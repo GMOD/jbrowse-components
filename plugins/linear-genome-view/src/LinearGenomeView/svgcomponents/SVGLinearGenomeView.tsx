@@ -8,7 +8,7 @@ import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
-import { contextStackRows } from '../contextLevels.ts'
+import { detailStackRows } from '../detailLevels.ts'
 import SVGHeader from './SVGHeader.tsx'
 import SVGRowHeader from './SVGRowHeader.tsx'
 import SVGView from './SVGView.tsx'
@@ -58,9 +58,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   // own readiness wait — an LGV display through `renderDisplaySvg`'s
   // `awaitSvgReady`, a non-LGV one (dotplot, synteny, circular) by calling that
   // itself.
-  const levels = model.contextLevelViews as LGV[]
-  const below = model.contextLevelsBelow
-  const stack = contextStackRows(model, levels, below)
+  const levels = model.detailLevelViews as LGV[]
+  const stack = detailStackRows(model, levels)
   const [
     { tracks, displayResults, tracksHeight, legendWidth, skippedTracks },
     levelTracks,
@@ -110,9 +109,9 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   })
   const w = width + trackLabelOffset + legendWidth
 
-  // Each context level and the trapezoid joining it to the row it details,
-  // stacked over the view under its full header — or under it, in the order
-  // `contextStackRows` gives, which is the order the screen draws too.
+  // The view under its full header, then each detail level under the trapezoid
+  // joining it to the row above, in the order `detailStackRows` gives — which
+  // is the order the screen draws too.
   //
   // A level's row header is a scalebar and no assembly name — the opposite of a
   // synteny row's. Every level is the host's own assembly, named once in the
@@ -127,9 +126,9 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const rendered = new Map(
     levels.map((level, i) => [level.id, levelTracks[i]!]),
   )
-  const levelRow = (level: LGV, first: boolean) => {
+  const levelRow = (level: LGV) => {
     const { tracksHeight, displayResults } = rendered.get(level.id)!
-    const rowTop = (first ? 0 : rowTopGap) + bandHeight
+    const rowTop = rowTopGap + bandHeight
     return {
       key: level.id,
       height: rowTop + rulerHeight + tracksHeight,
@@ -160,20 +159,19 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       ),
     }
   }
-  const connectorRow = (level: LGV, detail: LGV) => ({
+  const connectorRow = (level: LGV, context: LGV) => ({
     key: `connector-${level.id}`,
     // the band the reader set by dragging one of them, since how steep the
     // connectors read is the whole of what that drag is for
-    height: model.contextConnectorHeight,
+    height: model.detailConnectorHeight,
     node: (
       <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
         <OverviewScalebarPolygon
-          model={detail}
-          overview={level}
-          overviewOffsetPx={-level.offsetPx}
-          height={model.contextConnectorHeight}
+          model={level}
+          overview={context}
+          overviewOffsetPx={-context.offsetPx}
+          height={model.detailConnectorHeight}
           gradient
-          flip={below}
         />
       </g>
     ),
@@ -210,12 +208,13 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       </g>
     ),
   }
-  const stacked = stack.flatMap(({ level, detail }, i) =>
-    below
-      ? [connectorRow(level, detail), levelRow(level, false)]
-      : [levelRow(level, i === 0), connectorRow(level, detail)],
-  )
-  const rows = below ? [hostRow, ...stacked] : [...stacked, hostRow]
+  const rows = [
+    hostRow,
+    ...stack.flatMap(({ level, context }) => [
+      connectorRow(level, context),
+      levelRow(level),
+    ]),
+  ]
 
   let y = 0
   const children = rows.map(row => {

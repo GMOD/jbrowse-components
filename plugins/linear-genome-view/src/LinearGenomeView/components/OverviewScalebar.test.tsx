@@ -69,7 +69,7 @@ describe('OverviewScalebar tick labels', () => {
 })
 
 // The trapezoid joins the chromosome to whatever is drawn directly under it,
-// and with context levels that is the widest of them rather than the view: the
+// and with detail levels that is the widest of them rather than the view: the
 // view's own window is several rows further down, and the levels' connectors
 // are what walk the reader there.
 describe('OverviewScalebar "you are here" trapezoid', () => {
@@ -91,14 +91,14 @@ describe('OverviewScalebar "you are here" trapezoid', () => {
     ).container
   }
 
-  it('describes the view when it has no context levels', () => {
+  it('describes the view when it has no detail levels', () => {
     // 2.5Mb of the 250Mb overview, drawn 800px wide
     expect(topEdgeWidth(renderPolygon(overviewAt(2_500_000)))).toBeCloseTo(8, 0)
   })
 
-  it('describes the widest context level once there is one', () => {
+  it('describes the widest detail level once there is one', () => {
     const model = overviewAt(2_500_000)
-    model.addContextLevel()
+    model.addDetailLevel()
     expect(topEdgeWidth(renderPolygon(model))).toBeCloseTo(80, 0)
   })
 })

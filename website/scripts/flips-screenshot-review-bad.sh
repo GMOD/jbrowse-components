@@ -99,8 +99,8 @@ node scripts/flip-review.ts answered multiway_synteny/ecoli_island_lanes \
 node scripts/flip-review.ts answered pangenome/hprc_gbz_cfhr_lanes \
   "Fixed by the plugin publish. The graph plugin bundles its own clip code rather than taking it from the worker's synteny-core stub, and its copy has splitAtGapBp, so the lanes draw their genes and the ribbon narrows to nothing across the CFHR3-CFHR1 deletion instead of going solid grey."
 
-node scripts/flip-review.ts answered context_levels \
-  "Human, and filmed. Three levels of COLO829 on hg38: tumour coverage at 5 Mb over the gene track at 200 kb over the ONT reads at a kilobase of TP53. ui/context_levels films the route to that stack, since each level arrives empty and picks its own track."
+node scripts/flip-review.ts answered detail_levels \
+  "Human, and filmed. Three rows of COLO829 on hg38, zooming in down the page: tumour coverage over 200 kb, the gene track under it at 20 kb, the ONT reads at 2 kb of TP53. ui/detail_levels films the route to that stack."
 
 node scripts/flip-review.ts answered maf_summary_hprc_chromosome \
   "Kept, with the reference it was missing: the assembly carries cytobands now, so the gap that runs clear across every row sits under the ideogram's centromere. The black is the summary tier's own shading, since human haplotypes score at the top of the scale, and absence is what the figure is of."

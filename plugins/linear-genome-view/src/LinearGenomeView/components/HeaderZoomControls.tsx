@@ -1,20 +1,16 @@
-import { lazy, useState } from 'react'
+import { useState } from 'react'
 
 import { SingleSlider } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getBpDisplayStr, getDialogHost } from '@jbrowse/core/util'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { observer } from 'mobx-react'
 
-import { showAllRegionsMenuItem } from '../menuItems.ts'
+import { zoomMenuItems } from '../menuItems.ts'
 import ZoomButton from './ZoomButton.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-
-const RegionWidthEditorDialog = lazy(
-  () => import('./RegionWidthEditorDialog.tsx'),
-)
 
 const useStyles = makeStyles()(theme => ({
   container: {
@@ -36,36 +32,6 @@ const useStyles = makeStyles()(theme => ({
     },
   },
 }))
-
-function getZoomMenuItems(model: LinearGenomeViewModel) {
-  return [
-    ...[10, 50, 100].map(r => ({
-      label: `Zoom in ${r}x`,
-      onClick: () => {
-        model.zoom(model.bpPerPx / r)
-      },
-    })),
-    ...[10, 50, 100].map(r => ({
-      label: `Zoom out ${r}x`,
-      onClick: () => {
-        model.zoom(model.bpPerPx * r)
-      },
-    })),
-    showAllRegionsMenuItem(model),
-    {
-      label: 'Custom zoom',
-      onClick: () => {
-        getDialogHost(model).queueDialog(handleClose => [
-          RegionWidthEditorDialog,
-          {
-            model,
-            handleClose,
-          },
-        ])
-      },
-    },
-  ]
-}
 
 // The slider tracks live `bpPerPx`, which changes on every animation frame of a
 // zoom. Isolated into its own observer so the surrounding zoom buttons/menu —
@@ -123,7 +89,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
       halve and double, and the menu below reaches any factor the drag could */}
       {showSlider ? <ZoomSlider model={model} /> : null}
       <ZoomButton model={model} direction="in" />
-      <CascadingMenuButton menuItems={() => getZoomMenuItems(model)}>
+      <CascadingMenuButton menuItems={() => zoomMenuItems(model)}>
         <MoreVert />
       </CascadingMenuButton>
     </div>

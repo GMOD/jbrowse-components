@@ -11,26 +11,23 @@ import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { copyText } from '@jbrowse/core/util/copyText'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LaunchIcon from '@mui/icons-material/Launch'
 import LayersIcon from '@mui/icons-material/Layers'
 import LayersClearIcon from '@mui/icons-material/LayersClear'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import PaletteIcon from '@mui/icons-material/Palette'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SearchIcon from '@mui/icons-material/Search'
-import SwapVertIcon from '@mui/icons-material/SwapVert'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
-import { contextLevelHost } from './contextLevels.ts'
+import { detailLevelHost } from './detailLevels.ts'
 import {
-  AddContextLevelDialog,
+  AddDetailLevelDialog,
   ExportSvgDialog,
   GetSequenceDialog,
+  RegionWidthEditorDialog,
   ReturnToImportFormDialog,
   SequenceSearchDialog,
 } from './lazyDialogs.ts'
@@ -46,19 +43,15 @@ const TRACK_LABEL_OPTIONS = [
 ] as const
 
 /**
- * Zoom all the way out, shared by the view menu and the header's zoom menu —
- * one definition so the two cannot drift in label, and the view menu is the
- * only one of the two that survives `hideHeader`.
- *
- * The zoom menu earns it on the merits: this is the bottom of the same "Zoom
- * out 100x" ladder, and it is where someone already zooming looks.
+ * Zoom all the way out — the bottom of the same "Zoom out 100x" ladder it sits
+ * under.
  *
  * The label is the import form's button text verbatim (`ImportForm.tsx`), which
  * is where most people meet the phrase. No icon: the four-arrows glyph it
  * carried reads as "fullscreen", and nothing else names the same gesture, so a
  * substitute would be decoration rather than a distinction.
  */
-export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
+function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
   return {
     label: 'Show all regions in assembly',
     onClick: () => {
@@ -68,10 +61,9 @@ export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
 }
 
 /**
- * A view offers to grow a context level beside itself, and to move the stack it
- * has to the other side of the tracks; a level offers to go. Adding stops once
- * the widest level — or this view when it has none — is already zoomed all the
- * way out, since a level wider than that would show the same thing.
+ * A view offers to open a detail level under itself; a level offers to go.
+ * Adding stops once the closest level — or this view when it has none — is
+ * already at base level, since there is nothing left to zoom into.
  *
  * Only a view of its own offers to add one. A row of a comparative stack is
  * already part of somebody's figure: the synteny ribbons and the breakpoint
@@ -81,91 +73,101 @@ export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
  * not a top-level view either, hence the host check first — that is the menu
  * that takes it away again.
  */
-function contextLevelMenuItem(self: LinearGenomeViewModel): MenuItem[] {
-  const host = contextLevelHost(self)
-  if (host) {
-    return [
-      {
-        label: 'Remove context level',
-        icon: LayersClearIcon,
-        onClick: () => {
-          host.removeContextLevel(self)
-        },
-      },
-    ]
-  }
-  if (!self.isTopLevelView) {
+function addDetailLevelMenuItem(self: LinearGenomeViewModel): MenuItem[] {
+  if (!self.isTopLevelView || detailLevelHost(self)) {
     return []
   }
-  const top = self.contextLevelViews[0] ?? self
+  const closest = self.detailLevelViews.at(-1) ?? self
   return [
     {
-      label: 'Add context level',
+      label: 'Add detail level',
       icon: LayersIcon,
-      // `bpPerPx > 0` first: it is the unmeasured sentinel, and `maxBpPerPx`
-      // throws rather than answering for a view with no width yet
-      disabled: top.bpPerPx > 0 && top.bpPerPx >= top.maxBpPerPx,
+      // `bpPerPx > 0` first: it is the unmeasured sentinel for a view that has
+      // not been laid out yet, and comparing it says nothing
+      disabled: closest.bpPerPx > 0 && closest.bpPerPx <= closest.minBpPerPx,
       onClick: () => {
         getDialogHost(self).queueDialog(handleClose => [
-          AddContextLevelDialog,
+          AddDetailLevelDialog,
           { model: self, handleClose },
         ])
       },
     },
-    // The dialog names the side for the level it is adding, and the side
-    // belongs to the whole stack — so a stack already built is moved from
-    // here, rather than by adding a level nobody wanted to get at the radio.
-    ...(self.contextLevelViews.length
-      ? [
-          {
-            label: self.contextLevelsBelow
-              ? 'Move context levels above tracks'
-              : 'Move context levels below tracks',
-            icon: SwapVertIcon,
-            onClick: () => {
-              self.setContextLevelsBelow(!self.contextLevelsBelow)
-            },
-          },
-        ]
-      : []),
+  ]
+}
+
+/**
+ * The zoom ladder, shared by the header's zoom button and the view menu's
+ * "Zoom" — one definition so the two cannot drift, and the view menu is the
+ * only one of the two that survives `hideHeader`.
+ *
+ * A detail level belongs here rather than beside "Export SVG": what it does is
+ * zoom in, and what it costs is the view you were reading. Somebody who wants
+ * both looks where the zooming is.
+ */
+export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {
+  return [
+    ...[10, 50, 100].map(r => ({
+      label: `Zoom in ${r}x`,
+      onClick: () => {
+        self.zoom(self.bpPerPx / r)
+      },
+    })),
+    ...[10, 50, 100].map(r => ({
+      label: `Zoom out ${r}x`,
+      onClick: () => {
+        self.zoom(self.bpPerPx * r)
+      },
+    })),
+    showAllRegionsMenuItem(self),
+    {
+      label: 'Custom zoom',
+      onClick: () => {
+        getDialogHost(self).queueDialog(handleClose => [
+          RegionWidthEditorDialog,
+          { model: self, handleClose },
+        ])
+      },
+    },
+    ...addDetailLevelMenuItem(self),
   ]
 }
 
 /**
  * Build the main view menu items. A row stacked in another view has no import
  * form of its own, so only a top-level view offers the way back to one.
+ *
+ * Four actions, a Zoom group and a Show group. The four are what people open
+ * this menu to do — pick tracks, take a picture, search the sequence, start
+ * over — and the once-a-session settings that used to sit beside them are a
+ * popup away instead of in front of every reader every time.
  */
 export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   if (!self.hasDisplayedRegions) {
     return []
   }
   const session = getSession(self)
+  const host = detailLevelHost(self)
   const menuItems: MenuItem[] = [
     {
-      label: self.scalebarOnly ? 'Expand tracks' : 'Collapse to ruler',
-      icon: self.scalebarOnly ? ExpandMoreIcon : ExpandLessIcon,
+      label: 'Open track selector',
       onClick: () => {
-        self.setScalebarOnly(!self.scalebarOnly)
+        self.activateTrackSelector()
+      },
+      icon: TrackSelectorIcon,
+    },
+    {
+      label: 'Export SVG',
+      icon: PhotoCameraIcon,
+      onClick: () => {
+        session.queueDialog(handleClose => [
+          ExportSvgDialog,
+          {
+            model: self,
+            handleClose,
+          },
+        ])
       },
     },
-    ...contextLevelMenuItem(self),
-    ...(self.isTopLevelView
-      ? [
-          {
-            label: 'Return to import form',
-            onClick: () => {
-              session.queueDialog(handleClose => [
-                ReturnToImportFormDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-            icon: FolderOpenIcon,
-          },
-        ]
-      : []),
     ...(isSessionWithAddSessionTrack(session)
       ? [
           {
@@ -183,30 +185,37 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           },
         ]
       : []),
-    {
-      label: 'Export SVG',
-      icon: PhotoCameraIcon,
-      onClick: () => {
-        session.queueDialog(handleClose => [
-          ExportSvgDialog,
+    ...(self.isTopLevelView
+      ? [
           {
-            model: self,
-            handleClose,
+            label: 'Return to import form',
+            onClick: () => {
+              session.queueDialog(handleClose => [
+                ReturnToImportFormDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+            icon: FolderOpenIcon,
           },
-        ])
-      },
-    },
-    {
-      label: 'Open track selector',
-      onClick: () => {
-        self.activateTrackSelector()
-      },
-      icon: TrackSelectorIcon,
-    },
-    // Top-level rather than under a "Navigation" group: with scroll-to-zoom
-    // gone from here the group held two rows, and a popup for two is a click
-    // charged for nothing. Not under "Show...", which is visibility toggles.
-    showAllRegionsMenuItem(self),
+        ]
+      : []),
+    // The one row a detail level adds, and the only one of its own it needs.
+    // Top-level rather than under Zoom with the item that made it: a level is
+    // a second panel on the page, and taking a panel away is not a zoom.
+    ...(host
+      ? [
+          {
+            label: 'Remove detail level',
+            icon: LayersClearIcon,
+            onClick: () => {
+              host.removeDetailLevel(self)
+            },
+          },
+        ]
+      : []),
     {
       label: 'Horizontally flip',
       icon: SyncAltIcon,
@@ -215,24 +224,25 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
     },
     {
-      label: 'Color CDS by reading frame',
-      type: 'checkbox',
-      checked: self.colorByCDS,
-      icon: PaletteIcon,
-      onClick: () => {
-        self.setColorByCDS(!self.colorByCDS)
-      },
+      label: 'Zoom',
+      icon: ZoomInIcon,
+      subMenu: zoomMenuItems(self),
     },
     {
       label: 'Show...',
       icon: VisibilityIcon,
       subMenu: [
+        // Collapsing a row is about height and what it hides is the tracks, so
+        // it is the widest of the visibility answers and heads them. A checkbox
+        // rather than the pair of labels it was: "Collapse to ruler" turning
+        // into "Expand tracks" names the current state nowhere, and among
+        // checkboxes there is no room for the trick anyway.
         {
-          label: 'Show center line',
+          label: 'Collapse to ruler',
           type: 'checkbox',
-          checked: self.showCenterLine,
+          checked: self.scalebarOnly,
           onClick: () => {
-            self.setShowCenterLine(!self.showCenterLine)
+            self.setScalebarOnly(!self.scalebarOnly)
           },
         },
         {
@@ -247,15 +257,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             self.setHideHeader(!self.hideHeader)
           },
         },
-
-        {
-          label: 'Show track outlines',
-          type: 'checkbox',
-          checked: self.showTrackOutlines,
-          onClick: () => {
-            self.setShowTrackOutlines(!self.showTrackOutlines)
-          },
-        },
         {
           label: 'Show header overview',
           type: 'checkbox',
@@ -264,32 +265,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             self.setHideHeaderOverview(!self.hideHeaderOverview)
           },
           disabled: self.hideHeader,
-        },
-        {
-          label: 'Show no tracks active button',
-          type: 'checkbox',
-          checked: !self.hideNoTracksActive,
-          onClick: () => {
-            self.setHideNoTracksActive(!self.hideNoTracksActive)
-          },
-        },
-        {
-          // no icon: the palette it used to carry sat directly against the
-          // color-by-CDS one above it, which is the reason it moved here
-          label: 'Show amino acids when zoomed in',
-          type: 'checkbox',
-          checked: self.showAminoAcids,
-          onClick: () => {
-            self.setShowAminoAcids(!self.showAminoAcids)
-          },
-        },
-        {
-          label: 'Show guidelines',
-          type: 'checkbox',
-          checked: self.showGridlines,
-          onClick: () => {
-            self.setShowGridlines(!self.showGridlines)
-          },
         },
         ...(self.canShowCytobands
           ? [
@@ -303,6 +278,58 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
               },
             ]
           : []),
+        {
+          label: 'Show center line',
+          type: 'checkbox',
+          checked: self.showCenterLine,
+          onClick: () => {
+            self.setShowCenterLine(!self.showCenterLine)
+          },
+        },
+        {
+          label: 'Show guidelines',
+          type: 'checkbox',
+          checked: self.showGridlines,
+          onClick: () => {
+            self.setShowGridlines(!self.showGridlines)
+          },
+        },
+        {
+          label: 'Show track outlines',
+          type: 'checkbox',
+          checked: self.showTrackOutlines,
+          onClick: () => {
+            self.setShowTrackOutlines(!self.showTrackOutlines)
+          },
+        },
+        {
+          label: 'Show no tracks active button',
+          type: 'checkbox',
+          checked: !self.hideNoTracksActive,
+          onClick: () => {
+            self.setHideNoTracksActive(!self.hideNoTracksActive)
+          },
+        },
+        // The two answers to what the sequence draws as: one colours the
+        // codons, the other spells them out. Both lost the palette icon they
+        // used to carry — nothing else in this list has one.
+        { type: 'subHeader', label: 'Sequence' },
+        {
+          label: 'Color CDS by reading frame',
+          type: 'checkbox',
+          checked: self.colorByCDS,
+          onClick: () => {
+            self.setColorByCDS(!self.colorByCDS)
+          },
+        },
+        {
+          label: 'Show amino acids when zoomed in',
+          type: 'checkbox',
+          checked: self.showAminoAcids,
+          onClick: () => {
+            self.setShowAminoAcids(!self.showAminoAcids)
+          },
+        },
         // Where a track's name is drawn, and "Hidden" is one of the three
         // answers, so this is a visibility setting like everything above it.
         // Inline under a subheader rather than in a submenu of its own: it was a

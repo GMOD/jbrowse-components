@@ -271,14 +271,14 @@ export const featuresSpecs: ScreenshotSpec[] = [
         // ringed + boxed so the one click that enables it reads at a glance
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          ...menuCascade(['Color CDS by reading frame']),
+          ...menuCascade(['Show...', 'Color CDS by reading frame']),
         ],
         annotations: [
           {
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
-          ...cascadeBoxes(['Color CDS by reading frame']),
+          ...cascadeBoxes(['Show...', 'Color CDS by reading frame']),
         ],
       },
       {

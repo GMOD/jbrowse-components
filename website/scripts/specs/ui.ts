@@ -179,31 +179,25 @@ export const settingsVideoFixtures = {
 // What videos/ui.ts films. The tour ends where these stills already are, so it
 // opens on the session they were captured from rather than one written again.
 export const uiVideoFixtures = {
-  // The three tracks the context-levels tour checks and unchecks in the Add
-  // context level dialog, by the trackId its rows carry. The reads are the
-  // view's own, so they arrive checked and the tour takes them off each level.
-  contextLevelTracks: {
-    reads: 'COLO829_tumor_ont',
-    genes: 'ncbi_refseq_hg38',
-    coverage: 'COLO829_tumor_coverage',
-  },
-  // The reads the context-levels tour builds its stack over: the same COLO829
-  // window the context_levels figure ends on, with no levels yet, since the
-  // tour adds both of them.
-  contextLevelsSession: sessionSpec(
+  // The window the detail-levels tour builds its stack under: 200 kb of chr17
+  // around TP53 with the gene track on it and no levels yet, since the tour
+  // adds both of them. Genes rather than the figure's reads — the tour copies
+  // the view's tracks onto each level it adds, and three ONT lanes on one page
+  // is a tour that films the main thread rather than the feature.
+  detailLevelsSession: sessionSpec(
     encodeURIComponent('https://jbrowse.org/demos/cancer_sv/config.json'),
     {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr17:7,676,000-7,677,000',
+          loc: 'chr17:7,576,500-7,776,500',
           tracks: [
             {
-              trackId: 'COLO829_tumor_ont',
-              type: 'LinearAlignmentsDisplay',
-              height: 260,
-              forceLoad: true,
+              trackId: 'ncbi_refseq_hg38',
+              type: 'LinearBasicDisplay',
+              displayMode: 'compact',
+              height: 100,
             },
           ],
         },

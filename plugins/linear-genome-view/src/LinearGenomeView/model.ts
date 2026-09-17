@@ -66,11 +66,11 @@ import { handleSelectedRegion } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import { shouldSwapTracks } from './components/util.ts'
 import {
-  CONTEXT_CONNECTOR_HEIGHT,
+  DETAIL_CONNECTOR_HEIGHT,
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
   MIN_BP_PER_PX,
-  MIN_CONTEXT_CONNECTOR_HEIGHT,
+  MIN_DETAIL_CONNECTOR_HEIGHT,
   MINIMIZED_TRACK_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
@@ -78,7 +78,7 @@ import {
   TRACK_OUTLINE_BORDER,
   TRACK_TOP_GAP,
 } from './consts.ts'
-import { contextLevelHost, contextLevelType } from './contextLevels.ts'
+import { detailLevelHost, detailLevelType } from './detailLevels.ts'
 import { planFlight } from './flyTo.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
 import { lgvLaunchKeys } from './launchKeys.ts'
@@ -103,7 +103,7 @@ import {
   tickLabelWidth,
 } from './util.ts'
 
-import type { ContextLevel } from './contextLevels.ts'
+import type { DetailLevel } from './detailLevels.ts'
 import type { FlightViewport } from './flyTo.ts'
 import type {
   BpOffset,
@@ -435,35 +435,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * Wider views of the same locus stacked alongside the tracks, widest
-         * first. Each is a LinearGenomeView with tracks of its own whose
-         * regions, width and centre this view drives; its window width is the
-         * one thing it keeps. See `contextLevels.ts`.
+         * Closer views of the same locus stacked under the tracks, widest
+         * first, so the page zooms in as it reads down. Each is a
+         * LinearGenomeView with tracks of its own whose regions, width and
+         * centre this view drives; its window width is the one thing it keeps.
+         * See `detailLevels.ts`.
          */
-        contextLevels: types.stripDefault(
-          types.array(contextLevelType(pluginManager)),
+        detailLevels: types.stripDefault(
+          types.array(detailLevelType(pluginManager)),
           [],
         ),
 
         /**
          * #property
-         * Put the context levels under the tracks rather than over them. One
-         * side for the whole stack either way: the narrowest level is always
-         * the one touching the tracks, so the stack reads outward from the
-         * detail in one direction, and the trapezoids point the way it reads.
-         */
-        contextLevelsBelow: types.stripDefault(types.boolean, false),
-
-        /**
-         * #property
-         * Height of the bands the trapezoids between this view's context levels
+         * Height of the bands the trapezoids between this view's detail levels
          * are drawn in, dragged by any one of them. One number for the stack:
          * the bands are a ladder the eye reads down, and a rung of its own
          * height reads as a difference in the data rather than in the drawing.
          */
-        contextConnectorHeight: types.stripDefault(
+        detailConnectorHeight: types.stripDefault(
           types.number,
-          CONTEXT_CONNECTOR_HEIGHT,
+          DETAIL_CONNECTOR_HEIGHT,
         ),
 
         /**
@@ -780,26 +772,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The census entry for this view's context levels, which are views in
+       * The census entry for this view's detail levels, which are views in
        * their own right.
        */
       get ownViews() {
-        return [...self.contextLevels]
+        return [...self.detailLevels]
       },
       /**
        * #getter
-       * The context levels as what the host reads off them. The array element
+       * The detail levels as what the host reads off them. The array element
        * is a late type back onto this view, so this is where it gets a shape.
        */
-      get contextLevelViews(): ContextLevel[] {
-        return self.contextLevels
+      get detailLevelViews(): DetailLevel[] {
+        return self.detailLevels
       },
       /**
        * #getter
-       * Whether this view is itself a context level of another
+       * Whether this view is itself a detail level of another
        */
-      get isContextLevel() {
-        return !!contextLevelHost(self)
+      get isDetailLevel() {
+        return !!detailLevelHost(self)
       },
       /**
        * #getter
@@ -1478,33 +1470,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Add a context level showing `trackIds`, spanning `windowWidthBp` bases
-       * or ten times the widest level there is. The stack stays widest first,
-       * so a span between two existing levels lands between them, and one
-       * narrower than this view is pushed back out to it by the sync.
+       * Add a detail level showing `trackIds`, spanning `windowWidthBp` bases
+       * or a tenth of the closest level there is. The stack stays widest first,
+       * so a span between two existing levels lands between them, and one wider
+       * than this view is pulled back in to it by the sync.
        *
        * Answers the level, which is a LinearGenomeView: its own actions
        * navigate it, name its tracks and take it away again.
        */
-      addContextLevel({
+      addDetailLevel({
         windowWidthBp,
         trackIds = [],
       }: { windowWidthBp?: number; trackIds?: string[] } = {}) {
-        const widest = self.contextLevelViews[0]
+        const closest = self.detailLevelViews.at(-1)
         const width =
-          windowWidthBp ?? (widest?.windowWidthBp ?? self.windowWidthBp) * 10
+          windowWidthBp ?? (closest?.windowWidthBp ?? self.windowWidthBp) / 10
         const centerBp = self.windowStartBp + self.windowWidthBp / 2
-        const at = self.contextLevelViews.filter(
+        const at = self.detailLevelViews.filter(
           level => level.windowWidthBp > width,
         ).length
-        self.contextLevels.splice(at, 0, {
+        self.detailLevels.splice(at, 0, {
           type: 'LinearGenomeView',
           hideHeader: true,
           displayedRegions: self.displayedRegions,
           windowWidthBp: width,
           windowStartBp: centerBp - width / 2,
         })
-        const level = self.contextLevelViews[at]!
+        const level = self.detailLevelViews[at]!
         for (const trackId of trackIds) {
           level.showTrack(trackId)
         }
@@ -1513,27 +1505,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      removeContextLevel(level: ContextLevel) {
+      removeDetailLevel(level: DetailLevel) {
         detach(level)
         scheduleDetachedDestroy(level)
       },
       /**
        * #action
-       * Move this view's whole context stack under the tracks, or back over
-       * them.
-       */
-      setContextLevelsBelow(b: boolean) {
-        self.contextLevelsBelow = b
-      },
-      /**
-       * #action
-       * Set the height of every band between this view's context levels.
+       * Set the height of every band between this view's detail levels.
        * Floored at the drag surface's own height rather than at 0: the band IS
        * the handle, so a band dragged shut could never be dragged open again.
        */
-      setContextConnectorHeight(height: number) {
-        self.contextConnectorHeight = Math.max(
-          MIN_CONTEXT_CONNECTOR_HEIGHT,
+      setDetailConnectorHeight(height: number) {
+        self.detailConnectorHeight = Math.max(
+          MIN_DETAIL_CONNECTOR_HEIGHT,
           Math.round(height),
         )
       },

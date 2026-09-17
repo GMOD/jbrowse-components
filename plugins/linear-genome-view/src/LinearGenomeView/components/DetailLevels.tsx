@@ -4,7 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { observer } from 'mobx-react'
 
-import { contextStackRows } from '../contextLevels.ts'
+import { detailStackRows } from '../detailLevels.ts'
 import LinearGenomeView from './LinearGenomeView.tsx'
 import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 
@@ -37,88 +37,71 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The trapezoid from the span `detail` shows, as it sits in `context`, out to
- * `detail`'s full width: the header overview's "you are here", drawn between
- * two levels instead. The context level is scrolled, where the header overview
- * never is, so its left edge is what its origin is shifted by. `flip` is the
- * stack that reads downward into wider views, where the detail edge is the top
- * one.
+ * The trapezoid from the span `level` shows, as it sits in `context`, out to
+ * `level`'s full width: the header overview's "you are here", drawn between two
+ * rows of the stack instead. A detail level is scrolled, where the header
+ * overview never is, so its left edge is what its origin is shifted by.
  *
  * Its height belongs to the stack rather than to this pair, so a drag on any
  * band moves all of them: the bands are a ladder the eye reads down, and one
  * rung of its own height reads as a difference in the data. The height is worth
- * dragging at all because the band is a picture of a ratio — a level ten times
- * wider than the row beside it narrows to a tenth of the width there — and how
+ * dragging at all because the band is a picture of a ratio — a row ten times
+ * wider than the one under it narrows to a tenth of the width there — and how
  * steep that reads is the figure's to decide, not ours.
  */
 const LevelConnector = observer(function LevelConnector({
   host,
   context,
-  detail,
-  flip,
+  level,
 }: {
   host: LinearGenomeViewModel
   context: LinearGenomeViewModel
-  detail: LinearGenomeViewModel
-  flip: boolean
+  level: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const height = host.contextConnectorHeight
+  const height = host.detailConnectorHeight
   const handleProps = useResizeDrag({
     onDrag: delta => {
-      host.setContextConnectorHeight(host.contextConnectorHeight + delta)
+      host.setDetailConnectorHeight(host.detailConnectorHeight + delta)
     },
   })
-  return context.initialized && detail.initialized ? (
+  return context.initialized && level.initialized ? (
     <div className={classes.connector} style={{ height }}>
       <svg className={classes.polygon}>
         <OverviewScalebarPolygon
-          model={detail}
+          model={level}
           overview={context}
           overviewOffsetPx={-context.offsetPx}
           height={height}
           gradient
-          flip={flip}
         />
       </svg>
       <div
         {...handleProps}
-        data-testid={`context-connector-${context.id}`}
+        data-testid={`detail-connector-${level.id}`}
         className={classes.grab}
       />
     </div>
   ) : null
 })
 
-const ContextLevels = observer(function ContextLevels({
+const DetailLevels = observer(function DetailLevels({
   model,
 }: {
   model: LinearGenomeViewModel
 }) {
-  const levels = model.contextLevelViews as LinearGenomeViewModel[]
-  const below = model.contextLevelsBelow
-  const rows = contextStackRows(model, levels, below)
+  const levels = model.detailLevelViews as LinearGenomeViewModel[]
+  const rows = detailStackRows(model, levels)
   return rows.length ? (
-    <div data-testid={`context-levels-${model.id}`}>
-      {rows.map(({ level, detail }) => {
-        const connector = (
-          <LevelConnector
-            host={model}
-            context={level}
-            detail={detail}
-            flip={below}
-          />
-        )
-        return (
-          <Fragment key={level.id}>
-            {below ? connector : null}
-            <LinearGenomeView model={level} />
-            {below ? null : connector}
-          </Fragment>
-        )
-      })}
+    <div data-testid={`detail-levels-${model.id}`}>
+      {rows.map(({ level, context }) => (
+        <Fragment key={level.id}>
+          <LevelConnector host={model} context={context} level={level} />
+          <LinearGenomeView model={level} />
+        </Fragment>
+      ))}
     </div>
   ) : null
 })
 
-export default ContextLevels
+export default DetailLevels

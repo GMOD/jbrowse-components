@@ -13,8 +13,7 @@ import type { VideoSpec } from '../video-spec-types.ts'
 
 const {
   addTrackSession,
-  contextLevelsSession,
-  contextLevelTracks,
+  detailLevelsSession,
   addTrackUrl,
   bookmarkSession,
   bookmarkSpan,
@@ -40,18 +39,22 @@ const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 // carries the same `data-field`.
 const BOOKMARK_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
 
-// The Add context level dialog: its track list's filter, a checkbox by trackId,
-// and the button that takes the dialog. A row is taken by testid rather than by
-// its label, because a text target resolves to the filter field's own value
-// first.
-const {
-  reads: READS_TRACK,
-  genes: GENES_TRACK,
-  coverage: COVERAGE_TRACK,
-} = contextLevelTracks
-const TRACK_FILTER = '[data-testid="context-level-track-filter"]'
-const trackCheck = (trackId: string) =>
-  `[data-testid="context-level-track-${trackId}"]`
+// Add detail level, which lives under the view menu's Zoom group, and the
+// button that takes its dialog. The dialog itself is one checkbox, which the
+// tour leaves checked.
+const openAddDetailLevel = [
+  { type: 'waitForSelector', selector: cascade('submenu', 'Zoom') },
+  { type: 'click', selector: cascade('submenu', 'Zoom'), hold: 700 },
+  {
+    type: 'waitForSelector',
+    selector: cascade('menuitem', 'Add detail level'),
+  },
+  {
+    type: 'click',
+    selector: cascade('menuitem', 'Add detail level'),
+    hold: 1000,
+  },
+] as const
 const DIALOG_SUBMIT = 'form button[type="submit"]'
 
 export const uiVideos: VideoSpec[] = [
@@ -147,82 +150,60 @@ export const uiVideos: VideoSpec[] = [
     tailMs: 4000,
   },
 
-  // CONTEXT LEVELS, WHICH ARE BUILT RATHER THAN CONFIGURED. basic_usage.md's
-  // figure holds the finished stack — 5 Mb of coverage over 200 kb of genes
-  // over a kilobase of reads — and the route to it is three separate things a
-  // still cannot hold: the menu item, the dialog's track list, which opens with
-  // the view's own tracks checked, and the side of the tracks the stack sits on,
-  // which the second level's dialog switches with the first level already
-  // standing. The last frame is the payoff the prose asserts: the levels stay
-  // centred, so a navigation in the reads moves every level with it.
+  // DETAIL LEVELS, WHICH ARE BUILT RATHER THAN CONFIGURED. basic_usage.md's
+  // figure holds the finished stack, and the route to it is two things a still
+  // cannot hold: each level arriving ten times further in than the row above
+  // it, and the stack staying centred afterwards, so a navigation at the top
+  // moves every row with it.
+  //
+  // One gene track, copied onto each level the tour adds, so the three rows
+  // show the same data at 200 kb, 20 kb and 2 kb — which is the claim, drawn
+  // three times in one frame.
   {
-    name: 'ui/context_levels',
+    name: 'ui/detail_levels',
     description:
-      'A context level added from the view menu with the gene track checked in its dialog, a second wider level the same dialog sends under the reads, and a navigation the whole stack follows',
-    url: contextLevelsSession,
-    // the reads at 260, two levels at 80 each with their trapezoids, and room
-    // for the dialog that opens over them
-    viewportHeight: 900,
-    readySelector: displayPainted('pileup-display'),
-    readyTimeout: 180000,
-    settleMs: 15000,
+      'Two detail levels added from the view menu, each ten times further into the locus than the row above it, and a navigation the whole stack follows',
+    url: detailLevelsSession,
+    // three gene rows at 100 with their trapezoids, and room for the dialog
+    // that opens over them
+    viewportHeight: 760,
+    readySelector: displayPainted('linear-basic-display'),
+    readyTimeout: 120000,
+    settleMs: 8000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 2000 },
       {
         type: 'click',
         selector: '[data-testid="view_menu_icon"]',
-        say: 'Stack a wider view of the same locus over the reads',
+        say: 'Stack a closer view of the same locus under the tracks',
         hold: 900,
       },
-      { type: 'waitForText', text: 'Add context level' },
-      { type: 'click', text: 'Add context level', hold: 1200 },
-      // The dialog's list opens with the reads checked, since a level is a
-      // wider view of what is on screen. This one is for the genes, so the
-      // reads come off and the filter reaches the row that replaces them.
-      { type: 'waitForSelector', selector: trackCheck(READS_TRACK) },
+      ...openAddDetailLevel,
       {
         type: 'click',
-        selector: trackCheck(READS_TRACK),
-        say: "The level opens with the view's own tracks checked",
-        hold: 700,
+        selector: DIALOG_SUBMIT,
+        say: 'The level opens showing what the view is showing',
+        hold: 900,
       },
-      { type: 'type', selector: TRACK_FILTER, value: 'RefSeq' },
-      { type: 'waitForSelector', selector: trackCheck(GENES_TRACK) },
-      { type: 'click', selector: trackCheck(GENES_TRACK), hold: 700 },
-      { type: 'click', selector: DIALOG_SUBMIT },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 2000 },
       {
         type: 'click',
         selector: '[data-testid="view_menu_icon"]',
-        say: 'A second level, ten times wider again',
+        say: 'A second level, ten times further in again',
         hold: 900,
       },
-      { type: 'waitForText', text: 'Add context level' },
-      { type: 'click', text: 'Add context level', hold: 1200 },
-      { type: 'waitForSelector', selector: trackCheck(READS_TRACK) },
-      { type: 'click', selector: trackCheck(READS_TRACK) },
-      { type: 'type', selector: TRACK_FILTER, value: 'coverage' },
-      { type: 'waitForSelector', selector: trackCheck(COVERAGE_TRACK) },
-      { type: 'click', selector: trackCheck(COVERAGE_TRACK), hold: 700 },
-      // The side is the stack's, so this takes the level already standing with
-      // it, and the trapezoids turn over.
-      {
-        type: 'click',
-        text: 'Below the tracks',
-        say: 'The stack can sit under the tracks instead',
-        hold: 1200,
-      },
-      { type: 'click', selector: DIALOG_SUBMIT },
+      ...openAddDetailLevel,
+      { type: 'click', selector: DIALOG_SUBMIT, hold: 900 },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 2500 },
       // The claim, performed: the levels are centred on the view, so a
-      // navigation in the reads moves both of them.
+      // navigation at the top moves both of them.
       {
         type: 'type',
         selector: LOCATION_BOX,
-        value: 'chr17:7,687,400-7,688,400',
+        value: 'chr17:7,660,000-7,860,000',
         clear: true,
         say: 'Both levels follow the view',
       },

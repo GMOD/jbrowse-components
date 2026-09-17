@@ -145,7 +145,7 @@ export function insetLabelBaselineY(fontSize: number) {
 // `reserveAssemblyName` keeps the name's band whether or not the row draws one,
 // which is what a stack of one genome at several loci wants: a breakpoint split
 // view names its first row only, and the rest stay the same height as it. The
-// context-levels export is the case that says false — every row there is the
+// detail-levels export is the case that says false — every row there is the
 // host's own assembly, so no row names it and the band is space no glyph is
 // drawn in.
 export function getRowHeaderLayout({

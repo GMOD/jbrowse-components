@@ -13,11 +13,11 @@ import type { Region } from '@jbrowse/core/util/types'
 import type { IAnyModelType, IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * A context level is a LinearGenomeView nested under another one, showing a
- * wider window of the same locus over the host's tracks, or under them when
- * the host says so. Its only state of its own is `windowWidthBp` and `tracks`:
- * the host writes its regions, width and left edge, so the level always shares
- * the host's centre.
+ * A detail level is a LinearGenomeView nested under another one, drawn below
+ * the host's tracks and showing a narrower window of the same locus — the
+ * header overview's relationship to the view, carried on downward. Its only
+ * state of its own is `windowWidthBp` and `tracks`: the host writes its
+ * regions, width and left edge, so the level always shares the host's centre.
  *
  * Declared by hand rather than as the view model's own instance type: the
  * level array is a `types.late` back onto the registered LinearGenomeView, and
@@ -25,10 +25,10 @@ import type { IAnyModelType, IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * reference tsc refuses (TS7022). Components outside the factory cast a level
  * to `LinearGenomeViewModel`.
  */
-export interface ContextLevel extends IStateTreeNode {
+export interface DetailLevel extends IStateTreeNode {
   id: string
   bpPerPx: number
-  maxBpPerPx: number
+  minBpPerPx: number
   windowWidthBp: number
   windowStartBp: number
   displayedRegions: Region[]
@@ -40,20 +40,17 @@ export interface ContextLevel extends IStateTreeNode {
 }
 
 /**
- * The stack in page order, each level paired with the row its trapezoid points
- * at — the level below it in the stack, or the host itself. Above the tracks
- * the widest level comes first and the pairs read down to the host; below, the
- * host is the row above the first pair and the stack reads outward from it.
+ * The stack in page order, each level paired with the row above it — the
+ * previous level, or the host for the first. The array is widest first and
+ * every level is narrower than its host, so page order and array order are the
+ * same thing and each pair reads as one trapezoid: the span this row shows,
+ * marked on the row above it.
  *
  * One derivation for the screen and the SVG export, which otherwise agree on
  * the order by having been written twice.
  */
-export function contextStackRows<T>(host: T, levels: T[], below: boolean) {
-  const rows = levels.map((level, i) => ({
-    level,
-    detail: levels[i + 1] ?? host,
-  }))
-  return below ? rows.reverse() : rows
+export function detailStackRows<T>(host: T, levels: T[]) {
+  return levels.map((level, i) => ({ level, context: levels[i - 1] ?? host }))
 }
 
 /**
@@ -63,7 +60,7 @@ export function contextStackRows<T>(host: T, levels: T[], below: boolean) {
  * `getViewType` overload, whose result names this model's own instance type,
  * is not what tsc resolves here.
  */
-export function contextLevelType(pluginManager: PluginManager) {
+export function detailLevelType(pluginManager: PluginManager) {
   const name: string = 'LinearGenomeView'
   return types.late(
     (): IAnyModelType => pluginManager.getViewType(name).stateModel,
@@ -76,29 +73,29 @@ export function contextLevelType(pluginManager: PluginManager) {
  * is the same circular reference as above, which tsc resolves by quietly
  * widening the whole model.
  */
-export interface ContextLevelHost extends IStateTreeNode {
+export interface DetailLevelHost extends IStateTreeNode {
   bpPerPx: number
   windowWidthBp: number
-  contextLevelViews: ContextLevel[]
-  removeContextLevel(level: ContextLevel): void
+  detailLevelViews: DetailLevel[]
+  removeDetailLevel(level: DetailLevel): void
   horizontalScroll(distance: number): number
   slide(viewWidths: number): void
   scrollToBp(startBp: number): number
 }
 
-export function contextLevelHost(
+export function detailLevelHost(
   node: IStateTreeNode,
-): ContextLevelHost | undefined {
+): DetailLevelHost | undefined {
   const host = hasParent(node, 2)
     ? getParent<Record<string, unknown>>(node, 2)
     : undefined
-  return host && 'contextLevels' in host
-    ? (host as unknown as ContextLevelHost)
+  return host && 'detailLevels' in host
+    ? (host as unknown as DetailLevelHost)
     : undefined
 }
 
 // The three sets below classify every navigation-shaped action of the view,
-// and `contextLevels.test.ts` holds them against the view's real action list:
+// and `detailLevels.test.ts` holds them against the view's real action list:
 // a navigation in none of them lands on the level and quietly walks it off the
 // host's centre.
 
@@ -149,16 +146,16 @@ export const LEVEL_OWN = new Set([
 
 /**
  * Keep every level a derived view of its host: same regions, same width, same
- * centre, and never narrower than the level below it, so the stack reads
- * widest at the top down to the host. A level zoomed in past its floor is
- * pushed back out; a host zoomed out past a level pushes the level out with
- * it.
+ * centre, and between base level and the row above it, so the stack reads the
+ * host's span at the top zooming in the whole way down. A level zoomed out past
+ * its ceiling is pulled back in; a host zoomed in past a level pulls the level
+ * in with it.
  */
-function syncContextLevels(self: LinearGenomeViewModel) {
+function syncDetailLevels(self: LinearGenomeViewModel) {
   // The stack first and alone, so a view with no levels — which is every view
   // in the session but the one someone built a stack on — depends on this
   // array and nothing else, and its own pans and zooms wake nothing here.
-  const levels = self.contextLevelViews
+  const levels = self.detailLevelViews
   if (!levels.length) {
     return
   }
@@ -167,8 +164,8 @@ function syncContextLevels(self: LinearGenomeViewModel) {
     return
   }
   const centerBp = windowStartBp + windowWidthBp / 2
-  let floor = windowWidthBp
-  for (const level of [...levels].reverse()) {
+  let ceiling = windowWidthBp
+  for (const level of levels) {
     level.setWidth(volatileWidth)
     if (level.displayedRegions !== displayedRegions) {
       level.setDisplayedRegions(displayedRegions)
@@ -181,12 +178,16 @@ function syncContextLevels(self: LinearGenomeViewModel) {
     // the centre for good with nothing to put it back. Read, it snaps back, so
     // a miss costs that gesture rather than the stack.
     const { windowWidthBp: levelWidth, windowStartBp: levelStart } = level
-    const width = Math.max(levelWidth, floor)
+    // The floor is base level, which `zoomTo` holds every gesture to but not
+    // the window a snapshot arrives carrying — and a stack ten times in each
+    // step reaches it in three or four rungs.
+    const floor = level.minBpPerPx * volatileWidth
+    const width = Math.min(Math.max(levelWidth, floor), ceiling)
     const start = centerBp - width / 2
     if (width !== levelWidth || start !== levelStart) {
       level.setWindowFrame(width, start)
     }
-    floor = level.windowWidthBp
+    ceiling = level.windowWidthBp
   }
 }
 
@@ -197,7 +198,7 @@ function syncContextLevels(self: LinearGenomeViewModel) {
  */
 function redirectLevelGesture(
   self: LinearGenomeViewModel,
-  host: ContextLevelHost,
+  host: DetailLevelHost,
   call: { name: string; args: unknown[] },
   abort: (value: unknown) => void,
 ) {
@@ -245,7 +246,7 @@ function redirectLevelGesture(
  */
 function installLevelGestures(
   self: LinearGenomeViewModel,
-  host: ContextLevelHost,
+  host: DetailLevelHost,
 ) {
   addDisposer(
     self,
@@ -255,7 +256,7 @@ function installLevelGestures(
         call.id === call.rootId &&
         call.context === self
       // A middleware handler runs in whatever context dispatched the action,
-      // and one of those is `syncContextLevels` — an autorun that dispatches
+      // and one of those is `syncDetailLevels` — an autorun that dispatches
       // level actions. A `pendingLaunch` or `bpPerPx` read registered there
       // re-runs the whole sync whenever anything in the stack moves.
       // eslint-disable-next-line no-restricted-syntax -- effect input: the two scales a gesture is replayed at, read where an autorun may be the caller
@@ -269,17 +270,17 @@ function installLevelGestures(
   )
 }
 
-export function installContextLevels(self: LinearGenomeViewModel) {
+export function installDetailLevels(self: LinearGenomeViewModel) {
   addDisposer(
     self,
     autorun(
-      function contextLevelsAutorun() {
-        syncContextLevels(self)
+      function detailLevelsAutorun() {
+        syncDetailLevels(self)
       },
-      { name: 'LGVContextLevels' },
+      { name: 'LGVDetailLevels' },
     ),
   )
-  const host = contextLevelHost(self)
+  const host = detailLevelHost(self)
   if (host) {
     installLevelGestures(self, host)
   }

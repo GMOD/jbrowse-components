@@ -16,7 +16,7 @@ import { observer } from 'mobx-react'
 
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import { stickyChromeTops } from '../stickyChrome.ts'
-import ContextLevels from './ContextLevels.tsx'
+import DetailLevels from './DetailLevels.tsx'
 import Header from './Header.tsx'
 import MiniControls from './MiniControls.tsx'
 import NavigationAnnouncer from './NavigationAnnouncer.tsx'
@@ -64,7 +64,6 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
     tracks,
     unpinnedTracks,
     hideHeader,
-    contextLevelsBelow,
   } = model
   const stickyTops = stickyChromeTops({ stickyViewHeaders, headerHeight })
   const headerRef = useRef<HTMLDivElement>(null)
@@ -162,7 +161,6 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           <Header model={model} />
           {hideHeader ? <MiniControls model={model} /> : null}
         </div>
-        {contextLevelsBelow ? null : <ContextLevels model={model} />}
         {/* Everything the wheel may zoom, in both modes — see tracksRef. */}
         <div ref={tracksRef}>
           {model.scalebarOnly ? (
@@ -225,7 +223,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
             </TracksContainer>
           )}
         </div>
-        {contextLevelsBelow ? <ContextLevels model={model} /> : null}
+        <DetailLevels model={model} />
       </div>
     </>
   )

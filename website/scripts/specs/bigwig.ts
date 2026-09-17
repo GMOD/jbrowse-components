@@ -346,10 +346,10 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       {
         // top frame: single chromosome, view menu open with "Show all regions in
         // assembly" boxed — the one click that zooms the view out to the whole
-        // genome. Top-level since the Navigation group flattened (menuItems.ts).
+        // genome. Under "Zoom", with the rest of the ladder (menuItems.ts).
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          ...menuCascade(['Show all regions in assembly']),
+          ...menuCascade(['Zoom', 'Show all regions in assembly']),
           // The menu's popover layers land on top of an already-painted view,
           // and a previous run captured this frame with the whole view body
           // white behind them. The DOM was all there (assertViewsRendered
@@ -363,7 +363,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
-          ...cascadeBoxes(['Show all regions in assembly']),
+          ...cascadeBoxes(['Zoom', 'Show all regions in assembly']),
         ],
       },
       {

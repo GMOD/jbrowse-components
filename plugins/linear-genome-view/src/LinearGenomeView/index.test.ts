@@ -2816,11 +2816,11 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
   })
 
   // A synteny row and a breakpoint panel are placed by their own heights and
-  // exported a row per view, so a context level grown inside one walks the
+  // exported a row per view, so a detail level grown inside one walks the
   // ribbons off their rows and is dropped from that view's picture
-  test('only a top-level view offers to grow a context level', () => {
-    expect(viewMenuLabels(makeView(1))).toContain('Add context level')
-    expect(viewMenuLabels(makeView(1, true))).not.toContain('Add context level')
+  test('only a top-level view offers to grow a detail level', () => {
+    expect(viewMenuLabels(makeView(1))).toContain('Add detail level')
+    expect(viewMenuLabels(makeView(1, true))).not.toContain('Add detail level')
   })
 })
 

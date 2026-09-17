@@ -6,8 +6,8 @@ import {
   LEVEL_NAVIGATIONS,
   LEVEL_OWN,
   LEVEL_PANS,
-  contextStackRows,
-} from './contextLevels.ts'
+  detailStackRows,
+} from './detailLevels.ts'
 import { renderToSvg } from './svgcomponents/SVGLinearGenomeView.tsx'
 
 import type { LinearGenomeViewModel } from './index.ts'
@@ -43,38 +43,48 @@ function setup() {
 }
 
 function levels(view: LinearGenomeViewModel) {
-  return view.contextLevelViews as LinearGenomeViewModel[]
+  return view.detailLevelViews as LinearGenomeViewModel[]
 }
 
 function centerBp(view: { windowStartBp: number; windowWidthBp: number }) {
   return view.windowStartBp + view.windowWidthBp / 2
 }
 
-test('a level shares its host regions, width and centre at ten times the window', () => {
+test('a level shares its host regions, width and centre at a tenth of the window', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
   expect(level!.displayedRegions).toBe(view.displayedRegions)
   expect(level!.width).toBe(800)
-  expect(level!.windowWidthBp).toBe(80_000)
+  expect(level!.windowWidthBp).toBe(800)
   expect(centerBp(level!)).toBe(centerBp(view))
   expect(level!.hideHeader).toBe(true)
-  expect(level!.isContextLevel).toBe(true)
-  expect(view.isContextLevel).toBe(false)
+  expect(level!.isDetailLevel).toBe(true)
+  expect(view.isDetailLevel).toBe(false)
   expect(view.ownViews).toEqual([level])
 })
 
-test('levels stack widest first', () => {
+test('levels stack widest first, zooming in down the page', () => {
   const { view } = setup()
-  view.addContextLevel()
-  view.addContextLevel()
-  expect(levels(view).map(l => l.windowWidthBp)).toEqual([800_000, 80_000])
+  view.addDetailLevel()
+  view.addDetailLevel()
+  expect(levels(view).map(l => l.windowWidthBp)).toEqual([800, 80])
+})
+
+// The floor is base level: a level ten times into the last one would be 8bp
+// over 800px, which `zoomTo` clamps to the 16bp the view can draw
+test('a level asked for past base level comes back at base level', () => {
+  const { view } = setup()
+  view.addDetailLevel()
+  view.addDetailLevel()
+  view.addDetailLevel()
+  expect(levels(view).map(l => l.windowWidthBp)).toEqual([800, 80, 16])
 })
 
 test('the host moving keeps every level centred on it', () => {
   const { view } = setup()
-  view.addContextLevel()
-  view.addContextLevel()
+  view.addDetailLevel()
+  view.addDetailLevel()
   view.horizontalScroll(100)
   for (const level of levels(view)) {
     expect(centerBp(level)).toBe(centerBp(view))
@@ -83,7 +93,7 @@ test('the host moving keeps every level centred on it', () => {
 
 test('a drag on a level moves the host by the same number of bases', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
   const before = centerBp(view)
   level!.horizontalScroll(10)
@@ -93,69 +103,69 @@ test('a drag on a level moves the host by the same number of bases', () => {
 
 test('a scroll on a level places the host under the same centre', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
-  level!.scrollTo(0)
-  expect(centerBp(level!)).toBe(40_000)
-  expect(centerBp(view)).toBe(40_000)
+  level!.scrollTo(400_000)
+  expect(centerBp(level!)).toBe(400_400)
+  expect(centerBp(view)).toBe(400_400)
 })
 
-test('a level zooms about the host centre and never inside it', () => {
+test('a level zooms about the host centre and never outside it', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
   level!.zoomTo(level!.bpPerPx / 2, 0)
-  expect(level!.windowWidthBp).toBe(40_000)
+  expect(level!.windowWidthBp).toBe(400)
   expect(centerBp(level!)).toBe(centerBp(view))
-  level!.zoomTo(view.bpPerPx / 4)
+  level!.zoomTo(view.bpPerPx * 4)
   expect(level!.windowWidthBp).toBe(view.windowWidthBp)
 })
 
-test('the host zooming out pushes a narrower level out with it', () => {
+test('the host zooming in pulls a wider level in with it', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
-  view.zoomTo(view.bpPerPx * 100)
-  expect(view.windowWidthBp).toBe(800_000)
-  expect(level!.windowWidthBp).toBe(800_000)
+  view.zoomTo(view.bpPerPx / 100)
+  expect(view.windowWidthBp).toBe(80)
+  expect(level!.windowWidthBp).toBe(80)
 })
 
 test('a rubberband on a level navigates the host', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
   level!.moveTo(level!.pxToBp(100), level!.pxToBp(200))
-  expect(view.windowWidthBp).toBeCloseTo(10_000, -1)
+  expect(view.windowWidthBp).toBeCloseTo(100, -1)
   expect(centerBp(view)).toBeCloseTo(centerBp(level!), -1)
 })
 
 test('the snapshot carries a level and omits the key when there is none', () => {
   const { view } = setup()
-  expect('contextLevels' in getSnapshot(view)).toBe(false)
-  view.addContextLevel()
+  expect('detailLevels' in getSnapshot(view)).toBe(false)
+  view.addDetailLevel()
   const snap = getSnapshot(view) as {
-    contextLevels: { windowWidthBp: number }[]
+    detailLevels: { windowWidthBp: number }[]
   }
-  expect(snap.contextLevels).toHaveLength(1)
-  expect(snap.contextLevels[0]!.windowWidthBp).toBe(80_000)
+  expect(snap.detailLevels).toHaveLength(1)
+  expect(snap.detailLevels[0]!.windowWidthBp).toBe(800)
 })
 
 test('removing a level leaves the rest in place', () => {
   const { view } = setup()
-  view.addContextLevel()
-  view.addContextLevel()
-  const [widest, narrower] = levels(view)
-  view.removeContextLevel(widest!)
-  expect(levels(view)).toEqual([narrower])
+  view.addDetailLevel()
+  view.addDetailLevel()
+  const [widest, closer] = levels(view)
+  view.removeDetailLevel(widest!)
+  expect(levels(view)).toEqual([closer])
 })
 
 test('an arrow-key slide on a level moves the host by a fraction of the level', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
   const slide = jest.spyOn(view, 'slide')
   level!.slide(0.5)
-  expect(slide).toHaveBeenCalledWith(5)
+  expect(slide).toHaveBeenCalledWith(0.05)
   expect(centerBp(level!)).toBe(centerBp(view))
 })
 
@@ -165,12 +175,12 @@ test('a level restored from a snapshot redirects its gestures too', () => {
   // afterAttach — which for a stored stack is inside the host's construction
   const view = session.addView('LinearGenomeView', {
     displayedRegions: CTG_A,
-    contextLevels: [
+    detailLevels: [
       {
         type: 'LinearGenomeView',
         hideHeader: true,
         displayedRegions: CTG_A,
-        windowWidthBp: 80_000,
+        windowWidthBp: 800,
       },
     ],
   }) as LinearGenomeViewModel
@@ -217,98 +227,90 @@ test('every navigation-shaped action of a level is classified', () => {
 
 const polygons = (svg: string) => svg.split('<polygon').length - 1
 
-test('the SVG export stacks each level and its connector above the view', async () => {
+test('the SVG export puts the view first and each level under its connector', async () => {
   const { view } = setup()
   // no cytobands in this assembly, so the header draws no overview trapezoid
   expect(polygons(await renderToSvg(view, {}))).toBe(0)
-  view.addContextLevel()
-  view.addContextLevel()
+  view.addDetailLevel()
+  view.addDetailLevel()
   const svg = await renderToSvg(view, {})
   expect(polygons(svg)).toBe(2)
   // each level says how wide it is, and only the host's header names the
   // assembly the whole stack is of
-  expect(svg.split('>80Kbp<').length - 1).toBe(1)
-  expect(svg.split('>800Kbp<').length - 1).toBe(1)
+  expect(svg.split('>800bp<').length - 1).toBe(1)
+  expect(svg.split('>80bp<').length - 1).toBe(1)
   expect(svg.split('>volMyt1<').length - 1).toBe(1)
+  // and the page zooms in as it reads down
+  expect(svg.indexOf('>volMyt1<')).toBeLessThan(svg.indexOf('>800bp<'))
+  expect(svg.indexOf('>800bp<')).toBeLessThan(svg.indexOf('>80bp<'))
 })
 
 test("a level's own SVG export is the host's picture of the stack", async () => {
   const { view } = setup()
-  view.addContextLevel()
-  view.addContextLevel()
+  view.addDetailLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
-  // a level alone draws no connector; two levels above their host draw two
+  // a level alone draws no connector; two levels under their host draw two
   expect(polygons(await renderToSvg(level!, {}))).toBe(0)
   expect(polygons(await level!.exportSvg({ save: false }))).toBe(2)
 })
 
+// Adding lives under Zoom, which is what it does; removing is top-level on the
+// level itself, which is the panel it takes away
+function labels(v: LinearGenomeViewModel) {
+  return v.menuItems().map(m => ('label' in m ? m.label : undefined))
+}
+
+function addItem(v: LinearGenomeViewModel) {
+  const zoom = v.menuItems().find(m => 'label' in m && m.label === 'Zoom')
+  const subMenu = zoom && 'subMenu' in zoom ? zoom.subMenu : []
+  return (typeof subMenu === 'function' ? subMenu() : subMenu).find(
+    m => 'label' in m && m.label === 'Add detail level',
+  )
+}
+
 test("a level's menu takes it away, and does not offer to add another", () => {
   const { view } = setup()
-  view.addContextLevel()
-  const labels = (v: LinearGenomeViewModel) =>
-    v.menuItems().map(m => ('label' in m ? m.label : undefined))
-  expect(labels(view)).toContain('Add context level')
-  expect(labels(levels(view)[0]!)).toContain('Remove context level')
-  expect(labels(levels(view)[0]!)).not.toContain('Add context level')
+  view.addDetailLevel()
+  const level = levels(view)[0]!
+  expect(addItem(view)).toBeDefined()
+  expect(labels(view)).not.toContain('Remove detail level')
+  expect(labels(level)).toContain('Remove detail level')
+  expect(addItem(level)).toBeUndefined()
 })
 
-test('a view already zoomed all the way out offers no level above it', () => {
+test('a view already zoomed to base level offers no level under it', () => {
   const { view } = setup()
-  const addItem = (v: LinearGenomeViewModel) =>
-    v.menuItems().find(m => 'label' in m && m.label === 'Add context level')
   expect(addItem(view)).toMatchObject({ disabled: false })
-  view.showAllRegions()
+  view.zoomTo(view.minBpPerPx)
   expect(addItem(view)).toMatchObject({ disabled: true })
 })
 
-// The dialog names the side for the level it adds, so a stack already standing
-// needs a way over that does not involve adding one
-test('only a view with a stack is offered the move to the other side', () => {
+// The closest level is what the next one is measured against, so a stack that
+// has reached base level stops offering to go further in
+test('a stack already at base level offers no level under it', () => {
   const { view } = setup()
-  const moveItem = (v: LinearGenomeViewModel) =>
-    v
-      .menuItems()
-      .find(
-        m =>
-          'onClick' in m &&
-          typeof m.label === 'string' &&
-          m.label.startsWith('Move context'),
-      )
-  expect(moveItem(view)).toBeUndefined()
-  view.addContextLevel()
-  expect(moveItem(view)).toMatchObject({
-    label: 'Move context levels below tracks',
-  })
-  const level = levels(view)[0]!
-  expect(moveItem(level)).toBeUndefined()
-
-  const item = moveItem(view)!
-  if ('onClick' in item) {
-    item.onClick()
-  }
-  expect(view.contextLevelsBelow).toBe(true)
-  expect(moveItem(view)).toMatchObject({
-    label: 'Move context levels above tracks',
-  })
+  view.addDetailLevel({ windowWidthBp: view.minBpPerPx * view.width })
+  expect(addItem(view)).toMatchObject({ disabled: true })
 })
 
 test('the connector band is one height for the stack, with a floor', () => {
   const { view } = setup()
-  view.addContextLevel()
-  view.addContextLevel()
-  view.setContextConnectorHeight(view.contextConnectorHeight + 40)
-  expect(view.contextConnectorHeight).toBe(56)
+  view.addDetailLevel()
+  view.addDetailLevel()
+  view.setDetailConnectorHeight(view.detailConnectorHeight + 40)
+  expect(view.detailConnectorHeight).toBe(56)
   // a level keeps no height of its own, so every band moves together
-  expect(levels(view).map(l => l.contextConnectorHeight)).toEqual([16, 16])
-  view.setContextConnectorHeight(-10)
-  expect(view.contextConnectorHeight).toBe(4)
+  expect(levels(view).map(l => l.detailConnectorHeight)).toEqual([16, 16])
+  view.setDetailConnectorHeight(-10)
+  expect(view.detailConnectorHeight).toBe(4)
 })
 
 test('the SVG export draws the connectors at the height they were dragged to', async () => {
   const { view } = setup()
-  view.addContextLevel()
-  view.addContextLevel()
-  view.setContextConnectorHeight(64)
+  view.addDetailLevel()
+  view.addDetailLevel()
+  view.setDetailConnectorHeight(64)
   const svg = await renderToSvg(view, {})
   // two bottom corners each, both trapezoids on the band's floor
   expect(svg.split(',64 ').length - 1).toBe(4)
@@ -318,7 +320,7 @@ test('the SVG export draws the connectors at the height they were dragged to', a
 
 test('centring a level on a coordinate centres the host there', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
   level!.centerAt(100_000, 'ctgA')
   expect(centerBp(view)).toBeCloseTo(100_000, -2)
@@ -327,7 +329,7 @@ test('centring a level on a coordinate centres the host there', () => {
 
 test('a level moved off the host centre without a width change snaps back', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
   // LEVEL_OWN, so the middleware passes it through: the level writes its own
   // window, at the width it already had
@@ -337,7 +339,7 @@ test('a level moved off the host centre without a width change snaps back', () =
 
 test('dispatching a level action does not make the caller depend on the stack', () => {
   const { view } = setup()
-  view.addContextLevel()
+  view.addDetailLevel()
   const [level] = levels(view)
   let runs = 0
   const stop = autorun(() => {
@@ -345,7 +347,7 @@ test('dispatching a level action does not make the caller depend on the stack', 
     level!.horizontalScroll(0)
   })
   expect(runs).toBe(1)
-  view.addContextLevel()
+  view.addDetailLevel()
   expect(runs).toBe(1)
   stop()
 })
@@ -364,57 +366,41 @@ test('a level opens with the span and the tracks it was asked for', async () => 
     assemblyNames: ['volMyt1'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  view.addContextLevel({ windowWidthBp: 200_000, trackIds: ['genes'] })
+  view.addDetailLevel({ windowWidthBp: 2000, trackIds: ['genes'] })
   const [level] = levels(view)
-  expect(level!.windowWidthBp).toBe(200_000)
+  expect(level!.windowWidthBp).toBe(2000)
   await when(() => level!.tracks.length === 1)
   expect(level!.tracks[0]!.configuration.trackId).toBe('genes')
 })
 
 test('a span between two levels lands between them', () => {
   const { view } = setup()
-  view.addContextLevel()
-  view.addContextLevel()
-  view.addContextLevel({ windowWidthBp: 200_000 })
-  expect(levels(view).map(l => l.windowWidthBp)).toEqual([
-    800_000, 200_000, 80_000,
-  ])
+  view.addDetailLevel()
+  view.addDetailLevel()
+  view.addDetailLevel({ windowWidthBp: 200 })
+  expect(levels(view).map(l => l.windowWidthBp)).toEqual([800, 200, 80])
 })
 
-// A level narrower than the view shows less than the tracks under it, and the
-// sync is what refuses it: the dialog's field says so up front, an agent's call
-// finds out by the level coming back at the view's own span.
-test('a level asked for narrower than the view comes back at the view', () => {
+// A level wider than the view shows more than the tracks above it, and the sync
+// is what refuses it: an agent's call finds out by the level coming back at the
+// view's own span.
+test('a level asked for wider than the view comes back at the view', () => {
   const { view } = setup()
-  view.addContextLevel({ windowWidthBp: 100 })
+  view.addDetailLevel({ windowWidthBp: 100_000 })
   expect(levels(view)[0]!.windowWidthBp).toBe(view.windowWidthBp)
 })
 
-test('the side the stack sits on is one flag the snapshot omits by default', () => {
-  const { view } = setup()
-  expect(view.contextLevelsBelow).toBe(false)
-  expect('contextLevelsBelow' in getSnapshot(view)).toBe(false)
-  view.setContextLevelsBelow(true)
-  expect(
-    (getSnapshot(view) as { contextLevelsBelow?: boolean }).contextLevelsBelow,
-  ).toBe(true)
-})
-
-test('the stack reads down to the tracks above them, and outward below', () => {
-  expect(contextStackRows('host', ['wide', 'mid'], false)).toEqual([
-    { level: 'wide', detail: 'mid' },
-    { level: 'mid', detail: 'host' },
+test('the stack reads down from the host into closer views', () => {
+  expect(detailStackRows('host', ['near', 'far'])).toEqual([
+    { level: 'near', context: 'host' },
+    { level: 'far', context: 'near' },
   ])
-  expect(contextStackRows('host', ['wide', 'mid'], true)).toEqual([
-    { level: 'mid', detail: 'host' },
-    { level: 'wide', detail: 'mid' },
-  ])
-  expect(contextStackRows('host', [], true)).toEqual([])
+  expect(detailStackRows('host', [])).toEqual([])
 })
 
 // Each trapezoid's two horizontal edges, as the widths they were drawn at: the
-// narrow one is the span the wider level shows, the full-width one is the row
-// it details. Which of the two is on top is the whole of the flip.
+// narrow top edge is the span the row below shows, marked on the row above; the
+// full-width bottom edge is that row itself.
 function trapezoidEdges(svg: string) {
   return [...svg.matchAll(/<polygon[^>]*points="([^"]+)"/g)].map(match => {
     const points = match[1]!
@@ -429,34 +415,19 @@ function trapezoidEdges(svg: string) {
   })
 }
 
-test('a stack under the tracks exports the view first and flips its trapezoids', async () => {
+// Every trapezoid in the stack points the way the header overview's does, which
+// is what makes the page one ladder rather than two conventions meeting at the
+// tracks
+test('each connector fans out downward and holds its colour at the top', async () => {
   const { view } = setup()
-  view.addContextLevel()
-  view.addContextLevel()
-  const above = await renderToSvg(view, {})
-  view.setContextLevelsBelow(true)
-  const below = await renderToSvg(view, {})
-
-  // the host's header names the assembly once; each level's band names its span
-  expect(above.indexOf('>volMyt1<')).toBeGreaterThan(above.indexOf('>800Kbp<'))
-  expect(below.indexOf('>volMyt1<')).toBeLessThan(below.indexOf('>80Kbp<'))
-  // and under the tracks the stack widens downward, so the widest level is the
-  // last row rather than the first
-  expect(below.indexOf('>80Kbp<')).toBeLessThan(below.indexOf('>800Kbp<'))
-
-  expect(polygons(below)).toBe(2)
-  expect(trapezoidEdges(above).map(({ top, bottom }) => top < bottom)).toEqual([
+  view.addDetailLevel()
+  view.addDetailLevel()
+  const svg = await renderToSvg(view, {})
+  expect(trapezoidEdges(svg).map(({ top, bottom }) => top < bottom)).toEqual([
     true,
     true,
   ])
-  expect(trapezoidEdges(below).map(({ top, bottom }) => top > bottom)).toEqual([
-    true,
-    true,
-  ])
-  // the fade holds its colour at the narrow end either way, which is the end a
-  // mirrored gradient has to follow the shape to
-  const fadeFrom = (svg: string) =>
-    [...svg.matchAll(/<linearGradient[^>]*y1="(\d)"/g)].map(match => match[1])
-  expect(fadeFrom(above)).toEqual(['0', '0'])
-  expect(fadeFrom(below)).toEqual(['1', '1'])
+  expect(
+    [...svg.matchAll(/<linearGradient[^>]*y1="(\d)"/g)].map(match => match[1]),
+  ).toEqual(['0', '0'])
 })

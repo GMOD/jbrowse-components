@@ -291,40 +291,37 @@ sessions.
 The entry is absent unless the view shows a whole chromosome, since a sub-region
 gives an arbitrary slice of bands.
 
-### Context levels
+### Detail levels
 
-**Add context level** in the view's hamburger menu stacks a second view of the
-same locus at a wider span beside the tracks: a coverage track at megabase scale
-over a gene track at 200 kb over the reads at a kilobase, the way Ensembl's
-region-in-detail page is laid out. A trapezoid joins each level to the row it
-details.
+**Add detail level**, under **Zoom** in the view's hamburger menu, stacks a
+closer view of the same locus below the tracks: genes over a gene's exons over
+the reads at base level, each level ten times into the one above it. A trapezoid
+joins each level to the row above, marking the span it opens — the same shape
+the header overview draws between the chromosome and the view, carried on down
+the page.
 
-The dialog carries what a level arrives with. **Tracks on the level** opens with
-the tracks this view is showing checked, so Add alone gives a wider view of what
-is already on screen; the list holds every track this view can open, with a
-filter over their names, and the level keeps a track selector of its own for
-later. **Below the tracks** puts the stack under the view instead of over it,
-where it reads outward into wider spans. One side holds the whole stack, and the
-narrowest level is the one touching the tracks either way; **Move context levels
-below tracks** in the same menu takes a stack already built to the other side.
+The dialog asks one thing. **Copy this view's tracks** opens the level showing
+what this view is showing, so Add alone gives a closer look at the same data;
+unchecked, the level opens empty and its own track selector fills it.
 
-A level arrives ten times wider than the widest one there is, and the wheel
-takes it from there.
+A level arrives ten times zoomed in from the closest level there is, and the
+wheel takes it from there. It stops at base level, where the menu item goes
+grey.
 
 The levels stay centred on the view. Drag or pan a level and the view moves by
 the same number of bases; zoom a level and only that level changes width. A
 rubberband selection on a level navigates the view to it. Drag a trapezoid
-itself to set how tall its band is, which is how steep the connector reads. A
-level's own hamburger menu removes it.
+itself to set how tall its band is, which is how steep the connector reads.
+**Remove detail level** in a level's own hamburger menu takes it away.
 
 **Export SVG** draws the whole stack whichever menu it is asked from, each level
 under a bar labelled with the span it covers.
 
-<Figure caption="The Add context level item in the view menu." src="/img/context_levels_menu.png" />
+<Figure caption="The Add detail level item under Zoom in the view menu." src="/img/detail_levels_menu.png" />
 
-<Figure caption="A linear genome view of COLO829 with two context levels: tumour coverage at 5 Mb, the gene track at 200 kb, and the ONT reads at a kilobase of TP53. The trapezoids show where each level sits in the one above." src="/img/context_levels.png" />
+<Figure caption="A linear genome view of COLO829 at TP53 with two detail levels: tumour coverage over 200 kb, the gene track below it at 20 kb, and the ONT reads at 2 kb. Each trapezoid marks the span the row below it opens." src="/img/detail_levels.png" />
 
-<Video src="/media/ui/context_levels.mp4" caption="Building that stack: Add context level from the view menu, the reads unchecked and the gene track checked in its dialog, a second level ten times wider again that the same dialog sends under the reads, and a navigation the whole stack follows." />
+<Video src="/media/ui/detail_levels.mp4" caption="Building that stack: Add detail level from the view menu's Zoom group, a second level ten times in again, and a navigation the whole stack follows." />
 
 ### Track label positioning
 

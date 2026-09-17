@@ -61,13 +61,9 @@ const useStyles = makeStyles()(theme => ({
  * which wouldn't survive into a standalone exported SVG.
  * @param gradient - fade the whole shape out from the narrow overview edge to
  * the wide detail one, the way a figure in a paper draws the same connector.
- * The context levels ask for it and the header overview does not: the header's
+ * The detail levels ask for it and the header overview does not: the header's
  * is a flat band of chrome the eye reads as one mark, where the levels' is the
  * figure itself, and there the fade is what says which end is the detail.
- * @param flip - draw the detail edge along the top and the overview edge along
- * the bottom, for a stack whose wider view sits UNDER the detail. The shape and
- * the fade mirror together, so the trapezoid still narrows towards the wider
- * view and still holds its colour at that end.
  */
 const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   model,
@@ -76,7 +72,6 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   height = HEADER_BAR_HEIGHT,
   exportSvg = false,
   gradient = false,
-  flip = false,
 }: {
   model: LinearGenomeViewModel
   overview: ViewLayout
@@ -84,7 +79,6 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   height?: number
   exportSvg?: boolean
   gradient?: boolean
-  flip?: boolean
 }) {
   const { classes, theme } = useStyles()
   const { offsetPx, bpPerPx, dynamicBlocks } = model
@@ -103,27 +97,19 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
     overviewOffsetPx,
   )
   const bottom = transformPxSpan(extent, 1, -offsetPx)
-  const points = flip
-    ? trapezoidPoints(bottom, top, height)
-    : trapezoidPoints(top, bottom, height)
+  const points = trapezoidPoints(top, bottom, height)
 
   if (gradient) {
     // One gradient for both paints, scaled by the two opacities the flat
     // version fills and strokes at — `fill-opacity` multiplies the stop's
     // alpha — so the narrow end of a faded connector is exactly the colour of
     // an unfaded one and only the wide end moves.
-    const id = `context-connector-${svgNodeId(model)}`
+    const id = `detail-connector-${svgNodeId(model)}`
     const color = stripAlpha(theme.palette.tertiary.light)
     return (
       <>
         <defs>
-          <linearGradient
-            id={id}
-            x1="0"
-            y1={flip ? '1' : '0'}
-            x2="0"
-            y2={flip ? '0' : '1'}
-          >
+          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity={1} />
             <stop offset="100%" stopColor={color} stopOpacity={FADE_FLOOR} />
           </linearGradient>
