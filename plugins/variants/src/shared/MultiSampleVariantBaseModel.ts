@@ -47,6 +47,7 @@ import {
   loadedRegionIndexAt,
   orderRowsByDomain,
   paletteColorsByRow,
+  treeDescribesRows,
 } from '@jbrowse/tree-sidebar'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
@@ -84,42 +85,55 @@ import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
-// Apply a `colorBy` palette to the sample sources. Returns the colored sources,
-// or undefined when there's nothing to apply (no colorBy attribute, or sources
-// lack the requested attribute). `colorBy` is the resolved config-slot value so
-// the same palettizing drives both initial load and the interactive "Color
-// samples by" menu.
-//
-// The palette lands on `labelColor`, the channel tree-sidebar tints a row's
-// label with: these displays paint their cells by genotype, so a row has no
-// `color` of its own to spend, and carrying the tint under that name is what
-// once made them the last display drawing its own label component.
-
 type VariantHoverFields = Record<string, unknown> & {
   genotype: string
   name: string
 }
-export function maybeApplyColorByPalette(
+
+// The `colorBy` scale itself: one color per value of the attribute, built over
+// every adapter row. Over the adapter rows rather than the drawn ones because
+// `paletteColorsByRow` ranks values by how many rows carry them — resolved over
+// a subtree-filtered or haplotype-expanded list, focusing a clade would re-rank
+// the values and recolor everything left on screen.
+//
+// `undefined` is "nothing to color by": no attribute named, or one no source
+// carries.
+export function colorByPalette(
   colorBy: string,
   sources: Source[],
-): Source[] | undefined {
-  if (!colorBy) {
+): Map<string, string> | undefined {
+  if (!colorBy || !sources.some(source => colorBy in source)) {
     return undefined
   }
-  if (sources.some(source => colorBy in source)) {
-    const colors = paletteColorsByRow(sources, colorBy)
-    return sources.map((s, i) => ({ ...s, labelColor: colors[i]! }))
-  }
-  return undefined
+  const colors = paletteColorsByRow(sources, colorBy)
+  return new Map(sources.map((s, i) => [String(s[colorBy] ?? ''), colors[i]!]))
+}
+
+// Paint the scale onto the rows being drawn. The tint lands on `labelColor`,
+// the channel tree-sidebar draws a row's label in: these displays paint their
+// cells by genotype, so a row has no `color` of its own to spend.
+//
+// **The scale wins over whatever the row already carried** — a `samplesTsv`
+// `color` column, a color the arrangement dialog wrote, a palette an older
+// session persisted into `layout`. See the class docstring for why.
+export function applyColorByPalette<S extends Source>(
+  rows: S[],
+  colorBy: string,
+  palette: ReadonlyMap<string, string>,
+): S[] {
+  return rows.map(s => ({
+    ...s,
+    labelColor: palette.get(String(s[colorBy] ?? '')) ?? s.labelColor,
+  }))
 }
 
 // One spelling of "the config names an attribute the metadata doesn't have", for
-// the two settings that take one. Called from `applyArrangement` — the action
-// path — and never from the maybe* helpers above it: `rowOrderIsCustom` runs
-// `arrangeSources` inside a computed, and a computed must not console.warn per
-// menu render. Silent on an empty source list: that is the pre-load state, not
-// a bad config, and warning there printed an attribute list that was empty
-// because there was nothing to list yet.
+// the two settings that take one. Called from the actions that set them and
+// from `setSources`, which is where a config-declared attribute first meets the
+// metadata; never from a computed, which must not console.warn per menu render.
+// Silent on an empty source list: that is the pre-load state, not a bad config,
+// and warning there printed an attribute list that was empty because there was
+// nothing to list yet.
 function warnMissingAttribute(
   setting: string,
   attribute: string,
@@ -166,6 +180,10 @@ const PORTABLE_CONFIG_KEYS = [
   'showLegend',
   'showTree',
   'showBranchLength',
+  // The row `domain` seeds the order at read time rather than being written
+  // into `layout`, so a display-type switch that left it behind would drop the
+  // configured order along with it.
+  'domain',
   'referenceDrawingMode',
   'shadeByDosage',
   'colorBy',
@@ -239,119 +257,18 @@ export function maybeApplyFacet<S extends Record<string, unknown>>(
   return undefined
 }
 
-// The facet channel as the model reads it: the attribute banding the rows and
-// the band order it declares.
-interface Facet {
-  field: string
-  domain: string[]
-}
-
-// Seed the row order from the config `rowDomain`, then apply the active colorBy
-// palette and the facet's band order over it: the samples the domain names lead,
-// the rest keep the file's order, and a facet bands within that. Returns `[]`
-// when none of the three applies, the "no arrangement" layout — `orderRowsByDomain`
-// hands back the array it was given when the domain moves nothing, which is how
-// that stays distinguishable from a domain-seeded order. Its one caller is
-// `applyArrangement`, which is in turn the one thing setSources / setColorBy /
-// setFacet / clearLayout / setPhasedMode all arrange through — which is why none
-// of them can drift (a recolor dropping an active facet, a mode switch dropping
-// the coloring).
-function arrangeSources(
-  colorBy: string,
-  facet: Facet,
-  rowDomain: readonly string[],
+// Warn about both arrangement attributes at once, from the three actions that
+// can newly pair one with a source list: the load, and each setter.
+function warnUnknownArrangementAttributes(
+  self: { colorBy: string; facetField: string },
   sources: Source[],
-): Source[] {
-  const ordered = orderRowsByDomain(sources, rowDomain)
-  const colored = maybeApplyColorByPalette(colorBy, ordered)
-  return (
-    maybeApplyFacet(facet.field, facet.domain, colored ?? ordered) ??
-    colored ??
-    (ordered === sources ? [] : ordered)
-  )
-}
-
-// Drop the palette colors a previous `colorBy` wrote, leaving order and every
-// other per-row override in place. Applied only to layout rows: the adapter
-// sources can carry a color of their own (a `color` column in samplesTsv),
-// which is not ours to strip. `color` as well as `labelColor`, because a
-// session saved before the tint moved channels still holds its palette there.
-function stripPaletteColors(rows: Source[]): Source[] {
-  return rows.map(({ color: _color, labelColor: _labelColor, ...rest }) => rest)
-}
-
-// `applyArrangement` merges a non-empty layout through `getSources`, which
-// stamps `sampleName` on every row it returns, while the arrangement the config
-// alone produces has never been through it. Comparing the two therefore ignores
-// that key, or a second "Color by..." makes every track's row order read as
-// custom and "Reset row order" appears with nothing to reset.
-function withoutSampleName(rows: Source[]): Source[] {
-  return rows.map(({ sampleName: _sampleName, ...rest }) => rest)
-}
-
-// The slice `applyArrangement` drives. Structural so the helper can live beside
-// `arrangeSources` rather than inside the actions block that calls it.
-interface ArrangeableModel {
-  sourcesVolatile: Source[] | undefined
-  layout: Source[]
-  rowDomain: string[]
-  setLayout: (layout: Source[]) => void
-}
-
-/**
- * Re-apply the active `colorBy` palette and `facet` band order and persist the
- * result as the layout. The single implementation behind `setColorBy` and
- * `setFacet`.
- *
- * With an arrangement already on screen it re-arranges that arrangement, and
- * the config `domain` stays out of it: the seed is applied once, to the adapter
- * order, and only `clearLayout` returns to it. Re-deriving from
- * `sourcesVolatile` would make "Color by… → Population" discard a clustering
- * run or a hand-made order, and in phased mode halve the row count, since
- * `layout` there holds haplotype rows where `sourcesVolatile` holds samples;
- * re-seeding the domain over the layout would do the same to every row the
- * domain names.
- *
- * Persists through the mixin's `setLayout`, never a direct `self.layout =`, so
- * a loaded dendrogram is dropped exactly when the rows move: a recolor over an
- * unchanged order keeps its tree, and a refacet loses it.
- */
-function applyArrangement(
-  self: ArrangeableModel,
-  colorBy: string,
-  facet: Facet,
 ) {
-  const sources = self.sourcesVolatile
-  if (!sources) {
-    return
+  if (self.colorBy && !sources.some(source => self.colorBy in source)) {
+    warnMissingAttribute('colorBy', self.colorBy, sources)
   }
-  if (colorBy && !sources.some(source => colorBy in source)) {
-    warnMissingAttribute('colorBy', colorBy, sources)
+  if (self.facetField && !sources.some(source => self.facetField in source)) {
+    warnMissingAttribute('facet', self.facetField, sources)
   }
-  if (facet.field && !sources.some(source => facet.field in source)) {
-    warnMissingAttribute('facet', facet.field, sources)
-  }
-  if (self.layout.length === 0) {
-    // Nothing arranged yet, so adapter order is the thing to arrange. `[]` —
-    // what `arrangeSources` returns when neither axis applies — is the right
-    // answer here: it *means* "no arrangement".
-    self.setLayout(arrangeSources(colorBy, facet, self.rowDomain, sources))
-    return
-  }
-  // Merge the layout back over the adapter metadata that the palette and the
-  // facet read (`layout` is only an ordering/override hint).
-  // `renderingMode: 'alleleCount'` is "merge, don't expand further" — the
-  // layout rows already carry whatever granularity they were built at.
-  const current = getSources({
-    sources,
-    layout: self.layout,
-    renderingMode: 'alleleCount',
-  })
-  const base = colorBy ? current : stripPaletteColors(current)
-  const next = arrangeSources(colorBy, facet, [], base)
-  // Neither axis applies — but there is an arrangement here, and clearing both
-  // must not throw away the order the user is looking at.
-  self.setLayout(next.length ? next : base)
 }
 
 // Regions to fetch + render, by mode. Regular mode draws each variant at its
@@ -415,6 +332,36 @@ function fetchRegionsForMode(
  *   },
  * ]
  * ```
+ *
+ * ## How the rows are arranged
+ *
+ * `layout` holds only what a user or a clustering run did — a drag, the
+ * arrangement dialog, "Sort rows by genotype here", a run's order. The three
+ * config-declared channels are derived over `sourcesVolatile` on every read, in
+ * this order:
+ *
+ * 1. the row `domain` seeds the adapter order (the samples it names lead),
+ * 2. `layout` is merged over that seed,
+ * 3. phased mode expands each row to its haplotypes,
+ * 4. `colorBy` tints and `facet` bands the result.
+ *
+ * So `clearLayout` is the whole reset, "Reset row order" appears exactly when
+ * `layout` is non-empty, and nothing has to re-derive an arrangement when a
+ * setting changes. The same shape MAF and multi-wiggle already had.
+ *
+ * **The `colorBy` scale wins over a color the row already carried** — a
+ * `samplesTsv` `color` column, one the arrangement dialog wrote, one an older
+ * session persisted into `layout`. A channel bound to a variable beats a
+ * per-row constant, which is also what keeps every pre-change session looking
+ * exactly as it did and keeps the menu live on it: the palette is a pure
+ * function of the attribute, so recomputing it reproduces what that session
+ * stored. "Color by… → (none)" is what hands the row back its own color.
+ *
+ * **The `facet` band yields while a cluster tree describes the rows**, the
+ * mechanism `LinearMultiRowFeatureDisplay` uses for its row groups: the
+ * dendrogram positions leaf *i* on row *i*, so a band that moved rows under it
+ * would draw it against the wrong ones. A clustering run therefore never has to
+ * write the `facet` slot — a session spec setting both keeps both.
  */
 export default function MultiSampleVariantBaseModelF(
   configSchema: SharedVariantConfigModel,
@@ -840,16 +787,16 @@ export default function MultiSampleVariantBaseModelF(
            */
           setSources(sources: Source[]) {
             if (!deepEqual(sources, self.sourcesVolatile)) {
-              // An arrangement none of whose rows name a current sample is a
-              // previous dataset's: an adapter edit swapped the cohort out from
-              // under the layout, the colorBy palette it holds and the
-              // subtreeFilter naming its rows, and left standing they blank the
-              // display (getSources drops every stale row, the filter matches
-              // nothing). `clearLayout` is the same reset `setPhasedMode` takes
-              // when it renames the rows, and it re-seeds the configured
-              // arrangement against the new cohort. Keyed on total mismatch,
-              // not any mismatch — a partial overlap is the same cohort with
-              // samples added or removed, and the user's order survives that.
+              // A layout none of whose rows name a current sample is a previous
+              // dataset's: an adapter edit swapped the cohort out from under it
+              // and from under the `subtreeFilter` naming its rows, and left
+              // standing the filter matches nothing and the display goes blank.
+              // (The layout alone would survive — `getSources` drops a row no
+              // sample answers to — so the filter is what this is for.)
+              // `clearLayout` is the same reset `setPhasedMode` takes when it
+              // renames the rows. Keyed on total mismatch, not any mismatch — a
+              // partial overlap is the same cohort with samples added or
+              // removed, and the user's order survives that.
               const names = new Set(sources.map(s => resolveSampleName(s)))
               const layoutIsStale =
                 self.layout.length > 0 &&
@@ -857,53 +804,34 @@ export default function MultiSampleVariantBaseModelF(
               self.sourcesVolatile = sources
               if (layoutIsStale) {
                 self.clearLayout()
-              } else if (self.layout.length === 0) {
-                // Seeds the configured colorBy palette and facet band order on
-                // first load, and only then: an empty layout means the user has
-                // not arranged anything yet, and this fires once per adapter.
-                // Every LATER re-seed is its own action's job — setColorBy,
-                // setFacet, clearLayout and setPhasedMode each call
-                // `applyArrangement` themselves precisely because this will not
-                // fire again. Widening the guard here does not give them back.
-                applyArrangement(self, self.colorBy, {
-                  field: self.facetField,
-                  domain: self.facetDomain,
-                })
               }
+              warnUnknownArrangementAttributes(self, sources)
             }
           },
           /**
            * #action
            * Recolor sample rows by a metadata attribute (e.g. 'population'), or
-           * pass '' to clear the coloring. Persists the arrangement as the layout
-           * and records the choice in the `colorBy` config slot so it survives a
-           * data refetch and serializes into the session. Re-applies the facet in
-           * the same pass so recoloring doesn't drop an existing banding, and
-           * recolors the rows in place (see `applyArrangement`) so it doesn't drop
-           * an existing order either.
+           * pass '' to clear the coloring. Records the choice in the `colorBy`
+           * config slot, which is the whole of it: the tint is resolved on every
+           * read of `sources`, so a recolor moves no rows, drops no cluster tree
+           * and writes nothing into `layout`.
            */
           setColorBy(colorBy: string) {
             setConf(self, 'colorBy', colorBy)
-            applyArrangement(self, colorBy, {
-              field: self.facetField,
-              domain: self.facetDomain,
-            })
+            warnUnknownArrangementAttributes(self, self.sourcesVolatile ?? [])
           },
           /**
            * #action
            * Band the sample rows so each value of a metadata attribute (e.g.
-           * 'population') is contiguous, or pass '' to clear the facet.
-           * Persists the arrangement as the layout and records the choice in the
-           * `facet.field` config slot so it survives a data refetch and
-           * serializes into the session. Re-applies `colorBy` in the same pass
-           * so faceting doesn't drop an existing palette.
+           * 'population') is contiguous, or pass '' to clear the facet. Records
+           * the choice in the `facet.field` config slot, which is the whole of
+           * it: the banding is applied on every read of `sources`, over whatever
+           * `layout` holds, and it yields while a cluster tree describes those
+           * rows.
            */
           setFacet(field: string) {
             setConf({ configuration: self.configuration.facet }, 'field', field)
-            applyArrangement(self, self.colorBy, {
-              field,
-              domain: self.facetDomain,
-            })
+            warnUnknownArrangementAttributes(self, self.sourcesVolatile ?? [])
           },
           /**
            * #action
@@ -932,12 +860,6 @@ export default function MultiSampleVariantBaseModelF(
               // needs no tree, so a reorder leaves it perfectly valid); this is the
               // one action that renames the rows out from under it, and leaving it
               // set here matched nothing and blanked the display.
-              //
-              // Same reset as `clearLayout`, so the configured `colorBy` palette
-              // and facet band order come back on the new row names. Clearing
-              // without re-arranging dropped the row coloring on every mode
-              // switch while the menu still showed it checked — nothing else
-              // re-seeds `layout` (`setSources` fires once per adapter).
               self.clearLayout()
             }
           },
@@ -986,58 +908,6 @@ export default function MultiSampleVariantBaseModelF(
           },
         }
       })
-      .actions(self => {
-        const superClearLayout = self.clearLayout
-        return {
-          /**
-           * #action
-           * Restore the configured default arrangement. The mixin's
-           * `clearLayout` empties the layout and drops the tree plus the subtree
-           * filter that named its leaves; with no layout left, `applyArrangement`
-           * re-derives from adapter order — the same thing it does on first
-           * load, so a reset and a fresh load can't come out different.
-           */
-          clearLayout() {
-            superClearLayout()
-            applyArrangement(self, self.colorBy, {
-              field: self.facetField,
-              domain: self.facetDomain,
-            })
-          },
-        }
-      })
-      .views(self => ({
-        /**
-         * #getter
-         * Overrides the mixin's `layout.length > 0`: here a configured
-         * `domain` / `colorBy` / `facet` seeds `layout` on first load, so a
-         * non-empty layout is the ordinary state of a track nobody has
-         * rearranged, and
-         * `clearLayout` puts that same arrangement straight back. "Reset row
-         * order" is offered only once the layout has moved away from what the
-         * config alone would produce.
-         */
-        get rowOrderIsCustom(): boolean {
-          const sources = self.sourcesVolatile
-          return (
-            self.layout.length > 0 &&
-            !(
-              sources &&
-              deepEqual(
-                withoutSampleName(self.layout),
-                withoutSampleName(
-                  arrangeSources(
-                    self.colorBy,
-                    { field: self.facetField, domain: self.facetDomain },
-                    self.rowDomain,
-                    sources,
-                  ),
-                ),
-              )
-            )
-          )
-        },
-      }))
       .views(self => ({
         /**
          * #getter
@@ -1114,23 +984,44 @@ export default function MultiSampleVariantBaseModelF(
           return [...keys]
         },
 
-        // Four views on the source list, each with a different consumer:
+        /**
+         * #getter
+         * Adapter rows in the order the config `domain` declares: the samples it
+         * names lead, the rest keep the file's order. The seed `layout` merges
+         * over — it is never written into `layout`, so `clearLayout` returns
+         * here and a domain-seeded track offers no "Reset row order" until the
+         * rows actually move. Same shape as MAF's and multi-wiggle's
+         * `editableSources`.
+         */
+        get domainSeededSources(): Source[] | undefined {
+          const sources = self.sourcesVolatile
+          return sources && orderRowsByDomain(sources, self.rowDomain)
+        },
+
+        // Five views on the source list, each with a different consumer:
         //
-        // - sourcesBeforeSubtreeFilter: layout-ordered, NOT phased-expanded and
-        //   NOT subtree-filtered. The granularity `subtreeFilter` names, so it
-        //   is what an action computing a filter has to pick its names off.
+        // - domainSeededSources: adapter rows, domain-seeded. The base every
+        //   other one merges `layout` over.
+        // - sourcesBeforeSubtreeFilter: layout-merged, NOT phased-expanded,
+        //   NOT subtree-filtered, NOT tinted or banded. The granularity
+        //   `subtreeFilter` names, so it is what an action computing a filter
+        //   has to pick its names off.
         // - sourcesBase: that, subtree-filtered. Used by rpcProps — must not
         //   read sampleInfo (which is fetch-result-derived; reading it would
-        //   loop SettingsInvalidate).
+        //   loop SettingsInvalidate) — and by a clustering run, which writes
+        //   what it is handed into `layout`, where a palette color has no
+        //   business.
         // - sources: rendering view — sourcesBase + phased expansion (reads
-        //   sampleInfo). Subtree-filtered, so only visible rows show up.
+        //   sampleInfo) + the `colorBy` tint + the `facet` band.
         // - editableSources: dialog view — like `sources` but without the
         //   subtree filter, so submit doesn't wipe filtered samples from
-        //   `layout`.
+        //   `layout`, and without the tint and the band, so submit persists
+        //   only what the reader actually chose.
         get sourcesBeforeSubtreeFilter() {
-          return self.sourcesVolatile
+          const seeded = this.domainSeededSources
+          return seeded
             ? getSources({
-                sources: self.sourcesVolatile,
+                sources: seeded,
                 layout: self.layout.length ? self.layout : undefined,
                 renderingMode: 'alleleCount',
               })
@@ -1148,8 +1039,21 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * The display rows: `sourcesBase` expanded for phased rendering when
-         * sampleInfo is available. Sources already carrying HP (from clustering)
-         * pass through unchanged.
+         * sampleInfo is available (sources already carrying HP, from clustering,
+         * pass through unchanged), then tinted by `colorBy` and banded by
+         * `facet`.
+         *
+         * Expansion comes first so both channels read a haplotype row's own
+         * copy of its sample's metadata — a phased clustering run writes
+         * haplotype rows into `layout`, and `expandSourcesToHaplotypes` spreads
+         * every source field onto each one.
+         *
+         * **The band yields while a cluster tree describes these rows**, the
+         * mechanism `LinearMultiRowFeatureDisplay` uses for its row groups: the
+         * dendrogram positions leaf *i* on row *i*, so banding under it would
+         * draw it against the wrong rows. A cross-band drag therefore snaps
+         * back while the facet is on and no tree is loaded, and a clustering run
+         * needs no facet write of its own.
          *
          * **Resolved — an array, never `undefined`**, which is the shared
          * spelling across the row displays (canvas's multi-row painting and
@@ -1169,10 +1073,21 @@ export default function MultiSampleVariantBaseModelF(
             return []
           }
           const sampleInfo = self.sampleInfo
-          if (self.renderingMode !== 'phased' || !sampleInfo) {
-            return base
-          }
-          return expandSourcesToHaplotypes({ sources: base, sampleInfo })
+          const rows =
+            self.renderingMode === 'phased' && sampleInfo
+              ? expandSourcesToHaplotypes({ sources: base, sampleInfo })
+              : base
+          const palette = colorByPalette(
+            self.colorBy,
+            self.sourcesVolatile ?? [],
+          )
+          const tinted = palette
+            ? applyColorByPalette(rows, self.colorBy, palette)
+            : rows
+          return self.root && treeDescribesRows(self.root, rows)
+            ? tinted
+            : (maybeApplyFacet(self.facetField, self.facetDomain, tinted) ??
+                tinted)
         },
         /**
          * #getter
@@ -1182,10 +1097,14 @@ export default function MultiSampleVariantBaseModelF(
          * would submit the focused clade as the whole order and leave every
          * other sample appended after it. Same reason the other row displays'
          * `editableSources` sit upstream of `filterRowsBySubtree`.
+         *
+         * Neither the `colorBy` tint nor the `facet` band is on these rows:
+         * submit writes them straight to `layout`, so a channel resolved here
+         * would be persisted as if the reader had picked it row by row.
          */
         get editableSources(): ProcessedSource[] {
           return getSources({
-            sources: self.sourcesVolatile ?? [],
+            sources: self.domainSeededSources ?? [],
             layout: self.layout.length ? self.layout : undefined,
             renderingMode: self.renderingMode,
             sampleInfo: self.sampleInfo,

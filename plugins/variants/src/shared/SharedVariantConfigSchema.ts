@@ -20,11 +20,19 @@ const variantFacetSchema = ConfigurationSchema(
      * then the way every in-track grouping orders, digits by magnitude. Empty
      * means the rows keep their existing order. Writing
      * `facet: 'population'` directly on the display lands here.
+     *
+     * The band is applied when the rows are read, over whatever order the
+     * reader has arranged, so a drag that moves a sample into another band
+     * snaps back while this is set. It **yields while a cluster tree describes
+     * the rows** — the dendrogram positions leaf *i* on row *i*, so a band
+     * under it would draw it against the wrong rows. Clear the tree, or reset
+     * the row order, to band a clustered track.
      */
     field: {
       type: 'string',
       defaultValue: '',
-      description: 'sample-metadata attribute whose values take their own band',
+      description:
+        'sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows',
     },
     /**
      * #slot facet.domain
@@ -165,12 +173,17 @@ export default function sharedVariantConfigFactory() {
       },
       /**
        * #slot
+       * The tint is resolved when the rows are read, and while it is set it
+       * **wins over any color a row already carried** — a `color` column in the
+       * samplesTsv, one the arrangement dialog wrote, one an older session
+       * persisted. A channel bound to a variable beats a per-row constant;
+       * clear this to hand each row back its own color.
        */
       colorBy: {
         type: 'string',
         defaultValue: '',
         description:
-          "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping",
+          "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog",
       },
       /**
        * #slot

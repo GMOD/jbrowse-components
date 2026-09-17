@@ -1,11 +1,14 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import {
-  maybeApplyColorByPalette,
+  applyColorByPalette,
+  colorByPalette,
   maybeApplyFacet,
   sortSourcesByAttribute,
 } from './MultiSampleVariantBaseModel.ts'
 import sharedVariantConfigFactory from './SharedVariantConfigSchema.ts'
+
+import type { Source } from './types.ts'
 
 describe('SharedVariantConfigSchema', () => {
   const configSchema = sharedVariantConfigFactory()
@@ -157,36 +160,79 @@ describe('colorBy config slot', () => {
   })
 })
 
-// Guards the colorBy wiring (setSources / setColorBy -> maybeApplyColorByPalette):
-// the display colors sample rows by the resolved `colorBy` value, or no-ops when
-// colorBy is unset / the attribute is missing.
-describe('maybeApplyColorByPalette', () => {
+// The colorBy scale and its application, the two halves the `sources` getter
+// resolves on every read: the scale is built over the adapter rows so a subtree
+// filter cannot re-rank it, and painted onto whatever rows are being drawn.
+describe('colorByPalette', () => {
   const sources = [
     { name: 'sample1', population: 'EUR' },
     { name: 'sample2', population: 'AFR' },
     { name: 'sample3', population: 'EUR' },
   ]
 
-  it('returns undefined when colorBy is unset (no palette applied)', () => {
-    expect(maybeApplyColorByPalette('', sources)).toBeUndefined()
+  it('returns undefined when colorBy is unset', () => {
+    expect(colorByPalette('', sources)).toBeUndefined()
   })
 
-  it('colors sources by the requested attribute', () => {
-    const result = maybeApplyColorByPalette('population', sources)
-    expect(result).toBeDefined()
-    // same population => same color, different population => different color
-    expect(result![0]!.labelColor).toBe(result![2]!.labelColor)
-    expect(result![0]!.labelColor).not.toBe(result![1]!.labelColor)
+  it('gives each value of the attribute its own color', () => {
+    const palette = colorByPalette('population', sources)!
+    expect(palette.get('EUR')).toBeDefined()
+    expect(palette.get('EUR')).not.toBe(palette.get('AFR'))
   })
 
-  // silently: the warning lives in applyArrangement (the action path), because
-  // rowOrderIsCustom runs this inside a computed and a computed must not
-  // console.warn per menu render
+  // The ranking is by how many rows carry each value, so a scale resolved over
+  // the drawn rows would recolor the cohort whenever a clade was focused.
+  it('ranks the same however many rows are drawn', () => {
+    const whole = colorByPalette('population', sources)!
+    const clade = colorByPalette('population', [sources[1]!])!
+    expect(clade.get('AFR')).toBe(whole.get('AFR'))
+  })
+
+  // silently: the warning lives in the actions, because this runs inside a
+  // computed and a computed must not console.warn per menu render
   it('returns undefined, silently, when the requested attribute is absent', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    expect(maybeApplyColorByPalette('nonexistent', sources)).toBe(undefined)
+    expect(colorByPalette('nonexistent', sources)).toBe(undefined)
     expect(warn).not.toHaveBeenCalled()
     warn.mockRestore()
+  })
+})
+
+describe('applyColorByPalette', () => {
+  const palette = new Map([
+    ['EUR', 'blue'],
+    ['AFR', 'red'],
+  ])
+
+  it('tints each row by its value', () => {
+    const rows: Source[] = [
+      { name: 'a', population: 'EUR' },
+      { name: 'b', population: 'AFR' },
+    ]
+    expect(
+      applyColorByPalette(rows, 'population', palette).map(s => s.labelColor),
+    ).toEqual(['blue', 'red'])
+  })
+
+  // A channel bound to a variable beats a per-row constant — a samplesTsv
+  // `color` column, a color the arrangement dialog wrote, a palette an older
+  // session persisted into `layout`.
+  it('wins over a color the row already carried', () => {
+    const [row] = applyColorByPalette(
+      [{ name: 'a', population: 'EUR', labelColor: 'green' }],
+      'population',
+      palette,
+    )
+    expect(row!.labelColor).toBe('blue')
+  })
+
+  it('leaves a row the scale has no answer for alone', () => {
+    const [row] = applyColorByPalette(
+      [{ name: 'a', population: 'SAS', labelColor: 'green' }],
+      'population',
+      palette,
+    )
+    expect(row!.labelColor).toBe('green')
   })
 })
 
@@ -294,7 +340,7 @@ describe('maybeApplyFacet', () => {
     ])
   })
 
-  // silent for the reason maybeApplyColorByPalette's absent case is
+  // silent for the reason `colorByPalette`'s absent case is
   it('returns undefined, silently, when the attribute is absent', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     expect(maybeApplyFacet('nonexistent', [], sources)).toBeUndefined()
