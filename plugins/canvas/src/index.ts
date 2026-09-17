@@ -38,11 +38,6 @@ export {
   linearBasicDisplayConfigSchemaFactory,
   linearCanvasBaseDisplayConfigSchemaFactory,
 } from './LinearBasicDisplay/index.ts'
-// For @jbrowse/img and third parties writing the `color` slot.
-export {
-  STRAND_COLOR_JEXL,
-  attributeColorJexl,
-} from './RenderFeatureDataRPC/featureColors.ts'
 // The label-content vocabulary, for a display outside this plugin offering the
 // same choices.
 export {

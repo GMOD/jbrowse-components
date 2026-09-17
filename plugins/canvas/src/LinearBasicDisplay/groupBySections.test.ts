@@ -3,10 +3,6 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import {
-  STRAND_COLOR_JEXL,
-  attributeColorJexl,
-} from '../RenderFeatureDataRPC/featureColors.ts'
-import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
@@ -110,15 +106,15 @@ test('grouping with its color writes the grouping color, and unticking takes it 
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.applyGroupBy({ type: 'strand' }, true)
-  expect(display.conf.color).toBe(STRAND_COLOR_JEXL)
+  expect(display.colorByMode).toBe('strand')
 
   display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, true)
-  expect(display.conf.color).toBe(attributeColorJexl('biotype'))
+  expect(display.colorByAttribute).toBe('biotype')
 
   display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, false)
   expect(display.colorByMode).toBe('default')
 
-  display.setFeatureColor(attributeColorJexl('biotype', ['b', 'a']))
+  display.setColorScale({ field: 'biotype', domain: ['b', 'a'] })
   display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, false)
   expect(display.colorByMode).toBe('default')
 

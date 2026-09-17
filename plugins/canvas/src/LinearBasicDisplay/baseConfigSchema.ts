@@ -105,6 +105,42 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * A feature field, or a `jexl:` expression over `feature`, whose values
+       * each paint one palette color, and a key saying which; it wins over
+       * `color` while set. A transcript and all its parts paint the
+       * transcript's value, or its gene's where the transcript has none.
+       * `strand` paints forward tomato and reverse cornflowerblue unless
+       * `colorDomain` or `colorPalette` says otherwise.
+       */
+      colorField: {
+        type: 'string',
+        defaultValue: '',
+        description:
+          'feature field (or jexl expression) to color by, one palette color per value, with a key',
+      },
+      /**
+       * #slot
+       * The `colorField` values that take the palette first, in order. A
+       * value left out keeps a color derived from itself that no listed value
+       * paints, so every region agrees on it.
+       */
+      colorDomain: {
+        type: 'stringArray',
+        defaultValue: [],
+        description: 'colorField values that take the palette first, in order',
+      },
+      /**
+       * #slot
+       * The CSS colors `colorDomain` hands out, in order, continuing into the
+       * default palette past its end. Empty is the default palette.
+       */
+      colorPalette: {
+        type: 'stringArray',
+        defaultValue: [],
+        description: 'CSS colors the colorField values take, in order',
+      },
+      /**
+       * #slot
        */
       // `maybeColor` for the same reason as `color`: the default is
       // derive-from-theme, not a color.

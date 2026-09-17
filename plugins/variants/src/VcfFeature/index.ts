@@ -60,7 +60,8 @@ export default class VCFFeature implements Feature {
       : field === 'genotypes'
         ? this.variant.GENOTYPES()
         : (this.data[field as keyof typeof this.data] ??
-          this.variant[field as keyof typeof this.variant])
+          this.variant[field as keyof typeof this.variant] ??
+          this.variant.INFO[field])
   }
   parent() {
     return undefined

@@ -185,7 +185,7 @@ export function pushBoxRect(
   const [y, height] = applyUTRSizing(baseTopPx, baseHeight, isUTR(feature))
   const fill: PackedColor =
     colorOverride === undefined
-      ? packColor(boxColor(feature, ctx))
+      ? packColor(boxColor(feature, ctx, collector.colorKey))
       : { color: colorOverride, colorClass: LITERAL }
   rects.push({
     start: feature.get('start'),

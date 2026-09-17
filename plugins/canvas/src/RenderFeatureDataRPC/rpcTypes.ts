@@ -134,8 +134,12 @@ export interface FeatureDataResult {
 
   aminoAcidOverlay?: AminoAcidOverlayItem[]
 
-  // Undefined unless the `color` slot colors by an attribute.
-  legendCandidates?: LegendCandidate[]
+  // Undefined unless the color channel is a scale. A candidate's `rowIndex`
+  // indexes `rows`, the section its record files under.
+  colorKey?: {
+    candidates: LegendCandidate[]
+    rows: SectionStamp[]
+  }
 
   featureCount: number
 
@@ -223,6 +227,9 @@ export interface HitItemBase {
   // SubfeatureInfo and a standalone one on its FlatbushItem.
   transcript?: TranscriptCoords
 }
+
+// What a record's section is read off.
+export type SectionStamp = Pick<FlatbushItem, 'strand' | 'groupKey'>
 
 export interface FlatbushItem extends HitItemBase {
   kind: 'feature'

@@ -33,6 +33,9 @@ export function laneDisplayConfig({
     // through to when this is unset) takes only an `r,g,b` triple and would drop
     // the alpha a jexl-authored cell color can carry.
     color: `jexl:get(feature,'laneColor')`,
+    colorField: '',
+    colorDomain: [],
+    colorPalette: [],
     connectorColor: undefined,
     utrColor: undefined,
     featureHeight,

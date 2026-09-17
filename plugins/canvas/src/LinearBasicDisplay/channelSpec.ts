@@ -1,23 +1,15 @@
-import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import {
   ensureJexlPrefix,
   isJexl,
   stringToJexlExpression,
 } from '@jbrowse/core/util/jexlStrings'
 
-import {
-  STRAND_COLOR_JEXL,
-  attributeColorJexl,
-  attributeColorOf,
-} from '../RenderFeatureDataRPC/featureColors.ts'
+import { STRAND_FIELD } from '../RenderFeatureDataRPC/featureColors.ts'
 
+import type { ColorScaleSettings } from '../RenderFeatureDataRPC/featureColors.ts'
 import type { FeatureGroupBy } from './groupBy.ts'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
-
-// Strand is the one field that is not a feature attribute: GFF3 gives it a
-// column, so no attribute can take the name.
-const STRAND = 'strand'
 
 export const CHANNEL_SPEC_EXAMPLES = [
   { spec: '{ "facet": "strand" }', description: 'one section per strand' },
@@ -30,8 +22,13 @@ export const CHANNEL_SPEC_EXAMPLES = [
     description: 'one color per source',
   },
   {
+    spec: '{ "color": { "field": "strand" } }',
+    description: 'forward strand red, reverse blue',
+  },
+  {
     spec: '{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "palette": ["#1f77b4", "#ff7f0e"] } }',
-    description: 'those two biotypes blue and orange, and a key saying so',
+    description:
+      'those two biotypes blue and orange, and every other its own color',
   },
   { spec: '{ "color": "#1f77b4" }', description: 'one color for everything' },
   {
@@ -48,7 +45,7 @@ export function facetOf(groupBy: FeatureGroupBy | undefined) {
   if (groupBy === undefined) {
     return null
   }
-  const field = groupBy.type === 'strand' ? STRAND : groupBy.attribute
+  const field = groupBy.type === 'strand' ? STRAND_FIELD : groupBy.attribute
   return groupBy.domain?.length ? { field, domain: groupBy.domain } : { field }
 }
 
@@ -58,64 +55,24 @@ export function groupByOf(
   facet: NonNullable<ChannelSpec['facet']>,
 ): FeatureGroupBy {
   const domain = facet.domain ?? []
-  return facet.field === STRAND
+  return facet.field === STRAND_FIELD
     ? { type: 'strand', domain }
     : { type: 'attribute', attribute: facet.field, domain }
 }
 
-export function colorOf(color: string | undefined): ChannelSpec['color'] {
-  if (color === undefined) {
-    return null
-  }
-  if (color === STRAND_COLOR_JEXL) {
-    return { field: STRAND }
-  }
-  const byField = attributeColorOf(color)
-  return byField
+export function colorOf({
+  color,
+  colorField,
+  colorDomain,
+  colorPalette,
+}: ColorScaleSettings & { color: string | undefined }): ChannelSpec['color'] {
+  return colorField
     ? {
-        field: byField.attribute,
-        ...(byField.domain.length ? { domain: byField.domain } : {}),
-        ...(byField.palette.length ? { palette: byField.palette } : {}),
+        field: colorField,
+        ...(colorDomain.length ? { domain: [...colorDomain] } : {}),
+        ...(colorPalette.length ? { palette: [...colorPalette] } : {}),
       }
-    : color
-}
-
-export function colorSlotOf(color: NonNullable<ChannelSpec['color']>) {
-  return typeof color === 'string'
-    ? color
-    : color.field === STRAND
-      ? STRAND_COLOR_JEXL
-      : attributeColorJexl(color.field, color.domain, color.palette)
-}
-
-/**
- * A color by the facet's own field that names no domain takes the facet's,
- * so the sections and their colors list in one order. Copied when the spec is
- * applied rather than read at paint time, so a later Sections move reorders
- * the sections and leaves the colors where they are. The catch-all and
- * overflow sections name no value, so they spend no color.
- */
-export function withFacetDomain(
-  spec: ChannelSpec,
-  facet: ChannelSpec['facet'],
-): ChannelSpec {
-  const { color } = spec
-  return color &&
-    typeof color !== 'string' &&
-    color.field !== STRAND &&
-    !color.domain &&
-    facet?.domain &&
-    facet.field === color.field
-    ? {
-        ...spec,
-        color: {
-          ...color,
-          domain: facet.domain.filter(
-            key => key !== '' && key !== OVERFLOW_GROUP_KEY,
-          ),
-        },
-      }
-    : spec
+    : (color ?? null)
 }
 
 export function filterOf(activeFilters: string[]) {
@@ -124,37 +81,31 @@ export function filterOf(activeFilters: string[]) {
     : null
 }
 
-function colorScaleProblems(color: ChannelSpec['color']) {
-  return color &&
-    typeof color !== 'string' &&
-    color.field === STRAND &&
-    (color.domain || color.palette)
-    ? ["color: strand's colors are fixed, so it takes no domain or palette"]
-    : []
-}
-
 export function channelSpecProblems(spec: ChannelSpec, jexl: JexlInstance) {
   const expressions = [
     ...(spec.color
-      ? [{ channel: 'color', code: colorSlotOf(spec.color) }]
+      ? [
+          {
+            channel: 'color',
+            code:
+              typeof spec.color === 'string' ? spec.color : spec.color.field,
+          },
+        ]
       : []),
     ...(spec.filter ?? []).map(f => ({
       channel: 'filter',
       code: ensureJexlPrefix(f),
     })),
   ]
-  return [
-    ...colorScaleProblems(spec.color),
-    ...expressions.flatMap(({ channel, code }) => {
-      if (!isJexl(code)) {
-        return []
-      }
-      try {
-        stringToJexlExpression(code, jexl)
-        return []
-      } catch (e) {
-        return [`${channel}: ${e}`]
-      }
-    }),
-  ]
+  return expressions.flatMap(({ channel, code }) => {
+    if (!isJexl(code)) {
+      return []
+    }
+    try {
+      stringToJexlExpression(code, jexl)
+      return []
+    } catch (e) {
+      return [`${channel}: ${e}`]
+    }
+  })
 }

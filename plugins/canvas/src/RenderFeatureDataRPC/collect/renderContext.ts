@@ -1,6 +1,3 @@
-import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
-
-import type { AttributeColor } from '../featureColors.ts'
 import type { ArrowData, LineData, RectData } from '../packRenderArrays.ts'
 import type { DisplayConfig } from '../renderConfig.ts'
 import type {
@@ -10,6 +7,7 @@ import type {
   SubfeatureInfo,
 } from '../rpcTypes.ts'
 import type { PeptideData } from '../types.ts'
+import type { ColorKey } from './colorKey.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -46,15 +44,10 @@ export interface Collector {
   flatbushItems: FlatbushItem[]
   subfeatureInfos: SubfeatureInfo[]
   aminoAcidOverlay: AminoAcidOverlayItem[]
-  // Set when the `color` slot colors by an attribute: each top-level feature's
-  // value and the color it paints, for the key the main thread derives.
-  legend?: {
-    color: AttributeColor
-    collect: ReturnType<typeof createLegendCandidateCollector>
-  }
+  colorKey?: ColorKey
 }
 
-export function createCollector(color?: AttributeColor): Collector {
+export function createCollector(colorKey?: ColorKey): Collector {
   return {
     rects: [],
     lines: [],
@@ -63,9 +56,6 @@ export function createCollector(color?: AttributeColor): Collector {
     flatbushItems: [],
     subfeatureInfos: [],
     aminoAcidOverlay: [],
-    legend: color && {
-      color,
-      collect: createLegendCandidateCollector(),
-    },
+    colorKey,
   }
 }

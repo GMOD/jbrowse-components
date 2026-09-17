@@ -41,6 +41,9 @@ export function mockDisplayConfig(
     hideSourceFeatures: true,
     // the `maybeColor` slots default to unset, as a real config does
     color: undefined,
+    colorField: '',
+    colorDomain: [],
+    colorPalette: [],
     connectorColor: undefined,
     utrColor: undefined,
     labels: {

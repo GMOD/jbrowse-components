@@ -65,11 +65,9 @@ import {
   CHANNEL_SPEC_EXAMPLES,
   channelSpecProblems,
   colorOf,
-  colorSlotOf,
   facetOf,
   filterOf,
   groupByOf,
-  withFacetDomain,
 } from './channelSpec.ts'
 import { colorViews } from './colorViews.ts'
 import {
@@ -81,6 +79,7 @@ import {
   resolveOutlineColor,
   resolveRegionColors,
 } from './components/resolveRegionColors.ts'
+import { derivedColorKey } from './derivedColorKey.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
@@ -100,7 +99,7 @@ import {
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import {
   featureGroupSections,
-  groupColorJexl,
+  groupColorField,
   isGroupColor,
   normalizeFeatureGroupBy,
   sectionIdsOf,
@@ -146,6 +145,7 @@ import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type {
   Feature,
@@ -1154,6 +1154,27 @@ export default function baseStateModelFactory(
          */
         setFeatureColor(color?: string) {
           setConf(self, 'color', color)
+          setConf(self, 'colorField', '')
+          setConf(self, 'colorDomain', [])
+          setConf(self, 'colorPalette', [])
+        },
+
+        /**
+         * #action
+         * Paints by a field's values through a categorical scale in the
+         * `color` slot's place; undefined returns the painting to that slot.
+         */
+        setColorScale(scale?: {
+          field: string
+          domain?: string[]
+          palette?: string[]
+        }) {
+          if (scale) {
+            setConf(self, 'color', undefined)
+          }
+          setConf(self, 'colorField', scale?.field ?? '')
+          setConf(self, 'colorDomain', scale?.domain ?? [])
+          setConf(self, 'colorPalette', scale?.palette ?? [])
         },
 
         /**
@@ -1426,26 +1447,6 @@ export default function baseStateModelFactory(
         },
       }
     })
-    .actions(self => ({
-      /**
-       * #action
-       * What the Group by dialog applies: the grouping, and the color that
-       * goes with it. Unticked, only a color that was a grouping's own goes
-       * back to the default; a color picked by hand is left alone.
-       */
-      applyGroupBy(groupBy: FeatureGroupBy | undefined, colorByGroup: boolean) {
-        const { color } = self.conf
-        const nextJexl = groupColorJexl(groupBy)
-        const wasGroupColor =
-          isGroupColor(color, self.groupBy) || isGroupColor(color, groupBy)
-        self.setGroupBy(groupBy)
-        if (colorByGroup && nextJexl) {
-          self.setFeatureColor(nextJexl)
-        } else if (wasGroupColor) {
-          self.setFeatureColor(undefined)
-        }
-      },
-    }))
     .views(self => ({
       /**
        * #getter
@@ -1455,8 +1456,56 @@ export default function baseStateModelFactory(
       get channelSpec(): ChannelSpec {
         return {
           facet: facetOf(self.groupBy),
-          color: colorOf(self.conf.color),
+          color: colorOf(self.colorSettings),
           filter: filterOf(self.activeFilters()),
+        }
+      },
+      /**
+       * #getter
+       * The key the color channel's scale derives from what the worker
+       * painted, less the values only a hidden section painted: every value
+       * sorted, the scale's domain ahead of the rest.
+       */
+      get derivedColorScales(): ColorScale[] {
+        const scale = self.colorEncoding
+        const { groupBy, hiddenGroupKeys } = self
+        const sectionOf =
+          groupBy && hiddenGroupKeys.size > 0
+            ? sectionIdsOf(self.laidOutDataMap, groupBy)
+            : undefined
+        return scale
+          ? derivedColorKey(
+              scale,
+              self.rpcDataMap.values(),
+              sectionOf &&
+                (section => hiddenGroupKeys.has(sectionOf(section).key)),
+            )
+          : []
+      },
+      /**
+       * #method
+       * The Group by dialog's choice as channels: the grouping, a color by
+       * its field when ticked (left alone while that field already paints),
+       * and no color when unticked over a color that was a grouping's own.
+       */
+      groupByChannelSpec(
+        groupBy: FeatureGroupBy | undefined,
+        colorByGroup: boolean,
+      ): ChannelSpec {
+        const { colorField } = self.conf
+        const field = groupColorField(groupBy)
+        const wasGroupColor =
+          isGroupColor(colorField, self.groupBy) ||
+          isGroupColor(colorField, groupBy)
+        return {
+          facet: facetOf(carryGroupDomain(groupBy, self.groupBy)),
+          ...(colorByGroup && field
+            ? field === colorField
+              ? {}
+              : { color: { field } }
+            : wasGroupColor
+              ? { color: null }
+              : {}),
         }
       },
       /**
@@ -1481,19 +1530,18 @@ export default function baseStateModelFactory(
        * Writes each channel the spec changes onto the slot its menu writes,
        * and clears one the spec names `null`.
        */
-      applyChannelSpec(written: ChannelSpec) {
-        const current = self.channelSpec
-        const spec = withFacetDomain(
-          written,
-          written.facet === undefined ? current.facet : written.facet,
-        )
-        const { sets, clears } = channelSpecChanges(spec, current)
+      applyChannelSpec(spec: ChannelSpec) {
+        const { sets, clears } = channelSpecChanges(spec, self.channelSpec)
         const changed = new Set([...sets, ...clears])
         if (changed.has('facet')) {
           self.setGroupBy(spec.facet ? groupByOf(spec.facet) : undefined)
         }
         if (changed.has('color')) {
-          self.setFeatureColor(spec.color ? colorSlotOf(spec.color) : undefined)
+          if (spec.color && typeof spec.color !== 'string') {
+            self.setColorScale(spec.color)
+          } else {
+            self.setFeatureColor(spec.color ?? undefined)
+          }
         }
         if (changed.has('filter')) {
           self.setJexlFilters(spec.filter?.map(ensureJexlPrefix) ?? [])
@@ -1501,6 +1549,26 @@ export default function baseStateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * What the Group by dialog applies.
+       */
+      applyGroupBy(groupBy: FeatureGroupBy | undefined, colorByGroup: boolean) {
+        self.applyChannelSpec(self.groupByChannelSpec(groupBy, colorByGroup))
+      },
+      /**
+       * #action
+       * What a menu or dialog naming only a field writes: the field, keeping
+       * the domain and palette while it is the field already painting.
+       */
+      colorByField(field: string) {
+        const { colorField, colorDomain, colorPalette } = self.conf
+        self.setColorScale(
+          field === colorField
+            ? { field, domain: [...colorDomain], palette: [...colorPalette] }
+            : { field },
+        )
+      },
       /**
        * #action
        */
@@ -1518,11 +1586,7 @@ export default function baseStateModelFactory(
       openColorByAttributeDialog() {
         getDialogHost(self).queueDialog(handleClose => [
           ColorByAttributeDialog,
-          {
-            model: self,
-            handleClose,
-            initialAttribute: self.colorByAttribute,
-          },
+          { model: self, handleClose },
         ])
       },
     }))
@@ -1543,7 +1607,12 @@ export default function baseStateModelFactory(
         openGroupByDialog() {
           getDialogHost(self).queueDialog(handleClose => [
             GroupByDialog,
-            { model: self, handleClose, color: self.conf.color },
+            {
+              model: self,
+              handleClose,
+              color: self.conf.color,
+              colorField: self.conf.colorField,
+            },
           ])
         },
 

@@ -108,9 +108,9 @@ setting:
 ```
 
 The dialog's **Also color by strand** (or **by this attribute**) paints each
-section a distinct color: red and blue by strand, or one color per value. It
-starts ticked unless the track already has a color of its own, and unticking it
-returns the default color.
+section a distinct color: red and blue by strand, or one color per value, with a
+key naming them. It starts ticked unless the track already has a color of its
+own, and unticking it returns the default color.
 
 <Figure caption="NCBI RefSeq genes on hg38 grouped by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip, with the divider between them marking where one strand's rows end." src="/img/gene_track_group_by_strand.png" />
 
@@ -119,8 +119,7 @@ returns the default color.
 **Edit as JSON...**, at the foot of the Group by and Color by attribute dialogs,
 opens the track's grouping, color and filter as three channels. `facet` stacks a
 section per value of a field, in the order its `domain` lists; `color` is a CSS
-color or a jexl expression, or `{ "field": … }` for one color per value, whose
-`domain` hands out the `palette` in order and whose key the track draws;
+color or a jexl expression, or `{ "field": … }` for one color per value;
 `filter` is the list of jexl expressions **Filter by...** edits. Applying a spec
 changes only the channels it names, and `null` clears one. Each of these pastes
 as it is:
@@ -129,8 +128,9 @@ as it is:
 - `{ "facet": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"] } }`
   a section per biotype, these two first
 - `{ "color": { "field": "source" } }` one color per source
+- `{ "color": { "field": "strand" } }` forward strand red, reverse blue
 - `{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "palette": ["#1f77b4", "#ff7f0e"] } }`
-  those two biotypes blue and orange, and a key saying so
+  those two biotypes blue and orange, and every other its own color
 - `{ "color": "#1f77b4" }` one color for everything
 - `{ "filter": ["feature.type == 'gene'"] }` genes only
 - `{ "facet": null, "color": null }` ungrouped, default color
@@ -150,8 +150,15 @@ chosen order, and leaves the track's filter alone:
 
 <Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in its declared order, each in its own color." />
 
-`strand` is a field too. Each channel writes the same setting its menu does, so
-the Sections menu reorders a facet written this way.
+A color by a field is the `colorField`, `colorDomain` and `colorPalette`
+settings, and the track draws a key from the values it painted. Every value
+keeps a color derived from itself, so a pan or a reload paints it the same; a
+`domain` spends the palette on the values it lists, in order, and a value it
+leaves out never takes one of their colors. A transcript and all its parts paint
+the transcript's value, or its gene's where the transcript has none. `strand` is
+a field too, painting forward tomato and reverse cornflowerblue unless a domain
+or palette says otherwise. Each channel writes the same setting its menu does,
+so the Sections menu reorders a facet written this way.
 
 ## Color by CDS
 

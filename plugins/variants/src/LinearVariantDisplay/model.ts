@@ -21,6 +21,7 @@ import {
   SV_TYPE_COLOR_JEXL,
 } from '../shared/variantSvType.ts'
 import { breakendMenuItems } from './breakendMenu.ts'
+import { VARIANT_CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -114,10 +115,16 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       */
+      get channelSpecExamples() {
+        return VARIANT_CHANNEL_SPEC_EXAMPLES
+      },
+      /**
+       * #getter
        * `LegendMixin`'s hook: the scale of whichever preset coloring is active
-       * (impact tiers or SV classes), or none. SV-type shows the fixed class
-       * key; copy-number and unrecognized tokens aren't listed (the pure jexl
-       * has no present-set).
+       * (impact tiers or SV classes), or else the key a color by a field
+       * derives. SV-type shows the fixed class key; copy-number and
+       * unrecognized tokens aren't listed (the pure jexl has no present-set).
        */
       get colorScales(): ColorScale[] {
         if (this.colorsByConsequenceImpact) {
@@ -155,7 +162,7 @@ export default function stateModelFactory(
             },
           ]
         }
-        return []
+        return self.derivedColorScales
       },
       // #endregion
     }))

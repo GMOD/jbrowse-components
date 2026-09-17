@@ -2,21 +2,33 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
-import { STRAND_COLOR_JEXL } from '../../RenderFeatureDataRPC/featureColors.ts'
 import GroupByDialog from './GroupByDialog.tsx'
 
 import type { FeatureGroupBy } from '../groupBy.ts'
 
-function setup(groupBy: FeatureGroupBy | undefined, color?: string) {
+const SPEC = { facet: null }
+
+function setup(
+  groupBy: FeatureGroupBy | undefined,
+  color?: string,
+  colorField = '',
+) {
   const applyGroupBy = jest.fn()
+  const groupByChannelSpec = jest.fn(() => SPEC)
   const openChannelSpecDialog = jest.fn()
   const handleClose = jest.fn()
   const view = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <GroupByDialog
-        model={{ groupBy, applyGroupBy, openChannelSpecDialog }}
+        model={{
+          groupBy,
+          applyGroupBy,
+          groupByChannelSpec,
+          openChannelSpecDialog,
+        }}
         handleClose={handleClose}
         color={color}
+        colorField={colorField}
       />
     </ThemeProvider>,
   )
@@ -25,6 +37,7 @@ function setup(groupBy: FeatureGroupBy | undefined, color?: string) {
   return {
     ...view,
     applyGroupBy,
+    groupByChannelSpec,
     openChannelSpecDialog,
     handleClose,
     checkbox,
@@ -32,12 +45,13 @@ function setup(groupBy: FeatureGroupBy | undefined, color?: string) {
   }
 }
 
-test('Edit as JSON... hands over the unapplied choice and applies nothing', () => {
+test('Edit as JSON... hands over the unapplied choice as a spec and applies nothing', () => {
   const {
     getByText,
     getByLabelText,
     getByTestId,
     applyGroupBy,
+    groupByChannelSpec,
     openChannelSpecDialog,
     handleClose,
   } = setup(undefined)
@@ -46,23 +60,13 @@ test('Edit as JSON... hands over the unapplied choice and applies nothing', () =
     target: { value: 'gene_biotype' },
   })
   fireEvent.click(getByText('Edit as JSON...'))
-  expect(openChannelSpecDialog).toHaveBeenCalledWith({
-    facet: { field: 'gene_biotype' },
-    color: { field: 'gene_biotype' },
-  })
+  expect(groupByChannelSpec).toHaveBeenCalledWith(
+    { type: 'attribute', attribute: 'gene_biotype' },
+    true,
+  )
+  expect(openChannelSpecDialog).toHaveBeenCalledWith(SPEC)
   expect(handleClose).toHaveBeenCalled()
   expect(applyGroupBy).not.toHaveBeenCalled()
-})
-
-test('handing over the current grouping keeps its section order', () => {
-  const { getByText, openChannelSpecDialog } = setup(
-    { type: 'attribute', attribute: 'biotype', domain: ['b', 'a'] },
-    'purple',
-  )
-  fireEvent.click(getByText('Edit as JSON...'))
-  expect(openChannelSpecDialog).toHaveBeenCalledWith({
-    facet: { field: 'biotype', domain: ['b', 'a'] },
-  })
 })
 
 test('picking strand over the default color ticks its color and applies both', () => {
@@ -82,7 +86,7 @@ test('a color picked by hand leaves the box unticked', () => {
 })
 
 test('reopening over a track colored by its grouping keeps the box ticked', () => {
-  const { ticked } = setup({ type: 'strand' }, STRAND_COLOR_JEXL)
+  const { ticked } = setup({ type: 'strand' }, undefined, 'strand')
   expect(ticked()).toBe(true)
 })
 

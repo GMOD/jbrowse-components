@@ -54,11 +54,10 @@ const COOKBOOK_MULTIWIG_TRACK = {
   },
 }
 
-// The exact "color by strand" recipe taught in docs/cookbook.md, which is also
-// STRAND_COLOR_JEXL verbatim (plugins/canvas/src/RenderFeatureDataRPC/
-// featureColors.ts) -- what **Color by... -> Strand** writes, so the recipe and
-// the menu produce the same picture and `colorByMode` reads the figure's track
-// back as 'strand' rather than 'attribute'.
+// The exact "color by strand" recipe taught in docs/cookbook.md. It paints the
+// strand colors **Color by... -> Strand** paints (`STRAND_PALETTE` in
+// plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts), so the recipe and
+// the menu produce the same picture.
 //
 // Copied rather than imported, for the reason @jbrowse/img gives at its own
 // copy: remark-figure.ts pulls this module into the Astro build to resolve

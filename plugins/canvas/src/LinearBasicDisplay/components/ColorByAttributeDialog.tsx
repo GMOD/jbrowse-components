@@ -1,66 +1,45 @@
 import { useState } from 'react'
 
-import { ErrorMessage, SubmitDialog } from '@jbrowse/core/ui'
-import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-import { getEnv } from '@jbrowse/mobx-state-tree'
+import { SubmitDialog } from '@jbrowse/core/ui'
 import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { attributeColorJexl } from '../../RenderFeatureDataRPC/featureColors.ts'
-
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-// An attribute name containing a quote or backslash produces a malformed
-// expression, so this gates Apply.
-function jexlError(expression: string, jexl: JexlInstance) {
-  try {
-    stringToJexlExpression(expression, jexl)
-    return undefined
-  } catch (e) {
-    return e
-  }
-}
 
 const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
   model,
   handleClose,
-  initialAttribute = '',
 }: {
-  model: IStateTreeNode & {
-    setFeatureColor: (arg?: string) => void
+  model: {
+    colorByAttribute: string
+    colorByField: (field: string) => void
     openChannelSpecDialog: (seed?: ChannelSpec) => void
   }
   handleClose: () => void
-  initialAttribute?: string
 }) {
-  const [attribute, setAttribute] = useState(initialAttribute)
+  const [attribute, setAttribute] = useState(model.colorByAttribute)
   const trimmed = attribute.trim()
-  const expression = trimmed ? attributeColorJexl(trimmed) : ''
-  const jexl = getEnv<{ pluginManager: PluginManager }>(model).pluginManager
-    .jexl
-  const error = expression ? jexlError(expression, jexl) : undefined
 
   return (
     <SubmitDialog
       open
       title="Color by attribute"
       submitText="Apply"
-      submitDisabled={!trimmed || !!error}
+      submitDisabled={!trimmed}
       onCancel={() => {
         handleClose()
       }}
       onSubmit={() => {
-        model.setFeatureColor(expression)
+        model.colorByField(trimmed)
         handleClose()
       }}
       actions={
         <Button
           onClick={() => {
             model.openChannelSpecDialog(
-              trimmed ? { color: { field: trimmed } } : undefined,
+              trimmed && trimmed !== model.colorByAttribute
+                ? { color: { field: trimmed } }
+                : undefined,
             )
             handleClose()
           }}
@@ -70,8 +49,9 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
       }
     >
       <Typography variant="body2" gutterBottom>
-        Each unique value of the chosen feature attribute receives a distinct
-        color. Common attributes: type, source, biotype, gene_id.
+        Each value of the attribute paints one palette color, and the track
+        draws a key saying which. Common attributes: type, source, biotype,
+        gene_biotype.
       </Typography>
       <TextField
         label="Attribute name"
@@ -79,11 +59,9 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
         onChange={event => {
           setAttribute(event.target.value)
         }}
-        placeholder="e.g. type"
+        placeholder="e.g. gene_biotype"
         fullWidth
-        helperText={expression ? `Expression: ${expression}` : undefined}
       />
-      {error ? <ErrorMessage error={error} /> : null}
     </SubmitDialog>
   )
 })

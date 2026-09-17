@@ -422,34 +422,19 @@ describe('color routing', () => {
     }
   })
 
-  // `colorByMode` reports 'strand' only for this exact jexl, so a near-miss
-  // would render as an opaque per-feature expression and read back as
-  // "color by attribute"
-  test('color:strand means strand on the canvas displays too, via the jexl they recognize', () => {
+  test('color:strand and color:attribute:<name> name the field the canvas displays color by', () => {
     for (const category of ['feature', 'variant'] as const) {
-      const { snap } = buildDisplaySnapshot(category, ['color:strand'])
-      expect(snap.color).toBe(
-        "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'",
-      )
+      expect(buildDisplaySnapshot(category, ['color:strand']).snap).toEqual({
+        colorField: 'strand',
+      })
+      expect(
+        buildDisplaySnapshot(category, ['color:attribute:gene_biotype']).snap,
+      ).toEqual({ colorField: 'gene_biotype' })
     }
     // wiggle has no strand notion — 'strand' stays a literal color there
     expect(buildDisplaySnapshot('wiggle', ['color:strand']).snap.color).toBe(
       'strand',
     )
-  })
-
-  // the canvas analogue of alignments' `color:tag:X`: color by a per-feature
-  // value rather than a fixed scheme. `colorByAttribute` reads the name back out
-  // of this expression, so the shape has to be the one the display writes.
-  test('color:attribute:<name> builds the per-attribute expression', () => {
-    for (const category of ['feature', 'variant'] as const) {
-      const { snap } = buildDisplaySnapshot(category, [
-        'color:attribute:gene_biotype',
-      ])
-      expect(snap.color).toBe(
-        "jexl:categoricalColor(getInherited(feature,'gene_biotype'))",
-      )
-    }
   })
 
   test('color:attribute with no attribute name rejects', () => {

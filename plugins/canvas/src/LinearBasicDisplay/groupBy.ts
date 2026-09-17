@@ -5,16 +5,12 @@ import {
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
 
-import {
-  STRAND_COLOR_JEXL,
-  attributeColorJexl,
-  attributeColorOf,
-} from '../RenderFeatureDataRPC/featureColors.ts'
+import { STRAND_FIELD } from '../RenderFeatureDataRPC/featureColors.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
 import type {
   FeatureDataResult,
-  FlatbushItem,
+  SectionStamp,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
@@ -37,9 +33,9 @@ interface FeatureGroupByDimension<K extends FeatureGroupByType> {
   label: string
   // Read off the hit item rather than the feature: the worker already stamps
   // what a section needs, so a partition costs no refetch beyond the stamp.
-  key: (item: FlatbushItem, groupBy: FeatureGroupByOf<K>) => GroupId
-  // The `color` slot value that paints each section in its own color.
-  colorJexl: (groupBy: FeatureGroupByOf<K>) => string
+  key: (item: SectionStamp, groupBy: FeatureGroupByOf<K>) => GroupId
+  // The `colorField` that paints each section in its own color.
+  colorField: (groupBy: FeatureGroupByOf<K>) => string
 }
 
 const FORWARD_GROUP: GroupId = { key: '+', label: 'Forward strand' }
@@ -61,7 +57,7 @@ export const FEATURE_GROUP_BY_DIMENSIONS: {
         : item.strand === -1
           ? REVERSE_GROUP
           : UNSTRANDED_GROUP,
-    colorJexl: () => STRAND_COLOR_JEXL,
+    colorField: () => STRAND_FIELD,
   },
   attribute: {
     type: 'attribute',
@@ -70,31 +66,27 @@ export const FEATURE_GROUP_BY_DIMENSIONS: {
       item.groupKey
         ? { key: item.groupKey, label: `${attribute}: ${item.groupKey}` }
         : { key: '', label: `${attribute}: none` },
-    colorJexl: ({ attribute }) => attributeColorJexl(attribute),
+    colorField: ({ attribute }) => attribute,
   },
 }
 
-export function isGroupColor(
-  color: string | undefined,
-  groupBy: FeatureGroupBy | undefined,
-) {
-  return groupBy === undefined || color === undefined
-    ? false
-    : groupBy.type === 'attribute'
-      ? attributeColorOf(color)?.attribute === groupBy.attribute
-      : color === STRAND_COLOR_JEXL
-}
-
-export function groupColorJexl(groupBy: FeatureGroupBy | undefined) {
+export function groupColorField(groupBy: FeatureGroupBy | undefined) {
   return groupBy === undefined
     ? undefined
     : groupBy.type === 'attribute'
-      ? FEATURE_GROUP_BY_DIMENSIONS.attribute.colorJexl(groupBy)
-      : FEATURE_GROUP_BY_DIMENSIONS.strand.colorJexl(groupBy)
+      ? FEATURE_GROUP_BY_DIMENSIONS.attribute.colorField(groupBy)
+      : FEATURE_GROUP_BY_DIMENSIONS.strand.colorField(groupBy)
+}
+
+export function isGroupColor(
+  colorField: string,
+  groupBy: FeatureGroupBy | undefined,
+) {
+  return colorField !== '' && colorField === groupColorField(groupBy)
 }
 
 export function featureGroupId(
-  item: FlatbushItem,
+  item: SectionStamp,
   groupBy: FeatureGroupBy,
 ): GroupId {
   return groupBy.type === 'attribute'
@@ -153,7 +145,7 @@ export function sectionIdsOf(
     key: OVERFLOW_GROUP_KEY,
     label: overflowLabel(mergedCount),
   }
-  return (item: FlatbushItem): GroupId => {
+  return (item: SectionStamp): GroupId => {
     const id = featureGroupId(item, groupBy)
     return sectionOf(id.key) === id.key ? id : merged
   }

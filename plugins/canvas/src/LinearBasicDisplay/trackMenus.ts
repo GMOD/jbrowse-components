@@ -12,7 +12,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
-import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
+import { STRAND_FIELD } from '../RenderFeatureDataRPC/featureColors.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -65,6 +65,7 @@ interface ColorMenuSelf {
   openSetColorDialog: () => void
   openColorByAttributeDialog: () => void
   setFeatureColor: (color?: string) => void
+  colorByField: (field: string) => void
 }
 
 interface FeatureHeightSelf extends HeightModeMenuModel {
@@ -185,7 +186,7 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
       type: 'radio' as const,
       checked: self.colorByMode === 'strand',
       onClick: () => {
-        self.setFeatureColor(STRAND_COLOR_JEXL)
+        self.colorByField(STRAND_FIELD)
       },
     },
     {

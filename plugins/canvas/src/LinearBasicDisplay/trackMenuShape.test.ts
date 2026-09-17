@@ -1,7 +1,6 @@
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 
-import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -257,21 +256,8 @@ describe('color swatches under a per-feature jexl slot', () => {
   })
 })
 
-describe('the built-in strand color expression', () => {
-  it('is the documented short form, not get(feature,...)', () => {
-    expect(STRAND_COLOR_JEXL).toBe(
-      "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'",
-    )
-  })
-
-  it('round-trips: what the menu writes is what it reads back', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setFeatureColor(STRAND_COLOR_JEXL)
-    expect(display.colorByMode).toBe('strand')
-  })
-
-  it('is what the Color by... > Strand menu item writes', () => {
+describe('Color by... > Strand', () => {
+  it('colors by the strand field, which reads back as strand', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const strand = find(
@@ -280,6 +266,7 @@ describe('the built-in strand color expression', () => {
     ) as { onClick: () => void }
     strand.onClick()
     expect(display.colorByMode).toBe('strand')
+    expect(display.colorEncoding?.field).toBe('strand')
   })
 })
 
@@ -290,16 +277,16 @@ describe('the Default color rung', () => {
     expect(display.colorByMode).toBe('default')
   })
 
-  it('unsets the slot the Strand item wrote', () => {
+  it('unsets the field the Strand item wrote', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setFeatureColor(STRAND_COLOR_JEXL)
+    display.colorByField('strand')
     const item = find(
       subMenuOf(display.trackMenuItems(), 'Color by...'),
       'Default',
     ) as { onClick: () => void }
     item.onClick()
     expect(display.colorByMode).toBe('default')
-    expect(display.conf.color).toBeUndefined()
+    expect(display.colorEncoding).toBeUndefined()
   })
 })

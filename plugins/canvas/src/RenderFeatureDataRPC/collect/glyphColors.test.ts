@@ -2,12 +2,9 @@ import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { SimpleFeature } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import {
-  FEATURE_DEFAULT_COLOR,
-  UTR_DEFAULT_COLOR,
-  attributeColorJexl,
-} from '../featureColors.ts'
+import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from '../featureColors.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
+import { createColorKey } from './colorKey.ts'
 import { boxColor } from './glyphColors.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
@@ -139,7 +136,7 @@ describe('boxColor (a per-transcript attribute read from the box)', () => {
   })
 })
 
-describe('boxColor (color by attribute)', () => {
+describe('boxColor (color by a field)', () => {
   const gene = new SimpleFeature({
     uniqueId: 'gene1',
     refName: 'chr1',
@@ -161,15 +158,42 @@ describe('boxColor (color by attribute)', () => {
       },
     ],
   })
-  const config = mockDisplayConfig({
-    color: attributeColorJexl('gene_biotype'),
+  const transcript = gene.get('subfeatures')![0]!
+  const boxes = [transcript, ...transcript.get('subfeatures')!]
+
+  function paintAll(colorField: string, extra: Partial<DisplayConfig> = {}) {
+    const config = mockDisplayConfig({ colorField, ...extra })
+    const colorKey = createColorKey(config, jexl)!
+    colorKey.enterRecord({ strand: undefined, groupKey: undefined })
+    const fills = boxes.map(
+      box => boxColor(box, { config, colorByCDS: false, jexl }, colorKey).color,
+    )
+    return { fills, candidates: colorKey.candidates }
+  }
+
+  it("paints every box of a gene in the gene's value color, over the color slot", () => {
+    const { fills, candidates } = paintAll('gene_biotype', { color: 'red' })
+    expect(new Set(fills)).toEqual(
+      new Set([categoricalColor('protein_coding')]),
+    )
+    expect(candidates.map(c => c.label)).toEqual(['protein_coding'])
   })
 
-  it("paints every box of a gene in the gene's value color", () => {
-    const transcript = gene.get('subfeatures')![0]!
-    for (const box of [transcript, ...transcript.get('subfeatures')!]) {
-      expect(fill(box, config)).toBe(categoricalColor('protein_coding'))
-    }
+  it("paints a transcript's parts in the transcript's own value, not each part's", () => {
+    const { fills, candidates } = paintAll('type')
+    expect(new Set(fills)).toEqual(new Set([categoricalColor('mRNA')]))
+    expect(candidates.map(c => c.label)).toEqual(['mRNA'])
+  })
+
+  it('paints a value-less feature grey and names nothing for it', () => {
+    const { fills, candidates } = paintAll('missing')
+    expect(new Set(fills)).toEqual(new Set([categoricalColor(undefined)]))
+    expect(candidates).toEqual([])
+  })
+
+  it('reads a jexl field', () => {
+    const { fills } = paintAll("jexl:get(feature,'type') + '!'")
+    expect(new Set(fills)).toEqual(new Set([categoricalColor('mRNA!')]))
   })
 })
 

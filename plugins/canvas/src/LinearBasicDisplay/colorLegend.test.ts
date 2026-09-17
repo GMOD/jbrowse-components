@@ -2,8 +2,10 @@ import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { attributeColorJexl } from '../RenderFeatureDataRPC/featureColors.ts'
-import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
+import {
+  makeFeatureData,
+  makeFlatbushItem,
+} from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -75,57 +77,102 @@ describe('derived color key', () => {
     end: 10_000,
   }
 
-  function coloredDisplay() {
+  // Two records, one per biotype, each painting its own color.
+  function coloredDisplay(scale: {
+    field: string
+    domain?: string[]
+    palette?: string[]
+  }) {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    setConf(display, 'color', attributeColorJexl('biotype', ['lncRNA']))
+    display.setColorScale(scale)
     display.setRpcData(
       0,
       makeFeatureData({
-        legendCandidates: [
-          {
-            rowIndex: 0,
-            label: 'protein_coding',
-            color: cssColorToABGR('red'),
-          },
-          { rowIndex: 0, label: 'lncRNA', color: cssColorToABGR('blue') },
+        flatbushItems: [
+          makeFlatbushItem({ featureId: 'pc', groupKey: 'protein_coding' }),
+          makeFlatbushItem({ featureId: 'lnc', groupKey: 'lncRNA' }),
+          makeFlatbushItem({ featureId: 'sno', groupKey: 'snoRNA' }),
         ],
+        colorKey: {
+          candidates: [
+            {
+              rowIndex: 0,
+              label: 'protein_coding',
+              color: cssColorToABGR('red'),
+            },
+            { rowIndex: 1, label: 'lncRNA', color: cssColorToABGR('blue') },
+            { rowIndex: 2, label: 'snoRNA', color: cssColorToABGR('green') },
+          ],
+          rows: [
+            { strand: undefined, groupKey: 'protein_coding' },
+            { strand: undefined, groupKey: 'lncRNA' },
+            { strand: undefined, groupKey: 'snoRNA' },
+          ],
+        },
       }),
       ctgA,
     )
     return display
   }
 
+  const keyValues = (display: ReturnType<typeof coloredDisplay>) =>
+    display.legendSpec.sections?.[0]?.items.map(i => i.value)
+
   it('lists the painted values in the color domain order', () => {
-    const display = coloredDisplay()
+    const display = coloredDisplay({ field: 'biotype', domain: ['lncRNA'] })
     expect(display.colorScales).toEqual([
       expect.objectContaining({
         kind: 'categorical',
         title: 'biotype',
         domain: ['lncRNA'],
-        entries: expect.arrayContaining([
-          expect.objectContaining({ value: 'protein_coding' }),
-          expect.objectContaining({ value: 'lncRNA' }),
-        ]),
       }),
     ])
-    expect(display.legendSpec.sections![0]!.items.map(i => i.value)).toEqual([
-      'lncRNA',
-      'protein_coding',
-    ])
+    expect(keyValues(display)).toEqual(['lncRNA', 'protein_coding', 'snoRNA'])
   })
 
   it('sorts the values the way sections sort when the color names no domain', () => {
-    const display = coloredDisplay()
-    setConf(display, 'color', attributeColorJexl('biotype'))
-    expect(display.legendSpec.sections![0]!.items.map(i => i.value)).toEqual([
+    expect(keyValues(coloredDisplay({ field: 'biotype' }))).toEqual([
       'lncRNA',
       'protein_coding',
+      'snoRNA',
+    ])
+  })
+
+  it('leaves out a value only a hidden section painted', () => {
+    const display = coloredDisplay({ field: 'biotype' })
+    display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+    display.hideGroup('lncRNA')
+    expect(keyValues(display)).toEqual(['protein_coding', 'snoRNA'])
+  })
+
+  it('names strand values as strands', () => {
+    const display = coloredDisplay({ field: 'strand' })
+    display.setRpcData(
+      0,
+      makeFeatureData({
+        colorKey: {
+          candidates: [
+            { rowIndex: 0, label: '1', color: cssColorToABGR('tomato') },
+            {
+              rowIndex: 0,
+              label: '-1',
+              color: cssColorToABGR('cornflowerblue'),
+            },
+          ],
+          rows: [{ strand: undefined, groupKey: undefined }],
+        },
+      }),
+      ctgA,
+    )
+    expect(display.legendSpec.sections?.[0]?.items.map(i => i.label)).toEqual([
+      'Forward strand',
+      'Reverse strand',
     ])
   })
 
   it('yields to a legend slot', () => {
-    const display = coloredDisplay()
+    const display = coloredDisplay({ field: 'biotype' })
     setConf(display, 'legend', [{ label: 'SINE', color: '#e41a1c' }])
     expect(display.colorScales.map(s => s.id)).toEqual(['legend'])
   })
@@ -133,14 +180,17 @@ describe('derived color key', () => {
   it('is no key while every value paints one color', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    setConf(display, 'color', attributeColorJexl('biotype'))
+    display.setColorScale({ field: 'biotype' })
     display.setRpcData(
       0,
       makeFeatureData({
-        legendCandidates: [
-          { rowIndex: 0, label: 'a', color: cssColorToABGR('red') },
-          { rowIndex: 0, label: 'b', color: cssColorToABGR('red') },
-        ],
+        colorKey: {
+          candidates: [
+            { rowIndex: 0, label: 'a', color: cssColorToABGR('red') },
+            { rowIndex: 0, label: 'b', color: cssColorToABGR('red') },
+          ],
+          rows: [{ strand: undefined, groupKey: undefined }],
+        },
       }),
       ctgA,
     )

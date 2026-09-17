@@ -10,6 +10,7 @@ import { getFeatureName } from '../labelUtils.ts'
 import { readConfigValueSafe } from '../renderConfig.ts'
 import { isCDS, isUTR } from '../util.ts'
 
+import type { ColorKey } from './colorKey.ts'
 import type { RenderContext } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -114,8 +115,16 @@ export interface ClassedColor {
   colorClass: number
 }
 
-/** Unpacked, because `emitCodonRects` lightens the CSS string. */
-export function boxColor(feature: Feature, ctx: RenderContext): ClassedColor {
+/**
+ * Unpacked, because `emitCodonRects` lightens the CSS string. `colorKey` is
+ * the color channel's scale when it has one, which paints in the `color`
+ * slot's place and records what it painted.
+ */
+export function boxColor(
+  feature: Feature,
+  ctx: RenderContext,
+  colorKey?: ColorKey,
+): ClassedColor {
   const { config, colorByCDS, jexl } = ctx
   // An unset slot lets the file's own color speak and any set value beats it.
   // A UTR reads `utrColor` only when that slot is set, so `color` alone paints a
@@ -126,10 +135,18 @@ export function boxColor(feature: Feature, ctx: RenderContext): ClassedColor {
   const slot = isUtrBox && config.utrColor !== undefined ? 'utrColor' : 'color'
 
   const fill =
-    config[slot] === undefined
-      ? (inheritedBedColor(feature) ??
-        BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
-      : readConfigValueSafe<string>(config, slot, feature, jexl, INVALID_COLOR)
+    slot === 'color' && colorKey
+      ? colorKey.paint(feature)
+      : config[slot] === undefined
+        ? (inheritedBedColor(feature) ??
+          BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
+        : readConfigValueSafe<string>(
+            config,
+            slot,
+            feature,
+            jexl,
+            INVALID_COLOR,
+          )
 
   const featureStrand = feature.get('strand')
   const featurePhase = feature.get('phase')

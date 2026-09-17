@@ -7,57 +7,57 @@ import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 export const FEATURE_DEFAULT_COLOR = featureDefaultColor
 export const UTR_DEFAULT_COLOR = utrDefaultColor
 
-// What **Color by... → Strand** writes into the `color` slot. `colorByMode`
-// reads it back by string identity, so every writer of this expression has to
-// change with it rather than growing a list of accepted spellings. It uses
-// `feature.strand`, the short form the docs teach, so a user who types that by
-// hand gets the menu radio to agree with the painted track.
-export const STRAND_COLOR_JEXL =
-  "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
+export const STRAND_FIELD = 'strand'
 
-// **Color by attribute**. The `colorByAttribute` getter reads the attribute
-// name back out of the stored slot, and the generic return type lets a caller
-// outside this package pin its own copy against this one at compile time.
-//
-// `getInherited` because the slot is evaluated per painted box, and a gene's
-// CDS and exons carry none of the gene's attributes. `categoricalColor` is the
-// mark display's categorical rule, so a `domain` spends the palette in order
-// and the derived key reads the same table the boxes were painted from.
-export function attributeColorJexl<T extends string>(
-  attribute: T,
-  domain: readonly string[] = [],
-  palette: readonly string[] = [],
-) {
-  const scale =
-    domain.length || palette.length
-      ? `,${JSON.stringify(domain)},${JSON.stringify(palette)}`
-      : ''
-  return `jexl:categoricalColor(getInherited(feature,'${attribute}')${scale})` as const
+// Red forward and blue reverse, the vocabulary the synteny ribbons paint too.
+const STRAND_DOMAIN = ['1', '-1', '0']
+const STRAND_PALETTE = ['tomato', 'cornflowerblue', 'goldenrod']
+const STRAND_LABELS: Record<string, string> = {
+  '1': 'Forward strand',
+  '-1': 'Reverse strand',
+  '0': 'No strand',
 }
 
-const ATTRIBUTE_COLOR =
-  /^jexl:categoricalColor\(getInherited\(feature,'([^']+)'\)(?:,(\[.*\]),(\[.*\]))?\)$/
+export interface ColorScaleSettings {
+  colorField: string
+  colorDomain: readonly string[]
+  colorPalette: readonly string[]
+}
 
-export type AttributeColor = NonNullable<ReturnType<typeof attributeColorOf>>
+export interface FeatureColorScale {
+  field: string
+  domain: string[]
+  palette: string[]
+}
 
 /**
- * The attribute, domain and palette of a `color` slot `attributeColorJexl`
- * wrote, and undefined for any other color, a hand-written expression that
- * happens to look similar included.
+ * The color channel's scale, or undefined while `colorField` is empty and the
+ * `color` slot paints. Strand brings its own domain and palette where the
+ * settings name none.
  */
-export function attributeColorOf(color: string | undefined) {
-  const match = color === undefined ? null : ATTRIBUTE_COLOR.exec(color)
-  if (!match) {
-    return undefined
-  }
-  try {
-    const [, attribute = '', domainJson = '[]', paletteJson = '[]'] = match
-    const domain = (JSON.parse(domainJson) as unknown[]).map(String)
-    const palette = (JSON.parse(paletteJson) as unknown[]).map(String)
-    return attributeColorJexl(attribute, domain, palette) === color
-      ? { attribute, domain, palette }
-      : undefined
-  } catch {
-    return undefined
-  }
+export function featureColorScale({
+  colorField,
+  colorDomain,
+  colorPalette,
+}: ColorScaleSettings): FeatureColorScale | undefined {
+  const strand = colorField === STRAND_FIELD
+  return colorField
+    ? {
+        field: colorField,
+        domain: colorDomain.length
+          ? [...colorDomain]
+          : strand
+            ? STRAND_DOMAIN
+            : [],
+        palette: colorPalette.length
+          ? [...colorPalette]
+          : strand
+            ? STRAND_PALETTE
+            : [],
+      }
+    : undefined
+}
+
+export function colorValueLabel(field: string, value: string) {
+  return (field === STRAND_FIELD ? STRAND_LABELS[value] : undefined) ?? value
 }

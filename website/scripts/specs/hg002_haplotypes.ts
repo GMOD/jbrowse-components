@@ -202,12 +202,9 @@ const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
 // which is the inversion stated a third way, beside the crossing ribbons and the
 // reversed name order.
 //
-// THE BUILT-IN EXPRESSION, verbatim: this is STRAND_COLOR_JEXL
-// (plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts), what **Color
-// by... -> Strand** writes into the slot, so the figure shows a menu click
-// rather than a callback a reader has to copy. An exact match is also what
-// makes the track menu's radio read 'strand' instead of 'attribute'; a
-// prettier equivalent would silently uncheck it.
+// The strand colors **Color by... -> Strand** paints (`STRAND_PALETTE` in
+// plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts), written as the
+// cookbook's jexl recipe so the lanes draw no key over the ribbons.
 //
 // It replaced a hand-rolled `strand==1?'#1f77b4':'#d62728'` -- the cookbook's
 // blue-forward pair, which is the INVERSE of both the built-in and the synteny

@@ -11,11 +11,7 @@ import type {
   LinearAlignmentsDisplayModel,
   ReadCategoryKey,
 } from '@jbrowse/plugin-alignments'
-import type {
-  STRAND_COLOR_JEXL,
-  attributeColorJexl,
-  LinearBasicDisplayModel,
-} from '@jbrowse/plugin-canvas'
+import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
@@ -141,40 +137,17 @@ export type AssertCompactnessMatchesUpstream = AssertTrue<
     : false
 >
 
-// What `color:strand` writes into the canvas displays' `color` slot. That slot
-// holds a CSS color or a jexl expression, and `colorByMode` reports 'strand'
-// only for this EXACT string — so a near-miss would still render (as an opaque
-// per-feature expression) while reading back as "color by attribute".
-//
-// Duplicated rather than imported as a value: @jbrowse/plugin-canvas is a
-// devDependency here, used only for display types, and importing a value from
-// it would make the whole plugin a runtime dependency of this leaf module.
-// `satisfies typeof STRAND_COLOR_JEXL` is a type-only reference, so it costs
-// nothing at runtime and still fails the build the moment upstream edits the
-// string. Same trade as ALIGNMENTS_COMPACTNESS above.
-const STRAND_COLOR_JEXL_LOCAL =
-  "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'" satisfies typeof STRAND_COLOR_JEXL
-
-// The other expression those displays read back rather than treat as opaque:
-// `colorByAttribute` pulls the attribute name out of it with a regex. Pinned the
-// same way — upstream's is generic so its return type is the exact template, and
-// `satisfies` on the whole function type fails if that template changes.
-const attributeColorJexlLocal = (<T extends string>(attribute: T) =>
-  `jexl:categoricalColor(getInherited(feature,'${attribute}'))` as const) satisfies typeof attributeColorJexl
-
-// The canvas displays' `color` slot holds a CSS color or a jexl expression. Two
-// named modes map onto the exact expressions the display reads back; anything
-// else is passed through as a literal color.
+// The canvas displays paint a CSS color or jexl from `color`, and a field's
+// values through `colorField`: `color:strand` and `color:attribute:X` name the
+// field, and anything else is the color.
 function canvasColor(value: string, arg: string | undefined) {
-  if (value === 'strand') {
-    return STRAND_COLOR_JEXL_LOCAL
-  } else if (value === 'attribute') {
-    return attributeColorJexlLocal(
-      parseStr('color:attribute', arg ?? '', 'attribute name'),
-    )
-  } else {
-    return value
-  }
+  return value === 'strand'
+    ? { colorField: 'strand' }
+    : value === 'attribute'
+      ? {
+          colorField: parseStr('color:attribute', arg ?? '', 'attribute name'),
+        }
+      : { color: value }
 }
 
 // The `heightMode` config-slot values, pinned to the upstream union so a mode
@@ -240,6 +213,8 @@ interface DisplaySnapshot {
   filterBy?: FilterBySnapshot
   // wiggle / score
   color?: string
+  // the canvas-based displays' categorical color field
+  colorField?: string
   useBicolor?: boolean
   autoscale?: string
   minScore?: number
@@ -274,6 +249,8 @@ type WiggleConfigSlotKey =
 // divergently-named `configForceLoad` getter, so `keyof` the instance misses it
 // the same way it misses the wiggle slots above.
 type BaseConfigSlotKey = 'forceLoad'
+// The canvas displays read `colorField` through `colorEncoding`.
+type CanvasConfigSlotKey = 'colorField'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
@@ -282,6 +259,7 @@ type DisplayKeys =
   | keyof WiggleDisplayModel
   | WiggleConfigSlotKey
   | BaseConfigSlotKey
+  | CanvasConfigSlotKey
 
 export type UnknownSnapshotKeys = Exclude<keyof DisplaySnapshot, DisplayKeys>
 export type AssertSnapshotKeysExist = AssertNever<UnknownSnapshotKeys>
@@ -742,10 +720,10 @@ const modifiers: Record<string, Modifier> = {
         // explicit `useBicolor` from the JSON escape hatch.
         r.snap.color = value
       } else {
-        // Feature/variant: LinearCanvasBaseDisplay's `color`. A jexl with more
-        // than one colon can't survive this modifier's `split(':')`, so beyond
-        // the two named modes an expression goes through the JSON escape hatch.
-        r.snap.color = canvasColor(value, arg)
+        // Feature/variant: LinearCanvasBaseDisplay's `color` or `colorField`. A
+        // jexl with more than one colon can't survive this modifier's
+        // `split(':')`, so it goes through the JSON escape hatch.
+        Object.assign(r.snap, canvasColor(value, arg))
       }
     },
   },

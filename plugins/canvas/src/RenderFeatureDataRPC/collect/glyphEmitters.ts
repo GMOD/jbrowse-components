@@ -1,4 +1,3 @@
-import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
 import { LITERAL } from '../colorClasses.ts'
@@ -93,7 +92,7 @@ function emitExonRects(
       emitCodonRects(
         {
           aminoAcids,
-          baseColor: boxColor(childFeature, ctx),
+          baseColor: boxColor(childFeature, ctx, collector.colorKey),
           topPx: baseTopPx,
           height,
           strand,
@@ -759,15 +758,10 @@ export function processFeatureRecord(
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 
-  if (collector.legend) {
-    const { color, collect } = collector.legend
-    const value = groupKeyOf(feature, color.attribute) ?? ''
-    collect.add(
-      0,
-      value,
-      colorToUint32(categoricalColor(value, color.domain, color.palette)),
-    )
-  }
+  collector.colorKey?.enterRecord({
+    strand: strand !== 0 ? strand : undefined,
+    groupKey: groupKeyOf(feature, ctx.config.groupByAttribute),
+  })
 
   emitGlyph(
     layout,

@@ -3,18 +3,14 @@ import {
   getConf,
   setConf,
 } from '@jbrowse/core/configuration'
-import { legendIsReadable } from '@jbrowse/core/ui'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { isGeneLikeType, pluralize } from '@jbrowse/core/util'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SegmentIcon from '@mui/icons-material/Segment'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 
 import { SUBFEATURE_LABEL_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
-import { attributeColorOf } from '../RenderFeatureDataRPC/featureColors.ts'
 import {
   addTrimmedIsoformPicks,
   mergeIsoformPicks,
@@ -256,54 +252,26 @@ export default function stateModelFactory(
       /**
        * #getter
        * `LegendMixin`'s hook: the `legend` config slot as one categorical
-       * scale, or, with no slot, the key a color by an attribute derives from
-       * the values and colors the worker painted, listed in the color's domain
-       * order.
+       * scale, or, with no slot, the key the color channel's scale derives.
        */
       get colorScales(): ColorScale[] {
         const legend = getConf(self, 'legend') as {
           label: string
           color: string
         }[]
-        if (legend.length) {
-          return [
-            {
-              kind: 'categorical',
-              id: 'legend',
-              entries: legend.map(({ label, color }) => ({
-                value: label,
-                label,
-                color,
-              })),
-            },
-          ]
-        }
-        const byField = attributeColorOf(self.conf.color)
-        if (!byField) {
-          return []
-        }
-        const colors = new Map<string, string>()
-        for (const data of self.rpcDataMap.values()) {
-          for (const { label, color } of data.legendCandidates ?? []) {
-            if (!colors.has(label)) {
-              colors.set(label, abgrToCssRgba(color))
-            }
-          }
-        }
-        const entries = [...colors]
-          .sort(([a], [b]) => compareGroupKeys(a, b))
-          .map(([value, color]) => ({ value, label: value, color }))
-        return legendIsReadable(entries)
+        return legend.length
           ? [
               {
                 kind: 'categorical',
-                id: 'color',
-                title: byField.attribute,
-                domain: byField.domain,
-                entries,
+                id: 'legend',
+                entries: legend.map(({ label, color }) => ({
+                  value: label,
+                  label,
+                  color,
+                })),
               },
             ]
-          : []
+          : self.derivedColorScales
       },
     }))
     .views(self => {

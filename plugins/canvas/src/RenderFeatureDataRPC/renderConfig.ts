@@ -77,6 +77,10 @@ export interface DisplayConfig {
   // `maybeColor` slots: undefined means unset, so the feature's own BED color
   // paints it. Not the same as any concrete color.
   color: string | undefined
+  // A field here paints through a categorical scale and wins over `color`.
+  colorField: string
+  colorDomain: string[]
+  colorPalette: string[]
   connectorColor: string | undefined
   utrColor: string | undefined
   labels: {
@@ -109,6 +113,9 @@ const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   hideSourceFeatures: true,
   featureHeight: true,
   color: true,
+  colorField: true,
+  colorDomain: true,
+  colorPalette: true,
   connectorColor: true,
   utrColor: true,
   labels: true,

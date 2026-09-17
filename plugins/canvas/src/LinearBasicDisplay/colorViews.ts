@@ -3,11 +3,12 @@ import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
 import {
   FEATURE_DEFAULT_COLOR,
-  STRAND_COLOR_JEXL,
+  STRAND_FIELD,
   UTR_DEFAULT_COLOR,
-  attributeColorOf,
+  featureColorScale,
 } from '../RenderFeatureDataRPC/featureColors.ts'
 
+import type { ColorScaleSettings } from '../RenderFeatureDataRPC/featureColors.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -58,21 +59,40 @@ export function colorViews(self: ColorHost) {
      * #getter
      */
     get colorByMode(): 'default' | 'strand' | 'attribute' | 'solid' {
-      const raw = self.conf.color
-      return raw === undefined
-        ? 'default'
-        : raw === STRAND_COLOR_JEXL
-          ? 'strand'
-          : isJexl(raw)
-            ? 'attribute'
+      const { color, colorField } = self.conf
+      return colorField === STRAND_FIELD
+        ? 'strand'
+        : colorField || (color !== undefined && isJexl(color))
+          ? 'attribute'
+          : color === undefined
+            ? 'default'
             : 'solid'
     },
 
     /**
      * #getter
      */
-    get colorByAttribute() {
-      return attributeColorOf(self.conf.color)?.attribute ?? ''
+    get colorByAttribute(): string {
+      const { colorField } = self.conf
+      return colorField === STRAND_FIELD ? '' : colorField
+    },
+
+    /**
+     * #getter
+     * The color channel's scale, strand's colors filled in, or undefined
+     * while the `color` slot paints.
+     */
+    get colorEncoding() {
+      return featureColorScale(this.colorSettings)
+    },
+
+    /**
+     * #getter
+     * The color slots as written, the scale's three unresolved.
+     */
+    get colorSettings(): ColorScaleSettings & { color: string | undefined } {
+      const { color, colorField, colorDomain, colorPalette } = self.conf
+      return { color, colorField, colorDomain, colorPalette }
     },
   }
 }

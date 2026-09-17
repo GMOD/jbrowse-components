@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
-import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import {
   Button,
   FormControlLabel,
@@ -12,7 +11,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { facetOf } from '../channelSpec.ts'
 import { FEATURE_GROUP_BY_DIMENSIONS, isGroupColor } from '../groupBy.ts'
 
 import type { FeatureGroupBy, FeatureGroupByType } from '../groupBy.ts'
@@ -37,14 +35,20 @@ const GroupByDialog = observer(function GroupByDialog({
   model,
   handleClose,
   color,
+  colorField,
 }: {
   model: {
     groupBy: FeatureGroupBy | undefined
     applyGroupBy: (groupBy: FeatureGroupBy | undefined, color: boolean) => void
+    groupByChannelSpec: (
+      groupBy: FeatureGroupBy | undefined,
+      color: boolean,
+    ) => ChannelSpec
     openChannelSpecDialog: (seed?: ChannelSpec) => void
   }
   handleClose: () => void
   color: string | undefined
+  colorField: string
 }) {
   const [choice, setChoice] = useState<Choice>(model.groupBy?.type ?? 'none')
   const [attribute, setAttribute] = useState(model.groupBy?.attribute ?? '')
@@ -52,7 +56,8 @@ const GroupByDialog = observer(function GroupByDialog({
   const groupBy = groupByOf(choice, attribute.trim())
   const alsoColor =
     colorChoice ??
-    (color === undefined || isGroupColor(color, groupBy ?? model.groupBy))
+    ((color === undefined && colorField === '') ||
+      isGroupColor(colorField, groupBy ?? model.groupBy))
 
   return (
     <SubmitDialog
@@ -68,11 +73,8 @@ const GroupByDialog = observer(function GroupByDialog({
       actions={
         <Button
           onClick={() => {
-            const facet = facetOf(carryGroupDomain(groupBy, model.groupBy))
             model.openChannelSpecDialog(
-              facet && alsoColor
-                ? { facet, color: { field: facet.field } }
-                : { facet },
+              model.groupByChannelSpec(groupBy, alsoColor),
             )
             handleClose()
           }}

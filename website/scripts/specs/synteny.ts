@@ -4482,14 +4482,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // genes carry no `gene` attribute at all, only a locus tag, so every one of
   // them came out the same color and read as a large named group.
   //
-  // THE EXPRESSION IS NOW THE DIALOG'S OWN, character for character
-  // (`attributeColorJexl` in plugins/canvas). It used to carry a hand-written
-  // `? … : 'rgb(175,175,175)'` else-branch, which fixed the picture and left
-  // the figure documenting something a user cannot produce — the dialog writes
-  // no ternary. The grey moved into `randomColor`, where a missing value now
-  // returns a neutral instead of throwing on `undefined.length`; see its
-  // docstring. So a reader who follows sv_synteny/color_by_attribute below gets
-  // exactly this picture.
+  // It used to carry a hand-written `? … : 'rgb(175,175,175)'` else-branch.
+  // The grey moved into `randomColor`, where a missing value now returns a
+  // neutral instead of throwing on `undefined.length`; see its docstring.
   //
   // The colored genes stay on `randomColor` rather than a curated rainbow, for
   // the same reason. Review: "ideally we get a better palette, pulling from good
