@@ -26,11 +26,9 @@ export const configVideos: VideoSpec[] = [
     description:
       "Two settings clicked onto a volvox CRAM and the session they are named in: Color by... and Read connections, then Share, the dialog's settings icon, Plaintext JSON, and the readable session panel that mode brings with it",
     url: defaultsSession,
-    // Sized to the two things that OVERHANG the app, which the run's content
-    // report cannot see: it measures 456px here and asks for 444px back. The
-    // `Show...` submenu is ten checkboxes and reaches 808px, and the share
-    // dialog with the session panel open is 717px tall and centred, so a frame
-    // cut to the app clips the menu and then the payoff. Even, per the encode.
+    // Sized to what overhangs the app, which the run's content report cannot
+    // see and so asks for 404px back: the Read connections cascade's shadow
+    // reaches 846px, and the share dialog with the session panel is 717px.
     viewportHeight: 860,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
