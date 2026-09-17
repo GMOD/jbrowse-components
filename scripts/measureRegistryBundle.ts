@@ -26,17 +26,15 @@
  * over the metafile's import edges counts the pruned graph too, and reports
  * nearly all of the main thread's rendering stack in the worker.
  *
- * `uiKb` counts the whole rendering stack, not the specifiers
- * `reExportReach.ts` classifies on: emotion and stylis arrive under
+ * `uiKb` counts the whole rendering stack, not the four specifiers
+ * `generateReExports.ts` classifies on: emotion and stylis arrive under
  * @mui/material/styles rather than by being named, and the question here is
  * bytes, not whether a module renders.
  *
- * The worker's residual has two sources. `ui/theme.ts` imports `createTheme`
- * from @mui/material/styles and every renderer reads the theme, so @mui/system
- * and emotion ride into the worker with it, the trade ADR-128 took over marking
- * every theme reader as UI. Material's icon machinery is the other, 57 KB,
- * brought by the state models and plugin classes the worker serves, whose
- * menus name icons.
+ * The worker's residual is the ADR's stated exemption. `ui/theme.ts` imports
+ * `createTheme` from @mui/material/styles and every renderer reads the theme,
+ * so @mui/system and emotion ride into the worker with it. That is the trade
+ * ADR-128 took deliberately over marking every theme reader as UI.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
