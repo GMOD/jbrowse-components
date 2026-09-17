@@ -163,8 +163,8 @@ GRSD000002      0       1         German Shepherd Dog
 
 Nearly all swept breeds come in at a trace of wolf, and seven of the eight
 wolfdogs sit far above them. The eighth, Czechoslovakian 2, lands inside the
-sweep's range with no long block anywhere; both breeds have been bred back to
-dogs for decades.
+sweep's range with no long block anywhere; the Saarloos and Czechoslovakian
+Wolfdog breeds have both been bred back to dogs for decades.
 
 ### Collapsing calls into blocks
 
