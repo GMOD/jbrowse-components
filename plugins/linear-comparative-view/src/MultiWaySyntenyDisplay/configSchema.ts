@@ -65,6 +65,15 @@ export function configSchemaFactory() {
       /**
        * #slot
        */
+      domain: {
+        type: 'stringArray',
+        description:
+          'the lanes that stack first below the anchor, in order; the rest follow densest-first, so a ribbon chain through adjacent lanes is cut as late as possible. What the Lanes menu and a header drag write',
+        defaultValue: [],
+      },
+      /**
+       * #slot
+       */
       ribbonColor: {
         type: 'color',
         description: 'the color of the ribbons connecting adjacent lanes',

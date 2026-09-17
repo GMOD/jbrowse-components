@@ -244,8 +244,8 @@ test('row assemblies come out densest lane first, domain pinning over that', () 
   ).toEqual(['cacao', 'peach'])
 })
 
-// `domain` is authored in a session spec or a config defaultSession, so it
-// spells an assembly the way the session does, while the lane it has to match
+// `domain` is authored in a track's config or a session spec, so it spells an
+// assembly the way the session does, while the lane it has to match
 // is spelled the way the synteny table's BED did. Comparing those raw is the
 // `===` the assembly-name rule forbids, and it fails by silently pinning
 // nothing.

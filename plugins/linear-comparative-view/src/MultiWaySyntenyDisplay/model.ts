@@ -309,16 +309,6 @@ export function stateModelFactory(
         ),
         /**
          * #property
-         * the lane facet's domain: lanes to pin to the top, in order. Lanes
-         * it does not name follow densest-first, so the chain a ribbon draws
-         * through adjacent lanes is cut as late as possible and most stacks
-         * need no order authored at all. A declared property, so it is
-         * authorable from a session spec or a config defaultSession, and what
-         * the Lanes menu and a header drag write
-         */
-        domain: types.array(types.string),
-        /**
-         * #property
          * the reader's lanes, by assembly name: `only` the ones the picker
          * ticked, or the lanes in force `except` the ones Hide lane took out.
          * Undefined is `configuredLanes`, or every lane where there are none.
@@ -524,7 +514,7 @@ export function stateModelFactory(
          * that saw only some lanes merges first (`mergeDomain`).
          */
         setDomain(domain: string[]) {
-          self.domain.replace(domain)
+          setConf(self, 'domain', domain)
         },
         /**
          * #action
@@ -680,6 +670,12 @@ export function stateModelFactory(
        */
       get ribbonColor(): string {
         return getConf(self, 'ribbonColor')
+      },
+      /**
+       * #getter
+       */
+      get domain(): string[] {
+        return getConf(self, 'domain')
       },
       /**
        * #getter
@@ -967,7 +963,7 @@ export function stateModelFactory(
             .filter(lane => lane.drawn)
             .map(lane => self.laneKey(lane.name)),
         )
-        return rowAssembliesOf(self.groups, [...self.domain], (a, b) =>
+        return rowAssembliesOf(self.groups, self.domain, (a, b) =>
           isSameAssemblyName(a, b, assemblyManager),
         ).filter(assemblyName => drawn.has(self.laneKey(assemblyName)))
       },
