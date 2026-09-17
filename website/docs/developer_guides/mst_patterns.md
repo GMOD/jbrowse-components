@@ -388,8 +388,10 @@ get channelSpecExamples() {
  * #getter
  * `LegendMixin`'s hook: the scale of whichever preset coloring is active
  * (impact tiers or SV classes), or else the key a color by a field
- * derives. SV-type shows the fixed class key; copy-number and
- * unrecognized tokens aren't listed (the pure jexl has no present-set).
+ * derives. SV-type shows the fixed class key and the grey everything
+ * else takes; a copy-number state's rainbow color is the one thing it
+ * paints and cannot list, the pure jexl having no present-set to
+ * enumerate.
  */
 get colorScales(): ColorScale[] {
   if (this.colorsByConsequenceImpact) {
@@ -419,11 +421,7 @@ get colorScales(): ColorScale[] {
         kind: 'categorical',
         id: 'svType',
         title: 'SV type',
-        entries: PREDEFINED_SV_TYPES.map(t => ({
-          value: t.label,
-          label: t.label,
-          color: t.color,
-        })),
+        entries: svTypeLegendEntries(),
       },
     ]
   }
