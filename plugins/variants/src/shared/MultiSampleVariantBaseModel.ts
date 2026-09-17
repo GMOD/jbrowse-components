@@ -45,6 +45,7 @@ import {
   filterRowsBySubtree,
   focusRowGroup,
   loadedRegionIndexAt,
+  orderRowsByDomain,
   paletteColorsByRow,
 } from '@jbrowse/tree-sidebar'
 
@@ -245,23 +246,28 @@ interface Facet {
   domain: string[]
 }
 
-// Apply the active colorBy palette and the facet's band order in one pass:
-// color first, then band the colored rows so a track can set both and get
-// banded-and-colored together. Returns `[]` when neither applies, the "no
-// arrangement" layout. Its one caller is `applyArrangement`, which is in turn
-// the one thing setSources / setColorBy / setFacet / clearLayout / setPhasedMode
-// all arrange through — which is why none of them can drift (a recolor dropping
-// an active facet, a mode switch dropping the coloring).
+// Seed the row order from the config `rowDomain`, then apply the active colorBy
+// palette and the facet's band order over it: the samples the domain names lead,
+// the rest keep the file's order, and a facet bands within that. Returns `[]`
+// when none of the three applies, the "no arrangement" layout — `orderRowsByDomain`
+// hands back the array it was given when the domain moves nothing, which is how
+// that stays distinguishable from a domain-seeded order. Its one caller is
+// `applyArrangement`, which is in turn the one thing setSources / setColorBy /
+// setFacet / clearLayout / setPhasedMode all arrange through — which is why none
+// of them can drift (a recolor dropping an active facet, a mode switch dropping
+// the coloring).
 function arrangeSources(
   colorBy: string,
   facet: Facet,
+  rowDomain: readonly string[],
   sources: Source[],
 ): Source[] {
-  const colored = maybeApplyColorByPalette(colorBy, sources)
+  const ordered = orderRowsByDomain(sources, rowDomain)
+  const colored = maybeApplyColorByPalette(colorBy, ordered)
   return (
-    maybeApplyFacet(facet.field, facet.domain, colored ?? sources) ??
+    maybeApplyFacet(facet.field, facet.domain, colored ?? ordered) ??
     colored ??
-    []
+    (ordered === sources ? [] : ordered)
   )
 }
 
@@ -288,6 +294,7 @@ function withoutSampleName(rows: Source[]): Source[] {
 interface ArrangeableModel {
   sourcesVolatile: Source[] | undefined
   layout: Source[]
+  rowDomain: string[]
   setLayout: (layout: Source[]) => void
 }
 
@@ -325,7 +332,7 @@ function applyArrangement(
     // Nothing arranged yet, so adapter order is the thing to arrange. `[]` —
     // what `arrangeSources` returns when neither axis applies — is the right
     // answer here: it *means* "no arrangement".
-    self.setLayout(arrangeSources(colorBy, facet, sources))
+    self.setLayout(arrangeSources(colorBy, facet, self.rowDomain, sources))
     return
   }
   // Merge the layout back over the adapter metadata that the palette and the
@@ -338,7 +345,7 @@ function applyArrangement(
     renderingMode: 'alleleCount',
   })
   const base = colorBy ? current : stripPaletteColors(current)
-  const next = arrangeSources(colorBy, facet, base)
+  const next = arrangeSources(colorBy, facet, self.rowDomain, base)
   // Neither axis applies — but there is an arrangement here, and clearing both
   // must not throw away the order the user is looking at.
   self.setLayout(next.length ? next : base)
@@ -1000,8 +1007,9 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * Overrides the mixin's `layout.length > 0`: here a configured
-         * `colorBy` / `facet` seeds `layout` on first load, so a non-empty
-         * layout is the ordinary state of a track nobody has rearranged, and
+         * `domain` / `colorBy` / `facet` seeds `layout` on first load, so a
+         * non-empty layout is the ordinary state of a track nobody has
+         * rearranged, and
          * `clearLayout` puts that same arrangement straight back. "Reset row
          * order" is offered only once the layout has moved away from what the
          * config alone would produce.
@@ -1018,6 +1026,7 @@ export default function MultiSampleVariantBaseModelF(
                   arrangeSources(
                     self.colorBy,
                     { field: self.facetField, domain: self.facetDomain },
+                    self.rowDomain,
                     sources,
                   ),
                 ),

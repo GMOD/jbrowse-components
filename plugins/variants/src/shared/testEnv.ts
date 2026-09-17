@@ -18,6 +18,7 @@ export function createDisplayTestEnvironment<T>({
   stateModel,
   extraDisplays = [],
   trackType = 'VariantTrack',
+  displayConfig,
 }: {
   displayName: string
   configSchema: AnyConfigurationSchemaType
@@ -31,6 +32,8 @@ export function createDisplayTestEnvironment<T>({
   // The track the display hangs off. Defaults to the family's own; the LD
   // display reads a pre-computed file and so sits on `LDTrack`.
   trackType?: string
+  // Display config slots, for the ones with no setter (`domain`).
+  displayConfig?: Record<string, unknown>
 }) {
   return createSharedEnvironment<T>({
     trackType,
@@ -44,5 +47,6 @@ export function createDisplayTestEnvironment<T>({
     })),
     viewModel: linearGenomeViewStateModelFactory,
     assemblyEnd: 10_000_000,
+    displayConfig,
   })
 }

@@ -99,6 +99,52 @@ describe('refaceting invalidates the tree it reorders under', () => {
   })
 })
 
+describe('the config `domain` seeds the sample order', () => {
+  function domainDisplay(domain: string[]) {
+    const { display } = createTestEnvironment({
+      displayConfig: { domain },
+    }).createDisplay()
+    display.setSources(SOURCES)
+    return display
+  }
+
+  it('leads with the samples it names and leaves the rest in file order', () => {
+    expect(rowNames(domainDisplay(['S2']))).toEqual(['S2', 'S0', 'S1'])
+  })
+
+  it('ignores a sample the file does not have', () => {
+    expect(rowNames(domainDisplay(['T9', 'S1']))).toEqual(['S1', 'S0', 'S2'])
+  })
+
+  // The facet bands within the seeded order rather than against it: AFR (S0,
+  // S2) before EUR (S1), and S2 leads its band because the domain put it there.
+  it('bands a facet within it', () => {
+    const display = domainDisplay(['S2'])
+    display.setFacet('population')
+
+    expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
+  })
+
+  // The seed is what `clearLayout` puts back, so a track nobody has touched is
+  // not offered "Reset row order" — the same rule a configured colorBy follows.
+  it('is not a custom row order', () => {
+    const display = domainDisplay(['S2'])
+    expect(display.layout.map(s => s.name)).toEqual(['S2', 'S0', 'S1'])
+    expect(display.rowOrderIsCustom).toBe(false)
+  })
+
+  it('offers the reset once the rows move off it, and returns to it', () => {
+    const display = domainDisplay(['S2'])
+    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    expect(display.rowOrderIsCustom).toBe(true)
+
+    display.clearLayout()
+
+    expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
+    expect(display.rowOrderIsCustom).toBe(false)
+  })
+})
+
 describe('a rendering-mode switch renames the rows', () => {
   // The filter holds tree *leaf* names, and the mode decides whether those are
   // sample names or "S0 HP0" haplotype names. Left behind it matched nothing
