@@ -161,6 +161,18 @@ and a short homozygote.
     "name": "ABCA7 VNTR, where reads and assemblies disagree",
     "views": [
       {
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr19:1,049,000-1,050,500",
+        "tracks": [
+          {
+            "trackId": "hprc_abca7_trgt",
+            "type": "LinearVariantDisplay",
+            "height": 40
+          }
+        ]
+      },
+      {
         "type": "GraphGenomeView",
         "loadedTrackId": "hprc_v2_1_gbz_lanes",
         "loadedRegion": {

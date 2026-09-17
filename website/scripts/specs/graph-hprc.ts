@@ -2539,6 +2539,16 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     url: sessionSpec(ABCA7_CONFIG, {
       views: [
         {
+          ...abca7Views(ABCA7_REPEAT_KEY)[0],
+          tracks: [
+            {
+              trackId: 'hprc_abca7_trgt',
+              type: 'LinearVariantDisplay',
+              height: 40,
+            },
+          ],
+        },
+        {
           ...abca7Views(ABCA7_REPEAT_KEY)[1],
           repeatTrackId: 'hprc_abca7_trgt',
           walkRowSamples: [
@@ -2557,7 +2567,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: TOOLBAR_READY,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 500,
+    viewportHeight: 720,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
