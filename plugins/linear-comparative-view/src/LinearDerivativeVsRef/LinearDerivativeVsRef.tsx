@@ -17,6 +17,8 @@ import {
 } from '@jbrowse/plugin-alignments'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DownloadIcon from '@mui/icons-material/Download'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Button,
   FormControl,
@@ -143,6 +145,11 @@ function trackAssemblyName(track: AbstractTrackModel) {
 // Rows the picker draws. Enough that a real event's alternatives all fit, few
 // enough that a repeat-driven list does not become the dialog.
 const MAX_SHOWN = 10
+
+// A route with under this share of the top route's reads starts collapsed: on
+// HG008-T the benchmark junction carries 65 reads and the next six, mismapped
+// in chromosome-end repeats, carry 11 or fewer.
+const WEAK_ROUTE_SHARE = 0.25
 
 interface SyntenyPanel {
   initialized?: boolean
@@ -310,6 +317,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // questions could not be labelled (review: "'replace with split view' and
   // 'replace current view' are unclear what they would do").
   const [drawAs, setDrawAs] = useState<'synteny' | 'split'>('synteny')
+  const [showWeak, setShowWeak] = useState(false)
 
   // Above every read of the two props, which is the whole of the backstop:
   // "Replace current view" detaches the launching view and destroys it a task
@@ -338,6 +346,11 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   const showOffScreen = showsOffScreenFlag(candidates)
   const testIds = derivativePathTestIds(candidates)
   const selected = selectedCandidateIndex(candidates, picked)
+  const topReads = candidates[0]?.readCount ?? 0
+  const weak = candidates.map(
+    (c, idx) => idx !== selected && c.readCount < topReads * WEAK_ROUTE_SHARE,
+  )
+  const weakCount = weak.filter(Boolean).length
   // Whether the split drawing is offered for the route now selected, so the two
   // radio groups stay independent: a reader who picked "Breakpoint split view"
   // over a three-segment route and then moves to a 900-segment one would
@@ -639,26 +652,40 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                   setPicked(candidates[+event.target.value])
                 }}
               >
-                {candidates.map((candidate, idx) => (
-                  <FormControlLabel
-                    key={candidate.pathId}
-                    data-testid={testIds[idx]}
-                    value={idx}
-                    control={<Radio />}
-                    label={
-                      <CandidateRow
-                        candidate={candidate}
-                        noun={noun}
-                        showOffScreen={showOffScreen}
-                        partOfListed={candidates.some(
-                          c => c.pathId === candidate.partOf,
-                        )}
-                      />
-                    }
-                  />
-                ))}
+                {candidates.map((candidate, idx) =>
+                  weak[idx] && !showWeak ? null : (
+                    <FormControlLabel
+                      key={candidate.pathId}
+                      data-testid={testIds[idx]}
+                      value={idx}
+                      control={<Radio />}
+                      label={
+                        <CandidateRow
+                          candidate={candidate}
+                          noun={noun}
+                          showOffScreen={showOffScreen}
+                          partOfListed={candidates.some(
+                            c => c.pathId === candidate.partOf,
+                          )}
+                        />
+                      }
+                    />
+                  ),
+                )}
               </RadioGroup>
             )}
+            {weakCount > 0 ? (
+              <Button
+                size="small"
+                data-testid="derivative-toggle-weak-routes"
+                startIcon={showWeak ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                onClick={() => {
+                  setShowWeak(!showWeak)
+                }}
+              >
+                {`${showWeak ? 'Hide' : 'Show'} ${weakCount} ${weakCount === 1 ? 'route' : 'routes'} with under a quarter of the top route's ${noun}`}
+              </Button>
+            ) : null}
             {ranked.length > candidates.length ? (
               <Typography className={classes.caveat}>
                 {ranked.length - candidates.length} further paths are supported

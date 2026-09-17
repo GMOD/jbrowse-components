@@ -1093,6 +1093,8 @@ export const syntenyVideos: VideoSpec[] = [
       // feature's mate assembly, which decides whether a synteny view can open
       // at all (canLaunchSyntenyForMate). So this waits on the fetch rather than
       // guessing at it.
+      { type: 'waitForText', text: 'Launch' },
+      { type: 'hover', text: 'Launch', hold: 600 },
       { type: 'waitForText', text: 'Linear synteny view with hs1' },
       {
         type: 'hover',

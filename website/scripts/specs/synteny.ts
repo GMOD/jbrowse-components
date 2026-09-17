@@ -6,6 +6,7 @@ import {
   VOLVOX,
   cgiabUrl,
   hpyloriUrl,
+  menuCascade,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 import {
@@ -3868,9 +3869,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // and the context menu.
     viewportWidth: 900,
     // the top row's height: tall enough for the whole context menu in stage 1
-    // (the binding frame) — the menu opens below the clicked block, so the boxed
-    // "Linear synteny view with panTro6" item sits under the Launch heading. The bottom row sets its own,
-    // taller, height per stage.
+    // (the binding frame) — the menu opens below the clicked block, and the boxed
+    // "Linear synteny view with panTro6" item sits in its Launch submenu. The
+    // bottom row sets its own, taller, height per stage.
     viewportHeight: 575,
     stageColumns: 2,
     hideTooltip: true,
@@ -3897,6 +3898,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
           },
           { type: 'waitForText', text: 'Open feature details' },
+          ...menuCascade(['Launch', 'Linear synteny view with panTro6']),
           // leave the item the reader is being pointed at under the cursor, so
           // it carries the menu's own hover highlight as well as the box below
           { type: 'hover', text: 'Linear synteny view with panTro6' },
@@ -5235,12 +5237,9 @@ function launchMenuStills(): ScreenshotSpec[] {
           anchor: { track: 'ecoli_ava', locus: 'chr:801,000', fracY: 0, dy: 8 },
         },
         { type: 'waitForText', text: 'Open feature details' },
-        // the launch entries arrive a fetch after the menu: they need the
-        // alignment's mate, which says whether a synteny view can open at all
-        {
-          type: 'waitForText',
-          text: 'Linear synteny view, all assemblies here',
-        },
+        // the Launch submenu arrives a fetch after the menu: its entries need
+        // the alignment's mate, which says whether a synteny view can open
+        ...menuCascade(['Launch', 'Linear synteny view, all assemblies here']),
         { type: 'hover', text: 'Linear synteny view with' },
         { type: 'delay', ms: 500 },
       ],

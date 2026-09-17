@@ -78,7 +78,8 @@ test('an inverted segment is anchored on the end the path reaches', () => {
   const forward = buildSplitViewFromPath({
     candidate: candidate([
       { refName: 'chr3', start: 25326821, end: 25359568 },
-      { refName: 'chr3', start: 25350000, end: 25358430 },
+      { refName: 'chr10', start: 58717464, end: 58717662 },
+      { refName: 'chr12', start: 72250000, end: 72258430 },
     ]),
     tracks: [],
     windowSize: 10000,
@@ -86,13 +87,38 @@ test('an inverted segment is anchored on the end the path reaches', () => {
   const inverted = buildSplitViewFromPath({
     candidate: candidate([
       { refName: 'chr3', start: 25326821, end: 25359568 },
-      { refName: 'chr3', start: 25350000, end: 25358430, strand: -1 },
+      { refName: 'chr10', start: 58717464, end: 58717662 },
+      { refName: 'chr12', start: 72250000, end: 72258430, strand: -1 },
     ]),
     tracks: [],
     windowSize: 10000,
   }).locStrings
-  expect(forward[1]).toBe('chr3:25345001-25355000')
-  expect(inverted[1]).toBe('chr3:25353431-25363430')
+  expect(forward[2]).toBe('chr12:72245001-72255000')
+  expect(inverted[2]).toBe('chr12:72253431-72263430')
+})
+
+// COLO829's fold-back: the path ends inverted at the chr3 junction it starts
+// from, so its fourth window lies on the first panel's, where the split view
+// attaches those alignments. A fourth panel over the same stretch drew no
+// connections.
+test('a segment whose window overlaps an earlier panel reuses it', () => {
+  const { viewSnapshot, locStrings } = buildSplitViewFromPath({
+    candidate: candidate([
+      { refName: 'chr3', start: 25326821, end: 25359568 },
+      { refName: 'chr10', start: 58717463, end: 58717662 },
+      { refName: 'chr12', start: 72273111, end: 72273294, strand: -1 },
+      { refName: 'chr3', start: 25352683, end: 25359111, strand: -1 },
+    ]),
+    tracks: [track],
+    windowSize: 10000,
+  })
+  expect(viewSnapshot.views).toHaveLength(3)
+  expect(locStrings).toEqual([
+    'chr3:25354569-25364568',
+    'chr10:58712563-58722562',
+    'chr12:72268203-72278202',
+  ])
+  expect(viewSnapshot.displayName).toContain('chr3 (inverted)')
 })
 
 test('carries the launching view tracks onto every panel, without their ids', () => {

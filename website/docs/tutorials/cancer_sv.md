@@ -135,15 +135,15 @@ reads already carry which loci those are and in what order, so the view is built
 from them. On the tumor track, **Launch → Reconstruct derivative allele...**
 lists the routes the reads describe; pick one, set **Draw as** to **Breakpoint
 split view** and choose **Replace current view**, and the launching view is
-replaced by a panel per segment of that route, in the order the reads cross it,
+replaced by a panel per locus of that route, in the order the reads cross it,
 carrying the tracks that view had.
 
-<Video src="/media/sv/derivative_allele_route.mp4" caption="The route over the chr3 breakpoints: the tumor track menu, the routes the reads describe with the read count and segment sizes behind each one, and Breakpoint split view replacing the window with a panel per segment. The soft-clipped tails at the start return as the curves between panels." />
+<Video src="/media/sv/derivative_allele_route.mp4" caption="The route over the chr3 breakpoints: the tumor track menu, the routes the reads describe with the read count and segment sizes behind each one, and Breakpoint split view replacing the window with a panel per locus. The soft-clipped tails at the start return as the curves between panels." />
 
-This chain leaves chr3 and returns to it, so it gets two chr3 panels. Every
-panel opens on the same span, centered on the junction its segment carries.
-**Add → Breakpoint split view** builds a view whose loci you already know, one
-row per panel.
+This chain ends inverted at the chr3 junction it starts from, so its last
+segment shares the first panel and the view has three. Every panel opens on the
+same span, centered on the junction its segment carries. **Add → Breakpoint
+split view** builds a view whose loci you already know, one row per panel.
 
 A single record opens the same way. Right-click it in the variant track and
 choose **Open breakpoint split view**: one dialog asks for the shape, two

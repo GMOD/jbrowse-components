@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/plugin-alignments'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import LaunchIcon from '@mui/icons-material/Launch'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
@@ -278,8 +279,7 @@ export function featureMenuItems(self: SyntenyContextMenuModel): MenuItem[] {
   // Snapshotted here rather than read in an onClick because closeContextMenu
   // nulls it first.
   const block = self.contextMenuHit?.block
-  // The three ways out into another view read alike back to back, so they sit
-  // under one heading; the move stays outside it, since it changes this view.
+  // The move stays outside the submenu, since it changes this view.
   const launches = [
     ...launchSyntenyItem(self, feature, block),
     ...launchAllAssembliesItem(self, block),
@@ -288,7 +288,14 @@ export function featureMenuItems(self: SyntenyContextMenuModel): MenuItem[] {
   return [
     ...featureDetailItems(self, featureId, feature),
     ...(launches.length
-      ? [{ type: 'subHeader' as const, label: LAUNCH_LABEL }, ...launches]
+      ? [
+          {
+            type: 'subMenu' as const,
+            label: LAUNCH_LABEL,
+            icon: LaunchIcon,
+            subMenu: launches,
+          },
+        ]
       : []),
     ...movePanelItem(self, feature, block),
   ]

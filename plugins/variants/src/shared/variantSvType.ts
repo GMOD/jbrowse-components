@@ -48,7 +48,7 @@ export const PREDEFINED_SV_TYPES = [
   // display and this one
   { type: 'INS', label: 'Insertion', color: '#800080' },
   { type: 'INV', label: 'Inversion', color: '#ff7f00' },
-  { type: 'CNV', label: 'Copy number', color: '#984ea3' },
+  { type: 'CNV', label: 'Copy number', color: '#f781bf' },
   { type: 'BND', label: 'Breakend', color: '#a65628' },
   { type: MIXED_SV_TYPE, label: 'Mixed', color: '#999999' },
 ] as const

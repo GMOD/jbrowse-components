@@ -45,6 +45,7 @@ test('nav to synteny from right click', async () => {
     const canvas = findCanvasIn(display)
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
+    fireEvent.click(await findByText('Launch'))
     fireEvent.click(await findByText(/^Linear synteny view with /))
     fireEvent.click(await findByText('Open in new view'))
     await waitFor(() => {
@@ -71,6 +72,7 @@ test('replacing the launching view with the synteny view', async () => {
     const canvas = findCanvasIn(display)
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
+    fireEvent.click(await findByText('Launch'))
     fireEvent.click(await findByText(/^Linear synteny view with /))
     fireEvent.click(await findByText('Replace current view'))
 
@@ -146,6 +148,7 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     const canvas = findCanvasIn(display)
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
+    fireEvent.click(await findByText('Launch'))
     fireEvent.click(await findByText(/^Linear synteny view with /))
     fireEvent.click(await findByText('Open in new view'))
     await waitFor(() => {

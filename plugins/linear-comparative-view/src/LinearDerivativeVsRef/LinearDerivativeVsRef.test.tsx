@@ -243,6 +243,30 @@ describe('the split drawing above the panel cap', () => {
   })
 })
 
+test('routes with under a quarter of the top route reads start collapsed', () => {
+  const strong = { ...route(2), readCount: 40 }
+  const weak = { ...route(3, 'chr9'), readCount: 9 }
+  const routes = [strong, weak]
+  render(
+    <DerivativeVsRefDialog
+      model={{
+        derivativePathCandidates: routes,
+        hasReadsForDerivativePaths: true,
+        derivativePathEvidence: READS,
+        medianReadSpanBp: ONT_SPAN_BP,
+      }}
+      track={makeTrack().track}
+      handleClose={() => {}}
+    />,
+  )
+  const [strongId, weakId] = derivativePathTestIds(routes)
+  expect(screen.getByTestId(strongId!)).toBeTruthy()
+  expect(screen.queryByTestId(weakId!)).toBeNull()
+  fireEvent.click(screen.getByTestId('derivative-toggle-weak-routes'))
+  expect(screen.getByTestId(weakId!)).toBeTruthy()
+  cleanup()
+})
+
 // The segments track is a per-launch `FromConfigAdapter` over a temporary
 // assembly, so no list outside this view has any use for its config and any list
 // that holds one needs somebody to come back and sweep it. Both destinations this

@@ -42,9 +42,8 @@ export const NO_CALL_COLOR = 'hsl(50,50%,50%)'
 export const UNPHASED_COLOR = 'black'
 
 // Phased-mode alt fills: the primary (most frequent) alt and everything else.
-// Drawn from a palette the SV-type scale does not touch, so red means
-// "deletion" in one mode and nothing at all in another.
-export const PRIMARY_ALT_COLOR = '#1b9e77'
+// The secondary stays off the SV-type scale's red, which means "deletion" there.
+export const PRIMARY_ALT_COLOR = '#377eb8'
 export const SECONDARY_ALT_COLOR = '#e7298a'
 
 // Pre-packed ABGR for the unphased "black" fill — lets the hot per-cell loop

@@ -105,11 +105,8 @@ const TRUTH_SET = TRUTH_SET_TRACK.trackId
 // content, so the numbers come from the run's own reports rather than from a
 // shared round number.
 const MULTIHOP_HEIGHT = 1126
-// The chain half is the taller one, by the 100px its four gene lanes gained
-// (MULTIHOP_GENE_HEIGHT) and the ~35px the fourth panel needs on top of that.
-// Same budget rule as before: a panel's gene lane is paid for four times, so the
-// frame absorbs the growth rather than the pileups.
-const MULTIHOP_CHAIN_HEIGHT = 1325
+// The chain half's three panels, each paying for a gene lane and a pileup.
+const MULTIHOP_CHAIN_HEIGHT = 1126
 const MULTIHOP_WIDTH = 1000
 
 // Per PANEL, so worth four times what it reads as, which is why it was 45 and
@@ -215,26 +212,23 @@ const FLOW_NUMBER = (n: number, extra?: { view: [number, number] }) =>
 // STATE of the route this opens, and videos/sv.ts films the route itself, so
 // both read this rather than each writing the panel out. The per-panel track
 // heights are the reason it matters: the split view the route builds carries
-// this view's track list onto every panel, so 130 here is 130 four times there,
+// this view's track list onto every panel, so 160 here is 160 three times there,
 // and a height edited on one copy would move a figure the other one is of.
 const multihopBreakpointPanel = lgvSession(CONFIG, {
   assembly: 'hg38',
   loc: 'chr3:25,357,600-25,361,000',
   tracks: [
     // Both heights are carried onto EVERY panel of the view the dialog builds,
-    // so they are per-panel budgets rather than this page's layout: four panels
-    // have to fit the frame, and a tall track here is four tall tracks there.
+    // so they are per-panel budgets rather than this page's layout: three panels
+    // have to fit the frame, and a tall track here is three tall tracks there.
     { ...GENE_TRACK, height: MULTIHOP_GENE_HEIGHT },
     {
       trackId: TUMOUR,
       ...DEEP_ONT,
       showSoftClipping: true,
-      // 130 a panel, from the run's own report: at 110 the fourth panel ran
-      // 110px past the fold. The shared height is then the chain's rather than
-      // the pileup's — four panels at 130 need 1190, where the two pileups need
-      // 1095 — so `+append` pads the pileup half by ~95px rather than cropping
-      // a panel off this one.
-      height: 130,
+      // 160 a panel, so three panels fill the frame the tumour-over-normal
+      // half is sized to
+      height: 160,
       ...SUPER_COMPACT,
     },
   ],
@@ -767,6 +761,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         actions: [
           trackMenuIcon(TUMOUR),
           ...reconstructDerivativeAllele(180000),
+          // the two-read route starts collapsed under the chain's 28
+          {
+            type: 'click',
+            selector: '[data-testid="derivative-toggle-weak-routes"]',
+          },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="derivative-path-3-10-3rev"]',
+          },
         ],
         annotations: [
           {

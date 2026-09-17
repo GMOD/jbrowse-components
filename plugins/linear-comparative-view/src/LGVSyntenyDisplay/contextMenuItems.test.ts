@@ -2,13 +2,18 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { createDisplay } from './testEnv.ts'
 
-// Clickable items only: the heading over the launch group is asserted on its
-// own below, and every other case is about what can be clicked.
+interface Item {
+  type?: string
+  label?: string
+  subMenu?: Item[]
+}
+
+// Clickable items only, with the Launch submenu flattened in place: the
+// submenu itself is asserted on its own below.
 function labels(display: ReturnType<typeof createDisplay>) {
-  return display
-    .contextMenuItems()
-    .filter((i: unknown) => (i as { type?: string }).type !== 'subHeader')
-    .map((i: unknown) => (i as { label?: string }).label)
+  return (display.contextMenuItems() as Item[]).flatMap(i =>
+    i.type === 'subMenu' ? (i.subMenu ?? []).map(s => s.label) : [i.label],
+  )
 }
 
 function makeFeature(mateAssembly: string, CIGAR?: string) {
@@ -171,25 +176,20 @@ test('a mate outside the track assemblies can still move a panel already on it',
   expect(labelled).toContain(MOVE)
 })
 
-// The three ways out into another view read alike back to back, so they sit
-// under one heading — and the heading is absent when none of them is offered.
-test('the launch items sit under one heading, the move outside it', () => {
+// The ways out into another view sit in one Launch submenu, which is absent
+// when none of them is offered; the move stays outside it.
+test('the launch items sit in one submenu, the move outside it', () => {
   const display = createDisplay({ neighbourAssembly: 'volvox_random' })
   rightClick(display, makeFeature('volvox_random', '100M'))
-  const items = display.contextMenuItems() as {
-    type?: string
-    label?: string
-  }[]
-  const heading = items.findIndex(i => i.type === 'subHeader')
-  expect(items[heading]?.label).toBe('Launch')
-  expect(items[heading + 1]?.label).toBe(LAUNCH)
+  const items = display.contextMenuItems() as Item[]
+  const launch = items.find(i => i.type === 'subMenu')
+  expect(launch?.label).toBe('Launch')
+  expect(launch?.subMenu?.[0]?.label).toBe(LAUNCH)
   expect(items.at(-1)?.label).toBe(MOVE)
   const noLaunch = createDisplay({ neighbourAssembly: 'HG002#1' })
   rightClick(noLaunch, makeFeature('HG002#1', '100M'))
   expect(
-    (noLaunch.contextMenuItems() as { type?: string }[]).some(
-      i => i.type === 'subHeader',
-    ),
+    (noLaunch.contextMenuItems() as Item[]).some(i => i.type === 'subMenu'),
   ).toBe(false)
 })
 

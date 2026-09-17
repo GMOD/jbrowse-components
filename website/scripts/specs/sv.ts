@@ -1643,7 +1643,7 @@ export const svSpecs: ScreenshotSpec[] = [
         leader: true,
         dx: 110,
         anchor: {
-          selector: '[data-testid="derivative-path-chr13rev-chr5rev"]',
+          selector: '[data-testid="derivative-toggle-weak-routes"]',
           alignX: 'right',
         },
       },
