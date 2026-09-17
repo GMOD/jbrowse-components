@@ -29,7 +29,7 @@ const confNode = (self: object) => self as TreeSidebarHost
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the four `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
+ * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the five `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
  * Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
  * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
  * used while drawing the tree.
@@ -62,7 +62,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         types.maybe(types.frozen<ClusterProvenance>()),
         undefined,
       ),
-      treeAreaWidth: types.stripDefault(types.number, 80),
       subtreeFilter: types.stripDefault(
         types.maybe(types.array(types.string)),
         undefined,
@@ -159,6 +158,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get rowDomain(): string[] {
         return getConf(confNode(self), 'domain')
+      },
+      /**
+       * #getter
+       * Width in px of the sidebar the dendrogram draws in. On the config
+       * rather than the display snapshot for the same reason `height` is: the
+       * config node outlives the display instance, so a dragged width survives
+       * unticking and reticking the track.
+       */
+      get treeAreaWidth(): number {
+        return getConf(confNode(self), 'treeAreaWidth')
       },
     }))
     .actions(self => ({
@@ -298,7 +307,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           writeTree(tree, provenance)
         },
         setTreeAreaWidth(width: number) {
-          self.treeAreaWidth = width
+          setConf(confNode(self), 'treeAreaWidth', width)
         },
         setSubtreeFilter(names?: string[]) {
           // normalize empty to undefined so the field has one stripped state

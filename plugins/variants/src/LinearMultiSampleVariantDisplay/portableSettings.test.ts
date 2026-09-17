@@ -107,6 +107,17 @@ describe('getPortableSettings', () => {
     expect([...readConfObject(target, 'domain')]).toEqual(['HG002', 'HG001'])
   })
 
+  // A drag on the sidebar edge writes a config slot, like the track height
+  // above: returned in the instance snapshot instead, MST drops it and the
+  // gutter silently resets on a switch.
+  it('ports the tree sidebar width', () => {
+    const { display, target, targetId } = setup('')
+    display.setTreeAreaWidth(140)
+    const snapshot = display.getPortableSettings(targetId)
+    expect(snapshot).not.toHaveProperty('treeAreaWidth')
+    expect(readConfObject(target, 'treeAreaWidth')).toBe(140)
+  })
+
   it('ports the facet field and its band order', () => {
     const { display, target, targetId } = setup('')
     display.setFacet('population')

@@ -180,6 +180,10 @@ const PORTABLE_CONFIG_KEYS = [
   'colorBy',
   'facetField',
   'facetDomain',
+  // the sidebar width is a drag on a config slot, like `height`: returned in
+  // the instance snapshot instead, MST would drop it and a display-type switch
+  // would silently reset the gutter
+  'treeAreaWidth',
 ] as const
 
 // Loaded features in genomic order plus their interned genotype codes: what an
@@ -1621,7 +1625,6 @@ export default function MultiSampleVariantBaseModelF(
             clusterTree: self.clusterTree,
             clusterProvenance: self.clusterProvenance,
             subtreeFilter: self.subtreeFilter,
-            treeAreaWidth: self.treeAreaWidth,
             layout: self.layout,
           }
         },

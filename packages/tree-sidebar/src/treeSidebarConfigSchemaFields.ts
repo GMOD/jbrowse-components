@@ -92,6 +92,18 @@ export function treeSidebarConfigSchemaFields({
       defaultValue: [],
       description: rows,
     },
+    /**
+     * #slot
+     * Width in px of the sidebar the dendrogram draws in, left of the row
+     * labels. A drag on its edge writes this, the way a drag on the track's
+     * bottom edge writes `height`.
+     */
+    treeAreaWidth: {
+      type: 'number',
+      defaultValue: 80,
+      description:
+        'width in px of the tree sidebar, which a drag on its edge also writes',
+    },
   } as const
 }
 
