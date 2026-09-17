@@ -137,12 +137,13 @@ a refName.
 ### CategoricalRef
 
 A field bound to a categorical scale: each distinct value takes one entry of the
-channel's range — a palette entry for `color`, a glyph name for `glyph`. With a
-`domain`, the listed values take the range in that order and whatever else the
-region meets follows, sorted; without one each value derives its entry from
-itself (an integer takes the slot it names, anything else hashes in), so every
-region agrees on a value it shares with another at the cost of an occasional
-collision, and `domain` is the way to spend the range deliberately.
+channel's range — a palette entry for `color`, a glyph name for `glyph`. Every
+value derives its entry from itself (an integer takes the slot it names,
+anything else hashes in), so every region agrees on a value it shares with
+another at the cost of an occasional collision. A `domain` spends the range
+deliberately: the listed values take it in order, and a value the domain leaves
+out never takes a listed value's entry. The legend lists the domain first and
+the rest sorted.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

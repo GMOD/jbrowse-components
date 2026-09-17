@@ -73,7 +73,7 @@ always real in both realms.
 | `@jbrowse/alignments-core` | Shared GPU rendering utilities for alignments and synteny displays | 2 | all of it |
 | `@jbrowse/app-core` | JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop | 1 | 30 of 36 exports; the rest stubbed |
 | [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | 1 | all of it |
-| [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 1224 of 1324 exports; the rest stubbed |
+| [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 1225 of 1325 exports; the rest stubbed |
 | `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 75 | 122 of 147 exports; the rest stubbed |
 | [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 5 | 52 of 58 exports; the rest stubbed |
 | `@jbrowse/embedded-core` | JBrowse 2 code shared between embedded products | 1 | 1 of 4 exports; the rest stubbed |
