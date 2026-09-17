@@ -162,6 +162,19 @@ Where to put a new setting:
   that every consumer reads instead of the raw setting — see
   `ROW_HEIGHT_AND_FIT.md`.
 
+**A setting is a config slot, and the session mirrors it.** That is what keeps
+one word for one setting: a session spec's track entry writes the slot table
+(`SESSION_SPEC_FORMAT.md`), the config pages document it, `jbrowse validate`
+checks it, and the track menu writes the same slot the config author declared.
+A setting kept as a state-model property instead cannot be declared on a track
+in `config.json`, and it acquires a second spelling the moment either side
+names it — which is where the `groupBy` / `rowOrder` / `facet` drift came from,
+each of them the facet domain under another name. What stays a property is what
+the config never says: a reader's transient marks (hidden rows, pinned or
+soloed features, a lane picked out of a graph's haplotypes), an arrangement
+derived from data (`layout`, a cluster tree), and a launch spec that clears
+itself.
+
 The `fullConfSnapshot(self.configuration)` form above is canvas's, and canvas
 does not ship what it returns: `pickDisplayConfig` takes exactly the slots
 `DisplayConfig` declares back out of it, off a `Record<keyof DisplayConfig, true>`
