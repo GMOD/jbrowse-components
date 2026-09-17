@@ -140,10 +140,11 @@ return untracked(() => ({
 }))
 ```
 
-That is the shape to copy for any expensive effect: fold every input that should
-trigger it into one computed, track only that, and read the raw values inside
-`untracked`. Tracking the underlying observables individually would refire the
-worker fetch on every pan frame for an identical result.
+This computed-and-untracked split is the shape to copy for any expensive effect:
+fold every input that should trigger it into one computed, track only that, and
+read the raw values inside `untracked`. Tracking the underlying observables
+individually would refire the worker fetch on every pan frame for an identical
+result.
 
 :::warning An autorun must do its own reads — an MST action is an untracked one
 
@@ -152,15 +153,16 @@ actions run untracked**, so moving an autorun's body into one leaves the autorun
 with no dependencies at all. It fires exactly once, never again, and nothing
 throws or warns.
 
-This is easy to walk into because factoring the body out is the obvious way to
-reuse it — from a menu item, or from a flush-on-teardown path that wants the
-same work on demand. The fix is to duplicate the reads in the autorun and say
-why in a comment; `RegionTooLargeMixin`'s byte gate is the worked example.
+Factoring the body out into an action is easy to reach for, because it looks
+like the obvious way to reuse it — from a menu item, or from a flush-on-teardown
+path that wants the same work on demand. The fix is to duplicate the reads in
+the autorun and say why in a comment; `RegionTooLargeMixin`'s byte gate is the
+worked example.
 
-The same trap wearing different clothes: `self.someAction(getSnapshot(self))`
-tracks fine, and only because the snapshot is taken in the argument list, before
-the action is entered. Move that read inside the action and the dependency
-disappears with it.
+The same trap in another form: `self.someAction(getSnapshot(self))` tracks fine,
+and only because the snapshot is taken in the argument list, before the action
+is entered. Move that read inside the action and the dependency disappears with
+it.
 
 :::
 
@@ -200,8 +202,8 @@ so the mixins cannot be chained on one at a time the way `.views()` and
 `.views()` / `.actions()` / `.volatile()` chain onto the result of that one
 call.
 
-Mixins are factory functions returning a model type, not classes, so the same
-mixin can be composed at different positions in the chain without inheritance.
+Mixins are factory functions returning a model type, so the same mixin can be
+composed at different positions in the chain without inheritance.
 
 Keep the main model chain in one file. Splitting `.views()` or `.actions()`
 across files obscures the composition order and which views depend on which.
@@ -353,8 +355,8 @@ block's override; what differs is what TypeScript can see:
 - `this` inside the returned object literal is typed as **that literal**. It
   reaches same-block siblings and nothing else.
 
-So prefer `self.X`, and reach for `this.X` only for a sibling defined in the
-same block. `LinearVariantDisplay`'s legend getters use both, one line apart:
+Prefer `self.X`, and reach for `this.X` only for a sibling defined in the same
+block. `LinearVariantDisplay`'s legend getters use both, one line apart:
 
 <!-- include: plugins/variants/src/LinearVariantDisplay/model.ts#sameBlockThis -->
 
