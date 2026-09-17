@@ -1,12 +1,12 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { render, waitForElementToBeRemoved } from '@testing-library/react'
 
 import RefNameInfoDialog from './RefNameInfoDialog.tsx'
+import { aboutTestPluginManager, makeTrackConf } from './aboutTestUtils.ts'
 
-import type { AboutConfig } from './util.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 interface CallArgs {
@@ -18,7 +18,7 @@ function makeSession(call: Call) {
   return { rpcManager: { call } } as unknown as AbstractSessionModel
 }
 
-function renderConfig(config: AboutConfig, call: Call) {
+function renderConfig(config: AnyConfigurationModel, call: Call) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <RefNameInfoDialog
@@ -31,10 +31,7 @@ function renderConfig(config: AboutConfig, call: Call) {
 }
 
 function renderDialog(assemblyNames: string[], call: Call) {
-  return renderConfig(
-    { trackId: 'track1', assemblyNames, adapter: { type: 'TestAdapter' } },
-    call,
-  )
+  return renderConfig(makeTrackConf({ trackId: 'track1', assemblyNames }), call)
 }
 
 test('renders ref names grouped by assembly', async () => {
@@ -73,8 +70,6 @@ test('shows an error banner when the rpc rejects', async () => {
 // so reading one gave undefined, which useFetch reads as "key incomplete, don't
 // fetch" — the dialog said "Loading refNames" forever, on every assembly's
 // sequence track. The name comes from the assembly config holding it.
-const corePluginManager = new PluginManager([]).createPluggableElements()
-corePluginManager.configure()
 const SeqTrackConf = ConfigurationSchema(
   'ReferenceSequenceTrack',
   { adapter: ConfigurationSchema('TestAdapter', {}) },
@@ -89,7 +84,7 @@ const AssemblyConf = ConfigurationSchema(
 test('resolves a reference sequence track to its assembly', async () => {
   const assembly = AssemblyConf.create(
     { name: 'volvox', sequence: { trackId: 'volvox_refseq' } },
-    { pluginManager: corePluginManager },
+    { pluginManager: aboutTestPluginManager },
   )
   const call = jest.fn<Promise<unknown>, [unknown, unknown, CallArgs]>(
     async () => ['ctgA'],
@@ -100,12 +95,14 @@ test('resolves a reference sequence track to its assembly', async () => {
   expect(call.mock.calls[0]![2].assemblyName).toBe('volvox')
 })
 
-test('settles to an empty list when no assembly resolves, rather than spinning', async () => {
-  const { findByText, queryByText } = renderConfig(
-    // no assemblyNames, and a plain object has no parent to resolve one from
-    { trackId: 'track1', adapter: { type: 'TestAdapter' } },
+// an unanswerable question lands in the banner rather than spinning forever
+test('says so when a config names no assembly and hangs off none', async () => {
+  const { findByText } = renderConfig(
+    SeqTrackConf.create(
+      { trackId: 'track1' },
+      { pluginManager: aboutTestPluginManager },
+    ),
     async () => [],
   )
-  await waitForElementToBeRemoved(() => queryByText('Loading refNames'))
-  expect(await findByText('Copy ref names')).toBeTruthy()
+  expect(await findByText(/unknown assembly names/)).toBeTruthy()
 })

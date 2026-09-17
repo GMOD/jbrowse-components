@@ -1,7 +1,3 @@
-import { readConfSlot } from '@jbrowse/core/configuration'
-
-import type { AboutConfig } from './util.ts'
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
@@ -16,10 +12,10 @@ function descriptionUrl(value: string) {
 }
 
 /**
- * The URL of a track's prose description page, as a UCSC track hub supplies it,
- * and undefined for anything that is not an http(s) url — the value reaches
- * `openLocation` and an anchor's href, so a `javascript:` or `file://` one does
- * not become one here.
+ * The URL of a track's prose description page in its `metadata`, as a UCSC
+ * track hub supplies it, and undefined for anything that is not an http(s) url
+ * — the value reaches `openLocation` and an anchor's href, so a `javascript:`
+ * or `file://` one does not become one here.
  *
  * Four spellings: `UCSCTrackHubConnection` spreads the trackDb stanza across
  * `metadata`, the bulk converter behind genomes.jbrowse.org nests it under
@@ -28,8 +24,7 @@ function descriptionUrl(value: string) {
  * escaped anchor rather than a bare url, so the href comes back through a parse
  * rather than a regex.
  */
-export function getDescriptionHtmlUrl(config: AboutConfig) {
-  const metadata = readConfSlot(config, 'metadata')
+export function getDescriptionHtmlUrl(metadata: unknown) {
   return [metadata, isRecord(metadata) ? metadata.ucsc : undefined]
     .flatMap(record => (isRecord(record) ? [record.html, record.htmlPath] : []))
     .filter(candidate => typeof candidate === 'string')

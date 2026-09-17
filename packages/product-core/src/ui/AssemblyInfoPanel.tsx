@@ -2,17 +2,17 @@ import { useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { readConfObject, readConfSlot } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { CopyToClipboardButton } from '@jbrowse/core/ui'
 import { stripBaseUris } from '@jbrowse/core/util/addRelativeUris'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getParent, hasParent, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import RefNameAliasesDialog from './RefNameAliasesDialog.tsx'
 
-import type { AboutConfig, AboutPanelProps } from './util.ts'
+import type { AboutPanelProps } from './util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -47,18 +47,11 @@ const useStyles = makeStyles()(theme => ({
  * holding it *is* its assembly, the same walk `getConfAssemblyNames` makes.
  * Compared by identity against that node's `sequence`, so the card is the
  * assembly of the track the dialog is already showing.
- *
- * Both menus that open this dialog hand over a live node here: the hierarchical
- * selector reads `assemblyManager.get(name).configuration.sequence`, and the
- * in-view track label's `track.configuration` resolves to that same node
- * through `getTrackById`. The frozen `session.tracks` entry the rest of the
- * dialog has to cope with is never a reference sequence track.
  */
-function getAssemblyConf(config: AboutConfig) {
-  const parent =
-    isStateTreeNode(config) && hasParent(config)
-      ? getParent<AnyConfigurationModel & { sequence?: unknown }>(config)
-      : undefined
+function getAssemblyConf(config: AnyConfigurationModel) {
+  const parent = hasParent(config)
+    ? getParent<AnyConfigurationModel & { sequence?: unknown }>(config)
+    : undefined
   return parent?.sequence === config ? parent : undefined
 }
 
@@ -103,7 +96,7 @@ const AssemblyCard = observer(function AssemblyCard({
       <Attributes attributes={conf} omit={hideFields} hideUris={hideUris} />
       {showAliases ? (
         <RefNameAliasesDialog
-          assemblyName={readConfSlot<string>(assemblyConf, 'name')}
+          assemblyName={readConfObject(assemblyConf, 'name') as string}
           session={session}
           onClose={() => {
             setShowAliases(false)

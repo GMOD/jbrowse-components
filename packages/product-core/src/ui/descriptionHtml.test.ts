@@ -11,7 +11,7 @@ describe('getDescriptionHtmlUrl', () => {
   it('reads the anchor at metadata.html', () => {
     expect(
       getDescriptionHtmlUrl({
-        metadata: { html: `<a href="${base}">html/x.repeatMasker</a>` },
+        html: `<a href="${base}">html/x.repeatMasker</a>`,
       }),
     ).toBe(base)
   })
@@ -21,24 +21,18 @@ describe('getDescriptionHtmlUrl', () => {
   it('reads the anchor at metadata.ucsc.html', () => {
     expect(
       getDescriptionHtmlUrl({
-        metadata: {
-          ucsc: { track: 'repeatMasker', html: `<a href='${base}'>x</a>` },
-        },
+        ucsc: { track: 'repeatMasker', html: `<a href='${base}'>x</a>` },
       }),
     ).toBe(base)
   })
 
   // an assembly's reference sequence track spells the same thing htmlPath
   it('reads htmlPath, nested and not', () => {
+    expect(getDescriptionHtmlUrl({ htmlPath: `<a href="${base}">x</a>` })).toBe(
+      base,
+    )
     expect(
-      getDescriptionHtmlUrl({
-        metadata: { htmlPath: `<a href="${base}">x</a>` },
-      }),
-    ).toBe(base)
-    expect(
-      getDescriptionHtmlUrl({
-        metadata: { ucsc: { htmlPath: `<a href="${base}">x</a>` } },
-      }),
+      getDescriptionHtmlUrl({ ucsc: { htmlPath: `<a href="${base}">x</a>` } }),
     ).toBe(base)
   })
 
@@ -46,29 +40,27 @@ describe('getDescriptionHtmlUrl', () => {
   // would hand back the entities
   it('decodes entities in the href', () => {
     expect(
-      getDescriptionHtmlUrl({
-        metadata: { html: `<a href="${base}?a=1&amp;b=2">x</a>` },
-      }),
+      getDescriptionHtmlUrl({ html: `<a href="${base}?a=1&amp;b=2">x</a>` }),
     ).toBe(`${base}?a=1&b=2`)
   })
 
   it('accepts a bare url', () => {
-    expect(getDescriptionHtmlUrl({ metadata: { html: base } })).toBe(base)
+    expect(getDescriptionHtmlUrl({ html: base })).toBe(base)
   })
 
   it('is undefined for a track with no description page', () => {
     expect(
-      getDescriptionHtmlUrl({ metadata: { ucsc: { track: 'gc5Base' } } }),
+      getDescriptionHtmlUrl({ ucsc: { track: 'gc5Base' } }),
     ).toBeUndefined()
-    expect(getDescriptionHtmlUrl({ metadata: {} })).toBeUndefined()
     expect(getDescriptionHtmlUrl({})).toBeUndefined()
+    expect(getDescriptionHtmlUrl(undefined)).toBeUndefined()
   })
 
   // a relative path that never got resolved is not something to fetch against
   // the JBrowse origin
   it('is undefined for a value that is neither an anchor nor an absolute url', () => {
     expect(
-      getDescriptionHtmlUrl({ metadata: { html: 'html/x.repeatMasker' } }),
+      getDescriptionHtmlUrl({ html: 'html/x.repeatMasker' }),
     ).toBeUndefined()
   })
 
@@ -76,14 +68,10 @@ describe('getDescriptionHtmlUrl', () => {
   // that is not http(s) never becomes one
   it('is undefined for a non-http scheme', () => {
     expect(
-      getDescriptionHtmlUrl({
-        metadata: { html: '<a href="javascript:alert(1)">x</a>' },
-      }),
+      getDescriptionHtmlUrl({ html: '<a href="javascript:alert(1)">x</a>' }),
     ).toBeUndefined()
     expect(
-      getDescriptionHtmlUrl({
-        metadata: { html: '<a href="file:///etc/passwd">x</a>' },
-      }),
+      getDescriptionHtmlUrl({ html: '<a href="file:///etc/passwd">x</a>' }),
     ).toBeUndefined()
   })
 })

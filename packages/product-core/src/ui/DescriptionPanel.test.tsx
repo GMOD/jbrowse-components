@@ -3,8 +3,8 @@ import { ThemeProvider } from '@mui/material'
 import { render, waitForElementToBeRemoved } from '@testing-library/react'
 
 import DescriptionPanel from './DescriptionPanel.tsx'
+import { makeTrackConf } from './aboutTestUtils.ts'
 
-import type { AboutConfig } from './util.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const mockReadFile = jest.fn()
@@ -16,10 +16,13 @@ jest.mock('@jbrowse/core/util/io', () => ({
 const base = 'https://hgdownload.soe.ucsc.edu/hubs/GCF/x/html/x.repeatMasker'
 const session = {} as AbstractSessionModel
 
-function renderPanel(config: AboutConfig) {
+function renderPanel(metadata: Record<string, unknown>) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <DescriptionPanel config={config} session={session} />
+      <DescriptionPanel
+        config={makeTrackConf({ trackId: 't1', metadata })}
+        session={session}
+      />
     </ThemeProvider>,
   )
 }
@@ -29,9 +32,7 @@ beforeEach(() => {
 })
 
 test('renders nothing for a track with no description page', () => {
-  const { container } = renderPanel({
-    metadata: { ucsc: { track: 'gc5Base' } },
-  })
+  const { container } = renderPanel({ ucsc: { track: 'gc5Base' } })
   expect(container.innerHTML).toBe('')
   expect(mockReadFile).not.toHaveBeenCalled()
 })
@@ -39,7 +40,7 @@ test('renders nothing for a track with no description page', () => {
 test('fetches and renders the hub page, rebased', async () => {
   mockReadFile.mockResolvedValue('<h2>Description</h2><img src="mammals.png">')
   const { getByText, queryByText, container } = renderPanel({
-    metadata: { html: `<a href="${base}">html/x.repeatMasker</a>` },
+    html: `<a href="${base}">html/x.repeatMasker</a>`,
   })
   await waitForElementToBeRemoved(() => queryByText('Loading description'))
   expect(getByText('Description', { selector: 'h2' })).toBeTruthy()
@@ -53,7 +54,7 @@ test('fetches and renders the hub page, rebased', async () => {
 test('attributes the page and links to the original', async () => {
   mockReadFile.mockResolvedValue('<p>hi</p>')
   const { getByText, queryByText } = renderPanel({
-    metadata: { ucsc: { html: `<a href="${base}">x</a>` } },
+    ucsc: { html: `<a href="${base}">x</a>` },
   })
   await waitForElementToBeRemoved(() => queryByText('Loading description'))
   expect(getByText(/written for the UCSC Genome Browser/)).toBeTruthy()
@@ -66,7 +67,7 @@ test('strips scripting from the fetched page', async () => {
     '<p>real</p><script>window.pwned = 1</script><img src="x" onerror="window.pwned = 1">',
   )
   const { getByText, queryByText, container } = renderPanel({
-    metadata: { html: `<a href="${base}">x</a>` },
+    html: `<a href="${base}">x</a>`,
   })
   await waitForElementToBeRemoved(() => queryByText('Loading description'))
   expect(getByText('real')).toBeTruthy()
@@ -77,7 +78,7 @@ test('strips scripting from the fetched page', async () => {
 test('surfaces a fetch failure instead of spinning', async () => {
   mockReadFile.mockRejectedValue(new Error('404 fetching description'))
   const { getByText, queryByText } = renderPanel({
-    metadata: { html: `<a href="${base}">x</a>` },
+    html: `<a href="${base}">x</a>`,
   })
   await waitForElementToBeRemoved(() => queryByText('Loading description'))
   expect(getByText(/404 fetching description/)).toBeTruthy()

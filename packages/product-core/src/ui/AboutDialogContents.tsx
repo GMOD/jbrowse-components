@@ -2,11 +2,10 @@ import { useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { hydrateTrackConfig } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import PluggableComponents from '@jbrowse/core/ui/PluggableComponents'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import AssemblyInfoPanel from './AssemblyInfoPanel.tsx'
@@ -34,32 +33,13 @@ const AboutDialogContents = observer(function AboutDialogContents({
   const [showRefNames, setShowRefNames] = useState(false)
 
   const { pluginManager } = getEnv(session)
-
-  // The two menus that open this dialog hand over different things: the in-view
-  // track label passes `track.configuration`, a live node, while the
-  // hierarchical selector passes a `session.tracks` entry, which is a
-  // `types.frozen` plain object until something references the track. Hydrating
-  // converges them, so "Copy config" gives the same JSON whichever menu you came
-  // from; it returns undefined for a config no plugin can build, and that falls
-  // back to copying it as authored.
-  const live = isStateTreeNode(config)
-    ? config
-    : hydrateTrackConfig(pluginManager, config)
-  const conf = live
-    ? (getSnapshot(live) as Record<string, unknown>)
-    : (config as Record<string, unknown>)
-
-  const { config: shown, hideUris } = getAboutDialogConfig({
-    config: live ?? config,
-    session,
-    pluginManager,
-  })
+  const { config: shown, hideUris } = getAboutDialogConfig({ config, session })
 
   return (
     <div className={classes.content}>
       <BaseCard title="Configuration">
         <HeaderButtons
-          conf={conf}
+          conf={readConfObject(config)}
           hideUris={hideUris}
           setShowRefNames={setShowRefNames}
         />

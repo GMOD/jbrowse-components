@@ -522,9 +522,9 @@ rendering what you were handed and wrappers from two plugins nest instead of one
 disappearing. Which tracks any of them applies to is `matchesTrackSelector`, one
 predicate your contribution asks before it draws, and it reads a track config as
 readily as a widget model. An About panel therefore gets the copy-safe `trackId`
-matching only feature panels used to have, and so does `Core-customizeAbout`,
-which renders nothing at all. Both come from `@jbrowse/core/ui`, and between
-them they replace `addFeaturePanel`, `addReplaceWidget` and `addWidgetWrapper`.
+matching only feature panels used to have. Both come from `@jbrowse/core/ui`,
+and between them they replace `addFeaturePanel`, `addReplaceWidget` and
+`addWidgetWrapper`.
 
 Extending a view or display has its own entry point now.
 `Core-extendPluggableElement` fires for every kind of pluggable element there

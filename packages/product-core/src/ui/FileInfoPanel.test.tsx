@@ -3,10 +3,11 @@ import { ThemeProvider } from '@mui/material'
 import { render, waitForElementToBeRemoved } from '@testing-library/react'
 
 import FileInfoPanel from './FileInfoPanel.tsx'
+import { makeTrackConf } from './aboutTestUtils.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-const config = { trackId: 'track1', adapter: { type: 'TestAdapter' } }
+const config = makeTrackConf({ trackId: 'track1' })
 
 function makeSession(call: (...args: unknown[]) => Promise<unknown>) {
   return { rpcManager: { call } } as unknown as AbstractSessionModel

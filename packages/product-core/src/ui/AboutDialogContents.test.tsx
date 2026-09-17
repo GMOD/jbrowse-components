@@ -1,4 +1,3 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import {
   ConfigurationSchema,
   FormatAboutConfigSchemaFactory,
@@ -9,12 +8,10 @@ import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
 import AboutDialogContents from './AboutDialogContents.tsx'
+import { aboutTestPluginManager, makeTrackConf } from './aboutTestUtils.ts'
 
-import type { AboutConfig } from './util.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-const corePluginManager = new PluginManager([]).createPluggableElements()
-corePluginManager.configure()
 
 const SessionModel = types
   .model('Session', {
@@ -29,11 +26,11 @@ const SessionModel = types
 function makeSession(hideUris = false) {
   return SessionModel.create(
     { configuration: { formatAbout: { hideUris } } },
-    { pluginManager: corePluginManager },
+    { pluginManager: aboutTestPluginManager },
   ) as unknown as AbstractSessionModel
 }
 
-function renderContents(config: AboutConfig, hideUris = false) {
+function renderContents(config: AnyConfigurationModel, hideUris = false) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <AboutDialogContents config={config} session={makeSession(hideUris)} />
@@ -41,15 +38,18 @@ function renderContents(config: AboutConfig, hideUris = false) {
   )
 }
 
-const config = {
+const config = makeTrackConf({
   trackId: 't1',
   name: 'Track 1',
   adapter: {
     type: 'BamAdapter',
-    bamLocation: { localPath: '/srv/secretdir/x.bam' },
+    bamLocation: {
+      localPath: '/srv/secretdir/x.bam',
+      locationType: 'LocalPathLocation',
+    },
   },
   metadata: { refNames: 'a metadata column that happens to share a name' },
-}
+})
 
 test('shows the config, the file info panel and the copy button by default', async () => {
   const { findByText, getByText } = renderContents(config)

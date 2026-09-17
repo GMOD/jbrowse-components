@@ -1,4 +1,4 @@
-import { readConfSlot } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   CopyToClipboardButton,
   Dialog,
@@ -9,11 +9,10 @@ import { createStatusFanOut, statusProgressLabel } from '@jbrowse/core/util'
 import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AboutConfig, AboutPanelProps } from './util.ts'
+import type { AboutPanelProps } from './util.ts'
 
 const MAX_REF_NAMES = 10_000
 
@@ -45,23 +44,6 @@ function formatRefNames(
     .join('\n')
 }
 
-/**
- * A `ReferenceSequenceTrack` config declares no `assemblyNames` slot at all —
- * `createReferenceSeqTrackConfig` omits it deliberately, because such a track's
- * assembly is the config node holding it. `getConfAssemblyNames` is the shared
- * resolver that walks to that parent, and reading the slot directly instead is
- * what left "Show ref names" on every reference sequence track loading forever:
- * `undefined` serialized into the fetch key, which `useFetch` reads as "don't
- * fetch". It throws when a config has neither, which is why this is called
- * inside the fetcher — an unanswerable question belongs in the error banner
- * rather than thrown out of a render.
- */
-function aboutAssemblyNames(config: AboutConfig) {
-  return isStateTreeNode(config)
-    ? getConfAssemblyNames(config)
-    : (readConfSlot<string[] | undefined>(config, 'assemblyNames') ?? [])
-}
-
 const RefNameInfoDialog = observer(function RefNameInfoDialog({
   config,
   session,
@@ -69,7 +51,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
 }: AboutPanelProps & { onClose: () => void }) {
   const { classes } = useStyles()
   const { rpcManager } = session
-  const trackId = readConfSlot<string>(config, 'trackId')
+  const trackId = readConfObject(config, 'trackId') as string
 
   const { data, error, isLoading, status } = useFetch(
     ['CoreGetRefNames', trackId] as const,
@@ -77,16 +59,17 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
       // one status slot per assembly, so N concurrent reads aggregate into one
       // bar instead of the last writer winning
       const slot = createStatusFanOut(statusCallback)
+      // A `ReferenceSequenceTrack` config declares no `assemblyNames` slot: its
+      // assembly is the config node holding it, which `getConfAssemblyNames`
+      // walks to. It throws when a config has neither, and inside the fetcher
+      // that lands in the error banner rather than out of a render
       return Promise.all(
-        [...new Set(aboutAssemblyNames(config))].map(
+        [...new Set(getConfAssemblyNames(config))].map(
           async assemblyName =>
             [
               assemblyName,
               await rpcManager.call(trackId, 'CoreGetRefNames', {
-                adapterConfig: readConfSlot<Record<string, unknown>>(
-                  config,
-                  'adapter',
-                ),
+                adapterConfig: readConfObject(config, 'adapter'),
                 assemblyName,
                 signal,
                 statusCallback: slot(),

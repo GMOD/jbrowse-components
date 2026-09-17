@@ -5,8 +5,9 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import AssemblyInfoPanel from './AssemblyInfoPanel.tsx'
+import { makeTrackConf } from './aboutTestUtils.ts'
 
-import type { AboutConfig } from './util.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -84,7 +85,7 @@ function makeSession(assembly: FakeAssembly | undefined) {
 }
 
 function renderPanel(
-  config: AboutConfig,
+  config: AnyConfigurationModel,
   {
     hideUris = false,
     // null, not undefined: an omitted key defaults to the loaded assembly, so
@@ -129,11 +130,9 @@ test('omits an inline adapter payload but keeps the adapter itself', () => {
 })
 
 test('renders nothing for a track that is not an assembly sequence', () => {
-  const { queryByText } = renderPanel({
-    trackId: 't1',
-    type: 'AlignmentsTrack',
-    assemblyNames: ['volvox'],
-  })
+  const { queryByText } = renderPanel(
+    makeTrackConf({ trackId: 't1', assemblyNames: ['volvox'] }),
+  )
   expect(queryByText('Assembly')).toBeNull()
 })
 

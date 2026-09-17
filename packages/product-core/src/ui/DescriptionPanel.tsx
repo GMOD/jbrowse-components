@@ -1,4 +1,5 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorBanner, LoadingEllipses, SanitizedHTML } from '@jbrowse/core/ui'
 import { openLocation } from '@jbrowse/core/util/io'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -68,7 +69,7 @@ const DescriptionCard = observer(function DescriptionCard({
 const DescriptionPanel = observer(function DescriptionPanel({
   config,
 }: AboutPanelProps) {
-  const url = getDescriptionHtmlUrl(config)
+  const url = getDescriptionHtmlUrl(readConfObject(config, 'metadata'))
 
   return url ? <DescriptionCard url={url} /> : null
 })

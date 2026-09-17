@@ -361,9 +361,8 @@ matching yourself.
 
 `matchesTrackSelector` reads either the widget model these points carry or the
 track config the About points carry, so one call scopes a contribution to any of
-them — including [`Core-customizeAbout`](#core-customizeabout), which transforms
-a config and renders nothing. Anything the fields cannot express joins the same
-condition; the panel below adds `depth` to it.
+them. Anything the fields cannot express joins the same condition; the panel
+below adds `depth` to it.
 
 Don't reach for `matchTrackId` from `@jbrowse/core/util` — that one tests an id
 against patterns you supply, so the copy-track normalization is back to being
@@ -484,7 +483,6 @@ plugin before you put there.
 | --- | --- | --- | --- |
 | `Core-addTrackComponent` | sync |  | Inject a custom React component into the add-track widget |
 | `Core-addTrackComponentAdapterTypes` | sync | list | Adapter types whose add-track picker supplies the assembly |
-| `Core-customizeAbout` | sync | single | Transform the config shown in a track's About dialog |
 | `Core-extendPluggableElement` | sync | single | Mutate any pluggable element after it is created |
 | `Core-extendSession` | sync | single | Extend the session model with extra state or actions |
 | `Core-extendWorker` | sync | single | Take a booted RPC web worker: subscribe to the events it emits, post to it, or wrap its `call`. Fired once per booted worker, not per call |
@@ -699,33 +697,29 @@ type: synchronous
 Provide a different component for the "About this track" dialog.
 
 - `args` - a `ReactComponent`, by default the AboutTrack dialog
-- `props` - `AboutPanelProps`, shared by all three About points:
+- `props` - `AboutPanelProps`, shared by both About points. The dialog hydrates
+  the track config before either point fires, so `config` is always a live node:
 
 <!-- include: packages/product-core/src/ui/util.ts#aboutPanelProps -->
 
 ```typescript
-export type AboutConfig = AnyConfigurationModel | Record<string, unknown>
-
 export interface AboutPanelProps {
   session: AbstractSessionModel
-  config: AboutConfig
+  /** the track's config, hydrated by the dialog before any panel sees it */
+  config: AnyConfigurationModel
 }
 ```
 
-No in-tree plugin registers on any of the three: a track that wants to change
-its own About dialog sets the `formatAbout` config slot. These are the
-programmatic equivalent, for tracks you do not own.
+No in-tree plugin registers on either: a track that wants to change its own
+About dialog sets the `formatAbout` config slot. These are the programmatic
+equivalent, for tracks you do not own.
 
-All three are declared together — one accumulates an array, the other two thread
-a single value:
+Both are declared together — one accumulates an array, the other threads a
+single component:
 
 <!-- include: packages/product-core/src/ui/util.ts#aboutRegistry -->
 
 ```typescript
-// Augmentation lives here (not in the consuming components) because
-// AboutDialogContents imports from this module, so the registry entries are
-// visible wherever these points are evaluated — including getAboutDialogConfig
-// below, which then needs no cast on the Core-customizeAbout result.
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
     'Core-extraAboutPanel': ComponentList<AboutPanelProps>
@@ -733,14 +727,6 @@ declare module '@jbrowse/core/PluginManager' {
     // call site and the docs tag lives here at the contract
     /** #extensionPoint Core-replaceAbout | sync | Replace or wrap a track's About dialog body */
     'Core-replaceAbout': ComponentSlot<AboutPanelProps>
-    // data transform: mutate the config object shown in the dialog
-    'Core-customizeAbout': {
-      args: { config: Record<string, unknown> }
-      result: {
-        config: { metadata?: Record<string, unknown>; [key: string]: unknown }
-      }
-      props: AboutPanelProps
-    }
   }
 }
 ```
@@ -817,40 +803,6 @@ unconditionally lands on every track's About dialog.
 is how it says which tracks it is for, the same way a feature panel does — and
 it reads the track config these points carry rather than a widget model, so a
 `trackId` selector here also matches the user's copies of that track.
-
-### Core-customizeAbout
-
-type: synchronous
-
-Transform the config snapshot shown in the "About this track" dialog, after any
-`formatAbout` config has been applied.
-
-- `args` - an object of the form `{ config: Record<string, unknown> }`, the
-  track config snapshot with `formatAbout` already merged in
-- `props` - [`AboutPanelProps`](#core-replaceabout)
-
-Return value: an object of the same `{ config }` shape, with your modifications
-
-The dialog fires this for whatever track was opened, so returning a modified
-config unconditionally rewrites every track's. This point renders nothing, so
-there is no wrapper to scope — ask
-[`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for)
-and return `arg` untouched when the answer is no.
-
-Example: add a derived field to a particular track's about dialog
-
-<!-- include: packages/product-core/src/ui/aboutExtensionPoints.test.tsx#customizeAbout -->
-
-```typescript
-function addCustomizeAbout(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) =>
-    // every track-scoped point scopes itself with the same predicate
-    matchesTrackSelector({ trackId: 'volvox_sv_test' }, { config })
-      ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
-      : arg,
-  )
-}
-```
 
 ### Core-replaceWidget
 

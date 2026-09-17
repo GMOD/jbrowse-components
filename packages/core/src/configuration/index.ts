@@ -40,11 +40,7 @@ export {
   FormatDetailsConfigSchemaFactory,
 } from './formatDetailsConfigSchema.ts'
 export { mergeFormatCallbacks } from './mergeFormatCallbacks.ts'
-export {
-  readConfObject,
-  readConfSlot,
-  readConfigValue,
-} from './readConfObject.ts'
+export { readConfObject, readConfigValue } from './readConfObject.ts'
 export { getConf, setConf } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'
 export { expandTabixShorthand, tabixIndexSnapshot } from './tabixShorthand.ts'

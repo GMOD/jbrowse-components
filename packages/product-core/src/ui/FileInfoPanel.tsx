@@ -1,6 +1,6 @@
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { readConfSlot } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { statusProgressLabel } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
@@ -10,17 +10,12 @@ import type { AboutPanelProps } from './util.ts'
 
 type FileInfo = Record<string, unknown> | string
 
-// Inline `observer(function(){})`, not a bare declaration: this reads
-// observables (session.rpcManager, and config slots off what is usually a live
-// MST node), and babel-plugin-react-compiler compiles the bare form and can
-// memoize such a read into staleness. RefNameInfoDialog beside it is written
-// the same way; see the React Compiler x MobX note in CLAUDE.md
 const FileInfoPanel = observer(function FileInfoPanel({
   config,
   session,
 }: AboutPanelProps) {
   const { rpcManager } = session
-  const trackId = readConfSlot<string>(config, 'trackId')
+  const trackId = readConfObject(config, 'trackId') as string
 
   const {
     data: info,
@@ -34,7 +29,7 @@ const FileInfoPanel = observer(function FileInfoPanel({
     // dialog stops it, and the wait says what it is
     async (_name, _trackId, signal, statusCallback) =>
       (await rpcManager.call(trackId, 'CoreGetInfo', {
-        adapterConfig: readConfSlot<Record<string, unknown>>(config, 'adapter'),
+        adapterConfig: readConfObject(config, 'adapter'),
         signal,
         statusCallback,
       })) as FileInfo,
