@@ -51,6 +51,7 @@ function step({
   labelDy = 0,
   badgeSide = 'left',
   maxWidth,
+  box = true,
 }: {
   n: number
   anchor: AnnotationAnchor
@@ -63,6 +64,9 @@ function step({
   // launch link, where the badge would otherwise cover the genome name).
   badgeSide?: 'left' | 'right'
   maxWidth?: number
+  // the outline around the control, which a label pinned beside it can do
+  // without
+  box?: boolean
 }): Annotation[] {
   const badge: Annotation = {
     type: 'circle',
@@ -73,9 +77,11 @@ function step({
     anchor: { ...anchor, alignX: badgeSide },
     dx: badgeSide === 'left' ? -24 : 24,
   }
-  const box: Annotation = { type: 'box', strokeWidth: 3, anchor }
+  const outline: Annotation[] = box
+    ? [{ type: 'box', strokeWidth: 3, anchor }]
+    : []
   if (!label) {
-    return [box, badge]
+    return [...outline, badge]
   }
   // a text pill's y is its first baseline, so nudge it down by about half a
   // cap height to sit level with the control it labels
@@ -101,7 +107,7 @@ function step({
         : 0
   const dy = labelSide === 'below' ? 30 : labelSide === 'above' ? -18 : 7
   return [
-    box,
+    ...outline,
     badge,
     {
       type: 'text',
@@ -126,6 +132,7 @@ export const PROCEDURES: Record<string, Procedure> = {
           n: 1,
           anchor: { text: 'Open new genome' },
           label: 'Start here for a genome of your own',
+          box: false,
         }),
       },
       {
@@ -149,6 +156,7 @@ export const PROCEDURES: Record<string, Procedure> = {
             // Pushed clear of "Open genome(s)".
             labelDx: 190,
             maxWidth: 320,
+            box: false,
           }),
           // NO CALLOUT ON "Open from a URL", which is where the frame's third
           // and fourth red rectangles used to be (reviewer: "too many red boxes
