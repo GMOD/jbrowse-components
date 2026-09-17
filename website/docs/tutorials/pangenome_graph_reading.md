@@ -131,13 +131,14 @@ reference, one at a time, off the same drawing.
 
 ## Every haplotype's copies at once
 
-The number of kringle IV-2 copies a haplotype carries largely sets its level of
-lipoprotein(a), a heritable risk factor for heart disease, and short reads
-cannot count them. Picking walks one at a time answers that for one haplotype.
-Pick **Walk rows** in the **Layout** dropdown instead: each haplotype's walk
-becomes a bar on its own bp axis, blue where GRCh38 carries the same sequence
-and purple where it does not, longest first, so the copies each haplotype adds
-read as the length of its purple stretch.
+How many kringle IV-2 copies a haplotype carries is inversely related to its
+level of lipoprotein(a), a heritable risk factor for heart disease (Schmidt et
+al. 2016), so the count is the quantity to read off this locus. Picking walks
+one at a time answers that for one haplotype. Pick **Walk rows** in the
+**Layout** dropdown instead: each haplotype's walk becomes a bar on its own bp
+axis, blue where GRCh38 carries the same sequence and purple where it does not,
+longest first, so the copies each haplotype adds read as the length of its
+purple stretch.
 
 <Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, with the linear lanes of the same window above. The purple stretch of each bar is kringle copies GRCh38 does not carry, and the readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
@@ -168,6 +169,9 @@ through the rGFA here.
 
 - Liao WW, Asri M, Ebler J, et al. A draft human pangenome reference. Nature.
   2023;617(7960):312-324. https://doi.org/10.1038/s41586-023-05896-x
+- Schmidt K, Noureen A, Kronenberg F, Utermann G. Structure, function, and
+  genetics of lipoprotein(a). J Lipid Res. 2016;57(8):1339-1359.
+  https://doi.org/10.1194/jlr.R067314
 - Wick RR, Schultz MB, Zobel J, Holt KE. Bandage: interactive visualization of
   de novo genome assemblies. Bioinformatics. 2015;31(20):3350-3352.
   https://doi.org/10.1093/bioinformatics/btv383
