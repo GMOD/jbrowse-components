@@ -14,9 +14,8 @@ breeds beside yak, bison and gaur, so a locus that varies here varies across
 most of the genus.
 
 Each of those assemblies walks the graph as a named path, and `vg deconstruct`
-turns those paths into a VCF. The same locus then reads twice: as a graph
-showing where sequence is present and absent, and as a callset naming who
-carries it.
+turns those paths into a VCF. The same locus then reads as a graph showing where
+sequence is present and absent, and as a callset naming who carries it.
 
 We serve the graph as the same rGFA projections the
 [HPRC pangenome page](/docs/tutorials/pangenome_hprc/) opens, so the tracks, the
@@ -107,10 +106,10 @@ reports a tangled window.
 :::
 
 BoLA came out of the same ranking the
-[mouse page](/docs/tutorials/pangenome_mouse#finding-the-loci) describes: rank
-the coarse tier by segments per bubble, then name each entry off the reference
-annotation. It is the densest stretch of chr23 in the figure above, and the
-ranking found it without a curated list.
+[mouse page](/docs/tutorials/pangenome_mouse#finding-the-loci) describes, which
+ranks the coarse tier by segments per bubble and then names each entry off the
+reference annotation. It is the densest stretch of chr23 in the figure above,
+and the ranking found it without a curated list.
 
 ## Build it yourself
 
