@@ -45,7 +45,7 @@ track writes out what you set in the app.
 
 ## A complete config
 
-The same file with the settings people usually reach for: a track of each common
+A config.json with the settings people usually reach for: a track of each common
 type, a [`defaultSession`](/docs/config_guides/default_session) to open on load,
 and a theme. Every recipe below changes one piece of it.
 

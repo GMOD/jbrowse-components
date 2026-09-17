@@ -197,10 +197,11 @@ Both tutorials that build these files check the ids before loading anything:
 
 ### PanSN depth: sample or haplotype
 
-The two multi-genome adapters match a JBrowse assembly to PAF records by the
-PanSN prefix on each sequence name, assuming the assembly name is the sample
-name. Where the two differ, `assemblyNameToPanSN` maps one to the other, and the
-prefix may name a whole sample (`grape`) or a single haplotype (`grape#1`):
+`MultiGenomePafAdapter` and `MultiGenomeIndexedPafAdapter` match a JBrowse
+assembly to PAF records by the PanSN prefix on each sequence name, assuming the
+assembly name is the sample name. Where the two differ, `assemblyNameToPanSN`
+maps one to the other, and the prefix may name a whole sample (`grape`) or a
+single haplotype (`grape#1`):
 
 ```json addtrack
 {

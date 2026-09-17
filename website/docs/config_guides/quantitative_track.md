@@ -64,8 +64,8 @@ without a conversion to bedGraph:
 }
 ```
 
-The same track offers the Manhattan plot under the track menu's **Display
-types**; the
+This FeatureTrack also offers the Manhattan plot under the track menu's
+**Display types**; the
 [GWAS track guide](/docs/config_guides/gwas_track#any-scored-feature-file)
 covers it.
 

@@ -182,7 +182,7 @@ export type TrackInit =
 
 ## Where the view object goes
 
-The same object serves every launch route unchanged:
+The view object serves every launch route unchanged:
 
 - **A config file**, as `defaultSession`:
 
@@ -249,7 +249,7 @@ snapshot's display node where only a state-model property is read.
 
 ## Drawing the document as a static image
 
-The same document renders headlessly. `jb2export`, from
+The config document renders headlessly. `jb2export`, from
 [@jbrowse/img](/docs/jbrowse-img), takes the same config, assembly, location and
 tracks and writes SVG, PNG or PDF:
 

@@ -1141,9 +1141,9 @@ button's "Plaintext JSON" option: the longest format, and the one to read.
 
 ### &session=encoded-
 
-The same snapshot as base64 plus gzip, the Share button's "Long URL" option. It
-works without the session-sharing server, and because it is long the Share
-button puts it [in the fragment](#query-string-or-hash-fragment).
+The same JSON snapshot as base64 plus gzip, the Share button's "Long URL"
+option. It works without the session-sharing server, and because it is long the
+Share button puts it [in the fragment](#query-string-or-hash-fragment).
 
 ```
 https://jbrowse.org/code/jb2/latest/#session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6Ndfj...

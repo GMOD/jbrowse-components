@@ -81,7 +81,7 @@ that ClinVar is over its fetch-size gate at a whole-gene zoom:
 }
 ```
 
-That track draws once the view is zoomed in. A read over the same span is
+The ClinVar track draws once the view is zoomed in. A read over the same span is
 refused the same way; the next recipe narrows the region to work around it.
 
 ## Tabulate what is on screen
@@ -128,9 +128,9 @@ return {
   `gene_id` with no `Name`, so `name` is `null` on every gene there and `id` is
   the symbol.
 
-The same shape over ClinVar on the hosted hg38 config, where the field is the
-clinical significance. The whole BRCA1 view is over the read's byte gate, so
-`loc` narrows it to the gene's last exons:
+The same tabulate-in-code pattern works over ClinVar on the hosted hg38 config,
+counting by clinical significance instead. The whole BRCA1 view is over the
+read's byte gate, so `loc` narrows it to the gene's last exons:
 
 ```js
 const feats = await jb.getFeatures({

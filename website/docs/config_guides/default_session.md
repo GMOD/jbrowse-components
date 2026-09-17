@@ -77,8 +77,8 @@ reader switches without a link:
 }
 ```
 
-The same `trackId` rule applies: a session naming a track outside the top-level
-`tracks` array opens without it.
+A `preConfiguredSessions` entry naming a track outside the top-level `tracks`
+array opens without it, the same rule as `defaultSession`.
 
 ## See also
 
