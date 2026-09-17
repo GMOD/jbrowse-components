@@ -13,6 +13,8 @@ export type {
   ConfigModelForFields,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
+  ConfigurationSlotPath,
+  ConfigurationSlotPathValue,
   ConfigurationSlotValue,
   ConfigurationSnapshot,
   HostChecksSlotNames,

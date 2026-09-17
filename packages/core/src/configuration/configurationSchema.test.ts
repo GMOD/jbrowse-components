@@ -1370,6 +1370,7 @@ describe('readConfObject path resolution', () => {
       a: { type: 'number', defaultValue: 1 },
     })
     const node = schema.create(undefined, { pluginManager })
+    // @ts-expect-error -- 'missing' is not a sub-schema of this config
     expect(readConfObject(node, ['missing', 'deeper'])).toBeUndefined()
   })
 

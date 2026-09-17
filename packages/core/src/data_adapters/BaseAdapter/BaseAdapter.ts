@@ -9,6 +9,8 @@ import type {
   AnyConfigurationModel,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
+  ConfigurationSlotPath,
+  ConfigurationSlotPathValue,
   ConfigurationSlotValue,
 } from '../../configuration/index.ts'
 import type { getSubAdapterType } from '../dataAdapterCache.ts'
@@ -59,15 +61,16 @@ export class BaseAdapter<
 
   /** shorthand for `readConfObject(this.config, arg)` */
   getConf<
-    SLOT extends
+    const SLOT extends
       | ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>
-      | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>,
+      | ConfigurationSlotPath<ConfigurationSchemaForModel<CONF>> =
+      ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>,
   >(
     arg: SLOT,
     args?: Record<string, unknown>,
   ): SLOT extends string
     ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
-    : any {
+    : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONF>, SLOT> {
     return readConfObject(this.config, arg, args)
   }
 }

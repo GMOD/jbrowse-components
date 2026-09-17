@@ -5,6 +5,8 @@ import type {
   AnyConfigurationSnapshot,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
+  ConfigurationSlotPath,
+  ConfigurationSlotPathValue,
   ConfigurationSlotValue,
 } from './types.ts'
 
@@ -38,16 +40,17 @@ export function getConf(model: {
 }): AnyConfigurationSnapshot
 export function getConf<
   CONFMODEL extends AnyConfigurationModel,
-  SLOT extends
+  const SLOT extends
     | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
-    | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+    | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   model: { configuration: CONFMODEL },
   slotPath: SLOT,
   args?: Record<string, unknown>,
 ): SLOT extends string
   ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
-  : any
+  : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
 export function getConf(
   model: { configuration: AnyConfigurationModel },
   slotPath?: string | string[],

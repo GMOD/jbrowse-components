@@ -1,4 +1,5 @@
 import type { FileLocation } from '../util/types/index.ts'
+import type { IsAny } from '../util/types/isAny.ts'
 import type {
   ConfigurationSchemaDefinition,
   ConfigurationSchemaOptions,
@@ -6,6 +7,7 @@ import type {
 } from './configurationSchema.ts'
 import type { BuiltinSlotTypeName } from './configurationSlot.ts'
 import type {
+  IAnyType,
   ISimpleType,
   IStateTreeNode,
   Instance,
@@ -208,6 +210,62 @@ type SlotValueRawFromDef<DEF> = DEF extends AnyConfigurationSchemaType
               ? number
               : any
         : any
+
+type SubSchemaOf<SCHEMA, K> =
+  SCHEMA extends ConfigurationSchemaType<infer D, any>
+    ? K extends keyof D
+      ? D[K]
+      : GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
+        ? SubSchemaOf<GetBase<SCHEMA>, K>
+        : never
+    : never
+
+type SubSchemaSlotPath<SCHEMA> =
+  SCHEMA extends ConfigurationSchemaType<infer D, any>
+    ? IsAny<D> extends true
+      ? readonly string[]
+      :
+          | {
+              [K in keyof D & string]: D[K] extends AnyConfigurationSchemaType
+                ?
+                    | readonly [K, ConfigurationSlotName<D[K]>]
+                    | readonly [K, ...SubSchemaSlotPath<D[K]>]
+                : D[K] extends IAnyType | { type: 'frozen' | 'maybeFrozen' }
+                  ? readonly [K, ...string[]]
+                  : never
+            }[keyof D & string]
+          | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
+              ? SubSchemaSlotPath<GetBase<SCHEMA>>
+              : never)
+    : readonly string[]
+
+/**
+ * The array paths a read may take into `SCHEMA`. Past one segment each is
+ * checked: a sub-schema's name, then one of its slot names or a deeper path. A
+ * head naming something other than a sub-schema — a pluggable adapter union, an
+ * array or map of sub-schemas, a `frozen` slot — keeps an unchecked tail, and a
+ * widened schema admits any `string[]`.
+ *
+ * A one-segment path stays unchecked: it is how a generic class body, where
+ * `SCHEMA` is unresolved, reads a slot at all (`FastaAdapterBase`).
+ */
+export type ConfigurationSlotPath<SCHEMA> =
+  | readonly []
+  | readonly [string]
+  | SubSchemaSlotPath<SCHEMA>
+
+/** what a read of `PATH` into `SCHEMA` yields */
+export type ConfigurationSlotPathValue<SCHEMA, PATH> = PATH extends readonly [
+  infer HEAD,
+  ...infer REST,
+]
+  ? SubSchemaOf<SCHEMA, HEAD> extends infer SUB extends
+      AnyConfigurationSchemaType
+    ? REST extends readonly [infer SLOT extends string]
+      ? ConfigurationSlotValue<SUB, SLOT>
+      : ConfigurationSlotPathValue<SUB, REST>
+    : any
+  : any
 
 /** what a raw read (`getConf` / `readConfObject`) of this slot yields */
 export type ConfigurationSlotValue<SCHEMA, K extends string> =

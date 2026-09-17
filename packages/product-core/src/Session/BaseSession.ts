@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { setNumberGrouping } from '@jbrowse/core/util'
 import { freezeDeep } from '@jbrowse/core/util/freezeDeep'
@@ -195,7 +195,8 @@ export function BaseSessionModel<
        * `defaultUseWorkspaces`).
        */
       getPreferenceDefault(key: string): unknown {
-        return getConf(self, ['preferences', key])
+        const { preferences } = self.configuration
+        return preferences ? readConfObject(preferences, key) : undefined
       },
       /**
        * #method

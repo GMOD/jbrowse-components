@@ -13,6 +13,7 @@ import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
+  ConfigModelForFields,
   ConfigurationSnapshot,
   HostChecksSlotNames,
 } from './types.ts'
@@ -241,6 +242,83 @@ describe('getConf slot-value type narrowing', () => {
     }
     void check
     expect(true).toBe(true)
+  })
+
+  describe('a sub-schema path read', () => {
+    const facetSchema = ConfigurationSchema('ConfigNarrowingPathFacet', {
+      field: { type: 'string', defaultValue: 'population' },
+      domain: { type: 'stringArray', defaultValue: [] },
+      inner: ConfigurationSchema('ConfigNarrowingPathInner', {
+        size: { type: 'number', defaultValue: 3 },
+      }),
+    })
+    const pathBase = ConfigurationSchema('ConfigNarrowingPathBase', {
+      inherited: facetSchema,
+    })
+    const pathSchema = ConfigurationSchema(
+      'ConfigNarrowingPath',
+      {
+        facet: facetSchema,
+        blob: { type: 'frozen', defaultValue: { present: 1 } },
+      },
+      { baseConfiguration: pathBase },
+    )
+    const PathContainer = types.model('ConfigNarrowingPathContainer', {
+      configuration: ConfigurationReference(pathSchema),
+    })
+
+    test('types the slot at the end of the path', () => {
+      const model = PathContainer.create(
+        { configuration: {} },
+        { pluginManager },
+      )
+      const field = getConf(model, ['facet', 'field'])
+      const domain = readConfObject(model.configuration, ['facet', 'domain'])
+      const size = getConf(model, ['facet', 'inner', 'size'])
+      const inherited = getConf(model, ['inherited', 'field'])
+
+      assertType<Equal<typeof field, string>>()
+      assertType<Equal<typeof domain, string[]>>()
+      assertType<Equal<typeof size, number>>()
+      assertType<Equal<typeof inherited, string>>()
+
+      expect(field).toBe('population')
+      expect(domain).toEqual([])
+      expect(size).toBe(3)
+      expect(inherited).toBe('population')
+    })
+
+    test('an unknown segment is a compile error', () => {
+      const check = (model: Instance<typeof PathContainer>) => {
+        // @ts-expect-error -- 'fields' is not a slot on the facet sub-schema
+        getConf(model, ['facet', 'fields'])
+        // @ts-expect-error -- 'facets' is not a sub-schema
+        readConfObject(model.configuration, ['facets', 'field'])
+        // @ts-expect-error -- 'sizes' is not a slot on the inner sub-schema
+        getConf(model, ['facet', 'inner', 'sizes'])
+        // a frozen slot's JSON is not the schema's to check
+        getConf(model, ['blob', 'present'])
+      }
+      void check
+      expect(true).toBe(true)
+    })
+
+    test('a mixin host naming its field table checks the path too', () => {
+      const fields = { facet: facetSchema }
+      const check = (
+        host: { configuration: ConfigModelForFields<typeof fields> },
+        widened: { configuration: AnyConfigurationModel },
+      ) => {
+        const field = getConf(host, ['facet', 'field'])
+        assertType<Equal<typeof field, string>>()
+        // @ts-expect-error -- 'fields' is not a slot on the facet sub-schema
+        getConf(host, ['facet', 'fields'])
+        // the widened host checks nothing, as it does for a slot name
+        getConf(widened, ['facet', 'fields'])
+      }
+      void check
+      expect(true).toBe(true)
+    })
   })
 
   // `ConfigurationSnapshot` is what an embedder's `configuration` option is

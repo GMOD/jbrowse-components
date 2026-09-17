@@ -23,6 +23,8 @@ import type {
   AnyConfigurationSnapshot,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
+  ConfigurationSlotPath,
+  ConfigurationSlotPathValue,
   ConfigurationSlotValue,
 } from './types.ts'
 import type { IMSTMap } from '@jbrowse/mobx-state-tree'
@@ -134,16 +136,17 @@ export function readConfObject(
 ): AnyConfigurationSnapshot
 export function readConfObject<
   CONFMODEL extends AnyConfigurationModel,
-  SLOT extends
+  const SLOT extends
     | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
-    | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+    | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   confObject: CONFMODEL,
   slotPath?: SLOT,
   args?: Record<string, unknown>,
 ): SLOT extends string
   ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
-  : any
+  : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
 // A top-level types.map of sub-schemas (e.g. an assembly's per-key configs)
 // carries no resolvable schema type, so slot names/values aren't checked
 // (returns any); rawSlotValue falls back to map.get() for these. Deliberately

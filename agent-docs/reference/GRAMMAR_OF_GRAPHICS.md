@@ -309,14 +309,18 @@ into the key less the hidden sections.
 The facet replaced a `frozen` `groupBy` slot,
 `{ type: 'strand' | 'attribute', attribute, domain }`, that the spec translated
 to and from; alignments keeps its `groupBy`, whose dimensions are not fields.
-Flat, because `getConf` name-checks and types a top-level slot: the frozen one
-read as `any` and needed a normalizer to stop a malformed value, and a nested
-slot read is a `string[]` path `getConf` neither name-checks nor types. Two
-proposals were declined in review: filter shorthands such as
-`{ field, oneOf }` (jexl is the filter language, and reading structure back out
-of jexl is the fragile half); and the color as a `{ value, field, scale,
-domain, palette }` sub-schema shaped like the mark display's, for the same
-nested read, which the worker also walked per box.
+Flat, and the multi-sample variant displays' row facet went flat the same way:
+the frozen slot read as `any` and needed a normalizer to stop a malformed value,
+and a sub-schema is not carried across a display-type switch the way a
+top-level slot is and needs `liftField` for its string shorthand. A sub-schema
+read no longer costs its typing: `getConf` and `readConfObject` check a
+`['facet', 'field']` path segment by segment and type its value
+(`ConfigurationSlotPath`), measured at +0.6% instantiations. The mark display
+keeps its sub-schemas, because a mark list repeats them. Two proposals were
+declined in review: filter shorthands such as `{ field, oneOf }` (jexl is the
+filter language, and reading structure back out of jexl is the fragile half);
+and the color as a `{ value, field, scale, domain, palette }` sub-schema shaped
+like the mark display's, for the same reasons as the facet.
 
 The multi-row display's `partitionField` is the same partition with one fixed
 row per value and no chip. What the mark display does not take is the
