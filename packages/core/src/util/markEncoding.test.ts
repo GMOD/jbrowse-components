@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { categoricalPalette, categoricalValueColor } from '../ui/colors.ts'
+import { NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR } from './colorBits.ts'
 import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
@@ -126,12 +127,12 @@ test('an unpinned categorical scale colours by value, so two regions agree, and 
       { label: 'gene', color: of('gene') },
       {
         label: NO_VALUE_LABEL,
-        color: cssColorToABGR('#808080'),
+        color: cssColorToABGR(NO_CATEGORY_COLOR),
         missing: true,
       },
     ],
   })
-  expect(other.color[1]).toBe(cssColorToABGR('#808080'))
+  expect(other.color[1]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
 })
 
 test('a categorical domain pins the order, a palette the colours, and numbers sort numerically', () => {
@@ -247,7 +248,9 @@ test('a ramp scale reads the field through its domain into the LUT', () => {
   expect(r.color[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
   // a feature with no value paints the fallback and stays in the payload
   expect(r.count).toBe(5)
+  // the misconfiguration grey, which is not the no-category grey beside it
   expect(r.color[3]).toBe(cssColorToABGR('#808080'))
+  expect(r.color[3]).not.toBe(cssColorToABGR(NO_CATEGORY_COLOR))
 })
 
 test('a pinned ramp domain wins over the region extremes', () => {

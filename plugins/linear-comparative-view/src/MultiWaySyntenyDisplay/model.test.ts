@@ -1,6 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/groupKeys'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
@@ -1464,7 +1465,7 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
   const ribbons = display.colorScales.find(scale => scale.id === 'ribbons')
   expect(
     ribbons?.kind === 'categorical' ? ribbons.entries.map(e => e.label) : [],
-  ).toEqual(['C1', 'A1a', 'B1'])
+  ).toEqual(['C1', 'A1a', 'B1', NO_VALUE_LABEL])
 })
 
 test('identity ribbons key their ramp only when a record carries an identity', () => {

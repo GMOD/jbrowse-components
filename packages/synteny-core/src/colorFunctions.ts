@@ -1,4 +1,5 @@
 import { refNameColor, refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import {
   cssColorToABGR,
   packAbgr,
@@ -48,9 +49,9 @@ export const MISSING_VALUE_COLOR = cssColorToABGR(
   colorSchemes.default.cigarColors.M,
 )
 
-// a row a text column leaves unlabelled is "in no group", not "no data", and
-// recedes so the labelled rows carry the picture
-export const UNLABELLED_COLOR = cssColorToABGR('#c8c8c8')
+// a row a text column leaves unlabelled is "in no group", not "no data", so it
+// takes the one grey every categorical channel paints a value-less feature
+export const UNLABELLED_COLOR = cssColorToABGR(NO_CATEGORY_COLOR)
 const HIDDEN_UNLABELLED_COLOR = withAbgrAlpha(UNLABELLED_COLOR, 0)
 
 const STRAND_POS = cssColorToABGR(colorSchemes.strand.posColor)

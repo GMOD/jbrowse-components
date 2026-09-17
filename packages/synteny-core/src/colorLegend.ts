@@ -1,3 +1,5 @@
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/groupKeys'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 
 import { bandGroundColor } from './bandGround.ts'
@@ -57,6 +59,9 @@ export interface ColorChip {
   // painting an identity ramp while a sibling paints flat, say
   color?: string
   label: string
+  // the row naming the rows the column left unlabelled, which a key places
+  // after the labels whatever orders them
+  missing?: boolean
 }
 
 // Bitmask over the CIGAR indel ops actually painted in the current geometry —
@@ -160,6 +165,7 @@ export function getColorBySwatch(
     cigarOps = DEFAULT_CIGAR_OPS,
     trackChips,
     attributeRanges,
+    hideUnlabelled = false,
   }: {
     pointBased?: boolean
     cigarOps?: CigarOpMask
@@ -170,6 +176,8 @@ export function getColorBySwatch(
     // observed span per attribute, which is the domain an `attribute:<name>`
     // mode scales to and therefore what its ramp has to be labelled with
     attributeRanges?: Record<string, AttributeRange>
+    // the unlabelled rows draw at zero alpha, so the key names no grey
+    hideUnlabelled?: boolean
   } = {},
 ): ColorBySwatchSpec | undefined {
   // dotplot paints flat points and never draws CIGAR ops
@@ -199,6 +207,19 @@ export function getColorBySwatch(
           label,
         })),
         ...(rest > 0 ? [{ label: `+${rest} more` }] : []),
+        // The grey the column's unlabelled rows paint. Named unconditionally,
+        // like every other label here: this key describes the declared
+        // vocabulary rather than the rows in view, and the mode that draws no
+        // grey is the one that hides those rows.
+        ...(hideUnlabelled
+          ? []
+          : [
+              {
+                color: NO_CATEGORY_COLOR,
+                label: NO_VALUE_LABEL,
+                missing: true,
+              },
+            ]),
       ],
     }
   }
@@ -271,13 +292,14 @@ export function colorByScale(
     id: colorBy,
     title,
     entries: swatch
-      ? swatch.chips.map(({ color, label }) => ({
+      ? swatch.chips.map(({ color, label, missing }) => ({
           value: label,
           label,
           color:
             color === undefined
               ? undefined
               : legendChipColor(color, alpha, ground),
+          ...(missing ? { missing } : {}),
         }))
       : [{ value: 'note', label: colorByFallbackNote(colorBy) }],
   }

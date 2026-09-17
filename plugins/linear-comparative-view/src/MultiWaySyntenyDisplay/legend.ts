@@ -1,9 +1,8 @@
-import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import {
-  categoricalColor,
   colorByScale,
   colorByShortLabel,
   colorSchemes,
+  getColorBySwatch,
   resolveCategoricalMode,
   resolveContinuousMode,
 } from '@jbrowse/synteny-core'
@@ -12,11 +11,7 @@ import type { Span } from './layoutMultiWay.ts'
 import type { GlyphHit } from './multiwayRenderTypes.ts'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
-import type {
-  AttributeRange,
-  CategoricalMode,
-  SyntenyColorBy,
-} from '@jbrowse/synteny-core'
+import type { AttributeRange, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 /**
  * The key for the colors one lane draws, over the hits that lane packed: one
@@ -69,13 +64,16 @@ export function laneColorKey(
 }
 
 /**
- * What the ribbons' own colors mean as rows: a fixed pair in `strand` mode, one
- * row per label in a text column's mode, and nothing otherwise, since `default`
- * paints one color and a measurement a ramp (`ribbonColorScale`).
+ * What the ribbons' own colors mean as rows: a fixed pair in `strand` mode,
+ * whose names are lane-relative and so this display's own; a text column's
+ * mode through the one categorical swatch builder the synteny key reads,
+ * including the row naming its unlabelled grey; and nothing otherwise, since
+ * `default` paints one color and a measurement a ramp (`ribbonColorScale`).
  */
 export function ribbonColorKey(
   colorBy: SyntenyColorBy,
-  labels?: CategoricalMode,
+  attributeRanges: Record<string, AttributeRange> = {},
+  hideUnlabelled = false,
 ): CategoricalEntry[] {
   if (colorBy === 'strand') {
     return [
@@ -91,19 +89,18 @@ export function ribbonColorKey(
       },
     ]
   }
-  if (labels) {
-    const shown = labels.labels.slice(0, MAX_LEGEND_ENTRIES)
-    const rest = labels.labels.length - shown.length
-    return [
-      ...shown.map(label => ({
-        value: label,
-        label,
-        color: categoricalColor(labels, label),
-      })),
-      ...(rest > 0 ? [{ value: '', label: `+${rest} more` }] : []),
-    ]
+  if (!resolveCategoricalMode(colorBy, attributeRanges)) {
+    return []
   }
-  return []
+  const swatch = getColorBySwatch(colorBy, { attributeRanges, hideUnlabelled })
+  return swatch?.kind === 'chips'
+    ? swatch.chips.map(({ color, label, missing }) => ({
+        value: color === undefined ? '' : label,
+        label,
+        color,
+        ...(missing ? { missing } : {}),
+      }))
+    : []
 }
 
 /**
@@ -115,6 +112,7 @@ export function ribbonColorScale(
   colorBy: SyntenyColorBy,
   attributeRanges: Record<string, AttributeRange>,
   domain?: string[],
+  hideUnlabelled = false,
 ): ColorScale {
   const continuous = resolveContinuousMode(colorBy, attributeRanges)
   if (continuous && continuous.attribute in attributeRanges) {
@@ -130,7 +128,7 @@ export function ribbonColorScale(
     kind: 'categorical',
     id: 'ribbons',
     title: 'Ribbon colors',
-    entries: ribbonColorKey(colorBy, labels),
+    entries: ribbonColorKey(colorBy, attributeRanges, hideUnlabelled),
     // strand's pair is fixed and means what it is drawn in, so only the
     // label rows take a declared order
     domain: labels ? domain : undefined,

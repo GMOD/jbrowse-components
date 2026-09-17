@@ -1,3 +1,6 @@
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/groupKeys'
+
 import {
   CIGAR_OP_D,
   CIGAR_OP_I,
@@ -111,7 +114,8 @@ test('the fallback note names what the mode is actually doing', () => {
 })
 
 // A text column keys one chip per label, the file color where the file gave
-// one, and past the readable cap it says how many it left out.
+// one, the grey its unlabelled rows paint last, and past the readable cap it
+// says how many labels it left out.
 test('a categorical attribute lists a chip per label', () => {
   const swatch = getColorBySwatch('attribute:group', {
     attributeRanges: {
@@ -120,7 +124,16 @@ test('a categorical attribute lists a chip per label', () => {
   })
   expect(swatch?.kind).toBe('chips')
   if (swatch?.kind === 'chips') {
-    expect(swatch.chips.map(c => c.label)).toEqual(['B1', 'A1a'])
+    expect(swatch.chips.map(c => c.label)).toEqual([
+      'B1',
+      'A1a',
+      NO_VALUE_LABEL,
+    ])
+    expect(swatch.chips.at(-1)).toEqual({
+      color: NO_CATEGORY_COLOR,
+      label: NO_VALUE_LABEL,
+      missing: true,
+    })
     expect(swatch.chips[1]!.color).toBe('#4DB5E3')
     expect(swatch.chips[0]!.color).toBeDefined()
   }
@@ -133,8 +146,9 @@ test('a categorical attribute lists a chip per label', () => {
     },
   })
   if (many?.kind === 'chips') {
-    expect(many.chips.length).toBe(31)
+    expect(many.chips.length).toBe(32)
     expect(many.chips[30]).toEqual({ label: '+5 more' })
+    expect(many.chips[31]!.label).toBe(NO_VALUE_LABEL)
   }
 })
 

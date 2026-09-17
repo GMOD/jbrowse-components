@@ -5,6 +5,7 @@ import {
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { categoricalColorScale, categoricalScale } from '../ui/colors.ts'
+import { NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
 import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
@@ -68,10 +69,15 @@ export { NO_VALUE_LABEL } from './groupKeys.ts'
 
 export const DEFAULT_MARK_COLOR = '#0068d1'
 
-// What a feature paints when its colour field is missing or a `jexl:` colour
-// yields a non-string: visible, so a misconfiguration surfaces rather than
-// vanishing.
+// What a feature paints when a `jexl:` colour yields a non-string or a ramp
+// reads a value that is not finite: a misconfiguration, so it surfaces rather
+// than vanishing, and darker than the no-category grey beside it.
 const FALLBACK_COLOR = cssColorToABGR('#808080')
+
+// A feature with nothing in a categorical field is not a misconfiguration, so
+// it paints what every categorical channel in the tree paints a value-less
+// feature.
+const NO_CATEGORY = cssColorToABGR(NO_CATEGORY_COLOR)
 
 /**
  * #api
@@ -376,7 +382,7 @@ export function encodeFeatures<L extends LaneName>(
     const { indexOf } = colorCategories
     for (let i = 0; i < count; i++) {
       const index = indexOf[i]!
-      color[i] = index < 0 ? FALLBACK_COLOR : ofIndex[index]!
+      color[i] = index < 0 ? NO_CATEGORY : ofIndex[index]!
     }
     scale = {
       kind: 'categorical',
@@ -384,7 +390,7 @@ export function encodeFeatures<L extends LaneName>(
       entries: [
         ...entries.map(e => ({ label: e.label, color: e.value })),
         ...(hasMissing(indexOf, count)
-          ? [{ label: NO_VALUE_LABEL, color: FALLBACK_COLOR, missing: true }]
+          ? [{ label: NO_VALUE_LABEL, color: NO_CATEGORY, missing: true }]
           : []),
       ],
     }

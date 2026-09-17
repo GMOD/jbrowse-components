@@ -361,6 +361,7 @@ export function TrackColorsMixin() {
           trackChips: self.colorLegendChips,
           attributeRanges: self.attributeRanges,
           alpha: self.legendAlpha(),
+          hideUnlabelled: self.hideUnlabelled,
         })
         // only a text column's rows are the reader's to order; a track
         // palette and a ramp key what they key

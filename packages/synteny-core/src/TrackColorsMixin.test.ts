@@ -1,3 +1,5 @@
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/groupKeys'
+
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
 
 import type { AttributeRange } from './colorRamps.ts'
@@ -149,7 +151,7 @@ describe('a categorical column', () => {
     })
     view.setColorDomain(['C1'])
     expect(view.legendSpec.sections![0]!.items.map(item => item.label)).toEqual(
-      ['C1', 'A1a', 'B1'],
+      ['C1', 'A1a', 'B1', NO_VALUE_LABEL],
     )
 
     view.setColorBy('track')

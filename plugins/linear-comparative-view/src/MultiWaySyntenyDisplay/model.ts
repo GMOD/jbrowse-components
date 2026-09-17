@@ -1616,6 +1616,7 @@ export function stateModelFactory(
             self.ribbonColorBy,
             self.ribbonAttributeRanges,
             self.ribbonColorDomain,
+            self.hideUnlabelled,
           ),
         ]
         return scales.filter(scale => !colorScaleIsEmpty(scale))
