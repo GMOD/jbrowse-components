@@ -1934,6 +1934,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         },
         {
           type: 'GraphGenomeView',
+          showDeletionEdges: true,
           // Kept short enough not to truncate: the pane title ellipsised at
           // "...by which strain ...", which reads as a bug rather than as a
           // title. The path legend beside the drawing names the strains, so the

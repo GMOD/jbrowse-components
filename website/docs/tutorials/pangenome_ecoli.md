@@ -847,9 +847,9 @@ rGFA it means build order, from minigraph's `SR`.
 This layout needs a narrower window, a few hundred bp, since each segment is
 read individually. A row's bar is drawn over the **reference it replaces**,
 never over its own sequence length, so the tooltip gives an insertion's length.
-That is why CFT073's row draws one long bar labelled `7 kb deletion` running off
-the left edge: its segment is 75 bp on CFT073's own contig, and its two links
-land on `K12:1,004,667` inside the window and on `K12:997,574` 7.1 kb upstream.
+That is why CFT073's row draws one long bar labelled `7 kb del` running off the
+left edge: its segment is 75 bp on CFT073's own contig, and its two links land
+on `K12:1,004,667` inside the window and on `K12:997,574` 7.1 kb upstream.
 `pggb -V` writes the same event as one record at `chr:997,575` genotyped in
 CFT073 alone, and it is drawn again [below](#out-of-the-graph-into-the-strain)
 from CFT073's own coordinates.

@@ -486,10 +486,11 @@ are; the pggb page gives
 <Figure caption="1.6 kb of K12 past flhD, as a linear view above and as a graph below, both reading the same two tabix indexes. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
 
 The linear view and the graph both run the reference position ramp over the
-cut's region, so a color in the lane is that color in the graph. The dashed edge
-is the other four strains' route. An edge carries no sequence, so its drawn
-length comes from the layout; the label on it is the length of the node it
-skips.
+cut's region, so a color in the lane is that color in the graph. The other four
+strains' route is a link from the node before the IS1 element to the node after
+it. **Show deletion edges** in the view menu draws that link dashed, labelled
+with the length of the node it skips; it carries no sequence, so its drawn
+length comes from the layout.
 
 The
 [pggb tutorial](/docs/tutorials/pangenome_ecoli#browsing-the-whole-graph-by-locus)

@@ -560,6 +560,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
         },
         {
           type: 'GraphGenomeView',
+          showDeletionEdges: true,
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: MHC_REGION,
           layoutMode,
@@ -1343,6 +1344,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         },
         {
           type: 'GraphGenomeView',
+          showDeletionEdges: true,
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: C4_REGION,
           layoutMode: 'force',
@@ -1541,6 +1543,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         },
         {
           type: 'GraphGenomeView',
+          showDeletionEdges: true,
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: CFHR_REGION,
           layoutMode: 'auto',
@@ -2115,6 +2118,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         },
         {
           type: 'GraphGenomeView',
+          showDeletionEdges: true,
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: LPA_REGION,
           layoutMode: 'force',
