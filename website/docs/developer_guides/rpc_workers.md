@@ -14,12 +14,13 @@ structured-clone-safe values cross the boundary.
 
 <Figure caption="One box per side of the boundary, with serializeArguments() and deserializeReturn() on the two crossings they act at. statusCallback stays on the main thread, and a side channel reports progress to it while execute() is still running." src="/img/rpc_lifecycle.png" />
 
-Both hooks are yours to override. The serialize step is where refNames are
-renamed and functions are stripped, which is why a method taking regions extends
-a rename base — see [Renaming regions](#renaming-regions) below.
+`serializeArguments` and `deserializeReturn` are yours to override. The
+serialize step is where refNames are renamed and functions are stripped, which
+is why a method taking regions extends a rename base — see
+[Renaming regions](#renaming-regions) below.
 
-Sessions are sticky: a `sessionId` is pinned to one worker, so adapter caches
-stay warm across calls from the same session.
+A `sessionId` is pinned to one worker, so adapter caches stay warm across calls
+from the same session.
 
 ## Implementing an RPC method
 
@@ -207,8 +208,8 @@ export default class ScoreExamplePlugin extends Plugin {
 ## Calling from the main thread
 
 `getRpcSessionId(self)` is the sticky session id and
-`getSession(self).rpcManager` dispatches. Note that `sessionId` is **not**
-repeated inside the args object — `call` injects it from its first parameter.
+`getSession(self).rpcManager` dispatches. `call` injects `sessionId` from its
+first parameter.
 
 Two fields work that way, and neither belongs in a registry entry: `sessionId`
 (`RpcSession`) and the `signal`/`statusCallback` pair (`RpcHandles`). They are
@@ -290,7 +291,7 @@ above passes it into `getFeaturesArray`.
 ## Type-registering your method
 
 The `declare module '@jbrowse/core/rpc/RpcRegistry'` block at the top of
-`GetScoreData` above is what types `rpcManager.call` at every call site — and
+`GetScoreData` above types `rpcManager.call` at every call site, and
 `ctx.callRpc` with it, which forwards the same registry lookup, so a fetch gets
 per-method arg inference and a typed return without naming the session id.
 Without the registration both overloads fall back to `any`, so a misspelled arg
