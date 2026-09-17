@@ -99,16 +99,17 @@ Defaults for the `string`-valued feature colors, generated from the
 
 ## Exported color constants
 
-A few colors are plain `const` strings rather than palette members. The
-methylation colors are the worked case: the RPC worker packs them to ABGR per
-modified base and returns them inside its vertex data, and the legend on the
-main thread labels those same pixels.
+A few colors are plain `const` strings. The methylation colors are the worked
+case: the RPC worker packs them to ABGR per modified base and returns them
+inside its vertex data, and the legend on the main thread labels those same
+pixels.
 
 Where the color is applied decides which mechanism it uses. `modificationFwd`
 and `modificationRev` sit right beside these and are palette members, because
 the renderer sets them as shader uniforms, so a theme switch recomputes a getter
 and redraws. A color the worker has already baked into vertex data would need a
-theme switch to invalidate the alignments fetch, so it is fixed instead.
+theme switch to invalidate the alignments fetch, so `palette.ts` declares it as
+a plain const.
 
 Import them from `@jbrowse/core/ui/palette`, which has no toolkit in its module
 graph, or from `@jbrowse/core/ui/theme`, which re-exports the same values
@@ -155,9 +156,9 @@ variants are derived automatically.
 from the same `resolvePalette` call, so they can't disagree. They are for
 different consumers, and one of them is the rendering input:
 
-- **`session.palette`** (`JBrowsePalette`) is what rendering reads. Plain color
-  strings, no toolkit, serializable — so it crosses the RPC boundary as itself
-  and works with no browser at all.
+- **`session.palette`** (`JBrowsePalette`) holds the colors rendering reads.
+  Plain color strings, no toolkit, serializable — so it crosses the RPC boundary
+  as itself and works with no browser at all.
 - **`session.theme`** is the resolved MUI `Theme`, for components that are MUI.
 
 Derive a display's colors in a **model getter** over `session.palette`, and read
@@ -178,8 +179,8 @@ no component at all — SVG export and the RPC worker — so both would see a nu
 palette and render blank. As a getter the value is always present, and MobX
 recomputes it only when the theme changes.
 
-SVG export deliberately overrides the palette with the _export_ theme, which is
-why the export path resolves its own rather than reading the session's.
+SVG export deliberately overrides the palette with the _export_ theme, so the
+export path resolves its own palette.
 
 ## Adding theme colors in plugins
 
@@ -191,8 +192,7 @@ augmentation. Follow the existing `modificationFwd` / `modificationRev` pattern:
 - Tag it with `#color <group> | <label> | <description>` so it surfaces as a
   swatch row in these guides.
 - Give it a value in `lightStringColors`, plus `darkStringColors` if dark mode
-  needs a different one — a `Partial<StringColors>` overlay on the light set
-  rather than a second full table.
+  needs a different one — a `Partial<StringColors>` overlay on the light set.
 
 A color a worker bakes into its output goes the other way: declare it as a plain
 `const` in `palette.ts` and leave it off `StringColors`, for the reason in
