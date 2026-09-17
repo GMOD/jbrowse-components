@@ -231,12 +231,20 @@ them out in order. The merged file is hosted, so the whole track is:
 Red is active TSS, yellow enhancer, green transcription, grey Polycomb, and
 speckled olive bivalent.
 
+Over the chr9 stretch from FAM205A to ALDH1B1 the track reproduces
+[Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig. 3a, all 127
+epigenomes in the paper's tissue order. Promoters stay red through nearly every
+row, while PAX5 is transcribed only in the B cells and the B-lymphoblastoid
+GM12878.
+
+<Figure src="/img/chromhmm.png" caption="All 127 Roadmap epigenomes over chr9 from FAM205A to ALDH1B1, rows in the paper's tissue order with the group stripe beside them. Promoters are red in every tissue; PAX5 (boxed) is transcribed only in the B cell rows."/>
+
 A `domain` of six epigenome names narrows the same track to lung fibroblasts,
 foreskin fibroblasts and ES cells over HOXA, which reproduces the chromatin
 domains [Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
 fibroblasts from different parts of the body.
 
-<Figure src="/img/chromhmm.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
+<Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
 
 Without a `domain`, **Cluster rows by similarity...** derives the row order of
 all 127 from the data at whatever locus is in view.

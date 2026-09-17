@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { SPLIT_VIEW_LINK_LABEL } from '../../../plugins/variants/src/VariantFeatureWidget/LaunchBreakendPanel/labels.ts'
+import { repoRoot } from '../paths.ts'
 import {
   DEMO_CONFIG,
   HG38_RMSK_TRACK,
@@ -254,6 +258,50 @@ export const uiVideoFixtures = {
 // tissue blocks.
 const CHROMHMM_TRACK_ID = 'roadmap_chromhmm_multirow_hg19'
 const CHROMHMM_HOXA_WINDOW = 'chr7:26,950,000-27,450,000'
+
+// Roadmap 2015 Fig. 2's group order, which Fig. 3a keeps. The hosted track
+// lists its rowGroups alphabetically, and the display stacks rows in rowGroups
+// order, so the figure re-sorts them.
+const ROADMAP_FIGURE_GROUPS = [
+  'IMR90',
+  'ESC',
+  'iPSC',
+  'ES-deriv',
+  'Blood & T-cell',
+  'HSC & B-cell',
+  'Mesench',
+  'Myosat',
+  'Epithelial',
+  'Neurosph',
+  'Thymus',
+  'Brain',
+  'Adipose',
+  'Muscle',
+  'Heart',
+  'Sm. Muscle',
+  'Digestive',
+  'Other',
+  'ENCODE2012',
+]
+
+function roadmapFigureRowGroups() {
+  const config = JSON.parse(
+    readFileSync(join(repoRoot, 'test_data/config_demo.json'), 'utf8'),
+  ) as {
+    tracks: {
+      trackId: string
+      displays?: { rowGroups?: { group: string }[] }[]
+    }[]
+  }
+  const groups =
+    config.tracks.find(t => t.trackId === 'roadmap_chromhmm_multirow_hg19')
+      ?.displays?.[0]?.rowGroups ?? []
+  return groups.toSorted(
+    (a, b) =>
+      ROADMAP_FIGURE_GROUPS.indexOf(a.group) -
+      ROADMAP_FIGURE_GROUPS.indexOf(b.group),
+  )
+}
 
 const HOXA_FIBROBLAST_ROWS = [
   'NHLF Lung Fibroblast Primary Cells',
@@ -2303,13 +2351,56 @@ export const uiSpecs: ScreenshotSpec[] = [
     allowUnsettled: true,
   },
 
+  // Roadmap Epigenomics 2015 (Nature 518:317), Fig. 3a: all 127 epigenomes over
+  // ~3.7 Mb of chr9 from FAM205A to ALDH1B1, in Roadmap's tissue order with the
+  // group stripe beside the rows. Promoter columns run through every row, and
+  // PAX5 is transcribed only in the B cell rows and GM12878.
+  {
+    mode: 'url',
+    name: 'chromhmm',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr9:34,700,000-38,420,000',
+      tracks: [
+        {
+          trackId: 'ncbi_gff_hg19',
+          type: 'LinearBasicDisplay',
+          showLabels: 'name',
+          jexlFiltersSetting: ["jexl:feature.type!='pseudogene'"],
+          displayMode: 'compact',
+          height: 80,
+        },
+        {
+          trackId: 'roadmap_chromhmm_multirow_hg19',
+          type: 'LinearMultiRowFeatureDisplay',
+          rowGroups: roadmapFigureRowGroups(),
+          height: 760,
+        },
+      ],
+    }),
+    annotations: [
+      {
+        type: 'box',
+        anchor: {
+          track: 'roadmap_chromhmm_multirow_hg19',
+          locus: 'chr9:36,833,266-37,034,265',
+        },
+        pad: 2,
+      },
+    ],
+    readyText: 'ChromHMM',
+    readyTimeout: 180000,
+    settleMs: 10000,
+    viewportHeight: 1090,
+  },
+
   // Rinn et al. 2007 (Cell 129:1311), Fig. 3: lung fibroblasts keep the 3'
   // half of HOXA (HOXA1-A7) active and the 5' half (HOXA9-A13) Polycomb-
   // repressed, distal fibroblasts the reverse. Roadmap's lung and foreskin
   // fibroblasts carry the same split, and ES cells hold both halves repressed.
   {
     mode: 'url',
-    name: 'chromhmm',
+    name: 'chromhmm_hoxa_fibroblasts',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr7:27,110,000-27,265,000',
