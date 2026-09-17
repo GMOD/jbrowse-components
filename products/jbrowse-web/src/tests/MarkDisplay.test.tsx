@@ -173,8 +173,9 @@ test('points with the glyph a scale over a field, and the key drawing each glyph
 
   const el = await findDisplayPainted('mark-display', { timeout })
   expect(el.dataset.displayDrawn).toBe('true')
-  // the pinned domain's rows lead the key and the region's other name
-  // follows, walking the range again; every swatch is the glyph itself
+  // the pinned domain's rows lead the key and the region's other name follows
+  // with the glyph derived from its value, which a range the domain has spent
+  // can only repeat; every swatch is the glyph itself
   const legend = await findByTestId('floating-legend', {}, { timeout })
   await waitFor(() => {
     expect(legend.textContent).toContain('EDEN.3')
@@ -186,7 +187,7 @@ test('points with the glyph a scale over a field, and the key drawing each glyph
   expect(paths).toEqual([
     'M0 0L12 0L6 12Z',
     'M6 0L12 6L6 12L0 6Z',
-    'M0 0L12 0L6 12Z',
+    'M6 0L12 6L6 12L0 6Z',
   ])
 }, 30000)
 
