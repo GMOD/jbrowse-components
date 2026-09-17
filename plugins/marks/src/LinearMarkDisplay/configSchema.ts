@@ -89,8 +89,9 @@ const markColorSchema = ConfigurationSchema(
     /**
      * #slot marks.encoding.color.domain
      * For a categorical scale, the values in legend order, walking the
-     * palette from the first entry; left empty, each value derives its
-     * colour from itself, so every region agrees. For a linear or log scale, the
+     * palette from the first entry and continuing into the default palette
+     * past its end; a value left out derives its colour from itself and never
+     * takes a listed value's, so every region agrees. For a linear or log scale, the
      * `[min, max]` the ramp spans; empty uses each region's own extremes.
      */
     domain: {

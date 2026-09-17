@@ -165,6 +165,30 @@ test('a categorical domain pins the order, a palette the colours, and numbers so
   ).toEqual(['-1', '1'])
 })
 
+test('two regions agree on a value the domain leaves out, whatever else each met', () => {
+  const encoding = {
+    color: { field: 'type', scale: 'categorical' as const, domain: ['gene'] },
+  }
+  const busy = encodeFeatures(
+    [
+      feature(0, { type: 'gene' }),
+      feature(1, { type: 'exon' }),
+      feature(2, { type: 'snoRNA' }),
+    ],
+    encoding,
+    ALL,
+    { jexl },
+  )
+  const sparse = encodeFeatures(
+    [feature(3, { type: 'gene' }), feature(4, { type: 'snoRNA' })],
+    encoding,
+    ALL,
+    { jexl },
+  )
+  expect(sparse.color[1]).toBe(busy.color[2])
+  expect(busy.color[2]).not.toBe(busy.color[0])
+})
+
 test('the legend lists the domain first, an absent listed value included, then the rest in facet order', () => {
   const mixed = [
     feature(0, { type: 'exon' }),

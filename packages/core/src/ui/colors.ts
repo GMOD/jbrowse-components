@@ -130,7 +130,7 @@ export const categoricalPalette = [
  * paint it pink. A non-negative integer takes the slot it names, anchored at
  * 1, so `1`, `2`, `3` walk the palette in order and stay distinct; anything
  * else hashes in, stable for the same reason at the cost of an occasional
- * collision.
+ * collision. `categoricalScale` is the same rule with a domain.
  */
 export function categoricalValueColor(value: string): string
 export function categoricalValueColor<T>(
@@ -141,19 +141,81 @@ export function categoricalValueColor(
   value: string,
   palette: readonly unknown[] = categoricalPalette,
 ) {
-  const n = palette.length
+  return palette[valueSlot(value, palette.length)]!
+}
+
+function valueSlot(value: string, n: number) {
   const num = Number(value)
   return value !== '' && Number.isInteger(num) && num >= 0
-    ? palette[(num + n - 1) % n]!
-    : palette[hashString(value) % n]!
+    ? (num + n - 1) % n
+    : hashString(value) % n
+}
+
+// Rehashing rather than stepping to the next slot, so the unlisted values
+// that land on the listed prefix spread over the free slots instead of piling
+// onto the first one.
+function unlistedSlot(value: string, spent: number, size: number) {
+  let slot = valueSlot(value, size)
+  for (let salt = 1; slot < spent && salt <= size; salt++) {
+    slot = hashString(`${salt}:${value}`) % size
+  }
+  return slot < spent ? spent + (hashString(value) % (size - spent)) : slot
+}
+
+function entryKey(entry: unknown) {
+  return typeof entry === 'string' ? entry.toLowerCase() : entry
 }
 
 /**
- * The color one value of a categorical color channel paints: a value its
- * `domain` lists takes the palette entry at that position, and any other
- * value takes `categoricalValueColor`'s. A value-less feature is neutral grey.
- * An array value joins the way a group key does, so a feature filed under a
- * section paints that section's color.
+ * The categorical rule every scaled channel resolves through. With no
+ * `domain` a value takes `categoricalValueColor`'s slot in `range`. With one,
+ * the listed values take `range` in order, continuing into the `fallback`
+ * entries `range` lacks once it runs out, and any other value takes a slot
+ * derived from itself that no listed value holds. Unlisted values hash into
+ * `range` while the domain leaves some of it unspent, and into the fallback
+ * past that. A value's entry depends only on the value and the declaration,
+ * so every region agrees on it, and adding a listed value moves only the
+ * unlisted values on the slot it takes.
+ */
+export function categoricalScale<T>(
+  domain: readonly (string | number)[] | undefined,
+  range: readonly T[],
+  fallback: readonly T[] = [],
+): (value: string) => T {
+  const base = range.length ? range : fallback
+  const listed = [...new Set((domain ?? []).map(String))].filter(v => v !== '')
+  if (listed.length === 0) {
+    return value => base[valueSlot(value, base.length)]!
+  }
+  const inBase = new Set(base.map(entryKey))
+  const entries = [
+    ...base,
+    ...fallback.filter(entry => {
+      const key = entryKey(entry)
+      return inBase.has(key) ? false : (inBase.add(key), true)
+    }),
+  ]
+  const rank = new Map(listed.map((value, i) => [value, i]))
+  const spent = listed.length
+  const size = spent < base.length ? base.length : entries.length
+  return value => {
+    const i = rank.get(value)
+    return i !== undefined
+      ? entries[i % entries.length]!
+      : entries[
+          spent >= size
+            ? valueSlot(value, size)
+            : unlistedSlot(value, spent, size)
+        ]!
+  }
+}
+
+let lastScale: { key: string; scale: (value: string) => string } | undefined
+
+/**
+ * The color one value of a categorical color channel paints, by
+ * `categoricalScale` over the default palette. A value-less feature is
+ * neutral grey, and an array value joins the way a group key does.
  */
 export function categoricalColor(
   value: unknown,
@@ -163,12 +225,20 @@ export function categoricalColor(
   if (value === undefined || value === null || value === '') {
     return NO_CATEGORY_COLOR
   }
-  const colors = palette.length ? palette : categoricalPalette
-  const key = Array.isArray(value) ? value.map(String).join(',') : String(value)
-  const i = domain.indexOf(key)
-  return i === -1
-    ? categoricalValueColor(key, colors)
-    : colors[i % colors.length]!
+  const label = Array.isArray(value)
+    ? value.map(String).join(',')
+    : String(value)
+  if (domain.length === 0 && palette.length === 0) {
+    return categoricalValueColor(label)
+  }
+  const key = JSON.stringify([domain, palette])
+  if (lastScale?.key !== key) {
+    lastScale = {
+      key,
+      scale: categoricalScale(domain, palette, categoricalPalette),
+    }
+  }
+  return lastScale.scale(label)
 }
 
 // only category10 and set1 are imported by name; the rest are reached through

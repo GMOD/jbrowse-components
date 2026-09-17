@@ -53,9 +53,10 @@ trio's genotypes this way to check whether a call is inherited.
   HIGH red, MODERATE orange, LOW yellow, MODIFIER grey
 - **SV type** colors by structural-variant class, with fixed colors per class
   and an ascending rainbow for copy-number alleles (`<CN0>`, `<CN1>`, ...)
-- **Attribute...** takes any attribute name and colors by its value, generating
-  a `jexl:randomColor(get(feature,'<attr>'))` expression. Distinct values get
-  distinct, stable colors, so it works on any categorical INFO field
+- **Attribute...** takes a field name and colors by its value, one palette color
+  per value. It reads the record's own fields, such as `type` or `FILTER`; a
+  field inside INFO needs a `color` slot of
+  `jexl:categoricalColor(feature.INFO.SVCLASS)` instead
 
 The presets draw a dismissable color key naming the classes present, and work on
 the multi-sample displays too, where

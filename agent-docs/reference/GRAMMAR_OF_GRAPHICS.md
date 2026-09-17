@@ -222,8 +222,11 @@ The seams, named honestly:
   meaning the encoding cannot say will look like this.
 - **A scale table is per fetched region, and the quantitative ones are
   unioned.** The grammar resolves a scale over the whole dataset; the worker
-  sees one region. Value-derived categorical resolution makes regions agree
-  without a round trip. A quantitative ramp ships its raw values and the
+  sees one region. A categorical entry is a function of the value and the
+  declared domain (`categoricalScale`, `packages/core/src/ui/colors.ts`), so
+  regions agree without a round trip; a value the domain leaves out hashes
+  into a slot no listed value holds, where resolving it by the region's own
+  sorted rank had one value painting two colours across a pan. A quantitative ramp ships its raw values and the
   region's extent instead, and the display unions the extents into one domain
   the shapes read as a uniform (ADR-113), so an unpinned ramp agrees across
   the loaded regions and a pan that widens it uploads no instance bytes. What

@@ -145,9 +145,11 @@ describes that binding:
   palette entry to each distinct value, derived from the value itself so every
   region paints it the same way. `palette` lists CSS colours to draw from. An
   optional `domain` lists the values in legend order and walks the palette from
-  the first entry, for when the colours should be spent deliberately; values it
-  leaves out follow sorted, the same order a facet stacks its sections in, and
-  with no `domain` the legend is every value the region holds, sorted.
+  the first entry, continuing into the default palette past its end, for when
+  the colours should be spent deliberately. A value it leaves out keeps a colour
+  derived from itself that no listed value paints, and follows the listed ones
+  in the legend sorted, the order a facet stacks its sections in; with no
+  `domain` the legend is every value the region holds, sorted.
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domain": [0, 50], "ramp": ["white", "red"] }`
   reads the value through `domain` into the ramp. `ramp` is `["viridis"]` or two

@@ -1,3 +1,4 @@
+import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import {
   ensureJexlPrefix,
   isJexl,
@@ -91,7 +92,8 @@ export function colorSlotOf(color: NonNullable<ChannelSpec['color']>) {
  * A color by the facet's own field that names no domain takes the facet's,
  * so the sections and their colors list in one order. Copied when the spec is
  * applied rather than read at paint time, so a later Sections move reorders
- * the sections and leaves the colors where they are.
+ * the sections and leaves the colors where they are. The catch-all and
+ * overflow sections name no value, so they spend no color.
  */
 export function withFacetDomain(
   spec: ChannelSpec,
@@ -104,7 +106,15 @@ export function withFacetDomain(
     !color.domain &&
     facet?.domain &&
     facet.field === color.field
-    ? { ...spec, color: { ...color, domain: facet.domain } }
+    ? {
+        ...spec,
+        color: {
+          ...color,
+          domain: facet.domain.filter(
+            key => key !== '' && key !== OVERFLOW_GROUP_KEY,
+          ),
+        },
+      }
     : spec
 }
 

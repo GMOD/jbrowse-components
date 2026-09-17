@@ -114,8 +114,8 @@ const SetColorFieldDialog = lazy(
 
 // The color scale under field coloring: every value any loaded region met,
 // each with the color the worker packed for it. One value can arrive from
-// several regions and always with the same color (`categoricalValueColor` is a
-// function of the value), so the union is a plain first-wins merge, ordered by
+// several regions and always with the same color (`categoricalScale` is a
+// function of the value and `colorDomain`), so the union is a plain first-wins merge, ordered by
 // the display's `colorDomain` — listed values first, the rest sorted, numbers
 // by magnitude so `chr2` files before `chr10`.
 function categoryEntries(

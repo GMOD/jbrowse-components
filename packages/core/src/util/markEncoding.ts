@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/render-core/scoreScale'
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { categoricalPalette, categoricalValueColor } from '../ui/colors.ts'
+import { categoricalPalette, categoricalScale } from '../ui/colors.ts'
 import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
 import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
 import Flatbush from './flatbush/index.ts'
@@ -66,6 +66,8 @@ export const DEFAULT_MARK_COLOR = '#0068d1'
 // yields a non-string: visible, so a misconfiguration surfaces rather than
 // vanishing.
 const FALLBACK_COLOR = cssColorToABGR('#808080')
+
+const DEFAULT_PALETTE = categoricalPalette.map(cssColorToABGR)
 
 /**
  * #api
@@ -194,10 +196,8 @@ function categoryOrder(
 
 // The categorical arm `color` and `glyph` share: the walk records which
 // distinct value each admitted instance carried, and `resolve` hands every
-// value its range entry once the region's table is known. A listed domain
-// is the author's order and walks the range; without one the entry derives
-// from the value itself, so two regions that met different value sets still
-// agree on every value they share.
+// value its entry through `categoricalScale`, so two regions that met
+// different value sets still agree on every value they share.
 function categoricalChannel(read: ChannelReader, n: number) {
   const categories = new Map<string, number>()
   const indexOf = new Int32Array(n)
@@ -217,13 +217,16 @@ function categoricalChannel(read: ChannelReader, n: number) {
       }
       indexOf[at] = index
     },
-    resolve<T>(domain: (string | number)[] | undefined, range: readonly T[]) {
+    resolve<T>(
+      domain: (string | number)[] | undefined,
+      range: readonly T[],
+      fallback: readonly T[] = [],
+    ) {
       const ofIndex: T[] = Array.from({ length: categories.size })
       const entries: { label: string; value: T }[] = []
-      categoryOrder(categories, domain).forEach((label, slot) => {
-        const value = domain
-          ? range[slot % range.length]!
-          : categoricalValueColor(label, range)
+      const entryOf = categoricalScale(domain, range, fallback)
+      categoryOrder(categories, domain).forEach(label => {
+        const value = entryOf(label)
         const index = categories.get(label)
         if (index !== undefined) {
           ofIndex[index] = value
@@ -379,8 +382,12 @@ export function encodeFeatures<L extends LaneName>(
 
   let scale: ColorScaleTable | undefined
   if (scaled?.scale === 'categorical' && colorCategories && color) {
-    const palette = (scaled.palette ?? categoricalPalette).map(cssColorToABGR)
-    const { ofIndex, entries } = colorCategories.resolve(scaled.domain, palette)
+    const palette = scaled.palette?.map(cssColorToABGR) ?? DEFAULT_PALETTE
+    const { ofIndex, entries } = colorCategories.resolve(
+      scaled.domain,
+      palette,
+      DEFAULT_PALETTE,
+    )
     const { indexOf } = colorCategories
     for (let i = 0; i < count; i++) {
       const index = indexOf[i]!
