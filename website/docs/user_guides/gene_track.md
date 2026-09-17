@@ -79,7 +79,7 @@ grouping clears them. **Sections** in the track menu lists the sections drawn,
 each with **Move up**, **Move down** and **Hide section**, and **Reset section
 order** returns them to the sorted order.
 
-<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped by gene_biotype from Group by..., the sections sorted by name, then protein_coding moved to the top from Sections. The move writes the drawn order into the track's groupBy domain, so the session keeps it." />
+<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped by gene_biotype from Group by..., each section in its own color and sorted by name, then protein_coding moved to the top from Sections. The move writes the drawn order into the track's groupBy domain, so the session keeps it." />
 
 The `groupBy` config slot pre-groups a track, so a shared link opens grouped.
 Its optional `domain` is the section order: the values listed stack first, in
@@ -113,6 +113,42 @@ starts ticked unless the track already has a color of its own, and unticking it
 returns the default color.
 
 <Figure caption="NCBI RefSeq genes on hg38 grouped by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip, with the divider between them marking where one strand's rows end." src="/img/gene_track_group_by_strand.png" />
+
+### Writing the grouping as JSON
+
+**Edit as JSON...**, at the foot of the Group by and Color by attribute dialogs,
+opens the track's grouping, color and filter as three channels. `facet` stacks a
+section per value of a field, in the order its `domain` lists; `color` is a CSS
+color or a jexl expression, or `{ "field": … }` for one color per value;
+`filter` is the list of jexl expressions **Filter by...** edits. Applying a spec
+changes only the channels it names, and `null` clears one. Each of these pastes
+as it is:
+
+- `{ "facet": "strand" }` one section per strand
+- `{ "facet": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"] } }`
+  a section per biotype, these two first
+- `{ "color": { "field": "source" } }` one color per source
+- `{ "color": "#1f77b4" }` one color for everything
+- `{ "filter": ["feature.type == 'gene'"] }` genes only
+- `{ "facet": null, "color": null }` ungrouped, default color
+
+The dialog lists the same examples. This one groups and colors by biotype in a
+chosen order, and leaves the track's filter alone:
+
+```json
+{
+  "facet": {
+    "field": "gene_biotype",
+    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+  },
+  "color": { "field": "gene_biotype" }
+}
+```
+
+<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in its declared order, each in its own color." />
+
+`strand` is a field too. Each channel writes the same setting its menu does, so
+the Sections menu reorders a facet written this way.
 
 ## Color by CDS
 

@@ -8,10 +8,6 @@ const monospaceFontFamily =
   'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
 
 const useStyles = makeStyles()(theme => ({
-  error: {
-    color: theme.palette.error.main,
-    fontSize: '0.8em',
-  },
   container: {
     width: '100%',
     overflowX: 'auto',
@@ -24,9 +20,9 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Monospace multiline TextField for code/jexl/JSON/sequence content. Turns red
-// on a parse error, renders an optional error banner above and an InputLabel,
-// and applies the shared monospace font stack to the input slot. `children`
+// Monospace multiline TextField for code/jexl/JSON/sequence content. A parse
+// error turns it red and takes the helper text's place under the field, so
+// the text does not move while it flips between valid and invalid. `children`
 // render below the field (e.g. a description or help button).
 export default function MonospaceTextField({
   value,
@@ -37,6 +33,8 @@ export default function MonospaceTextField({
   style,
   className,
   readOnly,
+  inputTestId,
+  helperText,
   variant = 'outlined',
   ...rest
 }: {
@@ -46,34 +44,40 @@ export default function MonospaceTextField({
   label?: React.ReactNode
   children?: React.ReactNode
   readOnly?: boolean
+  inputTestId?: string
 } & Omit<TextFieldProps, 'value' | 'onChange' | 'error' | 'slotProps'>) {
   const { classes, cx } = useStyles()
   return (
-    <>
-      {error ? <p className={classes.error}>{`${error}`}</p> : null}
-      <div className={classes.container}>
-        {label ? <InputLabel shrink>{label}</InputLabel> : null}
-        <TextField
-          {...rest}
-          variant={variant}
-          multiline
-          value={value}
-          onChange={event => {
-            onChange?.(event.target.value)
-          }}
-          className={cx(className, error ? classes.errorField : undefined)}
-          style={style}
-          slotProps={{
-            input: {
-              readOnly,
-              classes: {
-                input: classes.field,
-              },
+    <div className={classes.container}>
+      {label ? <InputLabel shrink>{label}</InputLabel> : null}
+      <TextField
+        {...rest}
+        variant={variant}
+        multiline
+        error={!!error}
+        helperText={error ? `${error}` : helperText}
+        value={value}
+        onChange={event => {
+          onChange?.(event.target.value)
+        }}
+        className={cx(className, error ? classes.errorField : undefined)}
+        style={style}
+        slotProps={{
+          input: {
+            readOnly,
+            classes: {
+              input: classes.field,
             },
-          }}
-        />
-        {children}
-      </div>
-    </>
+          },
+          htmlInput: {
+            'data-testid': inputTestId,
+            spellCheck: false,
+            autoCorrect: 'off',
+            autoCapitalize: 'off',
+          },
+        }}
+      />
+      {children}
+    </div>
   )
 }

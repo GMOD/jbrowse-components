@@ -32,13 +32,37 @@ function setup(groupBy: FeatureGroupBy | undefined, color?: string) {
   }
 }
 
-test('Edit as JSON... hands over to the channel spec and applies nothing', () => {
-  const { getByText, applyGroupBy, openChannelSpecDialog, handleClose } =
-    setup(undefined)
+test('Edit as JSON... hands over the unapplied choice and applies nothing', () => {
+  const {
+    getByText,
+    getByLabelText,
+    getByTestId,
+    applyGroupBy,
+    openChannelSpecDialog,
+    handleClose,
+  } = setup(undefined)
+  fireEvent.click(getByLabelText('Attribute'))
+  fireEvent.change(getByTestId('group-by-attribute'), {
+    target: { value: 'gene_biotype' },
+  })
   fireEvent.click(getByText('Edit as JSON...'))
-  expect(openChannelSpecDialog).toHaveBeenCalled()
+  expect(openChannelSpecDialog).toHaveBeenCalledWith({
+    facet: { field: 'gene_biotype' },
+    color: { field: 'gene_biotype' },
+  })
   expect(handleClose).toHaveBeenCalled()
   expect(applyGroupBy).not.toHaveBeenCalled()
+})
+
+test('handing over the current grouping keeps its section order', () => {
+  const { getByText, openChannelSpecDialog } = setup(
+    { type: 'attribute', attribute: 'biotype', domain: ['b', 'a'] },
+    'purple',
+  )
+  fireEvent.click(getByText('Edit as JSON...'))
+  expect(openChannelSpecDialog).toHaveBeenCalledWith({
+    facet: { field: 'biotype', domain: ['b', 'a'] },
+  })
 })
 
 test('picking strand over the default color ticks its color and applies both', () => {

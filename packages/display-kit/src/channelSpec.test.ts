@@ -14,10 +14,30 @@ test('the plugin request, as a spec', () => {
   })
 })
 
-test('a field name alone is the shorthand for facet and color', () => {
-  expect(parse({ facet: 'strand', color: 'gene_biotype' })).toEqual({
+test('a string facet is a field, and a string color is a constant', () => {
+  expect(parse({ facet: 'strand', color: 'red' })).toEqual({
     facet: { field: 'strand' },
-    color: { field: 'gene_biotype' },
+    color: 'red',
+  })
+})
+
+test("the mark display's categorical color parses as written", () => {
+  expect(
+    parse({
+      color: {
+        field: 'strand',
+        scale: 'categorical',
+        domain: ['-1', '1'],
+        palette: ['blue', 'red'],
+      },
+    }),
+  ).toEqual({
+    color: {
+      field: 'strand',
+      scale: 'categorical',
+      domain: ['-1', '1'],
+      palette: ['blue', 'red'],
+    },
   })
 })
 
@@ -45,12 +65,11 @@ test.each([
     { facet: { field: 'x', order: [] } },
     'facet takes field and domain, not order',
   ],
-  [{ facet: { field: 'x', domain: 'a' } }, 'facet.domain lists values'],
-  [
-    { color: { field: 'x', value: 'red' } },
-    'color takes one of field and value',
-  ],
-  [{ color: {} }, 'color takes one of field and value'],
+  [{ facet: { field: 'x', domain: 'a' } }, 'facet.domain is a list'],
+  [{ color: { field: 'x', value: 'red' } }, 'not value'],
+  [{ color: {} }, 'color.field names a field'],
+  [{ color: { field: 'x', scale: 'linear' } }, 'color.scale is categorical'],
+  [{ color: { field: 'x', palette: 'red' } }, 'color.palette is a list'],
   [{ filter: [1] }, 'filter is a jexl expression'],
 ])('%j is refused: %s', (spec, message) => {
   expect(() => parse(spec)).toThrow(message)

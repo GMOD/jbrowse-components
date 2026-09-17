@@ -1,7 +1,13 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+import { parseChannelSpec } from '@jbrowse/display-kit/channelSpec'
+
 import {
   STRAND_COLOR_JEXL,
   attributeColorJexl,
 } from '../RenderFeatureDataRPC/featureColors.ts'
+import { CHANNEL_SPEC_EXAMPLES } from './channelSpec.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 function display() {
@@ -49,9 +55,25 @@ test('strand is a field on both channels', () => {
   })
 })
 
+test('a string color is a constant, not a field', () => {
+  const d = display()
+  d.applyChannelSpec({ color: 'red' })
+  expect(d.conf.color).toBe('red')
+  expect(d.colorByMode).toBe('solid')
+  expect(d.channelSpec.color).toBe('red')
+})
+
+test("strand's colors are fixed, so a domain or palette on it is a problem", () => {
+  expect(
+    display().channelSpecProblems({
+      color: { field: 'strand', domain: ['1', '-1'] },
+    }),
+  ).toEqual([expect.stringMatching(/strand's colors are fixed/)])
+})
+
 test('a channel the spec leaves out is left alone, and null clears one', () => {
   const d = display()
-  d.applyChannelSpec({ facet: { field: 'strand' }, color: { value: 'purple' } })
+  d.applyChannelSpec({ facet: { field: 'strand' }, color: 'purple' })
   d.applyChannelSpec({ color: null })
   expect(d.groupBy).toMatchObject({ type: 'strand' })
   expect(d.conf.color).toBeUndefined()
@@ -76,7 +98,7 @@ test('an expression that does not compile is a problem, named by channel', () =>
   const d = display()
   expect(
     d.channelSpecProblems({
-      color: { value: 'jexl:feature.type ==' },
+      color: 'jexl:feature.type ==',
       filter: ['feature.score >'],
     }),
   ).toEqual([
@@ -85,8 +107,29 @@ test('an expression that does not compile is a problem, named by channel', () =>
   ])
   expect(
     d.channelSpecProblems({
-      color: { value: 'red' },
+      color: 'red',
       filter: ['feature.score > 5'],
     }),
   ).toEqual([])
+})
+
+test.each(CHANNEL_SPEC_EXAMPLES)(
+  'the example $spec parses, passes and applies',
+  ({ spec }) => {
+    const d = display()
+    const parsed = parseChannelSpec(spec)
+    expect(d.channelSpecProblems(parsed)).toEqual([])
+    d.applyChannelSpec(parsed)
+    expect(d.channelSpec).toMatchObject(parsed)
+  },
+)
+
+test('the gene track guide prints every example the dialog lists', () => {
+  const guide = readFileSync(
+    join(__dirname, '../../../../website/docs/user_guides/gene_track.md'),
+    'utf8',
+  ).replaceAll(/\n\s*/g, ' ')
+  for (const { spec, description } of CHANNEL_SPEC_EXAMPLES) {
+    expect(guide).toContain(`\`${spec}\` ${description}`)
+  }
 })

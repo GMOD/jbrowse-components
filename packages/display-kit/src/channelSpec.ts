@@ -9,9 +9,23 @@ import { compareStructural } from 'mobx'
  */
 export interface ChannelSpec {
   facet?: { field: string; domain?: string[] } | null
-  color?: { field: string } | { value: string } | null
+  color?: ColorChannel | null
   filter?: string[] | null
 }
+
+/**
+ * A string is a constant: a CSS color, or a `jexl:` callback. An object
+ * binds a field to the categorical scale, whose `domain` hands out the
+ * `palette` in order.
+ */
+export type ColorChannel =
+  | string
+  | {
+      field: string
+      scale?: 'categorical'
+      domain?: string[]
+      palette?: string[]
+    }
 
 export const CHANNELS = ['facet', 'color', 'filter'] as const
 
@@ -49,13 +63,19 @@ function parseFacet(value: unknown): ChannelSpec['facet'] {
   }
   onlyKeys('facet', value, ['field', 'domain'])
   const { field, domain } = value
-  if (domain !== undefined && !Array.isArray(domain)) {
-    throw new Error('facet.domain lists values in the order they stack')
-  }
   return {
     field: fieldName('facet', field),
-    ...(domain === undefined ? {} : { domain: domain.map(String) }),
+    ...(domain === undefined
+      ? {}
+      : { domain: stringList('facet.domain', domain) }),
   }
+}
+
+function stringList(channel: string, value: unknown) {
+  if (!Array.isArray(value)) {
+    throw new Error(`${channel} is a list`)
+  }
+  return value.map(String)
 }
 
 function parseColor(value: unknown): ChannelSpec['color'] {
@@ -63,22 +83,35 @@ function parseColor(value: unknown): ChannelSpec['color'] {
     return null
   }
   if (typeof value === 'string') {
-    return { field: fieldName('color', value) }
+    if (!value.trim()) {
+      throw new Error(
+        'color is a CSS color, a jexl: expression or { "field": … }',
+      )
+    }
+    return value.trim()
   }
   if (!isRecord(value)) {
-    throw new Error('color is a field name, { "field": … } or { "value": … }')
+    throw new Error(
+      'color is a CSS color, a jexl: expression or { "field": … }',
+    )
   }
-  onlyKeys('color', value, ['field', 'value'])
-  if ((value.field === undefined) === (value.value === undefined)) {
-    throw new Error('color takes one of field and value')
+  onlyKeys('color', value, ['field', 'scale', 'domain', 'palette'])
+  const { field, scale, domain, palette } = value
+  if (scale !== undefined && scale !== 'categorical') {
+    throw new Error(
+      "color.scale is categorical here; a ramp over a number is the mark display's",
+    )
   }
-  if (value.field !== undefined) {
-    return { field: fieldName('color', value.field) }
+  return {
+    field: fieldName('color', field),
+    ...(scale === undefined ? {} : { scale }),
+    ...(domain === undefined
+      ? {}
+      : { domain: stringList('color.domain', domain) }),
+    ...(palette === undefined
+      ? {}
+      : { palette: stringList('color.palette', palette) }),
   }
-  if (typeof value.value !== 'string' || !value.value.trim()) {
-    throw new Error('color.value is a CSS color or a jexl: expression')
-  }
-  return { value: value.value.trim() }
 }
 
 function parseFilter(value: unknown): ChannelSpec['filter'] {

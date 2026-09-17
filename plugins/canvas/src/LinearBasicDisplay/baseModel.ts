@@ -62,6 +62,7 @@ import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDet
 import { scaleLaidOutData } from './applyLayout.ts'
 import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
 import {
+  CHANNEL_SPEC_EXAMPLES,
   channelSpecProblems,
   colorOf,
   colorSlotOf,
@@ -1458,6 +1459,12 @@ export default function baseStateModelFactory(
         }
       },
       /**
+       * #getter
+       */
+      get channelSpecExamples() {
+        return CHANNEL_SPEC_EXAMPLES
+      },
+      /**
        * #method
        */
       channelSpecProblems(spec: ChannelSpec) {
@@ -1491,10 +1498,10 @@ export default function baseStateModelFactory(
       /**
        * #action
        */
-      openChannelSpecDialog() {
+      openChannelSpecDialog(seed?: ChannelSpec) {
         getDialogHost(self).queueDialog(handleClose => [
           ChannelSpecDialog,
-          { model: self, handleClose },
+          { model: self, seed, handleClose },
         ])
       },
     }))

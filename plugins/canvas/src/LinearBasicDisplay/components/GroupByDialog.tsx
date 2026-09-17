@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
+import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import {
   Button,
   FormControlLabel,
@@ -11,9 +12,11 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { facetOf } from '../channelSpec.ts'
 import { FEATURE_GROUP_BY_DIMENSIONS, groupColorJexl } from '../groupBy.ts'
 
 import type { FeatureGroupBy, FeatureGroupByType } from '../groupBy.ts'
+import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 
 const CHOICES = ['none', 'strand', 'attribute'] as const satisfies readonly (
   | FeatureGroupByType
@@ -38,7 +41,7 @@ const GroupByDialog = observer(function GroupByDialog({
   model: {
     groupBy: FeatureGroupBy | undefined
     applyGroupBy: (groupBy: FeatureGroupBy | undefined, color: boolean) => void
-    openChannelSpecDialog: () => void
+    openChannelSpecDialog: (seed?: ChannelSpec) => void
   }
   handleClose: () => void
   color: string | undefined
@@ -65,7 +68,12 @@ const GroupByDialog = observer(function GroupByDialog({
       actions={
         <Button
           onClick={() => {
-            model.openChannelSpecDialog()
+            const facet = facetOf(carryGroupDomain(groupBy, model.groupBy))
+            model.openChannelSpecDialog(
+              facet && alsoColor
+                ? { facet, color: { field: facet.field } }
+                : { facet },
+            )
             handleClose()
           }}
         >
@@ -104,6 +112,7 @@ const GroupByDialog = observer(function GroupByDialog({
           helperText="Common attributes: type, source, biotype, gene_biotype"
           autoFocus
           fullWidth
+          slotProps={{ htmlInput: { 'data-testid': 'group-by-attribute' } }}
         />
       ) : null}
       {choice === 'none' ? null : (

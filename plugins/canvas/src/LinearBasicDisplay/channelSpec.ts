@@ -17,6 +17,27 @@ import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 // column, so no attribute can take the name.
 const STRAND = 'strand'
 
+export const CHANNEL_SPEC_EXAMPLES = [
+  { spec: '{ "facet": "strand" }', description: 'one section per strand' },
+  {
+    spec: '{ "facet": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"] } }',
+    description: 'a section per biotype, these two first',
+  },
+  {
+    spec: '{ "color": { "field": "source" } }',
+    description: 'one color per source',
+  },
+  { spec: '{ "color": "#1f77b4" }', description: 'one color for everything' },
+  {
+    spec: '{ "filter": ["feature.type == \'gene\'"] }',
+    description: 'genes only',
+  },
+  {
+    spec: '{ "facet": null, "color": null }',
+    description: 'ungrouped, default color',
+  },
+]
+
 export function facetOf(groupBy: FeatureGroupBy | undefined) {
   if (groupBy === undefined) {
     return null
@@ -36,19 +57,22 @@ export function groupByOf(
     : { type: 'attribute', attribute: facet.field, domain }
 }
 
-export function colorOf(color: string | undefined, colorByAttribute: string) {
+export function colorOf(
+  color: string | undefined,
+  colorByAttribute: string,
+): ChannelSpec['color'] {
   return color === undefined
     ? null
     : color === STRAND_COLOR_JEXL
       ? { field: STRAND }
       : colorByAttribute && color === attributeColorJexl(colorByAttribute)
         ? { field: colorByAttribute }
-        : { value: color }
+        : color
 }
 
 export function colorSlotOf(color: NonNullable<ChannelSpec['color']>) {
-  return 'value' in color
-    ? color.value
+  return typeof color === 'string'
+    ? color
     : color.field === STRAND
       ? STRAND_COLOR_JEXL
       : attributeColorJexl(color.field)
@@ -58,6 +82,16 @@ export function filterOf(activeFilters: string[]) {
   return activeFilters.length
     ? activeFilters.map(f => f.replace(/^jexl:/, ''))
     : null
+}
+
+function colorScaleProblems(color: ChannelSpec['color']) {
+  return color && typeof color !== 'string' && (color.domain || color.palette)
+    ? [
+        color.field === STRAND
+          ? "color: strand's colors are fixed, so it takes no domain or palette"
+          : 'color: domain and palette are not taken on this track yet',
+      ]
+    : []
 }
 
 export function channelSpecProblems(spec: ChannelSpec, jexl: JexlInstance) {
@@ -70,15 +104,18 @@ export function channelSpecProblems(spec: ChannelSpec, jexl: JexlInstance) {
       code: ensureJexlPrefix(f),
     })),
   ]
-  return expressions.flatMap(({ channel, code }) => {
-    if (!isJexl(code)) {
-      return []
-    }
-    try {
-      stringToJexlExpression(code, jexl)
-      return []
-    } catch (e) {
-      return [`${channel}: ${e}`]
-    }
-  })
+  return [
+    ...colorScaleProblems(spec.color),
+    ...expressions.flatMap(({ channel, code }) => {
+      if (!isJexl(code)) {
+        return []
+      }
+      try {
+        stringToJexlExpression(code, jexl)
+        return []
+      } catch (e) {
+        return [`${channel}: ${e}`]
+      }
+    }),
+  ]
 }

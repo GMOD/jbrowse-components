@@ -10,6 +10,7 @@ import { attributeColorJexl } from '../../RenderFeatureDataRPC/featureColors.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // An attribute name containing a quote or backslash produces a malformed
@@ -30,7 +31,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
 }: {
   model: IStateTreeNode & {
     setFeatureColor: (arg?: string) => void
-    openChannelSpecDialog: () => void
+    openChannelSpecDialog: (seed?: ChannelSpec) => void
   }
   handleClose: () => void
   initialAttribute?: string
@@ -58,7 +59,9 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
       actions={
         <Button
           onClick={() => {
-            model.openChannelSpecDialog()
+            model.openChannelSpecDialog(
+              trimmed ? { color: { field: trimmed } } : undefined,
+            )
             handleClose()
           }}
         >
