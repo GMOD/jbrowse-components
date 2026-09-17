@@ -976,9 +976,11 @@ async function main() {
   // when the specs passed on an idle box. Whichever specs are in flight when the
   // machine tips over are the ones named, so the summary was about load.
   //
-  // The liveness probe is the test, not the message text: the misleading shape
-  // carries no signature to match on. One retry, in a new browser, and a second
-  // death is reported as the failure it then is.
+  // Puppeteer's `error` event is the renderer crashing, and it ends the attempt
+  // at once: otherwise every wait in flight runs out its full readyTimeout
+  // first, and Chrome can hand the tab a fresh renderer that answers the
+  // liveness probe. The probe covers the deaths that event misses. One retry,
+  // in a new browser, and a second death is reported as the failure it then is.
   async function withFreshPage<T>(
     spec: BrowserScreenshotSpec,
     body: (page: Page) => Promise<T>,
@@ -1016,22 +1018,34 @@ async function main() {
           report('pageerror', err instanceof Error ? err.message : String(err))
         })
         const net = trackNetwork(page)
+        let crashError: Error | undefined
+        const crash = new Promise<never>((_, reject) => {
+          page.once('error', err => {
+            crashError = err
+            reject(err)
+          })
+        })
+        const run = body(page)
+        crash.catch(() => {})
+        run.catch(() => {})
         try {
-          return await body(page)
+          return await Promise.race([run, crash])
         } catch (err) {
-          const alive = await Promise.race([
-            page.evaluate(() => true).catch(() => false),
-            // unref'd, or the loser of this race holds the event loop open for
-            // its full delay after the last spec has been written
-            new Promise<boolean>(resolve => {
-              setTimeout(() => {
-                resolve(false)
-              }, LIVENESS_PROBE_MS).unref()
-            }),
-          ])
+          const alive =
+            !crashError &&
+            (await Promise.race([
+              page.evaluate(() => true).catch(() => false),
+              // unref'd, or the loser of this race holds the event loop open for
+              // its full delay after the last spec has been written
+              new Promise<boolean>(resolve => {
+                setTimeout(() => {
+                  resolve(false)
+                }, LIVENESS_PROBE_MS).unref()
+              }),
+            ]))
           if (!alive && attempt === 0) {
             console.error(
-              `    [${spec.name}] page died mid-capture, retrying once in a fresh browser`,
+              `    [${spec.name}] ${crashError ? 'renderer crashed' : 'page died'} mid-capture, retrying once in a fresh browser`,
             )
             continue
           }

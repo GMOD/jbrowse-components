@@ -322,6 +322,9 @@ export async function debugDump(page: Page, name: string) {
   const bodyText = await page
     .evaluate(() => document.body.innerText.substring(0, 800))
     .catch(() => undefined)
+  if (page.isClosed()) {
+    return
+  }
   console.error(
     bodyText === undefined
       ? `    [${name}] debug text: <page unreachable>`
