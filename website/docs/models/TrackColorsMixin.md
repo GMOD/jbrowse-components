@@ -21,6 +21,7 @@ it lives here rather than being copied into both models.
 | Member | Description |
 | --- | --- |
 | <span id="property-colorby">**colorBy**</span><br><code>colorBy: types.stripDefault(types.string, 'default')</code> | The color-by mode every track in the view renders with. |
+| <span id="property-colordomain">**colorDomain**</span><br><code>colorDomain: types.array(types.string)</code> | The order a text column's labels take under `colorBy: 'attribute:<column>'`: the labels listed here first, the rest sorted. A label's color is its position in that order, so this moves the drawing and the key together. Empty leaves the first-seen order. |
 | <span id="property-trackcolors">**trackColors**</span><br><code>trackColors: types.map(types.string)</code> | trackId -> explicit color under `colorBy: 'track'`. Absent means the track takes an automatic slot from the palette. |
 | <span id="property-hideunlabelled">**hideUnlabelled**</span><br><code>hideUnlabelled: types.stripDefault(types.boolean, false)</code> | Under a text-column mode, draw only the rows that carry a label. |
 
@@ -70,6 +71,7 @@ it lives here rather than being copied into both models.
 | <span id="action-resetattributeranges">**resetAttributeRanges**</span><br><code>() =&gt; void</code> | Forget the accumulated domain, leaving `attributeRanges` reporting what the LOADED fetches cover and nothing else.<br><br>The way back from a monotonic domain, and the only one: a single window holding an outlier widens the ramp for the rest of the session, and `attributeRanges` unions the loaded spans over this, so a reset rescales to what is on screen without waiting for a refetch. Picking a mode is what calls it — the gesture a reader makes when the ramp is telling them nothing is to choose it again. |
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(value: boolean) =&gt; void</code> | Set the view-wide mode, and rescale the ramp, which is the only way back from a domain one outlying window widened. |
 | <span id="action-setcolorby">**setColorBy**</span><br><code>(value: SyntenyColorBy) =&gt; void</code> |  |
+| <span id="action-setcolordomain">**setColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> | Declare the order a text column's labels take. The labels listed lead, the rest follow sorted; an empty list gives back the order the fetches found them in. |
 | <span id="action-settrackcolor">**setTrackColor**</span><br><code>(trackId: string, value: string &#124; undefined) =&gt; void</code> | Pin one track's color under `colorBy: 'track'`, or release it back to an automatic palette slot. |
 | <span id="action-cleartrackcolors">**clearTrackColors**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setshowlegend">**setShowLegend**</span><br><code>(show: boolean) =&gt; void</code> | Close the legend for the mode in use. The legend host's setter: closing the key hides it for this mode only, so picking another mode brings its key up. |

@@ -3810,6 +3810,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "legend": {
           "description": "explicit {label,color} color key for color-encoded categories; overrides the auto-derived legend. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
+        "colorDomain": {
+          "description": "optional legend order for the color categories; listed labels first, the rest sorted.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
         "rowGroups": {
           "description": "array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
@@ -4820,6 +4824,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "what colors a ribbon: \`default\` is ribbonColor; \`strand\` reads the record's strand — the two placements' orientations against the anchor multiplied out, so between the anchor and the first lane the alignment's own strand and between two mate lanes their relative strand — in the synteny view's strand colors, and not the drawn twist: a lane drawn flipped straightens its ribbons on screen while every one of them is an inversion; \`identity\` reads the pair's \`identity\` attribute (a PAF's, or an MCScan table's attributeColumns) on the synteny view's viridis ramp, and a pair without one keeps ribbonColor; \`attribute:<column>\` reads a text column the table declares in attributeColumns (an ancestral linkage group, an orthogroup) and paints one color per distinct label, or the color a \`color\` column put beside it, in the order labels were first seen so a pan does not recolor; a row without one keeps ribbonColor. Every mode keeps ribbonColor's opacity.",
           "$ref": "#/$defs/StringOrJexl",
           "default": "default"
+        },
+        "ribbonColorDomain": {
+          "description": "the order an \`attribute:<column>\` mode's labels take: the labels listed here first, the rest sorted. The order is the palette's too — a label's color is its position — so this moves the key and the ribbons together. Left empty the labels stay in the order the fetches first met them. The other modes paint a fixed pair or a ramp and ignore it.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "drawCurves": {
           "description": "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's view-level \`drawCurves\` override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
@@ -6994,6 +7002,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Feature field whose values color the points under colorBy: field.",
           "$ref": "#/$defs/StringOrJexl",
           "default": "name"
+        },
+        "colorDomain": {
+          "description": "optional legend order for the colour field; listed values first, the rest sorted.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
@@ -16542,6 +16554,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "colorBy": {
           "type": "string"
         },
+        "colorDomain": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "trackColors": {
           "type": "object",
           "additionalProperties": {
@@ -16765,6 +16783,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "colorBy": {
           "type": "string"
+        },
+        "colorDomain": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "trackColors": {
           "type": "object",

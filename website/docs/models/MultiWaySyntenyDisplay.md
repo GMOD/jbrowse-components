@@ -90,6 +90,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-ribboncolorby">**ribbonColorBy**</span><br><code>MultiWayRibbonColorBy</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> | the columns the track declares, each offered as its own ribbon mode. From the config rather than the data, so the menu is right before the first fetch | MultiWaySyntenyDisplay |
 | <span id="getter-ribbonlabels">**ribbonLabels**</span><br><code>CategoricalMode &#124; undefined</code> | the label table an `attribute:` ribbon mode paints from: every label seen in any fetch since the mode was picked, in first-seen order, so a pan adds labels at the end and recolors nothing. Undefined for the fixed modes, and for a column no loaded row carries as text | MultiWaySyntenyDisplay |
+| <span id="getter-ribboncolordomain">**ribbonColorDomain**</span><br><code>string[]</code> | the declared order an `attribute:` mode's labels take. A label's color is its position in that list, so this is the ribbons' order as much as the key's | MultiWaySyntenyDisplay |
 | <span id="getter-drawcurves">**drawCurves**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-showlaneticks">**showLaneTicks**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |

@@ -84,6 +84,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-clusterfield">**clusterField**</span><br><code>string</code> | The raw `clusterField` slot, `auto` until the user picks one. | LinearMultiRowFeatureDisplay |
 | <span id="getter-lengthfield">**lengthField**</span><br><code>string</code> | Feature attribute holding a signed bp length change vs the reference; empty turns the indel-glyph pass off. | LinearMultiRowFeatureDisplay |
 | <span id="getter-domain">**domain**</span><br><code>string[]</code> | The row facet's declared order, off config. | LinearMultiRowFeatureDisplay |
+| <span id="getter-colordomain">**colorDomain**</span><br><code>string[]</code> | The colour key's declared order, off config. The blocks are painted per feature, so this orders the key and nothing else. | LinearMultiRowFeatureDisplay |
 | <span id="getter-colorconfig">**colorConfig**</span><br><code>string &#124; undefined</code> | Raw `color` slot, forwarded to the worker which resolves it per feature. | LinearMultiRowFeatureDisplay |
 | <span id="getter-samplecolormap">**sampleColorMap**</span><br><code>Record&lt;string, string&gt;</code> | Map of partition value to color, applied in the worker over the per-feature `color`. | LinearMultiRowFeatureDisplay |
 | <span id="getter-rowproportion">**rowProportion**</span><br><code>number</code> |  | LinearMultiRowFeatureDisplay |

@@ -407,7 +407,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-clearselection">**clearSelection**</span><br><code>() =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-clearselection) |
 | <span id="action-setselectedsashimikey">**setSelectedSashimiKey**</span><br><code>(key: string &#124; undefined) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setselectedsashimikey) |
 | <span id="action-setselectedchainreadids">**setSelectedChainReadIds**</span><br><code>(ids: string[]) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setselectedchainreadids) |
-| <span id="action-setcolorscheme">**setColorScheme**</span><br><code>(colorBy: ColorBy) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setcolorscheme) |
+| <span id="action-setcolorby">**setColorBy**</span><br><code>(colorBy: ColorBy) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setcolorby) |
 | <span id="action-setfilterby">**setFilterBy**</span><br><code>(filterBy: FilterBy) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setfilterby) |
 | <span id="action-setshowsoftclipping">**setShowSoftClipping**</span><br><code>(value: boolean) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setshowsoftclipping) |
 | <span id="action-setmismatchalpha">**setMismatchAlpha**</span><br><code>(value: boolean) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setmismatchalpha) |

@@ -3112,6 +3112,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
+          "name": "colorDomain",
+          "type": "(JexlString | string[])"
+        },
+        {
           "name": "rowGroups",
           "type": "(JexlString | frozen)"
         },
@@ -3755,6 +3759,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "ribbonColorBy",
           "type": "(JexlString | string)"
+        },
+        {
+          "name": "ribbonColorDomain",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "drawCurves",
@@ -5123,6 +5131,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "colorDomain",
+          "type": "(JexlString | string[])"
+        },
+        {
           "name": "scoreField",
           "type": "(JexlString | string)"
         },
@@ -5918,6 +5930,7 @@ export const configManifest: ConfigManifest = {
         "highlight",
         "showHighlightChips",
         "colorBy",
+        "colorDomain",
         "trackColors",
         "hideUnlabelled",
         "type",
@@ -5950,6 +5963,7 @@ export const configManifest: ConfigManifest = {
         "displayName",
         "minimized",
         "colorBy",
+        "colorDomain",
         "trackColors",
         "hideUnlabelled",
         "type",
