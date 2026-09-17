@@ -121,6 +121,10 @@ const ABSENT_ON_PURPOSE = new Map([
   ],
   ['maxRegionBp', 'PANGENOME_GRAPHS, a graph plugin model prop, the same move'],
   ['maxGraphNodes', 'PANGENOME_GRAPHS, the same move'],
+  [
+    'carriedBy',
+    'PANGENOME_GRAPHS names the node popup field, the same move — the figure spec that quoted it here was retired with the duplicate pggb figures',
+  ],
   ['filterPaf', 'DEMO_DATASETS names a step in SVbyEye'],
   [
     'ERR_INSUFFICIENT_RESOURCES',
@@ -150,6 +154,10 @@ const ABSENT_ON_PURPOSE = new Map([
   [
     'viewTrackConfigs',
     'CONFIG_PATTERN names it under ADR-084, which deleted it',
+  ],
+  [
+    'rowOrder',
+    'CONFIG_PATTERN names one of the three spellings the facet domain drifted into, which "domain everywhere" collapsed',
   ],
   [
     'clickedInstanceIdx',

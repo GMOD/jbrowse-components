@@ -70,14 +70,14 @@ above is for a dataset that is configured but closed.
   [all-vs-all](/docs/tutorials/allvsall_synteny) dataset, where a locus reaches
   several assemblies at once.
 - **Right-click a single alignment** in a synteny track drawn in a linear genome
-  view and pick **Launch → Linear synteny view with ...** (naming the mate
-  assembly), which opens the one pair that alignment describes. Its **Use CIGAR
-  to map the current visible region to the target** option walks the alignment
-  to find the interval that matches what you are looking at; without it the
-  panels frame on the whole block's endpoints, and the dialog prints where each
-  panel will open either way. An alignment carrying no CIGAR — a PAF written
-  without minimap2's `-c`, MashMap, MCScan, the coarse tier of a PIF — offers
-  the same option as **Clip the panels to the current visible region**,
+  view and pick **Launch → Linear synteny view with \<assembly\>**,
+  <!-- menu-path-ok --> which opens the one pair that alignment describes. Its
+  **Use CIGAR to map the current visible region to the target** option walks the
+  alignment to find the interval that matches what you are looking at; without
+  it the panels frame on the whole block's endpoints, and the dialog prints
+  where each panel will open either way. An alignment carrying no CIGAR — a PAF
+  written without minimap2's `-c`, MashMap, MCScan, the coarse tier of a PIF —
+  offers the same option as **Clip the panels to the current visible region**,
   estimating the target interval by interpolating across the block, which is the
   straight line its ribbon is already drawn as. Worked through in
   [](/docs/tutorials/genomes_synteny). On a track declaring three or more
