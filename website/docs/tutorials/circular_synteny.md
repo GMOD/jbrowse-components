@@ -158,19 +158,19 @@ same circle from the chain track; as a session it is:
 }
 ```
 
-The two genomes share their chromosome names, so the arcs are labelled
-identically around the circle: the human chromosomes run clockwise from the top
-and the mouse chromosomes follow, and the view's title bar names the two in that
-order. Every ribbon is one flat translucent fill, and a reverse alignment reads
-as a twist between its two ends rather than as a second color.
+hg38 and mm39 share their chromosome names, so the arcs are labelled identically
+around the circle: the human chromosomes run clockwise from the top and the
+mouse chromosomes follow, and the view's title bar names the two in that order.
+Every ribbon is one flat translucent fill, and a reverse alignment reads as a
+twist between its two ends.
 
 <Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver block as a ribbon between the two genomes. Each human autosome fans out to several mouse chromosomes; the two X arcs hold one bundle." />
 
 ## Ordering the second genome
 
-Both arcs run the same way round the circle, so a mouse chromosome laid out in
-its own contig order sits opposite the human chromosome it does not align to,
-and each ribbon crosses the middle to reach its partner.
+The human and mouse arcs run the same way round the circle, so a mouse
+chromosome laid out in its own contig order sits opposite the human chromosome
+it does not align to, and each ribbon crosses the middle to reach its partner.
 
 `autoDiagonalize` is the reorder the
 [linear synteny view](/docs/user_guides/linear_synteny_view) and the
