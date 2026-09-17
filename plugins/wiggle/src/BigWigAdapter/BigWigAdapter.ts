@@ -143,13 +143,23 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
 
   private async rawSectionLevelsPre(opts: BaseOptions) {
     const source = await this.setup(opts)
-    return [
-      ...syntheticReductionLevels(
-        source.fileLevels,
-        await sampleMeanRecordSpan(source, opts),
-      ),
-      ...source.fileLevels,
-    ]
+    return source.finestCandidate === Infinity
+      ? source.fileLevels
+      : [
+          ...syntheticReductionLevels(
+            source.fileLevels,
+            await sampleMeanRecordSpan(source, opts),
+          ),
+          ...source.fileLevels,
+        ]
+  }
+
+  /**
+   * The reduction levels this file answers in, finest first: the synthetic
+   * tiers its raw sample keeps, then the file's own. Reads the sample.
+   */
+  public async getReductionLevels(opts: BaseOptions = {}) {
+    return this.rawSectionLevels(opts)
   }
 
   // Only a zoom some synthetic bin could serve, from half the finest candidate

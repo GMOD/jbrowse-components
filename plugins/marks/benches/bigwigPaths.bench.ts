@@ -51,10 +51,6 @@ import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 
 import BigWigAdapter from '../../wiggle/src/BigWigAdapter/BigWigAdapter.ts'
 import configSchema from '../../wiggle/src/BigWigAdapter/configSchema.ts'
-import {
-  sampleMeanRecordSpan,
-  syntheticReductionLevels,
-} from '../../wiggle/src/BigWigAdapter/syntheticTiers.ts'
 import { tierSpanRange } from '../../wiggle/src/BigWigAdapter/tierSpanRange.ts'
 import { processFeaturesFromArrays } from '../../wiggle/src/util.ts'
 import { autoBinStep } from '../src/LinearMarkDisplay/autoBin.ts'
@@ -76,12 +72,8 @@ const adapter = new BigWigAdapter(
     bigWigLocation: { localPath: file, locationType: 'LocalPathLocation' },
   }),
 )
-const source = await adapter.setup()
-const { header, fileLevels, firstLevel } = source
-const levels = [
-  ...syntheticReductionLevels(fileLevels, await sampleMeanRecordSpan(source)),
-  ...fileLevels,
-]
+const { header, firstLevel } = await adapter.setup()
+const levels = await adapter.getReductionLevels()
 const refName = flag('refName') ?? Object.keys(header.refsByName)[0]!
 const refInfo = header.refsByNumber[header.refsByName[refName]!]!
 const start = num('start', 0)

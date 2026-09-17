@@ -233,6 +233,7 @@ describe('a BigWig with no zoom levels', () => {
     }
     const { fileLevels } = await adapter.setup()
     expect(fileLevels).toEqual([])
+    expect(await adapter.getReductionLevels()).toEqual([])
     const raw = await adapterAt(
       require.resolve('./test_data/volvox.bw'),
     ).getFeatureArrays(region, { bpPerPx: 1 })
