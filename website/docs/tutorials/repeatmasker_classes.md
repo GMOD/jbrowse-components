@@ -110,9 +110,9 @@ changes.
 
 Two details in the config are easy to miss:
 
-- The display is not the track's default, so it needs a real `displays` entry
-  rather than the `displayDefaults` shorthand, whose `color` would reach the
-  default display as well.
+- The display is not the track's default, so it needs a real `displays` entry:
+  the `displayDefaults` shorthand's `color` would reach the default display as
+  well.
 - Whichever display is listed **first** becomes the one the track opens with.
   Putting a bare `{ "type": "LinearBasicDisplay", "displayId": ... }` ahead of
   the multi-row entry keeps the packed form as the default and leaves the lanes
@@ -130,9 +130,9 @@ tabix https://jbrowse.org/ucsc/hg38/rmsk.bed.gz chr17:45,700,000-45,750,000 |
   sort -k3 -nr
 ```
 
-The classes it prints are the lanes on screen, and their bp totals are the ink
-in each lane. A lane in the picture with no line here, or the reverse, means the
-view is not showing the file you think it is.
+The classes it prints are the lanes on screen, and their bp totals are the area
+drawn in each lane. A lane in the picture with no line here, or the reverse,
+means the view is not showing the file you think it is.
 
 The `Unknown` lane is the control: no entry in the `sampleColorMap` above and
 none in the cookbook's lookup table, and it is on screen anyway, because the
@@ -175,8 +175,8 @@ jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
 tabix -p bed rmsk.bed.gz
 ```
 
-Those are UCSC's first seven columns in UCSC's order, so the `tabix | awk` check
-above reads the result unchanged.
+The bed's columns are UCSC's first seven columns in UCSC's order, so the
+`tabix | awk` check above reads the result unchanged.
 
 ## Reproduce it end to end
 
