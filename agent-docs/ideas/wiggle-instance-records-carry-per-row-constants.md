@@ -1,6 +1,6 @@
 ---
 name: wiggle-instance-records-carry-per-row-constants
-description: Measured 2026-09-17 at 1000 sources on real BigWigs. The 256MB buffer ceiling only bites in a BigWig's raw section, where bbi returns up to 9 features a pixel, so synthetic zoom tiers below the first real one are the biggest lever (7.8x fewer features on an FST scan). Summary tiers already stay under 2 a pixel, so per-pixel decimation buys nothing there. Splitting the step-line and center-line records is the cheap win. A per-row colour texture shrinks every record by 4-8 bytes and turns a recolour into an 8KB upload, but the density LUT slot is taken and `Sampler2D.Load` emits broken WGSL. A positive-only specialisation isn't worth building, and ADR-016's split costs 57-85ms and doubles the wire bytes on signed data.
+description: Measured 2026-09-17 at 1000 sources on real BigWigs. The 256MB buffer ceiling only bites in a BigWig's raw section, where bbi returns up to 9 features a pixel, so synthetic zoom tiers below the first real one are the biggest lever (7.8x fewer features on an FST scan). Summary tiers already stay under 2 a pixel, so per-pixel decimation buys nothing there. The step-line and center-line records are split (2026-09-17, 44 to 32 and 36 bytes), but the prototype's 40% faster encode came from literal word offsets, not the smaller record. A per-row colour texture shrinks every record by 4-8 bytes and turns a recolour into an 8KB upload, but the density LUT slot is taken and `Sampler2D.Load` emits broken WGSL. A positive-only specialisation isn't worth building, and ADR-016's split costs 57-85ms and doubles the wire bytes on signed data.
 ---
 
 # Wiggle instance records carry per-row constants
@@ -19,7 +19,9 @@ production packers. The prototype packers in `prototypePackers.ts` run beside
 it, and no shader draws them. Before it prints any time, the bench checks every
 prototype field against the production buffer, colours included, through a
 per-row table built from `gpuProps`. `runInstanceBufferScenarios.sh` runs the
-six scenarios below, and `benches/results/*.json` holds the raw output.
+six scenarios below. `benches/results/*.json` holds the re-run after #2 landed,
+with production step and center arms. The raw output behind the tables below
+is those files at 612b15c4be.
 
 ```
 SCRNA=/path/CD4_T.bw FST=/path/fst_scan.bw \
@@ -85,6 +87,10 @@ second driver.
 | scRNA 1Mb | 9 / 11 / 12 | 28 / 30 / 9 / 8 | 33 / 18 / 15 | 39 / 19 |
 
 `buildSourceRenderData` itself costs 0.3-1ms. The packers are the encode time.
+Every prototype column (fill 16, step 32/24, center 36/28, band 36) writes
+literal word offsets where the production packers read generated offset
+objects, which #2 found is worth 20-40% by itself, so these deltas overstate
+what the smaller records buy.
 
 Worker time, `processFeaturesFromArrays` over 1000 sources, in ms:
 
@@ -124,17 +130,43 @@ until the last tier. The prototype `decimateRaw` is unoptimised (FST worker 107
 start's bin. It is a sizing prototype, not the implementation. Coverage BigWigs
 with 50bp bins gain less than 1bp tracks.
 
-### 2. Separate step-line and center-line records
+### 2. Separate step-line and center-line records — done
 
-**Gain:** step 44 → 32 bytes (-27%), center 44 → 36 (-18%). The per-source
-ceiling moves from 6,100 to 8,388 (step) or 7,456 (center). Step encode reads
-~40% faster in every scenario, well past noise. Center encode reads ~5-15%
-faster, within noise.
+**Landed 2026-09-17** on branch `wiggle-line-records`. `wiggleLine.slang` draws
+the step line on 32 bytes and `wiggleLineCenter.slang` the center line on 36,
+with a buffer of its own instead of borrowing the step line's through
+`bufferOf`. `rowScoreToYPx` and `pivotSideColor` moved into `wiggleCommon`, so
+both lines and the band still place and colour a score through one function.
 
-**Cost and risk:** low. Split `wiggleLine.slang` into two modules, since a
-module reflects one instance struct. `lineCenter` then owns its buffer instead
-of borrowing `line`'s through `bufferOf`. No HAL change. This repeats the
-eeaabfbb46 fill/line split one level down.
+**Bytes, exact:** step 44 → 32 (-27%), center 44 → 36 (-18%), as predicted.
+The per-source ceiling moves from 6,100 features to 8,388 (step) or 7,456
+(center). FST raw at 1000 sources: 586 → 426 MiB step, 480 MiB center. Both
+still exceed the 256MB floor there, so #1 is still what lets that scan draw.
+
+**Encode: the 40% did not survive.** Paired in one process on the same harness
+(15 rounds, MIN, random order, GC before each arm), main's 44-byte packer
+against the production 32/36-byte ones. Load average 5-12, so the ±35% caveat
+above holds:
+
+| scenario | step 44 / ctrl / 32 | center 44 / ctrl / 36 | step 32 literal | center 36 literal |
+| --- | --- | --- | --- | --- |
+| scRNA raw, positive | 119 / 122 / 116 | 135 / 139 / 139 | 83 | 116 |
+| scRNA raw, signed | 123 / 124 / 123 | 146 / 147 / 155 | 86 | 115 |
+| scRNA 1Mb | 18 / 25 / 13 | 19 / 19 / 27 | 8 | 16 |
+| phyloP, signed | 78 / 76 / 70 | 90 / 92 / 100 | 46 | 74 |
+| phyloP, positive | 76 / 75 / 69 | 87 / 87 / 99 | 55 | 71 |
+| FST raw | 392 / 411 / 350 | 500 / 515 / 439 | 225 | 437 |
+
+Step reads 0-11% faster, inside noise (28% at 1Mb, where the control sat 39%
+off its baseline). Center moves both ways. The prototype arms above
+(`packStepLine32`, `packCenterLine36`) wrote **literal** word offsets, and the
+production packers read the generated `INSTANCE_OFFSET_*` objects. The two
+produce byte-identical buffers, and the literal version alone is 20-38% faster
+on the step line and 0-41% on the center line. Destructuring the offsets into
+locals before the loop recovered only 5-15%. So the encode lever is how the
+packers address the record, not how big it is, and it applies to all four
+packers. The generated `packInstances` already writes literals but takes one
+array per field. Unmeasured.
 
 ### 3. A per-row colour table (texture), and shader-side sign colouring
 
@@ -251,7 +283,7 @@ which works but is the same HAL work as #3.
 
 ## Order if taken
 
-#2 first: low risk, no HAL, a measured 27% on step lines. #1 next, because it
+#2 is done. #1 next, because it
 is the one that turns "too much data, zoom in" into a picture on dense raw
 data, and it lives entirely in the adapter. #3 and #4 together, as one project,
 since each makes the other pay. Settle density's texture first.
