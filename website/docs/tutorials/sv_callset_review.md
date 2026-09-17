@@ -139,7 +139,7 @@ What each picture shows:
 - **nothing connecting the panels** means the reads do not support the caller's
   coordinates, which is either a false call or a breakpoint placed far enough
   off that `--flank` missed it. Re-render that row wider
-- **curves in the normal too** means germline, not somatic
+- **curves in the normal too** means the variant is germline
 - **a dense fan in a region of ragged coverage** is usually a repeat. The
   connectors are drawn from what the aligner reported, so a read mismapped into
   a repeat contributes a confident-looking curve
