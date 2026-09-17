@@ -1,3 +1,4 @@
+import { groupKeyComparator } from '../util/groupKeys.ts'
 import { formatScore } from '../util/numericUtils.ts'
 
 import type {
@@ -31,6 +32,10 @@ export interface CategoricalScale {
   id: string
   title?: string
   entries: CategoricalEntry[]
+  // The channel's declared order, the same word and rule every categorical
+  // channel reads (`groupKeyComparator`): the values it lists key first, the
+  // rest sorted. Unset leaves `entries` in the order the display built them.
+  domain?: readonly string[]
   // Each value names a set of the display's rows, so a click on its key row
   // can focus them (`LegendHost.focusLegendEntry`). A scale coloring features
   // or cells leaves this unset and its rows stay inert.
@@ -85,14 +90,20 @@ function rampItem(
 }
 
 function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
-  return scale.kind === 'categorical'
-    ? {
-        id: scale.id,
-        title: scale.title,
-        items: scale.entries.map(entry => ({ ...entry })),
-        focusesRows: scale.focusesRows,
-      }
-    : { id: scale.id, title: scale.title, items: [rampItem(scale, lone)] }
+  if (scale.kind !== 'categorical') {
+    return { id: scale.id, title: scale.title, items: [rampItem(scale, lone)] }
+  }
+  const items = scale.entries.map(entry => ({ ...entry }))
+  if (scale.domain?.length) {
+    const compare = groupKeyComparator(scale.domain)
+    items.sort((a, b) => compare(a.value, b.value))
+  }
+  return {
+    id: scale.id,
+    title: scale.title,
+    items,
+    focusesRows: scale.focusesRows,
+  }
 }
 
 /**

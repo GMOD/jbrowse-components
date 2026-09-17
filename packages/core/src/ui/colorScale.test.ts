@@ -124,6 +124,40 @@ test('the export flattens the same sections the screen draws', () => {
   )
 })
 
+test('a domain keys the values it lists first, then the rest sorted', () => {
+  const { sections } = legendSpecOf([
+    {
+      ...svType,
+      domain: ['DUP', 'INV'],
+      entries: [
+        { value: 'DEL', label: 'Deletion', color: 'red' },
+        { value: '', label: 'No type' },
+        { value: 'BND', label: 'Breakend', color: 'green' },
+        { value: 'DUP', label: 'Duplication', color: 'blue', hidden: true },
+      ],
+    },
+  ])
+  expect(sections![0]!.items.map(i => i.value)).toEqual([
+    'DUP',
+    'BND',
+    'DEL',
+    '',
+  ])
+  expect(sections![0]!.items[0]!.hidden).toBe(true)
+})
+
+test('no domain leaves the entries in the order the display built them', () => {
+  const declared = svType.entries.map(e => e.value)
+  expect(legendSpecOf([svType]).sections![0]!.items.map(i => i.value)).toEqual(
+    declared,
+  )
+  expect(
+    legendSpecOf([{ ...svType, domain: [] }]).sections![0]!.items.map(
+      i => i.value,
+    ),
+  ).toEqual(declared)
+})
+
 test('an empty categorical scale is no key; a ramp always is', () => {
   expect(colorScaleIsEmpty({ ...svType, entries: [] })).toBe(true)
   expect(colorScaleIsEmpty(svType)).toBe(false)
