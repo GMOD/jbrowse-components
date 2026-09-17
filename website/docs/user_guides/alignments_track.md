@@ -25,11 +25,11 @@ line up.
 
 <Figure caption="Sort by base groups reads by the nucleotide they carry at the sorted position." src="/img/alignments_sort_by_base.png" />
 
-The track menu's **Sort by...** does the same against the _center line_ (a 1bp
-indicator at the middle of the view), and also sorts by strand, mapping quality,
-or any BAM tag. **Sort by... → Longest reads first** and **Sort by... → Spliced
-reads first** order the whole layout instead, putting the widest reads, or the
-reads with a reference skip (`N`) in the CIGAR, at the top.
+The track menu's **Sort by...** groups reads the same way against the _center
+line_ (a 1bp indicator at the middle of the view), and also sorts by strand,
+mapping quality, or any BAM tag. **Sort by... → Longest reads first** and **Sort
+by... → Spliced reads first** order the whole layout instead, putting the widest
+reads, or the reads with a reference skip (`N`) in the CIGAR, at the top.
 
 ## Color by
 
@@ -177,9 +177,10 @@ with overlap depth as darker shading, the compact reading for a track with many
 groups; expanding one section from its chip opts that one back out to a true
 stack.
 
-These per-section choices apply only within the view. They are not saved to a
-session or a shared link, and changing the grouping dimension clears them, since
-a section name means nothing under a different dimension.
+The chevron, resize, hide, and collapse choices above apply only within the
+view. They are not saved to a session or a shared link, and changing the
+grouping dimension clears them, since a section name means nothing under a
+different dimension.
 
 <Figure caption="HG002 ONT reads grouped and colored by the HP tag. The pileup splits into one tinted section per haplotype, so phased reads and their haplotype-correlated SNPs read at a glance." src="/img/alignments/haplotype.png" />
 
@@ -198,9 +199,9 @@ transcript.
 
 <Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band carries the coverage over its own gene and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
 
-The same split works as a check on the reads. A position colored in one band and
-not the other is carried by one strand alone, the signature of a basecalling
-error rather than a variant.
+Grouping by strand also works as a check on the reads. A position colored in one
+band and not the other is carried by one strand alone, the signature of a
+basecalling error.
 
 <Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. At the left boxed column only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
 
