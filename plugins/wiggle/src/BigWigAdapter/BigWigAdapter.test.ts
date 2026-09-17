@@ -1,3 +1,7 @@
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -158,5 +162,89 @@ describe('the raw sample synthetic tiers are sized from', () => {
     expect(rows!.minScores).toBeDefined()
     await adapter.getZoomRange({ bpPerPx: 19 })
     expect(sampleMeanRecordSpan).toHaveBeenCalledTimes(1)
+  })
+})
+
+function adapterAt(localPath: string) {
+  return new BigWigAdapter(
+    configSchema.create({
+      bigWigLocation: { localPath, locationType: 'LocalPathLocation' },
+    }),
+  )
+}
+
+function rowsOf(r: Awaited<ReturnType<BigWigAdapter['getFeatureArrays']>>) {
+  return Array.from({ length: r.count }, (_, i) => [
+    r.starts[i],
+    r.ends[i],
+    r.scores[i],
+    r.minScores?.[i],
+    r.maxScores?.[i],
+  ])
+}
+
+describe('a synthetic zoom over several regions', () => {
+  it('bins each region as a fetch of that region alone does', async () => {
+    const adapter = adapterAt(require.resolve('./test_data/volvox.bw'))
+    const regions = [
+      { refName: 'ctgA', start: 1000, end: 3000, assemblyName: 'v' },
+      { refName: 'ctgA', start: 2501, end: 6003, assemblyName: 'v' },
+      { refName: 'ctgB', start: 0, end: 100, assemblyName: 'v' },
+      { refName: 'ctgA', start: 20003, end: 21007, assemblyName: 'v' },
+    ]
+    const together = await adapter.getFeatureArraysMulti(regions, {
+      bpPerPx: 5,
+    })
+    expect(together).toHaveLength(4)
+    for (const [i, region] of regions.entries()) {
+      const alone = await adapter.getFeatureArrays(region, { bpPerPx: 5 })
+      expect(rowsOf(together[i]!)).toEqual(rowsOf(alone))
+    }
+    expect(together[0]!.minScores).toBeDefined()
+    expect(together[0]!.count).toBeGreaterThan(100)
+    expect(together[2]!.count).toBe(0)
+  })
+})
+
+describe('a BigWig with no zoom levels', () => {
+  let dir: string
+  let path: string
+  beforeAll(() => {
+    dir = mkdtempSync(join(tmpdir(), 'bigwig-no-zoom-'))
+    path = join(dir, 'no_zoom_levels.bw')
+    const bytes = readFileSync(require.resolve('./test_data/volvox.bw'))
+    bytes.writeUInt16LE(0, 6)
+    writeFileSync(path, bytes)
+  })
+  afterAll(() => {
+    rmSync(dir, { recursive: true, force: true })
+  })
+  beforeEach(() => {
+    jest.mocked(sampleMeanRecordSpan).mockClear()
+  })
+
+  it('answers raw records at every zoom, over one range, with no sample', async () => {
+    const adapter = adapterAt(path)
+    const region = {
+      refName: 'ctgA',
+      start: 1000,
+      end: 9000,
+      assemblyName: 'v',
+    }
+    const { fileLevels } = await adapter.setup()
+    expect(fileLevels).toEqual([])
+    const raw = await adapterAt(
+      require.resolve('./test_data/volvox.bw'),
+    ).getFeatureArrays(region, { bpPerPx: 1 })
+    for (const bpPerPx of [0.5, 5, 19, 1000]) {
+      expect(await adapter.getZoomRange({ bpPerPx })).toEqual({
+        minBpPerPx: 0,
+        maxBpPerPx: Infinity,
+      })
+      const [rows] = await adapter.getFeatureArraysMulti([region], { bpPerPx })
+      expect(rows!.minScores).toBeUndefined()
+      expect(rowsOf(rows!)).toEqual(rowsOf(raw))
+    }
+    expect(sampleMeanRecordSpan).not.toHaveBeenCalled()
   })
 })

@@ -655,7 +655,7 @@ describe('against a real file', () => {
     expect(extremes(file, lo, hi)).toEqual(extremes(raw, lo, hi))
   })
 
-  test('two extents over one locus at one zoom read the same bins', async () => {
+  test('two extents over one locus at one zoom read the same bins, and the same values where a merged row is cut', async () => {
     const adapter = new BigWigAdapter(
       configSchema.create({
         bigWigLocation: {
@@ -664,10 +664,10 @@ describe('against a real file', () => {
         },
       }),
     )
-    const rowsAt = async (start: number, end: number) => {
+    const rowsAt = async (start: number, end: number, bpPerPx = 19) => {
       const [r] = await adapter.getFeatureArraysMulti(
         [{ refName: 'ctgA', start, end, assemblyName: 'v' }],
-        { bpPerPx: 19 },
+        { bpPerPx },
       )
       return Array.from({ length: r!.count }, (_, i) => [
         r!.starts[i],
@@ -685,6 +685,19 @@ describe('against a real file', () => {
     expect(wide).toContainEqual(narrow[0])
     expect(wholeRecord).toHaveLength(1)
     expect(wide).toContainEqual(wholeRecord[0])
+
+    // 4bp bins: identical bins over 20-40 merge into one row, which a fetch
+    // extent starting at 28 cuts. Bins past the extent aren't known, so the
+    // row bounds follow the fetch; the value at every base does not
+    const merged = await rowsAt(0, 20000, 5)
+    const cut = await rowsAt(30, 2000, 5)
+    expect(merged).toContainEqual([20, 40, 5, 5, 5])
+    expect(cut[0]).toEqual([28, 40, 5, 5, 5])
+    const valueAt = (rows: typeof merged, base: number) =>
+      rows.find(r => r[0]! <= base && base < r[1]!)?.slice(2)
+    for (let base = 30; base < 2000; base++) {
+      expect(valueAt(cut, base)).toEqual(valueAt(merged, base))
+    }
   })
 
   test('the file-level span keeps a bin off data as coarse as it', async () => {
