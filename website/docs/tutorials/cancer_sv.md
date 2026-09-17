@@ -187,12 +187,12 @@ pieces at every breakpoint and a prime on a piece crossed against it. **Save
 segment map (SVG)** writes that map for the picked route as a figure, and **Copy
 caption** puts the string and each letter's coordinates on the clipboard.
 
-This dataset is the reconstruction at its easiest: ONT reads tens of kilobases
+COLO829 is the easiest case for this reconstruction: ONT reads tens of kilobases
 long, an event that moves whole arms, and 29 molecules crossing all three loci.
 Junctions under 1 kb are mostly missed, because the aligner writes them inside a
-read's CIGAR rather than as a split alignment. What the reconstruction needs,
-and how to weigh a route once it appears, is in
-[](/docs/user_guides/derivative_allele#what-the-reconstruction-needs).
+read's CIGAR rather than as a split alignment.
+[](/docs/user_guides/derivative_allele#what-the-reconstruction-needs) covers
+what the reconstruction needs and how to weigh a route once it appears.
 
 The result is the view **Linear read vs ref** produces from a read, with the
 lower panel holding the path a group of reads agrees on. Running **Linear read
@@ -260,9 +260,10 @@ the next section.
 `derive` builds the allele's **sequence**: it pulls the reads spanning every
 locus, takes the longest as a backbone, polishes it into a consensus with the
 rest, aligns that consensus back to the reference, and realigns the reads to it.
-The in-app picker hands off to it: **Copy derive command** in the **Reconstruct
-derivative allele** dialog writes this command for the route you picked, with
-the track's alignment file and both sides of every junction filled in.
+The in-app picker builds the same command: **Copy derive command** in the
+**Reconstruct derivative allele** dialog writes this command for the route you
+picked, with the track's alignment file and both sides of every junction filled
+in.
 
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
@@ -285,10 +286,10 @@ wrote der3_RARB.vs_reference.paf
 wrote der3_RARB.derivative_segments.bed
 ```
 
-Four contiguous segments: two chr3 arms in opposite orientations, a foldback,
-with short pieces of chr10 and chr12 spliced in at the turn. Those two fragments
-are templated insertions, stretches of other chromosomes captured at a repair
-junction.
+The derivative has four contiguous segments: two chr3 arms in opposite
+orientations, a foldback, with short pieces of chr10 and chr12 spliced in at the
+turn. Those two fragments are templated insertions, stretches of other
+chromosomes captured at a repair junction.
 
 The PAF is a synteny track and the consensus is an assembly, so the
 reconstruction loads against the reference directly. The BED is the same
@@ -316,8 +317,8 @@ Ribbons below are colored by the reference chromosome they come from. The last
 segment names the event: an interval the allele has already carried, read back
 on the other strand, so the derivative turns around on itself. That leaves the
 stretch in the allele twice in opposite orientations, an inverted duplication,
-with the two templated inserts at the turn. Fold-backs are the canonical opening
-move of a breakage-fusion-bridge cycle.
+with the two templated inserts at the turn. A fold-back is the first step of a
+breakage-fusion-bridge cycle.
 
 The read lane under the reference row draws split alignments only, one row per
 molecule, with the truth set's validated calls above it.
@@ -339,10 +340,10 @@ alignment. They are the reads the consensus was polished from, so that shows
 they agree with each other; the truth set, called from other platforms, is the
 independent check.
 
-Each hg38 window runs past the segment the allele takes, so the bare reference
-either side of the reads is what this allele leaves behind. That lane draws
-split alignments only, and its coverage band counts the reads carrying a
-junction, stepping down as each arm runs out.
+Each hg38 window runs past the segment the allele takes, leaving bare reference
+on either side of the reads. That lane draws split alignments only, and its
+coverage band counts the reads carrying a junction, stepping down as each arm
+runs out.
 
 <Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the truth set's validated calls over the same molecules against hg38, split alignments only, each row stopping at a call with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them." src="/img/cancer_sv/derivative_inserts.png" />
 

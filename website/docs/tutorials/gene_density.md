@@ -120,8 +120,8 @@ adapter, a BigWigAdapter over the sidecar:
 The slot is on the adapter rather than the display, so every display over the
 file gets the band. `densityTierBpPerPx` is the one display setting here, and it
 is optional: on the smaller chromosomes a screen of genes fits the fetch budget,
-and the band is the point at that zoom, so the gene track asks for it from 50 kb
-per pixel outward. The repeat tracks need no such nudge.
+and the band reads better than individual genes at that zoom, so the gene track
+asks for it from 50 kb per pixel outward. The repeat tracks need no such nudge.
 
 The three repeat tracks are the RepeatMasker table cut into one BED per family
 on its `repFamily` column, so that the Alu track's features are Alus and its

@@ -188,7 +188,7 @@ vertical genome is the whole change.
 <Figure caption="The jellyfish against Capsaspora, sorted and colored the same way. Each group spreads over several Capsaspora chromosomes, and fewer of the points gather into clusters than in the comb jelly." src="/img/linkage_groups/alg_dotplot_res_cow.png" />
 
 The sponge holding the groups whole while the comb jelly holds them loosely is
-the shape of the argument Schultz et al. make for the comb jellies branching off
+the pattern Schultz et al. use to argue that the comb jellies branched off
 before the sponges did. The other two figures are read against this outgroup
 frame.
 

@@ -7,7 +7,7 @@ tutorial_category: Configuration & embedding
 
 Embedding a genome browser in a web page takes one `<script>` tag and no build
 step. Drop `assembly`, `tracks`, and `init` into `<LinearGenomeView>` and the
-component owns the view engine itself.
+component runs the view engine, with nothing else to wire up.
 
 ## Prerequisites
 

@@ -125,7 +125,7 @@ Each long read is a single DNA molecule, so reads that carry an `HP` haplotype
 tag (from WhatsHap, HiPhase, or ONT's `wf-human-variation`) can be separated by
 allele. Pick **Group by... → Tag...** from the track menu and enter `HP`. The
 dialog scans the reads in view, reports the values it found, and offers to color
-reads by the same tag, with that box arriving **checked**; uncheck it to keep
+reads by the same tag, with that box **checked** by default; uncheck it to keep
 the methylation coloring. The pileup then stacks into one band per haplotype,
 computed in the browser, one band methylated over the island and the other not.
 
@@ -141,7 +141,7 @@ and its source in the same view, on one x scale.
 The aggregate and the reads below it split the same way, molecule by molecule,
 with the same haplotype on the same side.
 
-The same split can be declared rather than clicked: a
+The same split can be declared in a config: a
 [mark display](/docs/config_guides/mark_display#facets) whose mark carries
 `facet: "HP"` opens with one band of rows per haplotype, named by a chip.
 

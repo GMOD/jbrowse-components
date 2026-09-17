@@ -224,7 +224,7 @@ are viewing out of the 2.3 GB file. The adapter needs only the S3 URL, on a
 haplotypes, drawing one row per haplotype. Co-inherited blocks are visible only
 in that form.
 
-On the MHC class II window the lane arrives as a wall. The VCF is fully
+On the MHC class II window the lane draws as a wall. The VCF is fully
 decomposed, so this window holds over fourteen thousand records, most of them
 SNPs and the rest small indels. This file already contains the structural tier.
 Open the track menu, choose **Edit filters**, and enter:

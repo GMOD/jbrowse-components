@@ -50,7 +50,7 @@ starting from a gene. Pick a species, type a gene symbol, and **Open in
 JBrowse** opens a session with all three views built and connected. It takes a
 `gene` and a `taxon` in its own URL, so
 [?gene=TP53&taxon=9606](https://gmod.org/JBrowseMSA/gene-explorer/?gene=TP53&taxon=9606)
-arrives with the gene resolved.
+opens with the gene resolved.
 
 The Gene Explorer's genome view collapses the introns, so the whole CDS is on
 screen at residue zoom. Its catalog is seven species: human genes arrive with
@@ -86,7 +86,7 @@ under **Advanced...** in the view menu afterwards.
 
 <Video src="/media/proteins/genomes_protein_launch.mp4" caption="TP53 on the hosted hg38 with NCBI RefSeq and ClinVar loaded: the right-click launcher, the dialog resolving a UniProt entry and an isoform, and the structure Launch renders. Hovering a coding position afterwards picks out its residue on the structure and in the alignment above it; the intron between the two exons picks out nothing." />
 
-The structure arrives with the genome view still above it. Hovering a genomic
+The structure opens with the genome view still above it. Hovering a genomic
 position highlights the matching residue on the structure, on the pairwise
 alignment above it, and in the per-residue tracks; hovering the structure
 highlights the genomic position.
@@ -123,7 +123,7 @@ add tracks to, so it is absent from the single-view embedded components.
 
 <Figure src="/img/protein/annotation_1d.png" caption="TP53 on hg38 above the 1D protein view its gene menu launched, with four of the session tracks turned on: the DNA binding call, UniProt natural variants, AlphaFold pLDDT and AlphaMissense substitution scores, all in residue coordinates. Confidence and variant density both fall away over the terminal tails." />
 
-<Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, where everything it can build is listed, and the 1D annotation view. The view arrives with none of its tracks on; DNA binding, Natural variant, AlphaFold confidence and AlphaMissense scores come on from Session tracks in the selector." />
+<Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, where everything it can build is listed, and the 1D annotation view. The view opens with none of its tracks on; DNA binding, Natural variant, AlphaFold confidence and AlphaMissense scores come on from Session tracks in the selector." />
 
 The dialog's other two tabs take a structure from elsewhere: **Foldseek search**
 finds structures resembling the protein's own, and **Open file manually** takes

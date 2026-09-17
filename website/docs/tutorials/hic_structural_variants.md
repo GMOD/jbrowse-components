@@ -95,7 +95,7 @@ and JBrowse also fetches the contacts _between_ the two, drawn in the wedge
 between their triangles. Type both locations into the location box, separated by
 a space.
 
-<Video src="/media/hic/two_regions.mp4" caption="A chr22 window typed into the location box beside a chr9 one, GM12878 above and K562 below: the wedge between the two triangles arrives with the second region." />
+<Video src="/media/hic/two_regions.mp4" caption="A chr22 window typed into the location box beside a chr9 one, GM12878 above and K562 below: the wedge between the two triangles appears with the second region." />
 
 Contact frequency decays with distance along whatever molecule two loci sit on,
 so two regions on separate chromosomes only touch at background rate. If they

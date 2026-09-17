@@ -209,8 +209,8 @@ score. It defaults to a pre-computed `-log10(p)` in a column called
 `neg_log_pvalue`, so a LOD column needs
 [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) naming it.
 [`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) stays at its
-default, since a LOD is already on the scale the plot draws; it is what a raw or
-natural-log p-value column would need. See the
+default, since a LOD is already on the scale the plot draws; a raw or
+natural-log p-value column would need it instead. See the
 [GWAS track guide](/docs/config_guides/gwas_track).
 
 ```json addtrack
