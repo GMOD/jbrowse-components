@@ -1,159 +1,96 @@
 #!/bin/bash
-# Verdict flips for the 2026-08-16 second pass over the five `bad` items, to be
-# run FROM THE PRIMARY CHECKOUT once the branch has landed.
+# Verdict flips for the 2026-09-17 pass over the bad items, to be run FROM THE
+# PRIMARY CHECKOUT once the branch has landed and `pnpm figures:pull` has
+# installed the new PNGs there, since an answered entry is hashed against the
+# image on disk.
 #
 # They are not on the branch on purpose: a worktree does not share the review
 # server's lock, and a branch carrying screenshot-review.json makes the ff-only
 # landing refuse against a reviewer's dirty copy. See screenshot-review-plan.md,
 # "Shared worktree".
 #
-# All five were UNCHANGED by the hash triage, i.e. genuinely still open, and all
-# five are answered with a change rather than a reply.
-#
 # NO BACKTICKS INSIDE A NOTE. They are double-quoted here, so a backtick pair is
-# command substitution and the words between it vanish from the note the
-# reviewer reads -- silently, apart from a "command not found" that scrolls past.
-# Name a symbol bare, or single-quote the whole note.
+# command substitution and the words between it vanish from the note.
+#
+# Still bad, and deliberately not flipped:
+# - pangenome/hprc_gbz_cfhr_lanes: two bugs. The RPC worker serves
+#   @jbrowse/synteny-core as a UI stub, so the graph plugin's worker-side
+#   clipSyntenyFeature returns a proxy and the lane fetch throws; and the
+#   plugin's own copy of clipFeatureToRegion predates splitAtGapBp, which is
+#   why the rows went solid grey before that. Needs a core export and a plugin
+#   publish.
+# - circular_synteny/rings: the legend is an overlay; a built-in circular view
+#   legend is app work.
+# - multiway_synteny/ecoli_island_lanes: no redesign settled yet.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-node scripts/flip-review.ts good chromhmm \
-  "NAMES ONLY, and the lane went from eight genes to the whole cluster. This
-started life as showDescriptions:false, which has no home on the unified labels
-enum, so migrateBasicConfigSnapshot had resolved it to 'auto' -- and 500 kb of
-HOXA is low enough density that 'auto' brings descriptions back. So the widest
-thing in the lane was 'HOXA cluster antisense RNA 2'.
+for name in protein/connected protein/tp53_hotspot protein/tp53_mapped_chain; do
+  node scripts/flip-review.ts answered "$name" \
+    "Genome view on the left, protein view on the right: the spec now uses the plugin's sideBySide launch."
+done
 
-Pinned to 'name' the same three rows now carry HOXA1 through HOTTIP, both HOXA
-antisense rows, MIR196B and both EVX1 rows. That is also what makes the two
-boxes readable as what they are: the genes left of the red box are the anterior
-half by name now, rather than by taking the label's word for it.
+node scripts/flip-review.ts answered chromhmm \
+  "Rebuilt as a reproduction of Rinn et al. 2007 (Cell 129:1311) Fig. 3 on six of the 127 Roadmap epigenomes. Lung fibroblasts keep HOXA1-A7 active and HOXA9-A13 Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold both halves repressed. The 127-row clustering stays in the tutorial's video, so nothing covers the tree any more."
 
-On the wider question, since you asked whether I am happy with it: the 127-row
-painting is as dense as it is because 127 rows is the dataset, and the two
-things that were chaotic and fixable have both been fixed now -- the key's
-stripe order, and this. What is left that I would still change is the 19-group
-sidebar vocabulary, which is Roadmap's own and whose alternatives in the same
-file are worse (that is the previous round's note). Say the word if you want
-that re-plotted rather than defended."
+node scripts/flip-review.ts answered gc_content \
+  "Yes. Reading left to right the skew flips from + to - at the terminus and from - to + at the origin, where the leading arm wraps through position 0. Both flips are now called out."
 
-node scripts/flip-review.ts good dog10k-size-fst-scan \
-  "BOTH, and the badge turns out to have been a rendering problem rather than a
-spec one. It was already gone from the spec last round; what kept it in the
-picture is the content-stable gate -- removing a 30 px circle from a 3000 px
-capture is under the 0.5% a re-render has to differ by, so the part was skipped
-and the composition restacked the old PNG. --force is the answer, and the same
-trap is worth knowing for any small annotation edit.
+node scripts/flip-review.ts answered pangenome/local_subgraph \
+  "The pill now says what the open end is and how to close it: the node's other link is outside the extracted region, and a wider region closes it. Here that region holds about 6,000 segments against the 48 drawn, which is why the figure keeps the narrow cut."
 
-THE WEDGE. Its apex is under three pixels wide, since the lower panel is 2 Mb of
-chr15 against 2,229 Mb of row, so where it lands is the whole of its accuracy --
-half a percent off and it points at a different chromosome. It is fitted rather
-than eyeballed: least squares over the row's own region dividers, thirty-three
-of them, every one predicted to within 2.4 px, and the data area it solves for
-is the one popgen/in2lt_inversion independently solved for against different
-landmarks. Measured back off the finished render, the apex sits within 2 px of
-the IGF1 point.
+node scripts/flip-review.ts answered cancer_sv/k562_bcr_abl_split \
+  "Left as is. K562 has no long-read DNA to build the derivative chromosome from (ENCODE's four K562 WGS runs are Illumina), and the Iso-Seq reads are spliced, so a reconstruction from them would build the fusion transcript rather than the der(22) allele."
 
-SHORTER: both score lanes 380 to 240, so the figure is 2632 px to 2192 even
-after paying 120 for the gutter the wedge lives in. What a Manhattan lane is
-read for is a ratio, and the ratio survives a third off the height.
+node scripts/flip-review.ts answered desktop-open-genome-steps \
+  "Removed the outline boxes around both controls; the numbered badges and labels stay."
 
-That broke every hand-fitted dy on the scan half, which is the part worth
-keeping: those are gone, and a score's y now comes from wiggle-core's own
-axisPlotBox. The three peak labels also moved to the SIDE of their points rather
-than above them, because the tallest peak sits within 40 px of the axis top at
-any lane height, so a pill above it is clipped by exactly the shrink that leaves
-the other two alone."
+node scripts/flip-review.ts answered cancer_sv/derivative_inserts \
+  "Moved the hg38 label into the empty middle of the gene lane, off the gene name."
 
-node scripts/flip-review.ts good qc/smn_block_and_reads \
-  "ALL THREE.
+node scripts/flip-review.ts answered cancer_sv/derivative_synteny \
+  "One callout on the dark rows: each molecule crosses that chr3 stretch twice, forward and then inverted, which is the fold-back itself. The overlap colour is unchanged."
 
-THE WEDGE, sized off the upper frame's own SMN highlight bands -- four landmarks
-whose coordinates are exact, fitted to under 0.8 px of residual. It lands where
-a reader can check it, because the block's right-hand edge is in both frames.
+node scripts/flip-review.ts answered pangenome/hprc_chm13_allele \
+  "The spec now waits for the force layout's loading overlay to clear, and no longer accepts an unsettled capture, so a spinner or a lane error fails the run instead of publishing."
 
-MEDICALLY RELEVANT, said on the picture: SMN1, biallelic loss causes spinal
-muscular atrophy. That was the gap. Every lane in both frames says something
-about mappability and none of them said why anyone sequences here, so the locus
-read as chosen for being hard. SMN1 alone rather than the pair, because SMN2 is
-900 kb away and outside the read frame; its copy-number-modifier role is in the
-prose beside the frame that shows both.
+node scripts/flip-review.ts remove hic/loops_and_domains
+node scripts/flip-review.ts remove genomes_msa/pyrin_residues
+node scripts/flip-review.ts remove genomes_basics/phylop_tp53
+node scripts/flip-review.ts remove synteny_follow_unaligned
+node scripts/flip-review.ts remove synteny_offscreen_mates_click
+node scripts/flip-review.ts remove linkage_groups/alg_dotplot_res_hca
+node scripts/flip-review.ts remove linkage_groups/alg_dotplot_res_cow
 
-COMPRESSED: 3330 px to 3110, with the two frames themselves down 170 css px
-between them and the gutter costing 60 back.
+node scripts/flip-review.ts answered cancer_sv/multihop_reads \
+  "Both halves are 1000 px wide, the route label sits next to the tumour track menu it starts from, and a separate arrow crosses the seam."
 
-The pileup's share of that is height alone, and featureHeight is not a lever
-here -- it was tried and reverted. At 464 bp a pixel a 150 bp read is a third of
-a pixel wide, so the compact preset's extra rows are the sparse tail of the pack
-rather than more field: the MAPQ block came back a picket fence over white.
-Shorter at the default row height keeps every drawn row inside the dense part,
-which is the thing being read."
+node scripts/flip-review.ts answered qc/smn_block_and_reads \
+  "The top frame carried about 70 px of blank page under the app, so the wedge started below it. The frame now ends at the app and the wedge starts on it; its span was already right (70.85-71.5 Mb)."
 
-node scripts/flip-review.ts good hic/loops_and_domains \
-  "BOTH CORNERS BANDED, which is the version of 'make the message obvious' that
-lets the data say it. The frame had no callout at all: the section defines a
-contact domain and a loop in prose, the figure drew one of each, and which one
-was left to the caption -- with six Arrowhead arcs, four HiCCUPS arcs and more
-than one block in the matrix, including a denser one left of MYC that is a
-different domain.
+node scripts/flip-review.ts answered cancer_sv/k562_fusion_inspector_reads \
+  "Zoomed out further on both outer sides, and arcs whose other end is outside both windows are gone. The remaining thin arcs are single split reads, which the display exempts from its support floor on purpose (one chimeric long read is real evidence). Filtering them would need a new split-support setting."
 
-The two bands are the domain's own corners, drawn by the view rather than the
-overlay, so they are columns through every lane. The Arrowhead arc's feet, the
-HiCCUPS arc's feet and the matrix block's two corners all land on them, which is
-the section's claim made checkable instead of asserted. The left corner needed no
-band of its own: the domain starts within half a kilobase of MYC and the gene's
-band was already there, which is also why the ranking was taken to this window.
+node scripts/flip-review.ts answered pangenome_cactus/graph_bubble \
+  "Kept as is. The dashed edge is the route the other four strains take around the IS1 node; without it the insertion looks like the only path and the callout points at nothing."
 
-The pills then say only what no lane can -- that those two columns are one
-object's ends, and that the arc was called FROM the matrix under it, which two
-track names naming the same cell line do not convey.
+node scripts/flip-review.ts answered hg002_haplotypes_location_markers \
+  "Both rows now open on the same 60 kb span, so they share one bp/px, aligned at the insertion."
 
-WHY GM12878, now in the prose, because the page never said: a domain-and-loop
-figure needs a matrix whose own published Arrowhead and HiCCUPS calls exist, and
-deep enough that a 600 kb block has edges. Worth a reader knowing before they
-read the three lanes agreeing as corroboration, since they cannot disagree.
+node scripts/flip-review.ts answered circular_view/coverage_ring_chords \
+  "Coverage is at the bigWig's own resolution now: the ngmlr_cov track no longer sets resolutionMultiplier 10. The legend is still an overlay, as on circular_synteny/rings."
 
-IS IT DIFFERENT IN DIFFERENT CELL TYPES: measured again, and at the level this
-frame draws, no -- every one of the twelve lineages is enriched inside the domain
-against its flanks, 3.6x for NK to 5.2x for CD4 Naive. That is what the lane is
-there to say and the prose says it.
+node scripts/flip-review.ts answered linkage_groups/alg_dotplot_res_emu \
+  "The comb jelly and Capsaspora plots were sparse because the BCnS groups were defined on sponge, cnidarian and bilaterian chromosomes, and those two genomes do not keep them. Both plots are deleted; the six-genome stack carries the comb jelly fan-out."
 
-But there IS a real answer one zoom down, which I did not build because you asked
-this figure to zoom OUT last round. Per 10 kb site inside the domain the lineages
-split: of the fourteen strongest sites, three are myeloid-dominated (~70% of the
-bin across CD14, CD16 and cDC) and two are B-dominated (~50-56% across the two B
-rows). A 700 kb second frame under this one would show that as peaks present in
-some rows and blank in others, which is a genuine negative in the picture. Say
-the word and it is the same two-part shape as the other figures in this pass."
+node scripts/flip-review.ts answered linkage_groups/alg_stack \
+  "Not ideal. autoDiagonalize sweeps top-down from Bolinopsis in its own file order, so every row below, the jellyfish included, is ordered off a comb jelly. The clean order pins the jellyfish row, whose chromosomes are the linkage groups, and sorts outward both ways; Re-order chromosomes has no anchor row yet, so that is an app change, not made in this pass."
 
-node scripts/flip-review.ts good ld/lct_pooled_vs_panel \
-  "TAKEN YOU UP ON IT, and the wider calculation pays off by more than the ask
-assumed. ld/lct_sweep_two_scales is the figure now: a 40 Mb Fst scan of chr2
-above, this frame under a trapezoid below it. Both parts keep their own live
-link, so this one is still openable on its own.
+node scripts/flip-review.ts answered alu_age/young_share \
+  "Removed the strand lane; the strand control stays in the statistics table. Finer windows weaken the trend rather than sharpen it (Spearman rho -0.69 at 1 Mb, -0.63 at 500 kb, -0.52 at 250 kb, -0.36 at 100 kb) as per-bin counts get noisy, so the figure stays at 1 Mb."
 
-scripts/build_lct_fst_scan.sh recomputes the same Weir & Cockerham estimator
-over the same panels of the same release, 40 Mb with LCT in the middle.
-rs4988235 comes out the highest-scoring site of 977,763, and the ten highest are
-all inside the block with it. Of the sites clearing 0.35, sixty-one are in
-134-136 Mb and five are in the other thirty-nine megabases. The lane draws that
-as one cluster at the top of the axis with nothing else near it.
+node scripts/flip-review.ts answered cancer_sv/k562_amplicon_dna \
+  "Three short labels, each with an arrow to the call it names: the two RNA junctions and the break to chr13. The ticks are the display's breakend glyph, a stem with a tick toward the side the derivative keeps, which the tutorial reads, so they stay."
 
-THE ONE THING THAT DESTROYS IT IS WINDOWING, and I built it that way first on
-the reasoning that a 40 Mb scan wants bins the way a Manhattan does. At 100 kb
-bins with WEIGHTED_FST the block ranks 58th of 400 windows, behind runs at 121.5
-and 151.7 Mb that have nothing to do with lactase. A sweep differentiates the
-variants on its own haplotype and leaves the rest of a bin on the background, so
-the bin averages the signal away. Not the bin size and not the contrast: the
-same slice unbinned puts the block first outright. That negative is recorded at
-the top of the build script so nobody re-adds --fst-window-size.
-
-Drawing it needs the opposite adapter setting from the lane below, which pins
-resolutionMultiplier to force raw values: 977k points is 650 a pixel, so here
-the zoom bin is what makes it drawable and summaryScoreMode 'max' is what keeps
-the peak through it. Both lanes share one 0.1-0.5 axis, so the peak is the same
-height in each.
-
-The bigWig is deployed to demos/popgen through deploy-demo.sh. Note the prior
-round's other offer still stands and was not taken: combining this with the
-haplotype matrix figure is a separate column and a separate question."
+node scripts/flip-review.ts answered pangenome/mouse_nnt \
+  "Rebuilt: RefSeq genes and the rGFA segments in the graph's own reference-position colours over the anchored graph, no allele inventory or bubble lanes, bubble labels off, and one callout naming the insertion as the C57BL/6J Nnt deletion, seen from a reference that is C57BL/6J."
