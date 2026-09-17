@@ -1,8 +1,11 @@
 // The tours over the general-usage guides, where the subject IS a route through
 // the app rather than a dataset.
-import { geneGroupingVideoFixtures } from '../specs/features.ts'
+import {
+  GENE_CHANNEL_SPEC_JSON,
+  geneGroupingVideoFixtures,
+} from '../specs/features.ts'
 import { uiVideoFixtures } from '../specs/ui.ts'
-import { LOCATION_BOX, RUBBERBAND, trackMenu } from './shared.ts'
+import { LOCATION_BOX, RUBBERBAND, cascade, trackMenu } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
@@ -487,12 +490,11 @@ export const uiVideos: VideoSpec[] = [
       { type: 'click', text: 'Attribute', hold: 600 },
       {
         type: 'type',
-        selector: 'input[placeholder="e.g. biotype"]',
+        selector: '[data-testid="group-by-attribute"]',
         value: 'gene_biotype',
         hold: 800,
       },
-      { type: 'click', text: 'Also color by this attribute', hold: 800 },
-      { type: 'click', selector: 'button:not([disabled])::-p-text(Apply)' },
+      { type: 'click', text: 'Apply' },
       { type: 'waitForText', text: 'gene_biotype: snoRNA' },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 2500 },
@@ -506,7 +508,7 @@ export const uiVideos: VideoSpec[] = [
       { type: 'click', text: 'Sections', hold: 800 },
       {
         type: 'click',
-        selector: '[role="menuitem"]::-p-text(gene_biotype: protein_coding)',
+        selector: cascade('submenu', 'gene_biotype: protein_coding'),
         hold: 800,
       },
       { type: 'waitForText', text: 'Move up' },
@@ -515,6 +517,54 @@ export const uiVideos: VideoSpec[] = [
       { type: 'waitForText', text: 'Move up', hidden: true },
       { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'waitForText', text: 'Track settings', hidden: true },
+      { type: 'delay', ms: 3500 },
+    ],
+    tailMs: 3000,
+  },
+
+  // The same grouping as `ui/gene_track_sections`, written instead of picked:
+  // the spec names a section order the Group by dialog has no field for.
+  {
+    name: 'ui/gene_track_channel_spec',
+    description:
+      'NCBI RefSeq genes on hg38 grouped by gene_biotype in a declared section order and colored by the same attribute, written as JSON from the Group by dialog',
+    url: geneGroupingVideoFixtures.session,
+    viewportHeight: 740,
+    readySelector: '::-p-text(NCBI RefSeq)',
+    readyTimeout: 120000,
+    settleMs: 10000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'delay', ms: 1500 },
+      {
+        type: 'click',
+        selector: trackMenu(geneGroupingVideoFixtures.trackId),
+        say: 'Write the grouping as JSON from the Group by dialog',
+        hold: 1000,
+      },
+      { type: 'waitForText', text: 'Group by...' },
+      { type: 'click', text: 'Group by...' },
+      { type: 'waitForText', text: 'Edit as JSON...' },
+      { type: 'click', text: 'Edit as JSON...', hold: 800 },
+      { type: 'waitForText', text: 'Facet, color and filter' },
+      { type: 'delay', ms: 2000 },
+      {
+        type: 'type',
+        selector: '[data-testid="channel-spec-json"]',
+        value: GENE_CHANNEL_SPEC_JSON,
+        clear: true,
+        cut: true,
+      },
+      { type: 'waitForText', text: 'Sets facet, color' },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'A facet with its section order, and a color',
+      },
+      { type: 'click', text: 'Apply' },
+      { type: 'waitForText', text: 'gene_biotype: pseudogene' },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 3500 },
     ],
     tailMs: 3000,

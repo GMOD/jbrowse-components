@@ -27,3 +27,9 @@ export const trackMenu = (trackId: string) =>
 // (packages/core/src/util/tracks.ts).
 export const displayReady = (displayId: string) =>
   `[data-display-id="${displayId}"][data-display-phase="ready"]`
+
+// A cascade row by its own testid rather than by its text. `CascadingMenu` slugs
+// each label into `cascading-<kind>-<label>`, so a label that also appears on a
+// section chip or twice in one cascade still names one row.
+export const cascade = (kind: 'submenu' | 'menuitem', label: string) =>
+  `[data-testid="cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}"]`

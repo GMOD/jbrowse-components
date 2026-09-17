@@ -281,6 +281,19 @@ synteny views' `colorDomain` prop — set it where the colours are assigned, so
 the row and the paint agree. The mark display's is `encoding.color.domain`,
 documented in `website/docs/config_guides/mark_display.md`.
 
+The feature display also takes a facet written in the mark display's words,
+from **Edit as JSON...** in its Group by and Color by attribute dialogs:
+`{ facet: { field, domain }, color: "css" | { field, domain, palette }, filter }`,
+parsed by `@jbrowse/display-kit/channelSpec` and written by `applyChannelSpec`
+onto `groupBy`, the `color` slot and the filter override, so nothing stores the
+spec. A color by a field is `categoricalColor` (the mark rule) in the `color`
+slot's jexl, read back by `attributeColorOf`, and the worker's per-feature
+`legendCandidates` derive the key in that domain's order. Two proposals were
+declined in review: a `facet` config key beside `groupBy` (one setting spelled
+twice, and alignments' dimensions are not fields), and filter shorthands such as
+`{ field, oneOf }` (jexl is the filter language, and reading structure back out
+of jexl is the fragile half).
+
 The multi-row display's `partitionField` is the same partition with one fixed
 row per value and no chip. What the mark display does not take is the
 alignments display's per-section collapse, which is that display's lane budget

@@ -164,6 +164,16 @@ const GROUPING_TRACK = {
   showLabels: 'name',
 }
 
+// What `ui/gene_track_channel_spec` pastes into Edit as JSON..., printed in
+// gene_track.md.
+export const GENE_CHANNEL_SPEC_JSON = `{
+  "facet": {
+    "field": "gene_biotype",
+    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+  },
+  "color": { "field": "gene_biotype" }
+}`
+
 export const geneGroupingVideoFixtures = {
   trackId: GROUPING_TRACK.trackId,
   session: lgvSession(DEMO_CONFIG, {

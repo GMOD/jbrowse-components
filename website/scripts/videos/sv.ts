@@ -6,7 +6,7 @@ import { displaySettled } from '@jbrowse/browser-test-utils'
 import { cancerSvVideoFixtures } from '../specs/cancer_sv.ts'
 import { cgiabVideoFixtures, svVideoFixtures } from '../specs/sv.ts'
 import { SORT_BY_GENOTYPE, multisvVideoFixtures } from '../specs/ui.ts'
-import { DENDROGRAM, trackMenu } from './shared.ts'
+import { DENDROGRAM, cascade, trackMenu } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -31,13 +31,6 @@ const ROUTE_LIST = '[data-testid="derivative-path-candidates"]'
 // left on, and off the view's overview strip, which writes the position under
 // the pointer into the view title.
 const WORDMARK = '[aria-label="JBrowse"]'
-
-// A cascade row by its own testid rather than by its text. `CascadingMenu` slugs
-// each label into `cascading-<kind>-<label>`, and the plot-type cascade holds
-// the word Scatter TWICE — once per layout group — so a text match would take
-// whichever of the two the DOM happened to mount first.
-const cascade = (kind: 'submenu' | 'menuitem', label: string) =>
-  `[data-testid="cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}"]`
 
 const cgiabCoverageMenu = trackMenu(cgiabVideoFixtures.coverageTrackId)
 
