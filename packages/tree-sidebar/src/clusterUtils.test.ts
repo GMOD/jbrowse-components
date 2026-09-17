@@ -6,6 +6,7 @@ import {
   computeClusterHierarchy,
   filterRowsBySubtree,
   getLeafNames,
+  orderRowsByDomain,
   parseClusterTree,
   pruneNewickToLeaves,
   reconcileLayout,
@@ -302,6 +303,67 @@ test('filterRowsBySubtree keeps row order, not filter order', () => {
 test('filterRowsBySubtree ignores filter names no row has', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }]
   expect(filterRowsBySubtree(rows, ['dad', 'ghost'])).toEqual([{ name: 'dad' }])
+})
+
+describe('orderRowsByDomain', () => {
+  const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
+
+  test('an empty domain returns the input array itself', () => {
+    expect(orderRowsByDomain(rows, [])).toBe(rows)
+  })
+
+  test('a domain naming none of the rows returns the input array itself', () => {
+    expect(orderRowsByDomain(rows, ['ghost'])).toBe(rows)
+  })
+
+  test('listed rows come first in the domain order', () => {
+    expect(orderRowsByDomain(rows, ['kid', 'dad'])).toEqual([
+      { name: 'kid' },
+      { name: 'dad' },
+      { name: 'mom' },
+    ])
+  })
+
+  // The rest keep the order they arrived in — the tree's leaf order, the
+  // adapter's, the file's — rather than being sorted the way a facet's
+  // unlisted sections are.
+  test('the rest keep the order they arrived in', () => {
+    const many = ['e', 'd', 'c', 'b', 'a'].map(name => ({ name }))
+    expect(orderRowsByDomain(many, ['c']).map(r => r.name)).toEqual([
+      'c',
+      'e',
+      'd',
+      'b',
+      'a',
+    ])
+  })
+
+  test('a listed name with no row places nothing', () => {
+    expect(orderRowsByDomain(rows, ['ghost', 'kid']).map(r => r.name)).toEqual([
+      'kid',
+      'mom',
+      'dad',
+    ])
+  })
+
+  test('a name listed twice places its row once', () => {
+    expect(orderRowsByDomain(rows, ['kid', 'kid']).map(r => r.name)).toEqual([
+      'kid',
+      'mom',
+      'dad',
+    ])
+  })
+
+  test('the rows themselves pass through, overrides and all', () => {
+    const decorated = [
+      { name: 'mom', label: 'Mother', color: 'red' },
+      { name: 'kid', label: 'Child' },
+    ]
+    expect(orderRowsByDomain(decorated, ['kid'])).toEqual([
+      { name: 'kid', label: 'Child' },
+      { name: 'mom', label: 'Mother', color: 'red' },
+    ])
+  })
 })
 
 // The tree is positioned by spacing its own leaves evenly across the row axis

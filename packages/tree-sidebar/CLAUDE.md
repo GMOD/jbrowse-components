@@ -124,8 +124,10 @@ bridged with a label gutter of their own, ~350 lines that existed because the
 shared one read the other name.
 
 `treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
-`showBranchLength` / `showRowLabels`), taking only the per-display descriptions,
-so a display cannot ship two of the three. **The mixin declares the accessors
+`showBranchLength` / `showRowLabels`, plus the `domain` row order the mixin
+reads as `rowDomain` — not `domain`, which is the score axis on multi-wiggle),
+taking only the per-display descriptions, so a display cannot ship three of the
+four. **The mixin declares the accessors
 over those slots**, so a display composes both halves or neither — it used to
 hand-write six `getConf` / `setConf` one-liners while this package's own code
 read them, which is how the labels toggle came to be spelled `showSidebarLabels`

@@ -388,6 +388,42 @@ export function reconcileLayout<D extends { name: string }>(
 }
 
 /**
+ * Seed a row order from a config `domain`: the rows it names come first, in its
+ * order, and every other row keeps the order it arrived in — a supplied
+ * phylogeny's leaf order for MAF, the adapter's for multi-wiggle, the file's
+ * sample order for the variant displays. The tail is not sorted, which is the
+ * one difference from a facet's domain (`groupKeyComparator`): there the
+ * unlisted sections are partition values with no order of their own, and here
+ * the order a row arrived in is itself an answer.
+ *
+ * A name matching no row places nothing, and a name listed twice places its row
+ * once. Applied under {@link reconcileLayout}, so a user's arrangement wins over
+ * the seed.
+ *
+ * Returns `rows` by reference when the domain moves nothing — empty, or naming
+ * none of these rows — so callers can short-circuit on identity, the same
+ * contract {@link reconcileLayout} and {@link filterRowsBySubtree} keep.
+ */
+export function orderRowsByDomain<T extends { name: string }>(
+  rows: T[],
+  domain: readonly string[],
+): T[] {
+  if (!domain.length) {
+    return rows
+  }
+  const byName = new Map(rows.map(r => [r.name, r]))
+  const listed = [...new Set(domain)].flatMap(name => {
+    const row = byName.get(name)
+    return row ? [row] : []
+  })
+  if (!listed.length) {
+    return rows
+  }
+  const placed = new Set(listed)
+  return [...listed, ...rows.filter(r => !placed.has(r))]
+}
+
+/**
  * Overlay a persisted `layout`'s per-row overrides onto rows already in the
  * order they are to be drawn in, matched by `name`. The overrides win; a row the
  * layout does not name keeps what the data gave it, and a layout row naming no

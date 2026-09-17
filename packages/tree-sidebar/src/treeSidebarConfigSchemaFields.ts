@@ -2,16 +2,22 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 /**
  * The config slots a display owes `TreeSidebarMixin` — one object, so a display
- * composing the mixin cannot ship two of the three.
+ * composing the mixin cannot ship three of the four.
  *
- * All three are read by code in *this* package rather than by the display:
- * `showTree` gates `TreeSidebar`, `SvgTreeSidebar` and `treeSidebarOffset`,
- * `showBranchLength` reaches `computeClusterHierarchy` and
+ * The three toggles are read by code in *this* package rather than by the
+ * display: `showTree` gates `TreeSidebar`, `SvgTreeSidebar` and
+ * `treeSidebarOffset`, `showBranchLength` reaches `computeClusterHierarchy` and
  * `treeBranchLengthMenuItem`, `showRowLabels` is `RowLabelsOverlay`'s
  * `showLabels`. Four displays declared them by hand and the set had already
  * drifted: three spelled the labels toggle `showRowLabels` and the fourth
  * spelled it `showSidebarLabels`, so `"showRowLabels": false` on a
  * multi-sample variant track was dropped in silence.
+ *
+ * `domain` is the fourth, and the row axis's declared order: the config seed
+ * under `layout`, which stays the runtime arrangement every drag, dialog,
+ * clustering run and column sort writes. The multi-row feature display had the
+ * only one; the other three had no declared order at all, so a config or a
+ * session spec pinning rows had to write the whole `layout` row table.
  *
  * The **descriptions** are the parameter because they are the part that is
  * genuinely per display — a MAF row is a species, a multi-wiggle row a subtrack,
@@ -21,12 +27,20 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 export function treeSidebarConfigSchemaFields({
   tree,
   rowLabels,
+  rows,
   branchLength = 'position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram)',
 }: {
   /** e.g. "show the species tree sidebar" */
   tree: string
   /** e.g. "draw the species name over the left of each row" */
   rowLabels: string
+  /**
+   * The `domain` sentence, which has to name what a row is and what the rows
+   * it does not list fall back on — a tree's leaf order, an adapter's, a
+   * file's. e.g. "row order: the species listed come first, in this order, and
+   * the rest keep the tree's order"
+   */
+  rows: string
   /** Overridable, but the default sentence is display-independent. */
   branchLength?: string
 }) {
@@ -57,6 +71,18 @@ export function treeSidebarConfigSchemaFields({
       type: 'boolean',
       defaultValue: true,
       description: rowLabels,
+    },
+    /**
+     * #slot
+     * The row axis's declared order, read through the mixin's `rowDomain`
+     * getter and applied under `layout`: a row the list names is placed, a row
+     * it does not keeps the order it arrived in. Empty — the default — is
+     * today's order untouched.
+     */
+    domain: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: rows,
     },
   } as const
 }
@@ -105,7 +131,7 @@ export function rowSeparatorsConfigSchemaFields({
 
 /**
  * What `TreeSidebarMixin` asks a composing display's `configuration` to be — the
- * three slots above and nothing else, which is all the mixin touches. Narrow so
+ * four slots above and nothing else, which is all the mixin touches. Narrow so
  * `getConf`/`setConf` still check the slot name; see `ConfigModelForFields`.
  */
 export type TreeSidebarConfigModel = ConfigModelForFields<

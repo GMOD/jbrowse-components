@@ -162,6 +162,7 @@ describe('the tree toggles', () => {
     ...treeSidebarConfigSchemaFields({
       tree: 'show the tree',
       rowLabels: 'draw each row name',
+      rows: 'row order; the rows listed come first, in this order',
     }),
   })
 
@@ -202,6 +203,39 @@ describe('the tree toggles', () => {
     for (const [other] of others(slot)) {
       expect(m[other]).toBe(true)
     }
+  })
+})
+
+// The fourth slot, and the one with no setter: `layout` is the runtime row
+// order and this is only the seed under it.
+describe('the row domain', () => {
+  const configSchema = ConfigurationSchema('TestDomainDisplay', {
+    ...treeSidebarConfigSchemaFields({
+      tree: 'show the tree',
+      rowLabels: 'draw each row name',
+      rows: 'row order; the rows listed come first, in this order',
+    }),
+  })
+
+  function makeConfigured(configuration: Record<string, unknown> = {}) {
+    return types
+      .compose(
+        'TestRowDomainConfigured',
+        TreeSidebarMixin<Src>(),
+        types.model({
+          type: types.literal('TestDomainDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .create({ type: 'TestDomainDisplay', configuration })
+  }
+
+  it('defaults to no declared order', () => {
+    expect(makeConfigured().rowDomain).toEqual([])
+  })
+
+  it('reads the `domain` slot', () => {
+    expect(makeConfigured({ domain: ['b', 'a'] }).rowDomain).toEqual(['b', 'a'])
   })
 })
 

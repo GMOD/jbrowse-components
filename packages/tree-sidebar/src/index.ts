@@ -60,6 +60,7 @@ export {
   clusteredCladeLayout,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  orderRowsByDomain,
   parseClusterOrder,
   parseClusterTree,
   reconcileLayout,
