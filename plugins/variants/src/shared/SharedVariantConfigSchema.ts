@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
@@ -26,6 +27,7 @@ export default function sharedVariantConfigFactory() {
         defaultValue: 0,
         advanced: true,
       },
+      ...jexlFilterConfigSchemaFields,
       ...rowHeightConfigSchemaFields(),
       ...treeSidebarConfigSchemaFields({
         tree: 'Show the sample clustering tree in the sidebar',

@@ -12,7 +12,7 @@
  *   LinearFeatureDisplay → LinearBasicDisplay
  *
  * Also lifts the per-instance alignments settings a v4.3.0 session persisted
- * (`colorBySetting`, `filterBySetting`, `jexlFilters`, `trackMaxHeight`,
+ * (`colorBySetting`, `filterBySetting`, `trackMaxHeight`,
  * `hideMismatchesSetting`) into the config where they now live as slots — off
  * the nested `LinearAlignmentsDisplay` container's `PileupDisplay` /
  * `SNPCoverageDisplay` sub-nodes and off a flat old display alike, see
@@ -80,7 +80,10 @@ const NESTED_ALIGNMENTS_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
 //
 // `hideSmallIndelsSetting` and `hideLargeIndelsSetting` are deliberately absent:
 // those two toggles have no slot today, the feature having been removed rather
-// than moved, so there is nowhere to carry them.
+// than moved, so there is nowhere to carry them. `jexlFilters` is absent for the
+// same reason since the slot left `baseLinearDisplayConfigSchema`: the
+// alignments display never read it, so the slot this used to carry the value to
+// no longer exists.
 const MIGRATED_INSTANCE_SLOTS: Record<
   string,
   { slot: string; convert?: (value: unknown) => unknown }
@@ -89,7 +92,6 @@ const MIGRATED_INSTANCE_SLOTS: Record<
   colorBySetting: { slot: 'colorBy' },
   filterBy: { slot: 'filterBy' },
   filterBySetting: { slot: 'filterBy' },
-  jexlFilters: { slot: 'jexlFilters' },
   trackMaxHeight: { slot: 'maxHeight' },
   hideMismatchesSetting: {
     slot: 'showMismatches',
@@ -112,10 +114,10 @@ const MIGRATED_INSTANCE_SLOTS: Record<
  * membership is whether the key still works, not which file makes it work.
  *
  * Keyed rather than flat because the same name means different things on
- * different displays: `jexlFilters` is lifted for the alignments display and,
- * differently, for the two variant ones, while on a LinearBasicDisplay — whose
- * own prop has always been `jexlFiltersSetting` — it is simply dead, and a flat
- * list would call that one supported.
+ * different displays: `jexlFilters` still works on the two multi-sample variant
+ * ones, while on a LinearBasicDisplay — whose own prop has always been
+ * `jexlFiltersSetting` — and on the alignments display, which reads no filter
+ * slot at all, it is simply dead, and a flat list would call those supported.
  */
 export const MIGRATED_DISPLAY_INSTANCE_KEYS: Record<string, string[]> = {
   '*': ['heightPreConfig'],

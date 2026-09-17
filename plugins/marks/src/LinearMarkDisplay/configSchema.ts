@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -724,16 +725,7 @@ export function configSchemaFactory() {
         defaultValue: true,
         description: 'draw the colour key',
       },
-      /**
-       * #slot jexlFilters
-       * Jexl filters every feature must pass before it is encoded, written
-       * without the `jexl:` prefix.
-       */
-      jexlFilters: {
-        type: 'stringArray',
-        defaultValue: [],
-        description: 'feature filters, without the jexl prefix',
-      },
+      ...jexlFilterConfigSchemaFields,
     },
     {
       explicitlyTyped: true,

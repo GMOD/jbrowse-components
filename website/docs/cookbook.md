@@ -234,7 +234,7 @@ session-wide form, and the About dialog.
 [`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) `fit`
 shrinks the features so the whole stack fits the height, putting a dense track
 into a screenshot with no scrollbar. `jexlFilters` draws only the features that
-pass every expression, on variant and alignments tracks too:
+pass every expression, on variant tracks too:
 
 ```json addtrack
 {

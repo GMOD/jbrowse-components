@@ -10,11 +10,13 @@ import type { Reversible } from '../ui/filterMenuItems.ts'
  * The two-tier feature-filter contract, shared by every display offering a
  * "Filter by..." row. Two tiers because the setting has two authors:
  *
- * - the **`jexlFilters` config slot** on `baseLinearDisplayConfigSchema`, which
- *   an admin declares in a track config. It stores expressions **unprefixed**,
- *   because config-slot values are deferred-evaluation and a stored `jexl:` is
- *   what marks a slot as a callback — so the prefix goes on at read time, in
- *   `configuredJexlFilters`.
+ * - the **`jexlFilters` config slot**, which an admin declares in a track
+ *   config. It stores expressions **unprefixed**, because config-slot values
+ *   are deferred-evaluation and a stored `jexl:` is what marks a slot as a
+ *   callback — so the prefix goes on at read time, in `configuredJexlFilters`.
+ *   The slot is `jexlFilterConfigSchemaFields` in display-kit, spread by the
+ *   canvas base display schema, the mark display schema and the shared
+ *   multi-sample variant schema — the three whose models read it.
  * - the **`jexlFiltersSetting` display property**, which the dialog writes and
  *   which stores them already prefixed (the runtime convention). Set — *even to
  *   an empty list* — it replaces the config tier entirely, which is what makes

@@ -377,7 +377,6 @@ describe('migrateSessionSnapshot', () => {
                   configuration: 'track1-LinearReadCloudDisplay',
                   colorBySetting: { type: 'insertSizeAndOrientation' },
                   trackMaxHeight: 900,
-                  jexlFilters: ["jexl:get(feature,'flags')==99"],
                   hideMismatchesSetting: true,
                 },
               ],
@@ -396,7 +395,6 @@ describe('migrateSessionSnapshot', () => {
     expect(display.showCoverage).toBeUndefined()
     expect(display.colorBySetting).toBeUndefined()
     expect(display.trackMaxHeight).toBeUndefined()
-    expect(display.jexlFilters).toBeUndefined()
     expect(display.hideMismatchesSetting).toBeUndefined()
 
     const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
@@ -408,7 +406,6 @@ describe('migrateSessionSnapshot', () => {
     expect(deltaDisplay.showCoverage).toBe(false)
     expect(deltaDisplay.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
     expect(deltaDisplay.maxHeight).toBe(900)
-    expect(deltaDisplay.jexlFilters).toEqual(["jexl:get(feature,'flags')==99"])
     // hideMismatches inverts into the showMismatches slot that replaced it
     expect(deltaDisplay.showMismatches).toBe(false)
   })
@@ -459,7 +456,6 @@ describe('migrateSessionSnapshot', () => {
               type: 'LinearPileupDisplay',
               displayId: 'track1-LinearPileupDisplay',
               colorBy: { type: 'modifications' },
-              jexlFilters: ["jexl:get(feature,'flags')==99"],
             },
           ],
         },
@@ -468,7 +464,6 @@ describe('migrateSessionSnapshot', () => {
     const display = (result.tracks as any)[0].displays[0]
     expect(display.type).toBe('LinearAlignmentsDisplay')
     expect(display.colorBy).toEqual({ type: 'modifications' })
-    expect(display.jexlFilters).toEqual(["jexl:get(feature,'flags')==99"])
     expect(result.trackConfigDeltas).toBeUndefined()
   })
 

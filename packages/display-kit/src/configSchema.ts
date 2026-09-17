@@ -9,9 +9,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category display
  *
  * Shared base config for linear displays — its slots (`height`,
- * `fetchSizeLimit`, `mouseover`, `jexlFilters`) are common to all of them. The
- * GPU stack's `LinearCanvasBaseDisplay` config extends it, and third-party
- * plugins extend it too.
+ * `fetchSizeLimit`, `mouseover`) are common to all of them. The GPU stack's
+ * `LinearCanvasBaseDisplay` config extends it, and third-party plugins extend
+ * it too. `jexlFilters` is not here: it lives in
+ * `jexlFilterConfigSchemaFields`, which only the displays that read it spread.
  */
 
 const baseLinearDisplayConfigSchema = ConfigurationSchema(
@@ -41,23 +42,6 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
       // descriptor rather than a bare id. get() since `function` is reserved.
       defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
       contextVariable: ['feature'],
-    },
-    /**
-     * #slot
-     * config jexlFilters are deferred evaluated so they are prepended with
-     * jexl at runtime rather than being stored with jexl in the config
-     */
-    jexlFilters: {
-      type: 'stringArray',
-      description:
-        'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
-      // EMPTY, and the NCBI source-record rule that used to live here is now
-      // `hideSourceFeatures` on the canvas display's own schema, applied in
-      // buildFeatureAdmission. This slot seeds the "Filter by..." dialog, so a
-      // default here is a jexl expression every user meets on every track
-      // before writing one of their own, on a rule that is about one annotation
-      // source (reviewer: "it confuses people ... it is just for ncbi gff").
-      defaultValue: [],
     },
   },
   {

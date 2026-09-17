@@ -423,12 +423,13 @@ numeric one, and opens this dialog where they do not.
 <Figure src="/img/mark_display/plot_field.png" caption="The Plot field dialog over an Alu track, reopened on the mark that track declares: the numeric fields the loaded features carry, the shape, the colour field and the count-per-bin box."/>
 
 The score submenu (min/max score), point size, cross hatches, the legend toggle,
-and **Filter by...** for the same `jexlFilters` every feature display takes. A
-filter runs in the worker before the encoding, so a filtered feature is neither
-drawn nor counted in the y-axis. Hovering a mark shows its location, value and
-colour class; clicking opens the feature's details. A click on a binned or
-coverage bar opens the bin or the run itself — its span, its count or depth and
-the other aggregates the mark's steps wrote — remade over the features under it.
+and **Filter by...** for the same `jexlFilters` the basic feature and variant
+displays take. A filter runs in the worker before the encoding, so a filtered
+feature is neither drawn nor counted in the y-axis. Hovering a mark shows its
+location, value and colour class; clicking opens the feature's details. A click
+on a binned or coverage bar opens the bin or the run itself — its span, its
+count or depth and the other aggregates the mark's steps wrote — remade over the
+features under it.
 
 The full slot list is the
 [LinearMarkDisplay config reference](/docs/config/linearmarkdisplay); how the

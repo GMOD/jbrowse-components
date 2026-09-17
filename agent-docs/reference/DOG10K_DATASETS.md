@@ -191,9 +191,10 @@ conservation track for canFam4.
 
 - `layout` HP indices are **0-based** on the wire (`<sample> HP0`/`HP1`, see
   `makeHaplotypeSources`). Using 1/2 renders every second row empty.
-- `jexlFiltersSetting` has **no effect** on `LinearMultiRowFeatureDisplay`. A
-  figure that wants a subset of painted rows needs a different track, not a
-  filter.
+- Neither `jexlFiltersSetting` nor `jexlFilters` has any effect on
+  `LinearMultiRowFeatureDisplay` — the display reads no filters, and the config
+  slot it used to publish is gone. A figure that wants a subset of painted rows
+  needs a different track, not a filter.
 - `flare_anc_to_bed.py` keys its palette on the ancestry **name**, not FLARE's
   internal code — the code is not stable between runs and a rebuild silently
   swapped the wolf and dog colors once.

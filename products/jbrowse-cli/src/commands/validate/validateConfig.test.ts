@@ -253,6 +253,43 @@ describe('validateConfig', () => {
     ])
   })
 
+  // `jexlFilters` sat on the shared base schema, so every linear display
+  // published it and only three read it. An alignments track declaring one
+  // validated, loaded, and filtered nothing.
+  it('reports jexlFilters on a display that reads no filters', () => {
+    const onAlignments = baseConfig()
+    onAlignments.tracks[0] = {
+      ...onAlignments.tracks[0]!,
+      // @ts-expect-error not a slot on this display
+      displays: [
+        {
+          type: 'LinearAlignmentsDisplay',
+          displayId: 'd',
+          jexlFilters: ["get(feature,'flags')==99"],
+        },
+      ],
+    }
+    expect(errorsOf(onAlignments).map(e => e.where)).toEqual([
+      'tracks[0].displays[0].jexlFilters',
+    ])
+
+    const onBasic = baseConfig()
+    onBasic.tracks[0] = {
+      ...onBasic.tracks[0]!,
+      type: 'FeatureTrack',
+      adapter: { type: 'Gff3TabixAdapter', uri: 'g.gff.gz' },
+      // @ts-expect-error the base config's track carries no displays
+      displays: [
+        {
+          type: 'LinearBasicDisplay',
+          displayId: 'd',
+          jexlFilters: ["get(feature,'type')=='gene'"],
+        },
+      ],
+    }
+    expect(validateConfig(onBasic).problems).toEqual([])
+  })
+
   function sessionDisplay(display: Record<string, unknown>) {
     const config = baseConfig()
     config.defaultSession.views = [
@@ -271,9 +308,8 @@ describe('validateConfig', () => {
   }
 
   // Stale but working, so a warning — and scoped to the display type the
-  // migration actually covers, since `jexlFilters` is lifted for the alignments
-  // display and simply dead on a LinearBasicDisplay (whose prop is
-  // `jexlFiltersSetting`).
+  // migration actually covers, since `colorBySetting` is lifted for the
+  // alignments display and means nothing on a LinearBasicDisplay.
   it('warns rather than errors on a key a session migration still lifts', () => {
     const config = sessionDisplay({
       type: 'LinearAlignmentsDisplay',
