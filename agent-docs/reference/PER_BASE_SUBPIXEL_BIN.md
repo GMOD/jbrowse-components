@@ -266,7 +266,10 @@ holds its 365ms clone measurement.
 ## What is still open
 
 - **What a per-base wall should look like at wide zoom**, and the one octave of
-  headroom the 1bp cell leaves — four candidates and three fixes, none built:
+  headroom the 1bp cell leaves. The per-window histogram was measured and
+  declined — over a 16-512 bp window the honest blend is one mud colour — so a
+  zoom threshold answers the first and a per-instance span the bin wide answers
+  the second, neither built:
   [ideas/per-base-wall-at-wide-zoom.md](../ideas/per-base-wall-at-wide-zoom.md).
 - ~~**No cross-backend test covers a per-base mode at any zoom.**~~ Answered on
   2026-08-27 and **closed rather than fixed**: two scenes were added, both failed
