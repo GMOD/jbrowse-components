@@ -1,11 +1,11 @@
 {
   "id": "mark-vs-wiggle-bigwig",
-  "measured": "2026-09-16",
+  "measured": "2026-09-17",
   "published": false,
   "source": {
     "kind": "bench",
     "repro": "node plugins/marks/benches/bigwigPaths.bench.ts, then the same with --file=<a coverage BigWig> --start=10000000 for the second file (CD16_Mono.bw is a 10x scRNA cluster coverage track over hg38, local to the machine that measured)",
-    "notes": "One 1500 px screen per zoom, from the contig start, at one bp/px inside each of the file's tiers and one in its raw section; `tier` is the reduction level bbi picks at that zoom. wiggle is getFeatureArraysMulti plus processFeaturesFromArrays, the RenderWiggleData executor's work for the region; marks is getFeaturesArray plus encodeFeatures over the bar shape's lanes, the CoreEncodeFeatures executor's work for `{ shape: 'bar', encoding: { y: 'score' } }`, so the difference is the BigWigFeature objects, the rxjs collect and the hover index; marks-mean runs `bin: auto` and `aggregate: mean` on top. control is the wiggle arm declared a second time. Interleaved round-robin, MIN across rounds, bbi's block cache warm after the first round: a refetch across a tier, not a cold open. The error columns are `aggregate: mean` over `bin: auto` of the tier's rows against the raw section's coverage-weighted mean over the same bins, as a percentage of the raw score range on the screen: unweighted is what the encoder computes, since bbi exports no validCnt; span-weighted is what a validCnt-weighted mean would approach on data this dense."
+    "notes": "One 1500 px screen per zoom, from the contig start, at one bp/px inside each of the file's tiers, the adapter's synthetic tiers included (ADR-129), and one in its raw section; `tier` is the reduction level the adapter reads at that zoom. wiggle is getFeatureArraysMulti plus processFeaturesFromArrays, the RenderWiggleData executor's work for the region; marks is getFeaturesArray plus encodeFeatures over the bar shape's lanes, the CoreEncodeFeatures executor's work for `{ shape: 'bar', encoding: { y: 'score' } }`, so the difference is the BigWigFeature objects, the rxjs collect and the hover index; marks-mean runs `bin: auto` and `aggregate: mean` on top. control is the wiggle arm declared a second time. Interleaved round-robin, MIN across rounds, bbi's block cache warm after the first round: a refetch across a tier, not a cold open. The error columns are `aggregate: mean` over `bin: auto` of the tier's rows against the raw section's coverage-weighted mean over the same bins, as a percentage of the raw score range on the screen: unweighted is what the encoder computes, since bbi exports no validCnt; span-weighted is what a validCnt-weighted mean would approach on data this dense."
   },
   "columns": [
     {
@@ -91,13 +91,43 @@
     {
       "values": {
         "file": "volvox_microarray.bw",
-        "bpPerPx": 869.5,
+        "bpPerPx": 64,
         "tier": "raw",
         "rows": 500,
-        "wiggleMs": 0.11,
+        "wiggleMs": 0.12,
         "controlMs": 0.1,
-        "marksMs": 0.41,
-        "marksMeanMs": 0.61
+        "marksMs": 0.32,
+        "marksMeanMs": 0.55
+      }
+    },
+    {
+      "values": {
+        "file": "volvox_microarray.bw",
+        "bpPerPx": 256,
+        "tier": "256 (synthetic)",
+        "rows": 196,
+        "wiggleMs": 0.12,
+        "controlMs": 0.09,
+        "marksMs": 0.17,
+        "marksMeanMs": 0.25,
+        "meanErrPct": 1.75,
+        "maxErrPct": 6.75,
+        "weightedErrPct": 1.75
+      }
+    },
+    {
+      "values": {
+        "file": "volvox_microarray.bw",
+        "bpPerPx": 943.6,
+        "tier": "1024 (synthetic)",
+        "rows": 49,
+        "wiggleMs": 0.08,
+        "controlMs": 0.07,
+        "marksMs": 0.12,
+        "marksMeanMs": 0.13,
+        "meanErrPct": 4.63,
+        "maxErrPct": 12.25,
+        "weightedErrPct": 4.63
       }
     },
     {
@@ -106,10 +136,10 @@
         "bpPerPx": 3478,
         "tier": "3478",
         "rows": 15,
-        "wiggleMs": 0.07,
-        "controlMs": 0.07,
-        "marksMs": 0.09,
-        "marksMeanMs": 0.11,
+        "wiggleMs": 0.05,
+        "controlMs": 0.05,
+        "marksMs": 0.07,
+        "marksMeanMs": 0.08,
         "meanErrPct": 5.6,
         "maxErrPct": 11.61,
         "weightedErrPct": 5.36
@@ -121,10 +151,10 @@
         "bpPerPx": 13912,
         "tier": "13912",
         "rows": 4,
-        "wiggleMs": 0.07,
-        "controlMs": 0.06,
-        "marksMs": 0.08,
-        "marksMeanMs": 0.09,
+        "wiggleMs": 0.04,
+        "controlMs": 0.04,
+        "marksMs": 0.06,
+        "marksMeanMs": 0.07,
         "meanErrPct": 1.39,
         "maxErrPct": 1.39,
         "weightedErrPct": 0.14
@@ -136,10 +166,10 @@
         "bpPerPx": 55648,
         "tier": "55648",
         "rows": 1,
-        "wiggleMs": 0.06,
-        "controlMs": 0.05,
-        "marksMs": 0.07,
-        "marksMeanMs": 0.08,
+        "wiggleMs": 0.04,
+        "controlMs": 0.04,
+        "marksMs": 0.06,
+        "marksMeanMs": 0.06,
         "meanErrPct": 0.14,
         "maxErrPct": 0.14,
         "weightedErrPct": 0.14
@@ -148,13 +178,28 @@
     {
       "values": {
         "file": "CD16_Mono.bw",
-        "bpPerPx": 100,
+        "bpPerPx": 32,
         "tier": "raw",
-        "rows": 622,
-        "wiggleMs": 0.2,
-        "controlMs": 0.2,
-        "marksMs": 0.43,
-        "marksMeanMs": 0.84
+        "rows": 124,
+        "wiggleMs": 0.16,
+        "controlMs": 0.15,
+        "marksMs": 0.25,
+        "marksMeanMs": 0.42
+      }
+    },
+    {
+      "values": {
+        "file": "CD16_Mono.bw",
+        "bpPerPx": 113.1,
+        "tier": "128 (synthetic)",
+        "rows": 244,
+        "wiggleMs": 0.19,
+        "controlMs": 0.19,
+        "marksMs": 0.3,
+        "marksMeanMs": 0.45,
+        "meanErrPct": 0.79,
+        "maxErrPct": 4.25,
+        "weightedErrPct": 0.46
       }
     },
     {
@@ -163,10 +208,10 @@
         "bpPerPx": 400,
         "tier": "400",
         "rows": 386,
-        "wiggleMs": 0.15,
-        "controlMs": 0.15,
-        "marksMs": 0.26,
-        "marksMeanMs": 0.55,
+        "wiggleMs": 0.17,
+        "controlMs": 0.16,
+        "marksMs": 0.28,
+        "marksMeanMs": 0.56,
         "meanErrPct": 0.28,
         "maxErrPct": 7.25,
         "weightedErrPct": 0.28
@@ -179,9 +224,9 @@
         "tier": "1600",
         "rows": 534,
         "wiggleMs": 0.17,
-        "controlMs": 0.16,
-        "marksMs": 0.31,
-        "marksMeanMs": 0.63,
+        "controlMs": 0.17,
+        "marksMs": 0.32,
+        "marksMeanMs": 0.74,
         "meanErrPct": 0.22,
         "maxErrPct": 7.93,
         "weightedErrPct": 0.18
@@ -196,7 +241,7 @@
         "wiggleMs": 0.25,
         "controlMs": 0.24,
         "marksMs": 0.42,
-        "marksMeanMs": 0.57,
+        "marksMeanMs": 0.65,
         "meanErrPct": 0.16,
         "maxErrPct": 1.9,
         "weightedErrPct": 0.11
@@ -208,10 +253,10 @@
         "bpPerPx": 25600,
         "tier": "25600",
         "rows": 906,
-        "wiggleMs": 0.51,
-        "controlMs": 0.52,
-        "marksMs": 1.03,
-        "marksMeanMs": 1.52,
+        "wiggleMs": 0.24,
+        "controlMs": 0.24,
+        "marksMs": 0.45,
+        "marksMeanMs": 0.64,
         "meanErrPct": 0.04,
         "maxErrPct": 0.64,
         "weightedErrPct": 0.04
@@ -223,10 +268,10 @@
         "bpPerPx": 102400,
         "tier": "102400",
         "rows": 866,
-        "wiggleMs": 0.21,
-        "controlMs": 0.2,
-        "marksMs": 0.46,
-        "marksMeanMs": 0.71,
+        "wiggleMs": 0.16,
+        "controlMs": 0.16,
+        "marksMs": 0.38,
+        "marksMeanMs": 0.73,
         "meanErrPct": 0.04,
         "maxErrPct": 1.24,
         "weightedErrPct": 0.04
@@ -238,10 +283,10 @@
         "bpPerPx": 409600,
         "tier": "409600",
         "rows": 471,
-        "wiggleMs": 0.2,
-        "controlMs": 0.2,
-        "marksMs": 0.34,
-        "marksMeanMs": 0.46,
+        "wiggleMs": 0.17,
+        "controlMs": 0.17,
+        "marksMs": 0.35,
+        "marksMeanMs": 0.77,
         "meanErrPct": 0.03,
         "maxErrPct": 0.22,
         "weightedErrPct": 0.03
@@ -253,10 +298,10 @@
         "bpPerPx": 1638400,
         "tier": "1638400",
         "rows": 136,
-        "wiggleMs": 0.34,
-        "controlMs": 0.33,
-        "marksMs": 0.44,
-        "marksMeanMs": 0.53,
+        "wiggleMs": 0.14,
+        "controlMs": 0.13,
+        "marksMs": 0.18,
+        "marksMeanMs": 0.21,
         "meanErrPct": 0.03,
         "maxErrPct": 0.26,
         "weightedErrPct": 0.03
@@ -268,10 +313,10 @@
         "bpPerPx": 6553600,
         "tier": "6553600",
         "rows": 37,
-        "wiggleMs": 0.2,
-        "controlMs": 0.2,
-        "marksMs": 0.28,
-        "marksMeanMs": 0.28,
+        "wiggleMs": 0.08,
+        "controlMs": 0.08,
+        "marksMs": 0.11,
+        "marksMeanMs": 0.11,
         "meanErrPct": 0.02,
         "maxErrPct": 0.06,
         "weightedErrPct": 0.02
@@ -283,10 +328,10 @@
         "bpPerPx": 26214400,
         "tier": "26214400",
         "rows": 11,
-        "wiggleMs": 0.13,
-        "controlMs": 0.11,
-        "marksMs": 0.14,
-        "marksMeanMs": 0.15,
+        "wiggleMs": 0.05,
+        "controlMs": 0.05,
+        "marksMs": 0.07,
+        "marksMeanMs": 0.07,
         "meanErrPct": 0.01,
         "maxErrPct": 0.01,
         "weightedErrPct": 0.01
@@ -298,10 +343,10 @@
         "bpPerPx": 104857600,
         "tier": "104857600",
         "rows": 3,
-        "wiggleMs": 0.08,
-        "controlMs": 0.06,
-        "marksMs": 0.11,
-        "marksMeanMs": 0.12,
+        "wiggleMs": 0.04,
+        "controlMs": 0.04,
+        "marksMs": 0.05,
+        "marksMeanMs": 0.06,
         "meanErrPct": 0,
         "maxErrPct": 0,
         "weightedErrPct": 0

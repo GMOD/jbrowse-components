@@ -51,6 +51,10 @@ import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 
 import BigWigAdapter from '../../wiggle/src/BigWigAdapter/BigWigAdapter.ts'
 import configSchema from '../../wiggle/src/BigWigAdapter/configSchema.ts'
+import {
+  sampleMeanRecordSpan,
+  syntheticReductionLevels,
+} from '../../wiggle/src/BigWigAdapter/syntheticTiers.ts'
 import { tierSpanRange } from '../../wiggle/src/BigWigAdapter/tierSpanRange.ts'
 import { processFeaturesFromArrays } from '../../wiggle/src/util.ts'
 import { autoBinStep } from '../src/LinearMarkDisplay/autoBin.ts'
@@ -72,8 +76,12 @@ const adapter = new BigWigAdapter(
     bigWigLocation: { localPath: file, locationType: 'LocalPathLocation' },
   }),
 )
-const { header } = await adapter.setup()
-const levels = header.zoomLevels.map(z => z.reductionLevel)
+const source = await adapter.setup()
+const { header, fileLevels, firstLevel } = source
+const levels = [
+  ...syntheticReductionLevels(fileLevels, await sampleMeanRecordSpan(source)),
+  ...fileLevels,
+]
 const refName = flag('refName') ?? Object.keys(header.refsByName)[0]!
 const refInfo = header.refsByNumber[header.refsByName[refName]!]!
 const start = num('start', 0)
@@ -87,8 +95,9 @@ function screenAt(bpPerPx: number): Region {
   }
 }
 
-// one zoom inside each tier: the geometric middle of the range it serves,
-// the raw section at a quarter of its ceiling, the top tier at its floor x2
+// one zoom inside each tier, synthetic ones included: the geometric middle of
+// the range it serves, the raw section at a quarter of its ceiling, the top
+// tier at its floor x2
 const zooms = flag('zooms')
   ? flag('zooms')!.split(',').map(Number)
   : [
@@ -146,7 +155,12 @@ function armMarksMean(region: Region, bpPerPx: number) {
 
 function tierLabel(bpPerPx: number) {
   const [lo] = tierSpanRange(levels, bpPerPx)
-  return lo === 0 ? 'raw' : String(lo * 2)
+  const reduction = lo * 2
+  return lo === 0
+    ? 'raw'
+    : reduction < firstLevel
+      ? `${reduction} (synthetic)`
+      : String(reduction)
 }
 
 interface RawRows {
