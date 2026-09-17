@@ -125,6 +125,42 @@ describe('a categorical column', () => {
     expect(view.seenAttributeRanges).toBe(first)
   })
 
+  // The accumulation stays first-seen and the domain applies at the read, so
+  // clearing it gives back the order the fetches found. A label's color is its
+  // position in the list, so this moves the drawing with the key.
+  it('reads its labels in the declared order, and gives them back when it is cleared', () => {
+    const view = viewWith([])
+    view.observeAttributeRanges({
+      group: { labels: ['B1', 'A1a', 'C1'], colors: {} },
+    })
+    view.setColorDomain(['C1'])
+    expect(view.attributeRanges).toEqual({
+      group: { labels: ['C1', 'A1a', 'B1'], colors: {} },
+    })
+    view.setColorDomain([])
+    expect(view.attributeRanges).toBe(view.seenAttributeRanges)
+  })
+
+  it('lists the key in that order too, and only for a column mode', () => {
+    const view = viewWith([])
+    view.setColorBy('attribute:group')
+    view.observeAttributeRanges({
+      group: { labels: ['B1', 'A1a', 'C1'], colors: {} },
+    })
+    view.setColorDomain(['C1'])
+    expect(view.legendSpec.sections![0]!.items.map(item => item.label)).toEqual(
+      ['C1', 'A1a', 'B1'],
+    )
+
+    view.setColorBy('track')
+    expect(view.colorScales[0]!.kind === 'categorical').toBe(true)
+    expect(
+      view.colorScales[0]!.kind === 'categorical'
+        ? view.colorScales[0]!.domain
+        : undefined,
+    ).toBeUndefined()
+  })
+
   it('takes over a numeric span under the same name', () => {
     const view = viewWith([])
     view.observeAttributeRanges({ group: { min: 3, max: 7 } })

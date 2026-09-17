@@ -1,4 +1,5 @@
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { colorByScale } from './colorLegend.ts'
@@ -59,6 +60,32 @@ export function widenAttributeRanges(
   return grown.length === 0 ? into : { ...into, ...Object.fromEntries(grown) }
 }
 
+// The declared order, applied at the read rather than to the accumulation:
+// `widenOne` above stays first-seen, so clearing the domain gives back the
+// order the fetches found. Identity-preserving like `widenAttributeRanges`,
+// and for the same reason.
+function orderLabels(
+  ranges: Record<string, AttributeRange>,
+  domain: readonly string[],
+) {
+  if (domain.length === 0) {
+    return ranges
+  }
+  const compare = groupKeyComparator(domain)
+  const moved = Object.entries(ranges).flatMap(([name, range]) => {
+    if (!isAttributeLabels(range)) {
+      return []
+    }
+    const labels = [...range.labels].sort(compare)
+    return labels.every((label, i) => label === range.labels[i])
+      ? []
+      : ([[name, { ...range, labels }]] as const)
+  })
+  return moved.length === 0
+    ? ranges
+    : { ...ranges, ...Object.fromEntries(moved) }
+}
+
 /**
  * #stateModel TrackColorsMixin
  *
@@ -79,6 +106,14 @@ export function TrackColorsMixin() {
        * The color-by mode every track in the view renders with.
        */
       colorBy: types.stripDefault(types.string, 'default'),
+      /**
+       * #property
+       * The order a text column's labels take under `colorBy:
+       * 'attribute:<column>'`: the labels listed here first, the rest sorted.
+       * A label's color is its position in that order, so this moves the
+       * drawing and the key together. Empty leaves the first-seen order.
+       */
+      colorDomain: types.array(types.string),
       /**
        * #property
        * trackId -> explicit color under `colorBy: 'track'`. Absent means the
@@ -209,9 +244,10 @@ export function TrackColorsMixin() {
        * spans would make that one legend lie about one of them.
        */
       get attributeRanges(): Record<string, AttributeRange> {
-        return self
+        const widened = self
           .loadedAttributeRanges()
           .reduce(widenAttributeRanges, self.seenAttributeRanges)
+        return orderLabels(widened, self.colorDomain)
       },
       /**
        * #getter
@@ -316,17 +352,24 @@ export function TrackColorsMixin() {
        * box for the whole view, and the ramp domain it labels is the view's.
        */
       get colorScales(): ColorScale[] {
-        return self.hasLegendKey
-          ? [
-              colorByScale(self.colorByMode, {
-                pointBased: self.legendPointBased(),
-                cigarOps: self.legendCigarOps(),
-                trackChips: self.colorLegendChips,
-                attributeRanges: self.attributeRanges,
-                alpha: self.legendAlpha(),
-              }),
-            ]
-          : []
+        if (!self.hasLegendKey) {
+          return []
+        }
+        const scale = colorByScale(self.colorByMode, {
+          pointBased: self.legendPointBased(),
+          cigarOps: self.legendCigarOps(),
+          trackChips: self.colorLegendChips,
+          attributeRanges: self.attributeRanges,
+          alpha: self.legendAlpha(),
+        })
+        // only a text column's rows are the reader's to order; a track
+        // palette and a ramp key what they key
+        return [
+          scale.kind === 'categorical' &&
+          colorByAttributeName(self.colorByMode) !== undefined
+            ? { ...scale, domain: [...self.colorDomain] }
+            : scale,
+        ]
       },
     }))
     .views(self => ({
@@ -394,6 +437,15 @@ export function TrackColorsMixin() {
         setColorBy(value: SyntenyColorBy) {
           self.colorBy = value
           forgetSeenRanges()
+        },
+        /**
+         * #action
+         * Declare the order a text column's labels take. The labels listed
+         * lead, the rest follow sorted; an empty list gives back the order the
+         * fetches found them in.
+         */
+        setColorDomain(domain: string[]) {
+          self.colorDomain.replace(domain)
         },
         /**
          * #action
