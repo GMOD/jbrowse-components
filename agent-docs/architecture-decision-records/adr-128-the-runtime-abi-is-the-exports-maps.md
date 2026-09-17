@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The runtime plugin ABI is generated from the exports maps: a runtime plugin externalizes every subpath every bundled @jbrowse package publishes, each product serves what it bundles, the worker's stub-or-real split is derived per export from the graph of the module that declares it, and a key a host lacks throws naming itself. Supersedes ADR-030 §3 — the built jbrowse-plugin-arg carried 84 files of core, 29 of display-kit and 21 of render-core beside 100 KB of its own code, and nothing in the repo could see it"
+summary: "The runtime plugin ABI is generated from the exports maps: a runtime plugin externalizes every subpath every bundled @jbrowse package publishes, each product serves what it bundles, the worker's stub-or-real split is derived per export by following imports by name to the modules that declare them, and a key a host lacks throws naming itself. Supersedes ADR-030 §3 — the built jbrowse-plugin-arg carried 84 files of core, 29 of display-kit and 21 of render-core beside 100 KB of its own code, and nothing in the repo could see it"
 ---
 
 # ADR-128: The runtime ABI is the exports maps
@@ -186,3 +186,19 @@ only published specifiers, and `sideEffects: false` keeps the rest of the
 graph out. `reExports.generated.json` marks such a module `mixed` and lists
 what it still stubs. EAGER_BUNDLE.md §"A rendering module's data names are real
 in the worker" has the measurement and the cost.
+
+## Amendment (2026-09): imports are followed by name
+
+Judging a declaring module by its whole graph stubbed a module that took one
+plain name from a barrel that renders. `scripts/reExportReach.ts` follows each
+value import by binding name instead, as `sideEffects: false` prunes, and
+counts `@mui/icons-material` beside the four packages, but only where the
+declaring module's whole graph also names one of them.
+
+Both simpler icon rules measured worse:
+
+- **Icons as renderers outright** stubs 48 names the worker served, among them
+  `createBaseTrackModel`, whose Save item names an icon, and with it the gwas,
+  variants and wiggle plugin classes that `workerModules.test.ts` pins as real.
+- **Icons left out** frees 21 more names and adds their 17 icons, 6.1 KB, to
+  the worker's rendering stack, which the split exists to keep out.

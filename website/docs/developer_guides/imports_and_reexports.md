@@ -54,15 +54,18 @@ generated from the same run. The categories:
   completion on any of these is the list of what you can import.
 
 A plugin's one bundle is evaluated on the main thread and again in the RPC
-worker, where nothing renders. The worker serves an export for real unless the
-module that declares it reaches react-dom, a Material UI component, the data
-grid or floating-ui, so a helper function a package's barrel re-exports beside
-its components is real. Each export that does render is a stub with its name, so
-your bundle still evaluates there. The stub is inert — every read and call on it
-returns another stub, so a number taken off one is 0 and a list is empty — and
-it reports nothing when that happens. The last column says how many of each
-package's exports are real; an adapter, an RPC method or a state-model mixin is
-always real in both realms.
+worker, where nothing renders. The worker serves an export for real unless
+serving it would evaluate react-dom, a Material UI component, the data grid or
+floating-ui. It follows imports name by name, the way a bundler prunes them, so
+a helper function a package's barrel re-exports beside its components is real,
+and so is one whose module imports a plain name from that barrel. A Material
+icon counts too, where the declaring module's imports also reach one of those
+four. Each export that does render is a stub with its name, so your bundle still
+evaluates there. The stub is inert — every read and call on it returns another
+stub, so a number taken off one is 0 and a list is empty — and it reports
+nothing when that happens. The last column says how many of each package's
+exports are real; an adapter, an RPC method or a state-model mixin is always
+real in both realms.
 
 <!-- REEXPORT_MODULES START -->
 
@@ -71,12 +74,12 @@ always real in both realms.
 | --- | --- | --- | --- |
 | `@jbrowse/add-track-core` | The file-format table the add-track guessers and the CLI both read — no framework deps | 1 | all of it |
 | `@jbrowse/alignments-core` | Shared GPU rendering utilities for alignments and synteny displays | 2 | all of it |
-| `@jbrowse/app-core` | JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop | 1 | 30 of 36 exports; the rest stubbed |
+| `@jbrowse/app-core` | JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop | 1 | 34 of 36 exports; the rest stubbed |
 | [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | 1 | all of it |
 | [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 239 | 1237 of 1334 exports; the rest stubbed |
 | `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 75 | 123 of 147 exports; the rest stubbed |
 | [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 5 | 52 of 58 exports; the rest stubbed |
-| `@jbrowse/embedded-core` | JBrowse 2 code shared between embedded products | 1 | 1 of 4 exports; the rest stubbed |
+| `@jbrowse/embedded-core` | JBrowse 2 code shared between embedded products | 1 | 3 of 4 exports; the rest stubbed |
 | `@jbrowse/ld-core` | Pure linkage-disequilibrium parsers and math — PLINK .ld parsing and genotype r²/D' — no rendering or framework deps | 1 | all of it |
 | [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | 1 | all of it |
 | `@jbrowse/plugin-alignments` | JBrowse 2 alignments adapters, tracks, etc. | 2 | 19 of 24 exports; the rest stubbed |
@@ -84,10 +87,10 @@ always real in both realms.
 | `@jbrowse/plugin-authentication` | JBrowse 2 Authentication | 1 | none; a stub with its names |
 | `@jbrowse/plugin-bed` | JBrowse 2 bed adapters, tracks, etc. | 1 | all of it |
 | `@jbrowse/plugin-blat` | JBrowse 2 UCSC BLAT client | 1 | none; a stub with its names |
-| `@jbrowse/plugin-breakpoint-split-view` | JBrowse 2 breakpoint detail split view | 1 | none; a stub with its names |
+| `@jbrowse/plugin-breakpoint-split-view` | JBrowse 2 breakpoint detail split view | 1 | 1 of 2 exports; the rest stubbed |
 | `@jbrowse/plugin-canvas` | JBrowse 2 plugin for canvas features | 3 | 34 of 37 exports; the rest stubbed |
 | `@jbrowse/plugin-circular-view` | JBrowse 2 circular view | 1 | 1 of 3 exports; the rest stubbed |
-| `@jbrowse/plugin-comparative-adapters` | JBrowse 2 comparative adapters | 1 | none; a stub with its names |
+| `@jbrowse/plugin-comparative-adapters` | JBrowse 2 comparative adapters | 1 | all of it |
 | `@jbrowse/plugin-config` | JBrowse 2 config utilities | 1 | all of it |
 | `@jbrowse/plugin-data-management` | JBrowse 2 linear genome view | 1 | all of it |
 | `@jbrowse/plugin-dotplot-view` | JBrowse 2 dotplot view | 1 | 1 of 3 exports; the rest stubbed |
@@ -118,9 +121,9 @@ always real in both realms.
 | [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | 150 of 173 exports; the rest stubbed |
 | `@jbrowse/text-indexing` | JBrowse 2 text indexing for desktop | 2 | all of it |
 | `@jbrowse/text-indexing-core` | JBrowse 2 core text indexing routines for parsing GFF3 and VCF files | 1 | all of it |
-| `@jbrowse/tree-sidebar` | Shared tree sidebar component for multi-sample displays | 9 | 126 of 142 exports; the rest stubbed |
-| `@jbrowse/web-core` | JBrowse 2 code shared between web-app type products | 1 | 2 of 7 exports; the rest stubbed |
-| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | 7 | 75 of 81 exports; the rest stubbed |
+| `@jbrowse/tree-sidebar` | Shared tree sidebar component for multi-sample displays | 9 | 131 of 142 exports; the rest stubbed |
+| `@jbrowse/web-core` | JBrowse 2 code shared between web-app type products | 1 | 4 of 7 exports; the rest stubbed |
+| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | 7 | 76 of 81 exports; the rest stubbed |
 
 <!-- REEXPORT_MODULES END -->
 

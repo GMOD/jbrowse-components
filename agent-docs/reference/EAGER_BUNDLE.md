@@ -174,10 +174,11 @@ routes, measured apart:
   the page to 403 on its own. Not adopted: with the cycle gone the site bundles
   no registry, and jbrowse-web is webpack, where naming every export marks the
   same set used. A rolldown embedder that calls `loadPlugins` still pays it. The worker's stub-or-real split is derived
-in the same run: a module is stubbed when its own source graph names react-dom,
-a Material UI component, the data grid or floating-ui, which is what put
-`ui/theme.ts` onto `@mui/material/styles` — its `@mui/material` barrel import
-had been marking a module every renderer reads as UI.
+in the same run, per export now (§"A rendering module's data names are real in
+the worker"). Its first form stubbed a module whose source graph named
+react-dom, a Material UI component, the data grid or floating-ui, which is what
+put `ui/theme.ts` onto `@mui/material/styles`: its `@mui/material` barrel
+import had been marking a module every renderer reads as UI.
 
 **What the split is worth is measured, not written here.**
 `pnpm measure-registry-bundle` bundles both of jbrowse-web's generated
@@ -187,9 +188,12 @@ module scope runs; CI re-checks it. Quote it from
 CI gates, so a number written anywhere else is one the next commit can falsify.
 The 272 -> 182 KB above is the hand-measured figure from the
 `workerNamespaceNames.ts` era and is kept as the record of that change, not as
-the current answer. The worker's residual rendering stack is `ui/theme.ts`
-reaching `@mui/material/styles`, which brings @mui/system and emotion with it:
-the exemption ADR-128 took over marking every theme reader as UI.
+the current answer. The worker's residual rendering stack has two sources.
+`ui/theme.ts` reaches `@mui/material/styles`, which brings @mui/system and
+emotion with it: the exemption ADR-128 took over marking every theme reader as
+UI. The other is 57 KB of Material's icon machinery (`SvgIcon`,
+`createStyled`, emotion's `styled`), which the state models and plugin classes
+the worker serves bring by naming icons in their menus.
 
 ### 4. The `@jbrowse/core/ui` barrel, and two more elements in descriptors
 
@@ -919,17 +923,44 @@ Fifteen became real by moving the declaration to a module of its own or pointing
 its import at the leaf, the barrels re-exporting the same names, and the
 registry worker's rendering stack did not move.
 
+Many of the rest came from the classifier, not the code: a declaring module
+counted as rendering when it took one plain name from a barrel that renders.
+`scripts/reExportReach.ts` now follows each value import by binding name to the
+module that declares it, the way `sideEffects: false` prunes a barrel. Against
+the whole-graph rule, with the rendering stack from `measureRegistryBundle.ts`:
+
+| Icons (`@mui/icons-material`)             | Names freed | Newly stubbed | Worker rendering stack |
+| ----------------------------------------- | ----------- | ------------- | ---------------------- |
+| not a renderer                            | 37          | 0             | +6.1 KB, 17 icons      |
+| a renderer                                | 16          | 48            | -57 KB                 |
+| a renderer where the whole graph renders  | 16          | 0             | unchanged, to the byte |
+
+The generator takes the third row. Icons had been missing from the rendering
+specifiers, and making them renderers outright stubs `createBaseTrackModel`
+(its Save item) and with it the gwas, variants and wiggle plugin classes, which
+`workerModules.test.ts` pins as real; the 57 KB is the icon machinery those
+modules keep in the worker. Leaving icons out frees the menu layer of rendering
+modules too and brings its icons with it. An icon therefore counts only when the
+declaring module's whole graph also names a renderer. The 16 are the app-core
+model factories, four embedded and web session names, the tree-sidebar
+autoruns, three components and two plugin classes, and the registry worker
+grows 6943 -> 7058 KB unminified. The 21 the icon condition holds back are what
+exempting icons would buy: the alignments plugin and display model,
+product-core's track menu mixins and items, the embedded and web session
+models, four more plugin classes and the wiggle point-size menu, for another
+1.3 MB unminified, 1.1 MB of it alignments code.
+
 The Desktop product's `workerReExports.test.ts` guards the rest, over every
 `@jbrowse` key Desktop serves, core's included. A stubbed name passes when its
 main-thread value is a component — an object carrying `$$typeof`, or a
 PascalCase function whose source calls the JSX runtime — or a hook named `use*`.
 Anything else, a primitive included, has to be listed in `STAYS_STUBBED` under
-the reason it stays: it renders, it holds components, it builds menu rows with
-icons or dialogs, it is an MST model factory or plugin class whose graph
-renders, or the only module publishing it renders and evaluates. A listed name
-that becomes real fails too, so the list stays exact. Desktop bundles neither
-`@jbrowse/web-core` nor `@jbrowse/embedded-core`, so the guard never sees their
-eight stubbed names.
+the reason it stays: it renders, it holds components, it builds menu rows in a
+module that names an icon, it is an MST model factory or plugin class whose
+graph renders, or the only module publishing it renders and evaluates. A listed
+name that becomes real fails too, so the list stays exact. Desktop bundles
+neither `@jbrowse/web-core` nor `@jbrowse/embedded-core`, so the guard never
+sees their four stubbed names.
 
 ### A proxy that answers any key is not the same shape as the module it stands in
 
