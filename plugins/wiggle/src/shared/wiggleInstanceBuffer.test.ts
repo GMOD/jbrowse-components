@@ -409,6 +409,39 @@ describe('packBandInstances', () => {
     expect(packBandInstances([mean]).byteLength).toBe(0)
   })
 
+  // Canvas2D paints bands in source order with source-over; the GPU composites
+  // the packed instances behind one another. Both must leave the last source's
+  // band on top where overlaid bands cross.
+  test('overlaid bands stack as Canvas2D paints them', () => {
+    const red = { ...bandSource(RENDERING_TYPE_LINE), color: [1, 0, 0] }
+    const blue = { ...bandSource(RENDERING_TYPE_LINE), color: [0, 0, 1] }
+    const sources = [red, blue] as SourceRenderData[]
+    const a = 0.3
+    const over = (dst: number[], [r, g, b]: number[]) => [
+      r! * a + dst[0]! * (1 - a),
+      g! * a + dst[1]! * (1 - a),
+      b! * a + dst[2]! * (1 - a),
+      a + dst[3]! * (1 - a),
+    ]
+    const behind = (dst: number[], [r, g, b]: number[]) => [
+      dst[0]! + r! * a * (1 - dst[3]!),
+      dst[1]! + g! * a * (1 - dst[3]!),
+      dst[2]! + b! * a * (1 - dst[3]!),
+      dst[3]! + a * (1 - dst[3]!),
+    ]
+    const unpack = (abgr: number) => [
+      (abgr & 0xff) / 255,
+      ((abgr >>> 8) & 0xff) / 255,
+      ((abgr >>> 16) & 0xff) / 255,
+    ]
+    const buf = packBandInstances(sources)
+    const gpu = [0, 3].map(i => unpack(readBand(buf, i).posColor))
+    const clear = [0, 0, 0, 0]
+    expect(gpu.reduce(behind, clear)).toEqual(
+      sources.map(s => s.color).reduce(over, clear),
+    )
+  })
+
   test('each bin carries its range and both sign colours', () => {
     const f = readBand(packBandInstances([bandSource(RENDERING_TYPE_LINE)]), 2)
     expect(f.start).toBe(300)

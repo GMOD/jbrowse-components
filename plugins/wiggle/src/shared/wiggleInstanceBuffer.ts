@@ -186,12 +186,16 @@ export function packLineInstances(sources: SourceRenderData[]) {
   return buf
 }
 
+// Last source first: the band pass composites each instance behind what the
+// target holds, so this order stacks overlaid bands as Canvas2D's in-order
+// source-over does.
 export function packBandInstances(sources: SourceRenderData[]) {
   const buf = new ArrayBuffer(totalOf(sources, true) * BAND_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   let off = 0
-  for (const source of sources) {
+  for (let s = sources.length - 1; s >= 0; s--) {
+    const source = sources[s]!
     const { band } = source
     if (band) {
       const positions = source.featurePositions
