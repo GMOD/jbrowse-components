@@ -180,12 +180,14 @@ describe('colorByPalette', () => {
     expect(palette.get('EUR')).not.toBe(palette.get('AFR'))
   })
 
-  // The ranking is by how many rows carry each value, so a scale resolved over
-  // the drawn rows would recolor the cohort whenever a clade was focused.
-  it('ranks the same however many rows are drawn', () => {
-    const whole = colorByPalette('population', sources)!
-    const clade = colorByPalette('population', [sources[1]!])!
-    expect(clade.get('AFR')).toBe(whole.get('AFR'))
+  // Ranked by how many rows carry each value, which is why the model resolves
+  // this over the adapter rows: over the drawn ones, focusing a clade would
+  // re-rank the values and recolor everything left on screen.
+  it('ranks by how many rows carry each value', () => {
+    const palette = colorByPalette('population', sources)!
+    const oneAfr = colorByPalette('population', [sources[1]!])!
+    expect(oneAfr.get('AFR')).not.toBe(palette.get('AFR'))
+    expect(oneAfr.get('AFR')).toBe(palette.get('EUR'))
   })
 
   // silently: the warning lives in the actions, because this runs inside a

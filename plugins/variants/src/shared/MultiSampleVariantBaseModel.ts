@@ -240,9 +240,9 @@ export function sortSourcesByAttribute<S extends Record<string, unknown>>(
 }
 
 // Reorder by the facet field when the attribute is present, else leave the
-// order alone. Mirrors maybeApplyColorByPalette: an unset or unknown attribute
-// is a no-op rather than an error, so a config naming a column the metadata
-// doesn't have degrades to unfaceted instead of breaking the display.
+// order alone. Mirrors `colorByPalette`: an unset or unknown attribute is a
+// no-op rather than an error, so a config naming a column the metadata doesn't
+// have degrades to unfaceted instead of breaking the display.
 export function maybeApplyFacet<S extends Record<string, unknown>>(
   field: string,
   domain: readonly string[],
@@ -1424,20 +1424,13 @@ export default function MultiSampleVariantBaseModelF(
          * and their shared block frays outward at the recombination
          * breakpoints that end it.
          *
-         * Sorts the rows that are already on screen, so the palette color,
-         * label and labelColor move with each row and nothing has to be merged
-         * back. Sorting adapter metadata would discard all three: **Color by… →
-         * Population** then **Sort rows by genotype here** would reorder and
-         * blank every sidebar swatch, with the menu still showing Population
-         * ticked. Nothing re-seeds the palette afterwards — `setSources`
-         * short-circuits on `deepEqual`, and `applyArrangement` is reachable
-         * only from `setColorBy` / `setFacet` / `clearLayout` /
-         * `setPhasedMode`.
+         * Sorts `editableSources`, so the label and labelColor only `layout`
+         * holds move with each row and nothing has to be merged back — and so
+         * the order written back carries no `colorBy` tint, which those rows
+         * deliberately do not have.
          */
         sortByGenotype(featureId: string) {
           const { cellData } = self
-          // `editableSources`, so the rows arrive already carrying the layout's
-          // colors and labels and already at the rendering mode's granularity.
           // Merging a fresh order back against `layout` by name cannot work in
           // phased mode — the sorted rows are haplotypes ("S0 HP0") and the
           // layout is sample-level, so nothing matched and every swatch went

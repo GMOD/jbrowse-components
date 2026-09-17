@@ -3,9 +3,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
-// Runtime "Color by...→Samples" wiring: setColorBy writes colorBy directly onto
-// the display's config and recolors the sample rows (persisted as `layout`);
-// colorByAttributes lists the samplesTsv metadata keys the user can band by.
+// Runtime "Color by...→Samples" wiring: setColorBy writes colorBy onto the
+// display's config and nothing else — the tint resolves on every read of
+// `sources`. colorByAttributes lists the samplesTsv metadata keys the user can
+// band by.
 describe('multi-sample variant colorBy', () => {
   const sources = [
     { name: 'HG001', population: 'EUR', sex: 'M' },
@@ -40,7 +41,7 @@ describe('multi-sample variant colorBy', () => {
     expect(readConfObject(model.configuration, 'colorBy')).toBe('population')
     // same population => same color, different => different
     const byName = Object.fromEntries(
-      model.layout.map(s => [s.name, s.labelColor]),
+      model.sources.map(s => [s.name, s.labelColor]),
     )
     expect(byName.HG001).toBe(byName.HG003)
     expect(byName.HG001).not.toBe(byName.HG002)
@@ -51,16 +52,15 @@ describe('multi-sample variant colorBy', () => {
     model.setSources(sources)
     // band by population: with no domain the bands sort, AFR ahead of EUR
     model.setFacet('population')
-    expect(model.layout.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
+    expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
 
-    // recoloring must keep the banded order, not revert to adapter order
+    // both channels resolve on the same read, so one cannot displace the other
     model.setColorBy('sex')
-    expect(model.layout.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
+    expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
   })
 
-  // Set to empty, the palette goes and the arrangement stays: a recolor is not
-  // a reorder in either direction, and resetting the order here threw away a
-  // clustering run or a hand-made order along with the colors.
+  // Set to empty, the tint goes and the banding stays: a recolor is not a
+  // reorder in either direction.
   it('strips the palette when set to empty, keeping the order', () => {
     const model = makeModel()
     model.setSources(sources)
@@ -69,16 +69,46 @@ describe('multi-sample variant colorBy', () => {
     model.setColorBy('')
 
     expect(model.colorBy).toBe('')
-    expect(model.layout.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
-    expect(model.layout.some(s => s.labelColor)).toBe(false)
+    expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
+    expect(model.sources.some(s => s.labelColor)).toBe(false)
   })
 
-  it('persists no arrangement at all when there was none to keep', () => {
+  // While a channel is bound to a variable it beats a per-row constant — the
+  // samplesTsv `color` column here, and equally a color the arrangement dialog
+  // wrote or a palette an older session persisted into `layout`.
+  it('wins over a samplesTsv color column, and hands it back when cleared', () => {
+    const model = makeModel()
+    model.setSources(sources.map(s => ({ ...s, color: 'rebeccapurple' })))
+    model.setColorBy('population')
+    expect(model.sources.some(s => s.labelColor === 'rebeccapurple')).toBe(
+      false,
+    )
+
+    model.setColorBy('')
+    expect(model.sources.every(s => s.labelColor === 'rebeccapurple')).toBe(
+      true,
+    )
+  })
+
+  it('writes no layout at all', () => {
     const model = makeModel()
     model.setSources(sources)
-    model.setColorBy('')
+    model.setColorBy('population')
 
-    expect(model.colorBy).toBe('')
     expect(model.layout).toHaveLength(0)
+  })
+
+  // The scale ranks values by how many rows carry them, so resolving it over
+  // the drawn rows would recolor the cohort every time a clade was focused.
+  it('keeps each row its color when a subtree filter hides the rest', () => {
+    const model = makeModel()
+    model.setSources(sources)
+    model.setColorBy('population')
+    const before = new Map(model.sources.map(s => [s.name, s.labelColor]))
+
+    model.setSubtreeFilter(['HG002'])
+
+    expect(model.sources.map(s => s.name)).toEqual(['HG002'])
+    expect(model.sources[0]!.labelColor).toBe(before.get('HG002'))
   })
 })

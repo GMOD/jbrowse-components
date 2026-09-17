@@ -63,10 +63,10 @@ describe('applyClusterOrder', () => {
     expect(() => apply([2, 0, 1], 'phased')).toThrow(/expected 6 entries/)
   })
 
-  // A phased run almost always starts with a layout already in place: `colorBy`
-  // or `facet` seeds one through `applyArrangement` on the very first
-  // `setSources`, and that one is at SAMPLE granularity. Those rows are
-  // superseded by the haplotypes and must not come back — appended, they expand
+  // A phased run can start with a SAMPLE-granularity layout already in place —
+  // a restored session, or a drag or a dialog submit made before the mode
+  // switch. Those rows are superseded by the haplotypes and must not come back
+  // — appended, they expand
   // a second time on the way to `sources` (3 samples -> 9 layout rows -> 12 drawn
   // rows against a 6-leaf tree), so the dendrogram is refused and the extra rows
   // have no cells.

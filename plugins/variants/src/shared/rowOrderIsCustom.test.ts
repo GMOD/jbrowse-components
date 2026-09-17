@@ -1,50 +1,62 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
 
-// A configured `colorBy` seeds `layout` on first load, so `layout.length` alone
-// offered "Reset row order" on every population-colored track before anyone had
-// touched it — and clicking it re-applied the same arrangement.
-test('a configured arrangement alone is not a custom row order', () => {
+const SOURCES = [
+  { name: 'HG001', population: 'EUR', super_pop: 'EUR' },
+  { name: 'HG002', population: 'AFR', super_pop: 'AFR' },
+]
+
+function colored() {
   const { display } = createTestEnvironment().createDisplay()
   display.setColorBy('population')
-  display.setSources([
-    { name: 'HG001', population: 'EUR' },
-    { name: 'HG002', population: 'AFR' },
-  ])
-  expect(display.layout.length).toBe(2)
+  display.setSources(SOURCES)
+  return display
+}
+
+// `layout` holds only what a user or a clustering run did, so the mixin's plain
+// `layout.length > 0` answers for these displays too. Both channels used to
+// seed `layout` on first load, which offered "Reset row order" on every
+// population-colored track before anyone had touched it.
+test('a configured colorBy writes no layout and is not a custom row order', () => {
+  const display = colored()
+  expect(display.layout).toHaveLength(0)
   expect(display.rowOrderIsCustom).toBe(false)
+  expect(display.sources.every(s => s.labelColor)).toBe(true)
 })
 
-test('a reorder away from the configured arrangement is custom', () => {
+test('a configured facet writes no layout and is not a custom row order', () => {
   const { display } = createTestEnvironment().createDisplay()
-  display.setColorBy('population')
-  display.setSources([
-    { name: 'HG001', population: 'EUR' },
-    { name: 'HG002', population: 'AFR' },
-  ])
-  display.setLayout([...display.layout].reverse())
+  display.setFacet('population')
+  display.setSources(SOURCES)
+
+  expect(display.layout).toHaveLength(0)
+  expect(display.rowOrderIsCustom).toBe(false)
+  expect(display.sources.map(s => s.name)).toEqual(['HG002', 'HG001'])
+})
+
+// The palette is a pure function of the attribute, so persisting it bought
+// nothing and cost every session a row table it had to carry and re-merge.
+test('a session snapshot after setColorBy carries no palette colors', () => {
+  const display = colored()
+  expect(getSnapshot(display).layout).toBeUndefined()
+})
+
+test('a reorder is custom, and the reset clears it', () => {
+  const display = colored()
+  display.setLayout([...display.sources].reverse())
   expect(display.rowOrderIsCustom).toBe(true)
+
   display.clearLayout()
+
   expect(display.rowOrderIsCustom).toBe(false)
+  expect(display.sources.map(s => s.name)).toEqual(['HG001', 'HG002'])
 })
 
-// The second "Color by..." re-arranges the layout already on screen rather than
-// adapter order, and that path merges through `getSources`, which stamps a
-// `sampleName` the config-derived arrangement has no reason to carry.
-test('a second color-by is still not a custom row order', () => {
-  const { display } = createTestEnvironment().createDisplay()
-  display.setColorBy('population')
-  display.setSources([
-    { name: 'HG001', population: 'EUR', super_pop: 'EUR' },
-    { name: 'HG002', population: 'AFR', super_pop: 'AFR' },
-  ])
+test('a second color-by still writes no layout', () => {
+  const display = colored()
   display.setColorBy('super_pop')
-  expect(display.rowOrderIsCustom).toBe(false)
-})
 
-test('with nothing configured any written layout is custom', () => {
-  const { display } = createTestEnvironment().createDisplay()
-  display.setSources([{ name: 'HG001' }, { name: 'HG002' }])
+  expect(display.layout).toHaveLength(0)
   expect(display.rowOrderIsCustom).toBe(false)
-  display.setLayout([{ name: 'HG002' }, { name: 'HG001' }])
-  expect(display.rowOrderIsCustom).toBe(true)
 })

@@ -4963,7 +4963,7 @@
           "type": "object",
           "properties": {
             "field": {
-              "description": "sample-metadata attribute whose values take their own band.",
+              "description": "sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows.",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
@@ -5098,7 +5098,7 @@
           "default": true
         },
         "colorBy": {
-          "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping.",
+          "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog.",
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
@@ -5278,7 +5278,7 @@
           "default": true
         },
         "colorBy": {
-          "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping.",
+          "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog.",
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },

@@ -69,23 +69,39 @@ describe('recoloring does not disturb the arrangement', () => {
   })
 })
 
-describe('refaceting invalidates the tree it reorders under', () => {
-  // `setLayout` decides from the rows, not from which action ran: a facet
-  // that lands on the order the tree already describes keeps it.
-  it('keeps the tree when the facet agrees with the clustered order', () => {
-    const display = clusteredDisplay()
-    display.setFacet('population')
-
-    // AFR (S2, S0) sorts before EUR (S1), which is the clustered order already
-    expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
-    expect(display.facetField).toBe('population')
-    expect(display.clusterTree).toBe(CLUSTERED_TREE)
-  })
-
-  it('drops the cluster tree when the facet order differs from it', () => {
+describe('the facet bands over the layout', () => {
+  it('bands the rows a drag left behind', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
-    // clustered in adapter order, which the facet will not preserve
+    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setFacet('population')
+
+    // AFR (S0, S2) leads; within the band the dragged order survives
+    expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
+  })
+
+  // The band is resolved on the read, over whatever `layout` holds, so a drag
+  // that moves a sample into another band has nowhere to land.
+  it('snaps a cross-band drag back', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources(SOURCES)
+    display.setFacet('population')
+    expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
+
+    // drag the EUR sample to the top, across the AFR band
+    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+
+    expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
+    expect(display.layout.map(s => s.name)).toEqual(['S1', 'S0', 'S2'])
+  })
+
+  // A dendrogram positions leaf i on row i, so a band under it would draw it
+  // against the wrong rows. The band yields instead — which is also why a
+  // clustering run never has to write the facet slot.
+  it('yields while a cluster tree describes the rows', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources(SOURCES)
+    // clustered in adapter order, which the facet would not preserve
     display.setLayoutAndClusterTree(
       [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }],
       '((S0,S1),S2);',
@@ -93,9 +109,56 @@ describe('refaceting invalidates the tree it reorders under', () => {
 
     display.setFacet('population')
 
-    expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
+    expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
+    expect(display.facetField).toBe('population')
+    expect(display.clusterTree).toBe('((S0,S1),S2);')
+    expect(display.hierarchy).toBeDefined()
+  })
+
+  // ...and it comes back the moment the tree stops describing them.
+  it('bands again once the rows move off the tree', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources(SOURCES)
+    display.setLayoutAndClusterTree(
+      [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }],
+      '((S0,S1),S2);',
+    )
+    display.setFacet('population')
+
+    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+
     expect(display.clusterTree).toBeUndefined()
-    expect(display.hierarchy).toBeUndefined()
+    expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
+  })
+
+  // A phased run's layout is haplotype rows, and expansion spreads every source
+  // field onto each one — so the attribute the band reads is there.
+  it('bands the haplotype rows a phased run produced', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setPhasedMode('phased')
+    display.setSources(SOURCES)
+    display.setCellData({
+      sampleInfo: Object.fromEntries(
+        SOURCES.map(s => [s.name, { maxPloidy: 2 }]),
+      ),
+    } as unknown as Parameters<typeof display.setCellData>[0])
+    display.setLayout(
+      ['S0', 'S1', 'S2'].flatMap(sampleName => [
+        { name: `${sampleName} HP0`, sampleName, HP: 0 },
+        { name: `${sampleName} HP1`, sampleName, HP: 1 },
+      ]),
+    )
+
+    display.setFacet('population')
+
+    expect(rowNames(display)).toEqual([
+      'S0 HP0',
+      'S0 HP1',
+      'S2 HP0',
+      'S2 HP1',
+      'S1 HP0',
+      'S1 HP1',
+    ])
   })
 })
 
@@ -125,11 +188,11 @@ describe('the config `domain` seeds the sample order', () => {
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
   })
 
-  // The seed is what `clearLayout` puts back, so a track nobody has touched is
-  // not offered "Reset row order" — the same rule a configured colorBy follows.
+  // The seed is derived, never written, so a track nobody has touched has an
+  // empty layout and is not offered "Reset row order".
   it('is not a custom row order', () => {
     const display = domainDisplay(['S2'])
-    expect(display.layout.map(s => s.name)).toEqual(['S2', 'S0', 'S1'])
+    expect(display.layout).toHaveLength(0)
     expect(display.rowOrderIsCustom).toBe(false)
   })
 
@@ -194,9 +257,9 @@ describe('a rendering-mode switch renames the rows', () => {
     expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
   })
 
-  // Clearing without re-arranging dropped the configured coloring on every
-  // mode switch, while "Color by… → Population" stayed checked in the menu.
-  it('re-applies the configured coloring to the renamed rows', () => {
+  // The coloring used to be seeded into `layout` and so went with it; it is
+  // now resolved on the read, so the renamed rows arrive already tinted.
+  it('keeps the configured coloring on the renamed rows', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
     display.setColorBy('population')
@@ -206,7 +269,7 @@ describe('a rendering-mode switch renames the rows', () => {
     expect(display.colorBy).toBe('population')
     expect(display.sources.every(s => s.labelColor)).toBe(true)
     const byName = Object.fromEntries(
-      display.layout.map(s => [s.name, s.labelColor]),
+      display.sources.map(s => [s.name, s.labelColor]),
     )
     expect(byName.S0).toBe(byName.S2)
     expect(byName.S0).not.toBe(byName.S1)

@@ -122,32 +122,52 @@ the anchored haplotype sort.
 - **Matrix mode is zoom-cache-strict** and fetches visible-only; regular is
   neither.
 
-## `layout` orders rows; `subtreeFilter` narrows them
+## `layout` holds what the reader did; the channels derive
+
+**`layout` is only a drag, the arrangement dialog, "Sort rows by genotype here"
+and a clustering run.** Every config-declared channel resolves when the rows are
+read, in `sources`: the row `domain` seeds the adapter order, `layout` merges
+over that seed, phased mode expands to haplotypes, then `colorBy` tints and
+`facet` bands. So `clearLayout` is the whole reset, and the mixin's plain
+`rowOrderIsCustom` answers. This used to be five `applyArrangement` call sites
+writing the derived arrangement into `layout`, and each one was a way for a
+recolor to drop a clustering run.
 
 `getSources` appends a sample a `layout` omits rather than dropping it — spelled
-here because the phased case keys "already covered" on `sampleName`.
+here because the phased case keys "already covered" on `sampleName`. Row-moving
+actions persist through `setLayout`, never `self.layout =`.
 
-Row-arrangement actions persist through `setLayout` (never `self.layout =`), and
-`applyArrangement` re-arranges the rows already on screen rather than
-re-deriving from adapter order, which made "Color by…" discard a clustering run.
+**The tint and the band go on downstream of everything written back to
+`layout`** — `editableSources` (the dialog's list, which submit persists) and
+`sourcesBase` (what a clustering run is handed, and `buildClusteredLayout`
+spreads into the layout) carry neither, or a session would store a channel as if
+the reader had picked it row by row.
 
-**An action computing a NEW order keeps the palette color, label and labelColor
-that only `layout` holds** — by sorting rows that already carry them
-(`editableSources`, as `sortByGenotype` does) or by merging a fresh order back
-with `applyLayoutOverrides` (`@jbrowse/tree-sidebar`, as clustering does through
-`buildClusteredLayout`). Doing neither blanked every sidebar swatch on a callset
-colored by a `samplesTsv` column while the menu still showed the palette ticked.
-`applyLayoutOverrides` matches on `name`, so it cannot merge across
-granularities: in phased mode a fresh order is haplotypes and `layout` is
-sample-level, and nothing matches.
+**An action computing a NEW order keeps the label and labelColor that only
+`layout` holds** — by sorting rows that already carry them (`editableSources`,
+as `sortByGenotype` does) or by merging a fresh order back with
+`applyLayoutOverrides` (`@jbrowse/tree-sidebar`, as clustering does through
+`buildClusteredLayout`). `applyLayoutOverrides` matches on `name`, so it cannot
+merge across granularities: in phased mode a fresh order is haplotypes and
+`layout` is sample-level, and nothing matches.
 
 **The row tint is `labelColor`**, the channel tree-sidebar's `RowLabelsOverlay`
 and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no
-`color` of its own to spend. `maybeApplyColorByPalette` writes it there, the
-group legend and the tooltip swatch read it there, and `getSources` folds a
-`samplesTsv` `color` column (or a session saved when the palette wrote `color`)
-onto it. Carrying the tint under `color` is what kept these displays on a label
-gutter of their own until 2026-08.
+`color` of its own to spend. `applyColorByPalette` writes it there, the group
+legend and the tooltip swatch read it there, and `getSources` folds a
+`samplesTsv` `color` column onto it. Carrying the tint under `color` is what
+kept these displays on a label gutter of their own until 2026-08.
+
+**`colorBy` beats whatever color the row already carried**, `samplesTsv`
+included: a channel bound to a variable beats a per-row constant. It is also
+what keeps a session saved before the derivation looking identical — the palette
+is a pure function of the attribute, so recomputing it reproduces what that
+session wrote into `layout`, and "Color by… → Population" still moves on it.
+
+**The `facet` band yields while a cluster tree describes the rows**
+(`treeDescribesRows`), the mechanism `LinearMultiRowFeatureDisplay` uses for its
+row groups. That is what lets a clustering run leave the `facet` slot alone: a
+run that cleared it would erase a session spec's own `facet` on load.
 
 ## Which display: the matrix is for genotype PATTERN, not spans
 

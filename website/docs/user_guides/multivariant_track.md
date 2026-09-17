@@ -157,7 +157,13 @@ any attribute you supply. Two slots wire it up:
   the sample name (matching the VCF header) and whose every remaining column is
   a metadata attribute.
 - `colorBy` on the display names one of those columns, and the per-sample rows
-  are grouped and colored by that attribute the first time the track loads.
+  are tinted by that attribute for as long as it is set — over any color the TSV
+  or the arrangement editor gave a row. Clear it to hand each row its own color
+  back.
+- `facet` bands the rows so each value of a column is contiguous. The band is
+  applied over whatever order you have arranged, so dragging a sample into
+  another band snaps it back, and it steps aside while a clustering dendrogram
+  is positioned against the rows.
 - [`domain`](/docs/config/linearmultisamplevariantdisplay/#slot-domain) names
   the samples that lead the rows; the rest keep the file's order, and a grouping
   attribute bands within that order rather than against it.

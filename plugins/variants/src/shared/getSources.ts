@@ -114,8 +114,7 @@ export function buildCanonicalRows({
  * on top of its own haplotypes.
  *
  * Returns `layout` itself when it already covers everything — the case every
- * layout the app can produce is in, since each of them (`arrangeSources`,
- * `buildClusteredLayout`, `sortSourcesAroundVariant`, the arrangement dialog)
+ * layout the app can produce is in, since each of them (`buildClusteredLayout`, `sortSourcesAroundVariant`, the arrangement dialog)
  * covers all rows.
  */
 function appendUncoveredSamples(sources: Source[], layout: Source[]): Source[] {
