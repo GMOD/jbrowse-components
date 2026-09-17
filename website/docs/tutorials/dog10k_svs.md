@@ -417,9 +417,10 @@ needs the other side of the junction, from a different callset.
 ### The retrocopy itself, as sequence {#the-retrocopy-itself-as-sequence}
 
 The CFA18 and CFA12 retrocopies were amplified, Sanger-sequenced and deposited
-as [MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) and
-[MF040221](https://www.ncbi.nlm.nih.gov/nuccore/MF040221). One alignment per
-retrocopy, against the parent locus cut out as its own FASTA:
+as [MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) for the CFA18
+insertion and [MF040221](https://www.ncbi.nlm.nih.gov/nuccore/MF040221) for the
+CFA12 one. One alignment per retrocopy, against the parent locus cut out as its
+own FASTA:
 
 <!-- from: scripts/build_dog10k_fgf4_synteny.sh -->
 

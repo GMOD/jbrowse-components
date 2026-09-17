@@ -13,8 +13,8 @@ nothing about the DNA event underneath. Load STAR-Fusion's short-read calls
 beside long RNA reads from the same cell line, count the molecules that cross
 each junction, then find where the chromosome broke: K562's BCR-ABL1 breaks 122
 kb before the junction the caller reports, inside _ABL1_'s first intron, and the
-amplicon's other junction, NUP214-XKR3, breaks almost exactly where the caller
-placed it.
+DNA break under the amplicon's other junction, NUP214-XKR3, sits at the junction
+the caller reports.
 
 ## Prerequisites
 

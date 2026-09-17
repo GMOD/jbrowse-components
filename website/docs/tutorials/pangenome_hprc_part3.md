@@ -292,11 +292,12 @@ configured lanes until **Choose lanes...** picks others. The cut carries one W
 line per haplotype walk, named through the companion, and **Sample rows** in the
 **Layout** dropdown gives each haplotype a row.
 
-Pick **Force-directed layout** in the same dropdown; the walks show most there.
-A node draws thicker the more of the nine walks carry it, so the reference is
-fat and each haplotype's private run of kringle copies is a thin loop. Now open
-the **Walk** dropdown and pick `HG00133`: its route stays colored, the rest
-fades, and a readout gives its length against the reference walk.
+Pick **Force-directed layout** in the same dropdown, where the walks are easiest
+to see. A node draws thicker the more of the nine walks carry it, so the
+reference is fat and each haplotype's private run of kringle copies is a thin
+loop. Now open the **Walk** dropdown and pick `HG00133`: its route stays
+colored, the rest fades, and a readout gives its length against the reference
+walk.
 
 <Figure caption="The KIV-2 array cut from the GBZ for eight haplotypes, force-directed under the same window's genes, bubble and rGFA segments, with HG00133's walk lifted. Nodes on the walk keep their reference-position color, red to magenta across the window, and every node the walk does not visit fades to grey. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout at the top right states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
