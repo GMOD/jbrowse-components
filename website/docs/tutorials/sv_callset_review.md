@@ -82,9 +82,10 @@ raising an error:
 - `END=` matches inside `CIEND=`, and the first hit wins
 - the two records of one breakend pair name the same translocation twice
 
-One image per row, named `1_chr1_33053494-chr6_2919922_gridss12o.png`: index
-first so the directory sorts in callset order, coordinates next, the caller's ID
-last. A file with no ID column falls back to `junction_<n>`.
+One image per row, named `1_chr1_33053494-chr6_2919922_gridss12o.png`: the
+filename opens with the index so the directory sorts in callset order, then the
+coordinates, then the caller's ID. A file with no ID column falls back to
+`junction_<n>`.
 
 `--flank` frames the panel, since a breakend is one base. `--dryRun` prints the
 file and loci of every row and renders nothing, and `--limit 20` renders the
@@ -103,7 +104,7 @@ callset, and a `--config` URL or `--hub` is fetched once. A row that cannot be
 rendered is reported and the run continues.
 
 A connector drawn dashed means the read has a segment at a locus the frame does
-not show. These reads also visit chr10, so this junction wants a third panel,
+not show. These reads also visit chr10, so this junction takes a third panel,
 and the control belongs beside it: one render per sample, the same `--loc` list
 and `--width`.
 
