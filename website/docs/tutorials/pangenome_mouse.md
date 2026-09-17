@@ -60,10 +60,9 @@ The projections are hosted beside the graph:
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) describes
 what each of those files holds and how a graph produces them.
 
-`minigraph` writes no path lines, so this graph records no carriage: nothing in
-it records which strain carries a given allele, and `firstSeenIn` in the allele
-file is construction order. [](/docs/tutorials/pangenome_cattle) is the panel
-where path lines recover it.
+`minigraph` writes no path lines, so this graph records no carriage, and
+`firstSeenIn` in the allele file is construction order.
+[](/docs/tutorials/pangenome_cattle) is the panel where path lines recover it.
 
 ## Nnt: a deletion that appears as an insertion
 
@@ -129,9 +128,9 @@ a segment count and a route range and no kind, since the row's numbers describe
 the whole region at once.
 
 _Dock2_ is also the one window on this page that wants the force layout. The
-other panels are chains and read better anchored; this one is loops hanging off
-a backbone, which is the structure a force-directed layout suits. Check the node
-and edge counts in the graph pane's header before switching.
+other panels are chains and read better anchored; this one is loops off a
+backbone, a structure a force-directed layout draws well. Check the node and
+edge counts in the graph pane's header before switching.
 
 ## Open it, and open what is inside
 

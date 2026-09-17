@@ -143,8 +143,8 @@ The `wheat` set is six genomes of wheat's own polyploidy history:
   A-genome donor
 
 Stacked in that order, each adjacent pair is an evolutionary step. Diagonalizing
-brings each homoeologous group's chromosomes together, with nothing telling the
-view which chromosomes are homoeologs.
+reorders each row so homoeologous chromosomes align; the config never states
+which chromosomes are homoeologs.
 
 **Show all regions - same bp per pixel** in the view menu (`sameScale` in a
 session spec) puts the rows on one bp/px, so a row's drawn length is its genome
@@ -184,9 +184,9 @@ chromosome-level correspondence, each row against the next:
   pseudoobscura -> virilis      best partner holds  77% of a chromosome's links (4 chromosomes)
 ```
 
-Stacked, each melanogaster arm's colour arrives as one bundle in every row.
+Stacked, each melanogaster arm draws as one colour bundle in every row.
 
-<Figure caption="Five Drosophila genomes stacked on OrthoFinder orthogroups: melanogaster, simulans, yakuba, pseudoobscura, virilis, on one bp/px. Each melanogaster arm's colour lands on a single chromosome in every row below, and the bundles cross themselves where inversions have accumulated." src="/img/orthofinder_synteny/drosophila.png" />
+<Figure caption="Five Drosophila genomes stacked on OrthoFinder orthogroups: melanogaster, simulans, yakuba, pseudoobscura, virilis, on one bp/px. Each melanogaster arm's colour marks a single chromosome in every row below, and the bundles cross themselves where inversions have accumulated." src="/img/orthofinder_synteny/drosophila.png" />
 
 ### One locus, one lane per fly
 
@@ -285,8 +285,8 @@ orthologs in its own coordinates, with the scale it took printed in the header.
 ```
 
 Every genome keeps the two dozen genes in this tomato window. Pepper and _N.
-attenuata_ need several times the anchor's span for them, the intergenic
-expansion arriving as a number in a lane header.
+attenuata_ need several times the anchor's span for them, and the lane header
+shows the intergenic expansion as a number.
 
 <Figure caption="A tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in its own coordinates. Every lane opens up more of its own genome than the anchor window to hold the same genes, the pepper and N. attenuata lanes most of all, with the multiple in each header." src="/img/multiway_synteny/solanaceae_lanes.png" />
 

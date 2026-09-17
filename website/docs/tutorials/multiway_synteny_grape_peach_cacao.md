@@ -9,7 +9,7 @@ tutorial_category: Synteny & comparative genomics
 jcvi's MCScan lines up orthologous genes across more than two genomes at once,
 into one wide table with a column per species. We load that table directly, draw
 grape, peach and cacao as rows of a single synteny view, and then read one grape
-locus across all seven plant genomes without leaving grape's own view.
+locus across all seven plant genomes.
 
 ## Prerequisites
 
