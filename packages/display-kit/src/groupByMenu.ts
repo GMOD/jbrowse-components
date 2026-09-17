@@ -139,18 +139,14 @@ export interface SectionOrderModel {
   hideGroup: (key: string) => void
 }
 
-// A synteny stack calls its sections lanes. Spelled whole, so a doc can quote
-// a label and `check-menu-labels` can find it.
-const SECTION_ORDER_LABELS = {
-  section: {
-    menu: 'Sections',
-    hide: 'Hide section',
-    reset: 'Reset section order',
-  },
-  lane: { menu: 'Lanes', hide: 'Hide lane', reset: 'Reset lane order' },
+// A synteny stack calls its sections lanes, and builds its own lane menu
+// around these rows.
+const HIDE_LABELS = {
+  section: 'Hide section',
+  lane: 'Hide lane',
 } as const
 
-export type SectionNoun = keyof typeof SECTION_ORDER_LABELS
+export type SectionNoun = keyof typeof HIDE_LABELS
 
 /**
  * The domain a reorder writes: the sections it names, in their new order,
@@ -224,7 +220,7 @@ export function sectionRowMenuItems(
       },
     },
     {
-      label: SECTION_ORDER_LABELS[noun].hide,
+      label: HIDE_LABELS[noun],
       disabled: keys.length < 2,
       keepMenuOpen: true,
       onClick: () => {
@@ -240,27 +236,23 @@ export function sectionRowMenuItems(
  * dead while the domain pins nothing. The runtime half of `domain`, so a
  * reader reorders what a config author declares.
  */
-export function sectionOrderMenuItems(
-  model: SectionOrderModel,
-  noun: SectionNoun,
-): MenuItem[] {
+export function sectionOrderMenuItems(model: SectionOrderModel): MenuItem[] {
   const { sections } = model
   if (sections.length < 2) {
     return []
   }
-  const labels = SECTION_ORDER_LABELS[noun]
   return [
     {
-      label: labels.menu,
+      label: 'Sections',
       icon: SwapVertIcon,
       subMenu: [
         ...sections.map(({ key, label }) => ({
           label,
-          subMenu: sectionRowMenuItems(model, key, noun),
+          subMenu: sectionRowMenuItems(model, key, 'section'),
         })),
         { type: 'divider' },
         {
-          label: labels.reset,
+          label: 'Reset section order',
           disabled: model.domain.length === 0,
           onClick: () => {
             model.setDomain([])

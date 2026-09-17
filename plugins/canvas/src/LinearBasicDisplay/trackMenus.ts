@@ -103,17 +103,14 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
       },
     },
     ...(facet
-      ? sectionOrderMenuItems(
-          {
-            sections: self.groupSections,
-            domain: facet.domain,
-            setDomain: domain => {
-              self.setFacet({ field: facet.field, domain })
-            },
-            hideGroup: self.hideGroup,
+      ? sectionOrderMenuItems({
+          sections: self.groupSections,
+          domain: facet.domain,
+          setDomain: domain => {
+            self.setFacet({ field: facet.field, domain })
           },
-          'section',
-        )
+          hideGroup: self.hideGroup,
+        })
       : []),
   ]
 }

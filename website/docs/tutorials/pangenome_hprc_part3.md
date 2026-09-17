@@ -212,9 +212,10 @@ loads them.
 ```
 
 The track opens on the assemblies its `assemblyNames` lists beside hg38, and
-`assemblyNameToPanSN` names which haplotype each one is. **Choose lanes...** on
-the track menu lists every haplotype the graph names, grouped by sample. Ticking
-every one draws the whole cohort, and the dialog's reset goes back to the eight.
+`assemblyNameToPanSN` names which haplotype each one is. **Lanes → Choose
+lanes...** on the track menu lists every haplotype the graph names, grouped by
+sample. Ticking every one draws the whole cohort, and the dialog's reset goes
+back to the eight.
 
 Type `chr1:196,640,000-196,900,000` and show the track. The session below is
 that state, and its live link opens it on the hosted config with the eight

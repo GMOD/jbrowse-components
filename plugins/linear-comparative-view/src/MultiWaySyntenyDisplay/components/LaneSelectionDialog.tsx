@@ -4,14 +4,9 @@ import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
 import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { laneResetLabel } from '../menus.ts'
+import { laneResetLabel } from '../laneSelection.ts'
 
-import type { LaneChoice, LaneSelectionModel } from '../menus.ts'
-
-export type LaneSelectionDialogModel = Omit<
-  LaneSelectionModel,
-  'openLaneSelection'
->
+import type { LaneChoice, LaneSelectionModel } from '../laneSelection.ts'
 
 function matchesFilter(lane: LaneChoice, filter: string) {
   const needle = filter.trim().toLowerCase()
@@ -59,7 +54,7 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
   model,
   handleClose,
 }: {
-  model: LaneSelectionDialogModel
+  model: LaneSelectionModel
   handleClose: () => void
 }) {
   const { laneUniverse } = model

@@ -1,11 +1,14 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { LaneGene } from './geneGlyph.ts'
+import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
+import { lanesMenuItem } from './menus.ts'
 import { declaredLanesOf, specsCoverMate, staleLaneSpecs } from './model.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
@@ -162,30 +165,17 @@ test('lane links are asked for only between lanes the session holds', () => {
   ).toEqual([['volvox_random', 'volvox_ins']])
 })
 
-// This display's `trackMenuItems` REPLACED the inherited list rather than
-// appending to it. Nothing is lost by that today — `BaseDisplay` returns `[]`
-// and neither mixin in the chain contributes a row — so this pins the item
-// itself and the composition is hygiene against the chain growing one, which
-// `addMenuItems` calls out as the silent half of writing an override by hand.
-test('the stacked-synteny launcher is under Launch on the track menu, over the inherited rows', () => {
+test('the track menu ends with the stacked-synteny launcher under Launch', () => {
   const display = createDisplay()
   const items = display.trackMenuItems()
-
-  // no lane-order row: the harness commits no features, so there is no mate
-  // lane to order. `menus.test.ts` covers that one on its own
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
+    'Show...',
+    'Color by...',
+    'Lanes',
     'Launch',
-    undefined,
-    'Curved lines',
-    'Bridge lanes that place nothing',
-    'Show lane ticks',
-    'Color ribbons by',
   ])
-  const [launch] = items
-  const subMenu =
-    launch && 'subMenu' in launch && typeof launch.subMenu !== 'function'
-      ? launch.subMenu
-      : []
+  const launch = items.at(-1)
+  const subMenu = launch && 'subMenu' in launch ? resolveSubMenu(launch) : []
   expect(subMenu.map(i => ('label' in i ? i.label : undefined))).toEqual([
     'Linear synteny view (visible region)',
   ])
@@ -218,14 +208,11 @@ test('the key names the anchor lane genes a name-hashed color slot draws', () =>
   expect(new Set(display.geneLegend.map(i => i.color)).size).toBe(2)
   expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
   expect(display.hasLegendKey).toBe(true)
-  expect(
-    display.trackMenuItems().map(i => ('label' in i ? i.label : undefined)),
-  ).toContain('Show legend')
 })
 
 // The default `color` slot is one color for every gene, which keys nothing: a
 // box of identical swatches spends the reader's attention to say the display
-// has a color. The row is off the track menu with it.
+// has a color, so `hasLegendKey` takes the Show legend row off with it.
 test('a flat color slot has nothing to key', () => {
   const display = createDisplay()
   display.setLaneGenes(
@@ -245,9 +232,6 @@ test('a flat color slot has nothing to key', () => {
   )
   expect(display.geneLegend).toEqual([])
   expect(display.hasLegendKey).toBe(false)
-  expect(
-    display.trackMenuItems().map(i => ('label' in i ? i.label : undefined)),
-  ).not.toContain('Show legend')
 })
 
 // The ribbons are the other color vocabulary, and only `strand` gives it rows:
@@ -1328,10 +1312,7 @@ test('a graph track opens on its own assemblies beside the anchor', () => {
     haplotypes: ['HG00097.1', 'HG00099.1'],
   })
   display.setSelectedLanes(['HG00097.1'])
-  const labels = display
-    .trackMenuItems()
-    .map(i => ('label' in i ? i.label : '—'))
-  expect(labels).toContain("The track's lanes (2)")
+  expect(laneResetLabel(display)).toBe("Show the track's lanes (2)")
 })
 
 // The bug this locks down: `laneSelection` existed and narrowed the DRAWING,
@@ -1379,7 +1360,7 @@ test('a lane selection reaches the fetch only where the adapter can cut on it', 
 test('the track menu offers the picker once there is a choice, and the way back out of a selection', () => {
   const display = createDisplay()
   const labels = () =>
-    display.trackMenuItems().map(i => ('label' in i ? i.label : '—'))
+    lanesMenuItem(display).subMenu.map(i => ('label' in i ? i.label : '—'))
   display.setFeatures([mateRecord('r1', 'volvox_random')])
   expect(labels()).not.toContain('Choose lanes...')
   display.setFeatures([
@@ -1388,7 +1369,7 @@ test('the track menu offers the picker once there is a choice, and the way back 
   ])
   expect(labels()).toContain('Choose lanes...')
   display.setSelectedLanes(['sample#1#a'])
-  expect(labels()).toContain('Every lane (2)')
+  expect(labels()).toContain('Show every lane (2)')
 })
 
 test('declaredLanesOf reads a header that names lanes and nothing else', () => {

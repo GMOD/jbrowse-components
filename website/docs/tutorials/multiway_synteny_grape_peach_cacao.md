@@ -490,7 +490,7 @@ Each lane has its own scale, and its header shows it:
 
 - `domain` pins the lanes it names to the top; the rest follow densest-first
   over the whole fetched table, so the order holds across a pan
-- with **Bridge lanes that place nothing** off, a sparse lane mid-stack cuts
+- with **Show... → Show ribbons across gaps** off, a sparse lane mid-stack cuts
   every chain running through it, which densest-first guards against
 
 ### Zooming to genes

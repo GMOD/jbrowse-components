@@ -1034,14 +1034,14 @@ export const trackFields: Record<string, FieldRecipe> = {
   ribbonColorBy: (value, { displayType }) => {
     const label = RIBBON_COLOR_MODES.find(([mode]) => mode === value)?.[1]
     return label && displayType === 'MultiWaySyntenyDisplay'
-      ? { path: `${TRACK_MENU} → Color ribbons by → ${label}` }
+      ? { path: `${TRACK_MENU} → Color by... → ${label}` }
       : undefined
   },
   laneFilter: (value, { displayType }) => {
     const only = asRecord(value)?.only
     return Array.isArray(only) && displayType === 'MultiWaySyntenyDisplay'
       ? {
-          path: `${TRACK_MENU} → Choose lanes...`,
+          path: `${TRACK_MENU} → Lanes → Choose lanes...`,
           note: `Tick the ${only.length} lane${only.length === 1 ? '' : 's'} this figure draws.`,
         }
       : undefined

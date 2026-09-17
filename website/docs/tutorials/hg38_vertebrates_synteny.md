@@ -209,11 +209,11 @@ that lane's header menu pins it onto the other contig.
 
 <Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and most run against their neighbours: five lanes show a reversed marker in their headers, the crossed ribbons are where a block runs against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
 
-**Color ribbons by → Strand** on the track menu colors each ribbon by the
-record's strand: the alignment's own strand between the anchor and the first
-lane, the two alignments' strands multiplied out between two mate lanes, rather
-than by whether the ribbon is drawn crossed. A lane whose alignments all run the
-other way is drawn flipped, with `[rev]` in its header, so its ribbons come out
+**Color by... → Strand** on the track menu colors each ribbon by the record's
+strand: the alignment's own strand between the anchor and the first lane, the
+two alignments' strands multiplied out between two mate lanes, rather than by
+whether the ribbon is drawn crossed. A lane whose alignments all run the other
+way is drawn flipped, with `[rev]` in its header, so its ribbons come out
 straight on screen; the strand color still marks every one of them as an
 inversion, and a single crossed ribbon into an unflipped lane is one block
 running against its neighbours.

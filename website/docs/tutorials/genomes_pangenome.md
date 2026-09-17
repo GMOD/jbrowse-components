@@ -117,9 +117,9 @@ The skipped stretch is the common CFHR3-CFHR1 deletion
 [(Hughes et al. 2006)](https://doi.org/10.1038/ng1890).
 [Part 3](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph) opens the
 same lane track on a panel of four deletion carriers and four non-carriers, each
-carrying its own gene models, and **Choose lanes...** in the track menu swaps in
-any other haplotype the graph names. A row with no haplotypes launch is a locus
-whose window holds no top-level structural site in the callset.
+carrying its own gene models, and **Lanes → Choose lanes...** in the track menu
+swaps in any other haplotype the graph names. A row with no haplotypes launch is
+a locus whose window holds no top-level structural site in the callset.
 
 ## The other two graphs
 

@@ -47,17 +47,14 @@ test('a move clamps to the ends and ignores a key it does not hold', () => {
 
 test('moving one section pins every drawn section, in the order now shown', () => {
   const written: string[][] = []
-  const items = sectionOrderMenuItems(
-    {
-      sections: sections('peach', 'cacao', 'grape'),
-      domain: ['hidden'],
-      setDomain: domain => {
-        written.push(domain)
-      },
-      hideGroup: () => {},
+  const items = sectionOrderMenuItems({
+    sections: sections('peach', 'cacao', 'grape'),
+    domain: ['hidden'],
+    setDomain: domain => {
+      written.push(domain)
     },
-    'section',
-  )
+    hideGroup: () => {},
+  })
   expect(labelsOf(items)).toEqual(['Sections'])
   const rows = subMenuOf(items[0])
   expect(labelsOf(rows)).toEqual([
@@ -85,12 +82,12 @@ test('the ends cannot move past themselves, reset is dead with nothing pinned, a
     setDomain: () => {},
     hideGroup: () => {},
   }
-  const rows = subMenuOf(sectionOrderMenuItems(model, 'lane')[0])
-  expect(labelsOf(rows)).toEqual(['PEACH', 'CACAO', '—', 'Reset lane order'])
+  const rows = subMenuOf(sectionOrderMenuItems(model)[0])
+  expect(labelsOf(rows)).toEqual(['PEACH', 'CACAO', '—', 'Reset section order'])
   expect(subMenuOf(rows[0]).map(disabledOf)).toEqual([true, false, false])
   expect(subMenuOf(rows[1]).map(disabledOf)).toEqual([false, true, false])
   expect(disabledOf(rows[3])).toBe(true)
   expect(
-    sectionOrderMenuItems({ ...model, sections: sections('peach') }, 'lane'),
+    sectionOrderMenuItems({ ...model, sections: sections('peach') }),
   ).toEqual([])
 })

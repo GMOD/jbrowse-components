@@ -1274,19 +1274,16 @@ export function stateModelFactory(
               ])
             },
           }),
-          ...sectionOrderMenuItems(
-            {
-              sections: self.facetLayout.sections,
-              domain: self.facetDomain,
-              setDomain: domain => {
-                self.setFacetDomain(domain)
-              },
-              hideGroup: key => {
-                self.hideGroup(key)
-              },
+          ...sectionOrderMenuItems({
+            sections: self.facetLayout.sections,
+            domain: self.facetDomain,
+            setDomain: domain => {
+              self.setFacetDomain(domain)
             },
-            'section',
-          ),
+            hideGroup: key => {
+              self.hideGroup(key)
+            },
+          }),
           ...densityTierMenuItems(self),
           ...makeShowSubMenu([
             makeCrossHatchItem(self),

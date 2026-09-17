@@ -11,6 +11,43 @@ export interface LaneFilter {
   except?: string[]
 }
 
+/**
+ * One lane the picker offers: declared by the adapter's header, placed in the
+ * fetched window, or both. `label` is the source's own name for it where that
+ * differs from the assembly name (a haplotype's PanSN prefix against the
+ * assembly it is loaded as) and `group` gathers lanes that belong together
+ * (a diploid sample's two haplotypes). `drawn` is whether the stack draws the
+ * lane wherever a window places it
+ */
+export interface LaneChoice {
+  name: string
+  label?: string
+  group?: string
+  placed: boolean
+  drawn: boolean
+}
+
+export interface LaneSelectionModel {
+  laneUniverse: LaneChoice[]
+  laneFilter: LaneFilter | undefined
+  configuredLanes: readonly string[]
+  chooseLanes: (names: string[]) => void
+  setSelectedLanes: (names: string[] | undefined) => void
+}
+
+/**
+ * Where the picker's Reset and the track menu's undo go: the track's lanes
+ * where it declares some, else every lane
+ */
+export function laneResetLabel(
+  model: Pick<LaneSelectionModel, 'configuredLanes' | 'laneUniverse'>,
+) {
+  const configured = model.configuredLanes.length
+  return configured
+    ? `Show the track's lanes (${configured})`
+    : `Show every lane (${model.laneUniverse.length})`
+}
+
 type KeyOf = (name: string) => string
 
 const has = (names: readonly string[], key: string, keyOf: KeyOf) =>

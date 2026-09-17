@@ -76,11 +76,7 @@ import {
   tickIntervalFor,
 } from './layoutMultiWay.ts'
 import { laneColorKey, ribbonColorScale } from './legend.ts'
-import {
-  laneOrderMenuItems,
-  laneSelectionMenuItems,
-  laneSettingsMenuItems,
-} from './menus.ts'
+import { multiWayTrackMenuItems } from './menus.ts'
 import {
   BANDS_KEY,
   boxesKey,
@@ -106,10 +102,9 @@ import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
-import type { LaneFilter } from './laneSelection.ts'
+import type { LaneChoice, LaneFilter } from './laneSelection.ts'
 import type { LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
-import type { LaneChoice } from './menus.ts'
 import type { MultiWayRibbonColorBy, TickGeometry } from './multiwayGeometry.ts'
 import type {
   MultiWayCell,
@@ -885,12 +880,6 @@ export function stateModelFactory(
         return getSession(self).assemblyManager.has(assemblyName)
       },
       /**
-       * #method
-       */
-      pinnedContigOf(assemblyName: string) {
-        return self.pinnedLaneContigs.get(assemblyName)
-      },
-      /**
        * #getter
        * every lane the picker can offer: the header's declared lanes in the
        * source's order, then the genomes the track config names, then any
@@ -1019,6 +1008,13 @@ export function stateModelFactory(
           assemblyName,
           self.laneKey,
         )
+      },
+      /**
+       * #action
+       * every hidden lane drawn again, keeping the picker's choice
+       */
+      showHiddenLanes() {
+        self.laneFilter = laneFilterOf(self.laneFilter?.only, [])
       },
     }))
     .actions(self => ({
@@ -1973,57 +1969,6 @@ export function stateModelFactory(
         return self.hoverTarget?.feature
       },
     }))
-    .views(self => {
-      const superMenuItems = self.trackMenuItems
-      return {
-        /**
-         * #method
-         * the same multi-panel launch the view menu and the rubberband offer,
-         * from the track that is already showing the lanes: every genome
-         * aligning to the visible window gets a full row of its own in a
-         * stacked linear synteny view, cut from this track's dataset.
-         * Appended to the inherited items rather than replacing them, so a
-         * mixin's item is not dropped by being composed under this one
-         */
-        trackMenuItems(): MenuItem[] {
-          const view = self.lgv
-          const items = [...superMenuItems()]
-          for (const item of syntenyRegionMenuItems({
-            label: 'Linear synteny view (visible region)',
-            region: widestRegion(view.dynamicBlocks.contentBlocks),
-            session: getSession(self),
-            openTracks: [self.parentTrack.configuration],
-            anchorTracks: anchorPanelTracks(view.tracks),
-            sourceView: containingPanelStack(view) ?? view,
-            // the panels are the lanes on screen, in the stack's order,
-            // rather than a discovery over the dataset that forgets the lanes
-            // the reader chose and, on a graph source, fetches every
-            // haplotype the window places a second time
-            discoverMatesFor: (_trackId, region) => async () =>
-              lanePanelsForRegion({
-                groups: self.groups,
-                rowAssemblies: self.rowAssemblies,
-                laneDecisions: self.laneDecisions,
-                region,
-                anchorCanon: refName =>
-                  self.anchorAssembly?.getCanonicalRefName2(refName) ?? refName,
-                trackAssemblyNames: getTrackAssemblyNames(self.parentTrack),
-              }),
-            starAnchor: self.starAnchor,
-          })) {
-            pushLaunchViewMenuItem(items, item)
-          }
-          return [
-            ...items,
-            { type: 'divider' },
-            ...laneSettingsMenuItems(self),
-            ...lodMenuItems(self),
-            ...laneSelectionMenuItems(self),
-            ...laneOrderMenuItems(self),
-          ]
-        },
-      }
-    })
     .actions(self => ({
       /**
        * #action
@@ -2110,6 +2055,52 @@ export function stateModelFactory(
         })
       },
     }))
+    .views(self => {
+      const superMenuItems = self.trackMenuItems
+      return {
+        /**
+         * #method
+         * Show..., Color by..., Lanes and Level of detail, then under Launch
+         * the same multi-panel launch the view menu and the rubberband offer:
+         * every genome aligning to the visible window in a stacked linear
+         * synteny view, cut from this track's dataset
+         */
+        trackMenuItems(): MenuItem[] {
+          const view = self.lgv
+          const items = [
+            ...superMenuItems(),
+            ...multiWayTrackMenuItems(self),
+            ...lodMenuItems(self),
+          ]
+          for (const item of syntenyRegionMenuItems({
+            label: 'Linear synteny view (visible region)',
+            region: widestRegion(view.dynamicBlocks.contentBlocks),
+            session: getSession(self),
+            openTracks: [self.parentTrack.configuration],
+            anchorTracks: anchorPanelTracks(view.tracks),
+            sourceView: containingPanelStack(view) ?? view,
+            // the panels are the lanes on screen, in the stack's order,
+            // rather than a discovery over the dataset that forgets the lanes
+            // the reader chose and, on a graph source, fetches every
+            // haplotype the window places a second time
+            discoverMatesFor: (_trackId, region) => async () =>
+              lanePanelsForRegion({
+                groups: self.groups,
+                rowAssemblies: self.rowAssemblies,
+                laneDecisions: self.laneDecisions,
+                region,
+                anchorCanon: refName =>
+                  self.anchorAssembly?.getCanonicalRefName2(refName) ?? refName,
+                trackAssemblyNames: getTrackAssemblyNames(self.parentTrack),
+              }),
+            starAnchor: self.starAnchor,
+          })) {
+            pushLaunchViewMenuItem(items, item)
+          }
+          return items
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

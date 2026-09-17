@@ -6,7 +6,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import LaneSelectionDialog, { laneRuns } from './LaneSelectionDialog.tsx'
 
-import type { LaneChoice } from '../menus.ts'
+import type { LaneChoice } from '../laneSelection.ts'
 
 const universe: LaneChoice[] = [
   { name: 'HG1.1', label: 'HG1#1', group: 'HG1', placed: true, drawn: true },
@@ -76,7 +76,7 @@ test('an unchanged submit hands over nothing, and Reset says where it goes', () 
   expect(screen.getByLabelText('extra')).not.toBeChecked()
   fireEvent.click(screen.getByText('Draw these lanes'))
   expect(chosen).toEqual([])
-  fireEvent.click(screen.getByText("The track's lanes (1)"))
+  fireEvent.click(screen.getByText("Show the track's lanes (1)"))
   expect(resets).toHaveLength(1)
 })
 

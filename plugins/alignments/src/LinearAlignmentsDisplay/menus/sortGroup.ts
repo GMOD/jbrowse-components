@@ -197,17 +197,14 @@ export interface SectionOrderMenuModel {
 export function getSectionOrderMenuItems(model: SectionOrderMenuModel) {
   const groupBy = model.effectiveGroupBy
   return groupBy
-    ? sectionOrderMenuItems(
-        {
-          sections: model.groupOrder,
-          domain: groupBy.domain ?? [],
-          setDomain: domain => {
-            model.setGroupBy({ ...groupBy, domain })
-          },
-          hideGroup: model.hideGroup,
+    ? sectionOrderMenuItems({
+        sections: model.groupOrder,
+        domain: groupBy.domain ?? [],
+        setDomain: domain => {
+          model.setGroupBy({ ...groupBy, domain })
         },
-        'section',
-      )
+        hideGroup: model.hideGroup,
+      })
     : []
 }
 
