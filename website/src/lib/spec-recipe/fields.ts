@@ -19,7 +19,6 @@ import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/
 import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
 import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
-import { RIBBON_COLOR_MODES } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorModes.ts'
 import {
   COLOR_MODES,
   VALUE_MODES_LABEL,
@@ -287,6 +286,15 @@ const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
 // numeric columns are each offered under the column's own name, below the
 // named presets. There is no fixed label to look up, so the column supplies it.
 const SYNTENY_ATTRIBUTE_PREFIX = 'attribute:'
+
+function syntenyColorLabel(value: unknown) {
+  return typeof value === 'string'
+    ? (SYNTENY_COLOR_MODES[value] ??
+        (value.startsWith(SYNTENY_ATTRIBUTE_PREFIX)
+          ? `${VALUE_MODES_LABEL} → ${value.slice(SYNTENY_ATTRIBUTE_PREFIX.length)}`
+          : undefined))
+    : undefined
+}
 
 // The two multi-sample variant displays share one base model, so one path
 // serves both. Unlike every other colorBy here the value is not an enum — it is
@@ -1032,7 +1040,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   ribbonColorBy: (value, { displayType }) => {
-    const label = RIBBON_COLOR_MODES.find(([mode]) => mode === value)?.[1]
+    const label = syntenyColorLabel(value)
     return label && displayType === 'MultiWaySyntenyDisplay'
       ? { path: `${TRACK_MENU} → Color by... → ${label}` }
       : undefined
@@ -1705,13 +1713,7 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined
   },
   colorBy: (value, { viewType }) => {
-    const label =
-      typeof value === 'string'
-        ? (SYNTENY_COLOR_MODES[value] ??
-          (value.startsWith(SYNTENY_ATTRIBUTE_PREFIX)
-            ? `${VALUE_MODES_LABEL} → ${value.slice(SYNTENY_ATTRIBUTE_PREFIX.length)}`
-            : undefined))
-        : undefined
+    const label = syntenyColorLabel(value)
     // Both comparative views carry the same palette button; only the header it
     // sits in differs.
     const header =

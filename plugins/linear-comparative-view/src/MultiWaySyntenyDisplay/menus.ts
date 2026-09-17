@@ -1,25 +1,21 @@
-import {
-  makeRadioSubMenu,
-  toggleItem,
-  withSubHeader,
-} from '@jbrowse/core/ui/menuItems'
+import { toggleItem, withSubHeader } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { sectionRowMenuItems } from '@jbrowse/display-kit/groupByMenu'
+import { colorByMenuItems } from '@jbrowse/synteny-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { laneRegion } from './laneHeader.ts'
 import { laneResetLabel } from './laneSelection.ts'
-import { ribbonColorModeOptions } from './ribbonColorModes.ts'
 
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
-import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { AttributeRange, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export type HeaderLane = Pick<
   Lane,
@@ -45,9 +41,14 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   hiddenLanes: readonly string[]
   showHiddenLanes: () => void
   openLaneSelection: () => void
-  ribbonColorBy: MultiWayRibbonColorBy
-  setRibbonColorBy: (mode: MultiWayRibbonColorBy) => void
+  ribbonColorBy: SyntenyColorBy
+  setRibbonColorBy: (mode: SyntenyColorBy) => void
   ribbonColorAttributes: readonly string[]
+  ribbonAttributeRanges: Record<string, AttributeRange>
+  ribbonColorDomain: readonly string[]
+  setRibbonColorDomain: (domain: string[]) => void
+  hideUnlabelled: boolean
+  setHideUnlabelled: (flag: boolean) => void
   showLaneTicks: boolean
   setShowLaneTicks: (flag: boolean) => void
   drawCurves: boolean
@@ -182,13 +183,18 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
   ]
 }
 
-function colorMenuItem(model: MultiWayMenuModel): MenuItem {
-  return makeRadioSubMenu({
-    label: 'Color by...',
-    icon: PaletteIcon,
-    value: model.ribbonColorBy,
-    onChange: model.setRibbonColorBy,
-    options: ribbonColorModeOptions(model.ribbonColorAttributes),
+export function colorSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
+  return colorByMenuItems({
+    colorBy: model.ribbonColorBy,
+    structuralModes: ['default', 'strand'],
+    attributes: model.ribbonColorAttributes,
+    attributeRanges: model.ribbonAttributeRanges,
+    surface: 'lanes',
+    hideUnlabelled: model.hideUnlabelled,
+    colorDomain: model.ribbonColorDomain,
+    setColorBy: model.setRibbonColorBy,
+    setHideUnlabelled: model.setHideUnlabelled,
+    setColorDomain: model.setRibbonColorDomain,
   })
 }
 
@@ -245,7 +251,11 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
 export function multiWayTrackMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return [
     ...makeShowSubMenu(showSubMenuItems(model)),
-    colorMenuItem(model),
+    {
+      label: 'Color by...',
+      icon: PaletteIcon,
+      subMenu: colorSubMenuItems(model),
+    },
     lanesMenuItem(model),
   ]
 }

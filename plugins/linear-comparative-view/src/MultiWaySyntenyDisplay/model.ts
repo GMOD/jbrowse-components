@@ -13,7 +13,6 @@ import {
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import {
@@ -31,14 +30,17 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 import {
+  PRESET_ATTRIBUTES,
   bandGroundColor,
   bandInk,
+  coerceColorBy,
   colorableColumns,
   declaredAttributes,
+  featureAttributeRanges,
   lodMenuItems,
   lodTierAt,
   LodTierInfoMixin,
-  resolveCategoricalMode,
+  orderAttributeLabels,
   trackHasLodTiers,
   widenAttributeRanges,
 } from '@jbrowse/synteny-core'
@@ -90,7 +92,6 @@ import {
 } from './multiwayGeometry.ts'
 import { multiwayBlocks } from './multiwayMarks.ts'
 import { ribbonParams } from './multiwayRenderTypes.ts'
-import { coerceRibbonColorBy, featureLabelTable } from './ribbonColorModes.ts'
 
 import type {
   SyntenyRenderState,
@@ -105,7 +106,7 @@ import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
 import type { LaneChoice, LaneFilter } from './laneSelection.ts'
 import type { LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
-import type { MultiWayRibbonColorBy, TickGeometry } from './multiwayGeometry.ts'
+import type { TickGeometry } from './multiwayGeometry.ts'
 import type {
   MultiWayCell,
   MultiWayLayer,
@@ -122,7 +123,12 @@ import type {
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { AttributeRange, LodMode, LodTier } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  LodMode,
+  LodTier,
+  SyntenyColorBy,
+} from '@jbrowse/synteny-core'
 import type React from 'react'
 
 /** what the pointer is over: a gene, a placement box or a ribbon */
@@ -244,6 +250,10 @@ export function declaredLanesOf(header: unknown): DeclaredLane[] {
   return out
 }
 
+function ribbonChannelNames(adapterConfig: Record<string, unknown>) {
+  return [...PRESET_ATTRIBUTES, ...declaredAttributes(adapterConfig)]
+}
+
 /** the specs whose lane holds nothing fetched under their key */
 export function staleLaneSpecs<Spec extends LaneFetchSpec>(
   specs: Spec[],
@@ -325,10 +335,11 @@ export function stateModelFactory(
       features: undefined as Feature[] | undefined,
       /**
        * #volatile
-       * per declared column, the labels every fetch since the ribbon mode was
-       * picked has carried, in first-seen order; see `ribbonLabels`
+       * per ribbon channel, the span or labels every fetch since the ribbon
+       * mode was picked has carried, labels in first-seen order so a pan
+       * recolors nothing; see `ribbonAttributeRanges`
        */
-      seenRibbonLabels: {} as Record<string, AttributeRange>,
+      seenAttributeRanges: {} as Record<string, AttributeRange>,
       /**
        * #volatile
        * per lane, the gene models fetched from that assembly's own gene track,
@@ -419,16 +430,22 @@ export function stateModelFactory(
           self.clickedTarget = undefined
         }
       }
+      function observeRibbonFeatures(features: readonly Feature[]) {
+        self.seenAttributeRanges = widenAttributeRanges(
+          self.seenAttributeRanges,
+          featureAttributeRanges(
+            features,
+            ribbonChannelNames(self.adapterConfig),
+          ),
+        )
+      }
       return {
         /**
          * #action
          */
         setFeatures(f: Feature[]) {
           self.features = f
-          self.seenRibbonLabels = widenAttributeRanges(
-            self.seenRibbonLabels,
-            featureLabelTable(f, declaredAttributes(self.adapterConfig)),
-          )
+          observeRibbonFeatures(f)
           dropDirectLinkClick()
         },
         /**
@@ -466,6 +483,7 @@ export function stateModelFactory(
           const held = new Map(self.laneLinks)
           for (const [pair, links] of fetched) {
             held.set(pair, links)
+            observeRibbonFeatures(links.links)
           }
           self.laneLinks = held
           dropDirectLinkClick()
@@ -531,11 +549,27 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setRibbonColorBy(mode: MultiWayRibbonColorBy) {
+        setRibbonColorBy(mode: SyntenyColorBy) {
           setConf(self, 'ribbonColorBy', mode)
-          // the way back from a label order one window fixed: the ribbons in
-          // hand re-key from what is loaded
-          self.seenRibbonLabels = {}
+          // the way back from a label order or a span one window fixed: the
+          // ribbons re-key from the features in hand
+          self.seenAttributeRanges = {}
+          observeRibbonFeatures(self.features ?? [])
+          for (const { links } of self.laneLinks?.values() ?? []) {
+            observeRibbonFeatures(links)
+          }
+        },
+        /**
+         * #action
+         */
+        setRibbonColorDomain(domain: string[]) {
+          setConf(self, 'ribbonColorDomain', domain)
+        },
+        /**
+         * #action
+         */
+        setHideUnlabelled(flag: boolean) {
+          setConf(self, 'hideUnlabelled', flag)
         },
         /**
          * #action
@@ -650,8 +684,8 @@ export function stateModelFactory(
       /**
        * #getter
        */
-      get ribbonColorBy(): MultiWayRibbonColorBy {
-        return coerceRibbonColorBy(getConf(self, 'ribbonColorBy'))
+      get ribbonColorBy(): SyntenyColorBy {
+        return coerceColorBy(getConf(self, 'ribbonColorBy'))
       },
       /**
        * #getter
@@ -664,32 +698,29 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the label table an `attribute:` ribbon mode paints from: every label
-       * seen in any fetch since the mode was picked, in first-seen order, so
-       * a pan adds labels at the end and recolors nothing. Undefined for the
-       * fixed modes, and for a column no loaded row carries as text
-       */
-      get ribbonLabels() {
-        const mode = resolveCategoricalMode(
-          getConf(self, 'ribbonColorBy'),
-          self.seenRibbonLabels,
-        )
-        const domain = this.ribbonColorDomain
-        return mode && domain.length
-          ? {
-              ...mode,
-              labels: [...mode.labels].sort(groupKeyComparator(domain)),
-            }
-          : mode
-      },
-      /**
-       * #getter
        * the declared order an `attribute:` mode's labels take. A label's color
        * is its position in that list, so this is the ribbons' order as much as
        * the key's
        */
       get ribbonColorDomain(): string[] {
         return getConf(self, 'ribbonColorDomain')
+      },
+      /**
+       * #getter
+       * what the ribbon modes paint from: each channel's span, and a text
+       * column's labels in `ribbonColorDomain` order
+       */
+      get ribbonAttributeRanges(): Record<string, AttributeRange> {
+        return orderAttributeLabels(
+          self.seenAttributeRanges,
+          this.ribbonColorDomain,
+        )
+      },
+      /**
+       * #getter
+       */
+      get hideUnlabelled(): boolean {
+        return getConf(self, 'hideUnlabelled')
       },
       /**
        * #getter
@@ -1474,7 +1505,8 @@ export function stateModelFactory(
           laneLinks: self.pairLinks,
           ribbonColor: self.ribbonColor,
           ribbonColorBy: self.ribbonColorBy,
-          ribbonLabels: self.ribbonLabels,
+          attributeRanges: self.ribbonAttributeRanges,
+          hideUnlabelled: self.hideUnlabelled,
           drawCurves: self.drawCurves,
           bridgeSkippedLanes: self.bridgeSkippedLanes,
         })
@@ -1571,18 +1603,6 @@ export function stateModelFactory(
         )
         return legendIsReadable(items, MAX_LEGEND_ENTRIES) ? items : []
       },
-      /**
-       * #getter
-       * whether any ribbon the stack draws carries an identity to paint: a
-       * gene table and a composed link carry none
-       */
-      get ribbonsCarryIdentity() {
-        const carries = (f: Feature) => typeof f.get('identity') === 'number'
-        return (
-          (self.features ?? []).some(carries) ||
-          [...self.pairLinks.values()].some(({ links }) => links.some(carries))
-        )
-      },
     }))
     .views(self => ({
       /**
@@ -1602,8 +1622,7 @@ export function stateModelFactory(
           },
           ribbonColorScale(
             self.ribbonColorBy,
-            self.ribbonLabels,
-            self.ribbonColorBy === 'identity' && self.ribbonsCarryIdentity,
+            self.ribbonAttributeRanges,
             self.ribbonColorDomain,
           ),
         ]

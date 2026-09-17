@@ -1,3 +1,5 @@
+import { dnDsRatio } from './colorRamps.ts'
+
 import type { AttributeRange } from './colorRamps.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -198,4 +200,42 @@ export function createAttributeChannels(
       return { attributes, attributeRanges }
     },
   }
+}
+
+/**
+ * A channel's number off one feature, -1 for none. dN/dS is the one derived
+ * channel: a ratio of two attributes, so nothing on the feature answers to it.
+ */
+export function readChannelValue(feature: Feature, name: string) {
+  return name === 'dnds' ? dnDsRatio(feature) : readAttribute(feature, name)
+}
+
+/** One feature written into every channel, at `index`. */
+export function writeFeatureChannels(
+  channels: readonly AttributeChannel[],
+  index: number,
+  feature: Feature,
+) {
+  for (const channel of channels) {
+    if (channel.name === 'dnds') {
+      writeAttribute(channel, index, dnDsRatio(feature))
+    } else {
+      writeFeatureAttribute(channel, index, feature)
+    }
+  }
+}
+
+/**
+ * The span or label list each named channel covers over `features`: what a
+ * worker's channels report, for a display that holds its features.
+ */
+export function featureAttributeRanges(
+  features: readonly Feature[],
+  names: readonly string[],
+) {
+  const channels = createAttributeChannels(names, features.length)
+  features.forEach((feature, index) => {
+    writeFeatureChannels(channels.list, index, feature)
+  })
+  return channels.finish(features.length).attributeRanges
 }

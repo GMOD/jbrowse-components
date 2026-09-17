@@ -400,10 +400,8 @@ describe('the ribbons', () => {
       laneLinks: undefined,
       ribbonColor: 'rgba(130,130,130,0.4)',
       ribbonColorBy: 'attribute:group',
-      ribbonLabels: {
-        attribute: 'group',
-        labels: ['B1', 'A1a'],
-        colors: { A1a: '#4DB5E3' },
+      attributeRanges: {
+        group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
       },
       drawCurves: false,
       bridgeSkippedLanes: false,
@@ -415,6 +413,67 @@ describe('the ribbons', () => {
       withAbgrAlpha(cssColorToABGR(refNameColor('B1', 0)), alpha),
     )
     expect(data.colors[2]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))
+
+    const hidden = ribbonData(
+      buildRibbonGeometry({
+        stack: s,
+        laneLinks: undefined,
+        ribbonColor: 'rgba(130,130,130,0.4)',
+        ribbonColorBy: 'attribute:group',
+        attributeRanges: {
+          group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
+        },
+        hideUnlabelled: true,
+        drawCurves: false,
+        bridgeSkippedLanes: false,
+      }).cells,
+      'ribbons:0',
+    )
+    expect(hidden.colors[1]).toBe(data.colors[1])
+    expect(abgrAlpha(hidden.colors[2]!)).toBe(0)
+  })
+
+  // dN/dS derives from two columns and a declared numeric column ramps over
+  // the span seen, so neither reads a feature attribute of the mode's own name
+  test('color by dN/dS or a numeric column ramps it, and a pair without one keeps the slot color', () => {
+    const s = stack({
+      features: [
+        new SimpleFeature({
+          ...pairFeature('g1', 100, 200).toJSON(),
+          dn: 0.1,
+          ds: 0.4,
+          ks: 0.2,
+        }),
+        new SimpleFeature({
+          ...pairFeature('g2', 300, 400).toJSON(),
+          dn: 0.8,
+          ds: 0.4,
+          ks: 1.6,
+        }),
+        pairFeature('g3', 500, 600),
+      ],
+    })
+    const colorsBy = (ribbonColorBy: 'dnds' | 'attribute:ks') =>
+      ribbonData(
+        buildRibbonGeometry({
+          stack: s,
+          laneLinks: undefined,
+          ribbonColor: 'rgba(130,130,130,0.4)',
+          ribbonColorBy,
+          attributeRanges: {
+            dnds: { min: 0.25, max: 2 },
+            ks: { min: 0.2, max: 1.6 },
+          },
+          drawCurves: false,
+          bridgeSkippedLanes: false,
+        }).cells,
+        'ribbons:0',
+      ).colors
+    for (const colors of [colorsBy('dnds'), colorsBy('attribute:ks')]) {
+      expect(colors[0]).not.toBe(colors[1])
+      expect(abgrAlpha(colors[0]!)).toBe(Math.round(0.4 * 255))
+      expect(colors[2]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))
+    }
   })
 
   test('leave out a pair too thin to read on both ends', () => {

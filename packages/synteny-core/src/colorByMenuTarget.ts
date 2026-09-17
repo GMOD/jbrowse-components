@@ -1,5 +1,4 @@
-import { resolveCategoricalMode } from './colorRamps.ts'
-
+import type { ColorModeSurface } from './colorModes.ts'
 import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 import type { ColorableTrack } from './trackColors.ts'
@@ -16,9 +15,9 @@ export interface ColorByMenuTrack {
 /**
  * #api
  * Project a view carrying `TrackColorsMixin` onto the menu builder's input.
- * Both palette menus were building this by hand, walking the model's tracks a
- * third time (after `colorableTracks` and the legend) and repeating the same
- * setter lambdas.
+ * `track` is offered once two tracks overlay, and `reference` only across a
+ * stack of two or more levels, since below that it degenerates to query or
+ * target.
  */
 export function colorByMenuTargetFor(
   model: TrackColorsModel,
@@ -27,33 +26,44 @@ export function colorByMenuTargetFor(
     showReference,
   }: { pointBased: boolean; showReference: boolean },
 ): ColorByMenuTarget {
+  const tracks = model.colorableTracks.map(({ trackId, name, color }) => ({
+    trackId,
+    name,
+    trackColor: model.trackColorFor(trackId),
+    pinned: color !== undefined,
+  }))
   return {
     colorBy: model.colorByMode,
+    structuralModes: [
+      'default',
+      'strand',
+      ...(tracks.length > 1 ? (['track'] as const) : []),
+      'query',
+      'target',
+      ...(showReference ? (['reference'] as const) : []),
+    ],
     attributes: model.colorableAttributes,
     attributeRanges: model.attributeRanges,
-    tracks: model.colorableTracks.map(({ trackId, name, color }) => ({
-      trackId,
-      name,
-      trackColor: model.trackColorFor(trackId),
-      pinned: color !== undefined,
-    })),
-    pointBased,
-    showReference,
-    categorical:
-      resolveCategoricalMode(model.colorByMode, model.attributeRanges) !==
-      undefined,
+    surface: pointBased ? 'points' : 'ribbons',
     hideUnlabelled: model.hideUnlabelled,
+    colorDomain: model.colorDomain,
     setColorBy: value => {
       model.setColorBy(value)
     },
     setHideUnlabelled: value => {
       model.setHideUnlabelled(value)
     },
-    setTrackColor: (trackId, value) => {
-      model.setTrackColor(trackId, value)
+    setColorDomain: domain => {
+      model.setColorDomain(domain)
     },
-    clearTrackColors: () => {
-      model.clearTrackColors()
+    trackColors: {
+      tracks,
+      setTrackColor: (trackId, value) => {
+        model.setTrackColor(trackId, value)
+      },
+      clearTrackColors: () => {
+        model.clearTrackColors()
+      },
     },
   }
 }
@@ -67,38 +77,43 @@ export interface TrackColorsModel {
   attributeRanges: Record<string, AttributeRange>
   colorByMode: SyntenyColorBy
   hideUnlabelled: boolean
+  colorDomain: readonly string[]
   trackColorFor: (trackId: string) => string
   setColorBy: (value: SyntenyColorBy) => void
   setHideUnlabelled: (value: boolean) => void
+  setColorDomain: (domain: string[]) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
   clearTrackColors: () => void
 }
 
 export interface ColorByMenuTarget {
   colorBy: SyntenyColorBy
-  tracks: ColorByMenuTrack[]
+  /** the structural modes the surface paints, in `COLOR_MODES` order */
+  structuralModes: readonly SyntenyColorBy[]
   /**
-   * numeric columns the overlaid tracks declare, each offered as its own mode.
-   * Taken from the track config rather than from the data so the menu is right
-   * before anything has loaded.
+   * columns the tracks declare, each offered as its own mode. Taken from the
+   * track config rather than from the data so the menu is right before
+   * anything has loaded.
    */
-  attributes: string[]
+  attributes: readonly string[]
   /**
-   * the span each channel has been seen to cover. A preset measurement is
-   * offered only once the loaded data has carried one value of it: a plain
-   * PAF has no dN/dS, and a CIGAR-less one no identity, so the row says so
-   * rather than painting every ribbon the missing-data color.
+   * the span or label list each channel has been seen to cover. A preset
+   * measurement is offered only once the loaded data has carried one value of
+   * it: a plain PAF has no dN/dS, and a CIGAR-less one no identity.
    */
   attributeRanges: Record<string, AttributeRange>
-  /** dotplots draw flat points and have no 'reference' anchor */
-  pointBased: boolean
-  /** 'reference' is meaningless below two stacked levels */
-  showReference: boolean
-  /** whether the current mode paints a text column, which is when the unlabelled rows can be hidden */
-  categorical: boolean
+  /** what draws the alignments, which some modes' help describes differently */
+  surface: ColorModeSurface
   hideUnlabelled: boolean
+  /** the order a text column's labels take, which Pin distinct colors writes */
+  colorDomain: readonly string[]
   setColorBy: (value: SyntenyColorBy) => void
   setHideUnlabelled: (value: boolean) => void
-  setTrackColor: (trackId: string, value: string | undefined) => void
-  clearTrackColors: () => void
+  setColorDomain: (domain: string[]) => void
+  /** the per-track swatches of a view overlaying tracks */
+  trackColors?: {
+    tracks: ColorByMenuTrack[]
+    setTrackColor: (trackId: string, value: string | undefined) => void
+    clearTrackColors: () => void
+  }
 }

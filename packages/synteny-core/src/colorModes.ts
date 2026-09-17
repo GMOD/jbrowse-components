@@ -1,10 +1,13 @@
 import type { SyntenyColorBy } from './colorUtils.ts'
 
-// One table for both views. They had a copy each and the help text had already
-// drifted — dotplot's Default said "black" and synteny's said "red", both
-// correct for their own renderer — so the wording that differs is a field
-// rather than a reason to keep two tables.
+// One table for every surface that colors alignments. The dotplot, the synteny
+// view and the multi-way lanes each had a copy and the help text had drifted,
+// so the wording that differs per surface is a field rather than a reason to
+// keep three tables.
 export const VALUE_MODES_LABEL = 'Color by value'
+
+/** what draws the alignments: synteny ribbons, dotplot points, or ribbons between multi-way lanes */
+export type ColorModeSurface = 'ribbons' | 'points' | 'lanes'
 
 // A mode is `structural` (what an alignment is: its strand, its track, which
 // sequence it lies on) or a `value` (a number it carries, painted on a ramp).
@@ -15,7 +18,7 @@ export const COLOR_MODES: {
   label: string
   kind: 'structural' | 'value'
   helpText: string
-  pointBasedHelpText?: string
+  surfaceHelpText?: Partial<Record<ColorModeSurface, string>>
 }[] = [
   {
     value: 'default',
@@ -23,7 +26,10 @@ export const COLOR_MODES: {
     label: 'Default',
     helpText:
       'The default red ribbon, with insertions, deletions and skips in their own colors.',
-    pointBasedHelpText: 'Every alignment in black.',
+    surfaceHelpText: {
+      points: 'Every alignment in black.',
+      lanes: "Every ribbon in the track's ribbon color.",
+    },
   },
   {
     value: 'strand',
@@ -31,6 +37,10 @@ export const COLOR_MODES: {
     label: 'Strand',
     helpText:
       'Forward and reverse alignments in different colors, so a twisted ribbon reads as an inversion.',
+    surfaceHelpText: {
+      lanes:
+        "Each ribbon by the record's strand against the lane above, so a lane drawn flipped still shows its inversions.",
+    },
   },
   {
     value: 'track',

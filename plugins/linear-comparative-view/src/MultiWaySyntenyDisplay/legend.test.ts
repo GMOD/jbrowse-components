@@ -96,13 +96,17 @@ test('the other two ribbon modes key no rows', () => {
   expect(ribbonColorKey('identity')).toEqual([])
 })
 
-// Identity painted viridis with no key at all, so a reader had colors and no
-// way to read a number off them
-test('identity keys the ramp it paints, and nothing where no ribbon carries one', () => {
-  const scale = ribbonColorScale('identity', undefined, true)
+// A ramp mode keys the synteny view's ramp under the ribbons' own title, and
+// keys nothing where no loaded pair carries the value it paints
+test('a measurement keys the ramp it paints, and nothing where no ribbon carries one', () => {
+  const scale = ribbonColorScale('identity', { identity: { min: 0.5, max: 1 } })
   expect(scale.kind).toBe('ramp')
   expect(scale.id).toBe('ribbons')
-  expect(ribbonColorScale('identity', undefined, false)).toEqual({
+  expect(scale.title).toBe('Ribbon identity')
+  expect(ribbonColorScale('dnds', { dnds: { min: 0, max: 3 } }).title).toBe(
+    'Ribbon dN/dS',
+  )
+  expect(ribbonColorScale('identity', {})).toEqual({
     kind: 'categorical',
     id: 'ribbons',
     title: 'Ribbon colors',

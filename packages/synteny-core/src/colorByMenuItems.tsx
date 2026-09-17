@@ -2,10 +2,11 @@ import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { withHint } from '@jbrowse/core/ui/menuItems'
 
 import { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
-import { continuousRampConfig } from './colorRamps.ts'
+import { continuousRampConfig, resolveCategoricalMode } from './colorRamps.ts'
 import { attributeColorBy } from './colorUtils.ts'
 
 import type { ColorByMenuTarget } from './colorByMenuTarget.ts'
+import type { CategoricalMode } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -19,23 +20,24 @@ interface ModeEntry {
 const presetRamps: Record<string, { attribute: string } | undefined> =
   continuousRampConfig
 
+const modeOf = new Map(COLOR_MODES.map(mode => [mode.value, mode]))
+
 function structuralModes({
-  pointBased,
-  showReference,
-  tracks,
+  structuralModes,
+  surface,
 }: ColorByMenuTarget): ModeEntry[] {
-  return COLOR_MODES.filter(
-    m =>
-      m.kind === 'structural' &&
-      (m.value !== 'reference' || showReference) &&
-      // one track has nothing to be told apart from
-      (m.value !== 'track' || tracks.length > 1),
-  ).map(m => ({
-    value: m.value,
-    label: m.label,
-    helpText:
-      pointBased && m.pointBasedHelpText ? m.pointBasedHelpText : m.helpText,
-  }))
+  return structuralModes.flatMap(value => {
+    const mode = modeOf.get(value)
+    return mode
+      ? [
+          {
+            value,
+            label: mode.label,
+            helpText: mode.surfaceHelpText?.[surface] ?? mode.helpText,
+          },
+        ]
+      : []
+  })
 }
 
 // The named measurements, then one entry per column the tracks declare. The
@@ -79,11 +81,45 @@ function radios(target: ColorByMenuTarget, modes: ModeEntry[]): MenuItem[] {
   }))
 }
 
+// Under a text column: hide the rows it leaves unlabelled, and pin the labels
+// seen so far into the domain so each keeps its palette slot in the next
+// session and the next window
+function categoricalItems(
+  target: ColorByMenuTarget,
+  { labels }: CategoricalMode,
+): MenuItem[] {
+  const { colorDomain } = target
+  const unpinned = labels.filter(label => !colorDomain.includes(label))
+  return [
+    {
+      label: 'Hide unlabelled rows',
+      type: 'checkbox',
+      checked: target.hideUnlabelled,
+      helpText:
+        'Draw only the rows the text column labels, so the groups carry the picture on their own.',
+      onClick: () => {
+        target.setHideUnlabelled(!target.hideUnlabelled)
+      },
+    },
+    {
+      label: 'Pin distinct colors',
+      disabled: unpinned.length === 0,
+      onClick: () => {
+        target.setColorDomain([...colorDomain, ...unpinned])
+      },
+    },
+  ]
+}
+
 // One row per overlaid track carrying its palette swatch, so a color can be
 // pinned for `colorBy: 'track'`; the row's own submenu is the way back.
-function trackColorItems(target: ColorByMenuTarget): MenuItem[] {
-  const { tracks } = target
+function trackColorItems({
+  tracks,
+  setTrackColor,
+  clearTrackColors,
+}: NonNullable<ColorByMenuTarget['trackColors']>): MenuItem[] {
   return [
+    { type: 'divider' },
     {
       label: 'Track colors',
       helpText:
@@ -96,7 +132,7 @@ function trackColorItems(target: ColorByMenuTarget): MenuItem[] {
               label: 'Reset color to automatic',
               disabled: !track.pinned,
               onClick: () => {
-                target.setTrackColor(track.trackId, undefined)
+                setTrackColor(track.trackId, undefined)
               },
             },
           ],
@@ -113,7 +149,7 @@ function trackColorItems(target: ColorByMenuTarget): MenuItem[] {
                 color={track.trackColor}
                 unset={!track.pinned}
                 onChange={value => {
-                  target.setTrackColor(track.trackId, value)
+                  setTrackColor(track.trackId, value)
                 }}
               />
             </span>
@@ -124,7 +160,7 @@ function trackColorItems(target: ColorByMenuTarget): MenuItem[] {
           label: 'Reset all to automatic',
           disabled: !tracks.some(t => t.pinned),
           onClick: () => {
-            target.clearTrackColors()
+            clearTrackColors()
           },
         },
       ],
@@ -134,13 +170,18 @@ function trackColorItems(target: ColorByMenuTarget): MenuItem[] {
 
 /**
  * #api
- * The palette-button menu shared by the dotplot and linear-synteny headers: the
- * structural mode radios, the measurements one hop in, and the per-track
- * swatches once more than one track is overlaid.
+ * The color-by menu shared by the dotplot and linear-synteny palette buttons
+ * and the multi-way synteny track's Color by...: the structural modes the
+ * surface paints, the measurements one hop in, the text-column rows while one
+ * is painting, and the per-track swatches once more than one track overlays.
  */
 export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
-  const { tracks } = target
   const values = valueModes(target)
+  const categorical = resolveCategoricalMode(
+    target.colorBy,
+    target.attributeRanges,
+  )
+  const { trackColors } = target
   return [
     ...radios(target, structuralModes(target)),
     {
@@ -151,22 +192,9 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
       helpText: 'A number each alignment carries, on a ramp the legend labels.',
       subMenu: radios(target, values),
     },
-    ...(target.categorical
-      ? [
-          {
-            label: 'Hide unlabelled rows',
-            type: 'checkbox' as const,
-            checked: target.hideUnlabelled,
-            helpText:
-              'Draw only the rows the text column labels, so the groups carry the picture on their own.',
-            onClick: () => {
-              target.setHideUnlabelled(!target.hideUnlabelled)
-            },
-          },
-        ]
-      : []),
-    ...(tracks.length > 1
-      ? [{ type: 'divider' as const }, ...trackColorItems(target)]
+    ...(categorical ? categoricalItems(target, categorical) : []),
+    ...(trackColors && trackColors.tracks.length > 1
+      ? trackColorItems(trackColors)
       : []),
   ]
 }

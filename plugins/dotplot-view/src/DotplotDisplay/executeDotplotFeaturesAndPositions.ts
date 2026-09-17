@@ -11,11 +11,9 @@ import {
   cumBpInEntry,
   declaredAttributes,
   UNNAMED,
-  dnDsRatio,
   findRegionEntry,
   makeStringDict,
-  writeFeatureAttribute,
-  writeAttribute,
+  writeFeatureChannels,
 } from '@jbrowse/synteny-core'
 
 import { cigarWorthParsing } from './dotplotCigarDetail.ts'
@@ -281,14 +279,7 @@ export async function executeDotplotFeaturesAndPositions({
     p22[n] = c22
     strands[n] = strand
     alignmentLengths[n] = Math.abs(end - start)
-    for (const channel of channelList) {
-      // dnds is derived from two attributes, so nothing answers to its name
-      if (channel.name === 'dnds') {
-        writeAttribute(channel, n, dnDsRatio(f))
-      } else {
-        writeFeatureAttribute(channel, n, f)
-      }
-    }
+    writeFeatureChannels(channelList, n, f)
     refNameIds[n] = hDict.idFor(refName)
     mateRefNameIds[n] = vDict.idFor(mateRefName)
     // '' rather than a missing-value sentinel: an absent name and an empty one

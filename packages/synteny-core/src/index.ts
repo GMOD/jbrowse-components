@@ -129,7 +129,11 @@ export {
 export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
 export { bandGroundColor, bandInk } from './bandGround.ts'
 export { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
-export { TrackColorsMixin, widenAttributeRanges } from './TrackColorsMixin.ts'
+export {
+  TrackColorsMixin,
+  orderAttributeLabels,
+  widenAttributeRanges,
+} from './TrackColorsMixin.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
 export { colorByMenuItems } from './colorByMenuItems.tsx'
 export { colorByMenuTargetFor } from './colorByMenuTarget.ts'
@@ -148,9 +152,12 @@ export {
   colorableColumns,
   createAttributeChannels,
   declaredAttributes,
+  featureAttributeRanges,
   readAttribute,
+  readChannelValue,
   writeAttribute,
   writeFeatureAttribute,
+  writeFeatureChannels,
 } from './attributeChannels.ts'
 export type { AttributeChannel } from './attributeChannels.ts'
 export {
@@ -246,6 +253,7 @@ export { default as ComparativeFetchStatus } from './ComparativeFetchStatus.tsx'
 export type { ComparativeStatusModel } from './ComparativeFetchStatus.tsx'
 export { MAX_MIN_LENGTH_BP, MIN_LENGTH_HELP } from './minLengthHelp.ts'
 export { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
+export type { ColorModeSurface } from './colorModes.ts'
 export { SETTINGS_SURFACE_LABELS } from './settingsSurfaces.ts'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {

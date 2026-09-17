@@ -64,7 +64,7 @@ export function widenAttributeRanges(
 // `widenOne` above stays first-seen, so clearing the domain gives back the
 // order the fetches found. Identity-preserving like `widenAttributeRanges`,
 // and for the same reason.
-function orderLabels(
+export function orderAttributeLabels(
   ranges: Record<string, AttributeRange>,
   domain: readonly string[],
 ) {
@@ -247,7 +247,7 @@ export function TrackColorsMixin() {
         const widened = self
           .loadedAttributeRanges()
           .reduce(widenAttributeRanges, self.seenAttributeRanges)
-        return orderLabels(widened, self.colorDomain)
+        return orderAttributeLabels(widened, self.colorDomain)
       },
       /**
        * #getter

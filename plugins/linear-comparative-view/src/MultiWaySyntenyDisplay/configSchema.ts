@@ -76,8 +76,17 @@ export function configSchemaFactory() {
       ribbonColorBy: {
         type: 'string',
         description:
-          "what colors a ribbon: `default` is ribbonColor; `strand` reads the record's strand — the two placements' orientations against the anchor multiplied out, so between the anchor and the first lane the alignment's own strand and between two mate lanes their relative strand — in the synteny view's strand colors, and not the drawn twist: a lane drawn flipped straightens its ribbons on screen while every one of them is an inversion; `identity` reads the pair's `identity` attribute (a PAF's, or an MCScan table's attributeColumns) on the synteny view's viridis ramp, and a pair without one keeps ribbonColor; `attribute:<column>` reads a text column the table declares in attributeColumns (an ancestral linkage group, an orthogroup) and paints one color per distinct label, or the color a `color` column put beside it, in the order labels were first seen so a pan does not recolor; a row without one keeps ribbonColor. Every mode keeps ribbonColor's opacity",
+          "what colors a ribbon, in the synteny view's `colorBy` spelling: `default` is ribbonColor; `strand` reads the record's strand — the two placements' orientations against the anchor multiplied out — and not the drawn twist, so a lane drawn flipped still shows its inversions; `identity`, `mappingQuality` and `dnds` paint the synteny view's ramps; `attribute:<column>` reads a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a `color` column put beside it). A pair carrying no value keeps ribbonColor, and every mode keeps its opacity. The synteny view's `track`, `query`, `target` and `reference` modes paint ribbonColor here",
         defaultValue: 'default',
+      },
+      /**
+       * #slot
+       */
+      hideUnlabelled: {
+        type: 'boolean',
+        description:
+          'under an `attribute:<column>` text mode, draw only the ribbons whose pair carries a label',
+        defaultValue: false,
       },
       /**
        * #slot

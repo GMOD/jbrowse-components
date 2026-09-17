@@ -2,15 +2,21 @@ import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import {
   categoricalColor,
   colorByScale,
+  colorByShortLabel,
   colorSchemes,
+  resolveCategoricalMode,
+  resolveContinuousMode,
 } from '@jbrowse/synteny-core'
 
 import type { Span } from './layoutMultiWay.ts'
 import type { GlyphHit } from './multiwayRenderTypes.ts'
-import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
-import type { CategoricalMode } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  CategoricalMode,
+  SyntenyColorBy,
+} from '@jbrowse/synteny-core'
 
 /**
  * The key for the colors one lane draws, over the hits that lane packed: one
@@ -64,11 +70,11 @@ export function laneColorKey(
 
 /**
  * What the ribbons' own colors mean as rows: a fixed pair in `strand` mode, one
- * row per label in an `attribute:` mode, and nothing otherwise, since `default`
- * paints one color and `identity` a ramp (`ribbonColorScale`).
+ * row per label in a text column's mode, and nothing otherwise, since `default`
+ * paints one color and a measurement a ramp (`ribbonColorScale`).
  */
 export function ribbonColorKey(
-  colorBy: MultiWayRibbonColorBy,
+  colorBy: SyntenyColorBy,
   labels?: CategoricalMode,
 ): CategoricalEntry[] {
   if (colorBy === 'strand') {
@@ -102,24 +108,31 @@ export function ribbonColorKey(
 
 /**
  * The ribbons' key in its own titled section, so a reader can tell a ribbon's
- * color from a glyph's: the synteny view's identity bar where some ribbon
- * carries an identity to paint, else `ribbonColorKey`'s rows
+ * color from a glyph's: the synteny view's ramp where some ribbon carries the
+ * value it paints, else `ribbonColorKey`'s rows
  */
 export function ribbonColorScale(
-  colorBy: MultiWayRibbonColorBy,
-  labels: CategoricalMode | undefined,
-  paintsIdentity: boolean,
+  colorBy: SyntenyColorBy,
+  attributeRanges: Record<string, AttributeRange>,
   domain?: string[],
 ): ColorScale {
-  return colorBy === 'identity' && paintsIdentity
-    ? { ...colorByScale('identity'), id: 'ribbons', title: 'Ribbon identity' }
-    : {
-        kind: 'categorical',
-        id: 'ribbons',
-        title: 'Ribbon colors',
-        entries: ribbonColorKey(colorBy, labels),
-        // strand's pair is fixed and means what it is drawn in, so only the
-        // label rows take a declared order
-        domain: labels ? domain : undefined,
-      }
+  const continuous = resolveContinuousMode(colorBy, attributeRanges)
+  if (continuous && continuous.attribute in attributeRanges) {
+    const label = colorByShortLabel(colorBy)
+    return {
+      ...colorByScale(colorBy, { attributeRanges }),
+      id: 'ribbons',
+      title: `Ribbon ${label[0]!.toLowerCase()}${label.slice(1)}`,
+    }
+  }
+  const labels = resolveCategoricalMode(colorBy, attributeRanges)
+  return {
+    kind: 'categorical',
+    id: 'ribbons',
+    title: 'Ribbon colors',
+    entries: ribbonColorKey(colorBy, labels),
+    // strand's pair is fixed and means what it is drawn in, so only the
+    // label rows take a declared order
+    domain: labels ? domain : undefined,
+  }
 }

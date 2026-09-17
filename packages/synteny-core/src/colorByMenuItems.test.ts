@@ -1,11 +1,13 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { colorByMenuItems } from './colorByMenuItems.tsx'
+import { colorByMenuTargetFor } from './colorByMenuTarget.ts'
 import { VALUE_MODES_LABEL } from './colorModes.ts'
 
 import type {
   ColorByMenuTarget,
   ColorByMenuTrack,
+  TrackColorsModel,
 } from './colorByMenuTarget.ts'
 
 const track = (n: number, over: Partial<ColorByMenuTrack> = {}) =>
@@ -19,23 +21,28 @@ const track = (n: number, over: Partial<ColorByMenuTrack> = {}) =>
 
 const noop = () => {}
 
+const trackColors = (tracks: ColorByMenuTrack[]) => ({
+  tracks,
+  setTrackColor: noop,
+  clearTrackColors: noop,
+})
+
 const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
   colorBy: 'default',
-  tracks: [track(0), track(1)],
+  structuralModes: ['default', 'strand', 'track', 'query', 'target'],
   attributes: [],
   attributeRanges: {
     identity: { min: 0.5, max: 1 },
     mappingQual: { min: 0, max: 60 },
     dnds: { min: 0, max: 2 },
   },
-  pointBased: false,
-  showReference: false,
-  categorical: false,
+  surface: 'ribbons',
   hideUnlabelled: false,
+  colorDomain: [],
   setHideUnlabelled: noop,
   setColorBy: noop,
-  setTrackColor: noop,
-  clearTrackColors: noop,
+  setColorDomain: noop,
+  trackColors: trackColors([track(0), track(1)]),
   ...over,
 })
 
@@ -72,25 +79,102 @@ test('view-wide modes lead, track colors follow', () => {
   expect(got.at(-1)).toBe('Track colors')
 })
 
-test('a single track gets no track colors section and no Track mode', () => {
-  const got = labels(colorByMenuItems(target({ tracks: [track(0)] })))
-  expect(got).not.toContain('Track colors')
-  // one track has nothing to be told apart from
-  expect(got).not.toContain('Distinct color per track')
-})
-
-test("'Reference' only appears for a stack of two or more levels", () => {
-  expect(labels(colorByMenuItems(target()))).not.toContain('Reference')
-  expect(labels(colorByMenuItems(target({ showReference: true })))).toContain(
-    'Reference',
+test('a surface lists the structural modes it paints, and one track has no swatches', () => {
+  const got = labels(
+    colorByMenuItems(
+      target({
+        structuralModes: ['default', 'strand'],
+        trackColors: trackColors([track(0)]),
+      }),
+    ),
   )
+  expect(got).toEqual(['Default', 'Strand', VALUE_MODES_LABEL])
 })
 
-test('the dotplot gets point-based help text for Default', () => {
-  const ribbon = colorByMenuItems(target())[0]!
-  const dotplot = colorByMenuItems(target({ pointBased: true }))[0]!
-  expect('helpText' in ribbon && ribbon.helpText).toContain('red')
-  expect('helpText' in dotplot && dotplot.helpText).toContain('black')
+function viewModel(tracks: number): TrackColorsModel {
+  return {
+    colorableTracks: Array.from({ length: tracks }, (_, i) => ({
+      trackId: `t${i}`,
+      name: `track ${i}`,
+    })),
+    colorableAttributes: [],
+    attributeRanges: {},
+    colorByMode: 'default',
+    hideUnlabelled: false,
+    colorDomain: [],
+    trackColorFor: () => '#4e79a7',
+    setColorBy: noop,
+    setHideUnlabelled: noop,
+    setColorDomain: noop,
+    setTrackColor: noop,
+    clearTrackColors: noop,
+  }
+}
+
+// One track has nothing to be told apart from, and 'reference' is meaningless
+// below two stacked levels
+test('a view offers Track once two tracks overlay, and Reference across a stack', () => {
+  const modesOf = (tracks: number, showReference: boolean) =>
+    colorByMenuTargetFor(viewModel(tracks), {
+      pointBased: false,
+      showReference,
+    }).structuralModes
+  expect(modesOf(1, false)).toEqual(['default', 'strand', 'query', 'target'])
+  expect(modesOf(2, true)).toEqual([
+    'default',
+    'strand',
+    'track',
+    'query',
+    'target',
+    'reference',
+  ])
+})
+
+test('each surface gets its own help text where the mode reads differently there', () => {
+  const helpOf = (surface: ColorByMenuTarget['surface'], index: number) => {
+    const item = colorByMenuItems(target({ surface }))[index]!
+    return 'helpText' in item ? item.helpText : undefined
+  }
+  expect(helpOf('ribbons', 0)).toContain('red')
+  expect(helpOf('points', 0)).toContain('black')
+  expect(helpOf('lanes', 0)).toContain("track's ribbon color")
+  expect(helpOf('lanes', 1)).toContain('lane above')
+  expect(helpOf('points', 1)).toBe(helpOf('ribbons', 1))
+})
+
+// Under a text column the labels seen so far can be pinned, so each keeps its
+// palette slot; a label already in the domain keeps its place.
+test('a text column offers its unlabelled toggle and a pin for the labels not yet pinned', () => {
+  const written: string[][] = []
+  const categorical = (colorDomain: string[]) =>
+    colorByMenuItems(
+      target({
+        colorBy: 'attribute:group',
+        attributeRanges: {
+          group: { labels: ['B1', 'A1a', 'C1'], colors: {} },
+        },
+        colorDomain,
+        setColorDomain: domain => {
+          written.push(domain)
+        },
+        trackColors: undefined,
+      }),
+    )
+  const rows = categorical(['A1a'])
+  expect(labels(rows).slice(-2)).toEqual([
+    'Hide unlabelled rows',
+    'Pin distinct colors',
+  ])
+  const pin = rows.at(-1)!
+  expect('disabled' in pin && pin.disabled).toBe(false)
+  ;(pin as { onClick: () => void }).onClick()
+  expect(written).toEqual([['A1a', 'B1', 'C1']])
+
+  const pinned = categorical(['C1', 'B1', 'A1a']).at(-1)!
+  expect('disabled' in pinned && pinned.disabled).toBe(true)
+  expect(labels(colorByMenuItems(target()))).not.toContain(
+    'Pin distinct colors',
+  )
 })
 
 // The measurements sit one hop in, so a plain PAF's user meets five radios
@@ -153,7 +237,9 @@ test('reset rows are disabled until a color is actually pinned', () => {
 
   const dirty = findSubMenu(
     colorByMenuItems(
-      target({ tracks: [track(0, { pinned: true }), track(1)] }),
+      target({
+        trackColors: trackColors([track(0, { pinned: true }), track(1)]),
+      }),
     ),
     'Track colors',
   )!

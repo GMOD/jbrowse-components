@@ -2,6 +2,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { laneRegion } from './laneHeader.ts'
 import {
+  colorSubMenuItems,
   laneHeaderMenuItems,
   lanesMenuItem,
   multiWayTrackMenuItems,
@@ -124,6 +125,11 @@ function trackModel({
     ribbonColorBy: 'default' as const,
     setRibbonColorBy: () => {},
     ribbonColorAttributes: [],
+    ribbonAttributeRanges: {},
+    ribbonColorDomain: [],
+    setRibbonColorDomain: () => {},
+    hideUnlabelled: false,
+    setHideUnlabelled: () => {},
     showLaneTicks: true,
     setShowLaneTicks: () => {},
     drawCurves: false,
@@ -148,6 +154,15 @@ test('the track menu is Show, Color by and Lanes', () => {
     'Show lane ticks',
     'Show ribbons as curves',
     'Show ribbons across gaps',
+  ])
+})
+
+test('Color by offers the synteny view modes a lane stack paints', () => {
+  const { model } = trackModel()
+  expect(labelsOf(colorSubMenuItems(model))).toEqual([
+    'Default',
+    'Strand',
+    'Color by value',
   ])
 })
 

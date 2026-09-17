@@ -1384,7 +1384,7 @@ test('declaredLanesOf reads a header that names lanes and nothing else', () => {
 // The label table an `attribute:` ribbon mode paints from accumulates across
 // fetches in first-seen order, so a pan that brings new labels appends them
 // and recolors nothing; picking the mode again re-keys from what is loaded.
-test('the ribbon label table accumulates across fetches and resets on a mode pick', () => {
+test('the ribbon label table accumulates across fetches and re-keys on a mode pick', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
       type: 'MCScanBlocksAdapter',
@@ -1411,20 +1411,19 @@ test('the ribbon label table accumulates across fetches and resets on a mode pic
   display.setRibbonColorBy('attribute:group')
   // `color` is parsed for the labels' palette, never offered as a mode
   expect(display.ribbonColorAttributes).toEqual(['group'])
+  const group = () => display.ribbonAttributeRanges.group
   display.setFeatures([row('f1', 'B1'), row('f2', 'A1a', '#4DB5E3')])
-  expect(display.ribbonLabels).toEqual({
-    attribute: 'group',
+  expect(group()).toEqual({
     labels: ['B1', 'A1a'],
     colors: { A1a: '#4DB5E3' },
   })
   display.setFeatures([row('f3', 'C1'), row('f2', 'A1a')])
-  expect(display.ribbonLabels?.labels).toEqual(['B1', 'A1a', 'C1'])
+  expect(group()).toEqual({
+    labels: ['B1', 'A1a', 'C1'],
+    colors: { A1a: '#4DB5E3' },
+  })
   display.setRibbonColorBy('attribute:group')
-  expect(display.ribbonLabels).toBeUndefined()
-  display.setFeatures([row('f3', 'C1')])
-  expect(display.ribbonLabels?.labels).toEqual(['C1'])
-  display.setRibbonColorBy('strand')
-  expect(display.ribbonLabels).toBeUndefined()
+  expect(group()).toEqual({ labels: ['C1', 'A1a'], colors: {} })
 })
 
 // A label's color is its position in the table, so the domain has to move the
@@ -1452,12 +1451,16 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
         end: 300,
       },
     })
+  const labels = () => {
+    const range = display.ribbonAttributeRanges.group
+    return range && 'labels' in range ? range.labels : []
+  }
   display.setRibbonColorBy('attribute:group')
   display.setFeatures([row('f1', 'B1'), row('f2', 'A1a'), row('f3', 'C1')])
-  expect(display.ribbonLabels?.labels).toEqual(['B1', 'A1a', 'C1'])
+  expect(labels()).toEqual(['B1', 'A1a', 'C1'])
 
-  setConf(display, 'ribbonColorDomain', ['C1'])
-  expect(display.ribbonLabels?.labels).toEqual(['C1', 'A1a', 'B1'])
+  display.setRibbonColorDomain(['C1'])
+  expect(labels()).toEqual(['C1', 'A1a', 'B1'])
   const ribbons = display.colorScales.find(scale => scale.id === 'ribbons')
   expect(
     ribbons?.kind === 'categorical' ? ribbons.entries.map(e => e.label) : [],
