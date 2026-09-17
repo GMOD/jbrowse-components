@@ -142,6 +142,16 @@ function cssRgb(source: SourceRenderData) {
   return `rgb(${r},${g},${b})`
 }
 
+function lineColors(source: SourceRenderData) {
+  const rgb = cssRgb(source)
+  return {
+    rgb,
+    negRgb: source.negColor
+      ? cssRgb({ ...source, color: source.negColor })
+      : rgb,
+  }
+}
+
 /**
  * One rendering family: its pass, the shared uniform write, and the painter
  * run once per source row.
@@ -259,16 +269,17 @@ const lineShape = wiggleShape(
   type => type === RENDERING_TYPE_LINE,
   (row, p) => {
     if (!row.source.band) {
-      drawLine({ ...row, rgb: cssRgb(row.source), lineWidth: p.lineWidth })
+      drawLine({ ...row, ...lineColors(row.source), lineWidth: p.lineWidth })
     }
   },
 )
 
 // Premultiplied MAX blend so the analytic-AA ribbon's overlapping segments and
 // caps union instead of accumulating into dark seams under src-over. Valid
-// because the target clears to transparent black and the only other ink in
-// center-line mode is the translucent whiskers band, which a same-hue stroke
-// exceeds in every premultiplied channel. Stated on the pass rather than as a `//! blend:` on
+// because the target clears to transparent black, every segment overlapping a
+// joint picks the same pivot-side colour, and the only other ink in center-line
+// mode is the translucent whiskers band, which a same-hue stroke exceeds in
+// every premultiplied channel. Stated on the pass rather than as a `//! blend:` on
 // wiggleLine.slang, because the step line above shares that shader and blends
 // the other way.
 const lineCenterShape = wiggleShape(
@@ -285,7 +296,7 @@ const lineCenterShape = wiggleShape(
     if (!row.source.band) {
       drawLineCenter({
         ...row,
-        rgb: cssRgb(row.source),
+        ...lineColors(row.source),
         lineWidth: p.lineWidth,
       })
     }

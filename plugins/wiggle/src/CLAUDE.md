@@ -9,7 +9,7 @@ other plugins draw a wiggle-shaped axis against it.
 The fill record (20 bytes, `WiggleFillInstance` in `wiggleCommon.slang`) feeds
 `wiggle.slang` (xyplot, scatter) and `wiggleDensity.slang` (density as the
 composed render-core `rowRect` shape, drawn off the fill pass's buffer via
-`bufferPassId`); `wiggleLine.slang` strokes (line, linecenter) on a 40-byte
+`bufferPassId`); `wiggleLine.slang` strokes (line, linecenter) on a 44-byte
 record of its own. Only stroked renderings read a neighbour, so while every
 rendering shared a shader every fill buffer carried those 20 bytes for nothing —
 164MB rather than 82MB at 1000 sources, against a 256MB `maxBufferSize` floor,
@@ -152,7 +152,8 @@ carries the raw slot** — the effective one moves with the rendering type, so
 switching to density would re-download every region.
 
 `bicolorPivot` crosses both ways: the worker owns the `avg`-path pos/neg split
-(ADR-016), the whiskers bands are colored main-thread.
+(ADR-016), the summary bands are colored main-thread, and line plots ignore the
+split entirely (below).
 
 ## Whiskers splits into solid layers only when the bars nest
 
@@ -161,10 +162,20 @@ magnitude first — the opposite order on each side of the pivot, which a single
 band order can't express. Density needs it because `drawDensity` builds one
 gradient per layer. Scatter keeps each band whole with per-instance colors.
 
-**A line plot's whiskers is two layers, not three strokes**: a `band` layer
-(`featureScores` the max, `band.minScores` the min) and the mean stroke. The
-band splits at the pivot per pixel, in the shader and by clip in Canvas2D,
-rather than into layers, which would break the ribbon at every crossing.
+## A line plot is one line, coloured by the side of the pivot it is on
+
+Every summary mode on `line`/`linecenter` draws one layer through all the bins
+(`lineLayers`), never the worker's avg split, which drew a positive line that
+chorded across every negative stretch. The layer carries `color` and `negColor`,
+and **the colour is decided where the ink is, not per bin**: the shader compares
+each fragment's centre-line y with the pivot, Canvas2D strokes twice through
+`PivotSidePen`, cut at the crossing. Centre line rather than pixel, so a stroke
+lying on the pivot stays one colour and every capsule overlapping a joint picks
+the same one under max blend; per-bin colours made magenta joints there.
+
+Whiskers adds a `band` layer (`featureScores` the max, `band.minScores` the min)
+under that line. The band splits at the pivot per pixel, in the shader and by
+clip in Canvas2D.
 
 ## The colour key takes the mode, not `isDensityMode`
 

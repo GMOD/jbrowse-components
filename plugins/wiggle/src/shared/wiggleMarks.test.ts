@@ -115,7 +115,7 @@ describe('the wiggle mark list', () => {
     expect(fill).toBeDefined()
     expect(fill!.count).toBe(2)
     expect(fill!.data.byteLength).toBe(2 * FILL_INSTANCE_STRIDE * 4)
-    expect(FILL_INSTANCE_STRIDE).toBe(INSTANCE_STRIDE / 2)
+    expect(FILL_INSTANCE_STRIDE).toBeLessThan(INSTANCE_STRIDE / 2)
     expect(hal.getBufferCount(0, 'line')).toBe(0)
   })
 
@@ -244,7 +244,8 @@ describe('the wiggle mark list', () => {
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const band = makeSource({
       renderingType: RENDERING_TYPE_LINE_CENTER,
-      band: { minScores: new Float32Array([1, 2]), negColor: [0, 0, 1] },
+      negColor: [0, 0, 1],
+      band: { minScores: new Float32Array([1, 2]) },
     })
     const mean = makeSource({ renderingType: RENDERING_TYPE_LINE_CENTER })
 

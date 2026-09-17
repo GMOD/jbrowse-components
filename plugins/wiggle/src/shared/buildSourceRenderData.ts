@@ -1,8 +1,12 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-import { RENDERING_TYPE_LINE_CENTER, gapBreakLimit } from '@jbrowse/wiggle-core'
+import {
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
+  gapBreakLimit,
+} from '@jbrowse/wiggle-core'
 
 import { isOverlayMode, renderingTypeToInt } from './wiggleComponentUtils.ts'
-import { makeSummaryLayers } from './wiggleLayers.ts'
+import { lineLayers, makeSummaryLayers } from './wiggleLayers.ts'
 
 import type { WiggleLayer } from './wiggleLayers.ts'
 import type {
@@ -30,6 +34,12 @@ function sourceLayers({
   negColor: [number, number, number]
   pivot: number
 }): WiggleLayer[] {
+  if (
+    renderingType === RENDERING_TYPE_LINE ||
+    renderingType === RENDERING_TYPE_LINE_CENTER
+  ) {
+    return lineLayers(source, summaryScoreMode, posColor, negColor)
+  }
   // whiskers draws min, mean and max, min/max the one band the user picked;
   // both are colored by each value's own sign against the pivot, so signed data keeps
   // reading as pos/neg. The worker only splits `featureScores` (ADR-016), so

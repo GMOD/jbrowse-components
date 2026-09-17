@@ -109,7 +109,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
       effectiveSummaryScoreMode: 'whiskers',
       renderingType: 'multilinecenter',
     })
-    expect(band!.band!.negColor).toEqual(band!.color)
+    expect(band!.negColor).toEqual(band!.color)
   })
 
   // Regression: min/max used to emit one layer in posColor, so a signed track
@@ -134,17 +134,26 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     },
   )
 
-  // Line keeps one layer so the polyline stays continuous across the pivot.
-  test('min mode colors per instance in line mode', () => {
-    const out = buildSourceRenderData(makeData(), {
-      ...baseGpuProps,
-      effectiveSummaryScoreMode: 'min',
-      renderingType: 'line',
-    })
-    expect(out).toHaveLength(1)
-    const colors = out[0]!.colorsAbgr!
-    expect(colors[0]).not.toEqual(colors[1])
-  })
+  // A line plot is one continuous line through every bin whatever the mode,
+  // coloured by pivot side when drawn: the worker's avg split would leave the
+  // positive line chording across every negative stretch.
+  test.each([
+    ['avg', [5, -5]],
+    ['min', [2, -8]],
+    ['max', [9, -1]],
+  ] as const)(
+    '%s mode on a line plot is one line over every bin',
+    (mode, scores) => {
+      const out = buildSourceRenderData(makeData(), {
+        ...baseGpuProps,
+        effectiveSummaryScoreMode: mode,
+        renderingType: 'linecenter',
+      })
+      expect(out.map(s => [...s.featureScores])).toEqual([scores])
+      expect(out[0]!.colorsAbgr).toBeUndefined()
+      expect(out[0]!.negColor).not.toEqual(out[0]!.color)
+    },
+  )
 
   // Density paints a row from the layer color alone (drawDensity has no
   // per-instance path), so there the band is split into two solid layers.

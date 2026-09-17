@@ -75,8 +75,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[16] = uniforms.densityRampLut
 }
 
-export const INSTANCE_STRIDE_BYTES = 40
-export const INSTANCE_STRIDE_WORDS = 10
+export const INSTANCE_STRIDE_BYTES = 44
+export const INSTANCE_STRIDE_WORDS = 11
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
@@ -92,6 +92,7 @@ export const INSTANCE_OFFSET_U32 = {
   startEnd: 0,
   color: 5,
   prevStartEnd: 7,
+  negColor: 10,
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
@@ -103,6 +104,7 @@ export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_rowIndex', components: 1, type: 'float', offsetBytes: 24, integer: false },
   { name: 'a_prevStartEnd', components: 2, type: 'uint', offsetBytes: 28, integer: true },
   { name: 'a_prevScoreLine', components: 1, type: 'float', offsetBytes: 36, integer: false },
+  { name: 'a_negColor', components: 1, type: 'uint', offsetBytes: 40, integer: true },
 ]
 
 export interface InstanceArrays {
@@ -114,6 +116,7 @@ export interface InstanceArrays {
   rowIndex: ArrayLike<number>
   prevStartEnd: ArrayLike<number>
   prevScoreLine: ArrayLike<number>
+  negColor: ArrayLike<number>
 }
 
 export function packInstances(
@@ -123,7 +126,7 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { startEnd, score, prevScore, nextScore, color, rowIndex, prevStartEnd, prevScoreLine } = arrays
+  const { startEnd, score, prevScore, nextScore, color, rowIndex, prevStartEnd, prevScoreLine, negColor } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = startEnd[i * 2 + 0]!
@@ -136,6 +139,7 @@ export function packInstances(
     u32[o + 7] = prevStartEnd[i * 2 + 0]!
     u32[o + 8] = prevStartEnd[i * 2 + 1]!
     f32[o + 9] = prevScoreLine[i]!
+    u32[o + 10] = negColor[i]!
   }
   return buf
 }
@@ -224,4 +228,13 @@ export function getInstancePrevScoreLine(f32: Float32Array, i: number) {
 
 export function setInstancePrevScoreLine(f32: Float32Array, i: number, v: number) {
   f32[i * INSTANCE_STRIDE_WORDS + 9] = v
+}
+
+// Instance `i`'s `negColor`.
+export function getInstanceNegColor(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 10]!
+}
+
+export function setInstanceNegColor(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 10] = v
 }

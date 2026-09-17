@@ -19,10 +19,10 @@ digraph wiggle_shape {
 
   summary [label="effectiveSummaryScoreMode"]
   plot -> summary
-  summary -> range [label=" whiskers on a line"]
-  summary -> bands [label=" whiskers elsewhere, min, max"]
+  summary -> range [label=" any mode, line plots"]
+  summary -> bands [label=" whiskers, min, max"]
   summary -> avg   [label=" avg (density resolves here)"]
-  range [label="a translucent min-max band\nsplit at the pivot, under the\nmean stroke coloured by sign"]
+  range [label="one line through every bin,\ncoloured by the pivot side it is on;\nwhiskers adds a translucent\nmin-max band under it"]
   bands [label="summary bands, each value\ncoloured by its own sign\nagainst the pivot"]
   avg   [label="the worker's positive/negative\nsplit, one layer each"]
 

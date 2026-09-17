@@ -1,4 +1,4 @@
-import { abgrToCssRgba, setAbgrFill } from '@jbrowse/core/util/colorBits'
+import { setAbgrFill } from '@jbrowse/core/util/colorBits'
 import {
   CANVAS_SEAM_PX,
   CappedPath,
@@ -45,7 +45,7 @@ export interface RowDraw {
   origin: number
 }
 
-// Per-instance colors (whiskers bands) exist on every layer the GPU encodes
+// Per-instance colors (summary bands) exist on every layer the GPU encodes
 // them for, so each draw fn must honor them or the Canvas2D fallback and the
 // SVG export diverge from the on-screen shader. A band holds only two packed
 // values, so switching on change batches into a couple of runs rather than one
@@ -166,18 +166,100 @@ export function drawDensity({
   }
 }
 
-// Single connected polyline per contiguous run of features. moveTo only at
-// the start of a new run (first feature, or whenever there's a gap to the
-// previous feature). Inside a run we lineTo through (x1,scoreY)→(x2,scoreY)
-// for each feature; the implicit continuation between iterations draws the
-// vertical step at the junction. Drop-to-zero is just another lineTo when
-// the next feature is non-adjacent.
-//
-// A per-instance color change also ends a stroke batch: the accumulated path is
-// stroked and reopened from the pen position, so the segment carries the color
-// of the feature it belongs to. That matches the shader, which colors all three
-// of a feature's segments (transition-in, horizontal, transition-out) from that
-// instance's packed color.
+// A polyline pen that keeps only the part of each segment on one side of the
+// pivot, cut at the crossing, so a line stroked once per side changes colour
+// exactly where it crosses. The shader makes the same call per fragment from
+// the stroke's centre line. A point on the pivot counts as above it.
+class PivotSidePen {
+  private x = 0
+  private y = 0
+  private drawing = false
+
+  constructor(
+    private ctx: MarkContext2D,
+    private path: CappedPath,
+    private pivotY: number,
+    private side: 'above' | 'below' | 'both',
+  ) {}
+
+  private keeps(y: number) {
+    return (
+      this.side === 'both' ||
+      this.side === (y > this.pivotY ? 'below' : 'above')
+    )
+  }
+
+  moveTo(x: number, y: number) {
+    this.x = x
+    this.y = y
+    this.drawing = false
+  }
+
+  lineTo(x: number, y: number) {
+    const from = this.keeps(this.y)
+    const to = this.keeps(y)
+    if (from || to) {
+      if (this.path.add()) {
+        this.drawing = false
+      }
+      let fromX = this.x
+      let fromY = this.y
+      let toX = x
+      let toY = y
+      if (from !== to) {
+        const crossX =
+          this.x + ((this.pivotY - this.y) / (y - this.y)) * (x - this.x)
+        if (from) {
+          toX = crossX
+          toY = this.pivotY
+        } else {
+          fromX = crossX
+          fromY = this.pivotY
+        }
+      }
+      if (from === to || fromX !== toX || fromY !== toY) {
+        if (!this.drawing || !from) {
+          this.ctx.moveTo(fromX, fromY)
+        }
+        this.ctx.lineTo(toX, toY)
+      }
+      this.drawing = to
+    } else {
+      this.drawing = false
+    }
+    this.x = x
+    this.y = y
+  }
+}
+
+// Strokes `trace` once per pivot side in that side's colour, or once whole
+// when the two colours match (solid colour, overlay).
+function strokeBySide(
+  ctx: MarkContext2D,
+  pivotY: number,
+  rgb: string,
+  negRgb: string,
+  trace: (pen: PivotSidePen) => void,
+) {
+  const passes =
+    rgb === negRgb
+      ? ([['both', rgb]] as const)
+      : ([
+          ['above', rgb],
+          ['below', negRgb],
+        ] as const)
+  for (const [side, style] of passes) {
+    ctx.strokeStyle = style
+    const path = new CappedPath(ctx, 'stroke')
+    trace(new PivotSidePen(ctx, path, pivotY, side))
+    path.flush()
+  }
+}
+
+// Single connected polyline per contiguous run of features: a rise from the
+// zero line into the first bin, across each bin top with the vertical step at
+// each junction, and a drop to the zero line wherever the next bin doesn't
+// touch this one.
 export function drawLine({
   ctx,
   source,
@@ -187,71 +269,40 @@ export function drawLine({
   domainY,
   scaleType,
   symlogConstant,
+  origin,
   rgb,
+  negRgb,
   lineWidth,
-}: RowDraw & { rgb: string; lineWidth: number }) {
+}: RowDraw & { rgb: string; negRgb: string; lineWidth: number }) {
   const n = source.numFeatures
   if (n === 0) {
     return
   }
-  const colorsAbgr = source.colorsAbgr
-  if (!colorsAbgr) {
-    ctx.strokeStyle = rgb
-  }
   ctx.lineWidth = lineWidth
-  const path = new CappedPath(ctx, 'stroke')
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const zeroY = scoreToY(0) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
-
-  let inRun = false
-  let lastAbgr = NO_COLOR
-  let penX = 0
-  let penY = 0
-  for (let i = 0; i < n; i++) {
-    const startBp = positions[i * 2]!
-    const endBp = positions[i * 2 + 1]!
-    const x1 = toX(startBp)
-    const x2 = toX(endBp)
-    const scoreY = scoreToY(scores[i]!) + rowTop
-
-    if (colorsAbgr) {
-      const c = colorsAbgr[i]!
-      if (c !== lastAbgr) {
-        path.flush()
-        if (inRun) {
-          ctx.moveTo(penX, penY)
-        }
-        ctx.strokeStyle = abgrToCssRgba(c)
-        lastAbgr = c
+  strokeBySide(ctx, scoreToY(origin) + rowTop, rgb, negRgb, pen => {
+    let inRun = false
+    for (let i = 0; i < n; i++) {
+      const endBp = positions[i * 2 + 1]!
+      const x1 = toX(positions[i * 2]!)
+      const x2 = toX(endBp)
+      const scoreY = scoreToY(scores[i]!) + rowTop
+      if (!inRun) {
+        pen.moveTo(x1, zeroY)
+        inRun = true
+      }
+      pen.lineTo(x1, scoreY)
+      pen.lineTo(x2, scoreY)
+      if (i === n - 1 || positions[(i + 1) * 2] !== endBp) {
+        pen.lineTo(x2, zeroY)
+        inRun = false
       }
     }
-    if (path.add() && inRun) {
-      ctx.moveTo(penX, penY)
-    }
-
-    if (inRun) {
-      ctx.lineTo(x1, scoreY)
-    } else {
-      ctx.moveTo(x1, zeroY)
-      ctx.lineTo(x1, scoreY)
-      inRun = true
-    }
-    ctx.lineTo(x2, scoreY)
-    penX = x2
-    penY = scoreY
-
-    const nextStartBp = i < n - 1 ? positions[(i + 1) * 2]! : -1
-    const gapAfter = nextStartBp !== endBp
-    if (gapAfter) {
-      ctx.lineTo(x2, zeroY)
-      penY = zeroY
-      inRun = false
-    }
-  }
-  path.flush()
+  })
 }
 
 // Point-to-point line: connects the score at each feature's bp midpoint to its
@@ -274,65 +325,34 @@ export function drawLineCenter({
   domainY,
   scaleType,
   symlogConstant,
+  origin,
   rgb,
+  negRgb,
   lineWidth,
-}: RowDraw & { rgb: string; lineWidth: number }) {
+}: RowDraw & { rgb: string; negRgb: string; lineWidth: number }) {
   const n = source.numFeatures
   if (n === 0) {
     return
-  }
-  const colorsAbgr = source.colorsAbgr
-  if (!colorsAbgr) {
-    ctx.strokeStyle = rgb
   }
   ctx.lineWidth = lineWidth
   // Round joins/caps match the GPU capsule so sharp bends don't nick.
   ctx.lineJoin = 'round'
   ctx.lineCap = 'round'
-  const path = new CappedPath(ctx, 'stroke')
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
-  let lastAbgr = NO_COLOR
-  let penX = 0
-  let penY = 0
-  for (let i = 0; i < n; i++) {
-    const pi = i * 2
-    const cx = (toX(positions[pi]!) + toX(positions[pi + 1]!)) / 2
-    const cy = scoreToY(scores[i]!) + rowTop
-    // Measured in bp, not px: the GPU encodes the same break from bp positions,
-    // and a px comparison would drift from it wherever a block is clipped.
-    const linked = centerLinksToPrevious(positions, i, gapLimitBp)
-    // Each segment runs from the previous midpoint to this one and takes this
-    // instance's color, same as the shader's per-feature capsule.
-    if (colorsAbgr) {
-      const c = colorsAbgr[i]!
-      if (c !== lastAbgr) {
-        path.flush()
-        if (linked) {
-          ctx.moveTo(penX, penY)
-        }
-        ctx.strokeStyle = abgrToCssRgba(c)
-        lastAbgr = c
+  strokeBySide(ctx, scoreToY(origin) + rowTop, rgb, negRgb, pen => {
+    for (let i = 0; i < n; i++) {
+      const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
+      const cy = scoreToY(scores[i]!) + rowTop
+      if (!centerLinksToPrevious(positions, i, gapLimitBp)) {
+        pen.moveTo(cx, cy)
       }
+      pen.lineTo(cx, cy)
     }
-    if (path.add() && linked) {
-      ctx.moveTo(penX, penY)
-    }
-    if (linked) {
-      ctx.lineTo(cx, cy)
-    } else {
-      // zero-length subpath = a round-capped dot, matching the shader's
-      // collapsed capsule; the next linked point extends it into a line
-      ctx.moveTo(cx, cy)
-      ctx.lineTo(cx, cy)
-    }
-    penX = cx
-    penY = cy
-  }
-  path.flush()
+  })
 }
 
 // Bins per closed polygon, so a long run still fits `CappedPath`'s per-path
@@ -424,8 +444,8 @@ export function drawWhiskerBand({
     below ||= minScores[i]! < origin
   }
   const posFill = cssRgba(source.color, WHISKER_BAND_OPACITY)
-  const negFill = cssRgba(band.negColor, WHISKER_BAND_OPACITY)
-  if (above && below) {
+  const negFill = cssRgba(source.negColor ?? source.color, WHISKER_BAND_OPACITY)
+  if (above && below && posFill !== negFill) {
     const dpr = getDpr()
     const pivotY = Math.round((scoreToY(origin) + rowTop) * dpr) / dpr
     const rowBottom = rowTop + rowHeight

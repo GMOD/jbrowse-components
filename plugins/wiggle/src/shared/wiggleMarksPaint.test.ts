@@ -603,14 +603,6 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
     return mock
   }
 
-  test.each([
-    ['line', RENDERING_TYPE_LINE],
-    ['linecenter', RENDERING_TYPE_LINE_CENTER],
-  ] as const)('%s strokes one batch per color', (_name, renderingType) => {
-    const { strokeStyles } = drawTwoTone(renderingType)
-    expect(strokeStyles).toEqual([abgrToCssRgba(red), abgrToCssRgba(blue)])
-  })
-
   test('scatter fills one batch per color', () => {
     const { fillStyles } = drawTwoTone(RENDERING_TYPE_SCATTER)
     expect(fillStyles).toEqual([abgrToCssRgba(red), abgrToCssRgba(blue)])
@@ -622,9 +614,8 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
     expect(ctx.fillStyle).toBe(abgrToCssRgba(blue))
   })
 
-  // Without per-instance colors nothing changes: still one batch in the layer
-  // color, so the common (non-whiskers) path keeps its single stroke/fill.
-  test('a layer with no per-instance colors still draws in one batch', () => {
+  // A line with one colour on both sides of the pivot strokes once.
+  test('a single-colour line draws in one batch', () => {
     const mock = createMockCanvas()
     paintWiggle(
       mock.ctx,
@@ -851,7 +842,8 @@ describe('the whiskers band', () => {
       ...makeSource(max, starts, ends, renderingType),
       color: posColor,
       gapLimitBp,
-      band: { minScores: new Float32Array(min), negColor },
+      negColor,
+      band: { minScores: new Float32Array(min) },
     }
   }
 
@@ -963,5 +955,68 @@ describe('the whiskers band', () => {
     expect(ctx.fill.mock.invocationCallOrder[0]).toBeLessThan(
       ctx.stroke.mock.invocationCallOrder[0]!,
     )
+  })
+})
+
+// A line plot takes its colour from the side of the pivot the line is on, not
+// from a bin, so a segment crossing the pivot changes colour at the crossing.
+// Domain [-10, 10] over 200px puts the pivot at y 100 and y(s) = 100 - 10s.
+describe('line plots colour by pivot side', () => {
+  const state = { ...lineState, domainY: [-10, 10] as [number, number] }
+
+  function paintSigned(renderingType: WiggleRenderingType) {
+    const mock = createMockCanvas()
+    const source = {
+      ...makeSource([5, -5], [0, 100], [100, 200], renderingType),
+      color: [0, 0, 1] as [number, number, number],
+      negColor: [1, 0, 0] as [number, number, number],
+    }
+    paintWiggle(mock.ctx, new Map([[0, [source]]]), [lineBlock], {
+      ...state,
+      renderingType,
+    })
+    const pts = (calls: number[][]) =>
+      calls.map(c => [
+        Math.round(c[0]! * 1000) / 1000,
+        Math.round(c[1]! * 1000) / 1000,
+      ])
+    return {
+      strokeStyles: mock.strokeStyles,
+      moves: pts(mock.ctx.moveTo.mock.calls),
+      lines: pts(mock.ctx.lineTo.mock.calls),
+    }
+  }
+
+  test('the interpolated line splits at its crossing', () => {
+    const { strokeStyles, moves, lines } = paintSigned(
+      RENDERING_TYPE_LINE_CENTER,
+    )
+    expect(strokeStyles).toEqual(['rgb(0,0,255)', 'rgb(255,0,0)'])
+    expect(moves).toEqual([
+      [40, 50],
+      [80, 100],
+    ])
+    expect(lines).toEqual([
+      [40, 50],
+      [80, 100],
+      [120, 150],
+    ])
+  })
+
+  test('the step line splits its vertical steps at the pivot', () => {
+    const { strokeStyles, moves, lines } = paintSigned(RENDERING_TYPE_LINE)
+    expect(strokeStyles).toEqual(['rgb(0,0,255)', 'rgb(255,0,0)'])
+    expect(moves).toEqual([
+      [0, 100],
+      [80, 100],
+    ])
+    expect(lines).toEqual([
+      [0, 50],
+      [80, 50],
+      [80, 100],
+      [80, 150],
+      [160, 150],
+      [160, 100],
+    ])
   })
 })

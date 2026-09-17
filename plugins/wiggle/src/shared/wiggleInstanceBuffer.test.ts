@@ -310,10 +310,10 @@ describe('each packer serves only its own renderings', () => {
     }
   })
 
-  test('a line rendering packs 40 bytes a feature and no fill buffer', () => {
+  test('a line rendering packs 44 bytes a feature and no fill buffer', () => {
     const layers = [stepSource(scores, starts, ends)]
     expect(packLineInstances(layers).byteLength).toBe(3 * LINE_STRIDE_BYTES)
-    expect(LINE_STRIDE_BYTES).toBe(40)
+    expect(LINE_STRIDE_BYTES).toBe(44)
     expect(packFillInstances(layers).byteLength).toBe(0)
   })
 
@@ -343,6 +343,25 @@ describe('each packer serves only its own renderings', () => {
   })
 })
 
+describe('the line record carries both pivot-side colours', () => {
+  test('negColor is written beside color, and falls back to it', () => {
+    const read = (buf: ArrayBuffer) => {
+      const u32 = new Uint32Array(buf)
+      return [u32[INSTANCE_OFFSET_U32.color], u32[INSTANCE_OFFSET_U32.negColor]]
+    }
+    const signed = {
+      ...centerSource([1, -1], [0, 100], [100, 200]),
+      negColor: [0, 0, 1] as [number, number, number],
+    }
+    const [pos, neg] = read(packLineInstances([signed]))
+    expect(pos).not.toBe(neg)
+    const [solid, solidNeg] = read(
+      packLineInstances([centerSource([1, -1], [0, 100], [100, 200])]),
+    )
+    expect(solidNeg).toBe(solid)
+  })
+})
+
 describe('packBandInstances', () => {
   const max = [9, 12, 6]
   const min = [2, 4, -3]
@@ -355,7 +374,8 @@ describe('packBandInstances', () => {
   ): SourceRenderData {
     return {
       ...makeSource(renderingType, max, starts, ends, gapLimitBp),
-      band: { minScores: new Float32Array(min), negColor: [0, 0, 1] },
+      negColor: [0, 0, 1],
+      band: { minScores: new Float32Array(min) },
     }
   }
 

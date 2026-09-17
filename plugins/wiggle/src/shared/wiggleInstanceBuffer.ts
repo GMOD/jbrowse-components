@@ -63,6 +63,12 @@ function colorOf(source: SourceRenderData) {
   return normalizedRgbToABGR(source.color[0], source.color[1], source.color[2])
 }
 
+function negColorOf(source: SourceRenderData) {
+  return source.negColor
+    ? normalizedRgbToABGR(...source.negColor)
+    : colorOf(source)
+}
+
 // xyplot / density / scatter: startEnd, score, color, rowIndex. No feature here
 // reads a neighbour, which is the whole reason this record is five words.
 export function packFillInstances(sources: SourceRenderData[]) {
@@ -110,9 +116,9 @@ export function packLineInstances(sources: SourceRenderData[]) {
   for (const source of sources.filter(s => !s.band)) {
     const row = source.rowIndex
     const colorAbgr = colorOf(source)
+    const negAbgr = negColorOf(source)
     const positions = source.featurePositions
     const scores = source.featureScores
-    const colorsAbgr = source.colorsAbgr
     const n = source.numFeatures
     const centerLine = source.renderingType === RENDERING_TYPE_LINE_CENTER
     // Center-to-center distance past which the center-line treats the span as a
@@ -128,7 +134,8 @@ export function packLineInstances(sources: SourceRenderData[]) {
       u32[off + LINE_U32.startEnd] = currStart
       u32[off + LINE_U32.startEnd + 1] = currEnd
       f32[off + LINE_F32.score] = score
-      u32[off + LINE_U32.color] = colorsAbgr ? colorsAbgr[i]! : colorAbgr
+      u32[off + LINE_U32.color] = colorAbgr
+      u32[off + LINE_U32.negColor] = negAbgr
       f32[off + LINE_F32.rowIndex] = row
       if (centerLine) {
         // The center-line pass draws one segment per feature from the previous
@@ -191,7 +198,7 @@ export function packBandInstances(sources: SourceRenderData[]) {
       const maxScores = source.featureScores
       const { minScores } = band
       const posAbgr = colorOf(source)
-      const negAbgr = normalizedRgbToABGR(...band.negColor)
+      const negAbgr = negColorOf(source)
       const centerLine = source.renderingType === RENDERING_TYPE_LINE_CENTER
       const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
       for (let i = 0; i < source.numFeatures; i++) {

@@ -105,11 +105,16 @@ export interface SourceRenderData {
   // every field; not harmless once the encoder skips the fields the pass in
   // force will never read.
   renderingType: WiggleRenderingType
-  // Optional per-instance packed ABGR colors. Used by bicolor whiskers, where
-  // each band (max/mean/min) is colored by its own value's sign vs the pivot,
-  // then tinted. When present it overrides `color` per feature in both backends;
-  // `color` stays the single-color fallback (and the legend/first-color source).
+  // Optional per-instance packed ABGR colors. Used by bicolor xyplot and scatter
+  // summary bands, where each band (max/mean/min) is colored by its own value's
+  // sign vs the pivot, then tinted. When present it overrides `color` per
+  // feature in both backends; `color` stays the single-color fallback (and the
+  // legend/first-color source).
   colorsAbgr?: Uint32Array
+  // A line plot's colour below the pivot, where `color` is its colour above.
+  // Chosen by where the line or band sits, not per bin, so a line crossing the
+  // pivot changes colour at the crossing.
+  negColor?: [number, number, number]
   // Center-to-center bp distance past which the interpolated (linecenter) line
   // treats the span as a hole and starts a new run instead of drawing a chord
   // across it. Computed once per layer by buildSourceRenderData (see
@@ -118,10 +123,9 @@ export interface SourceRenderData {
   // instance buffer as a NO_PREV_START sentinel. `undefined` never breaks.
   gapLimitBp?: number
   // A line plot's whiskers range: `featureScores` holds each bin's max and
-  // `minScores` its min, filled in `color` above the pivot and `negColor` below.
+  // `minScores` its min.
   band?: {
     minScores: Float32Array
-    negColor: [number, number, number]
   }
 }
 

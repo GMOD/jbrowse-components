@@ -6,6 +6,7 @@ import {
   drawLine,
   drawLineCenter,
   drawScatter,
+  drawWhiskerBand,
 } from '../plugins/wiggle/src/shared/wiggleDrawFunctions.ts'
 
 import type { MarkContext2D } from '../packages/render-core/src/marks/types.ts'
@@ -105,6 +106,7 @@ function wiggleRow(ctx: MarkContext2D, n: number) {
     symlogConstant: 1,
     origin: 0,
     rgb: 'red',
+    negRgb: 'blue',
   }
 }
 
@@ -158,6 +160,22 @@ const cases: [string, number, Painter][] = [
     2_000_000,
     (ctx, n) => {
       drawLineCenter({ ...wiggleRow(ctx, n), lineWidth: 1 })
+    },
+  ],
+  [
+    'wiggle whiskers band',
+    1_000_000,
+    (ctx, n) => {
+      const row = wiggleRow(ctx, n)
+      drawWhiskerBand({
+        ...row,
+        source: {
+          ...row.source,
+          negColor: [0, 0, 255],
+          band: { minScores: row.source.featureScores.map(v => v - 0.2) },
+        },
+        interpolated: false,
+      })
     },
   ],
   [

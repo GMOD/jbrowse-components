@@ -48,13 +48,24 @@ struct WiggleLineInstance {
   float rowIndex  : ATTR5;
   uint2 prevStartEnd : ATTR6;
   float prevScoreLine : ATTR7;
+  uint  negColor  : ATTR8;
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct VsOut {
   float4 position : SV_Position;
-  float4 color    : COLOR0;
+  nointerpolation float4 color    : COLOR0;
+  nointerpolation float4 negColor : COLOR1;
+  // Where the stroke's centre line sits, so a fragment takes the colour of the
+  // pivot side its centre line is on rather than its own pixel's: a stroke
+  // lying on the pivot stays one colour, and every segment overlapping a joint
+  // picks the same one. Step: (min, max) of the segment in CSS px, clamped
+  // against `yPx`. Center-line: (centre y, tangent y), walked along
+  // `localPos.x`.
+  nointerpolation float2 centerLine : TEXCOORD2;
+  nointerpolation float pivotYPx : TEXCOORD3;
+  float yPx : TEXCOORD4;
   // center-line: segment_coord — signed px distance (along, perp) from the
   // SEGMENT CENTER, so the fragment can evaluate the capsule SDF, with
   // segHalfLen the segment's half-length in px (the capsule body extent).
@@ -62,11 +73,14 @@ struct VsOut {
   nointerpolation float segHalfLen : TEXCOORD1;
 };
 
+float rowScoreToYPx(float score, float rowTop, float rowHeight) {
+  return scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
+}
+
 // Score → clip-space Y within a single row (line mode). Reads the y domain and
 // scale type from the global uniforms.
 float rowScoreToClipY(float score, float rowTop, float rowHeight, float pxToClip) {
-  float yPx = scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
-  return 1.0 - yPx * pxToClip;
+  return 1.0 - rowScoreToYPx(score, rowTop, rowHeight) * pxToClip;
 }
 
 [shader("vertex")]
@@ -82,6 +96,7 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
   float sy;
   float2 localPos = float2(0.0, 0.0);
   float segHalfLen = 0.0;
+  float2 centerLine = float2(0.0, 0.0);
 
   if (u.renderingType == RENDERING_TYPE_LINE) {
     // Thick step-line: each feature draws STEP_LINE_SEGMENTS triangle-quad
@@ -104,15 +119,21 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
     float clipNextY  = rowScoreToClipY(inst.nextScore, rowTop, rowHeight, pxToClip);
     float hwx = pxToClipLen(u.lineWidth * 0.5, u.viewportWidth);
     float hwy = u.lineWidth * 0.5 * pxToClip;
+    float scoreYPx = rowScoreToYPx(inst.score, rowTop, rowHeight);
     if (seg == 0u) {
       sx = lerp(sx1 - hwx, sx1 + hwx, q.x);
       sy = lerp(min(clipPrevY, clipScoreY) - hwy, max(clipPrevY, clipScoreY) + hwy, q.y);
+      float prevYPx = rowScoreToYPx(inst.prevScore, rowTop, rowHeight);
+      centerLine = float2(min(prevYPx, scoreYPx), max(prevYPx, scoreYPx));
     } else if (seg == 1u) {
       sx = lerp(min(sx1, sx2) - hwx, max(sx1, sx2) + hwx, q.x);
       sy = lerp(clipScoreY - hwy, clipScoreY + hwy, q.y);
+      centerLine = float2(scoreYPx, scoreYPx);
     } else {
       sx = lerp(sx2 - hwx, sx2 + hwx, q.x);
       sy = lerp(min(clipScoreY, clipNextY) - hwy, max(clipScoreY, clipNextY) + hwy, q.y);
+      float nextYPx = rowScoreToYPx(inst.nextScore, rowTop, rowHeight);
+      centerLine = float2(min(scoreYPx, nextYPx), max(scoreYPx, nextYPx));
     }
   } else {
     // Point-to-point line drawn as one CAPSULE per feature (render-core's
@@ -158,14 +179,24 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
     sy = 1.0 - (centerYpx + off.y) * pxToClip;
     localPos = local;
     segHalfLen = len * 0.5;
+    centerLine = float2(centerYpx, f.tangent.y);
   }
 
   VsOut o;
   o.position = float4(sx, sy, 0.0, 1.0);
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
+  o.negColor = float4(unpackRGBA(inst.negColor).rgb, 1.0);
   o.localPos = localPos;
   o.segHalfLen = segHalfLen;
+  o.centerLine = centerLine;
+  o.pivotYPx = rowScoreToYPx(u.origin, rowTop, rowHeight);
+  o.yPx = (1.0 - sy) / pxToClip;
   return o;
+}
+
+// A score on the pivot counts as positive, as it does everywhere else.
+float4 pivotSideColor(VsOut fragIn, float centerYPx) {
+  return centerYPx > fragIn.pivotYPx ? fragIn.negColor : fragIn.color;
 }
 
 [shader("fragment")]
@@ -183,9 +214,12 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     if (alpha <= 0.0) {
       discard;
     }
+    float along = clamp(fragIn.localPos.x, -fragIn.segHalfLen, fragIn.segHalfLen);
+    float4 color = pivotSideColor(
+      fragIn, fragIn.centerLine.x + fragIn.centerLine.y * along);
     // PREMULTIPLIED output so same-color overlaps union (max) rather than
     // accumulating.
-    return float4(fragIn.color.rgb * alpha, alpha);
+    return float4(color.rgb * alpha, alpha);
   }
   // The step-line's quads stay flat fills, and that is a decision rather than an
   // omission: a feature draws three square-capped quads that DELIBERATELY
@@ -195,5 +229,6 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // step line would gain a lattice of darker joints where it has none today.
   // The rendering that wants an antialiased stroke is linecenter, above, whose
   // capsules union under max blend precisely so that overlap is free.
-  return fragIn.color;
+  return pivotSideColor(
+    fragIn, clamp(fragIn.yPx, fragIn.centerLine.x, fragIn.centerLine.y));
 }

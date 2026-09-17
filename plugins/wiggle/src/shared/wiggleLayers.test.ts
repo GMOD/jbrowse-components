@@ -1,12 +1,10 @@
 import {
   RENDERING_TYPE_DENSITY,
-  RENDERING_TYPE_LINE,
-  RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
 } from '@jbrowse/wiggle-core'
 
-import { makeSummaryLayers } from './wiggleLayers.ts'
+import { lineLayers, makeSummaryLayers } from './wiggleLayers.ts'
 
 describe('makeSummaryLayers', () => {
   const positions = new Uint32Array([0, 10, 10, 20])
@@ -41,36 +39,40 @@ describe('makeSummaryLayers', () => {
     summaryScoreMode: 'whiskers',
   }
 
-  test.each([RENDERING_TYPE_LINE, RENDERING_TYPE_LINE_CENTER])(
-    'line whiskers (rendering %i) is a min-max band under the mean stroke',
-    renderingType => {
-      const [band, mean, ...rest] = makeSummaryLayers({
-        data: summaryData,
-        ...base,
-        pivot: 6,
-        renderingType,
-      })
-      expect(rest).toEqual([])
-      expect(band!.featureScores).toBe(maxScores)
-      expect(band!.band!.minScores).toBe(minScores)
-      expect(band!.color).toEqual(posColor)
-      expect(band!.band!.negColor).toEqual(negColor)
-      expect(band!.colorsAbgr).toBeUndefined()
-      expect(mean!.featureScores).toBe(scores)
-      expect(mean!.band).toBeUndefined()
-      // avg [5, 8] straddles pivot 6
-      expect(mean!.colorsAbgr![0]).not.toBe(mean!.colorsAbgr![1])
-    },
-  )
+  test('line whiskers is a min-max band under the mean line', () => {
+    const [band, mean, ...rest] = lineLayers(
+      summaryData,
+      'whiskers',
+      posColor,
+      negColor,
+    )
+    expect(rest).toEqual([])
+    expect(band!.featureScores).toBe(maxScores)
+    expect(band!.band!.minScores).toBe(minScores)
+    expect(mean!.featureScores).toBe(scores)
+    expect(mean!.band).toBeUndefined()
+    for (const layer of [band!, mean!]) {
+      expect(layer.color).toEqual(posColor)
+      expect(layer.negColor).toEqual(negColor)
+      expect(layer.colorsAbgr).toBeUndefined()
+    }
+  })
 
   test('line whiskers with no summary spread draws the mean alone', () => {
-    const result = makeSummaryLayers({
-      data: noSummaryData,
-      ...base,
-      renderingType: RENDERING_TYPE_LINE_CENTER,
-    })
+    const result = lineLayers(noSummaryData, 'whiskers', posColor, negColor)
     expect(result).toHaveLength(1)
     expect(result[0]!.band).toBeUndefined()
+  })
+
+  test.each([
+    ['avg', scores],
+    ['min', minScores],
+    ['max', maxScores],
+  ] as const)('a %s line is one layer over every bin', (mode, expected) => {
+    const [line, ...rest] = lineLayers(summaryData, mode, posColor, negColor)
+    expect(rest).toEqual([])
+    expect(line!.featureScores).toBe(expected)
+    expect(line!.numFeatures).toBe(2)
   })
 
   test('scatter whiskers keeps three whole bands, back to front', () => {
@@ -139,7 +141,7 @@ describe('makeSummaryLayers', () => {
       ...base,
       summaryScoreMode,
       pivot: 6,
-      renderingType: RENDERING_TYPE_LINE,
+      renderingType: RENDERING_TYPE_SCATTER,
     })
 
   test.each([
