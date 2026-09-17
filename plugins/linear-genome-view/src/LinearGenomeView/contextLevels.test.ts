@@ -1,8 +1,13 @@
 import { getMembers, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { autorun } from 'mobx'
+import { autorun, when } from 'mobx'
 
-import { LEVEL_NAVIGATIONS, LEVEL_OWN, LEVEL_PANS } from './contextLevels.ts'
+import {
+  LEVEL_NAVIGATIONS,
+  LEVEL_OWN,
+  LEVEL_PANS,
+  contextStackRows,
+} from './contextLevels.ts'
 import { renderToSvg } from './svgcomponents/SVGLinearGenomeView.tsx'
 
 import type { LinearGenomeViewModel } from './index.ts'
@@ -312,4 +317,115 @@ test('dispatching a level action does not make the caller depend on the stack', 
   view.addContextLevel()
   expect(runs).toBe(1)
   stop()
+})
+
+test('a level opens with the span and the tracks it was asked for', async () => {
+  const { session, view } = setup()
+  await when(
+    () =>
+      session.assemblyManager.assemblies.length ===
+      session.assemblyManager.assemblyNamesList.length,
+  )
+  session.addSessionTrackConf({
+    trackId: 'genes',
+    name: 'Genes',
+    type: 'FeatureTrack',
+    assemblyNames: ['volMyt1'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  view.addContextLevel({ windowWidthBp: 200_000, trackIds: ['genes'] })
+  const [level] = levels(view)
+  expect(level!.windowWidthBp).toBe(200_000)
+  await when(() => level!.tracks.length === 1)
+  expect(level!.tracks[0]!.configuration.trackId).toBe('genes')
+})
+
+test('a span between two levels lands between them', () => {
+  const { view } = setup()
+  view.addContextLevel()
+  view.addContextLevel()
+  view.addContextLevel({ windowWidthBp: 200_000 })
+  expect(levels(view).map(l => l.windowWidthBp)).toEqual([
+    800_000, 200_000, 80_000,
+  ])
+})
+
+// A level narrower than the view shows less than the tracks under it, and the
+// sync is what refuses it: the dialog's field says so up front, an agent's call
+// finds out by the level coming back at the view's own span.
+test('a level asked for narrower than the view comes back at the view', () => {
+  const { view } = setup()
+  view.addContextLevel({ windowWidthBp: 100 })
+  expect(levels(view)[0]!.windowWidthBp).toBe(view.windowWidthBp)
+})
+
+test('the side the stack sits on is one flag the snapshot omits by default', () => {
+  const { view } = setup()
+  expect(view.contextLevelsBelow).toBe(false)
+  expect('contextLevelsBelow' in getSnapshot(view)).toBe(false)
+  view.setContextLevelsBelow(true)
+  expect(
+    (getSnapshot(view) as { contextLevelsBelow?: boolean }).contextLevelsBelow,
+  ).toBe(true)
+})
+
+test('the stack reads down to the tracks above them, and outward below', () => {
+  expect(contextStackRows('host', ['wide', 'mid'], false)).toEqual([
+    { level: 'wide', detail: 'mid' },
+    { level: 'mid', detail: 'host' },
+  ])
+  expect(contextStackRows('host', ['wide', 'mid'], true)).toEqual([
+    { level: 'mid', detail: 'host' },
+    { level: 'wide', detail: 'mid' },
+  ])
+  expect(contextStackRows('host', [], true)).toEqual([])
+})
+
+// Each trapezoid's two horizontal edges, as the widths they were drawn at: the
+// narrow one is the span the wider level shows, the full-width one is the row
+// it details. Which of the two is on top is the whole of the flip.
+function trapezoidEdges(svg: string) {
+  return [...svg.matchAll(/<polygon[^>]*points="([^"]+)"/g)].map(match => {
+    const points = match[1]!
+      .split(' ')
+      .map(pair => pair.split(',').map(Number) as [number, number])
+    const ys = points.map(([, y]) => y)
+    const widthAt = (y: number) => {
+      const xs = points.filter(point => point[1] === y).map(([x]) => x)
+      return Math.max(...xs) - Math.min(...xs)
+    }
+    return { top: widthAt(Math.min(...ys)), bottom: widthAt(Math.max(...ys)) }
+  })
+}
+
+test('a stack under the tracks exports the view first and flips its trapezoids', async () => {
+  const { view } = setup()
+  view.addContextLevel()
+  view.addContextLevel()
+  const above = await renderToSvg(view, {})
+  view.setContextLevelsBelow(true)
+  const below = await renderToSvg(view, {})
+
+  // the host's header names the assembly once; each level's band names its span
+  expect(above.indexOf('>volMyt1<')).toBeGreaterThan(above.indexOf('>800Kbp<'))
+  expect(below.indexOf('>volMyt1<')).toBeLessThan(below.indexOf('>80Kbp<'))
+  // and under the tracks the stack widens downward, so the widest level is the
+  // last row rather than the first
+  expect(below.indexOf('>80Kbp<')).toBeLessThan(below.indexOf('>800Kbp<'))
+
+  expect(polygons(below)).toBe(2)
+  expect(trapezoidEdges(above).map(({ top, bottom }) => top < bottom)).toEqual([
+    true,
+    true,
+  ])
+  expect(trapezoidEdges(below).map(({ top, bottom }) => top > bottom)).toEqual([
+    true,
+    true,
+  ])
+  // the fade holds its colour at the narrow end either way, which is the end a
+  // mirrored gradient has to follow the shape to
+  const fadeFrom = (svg: string) =>
+    [...svg.matchAll(/<linearGradient[^>]*y1="(\d)"/g)].map(match => match[1])
+  expect(fadeFrom(above)).toEqual(['0', '0'])
+  expect(fadeFrom(below)).toEqual(['1', '1'])
 })

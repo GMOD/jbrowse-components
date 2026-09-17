@@ -4,6 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { observer } from 'mobx-react'
 
+import { contextStackRows } from '../contextLevels.ts'
 import LinearGenomeView from './LinearGenomeView.tsx'
 import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 
@@ -36,26 +37,30 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The trapezoid from the span `lower` shows, as it sits in `upper`, down to
- * `lower`'s full width: the header overview's "you are here", drawn between
- * two levels instead. The upper level is scrolled, where the header overview
- * never is, so its left edge is what its origin is shifted by.
+ * The trapezoid from the span `detail` shows, as it sits in `context`, out to
+ * `detail`'s full width: the header overview's "you are here", drawn between
+ * two levels instead. The context level is scrolled, where the header overview
+ * never is, so its left edge is what its origin is shifted by. `flip` is the
+ * stack that reads downward into wider views, where the detail edge is the top
+ * one.
  *
  * Its height belongs to the stack rather than to this pair, so a drag on any
  * band moves all of them: the bands are a ladder the eye reads down, and one
  * rung of its own height reads as a difference in the data. The height is worth
  * dragging at all because the band is a picture of a ratio — a level ten times
- * wider than the row below narrows to a tenth of the width over it — and how
+ * wider than the row beside it narrows to a tenth of the width there — and how
  * steep that reads is the figure's to decide, not ours.
  */
 const LevelConnector = observer(function LevelConnector({
   host,
-  upper,
-  lower,
+  context,
+  detail,
+  flip,
 }: {
   host: LinearGenomeViewModel
-  upper: LinearGenomeViewModel
-  lower: LinearGenomeViewModel
+  context: LinearGenomeViewModel
+  detail: LinearGenomeViewModel
+  flip: boolean
 }) {
   const { classes } = useStyles()
   const height = host.contextConnectorHeight
@@ -64,20 +69,21 @@ const LevelConnector = observer(function LevelConnector({
       host.setContextConnectorHeight(host.contextConnectorHeight + delta)
     },
   })
-  return upper.initialized && lower.initialized ? (
+  return context.initialized && detail.initialized ? (
     <div className={classes.connector} style={{ height }}>
       <svg className={classes.polygon}>
         <OverviewScalebarPolygon
-          model={lower}
-          overview={upper}
-          overviewOffsetPx={-upper.offsetPx}
+          model={detail}
+          overview={context}
+          overviewOffsetPx={-context.offsetPx}
           height={height}
           gradient
+          flip={flip}
         />
       </svg>
       <div
         {...handleProps}
-        data-testid={`context-connector-${upper.id}`}
+        data-testid={`context-connector-${context.id}`}
         className={classes.grab}
       />
     </div>
@@ -90,18 +96,27 @@ const ContextLevels = observer(function ContextLevels({
   model: LinearGenomeViewModel
 }) {
   const levels = model.contextLevelViews as LinearGenomeViewModel[]
-  return levels.length ? (
+  const below = model.contextLevelsBelow
+  const rows = contextStackRows(model, levels, below)
+  return rows.length ? (
     <div data-testid={`context-levels-${model.id}`}>
-      {levels.map((level, i) => (
-        <Fragment key={level.id}>
-          <LinearGenomeView model={level} />
+      {rows.map(({ level, detail }) => {
+        const connector = (
           <LevelConnector
             host={model}
-            upper={level}
-            lower={levels[i + 1] ?? model}
+            context={level}
+            detail={detail}
+            flip={below}
           />
-        </Fragment>
-      ))}
+        )
+        return (
+          <Fragment key={level.id}>
+            {below ? connector : null}
+            <LinearGenomeView model={level} />
+            {below ? null : connector}
+          </Fragment>
+        )
+      })}
     </div>
   ) : null
 })

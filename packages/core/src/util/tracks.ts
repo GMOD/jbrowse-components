@@ -963,6 +963,59 @@ export function viewCanDisplayTrack(
   )
 }
 
+/**
+ * Whether every name in `subset` appears in `superset`. An absent superset
+ * contains nothing; an absent subset is contained by anything.
+ */
+function containsAll<T>(superset: T[] = [], subset: T[] = []) {
+  const s = new Set(superset)
+  return subset.every(x => s.has(x))
+}
+
+/**
+ * The tracks a view can be offered: those that support every assembly it
+ * displays, and that declare a display it can draw. The track selector's tree
+ * and every other picker that opens a track into a view read this one answer,
+ * or one of them offers a track the next hides.
+ */
+export function filterTracks(
+  tracks: AnyConfigurationModel[],
+  self: {
+    // the view the tracks would open into, and the node the session and the
+    // plugin manager are read off: a caller whose assembly list comes from
+    // somewhere else — the track selector's, off whichever container it writes
+    // into — still names the view here
+    view?: IStateTreeNode & { type: string }
+    assemblyNames: string[]
+  },
+) {
+  const { view } = self
+  if (!view) {
+    return []
+  }
+  const { assemblyManager } = getSession(view)
+  const { pluginManager } = getEnv(view)
+  const canonical = (names: string[]) =>
+    canonicalAssemblyNames(names, assemblyManager)
+  const viewAssemblyNames = canonical(self.assemblyNames)
+  const viewDisplays = viewDisplayNames(pluginManager, view.type)
+  return tracks.filter(c => {
+    const trackAssemblyNames = readConfObject(c, 'assemblyNames') as
+      | string[]
+      | undefined
+    return (
+      // a view that declares no assemblies (one still initializing) constrains
+      // nothing; otherwise the track must cover every one of them
+      (viewAssemblyNames.length === 0 ||
+        containsAll(
+          trackAssemblyNames && canonical(trackAssemblyNames),
+          viewAssemblyNames,
+        )) &&
+      viewCanDisplayTrack(pluginManager, viewDisplays, c.type)
+    )
+  })
+}
+
 export function pickDisplayForView({
   declaredDisplays,
   requestedType,

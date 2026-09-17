@@ -22,12 +22,6 @@ export function isUnsupported(name = '') {
   return name.endsWith('(Unsupported)') || name.endsWith('(Unknown)')
 }
 
-// true if `superset` contains every element of `subset`; argument order matters
-export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
-  const s = new Set(superset)
-  return subset.every(x => s.has(x))
-}
-
 // The category a non-admin's added/copied tracks nest under. Leading space so
 // it sorts above the config's own categories.
 const sessionTracksCategory = ' Session tracks'

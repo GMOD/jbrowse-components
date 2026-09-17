@@ -14,9 +14,10 @@ import type { IAnyModelType, IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * A context level is a LinearGenomeView nested under another one, showing a
- * wider window of the same locus above the host's tracks. Its only state of
- * its own is `windowWidthBp` and `tracks`: the host writes its regions, width
- * and left edge, so the level always shares the host's centre.
+ * wider window of the same locus over the host's tracks, or under them when
+ * the host says so. Its only state of its own is `windowWidthBp` and `tracks`:
+ * the host writes its regions, width and left edge, so the level always shares
+ * the host's centre.
  *
  * Declared by hand rather than as the view model's own instance type: the
  * level array is a `types.late` back onto the registered LinearGenomeView, and
@@ -35,6 +36,24 @@ export interface ContextLevel extends IStateTreeNode {
   setWidth(width: number): void
   setDisplayedRegions(regions: Region[]): void
   setWindowFrame(windowWidthBp: number, windowStartBp: number): void
+  showTrack(trackId: string): unknown
+}
+
+/**
+ * The stack in page order, each level paired with the row its trapezoid points
+ * at — the level below it in the stack, or the host itself. Above the tracks
+ * the widest level comes first and the pairs read down to the host; below, the
+ * host is the row above the first pair and the stack reads outward from it.
+ *
+ * One derivation for the screen and the SVG export, which otherwise agree on
+ * the order by having been written twice.
+ */
+export function contextStackRows<T>(host: T, levels: T[], below: boolean) {
+  const rows = levels.map((level, i) => ({
+    level,
+    detail: levels[i + 1] ?? host,
+  }))
+  return below ? rows.reverse() : rows
 }
 
 /**

@@ -27,6 +27,7 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
 import { contextLevelHost } from './contextLevels.ts'
 import {
+  AddContextLevelDialog,
   ExportSvgDialog,
   GetSequenceDialog,
   ReturnToImportFormDialog,
@@ -66,10 +67,10 @@ export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
 }
 
 /**
- * A view offers to grow a context level above itself; a level offers to go.
- * Adding stops once the top of the stack — the widest level, or this view when
- * it has none — is already zoomed all the way out, since a level wider than
- * that would show the same thing.
+ * A view offers to grow a context level beside itself; a level offers to go.
+ * Adding stops once the widest level — or this view when it has none — is
+ * already zoomed all the way out, since a level wider than that would show the
+ * same thing.
  *
  * Only a view of its own offers to add one. A row of a comparative stack is
  * already part of somebody's figure: the synteny ribbons and the breakpoint
@@ -104,7 +105,10 @@ function contextLevelMenuItem(self: LinearGenomeViewModel): MenuItem[] {
       // throws rather than answering for a view with no width yet
       disabled: top.bpPerPx > 0 && top.bpPerPx >= top.maxBpPerPx,
       onClick: () => {
-        self.addContextLevel()
+        getDialogHost(self).queueDialog(handleClose => [
+          AddContextLevelDialog,
+          { model: self, handleClose },
+        ])
       },
     },
   ]

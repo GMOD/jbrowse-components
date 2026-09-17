@@ -64,6 +64,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
     tracks,
     unpinnedTracks,
     hideHeader,
+    contextLevelsBelow,
   } = model
   const stickyTops = stickyChromeTops({ stickyViewHeaders, headerHeight })
   const headerRef = useRef<HTMLDivElement>(null)
@@ -161,7 +162,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           <Header model={model} />
           {hideHeader ? <MiniControls model={model} /> : null}
         </div>
-        <ContextLevels model={model} />
+        {contextLevelsBelow ? null : <ContextLevels model={model} />}
         {/* Everything the wheel may zoom, in both modes — see tracksRef. */}
         <div ref={tracksRef}>
           {model.scalebarOnly ? (
@@ -224,6 +225,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
             </TracksContainer>
           )}
         </div>
+        {contextLevelsBelow ? <ContextLevels model={model} /> : null}
       </div>
     </>
   )

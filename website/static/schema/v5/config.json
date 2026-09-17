@@ -14451,6 +14451,9 @@
             "$ref": "#/$defs/LinearGenomeView"
           }
         },
+        "contextLevelsBelow": {
+          "type": "boolean"
+        },
         "contextConnectorHeight": {
           "type": "number"
         },

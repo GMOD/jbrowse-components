@@ -435,7 +435,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * Wider views of the same locus stacked above the tracks, widest
+         * Wider views of the same locus stacked alongside the tracks, widest
          * first. Each is a LinearGenomeView with tracks of its own whose
          * regions, width and centre this view drives; its window width is the
          * one thing it keeps. See `contextLevels.ts`.
@@ -444,6 +444,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
           types.array(contextLevelType(pluginManager)),
           [],
         ),
+
+        /**
+         * #property
+         * Put the context levels under the tracks rather than over them. One
+         * side for the whole stack either way: the narrowest level is always
+         * the one touching the tracks, so the stack reads outward from the
+         * detail in one direction, and the trapezoids point the way it reads.
+         */
+        contextLevelsBelow: types.stripDefault(types.boolean, false),
 
         /**
          * #property
@@ -1469,20 +1478,37 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Add a context level at the top of the stack, ten times wider than the
-       * widest level there is, or than this view when there is none.
+       * Add a context level showing `trackIds`, spanning `windowWidthBp` bases
+       * or ten times the widest level there is. The stack stays widest first,
+       * so a span between two existing levels lands between them, and one
+       * narrower than this view is pushed back out to it by the sync.
+       *
+       * Answers the level, which is a LinearGenomeView: its own actions
+       * navigate it, name its tracks and take it away again.
        */
-      addContextLevel() {
+      addContextLevel({
+        windowWidthBp,
+        trackIds = [],
+      }: { windowWidthBp?: number; trackIds?: string[] } = {}) {
         const widest = self.contextLevelViews[0]
-        const windowWidthBp = (widest?.windowWidthBp ?? self.windowWidthBp) * 10
+        const width =
+          windowWidthBp ?? (widest?.windowWidthBp ?? self.windowWidthBp) * 10
         const centerBp = self.windowStartBp + self.windowWidthBp / 2
-        self.contextLevels.unshift({
+        const at = self.contextLevelViews.filter(
+          level => level.windowWidthBp > width,
+        ).length
+        self.contextLevels.splice(at, 0, {
           type: 'LinearGenomeView',
           hideHeader: true,
           displayedRegions: self.displayedRegions,
-          windowWidthBp,
-          windowStartBp: centerBp - windowWidthBp / 2,
+          windowWidthBp: width,
+          windowStartBp: centerBp - width / 2,
         })
+        const level = self.contextLevelViews[at]!
+        for (const trackId of trackIds) {
+          level.showTrack(trackId)
+        }
+        return level
       },
       /**
        * #action
@@ -1490,6 +1516,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       removeContextLevel(level: ContextLevel) {
         detach(level)
         scheduleDetachedDestroy(level)
+      },
+      /**
+       * #action
+       * Move this view's whole context stack under the tracks, or back over
+       * them.
+       */
+      setContextLevelsBelow(b: boolean) {
+        self.contextLevelsBelow = b
       },
       /**
        * #action

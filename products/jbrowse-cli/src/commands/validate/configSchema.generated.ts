@@ -15523,6 +15523,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/LinearGenomeView"
           }
         },
+        "contextLevelsBelow": {
+          "type": "boolean"
+        },
         "contextConnectorHeight": {
           "type": "number"
         },
