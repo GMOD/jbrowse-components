@@ -3903,15 +3903,20 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 10000,
     stages: [
       {
+        // taller than the other three: the Launch cascade opens below the
+        // clicked block, and at 575 the submenu lands over its own parent row
+        viewportHeight: 700,
         actions: [
-          // chr16:54,049,320 is ~1.2 kb past the L1HS, inside the long conserved
-          // chain that flanks it — the big block the launch is aimed at — and
-          // 4px down is the block row, which is the top ~7px of the display.
+          // chr16:54,038,800 is inside the long conserved chain that flanks the
+          // L1HS — the big block the launch is aimed at — and 4px down is the
+          // block row, which is the top ~7px of the display. Left of centre, so
+          // the Launch submenu opens to the right of its parent rather than
+          // flipping back over it.
           {
             type: 'rightclick',
             anchor: {
               track: 'hg38_to_panTro6_liftOver',
-              locus: 'chr16:54,049,320',
+              locus: 'chr16:54,038,800',
               fracY: 0,
               dy: 4,
             },
@@ -3938,6 +3943,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
             y: 56,
             fontSize: 30,
             text: '(1) Right-click a chain block',
+          },
+          {
+            type: 'box',
+            anchor: { text: 'Launch' },
+            strokeWidth: 3,
           },
           {
             type: 'box',

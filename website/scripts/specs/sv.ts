@@ -1597,7 +1597,7 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG008-T_PacBio',
     readyTimeout: 180000,
-    viewportHeight: 900,
+    viewportHeight: 710,
     settleMs: 25000,
     hideTooltip: true,
     actions: [
