@@ -861,12 +861,20 @@
         "useQueryParam",
         "waitReady"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/SvgIcon",
         "@mui/material/Tooltip"
+      ],
+      "stubbed": [
+        "App",
+        "AssembliesMixin",
+        "DialogQueue",
+        "HistoryManagementMixin",
+        "JBrowseConfigF",
+        "JBrowseModelF"
       ]
     },
     "@jbrowse/cigar-utils": {
@@ -1699,11 +1707,58 @@
         "useRecentLocations",
         "wrapComponent"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/Tooltip"
+      ],
+      "stubbed": [
+        "ActionLink",
+        "AssemblySelector",
+        "BaseExportSvgDialog",
+        "CascadingMenu",
+        "CascadingMenuButton",
+        "ConfirmDialog",
+        "ContextMenu",
+        "CopyToClipboardButton",
+        "Dialog",
+        "EditableTypography",
+        "ErrorBanner",
+        "ErrorBar",
+        "ErrorMessage",
+        "ErrorOverlay",
+        "ExportSvgDialog",
+        "ExternalLink",
+        "FatalErrorDialog",
+        "FileDropZone",
+        "FileSelector",
+        "GpuFallbackButton",
+        "InfoDialog",
+        "JexlFilterDialog",
+        "LabeledCheckbox",
+        "LoadingEllipses",
+        "LoadingOverlay",
+        "LoadingProgress",
+        "Menu",
+        "MonospaceTextField",
+        "NumberTextField",
+        "ProgressChip",
+        "RefNameAutocomplete",
+        "RefNameAutocompleteEndAdornment",
+        "ReplaceCurrentViewButton",
+        "ResetToDefaultButton",
+        "SettingsChangesTable",
+        "ShareLinkField",
+        "SingleSlider",
+        "SliderTooltip",
+        "SubmitDialog",
+        "SubmitForm",
+        "TagTextField",
+        "ViewLoadingScreen",
+        "adornmentReservePx",
+        "getInputWidth",
+        "replaceViewAction"
       ]
     },
     "@jbrowse/core/ui/AddCustomPluginDialog": {
@@ -1964,9 +2019,16 @@
         "InfoIcon",
         "TrackSelector"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material/SvgIcon"
+      ],
+      "stubbed": [
+        "Cable",
+        "DNA",
+        "Highlighter",
+        "Indexing",
+        "TrackSelector"
       ]
     },
     "@jbrowse/core/ui/InfoDialog": {
@@ -4553,9 +4615,17 @@
         "useTrackControlMenu",
         "useTrackControlOverride"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "react-dom"
+      ],
+      "stubbed": [
+        "DisplayUIProvider",
+        "FloatingLegend",
+        "FloatingSvgOverlay",
+        "TrackOverlayPortal",
+        "plainTrackControl",
+        "resolveOverlays"
       ]
     },
     "@jbrowse/display-ui/axisPlacement": {
@@ -4607,12 +4677,17 @@
         "EmbeddedViewContainer",
         "createEmbeddedRootModel"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/SvgIcon",
         "@mui/material/Tooltip"
+      ],
+      "stubbed": [
+        "EmbeddedSessionMixin",
+        "EmbeddedSessionThemeMixin",
+        "createEmbeddedRootModel"
       ]
     },
     "@jbrowse/ld-core": {
@@ -4676,7 +4751,7 @@
         "segmentExitBp",
         "withContextMenuFeature"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
@@ -4684,6 +4759,13 @@
         "@mui/material/Tooltip",
         "react-dom",
         "react-dom/client"
+      ],
+      "stubbed": [
+        "copyFeatureInfo",
+        "default",
+        "getColorByMenuItem",
+        "getHitMenuItems",
+        "withContextMenuFeature"
       ]
     },
     "@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel": {
@@ -4846,11 +4928,15 @@
         "default",
         "renderToSvg"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "react-dom",
         "react-dom/client"
+      ],
+      "stubbed": [
+        "default",
+        "renderToSvg"
       ]
     },
     "@jbrowse/plugin-comparative-adapters": {
@@ -4890,7 +4976,7 @@
         "default",
         "renderToSvg"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@floating-ui/react",
         "@mui/material",
@@ -4899,6 +4985,10 @@
         "@mui/material/Tooltip",
         "react-dom",
         "react-dom/client"
+      ],
+      "stubbed": [
+        "default",
+        "renderToSvg"
       ]
     },
     "@jbrowse/plugin-gccontent": {
@@ -4958,9 +5048,12 @@
         "default",
         "getOrCreateJobsListWidget"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material/SvgIcon"
+      ],
+      "stubbed": [
+        "default"
       ]
     },
     "@jbrowse/plugin-legacy-jbrowse": {
@@ -5051,7 +5144,7 @@
         "useTrackControlMenu",
         "useViewSvgFigure"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
@@ -5059,6 +5152,32 @@
         "@mui/material/Tooltip",
         "react-dom",
         "react-dom/client"
+      ],
+      "stubbed": [
+        "DisplayUIProvider",
+        "ExportSvgDialog",
+        "FloatingLegend",
+        "FloatingSvgOverlay",
+        "HeaderSearchBoxRow",
+        "HeaderSearchBoxes",
+        "HighlightBand",
+        "HighlightChip",
+        "MultiLevelRubberband",
+        "OverviewHighlightBand",
+        "SVGHighlights",
+        "SVGHighlightsOverlay",
+        "SVGRowHeader",
+        "SVGTracks",
+        "SVGView",
+        "SearchBox",
+        "SvgChrome",
+        "SvgClipRect",
+        "TrackOverlayPortal",
+        "default",
+        "linearGenomeViewStateModelFactory",
+        "plainTrackControl",
+        "renderToSvg",
+        "useViewSvgFigure"
       ]
     },
     "@jbrowse/plugin-maf": {
@@ -5277,12 +5396,47 @@
         "withHostOverrides",
         "workspacesMenuItem"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/SvgIcon",
         "@mui/material/Tooltip"
+      ],
+      "stubbed": [
+        "AboutDialog",
+        "Drawer",
+        "DrawerControls",
+        "DrawerHeader",
+        "DrawerWidget",
+        "DrawerWidgetSelector",
+        "ModalWidget",
+        "ModalWidgetAppBar",
+        "PreferencesDialog",
+        "ThemeManagerSessionMixin",
+        "TrackMenuItemsSessionMixin",
+        "TrackMenuSessionMixin",
+        "WidgetBody",
+        "WidgetHeading",
+        "aboutTrackMenuItem",
+        "copyTrackSnapshot",
+        "decodeSessionFromUrl",
+        "encodeSessionToUrl",
+        "exportSessionMenuItem",
+        "importSessionMenuItem",
+        "isSessionWithThemes",
+        "newSessionMenuItem",
+        "openConnectionMenuItem",
+        "openTrackMenuItem",
+        "pluginExtraTrackItems",
+        "pluginStoreMenuItem",
+        "preferencesMenuItem",
+        "redoMenuItem",
+        "trackActionItems",
+        "trackActionMenuItems",
+        "trackListMenuItems",
+        "undoMenuItem",
+        "workspacesMenuItem"
       ]
     },
     "@jbrowse/render-core/blockClipUtils": {
@@ -6021,11 +6175,14 @@
         "svMateLocus",
         "walkBreakendChain"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/Tooltip"
+      ],
+      "stubbed": [
+        "BreakpointSplitViewChoiceDialog"
       ]
     },
     "@jbrowse/synteny-core": {
@@ -6205,13 +6362,39 @@
         "writeAttribute",
         "writeFeatureAttribute"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@floating-ui/react",
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/Tooltip",
         "react-dom"
+      ],
+      "stubbed": [
+        "AnchorsSelector",
+        "ChromosomeFilter",
+        "ColorBySelector",
+        "ComparativeFetchStatus",
+        "ComparativeTooltip",
+        "DiagonalizeDialog",
+        "DiagonalizeLoadingScreen",
+        "HelpTooltip",
+        "ImportFormModeToggle",
+        "ImportFormModes",
+        "ImportFormOpenCustomTrack",
+        "ImportFormSyntenyChoiceRadioGroup",
+        "ImportFormSyntenyTrackPanel",
+        "ImportSyntenyOpenCustomTrack",
+        "NoSyntenyTrackMessage",
+        "PifGzSelector",
+        "PreConfiguredSyntenyTrackSelect",
+        "QuickStartPanel",
+        "StandardFormatSelector",
+        "SwapAssemblies",
+        "TrackWarningsDialog",
+        "colorByMenuItems",
+        "colorByMenuTargetFor",
+        "defaultSyntenyFileFormats"
       ]
     },
     "@jbrowse/text-indexing": {
@@ -6351,7 +6534,7 @@
         "useClusterRun",
         "validateClusterOrder"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
@@ -6360,6 +6543,24 @@
         "@mui/x-data-grid",
         "react-dom",
         "react-dom/client"
+      ],
+      "stubbed": [
+        "ClusterDialog",
+        "ClusterModeSelector",
+        "ClusterProgress",
+        "ClusterProvenanceHint",
+        "DisplayContextMenu",
+        "DisplayCrosshairs",
+        "RowLabelsOverlay",
+        "SetColorDialog",
+        "SvgClusterProvenanceHint",
+        "SvgRowLabels",
+        "SvgTreePath",
+        "SvgTreeSidebar",
+        "TreeSidebar",
+        "setupRunClusteringAutorun",
+        "setupTreeDrawingAutorun",
+        "setupTreeSidebarAutoruns"
       ]
     },
     "@jbrowse/tree-sidebar/clusterMatrix": {
@@ -6474,12 +6675,19 @@
         "isWebSessionWithConnections",
         "sessionLastUsed"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/SvgIcon",
         "@mui/material/Tooltip"
+      ],
+      "stubbed": [
+        "BaseWebSession",
+        "BaseWebSessionModel",
+        "WebSessionConnectionsMixin",
+        "finalizeWebSession",
+        "isWebSessionWithConnections"
       ]
     },
     "@jbrowse/wiggle-core": {
@@ -6558,12 +6766,18 @@
         "makeResolutionSubMenuItem",
         "makeScatterPointSizeMenuItem"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/Tooltip",
         "react-dom"
+      ],
+      "stubbed": [
+        "SetMinMaxDialog",
+        "makePointSizeSubMenu",
+        "makeResolutionSubMenuItem",
+        "makeScatterPointSizeMenuItem"
       ]
     },
     "@jbrowse/wiggle-core/constants": {

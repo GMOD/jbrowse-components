@@ -11,9 +11,9 @@ import { markdownTable, rewriteMarkerBlock } from './util.ts'
 //
 // One row per package rather than one per subpath: 420 subpath rows would be
 // the exports maps restated, and the exports map is what a plugin author's
-// editor already reads. The row says how many subpaths and which of them the
-// RPC worker serves for real, which is the only per-package fact a plugin
-// author cannot read off the map.
+// editor already reads. The row says how many subpaths and how many of the
+// package's exports the RPC worker serves for real, which is the only
+// per-package fact a plugin author cannot read off the map.
 //
 // The guide opts in with a marker pair, regenerated on `pnpm autogen`:
 //
@@ -27,13 +27,15 @@ const MANIFEST = 'packages/core/src/ReExports/reExports.generated.json'
 interface ManifestModule {
   package: string
   names: string[]
-  worker: 'real' | 'stub'
+  worker: 'real' | 'stub' | 'mixed'
+  stubbed?: string[]
 }
 
 interface Row {
   name: string
   description: string
   subpaths: number
+  names: number
   stubbed: number
   apiPage?: string
 }
@@ -82,15 +84,15 @@ export function collectReExports(): Row[] {
         name: mod.package,
         description,
         subpaths: 0,
+        names: 0,
         stubbed: 0,
         apiPage: apiPageFor(dir),
       }
       byPackage.set(mod.package, row)
     }
     row.subpaths += 1
-    if (mod.worker === 'stub') {
-      row.stubbed += 1
-    }
+    row.names += mod.names.length
+    row.stubbed += mod.worker === 'real' ? 0 : (mod.stubbed ?? mod.names).length
   }
   return [...byPackage.values()].sort((a, b) => a.name.localeCompare(b.name))
 }
@@ -99,10 +101,10 @@ function workerCell(row: Row) {
   if (row.stubbed === 0) {
     return 'all of it'
   }
-  if (row.stubbed === row.subpaths) {
+  if (row.stubbed === row.names) {
     return 'none; a stub with its names'
   }
-  return `${row.subpaths - row.stubbed} of ${row.subpaths} subpaths; the rest stubbed`
+  return `${row.names - row.stubbed} of ${row.names} exports; the rest stubbed`
 }
 
 function renderTable(rows: Row[]) {

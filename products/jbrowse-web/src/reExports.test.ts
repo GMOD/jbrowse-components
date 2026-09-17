@@ -27,14 +27,12 @@ test('jbrowse-web serves the same keys in both realms', () => {
   expect(Object.keys(workerModules).sort()).toEqual(Object.keys(modules).sort())
 })
 
-function isStub(value: unknown) {
+function servesAStub(value: unknown) {
   return (
     value === uiStub ||
     (typeof value === 'object' &&
       value !== null &&
-      Object.entries(value).every(
-        ([k, v]) => (k === '__esModule' && v === true) || v === uiStub,
-      ))
+      Object.values(value).includes(uiStub))
   )
 }
 
@@ -51,19 +49,28 @@ const packageKeys = Object.keys(modules).filter(
   k => k.startsWith('@jbrowse/') && !k.startsWith('@jbrowse/core/'),
 )
 
-test('a stubbed package module carries the same own keys in both realms', () => {
-  const stubbed = packageKeys.filter(k => isStub(workerModules[k]))
+test('a stubbed package module carries the same own keys in both realms, each the stub or the main thread value', () => {
+  const stubbed = packageKeys.filter(k => servesAStub(workerModules[k]))
   expect(stubbed.length).toBeGreaterThan(0)
   for (const key of stubbed) {
-    expect({ key, names: ownKeys(workerModules[key]) }).toEqual({
+    const main = modules[key] as Record<string, unknown>
+    const worker = workerModules[key] as Record<string, unknown>
+    expect({ key, names: ownKeys(worker) }).toEqual({
       key,
-      names: ownKeys(modules[key]),
+      names: ownKeys(main),
     })
+    if (worker !== uiStub) {
+      for (const name of Object.keys(worker).filter(
+        n => worker[n] !== uiStub,
+      )) {
+        expect(worker[name]).toBe(main[name])
+      }
+    }
   }
 })
 
 test('a real package module is the same value in both realms', () => {
-  const real = packageKeys.filter(k => !isStub(workerModules[k]))
+  const real = packageKeys.filter(k => !servesAStub(workerModules[k]))
   expect(real).toContain('@jbrowse/display-kit/MultiRegionDisplayMixin')
   for (const key of real) {
     const main = modules[key] as Record<string, unknown>

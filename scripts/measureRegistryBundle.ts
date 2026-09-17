@@ -11,14 +11,20 @@
  *   pnpm measure-registry-bundle            re-measure and rewrite the file
  *   pnpm measure-registry-bundle --check    fail if the committed file is stale
  *
- * **Evaluation, not download.** Only `import-statement` edges are followed, so
- * what is counted is the module set each realm evaluates before the first
- * plugin's module scope runs — a `lazy(() => import(…))` component is out. That
- * is the right basis here, because the claim the split makes is about what the
- * worker *evaluates*: a stub exists so a plugin's module-scope read succeeds
- * without the worker pulling react-dom. It is the wrong basis for a download
- * figure, which is what scripts/measureChromeBundle.ts measures instead, and
- * that file's header says why the two differ.
+ * **Evaluation, not download.** Every `import()` stays external, and what is
+ * counted is the modules esbuild keeps once it has tree-shaken: the set each
+ * realm evaluates before the first plugin's module scope runs, with a
+ * `lazy(() => import(…))` component out. That is the right basis here, because
+ * the claim the split makes is about what the worker *evaluates*: a stub exists
+ * so a plugin's module-scope read succeeds without the worker pulling
+ * react-dom. It is the wrong basis for a download figure, which is what
+ * scripts/measureChromeBundle.ts measures instead, and that file's header says
+ * why the two differ.
+ *
+ * **Kept, not reached.** The worker imports a rendering module's data names by
+ * name, and `sideEffects: false` prunes the rest of that module's graph. A walk
+ * over the metafile's import edges counts the pruned graph too, and reports
+ * nearly all of the main thread's rendering stack in the worker.
  *
  * `uiKb` counts the whole rendering stack, not the four specifiers
  * `generateReExports.ts` classifies on: emotion and stylis arrive under
@@ -51,6 +57,17 @@ function packageOf(file: string) {
   return parts[0]!.startsWith('@') ? `${parts[0]}/${parts[1]}` : parts[0]!
 }
 
+const lazyImportsExternal: esbuild.Plugin = {
+  name: 'lazy-imports-external',
+  setup(build) {
+    build.onResolve({ filter: /.*/ }, args =>
+      args.kind === 'dynamic-import'
+        ? { path: args.path, external: true }
+        : undefined,
+    )
+  },
+}
+
 async function measure(entry: string) {
   const result = await esbuild.build({
     entryPoints: [path.join(root, entry)],
@@ -61,28 +78,21 @@ async function measure(entry: string) {
     platform: 'browser',
     target: 'esnext',
     logLevel: 'error',
+    outdir: path.join(root, 'scripts'),
+    plugins: [lazyImportsExternal],
   })
-  const { inputs } = result.metafile
-  const start = Object.keys(inputs).find(
-    f => path.resolve(root, f) === path.join(root, entry),
+  const { inputs, outputs } = result.metafile
+  const output = Object.values(outputs).find(
+    o =>
+      o.entryPoint &&
+      path.resolve(root, o.entryPoint) === path.join(root, entry),
   )
-  if (!start) {
-    throw new Error(`${entry}: esbuild reported no input for the entry point`)
+  if (!output) {
+    throw new Error(`${entry}: esbuild reported no output for the entry point`)
   }
-  const evaluated = new Set<string>()
-  const walk = (file: string) => {
-    const input = inputs[file]
-    if (evaluated.has(file) || !input) {
-      return
-    }
-    evaluated.add(file)
-    for (const imported of input.imports) {
-      if (imported.kind === 'import-statement') {
-        walk(imported.path)
-      }
-    }
-  }
-  walk(start)
+  const evaluated = Object.entries(output.inputs)
+    .filter(([, { bytesInOutput }]) => bytesInOutput > 0)
+    .map(([file]) => file)
   let bytes = 0
   let uiBytes = 0
   for (const file of evaluated) {
@@ -92,7 +102,7 @@ async function measure(entry: string) {
       uiBytes += size
     }
   }
-  return { bytes, uiBytes, modules: evaluated.size }
+  return { bytes, uiBytes, modules: evaluated.length }
 }
 
 const main = await measure('products/jbrowse-web/src/reExports.generated.ts')

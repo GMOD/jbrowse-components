@@ -4,13 +4,12 @@ import manifest from './reExports.generated.json'
 import { REACT_INTERNAL_KEYS, uiStub } from './uiStub.ts'
 import workerModules from './workerModules.ts'
 
-const stubbed = new Set(
-  Object.entries(manifest.modules)
-    .filter(([, m]) => m.worker === 'stub')
-    .map(([key]) => key),
-)
+const served: Record<
+  string,
+  { names: string[]; worker: string; stubbed?: string[]; uiVia?: string[] }
+> = manifest.modules
 const isShared = (key: string) =>
-  key in manifest.modules ? !stubbed.has(key) : key in frameworkShared
+  key in served ? served[key]!.worker === 'real' : key in frameworkShared
 
 // `default` is left out of a framework namespace: jest's CommonJS interop
 // synthesizes one on `import * as` of a package (mobx-react) whose ESM build
@@ -67,15 +66,64 @@ test('a stubbed entry with no named exports is the bare stub', () => {
   expect(workerModules['@jbrowse/core/ui/BaseTooltip']).toBe(uiStub)
 })
 
-test('every value in a stubbed namespace is the stub', () => {
+test('a rendering module serves the names the manifest stubs as the stub and the rest as themselves', () => {
   for (const key of Object.keys(modules).filter(k => !isShared(k))) {
-    const mod = workerModules[key]
-    if (mod !== uiStub) {
-      for (const [name, value] of Object.entries(mod as object)) {
+    const entry = served[key]
+    const stubbed = new Set(entry ? (entry.stubbed ?? entry.names) : [])
+    const main = modules[key] as Record<string, unknown>
+    const worker = workerModules[key] as Record<string, unknown>
+    if (worker === uiStub || !entry) {
+      for (const [name, value] of Object.entries(worker)) {
         expect(name === '__esModule' ? value : value === uiStub).toBe(true)
+      }
+    } else if (entry.names.length === 1 && entry.names[0] === 'default') {
+      expect(worker).toBe(main)
+    } else {
+      for (const [name, value] of Object.entries(worker)) {
+        if (name !== '__esModule') {
+          expect({ key, name, stub: value === uiStub }).toEqual({
+            key,
+            name,
+            stub: stubbed.has(name),
+          })
+          if (!stubbed.has(name)) {
+            expect(value).toBe(main[name])
+          }
+        }
       }
     }
   }
+})
+
+test('a data name a rendering barrel re-exports from a module that does not render is real', () => {
+  const ui = workerModules['@jbrowse/core/ui'] as Record<string, unknown>
+  expect(served['@jbrowse/core/ui']!.worker).toBe('mixed')
+  expect(ui.colorFwdStrand).toBe(
+    (modules['@jbrowse/core/ui'] as Record<string, unknown>).colorFwdStrand,
+  )
+  expect(ui.Dialog).toBe(uiStub)
+})
+
+test('no name the worker stubs holds a primitive on the main thread', () => {
+  const primitives = Object.keys(modules)
+    .filter(k => k in served)
+    .filter(k => !isShared(k))
+    .flatMap(key => {
+      const main = modules[key] as Record<string, unknown>
+      const worker = workerModules[key] as Record<string, unknown>
+      return worker === uiStub
+        ? []
+        : Object.keys(worker)
+            .filter(
+              name =>
+                worker[name] === uiStub &&
+                main[name] !== null &&
+                typeof main[name] !== 'object' &&
+                typeof main[name] !== 'function',
+            )
+            .map(name => `${key}#${name}`)
+    })
+  expect(primitives).toEqual([])
 })
 
 // What an adapter, an RPC method, a config schema or a state-model mixin reads
@@ -86,8 +134,6 @@ test('every value in a stubbed namespace is the stub', () => {
 // `computeYTicks.ts` reaching the @jbrowse/display-ui barrel is what had the
 // whole of @jbrowse/wiggle-core stubbed, config mixins included.
 test('the modules a worker-side plugin reads are served for real', () => {
-  const modules: Record<string, { worker: string; uiVia?: string[] }> =
-    manifest.modules
   const workerSide = [
     '@jbrowse/core/Plugin',
     '@jbrowse/core/configuration',
@@ -152,7 +198,7 @@ test('the modules a worker-side plugin reads are served for real', () => {
   ]
   expect(
     workerSide
-      .filter(key => modules[key]?.worker !== 'real')
-      .map(key => ({ key, uiVia: modules[key]?.uiVia })),
+      .filter(key => served[key]?.worker !== 'real')
+      .map(key => ({ key, uiVia: served[key]?.uiVia })),
   ).toEqual([])
 })
