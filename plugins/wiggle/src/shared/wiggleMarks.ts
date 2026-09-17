@@ -236,9 +236,9 @@ const densityShape = wiggleShape(
 const isLineFamily = (type: WiggleRenderingType) =>
   type === RENDERING_TYPE_LINE || type === RENDERING_TYPE_LINE_CENTER
 
-// The GPU draws the band after the lines and composites it behind them. Canvas2D
-// has no such blend, so the line marks paint band layers there, which sort
-// ahead of every line.
+// The GPU draws the band after the lines and composites it behind them.
+// MarkContext2D exposes no compositing operator, so on Canvas2D the line marks
+// paint band layers, which sort ahead of every line.
 const bandShape = wiggleShape(
   {
     ...slangPass({ id: 'band', mod: wiggleBandShader }),
@@ -272,11 +272,13 @@ const lineShape = wiggleShape(
 )
 
 // Premultiplied MAX blend so the analytic-AA ribbon's overlapping segments and
-// caps union instead of accumulating into dark seams under src-over. Valid
-// because the lines draw first into a target cleared to transparent black; the
-// whiskers band goes behind them afterwards. Stated on the pass rather than as a `//! blend:` on
-// wiggleLine.slang, because the step line above shares that shader and blends
-// the other way.
+// caps union instead of accumulating into dark seams under src-over. The lines
+// draw first into a target cleared to transparent black and the whiskers band
+// goes behind them afterwards. Max is still inexact where overlaid lines of
+// different colours cross, and at a joint within half a line width of the
+// pivot, whose capsules can pick different sides. Stated on the pass rather
+// than as a `//! blend:` on wiggleLine.slang, because the step line above
+// shares that shader and blends the other way.
 const lineCenterShape = wiggleShape(
   {
     ...slangPass({
@@ -348,7 +350,7 @@ export const WIGGLE_MARKS = [
   }),
   defineMark({
     shape: bandShape,
-    channels: sources => (sources[0]?.band ? sources : undefined),
+    channels: sources => (sources.some(s => s.band) ? sources : undefined),
     params: wiggleParams,
   }),
 ]

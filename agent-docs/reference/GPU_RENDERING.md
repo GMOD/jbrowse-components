@@ -1805,8 +1805,10 @@ estimator.
 **Depth buffer / early-Z.** No pass declares a depth-stencil state and no
 attachment carries one; overdraw is not depth-tested away. Every pass blends:
 `//! blend: premultiplied` (source-over) on most, `blendState: { op: 'max' }` on
-the wiggle center line, and nothing passes `blend: false`. Blending only
-composes correctly in draw order, back to front. A
+the wiggle center line, `//! blend: behind` on the wiggle whiskers band, which
+draws after the lines and composites under them, and nothing passes
+`blend: false`. Blending only composes correctly in draw order — back to front,
+or front to back for `behind`. A
 depth test rejects a fragment by its Z, which is exactly the fragment a
 translucent mark behind it was meant to show through; it would break the
 painter's-algorithm compositing the z-ordered mark lists (`PILEUP_MARKS`, the

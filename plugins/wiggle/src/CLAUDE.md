@@ -12,13 +12,15 @@ composed render-core `rowRect` shape, drawn off the fill pass's buffer via
 `bufferPassId`); `wiggleLine.slang` strokes (line, linecenter) on a 44-byte
 record of its own. Only stroked renderings read a neighbour, so while every
 rendering shared a shader every fill buffer carried those 20 bytes for nothing —
-180MB rather than 82MB at 1000 sources, against a 256MB `maxBufferSize` floor,
+164MB rather than 82MB at 1000 sources, against a 256MB `maxBufferSize` floor,
 which is a zoom ceiling rather than waste.
 
 `wiggleBand.slang` fills a line plot's whiskers band on a 44-byte record. **The
 GPU draws it after the lines with `blend: behind`**, because the interpolated
-line's max blend is only valid over an empty target; Canvas2D has no such blend,
-so band layers sort first and the line marks paint them.
+line's max blend is only valid over an empty target. `MarkContext2D` exposes no
+compositing operator, so on Canvas2D band layers sort first and the line marks
+paint them. The band packer runs last source first so overlaid bands stack as
+Canvas2D's in-order source-over does.
 
 `wiggleCommon.slang` holds what they must agree on: the uniform struct and the
 fill record are shared, the **binding is not**, and each re-imports

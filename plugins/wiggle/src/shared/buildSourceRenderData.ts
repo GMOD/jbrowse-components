@@ -208,7 +208,8 @@ export function buildSourceRenderData(
         pivot: bicolorPivot,
       })
       for (const layer of layers) {
-        ;(layer.band ? bands : result).push({
+        const into = layer.band ? bands : result
+        into.push({
           ...layer,
           rowIndex: row,
           renderingType: renderingTypeInt,
