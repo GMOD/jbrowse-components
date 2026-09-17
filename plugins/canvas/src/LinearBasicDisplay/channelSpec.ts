@@ -3,10 +3,9 @@ import {
   isJexl,
   stringToJexlExpression,
 } from '@jbrowse/core/util/jexlStrings'
-import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 
 import type { ColorScaleSettings } from '../RenderFeatureDataRPC/featureColors.ts'
-import type { FeatureGroupBy } from './groupBy.ts'
+import type { FeatureFacet } from './facet.ts'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 
@@ -40,23 +39,13 @@ export const CHANNEL_SPEC_EXAMPLES = [
   },
 ]
 
-export function facetOf(groupBy: FeatureGroupBy | undefined) {
-  if (groupBy === undefined) {
-    return null
-  }
-  const field = groupBy.type === 'strand' ? STRAND_FIELD : groupBy.attribute
-  return groupBy.domain?.length ? { field, domain: groupBy.domain } : { field }
-}
-
-// A facet with no domain writes an empty one, so a grouping re-picked in
-// the same key space sorts instead of keeping the order it carried.
-export function groupByOf(
-  facet: NonNullable<ChannelSpec['facet']>,
-): FeatureGroupBy {
-  const domain = facet.domain ?? []
-  return facet.field === STRAND_FIELD
-    ? { type: 'strand', domain }
-    : { type: 'attribute', attribute: facet.field, domain }
+export function facetOf(facet: FeatureFacet | undefined): ChannelSpec['facet'] {
+  return facet
+    ? {
+        field: facet.field,
+        ...(facet.domain.length ? { domain: [...facet.domain] } : {}),
+      }
+    : null
 }
 
 export function colorOf({

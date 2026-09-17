@@ -394,6 +394,31 @@ function colorScaleStep(
     : undefined
 }
 
+// The canvas displays' Group by dialog: a radio for strand, and a text field
+// under Attribute for any other field. The section order is the Sections
+// submenu's moves, which write the drawn order.
+function facetFieldStep(
+  value: unknown,
+  { displayType }: FieldContext,
+): FieldStep | undefined {
+  if (typeof value !== 'string' || !value || !isColorByDisplay(displayType)) {
+    return undefined
+  }
+  const groupBy = `${TRACK_MENU} → Group by...`
+  return value === 'strand'
+    ? { path: `${groupBy} → Strand` }
+    : { path: `${groupBy} → Attribute → ${value}` }
+}
+
+function facetDomainStep(
+  value: unknown,
+  { displayType }: FieldContext,
+): FieldStep | undefined {
+  return Array.isArray(value) && value.length && isColorByDisplay(displayType)
+    ? { path: `${TRACK_MENU} → Sections` }
+    : undefined
+}
+
 // One shared slider row (makeScatterPointSizeMenuItem) under a submenu each
 // display titles for itself: the wiggle displays call it 'Scatter point size',
 // the GWAS Manhattan display 'Point size'. The submenu label is what a reader
@@ -788,6 +813,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   colorField: colorFieldStep,
   colorDomain: colorScaleStep,
   colorPalette: colorScaleStep,
+  facetField: facetFieldStep,
+  facetDomain: facetDomainStep,
   jexlFilters: filterStep,
   jexlFiltersSetting: filterStep,
   // These three are declared by LinearHicDisplay alone, so as with the

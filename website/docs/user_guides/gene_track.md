@@ -79,13 +79,14 @@ grouping clears them. **Sections** in the track menu lists the sections drawn,
 each with **Move up**, **Move down** and **Hide section**, and **Reset section
 order** returns them to the sorted order.
 
-<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped by gene_biotype from Group by..., each section in its own color and sorted by name, then protein_coding moved to the top from Sections. The move writes the drawn order into the track's groupBy domain, so the session keeps it." />
+<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped by gene_biotype from Group by..., each section in its own color and sorted by name, then protein_coding moved to the top from Sections. The move writes the drawn order into the track's facetDomain, so the session keeps it." />
 
-The `groupBy` config slot pre-groups a track, so a shared link opens grouped.
-Its optional `domain` is the section order: the values listed stack first, in
-that order, and the rest follow sorted. A reorder from the menu writes the same
-slot, so what a config author declares and what a reader arranges are one
-setting:
+The `facetField` setting pre-groups a track, so a shared link opens grouped. It
+names a feature attribute, a dotted path into a structured one such as
+`INFO.SVTYPE`, or `strand`. `facetDomain` is the section order: the values
+listed stack first, in that order, and the rest follow sorted. A reorder from
+the menu writes the same setting, so what a config author declares and what a
+reader arranges are one setting:
 
 ```json addtrack
 {
@@ -98,11 +99,8 @@ setting:
     "uri": "https://example.com/GCF_000001405.40.gff.gz"
   },
   "displayDefaults": {
-    "groupBy": {
-      "type": "attribute",
-      "attribute": "gene_biotype",
-      "domain": ["protein_coding", "lncRNA", "pseudogene"]
-    }
+    "facetField": "gene_biotype",
+    "facetDomain": ["protein_coding", "lncRNA", "pseudogene"]
   }
 }
 ```
@@ -150,15 +148,16 @@ chosen order, and leaves the track's filter alone:
 
 <Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in its declared order, each in its own color." />
 
-A color by a field is the `colorField`, `colorDomain` and `colorPalette`
-settings, and the track draws a key from the values it painted. Every value
-keeps a color derived from itself, so a pan or a reload paints it the same; a
-`domain` spends the palette on the values it lists, in order, and a value it
-leaves out never takes one of their colors. A transcript and all its parts paint
-the transcript's value, or its gene's where the transcript has none. `strand` is
-a field too, painting forward tomato and reverse cornflowerblue unless a domain
-or palette says otherwise. Each channel writes the same setting its menu does,
-so the Sections menu reorders a facet written this way.
+A facet is the `facetField` and `facetDomain` settings, and a color by a field
+the `colorField`, `colorDomain` and `colorPalette` settings; the track draws a
+key from the values it painted. Every value keeps a color derived from itself,
+so a pan or a reload paints it the same; a `domain` spends the palette on the
+values it lists, in order, and a value it leaves out never takes one of their
+colors. A transcript and all its parts paint the transcript's value, or its
+gene's where the transcript has none. `strand` is a field too, painting forward
+tomato and reverse cornflowerblue unless a domain or palette says otherwise.
+Each channel writes the same setting its menu does, so the Sections menu
+reorders a facet written this way.
 
 ## Color by CDS
 

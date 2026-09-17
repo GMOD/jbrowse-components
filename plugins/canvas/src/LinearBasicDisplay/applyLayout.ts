@@ -1,4 +1,4 @@
-import { featureGroupSections, sectionIdsOf } from './groupBy.ts'
+import { featureGroupSections, sectionIdsOf } from './facet.ts'
 import { bodyHeightPx } from './layoutInputs.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
@@ -7,7 +7,7 @@ import type {
   FeatureLabelData,
   FlatbushItem,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FeatureGroupBy } from './groupBy.ts'
+import type { FeatureFacet } from './facet.ts'
 
 function scaleFloat32(arr: Float32Array, multiplier: number) {
   for (let i = 0; i < arr.length; i++) {
@@ -80,19 +80,19 @@ export function applyHeightScale(
 // chip is 16 px whatever the squeeze, so every feature moves back down by the
 // px the chips above it lost to the scale.
 export interface FixedChips {
-  groupBy: FeatureGroupBy
+  facet: FeatureFacet
   chipPx: number
 }
 
 function chipShiftOf(
   map: ReadonlyMap<number, FeatureDataResult>,
   scale: number,
-  { groupBy, chipPx }: FixedChips,
+  { facet, chipPx }: FixedChips,
 ) {
   const ordinal = new Map(
-    featureGroupSections(map, groupBy, chipPx).map((s, i) => [s.key, i]),
+    featureGroupSections(map, facet, chipPx).map((s, i) => [s.key, i]),
   )
-  const sectionOf = sectionIdsOf(map, groupBy)
+  const sectionOf = sectionIdsOf(map, facet)
   const lost = chipPx * (1 - scale)
   return (item: FlatbushItem) => {
     const i = isPlacedRow(item.topPx)

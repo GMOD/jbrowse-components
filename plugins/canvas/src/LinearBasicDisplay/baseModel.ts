@@ -15,13 +15,13 @@ import {
   isFeature,
   pluralize,
 } from '@jbrowse/core/util'
-import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
   activeJexlFilters,
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
+import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
@@ -67,7 +67,6 @@ import {
   colorOf,
   facetOf,
   filterOf,
-  groupByOf,
 } from './channelSpec.ts'
 import { colorViews } from './colorViews.ts'
 import {
@@ -80,6 +79,7 @@ import {
   resolveRegionColors,
 } from './components/resolveRegionColors.ts'
 import { derivedColorKey } from './derivedColorKey.ts'
+import { featureGroupSections, sectionIdsOf } from './facet.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
@@ -97,13 +97,6 @@ import {
   fitLadderVolatiles,
 } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
-import {
-  featureGroupSections,
-  groupColorField,
-  isGroupColor,
-  normalizeFeatureGroupBy,
-  sectionIdsOf,
-} from './groupBy.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
 import { featureIdsTouchingBlocks } from './layoutQueries.ts'
@@ -137,10 +130,10 @@ import type {
   FeatureItemEntry,
   FlatbushRegionIndexes,
 } from './components/hitTesting.ts'
+import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { RegionInstanceIndex } from './featureHighlightInk.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
-import type { FeatureGroupBy, FeatureGroupSection } from './groupBy.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -196,7 +189,7 @@ export type { Region } from '@jbrowse/core/util'
 // emit its own declarations.
 export type { LabelReservation } from './fitLadder.ts'
 export type { RegionInstanceIndex } from './featureHighlightInk.ts'
-export type { FeatureGroupBy, FeatureGroupSection } from './groupBy.ts'
+export type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 // Off this subpath rather than the barrel, so a subclass composing its own
 // "Color by..." presets holds no value edge into the eager entry.
 export { defaultColorItem } from './trackMenus.ts'
@@ -434,20 +427,23 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
-       * The in-track grouping, or undefined when ungrouped. The slot is
-       * `frozen`, so this is the chokepoint an unrecognized type stops at.
+       * The `facetField` and `facetDomain` slots, or undefined while
+       * ungrouped.
        */
-      get groupBy(): FeatureGroupBy | undefined {
-        return normalizeFeatureGroupBy(getConf(self, 'groupBy'))
+      get facet(): FeatureFacet | undefined {
+        const field = getConf(self, 'facetField')
+        return field
+          ? { field, domain: getConf(self, 'facetDomain') }
+          : undefined
       },
 
       /**
        * #getter
-       * Identity of the key space the grouping hands out keys in; the
-       * hidden sections are dropped when it moves.
+       * `HiddenGroupsMixin`'s hook: a section key means nothing outside the
+       * field that issued it, so moving the field drops what was hidden.
        */
-      get groupKeySpace() {
-        return groupKeySpaceOf(this.groupBy)
+      get groupKeySpace(): string {
+        return getConf(self, 'facetField')
       },
 
       /**
@@ -588,12 +584,11 @@ export default function baseStateModelFactory(
             ...workerConfig,
             subfeatureLabels: self.effectiveSubfeatureLabels,
             jexlFilters: self.activeFilters(),
-            // Only the attribute dimension needs a stamp per feature, so
-            // only it joins the cache key, and only while set: strand
-            // grouping never refetches.
-            ...(self.groupBy?.attribute === undefined
+            // A facet other than strand needs a stamp per feature, so only
+            // it joins the cache key: a strand facet never refetches.
+            ...(self.facet === undefined || self.facet.field === STRAND_FIELD
               ? {}
-              : { groupByAttribute: self.groupBy.attribute }),
+              : { facetField: self.facet.field }),
           },
           colorByCDS: self.colorByCDS,
           showAminoAcids: self.showAminoAcids,
@@ -636,7 +631,7 @@ export default function baseStateModelFactory(
           displayMode: self.displayMode,
           pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
           expandedGeneIds: self.expandedGeneIdSet,
-          groupBy: self.groupBy,
+          facet: self.facet,
           hiddenGroupKeys: self.hiddenGroupKeys,
         }
       },
@@ -693,7 +688,7 @@ export default function baseStateModelFactory(
        */
       get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
         const { layout, scale } = self.fitStage
-        const { groupBy } = self
+        const { facet } = self
         return self.coarseTierStandsIn
           ? EMPTY_LAID_OUT_DATA
           : scale === 1
@@ -701,7 +696,7 @@ export default function baseStateModelFactory(
             : scaleLaidOutData(
                 layout,
                 scale,
-                groupBy && { groupBy, chipPx: GROUP_LABEL_HEIGHT },
+                facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
               )
       },
       /**
@@ -711,13 +706,9 @@ export default function baseStateModelFactory(
        * paint; empty while ungrouped.
        */
       get groupSections(): FeatureGroupSection[] {
-        const { groupBy } = self
-        return groupBy
-          ? featureGroupSections(
-              this.laidOutDataMap,
-              groupBy,
-              GROUP_LABEL_HEIGHT,
-            )
+        const { facet } = self
+        return facet
+          ? featureGroupSections(this.laidOutDataMap, facet, GROUP_LABEL_HEIGHT)
           : []
       },
       /**
@@ -726,11 +717,11 @@ export default function baseStateModelFactory(
        * choice and so count as nothing the track failed to show.
        */
       get hiddenGroupFeatureIds(): ReadonlySet<string> | undefined {
-        const { groupBy, hiddenGroupKeys } = self
-        if (!groupBy || hiddenGroupKeys.size === 0) {
+        const { facet, hiddenGroupKeys } = self
+        if (!facet || hiddenGroupKeys.size === 0) {
           return undefined
         }
-        const sectionOf = sectionIdsOf(this.laidOutDataMap, groupBy)
+        const sectionOf = sectionIdsOf(this.laidOutDataMap, facet)
         const ids = new Set<string>()
         for (const data of this.laidOutDataMap.values()) {
           for (const item of data.flatbushItems) {
@@ -756,7 +747,7 @@ export default function baseStateModelFactory(
        * sections, so the label does not jump when data lands.
        */
       get prefersOffset() {
-        return self.groupBy !== undefined
+        return self.facet !== undefined
       },
       /**
        * #getter
@@ -1212,17 +1203,12 @@ export default function baseStateModelFactory(
 
       /**
        * #action
-       * The stack starts over from the top when its sections change. A
-       * grouping named without a domain keeps the current one while the key
-       * space holds, so a re-pick from the dialog is not a reorder; a
-       * reorder is this action with a new domain.
+       * Writes both facet slots, an unnamed domain as empty; undefined is
+       * ungrouped. The stack starts over from the top.
        */
-      setGroupBy(groupBy?: FeatureGroupBy) {
-        setConf(
-          self,
-          'groupBy',
-          carryGroupDomain(groupBy, self.groupBy) ?? null,
-        )
+      setFacet(facet?: { field: string; domain?: readonly string[] }) {
+        setConf(self, 'facetField', facet?.field ?? '')
+        setConf(self, 'facetDomain', [...(facet?.domain ?? [])])
         self.setScrollTop(0)
       },
 
@@ -1455,7 +1441,7 @@ export default function baseStateModelFactory(
        */
       get channelSpec(): ChannelSpec {
         return {
-          facet: facetOf(self.groupBy),
+          facet: facetOf(self.facet),
           color: colorOf(self.colorSettings),
           filter: filterOf(self.activeFilters()),
         }
@@ -1468,10 +1454,10 @@ export default function baseStateModelFactory(
        */
       get derivedColorScales(): ColorScale[] {
         const scale = self.colorEncoding
-        const { groupBy, hiddenGroupKeys } = self
+        const { facet, hiddenGroupKeys } = self
         const sectionOf =
-          groupBy && hiddenGroupKeys.size > 0
-            ? sectionIdsOf(self.laidOutDataMap, groupBy)
+          facet && hiddenGroupKeys.size > 0
+            ? sectionIdsOf(self.laidOutDataMap, facet)
             : undefined
         return scale
           ? derivedColorKey(
@@ -1484,21 +1470,22 @@ export default function baseStateModelFactory(
       },
       /**
        * #method
-       * The Group by dialog's choice as channels: the grouping, a color by
-       * its field when ticked (left alone while that field already paints),
-       * and no color when unticked over a color that was a grouping's own.
+       * The Group by dialog's choice of field as channels: the facet, keeping
+       * its domain while the field is the one already set, a color by the
+       * field when ticked (left alone while it already paints), and no color
+       * when unticked over a color that was the facet's own.
        */
       groupByChannelSpec(
-        groupBy: FeatureGroupBy | undefined,
+        field: string | undefined,
         colorByGroup: boolean,
       ): ChannelSpec {
         const { colorField } = self.colorSettings
-        const field = groupColorField(groupBy)
+        const current = facetOf(self.facet)
         const wasGroupColor =
-          isGroupColor(colorField, self.groupBy) ||
-          isGroupColor(colorField, groupBy)
+          colorField !== '' &&
+          (colorField === current?.field || colorField === field)
         return {
-          facet: facetOf(carryGroupDomain(groupBy, self.groupBy)),
+          facet: field === current?.field ? current : field ? { field } : null,
           ...(colorByGroup && field
             ? field === colorField
               ? {}
@@ -1534,7 +1521,7 @@ export default function baseStateModelFactory(
         const { sets, clears } = channelSpecChanges(spec, self.channelSpec)
         const changed = new Set([...sets, ...clears])
         if (changed.has('facet')) {
-          self.setGroupBy(spec.facet ? groupByOf(spec.facet) : undefined)
+          self.setFacet(spec.facet ?? undefined)
         }
         if (changed.has('color')) {
           if (spec.color && typeof spec.color !== 'string') {
@@ -1553,8 +1540,8 @@ export default function baseStateModelFactory(
        * #action
        * What the Group by dialog applies.
        */
-      applyGroupBy(groupBy: FeatureGroupBy | undefined, colorByGroup: boolean) {
-        self.applyChannelSpec(self.groupByChannelSpec(groupBy, colorByGroup))
+      applyGroupBy(field: string | undefined, colorByGroup: boolean) {
+        self.applyChannelSpec(self.groupByChannelSpec(field, colorByGroup))
       },
       /**
        * #action

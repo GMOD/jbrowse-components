@@ -24,9 +24,9 @@ export function collectRenderData(
   const ctx = {
     ...args,
     readGroupKey:
-      config.groupByAttribute === undefined
+      config.facetField === undefined
         ? undefined
-        : fieldReader(config.groupByAttribute, jexl),
+        : fieldReader(config.facetField, jexl),
   }
 
   for (const layout of layouts) {

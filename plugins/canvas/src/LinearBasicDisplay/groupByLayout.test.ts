@@ -6,7 +6,7 @@ import {
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { scaleLaidOutData } from './applyLayout.ts'
-import { featureGroupSections } from './groupBy.ts'
+import { featureGroupSections } from './facet.ts'
 import { computeLaidOutData } from './layout.ts'
 import { maxBottom } from './layoutQueries.ts'
 import { isPlacedRow } from './rowPlacement.ts'
@@ -67,7 +67,7 @@ const base: LayoutInputs = {
   reversedRegions: new Set<number>(),
   displayMode: 'normal',
   pinnedFeatureIds: new Set<string>(),
-  groupBy: { type: 'strand' },
+  facet: { field: 'strand', domain: [] },
 }
 
 function topsOf(out: ReadonlyMap<number, FeatureDataResult>) {
@@ -90,7 +90,7 @@ test('a hidden section leaves the pack and the stack closes over it', () => {
   const shown = computeLaidOutData(raw, base)
   const out = computeLaidOutData(raw, {
     ...base,
-    hiddenGroupKeys: new Set(['+']),
+    hiddenGroupKeys: new Set(['1']),
   })
   const tops = topsOf(out)
   expect(isPlacedRow(tops.get('f1')!)).toBe(false)
@@ -98,14 +98,12 @@ test('a hidden section leaves the pack and the stack closes over it', () => {
   expect(tops.get('r1')).toBe(GROUP_LABEL_HEIGHT)
   expect(maxBottom(out)).toBeLessThan(maxBottom(shown))
   expect(
-    featureGroupSections(out, base.groupBy!, GROUP_LABEL_HEIGHT).map(
-      s => s.key,
-    ),
-  ).toEqual(['-'])
+    featureGroupSections(out, base.facet!, GROUP_LABEL_HEIGHT).map(s => s.key),
+  ).toEqual(['-1'])
 })
 
 test('an attribute grouping sections by the stamped key, unvalued last', () => {
-  const groupBy = { type: 'attribute' as const, attribute: 'biotype' }
+  const facet = { field: 'biotype', domain: [] }
   const raw = new Map([
     [
       0,
@@ -116,18 +114,14 @@ test('an attribute grouping sections by the stamped key, unvalued last', () => {
       ]),
     ],
   ])
-  const out = computeLaidOutData(raw, { ...base, groupBy })
+  const out = computeLaidOutData(raw, { ...base, facet })
   expect(
-    featureGroupSections(out, groupBy, GROUP_LABEL_HEIGHT).map(s => s.label),
+    featureGroupSections(out, facet, GROUP_LABEL_HEIGHT).map(s => s.label),
   ).toEqual(['biotype: lncRNA', 'biotype: protein_coding', 'biotype: none'])
 })
 
 test('a domain stacks the sections it lists first, the rest sorted behind', () => {
-  const groupBy = {
-    type: 'attribute' as const,
-    attribute: 'subtrack',
-    domain: ['key5', 'key2', 'absent'],
-  }
+  const facet = { field: 'subtrack', domain: ['key5', 'key2', 'absent'] }
   const raw = new Map([
     [
       0,
@@ -140,9 +134,9 @@ test('a domain stacks the sections it lists first, the rest sorted behind', () =
       ]),
     ],
   ])
-  const out = computeLaidOutData(raw, { ...base, groupBy })
+  const out = computeLaidOutData(raw, { ...base, facet })
   expect(
-    featureGroupSections(out, groupBy, GROUP_LABEL_HEIGHT).map(s => s.key),
+    featureGroupSections(out, facet, GROUP_LABEL_HEIGHT).map(s => s.key),
   ).toEqual(['key5', 'key2', 'key1', 'key3', ''])
   const tops = topsOf(out)
   expect(tops.get('d')).toBeLessThan(tops.get('b')!)
@@ -150,7 +144,7 @@ test('a domain stacks the sections it lists first, the rest sorted behind', () =
 })
 
 test('past the cap the tail of values merges into one overflow section', () => {
-  const groupBy = { type: 'attribute' as const, attribute: 'id' }
+  const facet = { field: 'id', domain: [] }
   const n = MAX_GROUPS + 5
   const raw = new Map([
     [
@@ -163,8 +157,8 @@ test('past the cap the tail of values merges into one overflow section', () => {
       ),
     ],
   ])
-  const out = computeLaidOutData(raw, { ...base, groupBy })
-  const sections = featureGroupSections(out, groupBy, GROUP_LABEL_HEIGHT)
+  const out = computeLaidOutData(raw, { ...base, facet })
+  const sections = featureGroupSections(out, facet, GROUP_LABEL_HEIGHT)
   expect(sections).toHaveLength(MAX_GROUPS)
   expect(sections.at(-1)).toMatchObject({
     key: OVERFLOW_GROUP_KEY,
@@ -177,14 +171,10 @@ test('the fit scale squeezes the rows and leaves every chip row its height', () 
   const layout = computeLaidOutData(raw, base)
   const scale = 0.5
   const scaled = scaleLaidOutData(layout, scale, {
-    groupBy: base.groupBy!,
+    facet: base.facet!,
     chipPx: GROUP_LABEL_HEIGHT,
   })
-  const sections = featureGroupSections(
-    scaled,
-    base.groupBy!,
-    GROUP_LABEL_HEIGHT,
-  )
+  const sections = featureGroupSections(scaled, base.facet!, GROUP_LABEL_HEIGHT)
   const tops = topsOf(scaled)
   // first row sits one full chip below the top
   expect(tops.get('f1')).toBe(GROUP_LABEL_HEIGHT)

@@ -1,4 +1,4 @@
-import { setConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
@@ -45,39 +45,47 @@ test('grouping by strand stacks two labelled sections', () => {
   expect(display.groupSections).toEqual([])
   expect(display.showsGroupLabels).toBe(false)
 
-  display.setGroupBy({ type: 'strand' })
-  expect(display.groupBy).toEqual({ type: 'strand' })
-  expect(display.groupSections.map(s => [s.label, s.top])).toEqual([
-    ['Forward strand', 0],
-    ['Reverse strand', expect.any(Number)],
+  display.setFacet({ field: 'strand' })
+  expect(display.facet).toEqual({ field: 'strand', domain: [] })
+  expect(display.groupSections.map(s => [s.key, s.label, s.top])).toEqual([
+    ['1', 'Forward strand', 0],
+    ['-1', 'Reverse strand', expect.any(Number)],
   ])
   expect(display.groupSections[1]!.top).toBeGreaterThan(GROUP_LABEL_HEIGHT)
   expect(display.showsGroupLabels).toBe(true)
 
-  display.setGroupBy(undefined)
+  display.setFacet(undefined)
   expect(display.groupSections).toEqual([])
+})
+
+test('a strand domain reorders the strands', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  display.setFacet({ field: 'strand', domain: ['-1'] })
+  expect(display.groupSections.map(s => s.key)).toEqual(['-1', '1'])
 })
 
 test('an attribute grouping names its sections by value', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+  display.setFacet({ field: 'biotype' })
   expect(display.groupSections.map(s => s.label)).toEqual([
     'biotype: lncRNA',
     'biotype: protein_coding',
   ])
-  expect(display.rpcProps().displayConfig.groupByAttribute).toBe('biotype')
+  expect(display.rpcProps().displayConfig.facetField).toBe('biotype')
 })
 
 test('hiding a section is per key and drops with the grouping', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
 
-  display.hideGroup('+')
-  expect(display.groupSections.map(s => s.key)).toEqual(['-'])
+  display.hideGroup('1')
+  expect(display.groupSections.map(s => s.key)).toEqual(['-1'])
   expect(display.truncatedFeatureCount).toBe(0)
   const show = display
     .trackMenuItems()
@@ -88,7 +96,7 @@ test('hiding a section is per key and drops with the grouping', () => {
     ),
   ).toContain('Show 1 hidden group')
 
-  display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+  display.setFacet({ field: 'biotype' })
   expect(display.hiddenGroups.size).toBe(0)
   expect(display.groupSections).toHaveLength(2)
 })
@@ -97,7 +105,7 @@ test('a grouped track offsets its track label before any data lands', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   expect(display.prefersOffset).toBe(false)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
   expect(display.groupSections).toEqual([])
   expect(display.prefersOffset).toBe(true)
 })
@@ -105,20 +113,20 @@ test('a grouped track offsets its track label before any data lands', () => {
 test('grouping with its color writes the grouping color, and unticking takes it back', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  display.applyGroupBy({ type: 'strand' }, true)
+  display.applyGroupBy('strand', true)
   expect(display.colorByMode).toBe('strand')
 
-  display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, true)
+  display.applyGroupBy('biotype', true)
   expect(display.colorByAttribute).toBe('biotype')
 
-  display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, false)
+  display.applyGroupBy('biotype', false)
   expect(display.colorByMode).toBe('default')
 
   display.setColorScale({ field: 'biotype', domain: ['b', 'a'] })
-  display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, false)
+  display.applyGroupBy('biotype', false)
   expect(display.colorByMode).toBe('default')
 
-  display.applyGroupBy({ type: 'strand' }, true)
+  display.applyGroupBy('strand', true)
   display.applyGroupBy(undefined, false)
   expect(display.colorByMode).toBe('default')
 })
@@ -127,7 +135,7 @@ test('a color picked by hand survives regrouping without the color', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setFeatureColor('purple')
-  display.applyGroupBy({ type: 'strand' }, false)
+  display.applyGroupBy('strand', false)
   display.applyGroupBy(undefined, false)
   expect(display.featureColor).toBe('purple')
 })
@@ -136,13 +144,9 @@ test('reordering the sections keeps the hidden ones hidden', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+  display.setFacet({ field: 'biotype' })
   display.hideGroup('lncRNA')
-  display.setGroupBy({
-    type: 'attribute',
-    attribute: 'biotype',
-    domain: ['protein_coding'],
-  })
+  display.setFacet({ field: 'biotype', domain: ['protein_coding'] })
   expect(display.hiddenGroups.size).toBe(1)
   expect(display.groupSections.map(s => s.key)).toEqual(['protein_coding'])
 })
@@ -154,7 +158,7 @@ test('the Sections menu moves a section and writes the drawn order as the domain
   expect(
     display.trackMenuItems().find(i => 'label' in i && i.label === 'Sections'),
   ).toBeUndefined()
-  display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+  display.setFacet({ field: 'biotype' })
   const rows = () => {
     const item = display
       .trackMenuItems()
@@ -171,51 +175,23 @@ test('the Sections menu moves a section and writes the drawn order as the domain
   const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
   const moveDown = resolveSubMenu(first)[1] as { onClick: () => void }
   moveDown.onClick()
-  expect(display.groupBy?.domain).toEqual(['protein_coding', 'lncRNA'])
+  expect(getConf(display, 'facetDomain')).toEqual(['protein_coding', 'lncRNA'])
   expect(display.groupSections.map(s => s.key)).toEqual([
     'protein_coding',
     'lncRNA',
   ])
   const reset = rows()[3] as { onClick: () => void }
   reset.onClick()
-  expect(display.groupBy).toEqual({ type: 'attribute', attribute: 'biotype' })
+  expect(display.channelSpec.facet).toEqual({ field: 'biotype' })
 })
 
-test('re-picking the same attribute from the dialog keeps a curated domain', () => {
+test('re-picking the same field from the dialog keeps a curated domain', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  setConf(display, 'groupBy', {
-    type: 'attribute',
-    attribute: 'biotype',
-    domain: ['lncRNA'],
-  })
-  display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, true)
-  expect(display.groupBy?.domain).toEqual(['lncRNA'])
-  display.applyGroupBy({ type: 'attribute', attribute: 'gene_type' }, true)
-  expect(display.groupBy?.domain).toBeUndefined()
-  display.setGroupBy({ type: 'strand', domain: ['-'] })
-  display.setGroupBy({ type: 'strand', domain: [] })
-  expect(display.groupBy).toEqual({ type: 'strand' })
-})
-
-test('a domain in the slot survives normalization, its entries as strings', () => {
-  const { createDisplay } = createTestEnvironment()
-  const { display } = createDisplay()
-  setConf(display, 'groupBy', {
-    type: 'attribute',
-    attribute: 'bin',
-    domain: [10, 2],
-  })
-  expect(display.groupBy).toEqual({
-    type: 'attribute',
-    attribute: 'bin',
-    domain: ['10', '2'],
-  })
-})
-
-test('an unrecognized grouping in the slot reads as ungrouped', () => {
-  const { createDisplay } = createTestEnvironment()
-  const { display } = createDisplay()
-  setConf(display, 'groupBy', { type: 'flavour' })
-  expect(display.groupBy).toBeUndefined()
+  setConf(display, 'facetField', 'biotype')
+  setConf(display, 'facetDomain', ['lncRNA'])
+  display.applyGroupBy('biotype', true)
+  expect(display.facet?.domain).toEqual(['lncRNA'])
+  display.applyGroupBy('gene_type', true)
+  expect(display.facet).toEqual({ field: 'gene_type', domain: [] })
 })

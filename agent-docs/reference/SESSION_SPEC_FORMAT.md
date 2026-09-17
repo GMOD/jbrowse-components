@@ -135,16 +135,18 @@ third is exactly the set a grammar would call encoding and scale: `height`,
 the census shows authors using them as shared.
 
 `groupBy` now names one mechanism. It is an object naming a partition on the
-feature, alignments and LGV synteny displays, and every value takes its own
-stacked section with its own chips, its own collapse and its own `domain`. The
-multi-sample variant displays' row banding used to answer to the same key while
-doing something else — sorting the rows by a sample-metadata column, with no
-sections, no chips and no domain — and it is spelled `facet: { field, domain }`
-instead, the mark display's word for a row partition (`maybeApplyFacet` and
-`sortSourcesByAttribute` in
+alignments and LGV synteny displays, and every value takes its own stacked
+section with its own chips, its own collapse and its own `domain`. The feature
+display partitions on a field, so it spells the same stack as two flat
+settings, `facetField` and `facetDomain` (GRAMMAR_OF_GRAPHICS.md, "The facet
+stage"). The multi-sample variant displays' row banding used to answer to
+`groupBy` while doing something else — sorting the rows by a sample-metadata
+column, with no sections, no chips and no domain — and it is spelled
+`facet: { field, domain }` instead, the mark display's word for a row partition
+(`maybeApplyFacet` and `sortSourcesByAttribute` in
 `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). The census counts
 the key as the corpus spelled it when the record was written, so the `groupBy`
-row above still holds the variant displays' entries.
+row above still holds the feature and variant displays' entries.
 
 **The long tail names mechanisms, not aesthetics.** The keys used on one
 display type — `readConnections`, `showSoftClipping`, `rowIdentityMode`,

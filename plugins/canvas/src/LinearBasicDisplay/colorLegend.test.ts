@@ -141,7 +141,7 @@ describe('derived color key', () => {
 
   it('leaves out a value only a hidden section painted', () => {
     const display = coloredDisplay({ field: 'biotype' })
-    display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+    display.setFacet({ field: 'biotype' })
     display.hideGroup('lncRNA')
     expect(keyValues(display)).toEqual(['protein_coding', 'snoRNA'])
   })

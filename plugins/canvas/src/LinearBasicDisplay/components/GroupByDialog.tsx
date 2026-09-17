@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
+import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 import {
   Button,
   FormControlLabel,
@@ -11,23 +12,21 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { FEATURE_GROUP_BY_DIMENSIONS, isGroupColor } from '../groupBy.ts'
-
-import type { FeatureGroupBy, FeatureGroupByType } from '../groupBy.ts'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 
-const CHOICES = ['none', 'strand', 'attribute'] as const satisfies readonly (
-  | FeatureGroupByType
-  | 'none'
-)[]
+const CHOICES = ['none', 'strand', 'attribute'] as const
 
 type Choice = (typeof CHOICES)[number]
 
-function groupByOf(choice: Choice, attribute: string) {
+function choiceOf(field: string | undefined): Choice {
+  return !field ? 'none' : field === STRAND_FIELD ? 'strand' : 'attribute'
+}
+
+function fieldOf(choice: Choice, attribute: string) {
   return choice === 'strand'
-    ? ({ type: 'strand' } as const)
+    ? STRAND_FIELD
     : choice === 'attribute' && attribute
-      ? ({ type: 'attribute', attribute } as const)
+      ? attribute
       : undefined
 }
 
@@ -38,10 +37,10 @@ const GroupByDialog = observer(function GroupByDialog({
   colorField,
 }: {
   model: {
-    groupBy: FeatureGroupBy | undefined
-    applyGroupBy: (groupBy: FeatureGroupBy | undefined, color: boolean) => void
+    facet: { field: string } | undefined
+    applyGroupBy: (field: string | undefined, color: boolean) => void
     groupByChannelSpec: (
-      groupBy: FeatureGroupBy | undefined,
+      field: string | undefined,
       color: boolean,
     ) => ChannelSpec
     openChannelSpecDialog: (seed?: ChannelSpec) => void
@@ -50,31 +49,34 @@ const GroupByDialog = observer(function GroupByDialog({
   color: string | undefined
   colorField: string
 }) {
-  const [choice, setChoice] = useState<Choice>(model.groupBy?.type ?? 'none')
-  const [attribute, setAttribute] = useState(model.groupBy?.attribute ?? '')
+  const current = model.facet?.field
+  const [choice, setChoice] = useState(choiceOf(current))
+  const [attribute, setAttribute] = useState(
+    current === STRAND_FIELD ? '' : (current ?? ''),
+  )
   const [colorChoice, setColorChoice] = useState<boolean>()
-  const groupBy = groupByOf(choice, attribute.trim())
+  const field = fieldOf(choice, attribute.trim())
   const alsoColor =
     colorChoice ??
     ((color === undefined && colorField === '') ||
-      isGroupColor(colorField, groupBy ?? model.groupBy))
+      (colorField !== '' && colorField === (field ?? current)))
 
   return (
     <SubmitDialog
       open
       title="Group by"
       submitText="Apply"
-      submitDisabled={choice !== 'none' && !groupBy}
+      submitDisabled={choice !== 'none' && !field}
       onCancel={handleClose}
       onSubmit={() => {
-        model.applyGroupBy(groupBy, alsoColor)
+        model.applyGroupBy(field, alsoColor)
         handleClose()
       }}
       actions={
         <Button
           onClick={() => {
             model.openChannelSpecDialog(
-              model.groupByChannelSpec(groupBy, alsoColor),
+              model.groupByChannelSpec(field, alsoColor),
             )
             handleClose()
           }}
@@ -94,14 +96,12 @@ const GroupByDialog = observer(function GroupByDialog({
         }}
       >
         <FormControlLabel value="none" control={<Radio />} label="None" />
-        {(['strand', 'attribute'] as const).map(type => (
-          <FormControlLabel
-            key={type}
-            value={type}
-            control={<Radio />}
-            label={FEATURE_GROUP_BY_DIMENSIONS[type].label}
-          />
-        ))}
+        <FormControlLabel value="strand" control={<Radio />} label="Strand" />
+        <FormControlLabel
+          value="attribute"
+          control={<Radio />}
+          label="Attribute"
+        />
       </RadioGroup>
       {choice === 'attribute' ? (
         <TextField

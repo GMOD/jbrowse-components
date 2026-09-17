@@ -7,7 +7,7 @@ import {
   cloneMutableFields,
 } from './applyLayout.ts'
 import { pileupFadeIds } from './densityCollapse.ts'
-import { sectionIdsOf } from './groupBy.ts'
+import { facetOrder, sectionIdsOf } from './facet.ts'
 import { applyIsoformGapFloor, planIsoformGapFloor } from './isoformGapFloor.ts'
 import { applyIsoformTrim } from './isoformTrim.ts'
 import { displayModeMetrics } from './layoutInputs.ts'
@@ -20,7 +20,7 @@ import type {
   FeatureDataResult,
   FlatbushItem,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FeatureGroupBy } from './groupBy.ts'
+import type { FeatureFacet } from './facet.ts'
 import type { IsoformGapSpread } from './isoformGapFloor.ts'
 import type { IsoformBadge, IsoformTrim } from './isoformTrim.ts'
 import type {
@@ -45,20 +45,21 @@ export function computeLaidOutData(
 
 // The density band flattens every record onto row 0 to share pixels, and a
 // section split there would stack two bands nobody reserved.
-function effectiveGroupBy(
-  inputs: Pick<LayoutInputs, 'groupBy' | 'flattenRows'>,
-): FeatureGroupBy | undefined {
-  return inputs.flattenRows ? undefined : inputs.groupBy
+function effectiveFacet(
+  inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>,
+): FeatureFacet | undefined {
+  return inputs.flattenRows ? undefined : inputs.facet
 }
 
 // The row above each section's first row, spent only while the sections draw
 // chips; ungrouped is the one-section case at 0.
-function sectionChipPx(inputs: Pick<LayoutInputs, 'groupBy' | 'flattenRows'>) {
-  return effectiveGroupBy(inputs) ? GROUP_LABEL_HEIGHT : 0
+function sectionChipPx(inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>) {
+  return effectiveFacet(inputs) ? GROUP_LABEL_HEIGHT : 0
 }
 
-function sectionOrder(inputs: Pick<LayoutInputs, 'groupBy' | 'flattenRows'>) {
-  return groupKeyComparator(effectiveGroupBy(inputs)?.domain)
+function sectionOrder(inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>) {
+  const facet = effectiveFacet(inputs)
+  return groupKeyComparator(facet && facetOrder(facet))
 }
 
 // Which section every item stacks into, capped over the whole display, or
@@ -67,8 +68,8 @@ function sectionAssignment(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LabelRoomFactorFreeInputs,
 ) {
-  const groupBy = effectiveGroupBy(inputs)
-  return groupBy ? sectionIdsOf(rpcDataMap, groupBy) : undefined
+  const facet = effectiveFacet(inputs)
+  return facet ? sectionIdsOf(rpcDataMap, facet) : undefined
 }
 
 interface SectionPrep {
@@ -142,7 +143,7 @@ interface PackedSection extends SectionPrep {
 // its tallest ref group, and the chip row sits above its first row.
 function stackSections(
   refs: readonly PackedSection[][],
-  inputs: Pick<LayoutInputs, 'groupBy' | 'flattenRows'>,
+  inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>,
 ) {
   const chipPx = sectionChipPx(inputs)
   const heights = new Map<string, number>()
@@ -425,7 +426,7 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<
   labelRoomFactor: true,
   maxIsoformsPerGene: true,
   expandedGeneIds: true,
-  groupBy: true,
+  facet: true,
   hiddenGroupKeys: true,
   flattenRows: true,
   dropBelowLabelRows: true,
@@ -497,7 +498,7 @@ export function createIncrementalLayout({
     // Unlike `groupRawByRef`, an empty region still needs a cache entry, or
     // its group re-packs every time it is present.
     const groups = new Map<string, Map<number, LayoutRegionData>>()
-    const cacheKey = effectiveGroupBy(inputs)
+    const cacheKey = effectiveFacet(inputs)
       ? () => 'grouped'
       : (raw: LayoutRegionData) => raw.regionKey
     for (const [idx, raw] of rpcDataMap) {

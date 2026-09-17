@@ -373,7 +373,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
       assembly: 'hg38',
       loc: GROUPING_WINDOW,
       trackLabels: 'offset',
-      tracks: [{ ...GROUPING_TRACK, groupBy: { type: 'strand' }, height: 310 }],
+      tracks: [{ ...GROUPING_TRACK, facetField: 'strand', height: 310 }],
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,

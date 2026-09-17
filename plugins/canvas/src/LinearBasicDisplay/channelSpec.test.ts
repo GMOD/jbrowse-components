@@ -25,9 +25,8 @@ test('facet, color and filter land on the settings the menus write', () => {
     color: { field: 'subtrack', palette: ['red'] },
     filter: ["feature.type == 'gene'"],
   })
-  expect(d.groupBy).toEqual({
-    type: 'attribute',
-    attribute: 'subtrack',
+  expect(d.facet).toEqual({
+    field: 'subtrack',
     domain: ['key5', 'key2', 'key3'],
   })
   expect(d.colorSettings).toEqual({
@@ -48,7 +47,7 @@ test('facet, color and filter land on the settings the menus write', () => {
 test('strand is a field on both channels, painting its own colors', () => {
   const d = display()
   d.applyChannelSpec({ facet: { field: 'strand' }, color: { field: 'strand' } })
-  expect(d.groupBy).toMatchObject({ type: 'strand' })
+  expect(d.facet).toEqual({ field: 'strand', domain: [] })
   expect(d.colorByMode).toBe('strand')
   expect(d.colorEncoding?.palette).toEqual([
     'tomato',
@@ -91,7 +90,7 @@ test('a channel the spec leaves out is left alone, and null clears one', () => {
   const d = display()
   d.applyChannelSpec({ facet: { field: 'strand' }, color: { field: 'type' } })
   d.applyChannelSpec({ color: null })
-  expect(d.groupBy).toMatchObject({ type: 'strand' })
+  expect(d.facet).toMatchObject({ field: 'strand' })
   expect(d.colorSettings).toMatchObject({ color: undefined, colorField: '' })
   expect(d.channelSpec.color).toBeNull()
 })
@@ -160,7 +159,7 @@ describe('the Group by dialog applies a channel spec', () => {
       facet: { field: 'biotype' },
       color: { field: 'biotype', palette: ['red', 'blue'] },
     })
-    d.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, true)
+    d.applyGroupBy('biotype', true)
     expect(d.channelSpec.color).toEqual({
       field: 'biotype',
       palette: ['red', 'blue'],
@@ -171,9 +170,9 @@ describe('the Group by dialog applies a channel spec', () => {
     const viaDialog = display()
     const viaJson = display()
     for (const d of [viaDialog, viaJson]) {
-      d.setGroupBy({ type: 'attribute', attribute: 'biotype', domain: ['b'] })
+      d.setFacet({ field: 'biotype', domain: ['b'] })
     }
-    viaDialog.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, true)
+    viaDialog.applyGroupBy('biotype', true)
     viaJson.applyChannelSpec({ color: { field: 'biotype' } })
     expect(viaDialog.channelSpec).toEqual(viaJson.channelSpec)
     expect(viaJson.channelSpec.color).toEqual({ field: 'biotype' })
@@ -181,7 +180,7 @@ describe('the Group by dialog applies a channel spec', () => {
 
   it("clears a color that was the grouping's own when unticked, and leaves any other", () => {
     const d = display()
-    d.applyGroupBy({ type: 'strand' }, true)
+    d.applyGroupBy('strand', true)
     expect(d.groupByChannelSpec(undefined, false)).toEqual({
       facet: null,
       color: null,

@@ -8,7 +8,7 @@ import {
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { scaleLaidOutData } from './applyLayout.ts'
-import { featureGroupSections } from './groupBy.ts'
+import { featureGroupSections } from './facet.ts'
 import {
   computeLaidOutData,
   createContentHeightProbe,
@@ -1992,7 +1992,7 @@ describe('group by strand', () => {
     reversedRegions: new Set<number>(),
     displayMode: 'normal' as const,
     pinnedFeatureIds: new Set<string>(),
-    groupBy: { type: 'strand' as const },
+    facet: { field: 'strand', domain: [] },
   }
 
   test('forward features stack above reverse ones, each section under its chip row', () => {
@@ -2011,13 +2011,13 @@ describe('group by strand', () => {
     expect(tops.get('rev')!).toBeGreaterThan(tops.get('fwd')!)
     expect(tops.get('none')!).toBeGreaterThan(tops.get('rev')!)
     expect(
-      featureGroupSections(out, groupedInputs.groupBy, GROUP_LABEL_HEIGHT).map(
+      featureGroupSections(out, groupedInputs.facet, GROUP_LABEL_HEIGHT).map(
         s => [s.key, s.top],
       ),
     ).toEqual([
-      ['+', 0],
-      ['-', tops.get('rev')! - GROUP_LABEL_HEIGHT],
-      ['', tops.get('none')! - GROUP_LABEL_HEIGHT],
+      ['1', 0],
+      ['-1', tops.get('rev')! - GROUP_LABEL_HEIGHT],
+      ['0', tops.get('none')! - GROUP_LABEL_HEIGHT],
     ])
   })
 
@@ -2069,7 +2069,7 @@ describe('group by strand', () => {
     })
     const out = computeLaidOutData(new Map([[0, data]]), {
       ...groupedInputs,
-      groupBy: undefined,
+      facet: undefined,
     })
     expect(out.get(0)!.flatbushItems[0]!.topPx).toBe(0)
   })

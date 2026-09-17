@@ -16,7 +16,7 @@ import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
-import type { FeatureGroupBy } from './groupBy.ts'
+import type { FeatureFacet } from './facet.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
@@ -75,9 +75,9 @@ interface FeatureHeightSelf extends HeightModeMenuModel {
 
 interface GroupByMenuSelf {
   openGroupByDialog: () => void
-  groupBy: FeatureGroupBy | undefined
+  facet: FeatureFacet | undefined
   groupSections: readonly { key: string; label: string }[]
-  setGroupBy: (groupBy?: FeatureGroupBy) => void
+  setFacet: (facet?: FeatureFacet) => void
   hideGroup: (key: string) => void
 }
 
@@ -90,10 +90,10 @@ interface TrackMenuSelf extends GroupByMenuSelf {
   openFilterDialog: () => void
 }
 
-// The Sections submenu is the runtime half of `groupBy.domain`: a move
-// writes the grouping back with the drawn order as its domain.
+// The Sections submenu is the runtime half of `facetDomain`: a move writes
+// the drawn order there.
 export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
-  const { groupBy } = self
+  const { facet } = self
   return [
     {
       label: 'Group by...',
@@ -102,13 +102,13 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
         self.openGroupByDialog()
       },
     },
-    ...(groupBy
+    ...(facet
       ? sectionOrderMenuItems(
           {
             sections: self.groupSections,
-            domain: groupBy.domain ?? [],
+            domain: facet.domain,
             setDomain: domain => {
-              self.setGroupBy({ ...groupBy, domain })
+              self.setFacet({ field: facet.field, domain })
             },
             hideGroup: self.hideGroup,
           },

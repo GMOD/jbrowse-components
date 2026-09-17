@@ -6,7 +6,7 @@ import {
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FeatureGroupBy } from './groupBy.ts'
+import type { FeatureFacet } from './facet.ts'
 
 // A leaf module: the pack, the probes and the memo all take these, so it can
 // depend on none of them.
@@ -41,9 +41,9 @@ export interface LayoutInputs {
   labelRoomFactor?: number
   maxIsoformsPerGene?: number
   expandedGeneIds?: ReadonlySet<string>
-  // Packs one section per group key, stacked in `compareGroupKeys` order with
-  // a chip row above each. Read off the hit items, so no refetch.
-  groupBy?: FeatureGroupBy
+  // Packs one section per facet value, stacked in `facetOrder` with a chip row
+  // above each. Read off the hit items, so no refetch.
+  facet?: FeatureFacet
   // A hidden section's features leave the pack. Keys mean nothing outside the
   // grouping that issued them, so the set is dropped when it changes.
   hiddenGroupKeys?: ReadonlySet<string>

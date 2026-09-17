@@ -242,7 +242,7 @@ The seams, named honestly:
 A row facet — partition the features on a categorical field, stack one section
 per value, name each with a chip — is answered three times over one set of
 shared pieces. The feature display's "Group by..."
-(`plugins/canvas/src/LinearBasicDisplay/groupBy.ts`) and the alignments
+(`plugins/canvas/src/LinearBasicDisplay/facet.ts`) and the alignments
 display's (`plugins/alignments/src/shared/groupFeatures.ts`) are two; the mark
 display's declared `facet: { field }` is the third, and the only one the
 grammar spells. There the worker offsets each group's rows by the groups above
@@ -257,8 +257,8 @@ The shared pieces are the key order and the `MAX_GROUPS` cap
 a facet channel's optional `domain` lists the sections that stack first, the
 rest follow sorted (every value the data holds, with no domain), and the cap
 counts in that order, so the multi-row display's `domain` slot, the multiway
-synteny display's `domain` session prop, the feature and alignments displays'
-`groupBy.domain`, the mark's `facet.domain` and the colour and glyph channels'
+synteny display's `domain` session prop, the feature display's `facetDomain`,
+the alignments display's `groupBy.domain`, the mark's `facet.domain` and the colour and glyph channels'
 legend order are one word and one rule (`groupKeyComparator`); the four
 tree-sidebar displays (MAF, multi-wiggle, the two multi-sample variant ones and
 multi-row features) share that word as a `domain` row-order slot, read as
@@ -284,24 +284,36 @@ synteny views' `colorDomain` prop — set it where the colours are assigned, so
 the row and the paint agree. The mark display's is `encoding.color.domain`,
 documented in `website/docs/config_guides/mark_display.md`.
 
-The feature display also takes a facet written in the mark display's words,
-from **Edit as JSON...** in its Group by and Color by attribute dialogs:
+The feature display's facet is two flat settings, `facetField` and
+`facetDomain`, and **Edit as JSON...** in its Group by and Color by attribute
+dialogs reads and writes them in the mark display's words:
 `{ facet: { field, domain }, color: "css" | { field, domain, palette }, filter }`,
 parsed by `@jbrowse/display-kit/channelSpec` and written by `applyChannelSpec`
-onto `groupBy`, the flat `colorField`/`colorDomain`/`colorPalette` slots or
-`color`, and the filter override, so nothing stores the spec. The Group by
-dialog applies a spec too (`groupByChannelSpec`). The worker paints a color by a
+onto `facetField`/`facetDomain`, the flat `colorField`/`colorDomain`/`colorPalette`
+slots or `color`, and the filter override. The spec's facet is the stored pair,
+so nothing translates it and nothing stores the spec. The Group by dialog
+applies a spec too (`groupByChannelSpec`). `strand` is a field on both
+channels: its sections are the raw values `1`, `-1` and `0`, forward first
+while `facetDomain` names no order. One rule, `facetSectionLabel`, names a
+strand section and chips any other value `field: value`, on the canvas and mark
+displays alike. Only a facet on another field has the worker stamp a key on
+each feature, so a strand facet never refetches. The worker paints a color by a
 field through `categoricalColorScale` with no jexl, reading a part's value off
 its transcript (the emitter passes the level), and records each value it
 painted with the section its record files under, which `derivedColorKey` turns
-into the key less the hidden sections. Three proposals were declined in review:
-a `facet` config key beside `groupBy` (one setting spelled twice, and
-alignments' dimensions are not fields); filter shorthands such as
+into the key less the hidden sections.
+
+The facet replaced a `frozen` `groupBy` slot,
+`{ type: 'strand' | 'attribute', attribute, domain }`, that the spec translated
+to and from; alignments keeps its `groupBy`, whose dimensions are not fields.
+Flat, because `getConf` name-checks and types a top-level slot: the frozen one
+read as `any` and needed a normalizer to stop a malformed value, and a nested
+slot read is a `string[]` path `getConf` neither name-checks nor types. Two
+proposals were declined in review: filter shorthands such as
 `{ field, oneOf }` (jexl is the filter language, and reading structure back out
 of jexl is the fragile half); and the color as a `{ value, field, scale,
-domain, palette }` sub-schema shaped like the mark display's, because a nested
-slot read is a `string[]` path `getConf` neither name-checks nor types and the
-worker walked it per box, where the flat slots read through `getConf` checked.
+domain, palette }` sub-schema shaped like the mark display's, for the same
+nested read, which the worker also walked per box.
 
 The multi-row display's `partitionField` is the same partition with one fixed
 row per value and no chip. What the mark display does not take is the

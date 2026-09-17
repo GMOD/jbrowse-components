@@ -463,7 +463,7 @@ export const uiVideos: VideoSpec[] = [
     tailMs: 4000,
   },
 
-  // The runtime half of `groupBy.domain`: a grouping picked from the dialog,
+  // The runtime half of `facetDomain`: a grouping picked from the dialog,
   // then one section moved from the Sections submenu, which writes the drawn
   // order back as the domain.
   {

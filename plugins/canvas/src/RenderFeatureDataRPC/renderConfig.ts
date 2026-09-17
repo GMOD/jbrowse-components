@@ -52,9 +52,9 @@ export interface DisplayConfig {
   // round-trip. Track height is not sent either — the fit ladder trims isoforms
   // where it can see the packing.
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
-  // The attribute an `attribute` grouping keys on, stamped per feature as
-  // `groupKey`; the strand dimension needs no stamp and so never refetches.
-  groupByAttribute?: string
+  // The `facetField` each feature's `groupKey` is stamped from; absent for a
+  // strand facet, which the stamped strand answers without a refetch.
+  facetField?: string
   subfeatureLabels: SubfeatureLabels
   transcriptTypes: string[]
   canonicalTranscriptField: string
@@ -94,7 +94,7 @@ export interface DisplayConfig {
 // `zoomFetchKey` rather than invalidating settings.
 export type SettingsDisplayConfig = Omit<
   DisplayConfig,
-  'geneGlyphMode' | 'groupByAttribute'
+  'geneGlyphMode' | 'facetField'
 >
 
 // A `Record<keyof SettingsDisplayConfig, true>` is exhaustive in both

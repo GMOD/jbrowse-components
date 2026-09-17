@@ -4,15 +4,9 @@ import { fireEvent, render } from '@testing-library/react'
 
 import GroupByDialog from './GroupByDialog.tsx'
 
-import type { FeatureGroupBy } from '../groupBy.ts'
-
 const SPEC = { facet: null }
 
-function setup(
-  groupBy: FeatureGroupBy | undefined,
-  color?: string,
-  colorField = '',
-) {
+function setup(field: string | undefined, color?: string, colorField = '') {
   const applyGroupBy = jest.fn()
   const groupByChannelSpec = jest.fn(() => SPEC)
   const openChannelSpecDialog = jest.fn()
@@ -21,7 +15,7 @@ function setup(
     <ThemeProvider theme={createJBrowseTheme()}>
       <GroupByDialog
         model={{
-          groupBy,
+          facet: field === undefined ? undefined : { field },
           applyGroupBy,
           groupByChannelSpec,
           openChannelSpecDialog,
@@ -60,10 +54,7 @@ test('Edit as JSON... hands over the unapplied choice as a spec and applies noth
     target: { value: 'gene_biotype' },
   })
   fireEvent.click(getByText('Edit as JSON...'))
-  expect(groupByChannelSpec).toHaveBeenCalledWith(
-    { type: 'attribute', attribute: 'gene_biotype' },
-    true,
-  )
+  expect(groupByChannelSpec).toHaveBeenCalledWith('gene_biotype', true)
   expect(openChannelSpecDialog).toHaveBeenCalledWith(SPEC)
   expect(handleClose).toHaveBeenCalled()
   expect(applyGroupBy).not.toHaveBeenCalled()
@@ -76,7 +67,7 @@ test('picking strand over the default color ticks its color and applies both', (
   fireEvent.click(getByLabelText('Strand'))
   expect(ticked()).toBe(true)
   fireEvent.click(getByText('Apply'))
-  expect(applyGroupBy).toHaveBeenCalledWith({ type: 'strand' }, true)
+  expect(applyGroupBy).toHaveBeenCalledWith('strand', true)
 })
 
 test('a color picked by hand leaves the box unticked', () => {
@@ -86,7 +77,7 @@ test('a color picked by hand leaves the box unticked', () => {
 })
 
 test('reopening over a track colored by its grouping keeps the box ticked', () => {
-  const { ticked } = setup({ type: 'strand' }, undefined, 'strand')
+  const { ticked } = setup('strand', undefined, 'strand')
   expect(ticked()).toBe(true)
 })
 
@@ -99,8 +90,13 @@ test('an attribute grouping waits for a name, and unticking applies no color', (
   })
   fireEvent.click(checkbox()!)
   fireEvent.click(getByText('Apply'))
-  expect(applyGroupBy).toHaveBeenCalledWith(
-    { type: 'attribute', attribute: 'biotype' },
-    false,
+  expect(applyGroupBy).toHaveBeenCalledWith('biotype', false)
+})
+
+test('reopening over an attribute facet shows its field', () => {
+  const { getByLabelText, getByTestId } = setup('gene_biotype')
+  expect((getByLabelText('Attribute') as HTMLInputElement).checked).toBe(true)
+  expect((getByTestId('group-by-attribute') as HTMLInputElement).value).toBe(
+    'gene_biotype',
   )
 })

@@ -1,7 +1,7 @@
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
 import { observer } from 'mobx-react'
 
-import type { FeatureGroupSection } from '../groupBy.ts'
+import type { FeatureGroupSection } from '../facet.ts'
 
 export interface GroupLabelsModel {
   showsGroupLabels: boolean

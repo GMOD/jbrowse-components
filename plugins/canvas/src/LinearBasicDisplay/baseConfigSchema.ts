@@ -188,21 +188,27 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * In-track stacked grouping: `{ type: "strand" }` packs forward-strand
-       * features into one labelled section above the reverse-strand ones,
-       * with unstranded features last; `{ type: "attribute", attribute:
-       * "biotype" }` packs one section per value of a feature attribute. An
-       * optional `domain` on either is the section order: the values it
-       * lists stack first, in that order, and the rest follow sorted; left
-       * off, the sections are every value the data holds, sorted. `null`
-       * (the default) is ungrouped.
+       * The feature field each value of which packs its own labelled section
+       * of the track: a field name, a dotted path into a structured field
+       * (`INFO.SVTYPE`), a `jexl:` expression, or `strand`. A feature with
+       * no value stacks last, under `field: none`. Empty is ungrouped.
        */
-      groupBy: {
-        type: 'frozen',
-        defaultValue: null,
+      facetField: {
+        type: 'string',
+        defaultValue: '',
         description:
-          'In-track stacked grouping, e.g. `{ type: "strand" }` to pack each strand into its own labelled section, or `{ type: "attribute", attribute: "biotype" }` for one section per attribute value, sorted; an optional `domain: ["protein_coding", "lncRNA"]` stacks the listed values first, in that order (null = ungrouped)',
-        advanced: true,
+          'feature field (or jexl expression) to group by, one labelled section per value; `strand` for one per strand',
+      },
+      /**
+       * #slot
+       * The `facetField` values whose sections stack first, in order; the
+       * rest follow sorted. Empty stacks every section sorted, and a `strand`
+       * facet forward, reverse, then unstranded (`1`, `-1`, `0`).
+       */
+      facetDomain: {
+        type: 'stringArray',
+        defaultValue: [],
+        description: 'facetField values whose sections stack first, in order',
       },
       /**
        * #slot

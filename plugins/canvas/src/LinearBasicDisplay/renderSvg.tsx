@@ -24,7 +24,7 @@ import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { DensityBandLayer } from '../shared/densityBand.ts'
-import type { FeatureGroupSection } from './groupBy.ts'
+import type { FeatureGroupSection } from './facet.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'

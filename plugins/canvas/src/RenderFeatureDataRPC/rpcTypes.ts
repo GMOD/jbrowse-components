@@ -241,8 +241,8 @@ export interface FlatbushItem extends HitItemBase {
   tooltip: string
   name?: string
   strand?: number
-  // The feature's value of `groupByAttribute`, '' when it carries none;
-  // absent unless an attribute grouping asked for it.
+  // The feature's value of `facetField`, '' when it carries none; absent
+  // unless a facet other than strand asked for it.
   groupKey?: string
   densityFade: boolean
   // Present on a gene stacking more than one child.

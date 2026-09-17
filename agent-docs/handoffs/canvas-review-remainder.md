@@ -78,7 +78,7 @@ checked.
 
 ## Smaller
 
-- `sectionIdsOf` (`LinearBasicDisplay/groupBy.ts`) runs three or four times
+- `sectionIdsOf` (`LinearBasicDisplay/facet.ts`) runs three or four times
   per layout pass — `sectionAssignment`, `featureGroupSections`,
   `chipShiftOf` twice — where one pass could return the section list and the
   assignment together.

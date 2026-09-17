@@ -33,8 +33,8 @@ function renderLayer(model: Parameters<typeof layerModel>[0]) {
 }
 
 const sections = [
-  { key: '+', label: 'Forward strand', top: 0, height: 100 },
-  { key: '-', label: 'Reverse strand', top: 100, height: 100 },
+  { key: '1', label: 'Forward strand', top: 0, height: 100 },
+  { key: '-1', label: 'Reverse strand', top: 100, height: 100 },
 ]
 
 test('one chip per section, a divider above every section but the first', () => {
@@ -78,7 +78,7 @@ test("a chip's hide button hides its section, and a lone section offers none", (
   })
   const { getByTitle, rerender, queryByTitle } = render(layer(model))
   fireEvent.click(getByTitle('Hide "Reverse strand"'))
-  expect(model.hideGroup).toHaveBeenCalledWith('-')
+  expect(model.hideGroup).toHaveBeenCalledWith('-1')
 
   rerender(layer({ ...model, groupSections: sections.slice(0, 1) }))
   expect(queryByTitle('Hide "Forward strand"')).toBeNull()
