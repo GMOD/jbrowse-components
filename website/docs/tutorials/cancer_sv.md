@@ -340,10 +340,10 @@ alignment. They are the reads the consensus was polished from, so that shows
 they agree with each other; the truth set, called from other platforms, is the
 independent check.
 
-Each hg38 window runs past the segment the allele takes, leaving bare reference
-on either side of the reads. That lane draws split alignments only, and its
-coverage band counts the reads carrying a junction, stepping down as each arm
-runs out.
+Each hg38 window runs past the segment the allele takes, so the bare reference
+on either side of the reads is sequence the allele does not include. That lane
+draws split alignments only, and its coverage band counts the reads carrying a
+junction, stepping down as each arm runs out.
 
 <Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the truth set's validated calls over the same molecules against hg38, split alignments only, each row stopping at a call with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them." src="/img/cancer_sv/derivative_inserts.png" />
 

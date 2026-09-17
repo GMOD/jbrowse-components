@@ -271,7 +271,7 @@ Hover any node in your cut: the tooltip gives its length and its rank, and rank
 locus half a megabase towards the centromere, which holds few enough nodes to
 label. Your MHC class II cut has the same parts and many more of them.
 
-<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. Both panels color by reference position, red at the window's start to magenta at its end (the key is top right), so a block in the lane and its node below share a hue; a charcoal node has no GRCh38 coordinate, since an allele carries none. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips it, which is one whole copy of the tandem C4-CYP21-TNX module. Gene names hang under the backbone at the exons they cover." src="/img/pangenome/hprc_graph_anatomy.png" />
+<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. Both panels color by reference position, red at the window's start to magenta at its end (the key is top right), so a block in the lane and its node below share a hue; a charcoal node has no GRCh38 coordinate, which marks it as an allele. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips it, which is one whole copy of the tandem C4-CYP21-TNX module. Gene names hang under the backbone at the exons they cover." src="/img/pangenome/hprc_graph_anatomy.png" />
 
 A force layout has no x axis to share with the linear view, so color links the
 two. The graph opens colored by **Reference position**, which ramps hue across
