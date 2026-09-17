@@ -463,13 +463,13 @@ export const uiVideos: VideoSpec[] = [
     tailMs: 4000,
   },
 
-  // The runtime half of `facetDomain`: a grouping picked from the dialog,
-  // then one section moved from the Sections submenu, which writes the drawn
-  // order back as the domain.
+  // The runtime half of `facetDomain` and `colorDomain`: a grouping picked
+  // from the dialog, one section moved from the Sections submenu, then the
+  // key's values pinned into the color domain.
   {
     name: 'ui/gene_track_sections',
     description:
-      'NCBI RefSeq genes on hg38 grouped by gene_biotype from the Group by dialog, then protein_coding moved to the top from the Sections submenu',
+      'NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from the Group by dialog, protein_coding moved to the top from the Sections submenu, then Pin distinct colors giving every biotype its own color',
     url: geneGroupingVideoFixtures.session,
     viewportHeight: 740,
     readySelector: '::-p-text(NCBI RefSeq)',
@@ -517,19 +517,35 @@ export const uiVideos: VideoSpec[] = [
       { type: 'waitForText', text: 'Move up', hidden: true },
       { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'waitForText', text: 'Track settings', hidden: true },
+      { type: 'delay', ms: 2500 },
+      {
+        type: 'click',
+        selector: trackMenu(geneGroupingVideoFixtures.trackId),
+        say: 'Give each biotype a color of its own',
+        hold: 1000,
+      },
+      { type: 'waitForText', text: 'Color by...' },
+      { type: 'click', text: 'Color by...', hold: 800 },
+      { type: 'waitForText', text: 'Pin distinct colors' },
+      { type: 'click', text: 'Pin distinct colors', hold: 0 },
+      { type: 'waitForText', text: 'Pin distinct colors', hidden: true },
+      { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'waitForText', text: 'Track settings', hidden: true },
+      { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 3500 },
     ],
     tailMs: 3000,
   },
 
   // The same grouping as `ui/gene_track_sections`, written instead of picked:
-  // the spec names a section order the Group by dialog has no field for.
+  // the spec names a section order the Group by dialog has no field for. The
+  // frame is taller so the dialog, with the spec pasted in, fits whole.
   {
     name: 'ui/gene_track_channel_spec',
     description:
-      'NCBI RefSeq genes on hg38 grouped by gene_biotype in a declared section order and colored by the same attribute, written as JSON from the Group by dialog',
-    url: geneGroupingVideoFixtures.session,
-    viewportHeight: 740,
+      'NCBI RefSeq genes on hg38 grouped by gene_biotype in a declared section order and colored by the same attribute in a declared color order, written as JSON from the Group by dialog',
+    url: geneGroupingVideoFixtures.channelSpecSession,
+    viewportHeight: 860,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
     settleMs: 10000,
@@ -559,13 +575,18 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3000,
-        say: 'A facet with its section order, and a color',
+        say: 'A facet and a color, each with its domain',
       },
-      { type: 'click', text: 'Apply' },
+      // the caption chip sits over the dialog's buttons
+      { type: 'click', text: 'Apply', say: '' },
       { type: 'waitForText', text: 'gene_biotype: pseudogene' },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'delay', ms: 3500 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Sections and colors follow each domain',
+      },
     ],
     tailMs: 3000,
   },

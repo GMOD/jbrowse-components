@@ -171,17 +171,24 @@ export const GENE_CHANNEL_SPEC_JSON = `{
     "field": "gene_biotype",
     "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
   },
-  "color": { "field": "gene_biotype" }
+  "color": {
+    "field": "gene_biotype",
+    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+  }
 }`
 
-export const geneGroupingVideoFixtures = {
-  trackId: GROUPING_TRACK.trackId,
-  session: lgvSession(DEMO_CONFIG, {
+const groupingSession = (height: number) =>
+  lgvSession(DEMO_CONFIG, {
     assembly: 'hg38',
     loc: GROUPING_WINDOW,
     trackLabels: 'offset',
-    tracks: [{ ...GROUPING_TRACK, height: 520 }],
-  }),
+    tracks: [{ ...GROUPING_TRACK, height }],
+  })
+
+export const geneGroupingVideoFixtures = {
+  trackId: GROUPING_TRACK.trackId,
+  session: groupingSession(520),
+  channelSpecSession: groupingSession(640),
 }
 
 export const featuresSpecs: ScreenshotSpec[] = [

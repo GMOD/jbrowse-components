@@ -643,7 +643,7 @@ export const videoLiveRefs: Record<string, string> = {
   "ui/bulk_add_tracks": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes%22%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/add_genome": "?config=test_data/empty.json&sessionName=Screenshot",
   "ui/gene_track_sections": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C540%2C000-7%2C640%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22showLabels%22%3A%22name%22%2C%22height%22%3A520%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "ui/gene_track_channel_spec": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C540%2C000-7%2C640%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22showLabels%22%3A%22name%22%2C%22height%22%3A520%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "ui/gene_track_channel_spec": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C540%2C000-7%2C640%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22showLabels%22%3A%22name%22%2C%22height%22%3A640%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "variants/trio_phased_matrix": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A62%2C174%2C000-62%2C194%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22displayMode%22%3A%22compact%22%2C%22showOnlyGenes%22%3Atrue%2C%22showLabels%22%3A%22auto%22%2C%22height%22%3A80%7D%2C%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.vcf%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "repeats/painting_display_switch": "?config=test_data/config_demo.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22rmsk_hg38_ucsc%22%2C%22name%22%3A%22RepeatMasker%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedTabixAdapter%22%2C%22bedGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22CSI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz.csi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearBasicDisplay%22%2C%22displayId%22%3A%22rmsk_hg38_ucsc-LinearBasicDisplay%22%7D%2C%7B%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22displayId%22%3A%22rmsk_hg38_ucsc-LinearMultiRowFeatureDisplay%22%2C%22height%22%3A260%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A45%2C700%2C000-45%2C750%2C000%22%2C%22tracks%22%3A%5B%22rmsk_hg38_ucsc%22%5D%7D%5D%7D&sessionName=Screenshot",
   "hic/two_regions": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr9%3A129%2C730%2C000-131%2C730%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22highlight%22%3A%5B%7B%22refName%22%3A%22chr9%22%2C%22start%22%3A130713881%2C%22end%22%3A130887675%2C%22label%22%3A%22ABL1%22%2C%22color%22%3A%22rgba(30%2C110%2C190%2C0.16)%22%7D%2C%7B%22refName%22%3A%22chr22%22%2C%22start%22%3A23180509%2C%22end%22%3A23318037%2C%22label%22%3A%22BCR%22%2C%22color%22%3A%22rgba(30%2C110%2C190%2C0.16)%22%7D%5D%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22mane_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22name%22%2C%22height%22%3A68%7D%2C%7B%22trackId%22%3A%22hic_gm12878_insitu%22%2C%22type%22%3A%22LinearHicDisplay%22%2C%22height%22%3A380%2C%22useLogScale%22%3Afalse%2C%22useColorPercentile%22%3Atrue%2C%22selectedNormalization%22%3A%22NONE%22%2C%22squashToHeight%22%3Afalse%7D%2C%7B%22trackId%22%3A%22hic_k562_insitu%22%2C%22type%22%3A%22LinearHicDisplay%22%2C%22height%22%3A380%2C%22useLogScale%22%3Afalse%2C%22useColorPercentile%22%3Atrue%2C%22selectedNormalization%22%3A%22NONE%22%2C%22squashToHeight%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -821,7 +821,7 @@ export const videoFrames: Record<
   },
   "ui/gene_track_channel_spec": {
     "width": 1920,
-    "height": 740
+    "height": 860
   },
   "variants/trio_phased_matrix": {
     "width": 1920,
@@ -1153,11 +1153,13 @@ export const videoSteps: Record<string, string[]> = {
   ],
   "ui/gene_track_sections": [
     "Group the genes by their gene_biotype attribute",
-    "Reorder the sections from the track menu"
+    "Reorder the sections from the track menu",
+    "Give each biotype a color of its own"
   ],
   "ui/gene_track_channel_spec": [
     "Write the grouping as JSON from the Group by dialog",
-    "A facet with its section order, and a color"
+    "A facet and a color, each with its domain",
+    "Sections and colors follow each domain"
   ],
   "variants/trio_phased_matrix": [
     "Redraw the lane as one row per sample",
@@ -1202,5 +1204,5 @@ export const videoPastes: Record<string, string> = {
   "pangenome/hprc_end_to_end": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"hprc_minigraph_segments\",\n  \"name\": \"HPRC release 2 graph (rGFA segments)\",\n  \"assemblyNames\": [\"hg38\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38\",\n    \"assemblyNameToPanSN\": { \"hg38\": \"GRCh38\" }\n  },\n  \"displayDefaults\": { \"showLabels\": \"none\" }\n}",
   "pangenome/pggb_subgraph_launch": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"ecoli_pggb_segments\",\n  \"name\": \"pggb graph segments (whole graph, by locus)\",\n  \"assemblyNames\": [\"K12\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb\"\n  },\n  \"displayDefaults\": { \"showLabels\": \"none\" }\n}",
   "pangenome_cactus/subgraph_launch": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"ecoli_cactus_segments\",\n  \"name\": \"MC graph: segments (whole graph, by locus)\",\n  \"assemblyNames\": [\"K12\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus\"\n  },\n  \"displayDefaults\": { \"showLabels\": \"none\" }\n}",
-  "ui/gene_track_channel_spec": "{\n  \"facet\": {\n    \"field\": \"gene_biotype\",\n    \"domain\": [\"protein_coding\", \"snoRNA\", \"lncRNA\", \"pseudogene\"]\n  },\n  \"color\": { \"field\": \"gene_biotype\" }\n}"
+  "ui/gene_track_channel_spec": "{\n  \"facet\": {\n    \"field\": \"gene_biotype\",\n    \"domain\": [\"protein_coding\", \"snoRNA\", \"lncRNA\", \"pseudogene\"]\n  },\n  \"color\": {\n    \"field\": \"gene_biotype\",\n    \"domain\": [\"protein_coding\", \"snoRNA\", \"lncRNA\", \"pseudogene\"]\n  }\n}"
 }

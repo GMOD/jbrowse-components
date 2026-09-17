@@ -79,7 +79,7 @@ grouping clears them. **Sections** in the track menu lists the sections drawn,
 each with **Move up**, **Move down** and **Hide section**, and **Reset section
 order** returns them to the sorted order.
 
-<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped by gene_biotype from Group by..., each section in its own color and sorted by name, then protein_coding moved to the top from Sections. The move writes the drawn order into the track's facetDomain, so the session keeps it." />
+<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by..., with lncRNA and pseudogene in near-identical greens. Sections then moves protein_coding to the top, and Color by... → Pin distinct colors gives each biotype its own color." />
 
 The `facetField` setting pre-groups a track, so a shared link opens grouped. It
 names a feature attribute, a dotted path into a structured one such as
@@ -105,10 +105,10 @@ reader arranges are one setting:
 }
 ```
 
-The dialog's **Also color by strand** (or **by this attribute**) paints each
-section a distinct color: red and blue by strand, or one color per value, with a
-key naming them. It starts ticked unless the track already has a color of its
-own, and unticking it returns the default color.
+The dialog's **Also color by strand** (or **by this attribute**) colors each
+section by its value: red and blue by strand, or one color per value, with a key
+naming them. It starts ticked unless the track already has a color of its own,
+and unticking it returns the default color.
 
 <Figure caption="NCBI RefSeq genes on hg38 grouped by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip, with the divider between them marking where one strand's rows end." src="/img/gene_track_group_by_strand.png" />
 
@@ -133,8 +133,9 @@ as it is:
 - `{ "filter": ["feature.type == 'gene'"] }` genes only
 - `{ "facet": null, "color": null }` ungrouped, default color
 
-The dialog lists the same examples. This one groups and colors by biotype in a
-chosen order, and leaves the track's filter alone:
+The dialog lists the same examples. This one groups by biotype in a chosen
+order, gives each of the four biotypes its own color, and leaves the track's
+filter alone:
 
 ```json
 {
@@ -142,11 +143,14 @@ chosen order, and leaves the track's filter alone:
     "field": "gene_biotype",
     "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
   },
-  "color": { "field": "gene_biotype" }
+  "color": {
+    "field": "gene_biotype",
+    "domain": ["protein_coding", "snoRNA", "lncRNA", "pseudogene"]
+  }
 }
 ```
 
-<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in its declared order, each in its own color." />
+<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype in the palette color its place in the color's domain gives it." />
 
 A facet is the `facetField` and `facetDomain` settings, and a color by a field
 the `colorField`, `colorDomain` and `colorPalette` settings; the track draws a
