@@ -22,6 +22,7 @@ const STAYS_STUBBED: { reason: string; names: string[] }[] = [
       '@jbrowse/plugin-linear-genome-view#renderToSvg',
       '@jbrowse/synteny-core#colorByMenuItems',
       '@jbrowse/wiggle-core/chrome#makeResolutionSubMenuItem',
+      '@jbrowse/wiggle-core/chrome#makeScatterPointSizeMenuItem',
     ],
   },
   {
@@ -32,7 +33,7 @@ const STAYS_STUBBED: { reason: string; names: string[] }[] = [
     ],
   },
   {
-    reason: 'builds menu rows in a module that names a Material icon',
+    reason: 'builds menu rows carrying a Material icon or a lazy dialog',
     names: [
       '@jbrowse/plugin-alignments#getColorByMenuItem',
       '@jbrowse/plugin-alignments#getHitMenuItems',
@@ -51,13 +52,16 @@ const STAYS_STUBBED: { reason: string; names: string[] }[] = [
       '@jbrowse/product-core#undoMenuItem',
       '@jbrowse/product-core#workspacesMenuItem',
       '@jbrowse/wiggle-core/chrome#makePointSizeSubMenu',
-      '@jbrowse/wiggle-core/chrome#makeScatterPointSizeMenuItem',
     ],
   },
   {
     reason:
       'an MST model factory whose model imports its menus, dialogs or view components',
     names: [
+      '@jbrowse/app-core#AssembliesMixin',
+      '@jbrowse/app-core#HistoryManagementMixin',
+      '@jbrowse/app-core#JBrowseConfigF',
+      '@jbrowse/app-core#JBrowseModelF',
       '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel#default',
       '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel#default',
       '@jbrowse/plugin-canvas/LinearBasicDisplay/stateModel#default',
@@ -74,7 +78,9 @@ const STAYS_STUBBED: { reason: string; names: string[] }[] = [
       '@jbrowse/plugin-alignments#default',
       '@jbrowse/plugin-authentication#default',
       '@jbrowse/plugin-blat#default',
+      '@jbrowse/plugin-breakpoint-split-view#default',
       '@jbrowse/plugin-circular-view#default',
+      '@jbrowse/plugin-comparative-adapters#default',
       '@jbrowse/plugin-dotplot-view#default',
       '@jbrowse/plugin-grid-bookmark#default',
       '@jbrowse/plugin-jobs-management#default',
@@ -91,6 +97,15 @@ const STAYS_STUBBED: { reason: string; names: string[] }[] = [
       '@jbrowse/display-kit/DisplayContextMenu#openContextMenuFromEvent',
       '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel#ColorScheme',
       '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel#defaultColorItem',
+    ],
+  },
+  {
+    reason:
+      'reads containingLgv, which only the linear-genome-view barrel publishes, to install display autoruns',
+    names: [
+      '@jbrowse/tree-sidebar#setupRunClusteringAutorun',
+      '@jbrowse/tree-sidebar#setupTreeDrawingAutorun',
+      '@jbrowse/tree-sidebar#setupTreeSidebarAutoruns',
     ],
   },
 ]
