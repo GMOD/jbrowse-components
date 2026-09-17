@@ -558,7 +558,7 @@ said the opposite: "`strand` reads whether the ribbon is crossed — the lower
 placement runs the other way from the upper one" (`MW/configSchema.ts`); the
 design record said "Strand reads the DRAWN twist rather than a record's strand";
 the tutorial said "paints a ribbon that crosses" (`hg38_vertebrates_synteny.md`,
-"Color ribbons by → Strand"). For any lane drawn `[rev]` the code and the two
+"Color by... → Strand"). For any lane drawn `[rev]` the code and the two
 prose statements disagreed on screen, and no test pinned the semantics for a
 flipped lane. All three now state the record's strand.
 
