@@ -354,8 +354,7 @@ tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:191,000,001-192,000
 | 191 to 192 Mb  |        161 |   55 |
 | 203 to 204 Mb  |        690 |   47 |
 
-The dense megabase holds several times the copies and fewer AluY, which is the
-blue bar.
+The dense megabase, the blue bar, holds several times the copies and fewer AluY.
 
 ## Reproduce it end to end
 
