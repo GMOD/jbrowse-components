@@ -1,6 +1,62 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
+import {
+  findDisplayPainted,
+  navigateWithSessionSpec,
+  waitForDataLoaded,
+} from '../helpers.ts'
+import { dualSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
+import type { Page } from 'puppeteer'
+
+interface LiveModel {
+  JBrowseSession: {
+    views: {
+      tracks: {
+        displays: {
+          setRenderingType: (type: string) => void
+          setBicolorPivot: (pivot: number) => void
+        }[]
+      }[]
+    }[]
+  }
+}
+
+// BAM coverage has real min/max spread at the whole contig, and a pivot inside
+// its range splits both the whiskers band and the line.
+function whiskersBandTest(rendering: 'line' | 'linecenter') {
+  return {
+    name: `whiskers band on a ${rendering} plot, split at the pivot`,
+    fn: async (page: Page) => {
+      await navigateWithSessionSpec(page, {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'volvox',
+            loc: 'ctgA:1-50000',
+            tracks: ['p7FU-K6WqS_'],
+          },
+        ],
+      })
+      await findDisplayPainted(page, 'wiggle-display', 60000)
+      await waitForDataLoaded(page)
+      await page.evaluate(renderingType => {
+        const { JBrowseSession } = window as unknown as LiveModel
+        const display = JBrowseSession.views[0]!.tracks[0]!.displays[0]!
+        display.setRenderingType(renderingType)
+        display.setBicolorPivot(20)
+      }, rendering)
+      await waitForDataLoaded(page)
+      await dualSnapshot(
+        page,
+        `additional-whiskers-band-${rendering}`,
+        `${displayPainted('wiggle-display')} canvas`,
+      )
+    },
+  }
+}
 
 const suite: TestSuite = {
   name: 'Additional Track Types',
@@ -58,6 +114,8 @@ const suite: TestSuite = {
       loc: 'ctgA:1-50000',
       tracks: ['wiggle_track_fractional_posneg'],
     }),
+    whiskersBandTest('line'),
+    whiskersBandTest('linecenter'),
     lgvSnapshotTest({
       name: 'variant effect annotation track renders',
       snapshot: 'additional-variant-colors',
