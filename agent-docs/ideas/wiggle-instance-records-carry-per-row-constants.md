@@ -1,6 +1,6 @@
 ---
 name: wiggle-instance-records-carry-per-row-constants
-description: Measured 2026-09-17 at 1000 sources on real BigWigs. The 256MB buffer ceiling only bites in a BigWig's raw section, where bbi returns up to 9 features a pixel, so synthetic zoom tiers below the first real one are the biggest lever (7.8x fewer features on an FST scan). Summary tiers already stay under 2 a pixel, so per-pixel decimation buys nothing there. The step-line and center-line records are split (2026-09-17, 44 to 32 and 36 bytes), but the prototype's 40% faster encode came from literal word offsets, not the smaller record. A per-row colour texture shrinks every record by 4-8 bytes and turns a recolour into an 8KB upload, but the density LUT slot is taken and `Sampler2D.Load` emits broken WGSL. A positive-only specialisation isn't worth building, and ADR-016's split costs 57-85ms and doubles the wire bytes on signed data.
+description: Measured 2026-09-17 at 1000 sources on real BigWigs. The 256MB buffer ceiling only bites in a BigWig's raw section, where bbi returns up to 9 features a pixel, so synthetic zoom tiers below the first real one were the biggest lever (7.8x fewer features on an FST scan) and landed as ADR-129. Summary tiers already stay under 2 a pixel, so per-pixel decimation buys nothing there. The step-line and center-line records are split (2026-09-17, 44 to 32 and 36 bytes), but the prototype's 40% faster encode came from literal word offsets, not the smaller record. A per-row colour texture shrinks every record by 4-8 bytes and turns a recolour into an 8KB upload, but the density LUT slot is taken and `Sampler2D.Load` emits broken WGSL. A positive-only specialisation isn't worth building, and ADR-016's split costs 57-85ms and doubles the wire bytes on signed data.
 ---
 
 # Wiggle instance records carry per-row constants
@@ -104,31 +104,14 @@ Worker time, `processFeaturesFromArrays` over 1000 sources, in ms:
 
 ## Candidates, ranked
 
-### 1. Synthetic zoom tiers below a BigWig's first level
+### 1. Synthetic zoom tiers below a BigWig's first level — taken
 
-**Gain:** the only candidate that moves the raw-section ceiling. On FST at 319
-bp/px, power-of-two bins of `>= bpPerPx/2` bp take 13,966 features a source to
-1,783, 1.19/px. That puts fill at ~34 MiB instead of 266, and line at ~75
-instead of 586. scRNA at 151 bp/px drops from 4,492 to 891. Summary tiers gain
-nothing, because bbi already holds them under 2/px.
-
-**Design:** `BigWigAdapter` treats the raw section as more levels.
-`getZoomRange` declares a factor-4 band per synthetic bin, as bbi's own levels
-do, and `getFeatureArraysMulti` aggregates raw rows into span-weighted mean
-plus min/max. The whiskers path already consumes that shape. ADR-125 makes the
-adapter the right owner: displays declare no zoom key, so no display changes.
-
-**Why not per-pixel at fetch zoom:** a fetch serves a 4x band of zooms without
-refetching (`regionCommit`'s `zoomRange` test). Pixel-exact decimation would go
-coarse on the first zoom-in, so the bins have to be tiers, not pixels.
-
-**Cost and risk:** medium. A zoom-in through the raw section refetches at each
-synthetic tier: log4(firstTier/2) extra tiers, 4 for FST, each re-decoding
-blocks bbi already caches. Tooltip and hit test would report bins, not bases,
-until the last tier. The prototype `decimateRaw` is unoptimised (FST worker 107
-→ 202ms, since it allocates 5 full-count arrays) and assigns a feature to its
-start's bin. It is a sizing prototype, not the implementation. Coverage BigWigs
-with 50bp bins gain less than 1bp tracks.
+[ADR-129](../architecture-decision-records/adr-129-a-bigwigs-raw-section-answers-in-synthetic-tiers.md)
+has the design, the measurements and the rejected variants. The FST scan at
+319 bp/px now reads 1,783 rows a source instead of 13,966, which is 34 MiB of
+fill at 1000 sources instead of 266. Two things came out differently from the
+sketch this section held before. Bins answer only where they at least halve a region's rows. And a
+row spans the bases its bin covers, not the whole bin.
 
 ### 2. Separate step-line and center-line records — done
 
@@ -283,7 +266,5 @@ which works but is the same HAL work as #3.
 
 ## Order if taken
 
-#2 is done. #1 next, because it
-is the one that turns "too much data, zoom in" into a picture on dense raw
-data, and it lives entirely in the adapter. #3 and #4 together, as one project,
+#2 is done. #1 has landed (ADR-129). #3 and #4 together, as one project,
 since each makes the other pay. Settle density's texture first.

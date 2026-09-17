@@ -13,6 +13,12 @@ this mechanism, and closes the per-step refetch
 [ADR-123](adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md) accepted as
 interim. Step 1 of the 2026-09-16 grammar handoff.
 
+Amended 2026-09-17 by
+[ADR-129](adr-129-a-bigwigs-raw-section-answers-in-synthetic-tiers.md):
+`BigWigAdapter` puts up to two synthetic tiers in front of the file's levels,
+so the raw section now ends at half the finer one, not at `t_0 / 2`. The rule
+and the mechanism below are unchanged.
+
 ## Context
 
 A BigWig holds summary tiers whose reduction levels sit about 4x apart, and

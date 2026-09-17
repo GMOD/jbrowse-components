@@ -86,6 +86,16 @@ multi-wiggle's `summaryScoreMode` key and row list.
 method name — which `ARCHITECTURE.md` wants at the call site so the registry's
 typed args survive — plus multi-wiggle's structural `sources` argument.
 
+## A BigWig answers in bins below its first zoom level
+
+`BigWigAdapter` puts up to two synthetic tiers in front of the file's zoom
+levels (ADR-129). The range `getZoomRange` declares and the tier a fetch reads
+come from one `tierSpanRange` call over that combined list, so the two cannot
+drift apart. A synthetic fetch reads the raw section over bin-aligned extents
+and bins each region with `binRawRegion`. A region whose bins would not halve
+its rows answers raw, with no min/max, so the rows a synthetic zoom returns can
+be either shape.
+
 ## Multi-wiggle's rows are a getter over `rpcDataMap`
 
 Each region's payload carries the full source list, entries leave that map only
