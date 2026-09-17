@@ -110,8 +110,9 @@ Worker time, `processFeaturesFromArrays` over 1000 sources, in ms:
 has the design, the measurements and the rejected variants. The FST scan at
 319 bp/px now reads 1,783 rows a source instead of 13,966, which is 34 MiB of
 fill at 1000 sources instead of 266. Two things came out differently from the
-sketch this section held before. Bins answer only where they at least halve a region's rows. And a
-row spans the bases its bin covers, not the whole bin.
+sketch this section held before. A file keeps a bin only where it is at least
+twice its mean record span, so coarse data isn't binned. And a row spans the
+bases its bin covers, not the whole bin.
 
 ### 2. Separate step-line and center-line records — done
 
