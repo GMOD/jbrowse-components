@@ -234,10 +234,10 @@ speckled olive bivalent.
 Over the chr9 stretch from FAM205A to ALDH1B1 the track reproduces
 [Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig. 3a, all 127
 epigenomes in the paper's tissue order. Promoters stay red through nearly every
-row, while PAX5 is transcribed only in the B cells and the B-lymphoblastoid
-GM12878.
+row, while PAX5 is in a transcribed state only in the B cells and the
+B-lymphoblastoid GM12878.
 
-<Figure src="/img/chromhmm.png" caption="All 127 Roadmap epigenomes over chr9 from FAM205A to ALDH1B1, rows in the paper's tissue order with the group stripe beside them. Promoters are red in every tissue; PAX5 (boxed) is transcribed only in the B cell rows."/>
+<Figure src="/img/chromhmm.png" caption="All 127 Roadmap epigenomes over chr9 from FAM205A to ALDH1B1, rows in the paper's tissue order with the group stripe beside them. Promoters are red in every tissue; PAX5 (boxed) is in a transcribed state only in the B cell rows."/>
 
 A `domain` of six epigenome names narrows the same track to lung fibroblasts,
 foreskin fibroblasts and ES cells over HOXA, which reproduces the chromatin

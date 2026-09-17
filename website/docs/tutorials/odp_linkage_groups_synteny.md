@@ -140,8 +140,8 @@ vertical genome's chromosomes by where their orthologs land along the horizontal
 one, turning one block per group into a diagonal. In the six-genome stack below
 the same dialog asks which row to keep as it is, and the answer is the
 jellyfish: its chromosomes are the linkage groups, so every other row sorts
-against it rather than against a comb jelly. The same view as a session, with
-the sponge's unplaced scaffolds left off its axis:
+against it. The same view as a session, with the sponge's unplaced scaffolds
+left off its axis:
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
