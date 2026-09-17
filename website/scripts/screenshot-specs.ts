@@ -30,6 +30,7 @@ import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
 import { geneDensitySpecs } from './specs/gene_density.ts'
 import { genomesBasicsSpecs } from './specs/genomes_basics.ts'
+import { genomesPangenomeSpecs } from './specs/genomes_pangenome.ts'
 // the pangenome graph figures, split by organism — see specs/graph-fixtures.ts
 import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
 import { hprcGraphSpecs } from './specs/graph-hprc.ts'
@@ -79,6 +80,7 @@ export const specs: ScreenshotSpec[] = [
   ...dtuSpecs,
   ...bigwigSpecs,
   ...genomesBasicsSpecs,
+  ...genomesPangenomeSpecs,
   ...featuresSpecs,
   ...proteinStructuresSpecs,
   ...uiSpecs,

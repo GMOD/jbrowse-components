@@ -433,9 +433,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   genomes_pangenome: {
-    // The MHC class II graph the page's form draws, the graph pane only.
+    // The MHC class II graph the page's graph launch draws, the graph pane only.
     src: 'pangenome/genomes_hprc_mhc_graph.png',
-    band: [0.6, 0.98],
+    band: [0.74, 1],
+    xband: [0, 0.5],
   },
   genomes_synteny: {
     // curved ribbons with transparent indels: the blue reverse-strand sweep

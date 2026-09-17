@@ -142,6 +142,9 @@ export const figureLiveRefs: Record<string, string> = {
   "genomes_basics/gnomad_filter_menu": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C400-7%2C677%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-gnomadExomesVariantsV4_1%22%2C%22height%22%3A200%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "genomes_basics/about_track": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C400-7%2C677%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-phyloP100way%22%2C%22height%22%3A400%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "genomes_basics/genark_axolotl": "?config=https%3A%2F%2Fjbrowse.org%2Fhubs%2Fgenark%2FGCF%2F040%2F938%2F575%2FGCF_040938575.1%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_040938575.1%22%2C%22loc%22%3A%22tp53%22%7D%5D%7D&sessionName=Screenshot",
+  "pangenome/genomes_hprc_loci": "https://staging.genomes.jbrowse.org/pangenomes/hprc",
+  "pangenome/genomes_hprc_mhc_graph": "?config=https%3A%2F%2Fjbrowse.org%2Fpangenome%2Fhprc-grch38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22id%22%3A%22pangenome-locus-lgv%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%3A32510000-32600000%22%2C%22tracks%22%3A%5B%22hg38_ncbiRefSeq_ucsc%22%2C%22hprc_minigraph_bubbles%22%2C%22hprc_minigraph_alleles%22%2C%22hprc_minigraph_segments%22%5D%7D%2C%7B%22type%22%3A%22GraphGenomeView%22%2C%22displayName%22%3A%22HLA%20%2F%20MHC%20graph%22%2C%22loadedTrackId%22%3A%22hprc_minigraph_segments%22%2C%22loadedRegion%22%3A%7B%22refName%22%3A%22chr6%22%2C%22start%22%3A32510000%2C%22end%22%3A32600000%2C%22assemblyName%22%3A%22hg38%22%7D%2C%22connectedViewId%22%3A%22pangenome-locus-lgv%22%2C%22colorScheme%22%3A%22reference-position%22%7D%5D%7D&sessionName=Screenshot",
+  "pangenome/genomes_hprc_cfhr_haplotypes": "?config=https%3A%2F%2Fjbrowse.org%2Fpangenome%2Fhprc-grch38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A196740000-196850000%22%2C%22tracks%22%3A%5B%22hg38_ncbiRefSeq_ucsc%22%2C%7B%22trackId%22%3A%22hprc_v2_1_gbz_lanes%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22laneFilter%22%3A%7B%22only%22%3A%5B%22HG002%231%22%2C%22HG00128%232%22%2C%22HG00099%231%22%2C%22HG00280%231%22%2C%22HG00097%231%22%2C%22HG00126%231%22%2C%22HG00140%232%22%2C%22HG005%231%22%5D%7D%2C%22domain%22%3A%5B%22HG002%231%22%2C%22HG00128%232%22%2C%22HG00099%231%22%2C%22HG00280%231%22%2C%22HG00097%231%22%2C%22HG00126%231%22%2C%22HG00140%232%22%2C%22HG005%231%22%5D%2C%22height%22%3A459%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "about_track": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22volvox_cram%22%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_track_color_by_cds": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr17%3A41%2C244%2C000-41%2C244%2C090%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%22Pd8Wh30ei9R%22%2C%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_track_selenocysteine": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr3%3A49%2C395%2C505-49%2C395%2C625%22%2C%22colorByCDS%22%3Atrue%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%22Pd8Wh30ei9R%22%2C%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -399,7 +402,8 @@ export const figureLiveRefs: Record<string, string> = {
 export const figureLiveLabels: Record<string, string> = {
   "genomes_basics/site_home": "Open genomes.jbrowse.org",
   "genomes_basics/site_search": "Open genomes.jbrowse.org",
-  "genomes_basics/site_ucsc_list": "Open the UCSC genome list"
+  "genomes_basics/site_ucsc_list": "Open the UCSC genome list",
+  "pangenome/genomes_hprc_loci": "Open the HPRC page"
 }
 
 // Specs whose live session is genuinely slow to open, which the Figure macro
@@ -514,6 +518,8 @@ export const figureSlowSpecs: string[] = [
   "orthofinder_synteny/wheat_4a",
   "pangenome/bovine_bola",
   "pangenome/bovine_whole_chromosome",
+  "pangenome/genomes_hprc_cfhr_haplotypes",
+  "pangenome/genomes_hprc_mhc_graph",
   "pangenome/graph_context_hop1",
   "pangenome/graph_context_none",
   "pangenome/graph_kiv2_halos",
