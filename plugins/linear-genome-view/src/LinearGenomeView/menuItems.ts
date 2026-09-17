@@ -65,16 +65,16 @@ function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
  * Adding stops once the closest level — or this view when it has none — is
  * already at base level, since there is nothing left to zoom into.
  *
- * Only a view of its own offers to add one. A row of a comparative stack is
- * already part of somebody's figure: the synteny ribbons and the breakpoint
- * split panels are placed against each row's own height, and those views'
- * exports draw one row per view, so a level grown there walks the ribbons off
- * their rows and is dropped from the picture without a word. A level itself is
- * not a top-level view either, hence the host check first — that is the menu
- * that takes it away again.
+ * Only a view of its own offers to add one, which `isTopLevelView` is the whole
+ * of: a row of a comparative stack is already part of somebody's figure — the
+ * synteny ribbons and the breakpoint split panels are placed against each row's
+ * own height, and those views' exports draw one row per view, so a level grown
+ * there walks the ribbons off their rows and is dropped from the picture
+ * without a word — and a level, living under a view rather than under the
+ * session, is not a top-level view either.
  */
 function addDetailLevelMenuItem(self: LinearGenomeViewModel): MenuItem[] {
-  if (!self.isTopLevelView || detailLevelHost(self)) {
+  if (!self.isTopLevelView) {
     return []
   }
   const closest = self.detailLevelViews.at(-1) ?? self
