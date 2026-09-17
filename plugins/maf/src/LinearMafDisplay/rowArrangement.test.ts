@@ -1,3 +1,5 @@
+import { setConf } from '@jbrowse/core/configuration'
+
 import { createMafTestEnvironment } from './testEnv.ts'
 
 const TREE = '((hg38,panTro4),mm10);'
@@ -156,19 +158,51 @@ describe('the config `domain` seeds the row order', () => {
     ])
   })
 
-  // The guide tree positions leaf i on row i and nothing reconciles the names,
-  // so `treeDescribesRows` refuses it the moment a domain moves a row — the
-  // same refusal a drag earns, and the tree is still there to come back when
-  // the domain is emptied.
-  it('un-positions the guide tree it reorders under', () => {
+  // The domain turns the guide tree rather than overruling it: mouse's branch
+  // comes to the top and the dendrogram keeps drawing, because it is the same
+  // tree. The rows follow its leaves, so `treeDescribesRows` holds by
+  // construction rather than by luck.
+  it('rotates the guide tree it leads with, and still draws it', () => {
     const display = domainDisplay(['mm10'])
     expect(display.clusterTree).toBe(TREE)
-    expect(display.hierarchy).toBeUndefined()
+    expect(display.hierarchy).toBeDefined()
+    expect(rowNames(display)).toEqual(['mm10', 'hg38', 'panTro4'])
   })
 
   it('leaves the guide tree drawing when it agrees with the leaf order', () => {
     const display = domainDisplay(['hg38', 'panTro4'])
     expect(rowNames(display)).toEqual(['hg38', 'panTro4', 'mm10'])
+    expect(display.hierarchy).toBeDefined()
+  })
+
+  // A species brings its clade with it, which is the whole difference from
+  // placing each named row outright: that would read panTro4, mm10, hg38 and
+  // leave the dendrogram describing nobody.
+  it('keeps a clade together rather than placing each species outright', () => {
+    const display = domainDisplay(['panTro4', 'mm10'])
+    expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
+    expect(display.hierarchy).toBeDefined()
+  })
+
+  // The rotation is derived from the current domain every time, never written
+  // into the tree, so emptying the slot puts the rows and the dendrogram back
+  // in file order.
+  it('returns to the file order when the domain is emptied', () => {
+    const display = domainDisplay(['mm10'])
+    setConf(display, 'domain', [])
+    expect(rowNames(display)).toEqual(['hg38', 'panTro4', 'mm10'])
+    expect(display.hierarchy).toBeDefined()
+  })
+
+  // The filter runs over the rotated tree, so focusing the clade keeps the
+  // order the domain turned it into.
+  it('focuses a clade of the rotated tree in its rotated order', () => {
+    const display = domainDisplay(['panTro4'])
+    expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
+
+    display.setSubtreeFilter(['hg38', 'panTro4'])
+
+    expect(rowNames(display)).toEqual(['panTro4', 'hg38'])
     expect(display.hierarchy).toBeDefined()
   })
 

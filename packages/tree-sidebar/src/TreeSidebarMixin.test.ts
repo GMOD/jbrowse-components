@@ -6,6 +6,7 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
+import { getLeafNames } from './clusterUtils.ts'
 import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
@@ -236,6 +237,28 @@ describe('the row domain', () => {
 
   it('reads the `domain` slot', () => {
     expect(makeConfigured({ domain: ['b', 'a'] }).rowDomain).toEqual(['b', 'a'])
+  })
+
+  const leafNames = (m: { parsedTree?: Parameters<typeof getLeafNames>[0] }) =>
+    m.parsedTree && getLeafNames(m.parsedTree)
+
+  it('rotates a supplied tree towards it', () => {
+    const m = makeConfigured({ domain: ['c'] })
+    m.setClusterTree('((a,b),(c,d));')
+    expect(leafNames(m)).toEqual(['c', 'd', 'a', 'b'])
+  })
+
+  // A computed tree was rotated by the run that produced it, together with the
+  // `layout` written in the same action. Rotating it again on the way out would
+  // turn a session saved under one domain and reopened under another away from
+  // its own rows, and `treeDescribesRows` would then draw nothing at all.
+  it('leaves a computed tree as the run stored it', () => {
+    const m = makeConfigured({ domain: ['c'] })
+    m.setLayoutAndClusterTree([], '((a,b),(c,d));', {
+      regions: [],
+      settings: [],
+    })
+    expect(leafNames(m)).toEqual(['a', 'b', 'c', 'd'])
   })
 })
 

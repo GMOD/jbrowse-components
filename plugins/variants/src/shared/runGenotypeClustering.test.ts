@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { parseClusterTree, treeDescribesRows } from '@jbrowse/tree-sidebar'
 
 import { runGenotypeClustering } from './runGenotypeClustering.ts'
 
@@ -95,6 +96,32 @@ describe('runGenotypeClustering', () => {
       '(a,b,c);',
       PROVENANCE,
     )
+  })
+
+  // A run on a domain-seeded track composes with the seed: the dendrogram turns
+  // towards the declared order and the layout follows its leaves, so the tree
+  // still describes the rows. Placing each named sample outright instead would
+  // read sampleB, sampleC, sampleA and leave the dendrogram describing nobody.
+  it('rotates the run towards the config domain', async () => {
+    const model = makeModel({ rowDomain: ['sampleB', 'sampleC'] })
+    const rpcManager = makeRpcManager(async () => ({
+      order: [0, 1, 2],
+      tree: '((sampleA:1,sampleB:1):1,sampleC:2);',
+    }))
+
+    await runGenotypeClustering({
+      model,
+      rpcManager,
+      sessionId: 'session-1',
+      regions,
+      signal: new AbortController().signal,
+      statusCallback: jest.fn(),
+    })
+
+    const [layout, tree] = jest.mocked(model.setLayoutAndClusterTree).mock
+      .calls[0]!
+    expect(layout.map(s => s.name)).toEqual(['sampleB', 'sampleA', 'sampleC'])
+    expect(treeDescribesRows(parseClusterTree(tree!), layout)).toBe(true)
   })
 
   it('passes through the display filter values', async () => {
