@@ -482,8 +482,19 @@ export default defineConfig(
       // the elements away. The rule's premise only holds when the return value
       // is discarded, and it does not check that.
       'unicorn/no-unnecessary-splice': 'off',
+      // Neither Node 24 nor TypeScript's lib has Iterator.zip yet.
+      'unicorn/prefer-iterator-zip': 'off',
+      // 34 — unicorn 75 extended it to `const xs = []; if (c) xs.push(y)`, and
+      // the only rewrite is `[...(c ? [y] : [])]`, which unicorn itself won't
+      // apply to a .ts file because the spread loses contextual typing. The
+      // flagged push is also just the first of a run of `if`s that read alike.
+      'unicorn/no-immediate-mutation': 'off',
 
       // === Conflicts with repo conventions (nest / ternaries over early return) ===
+      // 33 — one guard per reason, and most carry their own comment saying why;
+      // `||`-merging them fuses unrelated exits (a mouse button and a gesture
+      // owner) into one condition.
+      'unicorn/prefer-combined-guards': 'off',
       'unicorn/prefer-early-return': 'off', // 74 — we prefer nesting over early return
       'unicorn/no-useless-else': 'off', // 93 — pushes early-return de-nesting
       'unicorn/no-lonely-if': 'off', // 6 — nesting preference

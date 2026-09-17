@@ -15,7 +15,7 @@
   "dependencies": {
     "@jbrowse/capture": "workspace:^",
     "esbuild": "^0.28.2",
-    "puppeteer": "^25.10.0",
+    "puppeteer": "^25.11.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "serve-handler": "^6.1.7"

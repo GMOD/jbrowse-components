@@ -127,7 +127,7 @@ export const servePort =
 // its action chain is a likelier cause than the renderer.
 export const CONCURRENCY = Math.max(
   1,
-  optNum('concurrency', values.concurrency) ?? (headed || check ? 1 : 4),
+  optNum('concurrency', values.concurrency) ?? (headed || check ? 1 : 2),
 )
 
 const HELP = `Render website screenshots from scripts/screenshot-specs.ts.

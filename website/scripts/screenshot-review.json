@@ -117,8 +117,8 @@
     "name": "bigwig/whole_genome_coverage",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:28:18.417Z",
-    "hash": "1184c0f78dc52e943076c402359b75ed4d8fd94b"
+    "reviewedAt": "2026-09-17T06:33:11.380Z",
+    "hash": "103c53c00c00871cafe5d3b02f7ebe37e22d4cfe"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -258,8 +258,8 @@
     "name": "alignments_sort_by_base",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:23:45.203Z",
-    "hash": "46792289a9905f5e3164277064cf5e165a1e39b7"
+    "reviewedAt": "2026-09-17T06:32:59.110Z",
+    "hash": "7dc433d5c34c5bb040c9c65324db6ef52c28d919"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -843,15 +843,15 @@
     "name": "alignments/haplotype",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:30:59.155Z",
-    "hash": "72fea9eb697b80e77ce5a644008bf3ae801cc32c"
+    "reviewedAt": "2026-09-17T06:33:01.549Z",
+    "hash": "59982c759b62e93c385ab72b75147c71e5c48b3e"
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:30:53.744Z",
-    "hash": "6df3292d007c039e554b82f8d8ad094ab9f217e8"
+    "reviewedAt": "2026-09-17T06:33:04.579Z",
+    "hash": "70e35e0df34e45603583cbab320d3675206593b2"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -864,8 +864,8 @@
     "name": "gene_track_color_by_cds",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:37:50.360Z",
-    "hash": "6eb78ff2ee949a2f04ad10247f321cc511cb9066"
+    "reviewedAt": "2026-09-17T06:35:31.704Z",
+    "hash": "65371b238e9b01f2041835055f0324f4b2dd8374"
   },
   "gene_track_mature_peptides": {
     "name": "gene_track_mature_peptides",
@@ -971,8 +971,8 @@
     "name": "embed_linear_genome_view/final",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:32:48.609Z",
-    "hash": "8943bd67519a15ac0a92908e459e23210a54b5e6"
+    "reviewedAt": "2026-09-17T06:35:11.953Z",
+    "hash": "a481e8b3664a0691bca54a7d7784f2e9e08749a5"
   },
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
@@ -1087,10 +1087,10 @@
   },
   "protein/connected": {
     "name": "protein/connected",
-    "status": "bad",
-    "note": "the side-by-side view is needed for lineargenome on left, proteinview on right",
-    "reviewedAt": "2026-09-14T14:03:07.488Z",
-    "hash": "3875200b730d93f203bb94b62f990d226c868e53"
+    "status": "answered",
+    "note": "Genome view on the left, protein view on the right: the spec now uses the plugin's sideBySide launch.",
+    "reviewedAt": "2026-09-17T08:24:53.985Z",
+    "hash": "3ad67a765ce22a29f5adadee00f95d9a6d97cf7d"
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
@@ -1103,8 +1103,8 @@
     "name": "feature_detail_protein",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-16T03:39:16.621Z",
-    "hash": "ce6e48d4693c321dba4b80dbca76bc5fd0a0ccd1"
+    "reviewedAt": "2026-09-17T06:35:14.270Z",
+    "hash": "29c0968adddfc0e5185090f7469674690d27da82"
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
@@ -1115,10 +1115,10 @@
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "bad",
-    "note": "unfortunately, this is still kind of confusing. like, is this expected that \"these epigenomes are open on HOXA\"? is this biologically telling a story/ whatis the story? the red text labels are covering up the node color boxes on the tree also, which makes it hard to 'see the story' also\n\nprevious notes:\nDONE: The result is real, a clustered block of epigenomes opening anterior HOXA while most hold it repressed, but the 500 kb window buried it under the flanks' scattered calls. The window is now the cluster plus about 40 kb either side, so each HOXA column is wide enough that the anterior and posterior blocks read as separate groups of rows. Before/after in .review-visuals/chromhmm_*; if it still reads as noise to you, deleting it is reasonable, though the chromhmm tutorial then keeps only its clustering video as a result.",
-    "reviewedAt": "2026-09-14T13:50:57.846Z",
-    "hash": "6a6345cc371ee7230f6416898d453bbd5be371a8"
+    "status": "answered",
+    "note": "Rebuilt as a reproduction of Rinn et al. 2007 (Cell 129:1311) Fig. 3 on six of the 127 Roadmap epigenomes. Lung fibroblasts keep HOXA1-A7 active and HOXA9-A13 Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold both halves repressed. The 127-row clustering stays in the tutorial's video, so nothing covers the tree any more.",
+    "reviewedAt": "2026-09-17T08:24:55.576Z",
+    "hash": "9d453d3a8f0add5908469dcc71c15ff6cae4d6c8"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1171,10 +1171,10 @@
   },
   "gc_content": {
     "name": "gc_content",
-    "status": "bad",
-    "note": "why is the replication origin on the right called out, but not the terminus. is the terminus the true place that shows positive->negative skew? DONE: A third callout, Replication origin, points at the oriC band on the skew track. I kept the two arm labels, since they carry the leading/lagging reading that an origin label alone would drop.",
-    "reviewedAt": "2026-09-14T13:53:54.571Z",
-    "hash": "352dbaa37a11546619cecfc5e49cf808a7d4360c"
+    "status": "answered",
+    "note": "Yes. Reading left to right the skew flips from + to - at the terminus and from - to + at the origin, where the leading arm wraps through position 0. Both flips are now called out.",
+    "reviewedAt": "2026-09-17T08:24:55.981Z",
+    "hash": "684eeb5f1801f5c839fa4264b13e7d344681b1e8"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
@@ -1889,10 +1889,10 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
-    "note": "very unclear what this text means 'one end open...its partner falls outside the extracted window'. the user will just ask, well, how do i fix this???",
-    "reviewedAt": "2026-09-14T14:00:47.343Z",
-    "hash": "f7d8206c99615d7067e1ae48d26c76d6ba92b002"
+    "status": "answered",
+    "note": "The pill now says what the open end is and how to close it: the node's other link is outside the extracted region, and a wider region closes it. Here that region holds about 6,000 segments against the 48 drawn, which is why the figure keeps the narrow cut.",
+    "reviewedAt": "2026-09-17T08:24:56.352Z",
+    "hash": "daa3a295f6a6831fc844cf78e59f210b7227cd49"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
@@ -2113,8 +2113,8 @@
     "name": "dog10k-cyp1a2-nonsense",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:36:34.187Z",
-    "hash": "5a3326f511fec97693152823470145dd144553c9"
+    "reviewedAt": "2026-09-17T06:34:56.351Z",
+    "hash": "5895f09bf8c75ef88d5b1e858f6d9ec58c76fd1b"
   },
   "dog10k-denr-sine-deletions": {
     "name": "dog10k-denr-sine-deletions",
@@ -2126,9 +2126,9 @@
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
     "status": "good",
-    "note": "much less text annotation please",
-    "reviewedAt": "2026-09-14T03:36:51.230Z",
-    "hash": "bbfbac33f27b4b4f7c4e3ac64b33126a1f3b6295"
+    "note": "",
+    "reviewedAt": "2026-09-17T06:35:09.884Z",
+    "hash": "2363df97cf7544154dfd23d0c23dfc639c28e81e"
   },
   "mcscan_anchors": {
     "name": "mcscan_anchors",
@@ -2148,8 +2148,8 @@
     "name": "dog10k-nhej1-cea-deletion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:36:48.381Z",
-    "hash": "212189f714e7248aed6bb5a17dba695e544ecdb6"
+    "reviewedAt": "2026-09-17T06:35:08.018Z",
+    "hash": "b302921444d7497dbf3d2e2fa6001f40c9b021d5"
   },
   "pangenome/hprc_amylase_graph": {
     "name": "pangenome/hprc_amylase_graph",
@@ -2162,8 +2162,8 @@
     "name": "dog10k-igf1-haplotype",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:36:46.259Z",
-    "hash": "137901f9ca24de47c29d03f7b954f3acfb8b2c64"
+    "reviewedAt": "2026-09-17T06:35:06.333Z",
+    "hash": "236dbfa05e0402986a2e62c480d9827d936b65f7"
   },
   "dog10k-slc28a3-copy-number": {
     "name": "dog10k-slc28a3-copy-number",
@@ -2259,8 +2259,8 @@
     "name": "dog10k-fgf4-retrogene-synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:36:43.005Z",
-    "hash": "51ac4c2d8769cffab0b785bda90167122b55613f"
+    "reviewedAt": "2026-09-17T06:35:04.056Z",
+    "hash": "dfed6d9b98a8472ce3691212c1a0402288f4677a"
   },
   "pangenome/pggb_collapsed_repeat": {
     "name": "pangenome/pggb_collapsed_repeat",
@@ -2299,9 +2299,9 @@
   },
   "cancer_sv/k562_bcr_abl_split": {
     "name": "cancer_sv/k562_bcr_abl_split",
-    "status": "bad",
-    "note": "i'm not sure but this figure could benefit from 'derivative allele' also? with the derived gene structure on the resulting contig?",
-    "reviewedAt": "2026-09-14T13:49:02.729Z",
+    "status": "answered",
+    "note": "Left as is. K562 has no long-read DNA to build the derivative chromosome from (ENCODE's four K562 WGS runs are Illumina), and the Iso-Seq reads are spliced, so a reconstruction from them would build the fusion transcript rather than the der(22) allele.",
+    "reviewedAt": "2026-09-17T08:24:56.730Z",
     "hash": "97b7c05ef2c263057012d5e221dd251235538f5b"
   },
   "desktop-add-track-steps": {
@@ -2320,10 +2320,10 @@
   },
   "desktop-open-genome-steps": {
     "name": "desktop-open-genome-steps",
-    "status": "bad",
-    "note": "too many square boxes in figure 2 on the right. just remove the \"1\" and \"2\" square boxes. . these are distracting.",
-    "reviewedAt": "2026-09-14T13:53:09.570Z",
-    "hash": "858e076538fc42c191e7664749db3343ef35b267"
+    "status": "answered",
+    "note": "Removed the outline boxes around both controls; the numbered badges and labels stay.",
+    "reviewedAt": "2026-09-17T08:24:57.144Z",
+    "hash": "3abe3aafbffce2345539d0feaeb334ac28d68c12"
   },
   "pangenome/hprc_inversion": {
     "name": "pangenome/hprc_inversion",
@@ -2349,9 +2349,9 @@
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
     "status": "answered",
-    "note": "DONE: The hg38 row now has the truth-set track, and every split read stops exactly on one of its validated calls; a callout says so, and that is the independent evidence. The realigned lane below only shows the reads agree with each other, since those same reads built the consensus, and the caption and prose now say that. The reads are grey; the only colours left are the two connector colours the legend names.",
-    "reviewedAt": "2026-09-14T05:29:51.634Z",
-    "hash": "84b516105aaf3d0652ff59582bf9f204720a93ab"
+    "note": "Moved the hg38 label into the empty middle of the gene lane, off the gene name.",
+    "reviewedAt": "2026-09-17T08:24:57.593Z",
+    "hash": "a007631fc5aa5d5a761258e353a62998dfcc46b8"
   },
   "cancer_sv/multihop_tumour_vs_normal": {
     "name": "cancer_sv/multihop_tumour_vs_normal",
@@ -2369,10 +2369,10 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "bad",
-    "note": "might benefit from red text annotation on the 'pair/split reads overlap here' explaining why this is happening in the foldback, brief explaination, or use arrows on the bottom panel, pointin at the top. the synteny ribbons try to help i think, but it is confusing. also, the 'overlap' is specifically an inverted overlap, not sure if we want specialized colorin",
-    "reviewedAt": "2026-09-14T13:47:42.042Z",
-    "hash": "36f6b9811882655c74f45ac11c467dde77aff814"
+    "status": "answered",
+    "note": "One callout on the dark rows: each molecule crosses that chr3 stretch twice, forward and then inverted, which is the fold-back itself. The overlap colour is unchanged.",
+    "reviewedAt": "2026-09-17T08:24:58.054Z",
+    "hash": "d2ae04f5ce5cb26653e57ce7e87d5f147b2387f9"
   },
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
@@ -2390,10 +2390,10 @@
   },
   "pangenome/hprc_chm13_allele": {
     "name": "pangenome/hprc_chm13_allele",
-    "status": "bad",
-    "note": "this captured a 'computing layout' in the graph view, this is very undesirable loading states should not be captured in screenshot",
-    "reviewedAt": "2026-09-14T14:21:35.558Z",
-    "hash": "4fbe5bb2c7b97d6c0f8bd42275243a11c0fbafca"
+    "status": "answered",
+    "note": "The spec now waits for the force layout's loading overlay to clear, and no longer accepts an unsettled capture, so a spinner or a lane error fails the run instead of publishing.",
+    "reviewedAt": "2026-09-17T08:24:58.456Z",
+    "hash": "166bb6a9ec2d182016afe10d5cb67a6e87f5938b"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2481,9 +2481,9 @@
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
-    "status": "answered",
-    "note": "DONE: All three rows are real by independent evidence. Their junctions are truth-set calls validated by PCR or capture: truthset_34 for the fold-back, and truthset_35 then _36 on one molecule for the three-segment row. The truth set now carries onto the reference panel, with a callout where the ribbon leaves chr9 at a validated call. The segment labels now show how far the reads reach, where before they included a 2 kb flank and disagreed with the dialog.",
-    "reviewedAt": "2026-09-14T05:29:51.633Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T06:33:52.307Z",
     "hash": "97c8fe8a3fbb7d9262307b96cb9fc612b5e57751"
   },
   "hic/overlay_controls": {
@@ -2539,8 +2539,8 @@
     "name": "alignments/strand_split_coverage",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:31:24.665Z",
-    "hash": "27e117fe0f89ea4999c4d1b97d9306c8c65fb44d"
+    "reviewedAt": "2026-09-17T06:33:09.266Z",
+    "hash": "3ab884682229c7a3c21187b8e371c9ea0d734a5c"
   },
   "hic/bcr_abl1_translocation": {
     "name": "hic/bcr_abl1_translocation",
@@ -2555,13 +2555,6 @@
     "note": "",
     "reviewedAt": "2026-09-14T13:55:55.056Z",
     "hash": "af078966e2f54f71714211ba5f4881f56434fe33"
-  },
-  "hic/loops_and_domains": {
-    "name": "hic/loops_and_domains",
-    "status": "bad",
-    "note": "try to improve y-screen-real estate, and use arrow pointing at MYC gene, and only one text box. unclear why we have both 'contact domains' and 'hi-c loops'. is this significant?",
-    "reviewedAt": "2026-09-14T13:57:10.901Z",
-    "hash": "d3d41d5d32d4bca6354f47af1873aa9c2ebc4422"
   },
   "jbrowse-img/gene_name_search": {
     "name": "jbrowse-img/gene_name_search",
@@ -2649,24 +2642,17 @@
   },
   "genomes_msa/launch_sequence": {
     "name": "genomes_msa/launch_sequence",
-    "status": "answered",
-    "note": "DONE: the Rows to align box now wraps the field instead of cutting through its label, the domain key is collapsed over the fitted alignment, and the blank under the last frame is gone. What remains is the plugin's layout: the launch tiles the genome view beside the MSA, leaving that half mostly empty, and the tree takes half the MSA panel.",
-    "reviewedAt": "2026-09-14T06:11:48.596Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T06:35:36.370Z",
     "hash": "91af97b326f70014f5bb66de9cc9a59c7de1dad4"
-  },
-  "genomes_msa/pyrin_residues": {
-    "name": "genomes_msa/pyrin_residues",
-    "status": "answered",
-    "note": "DONE: zoomed out to 8x12 px cells, the smallest that still draw letters, with a narrower tree, so the whole pyrin domain and seventy rows are in frame. Rows with the pyrin call, a generic death-domain call, uncalled residues and gap all show, and the caption now names those four kinds.",
-    "reviewedAt": "2026-09-14T06:11:48.597Z",
-    "hash": "ca3fb18ded4b598e2a99d38bba1c80eb8f026a09"
   },
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
-    "status": "bad",
-    "note": "the red text might want to be closer to the track morevert, and then the arrow doesnt need to be connected to the red text blurb, it is just the transition across. also, can make both left and right sides a bit wider, ideally equal width",
-    "reviewedAt": "2026-09-14T14:18:03.206Z",
-    "hash": "28eaf8c1da83967ba136d549d4d25dd9efaae6d6"
+    "status": "answered",
+    "note": "Both halves are 1000 px wide, the route label sits next to the tumour track menu it starts from, and a separate arrow crosses the seam.",
+    "reviewedAt": "2026-09-17T08:25:01.783Z",
+    "hash": "d520c9ac24e48f76db0779db0425bb838bf3538e"
   },
   "feature_plotting_threads": {
     "name": "feature_plotting_threads",
@@ -2774,8 +2760,8 @@
     "name": "dog10k-diet-genes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:36:39.895Z",
-    "hash": "25d23a89785619338a22ca9adbe437229a43c4d9"
+    "reviewedAt": "2026-09-17T06:35:00.312Z",
+    "hash": "8f260b24089576b803189979d19ff119ec713447"
   },
   "dtu/dtu_colored_gene_glyph": {
     "name": "dtu/dtu_colored_gene_glyph",
@@ -2790,13 +2776,6 @@
     "note": "is there a 'story' here? not interesting. consider delete.\n\nDELETED. The per-base reading it carried is in exon_four_ways, which holds phyloP against the sequence and its translation at the same zoom and now has a story to put them in.",
     "reviewedAt": "2026-08-13T17:31:48.990Z",
     "hash": "ffdb22d314b0c75dae3b94f8b3c3f13e4ec998e3"
-  },
-  "genomes_basics/phylop_tp53": {
-    "name": "genomes_basics/phylop_tp53",
-    "status": "bad",
-    "note": "i dont think this is good storytelling. exons always have high conservation basically.",
-    "reviewedAt": "2026-09-14T13:54:26.104Z",
-    "hash": "5c196094a91efa79b06a4cf73a9379e159f507a2"
   },
   "pangenome/pggb_spur_linear": {
     "name": "pangenome/pggb_spur_linear",
@@ -2872,10 +2851,10 @@
   },
   "qc/smn_block_and_reads": {
     "name": "qc/smn_block_and_reads",
-    "status": "bad",
-    "note": "the 'trapezoid' is not well positioned, the top view might need whitespace cropping?",
-    "reviewedAt": "2026-09-14T14:03:32.476Z",
-    "hash": "a8bf343873f563f215631d227a154eb5c97d591b"
+    "status": "answered",
+    "note": "The top frame carried about 70 px of blank page under the app, so the wedge started below it. The frame now ends at the app and the wedge starts on it; its span was already right (70.85-71.5 Mb).",
+    "reviewedAt": "2026-09-17T08:25:02.223Z",
+    "hash": "5fe4459a0bfb4ebb61629808e0747a395d9362f9"
   },
   "pangenome/pggb_bubble_tier": {
     "name": "pangenome/pggb_bubble_tier",
@@ -2915,9 +2894,9 @@
   "hg002_haplotypes_follow_panel": {
     "name": "hg002_haplotypes_follow_panel",
     "status": "good",
-    "note": "previous screenshot had a nice simpl einsertion, noit shown now ",
-    "reviewedAt": "2026-09-14T03:39:47.293Z",
-    "hash": "46b3ce054e6c362ca31ece787136906d8c24391a"
+    "note": "",
+    "reviewedAt": "2026-09-17T06:36:29.591Z",
+    "hash": "68d6da9e68e9753403a978221cb78ead868d575c"
   },
   "jbrowse-img/sv_review_pair": {
     "name": "jbrowse-img/sv_review_pair",
@@ -2977,10 +2956,10 @@
   },
   "cancer_sv/k562_fusion_inspector_reads": {
     "name": "cancer_sv/k562_fusion_inspector_reads",
-    "status": "bad",
-    "note": "might want to filter out low-frequency arcs? zoom out more even?\n\nprevious notes:\nDONE: The arcs are right. I rebuilt every read's SA chain from the BAM: 252 molecules join chr9:131,199,015 to chr22:16,808,086, which is where the thick brown arcs land, and the other brown arcs and ticks are real smaller junctions (for example, 43 reads to an off-screen chr9 acceptor). What looked wrong were the purple splice-junction domes above the coverage, which are sashimi arcs rather than read connections, plus a palette clash: a bezier across the seam is coloured by orientation (purple) while its arc is coloured interchromosomal (brown). Sashimi arcs are now off and the figure is 150 px shorter; I left the palette clash alone because it is an app choice.",
-    "reviewedAt": "2026-09-14T13:49:38.341Z",
-    "hash": "67268f8c9f51ee10dbc4d60f8582acb0b10491bd"
+    "status": "answered",
+    "note": "Zoomed out further on both outer sides, and arcs whose other end is outside both windows are gone. The remaining thin arcs are single split reads, which the display exempts from its support floor on purpose (one chimeric long read is real evidence). Filtering them would need a new split-support setting.",
+    "reviewedAt": "2026-09-17T08:25:02.683Z",
+    "hash": "e380d8cd4801bb2d7f7e5051fc1d0f47eac6d273"
   },
   "jbrowse-img/sv_review_derivative": {
     "name": "jbrowse-img/sv_review_derivative",
@@ -3124,17 +3103,17 @@
   },
   "pangenome_cactus/graph_bubble": {
     "name": "pangenome_cactus/graph_bubble",
-    "status": "bad",
-    "note": "do you think it is worth plotting the 'deletion' nodes in the graph? could consider deleting\n\nprevious notes:\nDONE: one leader, 'the other four strains skip this node', in open canvas replaces the paragraph box. Bubble labels are off (they put a SNP halo on every joint and a second deletion label over the arc), and the capture lost its blank tail.",
-    "reviewedAt": "2026-09-14T14:20:13.001Z",
+    "status": "answered",
+    "note": "Kept as is. The dashed edge is the route the other four strains take around the IS1 node; without it the insertion looks like the only path and the callout points at nothing.",
+    "reviewedAt": "2026-09-17T08:25:03.153Z",
     "hash": "e02aaf6cc6573d6271a290f99171a858ca34c078"
   },
   "fetch_chain": {
     "name": "fetch_chain",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-14T14:40:52.766Z",
-    "hash": "40861732c60863a4814265f40a60f580a31c2ca7"
+    "reviewedAt": "2026-09-17T06:35:16.134Z",
+    "hash": "9acc9076ae524e8d33bb9d0932f368d06c63399e"
   },
   "rpc_lifecycle": {
     "name": "rpc_lifecycle",
@@ -3159,10 +3138,10 @@
   },
   "hg002_haplotypes_location_markers": {
     "name": "hg002_haplotypes_location_markers",
-    "status": "bad",
-    "note": "should 'square view' (same zoom level on both rows)",
-    "reviewedAt": "2026-09-14T13:55:37.721Z",
-    "hash": "240f485db0b7635e57deec3d61f876262c68b6a7"
+    "status": "answered",
+    "note": "Both rows now open on the same 60 kb span, so they share one bp/px, aligned at the insertion.",
+    "reviewedAt": "2026-09-17T08:25:03.544Z",
+    "hash": "33d32f5098dc33aef3f47c5c822a732b3dd0fa09"
   },
   "inversion_pair_orientation": {
     "name": "inversion_pair_orientation",
@@ -3269,26 +3248,12 @@
     "reviewedAt": "2026-08-24T05:48:34.037Z",
     "hash": "6a39d0740ff28b39cd1388c253d569fc0b1c75d1"
   },
-  "synteny_follow_unaligned": {
-    "name": "synteny_follow_unaligned",
-    "status": "bad",
-    "note": "this isnt good as a screenshot. consider deleting",
-    "reviewedAt": "2026-09-14T14:04:27.801Z",
-    "hash": "ee689399ca46e58198eb643e155cd6cbbf48df77"
-  },
   "synteny_offscreen_mates": {
     "name": "synteny_offscreen_mates",
     "status": "good",
     "note": "",
     "reviewedAt": "2026-08-24T05:48:56.669Z",
     "hash": "42129875e61ddf4503a66994f1289738a9191539"
-  },
-  "synteny_offscreen_mates_click": {
-    "name": "synteny_offscreen_mates_click",
-    "status": "bad",
-    "note": "i previously mentioned our figure for this was not good. this might be slightly better, but still is not that powerful of a demo\n\nprevious notes:\nDONE: it now drives the click instead of declaring two sessions. The top frame hovers a mark, whose tooltip names the grape chromosome, counts the alignments and says a click adds it; the bottom frame is the click's own result, the grape panel on that mate's locus with the mark drawn as a ribbon. The old second frame showed the whole mate contig, which is not what a click does.",
-    "reviewedAt": "2026-09-14T14:04:53.527Z",
-    "hash": "b0190e92cc5c386705386fefc6b6bc73b62bdf96"
   },
   "alphagenome/accessibility_shared_axis": {
     "name": "alphagenome/accessibility_shared_axis",
@@ -3376,10 +3341,10 @@
   },
   "circular_view/coverage_ring_chords": {
     "name": "circular_view/coverage_ring_chords",
-    "status": "bad",
-    "note": "need finer-grain coverage...too blocky",
-    "reviewedAt": "2026-09-14T13:52:15.836Z",
-    "hash": "d95df68f1d0eadc12c2d6512f70f8b0a38bb353c"
+    "status": "answered",
+    "note": "Coverage is at the bigWig's own resolution now: the ngmlr_cov track no longer sets resolutionMultiplier 10. The legend is still an overlay, as on circular_synteny/rings.",
+    "reviewedAt": "2026-09-17T08:25:03.913Z",
+    "hash": "ff7e761202d13bd78329e2504397d3709ea54d9f"
   },
   "circular_synteny/x_control": {
     "name": "circular_synteny/x_control",
@@ -3411,23 +3376,16 @@
   },
   "linkage_groups/alg_dotplot_res_emu": {
     "name": "linkage_groups/alg_dotplot_res_emu",
-    "status": "bad",
-    "note": "this one is fairly good and not sparse, but others like linkage_groups/alg_dotplot_res_cow are sparse. why? DONE: Now a spec over the page's own session, against a new hosted demo (jbrowse.org/demos/odp_linkage_groups) built from the Dryad tables the way the tutorial does. The sponge's unplaced scaffolds are off the axis, ungrouped orthologs are grey, chromosomes are sorted, dots are larger and the legend is closed. A red box marks A1a as one block, the group the page's table follows, with the grey scatter around it as the contrast.",
-    "reviewedAt": "2026-09-14T13:58:42.311Z",
+    "status": "answered",
+    "note": "The comb jelly and Capsaspora plots were sparse because the BCnS groups were defined on sponge, cnidarian and bilaterian chromosomes, and those two genomes do not keep them. Both plots are deleted; the six-genome stack carries the comb jelly fan-out.",
+    "reviewedAt": "2026-09-17T08:25:04.351Z",
     "hash": "cbf612b57ab766f6017a70cb0b46aed750e08191"
-  },
-  "linkage_groups/alg_dotplot_res_hca": {
-    "name": "linkage_groups/alg_dotplot_res_hca",
-    "status": "bad",
-    "note": "still looks sparse DONE: Same spec and hosted demo as the sponge plot, with larger dots, which is what makes the loose clusters readable. The A1a column is boxed and labelled 'several comb jelly chromosomes', so the reader follows the same group from its single sponge block into its spread here.",
-    "reviewedAt": "2026-09-14T13:58:16.064Z",
-    "hash": "f1b636185a80736f02ac140f5bc5ac38d8f533c1"
   },
   "linkage_groups/alg_stack": {
     "name": "linkage_groups/alg_stack",
-    "status": "bad",
-    "note": "is the 'ordering' of the chromosomes on each row ideal do you think? previous notes: DONE: The figure is now a spec over the page's own session on the new hosted demo (jbrowse.org/demos/odp_linkage_groups), with the legend closed and a header that no longer truncates. The rows are named by species (Bolinopsis (comb jelly), Hormiphora (comb jelly) and so on). That needed an app fix first: when a row's first chromosome was too narrow for the folded name, the next chromosome's label drew over the name chip.",
-    "reviewedAt": "2026-09-14T13:59:30.095Z",
+    "status": "answered",
+    "note": "Not ideal. autoDiagonalize sweeps top-down from Bolinopsis in its own file order, so every row below, the jellyfish included, is ordered off a comb jelly. The clean order pins the jellyfish row, whose chromosomes are the linkage groups, and sorts outward both ways; Re-order chromosomes has no anchor row yet, so that is an app change, not made in this pass.",
+    "reviewedAt": "2026-09-17T08:25:04.746Z",
     "hash": "325420f589fe74103dd19c36af43894643f3d361"
   },
   "maf_row_menu": {
@@ -3705,17 +3663,17 @@
   },
   "protein/tp53_hotspot": {
     "name": "protein/tp53_hotspot",
-    "status": "bad",
-    "note": "the side-by-side view is needed for lineargenome on left, proteinview on right",
-    "reviewedAt": "2026-09-14T14:02:58.314Z",
-    "hash": "cca215e6e737f4e5ca80a1bfff3bdb4f02cdbab0"
+    "status": "answered",
+    "note": "Genome view on the left, protein view on the right: the spec now uses the plugin's sideBySide launch.",
+    "reviewedAt": "2026-09-17T08:24:54.598Z",
+    "hash": "246530a885a9c2738dcb06867726339906484d8f"
   },
   "protein/tp53_mapped_chain": {
     "name": "protein/tp53_mapped_chain",
-    "status": "bad",
-    "note": "the side-by-side view is needed for lineargenome on left, proteinview on right\n\nprevious notes:\nDONE: same stacked layout without ClinVar, and a red box plus leader label mark Chain B as the p53 peptide the transcript encodes.",
-    "reviewedAt": "2026-09-14T14:03:02.869Z",
-    "hash": "03c36281a41f1dce38b6cdfe21dcca279b037eb1"
+    "status": "answered",
+    "note": "Genome view on the left, protein view on the right: the spec now uses the plugin's sideBySide launch.",
+    "reviewedAt": "2026-09-17T08:24:55.125Z",
+    "hash": "f79b1168301a62f60fc8000d2d8fc0372d4d2da8"
   },
   "protein/tp53_three_structures": {
     "name": "protein/tp53_three_structures",
@@ -3752,26 +3710,19 @@
     "reviewedAt": "2026-09-14T14:04:01.687Z",
     "hash": "4cf4b4cf3ebd164e4797247339b984fac2f559d3"
   },
-  "linkage_groups/alg_dotplot_res_cow": {
-    "name": "linkage_groups/alg_dotplot_res_cow",
-    "status": "bad",
-    "note": "Still looks sparse, it is uninformative. ",
-    "reviewedAt": "2026-09-14T13:58:03.178Z",
-    "hash": "1f8114969c55d88cae10615d9c53aacb09813ed5"
-  },
   "alu_age/young_share": {
     "name": "alu_age/young_share",
-    "status": "bad",
-    "note": "i dont quite understand the strand split. also, if a more 'fine grain' window size than per-mb still tells similar story, could use more fine grain",
-    "reviewedAt": "2026-09-14T13:45:34.236Z",
-    "hash": "691d78dee194fab10f68dc35baefc3dbeed50913"
+    "status": "answered",
+    "note": "Removed the strand lane; the strand control stays in the statistics table. Finer windows weaken the trend rather than sharpen it (Spearman rho -0.69 at 1 Mb, -0.63 at 500 kb, -0.52 at 250 kb, -0.36 at 100 kb) as per-bin counts get noisy, so the figure stays at 1 Mb.",
+    "reviewedAt": "2026-09-17T08:25:05.105Z",
+    "hash": "5c0fd9b062e1210d629592950a7dbcf88ce7c33c"
   },
   "cancer_sv/k562_amplicon_dna": {
     "name": "cancer_sv/k562_amplicon_dna",
-    "status": "bad",
-    "note": "too many redtext box annotations, unclear what they are indicating. need arrows connecting to  particular positions to tell story potentially.",
-    "reviewedAt": "2026-09-14T13:48:26.073Z",
-    "hash": "4656f5023b427712528af6a883f65d4e5d27c7c6"
+    "status": "answered",
+    "note": "Three short labels, each with an arrow to the call it names: the two RNA junctions and the break to chr13. The ticks are the display's breakend glyph, a stem with a tick toward the side the derivative keeps, which the tutorial reads, so they stay.",
+    "reviewedAt": "2026-09-17T08:25:05.514Z",
+    "hash": "b4187d45b733a7fa5747e907cbdb82abd723cae6"
   },
   "gene_track_group_by_strand": {
     "name": "gene_track_group_by_strand",
@@ -3782,10 +3733,10 @@
   },
   "pangenome/mouse_nnt": {
     "name": "pangenome/mouse_nnt",
-    "status": "bad",
-    "note": "this is not a good figure. it is too complex, the rainbow coloring is not used in the lineargenomeview, the allele inventory tracks are almost always uninformative to me, and i have no idea what this is showing. consider delete this figure, unless we can SIGNIFICANTLY improve it",
-    "reviewedAt": "2026-09-14T14:01:40.158Z",
-    "hash": "d3f7eabd72307421a0bb487ae4c2cb63b5fc6a07"
+    "status": "answered",
+    "note": "Rebuilt: RefSeq genes and the rGFA segments in the graph's own reference-position colours over the anchored graph, no allele inventory or bubble lanes, bubble labels off, and one callout naming the insertion as the C57BL/6J Nnt deletion, seen from a reference that is C57BL/6J.",
+    "reviewedAt": "2026-09-17T08:25:05.944Z",
+    "hash": "91c63e206d9f090c93443ee9c9de1fbfb3f5f654"
   },
   "sv_cgiab/dotplot_haplotypes": {
     "name": "sv_cgiab/dotplot_haplotypes",
@@ -3807,5 +3758,40 @@
     "note": "this just has solid grey rows across every comparison in the multiwaysyntenydisplay. this seems like a bug. the origin/main screenshot did not have this",
     "reviewedAt": "2026-09-14T14:22:01.287Z",
     "hash": "4d0fee5250dad9afa4341d75b0084efb6759dd99"
+  },
+  "agent_synteny/dotplot_arms": {
+    "name": "agent_synteny/dotplot_arms",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T06:32:39.689Z",
+    "hash": "226ec04c647aaff82c800c0899fe251a49a9d3aa"
+  },
+  "agent_synteny/comparison_built": {
+    "name": "agent_synteny/comparison_built",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T06:32:42.074Z",
+    "hash": "747df9deac5f19ca9c95fbc4480371d45651a9c8"
+  },
+  "agent_synteny/inversion_2r": {
+    "name": "agent_synteny/inversion_2r",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T06:32:46.220Z",
+    "hash": "3a7f45eaad9be9cc21de8d0247abac277b893cc7"
+  },
+  "agent_synteny/inversion_x": {
+    "name": "agent_synteny/inversion_x",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T06:32:52.399Z",
+    "hash": "0dc21d402ebef06fe602ccdde7d5f2933c10dde5"
+  },
+  "gene_prediction_merge": {
+    "name": "gene_prediction_merge",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T06:35:22.407Z",
+    "hash": "001d028ba8ad5d3577f361443a23b8ff83529a99"
   }
 }

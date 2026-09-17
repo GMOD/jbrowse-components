@@ -426,6 +426,7 @@ export function isSupportedIndexingAdapter(type = '') {
 // needing insertion order builds its own Map (see tree-sidebar's CLAUDE.md).
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
   const result: Record<string, T[]> = Object.create(null)
+  // eslint-disable-next-line unicorn/prefer-group-by -- Object.groupBy types its result Partial, which would widen every caller's Object.values to `T[] | undefined`
   for (const value of array) {
     const t = predicate(value)
     result[t] ??= []
