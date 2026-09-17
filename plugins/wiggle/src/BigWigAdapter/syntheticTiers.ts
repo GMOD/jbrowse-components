@@ -7,11 +7,9 @@ export interface BigWigRegionArrays extends RawFeatureArrays {
   ends: Int32Array
 }
 
-// Two, because a writer puts a file's first level at 10-40x its data's record
-// spacing (UCSC starts at 10x the mean span and quarters until a level halves
-// the data), so under the second synthetic tier's floor the raw section already
-// holds about a feature a pixel. A third tier would sit at or under the data's
-// own resolution, where binning only costs a refetch.
+// Two, because under the second tier's floor the raw section already holds
+// about a row a pixel on the files ADR-129 measures, and a third tier's bins
+// would not halve the rows there, so binning would only cost a refetch.
 const SYNTHETIC_TIER_COUNT = 2
 
 const MIN_SYNTHETIC_BIN_BP = 2
@@ -237,8 +235,9 @@ function rawSlice(
  * The region's raw records come back instead, with no min/max, only when the
  * records overlap or run out of order, which a BigWig's raw section forbids.
  * Whether a zoom bins at all is the file's call (`syntheticReductionLevels`),
- * never the region's, so a locus reads the same at a zoom however it is
- * fetched.
+ * never the region's, so a base reads the same value at a zoom however it is
+ * fetched. A merged row's bounds do follow the fetch: the extent's edge cuts a
+ * run of identical bins, since the bins past it aren't known.
  */
 export function binRawRegion(
   starts: Int32Array,

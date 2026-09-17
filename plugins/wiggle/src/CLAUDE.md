@@ -90,13 +90,14 @@ typed args survive — plus multi-wiggle's structural `sources` argument.
 
 `BigWigAdapter` puts up to two synthetic tiers in front of the file's zoom
 levels (ADR-129). The range `getZoomRange` declares and the tier a fetch reads
-come from one `tierSpanRange` call over that combined list, so the two cannot
-drift apart. A synthetic fetch reads the raw section over bin-aligned extents
-and bins each region with `binRawRegion`. **Whether a zoom bins is the file's
-call, never the region's**: a bin under twice the mean record span, sampled once
-per file, leaves the ladder. A per-region test let a pan flip one locus between
-bins and raw at one zoom. Only overlapping or out-of-order records, which the
-format forbids, still answer raw at a synthetic zoom.
+come from two `tierSpanRange` calls, which `tierLevels` hands the same combined
+list, so the two cannot drift apart. A synthetic fetch reads the raw section
+over bin-aligned extents and bins each region with `binRawRegion`. **Whether a
+zoom bins is the file's call, never the region's**: a bin under twice the mean
+record span, sampled once per file, leaves the ladder. A per-region test let a
+pan flip one locus between bins and raw at one zoom. Only overlapping or
+out-of-order records, which the format forbids, still answer raw at a synthetic
+zoom.
 
 ## Multi-wiggle's rows are a getter over `rpcDataMap`
 
