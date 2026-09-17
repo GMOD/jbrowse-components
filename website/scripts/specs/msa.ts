@@ -17,11 +17,12 @@ import type {
 //
 // The Orthologs tab shipped in the release after jbrowse-plugin-msaview 2.7.3,
 // and the plugin store `latest/` bundle this config loads now serves it: every
-// label the stages gate on ("Orthologs (fast)", "Query species", "Rows to
-// align") is a literal in that bundle. Before that release the store served a
-// BLAST-only dialog, stage 2 found no such tab, and stage 3 waited out its
-// timeout with no alignment to gate on. A stage that fails that way is the
-// store lagging a release, not a broken spec.
+// label the stages gate on ("Orthologs", "Query species", "Rows to align") is a
+// literal in that bundle. Before that release the store served a BLAST-only
+// dialog, stage 2 found no such tab, and stage 3 waited out its timeout with no
+// alignment to gate on. A stage that fails that way is the store lagging a
+// release, not a broken spec. The tab was labelled "Orthologs (fast)" until the
+// store bundle dropped the parenthetical, which failed the stage the same way.
 //
 // "Rows to align" replaced a grid of 23 species checkboxes in 2.10.0, which is
 // also what made these figures dense: the checkbox list was intersected with
@@ -85,7 +86,7 @@ const RIGHT_CLICK_NLRP1: ScreenshotAction = {
 // ready" rather than a guess at how long the fetch takes.
 const OPEN_LAUNCH_DIALOG: ScreenshotAction[] = [
   { type: 'click', text: 'Launch MSA view' },
-  { type: 'waitForText', text: 'Orthologs (fast)' },
+  { type: 'waitForText', text: 'Orthologs' },
   {
     type: 'waitForSelector',
     selector: 'button:not([disabled])::-p-text(Submit)',
@@ -227,7 +228,7 @@ export const msaSpecs: ScreenshotSpec[] = [
       {
         actions: OPEN_LAUNCH_DIALOG,
         annotations: [
-          { type: 'box', anchor: { text: 'Orthologs (fast)' } },
+          { type: 'box', anchor: { text: 'Orthologs' } },
           {
             type: 'box',
             anchor: {
@@ -258,15 +259,15 @@ export const msaSpecs: ScreenshotSpec[] = [
           // of stepping 0.75x per click toward a floor that would still leave
           // the C terminus off the right edge.
           //
-          // The selector is the toolbar button's `tooltip` prop, which msaview
-          // passes straight through to the MUI IconButton and React therefore
-          // renders as a DOM attribute. That is the only thing distinguishing
-          // this button from the five icon buttons beside it, which carry no
-          // aria-label; if the plugin ever wraps it in a real MUI Tooltip the
-          // attribute goes away and this stage fails on the selector.
+          // The selector is the toolbar button's `tooltip` prop, which
+          // CascadingMenuButton now puts on the MUI IconButton as its
+          // `aria-label` while a real MUI Tooltip carries the title. It is the
+          // only thing distinguishing this button from the icon buttons beside
+          // it. An earlier bundle passed the prop through as a raw `tooltip`
+          // DOM attribute, and that spelling is what this stage used to match.
           {
             type: 'click',
-            selector: 'button[tooltip="Fit / zoom options"]',
+            selector: 'button[aria-label="Fit / zoom options"]',
           },
           { type: 'click', text: 'Fit horizontally' },
           { type: 'delay', ms: 1000 },

@@ -201,7 +201,7 @@ export const proteinVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Launch MSA view' },
       { type: 'click', text: 'Launch MSA view' },
-      { type: 'waitForText', text: 'Orthologs (fast)' },
+      { type: 'waitForText', text: 'Orthologs' },
       // Fewer than the dialog's own default of 100: this clip's point is the
       // tiling, not the aligner queue, and a smaller alignment also reads
       // better in a column a third of the screen wide.
@@ -228,13 +228,13 @@ export const proteinVideos: VideoSpec[] = [
       // `orthologParams` clears, so the toolbar appearing IS the gate.
       {
         type: 'waitForSelector',
-        selector: 'button[tooltip="Fit / zoom options"]',
+        selector: 'button[aria-label="Fit / zoom options"]',
         timeout: 300000,
         cut: true,
       },
       {
         type: 'click',
-        selector: 'button[tooltip="Fit / zoom options"]',
+        selector: 'button[aria-label="Fit / zoom options"]',
         say: 'Fit the alignment to its panel',
       },
       { type: 'click', text: 'Fit horizontally' },

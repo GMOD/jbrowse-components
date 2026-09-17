@@ -126,13 +126,13 @@ add tracks to, so it is absent from the single-view embedded components.
 <Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, where everything it can build is listed, and the 1D annotation view. The view opens with none of its tracks on; DNA binding, Natural variant, AlphaFold confidence and AlphaMissense scores come on from Session tracks in the selector." />
 
 The dialog's other two tabs take a structure from elsewhere: **Foldseek search**
-finds structures resembling the protein's own, and **Open file manually** takes
-a PDB or mmCIF file of yours.
+finds structures resembling the protein's own, and **File or URL** takes a PDB
+or mmCIF file of yours.
 
 ## Launching an MSA
 
 **Launch MSA view** on the same right-click menu builds a cross-species protein
-MSA. The dialog opens on its **Orthologs (fast)** tab, and three fields matter:
+MSA. The dialog opens on its **Orthologs** tab, and three fields matter:
 
 - **Query species** is the species the gene came from, free text resolved
   against NCBI's taxonomy: a scientific name, a common name or a taxon id
@@ -145,7 +145,7 @@ MSA. The dialog opens on its **Orthologs (fast)** tab, and three fields matter:
 is where the wait is. The cost scales with the row count.
 
 NCBI publishes one ortholog gene per species for most annotated genes. A gene
-with no resolvable symbol goes through the dialog's **NCBI BLAST query** tab.
+with no resolvable symbol goes through the dialog's **BLAST query** tab.
 
 Press **Submit**. A multiple sequence alignment view opens below the genome
 view, with a tree on the left, the alignment beside it, and the conserved-domain
