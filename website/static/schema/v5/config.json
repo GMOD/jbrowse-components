@@ -3776,7 +3776,7 @@
           }
         },
         "groupBy": {
-          "description": "In-track stacked grouping, e.g. `{ type: \"strand\" }` to pre-group reads by strand (null = ungrouped). Any JSON value: the slot is `frozen`, so its shape is not checked here.",
+          "description": "In-track stacked grouping, e.g. `{ type: \"strand\" }` to pre-group reads by strand, or `{ type: \"tag\", tag: \"HP\", domain: [\"2\", \"1\"] }` for one section per tag value with the listed values stacked first in that order (null = ungrouped). Any JSON value: the slot is `frozen`, so its shape is not checked here.",
           "default": null
         },
         "collapseGroupRows": {
@@ -4279,7 +4279,7 @@
           }
         },
         "groupBy": {
-          "description": "In-track stacked grouping, e.g. `{ type: \"strand\" }` to pre-group reads by strand (null = ungrouped). Any JSON value: the slot is `frozen`, so its shape is not checked here.",
+          "description": "In-track stacked grouping, e.g. `{ type: \"strand\" }` to pre-group reads by strand, or `{ type: \"tag\", tag: \"HP\", domain: [\"2\", \"1\"] }` for one section per tag value with the listed values stacked first in that order (null = ungrouped). Any JSON value: the slot is `frozen`, so its shape is not checked here.",
           "default": null
         },
         "collapseGroupRows": {

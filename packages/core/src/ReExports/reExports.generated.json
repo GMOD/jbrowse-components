@@ -3071,6 +3071,7 @@
         "MAX_GROUPS",
         "OVERFLOW_GROUP_KEY",
         "capGroupKeys",
+        "carryGroupDomain",
         "compareGroupKeys",
         "groupKeyComparator",
         "groupKeySpaceOf",

@@ -253,8 +253,10 @@ The shared pieces are the key order and the `MAX_GROUPS` cap
 (`packages/core/src/util/groupKeys.ts`, in core so a worker can reach them):
 a facet channel's `domain` lists the sections that stack first, the rest
 follow sorted, and the cap counts in that order, so the multi-row `rowOrder`,
-the feature display's `groupBy.domain` and the mark's `facet.domain` are one
-rule (`groupKeyComparator`),
+the feature and alignments displays' `groupBy.domain`, the mark's
+`facet.domain` and the colour and glyph channels' legend order are one rule
+(`groupKeyComparator`); a re-pick of the same grouping from a menu keeps the
+domain (`carryGroupDomain`), and a reorder is `setGroupBy` with a new one,
 the radio submenu (`groupByMenu.ts`), the chips and dividers
 (`GroupLabelChips.tsx`), and the hidden sections with their key-space reset
 (`HiddenGroupsMixin.ts`). The multi-row display's `partitionField` is the same
