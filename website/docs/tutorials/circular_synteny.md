@@ -169,8 +169,9 @@ twist between its two ends.
 ## Ordering the second genome
 
 The human and mouse arcs run the same way round the circle, so a mouse
-chromosome laid out in its own contig order sits opposite the human chromosome
-it does not align to, and each ribbon crosses the middle to reach its partner.
+chromosome laid out in its native contig order sits opposite the human
+chromosome it does not align to, and each ribbon crosses the middle to reach its
+partner.
 
 `autoDiagonalize` is the reorder the
 [linear synteny view](/docs/user_guides/linear_synteny_view) and the
