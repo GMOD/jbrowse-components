@@ -116,7 +116,14 @@ HPRC's file ships no guide tree; **Reset row order** puts back whatever the file
 supplied. Then cut the window from the segments track with **Launch → Graph
 genome view (this region)** for the graph pane under all four.
 
-<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's haplotypes clustered by genotype (grey reference, teal alt allele, magenta other alt, tan no call, an insertion widened to the inserted length with that bp count inside), a subtree of those haplotypes as alignment rows clustered by identity, grey where a haplotype aligns to GRCh38 and white where it has no aligned sequence, and the same window as a force-directed subgraph in reference-position colors with its bubbles haloed. The band marks the pseudogene pair between C4A and C4B; the haplotypes with no aligned sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's haplotypes clustered by genotype (grey reference, teal alt allele, magenta other alt, tan no call, an insertion widened to the inserted length with that bp count inside), a subtree of those haplotypes as alignment rows clustered by identity, grey where a haplotype aligns to GRCh38 and white where it has no aligned sequence, and the same window as a force-directed subgraph in reference-position colors. The band marks the pseudogene pair between C4A and C4B; the haplotypes with no aligned sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
+
+:::tip 💡 See also
+
+[Part 1](/docs/tutorials/pangenome_hprc#reading-what-you-cut) labels the
+backbone, an allele and a bubble on the C4 cut.
+
+:::
 
 The figure keeps thirty-two haplotype rows so each has the height for its name
 beside it; the track as configured above draws every haplotype. The
@@ -267,6 +274,14 @@ GRCh38, and the carriers' own annotations have no model there.
 
 <Figure caption="The CFH cluster's eight lanes read from the graph at load time, the non-carriers above the carriers, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's CAT genes at that haplotype's coordinates over it: a lane whose genes stop where hg38's CFHR3 and CFHR1 are is a haplotype that lacks them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
+:::tip 💡 See also
+
+[Synteny from a pangenome graph](/docs/tutorials/hprc_multiway_synteny#the-cfh-cluster-eight-haplotypes)
+places the same eight haplotypes from the graph's own alignment, unpacked
+offline into a whole-genome index.
+
+:::
+
 `GbzBaseSyntenyAdapter` locates a window on GRCh38's own path through the graph
 and emits one record per haplotype walk, in that haplotype's contig coordinates
 and carrying the walk's CIGAR. Upstream gbz-base reports `unknown#1`,
@@ -300,10 +315,12 @@ loop. Now open the **Walk** dropdown and pick `HG00133`: its route stays
 colored, the rest fades, and a readout gives its length against the reference
 walk.
 
-<Figure caption="The KIV-2 array cut from the GBZ for eight haplotypes, force-directed under the same window's genes, bubble and rGFA segments, with HG00133's walk lifted. Nodes on the walk keep their reference-position color, red to magenta across the window, and every node the walk does not visit fades to grey. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout at the top right states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
+:::tip 💡 See also
 
-[Part 4](/docs/tutorials/pangenome_graph_reading) walks through that drawing
-from the rGFA window to the lifted haplotype.
+[Part 4](/docs/tutorials/pangenome_graph_reading#lift-one-haplotype-out) draws
+this cut with `HG00133` lifted, and walks through it from the rGFA window.
+
+:::
 
 ### Preparing a graph of your own {#preparing-a-gbz-base-database}
 
@@ -383,8 +400,6 @@ With that track in the session, open the graph pane's **Launch** menu and pick
 **Linear synteny view (2 assemblies)**. It opens hg38 over hs1, each panel
 already at the interval the graph gives for it. Without such a track the entry
 stays, greyed out, and its tooltip names what is missing.
-
-<Figure caption="The graph's own Launch menu at the CHM13 window, with hg38 and hs1 loaded and the liftOver between them in the session. Above, the hg38 window and the cut in reference-position colors, the CHM13 node ringed. Below, the synteny view the Linear synteny view entry opened: hg38 over hs1, each panel framed on the locus the graph gives for it, with the liftOver alignment drawn as pink ribbons between them and the node as one dark bar on hs1." src="/img/pangenome/hprc_synteny_launch.png" />
 
 ## Reproduce it end to end
 

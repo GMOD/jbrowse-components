@@ -190,15 +190,17 @@ const HPRC_MAF_ROWS = [
 
 // The C4 window maf_hprc_pangenome opens, as the two shapes the session needs:
 // a locus for the linear view and a region for the subgraph the graph pane cuts.
+// It is pangenome/hprc_graph_anatomy's window, so part 3's pane is the cut part 1
+// labels.
 // One pair of numbers, because the reference-position ramp below is a function
 // of the graph's own loadedRegion — a second copy is how a block above and a
 // node below come out different colors for the same bp.
-const HPRC_C4_LOCUS = 'chr6:31,972,057-32,055,418'
+const HPRC_C4_LOCUS = 'chr6:31,980,000-32,050,000'
 const HPRC_C4_REGION = {
   refName: 'chr6',
   assemblyName: 'hg38',
-  start: 31972056,
-  end: 32055418,
+  start: 31980000,
+  end: 32050000,
 }
 
 // CYP21A1P and TNXA, the pseudogene pair of the second RCCX module. Marked
@@ -970,6 +972,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           loadedRegion: HPRC_C4_REGION,
           layoutMode: 'force',
           colorScheme: 'reference-position',
+          showBubbles: false,
         },
       ],
     }),
@@ -1050,7 +1053,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         textAlign: 'end' as const,
         anchor: {
           track: 'hprc_v2_0_mc_grch38',
-          locus: 'chr6:32,053,500',
+          locus: 'chr6:32,049,000',
           fracY: 0.12,
         },
       },

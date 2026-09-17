@@ -273,8 +273,6 @@ a collapsed repeat is either dropped or assigned to one copy.
 A [dotplot](/docs/user_guides/dotplot_view) reads the same PIF. A stretch the
 strain traverses backwards descends, so every inversion is visible at once.
 
-<Figure caption="The untangle projection as a dotplot, K12 against IAI39. The descending segments are inversions, and the boxed one is boxed again in the per-strain figure below." src="/img/pangenome/pggb_untangle_dotplot.png" />
-
 Untangle indexes every step of every path, so it is the slower of the two;
 restrict `-Q` to the paths you need on a base-level graph.
 
@@ -332,9 +330,9 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
 file's `itemRgb`. The white gaps are where a strain has no untangle segment on
 that stretch of K12.
 
-<Figure caption="odgi untangle over the whole K12 chromosome, one row per strain, red where the strain runs backwards and white where it has no segment at all. Only IAI39 is inverted at length." src="/img/pangenome/pggb_untangle_rows.png" />
+<Figure caption="The untangle projection read two ways, with the same inverted arm boxed in both. Above, one row per strain over the whole K12 chromosome, red where the strain runs backwards and white where it has no segment at all; only IAI39 is inverted at length. Below, K12 against IAI39 as a dotplot, where every descending segment is an inversion." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
 
-The box marks the same 594 kb arm in both figures. `selfCov` in the popup goes
+The box marks the same 594 kb arm in both panels. `selfCov` in the popup goes
 above 1 where a segment lands on a reference span the same strain also lands on
 elsewhere, so `jexl:feature.selfCov>1` in **Edit filters** cuts the lane to the
 collapsed repeats.
@@ -586,6 +584,14 @@ at the prophage boundary is joined to its other half, and reads long enough to
 cross the element carry it as a single labelled deletion.
 
 <Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the graph's depth curve and its MAF below. All four lanes break at the edges of the cryptic prophage CPZ-55." src="/img/pangenome/long_reads.png" />
+
+:::tip 💡 See also
+
+[The Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus#whole-genome-alignment-maf-projection)
+draws this window from its own graph's MAF, which breaks at the same prophage
+edges.
+
+:::
 
 `odgi depth` counts path **steps**, and the graph collapses the rRNA operons
 into one copy every strain walks several times, so those windows read above the
@@ -863,8 +869,6 @@ Clicking a node opens its details, which on a graph indexed this way include
 **`carriedBy`**: every haplotype whose path walks that segment, recorded by
 `build_pggb_tabix.sh` as an `SM:Z:` tag. **`contributingAssembly`** in the same
 panel is the field an rGFA has to use, and there `SR` is build order.
-
-<Figure caption="A backbone segment clicked in the graph. carriedBy names the four strains whose paths walk it; contributingAssembly lists only K12, which is all an rGFA could report." src="/img/pangenome/pggb_carriage.png" />
 
 #### Carriage as a linear lane
 

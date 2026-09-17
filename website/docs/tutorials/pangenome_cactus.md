@@ -307,6 +307,14 @@ already rooted on K12, the streaming
 
 <Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. The four non-K12 rows stop at the edges of the cryptic prophage CPZ-55, which K12 alone carries." src="/img/pangenome_cactus/maf.png" />
 
+:::tip 💡 See also
+
+[The pggb tutorial](/docs/tutorials/pangenome_ecoli#pangenome-depth-projection-core-vs-accessory)
+frames the same prophage under an unrelated isolate's nanopore reads, the depth
+curve and pggb's MAF, and all of them break at its edges.
+
+:::
+
 A row can be blank for two reasons: no colored columns is sequence shared with
 K12, and a row that stops is a strain with no alignment to K12 there. The
 coverage band separates the two cases.

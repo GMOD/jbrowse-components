@@ -111,15 +111,19 @@ haplotypes from the callset: haplotypes with identical genotypes at every
 structural site in the window share a configuration, and each lane stands for
 one configuration, largest group first, up to eight.
 
-<Figure caption="The CFH / CFHR haplotypes launch: hg38's RefSeq genes above eight haplotype lanes, each in its own contig coordinates. The first lane, HG002#1, stands for the largest group: its walk skips the boxed stretch holding CFHR3 and CFHR1, so the ribbon from hg38 past that stretch slants back to meet it. The seven lanes under it run through the whole window." src="/img/pangenome/genomes_hprc_cfhr_haplotypes.png" />
+The largest configuration at this locus skips the common CFHR3-CFHR1 deletion
+[(Hughes et al. 2006)](https://doi.org/10.1038/ng1890). **Lanes → Choose
+lanes...** in the track menu swaps in any other haplotype the graph names. A row
+with no haplotypes launch is a locus whose window holds no top-level structural
+site in the callset.
 
-The skipped stretch is the common CFHR3-CFHR1 deletion
-[(Hughes et al. 2006)](https://doi.org/10.1038/ng1890).
-[Part 3](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph) opens the
-same lane track on a panel of four deletion carriers and four non-carriers, each
-carrying its own gene models, and **Lanes → Choose lanes...** in the track menu
-swaps in any other haplotype the graph names. A row with no haplotypes launch is
-a locus whose window holds no top-level structural site in the callset.
+:::tip 💡 See also
+
+[Part 3](/docs/tutorials/pangenome_hprc_part3#the-lanes-from-the-database) opens
+the same lane track on four deletion carriers and four non-carriers, each
+drawing its own gene models.
+
+:::
 
 ## The other two graphs
 

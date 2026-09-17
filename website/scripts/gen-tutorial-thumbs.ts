@@ -460,17 +460,19 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   pangenome_graph_reading: {
     // The KIV-2 window force-directed with its bubbles haloed: the knot of
     // loops and the labels naming each bubble, below the linear lanes.
-    src: 'pangenome/graph_kiv2_halos.png',
-    band: [0.62, 1],
+    // xband starts right of the "each loop is a copy" callout.
+    src: 'pangenome/hprc_lpa_kiv2.png',
+    band: [0.72, 0.96],
+    xband: [0.46, 1],
   },
   pangenome_hprc_part5: {
     src: 'pangenome/hprc_abca7_repeat_units.png',
     band: [0.4, 0.8],
   },
   pangenome_mouse: {
-    // The Dock2 bubble as one haloed superbubble, the graph pane only.
-    src: 'pangenome/graph_mouse_dock2_halos.png',
-    band: [0.5, 1],
+    // The Dock2 bubble as one superbubble, the graph pane only.
+    src: 'pangenome/mouse_dock2.png',
+    band: [0.56, 0.97],
   },
   pangenome_hprc_part3: {
     // The eight lanes with their own contig names and coordinates in the row

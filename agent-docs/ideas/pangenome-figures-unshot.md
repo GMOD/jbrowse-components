@@ -80,10 +80,9 @@ the release-2 files, and why CHM13 is the only donor worth loading.
   and the next figure after it is a whole-chr6 variability profile with the MHC as
   a visible spike.
 - **Still open from the CHM13 figure:** highlight-into-the-donor view. The
-  synteny launch has its figure now, `pangenome/hprc_synteny_launch`, off
-  `test_data/graphgenomeview/hprc_hs1.json` (hg38 and hs1 alone: on `hprc.json`
-  a loaded CFHR haplotype also contributes at the CHM13 window, so the launch
-  there opens three panels and the liftOver aligns one of them to nothing), and
-  the GenArk route in `pangenome_hprc.md` makes any of the 464 haplotypes an
+  synteny launch stays prose on part 3, since its figure repeated
+  `pangenome/hprc_chm13_allele` above a liftOver ribbon (a figure of it needs
+  hg38 and hs1 alone: on `hprc.json` a loaded CFHR haplotype also contributes at
+  the CHM13 window, so the launch there opens three panels), and the GenArk route in `pangenome_hprc.md` makes any of the 464 haplotypes an
   openable donor, with `pangenome/hprc_haplotype_launch` and the
   `pangenome/hprc_out_to_haplotype` tour as the worked example.

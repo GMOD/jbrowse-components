@@ -42,14 +42,6 @@ Six configs live here, data-free but for one gene slice:
   `pangenome/hprc_haplotype_launch` and the `pangenome/hprc_out_to_haplotype`
   tour; `hprc.json` deliberately does not carry the assembly, since the extra
   `Open in` rows would change the node menu the MHC layout figure captures.
-- `hprc_hs1.json` — hg38 and hs1 (T2T-CHM13, the committed `hs1.chrom.sizes`)
-  with both gene tracks, the segments track on both assemblies, and UCSC's
-  hg38-to-hs1 liftOver as a synteny track. Backs
-  `pangenome/hprc_synteny_launch`, the graph's own **Launch → Linear synteny
-  view** at the CHM13 window. It cannot be `hprc.json`: that fixture loads four
-  more haplotypes for the CFHR and inversion figures, one of which contributes
-  at that window too, so the launch there offers three assemblies and a track
-  submenu, and the stack it opens has a panel the liftOver aligns nothing to.
 
 The plugin bundle is served from `jbrowse.org/demos/graphgenomeviewer` and the
 GFA slices from `jbrowse.org/demos/ecoli_pangenome`, so no build output and no

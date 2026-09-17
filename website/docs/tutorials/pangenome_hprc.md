@@ -452,10 +452,13 @@ color ramp, and hovering an edge gives the interval and the bp it removes. Read
 a deletion on the anchored layout, where the arc spans exactly the sequence it
 removes.
 
-<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the UniProt kringle domains, the bubbles lane and the rGFA segments. Nodes are colored by reference position, red to magenta across the window, and the alleles charcoal. Each lavender halo is one bubble, labelled in purple with what it is: the haloed knot of loops below the lane's widest bubble is labelled a repeat array, each loop one copy of the repeat, and the short red labels are deletions. One dashed arc bypasses the reference, and LPA is pinned under the backbone." src="/img/pangenome/hprc_lpa_kiv2.png" />
+:::tip 💡 See also
 
-[Part 4](/docs/tutorials/pangenome_graph_reading) opens that array and lifts one
+[Part 4](/docs/tutorials/pangenome_graph_reading#the-window-as-a-graph) cuts the
+LPA KIV-2 window from the table as a graph, opens its repeat array and lifts one
 haplotype's walk out of it.
+
+:::
 
 <Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. In the synteny view the pink ribbons are the alignment between each haplotype and hg38, and the ribbon narrows where a haplotype has nothing to align, which for HG01109 is the stretch holding CFHR3 and CFHR1. In the graph, the reference row is at the top in reference-position colors, each lower row one rank (the order minigraph added the assembly that first contributed that sequence) with its alleles as charcoal nodes haloed as bubbles, and the dashed arc under the reference row spans the gap that removes both genes." src="/img/pangenome/hprc_cfhr_deletion.png" />
 

@@ -64,7 +64,7 @@ left to right under the linear view in the same colours, and every bubble the
 index holds is drawn as a halo along the nodes it spans, with a label saying
 what kind of variation it is.
 
-<Figure caption="The LPA window with the RefSeq genes, the HPRC bubbles and the rGFA segments above the force-directed graph. The kringle array is the knot of loops in the middle and its halo labels it as a repeat array; the small halos on the backbone are the deletions and the insertion the index lists beside it, and LPA is pinned under the backbone with its exons drawn along it." src="/img/pangenome/graph_kiv2_halos.png" />
+<Figure caption="The LPA window with the RefSeq genes, the UniProt kringle domains, the HPRC bubbles and the rGFA segments above the force-directed graph. The kringle array is the knot of loops in the middle and its halo labels it as a repeat array; the smaller halos along the backbone are the other bubbles the index lists in the window, and LPA is pinned under the backbone with its exons drawn along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 The session's gene track is drawn onto the graph as well: LPA's name is pinned
 under the backbone at its midpoint, and its exons are the dark stretches along

@@ -6,7 +6,7 @@
 // holds.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { menuCascade, sessionSpec } from '../screenshot-spec-helpers.ts'
+import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import {
   GRAPH_DRAWN,
   TOOLBAR_READY,
@@ -1019,21 +1019,6 @@ export function hprcTierSession() {
 // a synteny track aligning them
 // ---------------------------------------------------------------------------
 //
-// A fixture of its own, hg38 and hs1 and nothing else: the launch opens EVERY
-// loaded contributor, and hprc.json loads four CFHR and inversion haplotypes
-// for its own figures, one of which contributes at the CHM13 window too. That
-// run's menu read `Linear synteny view (3 assemblies)` and cascaded into a
-// submenu of the three synteny tracks in the session, and the stack it would
-// have opened had a haplotype panel the liftOver aligns nothing to. The track
-// is UCSC's hg38-to-hs1 liftOver as an indexed PAF, the same one
-// test_data/hg38_hs1_synteny reads.
-const HPRC_HS1_CONFIG = local('test_data/graphgenomeview/hprc_hs1.json')
-const SYNTENY_LGV = 'hprc_synteny_lgv'
-const SYNTENY_GRAPH = 'hprc_synteny_graph'
-// The entry as graphMenuItems labels it: one synteny track, so no submenu, and
-// the assembly count in the label.
-const SYNTENY_LAUNCH_ITEM = 'Linear synteny view (2 assemblies)'
-
 // What website/scripts/videos/pangenome.ts films on the human graph beyond the
 // end-to-end tour: the two sessions above and the ids their steps click.
 export const hprcVideoFixtures = {
@@ -2435,71 +2420,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       {
         type: 'circle',
         anchor: { view: 1, graphNode: HPRC_ALLELE },
-        radius: 20,
-        strokeWidth: 3,
-      },
-    ],
-  },
-  // THE SYNTENY LAUNCH, on the human graph. pangenome/rgfa_launch_out_menu has
-  // it on five E. coli strains; on HPRC it was held to be dead, since a session
-  // loads one assembly. Two are loaded here, hg38 and hs1, the CHM13 window
-  // holds a node each contributes, and a liftOver between them is in the
-  // session, so the graph's own Launch menu offers the view. The menu is driven
-  // so the stack below is the launch's own: hg38 over hs1, each framed on the
-  // locus the graph states for it, with the liftOver ribbons between.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_synteny_launch',
-    url: sessionSpec(HPRC_HS1_CONFIG, {
-      views: [
-        {
-          id: SYNTENY_LGV,
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: CHM13_WINDOW,
-          tracks: [hg38GeneLane(60), hprcSegmentsLane(CHM13_REGION)],
-        },
-        {
-          id: SYNTENY_GRAPH,
-          type: 'GraphGenomeView',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: CHM13_REGION,
-          layoutMode: 'force',
-          colorScheme: 'reference-position',
-          // the CHM13 figure's trade: the pane is read for one arc against
-          // the chain it leaves, and the launched stack below needs the height
-          paneHeight: 320,
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 180000,
-    // the graph's own fetch is ~7 s at this window (see hprc_chm13_allele)
-    settleMs: 14000,
-    viewportWidth: 1100,
-    // off the run's own reports: 1070 was right while the launch handed back two
-    // bare rulers, and the panels carry the graph's own segments lane now
-    viewportHeight: 1460,
-    hideTooltip: true,
-    actions: [
-      {
-        type: 'click',
-        selector: `[data-testid="view-container-${SYNTENY_GRAPH}"] [data-testid="view_menu_icon"]`,
-      },
-      ...menuCascade(['Launch', SYNTENY_LAUNCH_ITEM]),
-      { type: 'click', text: SYNTENY_LAUNCH_ITEM },
-      {
-        type: 'waitForSelector',
-        selector: displayPainted('synteny_canvas'),
-        timeout: 180000,
-      },
-      { type: 'waitForAppSettled', timeout: 180000 },
-      { type: 'delay', ms: 3000 },
-    ],
-    annotations: [
-      {
-        type: 'circle',
-        anchor: { view: 1, graphNode: CHM13_NODE },
         radius: 20,
         strokeWidth: 3,
       },

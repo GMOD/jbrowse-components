@@ -67,14 +67,16 @@ the panel where path lines recover it.
 
 ## Nnt: a deletion that appears as an insertion
 
-Start at `Nnt`. Type `chr13:119,440,000-119,600,000`. C57BL/6J carries a
+Start at `Nnt`. Type `chr13:119,440,000-119,600,000`, cut the window from the
+segments track with **Launch → Graph genome view (this region)**, and pick
+**Force-directed layout** from the **Layout** dropdown. C57BL/6J carries a
 well-known multi-exon deletion there that abolishes the protein and makes B6J
 mice glucose intolerant. **GRCm39 is C57BL/6J**, so the backbone of this graph
 is the strain with the deletion. The graph therefore shows the deletion as
 sequence that the _other_ strains carry and the reference lacks, the opposite
 sign from every description of it.
 
-<Figure caption="The Nnt locus on GRCm39: RefSeq genes and the rGFA segments in the graph's reference-position colors, over the same window as an anchored graph. The large insertion hangs off the backbone inside Nnt, because the reference is the strain that lacks the sequence." src="/img/pangenome/mouse_nnt.png" />
+<Figure caption="The Nnt window with the RefSeq genes, the bubbles lane and the rGFA segments above the force-directed graph. The loop hanging off the backbone beside Nnt is haloed and labelled as an insertion, because the reference is the strain that lacks the sequence." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
 ## Finding the loci
 
@@ -106,15 +108,13 @@ A bubble index has one row per bubble, and each row reports where the graph
 varies and how much. No index row describes the inside of a bubble, so draw the
 bubble as a force-directed graph and open it to see its contents.
 
-Type `chr11:34,516,044-34,560,497`, the _Dock2_ intron, cut it from the segments
-track with **Launch → Graph genome view (this region)** and pick
-**Force-directed layout** from the **Layout** dropdown. The index lists this
-window as a single bubble, so the whole cut is that bubble. One label names it
-in the index's terms: a superbubble, with its segment count and the span of its
-routes. A bubble that fills the whole drawing gets the label and no halo,
-because a halo around everything would mark nothing.
-
-<Figure caption="The Dock2 intron window with the RefSeq genes, the bubbles lane and the rGFA segments above the force-directed graph. The bubbles lane is one row, and the graph's one label names the whole cut as a superbubble." src="/img/pangenome/graph_mouse_dock2_halos.png" />
+Type `chr11:34,516,044-34,560,497`, the _Dock2_ intron, and cut it the way the
+[Nnt step](#nnt-a-deletion-that-appears-as-an-insertion) does. The index lists
+this window as a single bubble, so the whole cut is that bubble. One label names
+it in the index's terms, the superbubble the figure under
+[Finding the loci](#finding-the-loci) carries, with its segment count and the
+span of its routes. A bubble that fills the whole drawing gets the label and no
+halo, because a halo around everything would mark nothing.
 
 The view pins Dock2 under the backbone, and no exon stretch appears anywhere in
 the cut. The gene track on the graph and the linear view above it both show that
@@ -123,11 +123,6 @@ the cut is intron.
 A superbubble is the index's name for a bubble too big to type. The label gives
 a segment count and a route range and no kind, since the row's numbers describe
 the whole region at once.
-
-_Dock2_ is also the one window on this page that wants the force layout. The
-other panels are chains and read better anchored; this one is loops off a
-backbone, a structure a force-directed layout draws well. Check the node and
-edge counts in the graph pane's header before switching.
 
 ## Open it, and open what is inside
 
@@ -148,10 +143,9 @@ those values for any anchored graph.
 ## The control
 
 _Nnt_ holds one large allele that the other strains carry and the reference
-lacks. Type `chr13:119,440,000-119,600,000` and cut it the same way. Nnt should
-halo as a plain insertion with nothing to descend into.
-
-<Figure caption="The Nnt window force-directed. The large loop halos as one insertion beside the smaller sites along the backbone, Nnt's exons run along the reference nodes with its name pinned under them, and no halo is a superbubble." src="/img/pangenome/graph_mouse_nnt_halos.png" />
+lacks, so its cut should hold nothing to descend into. The
+[Nnt figure](#nnt-a-deletion-that-appears-as-an-insertion) halos that allele as
+a plain insertion, and none of its labels is a superbubble.
 
 ## Check it against the index
 

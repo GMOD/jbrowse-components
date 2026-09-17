@@ -1,6 +1,5 @@
 // The graph drawn as a graph, for the two "reading the shape" tutorials: HPRC
-// KIV-2 in pangenome_graph_reading and the mouse Dock2 bubble in
-// pangenome_mouse. Every figure here is the force-directed layout,
+// KIV-2 in pangenome_graph_reading and the mouse Nnt locus in pangenome_mouse. Every figure here is the force-directed layout,
 // because that is what the pages are about: the graph view showing what a line
 // cannot.
 //
@@ -33,9 +32,8 @@ const BACK_BUTTON = '[data-testid="graph-unpop-bubble"]'
 // HPRC, the LPA KIV-2 window
 // ---------------------------------------------------------------------------
 
-// The same 130 kb window pangenome/hprc_lpa_kiv2 draws, so a reader of part 1
-// meets the locus they already know. LPA's own start is in frame so the gene
-// lane labels it.
+// The 130 kb window pangenome/hprc_lpa_kiv2 draws, which opens part 4. LPA's
+// own start is in frame so the gene lane labels it.
 const LPA_WINDOW = 'chr6:160,525,000-160,655,000'
 const LPA_REGION = {
   refName: 'chr6',
@@ -96,11 +94,8 @@ function kiv2LinearView() {
   }
 }
 
-// The window as the plugin now opens it: force-directed, seeded along the
-// reference so it reads left to right under the linear view, with every bubble
-// the index holds haloed along its own nodes and labelled by what it is. The
-// kringle array is the knot of loops; the deletions and the insertion are the
-// small halos on the backbone.
+// The window part 4 opens on, force-directed and haloed; the popped figure
+// clicks the array's label here.
 const KIV2_HALOS_URL = sessionSpec(HPRC_CONFIG, {
   views: [
     kiv2LinearView(),
@@ -114,18 +109,6 @@ const KIV2_HALOS_URL = sessionSpec(HPRC_CONFIG, {
     },
   ],
 })
-
-const kiv2HalosSpec: ScreenshotSpec = {
-  mode: 'url',
-  name: 'pangenome/graph_kiv2_halos',
-  url: KIV2_HALOS_URL,
-  readySelector: TOOLBAR_READY,
-  readyTimeout: 120000,
-  settleMs: 5000,
-  viewportWidth: 1400,
-  viewportHeight: 1045,
-  hideTooltip: true,
-}
 
 // The array's label clicked: the graph becomes the 29 segments the bubble row
 // names, laid out the same way, with the button back to the window. The popped
@@ -248,19 +231,9 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
 // Mouse, the Dock2 intron bubble
 // ---------------------------------------------------------------------------
 
-// The densest bubble in the mouse graph that fits one cut
-// (pangenome/mouse_dock2, pangenome_mouse): one index row of 524 segments
-// inside a Dock2 intron.
-const DOCK2_WINDOW = 'chr11:34,516,044-34,560,497'
-const DOCK2_REGION = {
-  refName: 'chr11',
-  assemblyName: 'mm39',
-  start: 34516044,
-  end: 34560497,
-}
-
-// Nnt, the page's control: a window whose one large allele is a plain
-// insertion, so it should halo as one insertion and nothing should nest.
+// Nnt, the page's first locus and its control: a window whose one large allele
+// is a plain insertion, so it should halo as one insertion and nothing should
+// nest.
 const NNT_WINDOW = 'chr13:119,440,000-119,600,000'
 const NNT_REGION = {
   refName: 'chr13',
@@ -296,7 +269,7 @@ function mouseLinearView(loc: string, domain: { start: number; end: number }) {
   }
 }
 
-function mouseGraphView(region: typeof DOCK2_REGION, paneHeight: number) {
+function mouseGraphView(region: typeof NNT_REGION, paneHeight: number) {
   return {
     type: 'GraphGenomeView',
     loadedTrackId: 'mouse_minigraph_segments',
@@ -307,28 +280,9 @@ function mouseGraphView(region: typeof DOCK2_REGION, paneHeight: number) {
   }
 }
 
-// The whole cut, one halo: the index knows this window as a single bubble of
-// 524 segments, so the halo runs along all of it and the label says superbubble.
-const dock2HalosSpec: ScreenshotSpec = {
-  mode: 'url',
-  name: 'pangenome/graph_mouse_dock2_halos',
-  url: sessionSpec(NONHUMAN_CONFIG, {
-    views: [
-      mouseLinearView(DOCK2_WINDOW, DOCK2_REGION),
-      mouseGraphView(DOCK2_REGION, 620),
-    ],
-  }),
-  readySelector: TOOLBAR_READY,
-  readyTimeout: 300000,
-  settleMs: 15000,
-  viewportWidth: 1400,
-  viewportHeight: 1100,
-  hideTooltip: true,
-}
-
-// The control: Nnt's window haloed. Its one large allele is an insertion the
-// other strains carry and the reference lacks, and it halos as one insertion
-// with nothing inside it to open.
+// Nnt's window haloed. C57BL/6J is the reference and carries the deletion, so
+// its one large allele halos as an insertion the other strains carry, with
+// nothing inside it to open. s130043141+ is that allele.
 const nntHalosSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_mouse_nnt_halos',
@@ -344,13 +298,23 @@ const nntHalosSpec: ScreenshotSpec = {
   viewportWidth: 1400,
   viewportHeight: 880,
   hideTooltip: true,
+  annotations: [
+    {
+      type: 'text',
+      text: 'Sequence the other strains carry and C57BL/6J lacks: its Nnt deletion',
+      fontSize: 17,
+      maxWidth: 330,
+      leader: true,
+      anchor: { view: 1, graphNode: 's130043141+' },
+      dx: 160,
+      dy: 40,
+    },
+  ],
 }
 
 export const graphReadingSpecs: ScreenshotSpec[] = [
-  kiv2HalosSpec,
   kiv2PoppedSpec,
   kiv2WalksSpec,
   kiv2WalkRowsSpec,
-  dock2HalosSpec,
   nntHalosSpec,
 ]

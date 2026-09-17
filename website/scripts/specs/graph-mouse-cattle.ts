@@ -19,11 +19,7 @@
 // deconstructed into a VCF that does. Each figure below is picked to show one
 // of those.
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
-import {
-  TOOLBAR_READY,
-  local,
-  referencePositionColor,
-} from './graph-fixtures.ts'
+import { TOOLBAR_READY, local } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -32,37 +28,6 @@ const CONFIG = local('test_data/graphgenomeview/pangenome_nonhuman.json')
 // ---------------------------------------------------------------------------
 // Mouse
 // ---------------------------------------------------------------------------
-
-// Nnt, and the reason this is the page's first figure rather than the H2 locus
-// a mouse geneticist would expect: it is the clearest demonstration in either
-// graph that a reference-anchored pangenome states variation RELATIVE to its
-// backbone, not absolutely.
-//
-// C57BL/6J carries a well-known five-exon deletion in Nnt (exons 7-11,
-// published as ~17.8 kb) which abolishes the protein and is why B6J is glucose
-// intolerant. mm39 IS C57BL/6J. So the graph's backbone is the strain with the
-// deletion, and the deletion appears as an INSERTION the other strains carry --
-// the opposite sign from every description in the literature.
-//
-// Measured off the hosted allele inventory rather than assumed:
-//   tabix …alleles.bed.gz chr13:119440000-119600000
-// gives exactly one allele over 10 kb in the window, `ins` 16,458 bp at
-// chr13:119,511,984-119,511,997 with CIGAR 13M16458I, inside Nnt
-// (chr13:119,472,063-119,566,380 per the mm39 RefSeq annotation). Three smaller
-// insertions sit beside it: 7,101 bp, 4,313 bp and 1,290 bp.
-//
-// 16,458 is NOT 17,800, and the caption does not claim it is. minigraph's
-// insertion is the non-reference sequence the other strains carry at that
-// point, which is a different measurement from a deletion's breakpoint span on
-// the B6 side; the two agree in scale and in position and that is all this
-// figure asserts.
-const NNT_REGION = {
-  refName: 'chr13',
-  assemblyName: 'mm39',
-  start: 119_440_000,
-  end: 119_600_000,
-}
-const NNT_LOC = 'chr13:119,440,000-119,600,000'
 
 // Dock2, and the window this figure draws was picked by MEASUREMENT rather than
 // by reputation. It replaced an H2 figure, and the replacement is the point:
@@ -206,64 +171,6 @@ const dock2Spec: ScreenshotSpec = {
 const BOLA_LOC = 'chr23:25,844,769-25,968,809'
 
 export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
-  {
-    mode: 'url',
-    name: 'pangenome/mouse_nnt',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          id: 'mouse-nnt-lgv',
-          assembly: 'mm39',
-          loc: NNT_LOC,
-          tracks: [
-            {
-              trackId: 'mm39_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              height: 60,
-            },
-            {
-              trackId: 'mouse_minigraph_segments',
-              type: 'LinearBasicDisplay',
-              showLabels: 'none',
-              heightMode: 'grow',
-              color: referencePositionColor(NNT_REGION),
-            },
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          displayName: 'Nnt graph',
-          loadedTrackId: 'mouse_minigraph_segments',
-          loadedRegion: NNT_REGION,
-          connectedViewId: 'mouse-nnt-lgv',
-          colorScheme: 'reference-position',
-          // anchored puts the insertion under the point in Nnt it attaches to
-          layoutMode: 'auto',
-          showBubbles: false,
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 300000,
-    settleMs: 12000,
-    viewportWidth: 1400,
-    viewportHeight: 760,
-    hideTooltip: true,
-    annotations: [
-      {
-        type: 'text',
-        text: 'Sequence the other strains carry and C57BL/6J lacks: its Nnt deletion',
-        fontSize: 17,
-        maxWidth: 330,
-        leader: true,
-        anchor: { view: 1, graphNode: 's130043141+' },
-        dx: 160,
-        dy: 40,
-      },
-    ],
-  },
   dock2Spec,
   {
     mode: 'url',

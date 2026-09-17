@@ -141,8 +141,6 @@ reference at the centre, which is the shape a lane stack anchored on hg38 reads.
 The [linear synteny view guide](/docs/user_guides/linear_synteny_view) covers
 the lane controls, the ribbons and the launches each lane header offers.
 
-<Figure caption="The header menu of one haplotype lane opens it at the matching region in its own view, or moves and hides the lane. The menu offers to re-anchor on the haplotype too, since a PIF header names no anchor, but every record here pairs a haplotype with GRCh38, so a stack anchored on a haplotype draws GRCh38 as its one lane." src="/img/multiway_synteny/hprc_lane_menu.png" />
-
 ## The CFH cluster, eight haplotypes
 
 The eight are the panel the
@@ -191,17 +189,21 @@ The four carriers also sort together, at the bottom of this stack, because lane
 order is densest first over the fetched window and a lane whose alignment skips
 the cluster places less of it; `domain` pins an order that has to hold.
 
+:::tip 💡 See also
+
+[Part 3 of the HPRC tutorial](/docs/tutorials/pangenome_hprc_part3#the-lanes-from-the-database)
+draws the same eight haplotypes at the same cluster from the graph's gbz-base
+database, read in the browser with no offline step.
+
+:::
+
 ## The whole chromosome
 
-The same track serves a whole chromosome. Type `chr12` into the location box.
-Over the whole chromosome the coarse tier answers the fetch in one pass, and
-each lane is that haplotype's assembled chromosome. The track menu's **Level of
-detail** entry picks the tier by hand.
-
-<Figure caption="All of hg38 chr12 over the eight haplotype lanes, served from the coarse tier of the graph-derived index. Every haplotype assembled chr12 as one contig, so each lane runs end to end, and the graph aligns nothing across the centromere in any of them." src="/img/multiway_synteny/hprc_chr12_whole.png" />
-
-A haplotype that assembled a chromosome in two pieces draws the piece holding
-most of the window, and names the other in the lane header.
+The same track serves a whole chromosome: type `chr12` and the coarse tier
+answers the fetch in one pass, with each lane that haplotype's assembled
+chromosome. The track menu's **Level of detail** entry picks the tier by hand. A
+haplotype that assembled a chromosome in two pieces draws the piece holding most
+of the window, and names the other in the lane header.
 
 ## Reproduce it end to end
 

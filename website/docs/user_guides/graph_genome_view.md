@@ -289,7 +289,7 @@ opened bubble. Click a label to open that bubble alone, with a button back. An
 opened bubble derives the bubbles inside it, so a superbubble opens level by
 level. **View menu → Settings → Mark bubbles** turns the halos off.
 
-<Figure caption="The LPA window force-directed with its bubbles haloed and named, LPA pinned under the backbone with its exons along the reference nodes, and the halo labels each a click from opening their bubble." src="/img/pangenome/graph_kiv2_halos.png" />
+<Figure caption="The LPA window force-directed with its bubbles haloed and named, LPA pinned under the backbone with its exons along the reference nodes, and the halo labels each a click from opening their bubble." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 The view draws the session's gene track onto the backbone. Exons are dark
 stretches along the reference nodes that carry them, and each gene's name is
