@@ -7,6 +7,7 @@ import {
   ZOOM_ACTIVE_WINDOW_MS,
   normalizeWheelDelta,
 } from '@jbrowse/core/util/wheelZoom'
+import { FloatingLegend } from '@jbrowse/display-ui'
 import { DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
@@ -390,6 +391,15 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       </div>
       <RingStrips host={model.ringHost} />
       <Controls model={model} />
+      {model.showLegend ? (
+        <FloatingLegend
+          sections={model.legendSpec.sections}
+          maxWidth={320}
+          onDismiss={() => {
+            model.setShowLegend(false)
+          }}
+        />
+      ) : null}
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle
           bar

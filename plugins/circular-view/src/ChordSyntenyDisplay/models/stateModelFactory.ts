@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { getSession, openFeatureWidget } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   colorSchemes,
@@ -124,6 +125,18 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        */
       get featureNoun() {
         return 'alignment'
+      },
+      /**
+       * #getter
+       * the ribbon fill the circle's key shows, when every ribbon shares one
+       */
+      get legendColor(): string | undefined {
+        const value: unknown = self.configuration.color
+        return self.colorBy === 'default' &&
+          typeof value === 'string' &&
+          !isJexl(value)
+          ? value
+          : undefined
       },
       /**
        * #getter

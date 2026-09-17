@@ -18,12 +18,14 @@ const CHROMOSOMES = [
 ]
 const BLOCKS = 'hg38ToMm39_blocks'
 // gene density as a heat strip: the average over each pixel's bins, so a
-// megabase-per-pixel ring reads genes per bin rather than the bin maximum
+// megabase-per-pixel ring reads genes per bin rather than the bin maximum.
+// Orange, so the ring and the steel-blue ribbons read as two things.
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
   type: 'LinearWiggleDisplay',
   defaultRendering: 'density',
   summaryScoreMode: 'avg',
+  posColor: '#d95f02',
   height: 40,
 }
 
@@ -50,30 +52,6 @@ function circularSyntenyView(
   })
 }
 
-// What the ring and the ribbons are, which nothing in the view says: a ring
-// carries no track label. Hung in the view's top-right corner, which the circle
-// leaves empty.
-function circularLegend(entries: { label: string; color: string }[]) {
-  return {
-    type: 'legend' as const,
-    fontSize: 15,
-    textAlign: 'end' as const,
-    entries,
-    anchor: {
-      selector: '[data-testid="close_view"]',
-      alignX: 'right' as const,
-      alignY: 'bottom' as const,
-    },
-    dx: -4,
-    dy: 16,
-  }
-}
-
-const SYNTENY_LEGEND = circularLegend([
-  { label: 'Ring: gene density, darker is denser', color: '#3f7fc4' },
-  { label: 'Ribbons: liftOver blocks', color: '#b3cbe2' },
-])
-
 const circularSyntenyReady = {
   readySelector: displayPainted('circular-chord-display'),
   readyTimeout: 180000,
@@ -96,6 +74,7 @@ export const circularSpecs: ScreenshotSpec[] = [
           type: 'CircularView',
           assembly: 'hg19',
           height: 780,
+          showLegend: true,
           tracks: [
             {
               trackId: 'ngmlr_cov',
@@ -113,12 +92,6 @@ export const circularSpecs: ScreenshotSpec[] = [
     settleMs: 10000,
     viewportWidth: 1000,
     viewportHeight: 900,
-    annotations: [
-      circularLegend([
-        { label: 'Ring: long-read coverage', color: '#1565c0' },
-        { label: 'Chords: translocations', color: '#ff8500' },
-      ]),
-    ],
   },
 
   // The two genomes' chromosomes around one circle, human first, and every
@@ -138,13 +111,14 @@ export const circularSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'circular_synteny/rings',
-    url: circularSyntenyView(CHROMOSOMES, [DENSITY_RING, BLOCKS]),
+    url: circularSyntenyView(CHROMOSOMES, [DENSITY_RING, BLOCKS], {
+      showLegend: true,
+    }),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 180000,
     settleMs: 10000,
     viewportWidth: 1000,
     viewportHeight: 900,
-    annotations: [SYNTENY_LEGEND],
   },
 
   // Three chromosomes of each genome: the X pair against two autosomes. The
@@ -154,13 +128,14 @@ export const circularSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'circular_synteny/x_control',
-    url: circularSyntenyView(['chr1', 'chr2', 'chrX'], [DENSITY_RING, BLOCKS]),
+    url: circularSyntenyView(['chr1', 'chr2', 'chrX'], [DENSITY_RING, BLOCKS], {
+      showLegend: true,
+    }),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 180000,
     settleMs: 10000,
     viewportWidth: 1000,
     viewportHeight: 900,
-    annotations: [SYNTENY_LEGEND],
   },
 
   // Hovering the widest X ribbon fills it in the hover colour and the

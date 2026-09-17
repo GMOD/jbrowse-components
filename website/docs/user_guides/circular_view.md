@@ -33,14 +33,16 @@ deletions and duplications load but don't produce an informative chord.
 A track whose display draws in the linear genome view draws on the circle as a
 ring: open it from the view's track selector, or name it in the view's `tracks`.
 Each track's menu is under **Tracks** in the view menu, since a ring has no
-label to hang it off. A quantitative ring draws its score axis radially in the
-gap before the first chromosome. Rings stack inward from the ideogram in the
-order the tracks were opened, each as tall as the display's height, and the
-chords and ribbons draw inside the innermost ring. Every setting the display has
-on a linear view — a wiggle's plot type and color, a mark display's `marks` —
-applies on the ring, and hovering or clicking a ring is the same hover and click
-as on the linear track: the tooltip and the feature details are the display's
-own.
+label to hang it off, and **Show legend** in the same menu names each ring,
+chord and ribbon track beside the color or density ramp it draws in (a view's
+`showLegend: true` opens with it). A quantitative ring draws its score axis
+radially in the gap before the first chromosome. Rings stack inward from the
+ideogram in the order the tracks were opened, each as tall as the display's
+height, and the chords and ribbons draw inside the innermost ring. Every setting
+the display has on a linear view — a wiggle's plot type and color, a mark
+display's `marks` — applies on the ring, and hovering or clicking a ring is the
+same hover and click as on the linear track: the tooltip and the feature details
+are the display's own.
 
 A ring is the display's linear rendering wrapped around the circle: the display
 draws a strip as long as the circumference, and the view resamples it so each

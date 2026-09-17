@@ -6,6 +6,8 @@ import {
 } from '@jbrowse/core/svg/svgReady'
 import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
+import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { getSession, radToDeg } from '@jbrowse/core/util'
 
 import { RingAxes } from '../../rings/RingAxes.tsx'
@@ -124,6 +126,15 @@ export async function renderToSvg(
             <Fragment key={id}>{result}</Fragment>
           ))}
         </g>
+        {model.showLegend ? (
+          <SvgColorLegend
+            entries={legendEntries(model.legendSpec)}
+            canvasWidth={figureSize}
+            maxHeight={figureSize}
+            testid="color-legend"
+            idPrefix={`legend-${model.id}`}
+          />
+        ) : null}
       </>
     ),
   })

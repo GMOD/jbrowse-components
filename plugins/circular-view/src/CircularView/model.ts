@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import {
   clamp,
   getDialogHost,
@@ -41,6 +42,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 
 import { RingHost } from '../rings/ringHost.ts'
+import { circularLegendSpec } from './circularLegend.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
 import {
   assemblyBandPx,
@@ -320,6 +322,11 @@ function stateModelFactory(pluginManager: PluginManager) {
          * form there would offer a control that cannot work
          */
         disableImportForm: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * a key naming each track's ring, chords or ribbons in the corner
+         */
+        showLegend: types.stripDefault(types.boolean, false),
 
         /**
          * #property
@@ -957,6 +964,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setShowLegend(flag: boolean) {
+        self.showLegend = flag
+      },
+      /**
+       * #action
+       */
       rotateClockwiseButton() {
         self.offsetRadians += Math.PI / 6
       },
@@ -1279,6 +1292,13 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       /**
+       * #getter
+       * one row per track: its name beside the color or ramp it paints with
+       */
+      get legendSpec() {
+        return circularLegendSpec(self)
+      },
+      /**
        * #method
        * return the view menu items
        */
@@ -1324,7 +1344,14 @@ function stateModelFactory(pluginManager: PluginManager) {
             },
             icon: TrackSelectorIcon,
           },
-          ...(self.tracks.length ? [this.tracksMenuItem()] : []),
+          ...(self.tracks.length
+            ? [
+                showLegendCheckboxItem(self.showLegend, () => {
+                  self.setShowLegend(!self.showLegend)
+                }),
+                this.tracksMenuItem(),
+              ]
+            : []),
         ]
       },
       /**

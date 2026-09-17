@@ -1,5 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -76,6 +77,14 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the chord color the circle's key shows, when every chord shares one
+       */
+      get legendColor(): string | undefined {
+        const value: unknown = self.configuration.strokeColor
+        return typeof value === 'string' && !isJexl(value) ? value : undefined
+      },
       /**
        * #method
        */
