@@ -21,38 +21,45 @@ const CIR_TREE_MAGIC = 0x2468ace0
 const SAMPLE_MIN_RECORDS = 256
 
 /**
- * The bin widths the adapter serves between the raw section and a file's first
- * zoom level, finest first. Powers of two a factor of 4 apart like bbi's own
- * levels, the coarsest the smallest at or above a quarter of the first level:
- * under `tierSpanRange` a bin of `b` then serves `[b/2, next/2)`, so a synthetic
- * tier holds at most two features a pixel, as a real one does.
- *
- * A bin under twice the raw section's mean record span is dropped, and its
- * zooms read raw records: binning halves the rows only where a bin holds two
- * records on average, which is UCSC's test for writing a level at all. A file
- * with no zoom levels, or no measurable span, gets none.
+ * The bins a file's synthetic tiers can hold, finest first, before
+ * `syntheticReductionLevels` weighs them against the data. Powers of two a
+ * factor of 4 apart like bbi's own levels, the coarsest the smallest at or
+ * above a quarter of the first level: under `tierSpanRange` a bin of `b` then
+ * serves `[b/2, next/2)`, so a synthetic tier holds at most two features a
+ * pixel, as a real one does. None under `MIN_SYNTHETIC_BIN_BP`, and none for a
+ * file with no zoom levels.
  */
-export function syntheticReductionLevels(
-  reductionLevels: readonly number[],
-  meanRecordSpan: number,
-) {
-  if (reductionLevels.length === 0) {
-    return []
-  }
-  const first = Math.min(...reductionLevels)
+export function syntheticCandidateLevels(reductionLevels: readonly number[]) {
   const levels: number[] = []
-  let bin = 2 ** Math.ceil(Math.log2(first / 4))
+  if (reductionLevels.length === 0) {
+    return levels
+  }
+  let bin = 2 ** Math.ceil(Math.log2(Math.min(...reductionLevels) / 4))
   for (
     let i = 0;
     i < SYNTHETIC_TIER_COUNT && bin >= MIN_SYNTHETIC_BIN_BP;
     i++
   ) {
-    if (bin >= 2 * meanRecordSpan) {
-      levels.unshift(bin)
-    }
+    levels.unshift(bin)
     bin /= 4
   }
   return levels
+}
+
+/**
+ * The bin widths the adapter serves between the raw section and a file's first
+ * zoom level, finest first: the candidates at or above twice the raw section's
+ * mean record span. Binning halves the rows only where a bin holds two records
+ * on average, so a finer bin is dropped and its zooms read raw records. A
+ * file with no measurable span (NaN) gets none.
+ */
+export function syntheticReductionLevels(
+  reductionLevels: readonly number[],
+  meanRecordSpan: number,
+) {
+  return syntheticCandidateLevels(reductionLevels).filter(
+    bin => bin >= 2 * meanRecordSpan,
+  )
 }
 
 interface SampleSource {

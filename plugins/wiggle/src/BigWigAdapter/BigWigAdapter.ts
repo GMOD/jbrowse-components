@@ -17,6 +17,7 @@ import {
   binRawRegion,
   sampleMeanRecordSpan,
   syntheticBinBp,
+  syntheticCandidateLevels,
   syntheticReductionLevels,
 } from './syntheticTiers.ts'
 import { tierSpanRange } from './tierSpanRange.ts'
@@ -128,36 +129,41 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     const bigwig = new BigWig({ filehandle })
     const header = await bigwig.getHeader(opts)
     const fileLevels = header.zoomLevels.map(z => z.reductionLevel)
+    const candidates = syntheticCandidateLevels(fileLevels)
     return {
       bigwig,
       filehandle,
       header,
       fileLevels,
       firstLevel: Math.min(...fileLevels),
+      candidateLadder: [...candidates, ...fileLevels],
+      finestCandidate: candidates[0] ?? Infinity,
     }
   }
 
   private async rawSectionLevelsPre(opts: BaseOptions) {
     const source = await this.setup(opts)
-    const { fileLevels } = source
-    return fileLevels.length === 0
-      ? fileLevels
-      : [
-          ...syntheticReductionLevels(
-            fileLevels,
-            await sampleMeanRecordSpan(source, opts),
-          ),
-          ...fileLevels,
-        ]
+    return [
+      ...syntheticReductionLevels(
+        source.fileLevels,
+        await sampleMeanRecordSpan(source, opts),
+      ),
+      ...source.fileLevels,
+    ]
   }
 
-  // Synthetic tiers only move the answer under half the first level, so a
-  // coarser zoom never pays the raw sample they are sized from
+  // Only a zoom some synthetic bin could serve, from half the finest candidate
+  // to half the first level, pays the raw sample the ladder is sized from.
+  // Outside that band every candidate stands in: a coarser zoom picks the same
+  // file level, and a finer one, a zoomless fetch included, reads raw and
+  // declares a raw range no wider than the sampled ladder's.
   private async tierLevels(opts: WiggleOptions) {
-    const { fileLevels, firstLevel } = await this.setup(opts)
-    return this.basesPerSpan(opts) < firstLevel / 2
+    const { candidateLadder, finestCandidate, firstLevel } =
+      await this.setup(opts)
+    const basesPerSpan = this.basesPerSpan(opts)
+    return basesPerSpan >= finestCandidate / 2 && basesPerSpan < firstLevel / 2
       ? this.rawSectionLevels(opts)
-      : fileLevels
+      : candidateLadder
   }
 
   public async getRefNames(opts?: BaseOptions) {

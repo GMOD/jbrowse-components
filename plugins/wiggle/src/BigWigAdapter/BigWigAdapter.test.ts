@@ -3,6 +3,15 @@ import { toArray } from 'rxjs/operators'
 
 import BigWigAdapter from './BigWigAdapter.ts'
 import configSchema from './configSchema.ts'
+import { sampleMeanRecordSpan } from './syntheticTiers.ts'
+
+jest.mock('./syntheticTiers.ts', () => {
+  const actual = jest.requireActual('./syntheticTiers.ts')
+  return {
+    ...actual,
+    sampleMeanRecordSpan: jest.fn(actual.sampleMeanRecordSpan),
+  }
+})
 
 describe('adapter can fetch features from volvox.bw', () => {
   let adapter: BigWigAdapter
@@ -108,5 +117,46 @@ describe('adapter can fetch features from volvox.bw', () => {
     expect(results[0]!.maxScores!.length).toBe(results[0]!.count)
     // wider region gets more bins
     expect(results[0]!.count).toBeGreaterThan(results[1]!.count)
+  })
+})
+
+describe('the raw sample synthetic tiers are sized from', () => {
+  const region = { refName: 'ctgA', start: 0, end: 20000, assemblyName: 'v' }
+  function coverage() {
+    return new BigWigAdapter(
+      configSchema.create({
+        bigWigLocation: {
+          localPath: require.resolve('./test_data/volvox.bw'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+    )
+  }
+  beforeEach(() => {
+    jest.mocked(sampleMeanRecordSpan).mockClear()
+  })
+
+  it('is never read by a fetch that sends no zoom, or one finer than any bin', async () => {
+    const adapter = coverage()
+    await firstValueFrom(adapter.getFeatures(region).pipe(toArray()))
+    await adapter.getFeatureArrays(region)
+    await adapter.getFeatureArraysMulti([region], { bpPerPx: 1 })
+    expect(await adapter.getZoomRange({})).toEqual({
+      minBpPerPx: 0,
+      maxBpPerPx: 2,
+    })
+    expect(await adapter.getZoomRange({ bpPerPx: 400 })).toEqual({
+      minBpPerPx: 320,
+      maxBpPerPx: 1280,
+    })
+    expect(sampleMeanRecordSpan).not.toHaveBeenCalled()
+  })
+
+  it('is read once, at the first zoom a synthetic bin could serve', async () => {
+    const adapter = coverage()
+    const [rows] = await adapter.getFeatureArraysMulti([region], { bpPerPx: 2 })
+    expect(rows!.minScores).toBeDefined()
+    await adapter.getZoomRange({ bpPerPx: 19 })
+    expect(sampleMeanRecordSpan).toHaveBeenCalledTimes(1)
   })
 })
