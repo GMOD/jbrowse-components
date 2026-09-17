@@ -173,9 +173,9 @@ name (`import hpmath;`), not file path. The shared helpers are in
   `point` and `bar` shapes read this scale, and the example combines it with its
   box's anchor at the canvas bottom
 
-The same directory holds the shared _shapes_ (`capsule`, `rowRect`,
-`pointGlyph`, `diagonalGrid`). Each carries a mark's geometry together with its
-antialias contract.
+`packages/render-core/src/shaders/` also holds the shared _shapes_ (`capsule`,
+`rowRect`, `pointGlyph`, `diagonalGrid`). Each carries a mark's geometry
+together with its antialias contract.
 [The shader shape library](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHADER_SHAPE_LIBRARY.md)
 lists what each shape draws, who imports it, and which parts are deliberately
 not shared. The example declares its uniforms inline. If several passes share a
@@ -280,10 +280,10 @@ pnpm add -D @jbrowse/shader-tools
 npx jbrowse-build-shaders
 ```
 
-It scans from the project root for `*.slang`, fetches a pinned `slangc` on first
-use, and writes each `*.generated.ts` next to its source (`hpmath` / `colorPack`
-resolve from your installed `@jbrowse/render-core`). Inside this repo the same
-tool is `pnpm gen:shaders`.
+`jbrowse-build-shaders` scans from the project root for `*.slang`, fetches a
+pinned `slangc` on first use, and writes each `*.generated.ts` next to its
+source (`hpmath` / `colorPack` resolve from your installed
+`@jbrowse/render-core`). Inside this repo the same tool is `pnpm gen:shaders`.
 
 One `.slang` file with entry points produces up to four modules, and **the
 module you import from decides what your users download**. A bundler treats a

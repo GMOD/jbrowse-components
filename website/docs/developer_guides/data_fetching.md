@@ -277,7 +277,7 @@ helpers commit that measurement and skip the store and `loadedRegions` for the
 refused region. `DisplayChrome` then shows the too-large banner with a "Force
 load" button.
 
-This design has two consequences:
+The byte gate has two consequences:
 
 - `regionTooLarge` is **derived**, not a flag. It compares the last measurement
   against the budget. A blocked display keeps running its fetch once per settled

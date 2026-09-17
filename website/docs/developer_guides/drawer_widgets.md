@@ -159,11 +159,12 @@ export type LinearGenomeViewLaunchProps = Partial<
 - **`drawerPosition`** (default `'right'`, set with `setDrawerPosition`)
   persists to localStorage and restores on the next page load.
 
-The two do **not** travel together. `drawerWidth` is an ordinary session
-property, so it round-trips through a saved or shared session; `drawerPosition`
-is stripped out of the snapshot on the way out and lives only in that browser's
-localStorage, as a personal layout preference. A session cannot carry a drawer
-position, so a host that wants one sets it after load.
+`drawerWidth` and `drawerPosition` do **not** travel together. `drawerWidth` is
+an ordinary session property, so it round-trips through a saved or shared
+session; `drawerPosition` is stripped out of the snapshot on the way out and
+lives only in that browser's localStorage, as a personal layout preference. A
+session cannot carry a drawer position, so a host that wants one sets it after
+load.
 
 ## Showing a custom widget
 
