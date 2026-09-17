@@ -1,0 +1,257 @@
+---
+name: wiggle-instance-records-carry-per-row-constants
+description: Measured 2026-09-17 at 1000 sources on real BigWigs. The 256MB buffer ceiling only bites in a BigWig's raw section, where bbi returns up to 9 features a pixel, so synthetic zoom tiers below the first real one are the biggest lever (7.8x fewer features on an FST scan). Summary tiers already stay under 2 a pixel, so per-pixel decimation buys nothing there. Splitting the step-line and center-line records is the cheap win. A per-row colour texture shrinks every record by 4-8 bytes and turns a recolour into an 8KB upload, but the density LUT slot is taken and `Sampler2D.Load` emits broken WGSL. A positive-only specialisation isn't worth building, and ADR-016's split costs 57-85ms and doubles the wire bytes on signed data.
+---
+
+# Wiggle instance records carry per-row constants
+
+A 2026-09-17 investigation into the memory and encode time of wiggle's GPU
+instance buffers, measured on branch `wiggle-buffer-investigation`. The starting
+question was whether strictly positive wiggles pay for the pivot/bicolor
+machinery. The answer is no, and the investigation found bigger levers along
+the way.
+
+## The harness
+
+`plugins/wiggle/benches/instanceBuffer.bench.ts` runs the real path: BigWig
+arrays through `processFeaturesFromArrays`, `buildSourceRenderData` and the
+production packers. The prototype packers in `prototypePackers.ts` run beside
+it, and no shader draws them. Before it prints any time, the bench checks every
+prototype field against the production buffer, colours included, through a
+per-row table built from `gpuProps`. `runInstanceBufferScenarios.sh` runs the
+six scenarios below, and `benches/results/*.json` holds the raw output.
+
+```
+SCRNA=/path/CD4_T.bw FST=/path/fst_scan.bw \
+  bash plugins/wiggle/benches/runInstanceBufferScenarios.sh out/
+```
+
+Setup: node 24, i9-9880H, 1000 sources and one 1500px screen per region. Each
+source cycles one file's arrays. Each run takes the MIN over 15 rounds, with
+the arms in a random order and a forced GC before each arm. Canvas2D arms use
+node-canvas (cairo), not Chrome. The load average sat at 7-10 on a shared box,
+and byte-identical controls landed up to ±35% off their baseline. **The byte
+counts are exact, but treat any encode delta under ~25% as unresolved.** The
+harness behind eeaabfbb46's "4300 features/source at 1Mb" was never committed,
+so this one is a rebuild.
+
+`--sign=signed` subtracts the median and `--sign=positive` takes |score|, so
+signed and positive runs compare on identical geometry.
+
+## Where the features-per-pixel actually is
+
+bbi picks the highest level whose reduction is at most 2 x `basesPerSpan`, and
+`basesPerSpan` is `bpPerPx x resolutionMultiplier`. `tierSpanRange` states the
+same rule. On any summary tier of a dense file, then, a screen holds between
+0.5 and 2 features per pixel. The measurements agree: phyloP 1.90-1.93/px at
+the top of each tier, scRNA coverage 0.3-0.9/px. The raw section, below
+`firstTier / 2` bp/px, has no such cap:
+
+| file, bp/px | tier | features/px | features/source |
+| --- | --- | --- | --- |
+| scRNA CD4_T coverage, 151 | raw (first tier 304) | 2.99 | 4,492 |
+| phyloP BRCA1, 4.9 | raw (first tier 10) | 4.67 | 7,011 |
+| 1KG FST scan, 319 | raw (first tier 640) | 9.31 | 13,966 |
+| scRNA CD4_T, 667 (the 1Mb view) | 1216 | 0.51 | 763 |
+
+A 1500px screen tops out near 3,000 features a source on a summary tier. The
+commit's 4,300-at-1Mb was therefore raw-section data or a wider canvas.
+
+## Measurements
+
+1000 sources, one region. Sizes are MiB, so the 256MB `maxBufferSize` floor is
+256 on this scale.
+
+| scenario | fill 20B | fill 16B* | line 44B | step 32B | step 24B* | center 36B | center 28B* | band 44B | band 36B* |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| scRNA raw 151 bp/px | 85.7 | 68.5 | 188.5 | 137.1 | 102.8 | 154.2 | 119.9 | — | — |
+| FST raw 319 bp/px | **266.4** | 213.1 | **586.0** | **426.2** | **319.7** | **479.5** | **372.9** | — | — |
+| phyloP tier 40, 79 bp/px | 55.2 | 44.1 | 121.4 | 88.3 | 66.2 | 99.3 | 77.3 | 121.4 | 99.3 |
+| scRNA 1Mb, tier 1216 | 14.6 | 11.6 | 32.0 | 23.3 | 17.5 | 26.2 | 20.4 | 32.0 | 26.2 |
+
+\* needs the per-row colour table. Bold means over the floor: today the FST
+scan cannot draw even xyplot at 1000 sources.
+
+Pack time in ms, MIN of 15. The control arm calls the baseline through a
+second driver.
+
+| scenario | fill / ctrl / 16B | step 44 / ctrl / 32 / 24 | center 44 / 36 / 28 | band 44 / 36 |
+| --- | --- | --- | --- | --- |
+| scRNA raw, positive | 64 / 70 / 59 | 138 / 137 / 84 / 86 | 159 / 158 / 110 | — |
+| scRNA raw, signed | 87 / 84 / 46 | 173 / 172 / 92 / 81 | 184 / 163 / 132 | — |
+| FST raw | 249 / 226 / 187 | 431 / 437 / 258 / 217 | 515 / 501 / 397 | — |
+| phyloP, signed | 45 / 44 / 34 | 130 / 108 / 85 / 59 | 133 / 114 / 100 | 129 / 104 |
+| phyloP, positive | 50 / 52 / 45 | 98 / 98 / 58 / 60 | 115 / 95 / 84 | 111 / 95 |
+| scRNA 1Mb | 9 / 11 / 12 | 28 / 30 / 9 / 8 | 33 / 18 / 15 | 39 / 19 |
+
+`buildSourceRenderData` itself costs 0.3-1ms. The packers are the encode time.
+
+Worker time, `processFeaturesFromArrays` over 1000 sources, in ms:
+
+| scenario | bicolor | control | useBicolor=false | wire+retained MiB (bicolor / not) |
+| --- | --- | --- | --- | --- |
+| scRNA raw, positive | 24 | 32 | 22 | 51.4 / 51.4 |
+| scRNA raw, signed (47% neg) | 89 | 87 | 32 | **102.8** / 51.4 |
+| phyloP, signed (47% neg) | 117 | 109 | 32 | **88.3** / 55.2 |
+| phyloP, positive | 35 | 37 | 38 | 55.2 / 55.2 |
+| FST raw, positive | 107 | 110 | 89 | 159.8 / 159.8 |
+
+## Candidates, ranked
+
+### 1. Synthetic zoom tiers below a BigWig's first level
+
+**Gain:** the only candidate that moves the raw-section ceiling. On FST at 319
+bp/px, power-of-two bins of `>= bpPerPx/2` bp take 13,966 features a source to
+1,783, 1.19/px. That puts fill at ~34 MiB instead of 266, and line at ~75
+instead of 586. scRNA at 151 bp/px drops from 4,492 to 891. Summary tiers gain
+nothing, because bbi already holds them under 2/px.
+
+**Design:** `BigWigAdapter` treats the raw section as more levels.
+`getZoomRange` declares a factor-4 band per synthetic bin, as bbi's own levels
+do, and `getFeatureArraysMulti` aggregates raw rows into span-weighted mean
+plus min/max. The whiskers path already consumes that shape. ADR-125 makes the
+adapter the right owner: displays declare no zoom key, so no display changes.
+
+**Why not per-pixel at fetch zoom:** a fetch serves a 4x band of zooms without
+refetching (`regionCommit`'s `zoomRange` test). Pixel-exact decimation would go
+coarse on the first zoom-in, so the bins have to be tiers, not pixels.
+
+**Cost and risk:** medium. A zoom-in through the raw section refetches at each
+synthetic tier: log4(firstTier/2) extra tiers, 4 for FST, each re-decoding
+blocks bbi already caches. Tooltip and hit test would report bins, not bases,
+until the last tier. The prototype `decimateRaw` is unoptimised (FST worker 107
+→ 202ms, since it allocates 5 full-count arrays) and assigns a feature to its
+start's bin. It is a sizing prototype, not the implementation. Coverage BigWigs
+with 50bp bins gain less than 1bp tracks.
+
+### 2. Separate step-line and center-line records
+
+**Gain:** step 44 → 32 bytes (-27%), center 44 → 36 (-18%). The per-source
+ceiling moves from 6,100 to 8,388 (step) or 7,456 (center). Step encode reads
+~40% faster in every scenario, well past noise. Center encode reads ~5-15%
+faster, within noise.
+
+**Cost and risk:** low. Split `wiggleLine.slang` into two modules, since a
+module reflects one instance struct. `lineCenter` then owns its buffer instead
+of borrowing `line`'s through `bufferOf`. No HAL change. This repeats the
+eeaabfbb46 fill/line split one level down.
+
+### 3. A per-row colour table (texture), and shader-side sign colouring
+
+**Gain in bytes:** fill 20 → 16, step 32 → 24, center 36 → 28, band 44 → 36,
+counted on top of #2. Fill cannot reach 12, because `rowIndex` stays per
+instance: 1000 sources in one draw call have no other way to name their row.
+The prototype packs `row << 1 | side` into one word.
+
+**Gain in interaction:** colour is in `gpuProps` (`sources[].color`,
+`posColor`, `negColor`), so a colour change today re-encodes every loaded
+region. That costs 45-250ms of fill or 60-500ms of line per region at 1000
+sources, per the tables above. A table makes it one 8,000-byte texture upload.
+A sort or subtrack toggle still re-encodes unless the instance carries the
+payload's source index and the table also maps index → row and visibility. The
+cost then moves to hidden sources staying in the buffer.
+
+**What the HAL supports today:**
+
+- A pass gets one texture. `pnpm gen:shaders` refuses a second sampler. Fill,
+  line and band bind none, so they are free.
+- **Density is not free.** Its ramp LUT holds the slot, and it draws off the
+  fill pass's buffer (`bufferOf: fill`), so removing `color` from the fill
+  record removes it from density too. Density then needs the ramp and the row
+  table in one texture (row 0 the ramp, row 1 the colours), or multi-texture
+  support in both HALs.
+- The WebGPU bind group layout gives the texture and sampler
+  `GPUShaderStage.FRAGMENT` only (`deviceGpuCache.ts`). A fragment-stage lookup
+  on a flat row varying works now. A vertex-stage lookup needs VERTEX
+  visibility, a one-line change that every textured pipeline shares.
+- **`Sampler2D.Load` emits invalid WGSL** with this slangc: `textureLoad` on the
+  sampler variable. `SampleLevel` at the texel centre with a `nearest` binding
+  compiles to `textureSampleLevel` and `textureLod`, both of which work. Found
+  by compiling a probe shader, not by drawing one.
+- The texture's max dimension is ≥8192 on WebGPU. WebGL2 guarantees 4096, so
+  wrap rows onto 2D past that.
+
+**What kills the uniform-array version:** WebGL2 guarantees a
+`MAX_UNIFORM_BLOCK_SIZE` of only 16,384 bytes, and std140 pads each array
+element to 16. Two colours per row in a `uvec4` then cap out near 1,000 rows,
+and wiggle's shared block already takes 80. On WebGPU the uniform
+ring is `MAX_UNIFORM_SLOTS` (2048) x the largest block any pass binds, rewritten
+per block per frame, so a 16KB block costs ~33MB of ring per HAL. Spec limits,
+not measured on hardware.
+
+**Pairs with #4.** Once the shader picks `table[row][score >= origin]`, the
+avg-path pos/neg split has no GPU consumer left. The line and band shaders
+already colour by side.
+
+**Cost and risk:** medium-high. It touches four shaders, density's texture, the
+HAL layout, and every Canvas2D painter, which today reads `source.color` and
+would read the same table. Whiskers scatter's per-instance tints
+(`colorsAbgr`) need a band index in the row word, or they keep a colour lane.
+
+### 4. ADR-016, re-measured: don't move the split, delete it
+
+The parked
+[re-measure-the-bicolor-split-on-the-main-thread](re-measure-the-bicolor-split-on-the-main-thread.md)
+asked for this number. On signed data the split costs the worker 57ms (scRNA:
+89 vs 32) to 85ms (phyloP: 117 vs 32) at 1000 sources. That is about the same
+as packing the region's fill buffer. It also doubles what the region ships and
+what `rpcDataMap` retains on the main thread: +51 MiB and +33 MiB. On
+one-sided data it costs nothing measurable, and aliasing keeps the wire bytes
+identical.
+
+Moving it into `buildSourceRenderData` as the parked idea proposes puts those
+57-85ms on the main thread per region arrival. Under `createEncodeMemo` the
+split also re-runs on every `gpuProps` change (colour, sort, plot type) unless
+it gets its own memo. ADR-016's rule already names the better exit: work
+"expressible as a uniform". `origin` is already a uniform, so with #3 the GPU
+colours by sign and the split disappears instead of moving. `bicolorPivot`
+then leaves `rpcProps`, and a pivot change costs no refetch and no re-encode.
+**Unmeasured risk:** Canvas2D xyplot would then switch `fillStyle` by sign
+inside one layer. On phyloP-like data (47% negative) that means roughly one
+switch per two bins, and density's per-layer gradient needs both sides. A
+Canvas2D-only lazy split is the fallback.
+
+### 5. Positive-only specialisation: not worth building
+
+- **Worker:** bicolor vs `useBicolor=false` on positive data sits inside the
+  control's spread in all three positive scenarios (24/22 against a 32
+  control; 35/38; 107/89 against 110). The count loop is one pass, and
+  aliasing ships nothing extra.
+- **GPU bytes:** only the line and band records spend 4 bytes (9%) on
+  `negColor`, and #3 removes that for every track, not just positive ones.
+- **GPU fragment:** one compare and select in `pivotSideColor`. Not measured,
+  since node has no GPU. Nothing suggests it shows.
+- **Canvas2D:** with default colours `strokeBySide` walks a positive track
+  twice. Against a no-op context, the empty second walk costs about as much JS
+  as the first: +20ms per 100 rows (scRNA), +35ms per 30 rows (FST). Real
+  painting through node-canvas moved within ±3% of the single-colour arm
+  (922/913, 1507/1447, 697/688ms), because stroking dominates. Chrome may weigh
+  it differently. Skipping the `below` pass for a layer with no score under the
+  pivot costs a few lines, for a gain that stays small.
+
+### 6. Same pattern elsewhere (quick survey, byte counts, not audited)
+
+An agent read the packers, and only the first row was spot-checked by hand
+(`computeVariantCells.ts` repeats one variant's span on every sample's cell).
+
+| record | stride | repeated per-row/feature constant | share |
+| --- | --- | --- | --- |
+| multi-sample variant `CellInstance` | 20 | startEnd + shapeType per variant, on every sample's cell | 60% |
+| variant matrix `CellInstance` | 12 | featureIndex per column | 33% |
+| synteny ribbon (4 pipelines) | 32 | alignmentLength, color per feature (+ featureId, kind) | 25-50% |
+| Manhattan `PointMarkInstance` | 24 | row always 0, glyph default outside LD | 33% |
+| MAF / multi-row `RowRectInstance` | 16 | row (and row colour when set) | 25-50% |
+| dotplot | 20 | color per feature | 20% |
+| alignments `gap` / `clip` | 20 / 16 | gapType constant per buffer; kind in two runs | 20-25% |
+| pileup read | 44 | tagColor 0 when unused; six small fields in 4-byte words | 9% (+~40% by packing) |
+
+The variant cell is the biggest: 1000 variants x 3000 samples is the scale its
+own comments cite. A per-variant span texture needs exact u32 through RGBA8,
+which works but is the same HAL work as #3.
+
+## Order if taken
+
+#2 first: low risk, no HAL, a measured 27% on step lines. #1 next, because it
+is the one that turns "too much data, zoom in" into a picture on dense raw
+data, and it lives entirely in the adapter. #3 and #4 together, as one project,
+since each makes the other pay. Settle density's texture first.

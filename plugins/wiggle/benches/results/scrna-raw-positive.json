@@ -1,0 +1,63 @@
+{
+  "header": {
+    "files": ["CD4_T.bw"],
+    "refName": "chr1",
+    "start": 150000000,
+    "viewBp": 226500,
+    "bpPerPx": 151,
+    "screenPx": 1500,
+    "tier": "raw",
+    "firstTier": 304,
+    "sources": 1000,
+    "sign": "keep",
+    "rounds": 15,
+    "paintSources": 100,
+    "decimation": {
+      "binBp": 128,
+      "featuresBefore": 4492000,
+      "featuresAfter": 891000,
+      "perPxAfter": 0.59
+    }
+  },
+  "memory": {
+    "featuresPerSource": 4492,
+    "featuresPerPx": 2.99,
+    "negShare": 0,
+    "wireMB": 51.4,
+    "wireNoBicolorMB": 51.4,
+    "fillMB": 85.7,
+    "fill16MB": 68.5,
+    "lineMB": 188.5,
+    "step32MB": 137.1,
+    "step24MB": 102.8,
+    "center36MB": 154.2,
+    "center28MB": 119.9,
+    "bandMB": 0,
+    "band36MB": 0,
+    "colorTableBytes": 8000
+  },
+  "timings": {
+    "worker-bicolor": 24,
+    "worker-control": 32.45,
+    "worker-nobicolor": 22.29,
+    "worker-decimate": 69.49,
+    "build-xy": 0.39,
+    "build-line": 0.4,
+    "pack-fill": 63.81,
+    "pack-fill-control": 70.32,
+    "pack-fill16+table": 58.79,
+    "pack-line(step)": 137.89,
+    "pack-line(step)-control": 137.47,
+    "pack-step32": 83.94,
+    "pack-step24+table": 85.97,
+    "pack-line(center)": 159.47,
+    "pack-center36": 157.93,
+    "pack-center28+table": 110.42,
+    "paint-step-bicolor": 921.94,
+    "paint-step-mono": 912.81,
+    "paint-center-bicolor": 421.47,
+    "paint-center-mono": 434.22,
+    "walk-step-bicolor": 54.3,
+    "walk-step-mono": 32.62
+  }
+}
