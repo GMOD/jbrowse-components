@@ -62,8 +62,12 @@ test('the range is in bp/px, scaled back through resolution and the multiplier',
     maxBpPerPx: 6956,
   })
   expect(await microarrayAdapter().getZoomRange({ bpPerPx: 1000 })).toEqual({
-    minBpPerPx: 0,
+    minBpPerPx: 512,
     maxBpPerPx: 1739,
+  })
+  expect(await microarrayAdapter().getZoomRange({ bpPerPx: 100 })).toEqual({
+    minBpPerPx: 0,
+    maxBpPerPx: 128,
   })
   expect(
     await microarrayAdapter().getZoomRange({ bpPerPx: 8000, resolution: 4 }),

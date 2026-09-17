@@ -12,6 +12,12 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { calcStdFromSums } from '@jbrowse/core/util/stats'
 
+import {
+  binAlignedExtent,
+  binRawRegion,
+  syntheticBinBp,
+  syntheticReductionLevels,
+} from './syntheticTiers.ts'
 import { tierSpanRange } from './tierSpanRange.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
@@ -116,9 +122,13 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
         this.pluginManager,
       ),
     })
+    const header = await bigwig.getHeader(opts)
+    const fileLevels = header.zoomLevels.map(z => z.reductionLevel)
     return {
       bigwig,
-      header: await bigwig.getHeader(opts),
+      header,
+      firstLevel: Math.min(...fileLevels),
+      levels: [...syntheticReductionLevels(fileLevels), ...fileLevels],
     }
   }
 
@@ -148,13 +158,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
   }
 
   public async getZoomRange(opts: WiggleOptions = {}): Promise<ZoomRange> {
-    const { header } = await this.setup(opts)
+    const { levels } = await this.setup(opts)
     const { resolution = 1 } = opts
     const bpPerPxPerSpan = resolution / this.getConf('resolutionMultiplier')
-    const [lo, hi] = tierSpanRange(
-      header.zoomLevels.map(z => z.reductionLevel),
-      this.basesPerSpan(opts),
-    )
+    const [lo, hi] = tierSpanRange(levels, this.basesPerSpan(opts))
     return {
       minBpPerPx: lo * bpPerPxPerSpan,
       maxBpPerPx: hi * bpPerPxPerSpan,
@@ -165,24 +172,76 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     region: Region,
     opts: WiggleOptions = {},
   ): Promise<ArrayFeatureView> {
-    const { refName, start, end } = region
+    const [arrays] = await this.readRegions([region], opts)
+    const { starts, ends, scores, minScores, maxScores } = arrays!
+    return new ArrayFeatureView(
+      minScores && maxScores
+        ? { starts, ends, scores, minScores, maxScores, isSummary: true }
+        : { starts, ends, scores, isSummary: false },
+      this.getConf('source'),
+      region.refName,
+    )
+  }
+
+  // One bbi pass over all regions, coalescing adjacent on-disk blocks across
+  // region boundaries. All regions share the tier picked from the view's
+  // bpPerPx. A synthetic tier reads the raw section over bin-aligned extents
+  // and bins each region; a file tier's rows are bbi's own.
+  private async readRegions(regions: Region[], opts: WiggleOptions) {
     const { statusCallback } = opts
-    const source = this.getConf('source')
+    const { bigwig, levels, firstLevel } = await this.setup(opts)
+    const basesPerSpan = this.basesPerSpan(opts)
+    const binBp = syntheticBinBp(
+      tierSpanRange(levels, basesPerSpan)[0],
+      firstLevel,
+    )
+    const rawSectionSpan = firstLevel / 4
 
-    const { bigwig } = await this.setup(opts)
-
-    const arrays = await downloadStatus(
+    const res = await downloadStatus(
       'Downloading wiggle data',
       statusCallback,
       onProgress =>
-        bigwig.getFeaturesAsArrays(refName, start, end, {
-          ...opts,
-          basesPerSpan: this.basesPerSpan(opts),
-          onProgress,
-        }),
+        bigwig.getFeaturesAsArraysMulti(
+          regions.map(({ refName, start, end }) => ({
+            refName,
+            ...(binBp === undefined
+              ? { start, end }
+              : binAlignedExtent(start, end, binBp)),
+          })),
+          {
+            ...opts,
+            basesPerSpan: binBp === undefined ? basesPerSpan : rawSectionSpan,
+            onProgress,
+          },
+        ),
     )
 
-    return new ArrayFeatureView(arrays, source, refName)
+    const { starts, ends, scores, regionOffsets } = res
+    const minScores = res.isSummary ? res.minScores : undefined
+    const maxScores = res.isSummary ? res.maxScores : undefined
+    return regions.map((region, i) => {
+      const lo = regionOffsets[i]!
+      const hi = regionOffsets[i + 1]!
+      return binBp === undefined
+        ? {
+            starts: starts.subarray(lo, hi),
+            ends: ends.subarray(lo, hi),
+            scores: scores.subarray(lo, hi),
+            minScores: minScores?.subarray(lo, hi),
+            maxScores: maxScores?.subarray(lo, hi),
+            count: hi - lo,
+          }
+        : binRawRegion(
+            starts,
+            ends,
+            scores,
+            lo,
+            hi,
+            region.start,
+            region.end,
+            binBp,
+          )
+    })
   }
 
   // bicolorPivot is a display concern (pos/neg color split) and stays out of
@@ -192,64 +251,19 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     region: Region,
     opts: WiggleOptions = {},
   ): Promise<RawFeatureArrays> {
-    const view = await this.getArrayFeatureView(region, opts)
-    return {
-      starts: view.starts,
-      ends: view.ends,
-      scores: view.scores,
-      minScores: view.minScores,
-      maxScores: view.maxScores,
-      count: view.length,
-    }
+    const [arrays] = await this.readRegions([region], opts)
+    return arrays!
   }
 
-  // Multi-region fast path: one bbi pass over all regions, coalescing adjacent
-  // on-disk blocks across region boundaries (fewer range requests than N
-  // independent getFeatureArrays calls — the win for collapsed-intron and
-  // whole-genome overviews). All regions share one zoom level, selected from the
-  // view's bpPerPx, so a single basesPerSpan is correct. The bbi result packs
-  // every region into one backing set of typed arrays plus regionOffsets;
-  // regionOffsets[i]..regionOffsets[i+1] is region i's copy-free slice.
+  // Multi-region fast path: fewer range requests than N independent
+  // getFeatureArrays calls — the win for collapsed-intron and whole-genome
+  // overviews. regionOffsets slices each region out of bbi's packed arrays
+  // copy-free.
   public async getFeatureArraysMulti(
     regions: Region[],
     opts: WiggleOptions = {},
   ): Promise<RawFeatureArrays[]> {
-    const { statusCallback } = opts
-    const { bigwig } = await this.setup(opts)
-
-    const res = await downloadStatus(
-      'Downloading wiggle data',
-      statusCallback,
-      onProgress =>
-        bigwig.getFeaturesAsArraysMulti(
-          regions.map(r => ({
-            refName: r.refName,
-            start: r.start,
-            end: r.end,
-          })),
-          {
-            ...opts,
-            basesPerSpan: this.basesPerSpan(opts),
-            onProgress,
-          },
-        ),
-    )
-
-    const { starts, ends, scores, regionOffsets } = res
-    const minScores = res.isSummary ? res.minScores : undefined
-    const maxScores = res.isSummary ? res.maxScores : undefined
-    return regions.map((_region, i) => {
-      const lo = regionOffsets[i]!
-      const hi = regionOffsets[i + 1]!
-      return {
-        starts: starts.subarray(lo, hi),
-        ends: ends.subarray(lo, hi),
-        scores: scores.subarray(lo, hi),
-        minScores: minScores?.subarray(lo, hi),
-        maxScores: maxScores?.subarray(lo, hi),
-        count: hi - lo,
-      }
-    })
+    return this.readRegions(regions, opts)
   }
 
   // UNUSED in-tree as of the client-side autoscale move: the wiggle displays

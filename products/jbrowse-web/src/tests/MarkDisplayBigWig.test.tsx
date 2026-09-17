@@ -13,9 +13,18 @@ setup()
 
 // The volvox microarray BigWig twice: the config's own QuantitativeTrack with
 // its wiggle display, and the same track re-declared under a mark display.
-function config() {
+function config(uri?: string) {
   const base = volvoxConfigWithTracks(['volvox_microarray'])
-  const [track] = base.tracks
+  const [original] = base.tracks
+  const track = uri
+    ? {
+        ...original,
+        adapter: {
+          type: 'BigWigAdapter',
+          bigWigLocation: { uri, locationType: 'UriLocation' },
+        },
+      }
+    : original
   return {
     ...base,
     tracks: [
@@ -100,10 +109,10 @@ test('a mark display over a BigWig holds the rows the wiggle display holds, and 
     expect(layer.x2[i]).toBe(source.featurePositions[i * 2 + 1])
     expect(layer.y[i]).toBe(source.featureScores[i])
   }
-  // the raw section of volvox_microarray.bw, whose first tier is 3,478 bp
+  // the raw section of volvox_microarray.bw, under its 256bp synthetic tier
   expect(marks.rpcDataMap.get(0)!.zoomRange).toEqual({
     minBpPerPx: 0,
-    maxBpPerPx: 1739,
+    maxBpPerPx: 128,
   })
 
   // A zoom in, so the viewport stays inside the loaded regions and only the
@@ -120,4 +129,43 @@ test('a mark display over a BigWig holds the rows the wiggle display holds, and 
       ['RenderWiggleData', 'CoreEncodeFeatures'].includes(method),
     ),
   ).toHaveLength(0)
+}, 40000)
+
+// Between the raw section and the file's first level the adapter bins the raw
+// records itself, so both displays hold the same bins. The 1bp coverage file's
+// first level is 40bp, so 12 bp/px reads its 16bp synthetic tier.
+test('a mark display and a wiggle display hold the same synthetic-tier bins', async () => {
+  const { view, findByTestId } = await createView(
+    config('volvox-sorted.bam.coverage.bw'),
+  )
+  view.setNewView(12, 0)
+  fireEvent.click(await findByTestId(hts('volvox_microarray'), {}, { timeout }))
+  fireEvent.click(await findByTestId(hts('microarray_marks'), {}, { timeout }))
+  await findDisplayPainted('wiggle-display', { timeout })
+  await findDisplayPainted('mark-display', { timeout })
+
+  const wiggle = view.tracks[0]!.displays[0] as unknown as WiggleProbe
+  const marks = view.tracks[1]!.displays[0] as unknown as MarkProbe
+  await waitFor(() => {
+    expect(wiggle.rpcDataMap.get(0)).toBeDefined()
+    expect(marks.rpcDataMap.get(0)).toBeDefined()
+  })
+  expect(marks.rpcDataMap.get(0)!.zoomRange).toEqual({
+    minBpPerPx: 8,
+    maxBpPerPx: 20,
+  })
+  const source = wiggle.rpcDataMap.get(0)!.sources[0]!
+  const layer = marks.rpcDataMap.get(0)!.layers[0]!
+  expect(layer.count).toBe(source.numFeatures)
+  expect(layer.count).toBeGreaterThan(10)
+  let onBinEdge = 0
+  for (let i = 0; i < layer.count; i++) {
+    const start = source.featurePositions[i * 2]!
+    expect(layer.x[i]).toBe(start)
+    expect(layer.x2[i]).toBe(source.featurePositions[i * 2 + 1])
+    expect(layer.y[i]).toBe(source.featureScores[i])
+    onBinEdge += start % 16 === 0 ? 1 : 0
+  }
+  // dense coverage, so a row starts where its bin does
+  expect(onBinEdge / layer.count).toBeGreaterThan(0.95)
 }, 40000)
