@@ -19,9 +19,9 @@ bbi picks the highest level whose reduction fits twice into a span, so a
 summary tier holds 0.5-2 rows a pixel. Below half the first level it reads the
 raw section, which has no such cap. The idea doc measured 9.31 rows a pixel on
 an FST scan at 319 bp/px, 4.67 on phyloP at 4.9 and 2.99 on scRNA coverage at
-151. At 1000 sources the FST scan needs 266 MiB of fill records and 586 MiB of
-line records, past the 256 MiB `maxBufferSize` floor, so that zoom cannot draw
-at all.
+151. At 1000 sources the FST scan needs 266 MiB of fill records and 426 MiB of
+step-line records, past the 256 MiB `maxBufferSize` floor, so that zoom cannot
+draw at all.
 
 ## Decision
 
@@ -125,12 +125,16 @@ data.
   answers raw it pays the aborted pass and the wider bin-aligned read. Binning
   costs 20-30 ns a raw row.
 
-  At 1000 sources on the main thread, `instanceBuffer.bench.ts` takes the FST
-  scan from 266.4 to 34.0 MiB of fill, from 586 to 74.8 MiB of line, and from
-  159.8 to 34.0 MiB wire, and its fill pack from 249 to 25 ms and step-line
-  pack from 431 to 64 ms. It takes scRNA from 85.7 to 17.9 MiB of fill. Summary
-  tiers keep bbi's own rows: phyloP at 79 bp/px holds 2,893 a source and scRNA
-  at 667 holds 763, as the idea doc measured.
+  At 1000 sources, on the split line records, `instanceBuffer.bench.ts` takes
+  the FST scan from 266.4 to 34.0 MiB of fill, from 426.2 to 54.4 MiB of step
+  line, from 479.5 to 61.2 MiB of center line, and from 159.8 to 34.0 MiB of
+  wire. Its fill pack goes from 245 to 37 ms, its step pack from 409 to 60 and
+  its center pack from 518 to 77 (min of 5, loaded box). Binned rows carry
+  min/max, so **whiskers mode now packs a band where raw rows had none**:
+  74.8 MiB and 86 ms on the same scan, still under the floor. scRNA at 151
+  bp/px goes from 85.7 to 17.9 MiB of fill. Summary tiers keep bbi's own rows:
+  phyloP at 79 bp/px holds 2,893 a source and scRNA at 667 holds 763, as the
+  idea doc measured.
 
 ## Rejected alternatives
 
