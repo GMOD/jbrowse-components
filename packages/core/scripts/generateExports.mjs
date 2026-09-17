@@ -33,9 +33,9 @@ const preservedExports = [
   '@jbrowse/core/util/renderToStaticMarkup',
   '@jbrowse/core/svg/saveSvgAsImage',
   // The registry a plugin's jbrequire resolves against, and core's module bag.
-  // PluginManager and PluginLoader reach both by relative path, which this scan
-  // does not count, so these stay published whichever subpath importers come
-  // and go.
+  // PluginManager and PluginLoader reach the registry by relative path, which
+  // this scan does not count, and the bag's importers are generated maps, so
+  // both stay published whichever subpath importers come and go.
   '@jbrowse/core/ReExports/registry',
   '@jbrowse/core/ReExports/modules',
   // jest.mock target for stable adapter ids in tests

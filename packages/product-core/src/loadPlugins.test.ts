@@ -26,6 +26,7 @@ function captureLoad() {
 }
 
 const jbrowseVersion = '4.3.0'
+const reExports = () => Promise.resolve({ default: {} })
 
 const defs: UMDLocPluginDefinition[] = [
   { name: 'MafViewer', umdLoc: { uri: 'https://example.com/maf.js' } },
@@ -38,13 +39,21 @@ afterEach(() => {
 
 test('dropVendored filters a bundled plugin a config still names', async () => {
   const calls = captureLoad()
-  await loadRuntimePlugins(defs, { dropVendored: true, jbrowseVersion })
+  await loadRuntimePlugins(defs, {
+    dropVendored: true,
+    jbrowseVersion,
+    reExports,
+  })
   expect(calls[0]!.names).toEqual(['UCSC'])
 })
 
 test('a product that does not bundle them still fetches one', async () => {
   const calls = captureLoad()
-  await loadRuntimePlugins(defs, { dropVendored: false, jbrowseVersion })
+  await loadRuntimePlugins(defs, {
+    dropVendored: false,
+    jbrowseVersion,
+    reExports,
+  })
   expect(calls[0]!.names).toEqual(['MafViewer', 'UCSC'])
 })
 
@@ -55,6 +64,7 @@ test('baseUri resolves relative plugin urls', async () => {
   await loadRuntimePlugins(defs, {
     dropVendored: true,
     jbrowseVersion,
+    reExports,
     baseUri: 'https://example.com/config.json',
   })
   expect(calls[0]!.baseUri).toBe('https://example.com/config.json')
@@ -65,6 +75,7 @@ test('baseUrl is still accepted as the pre-4.4 spelling', async () => {
   await loadRuntimePlugins(defs, {
     dropVendored: true,
     jbrowseVersion,
+    reExports,
     baseUrl: 'https://example.com/config.json',
   })
   expect(calls[0]!.baseUri).toBe('https://example.com/config.json')
@@ -72,7 +83,11 @@ test('baseUrl is still accepted as the pre-4.4 spelling', async () => {
 
 test('with neither, urls resolve against the page rather than throwing', async () => {
   const calls = captureLoad()
-  await loadRuntimePlugins(defs, { dropVendored: true, jbrowseVersion })
+  await loadRuntimePlugins(defs, {
+    dropVendored: true,
+    jbrowseVersion,
+    reExports,
+  })
   expect(calls[0]!.baseUri).toBe(window.location.href)
 })
 
@@ -82,7 +97,11 @@ test('with neither, urls resolve against the page rather than throwing', async (
 // not reach the loader at all.
 test('a config that names nothing loads nothing', async () => {
   const calls = captureLoad()
-  await loadRuntimePlugins([], { dropVendored: true, jbrowseVersion })
+  await loadRuntimePlugins([], {
+    dropVendored: true,
+    jbrowseVersion,
+    reExports,
+  })
   expect(calls).toEqual([])
 })
 
@@ -120,6 +139,7 @@ describe('store refs', () => {
     await loadRuntimePlugins([{ storePlugin: 'MafViewer' }], {
       dropVendored: true,
       jbrowseVersion,
+      reExports,
     })
     // dropped down to nothing, so there is nothing to load
     expect(calls).toEqual([])
@@ -128,7 +148,11 @@ describe('store refs', () => {
   it('fetches nothing when no definition is a ref', async () => {
     const fetchSpy = mockStore([])
     captureLoad()
-    await loadRuntimePlugins(defs, { dropVendored: true, jbrowseVersion })
+    await loadRuntimePlugins(defs, {
+      dropVendored: true,
+      jbrowseVersion,
+      reExports,
+    })
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
@@ -141,6 +165,7 @@ describe('store refs', () => {
       loadRuntimePlugins([{ storePlugin: 'Nope' }], {
         dropVendored: true,
         jbrowseVersion,
+        reExports,
       }),
     ).rejects.toThrow(/not in the plugin store/)
   })

@@ -142,10 +142,14 @@ metafile.
   dependencies it already reached transitively, the circular-genome-view
   build thirteen, among them `@jbrowse/plugin-linear-genome-view`, which
   `sv-core` and `tree-sidebar` had been pulling into it all along.
-- The registry chunk grows. It is loaded only when a config names a runtime
-  plugin, and the ui barrel's namespace spread — the pin EAGER_BUNDLE.md §4
-  removed from first paint — is back inside that chunk, where it was always
-  going to be for a plugin that reads the barrel.
+- The registry chunk grows, and its cost is not confined to the chunk. A host
+  whose bundle holds the registry keeps every export of every served module,
+  so a module its eager code shares carries all of them onto first paint, and
+  under rolldown the ui barrel's namespace spread — the pin EAGER_BUNDLE.md §4
+  removed — pins the barrel's Material UI there again. A host that loads no
+  plugin avoids both only while nothing it bundles imports a generated map:
+  PluginLoader's own `import()` of one did, which put build-your-own ~230 KB
+  over budget until the loader moved to the caller (EAGER_BUNDLE.md §3).
 
 ## Rejected
 

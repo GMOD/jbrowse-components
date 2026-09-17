@@ -24,10 +24,9 @@ export interface WorkerOptions {
   /**
    * The product's `workerReExports.generated.ts`, so a runtime plugin loading
    * here reads the host's copy of every `@jbrowse` package the product
-   * bundles. Without it the worker serves only what `@jbrowse/core` can on its
-   * own.
+   * bundles.
    */
-  reExports?: ReExportRegistryLoader
+  reExports: ReExportRegistryLoader
 }
 
 interface WorkerConfiguration {

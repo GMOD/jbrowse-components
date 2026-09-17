@@ -136,11 +136,12 @@ of **every** host, including embedded ones that load no runtime plugin at all.
 
 Nothing can call `jbrequire` before a runtime plugin exists, and the only thing
 that can make one exist is `PluginLoader.load()`, which is async. So the
-registry is now imported there (`publishReExports`, called at the top of
+registry is now fetched there (`publishReExports`, called at the top of
 `loadSettled`, before any plugin script evaluates) and parked in
 `ReExports/registry.ts` for the synchronous `jbrequire` to find.
-`installGlobalReExports(target)` stayed synchronous and still returns `this` —
-it records the target, and all six call sites chain into `load`/`loadSettled`.
+`installGlobalReExports(target, registry)` stays synchronous and returns `this`
+— it records the target and the product's loader, and every call site chains
+into `load`/`loadSettled`.
 
 Pinned by three tests in `PluginLoader.test.ts`, including one that installs the
 repo's own no-build plugin fixture (`test_data/no_build_plugin/esmplugin.js`,
@@ -151,9 +152,28 @@ Since 2026-09-16 the registry is generated from the exports maps
 (`scripts/generateReExports.ts`, ADR-128) and serves every subpath of every
 `@jbrowse` package the product bundles — 422 keys where the hand list named
 25 — so the namespace spread above names far more than it did. It is the same
-lazy chunk, loaded only when a config names a runtime plugin, and each product
-holds its own generated map (`reExports.generated.ts`) so an embedded build
-serves only the packages it bundles. The worker's stub-or-real split is derived
+lazy chunk, and each product holds its own generated map
+(`reExports.generated.ts`) so an embedded build serves only the packages it
+bundles.
+
+**Lazy is not confined.** Tree-shaking is whole-build: a host whose bundle holds
+the registry at all keeps every export of every served module, and a module
+eager code also imports carries all of them onto first paint. The generated maps
+reached build-your-own that way on the day they landed — every page ~230 KB
+gzipped over budget, the index page at 606 KB against 373 — by two
+routes, measured apart:
+
+- **A cycle.** The map serves `@jbrowse/core/PluginLoader`, and PluginLoader
+  `import()`ed the map as its default. Rolldown kept that loop in the build
+  though no page reached it. The loader now comes from the caller, so a
+  product's entry files are the only importers of a generated map; the fix
+  alone put the page at 376.
+- **The barrel spread.** The map's `import * as` of `@jbrowse/core/ui` makes
+  rolldown materialize the barrel where eager code imports it, pinning every
+  Material UI component the barrel re-exports. Importing each name instead took
+  the page to 403 on its own. Not adopted: with the cycle gone the site bundles
+  no registry, and jbrowse-web is webpack, where naming every export marks the
+  same set used. A rolldown embedder that calls `loadPlugins` still pays it. The worker's stub-or-real split is derived
 in the same run: a module is stubbed when its own source graph names react-dom,
 a Material UI component, the data grid or floating-ui, which is what put
 `ui/theme.ts` onto `@mui/material/styles` — its `@mui/material` barrel import

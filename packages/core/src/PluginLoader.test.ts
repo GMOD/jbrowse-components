@@ -442,10 +442,14 @@ describe('dedupePlugins', () => {
 // bundle reads `JBrowseExports` off the global at module scope, and a CJS/ESM
 // plugin's `install()` calls `pluginManager.jbrequire(name)` synchronously.
 // Both must be satisfied by the time any plugin script runs.
+const loadCoreRegistry = () => import('./ReExports/modules.ts')
+
 describe('runtime re-export ABI', () => {
   it('publishes JBrowseExports on the target before loading plugins', async () => {
     const target = {} as WindowOrWorkerGlobalScope & { JBrowseExports?: object }
-    await new PluginLoader([]).installGlobalReExports(target).load()
+    await new PluginLoader([])
+      .installGlobalReExports(target, loadCoreRegistry)
+      .load()
     expect(target.JBrowseExports).toBeDefined()
     // one entry from each of the two barrel shapes the registry serves
     expect(target.JBrowseExports).toHaveProperty('@jbrowse/core/util')
@@ -467,7 +471,7 @@ describe('runtime re-export ABI', () => {
       /No jbrequire re-export defined .* @jbrowse\/core\/ReExports\/list names/,
     )
     await new Loader([])
-      .installGlobalReExports({} as WindowOrWorkerGlobalScope)
+      .installGlobalReExports({} as WindowOrWorkerGlobalScope, loadCoreRegistry)
       .load()
     expect(new Manager([]).jbrequire('@jbrowse/core/util')).toHaveProperty(
       'getSession',
@@ -478,7 +482,9 @@ describe('runtime re-export ABI', () => {
     const target = {} as WindowOrWorkerGlobalScope & {
       JBrowseExports: Record<string, unknown>
     }
-    await new PluginLoader([]).installGlobalReExports(target).load()
+    await new PluginLoader([])
+      .installGlobalReExports(target, loadCoreRegistry)
+      .load()
     expect(() => target.JBrowseExports['@material-ui/core']).toThrow(
       /does not serve '@material-ui\/core'/,
     )
@@ -488,7 +494,7 @@ describe('runtime re-export ABI', () => {
 
   it('leaves the target alone until a load actually happens', () => {
     const target = {} as WindowOrWorkerGlobalScope & { JBrowseExports?: object }
-    new PluginLoader([]).installGlobalReExports(target)
+    new PluginLoader([]).installGlobalReExports(target, loadCoreRegistry)
     expect(target.JBrowseExports).toBeUndefined()
   })
 })
@@ -509,7 +515,7 @@ test('a real no-build plugin installs through jbrequire', async () => {
       fetchESM: () => import('../../../test_data/no_build_plugin/esmplugin.js'),
     },
   )
-    .installGlobalReExports({} as WindowOrWorkerGlobalScope)
+    .installGlobalReExports({} as WindowOrWorkerGlobalScope, loadCoreRegistry)
     .load()
   // the shape every product builds: the loader returns the class, the manager
   // takes an instance (createPluginManager.ts's asPluginRecord)

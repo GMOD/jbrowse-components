@@ -21,9 +21,9 @@ export default function loadPlugins(
   args?: LoadPluginsArgs,
 ) {
   return loadRuntimePlugins(pluginDefinitions, {
-    reExports: () => import('./reExports.generated.ts'),
     ...args,
     dropVendored: true,
     jbrowseVersion: version,
+    reExports: () => import('./reExports.generated.ts'),
   })
 }

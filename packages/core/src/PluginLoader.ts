@@ -306,52 +306,43 @@ export default class PluginLoader {
     return plugin.default
   }
 
-  private reExportTarget: WindowOrWorkerGlobalScope | undefined
-  private reExportRegistry: ReExportRegistryLoader | undefined
+  private reExports:
+    | { target: WindowOrWorkerGlobalScope; registry: ReExportRegistryLoader }
+    | undefined
 
   /**
    * Ask for the runtime ABI (`JBrowseExports`) to be published on `target`
-   * before any plugin bundle is evaluated. Records the target; the registry
-   * itself is fetched in `loadSettled` below.
-   *
-   * The split is the point. Every product calls this at startup, synchronously,
-   * whether or not the config names a plugin — so importing the registry here
-   * put it in every host's first paint. It is a ~126 KB gzipped module (see
-   * `ReExports/registry.ts` for why it cannot shrink) that only a runtime plugin
-   * can use, and loading one is async anyway.
+   * before any plugin bundle is evaluated. Records the target and the loader;
+   * `loadSettled` fetches the registry, a ~126 KB gzipped module only a runtime
+   * plugin can use (see `ReExports/registry.ts` for why it cannot shrink).
    *
    * `registry` is the product's generated map — `reExports.generated.ts` on
    * the main thread, `workerReExports.generated.ts` in its worker — which
-   * serves every `@jbrowse` package the product bundles. Without one, only
-   * what `@jbrowse/core` can serve on its own is published.
+   * serves every `@jbrowse` package the product bundles. The caller names it
+   * because the registry serves this module: an `import()` of it from here is
+   * a cycle rolldown keeps in any host bundling this file, whether or not
+   * anything loads a plugin (EAGER_BUNDLE.md §3).
    */
   installGlobalReExports(
     target: WindowOrWorkerGlobalScope,
-    registry?: ReExportRegistryLoader,
+    registry: ReExportRegistryLoader,
   ) {
-    this.reExportTarget = target
-    this.reExportRegistry = registry
+    this.reExports = { target, registry }
     return this
   }
 
   private async publishReExports() {
-    const target = this.reExportTarget
-    if (!target) {
+    if (!this.reExports) {
       return
     }
-    // a worker never renders: the same keys, with the UI ones stubbed, so a
-    // plugin bundle evaluates there without fetching react-dom and Material UI
-    const { default: ReExports } = this.reExportRegistry
-      ? await this.reExportRegistry()
-      : isWebWorker()
-        ? await import('./ReExports/workerModules.ts')
-        : await import('./ReExports/index.ts')
+    const { target, registry } = this.reExports
+    const { default: ReExports } = await registry()
     ;(target as unknown as Record<string, unknown>).JBrowseExports =
       loudOnMissingModule({ ...ReExports })
     // the synchronous half: `pluginManager.jbrequire(name)` is what a CJS
     // plugin calls, and it cannot await
     setReExportRegistry(ReExports)
-    this.reExportTarget = undefined
+    this.reExports = undefined
   }
 
   /**

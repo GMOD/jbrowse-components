@@ -11,12 +11,6 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 export interface LoadPluginsArgs {
   fetchESM?: (url: string) => Promise<LoadedPlugin>
   /**
-   * The product's `reExports.generated.ts`, so a plugin loaded here reads the
-   * host's copy of every `@jbrowse` package the product bundles. Without it
-   * the plugin is served only what `@jbrowse/core` can on its own.
-   */
-  reExports?: ReExportRegistryLoader
-  /**
    * Resolve relative plugin urls against this instead of the page. A config
    * fetched from somewhere else names its plugins relative to itself, so pass
    * that config's url — otherwise a `"url": "umd_plugin.js"` entry is looked
@@ -41,14 +35,23 @@ export interface LoadPluginsArgs {
  * a second copy beside its own; a product that does not bundle them — the
  * circular-genome-view build has neither MafViewer nor GWAS in its corePlugins —
  * must still fetch one a config names, or the config silently loses the plugin.
+ *
+ * `reExports` is the product's `reExports.generated.ts`, which serves every
+ * `@jbrowse` package the product bundles. Required for the same reason: a
+ * plugin handed core's map alone cannot read the rest.
  */
 export async function loadRuntimePlugins(
   pluginDefinitions: PluginDefinition[],
   {
     dropVendored,
     jbrowseVersion,
+    reExports,
     ...args
-  }: LoadPluginsArgs & { dropVendored: boolean; jbrowseVersion: string },
+  }: LoadPluginsArgs & {
+    dropVendored: boolean
+    jbrowseVersion: string
+    reExports: ReExportRegistryLoader
+  },
 ) {
   // Before dropVendoredPlugins, which matches on the UMD name a ref does not
   // carry until the store supplies it. `jbrowseVersion` is required rather than
@@ -71,7 +74,7 @@ export async function loadRuntimePlugins(
   const base = args.baseUri ?? args.baseUrl
   return toLoad.length
     ? new PluginLoader(toLoad, args)
-        .installGlobalReExports(window, args.reExports)
+        .installGlobalReExports(window, reExports)
         .load(base ?? window.location.href)
     : []
 }
