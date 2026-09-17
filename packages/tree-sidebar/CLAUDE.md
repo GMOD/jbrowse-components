@@ -43,6 +43,32 @@ silently. When writing a display:
 distinguishes stale from "no tree" and from "deliberately not positioned"
 (multi-wiggle overlay) by testing `root` against the rows.
 
+## A declared row order rotates the tree, it does not reorder against it
+
+The `domain` slot is a preference wherever the rows are a tree's leaves: a
+phylogeny fixes its leaf order only up to a rotation at each node, so
+`rotateNewickByDomain` turns each node towards the earliest listed leaf below it
+and the dendrogram keeps drawing. It is pure over `NewickNode` — no jbrowse
+import, so it lifts into `@gmod/newick` as written — and builds fresh nodes
+iteratively. `parsedTree` is cached per newick string, so an in-place sort
+compounds across domain changes and an unlisted clade never returns to file
+order.
+
+**Where it runs is the design.** A supplied tree (no `clusterProvenance`)
+rotates at parse time, and maf reads its row order back off that same computed,
+so the leaves and the rows cannot drift. A computed tree rotates in the run that
+produced it — `rotateClusterRun`, called from `applyClusterRun` and from
+variants' `applyClusterOrder`, which is the path `runGenotypeClustering` takes
+instead. Rotating a computed tree at parse time would turn a restored session's
+dendrogram away from the `layout` saved beside it and draw nothing. The R-paste
+`applyOrder` path carries no tree and rotates nothing: a paste is an explicit
+order.
+
+`writeNewick` is the only thing here that writes the format rather than reading
+it, for that rotated run tree alone. It imports hclust's `quoteName` rather than
+restating the escaping rule, and it keeps whichever `length` encoding it was
+handed.
+
 ## `clusterProvenance` is written in the same action as the tree, always
 
 `treeDescribesRows` gates on row **names**, which don't change when you pan, so

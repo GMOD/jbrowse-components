@@ -143,7 +143,7 @@ const configSchema = ConfigurationSchema(
     ...treeSidebarConfigSchemaFields({
       tree: 'Show the subtrack clustering tree in the sidebar',
       rowLabels: 'Name each subtrack row down the left edge',
-      rows: "Row order: the subtracks listed come first, in this order, and the rest keep the adapter's order",
+      rows: "Row order: the subtracks listed come first, in this order, and the rest keep the adapter's order. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed subtracks come as early as the tree allows",
     }),
     ...rowSeparatorsConfigSchemaFields(),
     /**

@@ -1,5 +1,6 @@
 import {
   buildClusteredLayout,
+  rotateClusterRun,
   validateClusterOrder,
 } from '@jbrowse/tree-sidebar'
 
@@ -7,10 +8,14 @@ import { expandSourcesToHaplotypes, resolveSampleName } from './getSources.ts'
 
 import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 
-// Turn a cluster order into the display's next `layout`. One home for the three
-// steps that have to agree, because the auto ("Run clustering") and manual (R
-// script paste) paths both take them and would otherwise drift:
+// Turn a cluster order into the display's next `layout`, and the run's
+// dendrogram into the one to store beside it. One home for the four steps that
+// have to agree, because the auto ("Run clustering") and manual (R script
+// paste) paths both take them and would otherwise drift:
 //
+// - rotate the run's tree towards the config `domain` and re-read the order off
+//   it, so a domain-seeded track composes with the run instead of losing its
+//   leading rows to it. The paste path passes no tree and rotates nothing.
 // - expand to haplotype rows in phased mode, so the order lines up with the
 //   per-haplotype matrix the worker built (sources already carrying `HP` pass
 //   through, so a re-cluster of an already-expanded set is idempotent)
@@ -40,6 +45,8 @@ export function applyClusterOrder({
   sourcesBase,
   layout,
   order,
+  tree,
+  domain = [],
   renderingMode,
   sampleInfo,
   matrixRowNames,
@@ -47,24 +54,35 @@ export function applyClusterOrder({
   sourcesBase: ProcessedSource[]
   layout: Source[]
   order: number[]
+  tree?: string
+  domain?: readonly string[]
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
   matrixRowNames?: string[]
-}): Source[] {
+}): { layout: Source[]; tree?: string } {
   const baseSources =
     renderingMode === 'phased' && sampleInfo
       ? expandSourcesToHaplotypes({ sources: sourcesBase, sampleInfo })
       : sourcesBase
-  validateClusterOrder(order, baseSources, matrixRowNames)
-  const clustered = buildClusteredLayout(baseSources, layout, order)
+  const rotated = rotateClusterRun({
+    rows: baseSources,
+    order,
+    tree,
+    domain,
+  })
+  validateClusterOrder(rotated.order, baseSources, matrixRowNames)
+  const clustered = buildClusteredLayout(baseSources, layout, rotated.order)
   const clusteredNames = new Set(clustered.map(s => s.name))
   const clusteredSamples = new Set(clustered.map(resolveSampleName))
-  return [
-    ...clustered,
-    ...layout.filter(
-      s =>
-        !clusteredNames.has(s.name) &&
-        !(s.HP === undefined && clusteredSamples.has(resolveSampleName(s))),
-    ),
-  ]
+  return {
+    layout: [
+      ...clustered,
+      ...layout.filter(
+        s =>
+          !clusteredNames.has(s.name) &&
+          !(s.HP === undefined && clusteredSamples.has(resolveSampleName(s))),
+      ),
+    ],
+    tree: rotated.tree,
+  }
 }

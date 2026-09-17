@@ -7,6 +7,7 @@ import {
   hierarchy,
   leaves,
 } from './hierarchy.ts'
+import { rotateNewickByDomain } from './rotateNewickByDomain.ts'
 
 import type { HierarchyNode } from './hierarchy.ts'
 import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'
@@ -66,8 +67,17 @@ function findSubtree<T extends ClusterNodeData>(
 // Parse a Newick string and build a hierarchy, without applying a filter.
 // Kept separate from applySubtreeFilter so MST can cache them independently —
 // changing the subtree filter re-runs only the traversal, not the parser.
-export function buildTree(newick: string): HierarchyNode<ClusterNodeData> {
-  return hierarchy<ClusterNodeData>(parseNewick(newick), d => d.children)
+//
+// `domain` rotates the tree towards a declared leaf order
+// (`rotateNewickByDomain`); empty leaves it as written.
+export function buildTree(
+  newick: string,
+  domain: readonly string[] = [],
+): HierarchyNode<ClusterNodeData> {
+  return hierarchy<ClusterNodeData>(
+    rotateNewickByDomain(parseNewick(newick), domain),
+    d => d.children,
+  )
 }
 
 // Prune a Newick-shaped tree down to just the leaves in `keep`, preserving the
@@ -389,12 +399,18 @@ export function reconcileLayout<D extends { name: string }>(
 
 /**
  * Seed a row order from a config `domain`: the rows it names come first, in its
- * order, and every other row keeps the order it arrived in — a supplied
- * phylogeny's leaf order for MAF, the adapter's for multi-wiggle, the file's
- * sample order for the variant displays. The tail is not sorted, which is the
- * one difference from a facet's domain (`groupKeyComparator`): there the
- * unlisted sections are partition values with no order of their own, and here
- * the order a row arrived in is itself an answer.
+ * order, and every other row keeps the order it arrived in — the adapter's
+ * order for multi-wiggle, the file's sample order for the variant displays. The
+ * tail is not sorted, which is the one difference from a facet's domain
+ * (`groupKeyComparator`): there the unlisted sections are partition values with
+ * no order of their own, and here the order a row arrived in is itself an
+ * answer.
+ *
+ * **This is the no-tree half.** Where a tree describes the rows, the domain is
+ * a preference the topology honours rather than a placement: the tree is
+ * rotated towards it (`rotateNewickByDomain`) and the rows follow its leaves,
+ * so the dendrogram keeps drawing. MAF passes those leaf names here as the
+ * domain, which is how one function states both halves.
  *
  * A name matching no row places nothing, and a name listed twice places its row
  * once. Applied under {@link reconcileLayout}, so a user's arrangement wins over

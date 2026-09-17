@@ -60,6 +60,7 @@ export {
   clusteredCladeLayout,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  getLeafNames,
   orderRowsByDomain,
   parseClusterOrder,
   parseClusterTree,
@@ -68,6 +69,8 @@ export {
   validateClusterOrder,
 } from './clusterUtils.ts'
 export { applyClusterRun } from './applyClusterRun.ts'
+export { rotateClusterRun } from './rotateClusterRun.ts'
+export { rotateNewickByDomain } from './rotateNewickByDomain.ts'
 export type { ClusterRunModel } from './applyClusterRun.ts'
 export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
 export { clusterProgressStatus } from './clusterProgressStatus.ts'

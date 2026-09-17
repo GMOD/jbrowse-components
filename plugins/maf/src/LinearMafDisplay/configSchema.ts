@@ -137,7 +137,7 @@ export default function configSchemaF() {
       ...treeSidebarConfigSchemaFields({
         tree: 'show the species tree sidebar',
         rowLabels: 'draw the species name over the left of each row',
-        rows: "row order: the species listed come first, in this order, and the rest keep the tree's order. The guide tree is drawn only in its own leaf order, so a domain that moves a species hides the dendrogram until the row order is reset",
+        rows: "row order: the guide tree rotates so the species listed come as early as its topology allows, the way ggtree's rotate turns a clade — a species brings its clade with it, so this is a preference the tree honours rather than a placement. The dendrogram keeps drawing. With no guide tree the species listed simply lead, and the rest keep the order the adapter reported them in",
       }),
       /**
        * #slot

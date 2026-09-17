@@ -65,7 +65,7 @@ const MultiSampleVariantClusterDialog = observer(
                 renderingMode,
                 sampleInfo,
                 matrixRowNames,
-              }),
+              }).layout,
             )
           }
         }}

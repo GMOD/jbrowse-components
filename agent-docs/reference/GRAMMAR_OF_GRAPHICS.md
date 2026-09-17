@@ -262,7 +262,11 @@ multi-row features) share that word as a `domain` row-order slot, read as
 `rowDomain` and applied under `layout`, where only multi-row features sorts the
 rows it leaves unlisted — for the other three a supplied phylogeny's leaf order
 and a file's sample order mean something, so those rows keep the order they
-arrived in (`orderRowsByDomain`); a re-pick of the
+arrived in (`orderRowsByDomain`); where a tree describes the rows the slot is a
+preference rather than a placement, rotating the tree towards the declared order
+as far as the topology allows (`rotateNewickByDomain`, ggtree's `rotate`) and
+reading the rows off its leaves, so a declared order never costs the dendrogram;
+a re-pick of the
 same grouping from a menu keeps the domain (`carryGroupDomain`), and the
 runtime half is one menu, `sectionOrderMenuItems` in `groupByMenu.ts`, the
 Sections (or Lanes) submenu with a move and a hide per section and a reset,
@@ -300,7 +304,7 @@ the sidebar can be read against both libraries before it is spelled.
 | ---------------------------------- | -------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | The tree                           | data, given                                        | the `tree` prop, given                                 | computed (`runClustering`, `clusterTree`, `clusterProvenance` naming the locus and settings), or given (MAF's guide `.nh`)                                                                          |
 | A row's data                       | `%<+%` attaches a table keyed by tip               | `rowData`                                              | the adapter's sources: a samples TSV's columns, a subtrack's metadata                                                                                                                               |
-| Declared row order                 | `ladderize`, then `rotate` / `flip` on a clade     | tree order                                             | the `domain` slot (`rowDomain` on the model, since the wiggle score axis owns `domain`): the rows listed first, the rest in the tree's, file's or adapter's order; a MAF guide tree draws only in its own leaf order, so a domain that moves a species un-positions it |
+| Declared row order                 | `ladderize`, then `rotate` / `flip` on a clade     | tree order                                             | the `domain` slot (`rowDomain` on the model, since the wiggle score axis owns `domain`): the rows listed first, the rest in the file's or adapter's order; with a tree it rotates instead — `[B,C,D]` on `((A,B),(C,D))` gives `B,A,C,D` — so the dendrogram keeps drawing |
 | Arranged row order                 | —                                                  | —                                                      | `layout`: order plus per-row label and colour overrides, written by drag, the arrangement dialog, a clustering run and sort-at-column; "Reset row order" clears it                                    |
 | Order at one column                | —                                                  | —                                                      | `sortRowsBy` and the right-click "Sort rows by … here", ComplexHeatmap's `row_order` from one column                                                                                                |
 | Focus on a clade                   | `viewClade`, `tree_subset`                         | —                                                      | `subtreeFilter`, a row-name set                                                                                                                                                                     |

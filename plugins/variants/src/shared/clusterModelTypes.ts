@@ -19,6 +19,9 @@ export interface ReducedModel extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
+  // The config `domain`, off `TreeSidebarMixin`. A run rotates its dendrogram
+  // towards it rather than discarding it, so both entry points forward it.
+  rowDomain: string[]
   // Whether the fetched inputs clustering needs have arrived. Phased mode
   // clusters haplotypes, which needs per-sample ploidy from `sampleInfo` — and
   // that rides with `cellData`, later than the header-only `sourcesVolatile`.

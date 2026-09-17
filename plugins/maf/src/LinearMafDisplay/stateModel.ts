@@ -41,6 +41,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  getLeafNames,
   orderRowsByDomain,
   reconcileLayout,
   resetRowOrderMenuItems,
@@ -749,16 +750,22 @@ export default function stateModelFactory(
          * replaced iterated `layout` alone — so with any custom arrangement
          * saved, a species revealed by a later region never got a row at all.
          *
-         * Under it the config `domain` seeds the order: the species it names
-         * lead, the rest keep the order the adapter reported them in, which for
-         * a track with an `.nh` is the guide tree's leaf order. Moving a row off
-         * that order is what un-positions the guide tree — `treeDescribesRows`
-         * asks for the leaves and the rows in the same order — so a domain that
-         * reorders hides the dendrogram, exactly as a drag does.
+         * Under it the config `domain` states the order. With a guide tree the
+         * rows follow the tree's own leaves, read off the rotated `parsedTree`
+         * the domain already turned — one computed for both, so the row order
+         * and the leaf order cannot drift and `treeDescribesRows` holds by
+         * construction. The domain is a preference there rather than a
+         * placement: a species leads its clade, and its clade leads. Without a
+         * tree the named species lead outright and the rest keep the order the
+         * adapter reported them in.
          */
         get editableSources(): MafSource[] {
+          const { parsedTree } = self
           return reconcileLayout(
-            orderRowsByDomain(self.sourcesVolatile, self.rowDomain),
+            orderRowsByDomain(
+              self.sourcesVolatile,
+              parsedTree ? getLeafNames(parsedTree) : self.rowDomain,
+            ),
             self.layout,
           )
         },

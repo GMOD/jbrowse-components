@@ -69,15 +69,18 @@ export async function runGenotypeClustering({
     // there is no window left to defer across. Deferring anyway meant the tree
     // waited on a refetch that no longer happens, and a
     // `runClustering: true` display drew no dendrogram at all.
+    const arranged = applyClusterOrder({
+      sourcesBase,
+      layout: model.layout,
+      order: ret.order,
+      tree: ret.tree,
+      domain: model.rowDomain,
+      renderingMode,
+      sampleInfo,
+    })
     model.setLayoutAndClusterTree(
-      applyClusterOrder({
-        sourcesBase,
-        layout: model.layout,
-        order: ret.order,
-        renderingMode,
-        sampleInfo,
-      }),
-      ret.tree,
+      arranged.layout,
+      arranged.tree,
       // The settings recorded are the ones that change which sites entered the
       // matrix, so a reader can tell a tree built over common variants from one
       // built over everything. `filters` (a jexl chain) is deliberately reduced

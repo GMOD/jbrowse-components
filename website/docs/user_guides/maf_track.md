@@ -211,9 +211,12 @@ track is configured with a Newick guide tree.
   species names, and **Tree branch lengths** draws the tree to scale.
 - **Edit row arrangement...** reorders or hand-picks rows. The
   [`domain`](/docs/config/linearmafdisplay/#slot-domain) slot states that order
-  in the config instead — the species it lists lead and the rest keep the tree's
-  order — but the dendrogram draws only in its own leaf order, so a domain that
-  moves a species hides the tree until **Reset row order**.
+  in the config instead. With a guide tree it rotates the tree rather than
+  overruling it: each node puts the clade holding the earliest listed species
+  first, so a listed species comes as early as the topology allows and brings
+  its relatives with it. The dendrogram keeps drawing, because it is the same
+  tree turned — `["mm10"]` on `((hg38,panTro4),mm10)` draws mouse's branch at
+  the top. With no guide tree the listed species simply lead.
 - **Row height** offers squeeze-to-fit, normal, compact, and custom row heights.
 
 ### Selecting a subtree
@@ -240,8 +243,9 @@ the run covers the visible rows only, so it resolves the structure inside the
 clade.
 
 The submenu names the locus a tree was computed over, since clustering reads the
-region in view. **Reset row order** restores the file's own order and the guide
-tree with it.
+region in view. A `domain` rotates the computed tree the same way it rotates a
+guide tree, so a run composes with a declared order instead of replacing it.
+**Reset row order** restores the file's own order and the guide tree with it.
 
 The dialog's manual tab exports the same scores as a TSV with an R script, for
 clustering elsewhere and pasting the order back.

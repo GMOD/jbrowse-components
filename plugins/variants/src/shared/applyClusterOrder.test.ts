@@ -17,7 +17,7 @@ function apply(order: number[], renderingMode = 'alleleCount') {
     sampleInfo: Object.fromEntries(
       sourcesBase.map(s => [s.name, { isPhased: true, maxPloidy: 2 }]),
     ),
-  })
+  }).layout
 }
 
 describe('applyClusterOrder', () => {
@@ -71,7 +71,7 @@ describe('applyClusterOrder', () => {
   // rows against a 6-leaf tree), so the dendrogram is refused and the extra rows
   // have no cells.
   it('drops sample rows the haplotypes supersede', () => {
-    const rows = applyClusterOrder({
+    const { layout: rows } = applyClusterOrder({
       sourcesBase,
       layout: sourcesBase.map(s => ({ ...s, color: 'red' })),
       order: [0, 2, 4, 1, 3, 5],
@@ -97,7 +97,7 @@ describe('applyClusterOrder', () => {
   // those are haplotypes. One of a pair may be hidden while its sibling
   // clusters, so keying the drop on sample alone would erase it.
   it('keeps a hidden haplotype whose sibling was clustered', () => {
-    const rows = applyClusterOrder({
+    const { layout: rows } = applyClusterOrder({
       sourcesBase,
       layout: [{ name: 'sampleA HP1', sampleName: 'sampleA', HP: 1 }],
       order: [0, 1, 2],

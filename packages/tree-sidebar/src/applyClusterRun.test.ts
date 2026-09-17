@@ -9,6 +9,7 @@ test('lands the layout from the row lists the run started with', async () => {
   const model = {
     editableSources: [a, b, c],
     layout: [] as { name: string }[],
+    rowDomain: [] as string[],
     setLayoutAndClusterTree: jest.fn(),
   }
   await applyClusterRun({

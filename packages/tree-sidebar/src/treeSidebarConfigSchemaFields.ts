@@ -78,6 +78,14 @@ export function treeSidebarConfigSchemaFields({
      * getter and applied under `layout`: a row the list names is placed, a row
      * it does not keeps the order it arrived in. Empty — the default — is
      * today's order untouched.
+     *
+     * **Where the rows are a tree's leaves it is a preference, not a
+     * placement.** A phylogeny fixes its leaf order only up to a rotation at
+     * each node, so the tree turns towards the list as far as its topology
+     * allows and keeps drawing (`rotateNewickByDomain`): `['B','C','D']` on
+     * `((A,B),(C,D))` gives `B,A,C,D`, because A rides with B. A supplied tree
+     * rotates where it is parsed and a computed one where the run produces it,
+     * so the tree and the row order always move together.
      */
     domain: {
       type: 'stringArray',

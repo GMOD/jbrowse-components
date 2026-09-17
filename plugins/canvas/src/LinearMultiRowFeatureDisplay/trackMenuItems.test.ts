@@ -37,6 +37,7 @@ function makeSelf(
     showBranchLength: true,
     treeHasBranchLengths: false,
     layout: [],
+    rowDomain: [],
     rowOrderIsCustom: false,
     editableSources: rows,
     clusterableSources: rows,
