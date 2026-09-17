@@ -1003,11 +1003,72 @@ describe('line plots colour by pivot side', () => {
     ])
   })
 
+  // A point exactly on the pivot counts as above it; the line arriving there
+  // from below must start the above-side stroke at that point, not at the
+  // last place the above side left off.
+  function opsThroughZero(renderingType: WiggleRenderingType) {
+    const mock = createMockCanvas()
+    const source = {
+      ...makeSource(
+        [5, -5, 0, 5],
+        [0, 100, 200, 300],
+        [100, 200, 300, 400],
+        renderingType,
+      ),
+      color: [0, 0, 1] as [number, number, number],
+      negColor: [1, 0, 0] as [number, number, number],
+    }
+    paintWiggle(mock.ctx, new Map([[0, [source]]]), [lineBlock], {
+      ...state,
+      renderingType,
+    })
+    const tagged = (op: string, fn: jest.Mock) =>
+      fn.mock.calls.map((c: number[], k: number) => ({
+        order: fn.mock.invocationCallOrder[k]!,
+        op: `${op}(${Math.round(c[0]!)},${Math.round(c[1]!)})`,
+      }))
+    return [...tagged('M', mock.ctx.moveTo), ...tagged('L', mock.ctx.lineTo)]
+      .sort((a, b) => a.order - b.order)
+      .map(o => o.op)
+  }
+
+  test('an interpolated line through exactly zero restarts at zero', () => {
+    expect(opsThroughZero(RENDERING_TYPE_LINE_CENTER)).toEqual([
+      'M(40,50)',
+      'L(40,50)',
+      'L(80,100)',
+      'M(200,100)',
+      'L(280,50)',
+      'M(80,100)',
+      'L(120,150)',
+      'L(200,100)',
+    ])
+  })
+
+  test('a step line through exactly zero restarts at zero', () => {
+    expect(opsThroughZero(RENDERING_TYPE_LINE)).toEqual([
+      'M(0,100)',
+      'L(0,50)',
+      'L(80,50)',
+      'L(80,100)',
+      'M(160,100)',
+      'L(240,100)',
+      'L(240,50)',
+      'L(320,50)',
+      'L(320,100)',
+      'M(80,100)',
+      'L(80,150)',
+      'L(160,150)',
+      'L(160,100)',
+    ])
+  })
+
   test('the step line splits its vertical steps at the pivot', () => {
     const { strokeStyles, moves, lines } = paintSigned(RENDERING_TYPE_LINE)
     expect(strokeStyles).toEqual(['rgb(0,0,255)', 'rgb(255,0,0)'])
     expect(moves).toEqual([
       [0, 100],
+      [160, 100],
       [80, 100],
     ])
     expect(lines).toEqual([

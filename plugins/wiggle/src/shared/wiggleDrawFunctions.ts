@@ -215,10 +215,10 @@ class PivotSidePen {
           fromY = this.pivotY
         }
       }
+      if (!this.drawing || !from) {
+        this.ctx.moveTo(fromX, fromY)
+      }
       if (from === to || fromX !== toX || fromY !== toY) {
-        if (!this.drawing || !from) {
-          this.ctx.moveTo(fromX, fromY)
-        }
         this.ctx.lineTo(toX, toY)
       }
       this.drawing = to
