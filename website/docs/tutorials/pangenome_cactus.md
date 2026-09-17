@@ -230,7 +230,7 @@ in a row per assembly the track lists.
 
 <Figure caption="The Minigraph-Cactus graph's synteny projection: five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair. The bottom band crosses where IAI39 carries large inversions relative to the others." src="/img/pangenome_cactus/synteny.png" />
 
-Same five strains in the same row order as the
+The synteny view stacks the same five strains in the same row order as the
 [all-vs-all tutorial's stack](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
 and the [pggb one](/docs/tutorials/pangenome_ecoli#synteny-projection). These
 blocks are read out of the HAL, so they are the graph's own alignment.
@@ -307,9 +307,8 @@ already rooted on K12, the streaming
 
 <Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. The four non-K12 rows stop at the edges of the cryptic prophage CPZ-55, which K12 alone carries." src="/img/pangenome_cactus/maf.png" />
 
-A row reads blank two ways: no colored columns is sequence shared with K12, and
-a row that stops is a strain with no alignment to K12 there. The coverage band
-separates them.
+No colored columns is sequence shared with K12, and a row that stops is a strain
+with no alignment to K12 there. The coverage band separates the two cases.
 
 `samples` names the rows and fixes their order. To order them by shared graph
 content instead, run
@@ -333,20 +332,20 @@ splits that per strain. Both run as in the pggb tutorial's
 and [per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)
 sections, over `mc/ecoli.full.og`, and load as the same
 [`QuantitativeTrack`](/docs/config_guides/quantitative_track) and
-[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track). Two names
-change: the reference path is `K12#0#chr`, and each other strain carries a
-trailing subpath tag (`Sakai#0#chr#0`), so the per-strain filter matches a
-prefix. The [build script](#reproduce-it-end-to-end) runs both.
+[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track). The
+reference path is `K12#0#chr`, and each other strain carries a trailing subpath
+tag (`Sakai#0#chr#0`), so the per-strain filter matches a prefix. The
+[build script](#reproduce-it-end-to-end) runs both.
 
-Depth counts path **steps** rather than strains, so a repeat the graph folded
-onto one run of nodes reads above the strain count. seqwish folds the rRNA
-copies together; the reference-first graph keeps them apart.
+Depth counts path **steps**, so a repeat the graph folded onto one run of nodes
+reads above the strain count. seqwish folds the rRNA copies together; the
+reference-first graph keeps them apart.
 
 <Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move." src="/img/pangenome_cactus/builders.png" />
 
 A collapsed repeat is where to look for variation _within_ an array; a
-reference-anchored copy keeps each at its own coordinate, so the depth curve
-here is a strain tally.
+reference-anchored copy keeps each repeat unit at a distinct coordinate, so the
+depth curve here is a strain tally.
 
 Under the aggregate curve, the pav rows show which strain accounts for each dip,
 as in the pggb tutorial's
@@ -358,7 +357,7 @@ This step takes a sample outside the graph, maps its short reads through the
 whole pangenome, and flattens the result onto K12. A read over an allele K12
 lacks places on another strain's path and has no K12 coordinate, so surjection
 leaves it unmapped; the BAM holds reads over sequence K12 carries, where a
-divergent read followed a non-reference path through a bubble and paid no
+divergent read followed a non-reference path through a bubble and incurred no
 mismatches or soft clips for it.
 
 `--giraffe` wrote the indexes during the build. `vg giraffe` emits a GAM, and
@@ -467,7 +466,7 @@ and a local build swaps in the `ecoli_cactus` prefix written above.
 The segments draw as an ordinary track on K12, and **Track menu → Launch → Graph
 genome view (this region)** cuts a subgraph at whatever is on screen.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the track above added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) on the segments lane's own menu, which paints the lane in the graph's colors as the graph arrives." />
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session, the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) run from the segments lane's own menu, painting the lane in the graph's colors as the graph loads." />
 
 A kilobase or two is the width to open one at. Past the flagellar operon, K12
 carries an IS1 element the other four skip. A second copy of the segments track,
