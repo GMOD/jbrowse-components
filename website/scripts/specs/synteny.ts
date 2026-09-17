@@ -1041,7 +1041,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             views: [
               {
                 assembly: 'peach',
-                loc: 'G7:18,555,000-18,653,000',
+                loc: 'G7:18,555,000-18,690,000',
                 tracks: [
                   {
                     trackId: 'peach_genes',
@@ -1065,7 +1065,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'grape',
-                loc: '11:778,000-866,000',
+                loc: '11:778,000-905,000',
                 tracks: [
                   {
                     trackId: 'grape_genes',
@@ -1080,7 +1080,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'cacao',
-                loc: '9:3,890,000-3,960,000',
+                loc: '9:3,890,000-3,995,000',
                 tracks: [
                   {
                     trackId: 'cacao_genes',
@@ -1126,22 +1126,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // single ortholog in each of the other two genomes -- 3:1 and 2:1 anchors
     // that MCScan is right to emit -- and it is the most interesting thing in
     // the frame rather than a rendering fault. Hence a pill instead of a fix.
+    // The windows run on past the array so the pill sits right of the fan it
+    // names rather than over it.
     annotations: [
       {
         type: 'text',
         text: 'three grape copies, one peach and one cacao ortholog: a tandem expansion',
         fontSize: 18,
-        maxWidth: 330,
-        // right-aligned: the array it names is at 836-863 kb, which is the last
-        // fifth of the frame, so a pill drawing rightward from it runs off
-        textAlign: 'end',
+        maxWidth: 300,
+        leader: true,
+        dx: 90,
         anchor: {
           // the MIDDLE panel of the three-genome stack; without the view path
           // this resolves against the top one (peach), which has no such track
           view: [0, 1],
           track: 'grape_genes',
-          locus: '11:849,000',
-          fracY: 0.92,
+          locus: '11:863,000',
+          fracY: 0.5,
         },
       },
     ],

@@ -1444,10 +1444,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Scroll-to-zoom toggle: a single frame ringing the toggle button with a
-  // callout explaining the click (the old second "enabled" frame was redundant
-  // per reviewer). Narrow/short viewport keeps the figure cropped to the LGV
-  // header.
+  // Scroll-to-zoom toggle: a single frame boxing the toggle button with a
+  // callout saying what it turns on. Narrow/short viewport keeps the figure
+  // cropped to the LGV header.
   {
     mode: 'url',
     name: 'scroll_zoom_toggle',
@@ -1462,21 +1461,21 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 455,
     annotations: [
       {
-        type: 'circle',
+        type: 'box',
         anchor: {
           selector: 'button[value="scrollZoom"]',
         },
       },
       {
         type: 'text',
-        text: 'Applies to every view',
+        text: 'The scroll wheel zooms instead of scrolling the page',
+        leader: true,
         anchor: {
           selector: 'button[value="scrollZoom"]',
+          alignY: 'bottom',
         },
-        // threads the gap between the labelled control and the search box.
-        // Less puts the pill over the button's own label, more runs it into
-        // the search box — the gap is what a wider control left.
-        dx: 70,
+        dx: 40,
+        dy: 70,
       },
     ],
   },
@@ -1590,12 +1589,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track menu: one frame. It was two — the icons ringed above, the opened menu
-  // below — and the second frame contains the first, since the menu hangs off
-  // the very icon the top frame was pointing at. So the menu is opened before
-  // the shot and all three marks share it: a ring on each of the two places the
-  // menu lives (the LGV track label, the track-list entry) and a box on what
-  // they open.
+  // Track menu: one frame, the menu opened before the shot and a ring on each
+  // of the two places it lives (the LGV track label, the track-list entry).
   {
     mode: 'url',
     name: 'track_menu',
@@ -1620,10 +1615,11 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'About track' },
     ],
     annotations: [
-      // the rings alone mark the menu icons; arrows from the empty band below
-      // read as ambiguous, so they were dropped (reviewer)
+      // the rings alone mark the menu icons, tight on the label's so it stays
+      // off the menu hanging below it
       {
         type: 'circle',
+        pad: 1,
         anchor: { selector: '[data-testid="track_menu_icon"]' },
       },
       {
@@ -1632,7 +1628,6 @@ export const uiSpecs: ScreenshotSpec[] = [
           selector: '[data-testid="htsTrackEntryMenu-Tracks,volvox_sv_test"]',
         },
       },
-      { type: 'box', anchor: { selector: 'ul[role="menu"]' } },
     ],
   },
 

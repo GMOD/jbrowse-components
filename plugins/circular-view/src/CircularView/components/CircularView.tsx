@@ -394,7 +394,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       {model.showLegend ? (
         <FloatingLegend
           sections={model.legendSpec.sections}
-          maxWidth={320}
+          maxWidth={440}
           onDismiss={() => {
             model.setShowLegend(false)
           }}
