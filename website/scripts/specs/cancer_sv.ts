@@ -1042,6 +1042,21 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 900,
       },
+      {
+        type: 'text',
+        text: 'Dark rows: each molecule crosses this stretch twice, forward and then inverted',
+        fontSize: 17,
+        maxWidth: 380,
+        leader: true,
+        anchor: {
+          view: [0, 0],
+          track: TUMOUR,
+          locus: 'chr3:25,356,000',
+          fracY: 0.8,
+        },
+        dx: -140,
+        dy: -30,
+      },
     ],
   },
   // The same reconstruction at the scale of the stitching. Above, the tumour's
@@ -1783,7 +1798,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       // Equal windows now, where they were 9.5 and 8.6. With one bp/px, unequal
       // windows are unequal PANEL widths, so the seam sat off-centre for no
       // reason anyone reading the figure could recover.
-      loc: 'chr9:131,186,500-131,199,515 chr22:16,795,568-16,808,583[rev]',
+      loc: 'chr9:131,183,000-131,199,515 chr22:16,792,068-16,808,583[rev]',
       // the call's own breakpoints, one band each, so each side's coverage step
       // has a marked position to sit on
       highlight: [
@@ -1861,11 +1876,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // saying how many molecules the fan is: 40-odd near-identical curves
           // and four look alike.
           readConnections: 'arc',
-          // over the 35 default (review: "increase height of the read
-          // connections arcs"). The slot buys apex separation and nothing else,
-          // so on a single junction it is purely about the arc being readable
-          // as a dome rather than as a bump on the coverage floor -- and this
-          // one carries the figure's headline number in its stroke width.
+          // arcs whose other end is outside both windows were a fan of thin
+          // lines leaving the frame
+          drawLongRange: false,
           readConnectionsHeight: 90,
           ...SPLIT_READS,
         },
@@ -2166,41 +2179,42 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'reaches chr13: no gene at either end, no fusion call',
+        text: 'BCR-ABL1 RNA junction',
         fontSize: 17,
-        maxWidth: 260,
-        textAlign: 'end',
+        leader: true,
         anchor: {
-          track: 'K562_cn',
-          locus: 'chr9:131,276,000',
-          fracY: 0.15,
-          dx: -12,
+          track: 'K562_star_fusion',
+          locus: 'chr9:130,854,064',
+          fracY: 0.3,
         },
+        dx: -90,
+        dy: 22,
       },
       {
         type: 'text',
-        text: 'DNA break and RNA junction meet at the NUP214 exon',
+        text: 'NUP214-XKR3 RNA junction',
         fontSize: 17,
-        maxWidth: 240,
-        textAlign: 'end',
+        leader: true,
         anchor: {
-          track: 'K562_cn',
-          locus: 'chr9:131,197,000',
-          fracY: 0.6,
-          dx: -12,
+          track: 'K562_star_fusion',
+          locus: 'chr9:131,199,015',
+          fracY: 0.3,
         },
+        dx: -90,
+        dy: 22,
       },
       {
         type: 'text',
-        text: 'the BCR-ABL1 junction sits at ABL1 exon 2, well right of its DNA break',
+        text: 'break to chr13, no fusion call',
         fontSize: 17,
-        maxWidth: 300,
+        leader: true,
         anchor: {
-          track: 'K562_cn',
-          locus: 'chr9:130,856,000',
-          fracY: 0.45,
-          dx: 12,
+          track: 'K562_10x_sv',
+          locus: 'chr9:131,280,138',
+          fracY: 0.3,
         },
+        dx: -90,
+        dy: 80,
       },
     ],
   },

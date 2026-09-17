@@ -19,7 +19,11 @@
 // deconstructed into a VCF that does. Each figure below is picked to show one
 // of those.
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
-import { TOOLBAR_READY, local } from './graph-fixtures.ts'
+import {
+  TOOLBAR_READY,
+  local,
+  referencePositionColor,
+} from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -212,49 +216,19 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           id: 'mouse-nnt-lgv',
           assembly: 'mm39',
           loc: NNT_LOC,
-          // EVERY LANE IS SIZED, and the first version of this spec passed bare
-          // trackIds instead. That is not a cosmetic difference here: an
-          // AlignmentsTrack defaults to LinearAlignmentsDisplay, which stacks a
-          // coverage band over the pileup and claims ~350 px, so the four lanes
-          // filled the viewport, pushed the GraphGenomeView entirely below the
-          // fold, and the graph never drew. The run then failed on TOOLBAR_READY
-          // — a five-minute timeout whose message is about a selector and says
-          // nothing about height.
           tracks: [
             {
               trackId: 'mm39_ncbiRefSeq_ucsc',
               type: 'LinearBasicDisplay',
-              height: 80,
-            },
-            // 70 CLIPPED IT, and the clip was through the middle of a
-            // label rather than at a row boundary, which reads as a broken
-            // render. 29 bubbles over this window pack into three rows of
-            // (tick, span, "N segments, up to M paths") at ~39 CSS px each, so
-            // anything under ~120 cuts the third row's second line. Same
-            // arithmetic for the segments lane below: 56 segments, four rows at
-            // ~31 px. The run's own SLACK_WARN_PX check reports the other
-            // direction, so an over-tall viewport does not go unnoticed.
-            {
-              trackId: 'mouse_minigraph_bubbles',
-              type: 'LinearBasicDisplay',
-              height: 125,
-            },
-            // The lane that carries the 16 kb claim, and PILEUP rather than the
-            // default: the allele inventory's rows are the alleles themselves,
-            // each drawn at its real magnitude off its CIGAR, so the coverage
-            // band above them is counting rows rather than measuring anything.
-            // A plain feature track would put the 16 kb insertion and a 50 bp
-            // one on the same 2 px floor, which is the whole reason this file
-            // is read as alignments at all.
-            {
-              trackId: 'mouse_minigraph_alleles',
-              type: 'LinearPileupDisplay',
-              height: 100,
+              geneGlyphMode: 'longestCoding',
+              height: 60,
             },
             {
               trackId: 'mouse_minigraph_segments',
               type: 'LinearBasicDisplay',
-              height: 130,
+              showLabels: 'none',
+              heightMode: 'grow',
+              color: referencePositionColor(NNT_REGION),
             },
           ],
         },
@@ -265,11 +239,9 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           loadedRegion: NNT_REGION,
           connectedViewId: 'mouse-nnt-lgv',
           colorScheme: 'reference-position',
-          // Anchored, for the reason spelled out on the H2 figure below: 29
-          // bubbles over 160 kb is a chain, and a force layout of a chain is an
-          // arc. Anchored also puts the 16 kb insertion directly under the
-          // point in Nnt where it attaches, which is the figure's whole subject.
+          // anchored puts the insertion under the point in Nnt it attaches to
           layoutMode: 'auto',
+          showBubbles: false,
         },
       ],
     }),
@@ -277,8 +249,20 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     settleMs: 12000,
     viewportWidth: 1400,
-    viewportHeight: 1105,
+    viewportHeight: 760,
     hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'Sequence the other strains carry and C57BL/6J lacks: its Nnt deletion',
+        fontSize: 17,
+        maxWidth: 330,
+        leader: true,
+        anchor: { view: 1, graphNode: 's130043141+' },
+        dx: 160,
+        dy: 40,
+      },
+    ],
   },
   dock2Spec,
   {

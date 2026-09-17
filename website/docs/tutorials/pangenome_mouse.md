@@ -74,11 +74,7 @@ is the strain with the deletion. The graph therefore shows the deletion as
 sequence that the _other_ strains carry and the reference lacks, the opposite
 sign from every description of it.
 
-<Figure caption="The Nnt locus on GRCm39: RefSeq genes, the bubbles lane, the allele inventory drawn at each allele's real size, and the rGFA segments, over the same window as an anchored graph. The one large allele sits inside Nnt, and it is an insertion because the reference is the strain that lacks the sequence." src="/img/pangenome/mouse_nnt.png" />
-
-An insertion consumes almost no reference, so a plain feature track draws a
-large insertion and a small one at the same minimum width. The allele lane reads
-the file as alignments and draws each allele at its real size from its CIGAR.
+<Figure caption="The Nnt locus on GRCm39: RefSeq genes and the rGFA segments in the graph's reference-position colors, over the same window as an anchored graph. The large insertion hangs off the backbone inside Nnt, because the reference is the strain that lacks the sequence." src="/img/pangenome/mouse_nnt.png" />
 
 ## Finding the loci
 
