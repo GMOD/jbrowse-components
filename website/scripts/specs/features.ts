@@ -151,6 +151,29 @@ export const proteinLaunchFixtures = {
   geneAnchor: PROTEIN_LAUNCH_ANCHOR,
 }
 
+// The gene-dense window the grouping figure and the `ui/gene_track_sections`
+// tour share. Its genes carry four `gene_biotype` values, protein_coding the
+// most, so a section reorder moves most of the lane.
+const GROUPING_WINDOW = 'chr17:7,540,000-7,640,000'
+const GROUPING_TRACK = {
+  trackId: 'ncbi_refseq_109_hg38_latest',
+  type: 'LinearBasicDisplay',
+  geneGlyphMode: 'longestCoding',
+  // names only: a description row under every gene doubled the forward
+  // section's height and pushed the reverse one off the frame
+  showLabels: 'name',
+}
+
+export const geneGroupingVideoFixtures = {
+  trackId: GROUPING_TRACK.trackId,
+  session: lgvSession(DEMO_CONFIG, {
+    assembly: 'hg38',
+    loc: GROUPING_WINDOW,
+    trackLabels: 'offset',
+    tracks: [{ ...GROUPING_TRACK, height: 520 }],
+  }),
+}
+
 export const featuresSpecs: ScreenshotSpec[] = [
   // About track dialog (config + file header), opened from the track menu of a
   // CRAM track so the FILE INFO panel shows the full @SQ/@PG header.
@@ -338,20 +361,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
     name: 'gene_track_group_by_strand',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr17:7,540,000-7,640,000',
+      loc: GROUPING_WINDOW,
       trackLabels: 'offset',
-      tracks: [
-        {
-          trackId: 'ncbi_refseq_109_hg38_latest',
-          type: 'LinearBasicDisplay',
-          geneGlyphMode: 'longestCoding',
-          // names only: a description row under every gene doubled the
-          // forward section's height and pushed the reverse one off the frame
-          showLabels: 'name',
-          groupBy: { type: 'strand' },
-          height: 310,
-        },
-      ],
+      tracks: [{ ...GROUPING_TRACK, groupBy: { type: 'strand' }, height: 310 }],
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,

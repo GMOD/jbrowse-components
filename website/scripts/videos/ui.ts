@@ -1,7 +1,8 @@
 // The tours over the general-usage guides, where the subject IS a route through
 // the app rather than a dataset.
+import { geneGroupingVideoFixtures } from '../specs/features.ts'
 import { uiVideoFixtures } from '../specs/ui.ts'
-import { LOCATION_BOX, RUBBERBAND } from './shared.ts'
+import { LOCATION_BOX, RUBBERBAND, trackMenu } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
@@ -457,5 +458,65 @@ export const uiVideos: VideoSpec[] = [
       { type: 'delay', ms: 3000 },
     ],
     tailMs: 4000,
+  },
+
+  // The runtime half of `groupBy.domain`: a grouping picked from the dialog,
+  // then one section moved from the Sections submenu, which writes the drawn
+  // order back as the domain.
+  {
+    name: 'ui/gene_track_sections',
+    description:
+      'NCBI RefSeq genes on hg38 grouped by gene_biotype from the Group by dialog, then protein_coding moved to the top from the Sections submenu',
+    url: geneGroupingVideoFixtures.session,
+    viewportHeight: 740,
+    readySelector: '::-p-text(NCBI RefSeq)',
+    readyTimeout: 120000,
+    settleMs: 10000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'delay', ms: 1500 },
+      {
+        type: 'click',
+        selector: trackMenu(geneGroupingVideoFixtures.trackId),
+        say: 'Group the genes by their gene_biotype attribute',
+        hold: 1000,
+      },
+      { type: 'waitForText', text: 'Group by...' },
+      { type: 'click', text: 'Group by...' },
+      { type: 'waitForText', text: 'Attribute' },
+      { type: 'click', text: 'Attribute', hold: 600 },
+      {
+        type: 'type',
+        selector: 'input[placeholder="e.g. biotype"]',
+        value: 'gene_biotype',
+        hold: 800,
+      },
+      { type: 'click', text: 'Also color by this attribute', hold: 800 },
+      { type: 'click', selector: 'button:not([disabled])::-p-text(Apply)' },
+      { type: 'waitForText', text: 'gene_biotype: snoRNA' },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      { type: 'delay', ms: 2500 },
+      {
+        type: 'click',
+        selector: trackMenu(geneGroupingVideoFixtures.trackId),
+        say: 'Reorder the sections from the track menu',
+        hold: 1000,
+      },
+      { type: 'waitForText', text: 'Sections' },
+      { type: 'click', text: 'Sections', hold: 800 },
+      {
+        type: 'click',
+        selector: '[role="menuitem"]::-p-text(gene_biotype: protein_coding)',
+        hold: 800,
+      },
+      { type: 'waitForText', text: 'Move up' },
+      { type: 'click', text: 'Move up', hold: 1800 },
+      { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
+      { type: 'waitForText', text: 'Move up', hidden: true },
+      { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'waitForText', text: 'Track settings', hidden: true },
+      { type: 'delay', ms: 3500 },
+    ],
+    tailMs: 3000,
   },
 ]

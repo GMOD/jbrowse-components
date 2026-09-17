@@ -79,6 +79,8 @@ grouping clears them. **Sections** in the track menu lists the sections drawn,
 each with **Move up**, **Move down** and **Hide section**, and **Reset section
 order** returns them to the sorted order.
 
+<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped by gene_biotype from Group by..., the sections sorted by name, then protein_coding moved to the top from Sections. The move writes the drawn order into the track's groupBy domain, so the session keeps it." />
+
 The `groupBy` config slot pre-groups a track, so a shared link opens grouped.
 Its optional `domain` is the section order: the values listed stack first, in
 that order, and the rest follow sorted. A reorder from the menu writes the same
