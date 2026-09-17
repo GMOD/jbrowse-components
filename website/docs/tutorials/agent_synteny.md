@@ -12,8 +12,8 @@ tutorial_category: Synteny & comparative genomics
 Four sentences typed at an AI agent are enough to align two fruit fly species
 that nobody has aligned to each other, build the comparison in JBrowse Desktop,
 and answer where the two genomes run in opposite directions by totalling up the
-alignment file rather than describing the picture. The sections below cover what
-to ask for, what the agent does with it, and the two places it needs telling.
+alignment file. The sections below cover what to ask for, what the agent does
+with it, and the two places it needs telling.
 
 ## Prerequisites
 
@@ -49,8 +49,8 @@ index, so neither assembly has to be described by hand.
 
 _Drosophila simulans_ and _D. mauritiana_ are sister species. Both are already
 hosted, so a browser opens either one on its own with genes and a working search
-box. What neither config has is the other species: the only synteny track in
-each is a liftOver to dm6, the _D. melanogaster_ reference.
+box. Neither config has the other species: the only synteny track in each is a
+liftOver to dm6, the _D. melanogaster_ reference.
 
 Neither hosted config can answer "show me these two side by side" by loading
 something. Somebody has to align the genomes first, and that is the part of the
@@ -94,8 +94,8 @@ minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 Whole genome against whole genome takes about seven minutes on 16 threads and 14
 GB of memory, and produces 6,663 alignment records.
 
-**This is where a tool call outlives its budget.** A `run_javascript` call has
-about two minutes before it answers with a timeout while the app carries on
+**This is where a tool call exceeds its time budget.** A `run_javascript` call
+has about two minutes before it answers with a timeout while the app carries on
 working, and the alignment is longer than that. An agent that puts the aligner
 in the background and polls it handles this; one that waits for it inside a
 single call reports a failure that did not happen. The phrase "in the
@@ -151,8 +151,7 @@ Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 
 The alias names work because the merged config kept each assembly's chromAlias
 file. Ask it to quantify what restricting the axes drops. Set the coloring to
-strand while you are there, so a block that runs backwards is a different color
-rather than a bend in a black line:
+strand while you are there, so a block that runs backwards is a different color:
 
 <Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, and a short reverse segment in blue where chr2R begins." src="/img/agent_synteny/dotplot_arms.png" />
 
@@ -239,7 +238,7 @@ Then take it to the first of the two X regions, `chrX:8,100,000-8,950,000` over
 
 ## What you had to tell it
 
-Three sentences, and each heads off a failure with no error message:
+Three sentences, and each prevents a failure with no error message:
 
 - **Start long work in the background, and let it finish before opening
   anything.** Otherwise a tool call times out over an aligner that is fine, and

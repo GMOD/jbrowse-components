@@ -253,8 +253,8 @@ since an all-vs-all file has a direct alignment for every pair.
 
 <Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength. The continuous ribbons are the backbone shared by all five; the bottom band crosses because IAI39 is inverted against the others." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-The gaps are where the strains differ: Sakai's largest carry its prophage
-Shiga-toxin genes, and CFT073's are its pathogenicity islands.
+Sakai's largest gap carries its prophage Shiga-toxin genes, and CFT073's carries
+its pathogenicity islands.
 
 ## Adding gene tracks
 
@@ -297,9 +297,8 @@ a block came from:
    **Move up**, **Move down** and **Hide section**, and **Reset section order**
    returns them to the sorted order.
 2. **Group by... → Hide self-alignment lane** drops the lane for the strain you
-   are viewing. `minimap2 -X` skipped each genome's own diagonal, so that lane
-   holds K-12's own internal repeats rather than its diagonal. The figures below
-   have it ticked.
+   are viewing. That lane holds K-12's own internal repeats, since `minimap2 -X`
+   skipped each genome's own diagonal. The figures below have it ticked.
 3. **Show... → Show coverage** adds a histogram of how many other strains cover
    each base. The rest of that menu is the one from alignments tracks.
 
