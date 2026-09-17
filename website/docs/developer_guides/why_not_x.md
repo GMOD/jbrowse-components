@@ -24,14 +24,14 @@ Three constraints decide what this renderer can be built on:
   pixels cannot drift. A display light enough to skip the canvas emits SVG
   directly instead — the arc displays and `MultiWaySyntenyDisplay` render the
   same JSX `<path>` elements on screen and into the export. Either way the
-  display already owns a drawing path the GPU has no part in, and a rendering
+  display already has a drawing path the GPU has no part in, and a rendering
   library would add one more implementation of every glyph to keep in step with
   it.
 - **The bytes are never converted.** A worker decodes a track into
   [one typed array per attribute](/docs/developer_guides/optimizations#the-worker-boundary),
   which crosses `postMessage` as a transferable and uploads to the GPU without
-  the main thread reading it. A retained-mode scene graph undoes that, because
-  it wants a JavaScript object per feature and mutates it per frame.
+  the main thread reading it. A retained-mode scene graph undoes that: it
+  allocates a JavaScript object per feature and mutates it every frame.
 - **Coordinates are absolute `uint32`.** A worker emits positions along a whole
   assembly, which run to hundreds of megabases, and float32 stops representing
   integers exactly above about 16 Mbp — so the shader
@@ -61,9 +61,8 @@ Slang, cross-compiled to WGSL and GLSL ES at build time.
 [GenomeSpy](https://genomespy.app/) hit the coordinate wall first and solved it
 with the same high/low split, so we took the technique rather than
 reimplementing it — `packages/render-core/src/shaders/hpmath.slang` carries the
-MIT attribution and `hpSplitUint` is the function. What we left is the grammar:
-JBrowse composes tracks a plugin registered, not a visualization someone
-authored.
+MIT attribution and `hpSplitUint` is the function. We kept the grammar: JBrowse
+composes tracks a plugin registered, not a visualization someone authored.
 
 ## Why WebGPU, and not WebGL2 alone
 
