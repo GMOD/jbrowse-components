@@ -158,6 +158,9 @@ any attribute you supply. Two slots wire it up:
   a metadata attribute.
 - `colorBy` on the display names one of those columns, and the per-sample rows
   are grouped and colored by that attribute the first time the track loads.
+- [`domain`](/docs/config/linearmultisamplevariantdisplay/#slot-domain) names
+  the samples that lead the rows; the rest keep the file's order, and a grouping
+  attribute bands within that order rather than against it.
 
 The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset (2,504 samples
 across 26 population codes) this way. For the TSV layout and the adapter and

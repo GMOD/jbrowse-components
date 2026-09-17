@@ -3076,10 +3076,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "domain",
-          "type": "(JexlString | string[])"
-        },
-        {
           "name": "rowHeight",
           "type": "(JexlString | number)"
         },
@@ -3130,6 +3126,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showRowLabels",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "domain",
+          "type": "(JexlString | string[])"
         }
       ],
       "stateModelProps": [
@@ -4065,6 +4065,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "domain",
+          "type": "(JexlString | string[])"
+        },
+        {
           "name": "showRowSeparators",
           "type": "(JexlString | boolean)"
         },
@@ -4202,6 +4206,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showRowLabels",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "domain",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "showRowSeparators",
@@ -4566,6 +4574,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "domain",
+          "type": "(JexlString | string[])"
+        },
+        {
           "name": "showRowSeparators",
           "type": "(JexlString | boolean)"
         },
@@ -4898,6 +4910,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showRowLabels",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "domain",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "showLegend",

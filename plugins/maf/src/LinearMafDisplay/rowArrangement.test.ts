@@ -177,11 +177,7 @@ describe('the config `domain` seeds the row order', () => {
   // domain rather than to the adapter order.
   it('gives way to a layout and comes back when it is cleared', () => {
     const display = domainDisplay(['mm10'])
-    display.setLayout([
-      { name: 'panTro4' },
-      { name: 'hg38' },
-      { name: 'mm10' },
-    ])
+    display.setLayout([{ name: 'panTro4' }, { name: 'hg38' }, { name: 'mm10' }])
     expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
 
     display.clearLayout()

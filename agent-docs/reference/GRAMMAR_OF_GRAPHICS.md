@@ -256,7 +256,13 @@ rest follow sorted (every value the data holds, with no domain), and the cap
 counts in that order, so the multi-row display's `domain` slot, the multiway
 synteny display's `domain` session prop, the feature and alignments displays'
 `groupBy.domain`, the mark's `facet.domain` and the colour and glyph channels'
-legend order are one word and one rule (`groupKeyComparator`); a re-pick of the
+legend order are one word and one rule (`groupKeyComparator`); the four
+tree-sidebar displays (MAF, multi-wiggle, the two multi-sample variant ones and
+multi-row features) share that word as a `domain` row-order slot, read as
+`rowDomain` and applied under `layout`, where only multi-row features sorts the
+rows it leaves unlisted — for the other three a supplied phylogeny's leaf order
+and a file's sample order mean something, so those rows keep the order they
+arrived in (`orderRowsByDomain`); a re-pick of the
 same grouping from a menu keeps the domain (`carryGroupDomain`), and the
 runtime half is one menu, `sectionOrderMenuItems` in `groupByMenu.ts`, the
 Sections (or Lanes) submenu with a move and a hide per section and a reset,

@@ -76,7 +76,11 @@ by a single column.
 
 **Reset row order** puts the subtracks back in the order they were loaded in. It
 appears in the same right-click menu and in the track menu, and it undoes a
-sort, a clustering run, and a hand-arranged order alike.
+sort, a clustering run, and a hand-arranged order alike. Where a track should
+open on a particular order, the
+[`domain`](/docs/config/multilinearwiggledisplay/#slot-domain) slot lists the
+subtracks that lead — the rest keep the adapter's order, and the reset returns
+to that order rather than past it.
 
 A session can bake the sort in with `sortRowsBy`, the way `runClustering` bakes
 in a clustering run — see [](/docs/models/multilinearwiggledisplay) for both

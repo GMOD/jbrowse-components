@@ -596,6 +596,7 @@ exports[`every registered schema slot default 1`] = `
     "conservationHeight": "number = 40",
     "conservationMode": "stringEnum = "base" of ["base","codon"]",
     "coverageHeight": "number = 45",
+    "domain": "stringArray = []",
     "fetchSizeLimit": "number = 5000000",
     "forceLoad": "boolean = false",
     "height": "maybeNumber = undefined",
@@ -683,6 +684,7 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearMultiSampleVariantDisplay": {
     "colorBy": "string = """,
+    "domain": "stringArray = []",
     "featureColor": "string = """,
     "fetchSizeLimit": "number = 1000000",
     "forceLoad": "boolean = false",
@@ -709,6 +711,7 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearMultiSampleVariantMatrixDisplay": {
     "colorBy": "string = """,
+    "domain": "stringArray = []",
     "featureColor": "string = """,
     "fetchSizeLimit": "number = 1000000",
     "forceLoad": "boolean = false",
@@ -811,6 +814,7 @@ exports[`every registered schema slot default 1`] = `
     "defaultRendering": "stringEnum = "multirowxy" of ["multirowxy","multirowdensity","multirowline","multirowlinecenter","multirowscatter","multixyplot","multiline","multilinecenter","multiscatter"]",
     "densityColorRamp": "stringEnum = "default" of ["default","viridis"]",
     "displayCrossHatches": "boolean = false",
+    "domain": "stringArray = []",
     "height": "number = 200",
     "lineWidth": "number = 1",
     "maxGapMultiple": "number = 0",

@@ -209,7 +209,11 @@ track is configured with a Newick guide tree.
 
 - **Show... → Show tree** toggles the dendrogram and **Show row labels** the
   species names, and **Tree branch lengths** draws the tree to scale.
-- **Edit row arrangement...** reorders or hand-picks rows.
+- **Edit row arrangement...** reorders or hand-picks rows. The
+  [`domain`](/docs/config/linearmafdisplay/#slot-domain) slot states that order
+  in the config instead — the species it lists lead and the rest keep the tree's
+  order — but the dendrogram draws only in its own leaf order, so a domain that
+  moves a species hides the tree until **Reset row order**.
 - **Row height** offers squeeze-to-fit, normal, compact, and custom row heights.
 
 ### Selecting a subtree

@@ -3757,10 +3757,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "sampleColorMap": {
           "description": "map of partition value to color; overrides the color slot for matching features. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
-        "domain": {
-          "description": "optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "rowHeight": {
           "description": "fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -3831,6 +3827,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "draw the row name over the left of each row.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
+        },
+        "domain": {
+          "description": "optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         }
       }
     },
@@ -5338,6 +5338,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
+        "domain": {
+          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "$ref": "#/$defs/BooleanOrJexl",
@@ -5521,6 +5525,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Show the per-sample row labels in the sidebar.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
+        },
+        "domain": {
+          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
@@ -6105,6 +6113,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
+        "domain": {
+          "description": "Row order: the subtracks listed come first, in this order, and the rest keep the adapter's order.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "$ref": "#/$defs/BooleanOrJexl",
@@ -6654,6 +6666,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "draw the species name over the left of each row.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
+        },
+        "domain": {
+          "description": "row order: the species listed come first, in this order, and the rest keep the tree's order. The guide tree is drawn only in its own leaf order, so a domain that moves a species hides the dendrogram until the row order is reset.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "showLegend": {
           "description": "show the color key for the active row rendering. Defaults to on.",
