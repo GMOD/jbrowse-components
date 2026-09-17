@@ -16,18 +16,12 @@ Used by LinearWiggleDisplay and MultiLinearWiggleDisplay.
 
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
-## Properties
-
-<!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="property-resolution">**resolution**</span><br><code>resolution: types.stripDefault(types.number, 1)</code> |  |
-
 ## Getters
 
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-resolution">**resolution**</span><br><code>number</code> | Points per pixel the fetch asks for, clamped to what the Resolution menu offers: the slot is reachable from a track config, which runs no setter, and `0` there divides by zero inside the adapter. | WiggleCommonMixin |
 | <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, WiggleDataResult&gt;</code> | The fetched scores, keyed by displayedRegionIndex — the foundation's per-region store, narrowed. | WiggleCommonMixin |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw `symlogConstant` slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known.<br><br>Here rather than on the score config because only the wiggle schemas declare the slot, and `getConf` returns `undefined` for a composer that does not. | WiggleCommonMixin |
 | <span id="getter-poscolor">**posColor**</span><br><code>string</code> |  | WiggleCommonMixin |

@@ -43,7 +43,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="property-type">**type**</span><br><code>type: types.literal('ChordVariantDisplay')</code> |  | ChordVariantDisplay |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | ChordVariantDisplay |
-| <span id="property-bezierradiusratio">**bezierRadiusRatio**</span><br><code>bezierRadiusRatio: types.stripDefault(types.number, 0.1)</code> | <span data-pagefind-ignore>how deep a chord bows toward the center, as a fraction of the radius; one straight across the circle reaches it, a shorter one bows in proportion to its span</span> | [BaseChordDisplay](../basechorddisplay#property-bezierradiusratio) |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
 
 ## Volatiles
@@ -72,6 +71,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>the off-screen export gate, on the shared `computeSvgReady` policy. A radial display has no box to draw an error in, so the export fails rather than exporting a message</span> | [BaseChordDisplay](../basechorddisplay#getter-svgready) |
 | <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayStatusPhase</code> |  | [BaseChordDisplay](../basechorddisplay#getter-displayphase) |
 | <span id="getter-radiuspx">**radiusPx**</span><br><code>number</code> |  | [BaseChordDisplay](../basechorddisplay#getter-radiuspx) |
+| <span id="getter-bezierradiusratio">**bezierRadiusRatio**</span><br><code>number</code> | <span data-pagefind-ignore>how deep a chord bows toward the center, as a fraction of the radius; one straight across the circle reaches it, a shorter one bows in proportion to its span</span> | [BaseChordDisplay](../basechorddisplay#getter-bezierradiusratio) |
 | <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> |  | [BaseChordDisplay](../basechorddisplay#getter-bezierradius) |
 | <span id="getter-sliceindex">**sliceIndex**</span><br><code>Record&lt;string, Slice&gt;</code> | <span data-pagefind-ignore>every slice of the circle, keyed by the assembly AND refName a feature off this display's adapter carries. Both halves are needed: two genomes on one circle can each carry a `chr1`. An elided slice answers to each refName it swallowed.</span> | [BaseChordDisplay](../basechorddisplay#getter-sliceindex) |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | [BaseChordDisplay](../basechorddisplay#getter-selectedfeatureid) |

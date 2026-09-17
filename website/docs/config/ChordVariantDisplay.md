@@ -34,10 +34,6 @@ expression over the `feature` so a chord can be colored by what it is:
 }
 ```
 
-How deep a chord bows toward the center is `bezierRadiusRatio`, a display
-state-model property rather than a config slot — a saved session carries it,
-a track config drops it.
-
 _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
@@ -60,3 +56,4 @@ These slots go on a display entry: `"displays": [{ "type": "ChordVariantDisplay"
 | <span id="slot-strokecolor">**strokeColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(255,133,0,0.32)'</code> | the line color of each arc<br>_callback args:_ `feature` |
 | <span id="slot-strokecolorselected">**strokeColorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'black'</code> | the line color of an arc that has been selected<br>_callback args:_ `feature` |
 | <span id="slot-strokecolorhover">**strokeColorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#555'</code> | the line color of an arc that is being hovered over with the mouse<br>_callback args:_ `feature` |
+| <span id="slot-bezierradiusratio">**bezierRadiusRatio**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | how deep a chord bows toward the center, as a fraction of the circle radius: 0 draws it straight across, and a larger value bows it further in |

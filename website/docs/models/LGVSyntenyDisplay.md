@@ -47,7 +47,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="property-type">**type**</span><br><code>type: types.literal('LGVSyntenyDisplay')</code> |  | LGVSyntenyDisplay |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(schema)</code> |  | LGVSyntenyDisplay |
-| <span id="property-lodmode">**lodMode**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>lodMode: types.stripDefault( types.enumeration('LodMode', ['aut…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>lodMode: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.enumeration('LodMode', ['auto', 'fine', 'coarse']),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'auto',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | Level-of-detail tier selection for tiered PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine' pins the per-row CIGAR tier (t/q); 'coarse' the tier whose CIGAR is folded to its large indels (T/Q). Matches the synteny view and dotplot setting of the same name — this display draws the same tracks and had no way to pin a tier. | LGVSyntenyDisplay |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
 
 ## Volatiles
@@ -101,6 +100,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-lodmode">**lodMode**</span><br><code>LodMode</code> | the level-of-detail tier the reader pinned, or 'auto' for the adapter's own bpPerPx threshold. `lodTier` is what resolves it | LGVSyntenyDisplay |
 | <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> | synteny features open the SyntenyFeatureWidget; the inherited `selectFeature` action reads this getter, so no override is needed. | LGVSyntenyDisplay |
 | <span id="getter-featurenoun">**featureNoun**</span><br><code>string</code> | A row here is a PAF block, not a read — the group-label chips say "Show all features". The ONE place that word is chosen: the two menu builders below that take a `noun` read it from here rather than spelling it again, so the chips and the menus cannot end up naming the same row two different things. | LGVSyntenyDisplay |
 | <span id="getter-derivativepathevidence">**derivativePathEvidence**</span><br><code>DerivativePathEvidence</code> | A chain here is one contig's blocks, and an assembly carries one or two contigs across a locus, so one is a route. Nothing names a block the view has not fetched (a PAF line has no SA tag), so a route is only what is on screen. | LGVSyntenyDisplay |

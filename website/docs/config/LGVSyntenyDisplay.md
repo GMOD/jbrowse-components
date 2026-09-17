@@ -59,6 +59,7 @@ These slots go on a display entry: `"displays": [{ "type": "LGVSyntenyDisplay", 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span id="slot-lodmode">**lodMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, fine, coarse) = <code>'auto'</code> | which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels |
 | <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:lgvSyntenyTooltip(feature)'</code> | Tooltip shown on hovering a synteny feature; the default jexl expression renders both mates' names and locations.<br>_callback args:_ `feature` |
 | <span id="slot-colorby">**colorBy**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{ type: 'strand' }</code> | Synteny reads are strand-colored by default (vs the base alignments display's `normal`); overrides the inherited `colorBy` slot's default.<br>_advanced_ |
 | <span id="slot-showcoverage">**showCoverage**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Synteny reads hide the coverage histogram by default; overrides the inherited base alignments display's `showCoverage` default of `true`. |

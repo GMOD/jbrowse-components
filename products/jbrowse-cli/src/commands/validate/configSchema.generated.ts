@@ -3849,6 +3849,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domain": {
           "description": "optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted.",
           "$ref": "#/$defs/StringArrayOrJexl"
+        },
+        "treeAreaWidth": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 80
         }
       }
     },
@@ -4265,6 +4270,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordVariantDisplaySlots": {
       "type": "object",
       "properties": {
+        "bezierRadiusRatio": {
+          "description": "how deep a chord bows toward the center, as a fraction of the circle radius: 0 draws it straight across, and a larger value bows it further in.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 0.1
+        },
         "onChordClick": {
           "description": "callback that should be run when a chord in the track is clicked.",
           "$ref": "#/$defs/BooleanOrJexl",
@@ -4318,6 +4328,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordSyntenyDisplaySlots": {
       "type": "object",
       "properties": {
+        "bezierRadiusRatio": {
+          "description": "how deep a chord bows toward the center, as a fraction of the circle radius: 0 draws it straight across, and a larger value bows it further in.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 0.1
+        },
+        "colorBy": {
+          "description": "what a ribbon's hue says: 'default' is the color slot, 'chromosome' the arc color of the chromosome it joins on the circle's first genome, and 'strand' the alignment's strand, which is also the twist in every mode.",
+          "anyOf": [
+            {
+              "enum": [
+                "default",
+                "chromosome",
+                "strand"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "default"
+        },
         "color": {
           "description": "the fill color of each ribbon.",
           "$ref": "#/$defs/StringOrJexl",
@@ -4769,6 +4800,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
+        "lodMode": {
+          "description": "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
+          "anyOf": [
+            {
+              "enum": [
+                "auto",
+                "fine",
+                "coarse"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "auto"
+        },
         "hideSelfAlignments": {
           "description": "Hide the group matching the view's own assembly when grouping by mate assembly.",
           "$ref": "#/$defs/BooleanOrJexl",
@@ -4832,6 +4879,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default.",
           "$ref": "#/$defs/StringOrJexl",
           "default": "#357089"
+        },
+        "lodMode": {
+          "description": "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
+          "anyOf": [
+            {
+              "enum": [
+                "auto",
+                "fine",
+                "coarse"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "auto"
         },
         "domain": {
           "description": "the lanes that stack first below the anchor, in order; the rest follow densest-first, so a ribbon chain through adjacent lanes is cut as late as possible. What the Lanes menu and a header drag write.",
@@ -5343,6 +5406,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
           "$ref": "#/$defs/StringArrayOrJexl"
         },
+        "treeAreaWidth": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 80
+        },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "$ref": "#/$defs/BooleanOrJexl",
@@ -5536,6 +5604,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domain": {
           "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
           "$ref": "#/$defs/StringArrayOrJexl"
+        },
+        "treeAreaWidth": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 80
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
@@ -5836,6 +5909,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "score"
         },
+        "resolution": {
+          "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 1
+        },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -6007,6 +6085,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "score"
         },
+        "resolution": {
+          "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 1
+        },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -6129,6 +6212,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domain": {
           "description": "Row order: the subtracks listed come first, in this order, and the rest keep the adapter's order. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed subtracks come as early as the tree allows.",
           "$ref": "#/$defs/StringArrayOrJexl"
+        },
+        "treeAreaWidth": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 80
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
@@ -6258,6 +6346,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
           "$ref": "#/$defs/StringOrJexl",
           "default": "score"
+        },
+        "resolution": {
+          "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 1
         },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
@@ -6485,6 +6578,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "score"
         },
+        "resolution": {
+          "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 1
+        },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -6683,6 +6781,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domain": {
           "description": "row order: the guide tree rotates so the species listed come as early as its topology allows, the way ggtree's rotate turns a clade — a species brings its clade with it, so this is a preference the tree honours rather than a placement. The dendrogram keeps drawing. With no guide tree the species listed simply lead, and the rest keep the order the adapter reported them in.",
           "$ref": "#/$defs/StringArrayOrJexl"
+        },
+        "treeAreaWidth": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 80
         },
         "showLegend": {
           "description": "show the color key for the active row rendering. Defaults to on.",
@@ -12204,9 +12307,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "clusterProvenance": {},
-        "treeAreaWidth": {
-          "type": "number"
-        },
         "subtreeFilter": {
           "type": "array",
           "items": {
@@ -12352,9 +12452,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordVariantDisplayState": {
       "type": "object",
       "properties": {
-        "bezierRadiusRatio": {
-          "type": "number"
-        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
@@ -12399,16 +12496,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordSyntenyDisplayState": {
       "type": "object",
       "properties": {
-        "bezierRadiusRatio": {
-          "type": "number"
-        },
-        "colorBy": {
-          "enum": [
-            "default",
-            "chromosome",
-            "strand"
-          ]
-        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
@@ -12541,13 +12628,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LGVSyntenyDisplayState": {
       "type": "object",
       "properties": {
-        "lodMode": {
-          "enum": [
-            "auto",
-            "fine",
-            "coarse"
-          ]
-        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
@@ -12592,13 +12672,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiWaySyntenyDisplayState": {
       "type": "object",
       "properties": {
-        "lodMode": {
-          "enum": [
-            "auto",
-            "fine",
-            "coarse"
-          ]
-        },
         "laneFilter": {},
         "heightPreConfig": {
           "deprecated": true,
@@ -12797,9 +12870,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "clusterProvenance": {},
-        "treeAreaWidth": {
-          "type": "number"
-        },
         "subtreeFilter": {
           "type": "array",
           "items": {
@@ -12875,9 +12945,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "clusterProvenance": {},
-        "treeAreaWidth": {
-          "type": "number"
-        },
         "subtreeFilter": {
           "type": "array",
           "items": {
@@ -12992,9 +13059,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearWiggleDisplayState": {
       "type": "object",
       "properties": {
-        "resolution": {
-          "type": "number"
-        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
@@ -13039,17 +13103,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiLinearWiggleDisplayState": {
       "type": "object",
       "properties": {
-        "resolution": {
-          "type": "number"
-        },
         "layout": {},
         "clusterTree": {
           "type": "string"
         },
         "clusterProvenance": {},
-        "treeAreaWidth": {
-          "type": "number"
-        },
         "subtreeFilter": {
           "type": "array",
           "items": {
@@ -13107,9 +13165,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearGCContentDisplayState": {
       "type": "object",
       "properties": {
-        "resolution": {
-          "type": "number"
-        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
@@ -13154,9 +13209,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearGCContentTrackDisplayState": {
       "type": "object",
       "properties": {
-        "resolution": {
-          "type": "number"
-        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
@@ -13206,9 +13258,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "clusterProvenance": {},
-        "treeAreaWidth": {
-          "type": "number"
-        },
         "subtreeFilter": {
           "type": "array",
           "items": {

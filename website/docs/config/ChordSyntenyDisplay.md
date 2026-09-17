@@ -46,10 +46,6 @@ displays do:
 }
 ```
 
-How deep a ribbon bows toward the center is `bezierRadiusRatio`, a display
-state-model property rather than a config slot — a saved session carries it,
-a track config drops it.
-
 _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
@@ -75,6 +71,8 @@ These slots go on a display entry: `"displays": [{ "type": "ChordSyntenyDisplay"
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span id="slot-colorby">**colorBy**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'default'</code> | what a ribbon's hue says: 'default' is the color slot, 'chromosome' the arc color of the chromosome it joins on the circle's first genome, and 'strand' the alignment's strand, which is also the twist in every mode |
 | <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(70,130,180,0.25)'</code> | the fill color of each ribbon<br>_callback args:_ `feature` |
 | <span id="slot-colorselected">**colorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(0,0,0,0.6)'</code> | the fill color of a ribbon that has been selected<br>_callback args:_ `feature` |
 | <span id="slot-colorhover">**colorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(85,85,85,0.6)'</code> | the fill color of a ribbon that is being hovered over with the mouse<br>_callback args:_ `feature` |
+| <span id="slot-bezierradiusratio">**bezierRadiusRatio**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | how deep a chord bows toward the center, as a fraction of the circle radius: 0 draws it straight across, and a larger value bows it further in |

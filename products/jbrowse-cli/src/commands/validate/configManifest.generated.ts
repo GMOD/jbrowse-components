@@ -3146,6 +3146,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "domain",
           "type": "(JexlString | string[])"
+        },
+        {
+          "name": "treeAreaWidth",
+          "type": "(JexlString | number)"
         }
       ],
       "stateModelProps": [
@@ -3154,7 +3158,6 @@ export const configManifest: ConfigManifest = {
         "layout",
         "clusterTree",
         "clusterProvenance",
-        "treeAreaWidth",
         "subtreeFilter",
         "runClustering",
         "clusterRegion",
@@ -3409,6 +3412,10 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
+          "name": "bezierRadiusRatio",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "onChordClick",
           "type": "(JexlString | boolean)"
         },
@@ -3431,7 +3438,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "bezierRadiusRatio",
         "configuration"
       ]
     },
@@ -3444,6 +3450,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayId",
           "type": "identifier"
+        },
+        {
+          "name": "bezierRadiusRatio",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "colorBy",
+          "type": "(JexlString | ChordSyntenyColorBy)"
         },
         {
           "name": "color",
@@ -3461,8 +3475,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "bezierRadiusRatio",
-        "colorBy",
         "configuration"
       ]
     },
@@ -3723,6 +3735,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "lodMode",
+          "type": "(JexlString | LodMode)"
+        },
+        {
           "name": "hideSelfAlignments",
           "type": "(JexlString | boolean)"
         }
@@ -3730,8 +3746,7 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "configuration",
-        "lodMode"
+        "configuration"
       ]
     },
     "MultiWaySyntenyDisplay": {
@@ -3767,6 +3782,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "utrColor",
           "type": "(JexlString | string)"
+        },
+        {
+          "name": "lodMode",
+          "type": "(JexlString | LodMode)"
         },
         {
           "name": "domain",
@@ -3809,7 +3828,6 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "configuration",
-        "lodMode",
         "laneFilter"
       ]
     },
@@ -4108,6 +4126,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string[])"
         },
         {
+          "name": "treeAreaWidth",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "showRowSeparators",
           "type": "(JexlString | boolean)"
         },
@@ -4181,7 +4203,6 @@ export const configManifest: ConfigManifest = {
         "layout",
         "clusterTree",
         "clusterProvenance",
-        "treeAreaWidth",
         "subtreeFilter",
         "runClustering",
         "clusterRegion",
@@ -4245,6 +4266,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string[])"
         },
         {
+          "name": "treeAreaWidth",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "showRowSeparators",
           "type": "(JexlString | boolean)"
         },
@@ -4302,7 +4327,6 @@ export const configManifest: ConfigManifest = {
         "layout",
         "clusterTree",
         "clusterProvenance",
-        "treeAreaWidth",
         "subtreeFilter",
         "runClustering",
         "clusterRegion",
@@ -4439,6 +4463,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "resolution",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "symlogConstant",
           "type": "(JexlString | number)"
         },
@@ -4494,7 +4522,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "resolution",
         "configuration"
       ]
     },
@@ -4535,6 +4562,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "scoreField",
           "type": "(JexlString | string)"
+        },
+        {
+          "name": "resolution",
+          "type": "(JexlString | number)"
         },
         {
           "name": "symlogConstant",
@@ -4605,6 +4636,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string[])"
         },
         {
+          "name": "treeAreaWidth",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "showRowSeparators",
           "type": "(JexlString | boolean)"
         },
@@ -4616,11 +4651,9 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "resolution",
         "layout",
         "clusterTree",
         "clusterProvenance",
-        "treeAreaWidth",
         "subtreeFilter",
         "runClustering",
         "clusterRegion",
@@ -4683,6 +4716,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "resolution",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "symlogConstant",
           "type": "(JexlString | number)"
         },
@@ -4750,7 +4787,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "resolution",
         "configuration"
       ]
     },
@@ -4809,6 +4845,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "resolution",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "symlogConstant",
           "type": "(JexlString | number)"
         },
@@ -4876,7 +4916,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "resolution",
         "configuration"
       ]
     },
@@ -4943,6 +4982,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string[])"
         },
         {
+          "name": "treeAreaWidth",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "showLegend",
           "type": "(JexlString | boolean)"
         },
@@ -5005,7 +5048,6 @@ export const configManifest: ConfigManifest = {
         "layout",
         "clusterTree",
         "clusterProvenance",
-        "treeAreaWidth",
         "subtreeFilter",
         "runClustering",
         "clusterRegion",

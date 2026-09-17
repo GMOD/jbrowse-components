@@ -48,9 +48,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="property-type">**type**</span><br><code>type: types.literal('ChordSyntenyDisplay')</code> |  | ChordSyntenyDisplay |
-| <span id="property-colorby">**colorBy**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>colorBy: types.stripDefault( types.enumeration&lt;RibbonColorBy&gt;(…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>colorBy: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.enumeration&lt;RibbonColorBy&gt;(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'ChordSyntenyColorBy',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;COLOR_BY.map(c =&gt; c.value),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'default',&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | what a ribbon's hue says: the `color` config slot, the chromosome of the circle's first genome it joins (that arc's ideogram color), or the strand. The strand is also the twist in every mode | ChordSyntenyDisplay |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | ChordSyntenyDisplay |
-| <span id="property-bezierradiusratio">**bezierRadiusRatio**</span><br><code>bezierRadiusRatio: types.stripDefault(types.number, 0.1)</code> | <span data-pagefind-ignore>how deep a chord bows toward the center, as a fraction of the radius; one straight across the circle reaches it, a shorter one bows in proportion to its span</span> | [BaseChordDisplay](../basechorddisplay#property-bezierradiusratio) |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
 
 ## Volatiles
@@ -70,6 +68,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-colorby">**colorBy**</span><br><code>"chromosome" &#124; "default" &#124; "strand"</code> | what a ribbon's hue says: the `color` config slot, the chromosome of the circle's first genome it joins (that arc's ideogram color), or the strand. The strand is also the twist in every mode | ChordSyntenyDisplay |
 | <span id="getter-ready">**ready**</span><br><code>boolean</code> | `loaded`, and no reorder this launch asked for still owed. Ribbons drawn before it would be drawn against the arcs it is about to move; a reorder that failed keeps this false and shows as `displayPhase` error, so a capture never commits the hairball | ChordSyntenyDisplay |
 | <span id="getter-displayerror">**displayError**</span><br><code>unknown</code> | the fetch's error, or else the owed reorder's | ChordSyntenyDisplay |
 | <span id="getter-featurenoun">**featureNoun**</span><br><code>string</code> |  | ChordSyntenyDisplay |
@@ -82,6 +81,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | <span data-pagefind-ignore>the off-screen export gate, on the shared `computeSvgReady` policy. A radial display has no box to draw an error in, so the export fails rather than exporting a message</span> | [BaseChordDisplay](../basechorddisplay#getter-svgready) |
 | <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayStatusPhase</code> |  | [BaseChordDisplay](../basechorddisplay#getter-displayphase) |
 | <span id="getter-radiuspx">**radiusPx**</span><br><code>number</code> |  | [BaseChordDisplay](../basechorddisplay#getter-radiuspx) |
+| <span id="getter-bezierradiusratio">**bezierRadiusRatio**</span><br><code>number</code> | <span data-pagefind-ignore>how deep a chord bows toward the center, as a fraction of the radius; one straight across the circle reaches it, a shorter one bows in proportion to its span</span> | [BaseChordDisplay](../basechorddisplay#getter-bezierradiusratio) |
 | <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> |  | [BaseChordDisplay](../basechorddisplay#getter-bezierradius) |
 | <span id="getter-sliceindex">**sliceIndex**</span><br><code>Record&lt;string, Slice&gt;</code> | <span data-pagefind-ignore>every slice of the circle, keyed by the assembly AND refName a feature off this display's adapter carries. Both halves are needed: two genomes on one circle can each carry a `chr1`. An elided slice answers to each refName it swallowed.</span> | [BaseChordDisplay](../basechorddisplay#getter-sliceindex) |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | [BaseChordDisplay](../basechorddisplay#getter-selectedfeatureid) |
