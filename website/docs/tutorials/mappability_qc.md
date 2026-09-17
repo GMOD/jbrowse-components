@@ -49,8 +49,8 @@ Genomes high-coverage short-read CRAM and its ONT long-read release
   https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
 - UCSC's hg38-to-CHM13 liftOver chain set:
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz
-- GM18501 ONT long reads aligned to GRCh38, counted rather than shown since the
-  bucket serves no CORS headers:
+- GM18501 ONT long reads aligned to GRCh38, counted here since the bucket serves
+  no CORS headers and so cannot be loaded as a track:
   https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam
 - the same sample aligned to T2T-CHM13:
   https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam
@@ -66,9 +66,8 @@ to put it.
 
 An aligner reports that as MAPQ 0. The read is still aligned and still drawn
 where it aligned; MAPQ is `-10 log10 Pr{mapping position is wrong}`
-([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so 0 is
-MAPQ 0 means the aligner found the position it chose about as likely wrong as
-right.
+([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so MAPQ 0
+means the aligner found the position it chose about as likely wrong as right.
 
 ## The block, and the reads inside it
 
@@ -165,8 +164,8 @@ high-coverage CRAM, added to the session; the figure's link opens both together.
 `scan_mappability_qc.sh` counts the reads in equal windows over _SMN1_ and over
 the right-hand end of the frame, from the same library, and they come back at
 the same depth. Without a MAPQ filter a coverage track draws flat across both.
-What separates them is the share of those reads sitting at MAPQ 0, which is most
-of them at _SMN1_ and almost none at the control.
+The share of those reads sitting at MAPQ 0 separates them: most of them at
+_SMN1_ and almost none at the control.
 
 The gnomAD lane shows what a MAPQ filter does to a depth track, in a different
 set of samples. It drops to a fraction of the control's depth over _SMN1_,
