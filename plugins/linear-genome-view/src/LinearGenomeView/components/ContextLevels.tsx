@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 
-import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { observer } from 'mobx-react'
 
 import LinearGenomeView from './LinearGenomeView.tsx'
@@ -9,7 +9,7 @@ import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   connector: {
     position: 'relative',
   },
@@ -19,13 +19,21 @@ const useStyles = makeStyles()({
     height: '100%',
     pointerEvents: 'none',
   },
-  // the whole band is the handle: it is the only thing drawn in it, and a 4px
-  // bar under a 16px trapezoid is a smaller target than the shape it resizes
+  // The whole band is the handle — a 4px bar under a 16px trapezoid is a
+  // smaller target than the shape it sizes — and `useResizeDrag` rather than
+  // `ResizeHandle` because that one's hover paints its whole surface, which
+  // here is the figure. A rule at the edge it drags says the same thing over
+  // the top of nothing.
   grab: {
     position: 'absolute',
     inset: 0,
+    cursor: 'row-resize',
+    touchAction: 'none',
+    '&:hover': {
+      borderBottom: `2px solid ${theme.palette.action.disabled}`,
+    },
   },
-})
+}))
 
 /**
  * The trapezoid from the span `lower` shows, as it sits in `upper`, down to
@@ -47,6 +55,11 @@ const LevelConnector = observer(function LevelConnector({
 }) {
   const { classes } = useStyles()
   const height = upper.contextConnectorHeight
+  const handleProps = useResizeDrag({
+    onDrag: delta => {
+      upper.setContextConnectorHeight(upper.contextConnectorHeight + delta)
+    },
+  })
   return upper.initialized && lower.initialized ? (
     <div className={classes.connector} style={{ height }}>
       <svg className={classes.polygon}>
@@ -58,11 +71,10 @@ const LevelConnector = observer(function LevelConnector({
           gradient
         />
       </svg>
-      <ResizeHandle
+      <div
+        {...handleProps}
+        data-testid={`context-connector-${upper.id}`}
         className={classes.grab}
-        onDrag={delta => {
-          upper.setContextConnectorHeight(height + delta)
-        }}
       />
     </div>
   ) : null
