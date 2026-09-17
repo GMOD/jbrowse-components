@@ -282,6 +282,40 @@ row per value and no chip. What the mark display does not take is the
 alignments display's per-section collapse, which is that display's lane budget
 rather than a facet's.
 
+## The row panel, against ggtree and react-msaview
+
+The four displays composing `TreeSidebarMixin` (`packages/tree-sidebar`) share
+a layout ComplexHeatmap states outright: a body, and beside it marginal
+annotations that each read a field of a row table. ggtree draws the same
+picture with the tree as the body and `gheatmap`, `msaplot` and `facet_plot`
+as the panels; react-msaview (`~/src/react-msaview`, whose
+`agent-docs/ideas/panels-and-marks.md` works the same correspondence from its
+side) names it the other way round, the alignment as the body and the tree as
+the first row panel, and its `rowData` table is what every row panel reads.
+Here the rows are samples, species or subtracks, the tree is the sidebar, and
+the row table is `layout`. The table is the correspondence, so a proposal on
+the sidebar can be read against both libraries before it is spelled.
+
+| Notion                             | ggtree                                             | react-msaview                                          | The tree sidebar                                                                                                                                                                                    |
+| ---------------------------------- | -------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The tree                           | data, given                                        | the `tree` prop, given                                 | computed (`runClustering`, `clusterTree`, `clusterProvenance` naming the locus and settings), or given (MAF's guide `.nh`)                                                                          |
+| A row's data                       | `%<+%` attaches a table keyed by tip               | `rowData`                                              | the adapter's sources: a samples TSV's columns, a subtrack's metadata                                                                                                                               |
+| Declared row order                 | `ladderize`, then `rotate` / `flip` on a clade     | tree order                                             | the `domain` slot (`rowDomain` on the model, since the wiggle score axis owns `domain`): the rows listed first, the rest in the tree's, file's or adapter's order; a MAF guide tree draws only in its own leaf order, so a domain that moves a species un-positions it |
+| Arranged row order                 | —                                                  | —                                                      | `layout`: order plus per-row label and colour overrides, written by drag, the arrangement dialog, a clustering run and sort-at-column; "Reset row order" clears it                                    |
+| Order at one column                | —                                                  | —                                                      | `sortRowsBy` and the right-click "Sort rows by … here", ComplexHeatmap's `row_order` from one column                                                                                                |
+| Focus on a clade                   | `viewClade`, `tree_subset`                         | —                                                      | `subtreeFilter`, a row-name set                                                                                                                                                                     |
+| Bands by a field                   | `groupOTU`, then a facet                           | —                                                      | the variant displays' `facet: { field, domain }`                                                                                                                                                    |
+| Row colour by a field              | `aes(color = field)` over the attached table       | `scale_row_color(field, channel)`                      | the variant displays' `colorBy` (a metadata column); the multi-row display's `sampleColorMap` is the explicit map and `rowGroups` the match-to-group form                                             |
+| Row labels                         | `geom_tiplab`                                      | tip labels                                             | `showRowLabels`, `colorRowLabels`                                                                                                                                                                   |
+| Branch lengths                     | `branch.length = "none"` for a cladogram           | —                                                      | `showBranchLength`                                                                                                                                                                                  |
+| Collapse a clade                   | `collapse` / `expand`                              | `clades` with `mark: "collapse"`                       | —                                                                                                                                                                                                   |
+| Highlight or bracket a clade       | `geom_hilight`, `geom_cladelab`, `geom_strip`      | `clades` with `mark: "highlight"` / `"bracket"`        | —                                                                                                                                                                                                   |
+| Node labels, support values        | `geom_nodelab`                                     | parsed, not drawn                                      | —                                                                                                                                                                                                   |
+| Further row panels                 | `gheatmap`, `facet_plot`                           | `rowPanels` with `strip`                               | —                                                                                                                                                                                                   |
+
+The four empty cells on the sidebar's side are each a mark or a guide over
+the row axis in the vocabulary above, and none is a new channel.
+
 ## Gaps against the grammar
 
 - **`window` and `sample` are absent**, and a BigWig's summary tiers are the

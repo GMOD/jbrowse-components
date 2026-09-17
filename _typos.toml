@@ -28,6 +28,8 @@ extend-ignore-re = [
 [default.extend-words]
 # domain terms, so the files holding them stay spell-checked and greppable
 NAM = "NAM"           # maize Zm-B73-REFERENCE-NAM-5.0
+OTU = "OTU"           # operational taxonomic unit, ggtree's groupOTU
+hilight = "hilight"   # ggtree's geom_hilight
 WEW = "WEW"           # Wild Emmer Wheat, WEWSeq_v.1.0
 Ser = "Ser"           # serine
 aas = "aas"           # amino acids
