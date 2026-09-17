@@ -286,9 +286,9 @@ transferables.
 
 Stack the facet groups themselves: `stack`'s `groupby` numbers every group from
 0, so the sections overlap until each one's rows are offset by the rows of the
-groups above it. The order is the facet's `domain` and the tail past the cap
-merges into one overflow section, the same two rules the chip row reads, so a
-layout and a reading of it agree without sharing state.
+groups above it. The order is `facetSectionOrder` over the facet's `domain` and
+the tail past the cap merges into one overflow section, the same two rules the
+chip row reads, so a layout and a reading of it agree without sharing state.
 
 A group's height is its own highest row plus one, which is right whether or not
 the `stack` grouped by this field — an ungrouped pack simply leaves one group
@@ -633,13 +633,15 @@ the wire; a reader is built in the worker.
 
 The key row a feature with nothing in a categorical field lands on, so the
 legend says why a mark is grey, or a disc, rather than listing a blank value.
+The same catch-all `facetSectionLabel` chips `field: none`, named for a key
+rather than for a section.
 
 ```js
 // type signature
 '(no value)'
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/groupKeys.ts)
 
 ### RampRef
 
