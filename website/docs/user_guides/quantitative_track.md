@@ -41,9 +41,9 @@ rescale to the region in view and differ in how they treat outliers:
 
 ### Summary score mode
 
-Zoomed out, a BigWig serves precomputed summary bins, and this picks which
-statistic a pixel draws: **Minimum**, **Maximum**, **Average**, or **Whiskers**,
-a darker average band inside the lighter min-to-max range
+Zoomed out, a BigWig serves precomputed summary bins, and **Summary score mode**
+picks which statistic a pixel draws: **Minimum**, **Maximum**, **Average**, or
+**Whiskers**, a darker average band inside the lighter min-to-max range
 ([`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)).
 Density mode draws the average, since it maps score to color.
 

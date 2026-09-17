@@ -30,7 +30,7 @@ all three name rows that the new partition does not have.
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Turning the UCSC RepeatMasker track into rows: the track menu's Display types submenu (top), and the same window partitioned by repeat class (bottom). Any feature track can be switched over this way." />
 
-To fix the column in config rather than picking it per session, set
+To fix the column in config, set
 [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
 in the track config:
 
@@ -90,7 +90,7 @@ repeat name, which is thousands of rows rather than twenty.
 }
 ```
 
-Swapping the final `[0]` for `[1]` splits by family instead of class.
+The final `[0]` selects class; swap it for `[1]` to split by family.
 
 The multi-row display isn't the track's default, so it needs an explicit
 `displays` entry rather than the `displayDefaults` shorthand (whose `color`
@@ -199,14 +199,13 @@ returns the rows to file order.
 clustering run.
 
 **Show... → Color row labels by row color** tints each label with the color that
-row's blocks are painted in, so a row can be found by color rather than by
-reading down a column of similar names. It is off by default: the label box is
-also what `rowGroups` and a color set in **Edit colors/arrangement…** use, and
-both of those win over it. It does nothing on a track colored per feature (an
-`itemRgb` painting, a jexl `color` slot), where no single color represents the
-row.
+row's blocks are painted in, so a row can be found by color. It is off by
+default: the label box is also what `rowGroups` and a color set in **Edit
+colors/arrangement…** use, and both of those win over it. It does nothing on a
+track colored per feature (an `itemRgb` painting, a jexl `color` slot), where no
+single color represents the row.
 
-<Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:39.0-40.5Mb, 1104 TCGA-BRCA tumors clustered by copy-number profile with the dendrogram and row labels beside them. Rows sort into amplified, gained, lost, and balanced bands instead of the input file's order." />
+<Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:39.0-40.5Mb, 1104 TCGA-BRCA tumors clustered by copy-number profile with the dendrogram and row labels beside them. Rows sort into amplified, gained, lost, and balanced bands." />
 
 ## Worked examples
 
@@ -224,7 +223,7 @@ Each of these builds the input file and the track config end to end:
 
 - [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/multiquantitative_track) - the same one-row-per-sample
-  idea for signal rather than intervals
+  idea for signal data
 - [](/docs/user_guides/multivariant_track)
 - [LinearMultiRowFeatureDisplay config schema](/docs/config/linearmultirowfeaturedisplay)
 - [](/docs/config_guides/customizing_feature_colors)

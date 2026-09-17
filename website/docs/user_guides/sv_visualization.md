@@ -170,17 +170,16 @@ how many there are, so the arcs count the support as well as locate it.
 Hover any arc for its classification. A read can have a grey LR fill and still
 carry a colored arc: the read itself crosses the breakpoint, splits into a
 primary and a strand-flipped supplementary alignment, and the arc joining those
-takes the magenta split-read color. That is evidence from one molecule rather
-than from a pair.
+takes the magenta split-read color. That is evidence from one molecule.
 
 ### SV channels
 
 Every scheme above paints one pileup, so an event's evidence arrives mixed into
 the rows around it. **Read connections → SV channels (pairs by orientation)**
-takes the same reads apart: each orientation class becomes its own band with its
-own coverage curve and its own arcs, the concordant pairs drop out, and the
-pileup goes away. Which band fills names the rearrangement, and a band that
-stays empty under a call is a call with no read-pair evidence behind it.
+takes the same reads apart: each orientation class gets a separate band with its
+own coverage curve and arcs, the concordant pairs drop out, and the pileup goes
+away. Which band fills names the rearrangement, and a band that stays empty
+under a call is a call with no read-pair evidence behind it.
 
 <Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles standing on the same breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band stays near empty." src="/img/sv_channels.png" />
 
@@ -281,8 +280,7 @@ joins the two breakpoints.
 **Group by → Split read (SA tag)** splits the pileup into two sections: reads
 carrying a supplementary alignment, and the rest. Together the two sections are
 the genotype: a locus where some reads invert and the rest run through unbroken
-is one inverted copy and one uninverted, read off the pileup rather than from
-the caller's `GT`.
+is one inverted copy and one uninverted, read directly off the pileup.
 
 <Figure caption="Reads grouped by Group by... → Split read (SA tag) over HGSV_10047 in HG00151 nanopore reads, with the 1KGP ensemble VCF call above. The split reads in the upper section break into three pieces with the middle one reversed; the reads below cross the same span in one piece." src="/img/inversion_long_read.png" />
 
@@ -383,11 +381,10 @@ For a heterozygous SV, the supporting reads all coming from one haplotype is
 strong evidence for the call. Where the BAM/CRAM has been haplotagged (WhatsHap,
 HiPhase), reads carry an `HP` tag, and sorting, coloring or
 [grouping](/docs/user_guides/alignments_track#grouping-reads) by it from the
-track menu clusters each haplotype. Grouping goes furthest, giving each
-haplotype its own pileup section with untagged reads collected in their own, so
-unphased support stays visible. The
-[phased trio tutorial](/docs/tutorials/analyze_trio) covers phased haplotypes
-end to end.
+track menu clusters each haplotype. Grouping goes furthest: each haplotype gets
+a separate pileup section, and untagged reads get one too, so unphased support
+stays visible. The [phased trio tutorial](/docs/tutorials/analyze_trio) covers
+phased haplotypes end to end.
 
 <Figure caption="A heterozygous deletion in HG002 ONT reads, with the SNP coverage panel above the pileup. The pileup is grouped by HP tag into stacked sections, and the reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
 
@@ -408,7 +405,7 @@ For large or inter-chromosomal SVs:
   matter.
 - Use the SV inspector for whole-genome triage before drilling in.
 
-<Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale without loading any reads." src="/img/cnv.png" />
+<Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale." src="/img/cnv.png" />
 
 ## Whole-genome assembly comparison
 

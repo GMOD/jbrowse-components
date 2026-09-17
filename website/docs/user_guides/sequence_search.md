@@ -24,10 +24,9 @@ Both strands are searched, case-insensitively; either can be turned off.
 
 Most restriction sites are palindromic — the site reads the same on both
 strands, which is how one enzyme cuts both — so such a hit is reported once,
-unstranded, rather than twice at one position. This needs bare `ACGT`: regex
-syntax has no reverse complement, and IUPAC codes are not regex (`N` matches a
-literal N). Use [Motif list](#restriction-enzymes-and-other-named-motifs) for
-IUPAC sites.
+unstranded. This needs bare `ACGT`: regex syntax has no reverse complement, and
+IUPAC codes are not regex (`N` matches a literal N). Use
+[Motif list](#restriction-enzymes-and-other-named-motifs) for IUPAC sites.
 
 ## CRISPR guide RNAs
 

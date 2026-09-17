@@ -94,11 +94,10 @@ configuration.
 
 If the VCF's `INFO` field carries SnpEff `ANN` or VEP `CSQ` annotations, each
 variant's alt-carrying cells can be colored by the severity of its most severe
-predicted consequence instead of by genotype. From the track menu, open **Color
-by...** and choose **Consequence impact** under **Cells**. The entry stays
-visible on a VCF that carries no annotations, but is greyed out and names why:
-_(checking for annotations...)_ while the scan runs, then _(no SnpEff/VEP
-annotations found)_.
+predicted consequence. From the track menu, open **Color by...** and choose
+**Consequence impact** under **Cells**. The entry stays visible on a VCF that
+carries no annotations, but is greyed out and names why: _(checking for
+annotations...)_ while the scan runs, then _(no SnpEff/VEP annotations found)_.
 
 Every annotation is bucketed into one of four impact tiers and painted with a
 fixed color, so the legend is the same across tracks:
@@ -166,7 +165,7 @@ any attribute you supply. Two slots wire it up:
   is positioned against the rows.
 - [`domain`](/docs/config/linearmultisamplevariantdisplay/#slot-domain) names
   the samples that lead the rows; the rest keep the file's order, and a grouping
-  attribute bands within that order rather than against it.
+  attribute bands within that order.
 
 The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset (2,504 samples
 across 26 population codes) this way. For the TSV layout and the adapter and

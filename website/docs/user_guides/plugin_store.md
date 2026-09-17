@@ -43,9 +43,9 @@ you open it in this browser.
 - An admin editing `config.json` is installing for every visitor instead, so the
   pin does not appear in admin mode.
 
-Because these load before anything is on screen, a plugin that crashes on load
-would otherwise take the app down on every visit with no way back to the menu.
-Two things stop that:
+Permanent plugins load before anything is on screen, so a plugin that crashes on
+load would otherwise take the app down on every visit with no way back to the
+menu. Two things stop that:
 
 - The fatal error dialog offers **Reload without permanent plugins**.
 - If a load never finishes, JBrowse turns the stuck plugins off before the next
@@ -53,8 +53,8 @@ Two things stop that:
   plugin and a **Turn back on and reload** button once the culprit is switched
   off.
 
-Adding `?safeMode` to the URL does the same thing deliberately, and accuses
-nobody.
+Adding `?safeMode` to the URL turns off every permanent plugin the same way, on
+purpose.
 
 ## See also
 
