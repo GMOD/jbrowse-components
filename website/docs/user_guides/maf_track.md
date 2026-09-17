@@ -37,8 +37,8 @@ sequence read. Hover one to name the species, the aligned block and its score,
 which on a deep alignment is how to tell one row from another once the labels
 shrink away. Zooming back in swaps the bars for the alignment itself. Neither
 the coverage band nor the conservation band is drawn on the summary tier, since
-both are computed from the per-base alignment the tier exists to avoid reading.
-Pointing a track at a summary file is covered in the
+both need the per-base alignment the tier skips reading. Pointing a track at a
+summary file is covered in the
 [MAF track configuration guide](/docs/config_guides/maf_track#the-zoom-out-tier).
 
 <Figure src="/img/maf_summary_tier.png" caption="The UCSC hg38 470-way narrowed to ~30 representative mammals, over GAPDH at two zooms. At 180 kb (top) the track reads its summary file, one grey bar per species per aligned region. At 200 bp (bottom) it draws the alignment itself, one colored cell per base, with the coverage band above."/>
