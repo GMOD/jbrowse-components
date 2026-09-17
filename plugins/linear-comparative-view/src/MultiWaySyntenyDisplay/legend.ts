@@ -109,6 +109,7 @@ export function ribbonColorScale(
   colorBy: MultiWayRibbonColorBy,
   labels: CategoricalMode | undefined,
   paintsIdentity: boolean,
+  domain?: string[],
 ): ColorScale {
   return colorBy === 'identity' && paintsIdentity
     ? { ...colorByScale('identity'), id: 'ribbons', title: 'Ribbon identity' }
@@ -117,5 +118,8 @@ export function ribbonColorScale(
         id: 'ribbons',
         title: 'Ribbon colors',
         entries: ribbonColorKey(colorBy, labels),
+        // strand's pair is fixed and means what it is drawn in, so only the
+        // label rows take a declared order
+        domain: labels ? domain : undefined,
       }
 }

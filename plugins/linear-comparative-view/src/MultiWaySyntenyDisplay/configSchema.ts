@@ -82,6 +82,15 @@ export function configSchemaFactory() {
       /**
        * #slot
        */
+      ribbonColorDomain: {
+        type: 'stringArray',
+        description:
+          "the order an `attribute:<column>` mode's labels take: the labels listed here first, the rest sorted. The order is the palette's too — a label's color is its position — so this moves the key and the ribbons together. Left empty the labels stay in the order the fetches first met them. The other modes paint a fixed pair or a ramp and ignore it",
+        defaultValue: [],
+      },
+      /**
+       * #slot
+       */
       drawCurves: {
         type: 'boolean',
         description:

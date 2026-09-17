@@ -13,6 +13,7 @@ import {
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import {
@@ -674,10 +675,26 @@ export function stateModelFactory(
        * fixed modes, and for a column no loaded row carries as text
        */
       get ribbonLabels() {
-        return resolveCategoricalMode(
+        const mode = resolveCategoricalMode(
           getConf(self, 'ribbonColorBy'),
           self.seenRibbonLabels,
         )
+        const domain = this.ribbonColorDomain
+        return mode && domain.length
+          ? {
+              ...mode,
+              labels: [...mode.labels].sort(groupKeyComparator(domain)),
+            }
+          : mode
+      },
+      /**
+       * #getter
+       * the declared order an `attribute:` mode's labels take. A label's color
+       * is its position in that list, so this is the ribbons' order as much as
+       * the key's
+       */
+      get ribbonColorDomain(): string[] {
+        return getConf(self, 'ribbonColorDomain')
       },
       /**
        * #getter
@@ -1591,6 +1608,7 @@ export function stateModelFactory(
             self.ribbonColorBy,
             self.ribbonLabels,
             self.ribbonColorBy === 'identity' && self.ribbonsCarryIdentity,
+            self.ribbonColorDomain,
           ),
         ]
         return scales.filter(scale => !colorScaleIsEmpty(scale))

@@ -1446,6 +1446,43 @@ test('the ribbon label table accumulates across fetches and resets on a mode pic
   expect(display.ribbonLabels).toBeUndefined()
 })
 
+// A label's color is its position in the table, so the domain has to move the
+// table itself: the key and the ribbons then read the same order.
+test('a ribbonColorDomain moves the label table, and the key with it', () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: {
+      type: 'MCScanBlocksAdapter',
+      attributeColumns: ['group'],
+    },
+  })
+  const row = (id: string, group: string) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      name: id,
+      group,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    })
+  display.setRibbonColorBy('attribute:group')
+  display.setFeatures([row('f1', 'B1'), row('f2', 'A1a'), row('f3', 'C1')])
+  expect(display.ribbonLabels?.labels).toEqual(['B1', 'A1a', 'C1'])
+
+  setConf(display, 'ribbonColorDomain', ['C1'])
+  expect(display.ribbonLabels?.labels).toEqual(['C1', 'A1a', 'B1'])
+  const ribbons = display.colorScales.find(scale => scale.id === 'ribbons')
+  expect(
+    ribbons?.kind === 'categorical' ? ribbons.entries.map(e => e.label) : [],
+  ).toEqual(['C1', 'A1a', 'B1'])
+})
+
 test('identity ribbons key their ramp only when a record carries an identity', () => {
   const display = createDisplay()
   display.setRibbonColorBy('identity')
