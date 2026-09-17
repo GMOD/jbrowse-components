@@ -5339,7 +5339,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "domain": {
-          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it.",
+          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "showRowSeparators": {
@@ -5527,7 +5527,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "domain": {
-          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it.",
+          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "showRowSeparators": {
@@ -6114,7 +6114,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "domain": {
-          "description": "Row order: the subtracks listed come first, in this order, and the rest keep the adapter's order.",
+          "description": "Row order: the subtracks listed come first, in this order, and the rest keep the adapter's order. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed subtracks come as early as the tree allows.",
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "showRowSeparators": {
@@ -6668,7 +6668,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "domain": {
-          "description": "row order: the species listed come first, in this order, and the rest keep the tree's order. The guide tree is drawn only in its own leaf order, so a domain that moves a species hides the dendrogram until the row order is reset.",
+          "description": "row order: the guide tree rotates so the species listed come as early as its topology allows, the way ggtree's rotate turns a clade — a species brings its clade with it, so this is a preference the tree honours rather than a placement. The dendrogram keeps drawing. With no guide tree the species listed simply lead, and the rest keep the order the adapter reported them in.",
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "showLegend": {
