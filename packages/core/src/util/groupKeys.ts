@@ -18,21 +18,21 @@ function groupKeyRank(key: string) {
   return key === '' ? 1 : key === OVERFLOW_GROUP_KEY ? 2 : 0
 }
 
-const ALL_DIGITS = /^\d+$/
+const NUMERIC = /^-?\d+(\.\d+)?$/
 
 /**
- * Two all-digit keys compare by magnitude, so numeric tag values order 1, 2,
- * 10. Everything else is code-point rather than localeCompare, which stays
- * deterministic and puts '+' before '-'. A display merging groups across
- * regions applies this same order, since one region's sort cannot place a
- * group absent from it.
+ * Two numeric keys compare by magnitude, so numeric tag values order 1, 2,
+ * 10 and a signed field orders -1 before 1. Everything else is code-point
+ * rather than localeCompare, which stays deterministic and puts '+' before
+ * '-'. A display merging groups across regions applies this same order,
+ * since one region's sort cannot place a group absent from it.
  */
 export function compareGroupKeys(a: string, b: string) {
   const rankDiff = groupKeyRank(a) - groupKeyRank(b)
   if (rankDiff !== 0) {
     return rankDiff
   }
-  if (ALL_DIGITS.test(a) && ALL_DIGITS.test(b)) {
+  if (NUMERIC.test(a) && NUMERIC.test(b)) {
     const na = Number(a)
     const nb = Number(b)
     if (na !== nb) {
@@ -64,6 +64,23 @@ export function groupKeyComparator(domain?: readonly string[]) {
     const rb = rank.get(b) ?? Infinity
     return ra !== rb ? (ra < rb ? -1 : 1) : compareGroupKeys(a, b)
   }
+}
+
+/**
+ * The domain a re-pick keeps: a grouping set from a menu or dialog names no
+ * domain, so one landing in the key space the current grouping already
+ * occupies carries the current order along. A reorder names its own domain
+ * and passes through, an empty one included.
+ */
+export function carryGroupDomain<
+  T extends { type: string; domain?: readonly string[] },
+>(next: T | undefined, current: T | undefined): T | undefined {
+  return next !== undefined &&
+    next.domain === undefined &&
+    current?.domain !== undefined &&
+    groupKeySpaceOf(next) === groupKeySpaceOf(current)
+    ? { ...next, domain: current.domain }
+    : next
 }
 
 /**

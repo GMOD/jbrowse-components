@@ -15,7 +15,7 @@ import {
   isFeature,
   pluralize,
 } from '@jbrowse/core/util'
-import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
+import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -1173,10 +1173,17 @@ export default function baseStateModelFactory(
 
       /**
        * #action
-       * The stack starts over from the top when its sections change.
+       * The stack starts over from the top when its sections change. A
+       * grouping named without a domain keeps the current one while the key
+       * space holds, so a re-pick from the dialog is not a reorder; a
+       * reorder is this action with a new domain.
        */
       setGroupBy(groupBy?: FeatureGroupBy) {
-        setConf(self, 'groupBy', groupBy ?? null)
+        setConf(
+          self,
+          'groupBy',
+          carryGroupDomain(groupBy, self.groupBy) ?? null,
+        )
         self.setScrollTop(0)
       },
 

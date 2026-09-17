@@ -2,6 +2,8 @@ import {
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
+  carryGroupDomain,
+  compareGroupKeys,
   groupKeyComparator,
   groupKeySpaceOf,
 } from './groupKeys.ts'
@@ -76,4 +78,38 @@ test('the key space is the dimension and its parameter, never the domain', () =>
   expect(
     groupKeySpaceOf({ type: 'attribute', attribute: 'gene_type' }),
   ).not.toBe(plain)
+})
+
+test('a signed or decimal key compares by magnitude, and a bare sign does not', () => {
+  expect(['1', '-1', '0.5', '-', '+'].sort(compareGroupKeys)).toEqual([
+    '+',
+    '-',
+    '-1',
+    '0.5',
+    '1',
+  ])
+})
+
+test('a re-pick in the same key space keeps the domain; a reorder or a new space does not', () => {
+  const current = {
+    type: 'attribute',
+    attribute: 'biotype',
+    domain: ['lncRNA'],
+  }
+  expect(
+    carryGroupDomain({ type: 'attribute', attribute: 'biotype' }, current),
+  ).toEqual(current)
+  expect(
+    carryGroupDomain(
+      { type: 'attribute', attribute: 'biotype', domain: [] },
+      current,
+    ),
+  ).toEqual({ type: 'attribute', attribute: 'biotype', domain: [] })
+  expect(
+    carryGroupDomain({ type: 'attribute', attribute: 'gene_type' }, current),
+  ).toEqual({ type: 'attribute', attribute: 'gene_type' })
+  expect(carryGroupDomain(undefined, current)).toBeUndefined()
+  expect(
+    carryGroupDomain({ type: 'attribute', attribute: 'biotype' }, undefined),
+  ).toEqual({ type: 'attribute', attribute: 'biotype' })
 })

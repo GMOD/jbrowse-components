@@ -145,6 +145,23 @@ test('reordering the sections keeps the hidden ones hidden', () => {
   expect(display.groupSections.map(s => s.key)).toEqual(['protein_coding'])
 })
 
+test('re-picking the same attribute from the dialog keeps a curated domain', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  setConf(display, 'groupBy', {
+    type: 'attribute',
+    attribute: 'biotype',
+    domain: ['lncRNA'],
+  })
+  display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, true)
+  expect(display.groupBy?.domain).toEqual(['lncRNA'])
+  display.applyGroupBy({ type: 'attribute', attribute: 'gene_type' }, true)
+  expect(display.groupBy?.domain).toBeUndefined()
+  display.setGroupBy({ type: 'strand', domain: ['-'] })
+  display.setGroupBy({ type: 'strand', domain: [] })
+  expect(display.groupBy).toEqual({ type: 'strand' })
+})
+
 test('a domain in the slot survives normalization, its entries as strings', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()

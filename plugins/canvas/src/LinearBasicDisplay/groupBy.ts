@@ -99,9 +99,10 @@ export function normalizeFeatureGroupBy(
   const obj = typeof value === 'object' && value !== null ? value : undefined
   const type = obj === undefined ? undefined : Reflect.get(obj, 'type')
   const rawDomain = obj === undefined ? undefined : Reflect.get(obj, 'domain')
-  const domain = Array.isArray(rawDomain)
-    ? { domain: rawDomain.map(String) }
-    : {}
+  const domain =
+    Array.isArray(rawDomain) && rawDomain.length > 0
+      ? { domain: rawDomain.map(String) }
+      : {}
   if (type === 'strand') {
     return { type, ...domain }
   }
