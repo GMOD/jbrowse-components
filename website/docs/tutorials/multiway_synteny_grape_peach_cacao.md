@@ -152,10 +152,11 @@ for sp in grape peach cacao; do
 done
 ```
 
-Both sides key on the mRNA's GFF3 `ID`. gffread names each CDS after it, and
-`--key=ID` writes it into BED column 4. For a key it cannot resolve, jcvi
-generates `mrna_494685`, which joins to nothing; `--key=transcript_id` and
-`--key=Name` produce that same unjoinable id on an NCBI annotation.
+The BED and CDS files both key on the mRNA's GFF3 `ID`. gffread names each CDS
+after it, and `--key=ID` writes it into BED column 4. For a key it cannot
+resolve, jcvi generates `mrna_494685`, which joins to nothing;
+`--key=transcript_id` and `--key=Name` produce that same unjoinable id on an
+NCBI annotation.
 
 Then catalog orthologs against the reference, MCScan each pair, and join:
 
@@ -428,7 +429,7 @@ lanes in each genome's own coordinates:
   including an [OrthoFinder table](/docs/tutorials/orthofinder_synteny) or an
   [all-vs-all PAF](/docs/tutorials/allvsall_synteny)
 
-The same thing as a `defaultSession`:
+The lanes above, as a `defaultSession`:
 
 ```json session config=https://jbrowse.org/demos/grape_peach_cacao/config.json
 {
@@ -499,7 +500,7 @@ A copy-number difference fans one gene into several, and a lone ortholog draws
 at gene size, centered in its lane. Hovering a ribbon highlights its ortholog
 group down every lane; clicking one opens the pair's details and keeps the
 group's ribbons outlined after the pointer leaves, until a click on empty canvas
-lets them go.
+clears the outline.
 
 <Figure caption="The same lanes cut to a few genes, with one ribbon clicked. Each ribbon links one gene to its ortholog in the lane below; the clicked group carries an outline down the lanes that chain it, and the details panel opens on the pair the click landed on." src="/img/multiway_synteny/lgv_track_clicked.png" />
 

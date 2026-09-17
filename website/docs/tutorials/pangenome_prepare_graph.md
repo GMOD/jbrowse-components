@@ -115,8 +115,9 @@ gfatools gfa2bed -m graph.sv.gfa.gz
 For a plain GFA a python helper walks the P and W lines and stands in for those
 tags, deriving the same intervals from path order.
 
-Neither is run by hand. Each is wrapped in a script that sorts, compresses and
-indexes both files, and fetches the python helper it needs:
+Neither the rGFA projection nor the path walk is run by hand. Each is wrapped in
+a script that sorts, compresses and indexes both files, and fetches the python
+helper it needs:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
@@ -455,8 +456,9 @@ The sort holds every recorded position in memory, so give it room. On a
 16-thread Intel Mac the walk aborts inside libmalloc's nano zone;
 `MallocNanoZone=0` or `--threads 8` gets past it, at over an hour of walking.
 
-Both files go somewhere that serves range requests, and their two URLs are the
-`uri` and the `haplotypeIndexLocation` of the track:
+The database and the haplotype-index companion file go somewhere that serves
+range requests, and their two URLs are the `uri` and the
+`haplotypeIndexLocation` of the track:
 
 ```json addtrack
 {
