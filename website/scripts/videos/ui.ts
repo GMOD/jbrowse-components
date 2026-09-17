@@ -39,11 +39,13 @@ const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 // carries the same `data-field`.
 const BOOKMARK_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
 
-// The Add context level dialog's track picker, and the button that takes the
-// dialog. The picker is an Autocomplete, so the testid is on the control and
-// the typing goes into the input inside it; the button is named `Add` there,
-// which is the prefix of the menu item that opened the dialog.
+// The Add context level dialog's track picker, its options, and the button that
+// takes the dialog. The picker is an Autocomplete, so the testid is on the
+// control and the typing goes into the input inside it. An option is taken by
+// role rather than by its text: the name typed into the field IS that text, and
+// a text target resolves to the field first.
 const CONTEXT_LEVEL_TRACKS = '[data-testid="context-level-tracks"] input'
+const TRACK_OPTION = 'li[role="option"]'
 const DIALOG_SUBMIT = 'form button[type="submit"]'
 
 export const uiVideos: VideoSpec[] = [
@@ -178,8 +180,8 @@ export const uiVideos: VideoSpec[] = [
         value: 'NCBI RefSeq genes',
         say: 'Name the tracks the level carries',
       },
-      { type: 'waitForText', text: 'NCBI RefSeq genes' },
-      { type: 'click', text: 'NCBI RefSeq genes', hold: 800 },
+      { type: 'waitForSelector', selector: TRACK_OPTION },
+      { type: 'click', selector: TRACK_OPTION, hold: 800 },
       { type: 'click', selector: DIALOG_SUBMIT },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 2000 },
@@ -197,8 +199,8 @@ export const uiVideos: VideoSpec[] = [
         selector: CONTEXT_LEVEL_TRACKS,
         value: 'COLO829 tumour coverage',
       },
-      { type: 'waitForText', text: 'COLO829 tumour coverage' },
-      { type: 'click', text: 'COLO829 tumour coverage', hold: 800 },
+      { type: 'waitForSelector', selector: TRACK_OPTION },
+      { type: 'click', selector: TRACK_OPTION, hold: 800 },
       // The side is the stack's, so this takes the level already standing with
       // it, and the trapezoids turn over.
       {
