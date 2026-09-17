@@ -203,7 +203,8 @@ row's blocks are painted in, so a row can be found by color rather than by
 reading down a column of similar names. It is off by default: the label box is
 also what `rowGroups` and a color set in **Edit colors/arrangement…** use, and
 both of those win over it. It does nothing on a track colored per feature (an
-`itemRgb` painting, a jexl `color` slot), where no single color is the row's.
+`itemRgb` painting, a jexl `color` slot), where no single color represents the
+row.
 
 <Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:39.0-40.5Mb, 1104 TCGA-BRCA tumors clustered by copy-number profile with the dendrogram and row labels beside them. Rows sort into amplified, gained, lost, and balanced bands instead of the input file's order." />
 

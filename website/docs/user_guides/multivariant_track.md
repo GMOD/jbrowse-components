@@ -158,8 +158,8 @@ any attribute you supply. Two slots wire it up:
   a metadata attribute.
 - `colorBy` on the display names one of those columns, and the per-sample rows
   are tinted by that attribute for as long as it is set — over any color the TSV
-  or the arrangement editor gave a row. Clear it to hand each row its own color
-  back.
+  or the arrangement editor gave a row. Clear it to restore each row's
+  individual color.
 - `facet` bands the rows so each value of a column is contiguous. The band is
   applied over whatever order you have arranged, so dragging a sample into
   another band snaps it back, and it steps aside while a clustering dendrogram

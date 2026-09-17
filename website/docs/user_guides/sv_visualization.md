@@ -72,13 +72,14 @@ pileup that is otherwise grey.
 
 <Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
 
-The two bundles come from pairs that straddle a junction. An inversion turns a
-stretch of sequence around, and every read inside it with it, so a pair with one
-end inside the segment and one end outside has one end reversed and one not:
-both point the same way, forward-forward across the left junction and
-reverse-reverse across the right. The end inside the segment also maps to the
-mirrored position, which is why each bundle reaches across the segment. A pair
-wholly inside the segment, or wholly outside it, maps as an ordinary LR pair.
+The green LL bundle and the navy RR bundle come from pairs that straddle a
+junction. An inversion turns a stretch of sequence around, and every read inside
+it with it, so a pair with one end inside the segment and one end outside has
+one end reversed and one not: both point the same way, forward-forward across
+the left junction and reverse-reverse across the right. The end inside the
+segment also maps to the mirrored position, which is why each bundle reaches
+across the segment. A pair wholly inside the segment, or wholly outside it, maps
+as an ordinary LR pair.
 
 <figure>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" style="max-width:100%;height:auto;display:block" width="900" font-family="system-ui, sans-serif" font-size="13" fill="#333" role="img" aria-label="How an inversion turns normal read pairs into LL and RR pairs on the reference">
@@ -277,10 +278,11 @@ those segments chain onto one row: the inverted middle paints in the
 reverse-strand color between two forward-strand segments, and a magenta arc
 joins the two breakpoints.
 
-**Group by → Split read (SA tag)** puts the reads carrying a supplementary
-alignment in their own section. The two sections together are the genotype: a
-locus where some reads invert and the rest run through unbroken is one inverted
-copy and one uninverted, read off the pileup rather than from the caller's `GT`.
+**Group by → Split read (SA tag)** splits the pileup into two sections: reads
+carrying a supplementary alignment, and the rest. Together the two sections are
+the genotype: a locus where some reads invert and the rest run through unbroken
+is one inverted copy and one uninverted, read off the pileup rather than from
+the caller's `GT`.
 
 <Figure caption="Reads grouped by Group by... → Split read (SA tag) over HGSV_10047 in HG00151 nanopore reads, with the 1KGP ensemble VCF call above. The split reads in the upper section break into three pieces with the middle one reversed; the reads below cross the same span in one piece." src="/img/inversion_long_read.png" />
 

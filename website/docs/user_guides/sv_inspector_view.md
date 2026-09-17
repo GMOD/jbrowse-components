@@ -46,7 +46,7 @@ Compatible variant callers include:
 
 ## Example workflow
 
-As an example, load this
+Load this
 [VCF of translocation events](https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf)
 called from the SKBR3 breast cancer cell line
 ([published data](https://schatz-lab.org/publications/SKBR3/)). Paste the URL
