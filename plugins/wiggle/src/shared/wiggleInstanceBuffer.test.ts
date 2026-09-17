@@ -1,4 +1,5 @@
 import {
+  NO_PREV_START,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_XYPLOT,
@@ -17,14 +18,21 @@ import {
   INSTANCE_STRIDE_WORDS as BAND_STRIDE_WORDS,
 } from './shaders/wiggleBand.generated.ts'
 import {
-  INSTANCE_OFFSET_F32,
-  INSTANCE_OFFSET_U32,
+  INSTANCE_OFFSET_F32 as LINE_F32,
+  INSTANCE_OFFSET_U32 as LINE_U32,
   INSTANCE_STRIDE_BYTES as LINE_STRIDE_BYTES,
-  INSTANCE_STRIDE_WORDS,
+  INSTANCE_STRIDE_WORDS as LINE_STRIDE_WORDS,
 } from './shaders/wiggleLine.generated.ts'
+import {
+  INSTANCE_OFFSET_F32 as CENTER_F32,
+  INSTANCE_OFFSET_U32 as CENTER_U32,
+  INSTANCE_STRIDE_BYTES as CENTER_STRIDE_BYTES,
+  INSTANCE_STRIDE_WORDS as CENTER_STRIDE_WORDS,
+} from './shaders/wiggleLineCenter.generated.ts'
 import {
   packBandInstances,
   packFillInstances,
+  packLineCenterInstances,
   packLineInstances,
 } from './wiggleInstanceBuffer.ts'
 
@@ -33,9 +41,8 @@ import type {
   WiggleRenderingType,
 } from '@jbrowse/wiggle-core'
 
-// `renderingType` decides which neighbor-derived fields get written at all, so
-// every test below states the mode it is about — the step-line group builds
-// step-line layers, the center-line group center-line ones.
+// `renderingType` decides which packer serves a layer at all, so every test
+// below states the mode it is about.
 function makeSource(
   renderingType: WiggleRenderingType,
   scores: number[],
@@ -76,28 +83,32 @@ const centerSource = (
 const fillSource = (scores: number[], starts: number[], ends: number[]) =>
   makeSource(RENDERING_TYPE_XYPLOT, scores, starts, ends)
 
-function readInstance(buf: ArrayBuffer, i: number) {
+function readStep(buf: ArrayBuffer, i: number) {
   const f32 = new Float32Array(buf)
-  const u32 = new Uint32Array(buf)
-  const base = i * INSTANCE_STRIDE_WORDS
+  const base = i * LINE_STRIDE_WORDS
   return {
-    score: f32[base + INSTANCE_OFFSET_F32.score]!,
-    prevScore: f32[base + INSTANCE_OFFSET_F32.prevScore]!,
-    nextScore: f32[base + INSTANCE_OFFSET_F32.nextScore]!,
-    prevStart: u32[base + INSTANCE_OFFSET_U32.prevStartEnd]!,
-    prevEnd: u32[base + INSTANCE_OFFSET_U32.prevStartEnd + 1]!,
-    prevScoreLine: f32[base + INSTANCE_OFFSET_F32.prevScoreLine]!,
+    score: f32[base + LINE_F32.score]!,
+    prevScore: f32[base + LINE_F32.prevScore]!,
+    nextScore: f32[base + LINE_F32.nextScore]!,
   }
 }
 
-// Sentinel written when there's no previous feature; must match NO_PREV_START
-// in wiggle.slang.
-const NO_PREV_START = 0xffffffff
+function readCenter(buf: ArrayBuffer, i: number) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const base = i * CENTER_STRIDE_WORDS
+  return {
+    score: f32[base + CENTER_F32.score]!,
+    prevStart: u32[base + CENTER_U32.prevStartEnd]!,
+    prevEnd: u32[base + CENTER_U32.prevStartEnd + 1]!,
+    prevScore: f32[base + CENTER_F32.prevScore]!,
+  }
+}
 
 describe('packLineInstances', () => {
   test('single isolated feature has prevScore=0 and nextScore=0', () => {
     const buf = packLineInstances([stepSource([5], [0], [100])])
-    const f = readInstance(buf, 0)
+    const f = readStep(buf, 0)
     expect(f.score).toBe(5)
     expect(f.prevScore).toBe(0)
     expect(f.nextScore).toBe(0)
@@ -105,8 +116,8 @@ describe('packLineInstances', () => {
 
   test('adjacent pair: first rises from zero and uses self-nextScore; second transitions and drops', () => {
     const buf = packLineInstances([stepSource([5, 8], [0, 100], [100, 200])])
-    const f0 = readInstance(buf, 0)
-    const f1 = readInstance(buf, 1)
+    const f0 = readStep(buf, 0)
+    const f1 = readStep(buf, 1)
 
     // first: no prev → rise from zero; adjacent next → nextScore=self so seg3 is degenerate
     expect(f0.prevScore).toBe(0)
@@ -120,8 +131,8 @@ describe('packLineInstances', () => {
   test('non-adjacent pair: both features rise from and drop to zero independently', () => {
     // gap between bp 100 and 200
     const buf = packLineInstances([stepSource([5, 8], [0, 200], [100, 300])])
-    const f0 = readInstance(buf, 0)
-    const f1 = readInstance(buf, 1)
+    const f0 = readStep(buf, 0)
+    const f1 = readStep(buf, 1)
 
     expect(f0.prevScore).toBe(0)
     expect(f0.nextScore).toBe(0)
@@ -133,7 +144,7 @@ describe('packLineInstances', () => {
     const buf = packLineInstances([
       stepSource([3, 7, 5], [0, 100, 200], [100, 200, 300]),
     ])
-    const f = readInstance(buf, 1)
+    const f = readStep(buf, 1)
     expect(f.score).toBe(7)
     expect(f.prevScore).toBe(3)
     // nextScore=self makes seg3 degenerate; the next feature's seg1 draws the transition
@@ -145,8 +156,8 @@ describe('packLineInstances', () => {
     const src0 = stepSource([5], [0], [100])
     const src1 = stepSource([8], [0], [100])
     const buf = packLineInstances([src0, src1])
-    const f0 = readInstance(buf, 0)
-    const f1 = readInstance(buf, 1)
+    const f0 = readStep(buf, 0)
+    const f1 = readStep(buf, 1)
 
     expect(f0.prevScore).toBe(0)
     expect(f0.nextScore).toBe(0)
@@ -159,9 +170,9 @@ describe('packLineInstances', () => {
     const buf = packLineInstances([
       stepSource([3, 7, 5], [0, 200, 300], [100, 300, 400]),
     ])
-    const f0 = readInstance(buf, 0)
-    const f1 = readInstance(buf, 1)
-    const f2 = readInstance(buf, 2)
+    const f0 = readStep(buf, 0)
+    const f1 = readStep(buf, 1)
+    const f2 = readStep(buf, 2)
 
     // f0: isolated on right side (gap after)
     expect(f0.prevScore).toBe(0)
@@ -175,73 +186,72 @@ describe('packLineInstances', () => {
     expect(f2.prevScore).toBe(7)
     expect(f2.nextScore).toBe(0)
   })
+})
 
-  // prevStartEnd + prevScoreLine drive the center-line
-  // (RENDERING_TYPE_LINE_CENTER) pass, which connects each feature's bp midpoint
-  // to the previous feature's. It links *every* consecutive pair in a source
-  // (only the first is a run start), so sporadic non-tiling bins don't dash the
-  // line. The span is passed whole, not pre-averaged: the shader averages it in
-  // clip space the same way it averages the current feature's, so an odd-width
-  // bin's half-base midpoint can't shift one end of a segment relative to the
-  // other.
-  describe('center-line (prevStartEnd / prevScoreLine)', () => {
-    test('first feature has no previous → sentinel', () => {
-      const f = readInstance(
-        packLineInstances([centerSource([5], [0], [100])]),
-        0,
-      )
-      expect(f.prevStart).toBe(NO_PREV_START)
-      expect(f.prevScoreLine).toBe(0)
-    })
+// prevStartEnd + prevScore drive the center line, which connects each
+// feature's bp midpoint to the previous feature's. It links *every* consecutive
+// pair in a source (only the first is a run start), so sporadic non-tiling bins
+// don't dash the line. The span is passed whole, not pre-averaged: the shader
+// averages it in clip space the same way it averages the current feature's, so
+// an odd-width bin's half-base midpoint can't shift one end of a segment
+// relative to the other.
+describe('packLineCenterInstances', () => {
+  test('first feature has no previous → sentinel', () => {
+    const f = readCenter(
+      packLineCenterInstances([centerSource([5], [0], [100])]),
+      0,
+    )
+    expect(f.prevStart).toBe(NO_PREV_START)
+    expect(f.prevScore).toBe(0)
+  })
 
-    test('adjacent feature carries the previous span and score', () => {
-      const buf = packLineInstances([
-        centerSource([5, 8], [0, 100], [100, 201]),
-      ])
-      expect(readInstance(buf, 0).prevStart).toBe(NO_PREV_START)
-      expect(readInstance(buf, 1).prevStart).toBe(0)
-      expect(readInstance(buf, 1).prevEnd).toBe(100)
-      expect(readInstance(buf, 1).prevScoreLine).toBe(5)
-    })
+  test('adjacent feature carries the previous span and score', () => {
+    const buf = packLineCenterInstances([
+      centerSource([5, 8], [0, 100], [100, 201]),
+    ])
+    expect(readCenter(buf, 0).prevStart).toBe(NO_PREV_START)
+    expect(readCenter(buf, 1).prevStart).toBe(0)
+    expect(readCenter(buf, 1).prevEnd).toBe(100)
+    expect(readCenter(buf, 1).prevScore).toBe(5)
+  })
 
-    test('odd-width bins keep their half-base midpoint intact', () => {
-      // 1bp bins: midpoints are 100.5 / 101.5, unrepresentable as integer bp.
-      // The span reaches the shader whole, so the average stays exact.
-      const buf = packLineInstances([
-        centerSource([5, 8], [100, 101], [101, 102]),
-      ])
-      expect(readInstance(buf, 1).prevStart).toBe(100)
-      expect(readInstance(buf, 1).prevEnd).toBe(101)
-    })
+  test('odd-width bins keep their half-base midpoint intact', () => {
+    // 1bp bins: midpoints are 100.5 / 101.5, unrepresentable as integer bp.
+    // The span reaches the shader whole, so the average stays exact.
+    const buf = packLineCenterInstances([
+      centerSource([5, 8], [100, 101], [101, 102]),
+    ])
+    expect(readCenter(buf, 1).prevStart).toBe(100)
+    expect(readCenter(buf, 1).prevEnd).toBe(101)
+  })
 
-    test('non-adjacent (gapped) features still connect: prev span + real score', () => {
-      // gap between bp 100 and 200; the center-line bridges it rather than break
-      const buf = packLineInstances([
-        centerSource([5, 8], [0, 200], [100, 300]),
-      ])
-      expect(readInstance(buf, 1).prevStart).toBe(0)
-      expect(readInstance(buf, 1).prevEnd).toBe(100)
-      expect(readInstance(buf, 1).prevScoreLine).toBe(5) // real prev score, not 0
-    })
+  test('non-adjacent (gapped) features still connect: prev span + real score', () => {
+    // gap between bp 100 and 200; the center-line bridges it rather than break
+    const buf = packLineCenterInstances([
+      centerSource([5, 8], [0, 200], [100, 300]),
+    ])
+    expect(readCenter(buf, 1).prevStart).toBe(0)
+    expect(readCenter(buf, 1).prevEnd).toBe(100)
+    expect(readCenter(buf, 1).prevScore).toBe(5) // real prev score, not 0
+  })
 
-    test('each source restarts the run (first feature = sentinel)', () => {
-      const buf = packLineInstances([
-        centerSource([5], [0], [100]),
-        centerSource([8], [0], [100]),
-      ])
-      expect(readInstance(buf, 0).prevStart).toBe(NO_PREV_START)
-      expect(readInstance(buf, 1).prevStart).toBe(NO_PREV_START)
-    })
+  test('each source restarts the run (first feature = sentinel)', () => {
+    const buf = packLineCenterInstances([
+      centerSource([5], [0], [100]),
+      centerSource([8], [0], [100]),
+    ])
+    expect(readCenter(buf, 0).prevStart).toBe(NO_PREV_START)
+    expect(readCenter(buf, 1).prevStart).toBe(NO_PREV_START)
+  })
 
-    test('large coordinates near uint32 range survive intact', () => {
-      const a = 4_000_000_000
-      const b = 4_000_000_100
-      const buf = packLineInstances([
-        centerSource([5, 8], [a, b], [b, b + 100]),
-      ])
-      expect(readInstance(buf, 1).prevStart).toBe(a)
-      expect(readInstance(buf, 1).prevEnd).toBe(b)
-    })
+  test('large coordinates near uint32 range survive intact', () => {
+    const a = 4_000_000_000
+    const b = 4_000_000_100
+    const buf = packLineCenterInstances([
+      centerSource([5, 8], [a, b], [b, b + 100]),
+    ])
+    expect(readCenter(buf, 1).prevStart).toBe(a)
+    expect(readCenter(buf, 1).prevEnd).toBe(b)
   })
 })
 
@@ -250,43 +260,48 @@ describe('packLineInstances', () => {
 // NO_PREV_START the source start uses, which collapses that capsule in the
 // shader. buildSourceRenderData supplies the threshold so this and
 // drawLineCenter break in the same places.
-describe('packLineInstances center-line gap breaks', () => {
+describe('packLineCenterInstances gap breaks', () => {
   // bins at 0..10, 10..20, then a hole, then 1000..1010
   const starts = [0, 10, 1000]
   const ends = [10, 20, 1010]
   const scores = [1, 2, 3]
 
   test('a gap past gapLimitBp restarts the run', () => {
-    const buf = packLineInstances([centerSource(scores, starts, ends, 50)])
+    const buf = packLineCenterInstances([
+      centerSource(scores, starts, ends, 50),
+    ])
     // the in-run feature still links to its predecessor
-    expect(readInstance(buf, 1).prevStart).toBe(0)
-    expect(readInstance(buf, 1).prevScoreLine).toBe(1)
+    expect(readCenter(buf, 1).prevStart).toBe(0)
+    expect(readCenter(buf, 1).prevScore).toBe(1)
     // the one across the hole does not
-    expect(readInstance(buf, 2).prevStart).toBe(NO_PREV_START)
-    expect(readInstance(buf, 2).prevScoreLine).toBe(0)
+    expect(readCenter(buf, 2).prevStart).toBe(NO_PREV_START)
+    expect(readCenter(buf, 2).prevScore).toBe(0)
   })
 
   test('a gap within gapLimitBp stays connected', () => {
-    const buf = packLineInstances([centerSource(scores, starts, ends, 5000)])
-    expect(readInstance(buf, 2).prevStart).toBe(10)
-    expect(readInstance(buf, 2).prevScoreLine).toBe(2)
+    const buf = packLineCenterInstances([
+      centerSource(scores, starts, ends, 5000),
+    ])
+    expect(readCenter(buf, 2).prevStart).toBe(10)
+    expect(readCenter(buf, 2).prevScore).toBe(2)
   })
 
   // buildSourceRenderData leaves the limit unset for every rendering but this
   // one, which is one connected run.
   test('no limit means one connected run, as before', () => {
-    const buf = packLineInstances([centerSource(scores, starts, ends)])
-    expect(readInstance(buf, 2).prevStart).toBe(10)
-    expect(readInstance(buf, 2).prevScoreLine).toBe(2)
+    const buf = packLineCenterInstances([centerSource(scores, starts, ends)])
+    expect(readCenter(buf, 2).prevStart).toBe(10)
+    expect(readCenter(buf, 2).prevScore).toBe(2)
   })
 })
 
-// A region's layers feed exactly one packer, and the other returns empty — which
-// is how that pass releases its buffer, so only the layout being drawn stays
-// resident. This is also what makes each wiggle mark gate on the layers'
-// rendering rather than the render state's: the two layouts are different
-// sizes, so a pass reading the wrong one reads past the end of its records.
-describe('each packer serves only its own renderings', () => {
+// A region's layers feed exactly one of the three packers a rendering can
+// select, and the others return empty — which is how those passes release
+// their buffers, so only the layout being drawn stays resident. This is also
+// what makes each wiggle mark gate on the layers' rendering rather than the
+// render state's: the layouts are different sizes, so a pass reading the wrong
+// one reads past the end of its records.
+describe('each packer serves only its own rendering', () => {
   const scores = [3, 7, 5]
   const starts = [0, 100, 200]
   const ends = [100, 200, 300]
@@ -296,8 +311,8 @@ describe('each packer serves only its own renderings', () => {
     const fill = packFillInstances(layers)
     expect(fill.byteLength).toBe(3 * FILL_STRIDE_BYTES)
     expect(FILL_STRIDE_BYTES).toBe(20)
-    // nothing for the line passes to draw, so their buffer is released
     expect(packLineInstances(layers).byteLength).toBe(0)
+    expect(packLineCenterInstances(layers).byteLength).toBe(0)
 
     const f32 = new Float32Array(fill)
     const u32 = new Uint32Array(fill)
@@ -310,56 +325,45 @@ describe('each packer serves only its own renderings', () => {
     }
   })
 
-  test('a line rendering packs 44 bytes a feature and no fill buffer', () => {
+  test('a step line packs 32 bytes a feature and nothing else', () => {
     const layers = [stepSource(scores, starts, ends)]
     expect(packLineInstances(layers).byteLength).toBe(3 * LINE_STRIDE_BYTES)
-    expect(LINE_STRIDE_BYTES).toBe(44)
+    expect(LINE_STRIDE_BYTES).toBe(32)
     expect(packFillInstances(layers).byteLength).toBe(0)
+    expect(packLineCenterInstances(layers).byteLength).toBe(0)
   })
 
-  // Within the shared line record, each of the two renderings still writes only
-  // its own neighbour group; the other keeps the zeroes ArrayBuffer hands out.
-  test('the step-line writes prevScore/nextScore and not the center-line pair', () => {
-    const f = readInstance(
-      packLineInstances([stepSource(scores, starts, ends)]),
-      1,
+  test('a center line packs 36 bytes a feature and nothing else', () => {
+    const layers = [centerSource(scores, starts, ends)]
+    expect(packLineCenterInstances(layers).byteLength).toBe(
+      3 * CENTER_STRIDE_BYTES,
     )
-    expect(f.prevScore).toBe(3)
-    expect(f.nextScore).toBe(7)
-    expect(f.prevStart).toBe(0)
-    expect(f.prevScoreLine).toBe(0)
-  })
-
-  test('the center-line writes prevStartEnd/prevScoreLine and not the step pair', () => {
-    const f = readInstance(
-      packLineInstances([centerSource(scores, starts, ends)]),
-      1,
-    )
-    expect(f.prevStart).toBe(0)
-    expect(f.prevEnd).toBe(100)
-    expect(f.prevScoreLine).toBe(3)
-    expect(f.prevScore).toBe(0)
-    expect(f.nextScore).toBe(0)
+    expect(CENTER_STRIDE_BYTES).toBe(36)
+    expect(packFillInstances(layers).byteLength).toBe(0)
+    expect(packLineInstances(layers).byteLength).toBe(0)
   })
 })
 
-describe('the line record carries both pivot-side colours', () => {
-  test('negColor is written beside color, and falls back to it', () => {
-    const read = (buf: ArrayBuffer) => {
-      const u32 = new Uint32Array(buf)
-      return [u32[INSTANCE_OFFSET_U32.color], u32[INSTANCE_OFFSET_U32.negColor]]
-    }
-    const signed = {
-      ...centerSource([1, -1], [0, 100], [100, 200]),
-      negColor: [0, 0, 1] as [number, number, number],
-    }
-    const [pos, neg] = read(packLineInstances([signed]))
-    expect(pos).not.toBe(neg)
-    const [solid, solidNeg] = read(
-      packLineInstances([centerSource([1, -1], [0, 100], [100, 200])]),
-    )
-    expect(solidNeg).toBe(solid)
-  })
+describe('both line records carry both pivot-side colours', () => {
+  const signedColor = [0, 0, 1] as [number, number, number]
+
+  test.each([
+    ['step', stepSource, packLineInstances, LINE_U32],
+    ['center', centerSource, packLineCenterInstances, CENTER_U32],
+  ] as const)(
+    '%s: negColor is written beside color, and falls back to it',
+    (_name, source, pack, offsets) => {
+      const read = (buf: ArrayBuffer) => {
+        const u32 = new Uint32Array(buf)
+        return [u32[offsets.color], u32[offsets.negColor]]
+      }
+      const layer = source([1, -1], [0, 100], [100, 200])
+      const [pos, neg] = read(pack([{ ...layer, negColor: signedColor }]))
+      expect(pos).not.toBe(neg)
+      const [solid, solidNeg] = read(pack([layer]))
+      expect(solidNeg).toBe(solid)
+    },
+  )
 })
 
 describe('packBandInstances', () => {
@@ -464,8 +468,10 @@ describe('packBandInstances', () => {
     // centers 150 and 350 sit 200bp apart, past the 150bp limit
     expect(third.prevStart).toBe(NO_PREV_START)
 
-    const line = packLineInstances([centerSource([5, 8, 1], starts, ends, 150)])
-    expect(readInstance(line, 2).prevStart).toBe(NO_PREV_START)
-    expect(readInstance(line, 1).prevStart).toBe(0)
+    const line = packLineCenterInstances([
+      centerSource([5, 8, 1], starts, ends, 150),
+    ])
+    expect(readCenter(line, 2).prevStart).toBe(NO_PREV_START)
+    expect(readCenter(line, 1).prevStart).toBe(0)
   })
 })

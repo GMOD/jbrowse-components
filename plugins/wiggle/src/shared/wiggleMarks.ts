@@ -14,6 +14,7 @@ import * as wiggleShader from './shaders/wiggle.generated.ts'
 import * as wiggleBandShader from './shaders/wiggleBand.generated.ts'
 import * as wiggleDensityShader from './shaders/wiggleDensity.generated.ts'
 import * as wiggleLineShader from './shaders/wiggleLine.generated.ts'
+import * as wiggleLineCenterShader from './shaders/wiggleLineCenter.generated.ts'
 import { getRowHeight, getRowTop } from './wiggleComponentUtils.ts'
 import {
   drawDensity,
@@ -26,6 +27,7 @@ import {
 import {
   packBandInstances,
   packFillInstances,
+  packLineCenterInstances,
   packLineInstances,
 } from './wiggleInstanceBuffer.ts'
 
@@ -44,9 +46,9 @@ import type {
 /**
  * Everything but the block geometry that both backends read, taken **off the
  * region's own layers** for `renderingType` and never off the render state.
- * The buffer carries only the neighbour fields the rendering it was encoded
- * for reads, so the shape drawing it has to be that same rendering or it reads
- * fields nobody wrote — and encode and render arrive through separate
+ * Each record carries only the fields its own rendering reads, so the shape
+ * drawing a buffer has to be the rendering it was encoded for or it reads past
+ * the end of its instances — and encode and render arrive through separate
  * autoruns, the render one first, so `state` can already name the rendering
  * the user just switched to while this region's buffer is still the previous
  * one. Drawing the previous plot for one frame is the correct stale. Empty
@@ -96,7 +98,7 @@ function writeWiggleUniforms(
   frame: MarkFrame,
   p: WiggleParams,
 ) {
-  // Any module's packer serves: the four entry shaders share
+  // Any module's packer serves: the five entry shaders share
   // `wiggleCommon.slang`'s uniform block, so the generated `Uniforms` are one
   // block.
   wiggleShader.writeUniforms(scratch, {
@@ -248,17 +250,11 @@ const bandShape = wiggleShape(
   () => {},
 )
 
-// The step line's vertex count is the shader's own — `vs_main` splits
-// `SV_VertexID` by the same numbers — and it draws as 3 square-capped quad
-// segments rather than a line list, whose width is hard-locked to 1px on both
-// GPU HALs.
+// Three square-capped quad segments per feature rather than a line list, whose
+// width is hard-locked to 1px on both GPU HALs.
 const lineShape = wiggleShape(
   {
-    ...slangPass({
-      id: 'line',
-      mod: wiggleLineShader,
-      verticesPerInstance: wiggleLineShader.STEP_LINE_VERTS,
-    }),
+    ...slangPass({ id: 'line', mod: wiggleLineShader }),
     pack: packLineInstances,
   },
   type => type === RENDERING_TYPE_LINE,
@@ -271,22 +267,10 @@ const lineShape = wiggleShape(
   },
 )
 
-// Premultiplied MAX blend so the analytic-AA ribbon's overlapping segments and
-// caps union instead of accumulating into dark seams under src-over. The lines
-// draw first into a target cleared to transparent black and the whiskers band
-// goes behind them afterwards. Max is still inexact where overlaid lines of
-// different colours cross, and at a joint within half a line width of the
-// pivot, whose capsules can pick different sides. Stated on the pass rather
-// than as a `//! blend:` on wiggleLine.slang, because the step line above
-// shares that shader and blends the other way.
 const lineCenterShape = wiggleShape(
   {
-    ...slangPass({
-      id: 'lineCenter',
-      mod: wiggleLineShader,
-      blendState: { op: 'max' },
-    }),
-    pack: packLineInstances,
+    ...slangPass({ id: 'lineCenter', mod: wiggleLineCenterShader }),
+    pack: packLineCenterInstances,
   },
   type => type === RENDERING_TYPE_LINE_CENTER,
   (row, p) => {
@@ -310,23 +294,17 @@ const fill = defineMark({
   params: wiggleParams,
 })
 
-const line = defineMark({
-  shape: lineShape,
-  channels,
-  params: wiggleParams,
-})
-
 /**
- * The wiggle family as a mark list: one mark per rendering family over the
- * four hand-written shaders, and one uniform block behind all five, since
- * every entry shader imports `wiggleCommon.slang`'s.
+ * The wiggle family as a mark list: one mark per hand-written shader, and one
+ * uniform block behind all five, since every entry shader imports
+ * `wiggleCommon.slang`'s.
  *
- * Three instance layouts, so three of the five marks carry the region's buffer
- * and the other two borrow one through `bufferOf`: density draws off the fill
- * record (`wiggleDensity.slang` declares the same struct) and the center line
- * off the step line's. Each packer returns empty for layers that aren't its
- * own, and an empty pack IS the release, so a region holds only the layouts
- * its rendering actually draws.
+ * Four instance layouts, so four of the five marks carry the region's buffer
+ * and density borrows the fill record through `bufferOf`
+ * (`wiggleDensity.slang` declares the same struct). Each packer returns empty
+ * for layers that aren't its own, and an empty pack IS the release, so a
+ * region holds only the layouts its rendering actually draws. The band draws
+ * last, behind the lines already in the target.
  */
 export const WIGGLE_MARKS = [
   fill,
@@ -341,12 +319,15 @@ export const WIGGLE_MARKS = [
     texture: (state: WiggleGPURenderState) =>
       densityRampLut(state.densityColorRamp) ?? undefined,
   }),
-  line,
+  defineMark({
+    shape: lineShape,
+    channels,
+    params: wiggleParams,
+  }),
   defineMark({
     shape: lineCenterShape,
     channels,
     params: wiggleParams,
-    bufferOf: line,
   }),
   defineMark({
     shape: bandShape,

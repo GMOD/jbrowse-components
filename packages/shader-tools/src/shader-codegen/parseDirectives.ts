@@ -494,13 +494,12 @@ export function parseTargets(source: string): ShaderTarget[] {
  * Both lived at the `slangPass()` call three packages away, where nothing
  * connected them to the stage that determines them.
  *
- * They are **defaults, not verdicts**, and that distinction is load-bearing
- * rather than caution: `wiggleLine.slang` is drawn by two passes at two
- * different blends (the step line src-over, the center line max), so a shader
- * that carries one blend for all its passes would be wrong. A pass may always
- * override, the same way `verticesPerInstance` overrides `VERTS_PER_INSTANCE`
- * — and a shader whose passes disagree simply declares neither and says so at
- * each pass.
+ * They are **defaults, not verdicts**: a shader drawn by two passes at two
+ * different blends — wiggle's step line (src-over) and center line (max), while
+ * they shared one module — would be wrong carrying one blend for both. A pass
+ * may always override, the same way `verticesPerInstance` overrides
+ * `VERTS_PER_INSTANCE` — and a shader whose passes disagree simply declares
+ * neither and says so at each pass.
  */
 const TOPOLOGIES = ['triangle-list', 'triangle-strip', 'line-list'] as const
 export type Topology = (typeof TOPOLOGIES)[number]

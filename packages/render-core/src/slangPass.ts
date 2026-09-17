@@ -45,14 +45,15 @@ export interface ShaderModule {
  * choices that are genuinely the *consumer's* rather than the shader's.
  *
  * Every remaining field is an override of something the module already carries,
- * and each one earns its place by a case in the tree where one shader is drawn
- * by two passes that disagree:
+ * for a shader drawn by two passes that disagree:
  *
  * - `verticesPerInstance` — the canvas chevron pass, whose count is the
  *   shader's `CHEVRON_VERTS` times a cap the *renderer* chooses.
- * - `blendState` / `topology` — wiggle's step line and center line share
- *   `wiggleLine.slang` and blend differently (src-over against max), so that
- *   shader declares no `//! blend:` and each pass says which it wants.
+ * - `blendState` / `topology` — no pass in the tree overrides these. Wiggle's
+ *   step line and center line did while they shared one module and blended
+ *   differently (src-over against max); each record now has its own module,
+ *   and the center line's states `//! blend: max` itself. A shader whose passes
+ *   disagree declares neither and says which at each pass.
  * - `blend: false` — nothing disables blending today, which is why there is no
  *   `//! blend: none` to inherit it from.
  *

@@ -658,8 +658,8 @@ The bases own everything that's truly shared:
   owns `upload`, over the `regionPasses` the subclass declares — six
   subclasses used to write that method, each restating an instance count the
   packed buffer already stated and each spelling the empty case differently. A
-  pass registered but never uploaded to — wiggle's density and center line,
-  canvas's chevron, which draw off a sibling's buffer — is simply absent from
+  pass registered but never uploaded to — wiggle's density and canvas's
+  chevron, which draw off a sibling's buffer — is simply absent from
   `regionPasses`, which `createMarkBackend` derives from the marks that declare
   no `bufferOf`.
 
@@ -1804,8 +1804,8 @@ estimator.
 
 **Depth buffer / early-Z.** No pass declares a depth-stencil state and no
 attachment carries one; overdraw is not depth-tested away. Every pass blends:
-`//! blend: premultiplied` (source-over) on most, `blendState: { op: 'max' }` on
-the wiggle center line, `//! blend: behind` on the wiggle whiskers band, which
+`//! blend: premultiplied` (source-over) on most, `//! blend: max` on the wiggle
+center line, `//! blend: behind` on the wiggle whiskers band, which
 draws after the lines and composites under them, and nothing passes
 `blend: false`. Blending only composes correctly in draw order — back to front,
 or front to back for `behind`. A

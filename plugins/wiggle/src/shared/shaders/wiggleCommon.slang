@@ -1,11 +1,12 @@
 // Uniform block, plot-box math and mode enums shared by the wiggle renderer's
-// two entry-point shaders. Split out because the two draw disjoint things off
-// different per-instance layouts — `wiggle.slang` fills (xyplot, density,
-// scatter) and `wiggleLine.slang` strokes (line, linecenter) — while agreeing
-// exactly on where a score lands vertically and where a bp lands horizontally.
-// One UBO is written per block render (`writeWiggleUniforms`) and read by
-// whichever pass draws, so `Uniforms` must stay in lockstep with the offsets
-// generated from it.
+// entry-point shaders: `wiggle.slang` and `wiggleDensity.slang` fill (xyplot,
+// scatter, density), `wiggleLine.slang` and `wiggleLineCenter.slang` stroke
+// (line, linecenter), and `wiggleBand.slang` fills a line's whiskers band. They
+// draw off different per-instance records while agreeing exactly on where a
+// score lands vertically, where a bp lands horizontally, and which side of the
+// pivot a line is on. One UBO is written per block render
+// (`writeWiggleUniforms`) and read by whichever pass draws, so `Uniforms` must
+// stay in lockstep with the offsets generated from it.
 //
 // Imported via `import wiggleCommon;`. Each consumer declares its OWN
 // `[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;` — the struct is shared,
@@ -15,12 +16,13 @@
 // The rendering-mode enum is the numeric contract between the `renderingType`
 // uniform and every TS path that sets it or branches on it, and the sentinel is
 // the same contract inside the instance buffer. They live here, in the one
-// module both entry points import, so there is a single declaration of each
+// module every entry point imports, so there is a single declaration of each
 // rather than one per shader — the evaluator resolves through imports, so a
-// constant declared here still reaches both. `SCALE_TYPE_LOG` / `SCALE_TYPE_
-// SYMLOG` are the shared `scoreScale` module's, generated into render-core.
-// Generated into @jbrowse/wiggle-core (see consts-out) because that is where
-// `WiggleRenderingType` is declared, and the plugin reads them back from there.
+// constant declared here still reaches all of them. `SCALE_TYPE_LOG` /
+// `SCALE_TYPE_SYMLOG` are the shared `scoreScale` module's, generated into
+// render-core. Generated into @jbrowse/wiggle-core (see consts-out) because
+// that is where `WiggleRenderingType` is declared, and the plugin reads them
+// back from there.
 //! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, NO_PREV_START, MIN_FILL_WIDTH_PX
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
 //! js-export: densityGradientT
@@ -36,8 +38,8 @@ public static const int RENDERING_TYPE_LINE = 2;
 public static const int RENDERING_TYPE_SCATTER = 3;
 public static const int RENDERING_TYPE_LINE_CENTER = 4;
 // prevStartEnd.x sentinel: no previous feature (source start). Larger than any
-// genomic coordinate, so it never collides with a real start. Only
-// wiggleLine.slang reads it, but it is declared here with the other numeric
+// genomic coordinate, so it never collides with a real start. Only the center
+// line and the band read it, but it is declared here with the other numeric
 // contracts so `consts-out` emits one file (that directive takes the WHOLE
 // export-consts list).
 public static const uint NO_PREV_START = 0xffffffffu;
@@ -94,7 +96,7 @@ public struct Uniforms {
   // wiggleDensity.slang reads it — the LUT cannot encode multiwiggle's
   // PER-ROW track colours, so the inline lerp stays the default and the LUT is
   // the alternative a config names. In the shared block like the other mode
-  // ints so one UBO write per region serves all three entry shaders.
+  // ints so one UBO write per region serves every entry shader.
   public int    densityRampLut;
 };
 
@@ -104,6 +106,20 @@ public float bpToClipX(uint bp, Uniforms u) {
 
 public float scoreToY(float score, float domainMin, float domainMax, float h, int scaleType, float symlogConstant) {
   return (1.0 - normalizeScore(score, domainMin, domainMax, scaleType, symlogConstant)) * h;
+}
+
+// A score's CSS px down the canvas in its row. The line shaders and the band
+// place every vertex, neighbour and pivot through it, so a band lies under its
+// line exactly.
+public float rowScoreToYPx(float score, float rowTop, float rowHeight, Uniforms u) {
+  return scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
+}
+
+// A line's colour follows the side of the pivot its centre line is on, not the
+// pixel's, so a line lying on the pivot stays one colour. Screen y grows
+// downward, so a larger y is below the pivot.
+public float4 pivotSideColor(float centerLineYPx, float pivotYPx, float4 posColor, float4 negColor) {
+  return centerLineYPx > pivotYPx ? negColor : posColor;
 }
 
 // Density mode's gradient position: how far this score sits from the pivot,

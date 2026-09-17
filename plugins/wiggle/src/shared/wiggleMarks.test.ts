@@ -23,6 +23,7 @@ import {
   INSTANCE_OFFSET_U32 as F_U32,
   INSTANCE_STRIDE_WORDS as INSTANCE_STRIDE,
 } from './shaders/wiggleLine.generated.ts'
+import { INSTANCE_STRIDE_WORDS as CENTER_INSTANCE_STRIDE } from './shaders/wiggleLineCenter.generated.ts'
 import { WIGGLE_MARKS } from './wiggleMarks.ts'
 
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -72,9 +73,7 @@ const DEFAULT_STATE = {
 }
 
 describe('the wiggle mark list', () => {
-  // A step-line layer, so every word this checks is one the encoding carries —
-  // prevScore/nextScore are the step-line pass's, and they live in the line
-  // shader's record, which is why this reads the 'line' buffer
+  // A step-line layer, so this reads the 'line' buffer
   // (wiggleInstanceBuffer.test.ts covers which mode writes what).
   it('uploads region data as interleaved buffer', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
@@ -102,9 +101,8 @@ describe('the wiggle mark list', () => {
     expect(f32[F_F32.rowIndex]).toBe(0)
   })
 
-  // The fill record has no room for the neighbour fields at all — that saving is
-  // the point of the two shaders — so a fill region uploads the narrower buffer
-  // and leaves the line pass without one.
+  // The fill record has no room for the neighbour fields at all, so a fill
+  // region uploads the narrower buffer and leaves both line passes without one.
   it('uploads the narrow record for a fill rendering, and no line buffer', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
@@ -115,8 +113,35 @@ describe('the wiggle mark list', () => {
     expect(fill).toBeDefined()
     expect(fill!.count).toBe(2)
     expect(fill!.data.byteLength).toBe(2 * FILL_INSTANCE_STRIDE * 4)
-    expect(FILL_INSTANCE_STRIDE).toBeLessThan(INSTANCE_STRIDE / 2)
+    expect(FILL_INSTANCE_STRIDE).toBeLessThan(INSTANCE_STRIDE)
     expect(hal.getBufferCount(0, 'line')).toBe(0)
+    expect(hal.getBufferCount(0, 'lineCenter')).toBe(0)
+  })
+
+  // Each line rendering owns its record, so a center-line region uploads only
+  // the center line's and releases the step line's.
+  it('uploads a center line into its own buffer, and no step-line buffer', () => {
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
+    const step = makeSource({ renderingType: RENDERING_TYPE_LINE })
+    const center = makeSource({ renderingType: RENDERING_TYPE_LINE_CENTER })
+
+    backend.upload(0, [step])
+    expect(hal.getBufferCount(0, 'line')).toBe(2)
+
+    backend.upload(0, [center])
+    const buf = hal.getBuffer(0, 'lineCenter')
+    expect(buf!.count).toBe(2)
+    expect(buf!.data.byteLength).toBe(2 * CENTER_INSTANCE_STRIDE * 4)
+    expect(hal.getBufferCount(0, 'line')).toBe(0)
+
+    backend.renderBlocks([makeBlock()], new Map([[0, [center]]]), {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_LINE_CENTER,
+    })
+    const [draw] = hal.callsOf('drawPass')
+    expect(draw!.args[0]).toBe('lineCenter')
+    expect(draw!.args[2]).toBeUndefined()
   })
 
   it('releases the buffer when uploading empty sources', () => {
@@ -213,12 +238,12 @@ describe('the wiggle mark list', () => {
     expect(drawCalls[0]!.args[0]).toBe('line')
     expect(drawCalls[0]!.args[1]).toBe(0)
     // no lender: the line mark owns the record it was packed into, and only
-    // the two marks that borrow one name a buffer pass
+    // density borrows one
     expect(drawCalls[0]!.args[2]).toBeUndefined()
   })
 
-  // The buffer carries only the neighbor fields its own rendering reads, so the
-  // pass has to follow the layers rather than the render state. Those two reach
+  // The buffer carries only the fields its own rendering reads, so the pass has
+  // to follow the layers rather than the render state. Those two reach
   // the display through separate autoruns and the render one is registered
   // first, so the frame right after a plot-type switch really does see a state
   // that has moved and a region that has not — drawing the previous plot once is
@@ -256,7 +281,7 @@ describe('the wiggle mark list', () => {
     })
 
     expect(hal.getBufferCount(0, 'band')).toBe(2)
-    expect(hal.getBufferCount(0, 'line')).toBe(2)
+    expect(hal.getBufferCount(0, 'lineCenter')).toBe(2)
     expect(hal.callsOf('drawPass').map(c => c.args.slice(0, 1))).toEqual([
       ['lineCenter'],
       ['band'],

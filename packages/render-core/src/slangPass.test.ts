@@ -88,10 +88,10 @@ describe('slangPass', () => {
   })
 
   it('lets two passes over one shader disagree about blend and topology', () => {
-    // Wiggle's step line and center line share wiggleLine.slang and blend
-    // differently (src-over against max), which is why that shader declares no
-    // `//! blend:` and each pass states its own. A module value winning here
-    // would collapse the two onto whichever the shader happened to name.
+    // A shader drawn at two blends (wiggle's step and center line, while they
+    // shared a module) declares no `//! blend:` and each pass states its own. A
+    // module value winning here would collapse the two onto whichever the
+    // shader happened to name.
     const mod = shaderModule({
       VERTS_PER_INSTANCE: 6,
       TOPOLOGY: 'triangle-list',

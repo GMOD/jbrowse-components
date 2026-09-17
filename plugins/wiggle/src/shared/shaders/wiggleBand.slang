@@ -39,10 +39,6 @@ struct VsOut {
   float belowPivotPx : TEXCOORD1;
 };
 
-float rowScoreToYPx(float score, float rowTop, float rowHeight) {
-  return scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
-}
-
 // Floored only in a column narrower than an output pixel, where the edge's rise
 // would otherwise pad and fade along its whole length; a wider steep edge keeps
 // its true perpendicular ramp.
@@ -58,8 +54,8 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
   float rowTop = inst.rowIndex * rowHeight;
   float startX = bpToClipX(inst.startEnd.x, u);
   float endX = bpToClipX(inst.startEnd.y, u);
-  float top = rowScoreToYPx(inst.maxScore, rowTop, rowHeight);
-  float bottom = rowScoreToYPx(inst.minScore, rowTop, rowHeight);
+  float top = rowScoreToYPx(inst.maxScore, rowTop, rowHeight, u);
+  float bottom = rowScoreToYPx(inst.minScore, rowTop, rowHeight, u);
 
   float x0 = startX;
   float x1 = endX;
@@ -70,8 +66,8 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
     x1 = (startX + endX) * 0.5;
     if (inst.prevStartEnd.x != NO_PREV_START) {
       x0 = (bpToClipX(inst.prevStartEnd.x, u) + bpToClipX(inst.prevStartEnd.y, u)) * 0.5;
-      top0 = rowScoreToYPx(inst.prevMaxScore, rowTop, rowHeight);
-      bottom0 = rowScoreToYPx(inst.prevMinScore, rowTop, rowHeight);
+      top0 = rowScoreToYPx(inst.prevMaxScore, rowTop, rowHeight, u);
+      bottom0 = rowScoreToYPx(inst.prevMinScore, rowTop, rowHeight, u);
     } else {
       x0 = x1;
     }
@@ -93,7 +89,7 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
   o.posColor = float4(unpackRGBA(inst.posColor).rgb, 1.0);
   o.negColor = float4(unpackRGBA(inst.negColor).rgb, 1.0);
   o.inkPx = float2((y - topEdge) * topPerp, (bottomEdge - y) * bottomPerp);
-  o.belowPivotPx = y - rowScoreToYPx(u.origin, rowTop, rowHeight);
+  o.belowPivotPx = y - rowScoreToYPx(u.origin, rowTop, rowHeight, u);
   return o;
 }
 
