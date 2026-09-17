@@ -13,6 +13,7 @@ color
 colorDomain
 connectedView
 connectedViewId
+contextLevels
 displayMode
 fadeThinAlignmentsMode
 followAnchorIndex

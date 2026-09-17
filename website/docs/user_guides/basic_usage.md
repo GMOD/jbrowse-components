@@ -290,6 +290,23 @@ sessions.
 The entry is absent unless the view shows a whole chromosome, since a sub-region
 gives an arbitrary slice of bands.
 
+### Context levels
+
+**Add context level** in the view's hamburger menu stacks a wider view of the
+same locus above the tracks: a gene track at 50 kb over a coverage track at 10
+kb over the reads at 1 kb, for instance, the way Ensembl's region-in-detail page
+is laid out. Each level has its own tracks and its own zoom, and a trapezoid
+joins it to the level below.
+
+The levels stay centred on the view. Drag or pan a level and the view moves by
+the same number of bases; zoom a level and only that level changes width. A
+rubberband selection on a level navigates the view to it. A level's own
+hamburger menu removes it.
+
+<Figure caption="The Add context level item in the view menu." src="/img/context_levels_menu.png" />
+
+<Figure caption="A linear genome view with two context levels: the gene track at 50 kb, a coverage track at 10 kb, and the alignments at 1 kb. The trapezoids show where each level sits in the one above." src="/img/context_levels.png" />
+
 ### Track label positioning
 
 Track labels sit on their own row, overlap the data, or hide entirely, from the

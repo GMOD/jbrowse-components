@@ -14349,6 +14349,12 @@
         "hideHeaderOverview": {
           "type": "boolean"
         },
+        "contextLevels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LinearGenomeView"
+          }
+        },
         "hideNoTracksActive": {
           "type": "boolean"
         },
