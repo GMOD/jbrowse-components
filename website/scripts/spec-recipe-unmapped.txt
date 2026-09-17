@@ -9,8 +9,8 @@ autoscale
 colorDomain
 connectedView
 connectedViewId
-contextLevels
 contigThickness
+detailLevels
 diagonalizeAnchorRow
 displayMode
 domain
