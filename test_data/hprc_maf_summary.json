@@ -6,6 +6,12 @@
       "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
       "refNameAliases": {
         "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
       }
     }
   ],

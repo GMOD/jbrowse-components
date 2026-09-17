@@ -15,6 +15,12 @@
       },
       "geneticCodes": {
         "chrM": 2
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
       }
     },
     {
