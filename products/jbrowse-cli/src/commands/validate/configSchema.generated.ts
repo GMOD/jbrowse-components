@@ -4833,6 +4833,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "#357089"
         },
+        "domain": {
+          "description": "the lanes that stack first below the anchor, in order; the rest follow densest-first, so a ribbon chain through adjacent lanes is cut as late as possible. What the Lanes menu and a header drag write.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
         "ribbonColor": {
           "description": "the color of the ribbons connecting adjacent lanes.",
           "$ref": "#/$defs/StringOrJexl",
@@ -5284,50 +5288,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "VariantFacet": {
-      "title": "VariantFacet",
-      "anyOf": [
-        {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"field\\": ... }\`."
-        },
-        {
-          "type": "object",
-          "properties": {
-            "field": {
-              "description": "sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows.",
-              "$ref": "#/$defs/StringOrJexl",
-              "default": ""
-            },
-            "domain": {
-              "description": "optional band order; listed values first, the rest sorted; left off, every value the metadata holds, sorted.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "LinearMultiSampleVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5437,8 +5397,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
-        "facet": {
-          "$ref": "#/$defs/VariantFacet"
+        "facetField": {
+          "description": "sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "facetDomain": {
+          "description": "facetField values whose bands stack first, in order.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "referenceDrawingMode": {
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
@@ -5625,8 +5591,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
-        "facet": {
-          "$ref": "#/$defs/VariantFacet"
+        "facetField": {
+          "description": "sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "facetDomain": {
+          "description": "facetField values whose bands stack first, in order.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "referenceDrawingMode": {
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
@@ -12626,12 +12598,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "fine",
             "coarse"
           ]
-        },
-        "domain": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         },
         "laneFilter": {},
         "heightPreConfig": {

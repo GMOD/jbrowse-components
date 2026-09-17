@@ -3769,6 +3769,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "domain",
+          "type": "(JexlString | string[])"
+        },
+        {
           "name": "ribbonColor",
           "type": "(JexlString | string)"
         },
@@ -3806,7 +3810,6 @@ export const configManifest: ConfigManifest = {
         "type",
         "configuration",
         "lodMode",
-        "domain",
         "laneFilter"
       ]
     },
@@ -4141,18 +4144,12 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "facet",
-          "type": "VariantFacetConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "(JexlString | string)"
-            },
-            {
-              "name": "domain",
-              "type": "(JexlString | string[])"
-            }
-          ]
+          "name": "facetField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "facetDomain",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "referenceDrawingMode",
@@ -4284,18 +4281,12 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "facet",
-          "type": "VariantFacetConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "(JexlString | string)"
-            },
-            {
-              "name": "domain",
-              "type": "(JexlString | string[])"
-            }
-          ]
+          "name": "facetField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "facetDomain",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "referenceDrawingMode",
