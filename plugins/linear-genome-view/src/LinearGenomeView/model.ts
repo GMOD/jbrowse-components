@@ -66,9 +66,11 @@ import { handleSelectedRegion } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import { shouldSwapTracks } from './components/util.ts'
 import {
+  CONTEXT_CONNECTOR_HEIGHT,
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
   MIN_BP_PER_PX,
+  MIN_CONTEXT_CONNECTOR_HEIGHT,
   MINIMIZED_TRACK_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
@@ -441,6 +443,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
         contextLevels: types.stripDefault(
           types.array(contextLevelType(pluginManager)),
           [],
+        ),
+
+        /**
+         * #property
+         * Height of the band holding the trapezoid that joins this level to the
+         * row below it, dragged by the band itself. A context level's only
+         * other state of its own, and meaningless on a view that is not one —
+         * nothing draws a connector under the host.
+         *
+         * The band is worth dragging because it is a picture of a ratio: a
+         * level ten times wider than the row below narrows to a tenth of the
+         * width over the band's height, and how steep that reads is the
+         * figure's, not ours.
+         */
+        contextConnectorHeight: types.stripDefault(
+          types.number,
+          CONTEXT_CONNECTOR_HEIGHT,
         ),
 
         /**
@@ -1476,6 +1495,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       removeContextLevel(level: ContextLevel) {
         detach(level)
         scheduleDetachedDestroy(level)
+      },
+      /**
+       * #action
+       * Set the height of the band this level's trapezoid is drawn in. Floored
+       * at the drag surface's own height rather than at 0: the band IS the
+       * handle, so a band dragged shut could never be dragged open again.
+       */
+      setContextConnectorHeight(height: number) {
+        self.contextConnectorHeight = Math.max(
+          MIN_CONTEXT_CONNECTOR_HEIGHT,
+          Math.round(height),
+        )
       },
       /**
        * #action

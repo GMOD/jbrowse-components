@@ -181,14 +181,72 @@ test('every navigation-shaped action of a level is classified', () => {
   }
 })
 
+const polygons = (svg: string) => svg.split('<polygon').length - 1
+
 test('the SVG export stacks each level and its connector above the view', async () => {
   const { view } = setup()
-  const polygons = (svg: string) => svg.split('<polygon').length - 1
   // no cytobands in this assembly, so the header draws no overview trapezoid
   expect(polygons(await renderToSvg(view, {}))).toBe(0)
   view.addContextLevel()
   view.addContextLevel()
-  expect(polygons(await renderToSvg(view, {}))).toBe(2)
+  const svg = await renderToSvg(view, {})
+  expect(polygons(svg)).toBe(2)
+  // each level says how wide it is, and only the host's header names the
+  // assembly the whole stack is of
+  expect(svg.split('>80Kbp<').length - 1).toBe(1)
+  expect(svg.split('>800Kbp<').length - 1).toBe(1)
+  expect(svg.split('>volMyt1<').length - 1).toBe(1)
+})
+
+test("a level's own SVG export is the host's picture of the stack", async () => {
+  const { view } = setup()
+  view.addContextLevel()
+  view.addContextLevel()
+  const [level] = levels(view)
+  // a level alone draws no connector; two levels above their host draw two
+  expect(polygons(await renderToSvg(level!, {}))).toBe(0)
+  expect(polygons(await level!.exportSvg({ save: false }))).toBe(2)
+})
+
+test("a level's menu takes it away, and does not offer to add another", () => {
+  const { view } = setup()
+  view.addContextLevel()
+  const labels = (v: LinearGenomeViewModel) =>
+    v.menuItems().map(m => ('label' in m ? m.label : undefined))
+  expect(labels(view)).toContain('Add context level')
+  expect(labels(levels(view)[0]!)).toContain('Remove context level')
+  expect(labels(levels(view)[0]!)).not.toContain('Add context level')
+})
+
+test('a view already zoomed all the way out offers no level above it', () => {
+  const { view } = setup()
+  const addItem = (v: LinearGenomeViewModel) =>
+    v.menuItems().find(m => 'label' in m && m.label === 'Add context level')
+  expect(addItem(view)).toMatchObject({ disabled: false })
+  view.showAllRegions()
+  expect(addItem(view)).toMatchObject({ disabled: true })
+})
+
+test("the connector band is the level's own height, and has a floor", () => {
+  const { view } = setup()
+  view.addContextLevel()
+  const [level] = levels(view)
+  level!.setContextConnectorHeight(level!.contextConnectorHeight + 40)
+  expect(level!.contextConnectorHeight).toBe(56)
+  level!.setContextConnectorHeight(-10)
+  expect(level!.contextConnectorHeight).toBe(4)
+})
+
+test('the SVG export draws each connector at the height it was dragged to', async () => {
+  const { view } = setup()
+  view.addContextLevel()
+  const [level] = levels(view)
+  level!.setContextConnectorHeight(64)
+  const svg = await renderToSvg(view, {})
+  // the trapezoid's two bottom corners sit on the band's floor
+  expect(svg).toContain(',64 ')
+  // and it fades from the narrow end down, rather than filling flat
+  expect(svg).toContain('<linearGradient')
 })
 
 test('centring a level on a coordinate centres the host there', () => {

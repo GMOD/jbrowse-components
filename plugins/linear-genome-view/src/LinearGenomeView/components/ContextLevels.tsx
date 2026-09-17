@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -8,14 +9,21 @@ import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
-const CONNECTOR_HEIGHT = 16
-
 const useStyles = makeStyles()({
   connector: {
+    position: 'relative',
+  },
+  polygon: {
     display: 'block',
     width: '100%',
-    height: CONNECTOR_HEIGHT,
+    height: '100%',
     pointerEvents: 'none',
+  },
+  // the whole band is the handle: it is the only thing drawn in it, and a 4px
+  // bar under a 16px trapezoid is a smaller target than the shape it resizes
+  grab: {
+    position: 'absolute',
+    inset: 0,
   },
 })
 
@@ -24,6 +32,10 @@ const useStyles = makeStyles()({
  * `lower`'s full width: the header overview's "you are here", drawn between
  * two levels instead. The upper level is scrolled, where the header overview
  * never is, so its left edge is what its origin is shifted by.
+ *
+ * Its height is `upper`'s to keep, and dragging the band is how it is set: the
+ * band's height is the slope of the connector, which is the one thing about the
+ * figure the data does not decide.
  */
 const LevelConnector = observer(function LevelConnector({
   upper,
@@ -33,15 +45,25 @@ const LevelConnector = observer(function LevelConnector({
   lower: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
+  const height = upper.contextConnectorHeight
   return upper.initialized && lower.initialized ? (
-    <svg className={classes.connector}>
-      <OverviewScalebarPolygon
-        model={lower}
-        overview={upper}
-        overviewOffsetPx={-upper.offsetPx}
-        height={CONNECTOR_HEIGHT}
+    <div className={classes.connector} style={{ height }}>
+      <svg className={classes.polygon}>
+        <OverviewScalebarPolygon
+          model={lower}
+          overview={upper}
+          overviewOffsetPx={-upper.offsetPx}
+          height={height}
+          gradient
+        />
+      </svg>
+      <ResizeHandle
+        className={classes.grab}
+        onDrag={delta => {
+          upper.setContextConnectorHeight(height + delta)
+        }}
       />
-    </svg>
+    </div>
   ) : null
 })
 

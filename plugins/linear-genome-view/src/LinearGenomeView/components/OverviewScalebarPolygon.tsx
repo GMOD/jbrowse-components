@@ -1,5 +1,6 @@
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { alpha } from '@jbrowse/core/ui/palette'
-import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import { getFillProps, getStrokeProps, stripAlpha } from '@jbrowse/core/util'
 import {
   regionBlocksPxExtent,
   transformPxSpan,
@@ -32,10 +33,17 @@ function trapezoidPoints(top: PxSpan, bottom: PxSpan, height: number) {
 // class computed once per theme (makeStyles memoizes) — an on-screen zoom frame
 // then does zero color parsing. SVG export can't carry a CSS class, so that path
 // serializes explicit fill/stroke attributes instead (see `exportSvg` below).
+const FILL_OPACITY = 0.3
+const STROKE_OPACITY = 0.8
+
+// What the fade leaves at the wide end. Not zero: the two slanted edges are what
+// say which span opened up, and an edge that reaches nothing loses its corner.
+const FADE_FLOOR = 0.12
+
 const useStyles = makeStyles()(theme => ({
   polygon: {
-    fill: alpha(theme.palette.tertiary.light, 0.3),
-    stroke: alpha(theme.palette.tertiary.light, 0.8),
+    fill: alpha(theme.palette.tertiary.light, FILL_OPACITY),
+    stroke: alpha(theme.palette.tertiary.light, STROKE_OPACITY),
   },
 }))
 
@@ -51,6 +59,11 @@ const useStyles = makeStyles()(theme => ({
  * @param exportSvg - serialize explicit fill/stroke attributes (the split the
  * `getFill/StrokeProps` helpers exist for) instead of the on-screen CSS class,
  * which wouldn't survive into a standalone exported SVG.
+ * @param gradient - fade the whole shape out from the narrow top edge to the
+ * wide bottom one, the way a figure in a paper draws the same connector. The
+ * context levels ask for it and the header overview does not: the header's is a
+ * flat band of chrome the eye reads as one mark, where the levels' is the
+ * figure itself, and there the fade is what says which end is the detail.
  */
 const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   model,
@@ -58,12 +71,14 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   overviewOffsetPx = 0,
   height = HEADER_BAR_HEIGHT,
   exportSvg = false,
+  gradient = false,
 }: {
   model: LinearGenomeViewModel
   overview: ViewLayout
   overviewOffsetPx?: number
   height?: number
   exportSvg?: boolean
+  gradient?: boolean
 }) {
   const { classes, theme } = useStyles()
   const { offsetPx, bpPerPx, dynamicBlocks } = model
@@ -84,11 +99,37 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   const bottom = transformPxSpan(extent, 1, -offsetPx)
   const points = trapezoidPoints(top, bottom, height)
 
+  if (gradient) {
+    // One gradient for both paints, scaled by the two opacities the flat
+    // version fills and strokes at — `fill-opacity` multiplies the stop's
+    // alpha — so the narrow end of a faded connector is exactly the colour of
+    // an unfaded one and only the wide end moves.
+    const id = `context-connector-${svgNodeId(model)}`
+    const color = stripAlpha(theme.palette.tertiary.light)
+    return (
+      <>
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={1} />
+            <stop offset="100%" stopColor={color} stopOpacity={FADE_FLOOR} />
+          </linearGradient>
+        </defs>
+        <polygon
+          points={points}
+          fill={`url(#${id})`}
+          fillOpacity={FILL_OPACITY}
+          stroke={`url(#${id})`}
+          strokeOpacity={STROKE_OPACITY}
+        />
+      </>
+    )
+  }
+
   return exportSvg ? (
     <polygon
       points={points}
-      {...getFillProps(alpha(theme.palette.tertiary.light, 0.3))}
-      {...getStrokeProps(alpha(theme.palette.tertiary.light, 0.8))}
+      {...getFillProps(alpha(theme.palette.tertiary.light, FILL_OPACITY))}
+      {...getStrokeProps(alpha(theme.palette.tertiary.light, STROKE_OPACITY))}
     />
   ) : (
     <polygon points={points} className={classes.polygon} />

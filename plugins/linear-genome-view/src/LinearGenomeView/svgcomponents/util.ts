@@ -141,12 +141,21 @@ export function insetLabelBaselineY(fontSize: number) {
 // scale in each row the only thing saying whether two rows are at the same zoom
 // is their ruler coordinates, which are unreadable at the size a figure is
 // published at. The standalone LGV export has drawn this bar all along.
+//
+// `reserveAssemblyName` keeps the name's band whether or not the row draws one,
+// which is what a stack of one genome at several loci wants: a breakpoint split
+// view names its first row only, and the rest stay the same height as it. The
+// context-levels export is the case that says false — every row there is the
+// host's own assembly, so no row names it and the band is space no glyph is
+// drawn in.
 export function getRowHeaderLayout({
   fontSize,
   showScalebar,
+  reserveAssemblyName = true,
 }: {
   fontSize: number
   showScalebar: boolean
+  reserveAssemblyName?: boolean
 }) {
   const label = labelInkHeight(fontSize)
   // the bp label hangs a cap below the bar's line and its own ink box ends a gap
@@ -163,6 +172,14 @@ export function getRowHeaderLayout({
     scalebarLineY === undefined
       ? -label
       : scalebarLineY - SVG_SCALEBAR_CAP - ROW_GAP - label
+  // up from the ruler to the topmost ink the row draws above it: the assembly
+  // label's box where there is one to reserve, else the scalebar's upper cap,
+  // else nothing
+  const bandHeight = reserveAssemblyName
+    ? -assemblyInkTop
+    : scalebarLineY === undefined
+      ? 0
+      : SVG_SCALEBAR_CAP - scalebarLineY
   return {
     // undefined rather than an unused number: a row without a scalebar has no
     // line to place, and the caller draws nothing
@@ -172,9 +189,7 @@ export function getRowHeaderLayout({
     assemblyLabelBaselineY: showScalebar
       ? labelBaselineFromTop(assemblyInkTop, fontSize)
       : 0,
-    // up from the ruler to the top of the topmost ink box — the assembly
-    // label's, in both cases
-    bandHeight: -assemblyInkTop,
+    bandHeight,
   }
 }
 

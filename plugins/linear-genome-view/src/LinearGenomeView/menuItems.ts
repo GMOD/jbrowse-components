@@ -67,29 +67,47 @@ export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
 
 /**
  * A view offers to grow a context level above itself; a level offers to go.
- * Adding stops once the widest level is already zoomed all the way out, since
- * a level wider than that would show the same thing.
+ * Adding stops once the top of the stack — the widest level, or this view when
+ * it has none — is already zoomed all the way out, since a level wider than
+ * that would show the same thing.
+ *
+ * Only a view of its own offers to add one. A row of a comparative stack is
+ * already part of somebody's figure: the synteny ribbons and the breakpoint
+ * split panels are placed against each row's own height, and those views'
+ * exports draw one row per view, so a level grown there walks the ribbons off
+ * their rows and is dropped from the picture without a word. A level itself is
+ * not a top-level view either, hence the host check first — that is the menu
+ * that takes it away again.
  */
-function contextLevelMenuItem(self: LinearGenomeViewModel): MenuItem {
+function contextLevelMenuItem(self: LinearGenomeViewModel): MenuItem[] {
   const host = contextLevelHost(self)
   if (host) {
-    return {
-      label: 'Remove context level',
-      icon: LayersClearIcon,
-      onClick: () => {
-        host.removeContextLevel(self)
+    return [
+      {
+        label: 'Remove context level',
+        icon: LayersClearIcon,
+        onClick: () => {
+          host.removeContextLevel(self)
+        },
       },
-    }
+    ]
   }
-  const widest = self.contextLevelViews[0]
-  return {
-    label: 'Add context level',
-    icon: LayersIcon,
-    disabled: !!widest && widest.bpPerPx >= widest.maxBpPerPx,
-    onClick: () => {
-      self.addContextLevel()
+  if (!self.isTopLevelView) {
+    return []
+  }
+  const top = self.contextLevelViews[0] ?? self
+  return [
+    {
+      label: 'Add context level',
+      icon: LayersIcon,
+      // `bpPerPx > 0` first: it is the unmeasured sentinel, and `maxBpPerPx`
+      // throws rather than answering for a view with no width yet
+      disabled: top.bpPerPx > 0 && top.bpPerPx >= top.maxBpPerPx,
+      onClick: () => {
+        self.addContextLevel()
+      },
     },
-  }
+  ]
 }
 
 /**
@@ -109,7 +127,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         self.setScalebarOnly(!self.scalebarOnly)
       },
     },
-    contextLevelMenuItem(self),
+    ...contextLevelMenuItem(self),
     ...(self.isTopLevelView
       ? [
           {

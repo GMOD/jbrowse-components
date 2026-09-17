@@ -15,7 +15,7 @@ import { renderViewTracks } from './renderViewTracks.ts'
 import {
   defaultTextHeight,
   getHeaderLayout,
-  labelBaselineFromTop,
+  getRowHeaderLayout,
   trackLabelLeftOffset,
 } from './util.ts'
 
@@ -107,21 +107,27 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   })
   const w = width + trackLabelOffset + legendWidth
 
-  // As on screen: each context level, widest first, then the trapezoid joining
-  // it to the level below, then the view itself under its full header
+  // Each context level, widest first, then the trapezoid joining it to the
+  // level below, then the view itself under its full header.
+  //
+  // A level's row header is a scalebar and no assembly name — the opposite of a
+  // synteny row's. Every level is the host's own assembly, named once in the
+  // host's header below, while the span each level covers is the whole point of
+  // the stack and is the one thing a ruler at figure size cannot be read for.
   const rowTopGap = 6
-  const connectorHeight = 16
+  const { bandHeight } = getRowHeaderLayout({
+    fontSize,
+    showScalebar: true,
+    reserveAssemblyName: false,
+  })
   const rows = levels.flatMap((level, i) => {
-    const labelBaselineY = labelBaselineFromTop(
-      i === 0 ? 0 : rowTopGap,
-      fontSize,
-    )
+    const rowTop = (i === 0 ? 0 : rowTopGap) + bandHeight
     return [
       {
         key: level.id,
-        height: labelBaselineY + rulerHeight + levelTracks[i]!.tracksHeight,
+        height: rowTop + rulerHeight + levelTracks[i]!.tracksHeight,
         node: (
-          <g transform={`translate(${exportMargin} ${labelBaselineY})`}>
+          <g transform={`translate(${exportMargin} ${rowTop})`}>
             <SVGView
               view={level}
               displayResults={levelTracks[i]!.displayResults}
@@ -130,6 +136,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                   view={level}
                   fontSize={fontSize}
                   rulerHeight={rulerHeight}
+                  showAssemblyName={false}
+                  showScalebar
                 />
               }
               fontSize={fontSize}
@@ -146,15 +154,17 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       },
       {
         key: `connector-${level.id}`,
-        height: connectorHeight,
+        // the band the reader set by dragging it, since how steep the connector
+        // reads is the whole of what that drag is for
+        height: level.contextConnectorHeight,
         node: (
           <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
             <OverviewScalebarPolygon
               model={levels[i + 1] ?? model}
               overview={level}
               overviewOffsetPx={-level.offsetPx}
-              height={connectorHeight}
-              exportSvg
+              height={level.contextConnectorHeight}
+              gradient
             />
           </g>
         ),

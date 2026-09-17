@@ -2800,18 +2800,27 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
 
   // A stacked row cleared by its own import form blanks the bands beside it,
   // and its ⋮ button and the parent's row menus both read `menuItems`
+  const viewMenuLabels = (view: LGV) => {
+    view.setWidth(800)
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
+    ])
+    return view.menuItems().map(m => ('label' in m ? m.label : undefined))
+  }
+
   test('only a top-level view offers its import form', () => {
-    const viewMenuLabels = (view: LGV) => {
-      view.setWidth(800)
-      view.setDisplayedRegions([
-        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
-      ])
-      return view.menuItems().map(m => ('label' in m ? m.label : undefined))
-    }
     expect(viewMenuLabels(makeView(1))).toContain('Return to import form')
     expect(viewMenuLabels(makeView(1, true))).not.toContain(
       'Return to import form',
     )
+  })
+
+  // A synteny row and a breakpoint panel are placed by their own heights and
+  // exported a row per view, so a context level grown inside one walks the
+  // ribbons off their rows and is dropped from that view's picture
+  test('only a top-level view offers to grow a context level', () => {
+    expect(viewMenuLabels(makeView(1))).toContain('Add context level')
+    expect(viewMenuLabels(makeView(1, true))).not.toContain('Add context level')
   })
 })
 

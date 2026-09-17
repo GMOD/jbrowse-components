@@ -124,6 +124,39 @@ test('a row header without a scalebar is unmoved', () => {
   })
 })
 
+// A row that draws no assembly name can decline to reserve its band, which is
+// what the context-levels export does: the band then starts at the scalebar's
+// upper cap, and the bar and its bp label still clear the ruler.
+test.each(fontSizes)(
+  'an unnamed row header reserves only its scalebar at fontSize %i',
+  fontSize => {
+    const named = getRowHeaderLayout({ fontSize, showScalebar: true })
+    const { scalebarLineY, bandHeight } = getRowHeaderLayout({
+      fontSize,
+      showScalebar: true,
+      reserveAssemblyName: false,
+    })
+    // same bar in the same place, in a shorter band
+    expect(scalebarLineY).toBe(named.scalebarLineY)
+    expect(bandHeight).toBeLessThan(named.bandHeight)
+    expect(scalebarLineY! - SVG_SCALEBAR_CAP).toBe(-bandHeight)
+    expect(
+      scalebarLineY! + SVG_SCALEBAR_CAP + labelInkHeight(fontSize),
+    ).toBeLessThanOrEqual(0)
+  },
+)
+
+// With neither there is nothing above the ruler to reserve.
+test('a row header with no name and no scalebar asks for no band', () => {
+  expect(
+    getRowHeaderLayout({
+      fontSize: 13,
+      showScalebar: false,
+      reserveAssemblyName: false,
+    }).bandHeight,
+  ).toBe(0)
+})
+
 // The header stacks assembly name, scalebar and ruler by ink box, not by
 // fontSize: reserving only fontSize clipped the assembly name's ascenders
 // against the top edge of the export.

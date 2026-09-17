@@ -99,6 +99,12 @@ export const LEVEL_NAVIGATIONS = new Set([
   'showAllRegionsInAssembly',
 ])
 
+// Everything a level hands to its host untouched. The navigations above, plus
+// the picture: what a reader sees is the stack, and `renderToSvg` draws every
+// level above the host that owns them, so a level's own Export SVG is the
+// host's. A level alone is a row out of a figure nobody asked for.
+export const LEVEL_REPLAYS = new Set([...LEVEL_NAVIGATIONS, 'exportSvg'])
+
 // What stays the level's own: its zoom, which is its one piece of state, and
 // the primitives the sync writes through. `zoomTo` from a wheel anchors under
 // the cursor, and the sync puts the centre back on the same frame.
@@ -183,7 +189,7 @@ export function installContextLevels(self: LinearGenomeViewModel) {
           self.scrollToBp(centerBp - self.windowWidthBp / 2)
           abort(arg)
         }
-      } else if (LEVEL_NAVIGATIONS.has(call.name)) {
+      } else if (LEVEL_REPLAYS.has(call.name)) {
         const host = self as unknown as Record<
           string,
           (...args: unknown[]) => unknown
