@@ -904,13 +904,32 @@ import edges counted what tree-shaking removes, so it read the pruned barrels
 as 3.5 MB of rendering stack in the worker. It counts the inputs esbuild keeps
 now, with every `import()` external.
 
-A stub of a number is the same bug with no call to trace, so
-`workerModules.test.ts` and the Desktop product's `workerReExports.test.ts` fail
-on any stubbed name whose main-thread value is a primitive. Four constants were
+A stub of a number is the same bug with no call to trace. Four constants were
 declared inside rendering modules — `VIEW_HEADER_HEIGHT`,
 `FLOATING_LEGEND_TOP_PX`, `MIN_TEXT_ROW_HEIGHT` with `rowLabelsCarryText`, and
-`DEFAULT_SHARE_URL` — and moved to modules of their own. A function declared in
-a rendering module is still a stub, and no test can tell it from a component.
+`DEFAULT_SHARE_URL` — and moved to modules of their own.
+
+A stubbed data function is the same bug again. Of the 278 names the worker
+still stubbed, 85 were neither a component nor a hook on the main thread: 50
+functions, 19 MST model factories, 14 plugin classes and 2 objects. The
+generator judges a declaring module by its whole import graph, so importing one
+data name from a barrel that renders stubs the importer too, and that is how
+`encodeSessionToUrl`, `isSessionWithThemes` and `addArcJexlFunctions` got there.
+Fifteen became real by moving the declaration to a module of its own or pointing
+its import at the leaf, the barrels re-exporting the same names, and the
+registry worker's rendering stack did not move.
+
+The Desktop product's `workerReExports.test.ts` guards the rest, over every
+`@jbrowse` key Desktop serves, core's included. A stubbed name passes when its
+main-thread value is a component — an object carrying `$$typeof`, or a
+PascalCase function whose source calls the JSX runtime — or a hook named `use*`.
+Anything else, a primitive included, has to be listed in `STAYS_STUBBED` under
+the reason it stays: it renders, it holds components, it builds menu rows with
+icons or dialogs, it is an MST model factory or plugin class whose graph
+renders, or the only module publishing it renders and evaluates. A listed name
+that becomes real fails too, so the list stays exact. Desktop bundles neither
+`@jbrowse/web-core` nor `@jbrowse/embedded-core`, so the guard never sees their
+eight stubbed names.
 
 ### A proxy that answers any key is not the same shape as the module it stands in
 

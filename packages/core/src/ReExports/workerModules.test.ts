@@ -104,28 +104,6 @@ test('a data name a rendering barrel re-exports from a module that does not rend
   expect(ui.Dialog).toBe(uiStub)
 })
 
-test('no name the worker stubs holds a primitive on the main thread', () => {
-  const primitives = Object.keys(modules)
-    .filter(k => k in served)
-    .filter(k => !isShared(k))
-    .flatMap(key => {
-      const main = modules[key] as Record<string, unknown>
-      const worker = workerModules[key] as Record<string, unknown>
-      return worker === uiStub
-        ? []
-        : Object.keys(worker)
-            .filter(
-              name =>
-                worker[name] === uiStub &&
-                main[name] !== null &&
-                typeof main[name] !== 'object' &&
-                typeof main[name] !== 'function',
-            )
-            .map(name => `${key}#${name}`)
-    })
-  expect(primitives).toEqual([])
-})
-
 // What an adapter, an RPC method, a config schema or a state-model mixin reads
 // in the worker. A module whose graph reaches react-dom, a Material UI
 // component, the data grid or floating-ui is stubbed there, and a stub answers
