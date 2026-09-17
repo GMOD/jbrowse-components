@@ -21,9 +21,9 @@ Plotting a field of a feature file needs no plugin at all. A `marks` entry on
 [`LinearMarkDisplay`](/docs/config_guides/mark_display) draws a `bar`, `point`
 or `span` over any feature adapter, with an `encoding` naming which fields feed
 it, and that page is the first rung. This guide is the second: a **shape** the
-library lacks, over the same worker encoding. The third — a display of your own,
-for a layout or a meaning the mark display does not have — is what the plugin
-below composes, and `plugins/gwas` is the in-tree form of it.
+library lacks, over the same worker encoding. The third is a display of your
+own, for a layout or a meaning the mark display does not have; the plugin below
+composes one, and `plugins/gwas` is the in-tree form of it.
 
 :::
 
@@ -627,7 +627,7 @@ export default function LinearScoreDisplayF(pluginManager: PluginManager) {
 }
 ```
 
-Both the model and the component load late. A state model is eager — anything
+The model and the component both load late. A state model is eager — anything
 registered at plugin install loads everything it names by value — so the
 `stateModel` thunk keeps the display's mixins and `installUpload` out of every
 host's startup bundle until a track first shows the display or a session names
@@ -640,7 +640,7 @@ how displays attach to a track type.
 
 ## Hit-testing (clicks and hovers)
 
-Where the ink is stays with the shape: its `ink` is the rect its painter fills,
+The shape owns where its ink is: its `ink` is the rect its painter fills,
 `hitNearest` measures the cursor against it, and the shared shapes carry both.
 The walk over the blocks under the cursor is render-core's `nearestMarkHit`; the
 display's part is which candidates each mark is asked about, and what to do with
@@ -766,9 +766,9 @@ export function SequenceRenderer(canvas: HTMLCanvasElement) {
 ## Writing your own shape
 
 Everything above carries over unchanged — model, fetch chain, `renderState`, the
-mark list, the component and the SVG export. What changes is the `shape` the
-mark names: a `.slang`, a uniform write, a painter and a hit test of your own,
-held to each other by a sweep test. See
+mark list, the component and the SVG export. Only the `shape` the mark names
+changes: a `.slang`, a uniform write, a painter and a hit test of your own, held
+to each other by a sweep test. See
 [](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
