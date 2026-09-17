@@ -43,9 +43,12 @@ rescale to the region in view and differ in how they treat outliers:
 
 Zoomed out, a BigWig serves precomputed summary bins, and **Summary score mode**
 picks which statistic a pixel draws: **Minimum**, **Maximum**, **Average**, or
-**Whiskers**, a darker average band inside the lighter min-to-max range
+**Whiskers**
 ([`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)).
-Density mode draws the average, since it maps score to color.
+Whiskers shows all three. An XY plot nests a darker average bar inside the
+lighter min-to-max range. A line plot fills min to max as a translucent band
+behind the average line, stepped or interpolated to match the line. Density mode
+draws the average, since it maps score to color.
 
 A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 **Maximum** keeps it visible.

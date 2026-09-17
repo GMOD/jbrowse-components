@@ -19,8 +19,10 @@ digraph wiggle_shape {
 
   summary [label="effectiveSummaryScoreMode"]
   plot -> summary
-  summary -> bands [label=" whiskers, min, max"]
+  summary -> range [label=" whiskers on a line"]
+  summary -> bands [label=" whiskers elsewhere, min, max"]
   summary -> avg   [label=" avg (density resolves here)"]
+  range [label="a translucent min-max band\nsplit at the pivot, under the\nmean stroke coloured by sign"]
   bands [label="summary bands, each value\ncoloured by its own sign\nagainst the pivot"]
   avg   [label="the worker's positive/negative\nsplit, one layer each"]
 
@@ -32,7 +34,7 @@ digraph wiggle_shape {
   whole [label="one band, per-instance colours"]
 
   encoded [label="encoded layers\nthe pass, the buffer, the rendering-type\nuniform and the Canvas2D painter\nare all read from these", style=bold]
-  split -> encoded  whole -> encoded
+  split -> encoded  whole -> encoded  range -> encoded
 
   gaps  [label="gaps: the step line breaks on bp\nadjacency; the interpolated line breaks\nonly past the gap limit, measured in bp"]
   width [label="width: a shared minimum-fill floor,\ngrown from the bin's start;\nthe Canvas2D-only fudge is not in the shader"]

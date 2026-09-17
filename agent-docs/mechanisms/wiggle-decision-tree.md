@@ -53,6 +53,9 @@ Config bounds are still checked first.
 - Nested filled bars and density split into solid layers drawn back to front,
   largest magnitude first. Everything else keeps one band with per-instance
   colours.
+- On a line plot, whiskers is a translucent min-to-max band under the mean
+  stroke, stepped or interpolated like the line, and coloured by which side of
+  the pivot its ink is on.
 - The pass, the buffer, the rendering-type uniform and the Canvas2D painter are
   **all read off the encoded layers**, never off live model state.
 - Gaps and bar width are settled last, and both backends share the width floor.

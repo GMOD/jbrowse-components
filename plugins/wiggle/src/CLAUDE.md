@@ -1,10 +1,10 @@
 # plugins/wiggle
 
-Two displays over three shaders, one Canvas2D twin and one hit test, all in
+Two displays over four shaders, one Canvas2D twin and one hit test, all in
 `src/shared`. Scale/axis/score machinery is `packages/wiggle-core`, because six
 other plugins draw a wiggle-shaped axis against it.
 
-## Two records, because a module reflects one instance struct
+## Three records, because a module reflects one instance struct
 
 The fill record (20 bytes, `WiggleFillInstance` in `wiggleCommon.slang`) feeds
 `wiggle.slang` (xyplot, scatter) and `wiggleDensity.slang` (density as the
@@ -15,6 +15,11 @@ rendering shared a shader every fill buffer carried those 20 bytes for nothing �
 164MB rather than 82MB at 1000 sources, against a 256MB `maxBufferSize` floor,
 which is a zoom ceiling rather than waste.
 
+`wiggleBand.slang` fills a line plot's whiskers range on a 44-byte record of its
+own, drawn before either stroke. **The band is translucent so the interpolated
+stroke's max blend stays valid over it**: a same-hue stroke exceeds the band in
+every premultiplied channel, where an opaque lightened band would erase it.
+
 `wiggleCommon.slang` holds what they must agree on: the uniform struct and the
 fill record are shared, the **binding is not**, and each re-imports
 `colorPack`/`hpmath`. Density's colour parity across GPU / Canvas2D / SVG is
@@ -23,18 +28,18 @@ write, zero buffer bytes) is pinned in `wiggleMarks.test.ts`.
 
 **The mark that draws, the buffer, the `renderingType` uniform and the Canvas2D
 painter all come off the encoded layers, never off `renderState`** — each of the
-four marks in `WIGGLE_MARKS` declines a block through `paintsBlock` when the
+five marks in `WIGGLE_MARKS` declines a block through `paintsBlock` when the
 region's layers are not its family. Encode and render are separate autoruns and
 render is registered first, so the frame after a plot-type switch sees a state
 that moved and a region that has not. Drawing the previous plot for one frame is
 the correct stale.
 
-The consequence differs by backend and the rule does not: on the GPU the two
-record sizes mean a pass reading the wrong one reads past the end of its
-instances; on Canvas2D the layer SET is chosen by the rendering (`filled` splits
-whiskers by sign) and so is `gapLimitBp`, so the new painter over the old layers
-is a plot that is neither. Canvas2D read `state` until 2026-08 and drew chords
-across every hole for that frame.
+The consequence differs by backend and the rule does not: on the GPU the record
+sizes mean a pass reading the wrong one reads past the end of its instances; on
+Canvas2D the layer SET is chosen by the rendering (`filled` splits whiskers by
+sign) and so is `gapLimitBp`, so the new painter over the old layers is a plot
+that is neither. Canvas2D read `state` until 2026-08 and drew chords across
+every hole for that frame.
 
 Each pass packs its own buffer and returns **empty** for renderings that are not
 its own — an empty pack is how a pass releases its buffer.
@@ -132,9 +137,10 @@ floored at 1 or the shader seeds the row transform with Infinity.
   score — harmless only because a 0-scoring feature draws the same either way.
 - **`linecenter`** connects consecutive pairs regardless of adjacency (reduced
   BigWig data is full of non-tiling bins); only a hole past `gapLimitBp` breaks
-  it, computed once per layer and read by both the encoder and `drawLineCenter`.
-  Measured in **bp, not px** — px drifts from the encoded break wherever a block
-  is clipped.
+  it, computed once per layer and measured in **bp, not px** — px drifts from
+  the encoded break wherever a block is clipped. `centerLinksToPrevious` applies
+  it for the stroke and the whiskers band on both backends, so the ribbon breaks
+  where the line does.
 - **`DEFAULT_GAP_BREAK_MULTIPLE` is 0 (off)** after shipping at 20;
   `gapBreak.ts`.
 
@@ -153,8 +159,12 @@ switching to density would re-download every region.
 `isDensityMode || (isFilled && bands.length > 1)`. Back-to-front, largest
 magnitude first — the opposite order on each side of the pivot, which a single
 band order can't express. Density needs it because `drawDensity` builds one
-gradient per layer. Everything else keeps the band whole with per-instance
-colors; splitting line or scatter breaks continuity at every pivot crossing.
+gradient per layer. Scatter keeps each band whole with per-instance colors.
+
+**A line plot's whiskers is two layers, not three strokes**: a `band` layer
+(`featureScores` the max, `band.minScores` the min) and the mean stroke. The
+band splits at the pivot per pixel, in the shader and by clip in Canvas2D,
+rather than into layers, which would break the ribbon at every crossing.
 
 ## The colour key takes the mode, not `isDensityMode`
 
