@@ -64,7 +64,7 @@ the first by default; use `refNameColumn` (below) to pick a different one.
 }
 ```
 
-That bare `{ "uri": ... }` is the shorthand for the default
+The bare `{ "uri": ... }` form of `refNameAliases` is shorthand for the default
 `RefNameAliasAdapter`. Spell the adapter out when you need one of its options,
 or a different alias adapter entirely:
 
