@@ -1,0 +1,158 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "adapterId": "W6DyPGJ0UU",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "alias1",
+              "aliases": ["A", "contigA"]
+            },
+            {
+              "refName": "ctgB",
+              "uniqueId": "alias2",
+              "aliases": ["B", "contigB"]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "synthetic_tiers_line_avg",
+      "name": "Synthetic tiers line avg",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "synthetic_tiers_a.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "synthetic_tiers_line_avg-LinearWiggleDisplay",
+          "defaultRendering": "line",
+          "summaryScoreMode": "avg"
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "synthetic_tiers_line_whiskers",
+      "name": "Synthetic tiers line whiskers",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "synthetic_tiers_a.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "synthetic_tiers_line_whiskers-LinearWiggleDisplay",
+          "defaultRendering": "line",
+          "summaryScoreMode": "whiskers"
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "synthetic_tiers_xyplot_avg",
+      "name": "Synthetic tiers xyplot avg",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "synthetic_tiers_a.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "synthetic_tiers_xyplot_avg-LinearWiggleDisplay",
+          "defaultRendering": "xyplot",
+          "summaryScoreMode": "avg"
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "synthetic_tiers_xyplot_whiskers",
+      "name": "Synthetic tiers xyplot whiskers",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "synthetic_tiers_a.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "synthetic_tiers_xyplot_whiskers-LinearWiggleDisplay",
+          "defaultRendering": "xyplot",
+          "summaryScoreMode": "whiskers"
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "synthetic_tiers_multiline_whiskers",
+      "name": "Synthetic tiers multiline whiskers",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "name": "a",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "synthetic_tiers_a.bw",
+              "locationType": "UriLocation"
+            }
+          },
+          {
+            "name": "b",
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "synthetic_tiers_b.bw",
+              "locationType": "UriLocation"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "displayId": "synthetic_tiers_multiline_whiskers-MultiLinearWiggleDisplay",
+          "defaultRendering": "multiline",
+          "summaryScoreMode": "whiskers"
+        }
+      ]
+    }
+  ]
+}
