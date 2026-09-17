@@ -84,11 +84,11 @@ The renderer reads the first of these that a row carries:
 - `id:f:`, written by odgi untangle, as a fraction or a percentage
 - the `num_matches` / `block_len` columns
 
-This is the same quantity as rustybam's `rb stats --paf` `perID_by_all` and
-[SVbyEye](https://github.com/daewoooo/SVbyEye). It is never recomputed from the
-CIGAR, where a plain `M` folds mismatches into matches and would report a
-divergent alignment as identical. A coarse row carries its fine row's counts and
-tags, so identity coloring does not jump at a tier switch.
+This identity value is the same quantity as rustybam's `rb stats --paf`
+`perID_by_all` and [SVbyEye](https://github.com/daewoooo/SVbyEye). It is never
+recomputed from the CIGAR, where a plain `M` folds mismatches into matches and
+would report a divergent alignment as identical. A coarse row carries its fine
+row's counts and tags, so identity coloring does not jump at a tier switch.
 
 ## Header
 
@@ -127,7 +127,7 @@ tag verbatim. The CIGAR is replaced by a **coarse CIGAR** in a `cr:Z:` tag:
   square, the row's own side first
 - a run also closes before the small indels it absorbs would skew it past half
   of `--coarse`, so the straight line between a run's corners is never more than
-  `--coarse` off the alignment's real path. That bound is what `--coarse` means
+  `--coarse` off the alignment's real path, the bound `--coarse` sets
 - the alphabet is `M I D N` plus the run form, lengths are non-negative, and a
   run never has a zero side. A reader takes `=`/`X` as `M` and ignores `S`, `H`
   and `P`, which the writer never emits
@@ -157,7 +157,7 @@ In a file whose header states a bound and `cigars:Z:all`, a tagless coarse row
 is therefore exactly one run, and readers walk it as `<own>:<mate>M` over its
 columns. A reader that meets a `version` newer than it knows keeps only that
 field: no bound, no implied runs, and `cr:Z:` ignored, so the coarse tier draws
-as plain ribbons rather than misreading a grammar it has not seen.
+as plain ribbons.
 
 The renderer walks a coarse CIGAR exactly as it walks a CIGAR at that zoom: each
 run is a ribbon segment between its corners, each kept gap a colored indel
@@ -179,10 +179,10 @@ is the zoom at which `auto` switches, and the header keeps it honest: a value
 below the `--coarse` the file was built with is raised to it. A `--no-coarse`
 file serves the fine tier at every zoom whatever the setting says.
 
-Both directions of compatibility work. A PIF built before `cr:Z:` existed has
-coarse rows split at large indels with no alignment string, and draws as plain
-ribbons. A JBrowse older than `cr:Z:` reads a new file and draws every coarse
-row as one straight ribbon, so build with `--no-coarse` to serve such clients.
+A PIF built before `cr:Z:` existed has coarse rows split at large indels with no
+alignment string, and draws as plain ribbons. A JBrowse older than `cr:Z:` reads
+a new file and draws every coarse row as one straight ribbon, so build with
+`--no-coarse` to serve such clients.
 
 ## Multi-genome
 
@@ -227,9 +227,9 @@ pair.
 pair from both ends, so A against B and B against A are both present, and both
 are anchored on A when A is the row being drawn. Drawn as they arrive the same
 ribbon gets two coats. The adapter keeps one, testing agreement on both spans
-and on the same diagonal rather than direction, since the two passes need not
-chain a homology into the same blocks. A file holding one direction per pair
-(`minimap2 -X`, a curated PAF) has nothing to drop.
+and on the same diagonal, since the two passes need not chain a homology into
+the same blocks. A file holding one direction per pair (`minimap2 -X`, a curated
+PAF) has nothing to drop.
 
 ## Preprocessing with rustybam
 
@@ -316,8 +316,7 @@ pair when a file stores each pair once. That needs a modified index format and
 its own reader. PIF folds only a perspective letter into the key and writes each
 record twice, so stock tabix and every existing reader work unchanged, at the
 cost of a larger file. PIF records are also strand-aware intervals with an
-alignment string rather than point pairs, so they need the CIGAR reorientation
-and the coarse tier.
+alignment string, so they need the CIGAR reorientation and the coarse tier.
 
 ## See also
 
@@ -333,5 +332,4 @@ Tutorials that build or load a PIF:
   shows where PanSN names come from when the aligner does not write them
 - [](/docs/tutorials/pangenome_ecoli) and [](/docs/tutorials/pangenome_cactus)
   take the PAF out of a pggb and a Minigraph-Cactus graph
-- [](/docs/tutorials/pangenome_hprc) loads hosted human PIF files rather than
-  building one
+- [](/docs/tutorials/pangenome_hprc) loads hosted human PIF files
