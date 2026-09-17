@@ -207,6 +207,9 @@ export async function waitForVisible(
   return el
 }
 
+const targetName = (action: ScreenshotAction) =>
+  action.selector ? `selector "${action.selector}"` : `text "${action.text}"`
+
 // Resolve an action's target element from either a CSS selector or visible text.
 // On timeout, rethrow with the human target (the spec's `text`/`selector`) so a
 // renamed menu item reads as `click target not found: text "Settings"` instead
@@ -219,12 +222,23 @@ function resolveTarget(page: Page, action: ScreenshotAction) {
   }
   return waitForVisible(page, selector, { timeout: action.timeout }).catch(
     () => {
-      const target = action.selector
-        ? `selector "${action.selector}"`
-        : `text "${action.text}"`
-      throw new Error(`${action.type} target not found: ${target}`)
+      throw new Error(`${action.type} target not found: ${targetName(action)}`)
     },
   )
+}
+
+// A disabled control takes the click and does nothing, so the run would film a
+// no-op and report success.
+async function assertEnabled(
+  el: Awaited<ReturnType<typeof resolveTarget>>,
+  action: ScreenshotAction,
+) {
+  const disabled = await el?.evaluate(
+    node => !!node.closest('[aria-disabled="true"], :disabled'),
+  )
+  if (disabled) {
+    throw new Error(`${action.type} target is disabled: ${targetName(action)}`)
+  }
 }
 
 // Click a resolved element. A real mouse click at the element's center is
@@ -404,14 +418,18 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     if (point) {
       await page.mouse.click(point.x, point.y)
     } else {
-      await clickElement(await resolveTarget(page, action))
+      const el = await resolveTarget(page, action)
+      await assertEnabled(el, action)
+      await clickElement(el)
     }
   } else if (action.type === 'rightclick') {
     const point = await actionPoint(page, action)
     if (point) {
       await page.mouse.click(point.x, point.y, { button: 'right' })
     } else {
-      await clickElement(await resolveTarget(page, action), 'right')
+      const el = await resolveTarget(page, action)
+      await assertEnabled(el, action)
+      await clickElement(el, 'right')
     }
   } else if (action.type === 'hover') {
     // a bare coordinate move (e.g. off a read to dismiss its hover tooltip while

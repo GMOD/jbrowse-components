@@ -1,8 +1,8 @@
 ---
 title: Display settings
 description:
-  Change a track's height, color and soft clipping, then make the change stick
-  in a link, a session file, or config.json
+  Change a track's height, color and read pairing, then make the change stick in
+  a link, a session file, or config.json
 guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
@@ -10,7 +10,7 @@ tutorial_category: Configuration & embedding
 Every setting in a track menu has a name, and JBrowse will tell you what it is.
 Change the setting by clicking, read the session JSON back, and the same key
 works in a shareable link, in a saved session file, and in `config.json`. We
-change four settings on one CRAM track and follow them through all three.
+change three settings on one CRAM track and follow them into each of those.
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ own.
 Either way you get a pileup of short reads, drawn at the default height in the
 default gray.
 
-## Change four settings
+## Change three settings
 
 Open the track's menu from the track label, and set:
 
@@ -45,17 +45,15 @@ Open the track's menu from the track label, and set:
   reference.
 - **Read connections → View as pairs / link supplementary alignments**, which
   puts each read on the same row as its mate.
-- **Show... → Show soft clipping**, which draws the clipped ends the aligner
-  trimmed off.
 
 Then drag the bottom edge of the track down to about 250px, so the deeper stack
 of paired rows fits.
 
-<Figure caption="The volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, soft-clipping shown, reads viewed as pairs and colored by insert size and orientation. The colored cluster at the left flags a structural variant." src="/img/display_settings_url_snapshot.png" />
+<Figure caption="The volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, reads viewed as pairs and colored by insert size and orientation. The colored cluster at the left flags a structural variant." src="/img/display_settings_url_snapshot.png" />
 
 ## Ask JBrowse what you just set
 
-Three menu clicks and a drag changed four settings, and each one has a name you
+Two menu clicks and a drag changed three settings, and each one has a name you
 can type into a config.
 
 In **JBrowse Web**, click **Share**, take **Plaintext JSON** from the settings
@@ -63,9 +61,9 @@ icon in the dialog, and tick the **Show readable JSON** box that arrives with
 it. In **JBrowse Desktop**, choose **File → Session → Save session as...**, save
 a `volvox.jbrowse` file, and open it in a text editor.
 
-<Video src="/media/config/settings_to_json.mp4" caption="Three settings taken from the volvox-sv (cram) track menu, then the share dialog's settings icon, Plaintext JSON, and the readable session panel that arrives with it." />
+<Video src="/media/config/settings_to_json.mp4" caption="Two settings taken from the volvox-sv (cram) track menu, then the share dialog's settings icon, Plaintext JSON, and the readable session panel that arrives with it." />
 
-Both hold the same JSON. Each of the four is a write to the track's own config,
+Both hold the same JSON. Each of the three is a write to the track's own config,
 so they arrive together under `trackConfigDeltas`, keyed by the track id you
 edited:
 
@@ -77,16 +75,15 @@ edited:
         "displayId": "volvox_sv_cram-LinearAlignmentsDisplay",
         "height": 250,
         "linkedReads": "normal",
-        "colorBy": { "type": "insertSizeAndOrientation" },
-        "showSoftClipping": true
+        "colorBy": { "type": "insertSizeAndOrientation" }
       }
     ]
   }
 }
 ```
 
-`height`, `linkedReads`, `colorBy` and `showSoftClipping` are the setting names,
-and every route below spells them the same way.
+`height`, `linkedReads` and `colorBy` are the setting names, and every route
+below spells them the same way.
 
 Change one more setting in the app, wait a second, and read `volvox.jbrowse`
 again: Desktop autosaves the open session about a second after each edit, and
@@ -117,8 +114,7 @@ loaded, and from a served `config.json` it does so for every visitor:
   "displayDefaults": {
     "height": 250,
     "linkedReads": "normal",
-    "colorBy": { "type": "insertSizeAndOrientation" },
-    "showSoftClipping": true
+    "colorBy": { "type": "insertSizeAndOrientation" }
   }
 }
 ```
@@ -128,7 +124,7 @@ out the full `displays` array when you are _selecting_ a non-default display
 type (`LinearMultiSampleVariantDisplay`, `LDTrackDisplay`, and so on); see
 [configuring tracks](/docs/config_guides/tracks) for both forms.
 
-The track then opens paired, colored and soft-clipped, with no clicking.
+The track then opens paired and colored, with no clicking.
 
 ## Precedence when config and session disagree
 

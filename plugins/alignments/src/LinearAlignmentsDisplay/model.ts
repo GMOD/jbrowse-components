@@ -315,7 +315,7 @@ export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
  * }
  * ```
  *
- * Long reads with soft-clipping shown and split/mate reads connected by arcs:
+ * Long reads with split/mate reads connected by arcs:
  * ```js
  * {
  *   type: 'AlignmentsTrack',
@@ -328,7 +328,6 @@ export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
  *       type: 'LinearAlignmentsDisplay',
  *       displayId: 'long_reads-LinearAlignmentsDisplay',
  *       height: 400,
- *       showSoftClipping: true,
  *       linkedReads: 'normal',
  *       readConnections: 'arc',
  *     },
