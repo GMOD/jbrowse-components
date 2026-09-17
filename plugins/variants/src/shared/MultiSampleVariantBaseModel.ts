@@ -303,11 +303,14 @@ interface ArrangeableModel {
  * result as the layout. The single implementation behind `setColorBy` and
  * `setFacet`.
  *
- * With an arrangement already on screen it re-arranges that arrangement.
- * Re-deriving from `sourcesVolatile` would make "Color by… → Population"
- * discard a clustering run or a hand-made order, and in phased mode halve the
- * row count, since `layout` there holds haplotype rows where `sourcesVolatile`
- * holds samples.
+ * With an arrangement already on screen it re-arranges that arrangement, and
+ * the config `domain` stays out of it: the seed is applied once, to the adapter
+ * order, and only `clearLayout` returns to it. Re-deriving from
+ * `sourcesVolatile` would make "Color by… → Population" discard a clustering
+ * run or a hand-made order, and in phased mode halve the row count, since
+ * `layout` there holds haplotype rows where `sourcesVolatile` holds samples;
+ * re-seeding the domain over the layout would do the same to every row the
+ * domain names.
  *
  * Persists through the mixin's `setLayout`, never a direct `self.layout =`, so
  * a loaded dendrogram is dropped exactly when the rows move: a recolor over an
@@ -345,7 +348,7 @@ function applyArrangement(
     renderingMode: 'alleleCount',
   })
   const base = colorBy ? current : stripPaletteColors(current)
-  const next = arrangeSources(colorBy, facet, self.rowDomain, base)
+  const next = arrangeSources(colorBy, facet, [], base)
   // Neither axis applies — but there is an arrangement here, and clearing both
   // must not throw away the order the user is looking at.
   self.setLayout(next.length ? next : base)

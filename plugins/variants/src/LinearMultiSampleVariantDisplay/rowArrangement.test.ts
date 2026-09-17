@@ -143,6 +143,38 @@ describe('the config `domain` seeds the sample order', () => {
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.rowOrderIsCustom).toBe(false)
   })
+
+  // The seed is applied once, to the adapter order. A recolor or a refacet
+  // re-arranges the rows on screen, and re-seeding there would move S2 back
+  // to the front over a drag and, over a clustering run, drop the tree.
+  it('does not re-seed a dragged order on a recolor', () => {
+    const display = domainDisplay(['S2'])
+    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setColorBy('population')
+
+    expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
+    expect(display.rowOrderIsCustom).toBe(true)
+  })
+
+  it('keeps a clustered order and its tree on a recolor', () => {
+    const display = domainDisplay(['S2'])
+    const clustered = [{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }]
+    const tree = '((S1,S0),S2);'
+    display.setLayoutAndClusterTree(clustered, tree)
+    display.setColorBy('population')
+
+    expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
+    expect(display.clusterTree).toBe(tree)
+    expect(display.hierarchy).toBeDefined()
+  })
+
+  it('bands a facet within a dragged order rather than the seed', () => {
+    const display = domainDisplay(['S2'])
+    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setFacet('population')
+
+    expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
+  })
 })
 
 describe('a rendering-mode switch renames the rows', () => {
