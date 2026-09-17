@@ -73,14 +73,14 @@ chromosome paper
 ([Rhie et al. 2023](https://www.nature.com/articles/s41586-023-06457-y)), which
 is where the coordinates the boxes use come from.
 
-The plot says where the palindromes are. Zooming it to the boxed 4.8 Mb
+The plot marks where the palindromes are. Zooming it to the boxed 4.8 Mb
 separates the family into four crossings, and the same track opens one of them
 in a [linear synteny view](/docs/user_guides/linear_synteny_view), both panels
 framing one palindrome and colored by strand: the arms draw as a single
 minus-strand ribbon over the plus-strand match of the sequence to itself.
 
-The gene lanes say the same thing from the annotation. Each arm carries its own
-copies of the same Y-linked families, RBMY1B and RBMY1A1 on one side against
+The gene lanes show the same pattern from the annotation. Each arm carries its
+own copies of the same Y-linked families, RBMY1B and RBMY1A1 on one side against
 RBMY1D and RBMY1E on the other, CDY10P and CDY11P either side of the centre. The
 unpainted gaps inside the arms are where the two copies differ.
 

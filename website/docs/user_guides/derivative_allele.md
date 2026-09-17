@@ -66,13 +66,13 @@ the view has not fetched.
 
 ## Judging what it lists
 
-A read count ranks the routes. It does not vouch for them: reads mismapped into
-a repeat produce a confident-looking route, so the output is a proposal to check
-against the reads.
+A read count ranks the routes, but a high count does not confirm one: reads
+mismapped into a repeat produce a confident-looking route, so treat the output
+as a proposal to check against the reads.
 
 - **A callset from other data is the strongest check.** The reads that build a
-  route cannot vouch for it, so load a validated callset or an assembly beside
-  the pileup and look for a call at each junction.
+  route cannot confirm it on their own, so load a validated callset or an
+  assembly beside the pileup and look for a call at each junction.
 - **The matched normal is the somatic check.** Normals propose routes too, at
   windows with nothing somatic in them.
 - **Look at the top two rows.** Where a published junction is recovered it is
@@ -83,8 +83,8 @@ against the reads.
 - **The outer segments end where the longest read ends.** Only the junctions are
   properties of the allele.
 - **Read the segment sizes.** A route whose segments are each about one read
-  long is an aligner splitting a short read across the genome. The segment strip
-  drawn to scale beside each row is what separates that from an allele.
+  long is an aligner splitting a short read across the genome; the segment strip
+  drawn to scale beside each row shows the sizes to check.
 - **A row marked "part of a longer route in this list"** crosses a run of
   another row's junctions and stops, so it is consistent with the longer route.
 - **Dozens of routes means a repetitive window.** The picker says how many it

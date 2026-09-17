@@ -172,7 +172,7 @@ The session URL contains:
 - per-track display state, such as an alignments track's soft-clipping and sort
   settings
 
-A shared link can therefore carry custom tracks without a JBrowse admin.
+A shared link can therefore carry custom tracks.
 
 ## Track menu
 
