@@ -137,6 +137,7 @@ export default function configSchemaF() {
       ...treeSidebarConfigSchemaFields({
         tree: 'show the species tree sidebar',
         rowLabels: 'draw the species name over the left of each row',
+        rows: "row order: the species listed come first, in this order, and the rest keep the tree's order. The guide tree is drawn only in its own leaf order, so a domain that moves a species hides the dendrogram until the row order is reset",
       }),
       /**
        * #slot

@@ -127,6 +127,69 @@ describe('the guide tree positions only while it describes the rows', () => {
   })
 })
 
+describe('the config `domain` seeds the row order', () => {
+  function domainDisplay(domain: string[]) {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { domain },
+    }).createDisplay()
+    display.setSamples({
+      samples: [sample('hg38'), sample('panTro4'), sample('mm10')],
+      treeNewick: TREE,
+      samplesCanonical: true,
+    })
+    return display
+  }
+
+  it('leads with the species it names and leaves the rest in tree order', () => {
+    expect(rowNames(domainDisplay(['mm10']))).toEqual([
+      'mm10',
+      'hg38',
+      'panTro4',
+    ])
+  })
+
+  it('ignores a species the data does not have', () => {
+    expect(rowNames(domainDisplay(['rn6', 'panTro4']))).toEqual([
+      'panTro4',
+      'hg38',
+      'mm10',
+    ])
+  })
+
+  // The guide tree positions leaf i on row i and nothing reconciles the names,
+  // so `treeDescribesRows` refuses it the moment a domain moves a row — the
+  // same refusal a drag earns, and the tree is still there to come back when
+  // the domain is emptied.
+  it('un-positions the guide tree it reorders under', () => {
+    const display = domainDisplay(['mm10'])
+    expect(display.clusterTree).toBe(TREE)
+    expect(display.hierarchy).toBeUndefined()
+  })
+
+  it('leaves the guide tree drawing when it agrees with the leaf order', () => {
+    const display = domainDisplay(['hg38', 'panTro4'])
+    expect(rowNames(display)).toEqual(['hg38', 'panTro4', 'mm10'])
+    expect(display.hierarchy).toBeDefined()
+  })
+
+  // `layout` is the runtime channel over the seed: a drag, a clustering run or
+  // the arrangement dialog still wins, and "Reset row order" returns to the
+  // domain rather than to the adapter order.
+  it('gives way to a layout and comes back when it is cleared', () => {
+    const display = domainDisplay(['mm10'])
+    display.setLayout([
+      { name: 'panTro4' },
+      { name: 'hg38' },
+      { name: 'mm10' },
+    ])
+    expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
+
+    display.clearLayout()
+
+    expect(rowNames(display)).toEqual(['mm10', 'hg38', 'panTro4'])
+  })
+})
+
 // The adapter schemas advertise a per-sample `color` and the track guide calls
 // it "the row's color". It lands on `MafSource.labelColor`, the field the
 // sidebar's label half tints from — it used to be carried as `color` and
