@@ -1,7 +1,14 @@
 // PROTOTYPES, measured by instanceBuffer.bench.ts and drawn by no shader. Each
 // packs the fields the production record carries minus the ones a per-row
-// colour table or a per-rendering record would make redundant, so the bench
-// can price bytes and encode time before anyone writes the Slang.
+// colour table would make redundant, so the bench can price bytes and encode
+// time before anyone writes the Slang.
+//
+// They write literal word offsets where production reads the generated offset
+// objects, and on node 24 that alone is worth 20-40% of a line packer's encode
+// (measured 2026-09-17: the 32-byte step packer took 225ms with literals and
+// 350ms with the generated offsets, byte-identical output). An encode delta
+// against a production arm mixes the record size with that, so price the
+// record's time with offsets written the same way on both sides.
 //
 // Row word: `row << 1 | side`, side 1 below the pivot. Every colour a
 // production record carries is `table[row][side]` in the cases the bench
@@ -29,10 +36,6 @@ function countOf(sources: SourceRenderData[], band: boolean) {
     }
   }
   return total
-}
-
-function colorOf(source: SourceRenderData) {
-  return normalizedRgbToABGR(source.color[0], source.color[1], source.color[2])
 }
 
 // What a colour change would upload instead of re-encoding every region: two
@@ -82,45 +85,6 @@ export function packFill16(sources: SourceRenderData[], pivot: number) {
   return buf
 }
 
-// step line, colours kept, 32 bytes: startEnd, score, prevScore, nextScore,
-// color, rowIndex, negColor.
-export function packStepLine32(sources: SourceRenderData[]) {
-  const buf = new ArrayBuffer(countOf(sources, false) * 32)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  let off = 0
-  for (const source of sources) {
-    if (source.band) {
-      continue
-    }
-    const row = source.rowIndex
-    const colorAbgr = colorOf(source)
-    const negAbgr = source.negColor
-      ? normalizedRgbToABGR(...source.negColor)
-      : colorAbgr
-    const positions = source.featurePositions
-    const scores = source.featureScores
-    const n = source.numFeatures
-    for (let i = 0; i < n; i++) {
-      const pi = i * 2
-      const score = scores[i]!
-      const currStart = positions[pi]!
-      const currEnd = positions[pi + 1]!
-      u32[off] = currStart
-      u32[off + 1] = currEnd
-      f32[off + 2] = score
-      f32[off + 3] =
-        i > 0 && positions[pi - 1] === currStart ? scores[i - 1]! : 0
-      f32[off + 4] = i < n - 1 && positions[pi + 2] === currEnd ? score : 0
-      u32[off + 5] = colorAbgr
-      f32[off + 6] = row
-      u32[off + 7] = negAbgr
-      off += 8
-    }
-  }
-  return buf
-}
-
 // step line, colour table, 24 bytes: startEnd, score, prevScore, nextScore,
 // row word.
 export function packStepLine24(sources: SourceRenderData[]) {
@@ -149,44 +113,6 @@ export function packStepLine24(sources: SourceRenderData[]) {
       f32[off + 4] = i < n - 1 && positions[pi + 2] === currEnd ? score : 0
       u32[off + 5] = rowWord
       off += 6
-    }
-  }
-  return buf
-}
-
-// center line, colours kept, 36 bytes: startEnd, score, color, rowIndex,
-// prevStartEnd, prevScoreLine, negColor.
-export function packCenterLine36(sources: SourceRenderData[]) {
-  const buf = new ArrayBuffer(countOf(sources, false) * 36)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  let off = 0
-  for (const source of sources) {
-    if (source.band) {
-      continue
-    }
-    const row = source.rowIndex
-    const colorAbgr = colorOf(source)
-    const negAbgr = source.negColor
-      ? normalizedRgbToABGR(...source.negColor)
-      : colorAbgr
-    const positions = source.featurePositions
-    const scores = source.featureScores
-    const n = source.numFeatures
-    const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
-    for (let i = 0; i < n; i++) {
-      const pi = i * 2
-      const linked = centerLinksToPrevious(positions, i, gapLimitBp)
-      u32[off] = positions[pi]!
-      u32[off + 1] = positions[pi + 1]!
-      f32[off + 2] = scores[i]!
-      u32[off + 3] = colorAbgr
-      f32[off + 4] = row
-      u32[off + 5] = linked ? positions[pi - 2]! : NO_PREV_START
-      u32[off + 6] = linked ? positions[pi - 1]! : 0
-      f32[off + 7] = linked ? scores[i - 1]! : 0
-      u32[off + 8] = negAbgr
-      off += 9
     }
   }
   return buf

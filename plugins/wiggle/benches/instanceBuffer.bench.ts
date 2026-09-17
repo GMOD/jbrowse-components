@@ -30,10 +30,21 @@ import BigWigAdapter from '../src/BigWigAdapter/BigWigAdapter.ts'
 import configSchema from '../src/BigWigAdapter/configSchema.ts'
 import { tierSpanRange } from '../src/BigWigAdapter/tierSpanRange.ts'
 import { buildSourceRenderData } from '../src/shared/buildSourceRenderData.ts'
+import {
+  INSTANCE_OFFSET_F32 as STEP_F32,
+  INSTANCE_OFFSET_U32 as STEP_U32,
+  INSTANCE_STRIDE_WORDS as STEP_WORDS,
+} from '../src/shared/shaders/wiggleLine.iface.generated.ts'
+import {
+  INSTANCE_OFFSET_F32 as CENTER_F32,
+  INSTANCE_OFFSET_U32 as CENTER_U32,
+  INSTANCE_STRIDE_WORDS as CENTER_WORDS,
+} from '../src/shared/shaders/wiggleLineCenter.iface.generated.ts'
 import { drawLine, drawLineCenter } from '../src/shared/wiggleDrawFunctions.ts'
 import {
   packBandInstances,
   packFillInstances,
+  packLineCenterInstances,
   packLineInstances,
 } from '../src/shared/wiggleInstanceBuffer.ts'
 import {
@@ -46,10 +57,8 @@ import {
   decimateRaw,
   packBand36,
   packCenterLine28,
-  packCenterLine36,
   packFill16,
   packStepLine24,
-  packStepLine32,
 } from './prototypePackers.ts'
 
 import type { WiggleGpuProps } from '../src/shared/buildSourceRenderData.ts'
@@ -210,46 +219,57 @@ function checkFill() {
   }
 }
 
+interface LineRecord {
+  words: number
+  u32: { startEnd: number; color: number; negColor: number }
+  f32: { score: number; rowIndex: number }
+}
+
+// Each prototype field is [production word, prototype word, view]; the
+// prototype's row word stands in for the production colours and row.
 function checkLine(
-  layers: SourceRenderData[],
+  what: string,
+  base: ArrayBuffer,
+  record: LineRecord,
   gpuProps: WiggleGpuProps,
   proto: ArrayBuffer,
   words: number,
   fields: [number, number, 'u' | 'f'][],
-  colorAt: number | undefined,
+  rowWordAt: number,
 ) {
-  const base = packLineInstances(layers)
   const table = buildRowColorTable(gpuProps)
   const bu = new Uint32Array(base)
   const bf = new Float32Array(base)
   const pu = new Uint32Array(proto)
   const pf = new Float32Array(proto)
-  const n = base.byteLength / 44
+  const n = base.byteLength / (record.words * 4)
   if (proto.byteLength / (words * 4) !== n) {
-    throw new Error('line instance count differs')
+    throw new Error(`${what} instance count differs`)
   }
   for (let i = 0; i < n; i++) {
-    const b = i * 11
+    const b = i * record.words
     const p = i * words
     for (const [bo, po, kind] of fields) {
       const a = kind === 'u' ? bu[b + bo]! : bf[b + bo]!
       const c = kind === 'u' ? pu[p + po]! : pf[p + po]!
       if (a !== c) {
-        fail(`line word ${bo}`, i, a, c)
+        fail(`${what} word ${bo}`, i, a, c)
       }
     }
-    if (colorAt !== undefined) {
-      // production: color @5, rowIndex @6, negColor @10
-      const row = pu[p + colorAt]! >> 1
-      if (bf[b + 6] !== row) {
-        fail('line row', i, bf[b + 6]!, row)
-      }
-      if (bu[b + 5] !== table[row * 2]) {
-        fail('line color', i, bu[b + 5]!, table[row * 2]!)
-      }
-      if (bu[b + 10] !== table[row * 2 + 1]) {
-        fail('line negColor', i, bu[b + 10]!, table[row * 2 + 1]!)
-      }
+    const row = pu[p + rowWordAt]! >> 1
+    if (bf[b + record.f32.rowIndex] !== row) {
+      fail(`${what} row`, i, bf[b + record.f32.rowIndex]!, row)
+    }
+    if (bu[b + record.u32.color] !== table[row * 2]) {
+      fail(`${what} color`, i, bu[b + record.u32.color]!, table[row * 2]!)
+    }
+    if (bu[b + record.u32.negColor] !== table[row * 2 + 1]) {
+      fail(
+        `${what} negColor`,
+        i,
+        bu[b + record.u32.negColor]!,
+        table[row * 2 + 1]!,
+      )
     }
   }
 }
@@ -282,69 +302,36 @@ function checkBand() {
 }
 
 checkFill()
-// production line: startEnd 0-1, score 2, prevScore 3, nextScore 4, color 5,
-// rowIndex 6, prevStartEnd 7-8, prevScoreLine 9, negColor 10
 checkLine(
-  lineLayers,
-  lineProps,
-  packStepLine32(lineLayers),
-  8,
-  [
-    [0, 0, 'u'],
-    [1, 1, 'u'],
-    [2, 2, 'f'],
-    [3, 3, 'f'],
-    [4, 4, 'f'],
-    [5, 5, 'u'],
-    [6, 6, 'f'],
-    [10, 7, 'u'],
-  ],
-  undefined,
-)
-checkLine(
-  lineLayers,
+  'step',
+  packLineInstances(lineLayers),
+  { words: STEP_WORDS, u32: STEP_U32, f32: STEP_F32 },
   lineProps,
   packStepLine24(lineLayers),
   6,
   [
-    [0, 0, 'u'],
-    [1, 1, 'u'],
-    [2, 2, 'f'],
-    [3, 3, 'f'],
-    [4, 4, 'f'],
+    [STEP_U32.startEnd, 0, 'u'],
+    [STEP_U32.startEnd + 1, 1, 'u'],
+    [STEP_F32.score, 2, 'f'],
+    [STEP_F32.prevScore, 3, 'f'],
+    [STEP_F32.nextScore, 4, 'f'],
   ],
   5,
 )
 checkLine(
-  centerLayers,
-  centerProps,
-  packCenterLine36(centerLayers),
-  9,
-  [
-    [0, 0, 'u'],
-    [1, 1, 'u'],
-    [2, 2, 'f'],
-    [5, 3, 'u'],
-    [6, 4, 'f'],
-    [7, 5, 'u'],
-    [8, 6, 'u'],
-    [9, 7, 'f'],
-    [10, 8, 'u'],
-  ],
-  undefined,
-)
-checkLine(
-  centerLayers,
+  'center',
+  packLineCenterInstances(centerLayers),
+  { words: CENTER_WORDS, u32: CENTER_U32, f32: CENTER_F32 },
   centerProps,
   packCenterLine28(centerLayers),
   7,
   [
-    [0, 0, 'u'],
-    [1, 1, 'u'],
-    [2, 2, 'f'],
-    [7, 3, 'u'],
-    [8, 4, 'u'],
-    [9, 5, 'f'],
+    [CENTER_U32.startEnd, 0, 'u'],
+    [CENTER_U32.startEnd + 1, 1, 'u'],
+    [CENTER_F32.score, 2, 'f'],
+    [CENTER_U32.prevStartEnd, 3, 'u'],
+    [CENTER_U32.prevStartEnd + 1, 4, 'u'],
+    [CENTER_F32.prevScore, 5, 'f'],
   ],
   6,
 )
@@ -390,10 +377,9 @@ const memory = {
   ).toFixed(1),
   fillMB: +(packFillInstances(xyLayers).byteLength / MB).toFixed(1),
   fill16MB: +(packFill16(xyLayers, pivot).byteLength / MB).toFixed(1),
-  lineMB: +(packLineInstances(lineLayers).byteLength / MB).toFixed(1),
-  step32MB: +(packStepLine32(lineLayers).byteLength / MB).toFixed(1),
+  stepMB: +(packLineInstances(lineLayers).byteLength / MB).toFixed(1),
   step24MB: +(packStepLine24(lineLayers).byteLength / MB).toFixed(1),
-  center36MB: +(packCenterLine36(centerLayers).byteLength / MB).toFixed(1),
+  centerMB: +(packLineCenterInstances(centerLayers).byteLength / MB).toFixed(1),
   center28MB: +(packCenterLine28(centerLayers).byteLength / MB).toFixed(1),
   bandMB: hasBand
     ? +(packBandInstances(bandLayers).byteLength / MB).toFixed(1)
@@ -506,25 +492,22 @@ const arms: Record<string, () => void> = {
       packFill16(xyLayers, pivot).byteLength +
       buildRowColorTable(xyProps).byteLength
   },
-  'pack-line(step)': () => {
+  'pack-step': () => {
     sink += packLineInstances(lineLayers).byteLength
   },
-  'pack-line(step)-control': () => {
+  'pack-step-control': () => {
     sink += packLineInstances(lineLayers).byteLength
-  },
-  'pack-step32': () => {
-    sink += packStepLine32(lineLayers).byteLength
   },
   'pack-step24+table': () => {
     sink +=
       packStepLine24(lineLayers).byteLength +
       buildRowColorTable(lineProps).byteLength
   },
-  'pack-line(center)': () => {
-    sink += packLineInstances(centerLayers).byteLength
+  'pack-center': () => {
+    sink += packLineCenterInstances(centerLayers).byteLength
   },
-  'pack-center36': () => {
-    sink += packCenterLine36(centerLayers).byteLength
+  'pack-center-control': () => {
+    sink += packLineCenterInstances(centerLayers).byteLength
   },
   'pack-center28+table': () => {
     sink +=
