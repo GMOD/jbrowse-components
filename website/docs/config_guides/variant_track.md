@@ -244,11 +244,11 @@ so the filters and signed LD are absent here. The
 [`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) switches between two
 reads of the same block:
 
-- **D'** asks whether recombination has been seen between two markers, so it
+- **D'** measures whether recombination has been seen between two markers, so it
   saturates near 1 wherever no recombinant haplotype has turned up. It recovers
   where crossing over stops, which finds an inversion's breakpoints
-- **r²** asks how well one marker predicts the other, which also requires the
-  two to be at similar frequency, so it draws the sharper boundary. It says
+- **r²** measures how well one marker predicts the other, which also requires
+  the two to be at similar frequency, so it draws the sharper boundary. It shows
   whether one marker can stand in for another
 
 Thinning is plink's `--maf`, decided when the table is written rather than in

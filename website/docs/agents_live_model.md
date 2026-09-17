@@ -482,7 +482,8 @@ The Claude in Chrome extension changes the calling convention:
   few levels, long strings are clipped, and a string that looks like base64 is
   replaced. Return flat, pre-sliced values, or a `JSON.stringify` of what you
   need.
-- **Its screenshot knows nothing about rendering.** Call `jb.waitReady()` first,
-  then screenshot, and read `notReady` from the settle result.
+- **Its screenshot captures whatever is on screen, with no wait for rendering.**
+  Call `jb.waitReady()` first, then screenshot, and read `notReady` from the
+  settle result.
 - **Wait for the page.** The app assigns `window.jb` after its first render, so
   poll for it after navigating.

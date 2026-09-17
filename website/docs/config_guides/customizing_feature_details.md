@@ -48,8 +48,8 @@ the panel:
   `"jexl:{name:feature.name}"` was meant replaces the panel with a message
   naming the track.
 
-The merged feature is what every part of the panel reads, the sequence panel and
-a plugin's extra panels included, and a saved session keeps the raw feature and
+Every part of the panel reads the merged feature, the sequence panel and a
+plugin's extra panels included. A saved session keeps the raw feature and
 re-runs the callbacks on load, so editing a track's `formatDetails` reshapes an
 open panel in place.
 
