@@ -847,6 +847,21 @@ test('a click on a raw mark opens the feature the hit spans', async () => {
   })
 })
 
+test('the read-back reads at the zoom the hit was drawn at', async () => {
+  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
+  const { display, view, session, mockRpcCall } = createDisplay()
+  onlyGetFeatures(mockRpcCall, () => [feature('a', 1200, 1700)])
+  view.zoomTo(37)
+  display.selectFeature(hitAt(0, 1200, 1700))
+  await waitFor(() => {
+    expect(session.openedWidgets).toHaveLength(1)
+  })
+  const [, , args] = mockRpcCall.mock.calls.find(
+    ([, method]) => method === 'CoreGetFeatures',
+  )!
+  expect(args).toMatchObject({ opts: { bpPerPx: view.bpPerPx } })
+})
+
 test('a click on a binned bar opens the bin the mark made, through its own steps', async () => {
   const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
   const { display, session, mockRpcCall } = createDisplay()

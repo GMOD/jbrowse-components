@@ -1034,7 +1034,10 @@ export function stateModelFactory(
        * #action
        * Open the feature widget for a hit: the worker shipped channels, not
        * records, so the features are read back over the hit's span and the
-       * mark's steps run again over them, which remakes a bin or a run.
+       * mark's steps run again over them, which remakes a bin or a run. It
+       * sends the view's zoom as the fetch did, so a BigWig answers with the
+       * tier rows the hit was drawn from rather than raw records no tier row
+       * matches.
        */
       selectFeature(hit: MarkHitInfo) {
         const region: Region | undefined =
@@ -1065,6 +1068,7 @@ export function stateModelFactory(
                       end: Math.max(hit.end, hit.start + 1),
                     },
                   ],
+                  opts: { bpPerPx: self.host.bpPerPx },
                   signal: fetch.signal,
                   statusCallback: fetch.statusCallback,
                 },
