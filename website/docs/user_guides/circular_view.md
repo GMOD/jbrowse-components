@@ -81,15 +81,16 @@ dotplot's does: **Quick start** picks a synteny track and opens its two genomes,
 and **Manual** takes **Add a second assembly** and a track for the pair, with a
 chromosome box per genome.
 
-Both arcs of a two-genome circle run the same way round, so a genome left in its
-own contig order puts every matching pair of chromosomes at opposite ends of a
-diameter and sends every ribbon through the middle. **Re-order chromosomes** in
-the view's menu — or `autoDiagonalize: true` on the view, which runs it on open
-— orders the second genome's chromosomes to follow the first's, by how many
-aligned bases each pair shares, and lays that genome out mirrored so the ribbons
-come out as a band of parallel arcs. It is the same pass the linear synteny view
-and the dotplot run, over the same alignment file, and it is offered on a
-two-genome circle carrying a synteny track and nowhere else.
+A two-genome circle's two halves, one arc per genome, run the same way round, so
+a genome left in its own contig order puts every matching pair of chromosomes at
+opposite ends of a diameter and sends every ribbon through the middle.
+**Re-order chromosomes** in the view's menu — or `autoDiagonalize: true` on the
+view, which runs it on open — orders the second genome's chromosomes to follow
+the first's, by how many aligned bases each pair shares, and lays that genome
+out mirrored so the ribbons come out as a band of parallel arcs. It is the same
+pass the linear synteny view and the dotplot run, over the same alignment file,
+and it is offered on a two-genome circle carrying a synteny track and nowhere
+else.
 
 The ribbons are one flat translucent fill by default. **Color by** in the
 track's menu paints each ribbon the color of the first genome's chromosome it
