@@ -22,8 +22,8 @@ same cohort whose coverage does none of that.
 
 The 1000 Genomes 2022 high-coverage ensemble SV callset
 ([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004)), read
-against three of its own samples' CRAMs and QuicK-mer2 copy number for the whole
-cohort.
+against three of the cohort's samples' CRAMs and QuicK-mer2 copy number for the
+whole cohort.
 
 - the ensemble SV callset, 3202 samples. EBI publishes it and nobody mirrors it,
   so the demo reads our own byte-for-byte copy[^ebi]:
@@ -81,10 +81,10 @@ track menu keys every row on the whole window and draws the dendrogram.
 Dark blue is no copy of _RHD_, light blue one, grey two, and the olive stripe is
 a separate nested call.
 
-A matrix cell marks that a sample carries something at that column, not which
-call. Loading the same VCF again in the ordinary variant display puts each
-record on its own row with its id, class and size. Cell coloring by **SV type**
-is the other way to ask, shown in the
+A matrix cell marks that a sample carries something at that column. Loading the
+same VCF again in the ordinary variant display puts each record on its own row
+with its id, class and size. Cell coloring by **SV type** is the other way to
+ask, shown in the
 [multi-variant track guide](/docs/user_guides/multivariant_track).
 
 Three lanes read below, over NCBI RefSeq genes:
@@ -101,7 +101,7 @@ The olive no-call column is a copy-number gain in the lane beneath it.
 
 <Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's sequencing depth under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels in the depth." src="/img/multisv_rhd.png" />
 
-<Video src="/media/sv/multisample_sort.mp4" caption="Both arrangements the section names, on the callset the figure above is of: a right-click on the deletion sorts the cohort by its genotype there and the callset order resolves into three bands, then the track menu's clustering re-keys the same rows on the whole window and draws the tree it built." />
+<Video src="/media/sv/multisample_sort.mp4" caption="On the callset shown in the figure above, a right-click on the deletion sorts the cohort by genotype there, resolving the callset order into three bands. The track menu's clustering then re-keys the same rows on the whole window and draws the tree it built." />
 
 The olive stripe is `HGSV_1823`, a small copy-number record inside the deletion,
 uncalled in most of the cohort. A no-call has a separate color. Copy number is a

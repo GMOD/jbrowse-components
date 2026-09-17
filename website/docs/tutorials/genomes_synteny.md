@@ -108,7 +108,7 @@ an intron of _FTO_.
 
 <Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats." src="/img/genomes_synteny/launch_sequence.png" />
 
-Its last frame switches to curves and **Transparent indels**
+The sequence's last frame switches to curves and **Transparent indels**
 ([above](#ribbon-display-settings)), which turns the one gap into a hole lining
 up against the RepeatMasker track. The element under it is an L1HS, the youngest
 human LINE-1 subfamily, and the chimp panel has every other repeat in the window
