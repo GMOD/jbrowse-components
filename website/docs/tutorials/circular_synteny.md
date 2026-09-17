@@ -162,7 +162,7 @@ hg38 and mm39 share their chromosome names, so the arcs are labelled identically
 around the circle: the human chromosomes run clockwise from the top and the
 mouse chromosomes follow, and the view's title bar names the two in that order.
 Every ribbon is one flat translucent fill, and a reverse alignment reads as a
-twist between its two ends.
+twist between its two ends rather than as a second color.
 
 <Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver block as a ribbon between the two genomes. Each human autosome fans out to several mouse chromosomes; the two X arcs hold one bundle." />
 
