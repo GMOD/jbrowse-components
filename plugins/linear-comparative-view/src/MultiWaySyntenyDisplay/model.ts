@@ -297,18 +297,6 @@ export function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * Level-of-detail tier selection for tiered PIF adapters, the setting
-         * the synteny view, dotplot and LGVSyntenyDisplay carry under the same
-         * name: 'auto' uses the adapter's bpPerPx threshold; 'fine' pins the
-         * per-row CIGAR tier; 'coarse' the tier whose CIGAR is folded to its
-         * large indels
-         */
-        lodMode: types.stripDefault(
-          types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
-          'auto',
-        ),
-        /**
-         * #property
          * the reader's lanes, by assembly name: `only` the ones the picker
          * ticked, or the lanes in force `except` the ones Hide lane took out.
          * Undefined is `configuredLanes`, or every lane where there are none.
@@ -577,7 +565,7 @@ export function stateModelFactory(
          * #action
          */
         setLodMode(mode: LodMode) {
-          self.lodMode = mode
+          setConf(self, 'lodMode', mode)
         },
       }
     })
@@ -603,6 +591,14 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the level-of-detail tier the reader pinned, or 'auto' for the
+       * adapter's own bpPerPx threshold. `lodTier` is what resolves it
+       */
+      get lodMode(): LodMode {
+        return getConf(self, 'lodMode')
+      },
+      /**
+       * #getter
        * whether the track's adapter has tiered storage to switch between —
        * gates the "Level of detail" menu, the way LGVSyntenyDisplay gates it
        */
@@ -618,14 +614,14 @@ export function stateModelFactory(
        * with no tiers, a gene table included
        */
       get lodTier() {
-        return lodTierAt(self, self.host.coarseBpPerPx, self.lodMode)
+        return lodTierAt(self, self.host.coarseBpPerPx, this.lodMode)
       },
       /**
        * #getter
        * the same tier off the live zoom, for `dataSuperseded`
        */
       get liveLodTier() {
-        return lodTierAt(self, self.lgv.bpPerPx, self.lodMode)
+        return lodTierAt(self, self.lgv.bpPerPx, this.lodMode)
       },
     }))
     .views(self => ({

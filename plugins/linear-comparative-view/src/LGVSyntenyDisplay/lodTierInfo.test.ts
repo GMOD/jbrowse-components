@@ -1,3 +1,5 @@
+import { getConf } from '@jbrowse/core/configuration'
+
 import { createSyntenyEnv } from './testEnv.ts'
 
 // The display's `lodTier` is resolved off the config slot until the one-shot
@@ -72,6 +74,13 @@ test('a tier flip is a zoom-key move, not a settings change', async () => {
   expect(display.lodTier).toBe('fine')
   expect(display.dataSuperseded).toBe(false)
   expect(display.zoomFetchKey).toBe('1|fine')
+  expect(display.settingsFetchInputs).toEqual(settings)
+
+  // the mode is a config slot, and picking one still moves only the zoom key
+  display.setLodMode('coarse')
+  expect(getConf(display, 'lodMode')).toBe('coarse')
+  expect(display.lodTier).toBe('coarse')
+  expect(display.rpcProps()).not.toHaveProperty('lodMode')
   expect(display.settingsFetchInputs).toEqual(settings)
 })
 

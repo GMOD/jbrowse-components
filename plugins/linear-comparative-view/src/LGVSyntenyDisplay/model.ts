@@ -85,24 +85,19 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
            * #property
            */
           configuration: ConfigurationReference(schema),
-          /**
-           * #property
-           * Level-of-detail tier selection for tiered PIF adapters. 'auto' uses
-           * the adapter's bpPerPx threshold; 'fine' pins the per-row CIGAR tier
-           * (t/q); 'coarse' the tier whose CIGAR is folded to its large
-           * indels (T/Q). Matches the synteny view and
-           * dotplot setting of the same name — this display draws the same tracks
-           * and had no way to pin a tier.
-           */
-          lodMode: types.stripDefault(
-            types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
-            'auto',
-          ),
         }),
       )
       // showCoverage defaults to false for synteny via the config-slot override
       // in configSchemaF (the base alignments display defaults it to true).
-      .views(() => ({
+      .views(self => ({
+        /**
+         * #getter
+         * the level-of-detail tier the reader pinned, or 'auto' for the
+         * adapter's own bpPerPx threshold. `lodTier` is what resolves it
+         */
+        get lodMode(): LodMode {
+          return getConf(self, 'lodMode')
+        },
         /**
          * #getter
          * synteny features open the SyntenyFeatureWidget; the inherited
@@ -261,7 +256,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * #action
          */
         setLodMode(arg: LodMode) {
-          self.lodMode = arg
+          setConf(self, 'lodMode', arg)
         },
       }))
       .views(self => ({

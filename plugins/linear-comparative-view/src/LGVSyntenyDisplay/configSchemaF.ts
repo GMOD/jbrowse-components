@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
 
 import { getMate } from '../syntenyMate.ts'
@@ -66,6 +67,16 @@ function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LGVSyntenyDisplay',
     {
+      /**
+       * #slot
+       */
+      lodMode: {
+        type: 'stringEnum',
+        model: types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+        defaultValue: 'auto',
+        description:
+          "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels",
+      },
       /**
        * #slot
        * Tooltip shown on hovering a synteny feature; the default jexl expression
