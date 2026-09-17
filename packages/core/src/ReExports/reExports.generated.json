@@ -1544,7 +1544,8 @@
       "package": "@jbrowse/core",
       "names": [
         "colorScaleIsEmpty",
-        "legendSpecOf"
+        "legendSpecOf",
+        "missingRowLast"
       ],
       "worker": "real"
     },
