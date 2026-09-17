@@ -97,6 +97,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cattle)
 - [](/docs/tutorials/pangenome_prepare_graph)
+- [](/docs/tutorials/pangenome_hprc_part5)
 
 ### Structural variation
 

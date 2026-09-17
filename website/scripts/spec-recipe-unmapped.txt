@@ -16,10 +16,12 @@ fadeThinAlignmentsMode
 height
 hideUnlabelled
 jexlFiltersSetting
+layoutMode
 legend
 lineWidth
 paneHeight
 readConnections
+repeatKey
 rowGroups
 sampleColorMap
 showBranchLength

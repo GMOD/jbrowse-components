@@ -96,7 +96,20 @@ graph holds, drawn in **Walk rows** from the **Layout** dropdown:
         "type": "LinearGenomeView",
         "assembly": "hg38",
         "loc": "chr19:1,049,000-1,050,500",
-        "tracks": ["hg38_ncbiRefSeq_ucsc", "hprc_abca7_trgt"]
+        "tracks": [
+          {
+            "trackId": "hg38_ncbiRefSeq_ucsc",
+            "type": "LinearBasicDisplay",
+            "showOnlyGenes": true,
+            "displayMode": "compact",
+            "height": 40
+          },
+          {
+            "trackId": "hprc_abca7_trgt",
+            "type": "LinearVariantDisplay",
+            "height": 40
+          }
+        ]
       },
       {
         "type": "GraphGenomeView",

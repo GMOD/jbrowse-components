@@ -1061,7 +1061,20 @@ function abca7Views(repeatKey: string) {
       type: 'LinearGenomeView',
       assembly: 'hg38',
       loc: 'chr19:1,049,000-1,050,500',
-      tracks: ['hg38_ncbiRefSeq_ucsc', 'hprc_abca7_trgt'],
+      tracks: [
+        {
+          trackId: 'hg38_ncbiRefSeq_ucsc',
+          type: 'LinearBasicDisplay',
+          showOnlyGenes: true,
+          displayMode: 'compact',
+          height: 40,
+        },
+        {
+          trackId: 'hprc_abca7_trgt',
+          type: 'LinearVariantDisplay',
+          height: 40,
+        },
+      ],
     },
     {
       type: 'GraphGenomeView',
@@ -2499,7 +2512,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: TOOLBAR_READY,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 1100,
+    viewportHeight: 1020,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
@@ -2510,7 +2523,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: TOOLBAR_READY,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 1100,
+    viewportHeight: 1020,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
     annotations: [
