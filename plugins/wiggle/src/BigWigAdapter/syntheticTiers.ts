@@ -17,8 +17,13 @@ const SYNTHETIC_TIER_COUNT = 2
 const MIN_SYNTHETIC_BIN_BP = 2
 
 const CIR_TREE_MAGIC = 0x2468ace0
+const CIR_TREE_HEADER_BYTES = 48
+const CIR_NODE_HEADER_BYTES = 4
 
-const SAMPLE_MIN_RECORDS = 256
+const SAMPLE_WINDOWS = 4
+const SAMPLE_WINDOW_RECORDS = 128
+const SAMPLE_WINDOW_WIDTHS = [64, 1024]
+const SAMPLE_MIN_RECORDS = 64
 
 /**
  * The bins a file's synthetic tiers can hold, finest first, before
@@ -69,47 +74,113 @@ interface SampleSource {
   firstLevel: number
 }
 
+// Where each child of the raw index's root starts, in file order. Every child
+// but the last covers the same number of data sections, so the starts sit at
+// even steps through the file's records, and each lands on data.
+async function rootChildStarts(
+  { filehandle, header }: SampleSource,
+  opts: { signal?: AbortSignal },
+) {
+  const offset = header.unzoomedIndexOffset + CIR_TREE_HEADER_BYTES
+  const head = await filehandle.read(
+    CIR_TREE_HEADER_BYTES + CIR_NODE_HEADER_BYTES,
+    header.unzoomedIndexOffset,
+    opts,
+  )
+  const headView = new DataView(head.buffer, head.byteOffset, head.byteLength)
+  if (
+    head.byteLength < CIR_TREE_HEADER_BYTES + CIR_NODE_HEADER_BYTES ||
+    headView.getUint32(0, true) !== CIR_TREE_MAGIC
+  ) {
+    return []
+  }
+  const itemBytes = headView.getUint8(CIR_TREE_HEADER_BYTES) === 1 ? 32 : 24
+  const count = headView.getUint16(CIR_TREE_HEADER_BYTES + 2, true)
+  if (count === 0) {
+    return []
+  }
+  const items = await filehandle.read(
+    count * itemBytes,
+    offset + CIR_NODE_HEADER_BYTES,
+    opts,
+  )
+  const view = new DataView(items.buffer, items.byteOffset, items.byteLength)
+  return Array.from(
+    { length: Math.floor(items.byteLength / itemBytes) },
+    (_, i) => ({
+      refId: view.getUint32(i * itemBytes, true),
+      start: view.getUint32(i * itemBytes + 4, true),
+    }),
+  )
+}
+
 /**
- * The raw section's mean record span, off a sample fixed by the file: the
- * records from where its raw index says the data starts, over 64 first-level
- * widths, or 1024 when that holds under 256 records. The header has no record
- * count to divide `basesCovered` by — a BigWig's `dataCount` counts sections —
- * so a file-level number has to come from records. NaN where the sample finds
- * none.
+ * The raw section's mean record span, off a sample fixed by the file. The
+ * header has no record count to divide `basesCovered` by — a BigWig's
+ * `dataCount` counts sections — so a file-level number has to come from
+ * records.
+ *
+ * The windows start where `SAMPLE_WINDOWS` children of the raw index's root
+ * start, picked at even fractions through the children: even steps through
+ * the file's records, on whichever refs hold them, so a file ordered with chrM
+ * first, or with its data on one small ref, still samples its bulk, and no
+ * window opens on an empty stretch. A window runs 64 first-level widths, or
+ * 1024 when that holds under `SAMPLE_WINDOW_RECORDS` records short of its ref's
+ * end, and counts its first `SAMPLE_WINDOW_RECORDS` records, each clipped to
+ * the window, so a dense window weighs no more than a sparse one.
+ *
+ * Under `SAMPLE_MIN_RECORDS` across the widened windows answers NaN, which
+ * keeps every synthetic bin off: data that sparse ships few raw rows at any
+ * zoom a synthetic tier would serve.
  */
 export async function sampleMeanRecordSpan(
-  { bigwig, filehandle, header, firstLevel }: SampleSource,
-  opts: { signal?: AbortSignal } = {},
+  source: SampleSource,
+  { signal }: { signal?: AbortSignal } = {},
 ) {
-  const index = await filehandle.read(48, header.unzoomedIndexOffset, opts)
-  const view = new DataView(index.buffer, index.byteOffset, index.byteLength)
-  const refName =
-    index.byteLength === 48 && view.getUint32(0, true) === CIR_TREE_MAGIC
-      ? header.refsByNumber[view.getUint32(16, true)]?.name
-      : undefined
-  if (refName === undefined) {
-    return Number.NaN
-  }
-  const start = view.getUint32(20, true)
+  const { bigwig, header, firstLevel } = source
+  const children = await rootChildStarts(source, { signal })
+  const count = Math.min(SAMPLE_WINDOWS, children.length)
+  let windows = Array.from(
+    { length: count },
+    (_, k) => children[Math.floor(((k + 0.5) * children.length) / count)]!,
+  ).flatMap(({ refId, start }) => {
+    const ref = header.refsByNumber[refId]
+    return ref ? [{ refName: ref.name, start, refEnd: ref.length }] : []
+  })
   let records = 0
   let bases = 0
-  for (const widths of [64, 1024]) {
-    const { starts, ends } = await bigwig.getFeaturesAsArrays(
-      refName,
-      start,
-      start + widths * firstLevel,
-      { ...opts, basesPerSpan: firstLevel / 4 },
-    )
-    records = starts.length
-    bases = 0
-    for (let i = 0; i < records; i++) {
-      bases += ends[i]! - starts[i]!
-    }
-    if (records >= SAMPLE_MIN_RECORDS) {
+  for (const widths of SAMPLE_WINDOW_WIDTHS) {
+    if (windows.length === 0) {
       break
     }
+    const lastPass = widths === SAMPLE_WINDOW_WIDTHS.at(-1)
+    const regions = windows.map(({ refName, start, refEnd }) => ({
+      refName,
+      start,
+      end: Math.min(refEnd, start + widths * firstLevel),
+    }))
+    const { starts, ends, regionOffsets } =
+      await bigwig.getFeaturesAsArraysMulti(regions, {
+        signal,
+        basesPerSpan: firstLevel / 4,
+      })
+    const short = []
+    for (const [k, window] of windows.entries()) {
+      const { start, end } = regions[k]!
+      const lo = regionOffsets[k]!
+      const hi = Math.min(regionOffsets[k + 1]!, lo + SAMPLE_WINDOW_RECORDS)
+      if (hi - lo < SAMPLE_WINDOW_RECORDS && end < window.refEnd && !lastPass) {
+        short.push(window)
+      } else {
+        for (let i = lo; i < hi; i++) {
+          bases += Math.min(ends[i]!, end) - Math.max(starts[i]!, start)
+        }
+        records += hi - lo
+      }
+    }
+    windows = short
   }
-  return bases / records
+  return records < SAMPLE_MIN_RECORDS ? Number.NaN : bases / records
 }
 
 /**

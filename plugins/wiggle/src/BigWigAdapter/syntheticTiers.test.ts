@@ -410,6 +410,145 @@ describe('binRawRegion', () => {
   })
 })
 
+interface FakeRef {
+  name: string
+  length: number
+  // contiguous records of this span from 0
+  span: number
+}
+
+// A raw index whose root children start where `children` says, over refs of
+// contiguous records, and a bbi that answers each window from those records
+function fakeSource(
+  refs: FakeRef[],
+  children: { refId: number; start: number }[],
+  firstLevel: number,
+) {
+  const index = new Uint8Array(52 + children.length * 24)
+  const view = new DataView(index.buffer)
+  view.setUint32(0, 0x2468ace0, true)
+  view.setUint16(50, children.length, true)
+  children.forEach(({ refId, start }, i) => {
+    view.setUint32(52 + i * 24, refId, true)
+    view.setUint32(56 + i * 24, start, true)
+  })
+  const windows: { refName: string; start: number; end: number }[][] = []
+  const bigwig = {
+    getFeaturesAsArraysMulti: async (
+      regions: { refName: string; start: number; end: number }[],
+    ) => {
+      windows.push(regions)
+      const starts: number[] = []
+      const ends: number[] = []
+      const regionOffsets = [0]
+      for (const { refName, start, end } of regions) {
+        const { span, length } = refs.find(r => r.name === refName)!
+        for (let s = Math.floor(start / span) * span; s < end; s += span) {
+          starts.push(s)
+          ends.push(Math.min(s + span, length))
+        }
+        regionOffsets.push(starts.length)
+      }
+      return {
+        starts: Int32Array.from(starts),
+        ends: Int32Array.from(ends),
+        scores: new Float32Array(starts.length),
+        regionOffsets,
+      }
+    },
+  }
+  const source = {
+    bigwig,
+    filehandle: {
+      read: async (length: number, position: number) =>
+        index.subarray(position, position + length),
+    },
+    header: {
+      unzoomedIndexOffset: 0,
+      refsByNumber: refs.map((r, id) => ({ ...r, id })),
+    },
+    firstLevel,
+  } as unknown as Parameters<typeof sampleMeanRecordSpan>[0]
+  return { source, windows }
+}
+
+describe('sampleMeanRecordSpan', () => {
+  const chr1 = { name: 'chr1', length: 100_000_000, span: 50 }
+  const chrM = { name: 'chrM', length: 16_569, span: 1 }
+
+  test('windows open where root children start, at even fractions through them, never only the first', async () => {
+    const children = [
+      { refId: 1, start: 0 },
+      ...Array.from({ length: 7 }, (_, i) => ({
+        refId: 0,
+        start: (i + 1) * 1_000_000,
+      })),
+    ]
+    const { source, windows } = fakeSource([chr1, chrM], children, 640)
+    expect(await sampleMeanRecordSpan(source)).toBe(50)
+    expect(windows).toEqual([
+      [1, 3, 5, 7].map(i => ({
+        refName: 'chr1',
+        start: i * 1_000_000,
+        end: i * 1_000_000 + 64 * 640,
+      })),
+    ])
+  })
+
+  test('a dense window counts no more records than a sparse one', async () => {
+    const { source } = fakeSource(
+      [chr1, chrM],
+      [
+        { refId: 1, start: 0 },
+        { refId: 0, start: 5_000_000 },
+      ],
+      640,
+    )
+    expect(await sampleMeanRecordSpan(source)).toBe((128 * 1 + 128 * 50) / 256)
+  })
+
+  test("only a window short of records widens, clipped to the window or its ref's end", async () => {
+    const sparse = { name: 'chr2', length: 50_000_000, span: 1000 }
+    const tiny = { name: 'chrUn', length: 2_500, span: 1000 }
+    const { source, windows } = fakeSource(
+      [sparse, tiny],
+      [
+        { refId: 0, start: 0 },
+        { refId: 1, start: 0 },
+      ],
+      40,
+    )
+    const span = await sampleMeanRecordSpan(source)
+    expect(windows).toEqual([
+      [
+        { refName: 'chr2', start: 0, end: 2560 },
+        { refName: 'chrUn', start: 0, end: 2500 },
+      ],
+      [{ refName: 'chr2', start: 0, end: 40960 }],
+    ])
+    expect(span).toBeNaN()
+
+    const { source: wider } = fakeSource(
+      [sparse],
+      Array.from({ length: 4 }, (_, i) => ({ refId: 0, start: i * 1_000_000 })),
+      40,
+    )
+    expect(await sampleMeanRecordSpan(wider)).toBeCloseTo(
+      (40 * 1000 + 960) / 41,
+      10,
+    )
+  })
+
+  test('an index with no children, or no index, answers NaN', async () => {
+    expect(
+      await sampleMeanRecordSpan(fakeSource([chr1], [], 640).source),
+    ).toBeNaN()
+    const { source } = fakeSource([chr1], [{ refId: 0, start: 0 }], 640)
+    source.filehandle.read = async () => new Uint8Array(52)
+    expect(await sampleMeanRecordSpan(source)).toBeNaN()
+  })
+})
+
 const COVERAGE =
   require.resolve('../../../../test_data/volvox/volvox-sorted.bam.coverage.bw')
 
@@ -561,7 +700,7 @@ describe('against a real file', () => {
     const { fileLevels } = await posneg.setup()
     expect(fileLevels[0]).toBe(1584)
     expect(await sampleMeanRecordSpan(await posneg.setup())).toBeCloseTo(
-      99.8,
+      99.9,
       1,
     )
     expect(await posneg.getZoomRange({ bpPerPx: 100 })).toEqual({
