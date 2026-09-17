@@ -37,12 +37,10 @@ welcome your [feedback](/contact).
 
 ## Where the data comes from
 
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), whose graph we
-host as tabix-indexed projections, listed with their sizes in the page's
-**Files** table, and whose callset and graph database two of the launches read
-straight off S3.
+Everything the page opens comes from
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
 
-- the SV-resolution graph the projections were cut from:
+- the SV-resolution graph our hosted tabix projections were cut from:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
 - how each segment index, link index, bubble file, allele inventory and bubble
   tier was built: https://jbrowse.org/demos/hprc/README.txt
