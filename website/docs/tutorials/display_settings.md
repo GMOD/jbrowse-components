@@ -132,21 +132,24 @@ The track then opens paired and colored, with no clicking.
 
 ## Precedence when config and session disagree
 
-A session can set a key that `displayDefaults` also sets. The config above sets
-`height: 250`, and this session sets 100 on the same track:
+A session can set a key that a track's `displayDefaults` also sets. The volvox
+config ships a gene track, `gff3tabix_genes_shorthand_jexl`, whose
+`displayDefaults` set two keys: `color`, a jexl expression that draws
+plus-strand features blue and minus-strand ones red, and `labels`, which names
+each feature with its type in brackets. This session sets `color` on that track
+and nothing else:
 
 ```json live config=test_data/volvox/config.json
 {
   "views": [
     {
       "assembly": "volvox",
-      "loc": "ctgA:1-10000",
+      "loc": "ctgA:1-25000",
       "type": "LinearGenomeView",
       "tracks": [
         {
-          "trackId": "volvox_sv_cram",
-          "height": 100,
-          "colorBy": { "type": "insertSizeAndOrientation" }
+          "trackId": "gff3tabix_genes_shorthand_jexl",
+          "color": "#8c8c8c"
         }
       ]
     }
@@ -154,8 +157,12 @@ A session can set a key that `displayDefaults` also sets. The config above sets
 }
 ```
 
-The track opens 100px tall. A session value overrides `displayDefaults` one key
-at a time, so a key the session does not set still comes from `displayDefaults`.
+The features draw grey, and their labels still read `seg04 [match]`. A session
+value overrides `displayDefaults` one key at a time: the session's `color`
+replaces the config's, and `labels`, which the session does not set, still comes
+from `displayDefaults`. The alignments track above follows the same rule, so a
+session that sets `height: 100` on it draws the track 100px tall and keeps the
+paired coloring from its config.
 
 Each entry in a view's `tracks` array is either a plain `trackId` string or an
 object with `trackId` plus settings written alongside it, as above. The settings
