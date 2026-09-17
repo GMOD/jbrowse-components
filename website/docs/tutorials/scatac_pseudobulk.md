@@ -83,10 +83,10 @@ snap.ex.export_coverage(
 # writes bw/<cell_type>.bw, one per group, keyed by group in the returned dict
 ```
 
-`n_jobs` is a memory knob: each worker holds a genome-wide coverage vector, and
-the writer dies partway through the groups when memory runs out. `groupby` picks
-the rows: the cluster column (`"leiden"`) for one per cluster, or the annotated
-column (`"cell_type"`) for one per cell type.
+`n_jobs` controls memory use: each worker holds a genome-wide coverage vector,
+and the writer dies partway through the groups when memory runs out. `groupby`
+picks the rows: the cluster column (`"leiden"`) for one per cluster, or the
+annotated column (`"cell_type"`) for one per cell type.
 
 ### Other starting points
 

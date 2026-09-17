@@ -204,8 +204,8 @@ sample table, so the two are independent.
 In a matrix every record is one column of equal width, so a window's width in
 the frame is a count of records. The build script prints which sites separate
 the two size classes, and this window is that span with a margin of
-undifferentiated sequence on each side, which is where the Fst lane comes back
-down.
+undifferentiated sequence on each side; the Fst lane comes back down over that
+margin.
 
 Clustering reads the region on screen, and over the whole window the separating
 columns are diluted by the undifferentiated sites around them. Zoom to the core,

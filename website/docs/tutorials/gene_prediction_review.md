@@ -79,12 +79,12 @@ portal.
 
 A junction is shared with a gene when it is an intron of one of that gene's
 transcripts. Reading the gene's exons as one list instead is cheaper and wrong:
-it manufactures junctions no transcript has, which is worth stating because it
-is what the first version of this comparison did. Against RANBP1's 13 isoforms
-it matched none of Tiberius's five correct junctions, and 18 of the 21 structure
-conflicts it reported were that arithmetic rather than the prediction. Every
-number on this page comes out of the run, for the same reason: the paragraph you
-are reading would otherwise still say 21.
+it manufactures junctions no transcript has. The first version of this
+comparison did exactly that. Against RANBP1's 13 isoforms it matched none of
+Tiberius's five correct junctions, and 18 of the 21 structure conflicts it
+reported were that arithmetic rather than the prediction. Every number on this
+page comes out of the run, for the same reason: the paragraph you are reading
+would otherwise still say 21.
 
 Two rules keep merged models down to one entry. The comparison runs at exon
 level against genes on the same strand, and a fusion counts only when the genes

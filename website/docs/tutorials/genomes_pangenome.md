@@ -125,12 +125,10 @@ inbred and wild-derived strains on GRCm39, and
 [/pangenomes/bovine](https://staging.genomes.jbrowse.org/pangenomes/bovine) is
 the taurine, indicine, yak, bison and gaur super-pangenome on ARS-UCD1.2.
 [The pangenomes landing page](https://staging.genomes.jbrowse.org/pangenomes/)
-is the choice between the three. What differs is what each graph can say: the
-mouse graph was built with minigraph, which writes no haplotype paths, so it has
-no callset and cannot say which strain carries an allele. The
-[mouse](/docs/tutorials/pangenome_mouse) and
-[cattle](/docs/tutorials/pangenome_cattle) tutorials are how those two were
-built.
+links all three. What each graph can say differs: the mouse graph was built with
+minigraph, which writes no haplotype paths, so it has no callset and cannot say
+which strain carries an allele. The [mouse](/docs/tutorials/pangenome_mouse) and
+[cattle](/docs/tutorials/pangenome_cattle) tutorials build those two.
 
 ## Adding the same tracks to your own instance
 

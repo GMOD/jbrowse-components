@@ -47,8 +47,7 @@ UCSC and the companion index we host.
 - release 2.1's Minigraph-Cactus graph as a gbz-base database, 10 GB, read by
   range request and never downloaded:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
-- the `.gbz` that database was built from, which is also what names its
-  haplotypes:
+- the `.gbz` that database was built from, which also names its haplotypes:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
 - our companion haplotype index for that database, which HPRC does not publish:
   https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
@@ -293,11 +292,11 @@ configured lanes until **Choose lanes...** picks others. The cut carries one W
 line per haplotype walk, named through the companion, and **Sample rows** in the
 **Layout** dropdown gives each haplotype a row.
 
-Pick **Force-directed layout** in the same dropdown, which is where the walks
-show most. A node draws thicker the more of the nine walks carry it, so the
-reference is fat and each haplotype's private run of kringle copies is a thin
-loop. Now open the **Walk** dropdown and pick `HG00133`: its route keeps its
-ink, the rest fades, and a readout gives its length against the reference walk.
+Pick **Force-directed layout** in the same dropdown; the walks show most there.
+A node draws thicker the more of the nine walks carry it, so the reference is
+fat and each haplotype's private run of kringle copies is a thin loop. Now open
+the **Walk** dropdown and pick `HG00133`: its route stays colored, the rest
+fades, and a readout gives its length against the reference walk.
 
 <Figure caption="The KIV-2 array cut from the GBZ for eight haplotypes, force-directed under the same window's genes, bubble and rGFA segments, with HG00133's walk lifted. Nodes on the walk keep their reference-position color, red to magenta across the window, and every node the walk does not visit fades to grey. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout at the top right states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 

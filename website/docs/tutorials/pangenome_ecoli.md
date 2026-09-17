@@ -390,7 +390,7 @@ alleles run past `LEN`, emitting the nested sites in its place, and `vcfwave`
 realigns what survives into primitive variants. On this graph nothing then
 paints over the layer beneath it, so the track needs no display filter.
 
-`LEN` is a cost knob too: vcfwave is dominated by the longest alleles, and
+`LEN` also controls runtime: vcfwave is dominated by the longest alleles, and
 HPRC's own `-a 100000` runs far longer here than `-a 10000`. Structural
 variation that large reads better in the graph view or the per-strain path
 track.
@@ -855,7 +855,7 @@ marks are the segments it takes instead, in the MAF's own row order.
 
 The dropdown redraws the same nodes into either layout:
 
-<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing drops the axis, and the alternate routes hang off the backbone where the rows had flattened them." />
+<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing drops the axis, and the alternate routes extend from the backbone where the rows had flattened them." />
 
 #### Who carries a segment
 
@@ -961,8 +961,8 @@ rGFA whole-genome, and open the pggb graph where you want every base.
 ### A window as a file
 
 With no index, **Add → Graph genome view** takes a GFA by file or URL, for a
-graph too large to index or a window someone hands you. Three odgi commands cut
-one:
+graph too large to index or a window someone else cut for you. Three odgi
+commands cut one:
 
 - `extract -E` takes every node between the first and last in the range
 - `sort -O` compacts the node ids
@@ -980,7 +980,7 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - 
 
 Nothing in a plain GFA marks one path as the reference, so pick it under **View
 menu → Settings → Reference path**. `odgi extract` writes the window into the
-path name (`K12#1#chr:1004500-1004961`), which is where the offsets come from.
+path name (`K12#1#chr:1004500-1004961`), and the offsets come from there.
 
 The same walk outside the browser puts those nodes on a linear track:
 
