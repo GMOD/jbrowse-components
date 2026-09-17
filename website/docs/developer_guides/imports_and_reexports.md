@@ -73,7 +73,7 @@ always real in both realms.
 | `@jbrowse/alignments-core` | Shared GPU rendering utilities for alignments and synteny displays | 2 | all of it |
 | `@jbrowse/app-core` | JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop | 1 | 30 of 36 exports; the rest stubbed |
 | [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | 1 | all of it |
-| [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 1228 of 1325 exports; the rest stubbed |
+| [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 239 | 1237 of 1334 exports; the rest stubbed |
 | `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 75 | 123 of 147 exports; the rest stubbed |
 | [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 5 | 52 of 58 exports; the rest stubbed |
 | `@jbrowse/embedded-core` | JBrowse 2 code shared between embedded products | 1 | 1 of 4 exports; the rest stubbed |
@@ -85,7 +85,7 @@ always real in both realms.
 | `@jbrowse/plugin-bed` | JBrowse 2 bed adapters, tracks, etc. | 1 | all of it |
 | `@jbrowse/plugin-blat` | JBrowse 2 UCSC BLAT client | 1 | none; a stub with its names |
 | `@jbrowse/plugin-breakpoint-split-view` | JBrowse 2 breakpoint detail split view | 1 | none; a stub with its names |
-| `@jbrowse/plugin-canvas` | JBrowse 2 plugin for canvas features | 3 | 36 of 39 exports; the rest stubbed |
+| `@jbrowse/plugin-canvas` | JBrowse 2 plugin for canvas features | 3 | 34 of 37 exports; the rest stubbed |
 | `@jbrowse/plugin-circular-view` | JBrowse 2 circular view | 1 | 1 of 3 exports; the rest stubbed |
 | `@jbrowse/plugin-comparative-adapters` | JBrowse 2 comparative adapters | 1 | none; a stub with its names |
 | `@jbrowse/plugin-config` | JBrowse 2 config utilities | 1 | all of it |

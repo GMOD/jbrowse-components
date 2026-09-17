@@ -2906,6 +2906,18 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (string | undefined))"
         },
         {
+          "name": "colorField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "colorDomain",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "colorPalette",
+          "type": "(JexlString | string[])"
+        },
+        {
           "name": "connectorColor",
           "type": "(JexlString | (string | undefined))"
         },
@@ -3900,6 +3912,18 @@ export const configManifest: ConfigManifest = {
         {
           "name": "color",
           "type": "(JexlString | (string | undefined))"
+        },
+        {
+          "name": "colorField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "colorDomain",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "colorPalette",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "connectorColor",

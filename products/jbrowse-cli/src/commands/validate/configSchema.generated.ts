@@ -3513,6 +3513,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.",
           "$ref": "#/$defs/StringOrJexl"
         },
+        "colorField": {
+          "description": "feature field (or jexl expression) to color by, one palette color per value, with a key.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "colorDomain": {
+          "description": "colorField values that take the palette first, in order.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
+        "colorPalette": {
+          "description": "CSS colors the colorField values take, in order.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
           "$ref": "#/$defs/StringOrJexl"
@@ -5053,6 +5066,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "color": {
           "description": "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.",
           "$ref": "#/$defs/StringOrJexl"
+        },
+        "colorField": {
+          "description": "feature field (or jexl expression) to color by, one palette color per value, with a key.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "colorDomain": {
+          "description": "colorField values that take the palette first, in order.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
+        "colorPalette": {
+          "description": "CSS colors the colorField values take, in order.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
@@ -7060,7 +7086,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "name"
         },
         "colorDomain": {
-          "description": "optional legend order for the colour field; listed values first, the rest sorted.",
+          "description": "optional legend and palette order for the colour field; listed values first, the rest sorted.",
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "scoreField": {

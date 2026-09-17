@@ -1116,6 +1116,7 @@
         "isConstantEntry",
         "isSlotDefinitionEntry",
         "liftField",
+        "liftValue",
         "makeSlotFacade",
         "mergeFormatCallbacks",
         "preProcessSlotValues",
@@ -1837,6 +1838,7 @@
       "package": "@jbrowse/core",
       "names": [
         "categoricalColor",
+        "categoricalColorScale",
         "categoricalPalette",
         "categoricalScale",
         "categoricalValueColor",
@@ -1846,7 +1848,8 @@
         "paletteColors",
         "refNameColor",
         "refNamePaletteColorAt",
-        "set1"
+        "set1",
+        "similarColors"
       ],
       "worker": "real"
     },
@@ -3064,6 +3067,13 @@
       "names": [],
       "worker": "real"
     },
+    "@jbrowse/core/util/fieldReader": {
+      "package": "@jbrowse/core",
+      "names": [
+        "fieldReader"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/fileHandleStore": {
       "package": "@jbrowse/core",
       "names": [
@@ -3578,6 +3588,17 @@
         "calcStdFromSums",
         "rectifyStats",
         "scoresToStats"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/strandScale": {
+      "package": "@jbrowse/core",
+      "names": [
+        "STRAND_DOMAIN",
+        "STRAND_FIELD",
+        "STRAND_PALETTE",
+        "readStrand",
+        "strandLabel"
       ],
       "worker": "real"
     },
@@ -4851,9 +4872,7 @@
         "MIN_FIT_BOX_PX",
         "SHOW_LABELS_MODES",
         "STRAND_ARROW_LENGTH_PX",
-        "STRAND_COLOR_JEXL",
         "UTR_HEIGHT_FRACTION",
-        "attributeColorJexl",
         "buildFeatureFlatbushIndex",
         "buildFeatureRenderData",
         "centerShrink",

@@ -317,6 +317,20 @@ section table a display names them from.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+### fieldReader
+
+What a channel reads off a feature: a field by name, a dotted path into a
+structured field where no field carries the whole name (`INFO.SVTYPE` on a VCF
+record), or a `jexl:` expression over `feature`. A jexl expression that does not
+compile throws here, once, rather than on every feature.
+
+```js
+// type signature
+(ref: string, jexl: JexlInstance | undefined) => (feature: Feature) => unknown
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)
+
 ### FieldRef
 
 Where a channel's value comes from: a feature field name, read natively
@@ -658,6 +672,17 @@ indistinguishable at runtime from the broken spelling.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
 
+### readStrand
+
+A feature's strand as the scale reads it: one with none is unstranded.
+
+```js
+// type signature
+(feature: Feature) => unknown
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
+
 ### relight
 
 Move a color's OKLCH lightness by `lightnessShift` and scale its chroma, holding
@@ -856,6 +881,48 @@ never baked into the color string.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
+### STRAND_DOMAIN
+
+```js
+// type signature
+string[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
+
+### STRAND_FIELD
+
+Strand as a categorical color field: the values a feature carries, the colors
+strand coloring paints them (red forward, blue reverse, the vocabulary the
+synteny ribbons paint too) and the names a key gives them.
+
+```js
+// type signature
+'strand'
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
+
+### STRAND_PALETTE
+
+```js
+// type signature
+string[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
+
+### strandLabel
+
+How a key names a strand value, or undefined for a value that is none.
+
+```js
+// type signature
+(value: string) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
 
 ### TransformStep
 

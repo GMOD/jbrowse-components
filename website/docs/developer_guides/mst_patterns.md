@@ -364,23 +364,32 @@ block. `LinearVariantDisplay`'s legend getters use both, one line apart:
 /**
  * #getter
  */
-// True when features are colored by their most severe consequence impact.
+// True when features are colored by their most severe consequence impact,
+// which a color field painting over the slot is not.
 get colorsByConsequenceImpact() {
-  return self.conf.color === CONSEQUENCE_IMPACT_JEXL
+  const { color, colorField } = self.colorSettings
+  return !colorField && color === CONSEQUENCE_IMPACT_JEXL
 },
 /**
  * #getter
  */
 // True when features are colored by their structural-variant class.
 get colorsBySvType() {
-  return self.conf.color === SV_TYPE_COLOR_JEXL
+  const { color, colorField } = self.colorSettings
+  return !colorField && color === SV_TYPE_COLOR_JEXL
+},
+/**
+ * #getter
+ */
+get channelSpecExamples() {
+  return VARIANT_CHANNEL_SPEC_EXAMPLES
 },
 /**
  * #getter
  * `LegendMixin`'s hook: the scale of whichever preset coloring is active
- * (impact tiers or SV classes), or none. SV-type shows the fixed class
- * key; copy-number and unrecognized tokens aren't listed (the pure jexl
- * has no present-set).
+ * (impact tiers or SV classes), or else the key a color by a field
+ * derives. SV-type shows the fixed class key; copy-number and
+ * unrecognized tokens aren't listed (the pure jexl has no present-set).
  */
 get colorScales(): ColorScale[] {
   if (this.colorsByConsequenceImpact) {
@@ -418,7 +427,7 @@ get colorScales(): ColorScale[] {
       },
     ]
   }
-  return []
+  return self.derivedColorScales
 },
 ```
 
