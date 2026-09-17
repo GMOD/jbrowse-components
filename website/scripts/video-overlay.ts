@@ -275,6 +275,24 @@ export async function setCaption(page: Page, text: string) {
   )
 }
 
+// Take the chip off for the tail of a clip, the way `parkCursor` takes the
+// cursor off and for the same reason: the chip fades on a 220ms CSS
+// transition, and the last repaint of a run of them does not reach the
+// screencast, so the seconds of tail froze part way through the fade and every
+// poster carried a faint ghost of the tour's last line. Dropping the
+// transition first leaves the chip gone in the frame after this, which the
+// tail behind it does reach. Mid-tour a step with an empty `say` still fades,
+// because there are frames after it to record the fade.
+export async function clearCaptionForTail(page: Page) {
+  await page.evaluate(id => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.style.transition = 'none'
+      el.style.opacity = '0'
+    }
+  }, CAPTION_ID)
+}
+
 // Send the pointer off frame, for the tail of a clip: a cursor parked over a
 // control leaves the last thing on screen looking like a step that did not
 // finish, and it is the frame the poster is taken from.

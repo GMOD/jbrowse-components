@@ -74,6 +74,7 @@ import {
   moveCursor,
   parkCursor,
   scrollPage,
+  clearCaptionForTail,
   setCaption,
 } from './video-overlay.ts'
 import {
@@ -457,7 +458,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
     if (!cam.recording) {
       await cam.start()
     }
-    await setCaption(stage, '')
+    await clearCaptionForTail(stage)
     captions.say('', filmedMs())
     await parkCursor(stage, height)
     await delay(spec.tailMs ?? TAIL_MS)

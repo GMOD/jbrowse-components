@@ -116,6 +116,23 @@ export const paletteColors = {
  * Past the end is the caller's problem, and the two callers answer differently
  * on purpose: an attribute palette-by hashes the VALUE (stable across
  * re-palettes), while a by-position painter has no value to hash and wraps.
+ *
+ * **It holds 14 pairs `similarColors` calls the same** — five schemes' blues,
+ * oranges, greens, reds and pinks — and deduping it at construction is the
+ * wrong reading of that, measured on the 38 GENCODE gene biotypes. Hashed,
+ * which is what a track with no `colorDomain` does, 30 of them land on 22
+ * colors and 38 on 26; the loss is the birthday collision on 40 slots, not the
+ * near-twins, and only 3 of the pairs they land on read alike. Pruning to the
+ * 30 distinct entries makes that 23 and 24, so it costs ten colors and buys
+ * nothing.
+ *
+ * The near-twins bite the PINNED case instead, where a `domain` spends the
+ * list in order: 30 listed values take 30 colors today and 7 of those pairs
+ * read alike. Ordering the distinct 30 first and the twins behind them fixes
+ * that outright (0 pairs at 30 listed values, 11 at 38 where the twins are
+ * reached anyway) and costs no colors — but it moves every hashed color in
+ * marks, GWAS, canvas, multi-row and the arrangement dialog, so it is a pass
+ * with a figure refresh in it.
  */
 export const categoricalPalette = [
   ...new Set(
