@@ -24,7 +24,6 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
 import { detailLevelHost } from './detailLevels.ts'
 import {
-  AddDetailLevelDialog,
   ExportSvgDialog,
   GetSequenceDialog,
   RegionWidthEditorDialog,
@@ -61,48 +60,9 @@ function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
 }
 
 /**
- * A view offers to open a detail level under itself; a level offers to go.
- * Adding stops once the closest level — or this view when it has none — is
- * already at base level, since there is nothing left to zoom into.
- *
- * Only a view of its own offers to add one, which `isTopLevelView` is the whole
- * of: a row of a comparative stack is already part of somebody's figure — the
- * synteny ribbons and the breakpoint split panels are placed against each row's
- * own height, and those views' exports draw one row per view, so a level grown
- * there walks the ribbons off their rows and is dropped from the picture
- * without a word — and a level, living under a view rather than under the
- * session, is not a top-level view either.
- */
-function addDetailLevelMenuItem(self: LinearGenomeViewModel): MenuItem[] {
-  if (!self.isTopLevelView) {
-    return []
-  }
-  const closest = self.detailLevelViews.at(-1) ?? self
-  return [
-    {
-      label: 'Add detail level',
-      icon: LayersIcon,
-      // `bpPerPx > 0` first: it is the unmeasured sentinel for a view that has
-      // not been laid out yet, and comparing it says nothing
-      disabled: closest.bpPerPx > 0 && closest.bpPerPx <= closest.minBpPerPx,
-      onClick: () => {
-        getDialogHost(self).queueDialog(handleClose => [
-          AddDetailLevelDialog,
-          { model: self, handleClose },
-        ])
-      },
-    },
-  ]
-}
-
-/**
  * The zoom ladder, shared by the header's zoom button and the view menu's
  * "Zoom" — one definition so the two cannot drift, and the view menu is the
  * only one of the two that survives `hideHeader`.
- *
- * A detail level belongs here rather than beside "Export SVG": what it does is
- * zoom in, and what it costs is the view you were reading. Somebody who wants
- * both looks where the zooming is.
  */
 export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   return [
@@ -128,7 +88,6 @@ export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         ])
       },
     },
-    ...addDetailLevelMenuItem(self),
   ]
 }
 
@@ -355,8 +314,22 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
 /**
  * Build rubberband selection menu items. `launchItems` are the plugin-supplied
  * things a selection can start (`rubberBandLaunchMenuItems()`); they collect
- * under one "Launch" submenu so the menu stays three actions plus a group
+ * under one "Launch" submenu so the menu stays four actions plus a group
  * however many plugins are loaded, and vanish entirely when none apply.
+ *
+ * A detail level is offered from HERE and nowhere else, because a drag is what
+ * the feature was always asking for and a menu item could not: the level shows
+ * one span of one place, and this is the gesture that names both. From the view
+ * menu it could only guess — a tenth of the middle, which is a span nobody
+ * picked.
+ *
+ * Only a view of its own offers it, which `isTopLevelView` is the whole of. A
+ * row of a comparative stack is already part of somebody's figure: the synteny
+ * ribbons and the breakpoint split panels are placed against each row's own
+ * height, and those views' exports draw one row per view, so a level grown
+ * there walks the ribbons off their rows and is dropped from the picture
+ * without a word. A level, living under a view rather than under the session,
+ * is not a top-level view either.
  */
 export function buildRubberBandMenuItems(
   self: LinearGenomeViewModel,
@@ -402,6 +375,17 @@ export function buildRubberBandMenuItems(
         ])
       },
     },
+    ...(self.isTopLevelView
+      ? [
+          {
+            label: 'Add detail level',
+            icon: LayersIcon,
+            onClick: () => {
+              self.addDetailLevelForSpan(leftOffset, rightOffset)
+            },
+          },
+        ]
+      : []),
     {
       label: 'Copy range',
       icon: ContentCopyIcon,

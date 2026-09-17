@@ -785,7 +785,7 @@ export const videoFrames: Record<
   },
   "ui/detail_levels": {
     "width": 1920,
-    "height": 760
+    "height": 700
   },
   "ui/open_track_url": {
     "width": 1920,
@@ -1118,9 +1118,9 @@ export const videoSteps: Record<string, string[]> = {
     "Click the saved row to navigate back"
   ],
   "ui/detail_levels": [
-    "Stack a closer view of the same locus under the tracks",
-    "The level opens showing what the view is showing",
-    "A second level, ten times further in again",
+    "Drag the span you want a closer look at",
+    "It opens below the tracks, showing the same track",
+    "A narrower drag opens a row under that one",
     "Both levels follow the view"
   ],
   "ui/open_track_url": [

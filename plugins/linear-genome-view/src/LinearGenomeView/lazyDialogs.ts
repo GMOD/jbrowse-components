@@ -12,9 +12,6 @@ export const ExportSvgDialog = lazy(
 export const GetSequenceDialog = lazy(
   () => import('./components/GetSequenceDialog.tsx'),
 )
-export const AddDetailLevelDialog = lazy(
-  () => import('./components/AddDetailLevelDialog.tsx'),
-)
 export const RegionWidthEditorDialog = lazy(
   () => import('./components/RegionWidthEditorDialog.tsx'),
 )

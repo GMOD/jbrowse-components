@@ -179,6 +179,15 @@ export const settingsVideoFixtures = {
 // What videos/ui.ts films. The tour ends where these stills already are, so it
 // opens on the session they were captured from rather than one written again.
 export const uiVideoFixtures = {
+  // The two spans the detail-levels tour drags, both on the top view: the
+  // second is the narrower of the two, so it lands under the level the first
+  // one opened. Loci rather than pixels, so each drag survives the recentring
+  // the one before it caused — a level shares its host's centre, so opening one
+  // moves the view to the middle of the span that opened it.
+  detailLevelSpans: {
+    outer: { start: 'chr17:7,660,000', end: 'chr17:7,700,000' },
+    inner: { start: 'chr17:7,673,000', end: 'chr17:7,685,000' },
+  },
   // The window the detail-levels tour builds its stack under: 200 kb of chr17
   // around TP53 with the gene track on it and no levels yet, since the tour
   // adds both of them. Genes rather than the figure's reads — the tour copies

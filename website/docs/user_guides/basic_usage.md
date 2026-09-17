@@ -293,35 +293,29 @@ gives an arbitrary slice of bands.
 
 ### Detail levels
 
-**Add detail level**, under **Zoom** in the view's hamburger menu, stacks a
-closer view of the same locus below the tracks: genes over a gene's exons over
-the reads at base level, each level ten times into the one above it. A trapezoid
-joins each level to the row above, marking the span it opens — the same shape
-the header overview draws between the chromosome and the view, carried on down
-the page.
+Drag a span across the view and pick **Add detail level**: a closer view of that
+span opens below the tracks, showing the same tracks. Do it again inside the new
+row and a third opens below that — genes over a gene's exons over the reads at
+base level, each row a closer look at the one above it. A trapezoid joins each
+row to the one above, marking the span it opens, the same shape the header
+overview draws between the chromosome and the view.
 
-The dialog asks one thing. **Copy this view's tracks** opens the level showing
-what this view is showing, so Add alone gives a closer look at the same data;
-unchecked, the level opens empty and its own track selector fills it.
+The stack stays centred on the view, so adding a level moves the view to the
+middle of the span you dragged.
 
-A level arrives ten times zoomed in from the closest level there is, and the
-wheel takes it from there. It stops at base level, where the menu item goes
-grey.
-
-The levels stay centred on the view. Drag or pan a level and the view moves by
-the same number of bases; zoom a level and only that level changes width. A
-rubberband selection on a level navigates the view to it. Drag a trapezoid
-itself to set how tall its band is, which is how steep the connector reads.
-**Remove detail level** in a level's own hamburger menu takes it away.
+Pan or drag a level and the view moves by the same number of bases; zoom a level
+and only that level changes width. Drag a trapezoid itself to set how tall its
+band is, which is how steep the connector reads. **Remove detail level** in a
+level's own hamburger menu takes it away.
 
 **Export SVG** draws the whole stack whichever menu it is asked from, each level
 under a bar labelled with the span it covers.
 
-<Figure caption="The Add detail level item under Zoom in the view menu." src="/img/detail_levels_menu.png" />
+<Figure caption="Add detail level in the rubberband menu, over a span dragged across the view." src="/img/detail_levels_menu.png" />
 
 <Figure caption="A linear genome view of COLO829 at TP53 with two detail levels: tumour coverage over 200 kb, the gene track below it at 20 kb, and the ONT reads at 2 kb. Each trapezoid marks the span the row below it opens." src="/img/detail_levels.png" />
 
-<Video src="/media/ui/detail_levels.mp4" caption="Building that stack: Add detail level from the view menu's Zoom group, a second level ten times in again, and a navigation the whole stack follows." />
+<Video src="/media/ui/detail_levels.mp4" caption="Building that stack: a span dragged across the view, Add detail level from its menu, the same drag inside the level that opens, and a navigation the whole stack follows." />
 
 ### Track label positioning
 

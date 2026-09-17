@@ -1670,6 +1670,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * Open a detail level over a rubberband selection, showing this view's
+       * tracks. The view recentres on the span first, because every level
+       * shares its host's centre — a level is a closer look at the middle of
+       * this view, and a selection off to one side would otherwise open
+       * somewhere else.
+       *
+       * The span is `computeMoveToLayout`'s, the pure half of the `moveTo` the
+       * same selection's "Zoom to region" runs, so the level covers exactly
+       * what zooming would have navigated to.
+       */
+      addDetailLevelForSpan(start?: BpOffset, end?: BpOffset) {
+        if (!start || !end) {
+          return undefined
+        }
+        const { bpPerPx, offsetPx } = computeMoveToLayout(self, start, end)
+        const windowWidthBp = bpPerPx * self.width
+        const centerBp = offsetPx * bpPerPx + windowWidthBp / 2
+        self.scrollToBp(centerBp - self.windowWidthBp / 2)
+        return self.addDetailLevel({
+          windowWidthBp,
+          trackIds: self.tracks.map(track => track.configuration.trackId),
+        })
+      },
+      /**
+       * #action
        * showTrack for a track whose display state model may be lazily
        * loaded: loads it, then shows
        */

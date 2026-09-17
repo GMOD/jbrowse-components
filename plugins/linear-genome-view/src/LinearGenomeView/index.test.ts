@@ -2821,18 +2821,13 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
 
   // A synteny row and a breakpoint panel are placed by their own heights and
   // exported a row per view, so a detail level grown inside one walks the
-  // ribbons off their rows and is dropped from that view's picture. It is the
-  // Zoom group that carries the item, on a view that has one at all.
+  // ribbons off their rows and is dropped from that view's picture. The
+  // rubberband menu is where the item lives, on a view that offers it at all.
   test('only a top-level view offers to open a detail level', () => {
-    const zoomLabels = (view: LGV) => {
-      const zoom = shown(view)
-        .menuItems()
-        .find(m => 'label' in m && m.label === 'Zoom')
-      const subMenu = zoom && 'subMenu' in zoom ? zoom.subMenu : []
-      return labelsOf(typeof subMenu === 'function' ? subMenu() : subMenu)
-    }
-    expect(zoomLabels(makeView(1))).toContain('Add detail level')
-    expect(zoomLabels(makeView(1, true))).not.toContain('Add detail level')
+    const bandLabels = (view: LGV) =>
+      labelsOf(shown(view).rubberBandMenuItems())
+    expect(bandLabels(makeView(1))).toContain('Add detail level')
+    expect(bandLabels(makeView(1, true))).not.toContain('Add detail level')
   })
 })
 

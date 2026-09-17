@@ -13,6 +13,7 @@ import type { VideoSpec } from '../video-spec-types.ts'
 
 const {
   addTrackSession,
+  detailLevelSpans,
   detailLevelsSession,
   addTrackUrl,
   bookmarkSession,
@@ -38,24 +39,6 @@ const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 // `.MuiDataGrid-cell` prefix is what tells it from its column header, which
 // carries the same `data-field`.
 const BOOKMARK_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
-
-// Add detail level, which lives under the view menu's Zoom group, and the
-// button that takes its dialog. The dialog itself is one checkbox, which the
-// tour leaves checked.
-const openAddDetailLevel = [
-  { type: 'waitForSelector', selector: cascade('submenu', 'Zoom') },
-  { type: 'click', selector: cascade('submenu', 'Zoom'), hold: 700 },
-  {
-    type: 'waitForSelector',
-    selector: cascade('menuitem', 'Add detail level'),
-  },
-  {
-    type: 'click',
-    selector: cascade('menuitem', 'Add detail level'),
-    hold: 1000,
-  },
-] as const
-const DIALOG_SUBMIT = 'form button[type="submit"]'
 
 export const uiVideos: VideoSpec[] = [
   // A LOOP, which is what bookmark_widget.md is about and what neither of its
@@ -152,21 +135,20 @@ export const uiVideos: VideoSpec[] = [
 
   // DETAIL LEVELS, WHICH ARE BUILT RATHER THAN CONFIGURED. basic_usage.md's
   // figure holds the finished stack, and the route to it is two things a still
-  // cannot hold: each level arriving ten times further in than the row above
-  // it, and the stack staying centred afterwards, so a navigation at the top
-  // moves every row with it.
+  // cannot hold: the drag that names each row's span, and the stack staying
+  // centred afterwards, so a navigation at the top moves every row with it.
   //
-  // One gene track, copied onto each level the tour adds, so the three rows
-  // show the same data at 200 kb, 20 kb and 2 kb — which is the claim, drawn
-  // three times in one frame.
+  // One gene track, copied onto each level a drag opens, so the three rows show
+  // the same data at three scales — which is the claim, drawn three times in
+  // one frame.
   {
     name: 'ui/detail_levels',
     description:
-      'Two detail levels added from the view menu, each ten times further into the locus than the row above it, and a navigation the whole stack follows',
+      'Two detail levels opened by dragging spans across the view, each row a closer look than the one above it, and a navigation the whole stack follows',
     url: detailLevelsSession,
-    // three gene rows at 100 with their trapezoids, and room for the dialog
-    // that opens over them
-    viewportHeight: 760,
+    // three gene rows at 100 with their trapezoids, and the menu that opens
+    // over them on each release
+    viewportHeight: 700,
     readySelector: displayPainted('linear-basic-display'),
     readyTimeout: 120000,
     settleMs: 8000,
@@ -174,28 +156,29 @@ export const uiVideos: VideoSpec[] = [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 2000 },
       {
-        type: 'click',
-        selector: '[data-testid="view_menu_icon"]',
-        say: 'Stack a closer view of the same locus under the tracks',
-        hold: 900,
+        type: 'drag',
+        fromAnchor: { locus: detailLevelSpans.outer.start, band: RUBBERBAND },
+        toAnchor: { locus: detailLevelSpans.outer.end, band: RUBBERBAND },
+        say: 'Drag the span you want a closer look at',
       },
-      ...openAddDetailLevel,
+      { type: 'waitForText', text: 'Add detail level' },
       {
         type: 'click',
-        selector: DIALOG_SUBMIT,
-        say: 'The level opens showing what the view is showing',
+        text: 'Add detail level',
+        say: 'It opens below the tracks, showing the same track',
         hold: 900,
       },
       { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 2000 },
+      { type: 'delay', ms: 2500 },
+      // a narrower span, so the row it opens lands under the first one
       {
-        type: 'click',
-        selector: '[data-testid="view_menu_icon"]',
-        say: 'A second level, ten times further in again',
-        hold: 900,
+        type: 'drag',
+        fromAnchor: { locus: detailLevelSpans.inner.start, band: RUBBERBAND },
+        toAnchor: { locus: detailLevelSpans.inner.end, band: RUBBERBAND },
+        say: 'A narrower drag opens a row under that one',
       },
-      ...openAddDetailLevel,
-      { type: 'click', selector: DIALOG_SUBMIT, hold: 900 },
+      { type: 'waitForText', text: 'Add detail level' },
+      { type: 'click', text: 'Add detail level', hold: 900 },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 2500 },
       // The claim, performed: the levels are centred on the view, so a

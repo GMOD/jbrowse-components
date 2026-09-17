@@ -1,12 +1,6 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import {
-  VOLVOX,
-  cascadeBoxes,
-  lgvSession,
-  menuCascade,
-  sessionSpec,
-} from '../screenshot-spec-helpers.ts'
+import { VOLVOX, lgvSession, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -81,7 +75,7 @@ export const detailLevelsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'detail_levels_menu',
-    viewportHeight: 820,
+    viewportHeight: 560,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:20,000-21,000',
@@ -89,16 +83,14 @@ export const detailLevelsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 4000,
+    // A drag across the view, since the span is what the item takes: dragging
+    // is the gesture, and the menu that opens on release is where the figure's
+    // one boxed row is.
     actions: [
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      ...menuCascade(['Zoom', 'Add detail level']),
+      { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
+      { type: 'waitForText', text: 'Add detail level' },
+      { type: 'delay', ms: 1000 },
     ],
-    annotations: [
-      {
-        type: 'circle',
-        anchor: { selector: '[data-testid="view_menu_icon"]' },
-      },
-      ...cascadeBoxes(['Zoom', 'Add detail level']),
-    ],
+    annotations: [{ type: 'box', anchor: { text: 'Add detail level' } }],
   },
 ]

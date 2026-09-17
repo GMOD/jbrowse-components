@@ -255,43 +255,63 @@ test("a level's own SVG export is the host's picture of the stack", async () => 
   expect(polygons(await level!.exportSvg({ save: false }))).toBe(2)
 })
 
-// Adding lives under Zoom, which is what it does; removing is top-level on the
-// level itself, which is the panel it takes away
+// A drag is what opens a level, so the item is the rubberband selection's;
+// removing is top-level on the level itself, which is the panel it takes away
 function labels(v: LinearGenomeViewModel) {
   return v.menuItems().map(m => ('label' in m ? m.label : undefined))
 }
 
-function addItem(v: LinearGenomeViewModel) {
-  const zoom = v.menuItems().find(m => 'label' in m && m.label === 'Zoom')
-  const subMenu = zoom && 'subMenu' in zoom ? zoom.subMenu : []
-  return (typeof subMenu === 'function' ? subMenu() : subMenu).find(
-    m => 'label' in m && m.label === 'Add detail level',
-  )
+function bandLabels(v: LinearGenomeViewModel) {
+  return v.rubberBandMenuItems().map(m => ('label' in m ? m.label : undefined))
 }
 
-test("a level's menu takes it away, and does not offer to add another", () => {
+test("a level's menu takes it away, and no menu offers to add one to it", () => {
   const { view } = setup()
   view.addDetailLevel()
   const level = levels(view)[0]!
-  expect(addItem(view)).toBeDefined()
+  expect(bandLabels(view)).toContain('Add detail level')
+  expect(labels(view)).not.toContain('Add detail level')
   expect(labels(view)).not.toContain('Remove detail level')
   expect(labels(level)).toContain('Remove detail level')
-  expect(addItem(level)).toBeUndefined()
+  expect(bandLabels(level)).not.toContain('Add detail level')
 })
 
-test('a view already zoomed to base level offers no level under it', () => {
+// The span the selection covers, and the place it covers it: the view recentres
+// on the drag, since every level shares its host's centre
+test('a drag opens a level over exactly what it selected', () => {
   const { view } = setup()
-  expect(addItem(view)).toMatchObject({ disabled: false })
-  view.zoomTo(view.minBpPerPx)
-  expect(addItem(view)).toMatchObject({ disabled: true })
+  view.addDetailLevelForSpan(view.pxToBp(100), view.pxToBp(300))
+  const [level] = levels(view)
+  expect(level!.windowWidthBp).toBeCloseTo(2000, -1)
+  expect(centerBp(view)).toBeCloseTo(402_000, -2)
+  expect(centerBp(level!)).toBe(centerBp(view))
 })
 
-// The closest level is what the next one is measured against, so a stack that
-// has reached base level stops offering to go further in
-test('a stack already at base level offers no level under it', () => {
+test('the level a drag opens carries the tracks the view is showing', async () => {
+  const { session, view } = setup()
+  await when(
+    () =>
+      session.assemblyManager.assemblies.length ===
+      session.assemblyManager.assemblyNamesList.length,
+  )
+  session.addSessionTrackConf({
+    trackId: 'genes',
+    name: 'Genes',
+    type: 'FeatureTrack',
+    assemblyNames: ['volMyt1'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  await view.launchTrack('genes')
+  view.addDetailLevelForSpan(view.pxToBp(100), view.pxToBp(300))
+  const [level] = levels(view)
+  await when(() => level!.tracks.length === 1)
+  expect(level!.tracks[0]!.configuration.trackId).toBe('genes')
+})
+
+test('a drag with no selection opens nothing', () => {
   const { view } = setup()
-  view.addDetailLevel({ windowWidthBp: view.minBpPerPx * view.width })
-  expect(addItem(view)).toMatchObject({ disabled: true })
+  expect(view.addDetailLevelForSpan(undefined, undefined)).toBeUndefined()
+  expect(levels(view)).toHaveLength(0)
 })
 
 test('the connector band is one height for the stack, with a floor', () => {
