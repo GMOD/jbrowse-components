@@ -2446,6 +2446,10 @@ export const svSpecs: ScreenshotSpec[] = [
           assembly: 'GRCh38_GIABv3',
           loc: 'chr3',
           tracks: [
+            // the bands under the ideogram, so p-arm and q-arm read off the
+            // frame itself (review: "add cytobands to the assembly and maybe
+            // even as track")
+            { trackId: 'grch38_cytobands', type: 'LinearBasicDisplay' },
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
@@ -2485,7 +2489,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr3',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 875,
+    viewportHeight: 960,
     settleMs: 30000,
     // in the depth lane's empty band on each arm: above the p-arm's points,
     // below the q-arm's

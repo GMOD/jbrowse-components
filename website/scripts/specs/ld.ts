@@ -1194,12 +1194,13 @@ export const ldSpecs: ScreenshotSpec[] = [
               // row would average a carrier chromosome with a non-carrier one.
               renderingMode: 'phased',
               runClustering: true,
-              // The block itself, as build_lct_ld.sh's r² profile resolves it,
-              // and narrower than what is drawn — the dog10k-igf1-haplotype
+              // The highlighted LCT/MCM6 stretch alone (review: "can cluster
+              // specifically over the highlighted region"), narrower than the
+              // r² block and than what is drawn — the dog10k-igf1-haplotype
               // pattern. Clustering over the whole drawn window instead mixes
               // in a megabase of unlinked sequence on each side, which is
               // exactly the variation that does NOT travel with the haplotype.
-              clusterRegion: 'chr2:135,000,000-136,150,000',
+              clusterRegion: 'chr2:135,787,850-135,876,467',
               colorBy: 'population',
               // the common, block-tagging variants. Unfiltered, this window is
               // mostly rare variation and the slab is buried in speckle.

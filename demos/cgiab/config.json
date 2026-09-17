@@ -20,6 +20,12 @@
             "locationType": "UriLocation"
           }
         }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
       }
     },
     {
@@ -51,6 +57,26 @@
     "name": "New Session"
   },
   "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "grch38_cytobands",
+      "name": "Cytobands (UCSC hg38)",
+      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": ["Reference"],
+      "adapter": {
+        "type": "BedAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz",
+        "columnNames": ["chrom", "chromStart", "chromEnd", "name", "gieStain"]
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "grch38_cytobands-LinearBasicDisplay",
+          "color": "jexl:{gneg:'rgb(227,227,227)',gpos25:'rgb(142,142,142)',gpos50:'rgb(85,85,85)',gpos75:'rgb(57,57,57)',gpos100:'rgb(0,0,0)',gvar:'rgb(0,0,0)',stalk:'rgb(127,127,127)',acen:'#800'}[get(feature,'gieStain')] || 'black'",
+          "height": 50
+        }
+      ]
+    },
     {
       "type": "VariantTrack",
       "trackId": "GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf",
