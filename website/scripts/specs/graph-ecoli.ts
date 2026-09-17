@@ -483,15 +483,28 @@ const LAUNCH_OUT_REGION = {
   start: 4400000,
   end: 4450000,
 }
+// The launch carries the graph's own track into the K12 panel, so a segments
+// track painted in the graph's reference-position ramp puts the same rainbow on
+// both frames (review: "it is not easy to see any 'connection' between the graph
+// and the launched synteny view").
+const LAUNCH_OUT_SEGMENTS_TRACK = 'ecoli_minigraph_segments_by_position'
 const LAUNCH_OUT_URL = sessionSpec(ECOLI_PANGENOME_CONFIG, {
+  sessionTracks: [
+    {
+      ...ECOLI_SEGMENTS_SESSION_TRACK,
+      trackId: LAUNCH_OUT_SEGMENTS_TRACK,
+      displayDefaults: { color: referencePositionColor(LAUNCH_OUT_REGION) },
+    },
+  ],
   views: [
     {
       id: 'launch_out_graph',
       type: 'GraphGenomeView',
-      loadedTrackId: ECOLI_SEGMENTS_TRACK,
+      loadedTrackId: LAUNCH_OUT_SEGMENTS_TRACK,
       loadedRegion: LAUNCH_OUT_REGION,
       layoutMode: 'force',
-      colorScheme: 'stable-rank',
+      colorScheme: 'reference-position',
+      showGenes: false,
     },
   ],
 })
@@ -566,11 +579,20 @@ function ecoliHoverSession() {
           },
         ],
       },
+      // No bubble halos, no gene overlay and a shorter pane (review: "it is
+      // hard to see the rainbow coloring in the graph. try to reduce bandage
+      // graphgenomeviewer height"): the halos and the exon bars sat over the
+      // reference nodes' hues, the gene lane above already names the genes,
+      // and the 65 kb loop took most of a 600 px pane.
       {
         type: 'GraphGenomeView',
         loadedTrackId: ECOLI_SEGMENTS_TRACK,
         loadedRegion: PATHS_REGION,
         colorScheme: 'reference-position',
+        showBubbles: false,
+        showGenes: false,
+        contigThickness: 10,
+        paneHeight: 420,
       },
     ],
   })
@@ -2517,10 +2539,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
     viewportWidth: 1000,
-    // the graph pane sizes itself to its drawing, and a force drawing is about
-    // as tall as it is wide where the row stack was flat — 600px of pane under
-    // the linear view rather than 260. Plus the MAF lane and its header.
-    viewportHeight: 1250,
+    // the linear view with its MAF lane, and the graph pane capped at 420
+    viewportHeight: 1070,
     // The graph's own hover tooltip stays: it names the node and gives the
     // coordinates on the assembly that contributed it, which is the other half
     // of the correspondence the band shows. spec.hideTooltip does not reach it;

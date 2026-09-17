@@ -14,9 +14,12 @@ import {
   ECOLI_DEMO_BASE,
   ecoliAvaStack,
 } from './demoBase.ts'
-import { GRAPH_DRAWN } from './graph-fixtures.ts'
+import { GRAPH_DRAWN, referencePositionColor } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// The paa island's graph slice and the segments lane over it share one ramp.
+const PAA_COLOR_DOMAIN = { start: 1445000, end: 1474500 }
 
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
@@ -3159,6 +3162,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 // 'auto'
                 showLabels: 'auto',
               },
+              // The graph's segments in the graph pane's own reference-position
+              // ramp, so a node below and its span here share a hue.
+              {
+                trackId: 'ecoli_minigraph_segments',
+                type: 'LinearBasicDisplay',
+                color: referencePositionColor(PAA_COLOR_DOMAIN),
+                height: 70,
+              },
               {
                 trackId: 'ecoli_ava',
                 type: 'LGVSyntenyDisplay',
@@ -3207,12 +3218,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
             gfaLocation: { uri: `${ECOLI_DEMO_BASE}/ecoli_paa_subgraph.gfa` },
             layoutMode: 'force',
             colorScheme: 'reference-position',
-            colorDomain: { start: 1445000, end: 1474500 },
+            colorDomain: PAA_COLOR_DOMAIN,
           },
         ],
       },
     ),
-    viewportHeight: 1190,
+    viewportHeight: 1290,
     // Both panes: the lanes' own done-marker AND the graph having drawn.
     // `body:has(A) B` is an AND — a bare list would be a CSS OR and fire on
     // whichever landed first, which here is always the lanes.
@@ -3226,13 +3237,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // the reader knows what stops. One line; the rest is in the caption.
     annotations: [
       {
-        // centred in the strip between the last lane and the graph pane's own
-        // header, which is what the LGV's spare height is for here
+        // in the strip under the last lane, which is what the LGV's spare
+        // height is for here
         type: 'text',
         fontSize: 18,
         maxWidth: 560,
-        x: 250,
-        y: 430,
+        anchor: {
+          track: 'ecoli_ava',
+          locus: 'chr:1,444,500',
+          alignY: 'bottom',
+          dy: -40,
+        },
         text: 'paa operon (phenylacetate catabolism): present in K-12 and NCTC86, absent from the other three',
       },
       {
