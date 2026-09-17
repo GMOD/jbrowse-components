@@ -346,7 +346,7 @@ since the follow would otherwise pull the row straight back off the contig it
 was just sent to, and the notification says so. That undo restores the previous
 anchor too.
 
-<Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. Above, the ribbons alone. Below, the same view marking the alignments it has no second endpoint for — most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
+<Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. The grey marks along the band's top edge are peach alignments whose grape end is on a chromosome the lower panel is not showing, and a labelled run names that chromosome. Most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
 
 ### Alignments anchored on the lower panel
 

@@ -821,34 +821,37 @@ function peachGrapeChr1({
 }
 
 export const syntenySpecs: ScreenshotSpec[] = [
-  // The two halves of the off-screen mate figure. Same view, same window; the
-  // second turns the marks on. Parts of `synteny_offscreen_mates`, so neither is
-  // referenced by a doc on its own.
+  // The off-screen mate marks, one frame. It was a pair with the marks off and
+  // on, and the only difference between the halves was a strip a few pixels
+  // tall (review: "unclear what i'm looking at here. just same thing in both
+  // multipart panels"), so the callout names the strip instead.
   {
     mode: 'url',
-    name: 'synteny_offscreen_mates_off',
-    url: peachGrapeChr1(),
+    name: 'synteny_offscreen_mates',
+    url: peachGrapeChr1({ marks: true }),
     viewportWidth: 1400,
     // sized off the run's own blank-below-the-content report
     viewportHeight: 424,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 12000,
-  },
-  {
-    mode: 'url',
-    name: 'synteny_offscreen_mates_on',
-    url: peachGrapeChr1({ marks: true }),
-    viewportWidth: 1400,
-    viewportHeight: 424,
-    readySelector: displayPainted('synteny_canvas'),
-    readyTimeout: 120000,
-    settleMs: 12000,
-  },
-  {
-    mode: 'compose',
-    name: 'synteny_offscreen_mates',
-    parts: ['synteny_offscreen_mates_off', 'synteny_offscreen_mates_on'],
+    annotations: [
+      {
+        type: 'text',
+        text: 'peach alignments whose grape end is on another chromosome',
+        fontSize: 18,
+        maxWidth: 300,
+        leader: true,
+        anchor: {
+          view: [0, 0],
+          locus: 'NC_034009.1:6,000,000',
+          alignY: 'bottom',
+          dy: 8,
+        },
+        dx: 60,
+        dy: -45,
+      },
+    ],
   },
 
   // Human vs chimp synteny (hosted liftOver chain, zoomed to an RB1 intron with

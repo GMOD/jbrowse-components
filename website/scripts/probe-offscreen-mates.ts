@@ -44,7 +44,7 @@ import { captureUrl } from './screenshot-ready.ts'
 import { specs } from './screenshot-specs.ts'
 
 const PORT = 3413
-const SPEC = process.env.SPEC ?? 'synteny_offscreen_mates_on'
+const SPEC = process.env.SPEC ?? 'synteny_offscreen_mates'
 const spec = specs.find(s => s.name === SPEC)
 if (!spec || spec.mode !== 'url') {
   throw new Error(`${SPEC} is not a url spec`)

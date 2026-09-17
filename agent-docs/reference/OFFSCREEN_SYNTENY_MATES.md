@@ -262,7 +262,7 @@ reports nothing.
   paths.
 - **How a reader identifies an UNLABELLED run.** Settled 2026-08-19: by
   hovering. A name goes on a stretch only when the stretch is wide enough to
-  hold it, and on `synteny_offscreen_mates_on` that is 5 of the 17 stretches on
+  hold it, and on `synteny_offscreen_mates` that is 5 of the 17 stretches on
   screen — so the marks a reader most needs explained are the ones the strip
   cannot explain. Until the hover the only way to identify one was to click it,
   and the click runs `navToLocString`, which replaces the facing panel's
