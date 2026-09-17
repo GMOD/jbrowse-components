@@ -128,7 +128,7 @@ the anchored haplotype sort.
 and a clustering run.** Every config-declared channel resolves when the rows are
 read, in `sources`: the row `domain` seeds the adapter order, `layout` merges
 over that seed, phased mode expands to haplotypes, then `colorBy` tints and
-`facet` bands. So `clearLayout` is the whole reset, and the mixin's plain
+`facetField` bands. So `clearLayout` is the whole reset, and the mixin's plain
 `rowOrderIsCustom` answers. Writing the derived arrangement into `layout`
 instead gave every recolor a way to drop a clustering run.
 
@@ -163,10 +163,11 @@ what keeps a session saved before the derivation looking identical — the palet
 is a pure function of the attribute, so recomputing it reproduces what that
 session wrote into `layout`, and "Color by… → Population" still moves on it.
 
-**The `facet` band yields while a cluster tree describes the rows**
+**The `facetField` band yields while a cluster tree describes the rows**
 (`treeDescribesRows`), the mechanism `LinearMultiRowFeatureDisplay` uses for its
-row groups. That is what lets a clustering run leave the `facet` slot alone: a
-run that cleared it would erase a session spec's own `facet` on load.
+row groups. That is what lets a clustering run leave the `facetField` slot
+alone: a run that cleared it would erase a session spec's own `facetField` on
+load.
 
 ## Which display: the matrix is for genotype PATTERN, not spans
 

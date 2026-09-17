@@ -107,6 +107,15 @@ describe('getPortableSettings', () => {
     expect([...readConfObject(target, 'domain')]).toEqual(['HG002', 'HG001'])
   })
 
+  it('ports the facet field and its band order', () => {
+    const { display, target, targetId } = setup('')
+    display.setFacet('population')
+    setConf(display, 'facetDomain', ['EUR', 'AFR'])
+    display.getPortableSettings(targetId)
+    expect(readConfObject(target, 'facetField')).toBe('population')
+    expect([...readConfObject(target, 'facetDomain')]).toEqual(['EUR', 'AFR'])
+  })
+
   // The tree's provenance and the subtree filter are the two pieces of
   // instance state that only mean something beside the tree and the layout they
   // came with.

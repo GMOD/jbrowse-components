@@ -259,9 +259,9 @@ inversion.
 The build script writes both inputs: a `samples.tsv` whose first column is the
 sample name and whose other columns are attributes to band and color rows by,
 and a one-record SV VCF genotyping every line `1/1` or `0/0`. Load it with a
-`LinearMultiSampleVariantDisplay` that bands (`facet`) and colors (`colorBy`)
-rows by the `karyotype` column, with the standard lines declared first so the
-carriers land at the bottom of the lane:
+`LinearMultiSampleVariantDisplay` that bands (`facetField`) and colors
+(`colorBy`) rows by the `karyotype` column, with the standard lines declared
+first so the carriers land at the bottom of the lane:
 
 ```json addtrack
 {
@@ -279,7 +279,8 @@ carriers land at the bottom of the lane:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] },
+      "facetField": "karyotype",
+      "facetDomain": ["Standard", "In(2L)t"],
       "colorBy": "karyotype"
     }
   ]

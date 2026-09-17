@@ -1,4 +1,4 @@
-import { ConfigurationSchema, liftField } from '@jbrowse/core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -7,49 +7,6 @@ import {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
-
-const variantFacetSchema = ConfigurationSchema(
-  'VariantFacet',
-  {
-    /**
-     * #slot facet.field
-     * Name of a sample-metadata attribute (a column in the adapter's
-     * samplesTsvLocation, e.g. 'population') whose values each take their own
-     * band of rows, so a group-restricted genotype pattern reads as one band
-     * rather than being scattered across the matrix. Bands order by `domain`,
-     * then the way every in-track grouping orders, digits by magnitude. Empty
-     * means the rows keep their existing order. Writing
-     * `facet: 'population'` directly on the display lands here.
-     *
-     * The band is applied when the rows are read, over whatever order the
-     * reader has arranged, so a drag that moves a sample into another band
-     * snaps back while this is set. It **yields while a cluster tree describes
-     * the rows** — the dendrogram positions leaf *i* on row *i*, so a band
-     * under it would draw it against the wrong rows. Clear the tree, or reset
-     * the row order, to band a clustered track.
-     */
-    field: {
-      type: 'string',
-      defaultValue: '',
-      description:
-        'sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows',
-    },
-    /**
-     * #slot facet.domain
-     * Optional band order: the values listed come first, in this order, and
-     * the rest follow sorted. Left off, the bands are every value the
-     * metadata holds, sorted. A listed value the metadata lacks takes no
-     * band.
-     */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'optional band order; listed values first, the rest sorted; left off, every value the metadata holds, sorted',
-    },
-  },
-  { preProcessSnapshot: liftField },
-)
 
 /**
  * #config SharedVariantDisplay
@@ -187,11 +144,36 @@ export default function sharedVariantConfigFactory() {
       },
       /**
        * #slot
-       * The row facet: a sample-metadata attribute, or an object naming it and
-       * its band order, whose values each take their own contiguous band of
-       * sample rows.
+       * Name of a sample-metadata attribute (a column in the adapter's
+       * samplesTsvLocation, e.g. 'population') whose values each take their
+       * own band of rows, so a group-restricted genotype pattern reads as one
+       * band rather than being scattered across the matrix. Bands order by
+       * `facetDomain`, then the way every in-track grouping orders, digits by
+       * magnitude. Empty means the rows keep their existing order.
+       *
+       * The band is applied when the rows are read, over whatever order the
+       * reader has arranged, so a drag that moves a sample into another band
+       * snaps back while this is set. It **yields while a cluster tree
+       * describes the rows** — the dendrogram positions leaf *i* on row *i*,
+       * so a band under it would draw it against the wrong rows. Clear the
+       * tree, or reset the row order, to band a clustered track.
        */
-      facet: variantFacetSchema,
+      facetField: {
+        type: 'string',
+        defaultValue: '',
+        description:
+          'sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows',
+      },
+      /**
+       * #slot
+       * The `facetField` values whose bands stack first, in order; the rest
+       * follow sorted. A listed value the metadata lacks takes no band.
+       */
+      facetDomain: {
+        type: 'stringArray',
+        defaultValue: [],
+        description: 'facetField values whose bands stack first, in order',
+      },
       /**
        * #slot
        * Whether to paint reference alleles: 'skip' (the default) fills the row

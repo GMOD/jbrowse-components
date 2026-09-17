@@ -301,12 +301,14 @@ const COHORT_TRACK_ID = 'tcga_brca_cnv'
 // `displays` array: slots put on the view's `tracks` entry are dropped for a
 // track the config doesn't already carry.
 function mutationTrack({
-  facet = '',
+  facetField = '',
+  facetDomain = [],
   colorBy = '',
   height = 1010,
   lineZoneHeight = 20,
 }: {
-  facet?: string | { field: string; domain: string[] }
+  facetField?: string
+  facetDomain?: string[]
   colorBy?: string
   height?: number
   lineZoneHeight?: number
@@ -358,7 +360,8 @@ function mutationTrack({
         // somatic data this separates truncating (HIGH) from missense
         // (MODERATE) without a per-figure color table.
         featureColor: 'jexl:impactColor(feature)',
-        facet,
+        facetField,
+        facetDomain,
         colorBy,
       },
     ],
@@ -463,21 +466,31 @@ const CLINVAR_TRACK = {
 
 function mutationFigure({
   loc,
-  facet = '',
+  facetField = '',
+  facetDomain = [],
   colorBy = '',
   height = 1010,
   lineZoneHeight = 20,
   clinvar = false,
 }: {
   loc: string
-  facet?: string | { field: string; domain: string[] }
+  facetField?: string
+  facetDomain?: string[]
   colorBy?: string
   height?: number
   lineZoneHeight?: number
   clinvar?: boolean
 }) {
   return kgUrl({
-    sessionTracks: [mutationTrack({ facet, colorBy, height, lineZoneHeight })],
+    sessionTracks: [
+      mutationTrack({
+        facetField,
+        facetDomain,
+        colorBy,
+        height,
+        lineZoneHeight,
+      }),
+    ],
     views: [
       {
         type: 'LinearGenomeView',
@@ -510,7 +523,8 @@ export const tcgaMutationVideoFixtures = {
   matrixDone: MATRIX_DONE,
   cdh1WholeTranscript: mutationFigure({
     loc: '16:68,730,000-68,842,000',
-    facet: { field: 'histology', domain: ['ductal', 'lobular'] },
+    facetField: 'histology',
+    facetDomain: ['ductal', 'lobular'],
     colorBy: 'histology',
     lineZoneHeight: LINE_ZONE_HEIGHT,
     height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
@@ -803,7 +817,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // (truncating) cells crowd into the lobular band and the much larger ductal
   // band above it is nearly empty.
   //
-  // Faceted AND colored by the same column: `facet` makes each histology's rows
+  // Faceted AND colored by the same column: `facetField` makes each histology's rows
   // contiguous and its domain puts ductal above lobular, which is the order the
   // caption reads; `colorBy` puts the color strip in the gutter that says which
   // band is which. Without the strip the bands are unlabeled row ranges.
@@ -825,7 +839,8 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       // column in the frame is an exonic change and the connector fan lands in
       // one bundle per exon.
       loc: '16:68,730,000-68,842,000',
-      facet: { field: 'histology', domain: ['ductal', 'lobular'] },
+      facetField: 'histology',
+      facetDomain: ['ductal', 'lobular'],
       colorBy: 'histology',
       lineZoneHeight: LINE_ZONE_HEIGHT,
       height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
@@ -911,7 +926,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     name: 'tcga/mutations_tp53_subtype',
     url: mutationFigure({
       loc: '17:7,668,000-7,688,000',
-      facet: 'subtype',
+      facetField: 'subtype',
       colorBy: 'subtype',
       lineZoneHeight: LINE_ZONE_HEIGHT,
       height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,

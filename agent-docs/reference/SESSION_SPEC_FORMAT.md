@@ -142,7 +142,7 @@ settings, `facetField` and `facetDomain` (GRAMMAR_OF_GRAPHICS.md, "The facet
 stage"). The multi-sample variant displays' row banding used to answer to
 `groupBy` while doing something else — sorting the rows by a sample-metadata
 column, with no sections, no chips and no domain — and it is spelled
-`facet: { field, domain }` instead, the mark display's word for a row partition
+`facetField` and `facetDomain` instead, the feature display's two settings
 (`maybeApplyFacet` and `sortSourcesByAttribute` in
 `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). The census counts
 the key as the corpus spelled it when the record was written, so the `groupBy`

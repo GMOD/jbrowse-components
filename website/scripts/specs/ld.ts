@@ -351,10 +351,8 @@ const agKaryotypeTrack = (
       // is dosage order, which the figure's prose reads off the lane: the
       // three classes come out as contiguous blocks, standard at the top and
       // homozygous inverted at the bottom.
-      facet: {
-        field: 'karyotype',
-        domain: ['2L+a/2L+a', '2La/2L+a', '2La/2La'],
-      },
+      facetField: 'karyotype',
+      facetDomain: ['2L+a/2L+a', '2La/2L+a', '2La/2La'],
       colorBy: 'karyotype',
       // 'skip', the default: the display fills the whole lane with
       // REFERENCE_COLOR in CSS and paints only ALT cells on top, so the lane is

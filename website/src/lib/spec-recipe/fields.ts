@@ -256,20 +256,6 @@ function groupByStep(value: unknown): FieldStep | undefined {
     : undefined
 }
 
-// The multi-sample variant displays' row facet, the banding twin of their
-// "Color by... → Samples": one menu row over whichever metadata columns the
-// track carries, so the recipe names the figure's field rather than looking it
-// up. The string shorthand and the `{ field }` object are the same value.
-function facetStep(value: unknown): FieldStep | undefined {
-  const field = asString(value) ?? asString(asRecord(value)?.field)
-  return field
-    ? {
-        path: `${TRACK_MENU} → Group rows by... → ${capitalizeFirst(field)}`,
-        note: `The submenu lists whichever metadata columns your samples carry, so "${field}" appears only if yours have it. A declared band order (\`domain\`) has no menu row of its own and stays config-only.`,
-      }
-    : undefined
-}
-
 // The synteny view's colour control is a palette button in the view header
 // (ColorBySelector), not a menu entry, and its radios come from COLOR_MODES,
 // imported. Note the neighbouring `colorByShortLabel` in the same package looks
@@ -404,12 +390,24 @@ function colorScaleStep(
 
 // The canvas displays' Group by dialog: a radio for strand, and a text field
 // under Attribute for any other field. The section order is the Sections
-// submenu's moves, which write the drawn order.
+// submenu's moves, which write the drawn order. The multi-sample variant
+// displays band their rows from one menu row over whichever metadata columns
+// the track carries, so the recipe names the figure's field, and their band
+// order has no menu row.
 function facetFieldStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
-  if (typeof value !== 'string' || !value || !isColorByDisplay(displayType)) {
+  if (typeof value !== 'string' || !value) {
+    return undefined
+  }
+  if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
+    return {
+      path: `${TRACK_MENU} → Group rows by... → ${capitalizeFirst(value)}`,
+      note: `The submenu lists whichever metadata columns your samples carry, so "${value}" appears only if yours have it.`,
+    }
+  }
+  if (!isColorByDisplay(displayType)) {
     return undefined
   }
   const groupBy = `${TRACK_MENU} → Group by...`
@@ -422,7 +420,16 @@ function facetDomainStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
-  return Array.isArray(value) && value.length && isColorByDisplay(displayType)
+  if (!Array.isArray(value) || !value.length) {
+    return undefined
+  }
+  if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
+    return {
+      path: `${TRACK_MENU} → Group rows by...`,
+      note: 'The band order has no menu row of its own; the figure declares it in the track config.',
+    }
+  }
+  return isColorByDisplay(displayType)
     ? { path: `${TRACK_MENU} → Sections` }
     : undefined
 }
@@ -1226,7 +1233,6 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined
   },
   groupBy: groupByStep,
-  facet: facetStep,
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number
   // names its preset without a second table to keep in sync
