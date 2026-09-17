@@ -1,3 +1,4 @@
+import { missingRowLast } from '../ui/colorScale.ts'
 import { legendIsReadable } from '../ui/legendSpec.ts'
 import { abgrToCssRgba } from './colorBits.ts'
 import { groupKeyComparator } from './groupKeys.ts'
@@ -158,17 +159,18 @@ export interface DerivedColorScaleSpec {
 /**
  * The one categorical key a color channel derives from what a worker painted:
  * the union above over the loaded regions, each color named by the first label
- * seen in it, ordered by the channel's `domain`, and the whole scale dropped
- * where it says nothing (`legendIsReadable`). The entries are ordered here as
- * well as in `legendSpecOf`, because a caller reads them for what the key
- * lists — the feature display pins its color domain off them.
+ * seen in it, ordered by the channel's `domain` under `missingRowLast`, and
+ * the whole scale dropped where it says nothing (`legendIsReadable`). The
+ * entries are ordered here as well as in `legendSpecOf`, because a caller
+ * reads them for what the key lists — the feature display pins its color
+ * domain off them.
  *
  * A display resolving its own colors hands the candidates its packer recorded
  * and a predicate for which of its rows paint them; one resolved by
  * `encodeFeatures` hands the entries of the scale table that came back. Either
  * way the key lists what the painting holds, because the candidates are the
  * packed colors themselves. The no-value row carries its `missing` flag from
- * whichever resolved it, and `legendSpecOf` is where that flag places it.
+ * whichever resolved it.
  */
 export function derivedColorScale<T>(
   regions: Iterable<T>,
@@ -183,7 +185,7 @@ export function derivedColorScale<T>(
       color: abgrToCssRgba(color),
       ...(missing ? { missing } : {}),
     }))
-    .sort((a, b) => compare(a.value, b.value))
+    .sort((a, b) => missingRowLast(a, b) || compare(a.value, b.value))
   return legendIsReadable(entries, maxItems)
     ? [{ kind: 'categorical', id, title: field, domain, entries }]
     : []

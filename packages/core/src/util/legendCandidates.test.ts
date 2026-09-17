@@ -1,7 +1,9 @@
+import { NO_VALUE_LABEL } from './groupKeys.ts'
 import {
   MAX_LEGEND_CANDIDATES,
   MAX_LEGEND_ENTRIES,
   createLegendCandidateCollector,
+  derivedColorScale,
   unionLegendCandidates,
 } from './legendCandidates.ts'
 
@@ -153,5 +155,69 @@ describe('unionLegendCandidates', () => {
     }
     expect(unionLegendCandidates(regions(), allRowsPaint, 1)).toEqual([])
     expect(pulled).toBe(1)
+  })
+})
+
+describe('derivedColorScale', () => {
+  const painted = collect([
+    [0, NO_VALUE_LABEL, GREEN],
+    [0, 'Quies', BLUE],
+    [0, 'TssA', RED],
+  ])
+  painted[0]!.missing = true
+
+  // A caller reads the entries for what the key lists — the feature display
+  // pins its color domain off them — so they come back in the key's order and
+  // not the order the walk met them.
+  const values = (domain?: string[]) =>
+    derivedColorScale([painted], allRowsPaint, { id: 'color', domain }).flatMap(
+      scale => (scale.kind === 'categorical' ? scale.entries : []),
+    )
+
+  test('orders the values and leaves the no-value row last', () => {
+    expect(values().map(e => e.value)).toEqual([
+      'Quies',
+      'TssA',
+      NO_VALUE_LABEL,
+    ])
+  })
+
+  test('keeps it last under a declared domain, which never lists it', () => {
+    expect(values(['TssA']).map(e => e.value)).toEqual([
+      'TssA',
+      'Quies',
+      NO_VALUE_LABEL,
+    ])
+  })
+
+  test('names the field and carries the domain onto the scale', () => {
+    expect(
+      derivedColorScale([painted], allRowsPaint, {
+        id: 'color',
+        field: 'state',
+        domain: ['TssA'],
+        labelOf: v => (v === 'TssA' ? 'Active TSS' : v),
+      }),
+    ).toMatchObject([
+      {
+        kind: 'categorical',
+        id: 'color',
+        title: 'state',
+        domain: ['TssA'],
+        entries: [
+          { value: 'TssA', label: 'Active TSS' },
+          { value: 'Quies', label: 'Quies' },
+          { value: NO_VALUE_LABEL, label: NO_VALUE_LABEL, missing: true },
+        ],
+      },
+    ])
+  })
+
+  test('is no scale at all where every row is one color', () => {
+    expect(
+      derivedColorScale([collect([[0, 'TssA', RED]])], allRowsPaint, {
+        id: 'color',
+      }),
+    ).toEqual([])
   })
 })

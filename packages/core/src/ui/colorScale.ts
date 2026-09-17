@@ -101,14 +101,11 @@ function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
   const compare = scale.domain?.length
     ? groupKeyComparator(scale.domain)
     : undefined
-  // The no-value row goes last in every key, declared order included: a
-  // domain never lists it, so ordering by the domain alone ranks it with the
-  // values the domain leaves out and its bracket floats it above them all.
-  // The sort is stable, so entries a display ordered itself stay put.
+  // The sort is stable and the value half is skipped without a domain, so a
+  // key a display ordered itself keeps that order and only its no-value row
+  // moves.
   items.sort(
-    (a, b) =>
-      Number(a.missing ?? false) - Number(b.missing ?? false) ||
-      (compare ? compare(a.value, b.value) : 0),
+    (a, b) => missingRowLast(a, b) || (compare ? compare(a.value, b.value) : 0),
   )
   return {
     id: scale.id,
@@ -134,6 +131,21 @@ export function legendSpecOf(scales: ColorScale[]): LegendSpec {
     title: lone?.kind === 'categorical' ? lone.title : undefined,
     sections: scales.map(scale => sectionOf(scale, scales.length === 1)),
   }
+}
+
+/**
+ * The no-value row goes after every value, in whatever orders the values: a
+ * `domain` never lists it, so ordering by the domain alone ranks it with the
+ * values the domain leaves out and the bracket its label starts with floats it
+ * above them all. Both places a key is ordered read this — `sectionOf` for the
+ * rows it draws, and `derivedColorScale` for the entries it hands back, which a
+ * display reads for what its key lists.
+ */
+export function missingRowLast(
+  a: { missing?: boolean },
+  b: { missing?: boolean },
+) {
+  return Number(a.missing ?? false) - Number(b.missing ?? false)
 }
 
 /** Whether a scale has anything for a key to show. */
