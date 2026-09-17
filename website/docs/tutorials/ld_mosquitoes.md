@@ -129,7 +129,7 @@ three classes: `2L+a/2L+a`, `2La/2L+a`, `2La/2La`, the `+` marking the
 non-inverted arrangement.
 
 Load each population as a `VariantTrack` whose adapter carries the samples TSV,
-with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
+with a `LinearMultiSampleVariantDisplay` that bands (`facet`) and colors
 (`colorBy`) rows by `karyotype`:
 
 ```json addtrack
@@ -148,7 +148,10 @@ with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "groupBy": "karyotype",
+      "facet": {
+        "field": "karyotype",
+        "domain": ["2L+a/2L+a", "2La/2L+a", "2La/2La"]
+      },
       "colorBy": "karyotype",
       "referenceDrawingMode": "skip"
     }
@@ -156,8 +159,9 @@ with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
 }
 ```
 
-[`groupBy`](/docs/config/linearmultisamplevariantdisplay/#slot-groupby) keeps
-the karyotype classes contiguous, and
+[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) keeps the
+karyotype classes contiguous, with its `domain` stacking them in dosage order,
+and
 [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
 `skip` fills the lane with the reference color and paints alt cells on top. Rows
 divide the lane's height between them, and the display draws a row for every

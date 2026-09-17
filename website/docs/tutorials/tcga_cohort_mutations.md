@@ -143,12 +143,14 @@ row goes below a pixel, so a band's mutation density reads as how dark it is.
 
 ## Group the rows by clinical annotation
 
-[`groupBy`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-groupby)
-names a column of the samples TSV and makes each of its values a contiguous band
-of rows.
+[`facet`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-facet) names
+a column of the samples TSV and makes each of its values a contiguous band of
+rows, sorted; a
+[`facet.domain`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-facetdomain)
+pins the bands you want first.
 [`colorBy`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-colorby)
-puts the matching color strip in the gutter. `colorBy` is also **Color by... →
-Samples** in the track menu; `groupBy` is config only.
+puts the matching color strip in the gutter. Both have a track-menu row too:
+**Group rows by...** and **Color by... → Samples**.
 
 ```json addtrack
 {
@@ -170,7 +172,7 @@ Samples** in the track menu; `groupBy` is config only.
       "height": 450,
       "lineZoneHeight": 130,
       "featureColor": "jexl:impactColor(feature)",
-      "groupBy": "histology",
+      "facet": { "field": "histology", "domain": ["ductal", "lobular"] },
       "colorBy": "histology"
     }
   ]

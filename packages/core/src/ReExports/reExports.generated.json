@@ -1107,6 +1107,7 @@
         "isConfigurationSlot",
         "isConstantEntry",
         "isSlotDefinitionEntry",
+        "liftField",
         "makeSlotFacade",
         "mergeFormatCallbacks",
         "preProcessSlotValues",

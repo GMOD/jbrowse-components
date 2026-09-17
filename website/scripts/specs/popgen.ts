@@ -146,7 +146,7 @@ const SITES_TRACK = {
 // so the carrier block starts and ends at the breakpoints and lines up under
 // the Fst plateau and the inversion-extent bar.
 //
-// groupBy orders the rows so carriers and standard lines are contiguous (without
+// The facet bands the rows so carriers and standard lines are contiguous (without
 // it the rows keep VCF column order); colorBy paints the sidebar strip. Both live
 // on the track's own displays array, not the view's tracks entry, or they'd be
 // dropped and the display would fall back to schema defaults.
@@ -165,7 +165,10 @@ const IN2LT_SV_TRACK = {
   displays: [
     {
       type: 'LinearMultiSampleVariantDisplay',
-      groupBy: 'karyotype',
+      // The domain puts the 161 standard lines first and the 19 carriers last,
+      // which is the order the figure's prose reads off the lane. Sorted, the
+      // carriers would lead: 'In(2L)t' precedes 'Standard'.
+      facet: { field: 'karyotype', domain: ['Standard', 'In(2L)t'] },
       colorBy: 'karyotype',
       // The carrier block has to out-contrast the hom-ref field, and by default
       // it doesn't: hom-ref genotypes paint #CCCCCC, the same gray as an empty
@@ -514,7 +517,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
   // the grey field the carriers' block sits on. Shrinking the lane changes the
   // pixel count and not the ratio; the ratio is what says how rare the
   // arrangement is. The block sits at the lane's bottom edge for the same kind
-  // of reason: `groupBy: 'karyotype'` orders in dosage order, so the carriers
+  // of reason: the karyotype facet's domain puts standard first, so the carriers
   // are the last rows there are.
   //
   // The parts stay separate specs rather than becoming one taller session,

@@ -4952,6 +4952,50 @@
       },
       "unevaluatedProperties": false
     },
+    "VariantFacet": {
+      "title": "VariantFacet",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for `{ \"field\": ... }`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "field": {
+              "description": "sample-metadata attribute whose values take their own band.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            },
+            "domain": {
+              "description": "optional band order; listed values first, the rest sorted; left off, every value the metadata holds, sorted.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearMultiSampleVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5054,10 +5098,8 @@
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
-        "groupBy": {
-          "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to order the sample rows by, so each group's rows are contiguous and a group-restricted genotype pattern reads as one band; empty means the rows keep their existing order.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
+        "facet": {
+          "$ref": "#/$defs/VariantFacet"
         },
         "referenceDrawingMode": {
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
@@ -5232,10 +5274,8 @@
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
-        "groupBy": {
-          "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to order the sample rows by, so each group's rows are contiguous and a group-restricted genotype pattern reads as one band; empty means the rows keep their existing order.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
+        "facet": {
+          "$ref": "#/$defs/VariantFacet"
         },
         "referenceDrawingMode": {
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",

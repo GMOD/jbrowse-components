@@ -4101,8 +4101,18 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "groupBy",
-          "type": "(JexlString | string)"
+          "name": "facet",
+          "type": "VariantFacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "referenceDrawingMode",
@@ -4230,8 +4240,18 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "groupBy",
-          "type": "(JexlString | string)"
+          "name": "facet",
+          "type": "VariantFacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "referenceDrawingMode",

@@ -134,15 +134,17 @@ third is exactly the set a grammar would call encoding and scale: `height`,
 `domain`. The names are flat and per-display, but the concepts are shared and
 the census shows authors using them as shared.
 
-`groupBy` is the one entry in that list where the sharing is only in the
-spelling. On the feature, alignments and LGV synteny displays it is an object
-naming a partition, and every value takes its own stacked section with its own
-chips, its own collapse and its own `domain`. On the multi-sample variant
-displays it is a bare string naming a sample-metadata column, and all it does is
-sort the rows by that column's value — no sections, no chips, no domain
-(`maybeApplyGroupBy` and `sortSourcesByAttribute` in
-`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). Two mechanisms
-under one key, and the census counts the key.
+`groupBy` now names one mechanism. It is an object naming a partition on the
+feature, alignments and LGV synteny displays, and every value takes its own
+stacked section with its own chips, its own collapse and its own `domain`. The
+multi-sample variant displays' row banding used to answer to the same key while
+doing something else — sorting the rows by a sample-metadata column, with no
+sections, no chips and no domain — and it is spelled `facet: { field, domain }`
+instead, the mark display's word for a row partition (`maybeApplyFacet` and
+`sortSourcesByAttribute` in
+`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). The census counts
+the key as the corpus spelled it when the record was written, so the `groupBy`
+row above still holds the variant displays' entries.
 
 **The long tail names mechanisms, not aesthetics.** The keys used on one
 display type — `readConnections`, `showSoftClipping`, `rowIdentityMode`,

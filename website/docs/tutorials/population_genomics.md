@@ -256,10 +256,11 @@ which draws each genotype at the call's true span.
 inversion.
 
 The build script writes both inputs: a `samples.tsv` whose first column is the
-sample name and whose other columns are attributes to order and color rows by,
+sample name and whose other columns are attributes to band and color rows by,
 and a one-record SV VCF genotyping every line `1/1` or `0/0`. Load it with a
-`LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors (`colorBy`)
-rows by the `karyotype` column:
+`LinearMultiSampleVariantDisplay` that bands (`facet`) and colors (`colorBy`)
+rows by the `karyotype` column, with the standard lines declared first so the
+carriers land at the bottom of the lane:
 
 ```json addtrack
 {
@@ -277,7 +278,7 @@ rows by the `karyotype` column:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "groupBy": "karyotype",
+      "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] },
       "colorBy": "karyotype"
     }
   ]

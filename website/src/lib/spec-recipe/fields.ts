@@ -261,6 +261,20 @@ function groupByStep(value: unknown): FieldStep | undefined {
     : undefined
 }
 
+// The multi-sample variant displays' row facet, the banding twin of their
+// "Color by... → Samples": one menu row over whichever metadata columns the
+// track carries, so the recipe names the figure's field rather than looking it
+// up. The string shorthand and the `{ field }` object are the same value.
+function facetStep(value: unknown): FieldStep | undefined {
+  const field = asString(value) ?? asString(asRecord(value)?.field)
+  return field
+    ? {
+        path: `${TRACK_MENU} → Group rows by... → ${capitalizeFirst(field)}`,
+        note: `The submenu lists whichever metadata columns your samples carry, so "${field}" appears only if yours have it. A declared band order (\`domain\`) has no menu row of its own and stays config-only.`,
+      }
+    : undefined
+}
+
 // The synteny view's colour control is a palette button in the view header
 // (ColorBySelector), not a menu entry, and its radios come from COLOR_MODES,
 // imported. Note the neighbouring `colorByShortLabel` in the same package looks
@@ -1158,6 +1172,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined
   },
   groupBy: groupByStep,
+  facet: facetStep,
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number
   // names its preset without a second table to keep in sync

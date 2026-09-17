@@ -347,10 +347,14 @@ const agKaryotypeTrack = (
       // single SV call has: its extent. Here each genotype draws at the call's
       // true span, so the cells begin and end at the breakpoints.
       type: 'LinearMultiSampleVariantDisplay',
-      // Within one population the karyotype is the only useful key, and it sorts
-      // standard, het, inverted on its own, so the three classes come out as
-      // contiguous blocks in dosage order.
-      groupBy: 'karyotype',
+      // Within one population the karyotype is the only useful key. The domain
+      // is dosage order, which the figure's prose reads off the lane: the
+      // three classes come out as contiguous blocks, standard at the top and
+      // homozygous inverted at the bottom.
+      facet: {
+        field: 'karyotype',
+        domain: ['2L+a/2L+a', '2La/2L+a', '2La/2La'],
+      },
       colorBy: 'karyotype',
       // 'skip', the default: the display fills the whole lane with
       // REFERENCE_COLOR in CSS and paints only ALT cells on top, so the lane is
@@ -980,7 +984,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     //
     // The five Gabon heterozygotes' band -- which one of the callouts points at
     // by name -- sits against the app frame's lower border, and that is not a
-    // crop: `groupBy: 'karyotype'` orders in dosage order, so those rows are the
+    // crop: the karyotype facet's domain is dosage order, so those rows are the
     // last rows the lane has, and at 170 px the band measures the 12 px its
     // 5-of-69 share comes to. Checked on the capture rather than assumed, because
     // it looks like a clip.
