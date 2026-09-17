@@ -249,7 +249,7 @@ Force-directed is the default, because an anchored drawing flattens both routes
 through a locus onto the reference axis, and an allele then looks like a stub
 hanging under a line.
 
-Both reference-anchored modes need a backbone, from rGFA tags or from a
+Anchored and Sample rows both need a backbone, from rGFA tags or from a
 reference path. A graph with neither greys them out. Force-directed is then the
 only layout available, and it draws the classic Bandage picture with alternate
 alleles as bubbles. The
@@ -275,9 +275,9 @@ strain that _first contributed_ the sequence, because `SR` is build order and
 the file records no other carriers. A path GFA states every path that visits a
 segment, so a row shows carriage and the node popup lists the other carriers.
 
-Both anchored layouts draw an allele across **the reference it replaces**. An
-insertion replaces no reference, so it draws as a mark where it attaches, with
-its size in the tooltip.
+Anchored and Sample rows both draw an allele across **the reference it
+replaces**. An insertion replaces no reference, so it draws as a mark where it
+attaches, with its size in the tooltip.
 
 ## Bubbles, genes and walks on the drawing
 
@@ -481,8 +481,8 @@ coordinates, where CFT073's gene track names it: `clbA` to `clbS`, the
 colibactin island. The launched coordinates come from the segments' `SN`/`SO`
 tags.
 
-The two halves of the figure show the same trip in opposite directions. On the
-left, a graph launches a linear view. On the right, a linear view launches a
+The two halves of the figure below show the same trip in opposite directions. On
+the left, a graph launches a linear view. On the right, a linear view launches a
 graph, from the right-click on segment `s1277` in
 [Route 1](#route-1-a-graph-track-browsable-by-locus) above. The two use
 different colorings for different questions: stable rank shows _whose_ sequence
