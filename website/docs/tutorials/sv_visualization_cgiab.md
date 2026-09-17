@@ -98,9 +98,9 @@ HG008-T is **hypodiploid**: its assembly recapitulates 35 tumor chromosomes,
 down from 46, with widespread arm-level loss and 16 truncal interchromosomal
 rearrangements
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). Arm-level
-loss is the backdrop for every copy-number figure below, so the benchmark CNV
-BED, which reports absolute copy number per interval, is what every other track
-gets read against.
+loss is the backdrop for every copy-number figure below, so every other track
+gets read against the benchmark CNV BED, which reports absolute copy number per
+interval.
 
 The [SV visualization guide](/docs/user_guides/sv_visualization) and the
 [SV inspector guide](/docs/user_guides/sv_inspector_view) cover the concepts;
@@ -616,8 +616,8 @@ them, its `total_copy_number` being absolute.
 ## Align the tumor assembly to GRCh38
 
 The tumor assembly is haplotype-resolved into T2T scaffolds. Load it as a second
-JBrowse assembly and align it to GRCh38; the PAF that comes out is what the
-synteny and dotplot views draw:
+JBrowse assembly and align it to GRCh38; the synteny and dotplot views draw from
+the resulting PAF:
 
 <!-- from: scripts/build_sv_visualization_cgiab.sh -->
 
@@ -822,7 +822,7 @@ multi-bigwig track, which is fast at any zoom:
 
 <Figure caption="The linear genome view start screen: click Show all regions in assembly to lay out every chromosome across the view." src="/img/sv_cgiab/cnv_show_all_regions.png" />
 
-The two rows in the figures here come from
+The tumor and normal rows in the figures here come from
 [goleft indexcov](https://github.com/brentp/goleft/tree/master/indexcov), which
 divides each sample by its own median. That normalization lets the rows share an
 axis: the tumor and the normal were sequenced to different depths, so raw
@@ -956,12 +956,12 @@ alignment length** (in the synteny view's menu) drops short, noisy anchors so
 the large syntenic blocks read clearly, and zooming in on a breakpoint reads it
 at base level.
 
-Give each haplotype its own row rather than letting both align to one. **Add
-row** in the import form takes a third panel, so the stack reads hap2, GRCh38,
-hap1, with a level of ribbons per adjacent pair. In one row the reference
-carries alignments from both haplotypes at once and the scaffold names on it
-come from either, so avoid that layout. Separate rows make the fusion legible,
-since hap1's ribbons cross where hap2's do not.
+Give each haplotype its own row. **Add row** in the import form takes a third
+panel, so the stack reads hap2, GRCh38, hap1, with a level of ribbons per
+adjacent pair. In one row the reference carries alignments from both haplotypes
+at once and the scaffold names on it come from either, so avoid that layout.
+Separate rows make the fusion legible, since hap1's ribbons cross where hap2's
+do not.
 
 <Figure caption="A three-row synteny view of the chr3/chr13 selection: hap2 on top, GRCh38 chr3 and chr13 in the middle, and the fused chr3_chr13_hap1 scaffold below, at a raised minimum alignment length. The two blue bands on the reference row are the breakends of the translocation above, chr3:139,976,414 and chr13:114,353,244, the same two positions the breakpoint split view opened on. The ribbons below the reference cross between them, where hap1 joins the two chromosomes; the ribbons above run to hap2, whose chr13 is unrearranged and whose chr3 material sits in a scaffold fused with chr6 and chr11." src="/img/sv_cgiab/synteny_view.png" />
 
