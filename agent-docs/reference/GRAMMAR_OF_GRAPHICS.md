@@ -269,10 +269,12 @@ that same rule: `CategoricalScale.domain` sorts a key's rows
 GWAS and multi-row `colorDomain` slots, the multiway `ribbonColorDomain`, the
 synteny views' `colorDomain` prop — set it where the colours are assigned, so
 the row and the paint agree. The mark display's is `encoding.color.domain`,
-documented in `website/docs/config_guides/mark_display.md`. The multi-row display's `partitionField` is the same
-partition with one fixed row per value and no chip. What the mark display does
-not take is the alignments display's per-section collapse, which is that
-display's lane budget rather than a facet's.
+documented in `website/docs/config_guides/mark_display.md`.
+
+The multi-row display's `partitionField` is the same partition with one fixed
+row per value and no chip. What the mark display does not take is the
+alignments display's per-section collapse, which is that display's lane budget
+rather than a facet's.
 
 ## Gaps against the grammar
 
