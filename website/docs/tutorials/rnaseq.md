@@ -5,11 +5,11 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-An RNA-seq read mapped back to the genome jumps the introns that were spliced
-out of it, and in a stranded library the pair flags mark which strand the
-transcript came from. Both are in the BAM already, in the CIGAR string and the
-flags, so splice arcs and strand coloring need no extra files and no
-configuration.
+An RNA-seq read mapped back to the genome jumps the introns spliced out of it,
+recorded in its CIGAR string, and in a stranded library the pair flags mark
+which strand the transcript came from. The CIGAR string and the pair flags are
+both already in the BAM, so splice arcs and strand coloring need no extra files
+and no configuration.
 
 ## Prerequisites
 
@@ -87,7 +87,7 @@ neutral color is left for a junction whose reads disagree or whose motif is none
 of GT-AG, GC-AG and AT-AC. Hovering an arc shows the motif beside the read
 count.
 
-At Normal read height each spliced read stands on its own: two grey exon-aligned
+At Normal read height JBrowse draws each spliced read as two grey exon-aligned
 ends joined by a thin teal line across the skipped intron. That connector is
 drawn per read, separate from the red/blue arcs above it, which aggregate every
 read crossing a junction.
@@ -224,9 +224,8 @@ awk -v OFS='\t' '{
 ```
 
 **portcullis** writes a header row naming its columns, so the recipe reads them
-by name rather than by position. `nb_raw_aln` is the raw supporting-read count,
-`canonical_ss` is `C`, `S` or `N` for canonical, semi-canonical and
-non-canonical:
+by name. `nb_raw_aln` is the raw supporting-read count, `canonical_ss` is `C`,
+`S` or `N` for canonical, semi-canonical and non-canonical:
 
 ```bash
 awk -F'\t' -v OFS='\t' '
