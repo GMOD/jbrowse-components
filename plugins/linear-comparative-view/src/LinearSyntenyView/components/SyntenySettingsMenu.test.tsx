@@ -167,14 +167,28 @@ test('a continuous setting keeps its slider one hop in', async () => {
   expect(await screen.findByTestId('opacity-slider')).toBeTruthy()
 })
 
-// Gated on the data rather than shown inert: PAFAdapter has one tier, so there
-// is nothing for this row to switch between.
+function rowShapes() {
+  return [...screen.getByRole('menu').querySelectorAll('li')]
+    .map(li =>
+      li.getAttribute('role') === 'separator'
+        ? '-'
+        : li.getAttribute('role') === 'menuitemcheckbox'
+          ? 'x'
+          : li.dataset.testid?.startsWith('cascading-submenu')
+            ? '>'
+            : '?',
+    )
+    .join('')
+}
+
+test('the checkboxes, a divider, then the submenus', async () => {
+  await openMenu(PIF)
+  expect(rowShapes()).toBe('xxxx->>>>')
+})
+
 test('an adapter with no tiers is offered no level of detail', async () => {
   await openMenu()
   expect(screen.queryByText('Level of detail')).toBeNull()
-  // and the heading over that section stays, because the CIGAR row is still
-  // under it — a PAF carries ops whether or not it carries a coarse tier
-  expect(screen.getByText('Detail')).toBeTruthy()
 })
 
 test('an indexed adapter is offered the tier it can switch to', async () => {
@@ -182,33 +196,9 @@ test('an indexed adapter is offered the tier it can switch to', async () => {
   expect(screen.getByText('Level of detail')).toBeTruthy()
 })
 
-// The one combination that would leave a heading with nothing under it: a PAF
-// with no tier to switch to AND no CIGAR ops to draw. `hasCigarData` is
-// optimistic until a display has reported back, so this has to land a fetch
-// that says so rather than configure it.
-test('a section whose every row is gated out takes its heading with it', async () => {
-  const view = await openMenu()
-  expect(screen.getByText('Detail')).toBeTruthy()
-
-  // in `act`, because this writes the model directly rather than through a
-  // click: without it the getter flips and the menu has not re-rendered yet,
-  // so the assertion below reads the previous frame
-  act(() => {
-    for (const d of view.allSyntenyDisplays) {
-      d.setRpcData(packSyntenyFeatureData([], { hasCigar: false }), undefined)
-    }
-  })
-  expect(view.hasCigarData).toBe(false)
-  expect(screen.queryByText('Detail')).toBeNull()
-  // the sections that still have rows are untouched
-  expect(screen.getByText('Ribbons')).toBeTruthy()
-  expect(screen.getByText('Scope')).toBeTruthy()
-})
-
-// The mirror, and the reason the heading is derived from its rows rather than by
-// re-testing what gated them: one row gone is not the section gone. A tiered
-// file with no CIGAR ops keeps Detail, carrying Level of detail alone.
-test('a section keeps its heading while any one row survives', async () => {
+// `hasCigarData` is optimistic until a display has reported back, so this has
+// to land a fetch that says so rather than configure it
+test('a file with no CIGAR ops is offered no CIGAR row', async () => {
   const view = await openMenu(PIF)
   expect(screen.getByText('CIGAR indels')).toBeTruthy()
 
@@ -220,8 +210,7 @@ test('a section keeps its heading while any one row survives', async () => {
 
   expect(view.hasCigarData).toBe(false)
   expect(screen.queryByText('CIGAR indels')).toBeNull()
-  expect(screen.getByText('Detail')).toBeTruthy()
-  expect(screen.getByText('Level of detail')).toBeTruthy()
+  expect(rowShapes()).toBe('xxxx->>>')
 })
 
 test('off-screen mates is one checkbox, on by default', async () => {

@@ -30,28 +30,9 @@ const MIN_IDENTITY_HELP =
 
 /**
  * Every setting that decides what the plot looks like and how much detail feeds
- * it, in the shape the synteny view's settings menu uses — so the two
- * comparative views cannot present the same settings as different kinds of
- * control. Opacity and Min length are literally the same settings in both.
- *
- * LEVEL OF DETAIL IS HERE, not in the ⋮ menu it used to sit in. It was the last
- * of these settings split off by widget type rather than by subject: a radio
- * group in one surface while the sliders it belongs beside were in another, and
- * nothing about the setting predicted which one held it.
- *
- * CIGAR AND GRIDLINES ARE HERE for the same reason: both were in the ⋮ menu's
- * "Show..." submenu, which filed them by widget type — a checkbox is a checkbox
- * — while the synteny view had already moved their twins into its settings
- * menu. Lock aspect ratio stayed behind, because it frames the plot rather than
- * draws it, and its twin (`sameScale`) is likewise in the synteny hamburger.
- *
- * FLAT, with no section headings. The synteny view's menu earns its three
- * because it has ten rows to group; seven do not, and a heading over a single
- * gated row is more rule than list. What it does keep is that menu's row shape
- * — `label + [?] + (checkbox | chevron)`, the sliders behind `makeSizeSubMenu` —
- * and the order arity gives the rows inside one of its sections: the checkboxes,
- * then the choice, then the values, so the row shape changes once down the menu
- * rather than flickering.
+ * it, in the shape the synteny view's settings menu uses: the checkboxes, a
+ * divider, then the submenus (choices before values). Lock aspect ratio frames
+ * the plot rather than draws it, so it stays in the ⋮ menu.
  */
 const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
   model,
@@ -89,6 +70,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
                 "Carry each axis' ruler ticks across the plot. An axis with no room to number itself draws none.",
             },
           ),
+          { type: 'divider' },
           ...lodMenuItems(model),
           makeSizeSubMenu({
             label: 'opacity',
