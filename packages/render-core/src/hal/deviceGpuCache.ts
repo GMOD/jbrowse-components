@@ -36,12 +36,15 @@ function gpuBlendState(bs: BlendState): GPUBlendState {
   // WebGPU rejects any factor but 'one' under max, which ignores them. Alpha
   // accumulates as webgl2Hal's applyBlendState does.
   const max = { srcFactor: 'one', dstFactor: 'one', operation: 'max' } as const
+  const behind = { srcFactor: 'one-minus-dst-alpha', dstFactor: 'one' } as const
   return bs.op === 'max'
     ? { color: max, alpha: max }
-    : {
-        color: { srcFactor: bs.srcFactor, dstFactor: bs.dstFactor },
-        alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
-      }
+    : bs.op === 'behind'
+      ? { color: behind, alpha: behind }
+      : {
+          color: { srcFactor: bs.srcFactor, dstFactor: bs.dstFactor },
+          alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+        }
 }
 
 export function pipelineRecipe(

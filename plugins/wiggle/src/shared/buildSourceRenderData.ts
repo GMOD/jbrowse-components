@@ -173,6 +173,9 @@ export function buildSourceRenderData(
   const defaultNegColor = cssColorToNormalizedRgb(defaultNegColorStr)
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
   const result: SourceRenderData[] = []
+  // Every band ahead of every line, so Canvas2D paints them all underneath, as
+  // the GPU composites them.
+  const bands: SourceRenderData[] = []
 
   // `sources` is the display's own visible list and the only thing iterated —
   // never the payload's. rowIndex is the source's position in it, so it lines up
@@ -205,7 +208,7 @@ export function buildSourceRenderData(
         pivot: bicolorPivot,
       })
       for (const layer of layers) {
-        result.push({
+        ;(layer.band ? bands : result).push({
           ...layer,
           rowIndex: row,
           renderingType: renderingTypeInt,
@@ -220,5 +223,5 @@ export function buildSourceRenderData(
     }
   }
 
-  return result
+  return bands.length > 0 ? [...bands, ...result] : result
 }

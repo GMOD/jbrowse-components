@@ -43,10 +43,12 @@ export type BlendFactor = 'one' | 'src-alpha' | 'one-minus-src-alpha' | 'zero'
 // per-channel max(src, dst) — used by same-color AA lines so overlapping
 // segments union instead of darkening under src-over accumulation. Max ignores
 // blend factors entirely (and WebGPU rejects any factor but 'one' under it), so
-// that variant carries none.
+// that variant carries none. 'behind' composites a premultiplied fragment under
+// what the target already holds, for a pass drawn after the ink it sits behind.
 export type BlendState =
   | { op?: 'add'; srcFactor: BlendFactor; dstFactor: BlendFactor }
   | { op: 'max' }
+  | { op: 'behind' }
 
 /**
  * One entry of a shader's GPU binding table, as the Slang codegen reflects it.

@@ -66,6 +66,7 @@ const BLEND_STATE_LITERAL: Record<BlendMode, string> = {
   straight: `{ srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha' }`,
   premultiplied: `{ srcFactor: 'one', dstFactor: 'one-minus-src-alpha' }`,
   max: `{ op: 'max' }`,
+  behind: `{ op: 'behind' }`,
 }
 
 function sizeOf(t: SlangType) {

@@ -519,7 +519,12 @@ export type Topology = (typeof TOPOLOGIES)[number]
  * emitted `BLEND_ENABLED = false` with no consumer is the untested path this
  * codegen refuses elsewhere; a pass that wants it passes `blend: false`.
  */
-export const BLEND_MODES = ['straight', 'premultiplied', 'max'] as const
+export const BLEND_MODES = [
+  'straight',
+  'premultiplied',
+  'max',
+  'behind',
+] as const
 export type BlendMode = (typeof BLEND_MODES)[number]
 
 function parseChoice<T extends string>(

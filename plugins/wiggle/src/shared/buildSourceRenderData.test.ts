@@ -101,6 +101,26 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     },
   )
 
+  // Canvas2D paints in layer order, so every band has to come before every
+  // line for overlaid sources to draw their lines over each other's bands.
+  test('band layers of every source come before any line', () => {
+    const out = buildSourceRenderData(
+      {
+        sources: [
+          ...makeData().sources,
+          { ...makeData().sources[0]!, name: 'b' },
+        ],
+      },
+      {
+        ...baseGpuProps,
+        sources: [{ name: 'default' }, { name: 'b' }],
+        effectiveSummaryScoreMode: 'whiskers',
+        renderingType: 'multilinecenter',
+      },
+    )
+    expect(out.map(l => !!l.band)).toEqual([true, true, false, false])
+  })
+
   // Overlay paints a source in one colour, so its band has one colour too.
   test('an overlaid band takes the source colour on both sides of the pivot', () => {
     const [band] = buildSourceRenderData(makeData(), {

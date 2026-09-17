@@ -1,9 +1,11 @@
 // A line plot's whiskers band: a quad per bin under the step line, a trapezoid
-// between bin midpoints under the interpolated one. Translucent, so the
-// interpolated line's max blend still composes over it.
+// between bin midpoints under the interpolated one. Drawn after the lines and
+// composited behind them, so every line lies exactly over every band.
 //! targets: wgsl, glsl
 //! coverage: analytic
+//! blend: behind
 //! export-consts: WHISKER_BAND_OPACITY
+//! js-skip: edgePerp — the analytic edge ramp's slope factor; Canvas2D fills the band as a path and antialiases it itself
 
 import antialias;
 import hpmath;
@@ -41,9 +43,11 @@ float rowScoreToYPx(float score, float rowTop, float rowHeight) {
   return scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
 }
 
+// Floored so a steep edge across a sub-pixel column pads and fades over at most
+// two output pixels rather than along its whole rise.
 float edgePerp(float dyPx, float dxPx) {
   float slope = abs(dxPx) > 1e-6 ? dyPx / dxPx : 0.0;
-  return 1.0 / sqrt(1.0 + slope * slope);
+  return max(1.0 / sqrt(1.0 + slope * slope), 0.5);
 }
 
 [shader("vertex")]
@@ -111,5 +115,6 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     discard;
   }
   float3 rgb = (fragIn.posColor.rgb * above + fragIn.negColor.rgb * below) / coverage;
-  return float4(rgb, WHISKER_BAND_OPACITY * coverage);
+  float alpha = WHISKER_BAND_OPACITY * coverage;
+  return float4(rgb * alpha, alpha);
 }

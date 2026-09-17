@@ -96,7 +96,7 @@ function writeWiggleUniforms(
   frame: MarkFrame,
   p: WiggleParams,
 ) {
-  // Any module's packer serves: the three entry shaders share
+  // Any module's packer serves: the four entry shaders share
   // `wiggleCommon.slang`'s uniform block, so the generated `Uniforms` are one
   // block.
   wiggleShader.writeUniforms(scratch, {
@@ -236,21 +236,16 @@ const densityShape = wiggleShape(
 const isLineFamily = (type: WiggleRenderingType) =>
   type === RENDERING_TYPE_LINE || type === RENDERING_TYPE_LINE_CENTER
 
-// Drawn before either stroke, so the mean line lies over its range.
+// The GPU draws the band after the lines and composites it behind them. Canvas2D
+// has no such blend, so the line marks paint band layers there, which sort
+// ahead of every line.
 const bandShape = wiggleShape(
   {
     ...slangPass({ id: 'band', mod: wiggleBandShader }),
     pack: packBandInstances,
   },
   isLineFamily,
-  (row, p) => {
-    if (row.source.band) {
-      drawWhiskerBand({
-        ...row,
-        interpolated: p.renderingType === RENDERING_TYPE_LINE_CENTER,
-      })
-    }
-  },
+  () => {},
 )
 
 // The step line's vertex count is the shader's own — `vs_main` splits
@@ -268,7 +263,9 @@ const lineShape = wiggleShape(
   },
   type => type === RENDERING_TYPE_LINE,
   (row, p) => {
-    if (!row.source.band) {
+    if (row.source.band) {
+      drawWhiskerBand({ ...row, interpolated: false })
+    } else {
       drawLine({ ...row, ...lineColors(row.source), lineWidth: p.lineWidth })
     }
   },
@@ -276,10 +273,8 @@ const lineShape = wiggleShape(
 
 // Premultiplied MAX blend so the analytic-AA ribbon's overlapping segments and
 // caps union instead of accumulating into dark seams under src-over. Valid
-// because the target clears to transparent black, every segment overlapping a
-// joint picks the same pivot-side colour, and the only other ink in center-line
-// mode is the translucent whiskers band, which a same-hue stroke exceeds in
-// every premultiplied channel. Stated on the pass rather than as a `//! blend:` on
+// because the lines draw first into a target cleared to transparent black; the
+// whiskers band goes behind them afterwards. Stated on the pass rather than as a `//! blend:` on
 // wiggleLine.slang, because the step line above shares that shader and blends
 // the other way.
 const lineCenterShape = wiggleShape(
@@ -293,7 +288,9 @@ const lineCenterShape = wiggleShape(
   },
   type => type === RENDERING_TYPE_LINE_CENTER,
   (row, p) => {
-    if (!row.source.band) {
+    if (row.source.band) {
+      drawWhiskerBand({ ...row, interpolated: true })
+    } else {
       drawLineCenter({
         ...row,
         ...lineColors(row.source),
@@ -342,16 +339,16 @@ export const WIGGLE_MARKS = [
     texture: (state: WiggleGPURenderState) =>
       densityRampLut(state.densityColorRamp) ?? undefined,
   }),
-  defineMark({
-    shape: bandShape,
-    channels: sources => (sources.some(s => s.band) ? sources : undefined),
-    params: wiggleParams,
-  }),
   line,
   defineMark({
     shape: lineCenterShape,
     channels,
     params: wiggleParams,
     bufferOf: line,
+  }),
+  defineMark({
+    shape: bandShape,
+    channels: sources => (sources[0]?.band ? sources : undefined),
+    params: wiggleParams,
   }),
 ]

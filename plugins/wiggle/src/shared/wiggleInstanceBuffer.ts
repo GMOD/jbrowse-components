@@ -38,8 +38,8 @@ import type { SourceRenderData } from '@jbrowse/wiggle-core'
 //
 // Splitting them is what lets the filled renderings — xyplot, density, scatter,
 // i.e. the defaults — stop carrying the neighbour fields only the two stroked
-// ones read. That is half the bytes per feature (20 vs 40), and on a
-// 1000-source multiwiggle at a 1Mb view it is 82MB rather than 164MB in a single
+// ones read. That is under half the bytes per feature (20 vs 44), and on a
+// 1000-source multiwiggle at a 1Mb view it is 82MB rather than 180MB in a single
 // per-region allocation, against a maxBufferSize floor of 256MB. It roughly
 // halves the encode too, which is main-thread work redone for every region
 // whenever gpuProps changes (a colour, a sort, a subtrack toggle).
@@ -113,7 +113,10 @@ export function packLineInstances(sources: SourceRenderData[]) {
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   let off = 0
-  for (const source of sources.filter(s => !s.band)) {
+  for (const source of sources) {
+    if (source.band) {
+      continue
+    }
     const row = source.rowIndex
     const colorAbgr = colorOf(source)
     const negAbgr = negColorOf(source)

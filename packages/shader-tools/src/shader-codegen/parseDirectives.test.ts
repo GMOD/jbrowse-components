@@ -302,6 +302,7 @@ describe('parseTopology / parseBlend', () => {
     expect(parseTopology('//! topology: line-list')).toBe('line-list')
     expect(parseBlend('//! blend: premultiplied')).toBe('premultiplied')
     expect(parseBlend('//! blend: max')).toBe('max')
+    expect(parseBlend('//! blend: behind')).toBe('behind')
     expect(parseCoverage('//! coverage: analytic')).toBe('analytic')
     expect(parseCoverage('// no directive')).toBeUndefined()
   })

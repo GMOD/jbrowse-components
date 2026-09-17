@@ -237,9 +237,9 @@ describe('the wiggle mark list', () => {
     expect(hal.callsOf('drawPass')[0]!.args[0]).toBe('fill')
   })
 
-  // The band is its own record, so a whiskers line region holds two buffers:
-  // the band's and the mean stroke's, and draws the band first.
-  it('draws a whiskers band before the stroke over it', () => {
+  // The band is its own record, so a whiskers line region holds two buffers.
+  // The band draws last and composites behind the line already there.
+  it('draws a whiskers band after the line it sits behind', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const band = makeSource({
@@ -258,8 +258,8 @@ describe('the wiggle mark list', () => {
     expect(hal.getBufferCount(0, 'band')).toBe(2)
     expect(hal.getBufferCount(0, 'line')).toBe(2)
     expect(hal.callsOf('drawPass').map(c => c.args.slice(0, 1))).toEqual([
-      ['band'],
       ['lineCenter'],
+      ['band'],
     ])
   })
 
