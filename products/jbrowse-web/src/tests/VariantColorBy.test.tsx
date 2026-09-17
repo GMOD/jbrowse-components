@@ -88,7 +88,7 @@ test('the consequence-impact color key renders, and dismissing it stops it drawi
   const [scale] = display.colorScales
   expect(
     scale?.kind === 'categorical' && scale.entries.map(i => i.label),
-  ).toEqual(['HIGH', 'MODERATE', 'LOW', 'MODIFIER'])
+  ).toEqual(['HIGH', 'MODERATE', 'LOW', 'MODIFIER', 'Unannotated'])
   expect(await screen.findByText('MODERATE', ...opts)).toBeInTheDocument()
 
   display.setShowLegend(false)
