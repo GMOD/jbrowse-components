@@ -373,6 +373,8 @@ export default [
   '@jbrowse/core/util/withLaunchInput',
   '@jbrowse/display-kit/BlockMsg',
   '@jbrowse/display-kit/BottomRightIndicators',
+  '@jbrowse/display-kit/channelSpec',
+  '@jbrowse/display-kit/ChannelSpecDialog',
   '@jbrowse/display-kit/ChromeHighlight',
   '@jbrowse/display-kit/ChromeLegend',
   '@jbrowse/display-kit/coarseTier',

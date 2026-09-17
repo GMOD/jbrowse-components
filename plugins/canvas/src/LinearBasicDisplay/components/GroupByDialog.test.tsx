@@ -9,19 +9,37 @@ import type { FeatureGroupBy } from '../groupBy.ts'
 
 function setup(groupBy: FeatureGroupBy | undefined, color?: string) {
   const applyGroupBy = jest.fn()
+  const openChannelSpecDialog = jest.fn()
+  const handleClose = jest.fn()
   const view = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <GroupByDialog
-        model={{ groupBy, applyGroupBy }}
-        handleClose={() => {}}
+        model={{ groupBy, applyGroupBy, openChannelSpecDialog }}
+        handleClose={handleClose}
         color={color}
       />
     </ThemeProvider>,
   )
   const checkbox = () => view.queryByRole('checkbox')
   const ticked = () => view.queryByRole('checkbox', { checked: true }) !== null
-  return { ...view, applyGroupBy, checkbox, ticked }
+  return {
+    ...view,
+    applyGroupBy,
+    openChannelSpecDialog,
+    handleClose,
+    checkbox,
+    ticked,
+  }
 }
+
+test('Edit as JSON... hands over to the channel spec and applies nothing', () => {
+  const { getByText, applyGroupBy, openChannelSpecDialog, handleClose } =
+    setup(undefined)
+  fireEvent.click(getByText('Edit as JSON...'))
+  expect(openChannelSpecDialog).toHaveBeenCalled()
+  expect(handleClose).toHaveBeenCalled()
+  expect(applyGroupBy).not.toHaveBeenCalled()
+})
 
 test('picking strand over the default color ticks its color and applies both', () => {
   const { getByLabelText, getByText, checkbox, ticked, applyGroupBy } =

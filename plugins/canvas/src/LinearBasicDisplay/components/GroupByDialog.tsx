@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
 import {
+  Button,
   FormControlLabel,
   Radio,
   RadioGroup,
@@ -37,6 +38,7 @@ const GroupByDialog = observer(function GroupByDialog({
   model: {
     groupBy: FeatureGroupBy | undefined
     applyGroupBy: (groupBy: FeatureGroupBy | undefined, color: boolean) => void
+    openChannelSpecDialog: () => void
   }
   handleClose: () => void
   color: string | undefined
@@ -60,6 +62,16 @@ const GroupByDialog = observer(function GroupByDialog({
         model.applyGroupBy(groupBy, alsoColor)
         handleClose()
       }}
+      actions={
+        <Button
+          onClick={() => {
+            model.openChannelSpecDialog()
+            handleClose()
+          }}
+        >
+          Edit as JSON...
+        </Button>
+      }
     >
       <Typography color="text.secondary" gutterBottom>
         Packs the features into labelled sections, one per group, stacked in

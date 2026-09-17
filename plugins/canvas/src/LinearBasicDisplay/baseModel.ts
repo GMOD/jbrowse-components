@@ -21,6 +21,7 @@ import {
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
+import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
@@ -28,6 +29,7 @@ import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { channelSpecChanges } from '@jbrowse/display-kit/channelSpec'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import {
   autorunOnReadyView,
@@ -35,7 +37,7 @@ import {
 } from '@jbrowse/display-kit/displayAutoruns'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
@@ -59,6 +61,14 @@ import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
 import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
 import { scaleLaidOutData } from './applyLayout.ts'
 import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
+import {
+  channelSpecProblems,
+  colorOf,
+  colorSlotOf,
+  facetOf,
+  filterOf,
+  groupByOf,
+} from './channelSpec.ts'
 import { colorViews } from './colorViews.ts'
 import {
   buildFeatureFlatbushIndex,
@@ -131,6 +141,7 @@ import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { FeatureGroupBy, FeatureGroupSection } from './groupBy.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type {
@@ -139,6 +150,7 @@ import type {
   Region,
   StatusCallback,
 } from '@jbrowse/core/util'
+import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -190,6 +202,9 @@ const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
 )
 const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
+const ChannelSpecDialog = lazy(
+  () => import('@jbrowse/display-kit/ChannelSpecDialog'),
+)
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 
@@ -1200,20 +1215,6 @@ export default function baseStateModelFactory(
       /**
        * #action
        */
-      openColorByAttributeDialog() {
-        getDialogHost(self).queueDialog(handleClose => [
-          ColorByAttributeDialog,
-          {
-            model: self,
-            handleClose,
-            initialAttribute: self.colorByAttribute,
-          },
-        ])
-      },
-
-      /**
-       * #action
-       */
       openFilterDialog() {
         getDialogHost(self).queueDialog(handleClose => [
           JexlFilterDialog,
@@ -1441,6 +1442,75 @@ export default function baseStateModelFactory(
         } else if (wasGroupColor) {
           self.setFeatureColor(undefined)
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The grouping, color and filter as grammar-of-graphics channels, each
+       * `null` while unset: what "Edit as JSON..." opens with.
+       */
+      get channelSpec(): ChannelSpec {
+        return {
+          facet: facetOf(self.groupBy),
+          color: colorOf(self.conf.color, self.colorByAttribute),
+          filter: filterOf(self.activeFilters()),
+        }
+      },
+      /**
+       * #method
+       */
+      channelSpecProblems(spec: ChannelSpec) {
+        return channelSpecProblems(
+          spec,
+          getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
+        )
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Writes each channel the spec changes onto the slot its menu writes,
+       * and clears one the spec names `null`.
+       */
+      applyChannelSpec(spec: ChannelSpec) {
+        const { sets, clears } = channelSpecChanges(spec, self.channelSpec)
+        const changed = new Set([...sets, ...clears])
+        if (changed.has('facet')) {
+          self.setGroupBy(spec.facet ? groupByOf(spec.facet) : undefined)
+        }
+        if (changed.has('color')) {
+          self.setFeatureColor(spec.color ? colorSlotOf(spec.color) : undefined)
+        }
+        if (changed.has('filter')) {
+          self.setJexlFilters(spec.filter?.map(ensureJexlPrefix) ?? [])
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      openChannelSpecDialog() {
+        getDialogHost(self).queueDialog(handleClose => [
+          ChannelSpecDialog,
+          { model: self, handleClose },
+        ])
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      openColorByAttributeDialog() {
+        getDialogHost(self).queueDialog(handleClose => [
+          ColorByAttributeDialog,
+          {
+            model: self,
+            handleClose,
+            initialAttribute: self.colorByAttribute,
+          },
+        ])
       },
     }))
     .actions(self => {

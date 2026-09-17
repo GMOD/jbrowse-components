@@ -3856,6 +3856,27 @@
         "react-dom"
       ]
     },
+    "@jbrowse/display-kit/channelSpec": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "CHANNELS",
+        "channelSpecChanges",
+        "parseChannelSpec"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/ChannelSpecDialog": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
     "@jbrowse/display-kit/ChromeHighlight": {
       "package": "@jbrowse/display-kit",
       "names": [

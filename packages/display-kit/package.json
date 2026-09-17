@@ -25,6 +25,7 @@
   "exports": {
     "./BlockMsg": "./src/BlockMsg.tsx",
     "./BottomRightIndicators": "./src/BottomRightIndicators.tsx",
+    "./ChannelSpecDialog": "./src/ChannelSpecDialog.tsx",
     "./ChromeHighlight": "./src/ChromeHighlight.tsx",
     "./ChromeLegend": "./src/ChromeLegend.tsx",
     "./CoarseTierMixin": "./src/CoarseTierMixin.ts",
@@ -54,6 +55,7 @@
     "./TrackControl": "./src/trackControl/TrackControl.tsx",
     "./TrackHeightIndicator": "./src/TrackHeightIndicator.tsx",
     "./TrackHeightMixin": "./src/TrackHeightMixin.tsx",
+    "./channelSpec": "./src/channelSpec.ts",
     "./configSchema": "./src/configSchema.ts",
     "./coarseTier": "./src/coarseTier.ts",
     "./coarseTierPhase": "./src/coarseTierPhase.ts",
@@ -124,6 +126,7 @@
     "exports": {
       "./BlockMsg": "./esm/BlockMsg.js",
       "./BottomRightIndicators": "./esm/BottomRightIndicators.js",
+      "./ChannelSpecDialog": "./esm/ChannelSpecDialog.js",
       "./ChromeHighlight": "./esm/ChromeHighlight.js",
       "./ChromeLegend": "./esm/ChromeLegend.js",
       "./CoarseTierMixin": "./esm/CoarseTierMixin.js",
@@ -153,6 +156,7 @@
       "./TrackControl": "./esm/trackControl/TrackControl.js",
       "./TrackHeightIndicator": "./esm/TrackHeightIndicator.js",
       "./TrackHeightMixin": "./esm/TrackHeightMixin.js",
+      "./channelSpec": "./esm/channelSpec.js",
       "./configSchema": "./esm/configSchema.js",
       "./coarseTier": "./esm/coarseTier.js",
       "./coarseTierPhase": "./esm/coarseTierPhase.js",

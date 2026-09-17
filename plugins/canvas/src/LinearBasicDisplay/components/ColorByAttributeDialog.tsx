@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { ErrorMessage, SubmitDialog } from '@jbrowse/core/ui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { getEnv } from '@jbrowse/mobx-state-tree'
-import { TextField, Typography } from '@mui/material'
+import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { attributeColorJexl } from '../../RenderFeatureDataRPC/featureColors.ts'
@@ -30,6 +30,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
 }: {
   model: IStateTreeNode & {
     setFeatureColor: (arg?: string) => void
+    openChannelSpecDialog: () => void
   }
   handleClose: () => void
   initialAttribute?: string
@@ -54,6 +55,16 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
         model.setFeatureColor(expression)
         handleClose()
       }}
+      actions={
+        <Button
+          onClick={() => {
+            model.openChannelSpecDialog()
+            handleClose()
+          }}
+        >
+          Edit as JSON...
+        </Button>
+      }
     >
       <Typography variant="body2" gutterBottom>
         Each unique value of the chosen feature attribute receives a distinct

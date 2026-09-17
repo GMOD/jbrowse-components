@@ -4,6 +4,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
 [
   "./BlockMsg",
   "./BottomRightIndicators",
+  "./ChannelSpecDialog",
   "./ChromeHighlight",
   "./ChromeLegend",
   "./CoarseTierMixin",
@@ -33,6 +34,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./TrackControl",
   "./TrackHeightIndicator",
   "./TrackHeightMixin",
+  "./channelSpec",
   "./coarseTier",
   "./coarseTierPhase",
   "./configSchema",
