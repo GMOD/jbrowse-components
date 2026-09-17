@@ -80,7 +80,7 @@ The graph and the callset are both derived from the multiple alignment, and
 release 2.1 publishes that too: `hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, 464
 haplotypes, beside a `.tai` index written by
 [taffy](https://github.com/ComparativeGenomicsToolkit/taffy). The index makes it
-addressable, so a locus is a ranged read:
+addressable, so a locus is a ranged read rather than a 53 GB download:
 
 ```json addtrack
 {
