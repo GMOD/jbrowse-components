@@ -285,8 +285,8 @@ pinned `slangc` on first use, and writes each `*.generated.ts` next to its
 source (`hpmath` / `colorPack` resolve from your installed
 `@jbrowse/render-core`). Inside this repo the same tool is `pnpm gen:shaders`.
 
-One `.slang` file with entry points produces up to four modules, and **the
-module you import from decides what your users download**. A bundler treats a
+One `.slang` file with entry points produces up to four modules, and **which
+module you import determines what your users download**. A bundler treats a
 namespace import (`import * as shader from './score.generated.ts'`) as using
 every export, so it includes or excludes a module whole. If any eager code
 imports a module, even for one value, the always-loaded chunk carries the whole
@@ -887,7 +887,7 @@ export default function LinearScoreDisplayF(pluginManager: PluginManager) {
 }
 ```
 
-Both the model and the component load late. Anything registered at plugin
+The model and the component both load late. Anything registered at plugin
 install loads everything it names by value, so a state model passed directly
 would load eagerly. Passing `stateModel` as a thunk keeps the display's mixins,
 its `installUpload` and their imports out of every host's startup bundle. They
