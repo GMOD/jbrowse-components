@@ -67,7 +67,7 @@ node scripts/flip-review.ts answered cancer_sv/multihop_split_view \
   "Same change as cancer_sv/multihop_reads: three panels, not four, and the panels are 160 px of pileup each so three fill the frame. NOT RE-RENDERED here."
 
 node scripts/flip-review.ts answered pangenome/pggb_untangle_rows \
-  "The cross-reference is gone from both figures; each says what its own box holds."
+  "Combined, by another pass landing first: the rows and the dotplot are one multipart figure, pangenome/pggb_untangle_inversion, with the same arm boxed in both halves, so neither caption points at the other any more."
 
 node scripts/flip-review.ts answered sv_cgiab/three_ways \
   "The picker collapses every route with under a quarter of the top route's reads behind one row that says so, and the callout points at that row. Here that hides six of the seven."
@@ -111,8 +111,12 @@ node scripts/flip-review.ts answered mark_display/facet \
 node scripts/flip-review.ts answered mark_display/plot_field \
   "Answered, nothing built. Two JSON routes exist already: Share, then the settings icon and Plaintext JSON, prints the session JSON a reader can paste back, and jb.applyChannelSpec takes a channel spec for an agent. A paste box in this dialog would be a third spelling of the same state, so if you want one the place for it is the display's own settings dialog, where it would cover every channel rather than this dialog's three fields."
 
-node scripts/flip-review.ts answered multiway_synteny/hprc_chr12_whole \
-  "Cytobands are on the hosted hprc_multiway config now, so the ideogram bands chr12 and the stretch no haplotype aligns sits under the centromere. The chr-naming is NOT done and needs a decision: the assembly reads jbrowse.org's hg38.prefix.fa.gz, whose refNames are 1, 2, 3 despite the name, and no chr-named hg38 is hosted beside it, so chr12 means rebuilding the assembly and the PIF it is indexed against. NOT RE-RENDERED: the page crashed the renderer here."
+# Retired on main while this pass ran (d7a3090106, "retire figures that repeat
+# another figure"), so the entry goes. The cytobands it asked for are on the
+# hosted hprc_multiway config either way. The chr-naming would have needed a
+# decision: the assembly reads jbrowse.org's hg38.prefix.fa.gz, whose refNames
+# are 1, 2, 3 despite the name, and no chr-named hg38 is hosted beside it.
+node scripts/flip-review.ts remove multiway_synteny/hprc_chr12_whole
 
-node scripts/flip-review.ts answered pangenome/genomes_hprc_cfhr_haplotypes \
-  "Widened to 150 kb. CAT annotation per row is a jb2hubs job rather than a figure one: the lanes take the best single-assembly track the session holds for each haplotype, and this page's config carries none, where the demos/hprc config has a CAT slice per haplotype for its own eight."
+# Also retired on main during this pass, as a repeat of pangenome/hprc_cfh_haplotypes.
+node scripts/flip-review.ts remove pangenome/genomes_hprc_cfhr_haplotypes

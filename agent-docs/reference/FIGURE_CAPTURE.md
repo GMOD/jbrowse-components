@@ -290,6 +290,42 @@ full duration whenever no wrapper matched, which made it read like a fixed
 sleep and invited tuning it as one.
 
 
+## A lost WebGL context commits a blank canvas, and the run says nothing
+
+A third way a figure comes out empty, and the one that is not a wait at all: the
+browser drops the display's WebGL2 context mid-capture. The run prints
+`WebGL: CONTEXT_LOST_WEBGL: loseContext: context lost` and
+`[WebGL2Hal #n] context LOST (statusMessage="", live=6)` in the browser log,
+carries on, and reports the spec as succeeded — so what lands in `static/img` is
+the page with its GPU canvases blank, with every readiness gate satisfied.
+`multiway_synteny/grape_peach_cacao_gene_orthologs` committed that way on
+2026-09-17: the gene glyphs and every synteny ribbon were gone, the run said
+`✓`, and the same spec drew the full figure when it was the only one running.
+
+Two things follow.
+
+- **A run that logs a context loss is not a run whose figures you may commit.**
+  Grep the log for `context LOST` before `figures:push`, and re-shoot the specs
+  it names. The ceiling itself is
+  [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md); `live=` in the message is how
+  many contexts were up when the eviction cascade started, and on a loaded
+  machine that is well under the 16 the budget describes.
+- **Concurrency is the lever.** The generator runs four specs at once by
+  default, each a browser with its own contexts, so a figure that stacks GPU
+  displays — a multi-panel synteny view, a breakpoint split view with a pileup
+  per panel — loses them under a sweep and keeps them when filtered alone. Run
+  such a spec on its own rather than raising its `settleMs`.
+
+**A page crash is the same failure one step further on**, and that one at least
+fails loudly: `Page crashed!`, a retry in a fresh browser, and the spec reported
+as failed with the committed PNG untouched. Four figures crashed every attempt
+on 2026-09-17 at load average 2 as well as 12 — `sv_cgiab/cnv_depth_baf`,
+`ld/lct_haploblock`, `multiway_synteny/hprc_chr12_whole` and
+`cancer_sv/multihop_split_view` — all of them a whole chromosome of scatter, a
+300-row clustered matrix, or three deep pileups at once. There is nothing to fix
+in the spec when this happens: land the spec change and let the sweep, on a
+machine doing nothing else, draw the figure.
+
 ## The other blank capture: `el.screenshot()` vs the compositor
 
 The section above is the **website generator's** race, and its fix is a better
