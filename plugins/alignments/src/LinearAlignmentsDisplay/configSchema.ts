@@ -181,7 +181,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'frozen',
         defaultValue: null,
         description:
-          'In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)',
+          'In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand, or `{ type: "tag", tag: "HP", domain: ["2", "1"] }` for one section per tag value with the listed values stacked first in that order (null = ungrouped)',
         advanced: true,
       },
       /**

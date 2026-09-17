@@ -25,7 +25,7 @@ import {
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
-import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
+import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
@@ -1621,7 +1621,11 @@ export default function stateModelFactory(
          * layout pass), so group identity/order stays stable across relayouts.
          */
         get groupOrder() {
-          return orderedGroups(self.rpcDataMap, self.hiddenGroupKeys)
+          return orderedGroups(
+            self.rpcDataMap,
+            self.hiddenGroupKeys,
+            this.effectiveGroupBy?.domain,
+          )
         },
 
         /**
@@ -3407,10 +3411,16 @@ export default function stateModelFactory(
            *
            * Doesn't drop the per-lane state: `HiddenGroupsMixin`'s key-space
            * reset does that for this write and for the ones no action of this
-           * display makes.
+           * display makes. A grouping named without a domain keeps the
+           * current one while the key space holds, so a re-pick from the menu
+           * is not a reorder; a reorder is this action with a new domain.
            */
           setGroupBy(groupBy?: GroupBy) {
-            setConf(self, 'groupBy', groupBy ?? null)
+            setConf(
+              self,
+              'groupBy',
+              carryGroupDomain(groupBy, self.groupBy) ?? null,
+            )
             self.scrollTop = 0
           },
 

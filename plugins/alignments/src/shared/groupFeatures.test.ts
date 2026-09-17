@@ -473,6 +473,45 @@ test('normalizeGroupBy keeps a valid dimension', () => {
   })
 })
 
+test('normalizeGroupBy keeps a domain as strings, and reads an empty one as none', () => {
+  expect(normalizeGroupBy({ type: 'tag', tag: 'HP', domain: [2, 1] })).toEqual({
+    type: 'tag',
+    tag: 'HP',
+    domain: ['2', '1'],
+  })
+  expect(normalizeGroupBy({ type: 'strand', domain: ['-'] })).toEqual({
+    type: 'strand',
+    domain: ['-'],
+  })
+  expect(normalizeGroupBy({ type: 'strand', domain: [] })).toEqual({
+    type: 'strand',
+  })
+})
+
+test('a domain stacks the listed values first, and the cap counts in that order', () => {
+  const features = [
+    feat('a', { tags: { HP: 2 } }),
+    feat('b', {}),
+    feat('c', { tags: { HP: 1 } }),
+  ]
+  expect(
+    keys(
+      partitionFeatures(features, { type: 'tag', tag: 'HP', domain: ['2'] }),
+    ),
+  ).toEqual(['2', '1', ''])
+  expect(
+    keys(partitionChains(features, { type: 'tag', tag: 'HP', domain: ['2'] })),
+  ).toEqual(['2', '1', ''])
+  const last = `v${String(MAX_GROUPS + 9).padStart(3, '0')}`
+  const groups = partitionFeatures(umiFeatures(MAX_GROUPS + 10), {
+    type: 'tag',
+    tag: 'RX',
+    domain: [last],
+  })
+  expect(groups[0]!.key).toBe(last)
+  expect(groups.at(-1)!.mergedKeys).not.toContain(last)
+})
+
 // A tag on a dimension that takes no parameter is residue from a hand-written
 // config or an edited session. Carried, it names a key space of its own, so
 // re-picking the SAME dimension from the menu — which writes the bare object —

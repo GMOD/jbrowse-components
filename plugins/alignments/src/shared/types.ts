@@ -296,9 +296,11 @@ export type ParameterlessGroupByType = Exclude<GroupByType, 'tag'>
 // convention downstream code hopes for: a stray tag beside another dimension
 // names a key space of its own (`groupKeySpaceOf`), so re-picking that same
 // dimension from the menu dropped every lane's collapse and refetched.
+// `domain` is the section order: the keys it lists stack first, the rest
+// follow sorted.
 export type GroupBy =
-  | { type: ParameterlessGroupByType; tag?: undefined }
-  | { type: 'tag'; tag: string }
+  | { type: ParameterlessGroupByType; tag?: undefined; domain?: string[] }
+  | { type: 'tag'; tag: string; domain?: string[] }
 
 export interface SortedBy {
   type: string

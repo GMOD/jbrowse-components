@@ -91,7 +91,7 @@ test('a signed or decimal key compares by magnitude, and a bare sign does not', 
 })
 
 test('a re-pick in the same key space keeps the domain; a reorder or a new space does not', () => {
-  const current = {
+  const current: { type: string; attribute: string; domain?: string[] } = {
     type: 'attribute',
     attribute: 'biotype',
     domain: ['lncRNA'],

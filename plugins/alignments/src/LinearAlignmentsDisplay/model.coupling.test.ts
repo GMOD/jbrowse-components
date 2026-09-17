@@ -1341,6 +1341,28 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(display.collapsedGroups.has('')).toBe(false)
   })
 
+  test('re-picking the grouping keeps its domain, and a reorder keeps the lane state', () => {
+    const display = createDisplay({ withRegions: true })
+    display.setGroupBy({ type: 'tag', tag: 'HP', domain: ['2'] })
+    seedGroups(display, [
+      { key: '1', label: 'HP: 1' },
+      { key: '2', label: 'HP: 2' },
+    ])
+    display.toggleGroupCollapsed('1')
+    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    expect(display.rpcProps().groupBy).toEqual({
+      type: 'tag',
+      tag: 'HP',
+      domain: ['2'],
+    })
+    expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
+    display.setGroupBy({ type: 'tag', tag: 'HP', domain: ['1'] })
+    expect(display.groupOrder.map(g => g.key)).toEqual(['1', '2'])
+    expect(display.collapsedGroups.has('1')).toBe(true)
+    display.setGroupBy({ type: 'tag', tag: 'RG' })
+    expect(display.groupBy).toEqual({ type: 'tag', tag: 'RG' })
+  })
+
   // Chain mode degrades a per-read dimension to ungrouped (`groupByForMode`)
   // with the slot untouched, so the fetch comes back as one '' lane while the
   // menu still reads "Group by MAPQ".

@@ -7,7 +7,7 @@ import {
 import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
-  compareGroupKeys,
+  groupKeyComparator,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
 
@@ -195,9 +195,13 @@ function mapqKey(feature: Feature): GroupKey {
 // cross-region union can exceed MAX_GROUPS when regions expose wildly
 // different value sets; it bounds the per-group region-width cost, which is
 // what actually blows up.
-function orderGroups(groups: FeatureGroup[]) {
-  const ordered = groups.sort((a, b) => compareGroupKeys(a.key, b.key))
-  const { sectionOf, mergedCount } = capGroupKeys(ordered.map(g => g.key))
+function orderGroups(groups: FeatureGroup[], domain?: readonly string[]) {
+  const compare = groupKeyComparator(domain)
+  const ordered = groups.sort((a, b) => compare(a.key, b.key))
+  const { sectionOf, mergedCount } = capGroupKeys(
+    ordered.map(g => g.key),
+    domain,
+  )
   if (mergedCount === 0) {
     return ordered
   }
@@ -256,7 +260,7 @@ export function partitionFeatures(
   for (const feature of features) {
     appendFeature(groups, feature, featureGroupKey(feature, groupBy))
   }
-  return orderGroups([...groups.values()])
+  return orderGroups([...groups.values()], groupBy.domain)
 }
 
 // A whole chain's key: the dimension's own answer where it states one, else the
@@ -434,7 +438,7 @@ export function partitionChains(
       appendFeature(groups, feature, groupKey)
     }
   }
-  return orderGroups([...groups.values()])
+  return orderGroups([...groups.values()], groupBy.domain)
 }
 
 // Resolve a persisted `groupBy` into one the partitioners can run, or `undefined`
@@ -459,11 +463,16 @@ export function normalizeGroupBy(groupBy: unknown): GroupBy | undefined {
   if (type === undefined || !isGroupByType(type)) {
     return undefined
   }
+  const rawDomain = obj === undefined ? undefined : Reflect.get(obj, 'domain')
+  const domain =
+    Array.isArray(rawDomain) && rawDomain.length > 0
+      ? { domain: rawDomain.map(String) }
+      : {}
   if (type !== 'tag') {
-    return { type }
+    return { type, ...domain }
   }
   const tag = readStringField(obj, 'tag')
-  return tag ? { type, tag } : undefined
+  return tag ? { type, tag, ...domain } : undefined
 }
 
 function readStringField(obj: object | undefined, field: string) {

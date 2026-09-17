@@ -183,6 +183,22 @@ test('orderedGroups drops a hidden lane', () => {
   expect(orderedGroups(rpcDataMap)).toHaveLength(2)
 })
 
+test('orderedGroups stacks the domain first across regions', () => {
+  const rpcDataMap = new Map([
+    [0, grouped([{ key: '+', data: data(['a']) }])],
+    [
+      1,
+      grouped([
+        { key: '-', data: data(['b']) },
+        { key: '', data: data(['c']) },
+      ]),
+    ],
+  ])
+  expect(
+    orderedGroups(rpcDataMap, undefined, ['', '-']).map(g => g.key),
+  ).toEqual(['', '-', '+'])
+})
+
 // The labels gate reads the sections the worker actually emitted, because the
 // `groupBy` setting can be set while the fetch is ungrouped.
 test('hasNamedGroups is false for an ungrouped or degraded fetch', () => {

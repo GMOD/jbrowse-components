@@ -1,6 +1,6 @@
 import {
   OVERFLOW_GROUP_KEY,
-  compareGroupKeys,
+  groupKeyComparator,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
 import { NO_HIDDEN_GROUPS } from '@jbrowse/display-kit/HiddenGroupsMixin'
@@ -150,6 +150,7 @@ export function hasNamedGroups(order: readonly GroupId[]) {
 export function orderedGroups(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden?: ReadonlySet<string>,
+  domain?: readonly string[],
 ): GroupId[] {
   const order = new Map<string, GroupId>()
   // The overflow lane is the one whose label a single region cannot answer for:
@@ -173,7 +174,8 @@ export function orderedGroups(
   if (overflow) {
     overflow.label = overflowLabel(merged.size)
   }
-  return [...order.values()].sort((a, b) => compareGroupKeys(a.key, b.key))
+  const compare = groupKeyComparator(domain)
+  return [...order.values()].sort((a, b) => compare(a.key, b.key))
 }
 
 // The per-read lookups below scan every group of every fetched region. They live
