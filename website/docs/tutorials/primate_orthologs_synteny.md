@@ -252,13 +252,13 @@ and a session or a config authors the same thing as `domain`.
 <Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing the RefSeq gene models annotated on its chromosome. Every lane keeps the block in order; the siamang lane reads it backwards, so its header reads [rev] and its ribbons are the reversed-strand ones, drawn straight because the lane is mirrored." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Zoomed out to four megabases the same track reads as a synteny painting, and
-color separates a block read forward from a block painted as reversed. Reversed
-marks a block that lane reads backwards from the lane above it, regardless of
-whether the mirroring drew it straight or crossed. One block runs down the
-middle of the frame with same-orientation flanks on either side of it, and one
-pair of lanes crosses near the right-hand edge. The headers give the other fact.
-Every lane sits at its own offset and scale, and a lane whose header names a
-multiple is holding the same genes over more sequence.
+color separates forward blocks from reversed ones. A block painted as reversed
+is one that lane reads backwards from the lane above it, whether the mirroring
+left it drawn straight or crossed. One block runs down the middle of the frame
+with same-orientation flanks on either side of it, and one pair of lanes crosses
+near the right-hand edge. The headers give the other fact. Every lane sits at
+its own offset and scale, and a lane whose header names a multiple is holding
+the same genes over more sequence.
 
 <Figure caption="Four megabases of human chr17 over the seven primate lanes, ribbons colored by strand. Blue is a block read backwards from the lane above: one runs down the middle of the frame between same-orientation flanks, and the two bottom lanes cross where a block flips between them." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 

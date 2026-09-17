@@ -97,7 +97,7 @@ node count well only at segment granularity.
 
 :::note
 
-The bovine graph pane holds a dozen assemblies, against ninety haplotypes for
+The bovine pangenome holds a dozen assemblies, against ninety haplotypes for
 HPRC. Its cuts are chains with a few loops, and the anchored layout often reads
 better. Check the node and edge counts in the graph pane's header before
 switching to the force layout. Use the force layout where the bubbles lane

@@ -307,8 +307,9 @@ already rooted on K12, the streaming
 
 <Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. The four non-K12 rows stop at the edges of the cryptic prophage CPZ-55, which K12 alone carries." src="/img/pangenome_cactus/maf.png" />
 
-No colored columns is sequence shared with K12, and a row that stops is a strain
-with no alignment to K12 there. The coverage band separates the two cases.
+A row can be blank for two reasons: no colored columns is sequence shared with
+K12, and a row that stops is a strain with no alignment to K12 there. The
+coverage band separates the two cases.
 
 `samples` names the rows and fixes their order. To order them by shared graph
 content instead, run
@@ -332,10 +333,10 @@ splits that per strain. Both run as in the pggb tutorial's
 and [per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)
 sections, over `mc/ecoli.full.og`, and load as the same
 [`QuantitativeTrack`](/docs/config_guides/quantitative_track) and
-[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track). The
-reference path is `K12#0#chr`, and each other strain carries a trailing subpath
-tag (`Sakai#0#chr#0`), so the per-strain filter matches a prefix. The
-[build script](#reproduce-it-end-to-end) runs both.
+[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track). Two names
+change: the reference path is `K12#0#chr`, and each other strain carries a
+trailing subpath tag (`Sakai#0#chr#0`), so the per-strain filter matches a
+prefix. The [build script](#reproduce-it-end-to-end) runs both.
 
 Depth counts path **steps** rather than strains, so a repeat the graph folded
 onto one run of nodes reads above the strain count. seqwish folds the rRNA

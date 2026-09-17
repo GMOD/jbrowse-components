@@ -84,8 +84,7 @@ constant depth.
 }
 ```
 
-The dip in coverage is easiest to see over the intron; open the track at
-`chr20:32,925,000-32,955,000`.
+Open the track at `chr20:32,925,000-32,955,000`.
 
 <Figure src="/img/read_marks/depth.png" caption="Thirty kilobases of an EFCAB8 intron in NA12878, the read depth as bars. Between 32,937,500 and 32,941,500 the depth runs at about half of what it is on either side." />
 
@@ -162,8 +161,7 @@ spanning pair red.
 ]
 ```
 
-The left breakpoint sits at the edge of the dip; zoom to
-`chr20:32,936,200-32,939,200` to see it.
+Zoom to the left edge of the dip, `chr20:32,936,200-32,939,200`.
 
 <Figure src="/img/read_marks/pileup.png" caption="The left breakpoint at 3 kb, the reads stacked and coloured by their pair's insert. The red reads end together at 32,937,680, where their mates lie 4 kb to the right; the pale reads run across it, and thin out on the far side." />
 
@@ -301,8 +299,8 @@ Pairs of 2 to 10 kb in the 100 kb window around each call:
 
 Every callset deletion in range is a bar, and the two homozygous ones are
 tallest. Five other windows hold ten or more such pairs with no call: the
-chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb; read the first out of the file
-directly:
+chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb; read the first window out of
+the file directly:
 
 ```bash
 samtools coverage -r chr20:32937680-32941583 NA12878.final.cram | cut -f 1-3,7

@@ -24,8 +24,8 @@ rather than a measurement. We welcome your [feedback](/contact).
 
 - [the AlphaGenome plugin](#the-alphagenome-plugin), which contributes the
   adapters these tracks use, the query panel, and the variant right-click item
-- nothing installed locally, and no AlphaGenome API key: we recorded and stored
-  the two predictions this page reads once, so following it spends no quota
+- nothing installed locally, and no AlphaGenome API key: the page reads two
+  stored predictions, each recorded once, so following it spends no quota
 
 ## Where the data comes from
 
@@ -131,13 +131,13 @@ go into a request:
 - **a variant, or none.** Left empty, the locus is predicted as it is
 
 A wide request takes minutes, so it is registered and the browser polls for it.
-The service keys requests by content with the window rounded to 4 kb, so asking
-again for what this page already asked returns at once, which is why the
-prediction behind the figures below is instant. The rounding matters because a
-view's region comes from an integer pixel offset, and two browser windows of
-different widths ask about the same locus in coordinates tens of bases apart. A
-hit can therefore return a window up to about 2 kb off the one asked for, and
-the track list names the interval that came back.
+Requests are keyed by content with the window rounded to 4 kb, so asking again
+for what this page already asked returns at once, which is why the prediction
+behind the figures below is instant. The rounding matters because a view's
+region comes from an integer pixel offset, and two browser windows of different
+widths ask about the same locus in coordinates tens of bases apart. A hit can
+therefore return a window up to about 2 kb off the one asked for, and the track
+list names the interval that came back.
 
 ## Two cell lines on one axis
 
@@ -259,8 +259,8 @@ difference compares one reference base with itself.
 The tracks the panel adds are session tracks, and their adapters address a
 stored array through a presigned URL that expires within the hour, so a track
 config copied out of one session does not load in the next. Re-open the panel
-and rebuild the same query instead; the panel keys the request by content, so it
-lands back on the same arrays for free.
+and rebuild the same query instead; requests are keyed by content, so the same
+query lands back on the same arrays for free.
 
 ## See also
 
