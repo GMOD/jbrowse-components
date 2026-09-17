@@ -229,11 +229,11 @@ grouped by the same field, and the facet stacks the groups themselves:
 }
 ```
 
-Sections order digits by magnitude and everything else by code point, and the
-tail past forty merges into one. The object form of `facet` takes an optional
-`domain`, the section order: the values listed stack first, in that order, and
-the rest follow sorted. It is the same key a colour scale's `domain` is, on the
-row channel instead of the colour one:
+Sections order a name with a number in it by that number, so chr2 before chr10,
+and the rest by code point, and the tail past forty merges into one. The object
+form of `facet` takes an optional `domain`, the section order: the values listed
+stack first, in that order, and the rest follow sorted. It is the same key a
+colour scale's `domain` is, on the row channel instead of the colour one:
 
 ```json
 {

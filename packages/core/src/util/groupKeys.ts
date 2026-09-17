@@ -19,18 +19,24 @@ function groupKeyRank(key: string) {
 }
 
 const NUMERIC = /^-?\d+(\.\d+)?$/
+const DIGIT_RUNS = /\d+|\D+/g
 
 /**
  * Two numeric keys compare by magnitude, so numeric tag values order 1, 2,
- * 10 and a signed field orders -1 before 1. Everything else is code-point
- * rather than localeCompare, which stays deterministic and puts '+' before
- * '-'. A display merging groups across regions applies this same order,
- * since one region's sort cannot place a group absent from it.
+ * 10 and a signed field orders -1 before 1. Any other pair compares run by
+ * run, a digit run by magnitude and the rest by code point, so chr2 files
+ * before chr10 and HP1 before HP10 while '+' stays before '-'. Code point
+ * rather than localeCompare keeps the order deterministic across locales. A
+ * display merging groups across regions applies this same order, since one
+ * region's sort cannot place a group absent from it.
  */
 export function compareGroupKeys(a: string, b: string) {
   const rankDiff = groupKeyRank(a) - groupKeyRank(b)
   if (rankDiff !== 0) {
     return rankDiff
+  }
+  if (a === b) {
+    return 0
   }
   if (NUMERIC.test(a) && NUMERIC.test(b)) {
     const na = Number(a)
@@ -39,7 +45,26 @@ export function compareGroupKeys(a: string, b: string) {
       return na < nb ? -1 : 1
     }
   }
-  return a === b ? 0 : a < b ? -1 : 1
+  const runsA = a.match(DIGIT_RUNS) ?? []
+  const runsB = b.match(DIGIT_RUNS) ?? []
+  const shared = Math.min(runsA.length, runsB.length)
+  for (let i = 0; i < shared; i++) {
+    const x = runsA[i]!
+    const y = runsB[i]!
+    if (x === y) {
+      continue
+    }
+    if (/^\d/.test(x) && /^\d/.test(y)) {
+      const nx = Number(x)
+      const ny = Number(y)
+      if (nx !== ny) {
+        return nx < ny ? -1 : 1
+      }
+      return x.length < y.length ? -1 : 1
+    }
+    return x < y ? -1 : 1
+  }
+  return runsA.length < runsB.length ? -1 : 1
 }
 
 /**

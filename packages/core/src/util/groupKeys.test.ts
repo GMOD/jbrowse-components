@@ -80,6 +80,15 @@ test('the key space is the dimension and its parameter, never the domain', () =>
   ).not.toBe(plain)
 })
 
+test('a digit run inside a key compares by magnitude, so chr2 files before chr10', () => {
+  expect(
+    ['chr10', 'chr2', 'chr1', 'chrX', 'HP10', 'HP2', 'HP1b', 'HP1a'].sort(
+      compareGroupKeys,
+    ),
+  ).toEqual(['HP1a', 'HP1b', 'HP2', 'HP10', 'chr1', 'chr2', 'chr10', 'chrX'])
+  expect(['v01', 'v1'].sort(compareGroupKeys)).toEqual(['v1', 'v01'])
+})
+
 test('a signed or decimal key compares by magnitude, and a bare sign does not', () => {
   expect(['1', '-1', '0.5', '-', '+'].sort(compareGroupKeys)).toEqual([
     '+',

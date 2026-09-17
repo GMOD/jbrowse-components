@@ -43,8 +43,7 @@ function labels(items: MenuItem[]): string[] {
 
 describe('LinearManhattanDisplay field coloring', () => {
   // With no domain the merge falls to `compareGroupKeys`, the order every
-  // categorical channel shares: numbers by magnitude, everything else by code
-  // point, so `chr10` files before `chr2` until a domain says otherwise.
+  // categorical channel shares, whose digit runs compare by magnitude.
   it('derives the color scale from the payloads, merged across regions and sorted', () => {
     const { display } = createTestEnvironment({
       colorBy: 'field',
@@ -74,8 +73,8 @@ describe('LinearManhattanDisplay field coloring', () => {
         title: 'name',
         entries: [
           { value: 'chr1', label: 'chr1', color: 'rgba(51,51,51,1)' },
-          { value: 'chr10', label: 'chr10', color: 'rgba(17,17,17,1)' },
           { value: 'chr2', label: 'chr2', color: 'rgba(34,34,34,1)' },
+          { value: 'chr10', label: 'chr10', color: 'rgba(17,17,17,1)' },
         ],
       },
     ])

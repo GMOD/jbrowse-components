@@ -51,7 +51,7 @@ Re-checked against the code and every tutorial the display appears in.
   entry off the header, pinned by `lodMenuGate.test.ts`.
 - **4.8** in part: the grape page's "no GFF3"; `hprc_multiway_synteny.md`'s
   Lanes submenu, which documented it without `Show all lanes` and `Reset lane
-  order` (`laneOrderMenuItem`); and the figure-manifest gap for six multiway
+  order` (now `sectionOrderMenuItems`); and the figure-manifest gap for six multiway
   figures the docs reference are all closed. `user_guide.md` still has no
   multiway section, and `GbzBaseSyntenyAdapter` still has no config page (it is
   out-of-repo, and nothing the pangenome pages document about it is wrong) —
