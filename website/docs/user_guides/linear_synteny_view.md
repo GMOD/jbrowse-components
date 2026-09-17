@@ -280,7 +280,7 @@ inside **Rows**:
 - **Square view - average bp per pixel** puts every row on the average of the
   rows' current scales, keeping each row's center
 - **Show all regions - each row fit to width** zooms every row out to its whole
-  assembly, giving each its own scale so it fills its own pane
+  assembly, scaling each row separately so it fills its pane
 - **Show all regions - same bp per pixel** zooms every row out too, but puts
   them all on one scale, so a smaller genome draws proportionally shorter than a
   larger one. The two show-all-regions rows are settings rather than one-off
