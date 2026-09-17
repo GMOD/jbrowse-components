@@ -116,9 +116,9 @@ downloaded and decompressed twice.
 [`@gmod/bbi`](https://github.com/GMOD/bbi-js/blob/main/docs/optimizations.md#many-regions-in-one-pass)
 owns that measurement.
 
-What it gives up is progressive drawing: per-region fetching fills a
-whole-genome view in as regions arrive, and a batched reader answers all of them
-at once. Both modes exist for that reason, and
+Batching gives up progressive drawing: per-region fetching fills a whole-genome
+view as regions arrive, while a batched reader answers all of them at once. Both
+modes exist for that reason, and
 [ADR-022](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/architecture-decision-records/adr-022-no-batched-wiggle-rpc.md)
 is the reversal that added the batched one.
 
@@ -148,10 +148,10 @@ carries, since it keeps every other field:
 
 <!-- END GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
-That table is what carrying both copies costs the file. What reading the coarse
-one saves is a different measurement, taken on a real hosted alignment — a
-human/mouse liftOver chain converted to a PIF — by counting the bytes the server
-actually sent for one whole-genome pass:
+The table above prices carrying both copies. Reading the coarse copy saves a
+different amount, measured on a real hosted alignment — a human/mouse liftOver
+chain converted to a PIF — by counting the bytes the server actually sent for
+one whole-genome pass:
 
 <!-- BEGIN GENERATED MEASUREMENT pif-tier-wire-bytes -->
 
@@ -162,9 +162,9 @@ actually sent for one whole-genome pass:
 
 <!-- END GENERATED MEASUREMENT pif-tier-wire-bytes -->
 
-Both arms read every row of their own tier out of the same file. The `bytes/row`
-column is the one to read: the coarse copy returns alignments that are far
-smaller, and what separates them is the CIGAR.
+The coarse and fine arms each read every row of their own tier out of the same
+file. The `bytes/row` column is the one to read: the coarse copy returns
+alignments that are far smaller, and the CIGAR accounts for the difference.
 
 The coarse copy did not always carry a CIGAR at all: earlier it split an
 alignment into pieces wherever an indel was large enough to matter, and read
@@ -185,13 +185,13 @@ Under 7% of rows carry a fold at all, and most of a fold's bytes are indels
 between 5 and 10 kb — too small to change a whole-genome view, kept anyway
 because the format bounds every run to within `--coarse` of the true path.
 
-Back in the file-size table, the last column is what carrying both copies costs
-the file, and the `coarse/fine bytes` column beside it is what reading the
-coarse copy saves. With 1.5 kb alignment blocks it gives up indel detail for
-almost nothing; at 5 Mb it is the difference between reading the CIGARs and not.
-**The coarse copy makes each alignment cheaper and does not make them fewer**,
-so it suits a few huge alignments with megabase CIGARs, and does little for a
-dense all-vs-all comparison, where the cost is the number of alignments.
+Back in the file-size table, the last column prices carrying both copies, and
+the `coarse/fine bytes` column beside it prices reading just the coarse copy.
+With 1.5 kb alignment blocks it gives up indel detail for almost nothing; at 5
+Mb it is the difference between reading the CIGARs and not. **The coarse copy
+makes each alignment cheaper and does not make them fewer**, so it suits a few
+huge alignments with megabase CIGARs, and does little for a dense all-vs-all
+comparison, where the cost is the number of alignments.
 
 Binning alignments together as they are read is the obvious answer to that, and
 it is capped. Profiling a whole-genome fetch of a human-vs-mouse-scale PIF puts
@@ -287,9 +287,9 @@ correctly. The whole 4.5x comes from testing "is this a base" as
 for `-` and ` ` exactly costs three lane-wise zero-byte tests per word against
 that one comparison. **The 4.5x was the semantic change, priced.**
 
-What did move the walk was decomposition: the largest single item in the
-per-cell body was a bounds test answering a question about the whole block, and
-hoisting it to a per-block scan is 1.13-1.24x across eight shapes.
+Decomposition did move the walk: the largest single item in the per-cell body
+was a bounds test answering a question about the whole block, and hoisting it to
+a per-block scan is 1.13-1.24x across eight shapes.
 [MAF_WORKER_PIPELINE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_WORKER_PIPELINE.md)
 has the method — measure the bare loop against the loop-plus-output, sweep the
 working set, peel the body one operation at a time.
@@ -425,8 +425,8 @@ carry no splice junction at all — yet the computed still rebuilt a list of emp
 sections per frame, and its overlay re-rendered on all 20 frames of a zoom to
 return a list of nulls. Handing back one shared empty array takes that to zero.
 
-**What the same measurement did not support** was moving these arcs off SVG onto
-the canvas the neighbouring read-connection arcs use. The case for it would be
+**The same measurement did not support** moving these arcs off SVG onto the
+canvas the neighbouring read-connection arcs use. The case for it would be
 per-feature DOM work, and there is none of the expensive kind: the paths are
 keyed by junction, so React pools them and a pan patches one path attribute per
 arc while creating and destroying nothing. That is the shape the coordinate
@@ -470,10 +470,10 @@ spans the whole track height and only its horizontal extent tells it apart from
 another; and a ribbon's extent covers everything between its two endpoints.
 Those two facts decide the whole performance story.
 
-Both tables are 300k drawn ribbons with the viewport parked mid-genome,
-differing only in which genome each ribbon connects to. `kept` is how many
-ribbons are wide enough to be worth picking and so enter the index; `candidates`
-is how many the index returns for one hover.
+The collinear and all-vs-all tables below are each 300k drawn ribbons with the
+viewport parked mid-genome, differing only in which genome each ribbon connects
+to. `kept` is how many ribbons are wide enough to be worth picking and so enter
+the index; `candidates` is how many the index returns for one hover.
 
 Two related genomes, where the index works:
 
