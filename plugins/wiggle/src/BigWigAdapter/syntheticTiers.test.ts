@@ -5,6 +5,7 @@ import configSchema from './configSchema.ts'
 import {
   binAlignedExtent,
   binRawRegion,
+  sampleMeanRecordSpan,
   syntheticBinBp,
   syntheticReductionLevels,
 } from './syntheticTiers.ts'
@@ -120,18 +121,27 @@ function randomRecords(seed: number, count: number, maxSpan: number) {
 
 describe('syntheticReductionLevels', () => {
   test('two power-of-two tiers under the first level, coarsest at or above a quarter of it', () => {
-    expect(syntheticReductionLevels([640, 2560])).toEqual([64, 256])
-    expect(syntheticReductionLevels([304, 1216])).toEqual([32, 128])
-    expect(syntheticReductionLevels([3478, 13912])).toEqual([256, 1024])
-    expect(syntheticReductionLevels([1024])).toEqual([64, 256])
-    expect(syntheticReductionLevels([40, 160])).toEqual([4, 16])
+    expect(syntheticReductionLevels([640, 2560], 1)).toEqual([64, 256])
+    expect(syntheticReductionLevels([304, 1216], 1)).toEqual([32, 128])
+    expect(syntheticReductionLevels([3478, 13912], 1)).toEqual([256, 1024])
+    expect(syntheticReductionLevels([1024], 1)).toEqual([64, 256])
+    expect(syntheticReductionLevels([40, 160], 1)).toEqual([4, 16])
+  })
+
+  test('a bin under twice the mean record span is dropped, and its zooms read raw', () => {
+    expect(syntheticReductionLevels([304, 1216], 28.8)).toEqual([128])
+    expect(syntheticReductionLevels([1584, 6336], 99.8)).toEqual([512])
+    expect(syntheticReductionLevels([3478, 13912], 100)).toEqual([256, 1024])
+    expect(syntheticReductionLevels([640, 2560], 32)).toEqual([64, 256])
+    expect(syntheticReductionLevels([15728], 980)).toEqual([4096])
+    expect(syntheticReductionLevels([640], Number.NaN)).toEqual([])
   })
 
   test('no bin under 2bp, and none for a file without zoom levels', () => {
-    expect(syntheticReductionLevels([10, 40])).toEqual([4])
-    expect(syntheticReductionLevels([8])).toEqual([2])
-    expect(syntheticReductionLevels([4])).toEqual([])
-    expect(syntheticReductionLevels([])).toEqual([])
+    expect(syntheticReductionLevels([10, 40], 1)).toEqual([4])
+    expect(syntheticReductionLevels([8], 1)).toEqual([2])
+    expect(syntheticReductionLevels([4], 1)).toEqual([])
+    expect(syntheticReductionLevels([], 1)).toEqual([])
   })
 
   test('the zoom ranges tile from 0 to infinity, every tier holding at most two bins a pixel', () => {
@@ -144,27 +154,36 @@ describe('syntheticReductionLevels', () => {
       [8, 32],
       [4, 16],
     ]) {
-      const levels = [...syntheticReductionLevels(fileLevels), ...fileLevels]
-      const first = fileLevels[0]!
-      const ranges = new Map<number, [number, number]>()
-      for (let span = 0.01; span < 1e6; span *= 1.01) {
-        const [lo, hi] = tierSpanRange(levels, span)
-        expect(lo).toBeLessThanOrEqual(span)
-        expect(span).toBeLessThan(hi)
-        ranges.set(lo, [lo, hi])
-        const b = syntheticBinBp(lo, first)
-        if (b !== undefined) {
-          expect(hi / b).toBeLessThanOrEqual(2)
-          expect(b).toBeLessThan(first)
+      for (const span of [1, 30]) {
+        const levels = [
+          ...syntheticReductionLevels(fileLevels, span),
+          ...fileLevels,
+        ]
+        const first = fileLevels[0]!
+        const ranges = new Map<number, [number, number]>()
+        for (
+          let basesPerSpan = 0.01;
+          basesPerSpan < 1e6;
+          basesPerSpan *= 1.01
+        ) {
+          const [lo, hi] = tierSpanRange(levels, basesPerSpan)
+          expect(lo).toBeLessThanOrEqual(basesPerSpan)
+          expect(basesPerSpan).toBeLessThan(hi)
+          ranges.set(lo, [lo, hi])
+          const b = syntheticBinBp(lo, first)
+          if (b !== undefined) {
+            expect(hi / b).toBeLessThanOrEqual(2)
+            expect(b).toBeLessThan(first)
+          }
         }
+        const sorted = [...ranges.values()].sort((a, c) => a[0] - c[0])
+        expect(sorted[0]![0]).toBe(0)
+        expect(sorted.at(-1)![1]).toBe(Infinity)
+        for (let i = 1; i < sorted.length; i++) {
+          expect(sorted[i]![0]).toBe(sorted[i - 1]![1])
+        }
+        expect(sorted).toHaveLength(levels.length + 1)
       }
-      const sorted = [...ranges.values()].sort((a, c) => a[0] - c[0])
-      expect(sorted[0]![0]).toBe(0)
-      expect(sorted.at(-1)![1]).toBe(Infinity)
-      for (let i = 1; i < sorted.length; i++) {
-        expect(sorted[i]![0]).toBe(sorted[i - 1]![1])
-      }
-      expect(sorted).toHaveLength(levels.length + 1)
     }
   })
 
@@ -275,27 +294,22 @@ describe('binRawRegion', () => {
     ])
   })
 
-  test('data as coarse as the bin comes back raw, untouched', () => {
-    const records = Array.from({ length: 20 }, (_, i) => ({
+  // syntheticReductionLevels keeps a bin this fine off 50bp records; handed
+  // one anyway, the rows are still exact, only more of them
+  test('records coarser than the bin still bin exactly, whole bins as runs', () => {
+    const records = Array.from({ length: 4 }, (_, i) => ({
       start: i * 50,
       end: i * 50 + 50,
-      score: i % 3,
-    }))
-    const out = bin(records, 0, 1000, 16)
-    expect(out).toEqual(
-      records.map(r => ({ ...r, min: undefined, max: undefined })),
-    )
-  })
-
-  test('bins that would not at least halve the rows come back raw', () => {
-    const starts = [0, 1, 4, 5, 8, 9, 12, 13, 16, 20]
-    const records = starts.map((start, i) => ({
-      start,
-      end: start + 1,
       score: i,
     }))
-    expect(bin(records, 0, 24, 4).every(r => r.min === undefined)).toBe(true)
-    expect(bin(records.slice(0, 8), 0, 16, 4)).toHaveLength(4)
+    expect(bin(records, 0, 200, 32)).toEqual([
+      { start: 0, end: 32, score: 0, min: 0, max: 0 },
+      { start: 32, end: 64, score: Math.fround(14 / 32), min: 0, max: 1 },
+      { start: 64, end: 96, score: 1, min: 1, max: 1 },
+      { start: 96, end: 128, score: Math.fround(60 / 32), min: 1, max: 2 },
+      { start: 128, end: 160, score: Math.fround(74 / 32), min: 2, max: 3 },
+      { start: 160, end: 200, score: 3, min: 3, max: 3 },
+    ])
   })
 
   test('records overlapping or out of order come back raw', () => {
@@ -313,12 +327,12 @@ describe('binRawRegion', () => {
   test('the fallback keeps only the records overlapping the region, not the bin-aligned margin', () => {
     const records = Array.from({ length: 10 }, (_, i) => ({
       start: i * 10,
-      end: i * 10 + 10,
+      end: i * 10 + (i === 4 ? 15 : 10),
       score: i,
     }))
-    expect(bin(records, 25, 75, 4).map(r => r.start)).toEqual([
-      20, 30, 40, 50, 60, 70,
-    ])
+    expect(bin(records, 25, 75, 32)).toEqual(
+      records.slice(2, 8).map(r => ({ ...r, min: undefined, max: undefined })),
+    )
   })
 
   test('matches a per-base oracle on random records of mixed spans', () => {
@@ -336,9 +350,6 @@ describe('binRawRegion', () => {
             r => r.end > extent.start && r.start < extent.end,
           )
           const rows = bin(fetched, rs, re, b)
-          if (rows[0]?.min === undefined) {
-            continue
-          }
           binned++
           expect(rows).toEqual(perBaseOracle(records, rs, re, b))
         }
@@ -483,6 +494,69 @@ describe('against a real file', () => {
     expect(integral(file, lo, hi) / exact).toBeCloseTo(1, 5)
     expect(extremes(synthetic, 8000, 32000)).toEqual(extremes(raw, 8000, 32000))
     expect(extremes(file, lo, hi)).toEqual(extremes(raw, lo, hi))
+  })
+
+  test('two extents over one locus at one zoom read the same bins', async () => {
+    const adapter = new BigWigAdapter(
+      configSchema.create({
+        bigWigLocation: {
+          localPath: COVERAGE,
+          locationType: 'LocalPathLocation',
+        },
+      }),
+    )
+    const rowsAt = async (start: number, end: number) => {
+      const [r] = await adapter.getFeatureArraysMulti(
+        [{ refName: 'ctgA', start, end, assemblyName: 'v' }],
+        { bpPerPx: 19 },
+      )
+      return Array.from({ length: r!.count }, (_, i) => [
+        r!.starts[i],
+        r!.ends[i],
+        r!.scores[i],
+        r!.minScores?.[i],
+        r!.maxScores?.[i],
+      ])
+    }
+    const wide = await rowsAt(0, 20000)
+    const narrow = await rowsAt(8003, 8005)
+    const wholeRecord = await rowsAt(100, 101)
+    expect(narrow).toHaveLength(1)
+    expect(narrow[0]![3]).toBeDefined()
+    expect(wide).toContainEqual(narrow[0])
+    expect(wholeRecord).toHaveLength(1)
+    expect(wide).toContainEqual(wholeRecord[0])
+  })
+
+  test('the file-level span keeps a bin off data as coarse as it', async () => {
+    const posneg = new BigWigAdapter(
+      configSchema.create({
+        bigWigLocation: {
+          localPath:
+            require.resolve('../../../../test_data/volvox/posneg_rw1.bw'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+    )
+    const { fileLevels } = await posneg.setup()
+    expect(fileLevels[0]).toBe(1584)
+    expect(await sampleMeanRecordSpan(await posneg.setup())).toBeCloseTo(
+      99.8,
+      1,
+    )
+    expect(await posneg.getZoomRange({ bpPerPx: 100 })).toEqual({
+      minBpPerPx: 0,
+      maxBpPerPx: 256,
+    })
+    const [raw] = await posneg.getFeatureArraysMulti(
+      [{ refName: 'ctgA', start: 0, end: 50000, assemblyName: 'v' }],
+      { bpPerPx: 100 },
+    )
+    expect(raw!.minScores).toBeUndefined()
+    expect(await posneg.getZoomRange({ bpPerPx: 300 })).toEqual({
+      minBpPerPx: 256,
+      maxBpPerPx: 792,
+    })
   })
 
   test('a synthetic fetch declares the range its bins serve', async () => {

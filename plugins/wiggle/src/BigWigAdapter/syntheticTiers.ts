@@ -1,4 +1,6 @@
 import type { RawFeatureArrays } from '../util.ts'
+import type { BigWig, BigWigHeaderWithRefNames } from '@gmod/bbi'
+import type { openLocation } from '@jbrowse/core/util/io'
 
 export interface BigWigRegionArrays extends RawFeatureArrays {
   starts: Int32Array
@@ -14,15 +16,26 @@ const SYNTHETIC_TIER_COUNT = 2
 
 const MIN_SYNTHETIC_BIN_BP = 2
 
+const CIR_TREE_MAGIC = 0x2468ace0
+
+const SAMPLE_MIN_RECORDS = 256
+
 /**
  * The bin widths the adapter serves between the raw section and a file's first
  * zoom level, finest first. Powers of two a factor of 4 apart like bbi's own
  * levels, the coarsest the smallest at or above a quarter of the first level:
  * under `tierSpanRange` a bin of `b` then serves `[b/2, next/2)`, so a synthetic
- * tier holds at most two features a pixel, as a real one does. A file with no
- * zoom levels gets none — there is no first level to anchor the ladder to.
+ * tier holds at most two features a pixel, as a real one does.
+ *
+ * A bin under twice the raw section's mean record span is dropped, and its
+ * zooms read raw records: binning halves the rows only where a bin holds two
+ * records on average, which is UCSC's test for writing a level at all. A file
+ * with no zoom levels, or no measurable span, gets none.
  */
-export function syntheticReductionLevels(reductionLevels: readonly number[]) {
+export function syntheticReductionLevels(
+  reductionLevels: readonly number[],
+  meanRecordSpan: number,
+) {
   if (reductionLevels.length === 0) {
     return []
   }
@@ -34,10 +47,62 @@ export function syntheticReductionLevels(reductionLevels: readonly number[]) {
     i < SYNTHETIC_TIER_COUNT && bin >= MIN_SYNTHETIC_BIN_BP;
     i++
   ) {
-    levels.unshift(bin)
+    if (bin >= 2 * meanRecordSpan) {
+      levels.unshift(bin)
+    }
     bin /= 4
   }
   return levels
+}
+
+interface SampleSource {
+  bigwig: BigWig
+  filehandle: Pick<ReturnType<typeof openLocation>, 'read'>
+  header: BigWigHeaderWithRefNames
+  firstLevel: number
+}
+
+/**
+ * The raw section's mean record span, off a sample fixed by the file: the
+ * records from where its raw index says the data starts, over 64 first-level
+ * widths, or 1024 when that holds under 256 records. The header has no record
+ * count to divide `basesCovered` by — a BigWig's `dataCount` counts sections —
+ * so a file-level number has to come from records. NaN where the sample finds
+ * none.
+ */
+export async function sampleMeanRecordSpan(
+  { bigwig, filehandle, header, firstLevel }: SampleSource,
+  opts: { signal?: AbortSignal } = {},
+) {
+  const index = await filehandle.read(48, header.unzoomedIndexOffset, opts)
+  const view = new DataView(index.buffer, index.byteOffset, index.byteLength)
+  const refName =
+    index.byteLength === 48 && view.getUint32(0, true) === CIR_TREE_MAGIC
+      ? header.refsByNumber[view.getUint32(16, true)]?.name
+      : undefined
+  if (refName === undefined) {
+    return Number.NaN
+  }
+  const start = view.getUint32(20, true)
+  let records = 0
+  let bases = 0
+  for (const widths of [64, 1024]) {
+    const { starts, ends } = await bigwig.getFeaturesAsArrays(
+      refName,
+      start,
+      start + widths * firstLevel,
+      { ...opts, basesPerSpan: firstLevel / 4 },
+    )
+    records = starts.length
+    bases = 0
+    for (let i = 0; i < records; i++) {
+      bases += ends[i]! - starts[i]!
+    }
+    if (records >= SAMPLE_MIN_RECORDS) {
+      break
+    }
+  }
+  return bases / records
 }
 
 /**
@@ -89,11 +154,11 @@ function rawSlice(
  * bin with no data (or only NaN) emits nothing. Adjacent rows with identical
  * mean, min and max merge, which keeps a long record one row.
  *
- * The region's raw records come back instead, with no min/max, when binning
- * would not at least halve the rows — the test UCSC's writer puts a zoom level
- * to, and what keeps data already as coarse as the bin from coming back
- * blended and no smaller — or when the records overlap or run out of order,
- * which a BigWig's raw section forbids.
+ * The region's raw records come back instead, with no min/max, only when the
+ * records overlap or run out of order, which a BigWig's raw section forbids.
+ * Whether a zoom bins at all is the file's call (`syntheticReductionLevels`),
+ * never the region's, so a locus reads the same at a zoom however it is
+ * fetched.
  */
 export function binRawRegion(
   starts: Int32Array,
@@ -118,10 +183,9 @@ export function binRawRegion(
     regionEnd,
     binBp,
   )
-  const capacity = Math.min(
-    Math.floor((rawHi - rawLo) / 2),
-    (extentEnd - extentStart) / binBp,
-  )
+  // A record adds at most three rows: its start bin, a run of whole bins, and
+  // the bin its tail shares with the next record
+  const capacity = Math.min(3 * (hi - lo), (extentEnd - extentStart) / binBp)
   if (capacity <= 0) {
     return rawSlice(starts, ends, scores, rawLo, rawHi)
   }

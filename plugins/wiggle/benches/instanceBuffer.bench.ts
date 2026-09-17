@@ -28,8 +28,6 @@ import { createCanvas } from 'canvas'
 
 import BigWigAdapter from '../src/BigWigAdapter/BigWigAdapter.ts'
 import configSchema from '../src/BigWigAdapter/configSchema.ts'
-import { syntheticReductionLevels } from '../src/BigWigAdapter/syntheticTiers.ts'
-import { tierSpanRange } from '../src/BigWigAdapter/tierSpanRange.ts'
 import { buildSourceRenderData } from '../src/shared/buildSourceRenderData.ts'
 import {
   INSTANCE_OFFSET_F32 as STEP_F32,
@@ -96,11 +94,7 @@ async function fetchRaw(file: string) {
     [{ refName, start, end, assemblyName: 'bench' }],
     { bpPerPx },
   )
-  const fileLevels = header.zoomLevels.map(z => z.reductionLevel)
-  const [lo] = tierSpanRange(
-    [...syntheticReductionLevels(fileLevels), ...fileLevels],
-    bpPerPx,
-  )
+  const { minBpPerPx: lo } = await adapter.getZoomRange({ bpPerPx })
   return {
     raw: raw!,
     refName,

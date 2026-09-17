@@ -24,8 +24,7 @@ import { resolve } from 'node:path'
 //
 // The bbi block cache is warm after the first round, so a read is a refetch
 // over held blocks. Identity: the tier's rows must be binRawRegion over the
-// bin-aligned raw read, and a region binRawRegion hands back raw must be
-// exactly the raw section's rows.
+// bin-aligned raw read.
 import { performance } from 'node:perf_hooks'
 
 import { BigWig } from '@gmod/bbi'
@@ -35,10 +34,10 @@ import configSchema from '../src/BigWigAdapter/configSchema.ts'
 import {
   binAlignedExtent,
   binRawRegion,
+  sampleMeanRecordSpan,
   syntheticBinBp,
   syntheticReductionLevels,
 } from '../src/BigWigAdapter/syntheticTiers.ts'
-import { tierSpanRange } from '../src/BigWigAdapter/tierSpanRange.ts'
 import { processFeaturesFromArrays } from '../src/util.ts'
 
 import type { RawFeatureArrays } from '../src/util.ts'
@@ -62,9 +61,6 @@ const end = Math.min(refLength, Math.round(start + bpPerPx * screenPx))
 const region = { refName, start, end, assemblyName: 'bench' }
 const fileLevels = header.zoomLevels.map(z => z.reductionLevel)
 const firstLevel = Math.min(...fileLevels)
-const levels = [...syntheticReductionLevels(fileLevels), ...fileLevels]
-const [lo, hi] = tierSpanRange(levels, bpPerPx)
-const binBp = syntheticBinBp(lo, firstLevel)
 const rawSpan = firstLevel / 4
 
 const adapter = new BigWigAdapter(
@@ -72,6 +68,11 @@ const adapter = new BigWigAdapter(
     bigWigLocation: { localPath: file, locationType: 'LocalPathLocation' },
   }),
 )
+const meanRecordSpan = await sampleMeanRecordSpan(await adapter.setup())
+const { minBpPerPx: lo, maxBpPerPx: hi } = await adapter.getZoomRange({
+  bpPerPx,
+})
+const binBp = syntheticBinBp(lo, firstLevel)
 
 async function readRaw() {
   const res = await bigwig.getFeaturesAsArraysMulti([region], {
@@ -129,11 +130,7 @@ function binAligned() {
   )
 }
 if (binBp !== undefined) {
-  const binned = binAligned()
-  sameRows(tier!, binned, 'tier vs binRawRegion')
-  if (binned.minScores === undefined) {
-    sameRows(binned, raw, 'fallback vs raw')
-  }
+  sameRows(tier!, binAligned(), 'tier vs binRawRegion')
 } else {
   sameRows(
     tier!,
@@ -248,7 +245,8 @@ const result = {
     end,
     bpPerPx,
     fileLevels: fileLevels.slice(0, 3),
-    syntheticLevels: syntheticReductionLevels(fileLevels),
+    meanRecordSpan: +meanRecordSpan.toFixed(2),
+    syntheticLevels: syntheticReductionLevels(fileLevels, meanRecordSpan),
     tier:
       binBp === undefined
         ? lo === 0
@@ -256,7 +254,6 @@ const result = {
           : `file ${lo * 2}`
         : `synthetic ${binBp}`,
     zoomRange: [lo, hi],
-    fellBackToRaw: binBp !== undefined && tier!.minScores === undefined,
     rounds,
   },
   raw: rows(raw),

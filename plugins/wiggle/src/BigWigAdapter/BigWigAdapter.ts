@@ -15,6 +15,7 @@ import { calcStdFromSums } from '@jbrowse/core/util/stats'
 import {
   binAlignedExtent,
   binRawRegion,
+  sampleMeanRecordSpan,
   syntheticBinBp,
   syntheticReductionLevels,
 } from './syntheticTiers.ts'
@@ -113,23 +114,50 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     setup: opts => this.setupPre(opts),
   })
 
+  private rawSectionLevels = cachedSetup({
+    setup: opts => this.rawSectionLevelsPre(opts),
+  })
+
   public static capabilities = ['hasResolution']
 
   private async setupPre(opts?: BaseOptions) {
-    const bigwig = new BigWig({
-      filehandle: openLocation(
-        this.getConf('bigWigLocation'),
-        this.pluginManager,
-      ),
-    })
+    const filehandle = openLocation(
+      this.getConf('bigWigLocation'),
+      this.pluginManager,
+    )
+    const bigwig = new BigWig({ filehandle })
     const header = await bigwig.getHeader(opts)
     const fileLevels = header.zoomLevels.map(z => z.reductionLevel)
     return {
       bigwig,
+      filehandle,
       header,
+      fileLevels,
       firstLevel: Math.min(...fileLevels),
-      levels: [...syntheticReductionLevels(fileLevels), ...fileLevels],
     }
+  }
+
+  private async rawSectionLevelsPre(opts: BaseOptions) {
+    const source = await this.setup(opts)
+    const { fileLevels } = source
+    return fileLevels.length === 0
+      ? fileLevels
+      : [
+          ...syntheticReductionLevels(
+            fileLevels,
+            await sampleMeanRecordSpan(source, opts),
+          ),
+          ...fileLevels,
+        ]
+  }
+
+  // Synthetic tiers only move the answer under half the first level, so a
+  // coarser zoom never pays the raw sample they are sized from
+  private async tierLevels(opts: WiggleOptions) {
+    const { fileLevels, firstLevel } = await this.setup(opts)
+    return this.basesPerSpan(opts) < firstLevel / 2
+      ? this.rawSectionLevels(opts)
+      : fileLevels
   }
 
   public async getRefNames(opts?: BaseOptions) {
@@ -158,7 +186,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
   }
 
   public async getZoomRange(opts: WiggleOptions = {}): Promise<ZoomRange> {
-    const { levels } = await this.setup(opts)
+    const levels = await this.tierLevels(opts)
     const { resolution = 1 } = opts
     const bpPerPxPerSpan = resolution / this.getConf('resolutionMultiplier')
     const [lo, hi] = tierSpanRange(levels, this.basesPerSpan(opts))
@@ -189,7 +217,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
   // and bins each region; a file tier's rows are bbi's own.
   private async readRegions(regions: Region[], opts: WiggleOptions) {
     const { statusCallback } = opts
-    const { bigwig, levels, firstLevel } = await this.setup(opts)
+    const { bigwig, firstLevel } = await this.setup(opts)
+    const levels = await this.tierLevels(opts)
     const basesPerSpan = this.basesPerSpan(opts)
     const binBp = syntheticBinBp(
       tierSpanRange(levels, basesPerSpan)[0],
