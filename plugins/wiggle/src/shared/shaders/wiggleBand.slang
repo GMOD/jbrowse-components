@@ -43,11 +43,13 @@ float rowScoreToYPx(float score, float rowTop, float rowHeight) {
   return scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
 }
 
-// Floored so a steep edge across a sub-pixel column pads and fades over at most
-// two output pixels rather than along its whole rise.
-float edgePerp(float dyPx, float dxPx) {
+// Floored only in a column narrower than an output pixel, where the edge's rise
+// would otherwise pad and fade along its whole length; a wider steep edge keeps
+// its true perpendicular ramp.
+float edgePerp(float dyPx, float dxPx, float dpr) {
   float slope = abs(dxPx) > 1e-6 ? dyPx / dxPx : 0.0;
-  return max(1.0 / sqrt(1.0 + slope * slope), 0.5);
+  float perp = 1.0 / sqrt(1.0 + slope * slope);
+  return abs(dxPx) * dpr < 1.0 ? max(perp, 0.5) : perp;
 }
 
 [shader("vertex")]
@@ -76,8 +78,8 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
   }
 
   float dxPx = (x1 - x0) * u.viewportWidth * 0.5;
-  float topPerp = edgePerp(top - top0, dxPx);
-  float bottomPerp = edgePerp(bottom - bottom0, dxPx);
+  float topPerp = edgePerp(top - top0, dxPx, u.devicePixelRatio);
+  float bottomPerp = edgePerp(bottom - bottom0, dxPx, u.devicePixelRatio);
   float pad = aaHalfPx(u.devicePixelRatio);
 
   float2 q = quadLocal(vid);
