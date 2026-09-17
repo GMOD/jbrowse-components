@@ -79,8 +79,8 @@ alongside `CoreRender` above:
   `MultiSampleVariantGetCellData` answers the same question from the display's
   own data.
 
-This is the one removal on this page that fails **loudly**: `getRpcMethodType`
-bottoms out in a registry lookup that throws
+Removed RPC methods are the one removal on this page that fails **loudly**:
+`getRpcMethodType` bottoms out in a registry lookup that throws
 `RpcMethodType 'X' is not registered`, names the method and lists what this
 build does register — which is also the answer to "which plugin is missing".
 
@@ -339,7 +339,7 @@ thickness only says whether the transcript codes. Those features now parse as
 `transcript` with `exon` children, which is what a coding BED12 has always done
 one step further along.
 
-What changes for a site: the feature reports a type where it reported none, so
+For a site, the feature reports a type where it reported none, so
 `showOnlyGenes` admits it, the hover readout numbers its exons and gives an HGVS
 `n.` coordinate, "Get sequence" offers the spliced cDNA, "Collapse introns" is
 offered on it, and "Save track data" round-trips it byte-exact where it used to
@@ -460,7 +460,7 @@ view object:
 }
 ```
 
-The same object works in a `defaultSession`, in a `?session=spec-` URL, in
+This flat JSON shape works in a `defaultSession`, in a `?session=spec-` URL, in
 `addView` and in an embedded `createViewState`. A view snapshot restored from a
 saved session is unaffected: `tracks` holding built track models still restores
 as built track models, and `tracks` holding trackIds is read as the request to
@@ -577,8 +577,8 @@ pluggableElement.extendStateModel(stateModel =>
 
 Not every type is lazy — `LinearGenomeView` is registered eagerly — so a bundle
 tested only against eager types can pass and still throw on a lazy one.
-`extendViewType` / `extendDisplayType` do this for you, and are the better road
-if you are touching the code anyway.
+`extendViewType` / `extendDisplayType` do this for you, and are the better
+choice if you are touching the code anyway.
 
 `Core-extendPluggableElement` fires when the loader resolves rather than at
 install, so the v4 idiom inside that callback still sees a loaded model and
@@ -588,8 +588,9 @@ lazy element and contributes nothing, with no error.
 
 ### Opening a view or a track is asynchronous too
 
-The same loader sits under the session's own API. Each v4 call still exists, and
-what it does when the model is not loaded is the second column:
+The same lazy-loader mechanism sits under the session's own API. Each v4 call
+still exists, and what it does when the model is not loaded is the second
+column:
 
 <!-- prettier-ignore -->
 | The v4 call | Without a loaded model | The v5 call |
