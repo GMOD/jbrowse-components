@@ -32,6 +32,7 @@ import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 
 import type { LinearGenomeViewModel } from './index.ts'
 import type { InitState } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { RpcStatus } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
@@ -2800,13 +2801,16 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
 
   // A stacked row cleared by its own import form blanks the bands beside it,
   // and its ⋮ button and the parent's row menus both read `menuItems`
-  const viewMenuLabels = (view: LGV) => {
+  const shown = (view: LGV) => {
     view.setWidth(800)
     view.setDisplayedRegions([
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
     ])
-    return view.menuItems().map(m => ('label' in m ? m.label : undefined))
+    return view
   }
+  const labelsOf = (items: MenuItem[]) =>
+    items.map(m => ('label' in m ? m.label : undefined))
+  const viewMenuLabels = (view: LGV) => labelsOf(shown(view).menuItems())
 
   test('only a top-level view offers its import form', () => {
     expect(viewMenuLabels(makeView(1))).toContain('Return to import form')
@@ -2817,10 +2821,18 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
 
   // A synteny row and a breakpoint panel are placed by their own heights and
   // exported a row per view, so a detail level grown inside one walks the
-  // ribbons off their rows and is dropped from that view's picture
-  test('only a top-level view offers to grow a detail level', () => {
-    expect(viewMenuLabels(makeView(1))).toContain('Add detail level')
-    expect(viewMenuLabels(makeView(1, true))).not.toContain('Add detail level')
+  // ribbons off their rows and is dropped from that view's picture. It is the
+  // Zoom group that carries the item, on a view that has one at all.
+  test('only a top-level view offers to open a detail level', () => {
+    const zoomLabels = (view: LGV) => {
+      const zoom = shown(view)
+        .menuItems()
+        .find(m => 'label' in m && m.label === 'Zoom')
+      const subMenu = zoom && 'subMenu' in zoom ? zoom.subMenu : []
+      return labelsOf(typeof subMenu === 'function' ? subMenu() : subMenu)
+    }
+    expect(zoomLabels(makeView(1))).toContain('Add detail level')
+    expect(zoomLabels(makeView(1, true))).not.toContain('Add detail level')
   })
 })
 

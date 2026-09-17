@@ -69,12 +69,9 @@ describe('OverviewScalebar tick labels', () => {
 })
 
 // The trapezoid joins the chromosome to whatever is drawn directly under it,
-// and with detail levels that is the widest of them rather than the view: the
-// view's own window is several rows further down, and the levels' connectors
-// are what walk the reader there.
+// which is this view whether or not it has detail levels — they go under the
+// tracks, and their own connectors carry the reader on down from there.
 describe('OverviewScalebar "you are here" trapezoid', () => {
-  // mid-contig, so the ten-times-wider level below still lands whole inside the
-  // region and its span is exactly ten times the view's
   function overviewAt(windowWidthBp: number) {
     const model = overview(1)
     model.setWindow(windowWidthBp, 100_000_000)
@@ -96,9 +93,9 @@ describe('OverviewScalebar "you are here" trapezoid', () => {
     expect(topEdgeWidth(renderPolygon(overviewAt(2_500_000)))).toBeCloseTo(8, 0)
   })
 
-  it('describes the widest detail level once there is one', () => {
+  it('describes the view still, once there is a detail level', () => {
     const model = overviewAt(2_500_000)
     model.addDetailLevel()
-    expect(topEdgeWidth(renderPolygon(model))).toBeCloseTo(80, 0)
+    expect(topEdgeWidth(renderPolygon(model))).toBeCloseTo(8, 0)
   })
 })
