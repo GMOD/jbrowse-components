@@ -293,7 +293,9 @@ a block came from:
 1. **Group by... → Mate assembly** gives one labelled lane per sample, shading
    darker where several alignments cover the same base. Untick **Show... →
    Collapse groups to one row** to stack every lane, or expand one from its
-   label.
+   label. **Sections** in the track menu then lists the lanes drawn, each with
+   **Move up**, **Move down** and **Hide section**, and **Reset section order**
+   returns them to the sorted order.
 2. **Group by... → Hide self-alignment lane** drops the lane for the strain you
    are viewing. `minimap2 -X` skipped each genome's own diagonal, so that lane
    holds K-12's own internal repeats rather than its diagonal. The figures below

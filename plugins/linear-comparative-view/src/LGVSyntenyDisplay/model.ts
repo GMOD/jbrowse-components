@@ -11,6 +11,7 @@ import {
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getHitMenuItems,
+  getSectionOrderMenuItems,
   getSortByMenuItem,
   NO_HIDDEN_GROUPS,
   pickColorOptions,
@@ -315,6 +316,10 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             }),
             ...getFiltersMenuItems(self),
             getSyntenyGroupByMenuItem(self),
+            // An all-vs-all track stacks a section per mate assembly, and this
+            // display inherits `groupBy.domain` from the alignments base, so the
+            // reorder menu is the base's too.
+            ...getSectionOrderMenuItems(self),
             ...getSyntenyShowMenuItems(self),
             // Same submenu the synteny view and dotplot show, from one source, so
             // the three surfaces can't word the same setting differently

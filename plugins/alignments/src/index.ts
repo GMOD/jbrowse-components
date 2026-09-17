@@ -57,6 +57,7 @@ export {
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getHitMenuItems,
+  getSectionOrderMenuItems,
   getSortByMenuItem,
   groupByRadioMenuItem,
   hiddenGroupsItems,
@@ -65,6 +66,7 @@ export {
 export type {
   CollapseGroupRowsModel,
   HiddenGroupsModel,
+  SectionOrderMenuModel,
 } from './LinearAlignmentsDisplay/menus/index.ts'
 export { queueReadVsRefDialog } from './ReadVsRefDialog/index.ts'
 export type { ReadVsRefLaunchArgs } from './ReadVsRefDialog/index.ts'

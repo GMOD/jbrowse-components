@@ -31,3 +31,4 @@ export {
   getSectionOrderMenuItems,
   getSortByMenuItem,
 } from './sortGroup.ts'
+export type { SectionOrderMenuModel } from './sortGroup.ts'
