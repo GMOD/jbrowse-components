@@ -247,7 +247,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-ui/yScaleTicks': m82,
   '@jbrowse/ld-core': m83,
   '@jbrowse/modifications-utils': m84,
-  '@jbrowse/plugin-alignments': uiNamespace(['COMPACTNESS_PRESETS', 'NO_HIDDEN_GROUPS', 'collapseGroupRowsItems', 'copyFeatureInfo', 'default', 'derivativeLetterSummary', 'getColorByMenuItem', 'getFeatureHeightMenuItem', 'getFiltersMenuItems', 'getHitMenuItems', 'getSortByMenuItem', 'groupByRadioMenuItem', 'hiddenGroupsItems', 'letterSegments', 'linearAlignmentsDisplayConfigSchemaFactory', 'pickColorOptions', 'pickGroupByOptions', 'queueReadVsRefDialog', 'segmentEntryBp', 'segmentExitBp', 'withContextMenuFeature'], true),
+  '@jbrowse/plugin-alignments': uiNamespace(['COMPACTNESS_PRESETS', 'NO_HIDDEN_GROUPS', 'collapseGroupRowsItems', 'copyFeatureInfo', 'default', 'derivativeLetterSummary', 'getColorByMenuItem', 'getFeatureHeightMenuItem', 'getFiltersMenuItems', 'getHitMenuItems', 'getSectionOrderMenuItems', 'getSortByMenuItem', 'groupByRadioMenuItem', 'hiddenGroupsItems', 'letterSegments', 'linearAlignmentsDisplayConfigSchemaFactory', 'pickColorOptions', 'pickGroupByOptions', 'queueReadVsRefDialog', 'segmentEntryBp', 'segmentExitBp', 'withContextMenuFeature'], true),
   '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel': uiNamespace(['ColorScheme', 'default'], true),
   '@jbrowse/plugin-arc': uiNamespace(['addArcJexlFunctions', 'default'], true),
   '@jbrowse/plugin-authentication': uiStub,
