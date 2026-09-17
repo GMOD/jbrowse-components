@@ -222,6 +222,12 @@ A variation the display owns is a setting on it: an alignments track has one
 arcs are `applyDisplaySettings({ readConnections: 'arc' })` and `describeSlots`
 lists what else it takes.
 
+A feature or variant track groups, colors and filters as channels:
+`display.applyChannelSpec({ facet: { field: 'strand' }, color: { field: 'type' }, filter: ["feature.type == 'gene'"] })`
+writes each onto the setting its menu writes, `null` clears one and a channel
+left out stays, and `display.channelSpec` reads them back. A field is a feature
+attribute, a dotted path such as `INFO.SVTYPE`, or `strand`.
+
 A feature's label is whatever `name` it carries, else its `id`, and a file
 decides which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and
 carries no `Name`, so `f.get('name')` is `null` there and `f.get('id')` is the
