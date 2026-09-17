@@ -11,6 +11,15 @@ import { DENSITY_COLOR_RAMPS } from './densityColorRamp.ts'
 export const wiggleConfigSchemaFields = {
   ...scoreAxisConfigSchemaFields,
   ...scoreFieldConfigSchemaFields,
+  /**
+   * #slot
+   */
+  resolution: {
+    type: 'number',
+    defaultValue: 1,
+    description:
+      'how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end',
+  },
   // Widens the shared axis slot rather than living in it: `symlog` is only
   // offered where something implements it, and that is the wiggle shaders.
   // LinearManhattanDisplay spreads the same shared fields and its shader has no

@@ -1,6 +1,5 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
 import {
   ScoreFieldConfigMixin,
   autoscaleDomainFromStats,
@@ -72,13 +71,19 @@ export const RESOLUTION_STEP = 2
  */
 export function WiggleCommonMixin() {
   return ScoreFieldConfigMixin()
-    .props({
-      /**
-       * #property
-       */
-      resolution: types.stripDefault(types.number, 1),
-    })
     .views(self => ({
+      /**
+       * #getter
+       * Points per pixel the fetch asks for, clamped to what the Resolution
+       * menu offers: the slot is reachable from a track config, which runs no
+       * setter, and `0` there divides by zero inside the adapter.
+       */
+      get resolution(): number {
+        return Math.min(
+          RESOLUTION_MAX,
+          Math.max(RESOLUTION_MIN, getConf(confNode(self), 'resolution')),
+        )
+      },
       /**
        * #getter
        * The fetched scores, keyed by displayedRegionIndex — the foundation's
@@ -285,9 +290,10 @@ export function WiggleCommonMixin() {
        * #action
        */
       setResolution(res: number) {
-        self.resolution = Math.min(
-          RESOLUTION_MAX,
-          Math.max(RESOLUTION_MIN, res),
+        setConf(
+          confNode(self),
+          'resolution',
+          Math.min(RESOLUTION_MAX, Math.max(RESOLUTION_MIN, res)),
         )
       },
       /**
