@@ -337,9 +337,9 @@ reference path is `K12#0#chr`, and each other strain carries a trailing subpath
 tag (`Sakai#0#chr#0`), so the per-strain filter matches a prefix. The
 [build script](#reproduce-it-end-to-end) runs both.
 
-Depth counts path **steps**, so a repeat the graph folded onto one run of nodes
-reads above the strain count. seqwish folds the rRNA copies together; the
-reference-first graph keeps them apart.
+Depth counts path **steps** rather than strains, so a repeat the graph folded
+onto one run of nodes reads above the strain count. seqwish folds the rRNA
+copies together; the reference-first graph keeps them apart.
 
 <Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move." src="/img/pangenome_cactus/builders.png" />
 
