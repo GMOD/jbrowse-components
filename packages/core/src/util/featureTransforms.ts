@@ -1,6 +1,7 @@
 import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
+  facetSectionLabel,
   groupKeyComparator,
   overflowLabel,
 } from './groupKeys.ts'
@@ -401,7 +402,7 @@ export function facetRows(
     const raw = f.get(field)
     const key = raw === undefined || raw === null ? '' : String(raw)
     if (!labels.has(key)) {
-      labels.set(key, key === '' ? `${field}: none` : `${field}: ${key}`)
+      labels.set(key, facetSectionLabel(field, key))
     }
     return { feature: f, key, row: Number(f.get(as)) || 0 }
   })

@@ -1,3 +1,5 @@
+import { STRAND_FIELD, strandLabel } from './strandScale.ts'
+
 /**
  * The ordering every in-track group-by shares, whatever partitioned the
  * features: named groups first, then the `''` catch-all a dimension files its
@@ -115,6 +117,17 @@ export function carryGroupDomain<
  */
 export function overflowLabel(count: number) {
   return `${count} merged values`
+}
+
+/**
+ * The chip a facet section shows: a strand by name, any other field's value
+ * as `field: value`, and its catch-all as `field: none`.
+ */
+export function facetSectionLabel(field: string, key: string) {
+  return (
+    (field === STRAND_FIELD ? strandLabel(key) : undefined) ??
+    `${field}: ${key === '' ? 'none' : key}`
+  )
 }
 
 /**
