@@ -7,11 +7,11 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-AlphaGenome reads a megabase of DNA and predicts what it does: where it is
-transcribed, where the chromatin is open, how it splices, and how it folds. We
-ask it about _TAL1_ in two cell lines, stack the answers that share units on one
-axis, and then score an oncogenic insertion against the reference to see the
-enhancer it creates.
+AlphaGenome reads a megabase of DNA and predicts where it is transcribed, where
+the chromatin is open, how it splices, and how it folds. We ask it about _TAL1_
+in two cell lines, stack the answers that share units on one axis, and then
+score an oncogenic insertion against the reference to see the enhancer it
+creates.
 
 :::caution Experimental
 
@@ -24,15 +24,15 @@ answer. We welcome your [feedback](/contact).
 
 - [the AlphaGenome plugin](#the-alphagenome-plugin), which contributes the
   adapters these tracks use, the query panel, and the variant right-click item
-- nothing installed locally, and no AlphaGenome API key: the two predictions
-  this page reads were recorded once and stored, so following it spends no quota
+- nothing installed locally, and no AlphaGenome API key: we recorded and stored
+  the two predictions this page reads once, so following it spends no quota
 
 ## Where the data comes from
 
-Two predictions over the _TAL1_ locus, made once against
-[AlphaGenome](https://www.alphagenomedocs.com/) and frozen under stable tokens,
-plus the hg38 annotation they are read against. The locus and the variant follow
-the AlphaGenome team's
+We made two predictions over the _TAL1_ locus once against
+[AlphaGenome](https://www.alphagenomedocs.com/) and froze them under stable
+tokens, and the list below also carries the hg38 annotation they are read
+against. The locus and the variant follow the AlphaGenome team's
 [worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
 
 - the reference prediction over chr1:46,700,048..47,748,623, all eleven output
@@ -131,20 +131,20 @@ go into a request:
 - **a variant, or none.** Left empty, the locus is predicted as it is
 
 A wide request takes minutes, so it is registered and the browser polls for it.
-Requests are keyed by content with the window rounded to 4 kb, so asking again
-for what this page already asked returns at once, which is why the prediction
-behind the figures below is instant. The rounding matters because a view's
-region comes from an integer pixel offset, and two browser windows of different
-widths ask about the same locus in coordinates tens of bases apart. A hit can
-therefore return a window up to about 2 kb off the one asked for, and the track
-list names the interval that came back.
+The service keys requests by content with the window rounded to 4 kb, so asking
+again for what this page already asked returns at once, which is why the
+prediction behind the figures below is instant. The rounding matters because a
+view's region comes from an integer pixel offset, and two browser windows of
+different widths ask about the same locus in coordinates tens of bases apart. A
+hit can therefore return a window up to about 2 kb off the one asked for, and
+the track list names the interval that came back.
 
 ## Two cell lines on one axis
 
-A finished prediction is a list of tracks, often thousands, and none cost
-anything to add: the arrays are stored, and a track is an HTTP range request
-into one. Filter the list to `polyA plus`, tick K562 and GM12878, and **Add
-selected** puts both in a single multi-wiggle track.
+A finished prediction is a list of tracks, often thousands. None cost anything
+to add, because the service stores the arrays and a track is only an HTTP range
+request into one. Filter the list to `polyA plus`, tick K562 and GM12878, and
+**Add selected** puts both in a single multi-wiggle track.
 
 Predicted RNA-seq in two cell types is a comparison only if the rows share a
 y-axis. Everything measured in the same units goes onto one axis: several
@@ -165,11 +165,10 @@ Add the DNase and ATAC tracks for both biosamples the same way. All four land in
 one track, because accessibility is one scale, and a DNase peak in K562 should
 also be an ATAC peak in K562.
 
-The shared axis also makes the rows' floors comparable: predicted ATAC in K562
-sits well above everything else across the window, while the same cell line's
-DNase resolves into peaks. On a per-row scale the two would look alike. The
-GM12878 rows are not empty either; chromatin is open at plenty of places that
-are not transcribed.
+On the shared axis, predicted ATAC in K562 sits well above everything else
+across the window, while the same cell line's DNase resolves into peaks. On a
+per-row scale the two would look alike. The GM12878 rows are not empty either;
+chromatin is open at plenty of places that are not transcribed.
 
 <Figure caption="Predicted DNase and ATAC for K562 and GM12878, four rows on one shared y-axis because accessibility is one set of units. The K562 ATAC row runs high across the whole window; the K562 DNase row below it resolves into peaks." src="/img/alphagenome/accessibility_shared_axis.png" />
 
@@ -184,7 +183,7 @@ in the browser. Add the K562 and GM12878 polyA junctions and zoom in to _TAL1_.
 The adapter's own threshold is low, which over one gene leaves dozens of faint
 arcs around a few strong ones; raise the Min score slider in the K562 track's
 menu and the strong ones remain, landing on the exon boundaries the RefSeq track
-draws. The arcs are colored by strand, one color here because every junction
+draws. The track colors arcs by strand, one color here because every junction
 over _TAL1_ is on the gene's strand, and the GM12878 lane is empty because
 _TAL1_ is off there.
 
@@ -235,7 +234,7 @@ Before running one yourself:
 ## Reading the difference
 
 Adding a track from a variant prediction gives two tracks: the reference and
-alternate curves together, and their difference on its own row, where positive
+alternate curves together, and a third row for their difference, where positive
 is a gain from the insertion and negative a loss. Add the CD34+ DNase, polyA
 plus RNA-seq and H3K27ac tracks, and zoom to _TAL1_ and the insertion.
 
@@ -259,8 +258,8 @@ difference compares one reference base with itself.
 The tracks the panel adds are session tracks, and their adapters address a
 stored array through a presigned URL that expires within the hour, so a track
 config copied out of one session does not load in the next. Re-open the panel
-instead: the request is keyed by content, so rebuilding the same query lands
-back on the same arrays for free.
+and rebuild the same query instead; the panel keys the request by content, so it
+lands back on the same arrays for free.
 
 ## See also
 
