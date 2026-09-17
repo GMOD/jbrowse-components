@@ -136,10 +136,10 @@ them:
 (The roles come from the 1000 Genomes pedigree line
 `VN049 HG02024 HG02026 HG02025`: father HG02026, mother HG02025.) Within one
 child haplotype, the matching _parental_ copy flips between the parent's copy 1
-and copy 2 at each crossover. Those flips are what the track below paints.
+and copy 2 at each crossover. The track below paints those flips.
 
 hap-ibd's output has gaps, plus short spurious segments from the statistical
-phasing, so it is collapsed into clean blocks before painting.
+phasing, so a cleanup step collapses it into clean blocks before painting.
 
 ## Converting hap-ibd data into painted inheritance blocks
 
@@ -226,9 +226,10 @@ Read the rows in pairs:
   got there; every step between the blue rows is a crossover.
 - **Red rows work the same way** for the maternal chromosome.
 
-That rule is the figure's own control: two filled blue rows at a position, or
-neither, means hap-ibd matched one child haplotype to both of the father's
-copies or to neither. The centromere is the blank with no markers to match on.
+That rule is the check built into the figure: two filled blue rows at a
+position, or neither, means hap-ibd matched one child haplotype to both of the
+father's copies or to neither. The centromere is the blank with no markers to
+match on.
 
 ## Relating the painting back to the genotypes
 

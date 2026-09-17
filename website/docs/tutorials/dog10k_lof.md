@@ -190,21 +190,21 @@ bcftools query -l dp.vcf.gz > cohort.samples
 bcftools query -f '%POS[\t%DP]\n' dp.vcf.gz > cohort.dp
 ```
 
-Depth is converted to copy number by comparison within each dog. The sequence
-around the element in that same dog is copy number two, so it serves as the
-denominator:
+The build script converts depth to copy number by comparison within each dog.
+The sequence around the element in that same dog is copy number two, so it is
+the denominator:
 
 ```
 CN = 2 * depth over the element / depth over the sequence around it
 ```
 
-No copy-number caller is involved, and the check is built in: that surrounding
-sequence has to come back out at two.
+The comparison is its own check, with no separate copy-number caller: that
+surrounding sequence has to come back out at two.
 
 Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
 evidence and is painted at 1 kb resolution.
 
-Callset depth is taken only where a variant was called, so the build script
+The callset records depth only where a variant was called, so the build script
 validates it against the 15 CRAMs the Dog10K share publishes: over the shared
 windows the two agree at r = 0.92 with no bias. That painting is in the config
 as `dog10k_cyp1a2_cn`.

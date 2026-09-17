@@ -99,12 +99,12 @@ se <- satuRn::testDTU(object = se, contrasts = L, sort = FALSE)
 res <- rowData(se)[["fitDTUResult_muscle_vs_liver"]]
 ```
 
-`res` carries the p-value, both FDRs and the model's own estimates per
-transcript. The isoform fractions the color reads come from the TPM matrix
-rather than from this table.
+`res` carries the p-value, both FDRs and the model's estimates per transcript.
+The isoform fractions the color reads come from the TPM matrix rather than from
+this table.
 
-**Write the statistics into GENCODE.** The called genes are subset out of the
-GENCODE v29 GFF3 and each transcript's numbers are appended to its attribute
+**Write the statistics into GENCODE.** The script subsets the called genes out
+of the GENCODE v29 GFF3 and appends each transcript's numbers to its attribute
 column. The rows come out in coordinate order, so indexing is the ordinary pair:
 
 <!-- from: scripts/build_dtu_demo.sh -->

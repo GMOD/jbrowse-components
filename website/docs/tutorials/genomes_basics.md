@@ -123,7 +123,7 @@ pair. Tick both, under Comparative Genomics:
 
 <Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from. A base is drawn only where it differs from human." />
 
-Most columns are blank, since no species differs from human at those bases, and
+Most columns are blank, since every species matches human at those bases, and
 conserved columns give a positive score. phyloP counts substitution events on
 the tree:
 
@@ -156,8 +156,8 @@ config points at are the hg38 ones.
 
 The promoter is at the high-coordinate end because the gene is on the minus
 strand, and everything lands there together: the CpG island, a promoter-class
-cCRE, the EPDnew call and both marks. H3K4me3 marks a promoter and H3K27ac an
-active one; all seven cell lines carry both.
+cCRE, the EPDnew call and both histone marks. H3K4me3 marks a promoter and
+H3K27ac an active one; all seven cell lines carry both.
 
 ## Filtering a dense track
 
@@ -179,10 +179,9 @@ filter leaves a track drawn in one colour.
 Once a filter is in effect the same menu row opens a submenu with **Edit
 filters...** and **Clear all filters**.
 
-A BigBed's extra fields arrive as fields, so whatever columns the file carries
-are what there is to filter on. ClinVar's clinical classification is
-`feature.clinSign`, so `jexl:feature.clinSign == 'Pathogenic'` cuts that catalog
-down the same way.
+A BigBed's extra fields arrive as fields, so filtering is limited to the columns
+the file carries. ClinVar's clinical classification is `feature.clinSign`, so
+`jexl:feature.clinSign == 'Pathogenic'` cuts that catalog down the same way.
 
 ## Other tracks in the hg38 catalog
 
