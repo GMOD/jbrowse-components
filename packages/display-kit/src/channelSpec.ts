@@ -104,7 +104,6 @@ function parseColor(value: unknown): ChannelSpec['color'] {
   }
   return {
     field: fieldName('color', field),
-    ...(scale === undefined ? {} : { scale }),
     ...(domain === undefined
       ? {}
       : { domain: stringList('color.domain', domain) }),

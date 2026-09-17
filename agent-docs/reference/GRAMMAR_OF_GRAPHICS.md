@@ -288,14 +288,20 @@ The feature display also takes a facet written in the mark display's words,
 from **Edit as JSON...** in its Group by and Color by attribute dialogs:
 `{ facet: { field, domain }, color: "css" | { field, domain, palette }, filter }`,
 parsed by `@jbrowse/display-kit/channelSpec` and written by `applyChannelSpec`
-onto `groupBy`, the `color` slot and the filter override, so nothing stores the
-spec. A color by a field is `categoricalColor` (the mark rule) in the `color`
-slot's jexl, read back by `attributeColorOf`, and the worker's per-feature
-`legendCandidates` derive the key in that domain's order. Two proposals were
-declined in review: a `facet` config key beside `groupBy` (one setting spelled
-twice, and alignments' dimensions are not fields), and filter shorthands such as
+onto `groupBy`, the flat `colorField`/`colorDomain`/`colorPalette` slots or
+`color`, and the filter override, so nothing stores the spec. The Group by
+dialog applies a spec too (`groupByChannelSpec`). The worker paints a color by a
+field through `categoricalColorScale` with no jexl, reading a part's value off
+its transcript (the emitter passes the level), and records each value it
+painted with the section its record files under, which `derivedColorKey` turns
+into the key less the hidden sections. Three proposals were declined in review:
+a `facet` config key beside `groupBy` (one setting spelled twice, and
+alignments' dimensions are not fields); filter shorthands such as
 `{ field, oneOf }` (jexl is the filter language, and reading structure back out
-of jexl is the fragile half).
+of jexl is the fragile half); and the color as a `{ value, field, scale,
+domain, palette }` sub-schema shaped like the mark display's, because a nested
+slot read is a `string[]` path `getConf` neither name-checks nor types and the
+worker walked it per box, where the flat slots read through `getConf` checked.
 
 The multi-row display's `partitionField` is the same partition with one fixed
 row per value and no chip. What the mark display does not take is the

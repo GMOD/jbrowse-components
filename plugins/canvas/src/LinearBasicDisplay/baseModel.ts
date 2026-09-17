@@ -1492,7 +1492,7 @@ export default function baseStateModelFactory(
         groupBy: FeatureGroupBy | undefined,
         colorByGroup: boolean,
       ): ChannelSpec {
-        const { colorField } = self.conf
+        const { colorField } = self.colorSettings
         const field = groupColorField(groupBy)
         const wasGroupColor =
           isGroupColor(colorField, self.groupBy) ||
@@ -1562,7 +1562,7 @@ export default function baseStateModelFactory(
        * the domain and palette while it is the field already painting.
        */
       colorByField(field: string) {
-        const { colorField, colorDomain, colorPalette } = self.conf
+        const { colorField, colorDomain, colorPalette } = self.colorSettings
         self.setColorScale(
           field === colorField
             ? { field, domain: [...colorDomain], palette: [...colorPalette] }
@@ -1610,8 +1610,8 @@ export default function baseStateModelFactory(
             {
               model: self,
               handleClose,
-              color: self.conf.color,
-              colorField: self.conf.colorField,
+              color: self.colorSettings.color,
+              colorField: self.colorSettings.colorField,
             },
           ])
         },

@@ -21,7 +21,7 @@ test('a string facet is a field, and a string color is a constant', () => {
   })
 })
 
-test("the mark display's categorical color parses as written", () => {
+test("the mark display's categorical color parses to the scale it names", () => {
   expect(
     parse({
       color: {
@@ -32,12 +32,7 @@ test("the mark display's categorical color parses as written", () => {
       },
     }),
   ).toEqual({
-    color: {
-      field: 'strand',
-      scale: 'categorical',
-      domain: ['-1', '1'],
-      palette: ['blue', 'red'],
-    },
+    color: { field: 'strand', domain: ['-1', '1'], palette: ['blue', 'red'] },
   })
 })
 

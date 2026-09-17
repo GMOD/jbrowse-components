@@ -1249,3 +1249,36 @@ test('the dialog submit writes the plot and its binned count into config', () =>
     binned: true,
   })
 })
+
+test('a color or glyph naming a field and no scale reads it categorically, or through a ramp as linear', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'point',
+      encoding: {
+        y: 'score',
+        color: { field: 'source' },
+        glyph: { field: 'type' },
+      },
+    },
+    {
+      shape: 'bar',
+      encoding: {
+        y: 'score',
+        color: { field: 'score', ramp: ['white', 'red'] },
+      },
+    },
+  ])
+  const { display } = createDisplay()
+  expect(display.encodings[0]!.color).toMatchObject({
+    field: 'source',
+    scale: 'categorical',
+  })
+  expect(display.encodings[0]!.glyph).toMatchObject({
+    field: 'type',
+    scale: 'categorical',
+  })
+  expect(display.encodings[1]!.color).toMatchObject({
+    field: 'score',
+    scale: 'linear',
+  })
+})

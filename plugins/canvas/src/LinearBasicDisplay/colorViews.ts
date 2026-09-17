@@ -91,8 +91,12 @@ export function colorViews(self: ColorHost) {
      * The color slots as written, the scale's three unresolved.
      */
     get colorSettings(): ColorScaleSettings & { color: string | undefined } {
-      const { color, colorField, colorDomain, colorPalette } = self.conf
-      return { color, colorField, colorDomain, colorPalette }
+      return {
+        color: self.conf.color,
+        colorField: getConf(self, 'colorField'),
+        colorDomain: getConf(self, 'colorDomain'),
+        colorPalette: getConf(self, 'colorPalette'),
+      }
     },
   }
 }

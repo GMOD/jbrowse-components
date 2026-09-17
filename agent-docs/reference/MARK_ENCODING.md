@@ -47,12 +47,16 @@ shipping it would key the fetch on the axis.
 
 **Colour is resolved in exactly one place per cardinality**, and the legend
 reads the same table ([mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md)).
-A categorical scale with a `domain` hands palette entries to the listed values
-in that order and then to whatever else the region held, sorted; without one,
-each value derives its entry from itself through `categoricalValueColor` (an
-integer takes the slot it names, anything else hashes in), so two regions that
-met different value sets agree on every value they share without a round trip,
-and a feature with nothing in the field takes a grey `(no value)` row. That
+Every value derives its entry from itself (`categoricalScale`,
+`packages/core/src/ui/colors.ts`: an integer takes the slot it names, anything
+else hashes in), so two regions that met different value sets agree on every
+value they share without a round trip, and a feature with nothing in the field
+takes a grey `(no value)` row. A `domain` hands palette entries to the listed
+values in that order, continuing into the default palette past a short one, and
+a value it leaves out hashes into a slot no listed value holds, nor one within
+0.05 OKLab of a listed color; the legend lists the domain first and the rest
+sorted. Ranking the unlisted values after the listed ones, as this did until
+2026-09-17, gave one value two colors across a pan. That
 was Manhattan's own evaluator until 2026-09-09; the encoder's per-region
 palette walk was the one way two regions of a view could disagree about a
 colour, and the reviewer's case against a view-level resolution instead was

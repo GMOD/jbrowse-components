@@ -2,10 +2,6 @@ import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAl
 import { COLOR_SCHEMES } from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
 import { READ_CATEGORIES } from '../../../../plugins/alignments/src/shared/readCategoryFilters.ts'
 import { cytosineContextOptions } from '../../../../plugins/alignments/src/shared/modificationData.ts'
-import {
-  STRAND_COLOR_JEXL,
-  attributeColorJexl,
-} from '../../../../plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 // Straight from core, not through plugins/variants' re-export of it: that
 // module pulls in variantTopBands.ts -> the whole plugins/canvas entrypoint ->
@@ -302,20 +298,11 @@ const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
   'LinearMultiSampleVariantMatrixDisplay',
 ])
 
-// Mirrors the canvas display's own `colorByMode` getter (its baseModel.ts),
-// which is what decides which of the three "Color by..." radios reads as
-// checked: the exact strand expression is 'strand', any other jexl is
-// 'attribute', anything else is a solid color. Both jexl strings are imported
-// rather than retyped — the menu that writes them and the getter that
-// recognizes them already share them by exact comparison, so a copy here would
-// be a third place to drift.
-//
-// The 'attribute' radio opens a dialog that writes only attributeColorJexl(name),
-// so an expression of any other shape lands in that mode without being reachable
-// through it, and the config editor is the only way to author one. That is why
-// this is the single recipe pointing at Settings, and it is not a general
-// fallback: every field in the gap report is a config slot too, so answering
-// them all that way would close the report by making it say nothing.
+// Mirrors the canvas display's own `colorByMode` getter (colorViews.ts), which
+// is what decides which of the "Color by..." radios reads as checked: a
+// `colorField` of `strand` is 'strand', any other field is 'attribute', and the
+// `color` slot is a solid color, a preset, or a jexl only the config editor
+// authors.
 //
 // Three displays take a `color`, and the submenu is the same one on two of
 // them: LinearVariantDisplay is built on the same canvas base model, so its
@@ -339,6 +326,13 @@ const VARIANT_COLOR_PRESETS: Record<string, string> = {
   'jexl:impactColor(feature)': 'Consequence impact',
 }
 
+function isColorByDisplay(displayType: string | undefined) {
+  return (
+    displayType === 'LinearBasicDisplay' ||
+    displayType === 'LinearVariantDisplay'
+  )
+}
+
 function colorStep(
   value: unknown,
   { displayType }: FieldContext,
@@ -354,37 +348,50 @@ function colorStep(
       note: 'Arc color is jexl-evaluated per (feature, alt) and no menu writes it: the only control this display adds is its line-width slider.',
     }
   }
-  if (
-    displayType !== 'LinearBasicDisplay' &&
-    displayType !== 'LinearVariantDisplay'
-  ) {
+  if (!isColorByDisplay(displayType)) {
     return undefined
   }
   const colorBy = `${TRACK_MENU} → Color by...`
-  if (displayType === 'LinearVariantDisplay') {
-    const preset = VARIANT_COLOR_PRESETS[value]
-    if (preset) {
-      return { path: `${colorBy} → ${preset}` }
-    }
-  } else if (value === STRAND_COLOR_JEXL) {
-    return { path: `${colorBy} → Strand` }
+  const preset =
+    displayType === 'LinearVariantDisplay'
+      ? VARIANT_COLOR_PRESETS[value]
+      : undefined
+  return preset
+    ? { path: `${colorBy} → ${preset}` }
+    : !isJexl(value)
+      ? { path: `${colorBy} → Solid color... → ${value}` }
+      : {
+          path: `${TRACK_MENU} → Settings → color`,
+          note: `A per-feature expression. The Color by... radios write a solid color, a field's palette, and ${
+            displayType === 'LinearVariantDisplay'
+              ? 'the SV-type and consequence-impact presets'
+              : 'the strand colors'
+          } only, so an expression is authored on the track config.`,
+        }
+}
+
+function colorFieldStep(
+  value: unknown,
+  { displayType }: FieldContext,
+): FieldStep | undefined {
+  if (typeof value !== 'string' || !value || !isColorByDisplay(displayType)) {
+    return undefined
   }
-  if (!isJexl(value)) {
-    return { path: `${colorBy} → Solid color... → ${value}` }
-  }
-  // Reconstructed through the exported builder rather than trusted from the
-  // regex, so only the dialog's exact output claims the dialog's path.
-  const attribute = /randomColor\(get\(feature,'([^']+)'\)\)/.exec(value)?.[1]
-  return attribute && attributeColorJexl(attribute) === value
-    ? { path: `${colorBy} → Attribute... → ${attribute}` }
-    : {
-        path: `${TRACK_MENU} → Settings → color`,
-        note: `A per-feature expression. The Color by... radios write a solid color, a per-attribute palette, and ${
-          displayType === 'LinearVariantDisplay'
-            ? 'the SV-type and consequence-impact presets'
-            : 'the strand preset'
-        } only, so an expression of any other shape is authored on the track config.`,
-      }
+  const colorBy = `${TRACK_MENU} → Color by...`
+  return value === 'strand' && displayType === 'LinearBasicDisplay'
+    ? { path: `${colorBy} → Strand` }
+    : { path: `${colorBy} → Attribute... → ${value}` }
+}
+
+// The dialog names the field; the order and colors it spends are the JSON the
+// same dialog opens.
+function colorScaleStep(
+  value: unknown,
+  { displayType }: FieldContext,
+): FieldStep | undefined {
+  return Array.isArray(value) && value.length && isColorByDisplay(displayType)
+    ? { path: `${TRACK_MENU} → Color by... → Attribute... → Edit as JSON...` }
+    : undefined
 }
 
 // One shared slider row (makeScatterPointSizeMenuItem) under a submenu each
@@ -778,6 +785,9 @@ const numberField =
 export const trackFields: Record<string, FieldRecipe> = {
   colorBy: colorByStep,
   color: colorStep,
+  colorField: colorFieldStep,
+  colorDomain: colorScaleStep,
+  colorPalette: colorScaleStep,
   jexlFilters: filterStep,
   jexlFiltersSetting: filterStep,
   // These three are declared by LinearHicDisplay alone, so as with the

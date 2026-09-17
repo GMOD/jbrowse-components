@@ -102,16 +102,19 @@ export default function stateModelFactory(
       /**
        * #getter
        */
-      // True when features are colored by their most severe consequence impact.
+      // True when features are colored by their most severe consequence impact,
+      // which a color field painting over the slot is not.
       get colorsByConsequenceImpact() {
-        return self.conf.color === CONSEQUENCE_IMPACT_JEXL
+        const { color, colorField } = self.colorSettings
+        return !colorField && color === CONSEQUENCE_IMPACT_JEXL
       },
       /**
        * #getter
        */
       // True when features are colored by their structural-variant class.
       get colorsBySvType() {
-        return self.conf.color === SV_TYPE_COLOR_JEXL
+        const { color, colorField } = self.colorSettings
+        return !colorField && color === SV_TYPE_COLOR_JEXL
       },
       /**
        * #getter

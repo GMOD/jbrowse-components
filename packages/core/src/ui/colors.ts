@@ -275,7 +275,7 @@ function cachedColorScale(
   domain: readonly string[],
   palette: readonly string[],
 ) {
-  const key = `${domain.join('\u001f')}\u001e${palette.join('\u001f')}`
+  const key = `${domain.join('\u001F')}\u001E${palette.join('\u001F')}`
   let scale = scaleCache.get(key)
   if (scale === undefined) {
     if (scaleCache.size >= MAX_CACHED_SCALES) {

@@ -1,4 +1,8 @@
-import { ConfigurationSchema, liftField } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  liftField,
+  liftValue,
+} from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
@@ -18,21 +22,6 @@ export const MARK_SOURCES = ['features', 'density'] as const
 export type MarkSourceName = (typeof MARK_SOURCES)[number]
 
 export const DEFAULT_POINT_DIAMETER_PX = 4
-
-// `color: 'red'`, `color: 'jexl:…'` and `glyph: 'triangle'` are the unscaled
-// arm, spelled as the bare string every other such slot takes; the object
-// form binds a field to a scale. One sub-schema holds both, so the string is
-// lifted into `value`. A `domain` written as numbers (a ramp's `[0, 100]`) is
-// carried as strings, which is the one array slot type the schema has; the
-// display parses the numbers back for a ramp.
-function liftValue(snap: unknown) {
-  const obj: Record<string, unknown> =
-    typeof snap === 'string' ? { value: snap } : { ...(snap as object) }
-  if (Array.isArray(obj.domain)) {
-    obj.domain = obj.domain.map(String)
-  }
-  return obj
-}
 
 const markColorSchema = ConfigurationSchema(
   'MarkColor',
@@ -63,7 +52,8 @@ const markColorSchema = ConfigurationSchema(
      * #slot marks.encoding.color.scale
      * How `field` becomes a colour. `categorical` hands out palette entries
      * per distinct value; `linear` and `log` read the value through `domain`
-     * into `ramp`. `none` paints `value`.
+     * into `ramp`. `none` paints `value`. Left out beside a `field`, it is
+     * `linear` with a `ramp` and `categorical` without.
      */
     scale: {
       type: 'stringEnum',
@@ -141,7 +131,8 @@ const markGlyphSchema = ConfigurationSchema(
     /**
      * #slot marks.encoding.glyph.scale
      * `categorical` hands a glyph from `range` to each distinct value of
-     * `field`; `none` draws `value`.
+     * `field`; `none` draws `value`. Left out beside a `field`, it is
+     * `categorical`.
      */
     scale: {
       type: 'stringEnum',
