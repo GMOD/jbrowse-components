@@ -99,12 +99,12 @@ console.log('\n  bpPerPx   binBp       entries       ms     heapMB')
 for (const bpPerPx of [2, 4, 8, 32, 128, 512, 1024]) {
   const binBp = subPixelBinBp(bpPerPx)
   const { n, ms, peak, err } = run(binBp)
+  const tail =
+    err === undefined
+      ? (peak / 1e6).toFixed(1).padStart(10)
+      : `  THREW ${String(err).split('\n')[0]} after ${n.toLocaleString()} entries`
   console.log(
-    `  ${String(bpPerPx).padStart(7)} ${String(binBp).padStart(7)}  ` +
-      `${n.toLocaleString().padStart(12)} ${ms.toFixed(0).padStart(8)} ` +
-      (err === undefined
-        ? (peak / 1e6).toFixed(1).padStart(10)
-        : `  THREW ${String(err).split('\n')[0]} after ${n.toLocaleString()} entries`),
+    `  ${String(bpPerPx).padStart(7)} ${String(binBp).padStart(7)}  ${n.toLocaleString().padStart(12)} ${ms.toFixed(0).padStart(8)} ${tail}`,
   )
 }
 console.log(
