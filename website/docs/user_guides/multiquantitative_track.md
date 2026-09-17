@@ -69,7 +69,7 @@ a result in a session URL.
 ## Sorting rows by score at one position
 
 Right-click a multi-row plot at the column you want to rank on and choose **Sort
-rows by score here**. The subtracks are reordered by the score each carries at
+rows by score here**. This reorders the subtracks by the score each carries at
 that base, highest at the top, so a cohort reads top-to-bottom at a candidate
 locus. Clustering orders the rows by the whole region in view; this orders them
 by a single column.
@@ -82,9 +82,9 @@ open on a particular order, the
 subtracks that lead — the rest keep the adapter's order, and the reset returns
 to that order rather than past it.
 
-A session can bake the sort in with `sortRowsBy`, the way `runClustering` bakes
-in a clustering run — see [](/docs/models/multilinearwiggledisplay) for both
-fields.
+A session can persist the sort with `sortRowsBy`, the way `runClustering`
+persists a clustering run — see [](/docs/models/multilinearwiggledisplay) for
+both fields.
 
 ## See also
 

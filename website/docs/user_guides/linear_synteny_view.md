@@ -55,8 +55,8 @@ a [pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
 The other way in starts from a locus in a linear genome view with a synteny
 track open on it, and lets JBrowse frame the panels. The track has to be open:
-its ribbons are what say the locus aligns anywhere at all, and a dataset that is
-configured but closed is what the import form above is for.
+its ribbons are what say the locus aligns anywhere at all, and the import form
+above is for a dataset that is configured but closed.
 
 - **Drag-select a region** on the scale bar and pick **Launch → Linear synteny
   view**. The dialog names the **synteny dataset** the region is read back out
@@ -303,8 +303,8 @@ draws nothing, so a locus syntenic to a chromosome the view cannot pair looks
 exactly like a locus syntenic to nothing. Two arrangements produce that, and the
 marks cover both. Either the mate is on a contig the facing panel is not
 displaying at all, or it is on one that panel has scrolled away from. The second
-is what a stack of whole genomes is made of. Every contig is displayed there, so
-nothing is missing from the panel, and the ribbons still disappear as soon as
+is the common case in a stack of whole genomes: every contig is displayed there,
+so nothing is missing from the panel, and the ribbons still disappear as soon as
 the two rows are not over each other.
 
 Where the mate sits on the facing panel is a live question, so the marks answer

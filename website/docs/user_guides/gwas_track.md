@@ -38,10 +38,9 @@ config.
 
 ## Public data sources
 
-Most public GWAS repositories use their own TSV column layout rather than the
-BED format GWASAdapter requires, so a conversion step is needed before loading.
-See the [config guide](/docs/config_guides/gwas_track) for the preprocessing
-pipeline.
+Most public GWAS repositories use their own TSV column layout. GWASAdapter
+requires BED, so a conversion step is needed before loading. See the
+[config guide](/docs/config_guides/gwas_track) for the preprocessing pipeline.
 
 | Source                                                                  | Notes                                                                  |
 | ----------------------------------------------------------------------- | ---------------------------------------------------------------------- |

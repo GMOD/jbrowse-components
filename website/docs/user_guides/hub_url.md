@@ -34,12 +34,12 @@ or extra assemblies:
 ?config=myconfig.json&hubURL=https://example.com/hub.txt
 ```
 
-The hub's tracks are added on top of whatever the config already defines.
+JBrowse adds the hub's tracks on top of whatever the config already defines.
 
 ## Opening the hub at a specific location
 
-By default a hub opens wherever it says to (`defaultPos` in its `genomes`
-stanza). Add [`&loc=`](/docs/urlparams#loc) and
+By default a hub opens at the location `defaultPos` states, in its `genomes`
+stanza. Add [`&loc=`](/docs/urlparams#loc) and
 [`&assembly=`](/docs/urlparams#assembly) to land somewhere else:
 
 ```
@@ -60,15 +60,15 @@ Pass a comma-separated list to open more than one hub at once:
 ?config=none&hubURL=https://example.com/hubA.txt,https://example.com/hubB.txt
 ```
 
-Each hub becomes its own category in the track selector.
+Each hub appears in the track selector as a separate category.
 
 ## How a loaded hub behaves
 
 Each hub URL becomes a UCSC track hub
 [connection](/docs/user_guides/connections) in the session, and from there it
-behaves exactly like a connection you added by hand: lazily loaded, its own
-category in the track selector, and only the tracks you open stored in the
-session.
+behaves exactly like a connection you added by hand: lazily loaded, in a
+dedicated category in the track selector, and only the tracks you open stored in
+the session.
 
 Hub tracks match to assemblies by genome ID, and the assemblies available are
 whatever the hub carries plus whatever a combined `?config=` defines, so a hub

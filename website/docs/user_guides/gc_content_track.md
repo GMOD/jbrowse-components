@@ -6,13 +6,13 @@ guide_category: Track types
 
 A GC content track plots the base composition of the reference genome itself,
 with no data file required, sliding a window along the assembly's sequence and
-drawing the result as a quantitative (wiggle) track. GC-rich and GC-poor regions
-and isochores read off that profile. Switch the same track to GC skew instead
-and its sign flips at a bacterial replication origin.
+drawing the result as a quantitative (wiggle) track. That profile shows GC-rich
+and GC-poor regions and isochores directly. Switch the same track to GC skew
+instead and its sign flips at a bacterial replication origin.
 
 ## Launching a GC content track from the sequence
 
-Because the signal is derived from the reference sequence, you launch the track
+Because the track computes the signal from the reference sequence, launch it
 straight off the reference sequence track:
 
 - From the track selector, open the track menu (vertical "...") on the reference
@@ -22,8 +22,8 @@ straight off the reference sequence track:
 
 Either route creates a `GCContentTrack` that wraps the assembly's existing
 sequence adapter in a `GCContentAdapter`, so it works for any assembly, whether
-its sequence is a 2bit, indexed FASTA, or bgzip-indexed FASTA. No new data is
-fetched beyond the sequence the browser already reads.
+its sequence is a 2bit, indexed FASTA, or bgzip-indexed FASTA. The adapter
+fetches no new data beyond the sequence the browser already reads.
 
 <Figure caption="GC content (top, XY plot) and GC skew (bottom) computed on the fly across the whole H. pylori 26695 chromosome. The skew flips sign at the two points the Replication origin / terminus track marks." src="/img/gc_content.png" />
 
