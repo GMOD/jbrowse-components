@@ -21,6 +21,7 @@ import {
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -1469,6 +1470,24 @@ export default function baseStateModelFactory(
           : []
       },
       /**
+       * #getter
+       * `colorDomain` followed by the values the color key lists that it
+       * does not, in the key's order and less the no-value row.
+       */
+      get pinnedColorDomain(): string[] {
+        const { colorDomain } = self.colorSettings
+        const listed = new Set(colorDomain)
+        const keyed = this.derivedColorScales.flatMap(scale =>
+          scale.kind === 'categorical'
+            ? scale.entries.map(entry => entry.value)
+            : [],
+        )
+        return [
+          ...colorDomain,
+          ...keyed.filter(v => v !== NO_VALUE_LABEL && !listed.has(v)),
+        ]
+      },
+      /**
        * #method
        * The Group by dialog's choice of field as channels: the facet, keeping
        * its domain while the field is the one already set, a color by the
@@ -1536,6 +1555,16 @@ export default function baseStateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * The categorical analogue of the Score menu's "Pin current min/max"
+       * (ADR-124): writes `pinnedColorDomain`, so every value the key lists
+       * spends its own palette color in key order, where the hash could give
+       * two values one color.
+       */
+      pinColorDomain() {
+        setConf(self, 'colorDomain', self.pinnedColorDomain)
+      },
       /**
        * #action
        * What the Group by dialog applies.

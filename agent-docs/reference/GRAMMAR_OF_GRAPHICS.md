@@ -235,7 +235,10 @@ The seams, named honestly:
   design and not a seam
   ([ADR-124](../architecture-decision-records/adr-124-the-score-axis-autoscales-over-what-is-loaded.md)):
   a pinned `domain` is what fixes a legend for a figure, and the Score menu's
-  "Pin current min/max" writes it from what is drawn.
+  "Pin current min/max" writes it from what is drawn. The feature display's
+  categorical counterpart is "Pin distinct colors" (`pinColorDomain`), which
+  appends the values its key lists to `colorDomain`, since two unlisted values
+  can hash onto one colour.
 
 ## The facet stage
 

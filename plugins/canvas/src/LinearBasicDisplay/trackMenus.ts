@@ -245,16 +245,38 @@ function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
   })
 }
 
+interface ColorPinSelf {
+  colorSettings: { colorField: string; colorDomain: readonly string[] }
+  pinnedColorDomain: readonly string[]
+  pinColorDomain: () => void
+}
+
+function pinColorsItems(self: ColorPinSelf): MenuItem[] {
+  const { colorField, colorDomain } = self.colorSettings
+  return colorField
+    ? [
+        { type: 'divider' },
+        {
+          label: 'Pin distinct colors',
+          disabled: self.pinnedColorDomain.length === colorDomain.length,
+          onClick: () => {
+            self.pinColorDomain()
+          },
+        },
+      ]
+    : []
+}
+
 // Reads the choices back off `self`: variants overrides `colorBySubMenuItems`
 // and relies on this wrapper picking it up.
-export function colorMenuItems(self: {
-  colorBySubMenuItems: () => MenuItem[]
-}): MenuItem[] {
+export function colorMenuItems(
+  self: ColorPinSelf & { colorBySubMenuItems: () => MenuItem[] },
+): MenuItem[] {
   return [
     {
       label: 'Color by...',
       icon: PaletteIcon,
-      subMenu: self.colorBySubMenuItems(),
+      subMenu: [...self.colorBySubMenuItems(), ...pinColorsItems(self)],
     },
   ]
 }

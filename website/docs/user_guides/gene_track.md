@@ -153,11 +153,13 @@ the `colorField`, `colorDomain` and `colorPalette` settings; the track draws a
 key from the values it painted. Every value keeps a color derived from itself,
 so a pan or a reload paints it the same; a `domain` spends the palette on the
 values it lists, in order, and a value it leaves out never takes one of their
-colors. A transcript and all its parts paint the transcript's value, or its
-gene's where the transcript has none. `strand` is a field too, painting forward
-tomato and reverse cornflowerblue unless a domain or palette says otherwise.
-Each channel writes the same setting its menu does, so the Sections menu
-reorders a facet written this way.
+colors. Two unlisted values can share a color, and **Color by... → Pin distinct
+colors** lists every value the key shows in `colorDomain`, in its order, so each
+takes its own. A transcript and all its parts paint the transcript's value, or
+its gene's where the transcript has none. `strand` is a field too, painting
+forward tomato and reverse cornflowerblue unless a domain or palette says
+otherwise. Each channel writes the same setting its menu does, so the Sections
+menu reorders a facet written this way.
 
 ## Color by CDS
 

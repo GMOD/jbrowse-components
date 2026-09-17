@@ -1,6 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 
 import {
   makeFeatureData,
@@ -169,6 +170,75 @@ describe('derived color key', () => {
       'Forward strand',
       'Reverse strand',
     ])
+  })
+
+  describe('Pin distinct colors', () => {
+    const colorByRows = (display: ReturnType<typeof coloredDisplay>) => {
+      const item = display
+        .trackMenuItems()
+        .find(i => 'label' in i && i.label === 'Color by...')!
+      return resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0])
+    }
+    const pinRow = (display: ReturnType<typeof coloredDisplay>) =>
+      colorByRows(display).find(
+        i => 'label' in i && i.label === 'Pin distinct colors',
+      ) as { disabled?: boolean; onClick: () => void } | undefined
+
+    function paint(
+      display: ReturnType<typeof coloredDisplay>,
+      labels: string[],
+    ) {
+      display.setRpcData(
+        0,
+        makeFeatureData({
+          colorKey: {
+            candidates: labels.map((label, i) => ({
+              rowIndex: 0,
+              label,
+              color: cssColorToABGR(`hsl(${i * 40}, 70%, 50%)`),
+            })),
+            rows: [{ strand: undefined, groupKey: undefined }],
+          },
+        }),
+        ctgA,
+      )
+    }
+
+    it('is offered only while a field paints', () => {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      expect(pinRow(display)).toBeUndefined()
+      display.setFeatureColor('red')
+      expect(pinRow(display)).toBeUndefined()
+      expect(pinRow(coloredDisplay({ field: 'biotype' }))).toBeDefined()
+    })
+
+    it('writes the key in its order after the domain, less the no-value row', () => {
+      const display = coloredDisplay({ field: 'biotype', domain: ['snoRNA'] })
+      paint(display, ['protein_coding', NO_VALUE_LABEL, 'snoRNA', 'lncRNA'])
+      pinRow(display)!.onClick()
+      expect(display.colorSettings.colorDomain).toEqual([
+        'snoRNA',
+        'lncRNA',
+        'protein_coding',
+      ])
+      expect(pinRow(display)!.disabled).toBe(true)
+    })
+
+    it('keeps the earlier order when a second pin adds the values that arrived since', () => {
+      const display = coloredDisplay({ field: 'biotype' })
+      paint(display, ['protein_coding', 'lncRNA'])
+      pinRow(display)!.onClick()
+      paint(display, ['protein_coding', 'antisense', 'miRNA'])
+      expect(pinRow(display)!.disabled).toBe(false)
+      pinRow(display)!.onClick()
+      expect(display.colorSettings.colorDomain).toEqual([
+        'lncRNA',
+        'protein_coding',
+        'antisense',
+        'miRNA',
+      ])
+    })
   })
 
   it('yields to a legend slot', () => {
