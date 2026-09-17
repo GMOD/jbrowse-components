@@ -198,13 +198,29 @@ const baseConfig = {
   // two hooks over a buffer `console.js` fills, so it costs nothing where no
   // display exists, and a project added later inherits it instead of quietly
   // opting out. A project that overrides this key has to spread it back in —
-  // see the default project below.
+  // see jsdomConfig below.
   setupFilesAfterEnv: [
     '<rootDir>/config/jest/contractGate.js',
     '<rootDir>/config/jest/testingLibraryTimeout.js',
   ],
   snapshotSerializers: ['<rootDir>/config/jest/emotionClassSerializer.cjs'],
   testEnvironmentOptions: { url: 'http://localhost' },
+}
+
+const jsdomConfig = {
+  // jsdom, plus node's fetch/Response/Request/Headers — jsdom ships no
+  // fetch at all and a `Headers` that strips `range`. See the file.
+  testEnvironment: '<rootDir>/config/jest/jsdomWithFetch.cjs',
+  ...baseConfig,
+  // After the spread, and spreading baseConfig's own entry back in: this key
+  // is the one both halves define, and `...baseConfig` last would otherwise
+  // drop all three of these.
+  setupFilesAfterEnv: [
+    ...baseConfig.setupFilesAfterEnv,
+    '<rootDir>/config/jest/fetchMockAfterEnv.js',
+    '<rootDir>/config/jest/deterministicIds.js',
+    '<rootDir>/config/jest/localStorage.js',
+  ],
 }
 
 export default {
@@ -318,23 +334,24 @@ export default {
         '/dist/',
         '/demos/',
         '<rootDir>/products/jbrowse-img/',
+        '<rootDir>/products/jbrowse-web/',
         // Own lockfile/test runner (vitest), CI'd separately (blat_proxy job).
         '<rootDir>/products/aws/',
       ],
-      // jsdom, plus node's fetch/Response/Request/Headers — jsdom ships no
-      // fetch at all and a `Headers` that strips `range`. See the file.
-      testEnvironment: '<rootDir>/config/jest/jsdomWithFetch.cjs',
-      ...baseConfig,
+      ...jsdomConfig,
       id: 'jbrowse-default',
-      // After the spread, and spreading baseConfig's own entry back in: this key
-      // is the one both halves define, and `...baseConfig` last would otherwise
-      // drop all three of these.
-      setupFilesAfterEnv: [
-        ...baseConfig.setupFilesAfterEnv,
-        '<rootDir>/config/jest/fetchMockAfterEnv.js',
-        '<rootDir>/config/jest/deterministicIds.js',
-        '<rootDir>/config/jest/localStorage.js',
-      ],
+    },
+    {
+      // Runs on remote CI only: `pnpm test` ignores this project and
+      // `pnpm test-ci` runs it. Narrow roots keep a second haste crawl off every
+      // jest invocation; node-module manual mocks apply only from a root, hence
+      // `packages/__mocks__`.
+      displayName: 'jbrowse-web',
+      testMatch: ['<rootDir>/products/jbrowse-web/**/*.test.{ts,tsx,js,jsx}'],
+      testPathIgnorePatterns: ['/dist/'],
+      ...jsdomConfig,
+      id: 'jbrowse-web',
+      roots: ['<rootDir>/products/jbrowse-web', '<rootDir>/packages/__mocks__'],
     },
   ],
 }

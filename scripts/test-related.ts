@@ -11,9 +11,8 @@
  * A changed file whose compiled output is unchanged — comments, types,
  * formatting — selects nothing.
  *
- * `products/jbrowse-web` suites run only when the change is in it or with
- * `--with-web`, so the default never selects more than the static graph minus
- * jbrowse-web did.
+ * The `jbrowse-web` jest project runs on remote CI; one of its suites runs here
+ * only when the change edits that test file, or with `--with-web`.
  *
  * Usage: `pnpm test-related [base-ref] [--with-web]` (default `main`). Extra
  * jest flags pass through after `--`.
@@ -145,10 +144,9 @@ if (unrecorded.length > 0 && staticInputs.length > 0) {
   }
 }
 
-const skippedWeb =
-  withWeb || liveSources.some(f => f.startsWith(WEB))
-    ? []
-    : [...selected].filter(t => t.startsWith(WEB) && !live.includes(t))
+const skippedWeb = withWeb
+  ? []
+  : [...selected].filter(t => t.startsWith(WEB) && !live.includes(t))
 for (const t of skippedWeb) {
   selected.delete(t)
 }
@@ -161,12 +159,12 @@ console.log(
 )
 if (skippedWeb.length > 0) {
   console.log(
-    `Skipped ${skippedWeb.length} products/jbrowse-web suite(s) that executed the change; --with-web runs them.`,
+    `Skipped ${skippedWeb.length} products/jbrowse-web suite(s) that executed the change; remote CI runs them, --with-web runs them here.`,
   )
 }
 if (harness.length > 0) {
   console.log(
-    `${harness.join(', ')} changed, which no footprint records; \`pnpm test\` runs every suite.`,
+    `${harness.join(', ')} changed, which no footprint records; \`pnpm test\` runs every suite outside jbrowse-web.`,
   )
 }
 if (selected.size === 0) {

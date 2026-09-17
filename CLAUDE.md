@@ -111,12 +111,14 @@ Desktop's MCP server — `run_javascript`, `docs`, `open`, `screenshot` — and
   formats, spell-checks and lints the files changed against main (`--all` for
   the tree). test-related runs the suites whose footprint — the files they
   executed on their last run — holds a changed file; a comment- or type-only
-  edit runs nothing. **Add `--with-web` before landing anything that moves a
-  config slot, a menu, a label or a snapshot shape**: jbrowse-web suites are
-  otherwise left out unless the change is in jbrowse-web. Where the full set is
-  not worth the wait, run the single web suite that names your subject instead;
-  it is seconds against 174. `reference/TEST_INFRASTRUCTURE.md` §"Which suites a
-  change runs".
+  edit runs nothing. `reference/TEST_INFRASTRUCTURE.md` §"Which suites a change
+  runs".
+- **The `jbrowse-web` jest project runs on remote CI, not here.** Its 182
+  app-level suites are half the suite clock; `pnpm test` and `test-related`
+  leave them out, and `pnpm test-ci` on push runs them. Don't run them before
+  landing, not even for a config slot, menu, label or snapshot change — a red
+  there after push gets fixed forward. Name one web suite only to chase a
+  failure CI reported or to back a claim that nothing covers a mechanism.
 - **An agent's jest run prints nothing for a passing suite.** jest 30 swaps in
   `AgentReporter` once it detects an agent environment (`CLAUDECODE` is one),
   and it prints only files that fail — so every `console.log`/`warn`/`error` a

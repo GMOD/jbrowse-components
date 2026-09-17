@@ -140,13 +140,16 @@ footprint yet, and it cannot discriminate on its own: every jbrowse-web suite
 imports `corePlugins`, so a wiggle `util.ts` edit is statically related to 313
 suites.
 
-**`products/jbrowse-web` suites run only when the change is in jbrowse-web, or
-with `--with-web`.** That keeps the default from ever selecting more than the
-static graph minus jbrowse-web did. The web suites are where a config-slot
-removal, a menu regrouping or a caption change goes red (`ConfigSlotDefaults`,
-`AlignmentsFilters`, `ReversedRegionLabels` each execute the module involved),
-so run `--with-web` before landing one of those. Selected by footprint it costs
-the median commit 19 suite-seconds rather than the static graph's 603.
+**The `jbrowse-web` jest project runs on remote CI only.** Its 182 suites each
+boot the app and together take 47% of the suite clock, where no other package
+takes more than 6%. `pnpm test` passes `--ignoreProjects jbrowse-web`,
+`pnpm test-ci` runs every project, and `test-related` selects a web suite only
+when the change edits that test file, or with `--with-web`. The web suites are
+where a config-slot removal, a menu regrouping or a caption change goes red
+(`ConfigSlotDefaults`, `AlignmentsFilters`, `ReversedRegionLabels` each execute
+the module involved), so that class of change can land green locally and red on
+push, and gets fixed forward. The `no web` rows below still select web suites
+for a change inside jbrowse-web, which `test-related` no longer does.
 
 Measured over the 264 recent commits that touched source, pricing each suite at
 its median duration in jest's perf cache:

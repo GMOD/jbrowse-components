@@ -178,11 +178,10 @@ push or open a PR unless asked.
 main, plus the whole-program typecheck — seconds, where the same gates over the
 tree are ~2 minutes (`--all`). `test-related` runs the suites that executed a
 changed file on their last run, so a suite that exercises the change from
-outside is in the run where `pnpm test <path>` would miss it. It leaves
-`products/jbrowse-web` out unless the change is in jbrowse-web: **run
-`pnpm test-related --with-web` before landing anything that moves a config
-slot, a menu, a label or a snapshot shape**, since those suites are where that
-class of change goes red. How it selects, and what it costs:
+outside is in the run where `pnpm test <path>` would miss it. It leaves out the
+`jbrowse-web` jest project, which only remote CI runs — including for a config
+slot, menu, label or snapshot change, the class those suites catch; a red there
+after push gets fixed forward. How it selects, and what it costs:
 `reference/TEST_INFRASTRUCTURE.md` §"Which suites a change runs".
 
 **Three CI jobs are gated by none of that**: `pnpm check-docs`, `pnpm build:esm`
