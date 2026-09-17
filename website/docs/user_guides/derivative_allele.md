@@ -58,10 +58,11 @@ and checks the route it ranks first against a published benchmark.
   own, but reads sitting only at that far locus contribute nothing until it is
   shown.
 
-The same entry on a synteny track reads contigs rather than reads, since a de
-novo assembly aligned to the reference is the same object at a larger scale.
-There one contig is enough to list a route, and every locus has to be on screen,
-because an alignment block names nothing the view has not fetched.
+The same **Reconstruct derivative allele...** entry on a synteny track reads
+contigs instead of reads, since a de novo assembly aligned to the reference is
+the same object at a larger scale. There one contig is enough to list a route,
+and every locus has to be on screen, because an alignment block names nothing
+the view has not fetched.
 
 ## Judging what it lists
 
