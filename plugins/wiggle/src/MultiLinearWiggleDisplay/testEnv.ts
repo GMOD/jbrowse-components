@@ -43,7 +43,10 @@ export function makeMultiWiggleData(...names: string[]): WiggleDataResult[] {
 // The shared display harness wired for the multi-wiggle display.
 // `createDisplay(snapshot)` takes display-instance keys, which is how the
 // clustering and sort autorun tests seed `runClustering`.
-export function createTestEnvironment() {
+export function createTestEnvironment({
+  // Display config slots, for the ones with no setter (`domain`).
+  displayConfig,
+}: { displayConfig?: Record<string, unknown> } = {}) {
   const env = createDisplayTestEnvironment<MultiLinearWiggleDisplayModel>({
     trackType: 'MultiQuantitativeTrack',
     adapter: { name: 'MultiWiggleAdapter', capabilities: ['hasResolution'] },
@@ -52,6 +55,7 @@ export function createTestEnvironment() {
     stateModel: (_pm, schema) => stateModelFactory(schema),
     viewModel: linearGenomeViewStateModelFactory,
     viewRegionEnd: 10_000,
+    displayConfig,
   })
   return {
     ...env,

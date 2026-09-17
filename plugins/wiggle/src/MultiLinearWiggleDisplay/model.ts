@@ -28,6 +28,7 @@ import {
   computeClusterHierarchy,
   filterRowsBySubtree,
   focusRowGroup,
+  orderRowsByDomain,
   reconcileLayout,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
@@ -186,8 +187,16 @@ export default function stateModelFactory(
         // multi-row display, so this display has nothing of its own to keep in
         // step. It used to, and that was the whole job of the wrapper this
         // replaced: aliasing `source` onto `name` before handing the rows over.
+        //
+        // The config `domain` seeds the order underneath: the subtracks it
+        // names lead, the rest keep adapter order. Both helpers hand back the
+        // array they were given when they change nothing, which is what keeps
+        // `gpuProps`'s identity steady on the ordinary track.
         get editableSources(): Source[] {
-          return reconcileLayout(this.sourcesWithoutLayout, self.layout)
+          return reconcileLayout(
+            orderRowsByDomain(this.sourcesWithoutLayout, self.rowDomain),
+            self.layout,
+          )
         },
       }
     })
