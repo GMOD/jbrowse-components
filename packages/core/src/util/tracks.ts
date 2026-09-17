@@ -1016,6 +1016,57 @@ export function filterTracks(
   })
 }
 
+/**
+ * The assembly's own sequence track, when the view can draw one. It is in no
+ * track list — the config lives on the assembly (see {@link getConfAssemblyNames}
+ * on why a sequence track's assembly is positional) — so a picker that walks
+ * `session.tracks` alone cannot offer the track most views open first.
+ */
+function refSeqTrackConf(
+  assemblyName: string,
+  view: IStateTreeNode & { type: string },
+) {
+  const { assemblyManager } = getSession(view)
+  const { pluginManager } = getEnv(view)
+  const conf = assemblyManager.get(assemblyName)?.configuration.sequence as
+    | AnyConfigurationModel
+    | undefined
+  // the same display-compatibility question filterTracks asks of every other
+  // track, so a view that cannot draw a sequence is not offered one
+  return conf &&
+    viewCanDisplayTrack(
+      pluginManager,
+      viewDisplayNames(pluginManager, view.type),
+      conf.type,
+    )
+    ? conf
+    : undefined
+}
+
+/**
+ * Every track config a view can be offered, each assembly's sequence track
+ * first and then {@link filterTracks} over the list handed in. The track
+ * selector's tree and the context-level dialog are both this, so a track one
+ * offers and the other hides would have to be a difference in the assemblies
+ * they were asked about.
+ */
+export function offeredTracks(
+  tracks: AnyConfigurationModel[],
+  self: {
+    view?: IStateTreeNode & { type: string }
+    assemblyNames: string[]
+  },
+) {
+  const { view, assemblyNames } = self
+  if (!view) {
+    return []
+  }
+  return [
+    ...assemblyNames.map(name => refSeqTrackConf(name, view)),
+    ...filterTracks(tracks, self),
+  ].filter(conf => conf !== undefined)
+}
+
 export function pickDisplayForView({
   declaredDisplays,
   requestedType,

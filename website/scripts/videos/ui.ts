@@ -14,6 +14,7 @@ import type { VideoSpec } from '../video-spec-types.ts'
 const {
   addTrackSession,
   contextLevelsSession,
+  contextLevelTracks,
   addTrackUrl,
   bookmarkSession,
   bookmarkSpan,
@@ -39,13 +40,18 @@ const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 // carries the same `data-field`.
 const BOOKMARK_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
 
-// The Add context level dialog's track picker, its options, and the button that
-// takes the dialog. The picker is an Autocomplete, so the testid is on the
-// control and the typing goes into the input inside it. An option is taken by
-// role rather than by its text: the name typed into the field IS that text, and
-// a text target resolves to the field first.
-const CONTEXT_LEVEL_TRACKS = '[data-testid="context-level-tracks"] input'
-const TRACK_OPTION = 'li[role="option"]'
+// The Add context level dialog: its track list's filter, a checkbox by trackId,
+// and the button that takes the dialog. A row is taken by testid rather than by
+// its label, because a text target resolves to the filter field's own value
+// first.
+const {
+  reads: READS_TRACK,
+  genes: GENES_TRACK,
+  coverage: COVERAGE_TRACK,
+} = contextLevelTracks
+const TRACK_FILTER = '[data-testid="context-level-track-filter"]'
+const trackCheck = (trackId: string) =>
+  `[data-testid="context-level-track-${trackId}"]`
 const DIALOG_SUBMIT = 'form button[type="submit"]'
 
 export const uiVideos: VideoSpec[] = [
@@ -144,15 +150,15 @@ export const uiVideos: VideoSpec[] = [
   // CONTEXT LEVELS, WHICH ARE BUILT RATHER THAN CONFIGURED. basic_usage.md's
   // figure holds the finished stack — 5 Mb of coverage over 200 kb of genes
   // over a kilobase of reads — and the route to it is three separate things a
-  // still cannot hold: the menu item, the dialog that names a level's span and
-  // tracks, and the side of the tracks the stack sits on, which the second
-  // level's dialog switches with the first level already standing. The last
-  // frame is the payoff the prose asserts: the levels stay centred, so a
-  // navigation in the reads moves every level with it.
+  // still cannot hold: the menu item, the dialog's track list, which opens with
+  // the view's own tracks checked, and the side of the tracks the stack sits on,
+  // which the second level's dialog switches with the first level already
+  // standing. The last frame is the payoff the prose asserts: the levels stay
+  // centred, so a navigation in the reads moves every level with it.
   {
     name: 'ui/context_levels',
     description:
-      'A context level added from the view menu with the gene track named in its dialog, a second wider level the same dialog sends under the reads, and a navigation the whole stack follows',
+      'A context level added from the view menu with the gene track checked in its dialog, a second wider level the same dialog sends under the reads, and a navigation the whole stack follows',
     url: contextLevelsSession,
     // the reads at 260, two levels at 80 each with their trapezoids, and room
     // for the dialog that opens over them
@@ -171,17 +177,19 @@ export const uiVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Add context level' },
       { type: 'click', text: 'Add context level', hold: 1200 },
-      // The dialog is where the span, the tracks and the side are named, which
-      // is the half the prose skips.
-      { type: 'waitForText', text: 'Level width (bp)' },
+      // The dialog's list opens with the reads checked, since a level is a
+      // wider view of what is on screen. This one is for the genes, so the
+      // reads come off and the filter reaches the row that replaces them.
+      { type: 'waitForSelector', selector: trackCheck(READS_TRACK) },
       {
-        type: 'type',
-        selector: CONTEXT_LEVEL_TRACKS,
-        value: 'NCBI RefSeq genes',
-        say: 'Name the tracks the level carries',
+        type: 'click',
+        selector: trackCheck(READS_TRACK),
+        say: "The level opens with the view's own tracks checked",
+        hold: 700,
       },
-      { type: 'waitForSelector', selector: TRACK_OPTION },
-      { type: 'click', selector: TRACK_OPTION, hold: 800 },
+      { type: 'type', selector: TRACK_FILTER, value: 'RefSeq' },
+      { type: 'waitForSelector', selector: trackCheck(GENES_TRACK) },
+      { type: 'click', selector: trackCheck(GENES_TRACK), hold: 700 },
       { type: 'click', selector: DIALOG_SUBMIT },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 2000 },
@@ -193,14 +201,11 @@ export const uiVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Add context level' },
       { type: 'click', text: 'Add context level', hold: 1200 },
-      { type: 'waitForText', text: 'Level width (bp)' },
-      {
-        type: 'type',
-        selector: CONTEXT_LEVEL_TRACKS,
-        value: 'COLO829 tumour coverage',
-      },
-      { type: 'waitForSelector', selector: TRACK_OPTION },
-      { type: 'click', selector: TRACK_OPTION, hold: 800 },
+      { type: 'waitForSelector', selector: trackCheck(READS_TRACK) },
+      { type: 'click', selector: trackCheck(READS_TRACK) },
+      { type: 'type', selector: TRACK_FILTER, value: 'coverage' },
+      { type: 'waitForSelector', selector: trackCheck(COVERAGE_TRACK) },
+      { type: 'click', selector: trackCheck(COVERAGE_TRACK), hold: 700 },
       // The side is the stack's, so this takes the level already standing with
       // it, and the trapezoids turn over.
       {

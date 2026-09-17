@@ -1119,7 +1119,7 @@ export const videoSteps: Record<string, string[]> = {
   ],
   "ui/context_levels": [
     "Stack a wider view of the same locus over the reads",
-    "Name the tracks the level carries",
+    "The level opens with the view's own tracks checked",
     "A second level, ten times wider again",
     "The stack can sit under the tracks instead",
     "Both levels follow the view"

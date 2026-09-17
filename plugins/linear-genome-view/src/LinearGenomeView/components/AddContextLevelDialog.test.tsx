@@ -8,6 +8,16 @@ import type { LinearGenomeViewModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+function trackConf(trackId: string, name: string) {
+  return {
+    trackId,
+    name,
+    type: 'FeatureTrack',
+    assemblyNames: ['volMyt1'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  }
+}
+
 async function setup() {
   const session = createTestSession()
   session.addAssemblyConf({
@@ -23,13 +33,10 @@ async function setup() {
       },
     },
   })
-  session.addSessionTrackConf({
-    trackId: 'genes',
-    name: 'Gene annotations',
-    type: 'FeatureTrack',
-    assemblyNames: ['volMyt1'],
-    adapter: { type: 'FromConfigAdapter', features: [] },
-  })
+  session.addSessionTrackConf(trackConf('genes', 'Gene annotations'))
+  // the markup a track config may carry, which the label has to come back
+  // without
+  session.addSessionTrackConf(trackConf('reads', 'Reads (<i>HTML italic</i>)'))
   // the assembly manager builds its models in an autorun, and until it has, the
   // alias resolution the track list goes through answers off an empty map
   const { assemblyManager } = session
@@ -52,32 +59,87 @@ function levels(view: LinearGenomeViewModel) {
   return view.contextLevelViews as LinearGenomeViewModel[]
 }
 
-test('the span it opens at is ten times the view, and Add uses it', async () => {
+function levelTrackIds(view: LinearGenomeViewModel) {
+  return levels(view)[0]!.tracks.map(t => t.configuration.trackId)
+}
+
+// Two controls, and neither is a span: the level arrives ten times the view and
+// the wheel changes it from there.
+test('Add alone opens a level ten times the view, above the tracks', async () => {
   const { view } = await setup()
-  const { getByTestId, getByRole } = render(
+  const { getByRole, queryByLabelText } = render(
     <AddContextLevelDialog model={view} handleClose={() => {}} />,
   )
-  expect((getByTestId('context-level-span') as HTMLInputElement).value).toBe(
-    '80,000',
-  )
+  expect(queryByLabelText(/width/i)).toBeNull()
   fireEvent.click(getByRole('button', { name: 'Add' }))
   expect(levels(view).map(l => l.windowWidthBp)).toEqual([80_000])
   expect(view.contextLevelsBelow).toBe(false)
 })
 
-test('a span narrower than the view says so and refuses to add', async () => {
+// The level is a wider view of what is on screen, so the dialog opens with the
+// view's own tracks checked and Add alone carries them over
+test('the tracks the view shows are the ones checked', async () => {
   const { view } = await setup()
-  const { getByTestId, getByRole, getByText } = render(
+  await view.launchTrack('genes')
+  const { getByRole } = render(
     <AddContextLevelDialog model={view} handleClose={() => {}} />,
   )
-  fireEvent.change(getByTestId('context-level-span'), {
-    target: { value: '2kb' },
-  })
-  expect(getByText(/has to be wider than the current view/)).toBeTruthy()
   expect(
-    (getByRole('button', { name: 'Add' }) as HTMLButtonElement).disabled,
+    (getByRole('checkbox', { name: 'Gene annotations' }) as HTMLInputElement)
+      .checked,
   ).toBe(true)
-  expect(levels(view)).toEqual([])
+  expect(
+    (getByRole('checkbox', { name: 'Reads (HTML italic)' }) as HTMLInputElement)
+      .checked,
+  ).toBe(false)
+  fireEvent.click(getByRole('button', { name: 'Add' }))
+  await waitFor(() => {
+    expect(levelTrackIds(view)).toEqual(['genes'])
+  })
+})
+
+// A session's list runs to tens of tracks, so the checked rows have to be the
+// ones on screen: 'reads' is configured after 'genes' and comes first here
+// because the view is showing it
+test("the view's own tracks head the list", async () => {
+  const { view } = await setup()
+  await view.launchTrack('reads')
+  // baseElement, not container: a Dialog renders into a portal off document.body
+  const { baseElement } = render(
+    <AddContextLevelDialog model={view} handleClose={() => {}} />,
+  )
+  const text = baseElement.textContent
+  expect(text.indexOf('Reads (HTML italic)')).toBeLessThan(
+    text.indexOf('Gene annotations'),
+  )
+})
+
+test('a name carrying markup is checked by the text a reader sees', async () => {
+  const { view } = await setup()
+  const { getByRole, getByTestId } = render(
+    <AddContextLevelDialog model={view} handleClose={() => {}} />,
+  )
+  fireEvent.click(getByRole('checkbox', { name: 'Reads (HTML italic)' }))
+  fireEvent.change(getByTestId('context-level-track-filter'), {
+    target: { value: 'italic' },
+  })
+  // the filter reads the same stripped name, so a tag cannot hide a row from it
+  expect(getByRole('checkbox', { name: 'Reads (HTML italic)' })).toBeTruthy()
+  fireEvent.click(getByRole('button', { name: 'Add' }))
+  await waitFor(() => {
+    expect(levelTrackIds(view)).toEqual(['reads'])
+  })
+})
+
+test('a track unchecked here stays off the level', async () => {
+  const { view } = await setup()
+  await view.launchTrack('genes')
+  const { getByRole } = render(
+    <AddContextLevelDialog model={view} handleClose={() => {}} />,
+  )
+  fireEvent.click(getByRole('checkbox', { name: 'Gene annotations' }))
+  fireEvent.click(getByRole('button', { name: 'Add' }))
+  expect(levels(view)[0]!.tracks).toEqual([])
 })
 
 test('the stack goes under the tracks when the dialog says so', async () => {
@@ -89,21 +151,4 @@ test('the stack goes under the tracks when the dialog says so', async () => {
   fireEvent.click(getByRole('button', { name: 'Add' }))
   expect(view.contextLevelsBelow).toBe(true)
   expect(levels(view)).toHaveLength(1)
-})
-
-test('a track picked here is on the level the dialog adds', async () => {
-  const { view } = await setup()
-  const { getByRole } = render(
-    <AddContextLevelDialog model={view} handleClose={() => {}} />,
-  )
-  fireEvent.change(getByRole('combobox', { name: 'Tracks on the level' }), {
-    target: { value: 'anno' },
-  })
-  fireEvent.click(getByRole('option', { name: 'Gene annotations' }))
-  fireEvent.click(getByRole('button', { name: 'Add' }))
-  const [level] = levels(view)
-  await waitFor(() => {
-    expect(level!.tracks).toHaveLength(1)
-  })
-  expect(level!.tracks[0]!.configuration.trackId).toBe('genes')
 })

@@ -299,15 +299,17 @@ over a gene track at 200 kb over the reads at a kilobase, the way Ensembl's
 region-in-detail page is laid out. A trapezoid joins each level to the row it
 details.
 
-The dialog carries what a level arrives with. **Level width** opens at ten times
-the widest level in the stack and takes a span written in full or abbreviated as
-500kb; the stack stays widest first, so a span between two levels lands between
-them. **Tracks on the level** picks from the tracks this view can open, and the
-level keeps a track selector of its own for the rest. **Below the tracks** puts
-the stack under the view instead of over it, where it reads outward into wider
-spans. One side holds the whole stack, and the narrowest level is the one
-touching the tracks either way; **Move context levels below tracks** in the same
-menu takes a stack already built to the other side.
+The dialog carries what a level arrives with. **Tracks on the level** opens with
+the tracks this view is showing checked, so Add alone gives a wider view of what
+is already on screen; the list holds every track this view can open, with a
+filter over their names, and the level keeps a track selector of its own for
+later. **Below the tracks** puts the stack under the view instead of over it,
+where it reads outward into wider spans. One side holds the whole stack, and the
+narrowest level is the one touching the tracks either way; **Move context levels
+below tracks** in the same menu takes a stack already built to the other side.
+
+A level arrives ten times wider than the widest one there is, and the wheel
+takes it from there.
 
 The levels stay centred on the view. Drag or pan a level and the view moves by
 the same number of bases; zoom a level and only that level changes width. A
@@ -322,7 +324,7 @@ under a bar labelled with the span it covers.
 
 <Figure caption="A linear genome view of COLO829 with two context levels: tumour coverage at 5 Mb, the gene track at 200 kb, and the ONT reads at a kilobase of TP53. The trapezoids show where each level sits in the one above." src="/img/context_levels.png" />
 
-<Video src="/media/ui/context_levels.mp4" caption="Building that stack: Add context level from the view menu, the gene track picked in the dialog, a second level ten times wider again that the same dialog sends under the reads, and a navigation the whole stack follows." />
+<Video src="/media/ui/context_levels.mp4" caption="Building that stack: Add context level from the view menu, the reads unchecked and the gene track checked in its dialog, a second level ten times wider again that the same dialog sends under the reads, and a navigation the whole stack follows." />
 
 ### Track label positioning
 

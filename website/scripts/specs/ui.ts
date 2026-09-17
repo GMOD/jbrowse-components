@@ -179,6 +179,14 @@ export const settingsVideoFixtures = {
 // What videos/ui.ts films. The tour ends where these stills already are, so it
 // opens on the session they were captured from rather than one written again.
 export const uiVideoFixtures = {
+  // The three tracks the context-levels tour checks and unchecks in the Add
+  // context level dialog, by the trackId its rows carry. The reads are the
+  // view's own, so they arrive checked and the tour takes them off each level.
+  contextLevelTracks: {
+    reads: 'COLO829_tumor_ont',
+    genes: 'ncbi_refseq_hg38',
+    coverage: 'COLO829_tumor_coverage',
+  },
   // The reads the context-levels tour builds its stack over: the same COLO829
   // window the context_levels figure ends on, with no levels yet, since the
   // tour adds both of them.

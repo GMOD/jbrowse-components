@@ -3370,6 +3370,7 @@
         "makeIndex",
         "makeIndexType",
         "normalizeTrackInit",
+        "offeredTracks",
         "openAssemblyInLinearView",
         "openMateLabel",
         "pickDisplayForView",

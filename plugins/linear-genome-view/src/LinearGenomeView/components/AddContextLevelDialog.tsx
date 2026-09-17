@@ -2,14 +2,15 @@ import { useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { SubmitDialog } from '@jbrowse/core/ui'
-import { getSession, parseBpString, toLocale } from '@jbrowse/core/util'
+import { coarseStripHTML, getSession } from '@jbrowse/core/util'
 import {
   allSessionTracks,
-  filterTracks,
   getTrackName,
+  offeredTracks,
 } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
-  Autocomplete,
+  Checkbox,
   FormControlLabel,
   Radio,
   RadioGroup,
@@ -19,33 +20,51 @@ import {
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
+const useStyles = makeStyles()(theme => ({
+  list: {
+    display: 'flex',
+    flexDirection: 'column',
+    maxHeight: 260,
+    overflowY: 'auto',
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
+    padding: theme.spacing(0.5, 1),
+  },
+  filter: {
+    marginBottom: theme.spacing(1),
+  },
+}))
 
 interface TrackOption {
   trackId: string
   name: string
 }
 
-/**
- * The span a new level opens at, ten times the widest level in the stack — the
- * same default the model's own action carries, seeded here so the reader can
- * type over it.
- */
-function defaultSpan(model: LinearGenomeViewModel) {
-  const widest = model.contextLevelViews[0]
-  return (widest?.windowWidthBp ?? model.windowWidthBp) * 10
+function trackIds(tracks: { configuration: AnyConfigurationModel }[]) {
+  return tracks.map(
+    track => readConfObject(track.configuration, 'trackId') as string,
+  )
 }
 
 /**
- * Where a context level arrives: how wide, which side of the tracks, and with
- * which tracks already on it.
+ * Where a context level arrives: which tracks are on it, and which side of the
+ * tracks the stack sits on.
+ *
+ * It asks for no span. The level arrives ten times wider than the widest one
+ * there is and the wheel takes it from there, which is a gesture over the
+ * picture rather than a number nobody brings to the dialog. The model's action
+ * still takes `windowWidthBp`, for a stack a spec or an agent builds outright.
+ *
+ * The tracks open here are the ones checked, so Add alone is a wider view of
+ * what is already on screen. A name is stripped of the markup a track config
+ * may carry (`coarseStripHTML`), since this row is a label rather than a place
+ * a link could be followed.
  *
  * The side belongs to the stack rather than to this level, so the radio moves
  * levels that are already here — the narrowest level touches the tracks either
  * way, and a stack split over both sides is two figures in one view.
- *
- * Picking tracks here rather than leaving it to the level's own selector is the
- * whole reason the dialog is worth opening: a level arrives empty, and the
- * track it is for is the reason anybody added it.
  */
 const AddContextLevelDialog = observer(function AddContextLevelDialog({
   model,
@@ -54,25 +73,32 @@ const AddContextLevelDialog = observer(function AddContextLevelDialog({
   model: LinearGenomeViewModel
   handleClose: () => void
 }) {
+  const { classes } = useStyles()
   const session = getSession(model)
-  const options: TrackOption[] = filterTracks(allSessionTracks(session), {
+  const options: TrackOption[] = offeredTracks(allSessionTracks(session), {
     view: model,
     assemblyNames: model.assemblyNames,
   }).map(conf => ({
     trackId: readConfObject(conf, 'trackId') as string,
-    name: getTrackName(conf, session),
+    name: coarseStripHTML(getTrackName(conf, session)),
   }))
 
-  const [span, setSpan] = useState(() =>
-    toLocale(Math.floor(defaultSpan(model))),
-  )
   const [below, setBelow] = useState(model.contextLevelsBelow)
-  const [tracks, setTracks] = useState<TrackOption[]>([])
-
-  const windowWidthBp = parseBpString(span)
-  const tooNarrow =
-    windowWidthBp !== undefined && windowWidthBp <= model.windowWidthBp
-  const valid = windowWidthBp !== undefined && !tooNarrow
+  // The view's own tracks, which are what the list opens checked AND what it
+  // sorts to the top: a session's track list runs to tens of entries, so the
+  // rows a reader came to see would otherwise be below the fold with every
+  // visible box unchecked. Read once rather than off `checked`, so the order
+  // holds still while the boxes are clicked.
+  const [opened] = useState(() => new Set(trackIds(model.tracks)))
+  const [checked, setChecked] = useState(() => new Set(opened))
+  const [filter, setFilter] = useState('')
+  const needle = filter.toLowerCase()
+  const matched = needle
+    ? options.filter(option => option.name.toLowerCase().includes(needle))
+    : options
+  const shown = matched.toSorted(
+    (a, b) => Number(opened.has(b.trackId)) - Number(opened.has(a.trackId)),
+  )
   const stacked = model.contextLevelViews.length
 
   return (
@@ -83,62 +109,66 @@ const AddContextLevelDialog = observer(function AddContextLevelDialog({
       title="Add context level"
       onCancel={handleClose}
       submitText="Add"
-      submitDisabled={!valid}
       onSubmit={() => {
-        if (valid) {
-          model.setContextLevelsBelow(below)
-          model.addContextLevel({
-            windowWidthBp,
-            trackIds: tracks.map(t => t.trackId),
-          })
-        }
+        model.setContextLevelsBelow(below)
+        model.addContextLevel({
+          trackIds: options
+            .map(option => option.trackId)
+            .filter(trackId => checked.has(trackId)),
+        })
         handleClose()
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <Typography>
-          A context level is a second view of this locus at a wider span, with
-          tracks of its own. It stays centred on this view, and zooming it
+          A wider view of this locus with tracks of its own, ten times the
+          widest level here. It stays centred on this view, and zooming it
           changes its span alone.
         </Typography>
-        <TextField
-          label="Level width (bp)"
-          autoFocus
-          fullWidth
-          variant="outlined"
-          value={span}
-          error={!valid}
-          helperText={
-            tooNarrow
-              ? 'A level shows more than the tracks under it, so this has to be wider than the current view'
-              : 'In full or abbreviated, e.g. 500kb or 1.5Mbp'
-          }
-          slotProps={{ htmlInput: { 'data-testid': 'context-level-span' } }}
-          onChange={event => {
-            setSpan(event.target.value)
-          }}
-        />
-        <Autocomplete
-          multiple
-          data-testid="context-level-tracks"
-          options={options}
-          value={tracks}
-          getOptionLabel={option => option.name}
-          isOptionEqualToValue={(option, value) =>
-            option.trackId === value.trackId
-          }
-          onChange={(_event, value) => {
-            setTracks(value)
-          }}
-          renderInput={params => (
+        <div>
+          <Typography>Tracks on the level</Typography>
+          <div data-testid="context-level-tracks">
             <TextField
-              {...params}
+              autoFocus
+              fullWidth
+              size="small"
               variant="outlined"
-              label="Tracks on the level"
-              placeholder={options.length ? 'Search tracks' : 'No tracks'}
+              className={classes.filter}
+              placeholder="Filter tracks"
+              value={filter}
+              slotProps={{
+                htmlInput: { 'data-testid': 'context-level-track-filter' },
+              }}
+              onChange={event => {
+                setFilter(event.target.value)
+              }}
             />
-          )}
-        />
+            <div className={classes.list}>
+              {shown.map(({ trackId, name }) => (
+                <FormControlLabel
+                  key={trackId}
+                  label={name}
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={checked.has(trackId)}
+                      data-testid={`context-level-track-${trackId}`}
+                      onChange={() => {
+                        setChecked(current => {
+                          const next = new Set(current)
+                          if (!next.delete(trackId)) {
+                            next.add(trackId)
+                          }
+                          return next
+                        })
+                      }}
+                    />
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </div>
         <div>
           <Typography>Where the stack goes</Typography>
           <RadioGroup

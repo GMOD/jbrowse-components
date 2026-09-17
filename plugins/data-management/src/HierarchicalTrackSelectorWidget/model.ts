@@ -6,11 +6,7 @@ import {
   localStorageSetJSON,
   notEmpty,
 } from '@jbrowse/core/util'
-import {
-  filterTracks,
-  viewCanDisplayTrack,
-  viewDisplayNames,
-} from '@jbrowse/core/util/tracks'
+import { filterTracks, offeredTracks } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
@@ -517,30 +513,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       isRecentlyUsed(trackId: string) {
         return self.recentlyUsedSet.has(trackId)
       },
-      /**
-       * #method
-       */
-      getRefSeqTrackConf(
-        assemblyName: string,
-      ): AnyConfigurationModel | undefined {
-        const { view } = self
-        if (!view) {
-          return undefined
-        }
-        const { assemblyManager } = getSession(self)
-        const trackConf = assemblyManager.get(assemblyName)?.configuration
-          .sequence as AnyConfigurationModel | undefined
-        // same display-compatibility question filterTracks asks of every other
-        // track, so a view that can't draw a sequence doesn't list one
-        return trackConf &&
-          viewCanDisplayTrack(
-            pluginManager,
-            viewDisplayNames(pluginManager, view.type),
-            trackConf.type,
-          )
-          ? trackConf
-          : undefined
-      },
     }))
 
     .views(self => ({
@@ -565,13 +537,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * filter out tracks that don't match the current assembly/display types
+       * the tracks this view can be offered — its assemblies' sequence tracks,
+       * then the session's list filtered to what it can draw
        */
       get configAndSessionTrackConfigurations() {
-        return [
-          ...self.assemblyNames.map(a => self.getRefSeqTrackConf(a)),
-          ...filterTracks(getSession(self).tracks, self),
-        ].filter(notEmpty)
+        return offeredTracks(getSession(self).tracks, self)
       },
       /**
        * #getter
