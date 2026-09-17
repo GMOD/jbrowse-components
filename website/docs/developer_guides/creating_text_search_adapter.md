@@ -186,8 +186,9 @@ normal outcome.
 On Enter, the exact hits win if there are any and everything that matched is the
 fallback; the winning set navigates when it holds one result and opens a picker
 otherwise. So `exact` keeps a precise name from offering everything it prefixes.
-Neither the label nor the display string decides it: those are display text, and
-a hit that matched on an ID or a description has neither equal to the query.
+The `exact` field decides it, not the label or the display string: those are
+display text, and a hit that matched on an ID or a description can have neither
+equal to the query.
 
 ## Configuration schema
 
