@@ -278,9 +278,10 @@ reverse-strand color between two forward-strand segments, and a magenta arc
 joins the two breakpoints.
 
 **Group by → Split read (SA tag)** splits the pileup into two sections: reads
-carrying a supplementary alignment, and the rest. Together the two sections are
-the genotype: a locus where some reads invert and the rest run through unbroken
-is one inverted copy and one uninverted, read directly off the pileup.
+carrying a supplementary alignment, and the rest. Together the two sections give
+the genotype directly from the pileup, independent of the caller's `GT` field: a
+locus where some reads invert and the rest run through unbroken is one inverted
+copy and one uninverted.
 
 <Figure caption="Reads grouped by Group by... → Split read (SA tag) over HGSV_10047 in HG00151 nanopore reads, with the 1KGP ensemble VCF call above. The split reads in the upper section break into three pieces with the middle one reversed; the reads below cross the same span in one piece." src="/img/inversion_long_read.png" />
 

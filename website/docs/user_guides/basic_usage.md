@@ -172,7 +172,8 @@ The session URL contains:
 - per-track display state, such as an alignments track's soft-clipping and sort
   settings
 
-A shared link can therefore carry custom tracks.
+A shared link can therefore carry custom tracks the recipient opens directly,
+with no admin needed to publish them first.
 
 ## Track menu
 

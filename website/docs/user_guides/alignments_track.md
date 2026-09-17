@@ -202,7 +202,7 @@ transcript.
 
 Grouping by strand also works as a check on the reads. A position colored in one
 band and not the other is carried by one strand alone, the signature of a
-basecalling error.
+basecalling error; a position that disagrees in both bands is a real variant.
 
 <Figure caption="HG002 nanopore reads grouped by strand, each band colored from only that strand's reads. At the left boxed column only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
 
