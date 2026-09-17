@@ -105,12 +105,9 @@ test('a data name a rendering barrel re-exports from a module that does not rend
 })
 
 // What an adapter, an RPC method, a config schema or a state-model mixin reads
-// in the worker. A module whose graph reaches react-dom, a Material UI
-// component, the data grid or floating-ui is stubbed there, and a stub answers
-// every read and call with itself — so a demotion costs a plugin silent zeros,
-// not an error. One `export … from` naming a package barrel is enough to do it:
-// `computeYTicks.ts` reaching the @jbrowse/display-ui barrel is what had the
-// whole of @jbrowse/wiggle-core stubbed, config mixins included.
+// in the worker. A name whose graph keeps a rendering library is stubbed there,
+// and a stub answers every read and call with itself, so a demotion costs a
+// plugin silent zeros, not an error.
 test('the modules a worker-side plugin reads are served for real', () => {
   const workerSide = [
     '@jbrowse/core/Plugin',

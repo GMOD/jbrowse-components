@@ -865,16 +865,11 @@
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
         "@mui/material/Tooltip"
       ],
       "stubbed": [
         "App",
-        "AssembliesMixin",
-        "DialogQueue",
-        "HistoryManagementMixin",
-        "JBrowseConfigF",
-        "JBrowseModelF"
+        "DialogQueue"
       ]
     },
     "@jbrowse/cigar-utils": {
@@ -1009,9 +1004,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ]
     },
     "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes": {
@@ -1021,9 +1014,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ]
     },
     "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard": {
@@ -1043,9 +1034,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ]
     },
     "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter": {
@@ -1062,9 +1051,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ]
     },
     "@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog": {
@@ -3959,9 +3946,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ]
     },
     "@jbrowse/display-kit/ChromeHighlight": {
@@ -4107,9 +4092,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ]
     },
     "@jbrowse/display-kit/DisplayErrorBar": {
@@ -4450,8 +4433,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "react-dom"
+        "@mui/material"
       ]
     },
     "@jbrowse/display-kit/rpcArgs": {
@@ -4479,8 +4461,7 @@
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
-        "@mui/material/Tooltip",
-        "react-dom"
+        "@mui/material/Tooltip"
       ],
       "stubbed": [
         "default"
@@ -4522,8 +4503,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "react-dom"
+        "@mui/material"
       ]
     },
     "@jbrowse/display-kit/TrackControl": {
@@ -4535,8 +4515,7 @@
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
-        "@mui/material/Tooltip",
-        "react-dom"
+        "@mui/material/Tooltip"
       ]
     },
     "@jbrowse/display-kit/trackHeightConfigSchemaFields": {
@@ -4555,8 +4534,7 @@
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
-        "@mui/material/Tooltip",
-        "react-dom"
+        "@mui/material/Tooltip"
       ]
     },
     "@jbrowse/display-kit/TrackHeightMixin": {
@@ -4705,15 +4683,15 @@
       ],
       "worker": "mixed",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip"
+        "@mui/icons-material/Delete",
+        "@mui/icons-material/FileCopy",
+        "@mui/icons-material/Info",
+        "@mui/icons-material/OpenInNew",
+        "@mui/icons-material/Settings",
+        "@mui/icons-material/SettingsBackupRestore"
       ],
       "stubbed": [
-        "EmbeddedSessionMixin",
-        "EmbeddedSessionThemeMixin",
-        "createEmbeddedRootModel"
+        "EmbeddedSessionMixin"
       ]
     },
     "@jbrowse/ld-core": {
@@ -4779,12 +4757,16 @@
       ],
       "worker": "mixed",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "react-dom",
-        "react-dom/client"
+        "@mui/icons-material/CallSplit",
+        "@mui/icons-material/CompareArrows",
+        "@mui/icons-material/ContentCopy",
+        "@mui/icons-material/FilterAlt",
+        "@mui/icons-material/FilterAltOff",
+        "@mui/icons-material/MenuOpen",
+        "@mui/icons-material/Notes",
+        "@mui/icons-material/Palette",
+        "@mui/icons-material/Save",
+        "@mui/icons-material/SwapVert"
       ],
       "stubbed": [
         "default",
@@ -4800,12 +4782,20 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "react-dom",
-        "react-dom/client"
+        "@mui/icons-material/AltRoute",
+        "@mui/icons-material/CallSplit",
+        "@mui/icons-material/CompareArrows",
+        "@mui/icons-material/ContentCopy",
+        "@mui/icons-material/Equalizer",
+        "@mui/icons-material/FilterAlt",
+        "@mui/icons-material/FilterAltOff",
+        "@mui/icons-material/Height",
+        "@mui/icons-material/MenuOpen",
+        "@mui/icons-material/Palette",
+        "@mui/icons-material/Polyline",
+        "@mui/icons-material/SwapVert",
+        "@mui/icons-material/Visibility",
+        "@mui/icons-material/Workspaces"
       ]
     },
     "@jbrowse/plugin-arc": {
@@ -4842,9 +4832,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ]
     },
     "@jbrowse/plugin-breakpoint-split-view": {
@@ -4853,15 +4841,15 @@
         "default",
         "renderToSvg"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@floating-ui/react",
         "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
         "react-dom",
         "react-dom/client"
+      ],
+      "stubbed": [
+        "renderToSvg"
       ]
     },
     "@jbrowse/plugin-canvas": {
@@ -4912,12 +4900,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "react-dom",
-        "react-dom/client"
+        "@mui/material/SvgIcon"
       ]
     },
     "@jbrowse/plugin-canvas/LinearBasicDisplay/stateModel": {
@@ -4927,12 +4910,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "react-dom",
-        "react-dom/client"
+        "@mui/material/SvgIcon"
       ]
     },
     "@jbrowse/plugin-circular-view": {
@@ -4944,6 +4922,7 @@
       ],
       "worker": "mixed",
       "uiVia": [
+        "@mui/icons-material/DataUsage",
         "@mui/material",
         "react-dom",
         "react-dom/client"
@@ -4958,14 +4937,7 @@
       "names": [
         "default"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@floating-ui/react",
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip",
-        "react-dom"
-      ]
+      "worker": "real"
     },
     "@jbrowse/plugin-config": {
       "package": "@jbrowse/plugin-config",
@@ -4992,10 +4964,8 @@
       ],
       "worker": "mixed",
       "uiVia": [
-        "@floating-ui/react",
         "@mui/material",
         "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
         "@mui/material/Tooltip",
         "react-dom",
         "react-dom/client"
@@ -5026,13 +4996,10 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@floating-ui/react",
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "react-dom",
-        "react-dom/client"
+        "@mui/material/Tooltip"
       ]
     },
     "@jbrowse/plugin-gtf": {
@@ -5087,10 +5054,12 @@
       "worker": "stub",
       "uiVia": [
         "@floating-ui/react",
+        "@mui/icons-material/AccountTree",
+        "@mui/icons-material/Add",
+        "@mui/icons-material/CalendarViewDay",
+        "@mui/icons-material/CompareArrows",
+        "@mui/icons-material/Save",
         "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
         "react-dom",
         "react-dom/client"
       ]
@@ -5201,12 +5170,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "react-dom",
-        "react-dom/client"
+        "@mui/icons-material/Save"
       ]
     },
     "@jbrowse/plugin-marks": {
@@ -5251,9 +5215,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/icons-material/TableChart"
       ]
     },
     "@jbrowse/plugin-text-indexing": {
@@ -5304,10 +5266,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip",
-        "react-dom"
+        "@mui/material"
       ]
     },
     "@jbrowse/product-core": {
@@ -5412,10 +5371,14 @@
       ],
       "worker": "mixed",
       "uiVia": [
+        "@mui/icons-material/Delete",
+        "@mui/icons-material/FileCopy",
+        "@mui/icons-material/Info",
+        "@mui/icons-material/OpenInNew",
+        "@mui/icons-material/Settings",
+        "@mui/icons-material/SettingsBackupRestore",
         "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip"
+        "@mui/material/SvgIcon"
       ],
       "stubbed": [
         "AboutDialog",
@@ -6185,9 +6148,7 @@
       ],
       "worker": "mixed",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ],
       "stubbed": [
         "BreakpointSplitViewChoiceDialog"
@@ -6545,29 +6506,22 @@
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
         "@mui/material/Tooltip",
         "@mui/x-data-grid",
-        "react-dom",
-        "react-dom/client"
+        "react-dom"
       ],
       "stubbed": [
         "ClusterDialog",
         "ClusterModeSelector",
         "ClusterProgress",
-        "ClusterProvenanceHint",
         "DisplayContextMenu",
-        "DisplayCrosshairs",
         "RowLabelsOverlay",
         "SetColorDialog",
         "SvgClusterProvenanceHint",
         "SvgRowLabels",
         "SvgTreePath",
         "SvgTreeSidebar",
-        "TreeSidebar",
-        "setupRunClusteringAutorun",
-        "setupTreeDrawingAutorun",
-        "setupTreeSidebarAutoruns"
+        "TreeSidebar"
       ]
     },
     "@jbrowse/tree-sidebar/clusterMatrix": {
@@ -6684,17 +6638,17 @@
       ],
       "worker": "mixed",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip"
+        "@mui/icons-material/Delete",
+        "@mui/icons-material/FileCopy",
+        "@mui/icons-material/Info",
+        "@mui/icons-material/OpenInNew",
+        "@mui/icons-material/Settings",
+        "@mui/icons-material/SettingsBackupRestore"
       ],
       "stubbed": [
         "BaseWebSession",
         "BaseWebSessionModel",
-        "WebSessionConnectionsMixin",
-        "finalizeWebSession",
-        "isWebSessionWithConnections"
+        "finalizeWebSession"
       ]
     },
     "@jbrowse/wiggle-core": {
@@ -6775,10 +6729,8 @@
       ],
       "worker": "mixed",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip",
-        "react-dom"
+        "@mui/icons-material/ScatterPlot",
+        "@mui/material"
       ],
       "stubbed": [
         "SetMinMaxDialog",
@@ -6826,8 +6778,6 @@
       "worker": "stub",
       "uiVia": [
         "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip",
         "react-dom"
       ]
     },
@@ -6836,10 +6786,7 @@
       "names": [
         "ScorePlotSvgFrame"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "react-dom"
-      ]
+      "worker": "real"
     }
   },
   "products": {

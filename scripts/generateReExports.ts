@@ -23,33 +23,25 @@
 // serves the keys of the packages it bundles, and must name each of them as a
 // direct dependency so its generated file can resolve the import.
 //
-// The worker serves a module for real unless the module's own source graph —
-// followed through workspace packages, stopped at third-party specifiers —
-// names react-dom, a Material UI component, the data grid or floating-ui.
-// Such a module still serves for real each export declared by a module that
-// does not render, imported by name so the bundler prunes the rest; a stub
-// with the export's name stands in for each other one, so the plugin's
+// The worker serves each export for real unless serving it would evaluate a
+// rendering library, which `reExportReach.ts` decides by following imports by
+// name the way the bundler prunes them. It imports the real names by name, and
+// a stub with the export's name stands in for each other one, so the plugin's
 // module-scope reads succeed without the worker fetching the UI graph.
 // agent-docs/reference/EAGER_BUNDLE.md §"3. The runtime re-export registry" is
 // the measurement behind the split.
 import { execFileSync } from 'node:child_process'
-import {
-  existsSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  statSync,
-} from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import esbuild from 'esbuild'
-import * as ts from 'typescript'
 
 import frameworkShared from '../packages/core/src/ReExports/frameworkShared.ts'
 import { REACT_INTERNAL_KEYS } from '../packages/core/src/ReExports/uiStub.ts'
 import { checkOrWriteAll } from '../website/scripts/check-utils.ts'
+import { createReExportReach, resolveRelative } from './reExportReach.ts'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const CORE = '@jbrowse/core'
@@ -61,10 +53,6 @@ const PRODUCTS = [
   'jbrowse-react-app',
   'jbrowse-react-circular-genome-view',
 ]
-// A specifier that means "this module renders": named by a module's own graph,
-// it puts the module behind a stub in the worker.
-const UI_SPECIFIER =
-  /^(react-dom(\/.*)?|@mui\/material(\/(?!styles|utils|colors)[A-Z].*)?|@mui\/x-data-grid.*|@floating-ui\/.*)$/
 
 interface Manifest {
   name: string
@@ -181,29 +169,14 @@ for (const pkg of served) {
 }
 entries.sort((a, b) => a.key.localeCompare(b.key))
 
-// ---- resolution ----------------------------------------------------------
-
-function resolveRelative(from: string, spec: string) {
-  const base = path.resolve(path.dirname(from), spec)
-  for (const candidate of [
-    base,
-    `${base}.ts`,
-    `${base}.tsx`,
-    path.join(base, 'index.ts'),
-    path.join(base, 'index.tsx'),
-  ]) {
-    if (existsSync(candidate) && statSync(candidate).isFile()) {
-      return candidate
-    }
-  }
-  throw new Error(`${from}: cannot resolve '${spec}'`)
-}
-
 // A workspace specifier, followed so the walk crosses package boundaries the
 // way the bundle does. One the served set does not name (a private package,
 // or a subpath a sibling reaches that its exports map does not publish)
 // resolves through the package directory instead.
 function resolveWorkspace(spec: string) {
+  if (!spec.startsWith('@jbrowse/') || spec === '@jbrowse/mobx-state-tree') {
+    return undefined
+  }
   const entry = entryByKey.get(spec)
   if (entry) {
     return entry.file
@@ -222,317 +195,7 @@ function resolveWorkspace(spec: string) {
     : resolveRelative(path.join(dir, 'package.json'), `./src${match[2]}`)
 }
 
-function resolveSpecifier(from: string, spec: string) {
-  if (spec.startsWith('.')) {
-    return resolveRelative(from, spec)
-  }
-  if (spec.startsWith('@jbrowse/') && spec !== '@jbrowse/mobx-state-tree') {
-    return resolveWorkspace(spec)
-  }
-  return undefined
-}
-
-// ---- one parse per file: its value edges and its runtime export names --------
-
-interface Binding {
-  spec: string
-  name: string
-}
-
-interface Parsed {
-  edges: string[]
-  names: Set<string>
-  stars: string[]
-  imports: Map<string, Binding>
-  reexports: Map<string, Binding>
-  exportedLocals: Map<string, string>
-  evaluates: boolean
-}
-
-const parsed = new Map<string, Parsed>()
-
-function hasModifier(node: ts.Node, kind: ts.SyntaxKind) {
-  return ts.canHaveModifiers(node)
-    ? (ts.getModifiers(node) ?? []).some(m => m.kind === kind)
-    : false
-}
-
-function bindingNames(name: ts.BindingName, out: Set<string>) {
-  if (ts.isIdentifier(name)) {
-    out.add(name.text)
-  } else {
-    for (const el of name.elements) {
-      if (ts.isBindingElement(el)) {
-        bindingNames(el.name, out)
-      }
-    }
-  }
-}
-
-const isInertInitializer = (init: ts.Expression | undefined) =>
-  !init ||
-  ts.isLiteralExpression(init) ||
-  ts.isArrowFunction(init) ||
-  ts.isFunctionExpression(init) ||
-  init.kind === ts.SyntaxKind.TrueKeyword ||
-  init.kind === ts.SyntaxKind.FalseKeyword
-
-// Whether a bundler must run the statement, which keeps its module and every
-// import that module names even when only a re-export through it is used.
-function evaluates(stmt: ts.Statement) {
-  if (hasModifier(stmt, ts.SyntaxKind.DeclareKeyword)) {
-    return false
-  }
-  if (ts.isImportDeclaration(stmt)) {
-    return !stmt.importClause
-  }
-  if (ts.isVariableStatement(stmt)) {
-    return !stmt.declarationList.declarations.every(d =>
-      isInertInitializer(d.initializer),
-    )
-  }
-  if (ts.isExportAssignment(stmt)) {
-    return !ts.isIdentifier(stmt.expression)
-  }
-  if (ts.isClassDeclaration(stmt)) {
-    return (
-      (ts.getDecorators(stmt) ?? []).length > 0 ||
-      (stmt.heritageClauses ?? []).some(h =>
-        h.types.some(t => !ts.isIdentifier(t.expression)),
-      ) ||
-      stmt.members.some(
-        m =>
-          ts.isClassStaticBlockDeclaration(m) ||
-          (ts.isPropertyDeclaration(m) &&
-            hasModifier(m, ts.SyntaxKind.StaticKeyword) &&
-            !isInertInitializer(m.initializer)),
-      )
-    )
-  }
-  return !(
-    ts.isExportDeclaration(stmt) ||
-    ts.isFunctionDeclaration(stmt) ||
-    ts.isTypeAliasDeclaration(stmt) ||
-    ts.isInterfaceDeclaration(stmt)
-  )
-}
-
-function parse(file: string): Parsed {
-  const cached = parsed.get(file)
-  if (cached) {
-    return cached
-  }
-  const source = ts.createSourceFile(
-    file,
-    readFileSync(file, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-  )
-  const out: Parsed = {
-    edges: [],
-    names: new Set(),
-    stars: [],
-    imports: new Map(),
-    reexports: new Map(),
-    exportedLocals: new Map(),
-    evaluates: source.statements.some(evaluates),
-  }
-  parsed.set(file, out)
-  for (const stmt of source.statements) {
-    if (ts.isImportDeclaration(stmt)) {
-      const clause = stmt.importClause
-      const spec = (stmt.moduleSpecifier as ts.StringLiteral).text
-      if (!clause) {
-        out.edges.push(spec)
-      } else if (!clause.isTypeOnly) {
-        const bindings = clause.namedBindings
-        if (clause.name) {
-          out.imports.set(clause.name.text, { spec, name: 'default' })
-        }
-        if (bindings && ts.isNamespaceImport(bindings)) {
-          out.imports.set(bindings.name.text, { spec, name: '*' })
-        } else if (bindings) {
-          for (const el of bindings.elements) {
-            out.imports.set(el.name.text, {
-              spec,
-              name: (el.propertyName ?? el.name).text,
-            })
-          }
-        }
-        const allTypeOnly =
-          !clause.name &&
-          bindings &&
-          ts.isNamedImports(bindings) &&
-          bindings.elements.every(el => el.isTypeOnly)
-        if (!allTypeOnly) {
-          out.edges.push(spec)
-        }
-      }
-    } else if (ts.isExportDeclaration(stmt)) {
-      if (stmt.isTypeOnly) {
-        continue
-      }
-      const spec = stmt.moduleSpecifier
-        ? (stmt.moduleSpecifier as ts.StringLiteral).text
-        : undefined
-      const clause = stmt.exportClause
-      if (!clause) {
-        out.stars.push(spec!)
-        out.edges.push(spec!)
-      } else if (ts.isNamespaceExport(clause)) {
-        out.names.add(clause.name.text)
-        out.reexports.set(clause.name.text, { spec: spec!, name: '*' })
-        out.edges.push(spec!)
-      } else {
-        let value = false
-        for (const el of clause.elements) {
-          if (!el.isTypeOnly) {
-            const local = (el.propertyName ?? el.name).text
-            out.names.add(el.name.text)
-            if (spec) {
-              out.reexports.set(el.name.text, { spec, name: local })
-            } else {
-              out.exportedLocals.set(el.name.text, local)
-            }
-            value = true
-          }
-        }
-        if (spec && value) {
-          out.edges.push(spec)
-        }
-      }
-    } else if (ts.isExportAssignment(stmt)) {
-      out.names.add('default')
-      if (ts.isIdentifier(stmt.expression)) {
-        out.exportedLocals.set('default', stmt.expression.text)
-      }
-    } else if (hasModifier(stmt, ts.SyntaxKind.ExportKeyword)) {
-      if (hasModifier(stmt, ts.SyntaxKind.DeclareKeyword)) {
-        continue
-      }
-      if (hasModifier(stmt, ts.SyntaxKind.DefaultKeyword)) {
-        out.names.add('default')
-      } else if (ts.isVariableStatement(stmt)) {
-        for (const decl of stmt.declarationList.declarations) {
-          bindingNames(decl.name, out.names)
-        }
-      } else if (
-        (ts.isFunctionDeclaration(stmt) ||
-          ts.isClassDeclaration(stmt) ||
-          ts.isEnumDeclaration(stmt)) &&
-        stmt.name
-      ) {
-        if (
-          ts.isEnumDeclaration(stmt) &&
-          hasModifier(stmt, ts.SyntaxKind.ConstKeyword)
-        ) {
-          continue
-        }
-        out.names.add(stmt.name.text)
-      }
-    }
-  }
-  return out
-}
-
-function runtimeExportNames(
-  file: string,
-  seen = new Set<string>(),
-): Set<string> {
-  const { names, stars } = parse(file)
-  const out = new Set(names)
-  for (const spec of stars) {
-    const target = resolveSpecifier(file, spec)
-    if (!target) {
-      throw new Error(
-        `${file}: \`export *\` from '${spec}' reaches outside the workspace, so its names cannot be listed`,
-      )
-    }
-    if (!seen.has(target)) {
-      seen.add(target)
-      for (const name of runtimeExportNames(target, seen)) {
-        if (name !== 'default') {
-          out.add(name)
-        }
-      }
-    }
-  }
-  return out
-}
-
-// The third-party specifiers a module's graph names, through workspace edges.
-const reachCache = new Map<string, Set<string>>()
-function reachedSpecifiers(file: string) {
-  const cached = reachCache.get(file)
-  if (cached) {
-    return cached
-  }
-  const out = new Set<string>()
-  const seen = new Set([file])
-  const pending = [file]
-  while (pending.length > 0) {
-    const from = pending.pop()!
-    for (const spec of parse(from).edges) {
-      const target = resolveSpecifier(from, spec)
-      if (!target) {
-        out.add(spec)
-      } else if (!seen.has(target)) {
-        seen.add(target)
-        pending.push(target)
-      }
-    }
-  }
-  reachCache.set(file, out)
-  return out
-}
-
-const uiVia = (file: string) =>
-  [...reachedSpecifiers(file)].filter(s => UI_SPECIFIER.test(s)).sort()
-
-// Whether importing export `name` of `file` by name reaches a rendering
-// library once a bundler has pruned what `sideEffects: false` lets it. The
-// module that declares the name decides, unless a module the name passes
-// through both renders and runs code of its own, which keeps that module's
-// whole graph. A name re-exported from a third-party specifier is judged by
-// the specifier, a namespace re-export by the module it gathers.
-function declaredInUi(
-  file: string,
-  name: string,
-  trail = new Set<string>(),
-): boolean {
-  const { reexports, exportedLocals, imports, names, stars, evaluates } =
-    parse(file)
-  trail.add(file)
-  const local = exportedLocals.get(name)
-  const binding =
-    reexports.get(name) ??
-    (local === undefined ? undefined : imports.get(local))
-  if (
-    (binding !== undefined || !names.has(name)) &&
-    evaluates &&
-    uiVia(file).length > 0
-  ) {
-    return true
-  }
-  if (binding) {
-    const target = resolveSpecifier(file, binding.spec)
-    if (!target) {
-      return UI_SPECIFIER.test(binding.spec)
-    }
-    return binding.name === '*' || trail.has(target)
-      ? uiVia(target).length > 0
-      : declaredInUi(target, binding.name, trail)
-  }
-  if (!names.has(name)) {
-    for (const spec of stars) {
-      const target = resolveSpecifier(file, spec)!
-      if (!trail.has(target) && runtimeExportNames(target).has(name)) {
-        return declaredInUi(target, name, trail)
-      }
-    }
-  }
-  return uiVia(file).length > 0
-}
+const { runtimeExportNames, uiVia } = createReExportReach(resolveWorkspace)
 
 interface Served {
   key: string
@@ -545,10 +208,18 @@ interface Served {
 
 const servedModules: Served[] = entries.map(entry => {
   const names = [...runtimeExportNames(entry.file)].sort()
-  const via = uiVia(entry.file)
   const stubbed =
-    via.length > 0 ? names.filter(name => declaredInUi(entry.file, name)) : []
-  return { ...entry, names, uiVia: via, stubbed }
+    uiVia(entry.file).length > 0
+      ? names.filter(name => uiVia(entry.file, name).length > 0)
+      : []
+  return {
+    ...entry,
+    names,
+    stubbed,
+    uiVia: [
+      ...new Set(stubbed.flatMap(name => uiVia(entry.file, name))),
+    ].sort(),
+  }
 })
 
 // ---- the framework half, evaluated ----------------------------------------
@@ -628,9 +299,14 @@ function workerExpression(
   if (real.length === 0) {
     return stubExpression(m.names)
   }
-  imports.push(
-    `import { ${real.map(name => `${name} as ${alias}_${name}`).join(', ')} } from ${q(specifier)}`,
-  )
+  const named = real.filter(name => name !== 'default')
+  const clause = [
+    ...(real.includes('default') ? [`${alias}_default`] : []),
+    ...(named.length > 0
+      ? [`{ ${named.map(name => `${name} as ${alias}_${name}`).join(', ')} }`]
+      : []),
+  ]
+  imports.push(`import ${clause.join(', ')} from ${q(specifier)}`)
   const hasDefault = m.names.includes('default')
   if (hasDefault && m.names.length === 1) {
     return `${alias}_default`

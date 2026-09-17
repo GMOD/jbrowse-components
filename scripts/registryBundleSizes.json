@@ -5,13 +5,13 @@
     "modules": 2944
   },
   "worker": {
-    "bytes": 7109290,
+    "bytes": 7227577,
     "uiBytes": 262885,
-    "modules": 1446
+    "modules": 1496
   },
   "mainKb": 14308,
   "mainUiKb": 4248,
-  "workerKb": 6943,
+  "workerKb": 7058,
   "workerUiKb": 257,
   "uiSavedKb": 3992
 }
