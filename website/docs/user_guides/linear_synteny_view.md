@@ -239,9 +239,8 @@ what the view _is_ — which genomes it stacks, where they point, what leaves it
 **Ribbons** — how one alignment is drawn.
 
 - **Identity fade** is described above
-- **Curved lines** draws ribbons as bezier curves instead of straight
-  connectors, which reads far better at whole-genome scale where straight
-  crossings stack into noise
+- **Curved lines** draws ribbons as bezier curves, which reads far better at
+  whole-genome scale where straight crossings stack into noise
 - **Location markers** continues the top panel's scalebar grid down through the
   ribbons, so each tick shows where a round coordinate up there lands below
 - **Opacity** is how much dense overlapping alignments show through each other
