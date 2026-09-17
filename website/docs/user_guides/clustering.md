@@ -54,10 +54,10 @@ Every display opens the same dialog, with two modes:
 
 - **Auto** runs hierarchical clustering (hclust, compiled to WebAssembly) in a
   worker, reporting progress as it goes. This is the mode to use.
-- **Manual** is an escape hatch for doing the clustering elsewhere. It hands you
-  the matrix, either as an R script that runs `hclust` and prints the row order,
-  or as a plain TSV for any other tool. Paste the resulting order back into the
-  dialog and click **Apply clustering**.
+- **Manual** runs the clustering outside JBrowse: it exports the matrix, either
+  as an R script that runs `hclust` and prints the row order, or as a plain TSV
+  for any other tool. Paste the resulting order back into the dialog and click
+  **Apply clustering**.
 
 Both modes cluster the same rows with the same linkage by default (average, or
 UPGMA), so manual mode reproduces auto mode.

@@ -86,16 +86,16 @@ forward and reverse primer and an optional maximum product size. This uses
 UCSC's `hgPcr` service and follows the same database-selection and apiKey/proxy
 options as BLAT search.
 
-Predicted amplicons arrive as a track, with the same **Search results** panel
+Predicted amplicons are added as a track, with the same **Search results** panel
 listing every product with its size and primer pair. As with BLAT, clicking a
 product takes the view to it.
 
-A PCR product has the shape of a paired-end read: two short oriented footprints
-pointing at each other with an unsequenced insert between them, so each product
-is drawn as a read pair with view-as-pairs on. The two arrows converge
-regardless of which strand the product is reported on, because each primer's
-direction does not follow the amplicon's strand. The line between them is the
-interior you never sequence.
+A PCR product has the structure of a paired-end read: two short oriented
+footprints pointing at each other with an unsequenced insert between them, so
+each product is drawn as a read pair with view-as-pairs on. The two arrows
+converge regardless of which strand the product is reported on, because each
+primer's direction does not follow the amplicon's strand. The line between them
+is the interior you never sequence.
 
 Because the primers themselves are carried as the reads' bases, a base where a
 primer disagrees with the template is drawn as a mismatch. UCSC tolerates one

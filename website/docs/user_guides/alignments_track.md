@@ -188,27 +188,28 @@ Grouping by `HP` is also how to check that a heterozygous variant's supporting
 reads sit on one haplotype; see
 [phasing heterozygous SVs](/docs/user_guides/sv_visualization#phasing-heterozygous-svs).
 
-Each section's coverage band is built from only its own reads. Group by
-**Strand** and turn off **Show... → Show pileup** for a forward and a reverse
-histogram on a shared scale, each with its own mismatch coloring. On a
-strand-specific paired-end library group by **First-of-pair strand** instead,
-since there the transcript strand is which mate the read is; the
+Each section's coverage band is built from only the reads grouped into that
+section. Group by **Strand** and turn off **Show... → Show pileup** for a
+forward and a reverse histogram on a shared scale, each colored by the
+mismatches in that strand's reads. On a strand-specific paired-end library group
+by **First-of-pair strand** instead, since there the transcript strand is which
+mate the read is; the
 [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that.
 Long-read cDNA is the clearest case, since the reads are oriented to the
 transcript.
 
-<Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band carries the coverage over its own gene and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
+<Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band carries the coverage over the gene it groups, and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
 
 Grouping by strand also works as a check on the reads. A position colored in one
 band and not the other is carried by one strand alone, the signature of a
 basecalling error.
 
-<Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. At the left boxed column only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
+<Figure caption="HG002 nanopore reads grouped by strand, each band colored from only that strand's reads. At the left boxed column only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
 
 **Track menu → Read connections → SV channels (pairs by orientation)** groups by
 pair orientation, drops the pileup and turns the arcs on together, so each
-orientation class is its own coverage band with its own arcs. See
-[SV channels](/docs/user_guides/sv_visualization#sv-channels).
+orientation class becomes a separate coverage band with a separate set of arcs.
+See [SV channels](/docs/user_guides/sv_visualization#sv-channels).
 
 ## Read height and track sizing
 
@@ -233,9 +234,9 @@ happens to the read height, then to the track height:
 
 <Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to track height selected. Because the size is computed while fitting, none of the presets above it read as selected." />
 
-Fit mode is for the shape of a pileup: drag the track taller or shorter and the
-reads re-fit. Reads draw no taller than the Normal preset and no smaller than
-1px, so a deep enough pileup still overflows. With grouping, each group's
+Fit mode adapts to how much room a pileup has: drag the track taller or shorter
+and the reads re-fit. Reads draw no taller than the Normal preset and no smaller
+than 1px, so a deep enough pileup still overflows. With grouping, each group's
 coverage row is reserved first and the expanded groups share what is left, so
 collapsing a group gives the rest more height.
 
@@ -384,10 +385,10 @@ plus one supplementary per additional locus, the whole set recorded in each
 record's `SA` tag, drawn as separate rows in the pileup.
 
 Right-click any of them and choose **Launch → Linear read vs ref** to put them
-back together. The read becomes its own assembly along one lane, every reference
-locus it touches lies along the other, and each alignment segment is a ribbon
-between them in the order the read visits them. An insertion shows as a gap in
-the diagonal. Dragging over the read lane extracts that sequence.
+back together. The read is drawn as a single assembly along one lane, every
+reference locus it touches lies along the other, and each alignment segment is a
+ribbon between them in the order the read visits them. An insertion shows as a
+gap in the diagonal. Dragging over the read lane extracts that sequence.
 
 <Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions. The ordinary pileup on top, and below it the read drawn against the reference, where each gap in the diagonal is inserted sequence absent from the reference." src="/img/read_vs_ref_insertion.png" />
 
