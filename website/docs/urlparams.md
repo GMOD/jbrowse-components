@@ -643,6 +643,7 @@ restores natively:
 | [`minVisibleWidth`](/docs/models/circularview#property-minvisiblewidth) | arcs thinner than this many pixels are elided instead of drawn, so a few thousand unplaced contigs do not become a ring of hairlines |
 | [`offsetRadians`](/docs/models/circularview#property-offsetradians) | similar to offsetPx in linear genome view |
 | [`paddingPx`](/docs/models/circularview#property-paddingpx) | blank margin between the circle and the edge of the figure |
+| [`showLegend`](/docs/models/circularview#property-showlegend) | a key naming each track's ring, chords or ribbons in the corner |
 | [`spacingPx`](/docs/models/circularview#property-spacingpx) | the gap drawn between adjacent chromosome arcs |
 | [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
 
@@ -823,6 +824,7 @@ restores natively:
 | [`cigarMode`](/docs/models/linearsyntenyview#property-cigarmode) | How per-base insertions and deletions inside each alignment are shown: 'full' paints indel wedges, 'matches' leaves them see-through, 'off' draws blocks only. |
 | [`colorBy`](/docs/models/trackcolorsmixin#property-colorby) | The color-by mode every track in the view renders with. One of `default`, `strand`, `query`, `target`, `reference`, `identity`, `mappingQuality`, `dnds`, `track`. |
 | [`colorDomain`](/docs/models/trackcolorsmixin#property-colordomain) | The order a text column's labels take under `colorBy: 'attribute:<column>'`: the labels listed here first, the rest sorted. A label's color is its position in that order, so this moves the drawing and the key together. Empty leaves the first-seen order. |
+| [`diagonalizeAnchorRow`](/docs/models/linearsyntenyview#property-diagonalizeanchorrow) | Which genome row "Re-order chromosomes" keeps as it is, ordering the rows below it against the row above them and the rows above it against the row below. The top row by default, which is the plain top-down cascade; a stack whose linkage groups are one row's chromosomes anchors on that row instead. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`drawCurves`](/docs/models/linearsyntenyview#property-drawcurves) | Draw every band's ribbons as bezier curves rather than straight chords. |
 | [`drawLocationMarkers`](/docs/models/linearsyntenyview#property-drawlocationmarkers) | Continue the query row's scalebar grid down through every band: a tick at each round query coordinate, joined to the coordinate the alignment pairs it with. |

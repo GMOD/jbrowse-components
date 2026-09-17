@@ -12,10 +12,13 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 A breakpoint split view over the loci a reconstructed path visits.
 
-ONE PANEL PER SEGMENT, not per chromosome. The segments are already in the order
-the reads cross them, so a path that leaves chr9 and comes back to it inverted
-gets two chr9 panels. A hand-built import form merges the two visits into one
-chr9 panel, since a person filling in rows types each chromosome once.
+ONE PANEL PER VISITED WINDOW, not per chromosome. The segments are already in
+the order the reads cross them, so a path that leaves chr9 and comes back to it
+27 kb away gets two chr9 panels. A segment whose window overlaps a panel already
+opened on its chromosome reuses that panel instead: COLO829's fold-back ends at
+the chr3 junction it starts from, the split view attaches each alignment to the
+first panel showing it, and a fourth panel over the same stretch drew no
+connections at all.
 
 The launching view's tracks are carried onto every panel, alignments tracks
 included, because the reads leaving one panel and arriving in the next are the

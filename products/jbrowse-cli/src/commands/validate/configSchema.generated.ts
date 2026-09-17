@@ -16497,6 +16497,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "disableImportForm": {
           "type": "boolean"
         },
+        "showLegend": {
+          "type": "boolean"
+        },
         "height": {
           "type": "number"
         },
@@ -16967,6 +16970,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
         },
         "followAnchorIndex": {
+          "type": "number"
+        },
+        "diagonalizeAnchorRow": {
           "type": "number"
         },
         "followMatchOrientation": {

@@ -6011,6 +6011,7 @@ export const configManifest: ConfigManifest = {
         "hideVerticalResizeHandle",
         "hideTrackSelectorButton",
         "disableImportForm",
+        "showLegend",
         "height",
         "displayedRegions",
         "minimumRadiusPx",
@@ -6088,6 +6089,7 @@ export const configManifest: ConfigManifest = {
         "followSynteny",
         "sameScale",
         "followAnchorIndex",
+        "diagonalizeAnchorRow",
         "followMatchOrientation",
         "levels",
         "views"

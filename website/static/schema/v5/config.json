@@ -15379,6 +15379,9 @@
         "disableImportForm": {
           "type": "boolean"
         },
+        "showLegend": {
+          "type": "boolean"
+        },
         "height": {
           "type": "number"
         },
@@ -15825,6 +15828,9 @@
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
         },
         "followAnchorIndex": {
+          "type": "number"
+        },
+        "diagonalizeAnchorRow": {
           "type": "number"
         },
         "followMatchOrientation": {

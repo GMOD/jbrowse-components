@@ -10,6 +10,8 @@ colorDomain
 connectedView
 connectedViewId
 contextLevels
+contigThickness
+diagonalizeAnchorRow
 displayMode
 domain
 fadeThinAlignmentsMode
@@ -27,7 +29,9 @@ rowGroups
 sampleColorMap
 showBranchLength
 showBubbles
+showDeletionEdges
 showGenes
+showGridlines
 showLegend
 showVariantLane
 sideBySide

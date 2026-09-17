@@ -62,6 +62,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-legendcolor">**legendColor**</span><br><code>string &#124; undefined</code> | the chord color the circle's key shows, when every chord shares one | ChordVariantDisplay |
 | <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;Omit&lt;Omit&lt;…&gt;, never&gt;, { .…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;Omit&lt;Omit&lt;…&gt;, never&gt;, { ...; }&gt;&gt; &amp; ... 15 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> |  | [BaseChordDisplay](../basechorddisplay#getter-view) |
 | <span id="getter-trackassemblynames">**trackAssemblyNames**</span><br><code>string[]</code> | <span data-pagefind-ignore>the track's assemblies that are on the circle, canonical and in the order the circle lays them out</span> | [BaseChordDisplay](../basechorddisplay#getter-trackassemblynames) |
 | <span id="getter-fetchinert">**fetchInert**</span><br><code>boolean</code> | <span data-pagefind-ignore>nothing of this track's is on the circle, so the fetch never runs; the SVG export's wait and the retry contract check both read it</span> | [BaseChordDisplay](../basechorddisplay#getter-fetchinert) |
