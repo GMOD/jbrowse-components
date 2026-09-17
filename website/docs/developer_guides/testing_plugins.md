@@ -289,7 +289,8 @@ runs — nothing is listening until you say so. Three things turn it on:
 
 A violation then appears as a warning notification in the session the broken
 display is in, alongside the console message. It names the fix, and it says
-which of the three turned it on, because the notice is about your code.
+which of the three turned it on, because the notice is about your code rather
+than about the reader's data.
 
 If you are building your own chrome rather than using a JBrowse app, the
 notification needs a `<Snackbar session={session} />` somewhere in your tree —

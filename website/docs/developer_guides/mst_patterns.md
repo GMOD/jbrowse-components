@@ -202,8 +202,8 @@ so the mixins cannot be chained on one at a time the way `.views()` and
 `.views()` / `.actions()` / `.volatile()` chain onto the result of that one
 call.
 
-Mixins are factory functions returning a model type, so the same mixin can be
-composed at different positions in the chain without inheritance.
+Mixins are factory functions returning a model type, not classes, so the same
+mixin can be composed at different positions in the chain without inheritance.
 
 Keep the main model chain in one file. Splitting `.views()` or `.actions()`
 across files obscures the composition order and which views depend on which.
