@@ -19,7 +19,7 @@ plugin adds `Help` with `appendToMenu`, which creates the menu when it is
 absent. The embeddable single-view components have no menu bar at all, so guard
 with `isAbstractMenuManager`.
 
-<Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place to consider adding your own custom view type."/>
+<Figure src="/img/top_level_menus.png" caption="The `Add` menu opens a view from the UI; register a custom view type here too."/>
 
 Contribute from `configure`: the spreadsheet-view plugin registers its view type
 in `install` and offers the way to open one in `configure`.
@@ -91,7 +91,7 @@ where the display is defined; to add to one belonging to another plugin, use
 Right-clicking a linear track opens `contextMenuItems`, which can vary by
 whether the click hit a feature and by which one.
 
-<Figure src="/img/linear_align_ctx_menu.png" caption="A screenshot of a context menu available on a linear genome view track. Here, we see the context menu of a feature right-clicked on a LinearAlignmentsDisplay."/>
+<Figure src="/img/linear_align_ctx_menu.png" caption="The context menu for a feature right-clicked on a LinearAlignmentsDisplay track."/>
 
 To add items to a menu on a display you do not own, use `addDisplayMenuItems`
 (`addViewMenuItems` for a view):
