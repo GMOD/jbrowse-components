@@ -998,6 +998,16 @@ export default function MultiSampleVariantBaseModelF(
           return sources && orderRowsByDomain(sources, self.rowDomain)
         },
 
+        /**
+         * #getter
+         * The `colorBy` scale, attribute value -> color, held apart from the
+         * rows so a drag or a clade focus does not rebuild it over the whole
+         * cohort. `undefined` when there is nothing to color by.
+         */
+        get rowPalette(): ReadonlyMap<string, string> | undefined {
+          return colorByPalette(self.colorBy, self.sourcesVolatile ?? [])
+        },
+
         // Five views on the source list, each with a different consumer:
         //
         // - domainSeededSources: adapter rows, domain-seeded. The base every
@@ -1077,10 +1087,7 @@ export default function MultiSampleVariantBaseModelF(
             self.renderingMode === 'phased' && sampleInfo
               ? expandSourcesToHaplotypes({ sources: base, sampleInfo })
               : base
-          const palette = colorByPalette(
-            self.colorBy,
-            self.sourcesVolatile ?? [],
-          )
+          const palette = self.rowPalette
           const tinted = palette
             ? applyColorByPalette(rows, self.colorBy, palette)
             : rows
