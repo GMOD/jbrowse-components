@@ -70,6 +70,7 @@ test('a boot failure whose error cannot be cloned is still reported', async () =
         e.cause = { read: () => {} }
         throw e
       },
+      reExports: () => Promise.resolve({ default: {} }),
     })
     self.dispatchEvent(
       new MessageEvent('message', {
