@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
@@ -25,6 +26,7 @@ import {
 
 import type { CircularViewModel } from '../CircularView/model.ts'
 import type { Slice } from '../CircularView/slices.ts'
+import type { ChordConfigModel } from './chordConfigSchemaFields.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { Region } from '@jbrowse/core/util/types'
@@ -54,6 +56,15 @@ export interface ChordFetchArgs {
   assemblyNames: string[]
 }
 
+// The host's config, narrowed to the slot this base reads: `getConf` checks a
+// name against the schema of the model it is handed, so reaching the host
+// through the widened `AnyConfigurationModel` would check nothing.
+interface ChordConfigHost {
+  configuration: ChordConfigModel
+}
+
+const confNode = (self: object) => self as ChordConfigHost
+
 function sliceKey(assemblyName: string | undefined, refName: string) {
   return `${assemblyName ?? ''}\u0000${refName}`
 }
@@ -69,19 +80,7 @@ function sliceKey(assemblyName: string | undefined, refName: string) {
  */
 export function BaseChordDisplay() {
   return types
-    .compose(
-      'BaseChordDisplay',
-      BaseDisplay,
-      types.model({
-        /**
-         * #property
-         * how deep a chord bows toward the center, as a fraction of the radius;
-         * one straight across the circle reaches it, a shorter one bows in
-         * proportion to its span
-         */
-        bezierRadiusRatio: types.stripDefault(types.number, 0.1),
-      }),
-    )
+    .compose('BaseChordDisplay', BaseDisplay, types.model({}))
     .volatile(() => ({
       /**
        * #volatile
@@ -185,9 +184,18 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
+       * how deep a chord bows toward the center, as a fraction of the radius;
+       * one straight across the circle reaches it, a shorter one bows in
+       * proportion to its span
+       */
+      get bezierRadiusRatio(): number {
+        return getConf(confNode(self), 'bezierRadiusRatio')
+      },
+      /**
+       * #getter
        */
       get bezierRadius() {
-        return this.radiusPx * self.bezierRadiusRatio
+        return this.radiusPx * this.bezierRadiusRatio
       },
       /**
        * #getter

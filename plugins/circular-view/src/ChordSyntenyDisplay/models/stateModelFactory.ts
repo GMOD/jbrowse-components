@@ -1,6 +1,8 @@
 import {
   ConfigurationReference,
+  getConf,
   readConfObject,
+  setConf,
 } from '@jbrowse/core/configuration'
 import { getSession, openFeatureWidget } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
@@ -16,23 +18,19 @@ import {
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
+import { CHORD_COLOR_BY } from './configSchema.ts'
 
 import type { ExportSvgOptions } from '../../CircularView/model.ts'
-import type { ChordSyntenyDisplayConfigModel } from './configSchema.ts'
+import type {
+  ChordSyntenyDisplayConfigModel,
+  RibbonColorBy,
+} from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { ThemeOptions } from '@mui/material'
 
 const RIBBON_ALPHA = 0.35
-
-const COLOR_BY = [
-  { value: 'default', label: 'Track color' },
-  { value: 'chromosome', label: "First genome's chromosome" },
-  { value: 'strand', label: 'Strand' },
-] as const
-
-type RibbonColorBy = (typeof COLOR_BY)[number]['value']
 
 function translucent(color: string) {
   return colord(color).alpha(RIBBON_ALPHA).toRgbString()
@@ -86,24 +84,20 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
         type: types.literal('ChordSyntenyDisplay'),
         /**
          * #property
-         * what a ribbon's hue says: the `color` config slot, the chromosome
-         * of the circle's first genome it joins (that arc's ideogram color),
-         * or the strand. The strand is also the twist in every mode
-         */
-        colorBy: types.stripDefault(
-          types.enumeration<RibbonColorBy>(
-            'ChordSyntenyColorBy',
-            COLOR_BY.map(c => c.value),
-          ),
-          'default',
-        ),
-        /**
-         * #property
          */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .views(self => ({
+      /**
+       * #getter
+       * what a ribbon's hue says: the `color` config slot, the chromosome of
+       * the circle's first genome it joins (that arc's ideogram color), or the
+       * strand. The strand is also the twist in every mode
+       */
+      get colorBy(): RibbonColorBy {
+        return getConf(self, 'colorBy')
+      },
       /**
        * #getter
        * `loaded`, and no reorder this launch asked for still owed. Ribbons
@@ -136,7 +130,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        * the resting fill of each ribbon under `colorBy`
        */
       get ribbonFill(): (feature: Feature) => string {
-        const { configuration, colorBy } = self
+        const { configuration } = self
+        const { colorBy } = this
         const configured = (feature: Feature) =>
           readConfObject(configuration, 'color', { feature })
         if (colorBy === 'strand') {
@@ -225,7 +220,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
          * #action
          */
         setColorBy(colorBy: RibbonColorBy) {
-          self.colorBy = colorBy
+          setConf(self, 'colorBy', colorBy)
         },
         /**
          * #action
@@ -259,7 +254,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           {
             label: 'Color by',
             type: 'subMenu',
-            subMenu: COLOR_BY.map(({ value, label }) => ({
+            subMenu: CHORD_COLOR_BY.map(({ value, label }) => ({
               label,
               type: 'radio' as const,
               checked: self.colorBy === value,

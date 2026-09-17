@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { chordConfigSchemaFields } from '../../chords/chordConfigSchemaFields.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
@@ -30,15 +32,13 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *   ],
  * }
  * ```
- * How deep a chord bows toward the center is `bezierRadiusRatio`, a display
- * state-model property rather than a config slot — a saved session carries it,
- * a track config drops it.
  */
 
 function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ChordVariantDisplay',
     {
+      ...chordConfigSchemaFields,
       /**
        * #slot
        */

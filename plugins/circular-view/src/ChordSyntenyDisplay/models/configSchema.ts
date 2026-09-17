@@ -1,4 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import { chordConfigSchemaFields } from '../../chords/chordConfigSchemaFields.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -14,6 +17,15 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // A literal rather than a constant imported from synteny-core, so this schema —
 // which every session builds eagerly — pulls none of that package in with it.
 const flatRibbonColor = 'rgba(70,130,180,0.25)'
+
+/** What a ribbon's hue can say, and what the track menu calls each. */
+export const CHORD_COLOR_BY = [
+  { value: 'default', label: 'Track color' },
+  { value: 'chromosome', label: "First genome's chromosome" },
+  { value: 'strand', label: 'Strand' },
+] as const
+
+export type RibbonColorBy = (typeof CHORD_COLOR_BY)[number]['value']
 
 /**
  * #config ChordSyntenyDisplay
@@ -53,14 +65,25 @@ const flatRibbonColor = 'rgba(70,130,180,0.25)'
  *   color: "jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,0,0,0.25)'",
  * }
  * ```
- * How deep a ribbon bows toward the center is `bezierRadiusRatio`, a display
- * state-model property rather than a config slot — a saved session carries it,
- * a track config drops it.
  */
 function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ChordSyntenyDisplay',
     {
+      ...chordConfigSchemaFields,
+      /**
+       * #slot
+       */
+      colorBy: {
+        type: 'stringEnum',
+        model: types.enumeration<RibbonColorBy>(
+          'ChordSyntenyColorBy',
+          CHORD_COLOR_BY.map(c => c.value),
+        ),
+        defaultValue: 'default',
+        description:
+          "what a ribbon's hue says: 'default' is the color slot, 'chromosome' the arc color of the chromosome it joins on the circle's first genome, and 'strand' the alignment's strand, which is also the twist in every mode",
+      },
       /**
        * #slot
        */
