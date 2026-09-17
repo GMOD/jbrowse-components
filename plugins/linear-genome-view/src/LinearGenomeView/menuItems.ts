@@ -357,6 +357,20 @@ export function buildRubberBandMenuItems(
         self.moveTo(leftOffset, rightOffset)
       },
     },
+    // Directly under "Zoom to region", which covers the same bases and is the
+    // choice being made: navigate there, or keep this view and open that span
+    // under it. The two below are what a selection is for when neither.
+    ...(self.isTopLevelView
+      ? [
+          {
+            label: 'Add detail level',
+            icon: LayersIcon,
+            onClick: () => {
+              self.addDetailLevelForSpan(leftOffset, rightOffset)
+            },
+          },
+        ]
+      : []),
     {
       label: 'Get sequence',
       icon: MenuOpenIcon,
@@ -375,17 +389,6 @@ export function buildRubberBandMenuItems(
         ])
       },
     },
-    ...(self.isTopLevelView
-      ? [
-          {
-            label: 'Add detail level',
-            icon: LayersIcon,
-            onClick: () => {
-              self.addDetailLevelForSpan(leftOffset, rightOffset)
-            },
-          },
-        ]
-      : []),
     {
       label: 'Copy range',
       icon: ContentCopyIcon,
