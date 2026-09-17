@@ -203,7 +203,7 @@ while IFS=$'\t' read -r SAMPLE PATH_ LABEL; do
   samtools depth -a -r "$CHROM:$START-$END" "$CRAMS/$PATH_" \
     | awk -v chrom="$CHROM" -v start="$START" -v end="$END" -v step="$STEP" \
           -v width="$WIDTH" -v minuniq="$MINUNIQUE" -v flankl="$FLANK_LEFT_END" \
-          -v flankr="$FLANK_RIGHT_START" -v norml="$NORM_LEFT_START" \
+          -v flankr="$FLANK_RIGHT_START" -v normLeft="$NORM_LEFT_START" \
           -v normr="$NORM_RIGHT_END" '
       BEGIN { getline mask < "mask.txt" }
       # depth only over positions RepeatMasker left alone, summed per STEP; a
@@ -233,7 +233,7 @@ while IFS=$'\t' read -r SAMPLE PATH_ LABEL; do
         }
         nf = 0
         for (i = 0; i < nb; i++) {
-          if ((pos[i] < flankl && pos[i] >= norml) ||
+          if ((pos[i] < flankl && pos[i] >= normLeft) ||
               (pos[i] >= flankr && pos[i] < normr)) {
             flank[nf++] = rate[i]
           }
@@ -675,7 +675,7 @@ with open('dog10k_cyp1a2_breed_cn.bed', 'w') as fh:
 print()
 print('%d painted segments across the %d animals of the panel'
       % (len(rows), len(order)))
-print('rowOrder slot for the panel display, paste into the track config:')
+print('domain slot for the panel display, paste into the track config:')
 print(json.dumps(order, indent=2))
 PY
 
@@ -712,4 +712,4 @@ echo "     $(pwd)/dog10k_cyp1a2_cohort_cn.bed.gz, one per canid in the callset,"
 echo "     $(pwd)/dog10k_cyp1a2_breed_cn.bed.gz, the named panel of that file,"
 echo "     $(pwd)/dog10k_cyp1a2_cpg.bed.gz, the CpG islands under the window."
 echo "Load each as a BedTabixAdapter under a LinearMultiRowFeatureDisplay, and"
-echo "check its legend and rowOrder slots against the blocks printed above."
+echo "check its legend and domain slots against the blocks printed above."

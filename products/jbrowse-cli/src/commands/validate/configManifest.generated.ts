@@ -3080,7 +3080,7 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "rowOrder",
+          "name": "domain",
           "type": "(JexlString | string[])"
         },
         {
@@ -3794,7 +3794,7 @@ export const configManifest: ConfigManifest = {
         "type",
         "configuration",
         "lodMode",
-        "rowOrder",
+        "domain",
         "laneFilter"
       ]
     },

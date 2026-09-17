@@ -230,7 +230,23 @@ grouped by the same field, and the facet stacks the groups themselves:
 ```
 
 Sections order digits by magnitude and everything else by code point, and the
-tail past forty merges into one.
+tail past forty merges into one. The object form of `facet` takes an optional
+`domain`, the section order: the values listed stack first, in that order, and
+the rest follow sorted. It is the same key a colour scale's `domain` is, on the
+row channel instead of the colour one:
+
+```json
+{
+  "shape": "span",
+  "facet": { "field": "HP", "domain": ["2", "1"] },
+  "transform": [{ "type": "stack", "groupby": ["HP"] }],
+  "encoding": { "row": "row" }
+}
+```
+
+**Sections** in the track menu lists the sections drawn, each with **Move up**,
+**Move down** and **Hide section**; a move writes the drawn order back as the
+facet's `domain`, and **Reset section order** clears it.
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a band of its own under the chip that names it, and the untagged reads in a third."/>
 

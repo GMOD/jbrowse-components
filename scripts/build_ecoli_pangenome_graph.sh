@@ -616,7 +616,7 @@ cat > untangle_rows_track.json <<JSON
     {
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "strain",
-      "rowOrder": [$(echo "$STRAINS" | tr ' ' '\n' | grep -v "^$REF$" \
+      "domain": [$(echo "$STRAINS" | tr ' ' '\n' | grep -v "^$REF$" \
         | paste -sd' ' - | sed 's/ /", "/g; s/^/"/; s/$/"/')],
       "legend": [
         { "label": "Same orientation as $REF", "color": "rgb(153,153,153)" },
@@ -733,7 +733,7 @@ cat > paths_track.json <<JSON
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "strain",
       "lengthField": "delta",
-      "rowOrder": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')],
+      "domain": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')],
       "legend": [
         { "label": "reference path", "color": "rgb(204,204,204)" },
         { "label": "insertion", "color": "rgb(192,0,192)" },

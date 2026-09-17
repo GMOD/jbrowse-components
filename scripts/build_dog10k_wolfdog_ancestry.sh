@@ -271,7 +271,7 @@ echo
 echo "Wrote $(pwd)/dog10k_wolfdog_ancestry.$CHROM.bed.gz (243 animals) and"
 echo "      $(pwd)/dog10k_wolfdog_named.$CHROM.bed.gz (the named subset),"
 echo "plus their .tbi. Load them with the track JSON in the local ancestry"
-echo "tutorial; the subset track's rowOrder is named.tsv, in that order."
+echo "tutorial; the subset track's domain is named.tsv, in that order."
 
 # Wolf-block length distribution per animal. The tutorial's claim that the
 # breeds separate on block LENGTH and not only on total wolf fraction rests on

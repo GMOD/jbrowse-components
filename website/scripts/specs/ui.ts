@@ -276,7 +276,7 @@ const CHROMHMM_HOXA_WINDOW = 'chr7:26,950,000-27,450,000'
 // on it, the same multi-row painting at 520.
 //
 // Unclustered is not unordered here, and that is what the tour opens on. The demo
-// config's own copy of this track pins a 127-line `rowOrder` in Roadmap's GROUP
+// config's own copy of this track pins a 127-line `domain` in Roadmap's GROUP
 // order, and `rowGroups` partitions the rows into contiguous tissue blocks for as
 // long as no cluster tree names them (`sources`, in
 // LinearMultiRowFeatureDisplay/model.ts) — so the stack opens with a clean tissue
@@ -2407,7 +2407,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
           type: 'LinearMultiRowFeatureDisplay',
-          // clustered, not in `rowOrder`: at 127 rows a pixel-high row carries
+          // clustered, not in `domain`: at 127 rows a pixel-high row carries
           // no label, so the only thing that can group the epigenomes is where
           // the display puts them. Unclustered the same window is 127 rows of
           // scattered red with no block in it.

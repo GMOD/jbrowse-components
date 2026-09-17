@@ -26,9 +26,9 @@ APP=jbrowse2   # relative to $OUTDIR, so the [ -f ] guard resolves after the cd
 # ── The nine cell types, once ────────────────────────────────────────────────
 # `<UCSC filename token>:<canonical ENCODE label>`, in the order the rows are
 # drawn in. This one list decides which files are fetched, the label each row
-# gets, and the `rowOrder` written into config.json. It used to live in three
+# gets, and the `domain` written into config.json. It used to live in three
 # places that had to agree: a recursive wget over the whole UCSC directory, a
-# case statement mapping filename to label, and rowOrder typed out again in the
+# case statement mapping filename to label, and domain typed out again in the
 # heredoc. A tenth file appearing upstream would have been pulled in by the
 # crawl with no label to give it.
 UCSC=http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm
@@ -83,10 +83,10 @@ cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi "$APP"/
 # ENCODE segmentation BEDs came from, so the whole demo reads from one place.
 # Column names come from the BED's own defline, so all the track has to say is
 # which of them partitions the rows; itemRgb paints each feature its state color
-# automatically. The CLI can't set partitionField/rowOrder, so the track is
+# automatically. The CLI can't set partitionField/domain, so the track is
 # written straight into config.json.
 #
-# `rowOrder` is substituted from CELL_TYPES rather than typed out a second time.
+# `domain` is substituted from CELL_TYPES rather than typed out a second time.
 # The placeholder is a real JSON string so the heredoc still parses on its own,
 # which is what scripts/check-build-scripts.py validates it as.
 ROW_ORDER=$(printf '"%s", ' "${CELL_TYPES[@]#*:}")
@@ -127,7 +127,7 @@ sed "s|\"@ROW_ORDER@\"|${ROW_ORDER%, }|" > "$APP"/config.json <<'JSON'
         {
           "type": "LinearMultiRowFeatureDisplay",
           "partitionField": "cellType",
-          "rowOrder": ["@ROW_ORDER@"],
+          "domain": ["@ROW_ORDER@"],
           "height": 200
         }
       ]

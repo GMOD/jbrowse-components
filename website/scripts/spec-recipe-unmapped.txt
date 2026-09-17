@@ -15,6 +15,7 @@ connectedView
 connectedViewId
 contextLevels
 displayMode
+domain
 fadeThinAlignmentsMode
 followAnchorIndex
 followSynteny
@@ -28,7 +29,6 @@ orthologParams
 paneHeight
 readConnections
 rowHeight
-rowOrder
 sampleColorMap
 showBranchLength
 showBubbles

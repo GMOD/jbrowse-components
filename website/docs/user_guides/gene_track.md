@@ -75,8 +75,35 @@ Track-menu toggles:
 Each section carries a chip naming it, and the × on a chip hides that section.
 The **Show N hidden** chip at the top of the track, or **Show... → Show N hidden
 groups**,<!-- menu-path-ok --> puts every hidden section back, and changing the
-grouping clears them. The `groupBy` config slot pre-groups a track, so a shared
-link opens grouped.
+grouping clears them. **Sections** in the track menu lists the sections drawn,
+each with **Move up**, **Move down** and **Hide section**, and **Reset section
+order** returns them to the sorted order.
+
+The `groupBy` config slot pre-groups a track, so a shared link opens grouped.
+Its optional `domain` is the section order: the values listed stack first, in
+that order, and the rest follow sorted. A reorder from the menu writes the same
+slot, so what a config author declares and what a reader arranges are one
+setting:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ncbi_refseq_hg38",
+  "name": "NCBI RefSeq genes",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://example.com/GCF_000001405.40.gff.gz"
+  },
+  "displayDefaults": {
+    "groupBy": {
+      "type": "attribute",
+      "attribute": "gene_biotype",
+      "domain": ["protein_coding", "lncRNA", "pseudogene"]
+    }
+  }
+}
+```
 
 The dialog's **Also color by strand** (or **by this attribute**) paints each
 section in its own color: red and blue by strand, or one color per value. It

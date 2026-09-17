@@ -153,11 +153,11 @@ export const epigenomicsVideos: VideoSpec[] = [
   // of its own cause. That figure is the 127 epigenomes already in similarity
   // order, so the tidy row order — the thing the section is about — arrives as
   // something the reader takes on faith, and the two sentences under it ("that
-  // config has no rowOrder", "clustering costs the tissue names") describe a
+  // config has no domain", "clustering costs the tissue names") describe a
   // trade nothing on the page performs.
   //
   // What the clip adds is the BEFORE, and here the before is not noise. The demo
-  // config's track carries a 127-line `rowOrder` in Roadmap's group order and
+  // config's track carries a 127-line `domain` in Roadmap's group order and
   // `rowGroups` keeps those groups contiguous while no tree names the rows, so
   // the stack opens with a clean tissue stripe beside a painting with no block in
   // it. The run swaps which axis is tidy: the blocks appear in the painting and

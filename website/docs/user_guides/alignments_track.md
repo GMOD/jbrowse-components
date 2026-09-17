@@ -129,7 +129,32 @@ for haplotype, `RG` for read group, or any other). Groups share one coverage
 scale and reads missing the tag collect in a trailing "none" section. Grouping
 caps at 40 sections; past that the tail merges into one "N merged values"
 section, and the tag dialog refuses a tag that would reach the cap, telling you
-how many distinct values it found in view first.
+how many distinct values it found in view first. **Sections** in the track menu
+lists the sections drawn, each with **Move up**, **Move down** and **Hide
+section**, and **Reset section order** returns them to the sorted order.
+
+The `groupBy` config slot pre-groups a track. Its optional `domain` is the
+section order: the values listed stack first, in that order, and the rest follow
+sorted. A reorder from the menu writes the same slot:
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "hg002_ont_phased",
+  "name": "HG002 ONT, phased",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BamAdapter",
+    "bamLocation": { "uri": "https://example.com/HG002.phased.bam" },
+    "index": {
+      "location": { "uri": "https://example.com/HG002.phased.bam.bai" }
+    }
+  },
+  "displayDefaults": {
+    "groupBy": { "type": "tag", "tag": "HP", "domain": ["2", "1"] }
+  }
+}
+```
 
 <Figure caption="Group by... → Tag... opens a dialog for the tag name (here the HP haplotype tag), which reports the values it finds in view and can color the reads by the same tag." src="/img/alignments/haplotype_groupby.png" />
 

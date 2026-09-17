@@ -1103,9 +1103,11 @@ export function stateModelFactory(
        * names the facet owns its domain, so the drawn order writes there.
        */
       setFacetDomain(domain: string[]) {
-        const facet = facetConfigOf(self.conf.marks)
-        if (facet) {
-          setConf({ configuration: facet }, 'domain', domain)
+        const mark = self.conf.marks.find(
+          (m: MarkConfig) => m.facet.field !== '',
+        )
+        if (mark) {
+          setConf({ configuration: mark.facet }, 'domain', domain)
         }
       },
       /**

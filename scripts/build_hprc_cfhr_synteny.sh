@@ -452,7 +452,7 @@ print(json.dumps({
             + [uri(f'hprc_cfhr_{name}.bed') for name in names],
             'assemblyNames': ['hg38', *names],
         },
-        # No rowOrder: the display stacks its lanes densest-first, and here
+        # No domain: the display stacks its lanes densest-first, and here
         # that IS the reading order. A non-carrier kept CFHR3 and CFHR1 and so
         # carries two placements a carrier does not, which puts every
         # non-carrier above every carrier without anything naming them — a

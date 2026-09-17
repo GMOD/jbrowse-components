@@ -1536,7 +1536,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // The upper lane is whole groups -- every Golden Retriever, Labrador Retriever
   // and Boxer in the collection, plus the four Greek wolves the nonsense-allele
   // figure draws -- so "every animal of this group carries it" is a claim the
-  // panel can make. `rowOrder` runs the groups high to low.
+  // panel can make. `domain` runs the groups high to low.
   //
   // It replaced a wild-versus-domestic split (67 wild canids against 1,920 dogs,
   // equal pixel heights), which was legible and showed nothing: half the dogs

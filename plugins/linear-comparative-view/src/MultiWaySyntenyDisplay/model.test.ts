@@ -1302,7 +1302,7 @@ test('a lane selection narrows the stack and survives a refetch', () => {
   })
   // pins apply inside the selection, and a hide takes a lane out of the
   // drawing without rewriting the choice
-  display.setRowOrder(['sample#1#a'])
+  display.setDomain(['sample#1#a'])
   expect(display.rowAssemblies).toEqual(['sample#1#a', 'volvox_random'])
   display.hideLane('volvox_random')
   expect(display.rowAssemblies).toEqual(['sample#1#a'])

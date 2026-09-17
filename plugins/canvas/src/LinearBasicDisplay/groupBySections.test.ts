@@ -12,6 +12,8 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { MenuItem } from '@jbrowse/core/ui'
+
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
 function strandedRegionData() {
@@ -159,7 +161,7 @@ test('the Sections menu moves a section and writes the drawn order as the domain
       .find(i => 'label' in i && i.label === 'Sections')!
     return resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0])
   }
-  const labelOf = (i: { label?: string }) => i.label
+  const labelOf = (i: MenuItem) => ('label' in i ? i.label : undefined)
   expect(rows().map(labelOf)).toEqual([
     'biotype: lncRNA',
     'biotype: protein_coding',

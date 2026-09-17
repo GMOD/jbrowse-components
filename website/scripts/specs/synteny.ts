@@ -572,7 +572,7 @@ const GRASSES_RICE_LANES = sessionSpec(
           {
             trackId: 'grasses_orthogroups',
             type: 'MultiWaySyntenyDisplay',
-            rowOrder: ['sorghum', 'brachypodium', 'setaria', 'maize'],
+            domain: ['sorghum', 'brachypodium', 'setaria', 'maize'],
             height: 320,
           },
         ],
@@ -602,7 +602,7 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
           {
             trackId: 'grape_peach_cacao_blocks',
             type: 'MultiWaySyntenyDisplay',
-            rowOrder: [
+            domain: [
               'peach',
               'cacao',
               'poplar',
@@ -1307,7 +1307,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // figures are the same locus read two ways: anchor-projected lanes there,
   // row-local lanes with correspondence ribbons here.
   //
-  // rowOrder pins the lanes by retention (the reading blocks_one_vs_all
+  // domain pins the lanes by retention (the reading blocks_one_vs_all
   // established: peach/cacao/poplar/citrus keep the block, arabidopsis a few,
   // tomato one gene), so the ribbon chains degrade downward instead of
   // breaking wherever a sparse lane happens to land — a ribbon only connects
@@ -1337,7 +1337,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'grape_peach_cacao_blocks',
                 type: 'MultiWaySyntenyDisplay',
-                rowOrder: [
+                domain: [
                   'peach',
                   'cacao',
                   'poplar',
@@ -1399,7 +1399,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // time. The track's own assemblyNames make it eight lanes and not 464: four
   // homozygous reference at the CFHR3/CFHR1 site and four homozygous for the
   // deletion, picked by build_hprc_cfhr_synteny.sh.
-  // `rowOrder` puts every non-carrier above every carrier, so the ribbon over
+  // `domain` puts every non-carrier above every carrier, so the ribbon over
   // the deletion narrows to a point at the one boundary between the groups.
   {
     mode: 'url',
@@ -1422,7 +1422,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'hprc_v2_1_gbz_lanes',
                 type: 'MultiWaySyntenyDisplay',
-                rowOrder: [
+                domain: [
                   'HG00097.1',
                   'HG00099.1',
                   'HG00128.1',
@@ -1473,7 +1473,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'ecoli_ava',
                 type: 'MultiWaySyntenyDisplay',
-                rowOrder: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'],
+                domain: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'],
                 height: 340,
               },
             ],
@@ -1515,7 +1515,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'vertebrates_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
-                rowOrder: ['chicken', 'frog', 'gar', 'zebrafish'],
+                domain: ['chicken', 'frog', 'gar', 'zebrafish'],
                 height: 320,
               },
             ],
@@ -1563,7 +1563,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'solanaceae_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
-                rowOrder: ['potato', 'pepper', 'tobacco', 'coffee'],
+                domain: ['potato', 'pepper', 'tobacco', 'coffee'],
                 height: 320,
               },
             ],
@@ -1609,7 +1609,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'drosophila_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
-                rowOrder: ['simulans', 'yakuba', 'pseudoobscura', 'virilis'],
+                domain: ['simulans', 'yakuba', 'pseudoobscura', 'virilis'],
                 height: 320,
               },
             ],
@@ -5197,7 +5197,7 @@ export const syntenyVideoFixtures = {
             {
               trackId: 'grape_peach_cacao_blocks',
               type: 'MultiWaySyntenyDisplay',
-              rowOrder: [
+              domain: [
                 'peach',
                 'cacao',
                 'poplar',
@@ -5445,7 +5445,7 @@ function launchMenuStills(): ScreenshotSpec[] {
                 {
                   trackId: 'grape_peach_cacao_blocks',
                   type: 'MultiWaySyntenyDisplay',
-                  rowOrder: ['peach', 'cacao', 'poplar'],
+                  domain: ['peach', 'cacao', 'poplar'],
                   height: 260,
                 },
               ],

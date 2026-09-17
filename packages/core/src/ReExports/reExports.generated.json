@@ -4113,7 +4113,11 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "groupByRadioMenuItem",
-        "hiddenGroupsItems"
+        "hiddenGroupsItems",
+        "mergeDomain",
+        "moveSectionTo",
+        "sectionOrderMenuItems",
+        "sectionRowMenuItems"
       ],
       "worker": "real"
     },

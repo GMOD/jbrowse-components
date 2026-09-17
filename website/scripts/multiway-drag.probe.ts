@@ -52,7 +52,7 @@ const SCROLL_SAMPLES = 40
 const multiwayTrack = {
   trackId: 'grape_peach_cacao_blocks',
   type: 'MultiWaySyntenyDisplay',
-  rowOrder: ['peach', 'cacao', 'poplar', 'citrus', 'arabidopsis', 'tomato'],
+  domain: ['peach', 'cacao', 'poplar', 'citrus', 'arabidopsis', 'tomato'],
   height: 340,
 }
 const geneTrack = {

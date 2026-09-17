@@ -56,7 +56,7 @@ const laneView = (lanesHeight: number, genesHeight: number) => ({
     {
       trackId: LANES_TRACK,
       type: 'MultiWaySyntenyDisplay',
-      rowOrder: [
+      domain: [
         'HG00097.1',
         'HG00099.1',
         'HG00128.1',

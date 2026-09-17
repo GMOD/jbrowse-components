@@ -128,7 +128,7 @@ def label(r):
     )
 
 # GROUP then EID: a tissue's epigenomes stay adjacent, which is the only job a
-# hand-written rowOrder would have had.
+# hand-written domain would have had.
 rows.sort(key=lambda r: (r['GROUP'], r['EID']))
 labels = [label(r) for r in rows]
 assert len(set(labels)) == len(labels), 'row labels are not unique'
@@ -222,7 +222,7 @@ cp roadmap.multirow.bed.gz roadmap.multirow.bed.gz.tbi "$APP"/
 # ── config.json: hg19 + the multi-row Roadmap track ──────────────────────────
 # `legend` is filled in because the Roadmap state names are mnemonics
 # (`12_EnhBiv`, `14_ReprPCWk`) and the key the display derives from the colors
-# would show them as they are. Both it and rowOrder are generated from the
+# would show them as they are. Both it and domain are generated from the
 # tables above, so neither can drift from what the file holds.
 python3 - <<'PY'
 import json
@@ -299,7 +299,7 @@ config = {
                     'displayId': 'roadmap_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay',
                     'partitionField': 'cellType',
                     'legend': legend,
-                    'rowOrder': row_order,
+                    'domain': row_order,
                     'rowGroups': row_groups,
                     'height': 700,
                 }

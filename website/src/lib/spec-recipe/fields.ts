@@ -1360,7 +1360,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     note: `This figure raises the limit to ${n.toLocaleString('en-US')} bytes because the region is a genuinely large read.`,
   })),
   // The two ways a multi-row display derives its row order, as opposed to a
-  // `layout`/`rowOrder` that states one outright. They are easy to confuse, so
+  // `layout`/`domain` that states one outright. They are easy to confuse, so
   // each note says what the order is computed FROM: clustering uses the whole
   // region in view, the sort uses a single column.
   runClustering: value =>

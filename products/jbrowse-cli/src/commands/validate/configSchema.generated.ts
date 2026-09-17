@@ -3761,8 +3761,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "sampleColorMap": {
           "description": "map of partition value to color; overrides the color slot for matching features. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
-        "rowOrder": {
-          "description": "optional explicit row order (by partition value).",
+        "domain": {
+          "description": "optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted.",
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "rowHeight": {
@@ -12546,7 +12546,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "coarse"
           ]
         },
-        "rowOrder": {
+        "domain": {
           "type": "array",
           "items": {
             "type": "string"

@@ -257,7 +257,7 @@ print('legend slot for the copy-number displays:')
 painted = {min(CN_CAP, r[2]) for r in rows}
 print(json.dumps([{'label': cn_label(cn), 'color': 'rgb(%s)' % cn_color(cn)}
                   for cn in sorted(painted)], indent=2))
-print('rowOrder slot for the panel display:')
+print('domain slot for the panel display:')
 print(json.dumps(order, indent=2))
 PY
 
@@ -270,7 +270,7 @@ echo
 echo "Wrote $(pwd)/dog10k_slc28a3_cohort_cn.bed.gz, one row per canid, and"
 echo "     $(pwd)/dog10k_slc28a3_breed_cn.bed.gz, the named panel of that file."
 echo "Load each as a BedTabixAdapter under a LinearMultiRowFeatureDisplay, and"
-echo "check its legend and rowOrder slots against the blocks printed above."
+echo "check its legend and domain slots against the blocks printed above."
 echo "Route 2 follows, and needs the reference and the SRA runs."
 
 # ── Route 2: six panel dogs, from their reads ───────────────────────────────
