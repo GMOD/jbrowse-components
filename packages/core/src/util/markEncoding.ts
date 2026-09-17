@@ -9,6 +9,7 @@ import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
 import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
 import Flatbush from './flatbush/index.ts'
 import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
+import { groupKeyComparator } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 
@@ -178,17 +179,17 @@ function lutColorAt(lut: Uint8Array, t: number) {
   return packAbgr(lut[o]!, lut[o + 1]!, lut[o + 2]!, lut[o + 3]!)
 }
 
+// The legend order is the facet order: the listed domain first, a listed
+// value the region lacks included, and the rest under `compareGroupKeys`, so
+// a faceted mark coloured by its facet field lists its legend as its chips.
 function categoryOrder(
   seen: Map<string, number>,
   domain: (string | number)[] | undefined,
 ) {
   const listed = (domain ?? []).map(String)
-  const rest = [...seen.keys()].filter(k => !listed.includes(k))
-  const numeric = rest.every(k => k !== '' && Number.isFinite(Number(k)))
-  rest.sort(
-    numeric ? (a, b) => Number(a) - Number(b) : (a, b) => a.localeCompare(b),
+  return [...new Set([...listed, ...seen.keys()])].sort(
+    groupKeyComparator(listed),
   )
-  return [...listed, ...rest]
 }
 
 // The categorical arm `color` and `glyph` share: the walk records which

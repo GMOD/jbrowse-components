@@ -165,6 +165,36 @@ test('a categorical domain pins the order, a palette the colours, and numbers so
   ).toEqual(['-1', '1'])
 })
 
+test('the legend lists the domain first, an absent listed value included, then the rest in facet order', () => {
+  const mixed = [
+    feature(0, { type: 'exon' }),
+    feature(1, { type: '' }),
+    feature(2, { type: 'UTR' }),
+    feature(3, { type: '10' }),
+    feature(4, { type: '9' }),
+  ]
+  const labels = (domain?: string[]) => {
+    const r = encodeFeatures(
+      mixed,
+      { color: { field: 'type', scale: 'categorical', domain } },
+      ALL,
+      { jexl },
+    )
+    return r.scale?.kind === 'categorical'
+      ? r.scale.entries.map(e => e.label)
+      : undefined
+  }
+  expect(labels()).toEqual(['9', '10', 'UTR', 'exon', NO_VALUE_LABEL])
+  expect(labels(['exon', 'CDS'])).toEqual([
+    'exon',
+    'CDS',
+    '9',
+    '10',
+    'UTR',
+    NO_VALUE_LABEL,
+  ])
+})
+
 test('a ramp scale reads the field through its domain into the LUT', () => {
   const r = encodeFeatures(
     features,
