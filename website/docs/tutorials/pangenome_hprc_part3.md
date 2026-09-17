@@ -81,7 +81,7 @@ The graph and the callset are both derived from the multiple alignment, and
 release 2.1 publishes that too: `hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, 464
 haplotypes, beside a `.tai` index written by
 [taffy](https://github.com/ComparativeGenomicsToolkit/taffy). The index makes it
-addressable, so a locus is a ranged read rather than a download:
+addressable, so a locus is a ranged read:
 
 ```json addtrack
 {
@@ -285,13 +285,13 @@ read off the graph.
 
 ### The graph view from the GBZ, for a chosen set {#gbz-graph-cut}
 
-The same track feeds the graph view. Type `chr6:160,616,002-160,646,753`, the
-KIV-2 array inside _LPA_, and take **Launch → Graph genome view (this region)**
-from the linear view's own menu. That cuts the window from the database for the
-lanes on screen, which are the track's configured lanes until **Choose
-lanes...** picks others. The cut carries one W line per haplotype walk, named
-through the companion, and **Sample rows** in the **Layout** dropdown gives each
-haplotype a row.
+The `hprc_v2_1_gbz_lanes` track also feeds the graph view. Type
+`chr6:160,616,002-160,646,753`, the KIV-2 array inside _LPA_, and take **Launch
+→ Graph genome view (this region)** from the linear view's own menu. That cuts
+the window from the database for the lanes on screen, which are the track's
+configured lanes until **Choose lanes...** picks others. The cut carries one W
+line per haplotype walk, named through the companion, and **Sample rows** in the
+**Layout** dropdown gives each haplotype a row.
 
 Pick **Force-directed layout** in the same dropdown, which is where the walks
 show most. A node draws thicker the more of the nine walks carry it, so the
@@ -311,8 +311,8 @@ HPRC publishes the database this track reads, so nothing above builds one. For a
 them JBrowse: `vg chains` for the snarl decomposition, `gbz-base construct` for
 the database, and `gbz-haplotype-index` for the companion that names the walks.
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database)
-shows all three. The companion HPRC does not publish has a script of its own
-under [Reproduce it end to end](#reproduce-it-end-to-end).
+shows all three. The companion that HPRC does not publish has a script of its
+own under [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## T2T-CHM13 as hs1 {#the-one-donor-worth-loading}
 
