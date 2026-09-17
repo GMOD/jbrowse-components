@@ -22,6 +22,7 @@ lineWidth
 paneHeight
 readConnections
 repeatKey
+repeatTrackId
 rowGroups
 sampleColorMap
 showBranchLength
@@ -33,4 +34,5 @@ sideBySide
 structures
 transcriptId
 uniprotId
+walkRowSamples
 zoomToBaseLevel

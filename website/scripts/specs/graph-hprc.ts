@@ -2533,4 +2533,32 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_abca7_disagreements',
+    url: sessionSpec(ABCA7_CONFIG, {
+      views: [
+        {
+          ...abca7Views(ABCA7_REPEAT_KEY)[1],
+          repeatTrackId: 'hprc_abca7_trgt',
+          walkRowSamples: [
+            'HG00099',
+            'HG03688',
+            'HG02559',
+            'HG02809',
+            'HG00323',
+            'HG04199',
+            'HG00741',
+          ],
+          paneHeight: 360,
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 240000,
+    viewportWidth: 1400,
+    viewportHeight: 500,
+    hideTooltip: true,
+    actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
+  },
 ]

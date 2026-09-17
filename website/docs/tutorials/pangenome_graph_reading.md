@@ -129,6 +129,18 @@ stays lit, and its readout compares the walk to itself. Pick each of the other
 seven in turn to read each haplotype's copy count as an excess over the
 reference, one at a time, off the same drawing.
 
+## Every haplotype's copies at once
+
+The number of kringle IV-2 copies a haplotype carries largely sets its level of
+lipoprotein(a), a heritable risk factor for heart disease, and short reads
+cannot count them. Picking walks one at a time answers that for one haplotype.
+Pick **Walk rows** in the **Layout** dropdown instead: each haplotype's walk
+becomes a bar on its own bp axis, blue where GRCh38 carries the same sequence
+and purple where it does not, longest first, so the copies each haplotype adds
+read as the length of its purple stretch.
+
+<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, with the linear lanes of the same window above. The purple stretch of each bar is kringle copies GRCh38 does not carry, and the readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
+
 ## Check it against the index
 
 The array's halo label in the first figure comes from one row of the hosted
@@ -149,6 +161,7 @@ through the rGFA here.
 
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part3)
+- [](/docs/tutorials/pangenome_hprc_part5)
 - [](/docs/tutorials/pangenome_mouse)
 
 ## References

@@ -3,20 +3,22 @@ title: Pangenome (HPRC) part 5, repeat lengths across haplotypes
 sidebar_label: Pangenome (HPRC 5, repeat lengths)
 description:
   Measure the ABCA7 intronic VNTR in every HPRC haplotype straight from the
-  graph, count its copies against a TRGT repeat catalogue, and check the counts
-  against TRGT's own genotypes
+  graph, set TRGT's read-based genotypes on the same bars, and find the samples
+  where reads lost an allele the assemblies kept
 guide_category: Tutorials
 tutorial_category: Pangenomes
 data: hosted
 ---
 
 A tandem repeat can be many times longer in one person than in the reference,
-and a linear track drawn on the reference has no room to show it. An intron of
+and the long alleles are the ones association studies care about. An intron of
 _ABCA7_ holds a variable number tandem repeat whose expansions were tied to
-Alzheimer's disease risk (De Roeck et al. 2018). We draw that repeat once per
-haplotype from the Human Pangenome Reference Consortium's release 2 graph, count
-its copies by the repeat unit, and check the counts against TRGT genotypes
-PacBio published for 100 of the same samples.
+Alzheimer's disease risk (De Roeck et al. 2018). Genotyping it from reads needs
+reads that span the whole allele, which gets harder the longer the allele is. We
+draw the repeat once per haplotype from the Human Pangenome Reference
+Consortium's release 2 graph, where each haplotype is an assembled sequence, set
+the TRGT genotypes PacBio called from HiFi reads of the same samples on the same
+bars, and look at the samples where the two disagree.
 [Part 3](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph) set up the
 graph track this page cuts from.
 
@@ -134,25 +136,73 @@ purple where it does not.
 
 <Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first, under the linear view of the same window with the TRGT record. GRCh38 is the short bar at the top, and the expansions are the purple stretches." src="/img/pangenome/hprc_abca7_walk_rows.png" />
 
-## Count the copies
+## TRGT's calls on the same bars
 
 With the TRGT track in the session, a **Repeat** dropdown appears beside
 **Walk**. Pick the _ABCA7_ record. The bars now start and end at the record's
 flanks and are divided into motif-length units, and each readout gives its copy
-count.
+count. Because the record carries each sample's genotype, every walk of a sample
+TRGT called also gets a black tick at each allele length TRGT called for that
+sample, and its readout turns red when neither call is within 10% of the walk.
 
-<Figure caption="The same rows with the TRGT record picked in the Repeat dropdown, boxed. Each bar is tiled by the motif, and each readout gives the walk's length, its copy count and its excess over GRCh38." src="/img/pangenome/hprc_abca7_repeat_units.png" />
+<Figure caption="The same rows with the TRGT record picked in the Repeat dropdown, boxed. Each bar is tiled by the motif, and a black tick marks each allele length TRGT called for that sample. A red readout is a walk no call matches." src="/img/pangenome/hprc_abca7_repeat_units.png" />
+
+## The samples where they disagree
+
+The rows run longest first, so a sample's two haplotypes land far apart. The
+session below keeps the whole cut and shows seven samples' walks in pairs, named
+in `walkRowSamples`: two where the calls match both walks, three where TRGT
+called one length twice, one where TRGT called a long allele no walk carries,
+and a short homozygote.
+
+```json session config=https://jbrowse.org/demos/hprc/config.json
+{
+  "defaultSession": {
+    "name": "ABCA7 VNTR, where reads and assemblies disagree",
+    "views": [
+      {
+        "type": "GraphGenomeView",
+        "loadedTrackId": "hprc_v2_1_gbz_lanes",
+        "loadedRegion": {
+          "refName": "chr19",
+          "assemblyName": "hg38",
+          "start": 1049407,
+          "end": 1050096
+        },
+        "layoutMode": "walkrows",
+        "repeatTrackId": "hprc_abca7_trgt",
+        "repeatKey": "chr19:1049406-1050096",
+        "walkRowSamples": [
+          "HG00099",
+          "HG03688",
+          "HG02559",
+          "HG02809",
+          "HG00323",
+          "HG04199",
+          "HG00741"
+        ],
+        "paneHeight": 360
+      }
+    ]
+  }
+}
+```
+
+HG00099 and HG03688 carry a tick at the end of each bar. HG02559 and HG02809
+each have one long walk with both ticks far short of it: TRGT reported the short
+allele twice. HG00323 is the reverse, with the long allele reported twice and
+its short walk in red. HG04199's ticks include one far past both of its walks,
+and its second walk is partial: that assembly does not span the repeat, so here
+it is the graph that may be missing the long allele.
+
+<Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each with TRGT's called allele lengths as black ticks. Where a tick sits at the end of its bar the two agree; a red readout is a walk no call matches." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
 ## Check it against TRGT's genotypes
 
 Click the TRGT record in the linear view. Its sample table gives each sample's
-`AL`, the two allele lengths, and `SD`, the reads spanning each allele. Set a
-sample's `AL` beside the readouts of its two walks: HG00099's walks are 388 and
-3,183 bp, and TRGT called 387 and 3,161.
-
-Where the two disagree, the graph usually holds a long allele TRGT did not see.
-HG02559's walks are 493 and 5,525 bp; TRGT called 491 bp twice, and `SD` shows
-no read spanning the second allele.
+`AL`, the two allele lengths the ticks are drawn from, and `SD`, the reads
+spanning each allele. HG02559's second allele has no spanning read at all, so
+TRGT's second call is a copy of its first.
 
 ## Reproduce it end to end
 

@@ -227,6 +227,23 @@ const kiv2WalksSpec: ScreenshotSpec = {
   ],
 }
 
+const kiv2WalkRowsSpec: ScreenshotSpec = {
+  mode: 'url',
+  name: 'pangenome/graph_kiv2_walk_rows',
+  url: sessionSpec(HPRC_CONFIG, {
+    views: [
+      kiv2WalksLinearView(),
+      { ...kiv2WalksGraphView(), layoutMode: 'walkrows', paneHeight: 300 },
+    ],
+  }),
+  readySelector: TOOLBAR_READY,
+  readyTimeout: 240000,
+  viewportWidth: 1400,
+  viewportHeight: 780,
+  hideTooltip: true,
+  actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
+}
+
 // ---------------------------------------------------------------------------
 // Mouse, the Dock2 intron bubble
 // ---------------------------------------------------------------------------
@@ -333,6 +350,7 @@ export const graphReadingSpecs: ScreenshotSpec[] = [
   kiv2HalosSpec,
   kiv2PoppedSpec,
   kiv2WalksSpec,
+  kiv2WalkRowsSpec,
   dock2HalosSpec,
   nntHalosSpec,
 ]
