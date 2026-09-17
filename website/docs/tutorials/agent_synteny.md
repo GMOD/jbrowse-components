@@ -101,12 +101,11 @@ in the background and polls it handles this; one that waits for it inside a
 single call reports a failure that did not happen. The phrase "in the
 background" in the request above tells the agent to do that.
 
-It is worth having the alignment finish before anything opens. Two genomes side
-by side with nothing between them look like the finished comparison, and an
-alignment that appears afterwards reads as a correction rather than a step.
+The alignment should finish before anything opens. Two genomes side by side with
+nothing between them look like the finished comparison, and an alignment that
+appears afterwards reads as a correction.
 
-Indexing the PAF lets the browser read a region out of it instead of parsing all
-of it:
+Indexing the PAF lets the browser read a region out of it:
 
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
@@ -142,18 +141,18 @@ zoom looks much like a genome pair with little in common.
 Add a dotplot of the same two assemblies underneath.
 ```
 
-Both assemblies carry a few hundred unplaced scaffolds, and a dotplot that draws
-them interleaves the axes with rows holding a handful of alignments each. Naming
-the arms gives one diagonal instead:
+_D. simulans_ and _D. mauritiana_ each carry a few hundred unplaced scaffolds,
+and a dotplot that draws them interleaves the axes with rows holding a handful
+of alignments each. Naming the arms gives one diagonal:
 
 ```
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
 The alias names work because the merged config kept each assembly's chromAlias
-file. Ask it to quantify what restricting the axes drops, not just apply the
-change. Set the coloring to strand while you are there, so a block that runs
-backwards is a different color rather than a bend in a black line:
+file. Ask it to quantify what restricting the axes drops. Set the coloring to
+strand while you are there, so a block that runs backwards is a different color
+rather than a bend in a black line:
 
 <Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, and a short reverse segment in blue where chr2R begins." src="/img/agent_synteny/dotplot_arms.png" />
 
@@ -258,15 +257,14 @@ you are looking at is a claim you can check.
 
 ## The same pipeline as a script
 
-The same pipeline as a script, for a reader who wants the files rather than the
-conversation:
+For a reader who wants the files:
 
 ```bash
 curl -O https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_fly_agent_synteny.sh
 bash build_fly_agent_synteny.sh fly_agent_synteny_build
 ```
 
-It downloads both genomes, runs the alignment, indexes it, and writes
+The script downloads both genomes, runs the alignment, indexes it, and writes
 `config.json` to open in Desktop. It needs the tools in
 [Prerequisites](#prerequisites), plus `jq` and `curl`.
 
