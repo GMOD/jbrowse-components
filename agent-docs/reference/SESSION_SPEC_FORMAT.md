@@ -134,6 +134,16 @@ third is exactly the set a grammar would call encoding and scale: `height`,
 `domain`. The names are flat and per-display, but the concepts are shared and
 the census shows authors using them as shared.
 
+`groupBy` is the one entry in that list where the sharing is only in the
+spelling. On the feature, alignments and LGV synteny displays it is an object
+naming a partition, and every value takes its own stacked section with its own
+chips, its own collapse and its own `domain`. On the multi-sample variant
+displays it is a bare string naming a sample-metadata column, and all it does is
+sort the rows by that column's value — no sections, no chips, no domain
+(`maybeApplyGroupBy` and `sortSourcesByAttribute` in
+`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). Two mechanisms
+under one key, and the census counts the key.
+
 **The long tail names mechanisms, not aesthetics.** The keys used on one
 display type — `readConnections`, `showSoftClipping`, `rowIdentityMode`,
 `hideSelfAlignments`, `maxMissingnessFilter`, `partitionField` — each name
@@ -144,12 +154,20 @@ same tail with an extra level of nesting.
 Two pairs that look like drift are not: `jexlFilters` is the config slot and
 `jexlFiltersSetting` the display's session override (`core/util/jexlFilters.ts`
 says which wins), and `color` versus `featureColor` on the multi-sample variant
-display is a real distinction (row color versus the per-variant override). The
-pairs that are just two spellings — `sortedBy` / `sortRowsBy` / `domain`
-for a row ordering, `showTree` / `showRowLabels` for sidebar chrome — are a
-naming sweep through `legacyKeys` in a `preProcessSnapshot`, which the manifest
-already reports as stale rather than wrong. That is a rename, and it needs no
-grammar to carry it.
+display is a real distinction (row color versus the per-variant override).
+`sortedBy` and `sortRowsBy` read as a third such pair and are two unrelated
+mechanisms: `sortedBy` is a config slot naming a genomic column, and the layout
+pass ranks each pileup section's reads by what sits in that column, on every
+relayout (`plugins/alignments/src/RenderAlignmentDataRPC/sortLayout.ts` —
+main-thread despite the directory, [ADR-053](../architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md));
+`sortRowsBy` is a one-shot launch spec that orders an already-fixed row set once
+the region covering its column has loaded, then clears itself and leaves the
+`layout` it wrote behind (`packages/tree-sidebar/src/rowSortAutorun.ts`).
+`domain` is the shared word and names neither: it is the declared order a facet
+stacks its sections in, whoever writes it. The pair that is just two spellings —
+`showTree` / `showRowLabels` for sidebar chrome — is a naming sweep through
+`legacyKeys` in a `preProcessSnapshot`, which the manifest already reports as
+stale rather than wrong. That is a rename, and it needs no grammar to carry it.
 
 ## What the grammars do, precisely
 
