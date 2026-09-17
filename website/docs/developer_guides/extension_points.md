@@ -195,10 +195,10 @@ can call is the one the point's shape calls for.
 
 There is a fourth fire method, `evaluateAsyncExtensionPointStrict`, which is
 `evaluateAsyncExtensionPoint` without the swallow-and-continue: a callback that
-throws propagates to the producer instead of being logged. Every `LaunchView-`
-point is fired that way, so a launcher that throws surfaces as an error to the
-user rather than as an empty session. Producers of accumulating points want the
-plain runner, where one plugin failing does not cost the others their entries.
+throws propagates to the producer. Every `LaunchView-` point is fired that way,
+so a launcher that throws surfaces as an error to the user. Producers of
+accumulating points want the plain runner, where one plugin failing does not
+cost the others their entries.
 
 These are the only signatures on this page that are not generated from source;
 they name placeholder arguments so the seven read side by side.
@@ -447,13 +447,13 @@ means.
 **joined**, so a producer waiting on the folded value learns when every handler
 has finished. A hand-written callback that returns its own promise gets that
 wrong, and gets it wrong invisibly: the symptom is a producer that stops waiting
-early, which reads as a race rather than as the wrong registration method.
+early, which reads as a race.
 
 `Core-handleUnrecognizedAssembly` works that way — a handler supplies the
 assembly out of band, and its promise lets `waitForAssembly` stop waiting on an
-event rather than on a clock. The producer there fires the point with the
-**sync** runner and awaits the folded value itself; only
-`evaluateAsyncExtensionPoint` awaits each callback in turn.
+event. The producer there fires the point with the **sync** runner and awaits
+the folded value itself; only `evaluateAsyncExtensionPoint` awaits each callback
+in turn.
 
 ## Extension point listing
 
@@ -561,9 +561,9 @@ with no `as`. The name is checked too: register your view or display in the
 registry beside its state model type, and a typo or a rename becomes a compile
 error instead of an extension that stops applying without one.
 
-Both take an array of names as well as one, which is how a contribution reaches
-a family of displays — a family here is a shared mixin set rather than a chain,
-so there is no parent type to name.
+`extendViewType` and `extendDisplayType` both take an array of names as well as
+one, which is how a contribution reaches a family of displays — a family here is
+a shared mixin set, so there is no parent type to name.
 
 For the commonest reason to reach for these — adding an entry to somebody else's
 menu — go one level higher still and use `addViewMenuItems` /
@@ -1018,10 +1018,10 @@ otherwise.
 
 Register with `addAddTrackComponent` (from `@jbrowse/core/util`) rather than
 with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot), which is the
-general way to fill a slot. This is the one slot with its own entry point, and
-it earns it by writing two points from one declaration of your adapter types:
-the fold here, and `Core-addTrackComponentAdapterTypes`, a plain list of the
-same claims for callers that have an adapter name and no model.
+general way to fill a slot. This is the one slot with its own entry point,
+because it writes two points from one declaration of your adapter types: the
+fold here, and `Core-addTrackComponentAdapterTypes`, a plain list of the same
+claims for callers that have an adapter name and no model.
 
 <!-- include: plugins/gwas/src/GWASAddTrackComponent/index.tsx#register -->
 
@@ -1146,8 +1146,7 @@ reports that by name.
 
 Register one to make your own view type launchable — see
 [](/docs/developer_guides/creating_view). A second callback on a built-in one
-sees the launch args the chain passes along, rather than the view the first
-callback created.
+sees the launch args the chain passes along.
 
 Each launcher's args are that view type's spec fields, documented once in the
 URL parameter guide and typed by the `Launch*Args` interface exported beside the
