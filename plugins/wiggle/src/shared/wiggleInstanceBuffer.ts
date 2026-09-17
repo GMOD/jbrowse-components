@@ -12,17 +12,24 @@ import {
   INSTANCE_STRIDE_WORDS as FILL_STRIDE_WORDS,
 } from './shaders/wiggle.iface.generated.ts'
 import {
+  INSTANCE_OFFSET_F32 as BAND_F32,
+  INSTANCE_OFFSET_U32 as BAND_U32,
+  INSTANCE_STRIDE_BYTES as BAND_STRIDE_BYTES,
+  INSTANCE_STRIDE_WORDS as BAND_STRIDE_WORDS,
+} from './shaders/wiggleBand.iface.generated.ts'
+import {
   INSTANCE_OFFSET_F32 as LINE_F32,
   INSTANCE_OFFSET_U32 as LINE_U32,
   INSTANCE_STRIDE_BYTES as LINE_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as LINE_STRIDE_WORDS,
 } from './shaders/wiggleLine.iface.generated.ts'
+import { centerLinksToPrevious } from './wiggleComponentUtils.ts'
 
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
-// Two per-instance records, so there is one packer each and a region's layers
-// feed exactly one of them: whichever matches the rendering they were built
-// for. The other returns an empty buffer, which is how a pass releases its
+// Three per-instance records, one packer each. A region's layers feed the fill
+// record or the line record, whichever matches the rendering they were built
+// for, and a line plot's whiskers band layers feed the band record besides. The other returns an empty buffer, which is how a pass releases its
 // buffer (see GpuPerRegionRenderingBackend.upload — an empty pack IS the
 // release), so switching plot type frees the layout that is no longer drawn
 // instead of leaving a stale one bound. The fill record serves three entry
@@ -37,10 +44,12 @@ import type { SourceRenderData } from '@jbrowse/wiggle-core'
 // halves the encode too, which is main-thread work redone for every region
 // whenever gpuProps changes (a colour, a sort, a subtrack toggle).
 
-function totalOf(sources: SourceRenderData[]) {
+function totalOf(sources: SourceRenderData[], band = false) {
   let total = 0
   for (const source of sources) {
-    total += source.numFeatures
+    if (!!source.band === band) {
+      total += source.numFeatures
+    }
   }
   return total
 }
@@ -98,7 +107,7 @@ export function packLineInstances(sources: SourceRenderData[]) {
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   let off = 0
-  for (const source of sources) {
+  for (const source of sources.filter(s => !s.band)) {
     const row = source.rowIndex
     const colorAbgr = colorOf(source)
     const positions = source.featurePositions
@@ -135,11 +144,7 @@ export function packLineInstances(sources: SourceRenderData[]) {
         // needs its own). NO_PREV_START is the shader's own constant, generated
         // in (adr-051), since this is the side that writes the value the shader
         // tests for.
-        const prevLinked =
-          i > 0 &&
-          (currStart + currEnd) / 2 -
-            (positions[pi - 2]! + positions[pi - 1]!) / 2 <=
-            gapLimitBp
+        const prevLinked = centerLinksToPrevious(positions, i, gapLimitBp)
         u32[off + LINE_U32.prevStartEnd] = prevLinked
           ? positions[pi - 2]!
           : NO_PREV_START
@@ -166,6 +171,49 @@ export function packLineInstances(sources: SourceRenderData[]) {
         f32[off + LINE_F32.nextScore] = nextAdj ? score : 0
       }
       off += LINE_STRIDE_WORDS
+    }
+  }
+  return buf
+}
+
+// A line plot's whiskers band: each bin's min and max, both sign colours, and
+// for the interpolated ribbon the previous linked bin's span and scores, so a
+// bin draws the trapezoid from that bin's midpoint to its own.
+export function packBandInstances(sources: SourceRenderData[]) {
+  const buf = new ArrayBuffer(totalOf(sources, true) * BAND_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  let off = 0
+  for (const source of sources) {
+    const { band } = source
+    if (band) {
+      const positions = source.featurePositions
+      const maxScores = source.featureScores
+      const { minScores } = band
+      const posAbgr = colorOf(source)
+      const negAbgr = normalizedRgbToABGR(...band.negColor)
+      const centerLine = source.renderingType === RENDERING_TYPE_LINE_CENTER
+      const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
+      for (let i = 0; i < source.numFeatures; i++) {
+        const linked =
+          centerLine && centerLinksToPrevious(positions, i, gapLimitBp)
+        u32[off + BAND_U32.startEnd] = positions[i * 2]!
+        u32[off + BAND_U32.startEnd + 1] = positions[i * 2 + 1]!
+        u32[off + BAND_U32.prevStartEnd] = linked
+          ? positions[i * 2 - 2]!
+          : NO_PREV_START
+        u32[off + BAND_U32.prevStartEnd + 1] = linked
+          ? positions[i * 2 - 1]!
+          : 0
+        f32[off + BAND_F32.minScore] = minScores[i]!
+        f32[off + BAND_F32.maxScore] = maxScores[i]!
+        f32[off + BAND_F32.prevMinScore] = linked ? minScores[i - 1]! : 0
+        f32[off + BAND_F32.prevMaxScore] = linked ? maxScores[i - 1]! : 0
+        u32[off + BAND_U32.posColor] = posAbgr
+        u32[off + BAND_U32.negColor] = negAbgr
+        f32[off + BAND_F32.rowIndex] = source.rowIndex
+        off += BAND_STRIDE_WORDS
+      }
     }
   }
   return buf

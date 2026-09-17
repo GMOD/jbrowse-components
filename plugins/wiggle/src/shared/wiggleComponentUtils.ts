@@ -32,6 +32,22 @@ export function getRowTop(rowIndex: number, rowHeight: number) {
   return rowIndex * rowHeight
 }
 
+// The interpolated line's break rule, in bp: bin `i` joins bin `i - 1` unless
+// their centers sit further apart than `gapLimitBp`. The stroke and the band
+// read it on both backends, so all four break in the same places.
+export function centerLinksToPrevious(
+  positions: Uint32Array,
+  i: number,
+  gapLimitBp: number,
+) {
+  return (
+    i > 0 &&
+    (positions[i * 2]! + positions[i * 2 + 1]!) / 2 -
+      (positions[i * 2 - 2]! + positions[i * 2 - 1]!) / 2 <=
+      gapLimitBp
+  )
+}
+
 const overlayTypes: ReadonlySet<string> = new Set(MULTI_WIGGLE_OVERLAY_TYPES)
 
 export function isOverlayMode(renderingType: string) {

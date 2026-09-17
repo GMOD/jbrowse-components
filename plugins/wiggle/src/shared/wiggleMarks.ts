@@ -11,6 +11,7 @@ import {
 
 import { densityRampLut } from './densityColorRamp.ts'
 import * as wiggleShader from './shaders/wiggle.generated.ts'
+import * as wiggleBandShader from './shaders/wiggleBand.generated.ts'
 import * as wiggleDensityShader from './shaders/wiggleDensity.generated.ts'
 import * as wiggleLineShader from './shaders/wiggleLine.generated.ts'
 import { getRowHeight, getRowTop } from './wiggleComponentUtils.ts'
@@ -19,9 +20,14 @@ import {
   drawLine,
   drawLineCenter,
   drawScatter,
+  drawWhiskerBand,
   drawXYPlot,
 } from './wiggleDrawFunctions.ts'
-import { packFillInstances, packLineInstances } from './wiggleInstanceBuffer.ts'
+import {
+  packBandInstances,
+  packFillInstances,
+  packLineInstances,
+} from './wiggleInstanceBuffer.ts'
 
 import type { RowDraw } from './wiggleDrawFunctions.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
@@ -217,6 +223,26 @@ const densityShape = wiggleShape(
   },
 )
 
+const isLineFamily = (type: WiggleRenderingType) =>
+  type === RENDERING_TYPE_LINE || type === RENDERING_TYPE_LINE_CENTER
+
+// Drawn before either stroke, so the mean line lies over its range.
+const bandShape = wiggleShape(
+  {
+    ...slangPass({ id: 'band', mod: wiggleBandShader }),
+    pack: packBandInstances,
+  },
+  isLineFamily,
+  (row, p) => {
+    if (row.source.band) {
+      drawWhiskerBand({
+        ...row,
+        interpolated: p.renderingType === RENDERING_TYPE_LINE_CENTER,
+      })
+    }
+  },
+)
+
 // The step line's vertex count is the shader's own — `vs_main` splits
 // `SV_VertexID` by the same numbers — and it draws as 3 square-capped quad
 // segments rather than a line list, whose width is hard-locked to 1px on both
@@ -232,14 +258,17 @@ const lineShape = wiggleShape(
   },
   type => type === RENDERING_TYPE_LINE,
   (row, p) => {
-    drawLine({ ...row, rgb: cssRgb(row.source), lineWidth: p.lineWidth })
+    if (!row.source.band) {
+      drawLine({ ...row, rgb: cssRgb(row.source), lineWidth: p.lineWidth })
+    }
   },
 )
 
 // Premultiplied MAX blend so the analytic-AA ribbon's overlapping segments and
 // caps union instead of accumulating into dark seams under src-over. Valid
-// because the target clears to transparent black and only this pass draws in
-// center-line mode. Stated on the pass rather than as a `//! blend:` on
+// because the target clears to transparent black and the only other ink in
+// center-line mode is the translucent whiskers band, which a same-hue stroke
+// exceeds in every premultiplied channel. Stated on the pass rather than as a `//! blend:` on
 // wiggleLine.slang, because the step line above shares that shader and blends
 // the other way.
 const lineCenterShape = wiggleShape(
@@ -253,7 +282,13 @@ const lineCenterShape = wiggleShape(
   },
   type => type === RENDERING_TYPE_LINE_CENTER,
   (row, p) => {
-    drawLineCenter({ ...row, rgb: cssRgb(row.source), lineWidth: p.lineWidth })
+    if (!row.source.band) {
+      drawLineCenter({
+        ...row,
+        rgb: cssRgb(row.source),
+        lineWidth: p.lineWidth,
+      })
+    }
   },
 )
 
@@ -273,15 +308,15 @@ const line = defineMark({
 
 /**
  * The wiggle family as a mark list: one mark per rendering family over the
- * three hand-written shaders, and one uniform block behind all four, since
+ * four hand-written shaders, and one uniform block behind all five, since
  * every entry shader imports `wiggleCommon.slang`'s.
  *
- * Two instance layouts, so two of the four marks carry the region's buffer and
- * the other two borrow it through `bufferOf`: density draws off the fill
+ * Three instance layouts, so three of the five marks carry the region's buffer
+ * and the other two borrow one through `bufferOf`: density draws off the fill
  * record (`wiggleDensity.slang` declares the same struct) and the center line
- * off the step line's. Each packer returns empty for the renderings that
- * aren't its own, and an empty pack IS the release, so a region holds only the
- * layout its rendering actually draws.
+ * off the step line's. Each packer returns empty for layers that aren't its
+ * own, and an empty pack IS the release, so a region holds only the layouts
+ * its rendering actually draws.
  */
 export const WIGGLE_MARKS = [
   fill,
@@ -295,6 +330,11 @@ export const WIGGLE_MARKS = [
     // inert table the backend keeps.
     texture: (state: WiggleGPURenderState) =>
       densityRampLut(state.densityColorRamp) ?? undefined,
+  }),
+  defineMark({
+    shape: bandShape,
+    channels: sources => (sources.some(s => s.band) ? sources : undefined),
+    params: wiggleParams,
   }),
   line,
   defineMark({

@@ -3,9 +3,20 @@
 // splits into solid-color layers or stays whole with per-instance colors.
 // Consumed by buildSourceRenderData, which places the layers in rows.
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
-import { getEffectiveScores } from '@jbrowse/wiggle-core'
+import {
+  RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
+  RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT,
+  getEffectiveScores,
+} from '@jbrowse/wiggle-core'
 
-import type { FeatureArrays, SourceRenderData } from '@jbrowse/wiggle-core'
+import type {
+  FeatureArrays,
+  SourceRenderData,
+  WiggleRenderingType,
+} from '@jbrowse/wiggle-core'
 
 function lightenColor(
   rgb: [number, number, number],
@@ -184,33 +195,35 @@ function whiskerBandSides(
 
 // The render layers one source contributes under a summary presentation
 // (whiskers, or a single min/max band), colored by each value's sign vs the
-// pivot so signed data (e.g. phyloP) reads as pos/neg. `summaryBands` above
-// decides which bands there are and how each is tinted; this decides how a band
-// becomes layers.
-//
-// Density never reaches here with whiskers: `sourceLayers` gates that on
-// `!isDensityMode` and falls through to the avg split. It does reach here with
-// min/max, which is why the density flag is taken rather than assumed false.
+// pivot so signed data (e.g. phyloP) reads as pos/neg. A line plot's whiskers
+// is a filled range under the mean stroke (`whiskerRangeLayers`); otherwise
+// `summaryBands` decides which bands there are and this decides how each
+// becomes layers. Density arrives with min/max only, since the model resolves
+// its whiskers to avg.
 export function makeSummaryLayers({
   data,
   summaryScoreMode,
   posColor,
   negColor,
   pivot,
-  isScatter,
-  isFilled,
-  isDensityMode,
+  renderingType,
 }: {
   data: FeatureArrays
   summaryScoreMode: string
   posColor: [number, number, number]
   negColor: [number, number, number]
   pivot: number
-  isScatter: boolean
-  isFilled: boolean
-  isDensityMode: boolean
+  renderingType: WiggleRenderingType
 }): WiggleLayer[] {
   const { featurePositions, numFeatures } = data
+  const isLine =
+    renderingType === RENDERING_TYPE_LINE ||
+    renderingType === RENDERING_TYPE_LINE_CENTER
+  if (isLine && summaryScoreMode === 'whiskers') {
+    return whiskerRangeLayers(data, posColor, negColor, pivot)
+  }
+  const isDensityMode = renderingType === RENDERING_TYPE_DENSITY
+  const isFilled = renderingType === RENDERING_TYPE_XYPLOT
   const bands = summaryBands(data, summaryScoreMode)
 
   // Split each band into solid-color pos/neg layers, or keep it whole and color
@@ -222,10 +235,11 @@ export function makeSummaryLayers({
   //     back-to-front, largest magnitude first. That order is opposite between
   //     the two sides (positive: max..min; negative: min..max), which a single
   //     band order can't express.
-  // Everything else keeps the band whole and colors per instance: line/scatter
-  // don't overpaint, and a split would break line continuity at every pivot
-  // crossing. A lone filled band is in that group too — its pos and neg bars
-  // grow away from the pivot in opposite directions and never overlap.
+  // Everything else keeps the band whole and colors per instance: scatter and a
+  // lone min/max line don't overpaint, and a split would break line continuity
+  // at every pivot crossing. A lone filled band is in that group too — its pos
+  // and neg bars grow away from the pivot in opposite directions and never
+  // overlap.
   if (isDensityMode || (isFilled && bands.length > 1)) {
     const sides = bands.map(b =>
       whiskerBandSides(
@@ -262,5 +276,44 @@ export function makeSummaryLayers({
     ),
   }))
   // scatter draws back-to-front, so its layer order is reversed
-  return isScatter ? layers.reverse() : layers
+  return renderingType === RENDERING_TYPE_SCATTER ? layers.reverse() : layers
+}
+
+// A line plot's whiskers: the min-to-max band, then the mean stroke over it,
+// coloured by sign as a lone band is. With no summary spread the band would
+// have no height, so only the mean draws.
+function whiskerRangeLayers(
+  data: FeatureArrays,
+  posColor: [number, number, number],
+  negColor: [number, number, number],
+  pivot: number,
+): WiggleLayer[] {
+  const { featurePositions, featureScores, numFeatures } = data
+  const mean = {
+    featurePositions,
+    featureScores,
+    numFeatures,
+    color: posColor,
+    colorsAbgr: bandColorsAbgr(
+      featureScores,
+      numFeatures,
+      pivot,
+      posColor,
+      negColor,
+      noTint,
+      noTint,
+    ),
+  }
+  return data.hasSummaryScores
+    ? [
+        {
+          featurePositions,
+          featureScores: data.featureMaxScores,
+          numFeatures,
+          color: posColor,
+          band: { minScores: data.featureMinScores, negColor },
+        },
+        mean,
+      ]
+    : [mean]
 }

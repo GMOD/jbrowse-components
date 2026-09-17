@@ -33,7 +33,6 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   minimalTicks: boolean
   posColor: string
   negColor: string
-  isDensityMode: boolean
   effectiveSummaryScoreMode: string
   maxGapMultiple: number
   resolution: number
@@ -129,7 +128,6 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
         negColor: self.negColor,
         effectiveSummaryScoreMode: self.effectiveSummaryScoreMode,
         renderingType: self.renderingType,
-        isDensityMode: self.isDensityMode,
         bicolorPivot: self.bicolorPivot,
         maxGapMultiple: self.maxGapMultiple,
       }

@@ -2,8 +2,10 @@ import { abgrToCssRgba, setAbgrFill } from '@jbrowse/core/util/colorBits'
 import {
   CANVAS_SEAM_PX,
   CappedPath,
+  getDpr,
   makeBpMapper,
   spanLeft,
+  withClip,
 } from '@jbrowse/render-core/canvas2dUtils'
 import {
   drawnRowHeightPx,
@@ -16,6 +18,8 @@ import {
   makeDensityLutFillFn,
   makeDensityRgbStringFn,
 } from './getDensityColor.ts'
+import { WHISKER_BAND_OPACITY } from './shaders/wiggleBand.consts.generated.ts'
+import { centerLinksToPrevious } from './wiggleComponentUtils.ts'
 
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -300,11 +304,7 @@ export function drawLineCenter({
     const cy = scoreToY(scores[i]!) + rowTop
     // Measured in bp, not px: the GPU encodes the same break from bp positions,
     // and a px comparison would drift from it wherever a block is clipped.
-    const linked =
-      i > 0 &&
-      (positions[pi]! + positions[pi + 1]!) / 2 -
-        (positions[pi - 2]! + positions[pi - 1]!) / 2 <=
-        gapLimitBp
+    const linked = centerLinksToPrevious(positions, i, gapLimitBp)
     // Each segment runs from the previous midpoint to this one and takes this
     // instance's color, same as the shader's per-feature capsule.
     if (colorsAbgr) {
@@ -333,6 +333,118 @@ export function drawLineCenter({
     penY = cy
   }
   path.flush()
+}
+
+// Bins per closed polygon, so a long run still fits `CappedPath`'s per-path
+// shape budget; consecutive polygons abut inside one fill, which leaves no seam.
+const BAND_BINS_PER_POLYGON = 1000
+
+// The whiskers band as one polygon per run: along each bin's max, back along
+// its min. Runs break where the stroke over them does — bp adjacency for the
+// step line, `gapLimitBp` for the interpolated one. A band crossing the pivot
+// fills twice, clipped above in `color` and below in `negColor`, with the
+// clip on a device pixel so the two fills meet without a seam.
+export function drawWhiskerBand({
+  ctx,
+  source,
+  block,
+  rowHeight,
+  rowTop,
+  domainY,
+  scaleType,
+  symlogConstant,
+  origin,
+  interpolated,
+}: RowDraw & { interpolated: boolean }) {
+  const { band, numFeatures: n } = source
+  if (!band || n === 0) {
+    return
+  }
+  const positions = source.featurePositions
+  const maxScores = source.featureScores
+  const { minScores } = band
+  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
+  const toX = makeBpMapper(block)
+  const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
+  const linked = (i: number) =>
+    interpolated
+      ? centerLinksToPrevious(positions, i, gapLimitBp)
+      : positions[i * 2 - 1] === positions[i * 2]
+
+  const polygons: [number, number][] = []
+  let start = 0
+  for (let i = 1; i <= n; i++) {
+    const joins = i < n && linked(i)
+    if (!joins || i - start === BAND_BINS_PER_POLYGON) {
+      if (!interpolated || i - start > 1) {
+        polygons.push([start, i])
+      }
+      start = joins && interpolated ? i - 1 : i
+    }
+  }
+
+  const centerX = (i: number) =>
+    (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
+  const trace = () => {
+    const path = new CappedPath(ctx, 'fill')
+    for (const [s, e] of polygons) {
+      for (let i = s; i < e; i++) {
+        path.add()
+      }
+      if (interpolated) {
+        ctx.moveTo(centerX(s), scoreToY(maxScores[s]!) + rowTop)
+        for (let i = s + 1; i < e; i++) {
+          ctx.lineTo(centerX(i), scoreToY(maxScores[i]!) + rowTop)
+        }
+        for (let i = e - 1; i >= s; i--) {
+          ctx.lineTo(centerX(i), scoreToY(minScores[i]!) + rowTop)
+        }
+      } else {
+        ctx.moveTo(toX(positions[s * 2]!), scoreToY(maxScores[s]!) + rowTop)
+        for (let i = s; i < e; i++) {
+          const y = scoreToY(maxScores[i]!) + rowTop
+          ctx.lineTo(toX(positions[i * 2]!), y)
+          ctx.lineTo(toX(positions[i * 2 + 1]!), y)
+        }
+        for (let i = e - 1; i >= s; i--) {
+          const y = scoreToY(minScores[i]!) + rowTop
+          ctx.lineTo(toX(positions[i * 2 + 1]!), y)
+          ctx.lineTo(toX(positions[i * 2]!), y)
+        }
+      }
+      ctx.closePath()
+    }
+    path.flush()
+  }
+
+  let above = false
+  let below = false
+  for (let i = 0; i < n; i++) {
+    above ||= maxScores[i]! >= origin
+    below ||= minScores[i]! < origin
+  }
+  const posFill = cssRgba(source.color, WHISKER_BAND_OPACITY)
+  const negFill = cssRgba(band.negColor, WHISKER_BAND_OPACITY)
+  if (above && below) {
+    const dpr = getDpr()
+    const pivotY = Math.round((scoreToY(origin) + rowTop) * dpr) / dpr
+    const rowBottom = rowTop + rowHeight
+    withClip(ctx, -1e6, rowTop - 1, 2e6, pivotY - rowTop + 1, () => {
+      ctx.fillStyle = posFill
+      trace()
+    })
+    withClip(ctx, -1e6, pivotY, 2e6, rowBottom - pivotY + 1, () => {
+      ctx.fillStyle = negFill
+      trace()
+    })
+  } else {
+    ctx.fillStyle = below ? negFill : posFill
+    trace()
+  }
+}
+
+function cssRgba([r, g, b]: [number, number, number], alpha: number) {
+  return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${alpha})`
 }
 
 export function drawScatter({

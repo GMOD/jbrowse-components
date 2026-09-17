@@ -117,6 +117,12 @@ export interface SourceRenderData {
   // — the Canvas2D path reads it directly, the GPU path has it baked into the
   // instance buffer as a NO_PREV_START sentinel. `undefined` never breaks.
   gapLimitBp?: number
+  // A line plot's whiskers range: `featureScores` holds each bin's max and
+  // `minScores` its min, filled in `color` above the pivot and `negColor` below.
+  band?: {
+    minScores: Float32Array
+    negColor: [number, number, number]
+  }
 }
 
 // Per-region streamed, like canvas/MAF/manhattan. Spelled as the shared

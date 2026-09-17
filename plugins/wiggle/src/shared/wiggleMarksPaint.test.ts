@@ -813,3 +813,155 @@ describe('a plot-type switch mid-frame', () => {
     expect(ctx.stroke).not.toHaveBeenCalled()
   })
 })
+
+describe('the whiskers band', () => {
+  // 1000bp over 800px, domain [0, 10] over 200px: y(s) = (1 - s / 10) * 200
+  const block = {
+    displayedRegionIndex: 0,
+    start: 0,
+    end: 1000,
+    screenStartPx: 0,
+    screenEndPx: 800,
+    reversed: false,
+  }
+  const state = {
+    domainY: [0, 10] as [number, number],
+    scaleType: SCALE_TYPE_LINEAR,
+    symlogConstant: 1,
+    renderingType: RENDERING_TYPE_LINE,
+    canvasWidth: 800,
+    canvasHeight: 200,
+    numRows: 1,
+    scatterPointSize: 2,
+    lineWidth: 1,
+    origin: 0,
+  }
+  const posColor: [number, number, number] = [0, 0, 1]
+  const negColor: [number, number, number] = [1, 0, 0]
+
+  function bandLayer(
+    max: number[],
+    min: number[],
+    starts: number[],
+    ends: number[],
+    renderingType: WiggleRenderingType,
+    gapLimitBp?: number,
+  ): SourceRenderData {
+    return {
+      ...makeSource(max, starts, ends, renderingType),
+      color: posColor,
+      gapLimitBp,
+      band: { minScores: new Float32Array(min), negColor },
+    }
+  }
+
+  function paint(
+    layers: SourceRenderData[],
+    renderingType: WiggleRenderingType,
+    overrides: Partial<typeof state> = {},
+  ) {
+    const mock = createMockCanvas()
+    paintWiggle(mock.ctx, new Map([[0, layers]]), [block], {
+      ...state,
+      renderingType,
+      ...overrides,
+    })
+    return mock
+  }
+
+  const points = (calls: number[][]) =>
+    calls.map(c => [
+      Math.round(c[0]! * 1000) / 1000,
+      Math.round(c[1]! * 1000) / 1000,
+    ])
+
+  test('a step band runs along each bin max and back along each bin min', () => {
+    const { ctx, fillStyles } = paint(
+      [bandLayer([8, 6], [2, 4], [0, 100], [100, 200], RENDERING_TYPE_LINE)],
+      RENDERING_TYPE_LINE,
+    )
+    expect(points(ctx.moveTo.mock.calls)).toEqual([[0, 40]])
+    expect(points(ctx.lineTo.mock.calls)).toEqual([
+      [0, 40],
+      [80, 40],
+      [80, 80],
+      [160, 80],
+      [160, 120],
+      [80, 120],
+      [80, 160],
+      [0, 160],
+    ])
+    expect(ctx.closePath).toHaveBeenCalledTimes(1)
+    expect(fillStyles).toEqual(['rgba(0,0,255,0.3)'])
+    // the block's own clip only: nothing to split at the pivot
+    expect(ctx.clip).toHaveBeenCalledTimes(1)
+  })
+
+  test('a step band breaks where the bins stop touching', () => {
+    const { ctx } = paint(
+      [bandLayer([8, 6], [2, 4], [0, 150], [100, 200], RENDERING_TYPE_LINE)],
+      RENDERING_TYPE_LINE,
+    )
+    expect(points(ctx.moveTo.mock.calls)).toEqual([
+      [0, 40],
+      [120, 80],
+    ])
+  })
+
+  // Centers at 50, 150 and 700bp => 40, 120 and 560px; the 550bp hole passes
+  // the 300bp limit, so the third bin is a run of one and has no area.
+  test('an interpolated band joins bin midpoints and breaks where the stroke does', () => {
+    const { ctx } = paint(
+      [
+        bandLayer(
+          [8, 6, 9],
+          [2, 4, 1],
+          [0, 100, 650],
+          [100, 200, 750],
+          RENDERING_TYPE_LINE_CENTER,
+          300,
+        ),
+      ],
+      RENDERING_TYPE_LINE_CENTER,
+    )
+    expect(points(ctx.moveTo.mock.calls)).toEqual([[40, 40]])
+    expect(points(ctx.lineTo.mock.calls)).toEqual([
+      [120, 80],
+      [120, 120],
+      [40, 160],
+    ])
+  })
+
+  test('a band crossing the pivot fills above in the pos colour and below in the neg colour', () => {
+    const { ctx, fillStyles, rectCalls } = paint(
+      [bandLayer([5], [-5], [0], [100], RENDERING_TYPE_LINE)],
+      RENDERING_TYPE_LINE,
+      { domainY: [-10, 10] },
+    )
+    expect(fillStyles).toEqual(['rgba(0,0,255,0.3)', 'rgba(255,0,0,0.3)'])
+    expect(ctx.clip).toHaveBeenCalledTimes(3)
+    const clipRects = rectCalls.filter(r => r[2] === 2e6)
+    expect(clipRects.map(r => r[1] + r[3])).toContain(100)
+    expect(clipRects.map(r => r[1])).toContain(100)
+  })
+
+  test('the band stays under the mean stroke, and the stroke skips the band layer', () => {
+    const band = bandLayer(
+      [8, 6],
+      [2, 4],
+      [0, 100],
+      [100, 200],
+      RENDERING_TYPE_LINE,
+    )
+    const mean = makeSource([5, 5], [0, 100], [100, 200], RENDERING_TYPE_LINE)
+    const { ctx, fillStyles, strokeStyles } = paint(
+      [band, mean],
+      RENDERING_TYPE_LINE,
+    )
+    expect(fillStyles).toHaveLength(1)
+    expect(strokeStyles).toHaveLength(1)
+    expect(ctx.fill.mock.invocationCallOrder[0]).toBeLessThan(
+      ctx.stroke.mock.invocationCallOrder[0]!,
+    )
+  })
+})

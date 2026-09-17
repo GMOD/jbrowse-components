@@ -1,3 +1,11 @@
+import {
+  RENDERING_TYPE_DENSITY,
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
+  RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT,
+} from '@jbrowse/wiggle-core'
+
 import { makeSummaryLayers } from './wiggleLayers.ts'
 
 describe('makeSummaryLayers', () => {
@@ -30,21 +38,53 @@ describe('makeSummaryLayers', () => {
     posColor,
     negColor,
     pivot: 0,
-    isFilled: false,
     summaryScoreMode: 'whiskers',
-    isDensityMode: false,
   }
 
-  test('returns 3 layers (max, avg, min) when summary data present', () => {
+  test.each([RENDERING_TYPE_LINE, RENDERING_TYPE_LINE_CENTER])(
+    'line whiskers (rendering %i) is a min-max band under the mean stroke',
+    renderingType => {
+      const [band, mean, ...rest] = makeSummaryLayers({
+        data: summaryData,
+        ...base,
+        pivot: 6,
+        renderingType,
+      })
+      expect(rest).toEqual([])
+      expect(band!.featureScores).toBe(maxScores)
+      expect(band!.band!.minScores).toBe(minScores)
+      expect(band!.color).toEqual(posColor)
+      expect(band!.band!.negColor).toEqual(negColor)
+      expect(band!.colorsAbgr).toBeUndefined()
+      expect(mean!.featureScores).toBe(scores)
+      expect(mean!.band).toBeUndefined()
+      // avg [5, 8] straddles pivot 6
+      expect(mean!.colorsAbgr![0]).not.toBe(mean!.colorsAbgr![1])
+    },
+  )
+
+  test('line whiskers with no summary spread draws the mean alone', () => {
+    const result = makeSummaryLayers({
+      data: noSummaryData,
+      ...base,
+      renderingType: RENDERING_TYPE_LINE_CENTER,
+    })
+    expect(result).toHaveLength(1)
+    expect(result[0]!.band).toBeUndefined()
+  })
+
+  test('scatter whiskers keeps three whole bands, back to front', () => {
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
-      isScatter: false,
+      renderingType: RENDERING_TYPE_SCATTER,
     })
-    expect(result).toHaveLength(3)
-    expect(result[0]!.featureScores).toBe(maxScores)
-    expect(result[1]!.featureScores).toBe(scores)
-    expect(result[2]!.featureScores).toBe(minScores)
+    expect(result.map(l => l.featureScores)).toEqual([
+      minScores,
+      scores,
+      maxScores,
+    ])
+    expect(result.every(l => l.band === undefined)).toBe(true)
   })
 
   test('filled splits each band by sign, stacking each side back-to-front', () => {
@@ -54,13 +94,9 @@ describe('makeSummaryLayers', () => {
     // negative side reverses to min..avg..max.
     const result = makeSummaryLayers({
       data: summaryData,
-      posColor,
-      negColor,
+      ...base,
       pivot: 6,
-      isScatter: false,
-      isFilled: true,
-      summaryScoreMode: 'whiskers',
-      isDensityMode: false,
+      renderingType: RENDERING_TYPE_XYPLOT,
     })
     // no per-instance colors: each split layer is a single solid color
     expect(result.every(l => l.colorsAbgr === undefined)).toBe(true)
@@ -74,11 +110,23 @@ describe('makeSummaryLayers', () => {
     ])
   })
 
+  test('density splits a lone band into solid sides', () => {
+    const result = makeSummaryLayers({
+      data: summaryData,
+      ...base,
+      summaryScoreMode: 'min',
+      pivot: 3,
+      renderingType: RENDERING_TYPE_DENSITY,
+    })
+    expect(result.map(l => [...l.featureScores])).toEqual([[4], [2]])
+    expect(result.every(l => l.colorsAbgr === undefined)).toBe(true)
+  })
+
   test('returns single layer when no summary variation', () => {
     const result = makeSummaryLayers({
       data: noSummaryData,
       ...base,
-      isScatter: false,
+      renderingType: RENDERING_TYPE_SCATTER,
     })
     expect(result).toHaveLength(1)
   })
@@ -91,7 +139,7 @@ describe('makeSummaryLayers', () => {
       ...base,
       summaryScoreMode,
       pivot: 6,
-      isScatter: false,
+      renderingType: RENDERING_TYPE_LINE,
     })
 
   test.each([
@@ -113,7 +161,7 @@ describe('makeSummaryLayers', () => {
       data: noSummaryData,
       ...base,
       pivot: 6,
-      isScatter: false,
+      renderingType: RENDERING_TYPE_SCATTER,
     })[0]!.colorsAbgr!
     const [below, above] = [avg[0]!, avg[1]!]
     // min [2, 4] is entirely below the pivot, max [9, 12] entirely above
@@ -121,29 +169,14 @@ describe('makeSummaryLayers', () => {
     expect([...bandOnly('max')[0]!.colorsAbgr!]).toEqual([above, above])
   })
 
-  test('reverses order in scatter mode', () => {
-    const result = makeSummaryLayers({
-      data: summaryData,
-      ...base,
-      isScatter: true,
-    })
-    expect(result).toHaveLength(3)
-    expect(result[0]!.featureScores).toBe(minScores)
-    expect(result[2]!.featureScores).toBe(maxScores)
-  })
-
   test('colors each band per feature by sign vs pivot', () => {
     // pivot 6: avg [5,8] -> neg,pos (differ); max [9,12] -> pos,pos (same);
     // min [2,4] -> neg,neg (same).
-    const [max, avg, min] = makeSummaryLayers({
+    const [min, avg, max] = makeSummaryLayers({
       data: summaryData,
-      posColor,
-      negColor,
+      ...base,
       pivot: 6,
-      isScatter: false,
-      isFilled: false,
-      summaryScoreMode: 'whiskers',
-      isDensityMode: false,
+      renderingType: RENDERING_TYPE_SCATTER,
     })
     expect(avg!.colorsAbgr).toHaveLength(2)
     expect(avg!.colorsAbgr![0]).not.toBe(avg!.colorsAbgr![1]) // neg vs pos
@@ -161,15 +194,11 @@ describe('makeSummaryLayers', () => {
     // The min band (most negative) must be lighter than the max band (least
     // negative) — the inverse of the positive side, so magnitude reads as
     // lightness in both directions rather than dark-brown negatives.
-    const [max, , min] = makeSummaryLayers({
+    const [min, , max] = makeSummaryLayers({
       data: summaryData,
-      posColor,
-      negColor,
+      ...base,
       pivot: 100,
-      isScatter: false,
-      isFilled: false,
-      summaryScoreMode: 'whiskers',
-      isDensityMode: false,
+      renderingType: RENDERING_TYPE_SCATTER,
     })
     const red = (abgr: number | undefined) => (abgr ?? 0) & 0xff
     expect(red(min!.colorsAbgr?.[0])).toBeGreaterThan(red(max!.colorsAbgr?.[0]))

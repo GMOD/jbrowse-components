@@ -3,6 +3,7 @@ import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
@@ -234,6 +235,31 @@ describe('the wiggle mark list', () => {
     })
 
     expect(hal.callsOf('drawPass')[0]!.args[0]).toBe('fill')
+  })
+
+  // The band is its own record, so a whiskers line region holds two buffers:
+  // the band's and the mean stroke's, and draws the band first.
+  it('draws a whiskers band before the stroke over it', () => {
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
+    const band = makeSource({
+      renderingType: RENDERING_TYPE_LINE_CENTER,
+      band: { minScores: new Float32Array([1, 2]), negColor: [0, 0, 1] },
+    })
+    const mean = makeSource({ renderingType: RENDERING_TYPE_LINE_CENTER })
+
+    backend.upload(0, [band, mean])
+    backend.renderBlocks([makeBlock()], new Map([[0, [band, mean]]]), {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_LINE_CENTER,
+    })
+
+    expect(hal.getBufferCount(0, 'band')).toBe(2)
+    expect(hal.getBufferCount(0, 'line')).toBe(2)
+    expect(hal.callsOf('drawPass').map(c => c.args.slice(0, 1))).toEqual([
+      ['band'],
+      ['lineCenter'],
+    ])
   })
 
   // Nothing to draw either way — an empty pack releases the pass's buffer — so

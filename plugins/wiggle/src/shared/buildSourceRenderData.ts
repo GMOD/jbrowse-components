@@ -1,21 +1,14 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-import {
-  RENDERING_TYPE_LINE_CENTER,
-  RENDERING_TYPE_XYPLOT,
-  gapBreakLimit,
-} from '@jbrowse/wiggle-core'
+import { RENDERING_TYPE_LINE_CENTER, gapBreakLimit } from '@jbrowse/wiggle-core'
 
-import {
-  isOverlayMode,
-  isScatterMode,
-  renderingTypeToInt,
-} from './wiggleComponentUtils.ts'
+import { isOverlayMode, renderingTypeToInt } from './wiggleComponentUtils.ts'
 import { makeSummaryLayers } from './wiggleLayers.ts'
 
 import type { WiggleLayer } from './wiggleLayers.ts'
 import type {
   SourceRenderData,
   WiggleDataResult,
+  WiggleRenderingType,
   WiggleSourceData,
 } from '@jbrowse/wiggle-core'
 
@@ -25,24 +18,20 @@ import type {
 function sourceLayers({
   source,
   summaryScoreMode,
-  isDensityMode,
-  scatter,
-  filled,
+  renderingType,
   posColor,
   negColor,
   pivot,
 }: {
   source: WiggleSourceData
   summaryScoreMode: string
-  isDensityMode: boolean
-  scatter: boolean
-  filled: boolean
+  renderingType: WiggleRenderingType
   posColor: [number, number, number]
   negColor: [number, number, number]
   pivot: number
 }): WiggleLayer[] {
-  // whiskers draws three bands, min/max the one the user picked; both are
-  // colored by each value's own sign against the pivot, so signed data keeps
+  // whiskers draws min, mean and max, min/max the one band the user picked;
+  // both are colored by each value's own sign against the pivot, so signed data keeps
   // reading as pos/neg. The worker only splits `featureScores` (ADR-016), so
   // that partition is re-derived per band on the main thread — without it,
   // switching a signed track to Minimum turned its negative bars blue and cost
@@ -61,9 +50,7 @@ function sourceLayers({
       posColor,
       negColor,
       pivot,
-      isScatter: scatter,
-      isFilled: filled,
-      isDensityMode,
+      renderingType,
     })
   }
 
@@ -107,7 +94,6 @@ export interface WiggleGpuProps {
   // `sourceLayers` treats anything but 'avg' as a mode that draws bands.
   effectiveSummaryScoreMode: string
   renderingType: string
-  isDensityMode: boolean
   // Threshold the whiskers bands are colored around, and the baseline bars
   // pivot on (= bicolorPivot). Present here *as well as* in rpcProps: the
   // worker owns the avg-path pos/neg split (ADR-016, so it stays in rpcProps
@@ -167,17 +153,12 @@ export function buildSourceRenderData(
     negColor: defaultNegColorStr,
     effectiveSummaryScoreMode: summaryScoreMode,
     renderingType,
-    isDensityMode,
     bicolorPivot,
     maxGapMultiple,
   } = gpuProps
   const overlay = isOverlayMode(renderingType)
-  const scatter = isScatterMode(renderingType)
   const renderingTypeInt = renderingTypeToInt(renderingType)
   const lineCenter = renderingTypeInt === RENDERING_TYPE_LINE_CENTER
-  // Filled bars (xyplot, incl. multi-row/overlay variants) need whiskers split
-  // by sign for correct back-to-front stacking; line/scatter/density don't.
-  const filled = renderingTypeInt === RENDERING_TYPE_XYPLOT
   const defaultPosColor = cssColorToNormalizedRgb(defaultPosColorStr)
   const defaultNegColor = cssColorToNormalizedRgb(defaultNegColorStr)
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
@@ -208,9 +189,7 @@ export function buildSourceRenderData(
       const layers = sourceLayers({
         source,
         summaryScoreMode,
-        isDensityMode,
-        scatter,
-        filled,
+        renderingType: renderingTypeInt,
         posColor,
         negColor: overlay ? posColor : defaultNegColor,
         pivot: bicolorPivot,

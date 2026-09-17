@@ -7,7 +7,7 @@ import type { WiggleGpuProps } from './buildSourceRenderData.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // One feature with positive avg, one with negative avg; each carries diverging
-// min/max so it counts as a real summary feature (whiskers becomes 3 layers).
+// min/max so it counts as a real summary feature.
 function makeData(): WiggleDataResult {
   const arrays = processFeaturesFromArrays(
     {
@@ -46,7 +46,6 @@ const baseGpuProps: WiggleGpuProps = {
   negColor: '#e01e26',
   effectiveSummaryScoreMode: 'avg',
   renderingType: 'xyplot',
-  isDensityMode: false,
   bicolorPivot: 0,
   maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
 }
@@ -83,20 +82,34 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     ])
   })
 
-  // Line rendering does not overpaint, so bands stay whole (3 layers spanning
-  // both signs) and are colored per instance instead of being split.
-  test('whiskers mode keeps whole bands for line rendering', () => {
-    const out = buildSourceRenderData(makeData(), {
+  // A line plot draws its range as one band spanning both signs, split at the
+  // pivot by the painter rather than here, with the mean stroke on top.
+  test.each(['line', 'linecenter', 'multirowlinecenter'])(
+    'whiskers mode is a band and a mean stroke for %s',
+    renderingType => {
+      const out = buildSourceRenderData(makeData(), {
+        ...baseGpuProps,
+        effectiveSummaryScoreMode: 'whiskers',
+        renderingType,
+      })
+      expect(out.map(s => [...s.featureScores])).toEqual([
+        [9, -1], // band max
+        [5, -5], // mean
+      ])
+      expect([...out[0]!.band!.minScores]).toEqual([2, -8])
+      expect(out[1]!.band).toBeUndefined()
+    },
+  )
+
+  // Overlay paints a source in one colour, so its band has one colour too.
+  test('an overlaid band takes the source colour on both sides of the pivot', () => {
+    const [band] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
+      sources: [{ name: 'default', color: '#00ff00' }],
       effectiveSummaryScoreMode: 'whiskers',
-      renderingType: 'line',
+      renderingType: 'multilinecenter',
     })
-    expect(out).toHaveLength(3)
-    expect(out.map(s => [...s.featureScores])).toEqual([
-      [9, -1], // max layer
-      [5, -5], // avg layer
-      [2, -8], // min layer
-    ])
+    expect(band!.band!.negColor).toEqual(band!.color)
   })
 
   // Regression: min/max used to emit one layer in posColor, so a signed track
@@ -139,7 +152,6 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'min',
-      isDensityMode: true,
       renderingType: 'density',
     })
     expect(out.map(s => [...s.featureScores])).toEqual([[2], [-8]])
@@ -152,7 +164,6 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     const out = buildSourceRenderData(makePositiveData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'min',
-      isDensityMode: true,
       renderingType: 'density',
     })
     expect(out).toHaveLength(1)
@@ -166,7 +177,6 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'avg',
-      isDensityMode: true,
       renderingType: 'density',
     })
     expect(out).toHaveLength(2)
@@ -267,7 +277,6 @@ describe('buildSourceRenderData gapLimitBp', () => {
       const [layer] = buildSourceRenderData(spacedData(), {
         ...baseGpuProps,
         renderingType,
-        isDensityMode: renderingType === 'density',
       })
       expect(layer!.gapLimitBp).toBeUndefined()
     }

@@ -11,12 +11,22 @@ import {
   INSTANCE_STRIDE_WORDS as FILL_STRIDE_WORDS,
 } from './shaders/wiggle.generated.ts'
 import {
+  INSTANCE_OFFSET_F32 as BAND_F32,
+  INSTANCE_OFFSET_U32 as BAND_U32,
+  INSTANCE_STRIDE_BYTES as BAND_STRIDE_BYTES,
+  INSTANCE_STRIDE_WORDS as BAND_STRIDE_WORDS,
+} from './shaders/wiggleBand.generated.ts'
+import {
   INSTANCE_OFFSET_F32,
   INSTANCE_OFFSET_U32,
   INSTANCE_STRIDE_BYTES as LINE_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS,
 } from './shaders/wiggleLine.generated.ts'
-import { packFillInstances, packLineInstances } from './wiggleInstanceBuffer.ts'
+import {
+  packBandInstances,
+  packFillInstances,
+  packLineInstances,
+} from './wiggleInstanceBuffer.ts'
 
 import type {
   SourceRenderData,
@@ -330,5 +340,79 @@ describe('each packer serves only its own renderings', () => {
     expect(f.prevScoreLine).toBe(3)
     expect(f.prevScore).toBe(0)
     expect(f.nextScore).toBe(0)
+  })
+})
+
+describe('packBandInstances', () => {
+  const max = [9, 12, 6]
+  const min = [2, 4, -3]
+  const starts = [0, 100, 300]
+  const ends = [100, 200, 400]
+
+  function bandSource(
+    renderingType: WiggleRenderingType,
+    gapLimitBp?: number,
+  ): SourceRenderData {
+    return {
+      ...makeSource(renderingType, max, starts, ends, gapLimitBp),
+      band: { minScores: new Float32Array(min), negColor: [0, 0, 1] },
+    }
+  }
+
+  function readBand(buf: ArrayBuffer, i: number) {
+    const f32 = new Float32Array(buf)
+    const u32 = new Uint32Array(buf)
+    const base = i * BAND_STRIDE_WORDS
+    return {
+      start: u32[base + BAND_U32.startEnd]!,
+      prevStart: u32[base + BAND_U32.prevStartEnd]!,
+      prevEnd: u32[base + BAND_U32.prevStartEnd + 1]!,
+      min: f32[base + BAND_F32.minScore]!,
+      max: f32[base + BAND_F32.maxScore]!,
+      prevMin: f32[base + BAND_F32.prevMinScore]!,
+      prevMax: f32[base + BAND_F32.prevMaxScore]!,
+      posColor: u32[base + BAND_U32.posColor]!,
+      negColor: u32[base + BAND_U32.negColor]!,
+    }
+  }
+
+  test('packs only band layers, and the line packer skips them', () => {
+    const band = bandSource(RENDERING_TYPE_LINE)
+    const mean = stepSource([5, 8, 1], starts, ends)
+    expect(BAND_STRIDE_BYTES).toBe(44)
+    expect(packBandInstances([band, mean]).byteLength).toBe(
+      3 * BAND_STRIDE_BYTES,
+    )
+    expect(packLineInstances([band, mean]).byteLength).toBe(
+      3 * LINE_STRIDE_BYTES,
+    )
+    expect(packBandInstances([mean]).byteLength).toBe(0)
+  })
+
+  test('each bin carries its range and both sign colours', () => {
+    const f = readBand(packBandInstances([bandSource(RENDERING_TYPE_LINE)]), 2)
+    expect(f.start).toBe(300)
+    expect(f.max).toBe(6)
+    expect(f.min).toBe(-3)
+    expect(f.posColor).not.toBe(f.negColor)
+    expect(f.prevStart).toBe(NO_PREV_START)
+  })
+
+  // The ribbon's trapezoid runs from the previous bin's midpoint, so it needs
+  // that bin's span and range, and breaks exactly where the mean stroke does.
+  test('the interpolated band links to the previous bin within the gap limit', () => {
+    const buf = packBandInstances([bandSource(RENDERING_TYPE_LINE_CENTER, 150)])
+    const first = readBand(buf, 0)
+    const second = readBand(buf, 1)
+    const third = readBand(buf, 2)
+    expect(first.prevStart).toBe(NO_PREV_START)
+    expect([second.prevStart, second.prevEnd]).toEqual([0, 100])
+    expect([second.prevMin, second.prevMax]).toEqual([2, 9])
+    // centers 150 and 350 sit 200bp apart, past the 150bp limit
+    expect(third.prevStart).toBe(NO_PREV_START)
+
+    const line = packLineInstances([centerSource([5, 8, 1], starts, ends, 150)])
+    expect(readInstance(line, 2).prevStart).toBe(NO_PREV_START)
+    expect(readInstance(line, 1).prevStart).toBe(0)
   })
 })
