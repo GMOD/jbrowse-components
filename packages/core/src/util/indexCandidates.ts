@@ -81,7 +81,7 @@ export function siblingLocation(
   const replaceLast = (path: string) =>
     // the separator is kept: a Windows local path uses backslashes and a URI
     // never does, so rebuilding with '/' would corrupt one of them
-    path.replace(/[^/\\]*$/, fileName)
+    path.replace(/[^/\\]*$/, () => fileName)
   if (location.locationType === 'UriLocation') {
     return { ...location, uri: replaceLast(location.uri) }
   }

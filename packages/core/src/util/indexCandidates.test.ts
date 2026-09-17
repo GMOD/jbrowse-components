@@ -86,6 +86,12 @@ describe('siblingLocation', () => {
     ).toMatchObject({ baseUri: 'https://x.test/c.json' })
   })
 
+  it('takes a file name containing `$&` literally', () => {
+    expect(
+      siblingLocation(uri('https://x.test/a/reads.bam'), 'r$&.bai'),
+    ).toMatchObject({ uri: 'https://x.test/a/r$&.bai' })
+  })
+
   it('has no answer for a Blob, which is what makes detection impossible there', () => {
     // a file picked out of a browser dialog has no directory around it to look
     // in, however much anyone would like one

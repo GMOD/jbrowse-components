@@ -686,8 +686,7 @@ const built = await esbuild.build({
     },
   ],
   stdin: {
-    contents: ENTRY.replace(
-      '__SHORTHAND_PROBES__',
+    contents: ENTRY.replace('__SHORTHAND_PROBES__', () =>
       JSON.stringify(collectShorthandProbes()),
     )
       .replace('__SCHEMA_ID__', JSON.stringify(SCHEMA_ID))
