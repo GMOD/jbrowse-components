@@ -222,8 +222,8 @@ the others draw a mark.
 
 ### Severus and DRAGEN
 
-Both are indexed VCFs with a record at each breakend, so they load with no
-display settings:
+Severus and DRAGEN are both indexed VCFs with a record at each breakend, so they
+load with no display settings:
 
 ```json addtrack
 {
@@ -469,10 +469,9 @@ comes directly from it.
 ### Depth per bin, and B-allele frequency
 
 The coverage bigWigs above are raw depth. Two more tracks, both built from the
-tumor reads, are what make copy number readable beside the callsets: binned
-depth, and B-allele frequency.
-[HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV), PacBio's somatic CNV
-caller, writes the first:
+tumor reads, make copy number readable beside the callsets: binned depth, and
+B-allele frequency. [HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV),
+PacBio's somatic CNV caller, writes the first:
 
 <!-- from: scripts/build_sv_visualization_cgiab.sh -->
 
@@ -610,8 +609,8 @@ departs from the rest is a CNV private to that subclone:
 
 Read those integers on the caller's own scale: CNVkit centers each sample's log2
 on that sample's own median, so on a hypodiploid genome the balanced state is
-not the row's CN 2. The benchmark CNV track in the same view is what anchors
-them, its `total_copy_number` being absolute.
+not the row's CN 2. The benchmark CNV track in the same view anchors them, its
+`total_copy_number` being absolute.
 
 ## Align the tumor assembly to GRCh38
 
@@ -660,7 +659,7 @@ each panel of the breakpoint split view it launches and set **Read height** →
 
 <Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, suggesting a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
 
-That junction is one breakend of a larger event, and interchromosomal
+The chr3-chr13 junction is one breakend of a larger event, and interchromosomal
 translocations in HG008 are frequently complex this way
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). The next
 walkthrough reads this one three ways.
@@ -711,7 +710,7 @@ because the caller and the assembly put its two ends in the same two places.
 
 The reconstruction is bounded twice by what is loaded. It is assembled from the
 reads in the **displayed regions**, which is why both sides of this junction are
-open above. And the hosted demo slices the tumor reads to the loci these
+open above. The hosted demo also slices the tumor reads to the loci these
 walkthroughs visit, so the reads reach one of `cluster_3`'s junctions where the
 assembly contig carries both. Rebuilding from the full BAM with
 [the build script](#reproduce-it-end-to-end) lifts that limit.
