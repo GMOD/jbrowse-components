@@ -2938,8 +2938,12 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | displayMode)"
         },
         {
-          "name": "groupBy",
-          "type": "(JexlString | frozen)"
+          "name": "facetField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "facetDomain",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "geneGlyphMode",
@@ -3946,8 +3950,12 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | displayMode)"
         },
         {
-          "name": "groupBy",
-          "type": "(JexlString | frozen)"
+          "name": "facetField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "facetDomain",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "geneGlyphMode",

@@ -3137,6 +3137,7 @@
         "capGroupKeys",
         "carryGroupDomain",
         "compareGroupKeys",
+        "facetSectionLabel",
         "groupKeyComparator",
         "groupKeySpaceOf",
         "overflowLabel"
