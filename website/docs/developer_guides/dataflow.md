@@ -12,7 +12,7 @@ zoom therefore costs a frame and not a fetch.
 
 <Figure caption="A pan or a zoom takes the dashed edge down the right: it re-enters at buffers the GPU already holds, and nothing above that point runs again. The three crossings carry the name of the figure that draws them in full." src="/img/dataflow.png" />
 
-A viewport change asks one question first: is this region already loaded? Where
+A viewport change first checks one thing: is this region already loaded? Where
 it is, nothing below the top of the figure runs. Where it is not, the display
 calls an adapter in an RPC worker, which reads the file's index, issues range
 requests for the chunks the index named, inflates them, builds records, and
@@ -104,8 +104,8 @@ a new region re-enters at the top.
 `RemoteFileWithRangeCache` and the parser's own chunk cache hold a byte range
 and what that range decoded to, and neither answer changes while the session
 runs. Both are evicted, never invalidated, and what evicts them is
-[](/docs/developer_guides/memory). `rpcDataMap` is the one that can hold a wrong
-answer: it keeps what the worker computed under one set of settings, so
+[](/docs/developer_guides/memory). `rpcDataMap` can hold a wrong answer: it
+keeps what the worker computed under one set of settings, so
 `SettingsInvalidate` watches the serialized `rpcProps()` and refetches every
 region when that string changes, drawing the old answer under a scrim until the
 new one lands.
@@ -127,7 +127,7 @@ is where a display declares which settings reach the buffer that way, and the
 pair is the whole rule: what `rpcProps()` returns refetches, what `gpuProps()`
 returns re-uploads, and everything else is a frame.
 
-<Figure caption="The vertical position of a door is the claim: a setting that reaches rpcProps() enters above the worker and pays for a round trip, one that reaches gpuProps() enters at the encode and pays for an upload, everything else enters at the draw. The chain is collapsed, with no autorun and no tick on it, so that depth is the only thing to read off it." src="/img/render_rates.png" />
+<Figure caption="The vertical position of a door marks what a setting costs: a setting that reaches rpcProps() enters above the worker and costs a round trip, one that reaches gpuProps() enters at the encode and costs an upload, everything else enters at the draw. The chain is collapsed, with no autorun and no tick on it, so that depth is the only thing to read off it." src="/img/render_rates.png" />
 
 A display with no working GPU backend takes the dashed branch and draws the same
 data with a Canvas2D function. [](/docs/developer_guides/svg_export) runs that

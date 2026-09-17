@@ -149,12 +149,12 @@ export interface ElementList<P> {
 ```
 
 `args` alone cannot say which shape a point has. A `TrackTypeGuesser` takes an
-argument and returns a string — the same signature a function component has — so
-a structural test admits it as a wrappable slot. `kind` exists only in the type
-— nothing sets it at runtime, and nothing reads it.
-`extensionPointShapes.test.ts` pins each seam against the points of the other
-shapes, and fails a new `ComponentList` or `ElementList` declared the long way,
-which would otherwise be a point no producer accepts.
+argument and returns a string, the same signature a function component has, so a
+structural test admits it as a wrappable slot. `kind` exists only in the type:
+nothing sets it at runtime, and nothing reads it. `extensionPointShapes.test.ts`
+pins each seam against the points of the other shapes, and fails a new
+`ComponentList` or `ElementList` declared the long way, which would otherwise be
+a point no producer accepts.
 
 ## API
 
@@ -438,9 +438,8 @@ pluginManager.listenToExtensionPoint(
 )
 ```
 
-Every callback registered on a notification point runs — there is no value for a
-later one to overwrite. That is what the `notify` shape in the listing below
-means.
+Every callback registered on a notification point runs, since there is no value
+for a later one to overwrite. The listing below marks this the `notify` shape.
 
 `addToExtensionPoint` rejects these names because of the promise handling. An
 `async` callback's promise is the point's completion signal, and two of them are
@@ -995,14 +994,14 @@ export default function MigrateMultiWiggleConfigF(
 ```
 
 That helper walks `snap.displays` for you and only calls your `migrate` for the
-display types you name, so unrelated tracks pass through untouched. Use it — not
-a config-schema `preProcessSnapshot` — whenever the migration rewrites the
+display types you name, so unrelated tracks pass through untouched. Use it, not
+a config-schema `preProcessSnapshot`, whenever the migration rewrites the
 **value** of an existing constrained slot: a `types.union` tests the raw
 snapshot, so it rejects the legacy value before a schema-level preprocessor ever
 runs. Adding, removing, or renaming a slot does not need this, since the union
 ignores props it doesn't know. Pass every type name the display answers to
-(canonical plus aliases), and make `migrate` idempotent — it also fires from the
-config-schema `preProcessSnapshot` on a direct create.
+(canonical plus aliases), and make `migrate` idempotent, since it also fires
+from the config-schema `preProcessSnapshot` on a direct create.
 
 ### Core-addTrackComponent
 
