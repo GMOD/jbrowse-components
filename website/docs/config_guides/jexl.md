@@ -111,11 +111,7 @@ jexl: getTag(feature, 'HP') // fetches haplotype tag from BAM or CRAM feature
 
 ```js
 jexl: randomColor(feature.type) // deterministic color from a string (e.g. a feature type)
-jexl: categoricalColor(
-  feature.biotype,
-  ['protein_coding', 'lncRNA'],
-  ['#1f77b4', '#ff7f0e'],
-) // a palette color per value: the values listed take the palette in order, any other value a stable palette color of its own, a missing one grey
+jexl: categoricalColor(getInherited(feature, 'biotype'), ['protein_coding']) // a palette color per value: the values listed take the palette (an optional third argument) in order, any other value a stable color no listed value paints, a missing one grey
 jexl: alpha('green', 0.5) // a color at 50% opacity
 jexl: hsl('#ff0000') // converts a color to its HSL form
 jexl: colorString('green') // normalizes a color name or value to a hex string

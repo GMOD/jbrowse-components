@@ -198,7 +198,7 @@ export default function JexlF(/* config?: any*/) {
   // color helpers
   /** #jexlFunction Color functions | randomColor(feature.type) | deterministic color from a string (e.g. a feature type) */
   j.addFunction('randomColor', randomColor)
-  /** #jexlFunction Color functions | categoricalColor(feature.biotype, ['protein_coding','lncRNA'], ['#1f77b4','#ff7f0e']) | a palette color per value: the values listed take the palette in order, any other value a stable palette color of its own, a missing one grey */
+  /** #jexlFunction Color functions | categoricalColor(getInherited(feature, 'biotype'), ['protein_coding']) | a palette color per value: the values listed take the palette (an optional third argument) in order, any other value a stable color no listed value paints, a missing one grey */
   j.addFunction('categoricalColor', categoricalColor)
   // These take and return CSS color *strings*, not Colord objects: a config
   // `jexl:` expression has no way to construct a Colord, and a color slot
