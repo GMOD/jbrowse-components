@@ -15,8 +15,8 @@ creates.
 
 :::caution Experimental
 
-The AlphaGenome plugin is beta, and every track on this page is a model's
-answer. We welcome your [feedback](/contact).
+The AlphaGenome plugin is beta, and every track on this page is a model's answer
+rather than a measurement. We welcome your [feedback](/contact).
 
 :::
 
@@ -155,7 +155,7 @@ shared scale** for one track per pick instead.
 On that shared axis, _TAL1_ carries predicted transcription in K562 and
 essentially none in GM12878, on the annotated exons. The lane to the right is
 _STIL_, predicted in both lines, which shows the flat GM12878 row is a
-prediction.
+prediction rather than a track that failed to load.
 
 <Figure caption="Predicted polyA plus RNA-seq over TAL1 in K562 and GM12878, both rows on one y-axis. The K562 row shows a block of signal across the annotated exons that the GM12878 row does not." src="/img/alphagenome/expression_two_cell_lines.png" />
 
@@ -191,7 +191,8 @@ _TAL1_ is off there.
 
 **Contact maps** come back as a triangle at 2 kb bins, and only for about a
 dozen cell lines, GM12878 among them. Predicted maps are much less skewed than
-sequenced ones, so the display saturates at the 95th percentile.
+sequenced ones, so the display saturates at the 95th percentile rather than at a
+fraction of the maximum.
 
 At the 70 kb this page has been sitting at, a 2 kb map is thirty-five bins
 across; zoom out to the whole predicted megabase and the domain structure
@@ -221,7 +222,7 @@ cell type the worked example uses, and the closest match AlphaGenome has to the
 CD34+ hematopoietic cells Mansour et al. studied. To reach it, remove K562 from
 the biosample box, add "common myeloid progenitor, CD34-positive", and type the
 insertion into the variant box. Any other variant or biosample is a real API
-call.
+call rather than a stored answer.
 
 Before running one yourself:
 
