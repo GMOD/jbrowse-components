@@ -62,22 +62,9 @@ const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 // UNFILTERED after a pin bump and let the gate answer, or accept that the
 // answer you get is not about the bundle.
 
-// The graph has drawn: the geometry pass has run and reported its vertex count.
-//
-// **Not `graph-perf-stats`, which is what every gate here used to say.** Plugin
-// `34018b5` put the perf READOUT behind `showPerf`, default off, because a
-// machine's fetch time in the toolbar of a published figure is a number the
-// reader has to work out is not about them. That took the element out of the DOM
-// with it, so the moment the pin moved past that build, every selector below
-// became unsatisfiable and eleven graph figures failed to capture at once,
-// reading as a spec bug rather than as the bundle.
-//
-// The counts on `graph-stats` are unconditional by construction — GraphStats.tsx
-// says so, and puts them on that element rather than on the readout precisely so
-// switching the text off leaves them behind. `data-geometry-vertices` is empty
-// until buildGeometry has run, so it is the same signal without the setting.
+// The plugin's showLoading holds the view phase until its geometry is built.
 export const GRAPH_DRAWN =
-  '[data-testid="graph-stats"]:not([data-geometry-vertices=""])'
+  '[data-view-phase="ready"] [data-testid="graph-stats"]'
 
 // Ready when the layout has landed AND the toolbar has painted. Waiting on the
 // stats alone raced: a slow subgraph fetch could leave the Layout/Color selects
