@@ -306,7 +306,7 @@ bash build_grape_peach_anchors.sh
 npx --yes serve grape_peach_anchors_build/jbrowse2  # then open the printed URL
 ```
 
-Its gene ids differ from the samples above, which come from a Phytozome
+The script's gene ids differ from the samples above, which come from a Phytozome
 annotation of the same genomes.
 
 ## See also
