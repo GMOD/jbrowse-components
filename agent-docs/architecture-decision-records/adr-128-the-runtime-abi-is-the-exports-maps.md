@@ -166,7 +166,7 @@ metafile.
   (untouched since 2026-05-01) the linear genome view. The graph plugin's read
   failed in the worker, where synteny-core's barrel was a stub because it also
   exports components. Narrowing to the four packages took the registry from
-  14238 to 6959 KB on the main thread and 6106 to 4551 KB in the worker
+  14238 to 6960 KB on the main thread and 6106 to 4551 KB in the worker
   (`scripts/registryBundleSizes.json`), and no JBrowse release carried the
   wide list.
 - **Split the worker's stubs per export, so a rendering module's data names
