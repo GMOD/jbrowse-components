@@ -302,7 +302,7 @@ and calling it throws inside the reaching plugin's own `install`.
     exported past it or read anywhere
 
 The removals table above and `scripts/check-published-plugins.ts` both work from
-module exports, and neither is checked against a published bundle, so neither
+module exports and are not checked against a published bundle, so neither
 reaches a plugin `exports` object or the session.
 `pluginFacingSessionApi.test.ts` pins the fifteen session members published
 bundles actually call, and performs the call rather than just asserting the

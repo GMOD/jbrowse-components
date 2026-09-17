@@ -19,7 +19,7 @@ plugin adds `Help` with `appendToMenu`, which creates the menu when it is
 absent. The embeddable single-view components have no menu bar at all, so guard
 with `isAbstractMenuManager`.
 
-<Figure src="/img/top_level_menus.png" caption="The `Add` menu opens a view from the UI; register a custom view type here too."/>
+<Figure src="/img/top_level_menus.png" caption="The `Add` menu opens a view from the UI, and a plugin can add an entry here for its own view type."/>
 
 Contribute from `configure`: the spreadsheet-view plugin registers its view type
 in `install` and offers the way to open one in `configure`.

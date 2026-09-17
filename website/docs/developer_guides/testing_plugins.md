@@ -272,7 +272,8 @@ Some of what a display can get wrong is an **ordering** no type states and no
 test of yours can see — a `afterAttach` that chains to `super` and so installs
 every fetch autorun twice, a `reload()` that clears the error without
 invalidating anything the fetch gate reads, two live SVG figures of one view
-minting the same ids. Each of those renders correctly and reports no error.
+minting the same ids. Each of those draws a plausible picture and reports no
+error.
 
 JBrowse checks all of them at runtime and reports each as a sentence naming the
 fix. In a JBrowse you build yourself the report is a `console.error`; in a

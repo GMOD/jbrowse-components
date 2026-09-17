@@ -640,7 +640,7 @@ how displays attach to a track type.
 
 ## Hit-testing (clicks and hovers)
 
-The shape owns where its ink is: its `ink` is the rect its painter fills,
+The shape defines where its ink is: its `ink` is the rect its painter fills,
 `hitNearest` measures the cursor against it, and the shared shapes carry both.
 The walk over the blocks under the cursor is render-core's `nearestMarkHit`; the
 display's part is which candidates each mark is asked about, and what to do with
