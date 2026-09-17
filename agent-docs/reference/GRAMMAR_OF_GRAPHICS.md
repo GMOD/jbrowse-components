@@ -239,6 +239,27 @@ The seams, named honestly:
   categorical counterpart is "Pin distinct colors" (`pinColorDomain`), which
   appends the values its key lists to `colorDomain`, since two unlisted values
   can hash onto one colour.
+- **A categorical key is derived in one place, from the colours themselves.**
+  `derivedColorScale` (`packages/core/src/util/legendCandidates.ts`) is the
+  derivation every channel-backed key runs: the union over the loaded regions,
+  one row per distinct colour named by the first label seen in it, ordered by
+  the channel's `domain`, and dropped where `legendIsReadable` says the rows
+  would say nothing. The canvas feature display hands it the candidates its
+  worker walk recorded with a section stamp apiece, so a hidden section's
+  colours leave the key; Manhattan hands it the entries of the scale table
+  `encodeFeatures` resolved; synteny and the mark display map their own
+  resolved tables but place the rows through the same `legendSpecOf`. The
+  multi-row feature display keeps the bare union, because its colours are
+  `itemRgb` and per-feature `jexl:` — there is no channel behind them to carry
+  a field name or a domain. **The no-value row is a `missing` flag on the
+  entry, not a label a comparator recognises**, and `legendSpecOf` places it
+  last whatever else orders the key: it used to sort by its own name, so a
+  declared `domain` floated `(no value)` above every value the domain did not
+  list, on the bracket the label starts with. What a value-less feature paints
+  is `NO_CATEGORY_COLOR`, one grey across the encoder, the feature display and
+  synteny's unlabelled rows; `#808080` beside it is the misconfiguration
+  colour — a `jexl:` colour that yielded a non-string, a ramp value that is
+  not finite — and means something else.
 
 ## The facet stage
 
@@ -296,15 +317,19 @@ onto `facetField`/`facetDomain`, the flat `colorField`/`colorDomain`/`colorPalet
 slots or `color`, and the filter override. The spec's facet is the stored pair,
 so nothing translates it and nothing stores the spec. The Group by dialog
 applies a spec too (`groupByChannelSpec`). `strand` is a field on both
-channels: its sections are the raw values `1`, `-1` and `0`, forward first
-while `facetDomain` names no order. One rule, `facetSectionLabel`, names a
-strand section and chips any other value `field: value`, on the canvas and mark
-displays alike. Only a facet on another field has the worker stamp a key on
+channels: its sections are the raw values `1`, `-1` and `0`, and two rules in
+core carry it wherever it is declared — `facetSectionOrder` stacks forward,
+reverse, unstranded where no `domain` names an order, and `facetSectionLabel`
+names a strand section and chips any other value `field: value`. `facetRows`
+applies the order in the worker, so a declared `facet: 'strand'` on the mark
+display stacks the same way the feature display's `facetField` does; raw strand
+keys sort `-1, 0, 1` under `compareGroupKeys`, which put the reverse band on
+top. Only a facet on another field has the worker stamp a key on
 each feature, so a strand facet never refetches. The worker paints a color by a
 field through `categoricalColorScale` with no jexl, reading a part's value off
 its transcript (the emitter passes the level), and records each value it
-painted with the section its record files under, which `derivedColorKey` turns
-into the key less the hidden sections.
+painted with the section its record files under, which `derivedColorKey` hands
+`derivedColorScale` as the key less the hidden sections.
 
 The facet replaced a `frozen` `groupBy` slot,
 `{ type: 'strand' | 'attribute', attribute, domain }`, that the spec translated

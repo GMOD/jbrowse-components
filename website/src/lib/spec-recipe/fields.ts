@@ -320,11 +320,27 @@ const VARIANT_COLOR_PRESETS: Record<string, string> = {
   'jexl:impactColor(feature)': 'Consequence impact',
 }
 
-function isColorByDisplay(displayType: string | undefined) {
-  return (
-    displayType === 'LinearBasicDisplay' ||
-    displayType === 'LinearVariantDisplay'
-  )
+/**
+ * The displays composing the canvas base display, which is where the flat
+ * channel slots and the dialogs that write them live: `colorField` and
+ * `colorDomain` under Color by..., `facetField` and `facetDomain` under Group
+ * by..., with Sections for the drawn order. `LinearVariantDisplay` is on the
+ * same base as `LinearBasicDisplay` and renames its vocabulary, so every
+ * channel step below is a step in one of those menus and one list gates them
+ * all.
+ *
+ * Spelled out rather than read off the config manifest, which is 190 kB of
+ * JSON that would then be in every page's build graph; the list is derived and
+ * compared in `channelMenuDisplays.test.ts` instead, so a third display on that
+ * base fails a check rather than silently losing its steps.
+ */
+export const CHANNEL_MENU_DISPLAYS = new Set([
+  'LinearBasicDisplay',
+  'LinearVariantDisplay',
+])
+
+function hasChannelMenus(displayType: string | undefined) {
+  return displayType !== undefined && CHANNEL_MENU_DISPLAYS.has(displayType)
 }
 
 function colorStep(
@@ -342,7 +358,7 @@ function colorStep(
       note: 'Arc color is jexl-evaluated per (feature, alt) and no menu writes it: the only control this display adds is its line-width slider.',
     }
   }
-  if (!isColorByDisplay(displayType)) {
+  if (!hasChannelMenus(displayType)) {
     return undefined
   }
   const colorBy = `${TRACK_MENU} → Color by...`
@@ -368,7 +384,7 @@ function colorFieldStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
-  if (typeof value !== 'string' || !value || !isColorByDisplay(displayType)) {
+  if (typeof value !== 'string' || !value || !hasChannelMenus(displayType)) {
     return undefined
   }
   const colorBy = `${TRACK_MENU} → Color by...`
@@ -383,7 +399,7 @@ function colorScaleStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
-  return Array.isArray(value) && value.length && isColorByDisplay(displayType)
+  return Array.isArray(value) && value.length && hasChannelMenus(displayType)
     ? { path: `${TRACK_MENU} → Color by... → Attribute... → Edit as JSON...` }
     : undefined
 }
@@ -407,7 +423,7 @@ function facetFieldStep(
       note: `The submenu lists whichever metadata columns your samples carry, so "${value}" appears only if yours have it.`,
     }
   }
-  if (!isColorByDisplay(displayType)) {
+  if (!hasChannelMenus(displayType)) {
     return undefined
   }
   const groupBy = `${TRACK_MENU} → Group by...`
@@ -429,7 +445,7 @@ function facetDomainStep(
       note: 'The band order has no menu row of its own; the figure declares it in the track config.',
     }
   }
-  return isColorByDisplay(displayType)
+  return hasChannelMenus(displayType)
     ? { path: `${TRACK_MENU} → Sections` }
     : undefined
 }
