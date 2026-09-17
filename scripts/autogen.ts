@@ -107,6 +107,14 @@ const GENERATORS: Generator[] = [
     needs: ['core exports'],
   },
   {
+    // scripts/registryBundleSizes.json — what each realm's generated registry
+    // evaluates on load, which is the number ADR-128's worker split rests on.
+    name: 'registry bundle sizes',
+    argv: rootScript('measureRegistryBundle.ts'),
+    independent: true,
+    needs: ['runtime re-exports'],
+  },
+  {
     // scripts/chromeBundleSizes.json, measured by bundling both entry points.
     name: 'chrome bundle sizes',
     argv: rootScript('measureChromeBundle.ts'),

@@ -159,6 +159,18 @@ a Material UI component, the data grid or floating-ui, which is what put
 `ui/theme.ts` onto `@mui/material/styles` — its `@mui/material` barrel import
 had been marking a module every renderer reads as UI.
 
+**What the split is worth is measured, not written here.**
+`pnpm measure-registry-bundle` bundles both of jbrowse-web's generated
+registries and records what each realm evaluates before the first plugin's
+module scope runs; CI re-checks it. Quote it from
+`scripts/registryBundleSizes.json` rather than from prose — that file is what
+CI gates, so a number written anywhere else is one the next commit can falsify.
+The 272 -> 182 KB above is the hand-measured figure from the
+`workerNamespaceNames.ts` era and is kept as the record of that change, not as
+the current answer. The worker's residual rendering stack is `ui/theme.ts`
+reaching `@mui/material/styles`, which brings @mui/system and emotion with it:
+the exemption ADR-128 took over marking every theme reader as UI.
+
 ### 4. The `@jbrowse/core/ui` barrel, and two more elements in descriptors
 
 Done in a follow-up pass; 523 → 514 KB gzipped. **A small number, and worth
