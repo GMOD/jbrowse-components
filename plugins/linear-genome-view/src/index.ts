@@ -140,6 +140,8 @@ export type { ScalebarRefNameLabel } from './LinearGenomeView/util.ts'
 // split view, the two synteny displays and the react-linear-genome-view model
 // all serialize it.
 export type { RegionsOrientation } from './LinearGenomeView/util.ts'
+// Same reason, for the `contextLevelViews` getter.
+export type { ContextLevel } from './LinearGenomeView/contextLevels.ts'
 // The scalebar's grid, published because it is a contract other views draw
 // against rather than an internal of this one: the synteny view's location
 // markers continue this ruler down through the ribbons, and pin their pitch AND

@@ -100,6 +100,7 @@ export {
   drawerGridTemplateColumns,
 } from './ui/index.ts'
 export type {
+  AboutPanelProps,
   PreferencesDialogSession,
   PreferencesPanelDescriptor,
 } from './ui/index.ts'
