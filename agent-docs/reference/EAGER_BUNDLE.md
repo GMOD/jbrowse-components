@@ -149,12 +149,11 @@ five `jbrequire` calls at the top of `install()`) end to end. All three were
 confirmed to fail with the `publishReExports()` call removed.
 
 Since 2026-09-16 the registry is generated from the exports maps
-(`scripts/generateReExports.ts`, ADR-128) and serves every subpath of every
-`@jbrowse` package the product bundles — 422 keys where the hand list named
-25 — so the namespace spread above names far more than it did. It is the same
-lazy chunk, and each product holds its own generated map
-(`reExports.generated.ts`) so an embedded build serves only the packages it
-bundles.
+(`scripts/generateReExports.ts`, ADR-128) and serves every subpath of
+`@jbrowse/core` and the display toolkit — 376 keys where the hand list named
+25 core subpaths — so the namespace spread above names far more than it did. It
+is the same lazy chunk, and each product holds its own generated map
+(`reExports.generated.ts`).
 
 **Lazy is not confined.** Tree-shaking is whole-build: a host whose bundle holds
 the registry at all keeps every export of every served module, and a module

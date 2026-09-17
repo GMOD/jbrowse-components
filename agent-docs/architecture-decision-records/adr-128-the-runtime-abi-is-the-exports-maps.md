@@ -1,13 +1,14 @@
 ---
 status: Accepted
-summary: "The runtime plugin ABI is generated from the exports maps: a runtime plugin externalizes every subpath every bundled @jbrowse package publishes, each product serves what it bundles, the worker's stub-or-real split is derived from each module's own graph, and a key a host lacks throws naming itself. Supersedes ADR-030 §3 — the built jbrowse-plugin-arg carried 84 files of core, 29 of display-kit and 21 of render-core beside 100 KB of its own code, and nothing in the repo could see it"
+summary: "The runtime plugin ABI is generated from the exports maps of @jbrowse/core and the display toolkit (display-kit, display-ui, render-core): a runtime plugin externalizes every subpath those four publish and bundles any other @jbrowse package it uses, no plugin's code is served, the worker's stub-or-real split is derived from each module's own graph, and a key a host lacks throws naming itself. Supersedes ADR-030 §3 — the built jbrowse-plugin-arg carried 84 files of core, 29 of display-kit and 21 of render-core beside 100 KB of its own code, and nothing in the repo could see it"
 ---
 
 # ADR-128: The runtime ABI is the exports maps
 
 ## Status
 
-Accepted (2026-09-16). Supersedes decision 3 of
+Accepted (2026-09-16, narrowed to core and the display toolkit 2026-09-17).
+Supersedes decision 3 of
 [ADR-030](adr-030-render-core-package-static-import-only.md) — the render
 API is served now, not bundled — and closes the first two follow-ups in
 [reference/PLUGIN_ABI_STABILITY.md](../reference/PLUGIN_ABI_STABILITY.md).
@@ -64,21 +65,22 @@ component subpaths are.
 
 ## Decision
 
-**A runtime plugin externalizes `@jbrowse/*` as a whole, and the host serves
-every subpath every bundled `@jbrowse` package publishes.**
-`scripts/generateReExports.ts` derives, on `pnpm autogen`:
+**The host serves every subpath `@jbrowse/core`, `@jbrowse/display-kit`,
+`@jbrowse/display-ui` and `@jbrowse/render-core` publish, and no other
+`@jbrowse` package.** Those four are what a plugin is built on; another
+plugin's code, or a helper package behind one, is not served, so a runtime
+plugin never runs against another plugin's internals and bundles any helper it
+wants. `scripts/generateReExports.ts` derives, on `pnpm autogen`:
 
-- `ReExports/list.ts` — the union: the framework singletons and Material UI
-  from the hand-written `frameworkModules.ts`, and every `exports`-map subpath
-  (or `main`) of every public `@jbrowse` package in jbrowse-web's dependency
-  closure, `ReExports/*` excluded. 422 keys over 47 packages.
+- `ReExports/list.ts` — the framework singletons and Material UI from the
+  hand-written `frameworkModules.ts`, and every `exports`-map subpath (or
+  `main`) of the four served packages, `ReExports/*` excluded. 376 keys.
 - `coreModules.generated.ts` / `coreWorkerModules.generated.ts` — the
   `@jbrowse/core` half, which core can serve on its own.
 - `products/<p>/src/reExports.generated.ts` and `workerReExports.generated.ts`
-  — one pair per product, spreading core's map under namespaces of every
-  other package that product bundles. A product names each served package as
-  a direct dependency, since pnpm resolves nothing else; the generator fails
-  naming the missing one.
+  — one pair per product, spreading core's map beside the display toolkit's
+  keys. A product names each served package as a direct dependency, since pnpm
+  resolves nothing else; the generator fails naming the missing one.
 - `reExports.generated.json` — every key with its runtime export names and
   the worker verdict, which `check-published-plugins.ts` and the removals
   tables read.
@@ -110,8 +112,8 @@ one failure.
 
 **The plugin `exports` objects are gone**, and the `@material-ui/*` aliases
 with them (one live reader, `jbrowse-plugin-reactome` 1.0.1). What an
-`exports` object held is a named export of the plugin package, which the
-served list now includes.
+`exports` object held is a named export of the plugin package, and a runtime
+plugin has no route to it.
 
 **`scripts/check-plugin-porosity.ts` is the gate**, in the post-build CI job
 beside the declaration-leak and extension-point checks: it builds the exemplar
@@ -138,10 +140,8 @@ metafile.
   render-core goes with it for the one-rule reason; a plugin's generated
   shader is consumed by the host's `slangPass`, which was already the
   contract.
-- Products declare the packages they bundle. jbrowse-web gained ten direct
-  dependencies it already reached transitively, the circular-genome-view
-  build thirteen, among them `@jbrowse/plugin-linear-genome-view`, which
-  `sv-core` and `tree-sidebar` had been pulling into it all along.
+- Each product names the four served packages as direct dependencies, so
+  its generated map can import them.
 - The registry chunk grows, and its cost is not confined to the chunk. A host
   whose bundle holds the registry keeps every export of every served module,
   so a module its eager code shares carries all of them onto first paint, and
@@ -157,10 +157,28 @@ metafile.
   `JBrowseExports[key]` at module scope and cannot await, so every served
   module is loaded before the first plugin evaluates. Per-key laziness needs
   the plugin to declare what it reads, which the bundle does not carry.
+- **Serve every `@jbrowse` package a product bundles.** This ADR's first
+  form: 422 keys over 47 packages, 33 of them plugins. It made other plugins'
+  code a runtime dependency of any plugin that imported it, which is the
+  coupling the plugin model avoids, and it had no user: in `~/src/jb2plugins`
+  the graph genome viewer read `@jbrowse/synteny-core` and
+  `@jbrowse/cigar-utils` off the host, and `jbrowse-plugin-multilevel-linear-view`
+  (untouched since 2026-05-01) the linear genome view. The graph plugin's read
+  failed in the worker, where synteny-core's barrel was a stub because it also
+  exports components. Narrowing to the four packages took the registry from
+  14238 to 6959 KB on the main thread and 6106 to 4551 KB in the worker
+  (`scripts/registryBundleSizes.json`), and no JBrowse release carried the
+  wide list.
+- **Split the worker's stubs per export, so a rendering module's data names
+  are real.** Built for the graph plugin's two synteny names and reverted the
+  next day: about 580 lines of generator modelling `sideEffects: false`
+  pruning, a 53-name allowlist, and 66 KB gzipped more registry on top of the
+  worker's own graph (263 to 329 KB, esbuild, minified), half of it app-core
+  and product-core session models no worker plugin reads. With no plugin's
+  code served there is no consumer.
 - **Host the non-core maps in `@jbrowse/product-core`.** One generated pair
-  instead of five, but `sv-core` and `tree-sidebar` depend on the linear
-  genome view plugin, so product-core would have pulled that plugin into every
-  product, and the embedded builds choose their plugin sets on purpose.
+  instead of five, rejected while `sv-core` and `tree-sidebar`, which depend
+  on the linear genome view plugin, were served. That reason left with them.
 - **Keep render-core bundled, serve the rest.** A plugin's own render-core
   copy would then drive backends through the host's display-kit copy's
   `RenderLifecycleMixin`, two copies of one lifecycle held together by

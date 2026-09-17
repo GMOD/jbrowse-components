@@ -270,12 +270,11 @@ and calling it throws inside the reaching plugin's own `install`.
 - **the plugin `exports` objects, all of them.** `AuthenticationPlugin`,
   `DataManagementPlugin`, `LinearGenomeViewPlugin` and `WigglePlugin` carried
   one; `pluginManager.getPlugin('X').exports` is now `undefined` on every
-  plugin. What they held is importable from the plugin package instead
-  (`baseLinearDisplayConfigSchema` from `@jbrowse/display-kit/configSchema`,
-  `SearchBox` and `ZoomControls` from `@jbrowse/plugin-linear-genome-view`,
-  `AssemblyManager` from `@jbrowse/plugin-data-management`), and that import
-  resolves to the host's copy: see
-  [](/docs/developer_guides/imports_and_reexports). Reading the store bundles
+  plugin. A runtime plugin gets no other plugin's code: the display schema they
+  carried is `baseLinearDisplayConfigSchema` from
+  `@jbrowse/display-kit/configSchema`, which the host re-exports, and
+  `SearchBox`, `ZoomControls` and `AssemblyManager` have no replacement (see
+  [](/docs/developer_guides/imports_and_reexports)). Reading the store bundles
   found no v5-era plugin reaching an `exports` object; the v4 bundles that did
   (`gdc`, `icgc`, `gwas`, `quantseq`, `mafviewer`, `multilevel-linear-view2`)
   each already break on v5 through a renderer-era name.

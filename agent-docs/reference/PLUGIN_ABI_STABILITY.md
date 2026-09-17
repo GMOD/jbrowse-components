@@ -19,8 +19,8 @@ protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 - **The runtime registry is the exports maps** ([ADR-128](../architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md)).
   `scripts/generateReExports.ts` writes `ReExports/list.ts`, the module maps
   in core and in each product, and `reExports.generated.json`, from the
-  `exports` map of every `@jbrowse` package jbrowse-web bundles — 422 keys
-  over 47 packages where the hand list named 25 core subpaths. So a served
+  `exports` maps of `@jbrowse/core` and the display toolkit — 376 keys where
+  the hand list named 25 core subpaths. No other plugin's code is served. So a served
   name is one an exports map publishes, a removal is a diff in a committed
   generated file, and the two checks that read the manifest are the gates: the
   `ABI_REMOVED_NAMES` table (`website/scripts/generate-abi-removals.ts`) fails
@@ -211,7 +211,7 @@ one either.
   - `isSessionWithDialogs` — same file. Every session that composes `BaseSessionModel` has the dialog members, so there is no longer a narrowing to do
   - `SessionWithDialogs` — same file; the mixin it was an `Instance` of is gone
   - `SessionWithDialogsType` — same file; it was the `ReturnType` of that mixin
-- **the plugin `exports` objects, all four.** `AuthenticationPlugin` (ten account schemas and factories), `DataManagementPlugin` (`AssemblyManager`), `LinearGenomeViewPlugin` (`baseLinearDisplayConfigSchema`, `SearchBox`, `ZoomControls`, `LinearGenomeView`) and `WigglePlugin` (`utils`). Measured 2026-09-16 over the 17 store bundles: the only readers were pre-v5 bundles already dead on v5 through a renderer-era name, and `multilevel-linear-view2` 1.0.2, which takes the three LGV components. Its bundle also carries `BaseLinearDisplay` and `renderToAbstractCanvas`, but as 89 files of the published LGV plugin it inlined through a value import of `RefNameAutocomplete`, not as reads off the host. Apollo composes `InternetAccount` from core and never reached the authentication set. What an `exports` object held is a named export of the plugin package, which RFC-001 §7 made the route for new plugin code; `lazyPluginExports.tsx`, which existed only to keep the LGV object from pinning three components into first paint, went with it
+- **the plugin `exports` objects, all four.** `AuthenticationPlugin` (ten account schemas and factories), `DataManagementPlugin` (`AssemblyManager`), `LinearGenomeViewPlugin` (`baseLinearDisplayConfigSchema`, `SearchBox`, `ZoomControls`, `LinearGenomeView`) and `WigglePlugin` (`utils`). Measured 2026-09-16 over the 17 store bundles: the only readers were pre-v5 bundles already dead on v5 through a renderer-era name, and `multilevel-linear-view2` 1.0.2, which takes the three LGV components. Its bundle also carries `BaseLinearDisplay` and `renderToAbstractCanvas`, but as 89 files of the published LGV plugin it inlined through a value import of `RefNameAutocomplete`, not as reads off the host. Apollo composes `InternetAccount` from core and never reached the authentication set. What an `exports` object held is a named export of the plugin package, which a runtime plugin does not read off the host; `lazyPluginExports.tsx`, which existed only to keep the LGV object from pinning three components into first paint, went with it
 - **`LinearGenomeViewPlugin.exports`**, before the object itself went:
   - `BaseLinearDisplay` — the legacy block-render state model, removed with the server-side render path. A v4 plugin composing `exports.BaseLinearDisplay()` throws while its `install` runs, so its track type never registers and the user opens a saved session with the track simply absent
   - `BaseLinearDisplayComponent` — the React half of the same pair, and the last reader of the `DisplayMessageComponent` getter on `BaseDisplayModel`, which went with it. A display model no longer holds a React component at all
