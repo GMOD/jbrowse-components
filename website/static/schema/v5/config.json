@@ -14451,6 +14451,9 @@
             "$ref": "#/$defs/LinearGenomeView"
           }
         },
+        "contextConnectorHeight": {
+          "type": "number"
+        },
         "hideNoTracksActive": {
           "type": "boolean"
         },

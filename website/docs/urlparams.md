@@ -453,6 +453,7 @@ restores natively:
 | Property | What it does |
 | --- | --- |
 | [`colorByCDS`](/docs/models/lineargenomeview#property-colorbycds) | color CDS segments by reading frame |
+| [`contextConnectorHeight`](/docs/models/lineargenomeview#property-contextconnectorheight) | Height of the band holding the trapezoid down to the row below, dragged by the band itself. A context level's only other state of its own; nothing draws a connector under a view that is not one. |
 | [`contextLevels`](/docs/models/lineargenomeview#property-contextlevels) | Wider views of the same locus stacked above the tracks, widest first. Each is a LinearGenomeView with tracks of its own whose regions, width and centre this view drives; its window width is the one thing it keeps. See `contextLevels.ts`. |
 | [`displayedRegions`](/docs/models/lineargenomeview#property-displayedregions) | currently displayed regions, can be a single chromosome, arbitrary subsections, or the entire set of chromosomes in the genome, but it not advised to use the entire set of chromosomes if your assembly is very fragmented |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |

@@ -302,8 +302,12 @@ joins it to the level below.
 
 The levels stay centred on the view. Drag or pan a level and the view moves by
 the same number of bases; zoom a level and only that level changes width. A
-rubberband selection on a level navigates the view to it. A level's own
-hamburger menu removes it.
+rubberband selection on a level navigates the view to it. Drag a trapezoid
+itself to set how tall its band is, which is how steep the connector reads. A
+level's own hamburger menu removes it.
+
+**Export SVG** draws the whole stack whichever menu it is asked from, each level
+under a bar labelled with the span it covers.
 
 <Figure caption="The Add context level item in the view menu." src="/img/context_levels_menu.png" />
 

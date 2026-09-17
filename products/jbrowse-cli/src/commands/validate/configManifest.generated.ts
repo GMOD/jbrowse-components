@@ -5967,6 +5967,7 @@ export const configManifest: ConfigManifest = {
         "hideHeader",
         "hideHeaderOverview",
         "contextLevels",
+        "contextConnectorHeight",
         "hideNoTracksActive",
         "trackSelectorType",
         "showCenterLine",
