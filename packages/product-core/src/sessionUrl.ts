@@ -4,7 +4,7 @@ import {
   toUrlSafeB64,
 } from '@jbrowse/core/util'
 
-import { getShareableSessionSnapshot } from './Session/index.ts'
+import { getShareableSessionSnapshot } from './Session/shareableSnapshot.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

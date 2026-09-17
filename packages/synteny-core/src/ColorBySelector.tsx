@@ -2,10 +2,11 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
-import { colorByMenuItems, colorByMenuTargetFor } from './colorByMenuItems.tsx'
+import { colorByMenuItems } from './colorByMenuItems.tsx'
+import { colorByMenuTargetFor } from './colorByMenuTarget.ts'
 import { colorByShortLabel } from './colorLegend.ts'
 
-import type { TrackColorsModel } from './colorByMenuItems.tsx'
+import type { TrackColorsModel } from './colorByMenuTarget.ts'
 
 /**
  * #api

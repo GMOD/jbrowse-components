@@ -1,47 +1,13 @@
 import Plugin from '@jbrowse/core/Plugin'
-import { set1 } from '@jbrowse/core/ui/colors'
 
 import ArcGetFeaturesRPCMethodsF from './ArcGetFeaturesRPC/index.ts'
 import LinearArcDisplayF from './LinearArcDisplay/index.ts'
 import LinearPairedArcDisplayF from './LinearPairedArcDisplay/index.ts'
-import { FALLBACK_STROKE_PX } from './shared/arcLayout.ts'
+import { addArcJexlFunctions } from './arcJexlFunctions.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature } from '@jbrowse/core/util'
 
-const svTypeColors: [string, string][] = [
-  ['<DEL', set1[0]!],
-  ['<DUP', set1[1]!],
-  ['<INV', set1[2]!],
-  ['<TRA', set1[3]!],
-  ['<CNV', set1[4]!],
-]
-
-// The functions the arc config slots default to. Exported so the plugin's own
-// test harness registers the same ones `install` does — a harness without them
-// can only test slot values written by hand, which is how a default expression
-// that blanked the display shipped.
-export function addArcJexlFunctions(pluginManager: PluginManager) {
-  /** #jexlFunction Slot defaults from plugins | logThickness(feature, 'score') | log(attribute + 1) where that is a width, else 1px; the arc display's default thickness */
-  pluginManager.jexl.addFunction(
-    'logThickness',
-    (feature: Feature, attributeName: string) => {
-      // Always a width the display can paint. This is what `thickness` defaults
-      // to, so it runs over every feature of a BED3/BED4 track, and an absent,
-      // non-numeric or negative attribute must not answer something that hides
-      // the arc — `layOutArcs` reads a thickness of 0 as an instruction to hide
-      // it, which belongs to an expression the user wrote, not to this one.
-      const thickness = Math.log(Number(feature.get(attributeName)) + 1)
-      return thickness > 0 ? thickness : FALLBACK_STROKE_PX
-    },
-  )
-  /** #jexlFunction Slot defaults from plugins | defaultPairedArcColor(feature, alt) | a color per SV type read off the ALT (DEL, DUP, INV, TRA, CNV) */
-  pluginManager.jexl.addFunction(
-    'defaultPairedArcColor',
-    (_feature: Feature, alt?: string) =>
-      svTypeColors.find(([prefix]) => alt?.startsWith(prefix))?.[1] ?? set1[6]!, // skip 5, yellow
-  )
-}
+export { addArcJexlFunctions } from './arcJexlFunctions.ts'
 
 export default class ArcPlugin extends Plugin {
   name = 'ArcRenderer'

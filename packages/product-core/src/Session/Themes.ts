@@ -1,7 +1,10 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { createJBrowseThemeFromArgs, defaultThemes } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
+import {
+  createJBrowseThemeFromArgs,
+  defaultThemes,
+} from '@jbrowse/core/ui/theme'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -10,8 +13,8 @@ import { asSession } from '../siblingCast.ts'
 import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui'
 import type { PaletteInput } from '@jbrowse/core/ui/palette'
+import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui/theme'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 

@@ -2,6 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import { arcApexY } from './arcShape.ts'
+import { FALLBACK_STROKE_PX } from './fallbackStrokePx.ts'
 
 import type { ArcShape } from './arcShape.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -93,11 +94,6 @@ export type ArcParts = Omit<LaidOutArc, 'selected' | 'xMin' | 'xMax'> & {
 interface ArcLayoutHost extends IStateTreeNode {
   selectedFeatureId: string | undefined
 }
-
-// What Canvas2D's `lineWidth` and SVG's `stroke-width` both default to, so a
-// thickness that is no width at all draws what an absent one would. Shared with
-// `logThickness`, which answers it for the same reason.
-export const FALLBACK_STROKE_PX = 1
 
 // A style slot is a jexl expression over the feature, so `arcHeight`'s default
 // is `-Infinity` for a zero-length feature. The extent cannot see a bezier's

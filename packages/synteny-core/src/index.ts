@@ -131,12 +131,13 @@ export { bandGroundColor, bandInk } from './bandGround.ts'
 export { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 export { TrackColorsMixin, widenAttributeRanges } from './TrackColorsMixin.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
-export { colorByMenuItems, colorByMenuTargetFor } from './colorByMenuItems.tsx'
+export { colorByMenuItems } from './colorByMenuItems.tsx'
+export { colorByMenuTargetFor } from './colorByMenuTarget.ts'
 export type {
   ColorByMenuTarget,
   ColorByMenuTrack,
   TrackColorsModel,
-} from './colorByMenuItems.tsx'
+} from './colorByMenuTarget.ts'
 // the palette button itself, not just the menu inside it — the two headers had a
 // copy each and only one of them said which mode it was in
 export { default as ColorBySelector } from './ColorBySelector.tsx'

@@ -53,12 +53,12 @@ export {
 export {
   TrackMenuItemsSessionMixin,
   aboutTrackMenuItem,
-  copyTrackSnapshot,
-  pluginExtraTrackItems,
   trackActionItems,
   trackActionMenuItems,
   trackListMenuItems,
 } from './TrackMenu.ts'
+export { copyTrackSnapshot } from './copyTrackSnapshot.ts'
+export { pluginExtraTrackItems } from './pluginExtraTrackItems.ts'
 export { TrackMenuSessionMixin } from './TrackMenuSessionMixin.ts'
 export { finalizeSession } from './finalizeSession.ts'
 export type { AssertSessionModel } from './assertSessionModel.ts'

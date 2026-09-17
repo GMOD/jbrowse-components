@@ -6,7 +6,7 @@ import { VALUE_MODES_LABEL } from './colorModes.ts'
 import type {
   ColorByMenuTarget,
   ColorByMenuTrack,
-} from './colorByMenuItems.tsx'
+} from './colorByMenuTarget.ts'
 
 const track = (n: number, over: Partial<ColorByMenuTrack> = {}) =>
   ({

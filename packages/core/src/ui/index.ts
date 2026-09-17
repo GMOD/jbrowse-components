@@ -37,10 +37,12 @@ export { useRecentLocations } from './useRecentLocations.ts'
 export type { RecentLocation } from './useRecentLocations.ts'
 export {
   RefNameAutocompleteEndAdornment,
-  adornmentReservePx,
-  getInputWidth,
   default as RefNameAutocomplete,
 } from './RefNameAutocomplete/index.tsx'
+export {
+  adornmentReservePx,
+  getInputWidth,
+} from './RefNameAutocomplete/util.ts'
 export { default as CascadingMenu } from './CascadingMenu.tsx'
 export { default as CascadingMenuButton } from './CascadingMenuButton.tsx'
 export { default as ContextMenu } from './ContextMenu.tsx'

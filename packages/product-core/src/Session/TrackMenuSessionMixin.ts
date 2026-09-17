@@ -1,11 +1,8 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { asSession } from '../siblingCast.ts'
-import {
-  aboutTrackMenuItem,
-  pluginExtraTrackItems,
-  trackListMenuItems,
-} from './TrackMenu.ts'
+import { aboutTrackMenuItem, trackListMenuItems } from './TrackMenu.ts'
+import { pluginExtraTrackItems } from './pluginExtraTrackItems.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

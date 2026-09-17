@@ -1,58 +1,24 @@
 import { lazy } from 'react'
 
 import { InfoIcon } from '@jbrowse/core/ui/Icons'
-import { buildExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuItems'
 import { namesTemporaryAssembly } from '@jbrowse/core/util'
-import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
 
+import { pluginExtraTrackItems } from './pluginExtraTrackItems.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { DialogComponentType } from '@jbrowse/core/util'
-import type {
-  AbstractSessionModel,
-  TrackActionView,
-} from '@jbrowse/core/util/types'
+import type { TrackActionView } from '@jbrowse/core/util/types'
 
 const AboutDialog = lazy(() => import('../ui/AboutDialog.tsx'))
-
-type TrackCopySnapshot = {
-  trackId: string
-  name: string
-  category?: unknown
-  displays?: { type: string; displayId: string }[]
-} & Record<string, unknown>
-
-/**
- * Clone a track config for "Copy track": snapshots the config, appends a unique
- * timestamp suffix to trackId (so it doesn't collide with the original), tags
- * " (copy)" on the name, and regenerates each displayId to the canonical
- * `${trackId}-${type}` form baseTrackConfig auto-injects — keeping them unique
- * (displayId is a types.identifier, so a collision would crash MST).
- */
-export function copyTrackSnapshot(
-  config: BaseTrackConfig,
-  opts: { clearCategory: boolean },
-): TrackCopySnapshot {
-  const snap = structuredClone(
-    isStateTreeNode(config) ? getSnapshot(config) : config,
-  ) as TrackCopySnapshot
-  snap.trackId += `-${Date.now()}`
-  snap.name += ' (copy)'
-  if (opts.clearCategory) {
-    snap.category = undefined
-  }
-  for (const d of snap.displays ?? []) {
-    d.displayId = `${snap.trackId}-${d.type}`
-  }
-  return snap
-}
 
 interface TrackActionSession<C> {
   editConfiguration: (
@@ -177,7 +143,7 @@ export function trackActionItems<C extends { trackId: string }>({
   ]
 }
 
-interface SessionWithDialog {
+export interface SessionWithDialog {
   queueDialog: (
     cb: (done: () => void) => [DialogComponentType, Record<string, unknown>],
   ) => void
@@ -200,24 +166,6 @@ export function aboutTrackMenuItem(
       ])
     },
   }
-}
-
-/**
- * plugin-contributed per-track items (`Core-extraTrackMenuItems`), surfaced in
- * both the hierarchical selector and the in-view label menu so plugins reach
- * every track menu consistently
- */
-export function pluginExtraTrackItems(
-  pluginManager: PluginManager,
-  session: SessionWithDialog,
-  config: AnyConfigurationModel,
-  view?: TrackActionView,
-): MenuItem[] {
-  return buildExtraTrackMenuItems(pluginManager, {
-    session: session as unknown as AbstractSessionModel,
-    config,
-    view,
-  })
 }
 
 /**

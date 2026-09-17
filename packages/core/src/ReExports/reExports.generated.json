@@ -1499,10 +1499,13 @@
         "normalizeSvgMarkup",
         "serializeSvg"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "react-dom",
         "react-dom/client"
+      ],
+      "stubbed": [
+        "serializeSvg"
       ]
     },
     "@jbrowse/core/svg/SvgExport": {
@@ -1756,8 +1759,6 @@
         "SubmitForm",
         "TagTextField",
         "ViewLoadingScreen",
-        "adornmentReservePx",
-        "getInputWidth",
         "replaceViewAction"
       ]
     },
@@ -4453,12 +4454,15 @@
         "default",
         "skippedFeatures"
       ],
-      "worker": "stub",
+      "worker": "mixed",
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/Tooltip",
         "react-dom"
+      ],
+      "stubbed": [
+        "default"
       ]
     },
     "@jbrowse/display-kit/squashToHeightMenuItem": {
@@ -4762,11 +4766,9 @@
         "react-dom/client"
       ],
       "stubbed": [
-        "copyFeatureInfo",
         "default",
         "getColorByMenuItem",
-        "getHitMenuItems",
-        "withContextMenuFeature"
+        "getHitMenuItems"
       ]
     },
     "@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel": {
@@ -4791,15 +4793,7 @@
         "addArcJexlFunctions",
         "default"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "react-dom",
-        "react-dom/client"
-      ]
+      "worker": "real"
     },
     "@jbrowse/plugin-authentication": {
       "package": "@jbrowse/plugin-authentication",
@@ -5414,22 +5408,16 @@
         "ModalWidget",
         "ModalWidgetAppBar",
         "PreferencesDialog",
-        "ThemeManagerSessionMixin",
         "TrackMenuItemsSessionMixin",
         "TrackMenuSessionMixin",
         "WidgetBody",
         "WidgetHeading",
         "aboutTrackMenuItem",
-        "copyTrackSnapshot",
-        "decodeSessionFromUrl",
-        "encodeSessionToUrl",
         "exportSessionMenuItem",
         "importSessionMenuItem",
-        "isSessionWithThemes",
         "newSessionMenuItem",
         "openConnectionMenuItem",
         "openTrackMenuItem",
-        "pluginExtraTrackItems",
         "pluginStoreMenuItem",
         "preferencesMenuItem",
         "redoMenuItem",
@@ -6394,7 +6382,6 @@
         "SwapAssemblies",
         "TrackWarningsDialog",
         "colorByMenuItems",
-        "colorByMenuTargetFor",
         "defaultSyntenyFileFormats"
       ]
     },
