@@ -54,13 +54,16 @@ iteratively. `parsedTree` is cached per newick string, so an in-place sort
 compounds across domain changes and an unlisted clade never returns to file
 order.
 
-**Where it runs is the design.** A supplied tree (no `clusterProvenance`)
-rotates at parse time, and maf reads its row order back off that same computed,
-so the leaves and the rows cannot drift. A computed tree rotates in the run that
-produced it — `rotateClusterRun`, called from `applyClusterRun` and from
-variants' `applyClusterOrder`, which is the path `runGenotypeClustering` takes
-instead. Rotating a computed tree at parse time would turn a restored session's
-dendrogram away from the `layout` saved beside it and draw nothing. The R-paste
+**Where it runs is the design.** Parse time rotates only a tree nothing has
+arranged under — no `clusterProvenance`, so it was supplied rather than
+computed, and no `layout`, so the rows are the tree's own leaves. maf reads its
+row order back off that same computed, so the leaves and the rows cannot drift.
+Everything else rotates in the run that produced it: `rotateClusterRun`, called
+from `applyClusterRun` and from variants' `applyClusterOrder`, which is the path
+`runGenotypeClustering` takes instead. Rotating an arranged tree on the way out
+would turn a restored session's dendrogram away from the `layout` saved beside
+it and draw nothing at all — and the `layout` is the stronger half of that gate,
+because `setLayoutAndClusterTree` takes its provenance optionally. The R-paste
 `applyOrder` path carries no tree and rotates nothing: a paste is an explicit
 order.
 
