@@ -31,8 +31,13 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
  */
 export function createTestEnvironment({
   colorBy = 'normal',
+  colorDomain,
   ldAdapter = true,
-}: { colorBy?: ManhattanColorBy; ldAdapter?: boolean } = {}) {
+}: {
+  colorBy?: ManhattanColorBy
+  colorDomain?: string[]
+  ldAdapter?: boolean
+} = {}) {
   const env = createDisplayTestEnvironment<LinearManhattanDisplayModel>({
     plugins: [new LinearGenomeViewPlugin()],
     trackType: 'GWASTrack',
@@ -55,7 +60,7 @@ export function createTestEnvironment({
     configSchema: () => configSchemaFactory(),
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
     viewModel: linearGenomeViewStateModelFactory,
-    displayConfig: { colorBy },
+    displayConfig: { colorBy, ...(colorDomain ? { colorDomain } : {}) },
     regions: REGIONS,
     onViewReady: view => {
       view.showAllRegions()

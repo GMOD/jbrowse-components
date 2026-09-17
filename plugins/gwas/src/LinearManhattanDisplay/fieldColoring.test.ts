@@ -42,7 +42,10 @@ function labels(items: MenuItem[]): string[] {
 }
 
 describe('LinearManhattanDisplay field coloring', () => {
-  it('derives the color scale from the payloads, merged across regions and sorted numerically', () => {
+  // With no domain the merge falls to `compareGroupKeys`, the order every
+  // categorical channel shares: numbers by magnitude, everything else by code
+  // point, so `chr10` files before `chr2` until a domain says otherwise.
+  it('derives the color scale from the payloads, merged across regions and sorted', () => {
     const { display } = createTestEnvironment({
       colorBy: 'field',
     }).createDisplay()
@@ -71,11 +74,32 @@ describe('LinearManhattanDisplay field coloring', () => {
         title: 'name',
         entries: [
           { value: 'chr1', label: 'chr1', color: 'rgba(51,51,51,1)' },
-          { value: 'chr2', label: 'chr2', color: 'rgba(34,34,34,1)' },
           { value: 'chr10', label: 'chr10', color: 'rgba(17,17,17,1)' },
+          { value: 'chr2', label: 'chr2', color: 'rgba(34,34,34,1)' },
         ],
       },
     ])
+  })
+
+  it('a colorDomain keys the values it lists first, and rides to the worker', () => {
+    const { display } = createTestEnvironment({
+      colorBy: 'field',
+      colorDomain: ['chr10', 'chr2'],
+    }).createDisplay()
+    display.setRpcData(
+      0,
+      payload([
+        { value: 'chr1', color: '#333333' },
+        { value: 'chr2', color: '#222222' },
+        { value: 'chr10', color: '#111111' },
+      ]),
+      REGION,
+    )
+    const [scale] = display.colorScales
+    expect(
+      scale?.kind === 'categorical' ? scale.entries.map(e => e.value) : [],
+    ).toEqual(['chr10', 'chr2', 'chr1'])
+    expect(display.rpcProps().colorDomain).toEqual(['chr10', 'chr2'])
   })
 
   it('has no key under a single color, and the r² bins under LD coloring', () => {

@@ -32,6 +32,10 @@ export interface GetManhattanDataArgs {
   // `colorField`. 'normal' uses `color`.
   colorBy: ManhattanColorBy
   colorField: string
+  // Field coloring's declared order: these values key first and walk the
+  // palette in this order, the rest follow sorted. Undefined where the
+  // display declared none, and then the value's own color applies.
+  colorDomain?: string[]
   // The feature field plotted on the y axis, `score` unless the display's
   // `scoreField` slot names another
   scoreField: string

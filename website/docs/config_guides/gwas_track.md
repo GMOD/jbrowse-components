@@ -114,6 +114,10 @@ types**), and two slots choose what it reads:
   each distinct value of a column its own color and draws a key of the values
   met. A value takes the same color in every region and session. The track
   menu's **Color by** submenu switches between a single color, a field and LD.
+- [`colorDomain`](/docs/config/linearmanhattandisplay/#slot-colordomain) — the
+  order those values take, in the key and in the palette. The values it lists
+  come first, in that order, and the rest follow sorted; left empty every value
+  sorts on its own. A scan whose tiers read high to low names them here.
 
 ```json addtrack
 {

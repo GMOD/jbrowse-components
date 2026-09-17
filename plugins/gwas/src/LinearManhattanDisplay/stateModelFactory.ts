@@ -10,6 +10,7 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin, {
   legendCheckboxItem,
@@ -114,10 +115,12 @@ const SetColorFieldDialog = lazy(
 // The color scale under field coloring: every value any loaded region met,
 // each with the color the worker packed for it. One value can arrive from
 // several regions and always with the same color (`categoricalValueColor` is a
-// function of the value), so the union is a plain first-wins merge, sorted
-// numerically where the values are numbers so `chr2` files before `chr10`.
+// function of the value), so the union is a plain first-wins merge, ordered by
+// the display's `colorDomain` — listed values first, the rest sorted, numbers
+// by magnitude so `chr2` files before `chr10`.
 function categoryEntries(
   entries: Iterable<ManhattanRpcResult>,
+  domain: string[],
 ): CategoricalEntry[] {
   const byValue = new Map<string, number>()
   for (const { scale } of entries) {
@@ -129,8 +132,9 @@ function categoryEntries(
       }
     }
   }
+  const compare = groupKeyComparator(domain)
   return [...byValue]
-    .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+    .sort(([a], [b]) => compare(a, b))
     .map(([value, color]) => ({
       value,
       label: value,
@@ -280,6 +284,13 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * the colour field values that key first, the rest following sorted
+         */
+        get colorDomain(): string[] {
+          return getConf(self, 'colorDomain')
+        },
+        /**
+         * #getter
          * the PLINK .ld sub-adapter configured on the track's `GWASAdapter`, or
          * undefined when none is set (the slot defaults to null, normalized here
          * to undefined for "absent")
@@ -413,6 +424,7 @@ export function stateModelFactory(
           color: string
           colorBy: ManhattanColorBy
           colorField: string
+          colorDomain: string[]
           indexSnp: string | undefined
           ldAdapterConfig: Record<string, unknown> | undefined
         } {
@@ -421,6 +433,7 @@ export function stateModelFactory(
             color: self.color,
             colorBy: self.colorBy,
             colorField: self.colorField,
+            colorDomain: self.colorDomain,
             indexSnp: self.indexSnp,
             ldAdapterConfig: self.ldAdapterConfig,
           }
@@ -592,7 +605,8 @@ export function stateModelFactory(
             return [ldScale(this.indexSnpMissing)]
           }
           if (self.colorBy === 'field') {
-            const entries = categoryEntries(self.rpcDataMap.values())
+            const domain = self.colorDomain
+            const entries = categoryEntries(self.rpcDataMap.values(), domain)
             return entries.length
               ? [
                   {
@@ -600,6 +614,7 @@ export function stateModelFactory(
                     id: 'field',
                     title: self.colorField,
                     entries,
+                    domain: domain.length ? domain : undefined,
                   },
                 ]
               : []

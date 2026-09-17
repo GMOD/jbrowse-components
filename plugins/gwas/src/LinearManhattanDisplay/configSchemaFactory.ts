@@ -146,6 +146,19 @@ export function configSchemaFactory() {
         description:
           'Feature field whose values color the points under colorBy: field',
       },
+      /**
+       * #slot
+       * The order the colour field's values take, in the key and in the
+       * palette: the values listed here come first, the rest follow sorted.
+       * Left empty the values sort on their own, so a domain is how a scan
+       * names the tier order its readers expect.
+       */
+      colorDomain: {
+        type: 'stringArray',
+        defaultValue: [],
+        description:
+          'optional legend order for the colour field; listed values first, the rest sorted',
+      },
       ...scoreFieldConfigSchemaFields,
       // The score axis. `scaleType`, `autoscale` and `numStdDev` come with it
       // because `ScoreScaleMixin` reads all five, but only the min/max bounds

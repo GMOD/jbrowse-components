@@ -56,6 +56,7 @@ async function makeReaders(
     | 'color'
     | 'colorBy'
     | 'colorField'
+    | 'colorDomain'
     | 'indexSnp'
     | 'ldAdapterConfig'
     | 'ldRefName'
@@ -92,7 +93,11 @@ async function makeReaders(
     }
   } else if (args.colorBy === 'field') {
     return {
-      color: { field: args.colorField, scale: 'categorical' },
+      color: {
+        field: args.colorField,
+        scale: 'categorical',
+        domain: args.colorDomain?.length ? args.colorDomain : undefined,
+      },
       glyph: defaultGlyph,
     }
   } else {
@@ -159,6 +164,7 @@ export async function executeGetManhattanData({
     color,
     colorBy,
     colorField,
+    colorDomain,
     scoreField,
     indexSnp,
     ldAdapterConfig,
@@ -188,6 +194,7 @@ export async function executeGetManhattanData({
     color,
     colorBy,
     colorField,
+    colorDomain,
     indexSnp,
     ldAdapterConfig,
     ldRefName,
