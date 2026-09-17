@@ -53,6 +53,9 @@ import {
 } from './paths.ts'
 
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
+// Paragraph-scoped, not line-scoped: a path wraps, so there is no one line to
+// hang it on. A bullet list is one paragraph, so suppressing a templated label
+// in one bullet stops checking the paths in its neighbours too.
 const SUPPRESS = '<!-- menu-path-ok -->'
 
 // Pages whose subject plugin is not in this repo, mapped to the sibling checkout
@@ -322,7 +325,8 @@ reportProblems(
         `If it belongs to a plugin outside this repo, map the page to that`,
         `checkout's src/ in EXTERNAL_PLUGIN_PAGES. For a templated label`,
         `(\`Highlight in \${assembly}\`) or a data value that is not a label at`,
-        `all, add ${SUPPRESS} to the line.`,
+        `all, add ${SUPPRESS} to the line. It suppresses every path in that`,
+        `paragraph, so check what else is in one before reaching for it.`,
       ]
     : [],
   `All menu-path labels resolve to a string the app renders${
