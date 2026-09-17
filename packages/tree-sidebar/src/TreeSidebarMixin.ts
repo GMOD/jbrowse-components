@@ -182,17 +182,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
     }))
     .views(self => ({
-      // `rowDomain` rotates a SUPPLIED tree (maf's `.nh`), which is what having
-      // no provenance says this one is. A computed tree is rotated by the run
-      // that produced it, together with the `layout` it wrote — rotating one
-      // again here would turn a restored session's dendrogram away from the
-      // rows saved beside it, and `treeDescribesRows` would then draw nothing.
+      // `rowDomain` rotates a tree nothing has arranged under: no provenance,
+      // so it was supplied rather than computed (maf's `.nh`), and no `layout`,
+      // so the rows are the tree's own leaves. A run rotates its own tree in
+      // the same action as the `layout` it writes; rotating one again here
+      // would turn a restored session's dendrogram away from the rows saved
+      // beside it, and `treeDescribesRows` would then draw nothing at all.
       get parsedTree() {
+        const arranged = !!self.clusterProvenance || self.layout.length > 0
         return self.clusterTree
-          ? buildTree(
-              self.clusterTree,
-              self.clusterProvenance ? [] : self.rowDomain,
-            )
+          ? buildTree(self.clusterTree, arranged ? [] : self.rowDomain)
           : undefined
       },
     }))

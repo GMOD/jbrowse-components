@@ -28,6 +28,7 @@ function makeModel(overrides: Partial<MafClusterSelf> = {}) {
       src('HG00146.1'),
     ],
     layout: [],
+    rowDomain: [],
     adapterConfig: { type: 'BgzipTaffyAdapter' },
     setLayout: jest.fn(),
     setLayoutAndClusterTree: jest.fn(),
