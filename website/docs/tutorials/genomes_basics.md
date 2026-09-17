@@ -54,10 +54,10 @@ Picking one loads a JBrowse instance at a plain URL, shareable as a link.
 
 ## Searching for a gene
 
-Open hg38. It arrives with **NCBI RefSeq - RefSeq All** on and the track
-selector showing. Type `TP53` into the location box and press Enter. The hosted
-config ships a name index, so gene symbols resolve with no setup, and
-coordinates like `chr17:7,668,400-7,687,550` work too.
+Open hg38. It opens with **NCBI RefSeq - RefSeq All** on and the track selector
+showing. Type `TP53` into the location box and press Enter. The hosted config
+ships a name index, so gene symbols resolve with no setup, and coordinates like
+`chr17:7,668,400-7,687,550` work too.
 
 <Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, answered by the config's own name index. Middle: what Enter opens, as many transcripts as the track's height holds, the gene labelled TP53 +20 more for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
 
@@ -77,7 +77,7 @@ categories, and **Filter tracks** searches all of them. Type `phyloP` and tick
 **Basewise Conservation (phyloP) - 100-way vertebrate alignment**, under
 Comparative Genomics.
 
-<Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation lane arrives under the TP53 transcript." />
+<Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation lane appears under the TP53 transcript." />
 
 The names are UCSC's, so a track known from the UCSC browser is findable under
 the same label. UCSC publishes several phyloP tracks for hg38, so the words
@@ -202,7 +202,7 @@ closes it.
 
 ## What is actually downloaded
 
-The config lives on jbrowse.org, but most UCSC track data resolves back to
+The config is hosted on jbrowse.org, but most UCSC track data resolves back to
 hgdownload, read by byte range. The track menu's **About track** prints the
 adapter, which is where to look when a track is slow or missing.
 

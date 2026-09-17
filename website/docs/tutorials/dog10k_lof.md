@@ -141,9 +141,9 @@ a block, and the gene track still shows which exon it sits in.
 <Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant lane, then one row per dog. Five breeds carry it; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
 The build script genotypes the same site over every canid in the callset. Dozens
-of breeds carry the allele and it reaches homozygosity in several: among the
-dogs sampled here, no German Hound and no Shetland Sheepdog is homozygous
-reference. It is absent from every wolf and every coyote in the collection.
+of breeds carry the allele and it reaches homozygosity in several: every German
+Hound and every Shetland Sheepdog sampled here carries at least one copy, while
+every wolf and every coyote in the collection is homozygous reference.
 
 Three neighbours sit inside the same 101 bp, and the display filters them out:
 
@@ -198,8 +198,8 @@ the denominator:
 CN = 2 * depth over the element / depth over the sequence around it
 ```
 
-The comparison is its own check, with no separate copy-number caller: that
-surrounding sequence has to come back out at two.
+No separate copy-number caller runs; the check is built into the ratio, since
+that surrounding sequence has to come back out at two.
 
 Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
 evidence and is painted at 1 kb resolution.

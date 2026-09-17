@@ -78,7 +78,7 @@ Turn on **Rendering mode → Phased** from the track menu:
 
 <Figure caption="The phased rendering mode, and the 'Rendering mode' → 'Phased' menu item that turns it on." src="/img/trio-matrix-phased.png"/>
 
-<Video src="/media/variants/trio_phased_matrix.mp4" caption="Both picks in one pass, on the track the figures above are of: the multi-sample matrix display, then the phased rendering mode splitting each trio member into its two haplotype rows in place. The last move zooms out to the window the rest of the page works in." />
+<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then the phased rendering mode splitting each trio member into its two haplotype rows in place, on the track the figures above are of. The last move zooms out to the window the rest of the page works in." />
 
 That last move is wider than the default display will draw. It stops above its
 [feature-density limit](/docs/config/linearcanvasbasedisplay/#slot-maxfeaturescreendensity),
@@ -235,7 +235,8 @@ match on.
 
 Stack the painting directly above the same VCF in the **phased multi-sample
 variant display**, which draws genotypes at their real genomic positions.
-_Matrix_ mode spaces its columns evenly, on a scale of its own.
+_Matrix_ mode instead spaces its columns evenly, independent of genomic
+position.
 
 Zoom to a few hundred kb around one boundary, where the block-step is obvious
 and the genotype columns resolve into individual variants. Start with the
