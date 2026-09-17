@@ -73,7 +73,7 @@ the deletion is a wide block. Clicking it opens the feature details panel, whose
 **SAMPLES** section lists every sample's genotype, read depth and other
 per-sample fields.
 
-Rows arrive in the callset's order. Right-click the deletion and pick **Sort by
+Rows start in the callset's order. Right-click the deletion and pick **Sort by
 genotype** to order rows by genotype at that call, then by how far each keeps
 matching its neighbours. **Clustering → Cluster rows by genotype...** in the
 track menu keys every row on the whole window and draws the dendrogram.
@@ -173,7 +173,7 @@ profile's noise is the same shape.
 - [](/docs/jbrowse_anywidget)
 
 [^ebi]:
-    The file EBI publishes lives at
+    The file EBI publishes is at
     https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
     and our copy is byte-for-byte that. The CRAM urls above are the Registry of
     Open Data mirror of the same 1000 Genomes ftp tree, which answers a range

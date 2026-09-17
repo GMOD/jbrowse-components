@@ -23,8 +23,8 @@ protein3d plugin does the mapping; Mol\* draws the structures.
 
 ## Where the data comes from
 
-The hg38 config the links open carries NCBI RefSeq; everything about the protein
-arrives per structure from the services beside it.
+The hg38 config the links open carries NCBI RefSeq; the services listed beside
+each structure provide everything about the protein.
 
 - hg38 with NCBI RefSeq:
   https://jbrowse.org/code/jb2/main/test_data/protein3d_config.json

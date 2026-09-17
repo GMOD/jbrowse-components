@@ -133,9 +133,9 @@ connectors from those skips:
 
 ## Reading a deep pileup
 
-Deep RNA-seq buries the evidence under the reads that carry none. Three controls
-in the track menu pull it back out, and each is a setting on the track rather
-than a new file.
+In a deep pileup, reads with a skip sit among many more that carry none, so the
+splicing evidence is hard to pick out. Three controls in the track menu pull it
+back out, and each is a setting on the track rather than a new file.
 
 **Sort by... → Spliced reads first** gives every read whose CIGAR carries a skip
 the lowest rows, so the junction-spanning reads sit together at the top of the
@@ -148,8 +148,8 @@ useful for checking intron retention.
 
 **Sashimi arcs → Hide non-canonical junctions** drops every arc whose intron
 does not begin and end with GT-AG, GC-AG or AT-AC on either strand. At depth the
-thin arcs are mostly these alignment artefacts, and they are what **Sashimi arcs
-→ Min read support** cannot remove without also removing a real junction
+thin arcs are mostly these alignment artefacts. Raising **Sashimi arcs → Min
+read support** removes them too, but only by also removing a real junction
 supported by few reads.
 
 ## Loading your own RNA-seq data
