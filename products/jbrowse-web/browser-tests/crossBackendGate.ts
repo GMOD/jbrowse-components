@@ -159,10 +159,11 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // It was deleted on 2026-08-05 at "measured 2.22%" because it sat under the
   // old 3% default; it is 2.40% now, which is worth watching on its own.
   { match: 'inversion-paired-coverage', threshold: 0.03 },
-  // A one-pixel line crossing the pivot every few bins: Canvas2D cuts each
-  // crossing with a capped stroke, the shader per fragment. Measured 1.82% and
-  // 2.31% under swiftshader, 1.69% and 2.28% on a real GPU, all on the line.
-  { match: 'whiskers-band', threshold: 0.03 },
+  // A one-pixel step line crossing the pivot every few bins: Canvas2D cuts
+  // each crossing with a capped stroke, the shader per fragment. The step plot
+  // measured 1.82% under swiftshader and 1.69% on a real GPU, all on the line;
+  // the interpolated one 0.95% once the band composited behind the line.
+  { match: 'whiskers-band', threshold: 0.025 },
   // Dense simulated-long-read pileups + their coverage strip. This entry was
   // 20% and excused as "uniform edge shimmer over identically-shaped reads".
   // **That was wrong, and the ceiling was hiding two real bugs.** The drifts

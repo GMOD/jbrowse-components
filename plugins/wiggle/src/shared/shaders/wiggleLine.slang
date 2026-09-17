@@ -59,7 +59,7 @@ struct VsOut {
   nointerpolation float4 negColor : COLOR1;
   // The centre line's position — step: its y range; center-line: centre y and
   // tangent y — so colour follows the line's side of the pivot, not the
-  // pixel's. A line on the pivot stays one colour and overlapping capsules agree.
+  // pixel's, so a line on the pivot stays one colour.
   nointerpolation float2 centerLine : TEXCOORD2;
   nointerpolation float pivotYPx : TEXCOORD3;
   float yPx : TEXCOORD4;

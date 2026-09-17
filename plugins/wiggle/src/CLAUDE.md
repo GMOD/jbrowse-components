@@ -168,9 +168,9 @@ Every summary mode on `line`/`linecenter` draws one layer through all the bins
 (`lineLayers`), never the worker's avg split. **Colour comes from the line's
 side of the pivot, not the bin**: the shader tests each fragment's centre-line
 y, Canvas2D strokes once per side through `PivotSidePen`. Centre line rather
-than pixel, so capsules overlapping at a joint agree under max blend; per-bin
-colours blended those joints to magenta. Whiskers adds a `band` layer under the
-line.
+than pixel, so capsules overlapping at a joint agree under max blend unless the
+joint lies within half a line width of the pivot; per-bin colours blended every
+colour-changing joint to magenta. Whiskers adds a `band` layer under the line.
 
 ## The colour key takes the mode, not `isDensityMode`
 
