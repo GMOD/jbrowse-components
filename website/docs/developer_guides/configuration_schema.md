@@ -7,9 +7,10 @@ guide_category: Core concepts
 ---
 
 JBrowse configuration is built with `ConfigurationSchema`, a thin wrapper around
-MST models. Every adapter, track, and display declares a schema of typed slots;
-instances are created from config JSON and observed reactively. Read slots with
-`getConf` (from a state model) or `readConfObject` (from a raw config node).
+MST (`@jbrowse/mobx-state-tree`) models. Every adapter, track, and display
+declares a schema of typed slots; instances are created from config JSON and
+observed reactively. Read slots with `getConf` (from a state model) or
+`readConfObject` (from a raw config node).
 
 ## Defining a schema
 
@@ -152,7 +153,7 @@ the feature's own BED color through.
 
 Because unset _is_ their default, **`maybe*` slots omit `defaultValue`** — every
 other type must declare one, and leaving it off is a type error. Writing
-`defaultValue: undefined` on a `maybe*` slot is legal but usually says nothing.
+`defaultValue: undefined` on a `maybe*` slot is legal but usually adds nothing.
 
 The exception is a `maybe*` slot **overriding a base slot that has a concrete
 default**: the override merges field-by-field, so omitting `defaultValue`
@@ -160,7 +161,7 @@ inherits the base's value and the slot is never unset. State
 `defaultValue: undefined` there to overwrite it.
 
 `frozen` and `maybeFrozen` hold arbitrary JSON. The value is not deeply
-reactive, and reads are typed `any` — the shape is the caller's to assert.
+reactive, and reads are typed `any` — the structure is the caller's to assert.
 
 For enums, use `type: 'stringEnum'` and add a `model` field. The score axis's
 `scaleType` slot:
@@ -248,7 +249,7 @@ depends on the kind of entry:
 - **A nested sub-schema or a constant replaces the base entry wholesale.** They
   have no fields to fold.
 
-To turn an inherited field off, state it rather than omitting it:
+To turn an inherited field off, state it:
 `mySlot: { type: 'number', defaultValue: 4, advanced: false }` still inherits
 the base slot's `description` and `validate`, and is not advanced here.
 
@@ -365,7 +366,7 @@ getter:
 Use `readConfObject` when you hold the **config model itself** — an entry from
 `session.tracks`, or a sub-config you resolved yourself. The multi-wiggle
 "combine selected tracks" menu item works on the track selector's selection,
-which is configs rather than models:
+which holds configs:
 
 <!-- include: plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#readConfObject -->
 
@@ -386,7 +387,7 @@ adapter: {
 A TypeScript error "Property 'configuration' is missing" is the signal that you
 have a raw config and should call `readConfObject` instead of `getConf`.
 
-Both accept a path array for nested access —
+`getConf` and `readConfObject` both accept a path array for nested access —
 `getConf(self, ['adapter', 'sequenceAdapter'])`, or the adapter form shown under
 [configuration internals](#configuration-internals) below.
 
@@ -438,8 +439,8 @@ concrete**. Type the state model factory's `configSchema` parameter to the
 schema's own type, not to `AnyConfigurationSchemaType`, or the reads degrade to
 `any` with no compile error to say so. A `conf` getter typed off the concrete
 schema (`get conf(): LinearPairedArcDisplayConfig`) is still the tidy way to
-name it once, the same move as `BaseAdapter<CONF>`, but it no longer buys the
-checking.
+name it once, the same move as `BaseAdapter<CONF>`, but it no longer provides
+the checking.
 
 ## Frozen track hydration
 
@@ -508,16 +509,16 @@ usual cause of a display that scrolls badly.
 
 :::warning An arg-less read of a callback slot resolves it against nothing
 
-That third argument is **optional**, so "what is this setting" and "what is this
-setting for this feature" are the same call with and without it. On a slot
-holding a `jexl:` value the arg-less form still evaluates, against a context
-where every name the expression mentions is `undefined`, and hands back the
-fallout as the setting. Nothing throws at the reader, and the two ways it goes
-wrong look nothing alike:
+The context object is `readConfObject`'s and `getConf`'s optional third
+argument, so "what is this setting" and "what is this setting for this feature"
+are the same call with and without it. On a slot holding a `jexl:` value the
+arg-less form still evaluates, against a context where every name the expression
+mentions is `undefined`, and hands back the fallout as the setting. Nothing
+throws at the reader, and the two ways it goes wrong look nothing alike:
 
 - the expression touches a member of the missing value (`get(feature,…)`) and
-  throws out of whatever getter did the read, which surfaces as the display
-  erroring;
+  throws out of whatever getter did the read, which appears to the reader as the
+  display erroring;
 - every function in it is total (`split(feature.name,…)`), and a plausible wrong
   value comes back — `''`, `NaN` — and travels on as a real setting.
 
