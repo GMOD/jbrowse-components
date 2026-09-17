@@ -52,6 +52,12 @@ over the differences between BAM and CRAM features to reach their tags.
 
 <!-- JEXL_CATALOG START -->
 
+**Feature operations - getInherited**
+
+```js
+jexl: getInherited(feature, 'gene_biotype') // the attribute from the feature, or from its nearest ancestor that has it, so a CDS reads its gene's value
+```
+
 **Math functions**
 
 ```js
