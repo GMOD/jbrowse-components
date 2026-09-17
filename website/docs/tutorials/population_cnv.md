@@ -20,7 +20,7 @@ second half packs the values into one Zarr store.
   [desktop quickstart](/docs/quickstart_desktop): every file here is a URL, so
   Desktop needs nothing hosted)
 - `node` 24 or newer, to [build a Zarr store](#build-the-store); the converter
-  is one downloadable file and pulls its own two npm packages
+  is one downloadable file that pulls two npm packages
 - QuicK-mer2 and a 30x alignment, to add
   [samples of your own](#your-own-samples)
 
@@ -40,9 +40,8 @@ lab at the University of Michigan
   https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw
 - the same values packed into one Zarr store for the
   [latency comparison](#scaling-past-one-population). This is a directory of
-  chunks rather than a file, so it is the `uri` an adapter takes and not
-  something to open in a browser:
-  https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
+  chunks, so it is the `uri` an adapter takes, not something to open in a
+  browser: https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 
 ## The QuicK-mer2 estimates
 
@@ -94,7 +93,7 @@ display settings turn that into a copy-number heatmap:
 - [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore) and
   [`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore) pin the
   scale, so two copies are the same color in every window. Keep the bounds
-  **symmetric around the pivot**: the ramp divides both sides by the longer one,
+  **symmetric around the pivot**. The ramp divides both sides by the longer one,
   so 0 to 4 lets both extremes saturate, and gains past 4 clamp.
 
 Rows are in file order until **Clustering → Cluster rows by score...** in the
@@ -106,7 +105,7 @@ with these settings already applied.
 
 ## Read the copy-number heatmap
 
-Six individuals spanning the range, each plotted as a profile:
+Six individuals across the range each appear below as a profile:
 
 <Figure caption="The same window as six stacked profiles on a shared 0-10 axis, from an individual carrying about nine copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
@@ -128,7 +127,7 @@ nested multiallelic copy number does not fit that shape. Depth carries no
 genotype, allele frequency or phasing either. Where the variation fits the
 representation, they agree:
 
-<Figure caption="UGT2B17 on chr4, a biallelic deletion: depth is flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
+<Figure caption="UGT2B17 on chr4, a biallelic deletion, depth flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
 ## Scaling past one population
 
@@ -208,7 +207,7 @@ The adapter config gives only the store's location; the sample list, bin size
 and resolution levels are attributes of the store. A relative `uri` resolves
 against the config that holds it.
 
-<Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies: the CCL3L1/CCL4L1 block stands in flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
+<Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies. The CCL3L1/CCL4L1 block is flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 
 Two requests are metadata, once per store; the rest are chunks, each carrying
 every sample across a range of bins, so a view's cost follows the width of the
@@ -246,10 +245,10 @@ node build_signal_zarr.ts \
 ```
 
 The command above is the one behind the hosted store, run over all 2504 samples
-and the windows its figures visit; the store lands at 2.4 MB.
+and the windows shown in its figures; the store lands at 2.4 MB.
 
-`--levels` is the resolution pyramid: one samples-by-bins array per entry,
-coarser ones averaged from the finest. The adapter reads the coarsest level
+`--levels` sets the resolution pyramid. Each entry is one samples-by-bins array,
+with coarser ones averaged from the finest. The adapter reads the coarsest level
 whose bins are no wider than a screen pixel, so a whole-chromosome view costs
 the same couple of requests. Give it your input's bin size first, then steps of
 roughly 3x: `10000,30000,100000` rather than `10000,100000`, since a 10x gap
