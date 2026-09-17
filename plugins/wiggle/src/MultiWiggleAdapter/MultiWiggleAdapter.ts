@@ -196,12 +196,16 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     return adapters.filter(adp => sourceNames.has(adp.source))
   }
 
+  // Bounded like the fetch it runs beside: a BigWig's first range under its
+  // first zoom level reads a raw-section sample, several range reads a file
   public async getZoomRange(
     opts: WiggleOptions = {},
   ): Promise<ZoomRange | undefined> {
     const adapters = await this.getFilteredAdapters(opts.sources)
-    const ranges = await Promise.all(
-      adapters.map(adp => adp.dataAdapter.getZoomRange(opts)),
+    const ranges = await mapWithConcurrency(
+      adapters,
+      SUBTRACK_FETCH_CONCURRENCY,
+      adp => adp.dataAdapter.getZoomRange(opts),
     )
     let range: ZoomRange | undefined
     for (const r of ranges) {

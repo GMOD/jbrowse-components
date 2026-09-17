@@ -52,6 +52,32 @@ describe('MultiWiggleAdapter.getZoomRange', () => {
       await adapterOver([undefined, undefined]).getZoomRange({ bpPerPx: 30 }),
     ).toBeUndefined()
   })
+
+  it('asks no more sources at once than the fetch beside it reads', async () => {
+    let inFlight = 0
+    let peak = 0
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: Array.from({ length: 25 }, (_, i) => `https://x/${i}.bw`),
+      }),
+      jest.fn().mockImplementation(async () => ({
+        dataAdapter: {
+          getZoomRange: async () => {
+            inFlight++
+            peak = Math.max(peak, inFlight)
+            await new Promise(res => setTimeout(res, 0))
+            inFlight--
+            return { minBpPerPx: 0, maxBpPerPx: 8 }
+          },
+        },
+      })),
+    )
+    expect(await adapter.getZoomRange({ bpPerPx: 1 })).toEqual({
+      minBpPerPx: 0,
+      maxBpPerPx: 8,
+    })
+    expect(peak).toBe(10)
+  })
 })
 
 describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
