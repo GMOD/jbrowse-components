@@ -52,8 +52,9 @@ from the extension and the `.fai` and `.gzi` sit beside it.
 }
 ```
 
-The alignment is a synteny track over the Q100 chain. Both endpoints are the
-same assembly, since the two haplotypes are contigs of one:
+The alignment is a synteny track over the Q100 chain. The chain's query and
+target assemblies are both `hg002v1.2`, since the two haplotypes are contigs of
+one:
 
 ```json addtrack
 {
@@ -90,17 +91,17 @@ Press **Launch**, then click the palette icon in the view's header and pick
 HG002 is male, so `chrX_MATERNAL` and `chrY_PATERNAL` have nothing on the other
 haplotype to chain to, and their column and row stay empty.
 
-<Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with its own counterpart; the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
+<Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with the same chromosome on the other haplotype; the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
 
 ## The 8p23.1 inversion
 
-Every chromosome in the plot is a red diagonal against its own counterpart, and
-chromosome 8 is the one to look at closely. HG002 is heterozygous for the 8p23.1
-inversion polymorphism (Bosch _et al._ 2009), so the maternal and paternal
-copies of that arm run in opposite directions, and the Q100 chain carries it as
-its largest inverted block, close to 4 Mb. The plot places it; a linear synteny
-view reads the two copies against each other, with each haplotype's own tracks
-beside the ribbons.
+Every chromosome in the plot is a red diagonal against the same chromosome on
+the other haplotype, and chromosome 8 is the one to look at closely. HG002 is
+heterozygous for the 8p23.1 inversion polymorphism (Bosch _et al._ 2009), so the
+maternal and paternal copies of that arm run in opposite directions, and the
+Q100 chain carries it as its largest inverted block, close to 4 Mb. The plot
+places it; a linear synteny view reads the two copies against each other, with
+each haplotype's own tracks beside the ribbons.
 
 There are two ways into that view. From the plot, drag a box around the cell
 where `chr8_MATERNAL` meets `chr8_PATERNAL` and pick **Zoom in**; near the start
@@ -113,11 +114,11 @@ needs, and both panels open on the whole assembly. This section takes the second
 route, since it gives a window to write down.
 
 Click the follow button in the view's header, the arrows icon, before framing
-anything. It makes the top panel the anchor: wherever it goes, the panel below
-is placed on the sequence that aligns to it, resolved through the chain. From
+anything. It makes the top panel the anchor: wherever it goes, it places the
+panel below on the sequence that aligns to it, resolved through the chain. From
 here on the top panel is the only one to navigate. Type
-`chr8_MATERNAL:5,250,000-14,250,000` into its search box, and the paternal panel
-arrives on the matching stretch of `chr8_PATERNAL` on its own. Then:
+`chr8_MATERNAL:5,250,000-14,250,000` into its search box, and the follow button
+moves the paternal panel to the matching stretch of `chr8_PATERNAL`. Then:
 
 - pick **Strand** from the palette icon, matching the plot's coloring: collinear
   red, inverted blue
