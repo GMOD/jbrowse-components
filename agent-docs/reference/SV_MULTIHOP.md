@@ -428,28 +428,25 @@ count. The feature has to rank the true junction above them with nothing telling
 it which is which, and the fixture asserts both that it does and that it does
 not silently drop them.
 
-**A route is built from the reads in the DISPLAYED REGIONS**, which is what
-decides how much of the ranked list a figure of this dialog can show.
-`computeReadChains` takes one pileup entry per displayed region, so a locus that
-is not on screen contributes no chain however completely its reads' SA tags
-describe the join. Measured on `sv_cgiab/three_ways`: over the chr3 slice alone
-the picker offered exactly **one** route, and over both demo slices it offered
-**seven** — 65 reads, then 10, 5, 4, 3, 2, 2, the runners-up all flagged
-"extends beyond this window". The mismapping the fixture's third `it` asserts
-about is chr13's, and chr3's window is nowhere near a telomere, so the chr3-only
-shot has nothing under the top row for the walkthrough to ask a reader to weigh.
-The spec's two `loc` regions are the demo slice bounds, i.e. the same windows
-`realReads.cgiab.test.ts` builds `REGIONS` from, so figure and fixture read the
-same records.
+**A route was built from the reads in the DISPLAYED REGIONS.** The chain
+builder took one pileup entry per displayed region, so a locus that is not on
+screen contributed no chain however completely its reads' SA tags describe the
+join. Over the chr3 slice alone the picker offered exactly **one** route; over
+both demo slices it offered **seven** — 65 reads, then 10, 5, 4, 3, 2, 2, the
+runners-up all flagged "extends beyond this window". Chr13's window ends at that
+chromosome's q-terminus and chr3's is nowhere near a telomere, which is where
+the six extra rows came from. The same asymmetry holds for anything else read
+over these slices: what is on screen sets what the reads can say.
 
 ## The batch study, and what it settled
 
-`scripts/derivative_path_study.ts` ran the real `computeReadChains` +
-`computeDerivativePaths` at every junction two somatic callsets report, with two
-control sets. Both it and the picker were removed ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)), and
-`git show 7ba0479e7d:scripts/derivative_path_study.ts` has the harness. 215 junctions, two cancers, two chemistries. Run it as
-`fetch <dataset>` then `score <dataset>`; the fetch is minutes of remote range
-queries and the corpus it writes is gitignored and refetchable.
+A harness, `derivative_path_study.ts`, ran the picker's real chain builder and
+grouping at every junction two somatic callsets report, with two control sets:
+215 junctions, two cancers, two chemistries. It was removed with the picker
+([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md));
+`git log --diff-filter=D --oneline -- 'scripts/derivative_path*'` finds the
+commit that holds it. It ran as `fetch <dataset>` then `score <dataset>`, the
+fetch minutes of remote range queries, the corpus it wrote gitignored.
 
 The two datasets differ in the way that decides what a number means:
 
@@ -517,12 +514,12 @@ windows, 4% of HG008-T's, the gap being 60x ONT against 35x HiFi -- and so do
 random loci (28% and 3%). That is the dialog's caveat, quantified: routes appear
 at ordinary loci, and read count alone does not separate them.
 
-**`minReads = 2` is the knee, and now there is a curve to point at.** Window
+**A support floor of 2 is the knee, and there is a curve to point at.** Window
 size (5/10/20 kb) does not move recall at all in either dataset, and neither
-does the junction tolerance anywhere from 5 to 100 bp. `minReads` is the only
+does the junction tolerance anywhere from 5 to 100 bp. The floor is the only
 parameter that trades:
 
-| minReads | COLO829 recall | routes per random locus | HG008-T recall | routes per random locus |
+| support floor | COLO829 recall | routes per random locus | HG008-T recall | routes per random locus |
 | --- | --- | --- | --- | --- |
 | 1 | 84% | 3.77 | 73% | 1.80 |
 | 2 | 81% | 0.30 | 70% | 0.37 |
@@ -554,9 +551,9 @@ projects to six fields inside the pipeline.
 The in-app reconstruction (`Reconstruct derivative allele...`, a
 `LinearAlignmentsDisplay` track-menu item, removed by ADR-137) drew the PATH
 only. A lane placing
-each supporting read onto that path — `projectReadsOntoDerivative`, beside
-`computePaths` — was built and then reverted in `e7b4f2b29b`, which is the
-commit to read before proposing it again. It is an attractive idea and the
+each supporting read onto that path — `projectReadsOntoDerivative`, beside the
+grouping — was built and then reverted in `e7b4f2b29b`, which is the commit to
+read before proposing it again. It is an attractive idea and the
 arithmetic works: the path is a piecewise-linear map from reference coordinates
 onto the allele's axis, a read's alignment is already a map from the read to the
 reference, so composing the two places the read with no aligner and no

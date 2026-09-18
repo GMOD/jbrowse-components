@@ -31,9 +31,8 @@ saying what a row and a colour mean in each plugin.
 
 The other family here is the **subsystem** a track type sits on top of rather
 than one a display runs — a pipeline several plugins share, stated for someone
-who does not know which plugin owns it. [split-read-chains](split-read-chains.md)
-and [derivative-allele-candidates](derivative-allele-candidates.md) are the pair
-that exists, and they read in that order.
+who does not know which plugin owns it.
+[split-read-chains](split-read-chains.md) is the one that exists.
 
 ## What belongs here
 

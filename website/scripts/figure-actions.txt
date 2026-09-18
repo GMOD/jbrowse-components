@@ -9,7 +9,7 @@ tutorials/allvsall_synteny.md 1
 tutorials/alphagenome.md 1
 tutorials/analyze_trio.md 3
 tutorials/bxd_qtl.md 3
-tutorials/cancer_sv.md 6
+tutorials/cancer_sv.md 3
 tutorials/circular_synteny.md 2
 tutorials/dog10k_lof.md 1
 tutorials/dog10k_selection.md 1
