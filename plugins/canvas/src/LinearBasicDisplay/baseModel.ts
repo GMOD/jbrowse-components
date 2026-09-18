@@ -1493,7 +1493,9 @@ export default function baseStateModelFactory(
         const listed = new Set(domain)
         const keyed = this.derivedColorScales.flatMap(scale =>
           scale.kind === 'categorical'
-            ? scale.entries.filter(e => e.value !== '').map(e => e.value)
+            ? scale.entries
+                .flatMap(e => e.values ?? [e.value])
+                .filter(v => v !== '')
             : [],
         )
         return [...domain, ...keyed.filter(v => !listed.has(v))]

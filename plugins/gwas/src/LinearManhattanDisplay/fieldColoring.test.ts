@@ -72,9 +72,24 @@ describe('LinearManhattanDisplay field coloring', () => {
         id: 'field',
         title: 'name',
         entries: [
-          { value: 'chr1', label: 'chr1', color: 'rgba(51,51,51,1)' },
-          { value: 'chr2', label: 'chr2', color: 'rgba(34,34,34,1)' },
-          { value: 'chr10', label: 'chr10', color: 'rgba(17,17,17,1)' },
+          {
+            value: 'chr1',
+            values: ['chr1'],
+            label: 'chr1',
+            color: 'rgba(51,51,51,1)',
+          },
+          {
+            value: 'chr2',
+            values: ['chr2'],
+            label: 'chr2',
+            color: 'rgba(34,34,34,1)',
+          },
+          {
+            value: 'chr10',
+            values: ['chr10'],
+            label: 'chr10',
+            color: 'rgba(17,17,17,1)',
+          },
         ],
       },
     ])

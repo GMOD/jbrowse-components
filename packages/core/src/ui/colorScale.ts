@@ -16,6 +16,12 @@ import type {
  */
 export interface CategoricalEntry {
   value: string
+  /**
+   * Every value painted in this row's color where the key is derived from
+   * the painting (`derivedColorScale`), `value` being the first; the label
+   * names them all. A row declared one value at a time leaves it unset.
+   */
+  values?: string[]
   label: string
   color?: string
   swatches?: LegendSwatch[]

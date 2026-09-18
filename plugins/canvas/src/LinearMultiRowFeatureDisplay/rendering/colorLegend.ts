@@ -84,6 +84,6 @@ export function buildColorLegend(
     }
   })
   return entries.length > 1
-    ? entries.map(({ value, color }) => ({ label: value, color }))
+    ? entries.map(({ values, color }) => ({ label: values.join(', '), color }))
     : []
 }

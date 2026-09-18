@@ -139,7 +139,7 @@ test('all rows overridden reads no regions at all', () => {
   expect(consumed).toBe(false)
 })
 
-test('two names sharing a color collapse to one first-seen entry', () => {
+test('two names sharing a color are one row naming both', () => {
   const shared = regionData({
     ...region,
     featureNames: ['TssA', 'TssAFlnk', 'TssA', 'Quies'],
@@ -150,7 +150,7 @@ test('two names sharing a color collapse to one first-seen entry', () => {
   expect(
     buildColorLegend([shared], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA', color: 0xff0000ff },
+    { label: 'TssA, TssAFlnk', color: 0xff0000ff },
     { label: 'Quies', color: 0xff00ff00 },
   ])
 })

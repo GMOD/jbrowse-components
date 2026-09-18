@@ -15,9 +15,10 @@ export interface LegendCandidate {
   color: number
 }
 
-// One row of a derived key: a color, named by the first value seen in it.
+// One row of a derived key: a color and every value painted in it, in
+// first-seen order.
 export interface LegendEntry {
-  value: string
+  values: string[]
   color: number
 }
 
@@ -37,9 +38,9 @@ export const MAX_LEGEND_CANDIDATES = 1024
 /**
  * Accumulator for the distinct (row, value, color) combinations a packer walks
  * past, in first-seen order and bounded, so the main thread never re-walks the
- * features. Deduped on the whole triple: the union takes the first value it
- * sees for a color, so a second value on that color has to still be in the
- * list to carry it.
+ * features. Deduped on the whole triple: a row of the union lists every value
+ * painted in its color, so a second value on that color has to still be in the
+ * list to reach it.
  */
 export function createLegendCandidateCollector(
   maxCandidates = MAX_LEGEND_CANDIDATES,
@@ -68,10 +69,10 @@ export interface LegendCandidateSource {
 
 /**
  * The categorical color key over any number of packed regions: one entry per
- * distinct color, named by the first value seen in that color, in first-seen
- * order. Keyed by color rather than by value, so each key row is 1:1 with a
- * color — hiding a category hides features BY color, so two values sharing
- * one color collapse to a single row.
+ * distinct color listing every value painted in it, colors in first-seen
+ * order. Keyed by color rather than by value because hiding a category hides
+ * features BY color, so two values sharing one color are one row that names
+ * both; a value met in two colors stays with the first.
  *
  * `[]` when there are more than `maxEntries` distinct colors, where the data is
  * not a categorical vocabulary. `regions` is consumed lazily.
@@ -81,34 +82,34 @@ export function unionLegendCandidates<T>(
   resolve: (region: T) => LegendCandidateSource,
   maxEntries = MAX_LEGEND_ENTRIES,
 ) {
-  const entries: LegendEntry[] = []
-  const seenColors = new Set<number>()
+  const rows = new Map<number, LegendEntry>()
   const seenValues = new Set<string>()
   for (const region of regions) {
     const { candidates, rowPaintsCandidateColor } = resolve(region)
     for (const { rowIndex, value, color } of candidates) {
-      if (
-        rowPaintsCandidateColor(rowIndex) &&
-        !seenValues.has(value) &&
-        !seenColors.has(color)
-      ) {
-        seenValues.add(value)
-        seenColors.add(color)
-        entries.push({ value, color })
-        if (entries.length > maxEntries) {
+      if (!rowPaintsCandidateColor(rowIndex) || seenValues.has(value)) {
+        continue
+      }
+      seenValues.add(value)
+      const row = rows.get(color)
+      if (row) {
+        row.values.push(value)
+      } else {
+        rows.set(color, { values: [value], color })
+        if (rows.size > maxEntries) {
           return []
         }
       }
     }
   }
-  return entries
+  return [...rows.values()]
 }
 
 /**
  * The one categorical key a color channel derives from what a worker painted:
- * the union above over the loaded regions, each row a painted color named
- * through `field` and ordered by it, and nothing where the rows would say
- * nothing (`legendIsReadable`). A display resolving its own colors hands the
+ * the union above over the loaded regions, each row a painted color naming
+ * every value in it through `field` and ordered by it, and nothing where the
+ * rows would say nothing (`legendIsReadable`). A display resolving its own colors hands the
  * candidates its packer recorded; one resolved by `encodeFeatures` hands the
  * entries of the scale tables that came back. Either way the key lists what
  * the painting holds.
@@ -123,13 +124,18 @@ export function derivedColorScale<T>(
   }: { id: string; field: CategoricalField; maxItems?: number },
 ): ColorScale[] {
   const entries = unionLegendCandidates(regions, resolve)
+    .map(({ values, color }) => {
+      const sorted = values.toSorted(field.compare)
+      const value = sorted[0]!
+      return {
+        value,
+        values: sorted,
+        label: sorted.map(v => field.label(v)).join(', '),
+        color: abgrToCssRgba(color),
+        ...(value === '' ? { missing: true } : {}),
+      }
+    })
     .sort((a, b) => field.compare(a.value, b.value))
-    .map(({ value, color }) => ({
-      value,
-      label: field.label(value),
-      color: abgrToCssRgba(color),
-      ...(value === '' ? { missing: true } : {}),
-    }))
   return legendIsReadable(entries, maxItems)
     ? [
         {

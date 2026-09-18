@@ -74,15 +74,15 @@ describe('createLegendCandidateCollector', () => {
 })
 
 describe('unionLegendCandidates', () => {
-  test('one entry per distinct color, named by the first value in it', () => {
+  test('one entry per distinct color, listing every value painted in it', () => {
     const candidates = collect([
       [0, 'TssA', RED],
       [0, 'Quies', GREEN],
       [1, 'TssAFlnk', RED],
     ])
     expect(unionLegendCandidates([candidates], allRowsPaint)).toEqual([
-      { value: 'TssA', color: RED },
-      { value: 'Quies', color: GREEN },
+      { values: ['TssA', 'TssAFlnk'], color: RED },
+      { values: ['Quies'], color: GREEN },
     ])
   })
 
@@ -92,7 +92,7 @@ describe('unionLegendCandidates', () => {
       [0, 'TssA', BLUE],
     ])
     expect(unionLegendCandidates([candidates], allRowsPaint)).toEqual([
-      { value: 'TssA', color: RED },
+      { values: ['TssA'], color: RED },
     ])
   })
 
@@ -103,8 +103,8 @@ describe('unionLegendCandidates', () => {
       [0, 'Enh', BLUE],
     ])
     expect(unionLegendCandidates([first, second], allRowsPaint)).toEqual([
-      { value: 'TssA', color: RED },
-      { value: 'Enh', color: BLUE },
+      { values: ['TssA'], color: RED },
+      { values: ['Enh'], color: BLUE },
     ])
   })
 
@@ -118,7 +118,7 @@ describe('unionLegendCandidates', () => {
         candidates: c,
         rowPaintsCandidateColor: rowIndex => rowIndex !== 0,
       })),
-    ).toEqual([{ value: 'Quies', color: GREEN }])
+    ).toEqual([{ values: ['Quies'], color: GREEN }])
   })
 
   test('past the entry bar there is no categorical key to show', () => {
@@ -191,6 +191,33 @@ describe('derivedColorScale', () => {
           { value: 'Quies', label: 'Quies' },
           { value: '', label: NO_VALUE_LABEL, missing: true },
         ],
+      },
+    ])
+  })
+
+  test("a row names every value painted in its color, in the field's order", () => {
+    const shared = collect([
+      [0, 'TssA', RED],
+      [0, 'Quies', GREEN],
+      [0, 'Enh', RED],
+    ])
+    expect(
+      derivedColorScale([shared], allRowsPaint, {
+        id: 'color',
+        field: categoricalField('state', { domain: ['Quies', 'Enh'] }),
+      }).flatMap(scale => (scale.kind === 'categorical' ? scale.entries : [])),
+    ).toEqual([
+      {
+        value: 'Quies',
+        values: ['Quies'],
+        label: 'Quies',
+        color: 'rgba(0,255,0,1)',
+      },
+      {
+        value: 'Enh',
+        values: ['Enh', 'TssA'],
+        label: 'Enh, TssA',
+        color: 'rgba(255,0,0,1)',
       },
     ])
   })

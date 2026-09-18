@@ -262,6 +262,37 @@ describe('derived color key', () => {
         'miRNA',
       ])
     })
+
+    it('pins every value of a row two values share, so the pin tells them apart', () => {
+      const display = coloredDisplay({ field: 'biotype' })
+      display.setRpcData(
+        0,
+        makeFeatureData({
+          colorKey: {
+            candidates: [
+              {
+                rowIndex: 0,
+                value: 'protein_coding',
+                color: cssColorToABGR('red'),
+              },
+              { rowIndex: 0, value: 'lncRNA', color: cssColorToABGR('red') },
+              { rowIndex: 0, value: 'snoRNA', color: cssColorToABGR('blue') },
+            ],
+            rows: [{ strand: undefined, groupKey: undefined }],
+          },
+        }),
+        ctgA,
+      )
+      expect(display.legendSpec.sections?.[0]?.items.map(i => i.label)).toEqual(
+        ['lncRNA, protein_coding', 'snoRNA'],
+      )
+      pinRow(display)!.onClick()
+      expect(display.colorSettings.domain).toEqual([
+        'lncRNA',
+        'protein_coding',
+        'snoRNA',
+      ])
+    })
   })
 
   it('yields to a legend slot', () => {
