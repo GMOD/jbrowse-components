@@ -8,6 +8,7 @@ import {
   findChromeExecutable,
   isBrowserConsoleNoise,
 } from './browser.ts'
+import { assertImagePath } from './imagePath.ts'
 import { assertSupportedInstance } from './instanceVersion.ts'
 import { waitForJBrowseReady } from './ready.ts'
 import { assemblyFromSession, trackIdsFromSession } from './session.ts'
@@ -51,7 +52,7 @@ export interface OpenResult extends ReadyReport {
  * reading state back out of `window.JBrowseSession`, capturing a dialog. For a
  * plain image, `captureJBrowse` wraps the whole thing.
  *
- * The assembly and track count asked for in the URL become the session gate's
+ * The assembly and trackIds asked for in the URL become the session gate's
  * expectations unless you override them, so a mistyped trackId fails here rather
  * than producing an image of an empty browser.
  */
@@ -113,7 +114,10 @@ export async function openJBrowse(
 }
 
 export interface CaptureOptions extends OpenOptions {
-  /** PNG path to write. Omit to get the buffer back and write it yourself. */
+  /**
+   * Image path to write, `.png`, `.jpg`/`.jpeg` or `.webp`. Omit to get the PNG
+   * buffer back and write it yourself.
+   */
   out?: string
   /**
    * Capture the whole scrollable page rather than the viewport. Implemented by
@@ -140,8 +144,7 @@ export async function captureJBrowse(
 ): Promise<CaptureResult> {
   const { out, fullPage = false, ...openOptions } = options
   if (out) {
-    // Before the browser launches: a missing parent directory otherwise fails
-    // at the screenshot, after the whole launch-navigate-wait cycle.
+    assertImagePath(out)
     mkdirSync(dirname(out), { recursive: true })
   }
   const { browser, page, url, ...report } = await openJBrowse(openOptions)

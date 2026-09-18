@@ -32,7 +32,8 @@ WHAT TO SHOW
   --sessionName <name>  name the opened session carries
 
 THE IMAGE
-  --out, -o <file>      PNG to write (required unless using a subcommand)
+  --out, -o <file>      .png, .jpg or .webp to write (required unless using a
+                        subcommand)
   --width <px>          viewport width (default 1400)
   --height <px>         viewport height (default 900)
   --scale <n>           device pixel ratio (default 2)
