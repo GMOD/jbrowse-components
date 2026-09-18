@@ -2907,7 +2907,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | (string | undefined))"
+              "type": "(JexlString | (CssColor | undefined))"
             },
             {
               "name": "field",
@@ -2925,15 +2925,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "connectorColor",
-          "type": "(JexlString | (string | undefined))"
+          "type": "(JexlString | (CssColor | undefined))"
         },
         {
           "name": "utrColor",
-          "type": "(JexlString | (string | undefined))"
+          "type": "(JexlString | (CssColor | undefined))"
         },
         {
           "name": "outlineColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "featureHeight",
@@ -3097,7 +3097,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | (string | undefined))"
+          "type": "(JexlString | (CssColor | undefined))"
         },
         {
           "name": "sampleColorMap",
@@ -3443,15 +3443,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "strokeColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "strokeColorSelected",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "strokeColorHover",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         }
       ],
       "legacyKeys": [
@@ -3483,15 +3483,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "colorSelected",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "colorHover",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         }
       ],
       "stateModelProps": [
@@ -3809,11 +3809,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "utrColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "lodMode",
@@ -3829,7 +3829,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | string)"
+              "type": "(JexlString | CssColor)"
             },
             {
               "name": "field",
@@ -3986,7 +3986,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | (string | undefined))"
+              "type": "(JexlString | (CssColor | undefined))"
             },
             {
               "name": "field",
@@ -4004,15 +4004,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "connectorColor",
-          "type": "(JexlString | (string | undefined))"
+          "type": "(JexlString | (CssColor | undefined))"
         },
         {
           "name": "utrColor",
-          "type": "(JexlString | (string | undefined))"
+          "type": "(JexlString | (CssColor | undefined))"
         },
         {
           "name": "outlineColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "featureHeight",
@@ -4498,7 +4498,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "minScore",
@@ -4538,11 +4538,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "posColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "negColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "bicolorPivot",
@@ -4639,11 +4639,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "posColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "negColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "bicolorPivot",
@@ -4751,7 +4751,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "minScore",
@@ -4791,11 +4791,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "posColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "negColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "bicolorPivot",
@@ -4880,7 +4880,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "minScore",
@@ -4920,11 +4920,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "posColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "negColor",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "bicolorPivot",
@@ -5190,7 +5190,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "thickness",
@@ -5250,7 +5250,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | string)"
+          "type": "(JexlString | CssColor)"
         },
         {
           "name": "lineWidth",
@@ -5295,7 +5295,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | string)"
+              "type": "(JexlString | CssColor)"
             },
             {
               "name": "field",
@@ -5450,7 +5450,7 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | string)"
+                      "type": "(JexlString | CssColor)"
                     },
                     {
                       "name": "field",

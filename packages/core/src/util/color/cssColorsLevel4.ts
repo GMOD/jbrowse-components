@@ -161,3 +161,5 @@ export function namedColorToHex(name: string): string | undefined {
 export function isNamedColor(name: string): boolean {
   return Object.hasOwn(colors, name)
 }
+
+export const CSS_COLOR_NAMES: readonly string[] = Object.keys(colors)

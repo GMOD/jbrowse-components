@@ -84,6 +84,57 @@ test('a callback default is evaluated per-read', () => {
   ).toBe('abc')
 })
 
+describe('a color slot', () => {
+  const colorSlot = (value?: unknown) =>
+    makeConfig({ type: 'color', defaultValue: 'red' }, value)
+
+  test.each([
+    'red',
+    'Red',
+    'steelblue',
+    '#f00',
+    '#ff0000',
+    '#ff000080',
+    'rgb(255,0,0)',
+    'rgba(255, 0, 0, 0.5)',
+    'hsl(120,100%,50%)',
+    'hsla(120, 100%, 50%, 0.3)',
+    'transparent',
+    '255,0,0',
+  ])('accepts %s', value => {
+    expect(readConfObject(colorSlot(value), 'slot')).toBe(value)
+  })
+
+  test('accepts a jexl callback', () => {
+    expect(readConfObject(colorSlot("jexl:'blue'"), 'slot')).toBe('blue')
+  })
+
+  test('accepts the empty string, which outlineColor spells "no outline" with', () => {
+    expect(readConfObject(colorSlot(''), 'slot')).toBe('')
+  })
+
+  // A field name where a color goes used to load and paint the invalid
+  // sentinel; ggplot2 fails the same mistake at draw time.
+  test.each(['biotype', 'strand'])(
+    'refuses %s, naming the slot, the value and what a color is',
+    value => {
+      expect(() => colorSlot(value)).toThrow(
+        `${JSON.stringify(value)} is not a color. A color is a CSS color`,
+      )
+      expect(() => colorSlot(value)).toThrow('/slot')
+    },
+  )
+
+  test('maybeColor stays unset by default and refuses a non-color too', () => {
+    expect(
+      readConfObject(makeConfig({ type: 'maybeColor' }), 'slot'),
+    ).toBeUndefined()
+    expect(() => makeConfig({ type: 'maybeColor' }, 'biotype')).toThrow(
+      'is not a color',
+    )
+  })
+})
+
 test('stringEnum slot uses a custom model and reads its value', () => {
   const config = makeConfig({
     type: 'stringEnum',

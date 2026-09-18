@@ -54,8 +54,8 @@ describe('configuration schemas', () => {
     model.configuration.setSlot('backgroundColor', `jexl:'#'+a`)
     expect(getConf(model, 'backgroundColor', { a: 'zonk' })).toBe('#zonk')
     expect(getConf(model, 'backgroundColor', { a: 'bar' })).toBe('#bar')
-    model.configuration.setSlot('backgroundColor', 'hoog')
-    expect(getConf(model, 'backgroundColor', { a: 'zonk' })).toBe('hoog')
+    model.configuration.setSlot('backgroundColor', 'hotpink')
+    expect(getConf(model, 'backgroundColor', { a: 'zonk' })).toBe('hotpink')
 
     model.configuration.setSlot('someInteger', 'jexl:5+a')
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(10)

@@ -73,6 +73,7 @@ import { MIGRATED_DISPLAY_INSTANCE_KEYS } from '@jbrowse/product-core'
 import { JBrowseConfigF } from '@jbrowse/app-core'
 import { getConfigurationSchemaMetadata } from '@jbrowse/core/configuration'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { CSS_COLOR_NAMES } from '@jbrowse/core/util/color'
 import { FileLocation } from '@jbrowse/core/util/types/mst'
 import {
   getSnapshot,
@@ -298,7 +299,9 @@ function shorthandKeysOf(adapterType) {
 // legacyKeysOf below asks each schema directly.
 //
 // The value matters — a migration keyed on a shape ("renderer" being an object
-// with lift-able props inside) does nothing for a probe of the wrong type.
+// with lift-able props inside) does nothing for a probe of the wrong type, and
+// one landing in a color slot has to be a color, or the slot refuses it and
+// the key reads as dropped.
 // Extra settings a candidate needs present before its effect is observable at
 // all. \`showDescriptions\` alone migrates to showLabels 'auto' — the slot's own
 // default, so stripDefault removes it again and the probe sees an unchanged
@@ -310,18 +313,26 @@ const LEGACY_COMPANIONS = {
   showDescriptions: { showLabels: 'off' },
 }
 
+const PROBE_COLOR = '#123456'
+
 const LEGACY_CANDIDATES = {
-  renderer: { color1: 'probe', color: 'probe', strokeColor: 'probe' },
-  renderers: { XYPlotRenderer: { type: 'XYPlotRenderer', color: 'probe' } },
+  renderer: {
+    color1: PROBE_COLOR,
+    color: PROBE_COLOR,
+    strokeColor: PROBE_COLOR,
+  },
+  renderers: {
+    XYPlotRenderer: { type: 'XYPlotRenderer', color: PROBE_COLOR },
+  },
   pileupDisplay: { type: 'LinearPileupDisplay' },
   snpCoverageDisplay: { type: 'LinearSNPCoverageDisplay' },
   defaultRendering: 'probe',
   autoHeight: true,
   showDescriptions: false,
-  color1: 'probe',
-  color2: 'probe',
-  color3: 'probe',
-  outline: 'probe',
+  color1: PROBE_COLOR,
+  color2: PROBE_COLOR,
+  color3: PROBE_COLOR,
+  outline: PROBE_COLOR,
 }
 
 // Asks a schema, by construction, which of the candidates above it actually
@@ -540,6 +551,7 @@ const schema = buildConfigJsonSchema({
     views: elements('view', n => pm.getViewType(n)),
   },
   metadataOf: getConfigurationSchemaMetadata,
+  cssColorNames: CSS_COLOR_NAMES,
   isType,
   isArrayType,
   isMapType,

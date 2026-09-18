@@ -134,6 +134,29 @@ describe('the schema', () => {
     expect(error?.message).toContain('"jexl:" expression')
   })
 
+  it('reports a field name written where a color goes', () => {
+    const config = baseConfig()
+    config.tracks[0]!.displays = [
+      { type: 'LinearWiggleDisplay', posColor: 'biotype' },
+    ]
+    const [error] = schemaProblems(config)
+    expect(error?.where).toBe('tracks[0].displays[0].posColor')
+    expect(error?.message).toBe(
+      'expected a CSS color (a name like "red", "#rrggbb", "rgb()" or "hsl()") or a "jexl:" expression, got "biotype"',
+    )
+  })
+
+  it.each(['Red', '#ff000080', 'rgba(255, 0, 0, 0.5)', 'hsl(120,100%,50%)'])(
+    'accepts the color %s',
+    color => {
+      const config = baseConfig()
+      config.tracks[0]!.displays = [
+        { type: 'LinearWiggleDisplay', posColor: color },
+      ]
+      expect(schemaProblems(config)).toEqual([])
+    },
+  )
+
   it('accepts a jexl: string where a number is expected', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [

@@ -76,6 +76,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "CssColorOrJexl": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CssColor"
+        },
+        {
+          "$ref": "#/$defs/JexlString"
+        }
+      ]
+    },
     "NumberOrJexl": {
       "anyOf": [
         {
@@ -133,6 +143,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "string",
       "pattern": "^jexl:",
       "description": "A jexl callback evaluated when the slot is read, e.g. \`jexl:get(feature, \\"score\\") > 10 ? \\"red\\" : \\"blue\\"\`. Every slot accepts one in place of a fixed value."
+    },
+    "CssColor": {
+      "type": "string",
+      "pattern": "^\\\\s*(?:#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\\\\([^()]*\\\\)|\\\\d{1,3}\\\\s*,\\\\s*\\\\d{1,3}\\\\s*,\\\\s*\\\\d{1,3}|[aA][lL][iI][cC][eE][bB][lL][uU][eE]|[aA][nN][tT][iI][qQ][uU][eE][wW][hH][iI][tT][eE]|[aA][qQ][uU][aA]|[aA][qQ][uU][aA][mM][aA][rR][iI][nN][eE]|[aA][zZ][uU][rR][eE]|[bB][eE][iI][gG][eE]|[bB][iI][sS][qQ][uU][eE]|[bB][lL][aA][cC][kK]|[bB][lL][aA][nN][cC][hH][eE][dD][aA][lL][mM][oO][nN][dD]|[bB][lL][uU][eE]|[bB][lL][uU][eE][vV][iI][oO][lL][eE][tT]|[bB][rR][oO][wW][nN]|[bB][uU][rR][lL][yY][wW][oO][oO][dD]|[cC][aA][dD][eE][tT][bB][lL][uU][eE]|[cC][hH][aA][rR][tT][rR][eE][uU][sS][eE]|[cC][hH][oO][cC][oO][lL][aA][tT][eE]|[cC][oO][rR][aA][lL]|[cC][oO][rR][nN][fF][lL][oO][wW][eE][rR][bB][lL][uU][eE]|[cC][oO][rR][nN][sS][iI][lL][kK]|[cC][rR][iI][mM][sS][oO][nN]|[cC][yY][aA][nN]|[dD][aA][rR][kK][bB][lL][uU][eE]|[dD][aA][rR][kK][cC][yY][aA][nN]|[dD][aA][rR][kK][gG][oO][lL][dD][eE][nN][rR][oO][dD]|[dD][aA][rR][kK][gG][rR][aA][yY]|[dD][aA][rR][kK][gG][rR][eE][eE][nN]|[dD][aA][rR][kK][gG][rR][eE][yY]|[dD][aA][rR][kK][kK][hH][aA][kK][iI]|[dD][aA][rR][kK][mM][aA][gG][eE][nN][tT][aA]|[dD][aA][rR][kK][oO][lL][iI][vV][eE][gG][rR][eE][eE][nN]|[dD][aA][rR][kK][oO][rR][aA][nN][gG][eE]|[dD][aA][rR][kK][oO][rR][cC][hH][iI][dD]|[dD][aA][rR][kK][rR][eE][dD]|[dD][aA][rR][kK][sS][aA][lL][mM][oO][nN]|[dD][aA][rR][kK][sS][eE][aA][gG][rR][eE][eE][nN]|[dD][aA][rR][kK][sS][lL][aA][tT][eE][bB][lL][uU][eE]|[dD][aA][rR][kK][sS][lL][aA][tT][eE][gG][rR][aA][yY]|[dD][aA][rR][kK][sS][lL][aA][tT][eE][gG][rR][eE][yY]|[dD][aA][rR][kK][tT][uU][rR][qQ][uU][oO][iI][sS][eE]|[dD][aA][rR][kK][vV][iI][oO][lL][eE][tT]|[dD][eE][eE][pP][pP][iI][nN][kK]|[dD][eE][eE][pP][sS][kK][yY][bB][lL][uU][eE]|[dD][iI][mM][gG][rR][aA][yY]|[dD][iI][mM][gG][rR][eE][yY]|[dD][oO][dD][gG][eE][rR][bB][lL][uU][eE]|[fF][iI][rR][eE][bB][rR][iI][cC][kK]|[fF][lL][oO][rR][aA][lL][wW][hH][iI][tT][eE]|[fF][oO][rR][eE][sS][tT][gG][rR][eE][eE][nN]|[fF][uU][cC][hH][sS][iI][aA]|[gG][aA][iI][nN][sS][bB][oO][rR][oO]|[gG][hH][oO][sS][tT][wW][hH][iI][tT][eE]|[gG][oO][lL][dD]|[gG][oO][lL][dD][eE][nN][rR][oO][dD]|[gG][rR][aA][yY]|[gG][rR][eE][eE][nN]|[gG][rR][eE][eE][nN][yY][eE][lL][lL][oO][wW]|[gG][rR][eE][yY]|[hH][oO][nN][eE][yY][dD][eE][wW]|[hH][oO][tT][pP][iI][nN][kK]|[iI][nN][dD][iI][aA][nN][rR][eE][dD]|[iI][nN][dD][iI][gG][oO]|[iI][vV][oO][rR][yY]|[kK][hH][aA][kK][iI]|[lL][aA][vV][eE][nN][dD][eE][rR]|[lL][aA][vV][eE][nN][dD][eE][rR][bB][lL][uU][sS][hH]|[lL][aA][wW][nN][gG][rR][eE][eE][nN]|[lL][eE][mM][oO][nN][cC][hH][iI][fF][fF][oO][nN]|[lL][iI][gG][hH][tT][bB][lL][uU][eE]|[lL][iI][gG][hH][tT][cC][oO][rR][aA][lL]|[lL][iI][gG][hH][tT][cC][yY][aA][nN]|[lL][iI][gG][hH][tT][gG][oO][lL][dD][eE][nN][rR][oO][dD][yY][eE][lL][lL][oO][wW]|[lL][iI][gG][hH][tT][gG][rR][aA][yY]|[lL][iI][gG][hH][tT][gG][rR][eE][eE][nN]|[lL][iI][gG][hH][tT][gG][rR][eE][yY]|[lL][iI][gG][hH][tT][pP][iI][nN][kK]|[lL][iI][gG][hH][tT][sS][aA][lL][mM][oO][nN]|[lL][iI][gG][hH][tT][sS][eE][aA][gG][rR][eE][eE][nN]|[lL][iI][gG][hH][tT][sS][kK][yY][bB][lL][uU][eE]|[lL][iI][gG][hH][tT][sS][lL][aA][tT][eE][gG][rR][aA][yY]|[lL][iI][gG][hH][tT][sS][lL][aA][tT][eE][gG][rR][eE][yY]|[lL][iI][gG][hH][tT][sS][tT][eE][eE][lL][bB][lL][uU][eE]|[lL][iI][gG][hH][tT][yY][eE][lL][lL][oO][wW]|[lL][iI][mM][eE]|[lL][iI][mM][eE][gG][rR][eE][eE][nN]|[lL][iI][nN][eE][nN]|[mM][aA][gG][eE][nN][tT][aA]|[mM][aA][rR][oO][oO][nN]|[mM][eE][dD][iI][uU][mM][aA][qQ][uU][aA][mM][aA][rR][iI][nN][eE]|[mM][eE][dD][iI][uU][mM][bB][lL][uU][eE]|[mM][eE][dD][iI][uU][mM][oO][rR][cC][hH][iI][dD]|[mM][eE][dD][iI][uU][mM][pP][uU][rR][pP][lL][eE]|[mM][eE][dD][iI][uU][mM][sS][eE][aA][gG][rR][eE][eE][nN]|[mM][eE][dD][iI][uU][mM][sS][lL][aA][tT][eE][bB][lL][uU][eE]|[mM][eE][dD][iI][uU][mM][sS][pP][rR][iI][nN][gG][gG][rR][eE][eE][nN]|[mM][eE][dD][iI][uU][mM][tT][uU][rR][qQ][uU][oO][iI][sS][eE]|[mM][eE][dD][iI][uU][mM][vV][iI][oO][lL][eE][tT][rR][eE][dD]|[mM][iI][dD][nN][iI][gG][hH][tT][bB][lL][uU][eE]|[mM][iI][nN][tT][cC][rR][eE][aA][mM]|[mM][iI][sS][tT][yY][rR][oO][sS][eE]|[mM][oO][cC][cC][aA][sS][iI][nN]|[nN][aA][vV][aA][jJ][oO][wW][hH][iI][tT][eE]|[nN][aA][vV][yY]|[oO][lL][dD][lL][aA][cC][eE]|[oO][lL][iI][vV][eE]|[oO][lL][iI][vV][eE][dD][rR][aA][bB]|[oO][rR][aA][nN][gG][eE]|[oO][rR][aA][nN][gG][eE][rR][eE][dD]|[oO][rR][cC][hH][iI][dD]|[pP][aA][lL][eE][gG][oO][lL][dD][eE][nN][rR][oO][dD]|[pP][aA][lL][eE][gG][rR][eE][eE][nN]|[pP][aA][lL][eE][tT][uU][rR][qQ][uU][oO][iI][sS][eE]|[pP][aA][lL][eE][vV][iI][oO][lL][eE][tT][rR][eE][dD]|[pP][aA][pP][aA][yY][aA][wW][hH][iI][pP]|[pP][eE][aA][cC][hH][pP][uU][fF][fF]|[pP][eE][rR][uU]|[pP][iI][nN][kK]|[pP][lL][uU][mM]|[pP][oO][wW][dD][eE][rR][bB][lL][uU][eE]|[pP][uU][rR][pP][lL][eE]|[rR][eE][bB][eE][cC][cC][aA][pP][uU][rR][pP][lL][eE]|[rR][eE][dD]|[rR][oO][sS][yY][bB][rR][oO][wW][nN]|[rR][oO][yY][aA][lL][bB][lL][uU][eE]|[sS][aA][dD][dD][lL][eE][bB][rR][oO][wW][nN]|[sS][aA][lL][mM][oO][nN]|[sS][aA][nN][dD][yY][bB][rR][oO][wW][nN]|[sS][eE][aA][gG][rR][eE][eE][nN]|[sS][eE][aA][sS][hH][eE][lL][lL]|[sS][iI][eE][nN][nN][aA]|[sS][iI][lL][vV][eE][rR]|[sS][kK][yY][bB][lL][uU][eE]|[sS][lL][aA][tT][eE][bB][lL][uU][eE]|[sS][lL][aA][tT][eE][gG][rR][aA][yY]|[sS][lL][aA][tT][eE][gG][rR][eE][yY]|[sS][nN][oO][wW]|[sS][pP][rR][iI][nN][gG][gG][rR][eE][eE][nN]|[sS][tT][eE][eE][lL][bB][lL][uU][eE]|[tT][aA][nN]|[tT][eE][aA][lL]|[tT][hH][iI][sS][tT][lL][eE]|[tT][oO][mM][aA][tT][oO]|[tT][uU][rR][qQ][uU][oO][iI][sS][eE]|[vV][iI][oO][lL][eE][tT]|[wW][hH][eE][aA][tT]|[wW][hH][iI][tT][eE]|[wW][hH][iI][tT][eE][sS][mM][oO][kK][eE]|[yY][eE][lL][lL][oO][wW]|[yY][eE][lL][lL][oO][wW][gG][rR][eE][eE][nN]|[tT][rR][aA][nN][sS][pP][aA][rR][eE][nN][tT])\\\\s*$",
+      "description": "A CSS color: a name like \\"red\\", \\"#rgb\\" / \\"#rrggbb\\" / \\"#rrggbbaa\\", or \\"rgb()\\" / \\"rgba()\\" / \\"hsl()\\" / \\"hsla()\\". A field name is not a color; color by a field through the display's color channel."
     },
     "FileLocation": {
       "description": "Where a file is: written in full with a \`locationType\`, or as a bare \`{ \\"uri\\" }\` / \`{ \\"localPath\\" }\` that JBrowse tags itself.",
@@ -3384,7 +3399,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback.",
-              "$ref": "#/$defs/StringOrJexl"
+              "$ref": "#/$defs/CssColorOrJexl"
             },
             "field": {
               "description": "feature field (or jexl expression) to color by, one palette color per value.",
@@ -3610,15 +3625,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
-          "$ref": "#/$defs/StringOrJexl"
+          "$ref": "#/$defs/CssColorOrJexl"
         },
         "utrColor": {
           "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
-          "$ref": "#/$defs/StringOrJexl"
+          "$ref": "#/$defs/CssColorOrJexl"
         },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": ""
         },
         "featureHeight": {
@@ -3846,7 +3861,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "description": "fill color of each block (CSS color or jexl expression for per-feature coloring). Unset, a feature's own itemRgb paints it if it has one, else each row gets a distinct color from a categorical palette.",
-          "$ref": "#/$defs/StringOrJexl"
+          "$ref": "#/$defs/CssColorOrJexl"
         },
         "sampleColorMap": {
           "description": "map of partition value to color; overrides the color slot for matching features. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -4357,17 +4372,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "strokeColor": {
           "description": "the line color of each arc.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "rgba(255,133,0,0.32)"
         },
         "strokeColorSelected": {
           "description": "the line color of an arc that has been selected.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "black"
         },
         "strokeColorHover": {
           "description": "the line color of an arc that is being hovered over with the mouse.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#555"
         },
         "renderer": {
@@ -4426,17 +4441,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "description": "the fill color of each ribbon.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "rgba(70,130,180,0.25)"
         },
         "colorSelected": {
           "description": "the fill color of a ribbon that has been selected.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "rgba(0,0,0,0.6)"
         },
         "colorHover": {
           "description": "the fill color of a ribbon that is being hovered over with the mouse.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "rgba(85,85,85,0.6)"
         }
       }
@@ -4933,7 +4948,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "the color of the ribbons connecting adjacent lanes.",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/CssColorOrJexl",
               "default": "rgba(130,130,130,0.3)"
             },
             "field": {
@@ -5013,12 +5028,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "description": "the fill color of the gene glyphs, matching the canvas gene track default.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "goldenrod"
         },
         "utrColor": {
           "description": "the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#357089"
         },
         "lodMode": {
@@ -5275,15 +5290,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
-          "$ref": "#/$defs/StringOrJexl"
+          "$ref": "#/$defs/CssColorOrJexl"
         },
         "utrColor": {
           "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
-          "$ref": "#/$defs/StringOrJexl"
+          "$ref": "#/$defs/CssColorOrJexl"
         },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": ""
         },
         "featureHeight": {
@@ -5947,7 +5962,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "description": "Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
         "minScore": {
@@ -6019,12 +6034,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
         "negColor": {
           "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#e01e26"
         },
         "bicolorPivot": {
@@ -6195,12 +6210,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
         "negColor": {
           "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#e01e26"
         },
         "bicolorPivot": {
@@ -6385,7 +6400,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "description": "Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
         "minScore": {
@@ -6457,12 +6472,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
         "negColor": {
           "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#e01e26"
         },
         "bicolorPivot": {
@@ -6616,7 +6631,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "description": "Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
         "minScore": {
@@ -6688,12 +6703,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
         "negColor": {
           "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "#e01e26"
         },
         "bicolorPivot": {
@@ -7097,7 +7112,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "description": "the color of the arcs.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "darkblue"
         },
         "thickness": {
@@ -7190,7 +7205,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "description": "the color of the arcs.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/CssColorOrJexl",
           "default": "jexl:defaultPairedArcColor(feature,alt)"
         },
         "lineWidth": {
@@ -7251,7 +7266,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS color or jexl callback for Manhattan points.",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/CssColorOrJexl",
               "default": "#0068d1"
             },
             "field": {
@@ -7505,7 +7520,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback.",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/CssColorOrJexl",
               "default": "#0068d1"
             },
             "field": {

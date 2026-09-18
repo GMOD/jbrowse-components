@@ -86,6 +86,9 @@ function describe(schema: Schema): string {
   if (name === 'JexlString') {
     return 'a "jexl:" expression'
   }
+  if (name === 'CssColor') {
+    return 'a CSS color (a name like "red", "#rrggbb", "rgb()" or "hsl()")'
+  }
   if (name) {
     return `a ${name}`
   }

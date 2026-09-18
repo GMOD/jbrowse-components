@@ -1,5 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { isCssColor } from '../util/colorBits.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
@@ -19,6 +20,17 @@ interface SlotTypeSpec {
   fallbackDefault?: unknown
 }
 
+// What a color slot admits is what the painters parse (`isCssColor`), plus the
+// empty string a slot such as `outlineColor` spells "none" with; a field name
+// written where a color goes used to load and paint the invalid sentinel.
+const CssColorType = types.refinement(
+  'CssColor',
+  types.string,
+  value => value === '' || isCssColor(value),
+  value =>
+    `${JSON.stringify(value)} is not a color. A color is a CSS color: a name like "red" or "steelblue", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", or "transparent"; a color computed per feature is a "jexl:" callback`,
+)
+
 // Single source of truth for the builtin slot type names, pairing each with its
 // MST value type and its editor fallback default. Keeping model + fallback in
 // one table means adding a slot type is one edit and can't half-register.
@@ -36,9 +48,7 @@ const slotTypes = {
   },
   numberMap: { model: types.map(types.number), fallbackDefault: {} },
   boolean: { model: types.boolean, fallbackDefault: true },
-  // a color is just a string; the editor picks a color widget off the slot's
-  // `type` metadata, and values are accepted unvalidated (CSS names, hex, jexl)
-  color: { model: types.string, fallbackDefault: 'black' },
+  color: { model: CssColorType, fallbackDefault: 'black' },
   integer: { model: types.integer, fallbackDefault: 1 },
   number: { model: types.number, fallbackDefault: 1 },
   // The `maybe*` types spend `undefined` on "not explicitly set", which is the
@@ -48,7 +58,7 @@ const slotTypes = {
   maybeBoolean: { model: types.maybe(types.boolean) },
   // for a slot whose unset state means "decide from the data" — a feature's own
   // BED itemRgb, say
-  maybeColor: { model: types.maybe(types.string) },
+  maybeColor: { model: types.maybe(CssColorType) },
   // object-valued, e.g. alignments `colorBy`
   maybeFrozen: { model: types.maybe(types.frozen()) },
   string: { model: types.string, fallbackDefault: '' },

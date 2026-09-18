@@ -122,6 +122,10 @@ export function featureBedColor(feature: Feature): string | undefined {
 // color — the same rule featureItemRgb applies, so a jexl callback reading an
 // itemRgb column and the automatic path agree on what counts as a color.
 export function parseCssColorOr(color: string, fallback: Color): Color {
+  return tryParseCssColor(color) ?? fallback
+}
+
+function tryParseCssColor(color: string): Color | undefined {
   const str = color.trim().toLowerCase()
   if (str === 'transparent') {
     return newColor(0, 0, 0, 0)
@@ -131,8 +135,17 @@ export function parseCssColorOr(color: string, fallback: Color): Color {
     const triple = bedTriple(str)
     return parse(hex ? hex : triple ? `rgb(${triple})` : str)
   } catch {
-    return fallback
+    return undefined
   }
+}
+
+/**
+ * Whether the painters read `color` as a color — a CSS name, hex, functional
+ * form, `transparent` or a BED triple — rather than as the invalid sentinel.
+ * What a `color` config slot admits.
+ */
+export function isCssColor(color: string) {
+  return tryParseCssColor(color) !== undefined
 }
 
 export function parseCssColor(color: string | undefined | null) {

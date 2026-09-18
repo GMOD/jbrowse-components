@@ -71,6 +71,8 @@ export interface Deps {
     views: ElementEntry[]
   }
   metadataOf: (type: MstType) => SchemaMetadata | undefined
+  /** The CSS named colors, as the painters' table spells them. */
+  cssColorNames: readonly string[]
   isType: (thing: unknown) => boolean
   isArrayType: (type: MstType) => boolean
   isMapType: (type: MstType) => boolean
@@ -88,6 +90,20 @@ export interface Deps {
   legacyKeysOf: (group: string, name: string) => string[]
   legacyValuesOf: (group: string, name: string) => Record<string, unknown[]>
   shorthandKeysOf: (group: string, name: string) => string[]
+}
+
+// The forms `isCssColor` parses, as one anchored regex: JSON Schema patterns
+// carry no case flag, so each named color is spelled letter by letter.
+function cssColorPattern(names: readonly string[]) {
+  const anyCase = (word: string) =>
+    word.replaceAll(/[a-z]/g, c => `[${c}${c.toUpperCase()}]`)
+  const forms = [
+    '#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})',
+    String.raw`(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)`,
+    String.raw`\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}`,
+    ...[...names, 'transparent'].map(anyCase),
+  ]
+  return String.raw`^\s*(?:${forms.join('|')})\s*$`
 }
 
 const COMMENT_KEYS = { '^_+comment': {} }
@@ -181,9 +197,13 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   function unwrap(type: MstType) {
     let cur = type
     let jexl = false
+    let color = false
     for (let i = 0; i < 16; i++) {
       if (cur.name === 'JexlString') {
         jexl = true
+      }
+      if (cur.name === 'CssColor') {
+        color = true
       }
       const sub = cur.getSubTypes()
       if (!sub || typeof sub !== 'object' || Array.isArray(sub)) {
@@ -191,7 +211,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       }
       cur = sub
     }
-    return { type: cur, jexl }
+    return { type: cur, jexl, color }
   }
 
   function collapseAnyOf(branches: JsonSchema[]): JsonSchema {
@@ -226,9 +246,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     if (meta) {
       return configObject(raw, meta, depth)
     }
-    const { type, jexl } = unwrap(raw)
+    const { type, jexl, color } = unwrap(raw)
     if (jexl) {
       return ref('JexlString')
+    }
+    if (color) {
+      return ref('CssColor')
     }
     if (type !== raw) {
       return mstSchema(type, depth)
@@ -298,8 +321,8 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   const SHARED_SLOT_DEFS: Record<string, [string, JsonSchema]> = {
     string: ['StringOrJexl', { type: 'string' }],
     text: ['StringOrJexl', { type: 'string' }],
-    color: ['StringOrJexl', { type: 'string' }],
-    maybeColor: ['StringOrJexl', { type: 'string' }],
+    color: ['CssColorOrJexl', ref('CssColor')],
+    maybeColor: ['CssColorOrJexl', ref('CssColor')],
     number: ['NumberOrJexl', { type: 'number' }],
     maybeNumber: ['NumberOrJexl', { type: 'number' }],
     integer: ['IntegerOrJexl', { type: 'integer' }],
@@ -331,6 +354,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         return { type: 'boolean' }
       case 'color':
       case 'maybeColor':
+        return ref('CssColor')
       case 'string':
       case 'text':
         return { type: 'string' }
@@ -701,6 +725,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     pattern: '^jexl:',
     description:
       'A jexl callback evaluated when the slot is read, e.g. `jexl:get(feature, "score") > 10 ? "red" : "blue"`. Every slot accepts one in place of a fixed value.',
+  }
+  defs.CssColor = {
+    type: 'string',
+    pattern: cssColorPattern(deps.cssColorNames),
+    description:
+      'A CSS color: a name like "red", "#rgb" / "#rrggbb" / "#rrggbbaa", or "rgb()" / "rgba()" / "hsl()" / "hsla()". A field name is not a color; color by a field through the display\'s color channel.',
   }
   defs.FileLocation = {
     description:

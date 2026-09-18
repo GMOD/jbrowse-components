@@ -91,7 +91,11 @@ export function makeContrasting(
   return best
 }
 
-export { isNamedColor, namedColorToHex } from './cssColorsLevel4.ts'
+export {
+  CSS_COLOR_NAMES,
+  isNamedColor,
+  namedColorToHex,
+} from './cssColorsLevel4.ts'
 
 // The (lightness, chroma) tiers randomColor picks between, in OKLCH. Values are
 // in the band a hand-built categorical palette occupies — bright enough to tell
