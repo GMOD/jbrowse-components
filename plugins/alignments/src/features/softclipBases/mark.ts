@@ -3,10 +3,16 @@ import { defineMark } from '@jbrowse/render-core/marks'
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 import { buildBaseCssMap } from '../mismatch/baseColors.ts'
 import { packBaseCells } from '../mismatch/mark.ts'
-import { Band, Fade, Hit, Paint, pileupShape } from '../pileupShape.ts'
+import {
+  Band,
+  Fade,
+  Hit,
+  Paint,
+  pileupShape,
+  pileupChannels,
+} from '../pileupShape.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { PileupChannels } from '../pileupShape.ts'
 import type { SoftclipBasesUploadData } from './types.ts'
 
 // One clipped base of a read's unaligned tail: a `cell` mark on the read's own
@@ -41,19 +47,12 @@ export const SOFTCLIP_BASES_MARK = defineMark({
       fadedCss: [],
     }),
   }),
-  channels: (data: SoftclipBasesUploadData): PileupChannels => ({
-    positions: data.softclipBasePositions,
-    stride: 1,
-    rows: data.softclipBaseYs,
-    start: 0,
-    end: data.softclipBaseYs.length,
-    kinds: undefined,
-    kind: 0,
-    freqs: undefined,
-    quals: undefined,
-    lengths: undefined,
-    keys: data.softclipBaseBases,
-  }),
+  channels: (data: SoftclipBasesUploadData) =>
+    pileupChannels({
+      positions: data.softclipBasePositions,
+      rows: data.softclipBaseYs,
+      keys: data.softclipBaseBases,
+    }),
   params: (state: RenderState) => state,
   enabled: s => s.showSoftClipping,
 })

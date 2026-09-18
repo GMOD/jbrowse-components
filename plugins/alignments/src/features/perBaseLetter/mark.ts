@@ -3,10 +3,16 @@ import { defineMark } from '@jbrowse/render-core/marks'
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 import { buildBaseCssMap } from '../mismatch/baseColors.ts'
 import { packBaseCells } from '../mismatch/mark.ts'
-import { Band, Fade, Hit, Paint, pileupShape } from '../pileupShape.ts'
+import {
+  Band,
+  Fade,
+  Hit,
+  Paint,
+  pileupShape,
+  pileupChannels,
+} from '../pileupShape.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { PileupChannels } from '../pileupShape.ts'
 import type { PerBaseLetterUploadData } from './types.ts'
 
 // Every aligned base in its nucleotide colour: a `cell` mark on one pileup row,
@@ -41,19 +47,12 @@ export const PER_BASE_LETTER_MARK = defineMark({
       fadedCss: [],
     }),
   }),
-  channels: (data: PerBaseLetterUploadData): PileupChannels => ({
-    positions: data.perBaseLetterPositions,
-    stride: 1,
-    rows: data.perBaseLetterYs,
-    start: 0,
-    end: data.perBaseLetterYs.length,
-    kinds: undefined,
-    kind: 0,
-    freqs: undefined,
-    quals: undefined,
-    lengths: undefined,
-    keys: data.perBaseLetterBases,
-  }),
+  channels: (data: PerBaseLetterUploadData) =>
+    pileupChannels({
+      positions: data.perBaseLetterPositions,
+      rows: data.perBaseLetterYs,
+      keys: data.perBaseLetterBases,
+    }),
   params: (state: RenderState) => state,
   enabled: s => s.showPerBaseLetter,
 })

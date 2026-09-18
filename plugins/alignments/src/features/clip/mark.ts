@@ -16,6 +16,7 @@ import {
   countMarks,
   markSelects,
   pileupShape,
+  pileupChannels,
 } from '../pileupShape.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -58,19 +59,14 @@ function packClips(c: PileupChannels) {
 // what the packer's kind and the painter's colour read.
 export function clipChannels(data: InterbaseUploadData): PileupChannels {
   const { insEnd, hcEnd } = interbaseRangeEnds(data)
-  return {
+  return pileupChannels({
     positions: data.interbasePositions,
-    stride: 1,
     rows: data.interbaseYs,
     start: insEnd,
     end: hcEnd,
-    kinds: undefined,
-    kind: 0,
     freqs: data.interbaseFrequencies,
-    quals: undefined,
-    lengths: undefined,
     keys: data.interbaseTypes,
-  }
+  })
 }
 
 /**

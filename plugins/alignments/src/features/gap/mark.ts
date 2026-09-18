@@ -18,6 +18,7 @@ import {
   countMarks,
   markSelects,
   pileupShape,
+  pileupChannels,
 } from '../pileupShape.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -39,20 +40,15 @@ import type { GapUploadData } from './types.ts'
 // A byte that is neither kind belongs to neither mark, so a third gap type added
 // to the worker's array is packed by neither pass and drawn by neither painter.
 // That is deliberate — see plugins/alignments/src/CLAUDE.md.
-function gapChannels(data: GapUploadData, kind: number): PileupChannels {
-  return {
+function gapChannels(data: GapUploadData, kind: number) {
+  return pileupChannels({
     positions: data.gapPositions,
     stride: 2,
     rows: data.gapYs,
-    start: 0,
-    end: data.gapYs.length,
     kinds: data.gapTypes,
     kind,
     freqs: data.gapFrequencies,
-    quals: undefined,
-    lengths: undefined,
-    keys: undefined,
-  }
+  })
 }
 
 export function packGaps(c: PileupChannels) {

@@ -14,6 +14,7 @@ import {
   countMarks,
   markSelects,
   pileupShape,
+  pileupChannels,
 } from '../pileupShape.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -79,19 +80,12 @@ export const OVERLAP_MARK = defineMark({
       }
     },
   }),
-  channels: (data: OverlapsUploadData): PileupChannels => ({
-    positions: data.overlapPositions,
-    stride: 2,
-    rows: data.overlapYs,
-    start: 0,
-    end: data.overlapYs.length,
-    kinds: undefined,
-    kind: 0,
-    freqs: undefined,
-    quals: undefined,
-    lengths: undefined,
-    keys: undefined,
-  }),
+  channels: (data: OverlapsUploadData) =>
+    pileupChannels({
+      positions: data.overlapPositions,
+      stride: 2,
+      rows: data.overlapYs,
+    }),
   params: (state: RenderState) => state,
   enabled: shouldDrawOverlaps,
 })

@@ -19,6 +19,7 @@ import {
   countMarks,
   markSelects,
   pileupShape,
+  pileupChannels,
 } from '../pileupShape.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -55,20 +56,14 @@ function packInsertions(c: PileupChannels) {
 // per-entry type test go: this and the two clip marks each used to walk the
 // whole array, so one hover scanned it three times over to reject most of it on
 // a byte the layout already guarantees.
-export function insertionChannels(data: InterbaseUploadData): PileupChannels {
-  return {
+export function insertionChannels(data: InterbaseUploadData) {
+  return pileupChannels({
     positions: data.interbasePositions,
-    stride: 1,
     rows: data.interbaseYs,
-    start: 0,
     end: data.numInsertions,
-    kinds: undefined,
-    kind: 0,
     freqs: data.interbaseFrequencies,
-    quals: undefined,
     lengths: data.interbaseLengths,
-    keys: undefined,
-  }
+  })
 }
 
 export function insertionHit(

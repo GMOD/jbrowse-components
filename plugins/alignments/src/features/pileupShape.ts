@@ -90,6 +90,40 @@ export interface PileupChannels {
 }
 
 /**
+ * A mark's channels, with every lane it leaves out at its default: one array
+ * entry per instance, the whole array, no kind split and no optional lane. The
+ * one constructor, so every mark's channels come out in one field order.
+ */
+export function pileupChannels({
+  positions,
+  stride = 1,
+  rows,
+  start = 0,
+  end = rows.length,
+  kinds,
+  kind = 0,
+  freqs,
+  quals,
+  lengths,
+  keys,
+}: Pick<PileupChannels, 'positions' | 'rows'> &
+  Partial<PileupChannels>): PileupChannels {
+  return {
+    positions,
+    stride,
+    rows,
+    start,
+    end,
+    kinds,
+    kind,
+    freqs,
+    quals,
+    lengths,
+    keys,
+  }
+}
+
+/**
  * Which pivot a shape uses, and it decides TWO things that have to agree: how
  * Canvas2D widens a sub-pixel mark, and which cursor coordinate contains it.
  *

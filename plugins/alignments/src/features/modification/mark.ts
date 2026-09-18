@@ -2,10 +2,16 @@ import { defineMark } from '@jbrowse/render-core/marks'
 
 import * as packedColorQuadShader from '../../shaders/slang/packedColorQuad.generated.ts'
 import { packColorCells } from '../perBaseQuality/mark.ts'
-import { Band, Fade, Hit, Paint, pileupShape } from '../pileupShape.ts'
+import {
+  Band,
+  Fade,
+  Hit,
+  Paint,
+  pileupShape,
+  pileupChannels,
+} from '../pileupShape.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { PileupChannels } from '../pileupShape.ts'
 import type { ModificationUploadData } from './types.ts'
 
 const identity = (packed: number) => packed
@@ -42,19 +48,12 @@ export const MODIFICATION_MARK = defineMark({
     // per run rather than per mark.
     paint: () => ({ rule: Paint.packedAbgr, opaqueCss: [], fadedCss: [] }),
   }),
-  channels: (data: ModificationUploadData): PileupChannels => ({
-    positions: data.modificationPositions,
-    stride: 1,
-    rows: data.modificationYs,
-    start: 0,
-    end: data.modificationYs.length,
-    kinds: undefined,
-    kind: 0,
-    freqs: undefined,
-    quals: undefined,
-    lengths: undefined,
-    keys: data.modificationColors,
-  }),
+  channels: (data: ModificationUploadData) =>
+    pileupChannels({
+      positions: data.modificationPositions,
+      rows: data.modificationYs,
+      keys: data.modificationColors,
+    }),
   params: (state: RenderState) => state,
   enabled: modificationsEnabled,
 })

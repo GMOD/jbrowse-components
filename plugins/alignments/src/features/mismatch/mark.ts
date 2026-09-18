@@ -10,6 +10,7 @@ import {
   countMarks,
   markSelects,
   pileupShape,
+  pileupChannels,
 } from '../pileupShape.ts'
 import { buildBaseCssMap, buildBaseFadeCssMap } from './baseColors.ts'
 
@@ -102,21 +103,16 @@ export const MISMATCH_MARK = defineMark({
       fadedCss: buildBaseFadeCssMap(state),
     }),
   }),
-  channels: (data: MismatchUploadData): PileupChannels => ({
-    // One base per entry by construction, which is also why the frequency gate
-    // takes a bare `bpPerPx` where a deletion's takes `bpPerPx / length`.
-    positions: data.mismatchPositions,
-    stride: 1,
-    rows: data.mismatchYs,
-    start: 0,
-    end: data.mismatchYs.length,
-    kinds: undefined,
-    kind: 0,
-    freqs: data.mismatchFrequencies,
-    quals: data.mismatchQuals,
-    lengths: undefined,
-    keys: data.mismatchBases,
-  }),
+  // One base per entry by construction, which is also why the frequency gate
+  // takes a bare `bpPerPx` where a deletion's takes `bpPerPx / length`.
+  channels: (data: MismatchUploadData) =>
+    pileupChannels({
+      positions: data.mismatchPositions,
+      rows: data.mismatchYs,
+      freqs: data.mismatchFrequencies,
+      quals: data.mismatchQuals,
+      keys: data.mismatchBases,
+    }),
   params: (state: RenderState) => state,
   enabled: s => s.showMismatches,
 })

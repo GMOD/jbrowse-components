@@ -9,6 +9,7 @@ import {
   countMarks,
   markSelects,
   pileupShape,
+  pileupChannels,
 } from '../pileupShape.ts'
 import { qualityAbgr, qualityCssColors } from './colors.ts'
 
@@ -77,19 +78,12 @@ export const PER_BASE_QUALITY_MARK = defineMark({
       fadedCss: [],
     }),
   }),
-  channels: (data: PerBaseQualityUploadData): PileupChannels => ({
-    positions: data.perBaseQualPositions,
-    stride: 1,
-    rows: data.perBaseQualYs,
-    start: 0,
-    end: data.perBaseQualYs.length,
-    kinds: undefined,
-    kind: 0,
-    freqs: undefined,
-    quals: undefined,
-    lengths: undefined,
-    keys: data.perBaseQualScores,
-  }),
+  channels: (data: PerBaseQualityUploadData) =>
+    pileupChannels({
+      positions: data.perBaseQualPositions,
+      rows: data.perBaseQualYs,
+      keys: data.perBaseQualScores,
+    }),
   params: (state: RenderState) => state,
   enabled: s => s.showPerBaseQuality,
 })
