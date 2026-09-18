@@ -18,6 +18,12 @@ describe('auto', () => {
     expect(
       resolveClusterField({ ...base, colorConfig: 'jexl:feature.state' }),
     ).toBe('state')
+    expect(
+      resolveClusterField({
+        ...base,
+        colorConfig: "jexl:get( feature, 'state' ) == 'TSS' ? 'red' : 'gray'",
+      }),
+    ).toBe('state')
   })
 
   test('ignores an attribute the loaded features do not carry', () => {

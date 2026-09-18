@@ -145,7 +145,7 @@ export const AUTO_CLUSTER_FIELD = 'auto'
 // Either spelling of an attribute read inside a jexl color expression, matched
 // as one alternation so the earliest of the two wins.
 const COLOR_ATTRIBUTE =
-  /get\(feature,['"]([^'"]+)['"]\)|\bfeature\.([A-Za-z_]\w*)/
+  /get\(\s*feature\s*,\s*['"]([^'"]+)['"]\s*\)|\bfeature\.([A-Za-z_]\w*)/
 
 function colorAttribute(colorConfig: string | undefined) {
   const match = isCallbackValue(colorConfig)
