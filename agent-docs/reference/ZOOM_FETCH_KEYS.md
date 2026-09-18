@@ -77,10 +77,18 @@ across one refetches every visible region together. See
 
 **Three declarations key on zoom:**
 
-- **Canvas** (`LinearBasicDisplay`): the amino-acid overlay is the only
-  `bpPerPx`-dependent worker decision, so the key is that discrete threshold —
-  `String(shouldRenderPeptideBackground(view.bpPerPx))` — and every other zoom
-  change reuses the cached features. `laidOutDataMap` uses `coarseBpPerPx`
+- **Canvas** (`LinearBasicDisplay`): two worker decisions depend on zoom, and
+  `zoomFetchArgs()` sends both resolved rather than sending the zoom behind
+  them — `peptides` (the amino-acid overlay is on and the view is at 1 bp/px or
+  finer) and `geneGlyphMode` (`auto` collapses to one transcript past
+  100 bp/px), with `expandedGeneIds` under `longestCoding`, the one mode the
+  worker collapses in. The worker still gets `bpPerPx`, for the density gates
+  alone, and every other zoom change reuses the cached features. Both
+  thresholds read the **live** zoom. A term that flips only at a crossing costs
+  a mid-gesture refetch only where the gesture crosses, and this extract is not
+  the OOM that makes alignments settle first; off the debounced zoom, a region
+  fetched in the mode the view just left read as current for 500ms, and an
+  export in that window drew it. `laidOutDataMap` uses `coarseBpPerPx`
   (debounced 500ms) so Y-row packing doesn't recompute on every animation frame
   during smooth zoom.
 - **Multi-sample variant matrix**: columns lay out by feature index across the
@@ -91,11 +99,10 @@ across one refetches every visible region together. See
   genomic position.
 - **Alignments** (`LinearAlignmentsDisplay`): the two per-base colour schemes
   sample the wall at a sub-pixel bin, so what the worker's extract holds for a
-  region is a function of zoom. The key is `String(perBaseBinBp)`, which is one
-  constant string in every other colour scheme, and `perBaseBinBp` is
-  `subPixelBinBp` over the **debounced** `coarseBpPerPx`. That same getter rides
-  to the worker as a call-site RPC argument, so the key describes the fetch that
-  was actually issued.
+  region is a function of zoom. `zoomFetchArgs()` carries `perBaseBinBp`, which
+  is 1 in every other colour scheme and otherwise `subPixelBinBp` over the
+  **debounced** `coarseBpPerPx`. The RPC spreads the same object, so the stamp
+  describes the fetch that was actually issued.
 
   Keying live `bpPerPx` instead would not be wrong for flipping more often: the
   quantization flips the bin once per octave either way, and wiggle keys on live

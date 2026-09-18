@@ -253,10 +253,10 @@ export default function MultiRegionDisplayMixin() {
          * Overridable hook (default `''`): the zoom-dependent term of what a
          * fetch issued right now would produce for a region — the one axis of
          * the fetch key the display supplies, where the settings and adapter
-         * axes are the mixin's (`fetchInputs` below). Wiggle returns
-         * `String(view.bpPerPx)` (adr-008), canvas the peptide-overlay
-         * threshold, the variant matrix its zoom in matrix mode only,
-         * alignments its per-base sampling bin.
+         * axes are the mixin's (`fetchInputs` below). The variant matrix
+         * returns its zoom in matrix mode only; canvas and alignments state
+         * theirs through `zoomFetchArgs`, and wiggle through the adapter's
+         * `zoomRange`.
          *
          * Here and NOT in `rpcProps()`: a zoom-swinging value in the RPC
          * payload runs `SettingsInvalidate` on every crossing — the in-flight

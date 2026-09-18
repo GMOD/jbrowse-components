@@ -100,11 +100,12 @@ export default function stateModelFactory(
         return getConf(self, 'showOnlyGenes')
       },
 
-      // Off the debounced zoom, so a gesture crossing the `auto` threshold
-      // moves `zoomFetchKey` once it settles, on the layout's cadence.
+      // Off the live zoom: off the debounced one, a region fetched in the
+      // mode the view just left read as current for 500ms, and an export in
+      // that window drew it.
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
         return this.geneGlyphMode === 'auto'
-          ? containingLgv(self).coarseBpPerPx > 100
+          ? containingLgv(self).bpPerPx > 100
             ? 'longestCoding'
             : 'all'
           : this.geneGlyphMode

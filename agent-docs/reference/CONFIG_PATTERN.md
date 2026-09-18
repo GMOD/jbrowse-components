@@ -52,8 +52,9 @@ value, defaults included, so the worker can read the result with no schema.
 
 A value that swings with zoom (canvas's `effectiveGeneGlyphMode`, the synteny
 LOD tier, alignments' per-base bin) is NOT an `rpcProps` field: it is a
-`zoomFetchKey` term and a call-site RPC argument, so a threshold crossing
-refetches the regions on screen without a settings invalidation.
+`zoomFetchArgs()` field, which the RPC spreads and the foundation stamps, so a
+threshold crossing refetches the regions on screen without a settings
+invalidation.
 
 Both snapshot helpers return ALL config values including defaults (unlike
 `getSnapshot()`, which strips defaults via `postProcessSnapshot`). JEXL callback

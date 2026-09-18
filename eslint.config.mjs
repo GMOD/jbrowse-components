@@ -248,11 +248,11 @@ const noSessionAddTrackConf = {
     'Call `session.addSessionTrackConf` for a track a feature stands up on the user’s behalf, or `session.publishTrackConf` in an Add-track workflow where an admin means to add it for the whole site — and gate on the matching `isSessionWithAddSessionTrack` / `isSessionWithPublishTrackConf`. `addTrackConf` and `isSessionWithAddTracks` survive only for prebuilt plugin bundles. See the tracks section of CLAUDE.md.',
 }
 
-// `rpcProps`, `regionHasData` and `isCacheValid` are the method-shaped fetch
-// hooks read from reactive contexts, and MST decides what a member IS from the
-// block it is declared in. `.actions()` makes it an action, MobX runs an action
-// inside `untracked`, and the hook then returns the right value while
-// registering none of the observables it read. ADR-044 rejected this rule in
+// `rpcProps`, `zoomFetchArgs`, `regionHasData` and `isCacheValid` are the
+// method-shaped fetch hooks read from reactive contexts, and MST decides what a
+// member IS from the block it is declared in. `.actions()` makes it an action,
+// MobX runs an action inside `untracked`, and the hook then returns the right
+// value while registering none of the observables it read. ADR-044 rejected this rule in
 // 2026-07 on the grounds that a lint pass "would see the easy cases and miss
 // precisely the 210-line-block case that shipped"; two of the three escapes it
 // named — a 210-line `.actions()` block, and a super-capture override that
@@ -260,11 +260,11 @@ const noSessionAddTrackConf = {
 // A helper factory spread into the block is the one that is not.
 const noFetchHookInActions = {
   selector: [
-    "CallExpression[callee.property.name='actions'] > ArrowFunctionExpression > ObjectExpression > Property[key.name=/^(isCacheValid|regionHasData|rpcProps)$/]",
-    "CallExpression[callee.property.name='actions'] > ArrowFunctionExpression > BlockStatement > ReturnStatement > ObjectExpression > Property[key.name=/^(isCacheValid|regionHasData|rpcProps)$/]",
+    "CallExpression[callee.property.name='actions'] > ArrowFunctionExpression > ObjectExpression > Property[key.name=/^(isCacheValid|regionHasData|rpcProps|zoomFetchArgs)$/]",
+    "CallExpression[callee.property.name='actions'] > ArrowFunctionExpression > BlockStatement > ReturnStatement > ObjectExpression > Property[key.name=/^(isCacheValid|regionHasData|rpcProps|zoomFetchArgs)$/]",
   ].join(', '),
   message:
-    'Declare `rpcProps`, `regionHasData` and `isCacheValid` in a `.views()` block, never `.actions()`. MST turns whatever an `.actions()` block declares into an action and MobX runs an action inside `untracked`, so the hook still returns the right value when called and simply stops registering the observables it read — every autorun and computed calling it keeps a stale answer until something else it happens to depend on changes. Nothing throws and nothing logs, and the block opener deciding a member’s fate is often hundreds of lines above it: multi-sample-variant shipped a byte gate that evaluated `false` once before init and never re-evaluated, and multi-row shipped an `isCacheValid` inside a 210-line `.actions()` block that only looked harmless because `FetchVisibleRegions` re-fired for its own reasons. Move the declaration into a `.views()` block, or make the hook a getter — MST throws on a getter inside `.actions()`, which is why `regionFetchKey` needs no rule. See agent-docs/architecture-decision-records/adr-044-reactive-display-hooks-are-getters-or-pinned-views.md.',
+    'Declare `rpcProps`, `zoomFetchArgs`, `regionHasData` and `isCacheValid` in a `.views()` block, never `.actions()`. MST turns whatever an `.actions()` block declares into an action and MobX runs an action inside `untracked`, so the hook still returns the right value when called and simply stops registering the observables it read — every autorun and computed calling it keeps a stale answer until something else it happens to depend on changes. Nothing throws and nothing logs, and the block opener deciding a member’s fate is often hundreds of lines above it: multi-sample-variant shipped a byte gate that evaluated `false` once before init and never re-evaluated, and multi-row shipped an `isCacheValid` inside a 210-line `.actions()` block that only looked harmless because `FetchVisibleRegions` re-fired for its own reasons. Move the declaration into a `.views()` block, or make the hook a getter — MST throws on a getter inside `.actions()`, which is why `regionFetchKey` needs no rule. See agent-docs/architecture-decision-records/adr-044-reactive-display-hooks-are-getters-or-pinned-views.md.',
 }
 
 // `CanvasFeatureGateMixin` and `RegionTooLargeMixin` (which

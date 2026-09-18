@@ -12,8 +12,8 @@ import {
 } from './densityGate.ts'
 import { buildFeatureAdmission } from './featureAdmission.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
-import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
+import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureDataResult } from './rpcTypes.ts'
 import type { PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -30,10 +30,11 @@ export async function executeRenderFeatureData({
     sessionId,
     adapterConfig,
     displayConfig,
+    geneGlyphMode,
     region,
     bpPerPx: requestedBpPerPx,
     colorByCDS,
-    showAminoAcids,
+    peptides,
     geneticCodeId,
     sequenceAdapter,
     showOnlyGenes,
@@ -45,6 +46,7 @@ export async function executeRenderFeatureData({
     signal,
     statusCallback,
   } = args
+  const config: DisplayConfig = { ...displayConfig, geneGlyphMode }
 
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
@@ -69,7 +71,7 @@ export async function executeRenderFeatureData({
   // Both density gates and the layout pass use this one admission, so the
   // pre-fetch estimate cannot disagree with the exact post-fetch count.
   const admit = buildFeatureAdmission({
-    config: displayConfig,
+    config,
     jexl: pluginManager.jexl,
     showOnlyGenes,
     soloFeatureIds,
@@ -125,11 +127,7 @@ export async function executeRenderFeatureData({
   const expandedGenes = expandedGeneIds && new Set(expandedGeneIds)
 
   let peptideDataMap: Map<string, PeptideData> | undefined
-  if (
-    showAminoAcids &&
-    sequenceAdapter &&
-    shouldRenderPeptideBackground(requestedBpPerPx)
-  ) {
+  if (peptides && sequenceAdapter) {
     peptideDataMap = await updateStatus(
       'Downloading peptide data',
       statusCallback,
@@ -162,7 +160,7 @@ export async function executeRenderFeatureData({
       buildFeatureRenderData({
         features: features.values(),
         featureCount: features.size,
-        config: displayConfig,
+        config,
         jexl: pluginManager.jexl,
         regionStart: region.start,
         regionEnd: region.end,

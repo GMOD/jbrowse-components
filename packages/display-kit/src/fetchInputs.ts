@@ -30,12 +30,12 @@ export interface FetchInputsHost extends IStateTreeNode {
    * The zoom-derived worker arguments as an object — **the same object the
    * display spreads into its RPC call**, which is the whole point of the hook:
    * a display that sends `bpPerPx` and keys on `String(bpPerPx)` has written
-   * one fact twice, and the two spellings drift (canvas keys a peptide
-   * threshold while it sends a glyph mode).
+   * one fact twice, and the two spellings drift.
    *
-   * Alignments fills it with its per-base bin and detail tier. A display that
-   * has not been converted leaves this undefined and its `zoomFetchKey` string
-   * is the zoom tier instead.
+   * Alignments fills it with its per-base bin and detail tier, canvas with
+   * its resolved glyph mode and peptide flag. A display that has not been
+   * converted leaves this undefined and its `zoomFetchKey` string is the zoom
+   * tier instead.
    */
   zoomFetchArgs?: () => object
   zoomFetchKey: string

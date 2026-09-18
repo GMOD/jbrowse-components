@@ -601,7 +601,6 @@ export default function baseStateModelFactory(
               : { facetField: self.facet.field }),
           },
           colorByCDS: self.colorByCDS,
-          showAminoAcids: self.showAminoAcids,
           // Undefined while collecting, so building the set neither
           // refetches nor hides anything.
           soloFeatureIds:
@@ -1328,21 +1327,25 @@ export default function baseStateModelFactory(
     }))
     .views(self => ({
       /**
-       * #getter
+       * #method
+       * The worker's zoom-dependent decisions, resolved: the RPC spreads this
+       * object and the foundation stamps it beside each region, so a track
+       * with the overlay off and a fixed mode never refetches on zoom.
+       * `expandedGeneIds` only under `longestCoding`, the one mode the worker
+       * collapses in.
        */
-      // Only the two bpPerPx-dependent worker decisions, so a track with
-      // the overlay off and a fixed mode never refetches on zoom; a getter,
-      // not an action, because an action would untrack the `bpPerPx` read.
-      get zoomFetchKey(): string {
-        const peptides =
-          self.showAminoAcids &&
-          shouldRenderPeptideBackground(containingLgv(self).bpPerPx)
-        const mode = self.effectiveGeneGlyphMode
-        const expanded =
-          mode === 'longestCoding' && self.expandedGeneIds.length > 0
-            ? `|${self.expandedGeneIds.join(',')}`
-            : ''
-        return `${peptides}|${mode}${expanded}`
+      zoomFetchArgs() {
+        const geneGlyphMode = self.effectiveGeneGlyphMode
+        return {
+          geneGlyphMode,
+          peptides:
+            self.showAminoAcids &&
+            shouldRenderPeptideBackground(containingLgv(self).bpPerPx),
+          expandedGeneIds:
+            geneGlyphMode === 'longestCoding' && self.expandedGeneIds.length > 0
+              ? toJS(self.expandedGeneIds)
+              : undefined,
+        }
       },
     }))
     .actions(self => ({
@@ -1409,6 +1412,7 @@ export default function baseStateModelFactory(
           // invalidation.
           const maxFeatureDensity = self.maxFeatureDensity
           const args = rpcArgs(self)
+          const zoomArgs = self.zoomFetchArgs()
           self.pruneDensityStatsToVisible(
             new Set(
               view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
@@ -1423,14 +1427,7 @@ export default function baseStateModelFactory(
               )
               return ctx.callRpc('RenderFeatureData', {
                 ...args,
-                displayConfig: {
-                  ...args.displayConfig,
-                  geneGlyphMode: self.effectiveGeneGlyphMode,
-                },
-                expandedGeneIds:
-                  self.expandedGeneIds.length > 0
-                    ? toJS(self.expandedGeneIds)
-                    : undefined,
+                ...zoomArgs,
                 geneticCodeId: assembly?.getGeneticCodeId(region.refName),
                 region,
                 bpPerPx,

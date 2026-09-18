@@ -61,6 +61,7 @@ test('the reactive method hooks are views, not actions', () => {
   expect(actions).not.toContain('isCacheValid')
   expect(actions).not.toContain('regionHasData')
   expect(actions).not.toContain('rpcProps')
+  expect(actions).not.toContain('zoomFetchArgs')
 })
 
 describe('FetchVisibleRegions autorun', () => {
@@ -318,6 +319,7 @@ describe('FetchVisibleRegions autorun', () => {
     it('refetches on a zoom that crosses it', async () => {
       const { display, view, mockRpcCall } = await loadedAboveTheThreshold()
       const callsBefore = mockRpcCall.mock.calls.length
+      expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({ peptides: false })
 
       view.zoomTo(0.5)
       expect(display.viewportWithinLoadedData).toBe(true)
@@ -327,6 +329,19 @@ describe('FetchVisibleRegions autorun', () => {
       await waitFor(() => {
         expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
       })
+      expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({ peptides: true })
+    })
+
+    it('does not refetch when the overlay is toggled above it', async () => {
+      const { display, view, mockRpcCall } = await loadedAboveTheThreshold()
+      const callsBefore = mockRpcCall.mock.calls.length
+
+      view.setShowAminoAcids(false)
+      expect(display.staleSettingsDrawn).toBe(false)
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+
+      expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     })
 
     it('does not refetch on a crossing zoom with amino acids off', async () => {
@@ -341,7 +356,7 @@ describe('FetchVisibleRegions autorun', () => {
       jest.advanceTimersByTime(800)
       await jest.runAllTimersAsync()
 
-      expect(display.zoomFetchKey).toBe('false|all')
+      expect(display.zoomFetchArgs().peptides).toBe(false)
       expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     })
   })
@@ -366,12 +381,12 @@ describe('FetchVisibleRegions autorun', () => {
       return { display, view, mockRpcCall }
     }
 
-    it('rides in the zoom key and the RPC call, not in rpcProps', async () => {
+    it('rides in zoomFetchArgs and the RPC call, not in rpcProps', async () => {
       const { display, view, mockRpcCall } = await loadedCollapsed()
       const settings = display.settingsFetchInputs
-      expect(display.zoomFetchKey).toBe('false|longestCoding')
+      expect(display.zoomFetchArgs().geneGlyphMode).toBe('longestCoding')
       expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({
-        displayConfig: { geneGlyphMode: 'longestCoding' },
+        geneGlyphMode: 'longestCoding',
       })
       expect(display.rpcProps().displayConfig).not.toHaveProperty(
         'geneGlyphMode',
@@ -384,12 +399,23 @@ describe('FetchVisibleRegions autorun', () => {
 
       await waitFor(() => {
         expect(mockRpcCall.mock.lastCall?.[2]).toMatchObject({
-          displayConfig: { geneGlyphMode: 'all' },
+          geneGlyphMode: 'all',
         })
       })
-      expect(display.zoomFetchKey).toBe('false|all')
+      expect(display.zoomFetchArgs().geneGlyphMode).toBe('all')
       expect(display.settingsFetchInputs).toEqual(settings)
       expect(display.staleSettingsDrawn).toBe(false)
+    })
+
+    it('reads stale from the crossing, not from the settled zoom', async () => {
+      const { display, view } = await loadedCollapsed()
+      expect(display.dataCurrent).toBe(true)
+
+      view.zoomTo(50)
+      expect(view.coarseBpPerPx).toBeGreaterThan(100)
+      expect(display.viewportWithinLoadedData).toBe(true)
+      expect(display.dataCurrent).toBe(false)
+      expect(display.phaseViewportCurrent).toBe(true)
     })
 
     it('does not move for a fixed mode', async () => {
@@ -401,7 +427,7 @@ describe('FetchVisibleRegions autorun', () => {
       jest.advanceTimersByTime(800)
       await jest.runAllTimersAsync()
 
-      expect(display.zoomFetchKey).toBe('false|all')
+      expect(display.zoomFetchArgs().geneGlyphMode).toBe('all')
       expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     })
 
@@ -412,7 +438,11 @@ describe('FetchVisibleRegions autorun', () => {
 
       display.toggleExpandedGene('gene1')
       expect(display.rpcProps()).not.toHaveProperty('expandedGeneIds')
-      expect(display.zoomFetchKey).toBe('false|longestCoding|gene1')
+      expect(display.zoomFetchArgs()).toEqual({
+        geneGlyphMode: 'longestCoding',
+        peptides: false,
+        expandedGeneIds: ['gene1'],
+      })
       jest.advanceTimersByTime(800)
       await jest.runAllTimersAsync()
 
@@ -431,7 +461,7 @@ describe('FetchVisibleRegions autorun', () => {
       const callsBefore = mockRpcCall.mock.calls.length
 
       display.toggleExpandedGene('gene1')
-      expect(display.zoomFetchKey).toBe('false|all')
+      expect(display.zoomFetchArgs().expandedGeneIds).toBeUndefined()
       jest.advanceTimersByTime(800)
       await jest.runAllTimersAsync()
 
@@ -1425,11 +1455,11 @@ describe('geneGlyphMode auto collapse', () => {
     const { display, view } = setup()
     expect(display.geneGlyphMode).toBe('auto')
 
-    zoomAndSettle(view, 200)
+    view.zoomTo(200)
     expect(view.bpPerPx).toBeGreaterThan(100)
     expect(display.effectiveGeneGlyphMode).toBe('longestCoding')
 
-    zoomAndSettle(view, 50)
+    view.zoomTo(50)
     expect(view.bpPerPx).toBeLessThan(100)
     expect(display.effectiveGeneGlyphMode).toBe('all')
   })

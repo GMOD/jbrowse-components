@@ -117,12 +117,12 @@ spread:
 })
 ```
 
-A zoom-derived worker decision is not an `rpcProps` field: it is the display's
-`zoomFetchKey` term and rides the RPC as a call-site argument (canvas's
-`effectiveGeneGlyphMode`, alignments' `perBaseBinBp`, the synteny `lodTier`),
-so a threshold crossing refetches the regions on screen while they keep
-drawing, where an `rpcProps` move runs `SettingsInvalidate`, supersedes the
-in-flight fetch and scrims the held data.
+A zoom-derived worker decision is not an `rpcProps` field: it is a field of the
+display's `zoomFetchArgs()`, the object the RPC spreads and the foundation
+stamps (canvas's `effectiveGeneGlyphMode`, alignments' `perBaseBinBp`, the
+synteny `lodTier`), so a threshold crossing refetches the regions on screen
+while they keep drawing, where an `rpcProps` move runs `SettingsInvalidate`,
+supersedes the in-flight fetch and scrims the held data.
 
 `MultiRegionDisplayMixin` does **not** provide a base default — declaring one
 would widen the typed return through MST's `.views()` chain and force consumers to

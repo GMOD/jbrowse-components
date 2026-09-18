@@ -88,9 +88,9 @@ export interface DisplayConfig {
   }
 }
 
-// What the worker gets for `geneGlyphMode` is the zoom-resolved mode, added at
-// the RPC call site, so crossing its `auto` threshold moves the display's
-// `zoomFetchKey` rather than invalidating settings.
+// The config slots the worker reads. `geneGlyphMode` reaches it resolved
+// against the zoom through the display's `zoomFetchArgs`, and `facetField` is
+// the facet's rather than a slot.
 export type SettingsDisplayConfig = Omit<
   DisplayConfig,
   'geneGlyphMode' | 'facetField'

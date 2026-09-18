@@ -79,7 +79,7 @@ async function settle() {
 const BYTES_PER_BP = 20
 
 // Every zoom here sits above 100 bp/px, on one side of the gene-glyph `auto`
-// threshold, so a refetch off `zoomFetchKey` cannot hide a freeze.
+// threshold, so a refetch off `zoomFetchArgs` cannot hide a freeze.
 const WARM_BP_PER_PX = 150
 const WIDE_BP_PER_PX = 1500
 const RELEASED_BP_PER_PX = 400

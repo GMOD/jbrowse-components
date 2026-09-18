@@ -105,9 +105,9 @@ is declared in `STATES_NO_RULES`.
 - Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
   `rpcProps()`; it is an infinite fetch loop. See
   [the trap](reference/FETCH_KEYS.md#rpcprops-loop-trap-and-how-to-break-it).
-- Don't declare `rpcProps`, `regionHasData` or `isCacheValid` in `.actions()`.
-  MST runs an action `untracked`, so their reads register no dependency and
-  callers silently keep a stale answer; `no-restricted-syntax` fails the
+- Don't declare `rpcProps`, `zoomFetchArgs`, `regionHasData` or `isCacheValid`
+  in `.actions()`. MST runs an action `untracked`, so their reads register no
+  dependency and callers silently keep a stale answer; `no-restricted-syntax` fails the
   declaration in source and says why. See [the
   pattern](#rpcprops--gpuprops-pattern).
 - Don't let a per-frame viewport value reach `gpuProps()`. A change to it

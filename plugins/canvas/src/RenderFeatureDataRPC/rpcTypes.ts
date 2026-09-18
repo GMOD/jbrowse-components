@@ -15,7 +15,10 @@ export interface LabelItem {
 
 export interface RenderFeatureDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
-  displayConfig: DisplayConfig
+  displayConfig: Omit<DisplayConfig, 'geneGlyphMode'>
+  // Resolved against the zoom by the display, beside `displayConfig` because
+  // it is a zoom input rather than a setting.
+  geneGlyphMode: DisplayConfig['geneGlyphMode']
   // A caller that synthesizes a region must round start/end to integer bp
   // itself; the worker does no defensive re-round.
   region: {
@@ -26,10 +29,13 @@ export interface RenderFeatureDataArgs extends GatedFetchArgs {
     // sequence-adapter (FASTA) refName, set by the data-adapter renaming pass
     originalRefName?: string
   }
+  // Read by the density gates alone; every zoom-dependent decision arrives
+  // resolved.
   bpPerPx: number
   colorByCDS?: boolean
-  // Implies a sequence fetch, which is why it is separate from colorByCDS.
-  showAminoAcids?: boolean
+  // The amino-acid overlay, already judged against the zoom. Implies a
+  // sequence fetch, which is why it is separate from colorByCDS.
+  peptides?: boolean
   // Translation-table fallback for transcripts whose features lack a
   // transl_table attribute.
   geneticCodeId?: number

@@ -1174,8 +1174,8 @@ only on a real violation):
   move: a state a check invented for itself is a cost of that check, and moving
   the check should take it.**
 
-- **`rpcProps` / `regionHasData` / `isCacheValid` must be `.views()`, not
-  `.actions()`.** MobX runs actions untracked, so the reads register no
+- **`rpcProps` / `zoomFetchArgs` / `regionHasData` / `isCacheValid` must be
+  `.views()`, not `.actions()`.** MobX runs actions untracked, so the reads register no
   dependency and callers keep a stale answer. A declaration of one of those
   names directly inside an `.actions(…)` block is an eslint error
   (`no-restricted-syntax`, which carries the reason); `zoomFetchKey` is spared
