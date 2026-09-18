@@ -37,4 +37,3 @@ tutorials/scrna_pseudobulk.md 1
 tutorials/selection_pressure.md 1
 tutorials/sv_visualization_cgiab.md 2
 tutorials/synteny_visualization.md 2
-tutorials/tp53_structures.md 2
