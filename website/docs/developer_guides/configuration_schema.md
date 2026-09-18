@@ -122,8 +122,8 @@ typed, a slot can be edited graphically without an author writing any UI.
 | --- | --- | --- | --- |
 | <code>boolean</code> | <code>types.boolean</code> | <code>boolean</code> | checkbox |
 | <code>maybeBoolean</code> | <code>types.maybe(types.boolean)</code> | <code>boolean &#124; undefined</code> | checkbox |
-| <code>color</code> | <code>types.string</code> | <code>string</code> | text field beside a swatch that opens a color picker |
-| <code>maybeColor</code> | <code>types.maybe(types.string)</code> | <code>string &#124; undefined</code> | text field beside a swatch that opens a color picker |
+| <code>color</code> | <code>CssColorType</code> | <code>string</code> | text field beside a swatch that opens a color picker |
+| <code>maybeColor</code> | <code>types.maybe(CssColorType)</code> | <code>string &#124; undefined</code> | text field beside a swatch that opens a color picker |
 | <code>fileLocation</code> | <code>FileLocation</code> | <code>FileLocation</code> | URL, local file path (desktop) or file blob (browser) |
 | <code>frozen</code> | <code>types.frozen()</code> | <code>any</code> | monospace textarea holding arbitrary JSON |
 | <code>maybeFrozen</code> | <code>types.maybe(types.frozen())</code> | <code>any</code> | monospace textarea holding arbitrary JSON |

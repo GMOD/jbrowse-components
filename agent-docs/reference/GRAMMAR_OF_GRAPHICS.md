@@ -237,14 +237,21 @@ The seams, named honestly:
   a pinned `domain` is what fixes a legend for a figure, and the Score menu's
   "Pin current min/max" writes it from what is drawn. The feature display's
   categorical counterpart is "Pin distinct colors" (`pinColorDomain`), which
-  appends the values its key lists to `color.domain`, since two unlisted values
-  can hash onto one colour.
+  appends every value its key's rows list to `color.domain`, since two
+  unlisted values can hash onto one colour — and a row sharing a colour
+  between two values pins both, which is what makes them distinct.
 - **A categorical key is derived in one place, from the colours themselves.**
   `derivedColorScale` (`packages/core/src/util/legendCandidates.ts`) is the
   derivation every channel-backed key runs: the union over the loaded regions,
-  one row per distinct colour named by the first label seen in it, ordered by
-  the channel's `domain`, and dropped where `legendIsReadable` says the rows
-  would say nothing. The canvas feature display hands it the candidates its
+  one row per distinct colour naming every value painted in it
+  (`CategoricalEntry.values`, the label joining their names in the field's
+  order, `value` the first as the row's id), rows ordered by the channel's
+  `domain`, and dropped where `legendIsReadable` says the rows would say
+  nothing. ggplot2 derives the same rows from a scale's breaks, so two levels
+  mapped to one colour are two rows with one swatch; here the hide toggle
+  hides by colour, so they are one row with two names
+  ([ADR-136](../architecture-decision-records/adr-136-a-legend-follows-its-scale-and-a-colour-slot-is-a-colour.md)).
+  The canvas feature display hands it the candidates its
   worker walk recorded with a section stamp apiece, so a hidden section's
   colours leave the key; Manhattan hands it the entries of the scale table
   `encodeFeatures` resolved; synteny and the mark display map their own
@@ -254,8 +261,8 @@ The seams, named honestly:
   the multi-row feature display's and the multiway lane glyphs'
   (`laneColorKey`) read colours off `itemRgb` and per-feature `jexl:`, so
   there is no channel behind them to carry a field name or a domain. They
-  still run the union's rule — a row IS a colour, named by the first feature
-  carrying it. **A value-less feature files under the empty key `''`**, which
+  still run the union's rule — a row IS a colour, named by every feature
+  value carrying it. **A value-less feature files under the empty key `''`**, which
   the one comparator already places after every value, so the worker tables
   and the candidates carry no flag for it; the key's `missing` row is derived
   from that key where the row is made. What a value-less feature paints
@@ -399,13 +406,21 @@ the row axis in the vocabulary above, and none is a new channel.
   bp per bin, snapped up — so a zoom inside a rung refetches nothing and a
   1,600x sweep in 64 steps costs 11 refetches. GenomeSpy's `multiscale`
   spells the same idea with `stops`.
-- **Scale resolution across layers is y's alone.** `encoding.y.resolve:
+- **Scale resolution across layers: y declares it, a categorical colour
+  shares by construction, a ramp does not share.** `encoding.y.resolve:
   'independent'` gives one mark its own domain and a second axis on the right,
   on screen and in the export
   ([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md));
-  colour has no equivalent, so two marks with two ramps still union nothing
-  and each key is its own. A second independent mark is refused, the chrome
-  having one place to put the axis.
+  a second independent mark is refused, the chrome having one place to put
+  the axis. Two marks colouring or glyphing by one field through one domain
+  and palette share one key section — `buildMarkLegend` keys a section on the
+  declaration rather than the mark, the way ggplot2's `ScalesList$add_defaults`
+  keeps one scale per aesthetic across layers and `Guides$merge` folds
+  matching guides — and any difference in the declaration keeps them apart
+  ([ADR-136](../architecture-decision-records/adr-136-a-legend-follows-its-scale-and-a-colour-slot-is-a-colour.md)).
+  Two marks with two unpinned ramps over one field still union nothing and
+  each key is its own: the domain is a uniform each mark's shaders read, so
+  sharing it is a rendering change to measure, not a legend change.
 - **No conditional encoding.** Hover and selection are a guide over the
   painting, not a `condition` on a channel: a display names the lit
   instances and the chrome boxes their ink

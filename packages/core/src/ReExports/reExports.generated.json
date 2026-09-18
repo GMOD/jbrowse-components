@@ -2583,6 +2583,7 @@
     "@jbrowse/core/util/color": {
       "package": "@jbrowse/core",
       "names": [
+        "CSS_COLOR_NAMES",
         "NO_CATEGORY_COLOR",
         "emphasize",
         "isNamedColor",
@@ -2619,6 +2620,7 @@
         "getGreen",
         "getLuminance",
         "getRed",
+        "isCssColor",
         "lighten",
         "newColor",
         "normalizedRgbToABGR",
