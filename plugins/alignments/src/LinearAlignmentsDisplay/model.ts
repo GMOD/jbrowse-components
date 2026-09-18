@@ -1096,10 +1096,9 @@ export default function stateModelFactory(
           /**
            * #getter
            * The modification types drawn in the rendered reads, the counterpart
-           * of `presentTagValues`. `detectedModifications` adds each region's
-           * types when that region's fetch lands and is never cleared, so a
-           * legend keyed on it would still list 6mA after panning off the one
-           * locus carrying 6mA.
+           * of `presentTagValues`. `detectedModifications` is what the loaded
+           * reads carry, hidden lanes included, so a legend keyed on it would
+           * name a colour no visible read paints.
            *
            * Read from `modificationTypes`, which the worker builds from the drawn
            * marks, not from the MM/ML parse, so it matches what is on screen. The
@@ -2925,12 +2924,12 @@ export default function stateModelFactory(
         // bound (filterBy, colorBy, …) plus the one main-thread decision
         // field that selects between pileup and chain RPC (linkedReads).
         // Arc-only fields (arcColorByType, drawInter, drawLongRange) are
-        // NOT here — they are tracked by the arcsRpcDataMap computed
-        // getter and do not require a refetch. Non-tag sort changes are
-        // handled main-thread by laidOutPileupMap, as is tag coloring
-        // (readTagColors is baked in laidOutPileupMap from the per-read value
-        // strings the worker already ships, so no discovered-value state exists
-        // to put here and re-create the discover→assign→refetch loop with).
+        // NOT here — `arcsResult` reads them and they do not require a
+        // refetch. Non-tag sort changes are handled by the main-thread layout,
+        // as is tag coloring (`readTagColors` is baked in `laidOutByGroup` from
+        // the per-read value strings the worker already ships, so no
+        // discovered-value state exists to put here and re-create the
+        // discover→assign→refetch loop with).
         //
         // Lives in its own views block, after every field it reads, so it can
         // read them off `self`: a subclass overriding it captures the base as a
@@ -3795,7 +3794,7 @@ export default function stateModelFactory(
           /**
            * #action
            * Toggle the paired-read connection overlay. A main-thread tier-2/4
-           * setting (read in `laidOutPileupMap` + `renderState`), not in
+           * setting (read by the layout and `renderState`), not in
            * `rpcProps` — toggling it never refetches.
            */
           setShowBezierConnections(flag: boolean) {

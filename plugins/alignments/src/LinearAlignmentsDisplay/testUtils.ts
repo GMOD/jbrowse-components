@@ -518,12 +518,6 @@ export function clickMenuItem(items: MenuItem[], label: string) {
   found.onClick()
 }
 
-/** Whether `label` names a row that would do something when clicked. */
-export function isMenuItemClickable(items: MenuItem[], label: string) {
-  const found = findMenuItem(items, label)
-  return found !== undefined && 'onClick' in found
-}
-
 /**
  * Put the view at a scale, and settle what a real one settles asynchronously.
  *

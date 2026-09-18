@@ -19,8 +19,6 @@ const UI = readShader.UNIFORM_OFFSET_I32
 const UU = readShader.UNIFORM_OFFSET_U32
 const USLOTS = readShader.UNIFORM_SLOT_ARRAYS
 
-export const PILEUP_UNIFORMS_SIZE_BYTES = readShader.UNIFORMS_SIZE_BYTES
-
 /** The three views one pileup uniform buffer is written through. */
 export interface PileupUniformViews {
   f32: Float32Array

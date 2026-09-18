@@ -20,6 +20,7 @@ import {
   getModProbabilities,
   getModProbabilityBytes,
   getModTypes,
+  getTagAlt,
   isMethylationFillType,
   matchesCytosineContext,
 } from '@jbrowse/modifications-utils'
@@ -30,7 +31,7 @@ import {
   isModificationTypeVisible,
 } from '../../shared/types.ts'
 import { getFlags } from '../../shared/util.ts'
-import { getColorForModification, getTagAlt } from '../../util.ts'
+import { getColorForModification } from '../../util.ts'
 import { packedCigarOps } from '../alignedBaseWalk.ts'
 
 import type { ColorBy, ModificationColorBy } from '../../shared/types.ts'
