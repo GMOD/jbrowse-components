@@ -1,4 +1,4 @@
-import { adapterConfigKey } from './adapterConfigKey.ts'
+import { isDataCurrent } from './isDataCurrent.ts'
 import { getRpcSessionId } from './parentWalk.ts'
 import { getRpcHost } from './sessionServices.ts'
 
@@ -23,14 +23,16 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export function createAdapterMetadataFetch(
   self: IStateTreeNode & { adapterConfig: Record<string, unknown> },
 ) {
-  let cached: { key: string; promise: Promise<unknown> } | undefined
+  let cached:
+    | { adapterConfig: Record<string, unknown>; promise: Promise<unknown> }
+    | undefined
   return () => {
-    const key = adapterConfigKey(self.adapterConfig)
-    if (cached?.key !== key) {
+    const { adapterConfig } = self
+    if (!cached || !isDataCurrent(cached.adapterConfig, adapterConfig)) {
       const promise = getRpcHost(self)
         // eslint-disable-next-line no-restricted-syntax -- nothing to narrate, nothing a cancel could save
         .rpcManager.call(getRpcSessionId(self), 'CoreGetMetadata', {
-          adapterConfig: self.adapterConfig,
+          adapterConfig,
         })
         .catch((e: unknown) => {
           if (cached?.promise === promise) {
@@ -38,7 +40,7 @@ export function createAdapterMetadataFetch(
           }
           throw e
         })
-      cached = { key, promise }
+      cached = { adapterConfig, promise }
     }
     return cached.promise
   }

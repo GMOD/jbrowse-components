@@ -1,12 +1,13 @@
-import { compareStructural, computed, isObservable, toJS } from 'mobx'
+import { isObservable, toJS } from 'mobx'
+
+import { stableIdentityComputed } from './stableIdentityComputed.ts'
 
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * The two tiers of a per-region fetch's inputs, as **values** rather than as
- * the strings `regionFetchKey` / `settingsFetchKey` spell. `compareStructural`
- * decides them, so a display states each input once — in the object it sends
- * the worker — instead of once there and once again in a key.
+ * The two tiers of a per-region fetch's inputs, as **values**. `isDataCurrent`
+ * compares them structurally, so a display states each input once — in the
+ * object it sends the worker — instead of once there and once again in a key.
  *
  * Two tiers and not one, because the tiers differ in what a change *shows*:
  * `settings` raises `staleSettingsDrawn`'s scrim over the held data, `zoom`
@@ -18,14 +19,21 @@ export interface FetchInputs {
 }
 
 /**
- * The host members {@link makeFetchInputs} reads. All three are looked up
- * dynamically rather than declared on the mixin's public interface, so a
+ * The host members {@link makeSettingsFetchInputs} reads, looked up
+ * dynamically rather than declared on `FetchMixin`'s public interface, so a
  * subclass keeps its narrow `rpcProps()` return type through MST's `.views()`
  * chain.
  */
-export interface FetchInputsHost extends IStateTreeNode {
+export interface SettingsFetchInputsHost extends IStateTreeNode {
   rpcProps?: () => unknown
   adapterConfig?: Record<string, unknown>
+}
+
+/**
+ * The host members {@link makeFetchInputs} reads beyond the settings tier.
+ */
+export interface FetchInputsHost extends IStateTreeNode {
+  settingsFetchInputs: unknown
   /**
    * The zoom-derived worker arguments as an object — **the same object the
    * display spreads into its RPC call**, which is the whole point of the hook:
@@ -46,10 +54,9 @@ export interface FetchInputsHost extends IStateTreeNode {
  *
  * The stamp outlives the fetch that wrote it, so a field holding a live
  * collection — MAF's `subtreeFilter: self.subtreeFilterSet`, a display handing
- * over an MST array — is mutated in place inside every region's stamp, and the
+ * over an MST array — is mutated in place inside every stamp, and the
  * staleness compare then reads the current state against itself and says
- * nothing moved. `JSON.stringify` was immune to that by construction; a value
- * stamp is not, and this is what buys the immunity back.
+ * nothing moved.
  *
  * Plain objects, arrays and observable containers are rebuilt; a `Set` or `Map`
  * becomes its entry list, which changes what the compare sees but changes it
@@ -83,47 +90,38 @@ export function snapshotInputs(value: unknown): unknown {
 }
 
 /**
- * `settings` and `zoom` as two structural computeds on one display.
+ * Every fetch family's settings axis: the `rpcProps()` payload and the adapter
+ * config, as one structural computed.
  *
  * Structural, so the value's identity survives a recomputation that lands on
- * the same content — every region a fetch stamps holds the *same* object, and
- * `isCacheValid`'s compare then short-circuits on `===`. The short-circuit makes
- * a deep compare per visible block cheaper than the string compare it replaces,
- * because the string had to be built and walked on every settings read.
+ * the same content — every stamp holds the *same* object, and the freshness
+ * compare then short-circuits on `===`.
  *
- * Structural also settles two hazards the JSON key could not. `JSON.stringify`
+ * Structural also settles two hazards a serialized key cannot. `JSON.stringify`
  * drops an `undefined`-valued key, so a field could not be told from a sibling
  * state that also drops; and it flattens a class with no own enumerable fields
  * to `{}`. `compareStructural` counts keys and compares own fields, so a change
- * to either state invalidates the cache.
+ * to either state invalidates.
  */
-export function makeFetchInputs(self: FetchInputsHost) {
-  const settings = computed(
-    () =>
-      snapshotInputs({
-        rpcProps: self.rpcProps?.call(self),
-        adapterConfig: self.adapterConfig,
-      }),
-    { equals: compareStructural },
+export function makeSettingsFetchInputs(self: SettingsFetchInputsHost) {
+  return stableIdentityComputed(() =>
+    snapshotInputs({
+      rpcProps: self.rpcProps?.call(self),
+      adapterConfig: self.adapterConfig,
+    }),
   )
-  const zoom = computed(
-    () => snapshotInputs(self.zoomFetchArgs?.call(self) ?? self.zoomFetchKey),
-    { equals: compareStructural },
-  )
-  const inputs = computed(
-    (): FetchInputs => ({ settings: settings.get(), zoom: zoom.get() }),
-    { equals: compareStructural },
-  )
-  return { settings, zoom, inputs }
 }
 
 /**
- * Whether a region's stamp still answers the current inputs. Identity first,
- * which is the case that runs on every autorun pass over an unchanged display.
+ * A per-region fetch's `settings` and `zoom` tiers as one structural computed,
+ * the settings half read off the host's `settingsFetchInputs`.
  */
-export function fetchInputsCurrent(
-  stamped: FetchInputs | undefined,
-  current: FetchInputs,
-) {
-  return stamped !== undefined && compareStructural(stamped, current)
+export function makeFetchInputs(self: FetchInputsHost) {
+  const zoom = stableIdentityComputed(() =>
+    snapshotInputs(self.zoomFetchArgs?.call(self) ?? self.zoomFetchKey),
+  )
+  return stableIdentityComputed((): FetchInputs => ({
+    settings: self.settingsFetchInputs,
+    zoom: zoom.get(),
+  }))
 }

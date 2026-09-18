@@ -13,7 +13,6 @@
 // (so its reads are the dependency set), `run` owns every await, and `commit`
 // is synchronous and unreachable unless the fetch is still current.
 
-import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -84,8 +83,8 @@ const TestDisplay = types
     get adapterConfig() {
       return { type: self.adapterType }
     },
-    // the display's half of the freshness key; `currentFetchKey` appends the
-    // settings and adapter axes, which is how the installer tracks the adapter.
+    // the display's half of the freshness key; `currentFetchKey` pairs it with
+    // the settings axis, which carries the adapter, so the installer tracks it.
     // It THROWS while gated, the way both real displays' signatures throw on
     // view geometry before the view is initialized: the installer has to read
     // `prepare` first and the key only once the gate is open, or the first
@@ -106,10 +105,13 @@ const TestDisplay = types
   }))
 
 // the whole key the installer gates on and stamps, for a given view input:
-// `KeyedFetchMixin.currentFetchKey`'s three axes, the settings one empty
-// because this display declares no `rpcProps`
+// `KeyedFetchMixin.currentFetchKey`, whose settings axis carries no `rpcProps`
+// because this display declares none
 function keyFor(viewKey: string, adapterType = 'TestAdapter') {
-  return `${viewKey}||${adapterConfigKey({ type: adapterType })}`
+  return {
+    view: viewKey,
+    settings: { rpcProps: undefined, adapterConfig: { type: adapterType } },
+  }
 }
 
 // isSessionModel duck-types on rpcManager + configuration; that plus
@@ -221,7 +223,7 @@ describe('installComparativeFetchAutorun', () => {
     display.setViewKey('k2')
     await settle()
     expect(prepared).toHaveLength(2)
-    expect(display.loadedFetchKey).toBe(keyFor('k2'))
+    expect(display.loadedFetchKey).toEqual(keyFor('k2'))
   })
 
   // `FetchPhases.run` promises nothing it reads is tracked, and `run` being
@@ -276,7 +278,7 @@ describe('installComparativeFetchAutorun', () => {
       result: 'r1',
       args: { geometry: 0 },
     })
-    expect(display.loadedFetchKey).toBe(keyFor('k1'))
+    expect(display.loadedFetchKey).toEqual(keyFor('k1'))
   })
 
   describe('latest-wins', () => {
@@ -407,13 +409,13 @@ test('an adapter edit refetches over an unchanged display key', async () => {
   })
   await settle()
   expect(committed).toHaveLength(1)
-  expect(display.loadedFetchKey).toBe(keyFor('k1'))
+  expect(display.loadedFetchKey).toEqual(keyFor('k1'))
 
   display.setAdapterType('EditedAdapter')
-  expect(display.loadedFetchKey).not.toBe(keyFor('k1', 'EditedAdapter'))
+  expect(display.loadedFetchKey).not.toEqual(keyFor('k1', 'EditedAdapter'))
   await settle()
   expect(committed).toHaveLength(2)
-  expect(display.loadedFetchKey).toBe(keyFor('k1', 'EditedAdapter'))
+  expect(display.loadedFetchKey).toEqual(keyFor('k1', 'EditedAdapter'))
 })
 
 // The retry contract for the comparative displays. After an error every fetch

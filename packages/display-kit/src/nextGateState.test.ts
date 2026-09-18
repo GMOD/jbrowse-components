@@ -122,7 +122,7 @@ const TIERS = [TIER_A, TIER_B]
  */
 interface Model {
   bytes: number | undefined
-  key: string | undefined
+  key: unknown
   approved: boolean
 }
 

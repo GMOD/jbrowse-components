@@ -980,9 +980,9 @@ test('a fixed bin width ignores the zoom, and its fetch key with it', () => {
   )
   const { display, view } = createDisplay()
   view.zoomTo(1)
-  const key = display.rpcPropsCacheKey
+  const key = display.settingsFetchInputs
   view.zoomTo(1000)
-  expect(display.rpcPropsCacheKey).toBe(key)
+  expect(display.settingsFetchInputs).toEqual(key)
   expect(display.rpcProps().layers[0]!.transform![0]).toMatchObject({
     step: 5000,
   })

@@ -11,10 +11,7 @@ import {
 } from '@jbrowse/core/util/progress'
 import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
-import {
-  serializeAdapterConfig,
-  serializeRpcProps,
-} from './rpcPropsCacheKey.ts'
+import { makeSettingsFetchInputs } from './fetchInputs.ts'
 
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { RpcStatus } from '@jbrowse/core/util/progress'
@@ -348,36 +345,29 @@ export default function FetchMixin() {
       get awaitingDependentData(): boolean {
         return false
       },
-
-      /**
-       * #getter
-       * The RPC cache key both fetch foundations invalidate on: this display's
-       * `rpcProps()` payload serialized to a string. `serializeRpcProps`
-       * documents why, including why a field whose distinct states serialize
-       * identically never invalidates anything.
-       *
-       * Here, beside the two hooks above, for the same reason they are: it
-       * describes the display, and every foundation composes this mixin. The
-       * per-region family watches it from `SettingsInvalidate` and the global
-       * one from its fetch autorun's trigger list — one getter and one name, so
-       * the two cannot come to invalidate on different axes. The global side
-       * built its own local `computed` over the same function until 2026-08,
-       * which was the same value under a second spelling.
-       */
-      get rpcPropsCacheKey(): string {
-        return serializeRpcProps(self)
-      },
-      /**
-       * #getter
-       * The adapter axis of the same key, watched by the same two readers as
-       * `rpcPropsCacheKey`: `SettingsInvalidate` per-region and the global
-       * family's `currentFetchKey`. A track re-pointed in the config editor is a
-       * different fetch, and until 2026-09 only the comparative family said so.
-       */
-      get adapterConfigKey(): string {
-        return serializeAdapterConfig(self)
-      },
     }))
+    .views(self => {
+      const settings = makeSettingsFetchInputs(self)
+      return {
+        /**
+         * #getter
+         * The settings axis every fetch family invalidates on: this display's
+         * `rpcProps()` payload and its adapter config, as one value compared
+         * structurally. The per-region family watches it from
+         * `SettingsInvalidate` and stamps it on each region, the keyed
+         * families fold it into `currentFetchKey`, and the byte gate measures
+         * under it — one getter, so no two can come to invalidate on
+         * different axes.
+         *
+         * `undefined` inside the payload is a real state and a class instance
+         * compares by its own fields, which a serialized key could not say;
+         * `makeSettingsFetchInputs` has why.
+         */
+        get settingsFetchInputs(): unknown {
+          return settings.get()
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

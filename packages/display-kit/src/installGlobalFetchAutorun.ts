@@ -8,7 +8,7 @@ import { autorunOnReadyView } from './displayAutoruns.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
-import type { KeyedFetchHost } from './KeyedFetchMixin.ts'
+import type { FetchKey, KeyedFetchHost } from './KeyedFetchMixin.ts'
 import type { GateCommitHost, GateFetchState } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
@@ -80,7 +80,7 @@ export interface GlobalFetchAutorunHost
 /** what one issued fetch was judged against, captured in `prepare` */
 interface GlobalFetchIssue<TArgs> {
   args: TArgs
-  signature: string
+  signature: FetchKey
 }
 
 /** what one round trip landed, carrying the gate state it was issued under */
@@ -153,7 +153,7 @@ function globalFetchPlan<TArgs, TResult>(
  *   above every gate, because `host` is a parent walk and so is nearly every
  *   other gate in the tree.
  * - **fetchKey / loadedKey** — `currentFetchKey` (the display's
- *   `viewSignature` plus the serialized `rpcProps()` axis, so the viewport and
+ *   `viewSignature` plus the `settingsFetchInputs` axis, so the viewport and
  *   every user setting are tracked wherever the compare runs) against the
  *   stamp `commitFetchResult` wrote. While `regionTooLarge` holds, the
  *   committed side reads as absent — the precedence the per-region family

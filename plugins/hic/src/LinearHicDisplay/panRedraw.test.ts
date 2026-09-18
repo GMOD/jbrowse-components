@@ -75,7 +75,7 @@ test('a pan inside the loaded blocks redraws without a refetch', async () => {
   const signatureBefore = display.currentFetchKey
 
   view.horizontalScroll(10)
-  expect(display.currentFetchKey).toBe(signatureBefore)
+  expect(display.currentFetchKey).toEqual(signatureBefore)
   // the redraw half: the per-frame transform followed the viewport
   expect(display.viewTransform.viewOffsetX).toBe(offsetBefore - 10)
   expect(display.dataCurrent).toBe(true)
@@ -91,7 +91,7 @@ test('a zoom moves the signature and refetches', async () => {
   const signatureBefore = display.currentFetchKey
 
   view.zoomTo(5000)
-  expect(display.currentFetchKey).not.toBe(signatureBefore)
+  expect(display.currentFetchKey).not.toEqual(signatureBefore)
   expect(display.dataCurrent).toBe(false)
 
   jest.advanceTimersByTime(1100)

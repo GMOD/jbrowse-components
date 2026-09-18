@@ -89,7 +89,7 @@ afterEach(() => {
 describe('LinearMafDisplay alignment fetch count', () => {
   // Regression: `rpcProps()` used to return `orderedSampleIds`, which is derived
   // from the fetch result — undefined before the first one, defined after. That
-  // flipped `rpcPropsCacheKey` the moment the samples landed, so
+  // flipped the settings key the moment the samples landed, so
   // SettingsInvalidate discarded the region that had just arrived and the whole
   // (heaviest-in-the-plugin) payload was downloaded a second time on every single
   // track load.

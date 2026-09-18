@@ -324,14 +324,13 @@ export function installChordFetch(
           }
         : undefined
     },
-    fetchKey: ({ adapterConfig, regions, assemblyNames }) =>
-      JSON.stringify([
-        adapterConfig,
-        assemblyNames,
-        regions
-          .map(r => `${r.assemblyName}:${r.refName}:${r.start}-${r.end}`)
-          .sort(),
-      ]),
+    fetchKey: ({ adapterConfig, regions, assemblyNames }) => ({
+      adapterConfig,
+      assemblyNames,
+      regions: regions
+        .map(r => `${r.assemblyName}:${r.refName}:${r.start}-${r.end}`)
+        .sort(),
+    }),
     run: async (args, ctx) => {
       const { sessionId, adapterConfig, assemblyNames } = args
       const { assemblyManager } = getSession(self)

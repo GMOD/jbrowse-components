@@ -1,6 +1,6 @@
 interface GateViewport {
   spanBp: number
-  key: string
+  key: unknown
 }
 
 /** What `RegionTooLargeMixin` exposes for a measurement to land on. */

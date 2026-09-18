@@ -111,13 +111,13 @@ describe('multi-sample variant row placement', () => {
 
   test('a reorder does not invalidate the fetch', () => {
     const display = setup()
-    const before = display.rpcPropsCacheKey
+    const before = display.settingsFetchInputs
     display.setLayout([{ name: 'S2' }, { name: 'S0' }, { name: 'S1' }])
 
-    // `SettingsInvalidate` watches exactly this string — an unchanged key is
+    // `SettingsInvalidate` watches exactly this value — an unchanged key is
     // what makes a reorder a re-upload instead of a fresh download of the whole
     // VCF window. The row order used to be in the payload, so it changed here.
-    expect(display.rpcPropsCacheKey).toBe(before)
+    expect(display.settingsFetchInputs).toEqual(before)
     expect(display.cellData).toBeDefined()
   })
 
@@ -135,10 +135,10 @@ describe('multi-sample variant row placement', () => {
     // membership genuinely changing does invalidate: fewer rows is less to
     // compute, so it stays a fetch input. Narrowing is the subtree filter's
     // job — the same call maf makes.
-    const key = display.rpcPropsCacheKey
+    const key = display.settingsFetchInputs
     display.setSubtreeFilter(['S0', 'S2'])
     expect(display.sampleFilter).toEqual(['S0', 'S2'])
-    expect(display.rpcPropsCacheKey).not.toBe(key)
+    expect(display.settingsFetchInputs).not.toEqual(key)
   })
 
   test('a row the display is not drawing is placed off-canvas, not at row 0', () => {

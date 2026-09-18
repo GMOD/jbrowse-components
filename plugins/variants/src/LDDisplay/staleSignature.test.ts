@@ -53,7 +53,7 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
     snps: [],
   })
   await waitFor(() => {
-    expect(display.loadedFetchKey).toBe(issuedSignature)
+    expect(display.loadedFetchKey).toEqual(issuedSignature)
   })
 
   // the pan moved the block set out from under the fetch, so the data is not

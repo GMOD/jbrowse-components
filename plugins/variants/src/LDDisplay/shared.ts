@@ -200,8 +200,8 @@ export default function sharedModelFactory(
        * so the stale triangle draws at its own position under the live
        * transform while the refetch runs. The settings axis — what keeps
        * `svgReady` from capturing a matrix computed under the filters the user
-       * just changed — rides in through the `rpcPropsCacheKey` half the mixin
-       * appends.
+       * just changed — rides in through the `settingsFetchInputs` half the
+       * mixin pairs it with.
        */
       get viewSignature(): string | undefined {
         return self.dynamicBlockSignature
@@ -401,10 +401,9 @@ export default function sharedModelFactory(
 
       // Literal RPC payload for RenderLDData. Adding a field here
       // automatically flows into both the RPC call and the refetch trigger:
-      // the global fetch skeleton tracks the *serialized* payload
-      // (`installGlobalFetchAutorun`'s computed over `serializeRpcProps`), so
-      // a change to any returned field refires the fetch while a read the
-      // payload doesn't return cannot. No hand-enumerated fields at the top of
+      // the global fetch skeleton tracks the returned payload as a value
+      // (`FetchMixin.settingsFetchInputs`), so a change to any returned field
+      // refires the fetch while a read the payload doesn't return cannot. No hand-enumerated fields at the top of
       // the autorun.
       //
       // Annotated, not inferred: the annotation is what makes a field the RPC

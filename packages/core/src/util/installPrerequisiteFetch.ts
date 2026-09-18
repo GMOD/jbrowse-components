@@ -1,4 +1,3 @@
-import { adapterConfigKey } from './adapterConfigKey.ts'
 import { installFetch } from './installFetch.ts'
 
 import type { StatusReporter } from './createAbortRotation.ts'
@@ -16,6 +15,8 @@ export interface PrerequisiteFetchHost extends FetchSkeletonHost {
   /**
    * Read in `prepare`, so it is **tracked**: an adapter edited in the config
    * editor has to re-read, and `run`'s own reads are untracked by contract.
+   * The key stamps it by reference, which is safe because nothing mutates an
+   * adapter config in place: it is a config snapshot or built fresh from one.
    */
   adapterConfig: Record<string, unknown>
   isMinimized: boolean
@@ -109,7 +110,7 @@ export function installPrerequisiteFetch<TResult>(
     report,
     gate: () => !self.isMinimized && gate(),
     prepare: () => ({ adapterConfig: self.adapterConfig }),
-    fetchKey: ({ adapterConfig }) => adapterConfigKey(adapterConfig),
+    fetchKey: ({ adapterConfig }) => adapterConfig,
     run: ({ adapterConfig }, ctx) => run(adapterConfig, ctx),
     commit,
     setError,

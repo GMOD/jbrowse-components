@@ -2,8 +2,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { isSubAdapterConfig } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingTrack } from '@jbrowse/core/util'
-import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { installFetch } from '@jbrowse/core/util/installFetch'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { types } from '@jbrowse/mobx-state-tree'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
@@ -154,10 +154,10 @@ export default function CoarseTierMixin<P extends object>() {
       /**
        * #getter
        * Overridable hook (default `''`): what the read depends on beyond its
-       * span and its adapter — a zoom bucket, a settings key. A held read whose
-       * key differs re-reads.
+       * span and its adapter — a zoom bucket, the settings axis. A value
+       * compared structurally, so a held read whose key differs re-reads.
        */
-      get coarseReadKey(): string {
+      get coarseReadKey(): unknown {
         return ''
       },
     }))
@@ -248,10 +248,10 @@ export default function CoarseTierMixin<P extends object>() {
        */
       get coarseTierIssueKey() {
         const source = self.coarseSourceConfig
-        const adapter = isSubAdapterConfig(source)
-          ? adapterConfigKey(source)
-          : ''
-        return `${adapter}|${self.coarseReadKey}`
+        return {
+          adapter: isSubAdapterConfig(source) ? source : undefined,
+          read: self.coarseReadKey,
+        }
       },
     }))
     .views(self => ({
@@ -361,7 +361,7 @@ export default function CoarseTierMixin<P extends object>() {
             const held = self.coarseTierRead
             return (
               held !== undefined &&
-              held.key === read.key &&
+              isDataCurrent(held.key, read.key) &&
               coarseTierCovers(held.regions, view(self).visibleRegions)
             )
           },

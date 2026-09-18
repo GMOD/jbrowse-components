@@ -2,6 +2,7 @@ import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import FetchMixin from './FetchMixin.ts'
+import { stableIdentityComputed } from './stableIdentityComputed.ts'
 
 import type { FetchLifecycleHost } from './FetchMixin.ts'
 import type { AbortRotation } from '@jbrowse/core/util/createAbortRotation'
@@ -17,9 +18,19 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  */
 export interface KeyedFetchHost extends IStateTreeNode, FetchLifecycleHost {
   fetchRotation: AbortRotation
-  currentFetchKey: string | undefined
-  loadedFetchKey: string | undefined
-  commitFetchResult: (commit: () => void, key: string) => void
+  currentFetchKey: FetchKey | undefined
+  loadedFetchKey: FetchKey | undefined
+  commitFetchResult: (commit: () => void, key: FetchKey) => void
+}
+
+/**
+ * What a keyed fetch is issued for, as a value `isDataCurrent` compares: the
+ * display's `viewSignature` and `FetchMixin.settingsFetchInputs`, the settings
+ * axis the per-region family stamps on each region.
+ */
+export interface FetchKey {
+  view: string
+  settings: unknown
 }
 
 /**
@@ -49,7 +60,7 @@ export default function KeyedFetchMixin() {
        * under the loading overlay, HiC the stale matrix, synteny the stale
        * ribbons.
        */
-      loadedFetchKey: undefined as string | undefined,
+      loadedFetchKey: undefined as FetchKey | undefined,
     }))
     .views(() => ({
       /**
@@ -62,9 +73,9 @@ export default function KeyedFetchMixin() {
        * prerequisite header still in flight) and holds the fetch off.
        *
        * Settings and the adapter are deliberately not the display's half:
-       * `currentFetchKey` below appends `rpcPropsCacheKey` and
-       * `adapterConfigKey`, so a field added to `rpcProps()` or a track
-       * re-pointed in the config editor invalidates held data structurally.
+       * `currentFetchKey` below pairs this with `settingsFetchInputs`, so a
+       * field added to `rpcProps()` or a track re-pointed in the config editor
+       * invalidates held data structurally.
        * HiC hand-folded one settings term in, and a second term would not
        * have invalidated anything; the comparative family folded the adapter in at its
        * installer and compared without it at its export gate.
@@ -95,21 +106,27 @@ export default function KeyedFetchMixin() {
         return false
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * Key of the fetch the current view, settings and adapter call for — the
-       * display's `viewSignature` plus the serialized `rpcProps()` axis plus
-       * the adapter config. The fetch skeleton's freshness key: captured at
-       * issue, compared against the stamp above, and written to it at commit.
-       */
-      get currentFetchKey(): string | undefined {
-        const base = self.viewSignature
-        return base === undefined
+    .views(self => {
+      const key = stableIdentityComputed((): FetchKey | undefined => {
+        const view = self.viewSignature
+        return view === undefined
           ? undefined
-          : `${base}|${self.rpcPropsCacheKey}|${self.adapterConfigKey}`
-      },
-    }))
+          : { view, settings: self.settingsFetchInputs }
+      })
+      return {
+        /**
+         * #getter
+         * Key of the fetch the current view, settings and adapter call for.
+         * The fetch skeleton's freshness key: captured at issue, compared
+         * against the stamp above, and written to it at commit. Its identity
+         * survives a recomputation onto equal content, so the idle compare is
+         * `===`.
+         */
+        get currentFetchKey(): FetchKey | undefined {
+          return key.get()
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
@@ -143,7 +160,7 @@ export default function KeyedFetchMixin() {
          * `loadedFetchKey`, this action makes `dataCurrent` derivable, because
          * a display cannot commit without stamping.
          */
-        commitFetchResult(commit: () => void, key: string) {
+        commitFetchResult(commit: () => void, key: FetchKey) {
           commit()
           self.loadedFetchKey = key
         },

@@ -21,9 +21,11 @@ import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
+import { makeSettingsFetchInputs } from './fetchInputs.ts'
 import { installGlobalFetchAutorun } from './installGlobalFetchAutorun.ts'
-import { serializeRpcProps } from './rpcPropsCacheKey.ts'
+import { stableIdentityComputed } from './stableIdentityComputed.ts'
 
+import type { FetchKey } from './KeyedFetchMixin.ts'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const DELAY = 10
@@ -105,7 +107,7 @@ const TestDisplay = types
     committedBytes: [] as (number | undefined)[][],
     // `GlobalFetchMixin`'s: what `commitFetchResult` stamps and `dataCurrent`
     // compares against
-    loadedFetchKey: undefined as string | undefined,
+    loadedFetchKey: undefined as FetchKey | undefined,
   }))
   .volatile(self => ({
     // `FetchMixin`'s rotation, lent to the skeleton — which is also what a test
@@ -124,18 +126,25 @@ const TestDisplay = types
       return getParent<TestViewShape>(self)
     },
   }))
-  .views(self => ({
+  .views(self => {
     // `GlobalFetchMixin`'s freshness pair, spelled the way that mixin spells
-    // it: the block set plus the serialized settings axis, so the viewport and
-    // `rpcProps()` are tracked wherever the signature is read — which is now
-    // the whole viewport trigger, the way it is for the real mixin.
-    get currentFetchKey(): string | undefined {
-      return `${self.host.dynamicBlocks.contentBlocks
-        .map(b => b.key)
-        .join(',')}|${this.rpcPropsCacheKey}`
-    },
+    // it: the block set plus `FetchMixin`'s settings axis, so the viewport and
+    // `rpcProps()` are tracked wherever the key is read — which is now the
+    // whole viewport trigger, the way it is for the real mixin.
+    const settings = makeSettingsFetchInputs(self)
+    const key = stableIdentityComputed((): FetchKey => ({
+      view: self.host.dynamicBlocks.contentBlocks.map(b => b.key).join(','),
+      settings: settings.get(),
+    }))
+    return {
+      get currentFetchKey(): FetchKey | undefined {
+        return key.get()
+      },
+    }
+  })
+  .views(self => ({
     get dataCurrent() {
-      return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
+      return isDataCurrent(self.loadedFetchKey, self.currentFetchKey)
     },
     // `FetchMixin`'s hook, which this fixture composes by hand — the check reads
     // it off the node in both families rather than taking a predicate.
@@ -146,10 +155,6 @@ const TestDisplay = types
     // mixin spells it. The two volatiles above stand in for its inputs.
     get gateSkipsMeasuredViewport() {
       return self.regionTooLarge && !self.gateMeasurementStale
-    },
-    // `FetchMixin`'s, over this fixture's own `rpcProps` above
-    get rpcPropsCacheKey() {
-      return serializeRpcProps(self as never)
     },
   }))
   .actions(self => ({
@@ -165,7 +170,7 @@ const TestDisplay = types
     endFetch(_current: boolean) {},
     setError(_error?: unknown) {},
     // `GlobalFetchMixin.commitFetchResult`
-    commitFetchResult(commit: () => void, signature: string) {
+    commitFetchResult(commit: () => void, signature: FetchKey) {
       commit()
       self.loadedFetchKey = signature
     },
@@ -399,9 +404,9 @@ describe('installGlobalFetchAutorun', () => {
     expect(gateCalls.count).toBeGreaterThan(before)
   })
 
-  // the trigger is the *serialized* payload (`FetchMixin.rpcPropsCacheKey`
-  // axis), so an observable rpcProps() merely consults doesn't refetch — this is
-  // what keeps a global display off refetches the per-region family wouldn't do
+  // the trigger is the returned payload as a value (`FetchMixin`'s
+  // `settingsFetchInputs` axis), so an observable rpcProps() merely consults
+  // doesn't refetch — the same rule the per-region family keys on
   it('ignores an observable rpcProps() reads but does not return', async () => {
     const { display, gateCalls } = await setup(() => true)
     await settle()

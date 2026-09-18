@@ -262,5 +262,5 @@ test('currentFetchKey moves with the adapter config', () => {
   expect(before).toBeDefined()
 
   model.setAdapterConfig({ type: 'B' })
-  expect(model.currentFetchKey).not.toBe(before)
+  expect(model.currentFetchKey).not.toEqual(before)
 })

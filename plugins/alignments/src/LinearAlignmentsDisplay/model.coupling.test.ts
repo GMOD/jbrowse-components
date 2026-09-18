@@ -467,7 +467,7 @@ describe('ordering controls in chain mode', () => {
     ).toBe(true)
   })
 
-  // `rpcProps()` is the fetch cache key (serialized by `rpcPropsCacheKey`), so
+  // `rpcProps()` is the fetch cache key (through `settingsFetchInputs`), so
   // anything in it that the worker then throws away buys a refetch for nothing.
   // Chain mode forces soft clipping off and drops the sort tag, so both have to
   // be projected the same way here.

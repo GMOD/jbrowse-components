@@ -81,7 +81,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // other test here starts in LD mode because that is what a restored session
   // does, and that shape cannot see a toggle whose write fails to reach the
   // fetch — `setColorBy` writes a config slot, so it invalidates through
-  // `rpcPropsCacheKey` rather than through anything the display holds.
+  // `settingsFetchInputs` rather than through anything the display holds.
   it('adopts the index when the user turns LD colouring on', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockImplementation(

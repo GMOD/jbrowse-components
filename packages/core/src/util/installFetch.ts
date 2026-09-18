@@ -211,8 +211,12 @@ interface InstallFetchOptionsBase<TArgs, TResult>
    *
    * Omit it where the fetch holds no committed state to compare against — most
    * of them, whose `prepare` returns args unconditionally.
+   *
+   * A value, compared by `isDataCurrent`: the settings a fetch was issued
+   * under go in as the object the worker receives, never as a serialized
+   * spelling of it.
    */
-  fetchKey?: (args: TArgs) => string
+  fetchKey?: (args: TArgs) => unknown
   /**
    * The key of the data already committed, when the host keeps one —
    * `KeyedFetchMixin` stamps `loadedFetchKey`, which its `dataCurrent` reads
@@ -225,10 +229,10 @@ interface InstallFetchOptionsBase<TArgs, TResult>
    * write is what wakes the autorun to fetch A again. A closure variable would
    * leave data B under viewport A until the next input moved.
    */
-  loadedKey?: () => string | undefined
+  loadedKey?: () => unknown
   /**
    * The predicate form of the freshness gate, for a fetch whose "I have exactly
-   * this already" is not string equality: the density tier holds bins over a
+   * this already" is not key equality: the density tier holds bins over a
    * buffered read and answers a viewport those bins *contain*, which no key can
    * spell. Same rules as `fetchKey` — declined runs report `declined`, and a
    * `reloadCounter` advanced since the last issued fetch overrides it — so the
@@ -357,10 +361,11 @@ export function installFetch<TArgs, TResult>(
   let issuedEpoch: number | undefined
   // The skeleton's own stamp exists only where there is a key to stamp — a
   // fetch with no `fetchKey` never reads it, so allocating one would only feed
-  // it `undefined` on every commit.
+  // it `undefined` on every commit. Shallow, because the deep enhancer would
+  // swap a stamped key object for an observable copy of it.
   const stamp =
     loadedKey === undefined && fetchKey !== undefined
-      ? observable.box<string | undefined>()
+      ? observable.box<unknown>(undefined, { deep: false })
       : undefined
   const heldKey = loadedKey ?? (() => stamp?.get())
   // the freshness gate in whichever form the caller declared it

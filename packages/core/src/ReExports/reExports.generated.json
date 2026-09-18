@@ -2419,13 +2419,6 @@
       ],
       "worker": "real"
     },
-    "@jbrowse/core/util/adapterConfigKey": {
-      "package": "@jbrowse/core",
-      "names": [
-        "adapterConfigKey"
-      ],
-      "worker": "real"
-    },
     "@jbrowse/core/util/adapterMetadata": {
       "package": "@jbrowse/core",
       "names": [
@@ -3877,8 +3870,8 @@
     "@jbrowse/display-kit/fetchInputs": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "fetchInputsCurrent",
         "makeFetchInputs",
+        "makeSettingsFetchInputs",
         "snapshotInputs"
       ],
       "worker": "real"
@@ -4170,14 +4163,6 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "rpcArgs"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/rpcPropsCacheKey": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "serializeAdapterConfig",
-        "serializeRpcProps"
       ],
       "worker": "real"
     },

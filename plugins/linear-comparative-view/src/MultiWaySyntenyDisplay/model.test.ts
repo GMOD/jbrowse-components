@@ -679,12 +679,12 @@ describe('the level-of-detail tier', () => {
     expect(display.hasLodCapableAdapter).toBe(true)
     expect(display.lodTier).toBe('fine')
     const before = display.currentFetchKey
-    expect(before).toContain('|fine|')
+    expect(before?.view).toContain('|fine|')
 
     display.setLodMode('coarse')
     expect(display.lodTier).toBe('coarse')
-    expect(display.currentFetchKey).not.toBe(before)
-    expect(display.currentFetchKey).toContain('|coarse|')
+    expect(display.currentFetchKey).not.toEqual(before)
+    expect(display.currentFetchKey?.view).toContain('|coarse|')
     expect(menuLabels(display)).toContain('Level of detail')
   })
 
@@ -704,7 +704,7 @@ describe('the level-of-detail tier', () => {
     const before = display.currentFetchKey
     display.setLodMode('coarse')
     expect(display.lodTier).toBe('fine')
-    expect(display.currentFetchKey).toBe(before)
+    expect(display.currentFetchKey).toEqual(before)
   })
 
   test('the ortholog fetch and the link fetch pass the tier, and the header is read once', async () => {
@@ -1174,10 +1174,10 @@ test('hiding a lane on a graph track refetches nothing', () => {
     mateRecord('r1', 'HG00097.1'),
     mateRecord('r2', 'HG00099.1'),
   ])
-  const key = display.rpcPropsCacheKey
+  const key = display.settingsFetchInputs
   display.hideLane('HG00097.1')
   expect(display.rowAssemblies).toEqual(['HG00099.1'])
-  expect(display.rpcPropsCacheKey).toBe(key)
+  expect(display.settingsFetchInputs).toEqual(key)
 })
 
 // A picker choice in force is also what a graph track fetches, so a hide has
@@ -1193,14 +1193,14 @@ test('hiding a lane under a picker choice keeps the choice and refetches nothing
     mateRecord('r2', 'HG00099.1'),
   ])
   display.chooseLanes(['HG00097.1', 'HG00099.1'])
-  const key = display.rpcPropsCacheKey
+  const key = display.settingsFetchInputs
   display.hideLane('HG00097.1')
   expect(display.laneFilter).toEqual({
     only: ['HG00097.1', 'HG00099.1'],
     except: ['HG00097.1'],
   })
   expect(display.rowAssemblies).toEqual(['HG00099.1'])
-  expect(display.rpcPropsCacheKey).toBe(key)
+  expect(display.settingsFetchInputs).toEqual(key)
   display.showLane('HG00097.1')
   expect(display.laneFilter).toEqual({ only: ['HG00097.1', 'HG00099.1'] })
   expect(display.rowAssemblies).toEqual(['HG00097.1', 'HG00099.1'])
@@ -1338,7 +1338,7 @@ test('a lane selection reaches the fetch only where the adapter can cut on it', 
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
     trackAssemblyNames: ['volvox'],
   })
-  const everyLane = graph.rpcPropsCacheKey
+  const everyLane = graph.settingsFetchInputs
   expect(graph.fetchLaneSelection).toBeUndefined()
 
   graph.setSelectedLanes(['HG00097.1', 'HG00099.1'])
@@ -1346,16 +1346,16 @@ test('a lane selection reaches the fetch only where the adapter can cut on it', 
   expect(graph.rpcProps()).toEqual({
     haplotypes: ['HG00097.1', 'HG00099.1'],
   })
-  const eightLanes = graph.rpcPropsCacheKey
-  expect(eightLanes).not.toBe(everyLane)
+  const eightLanes = graph.settingsFetchInputs
+  expect(eightLanes).not.toEqual(everyLane)
 
   // a different set is a different fetch, and clearing it comes back to the key
   // the unfiltered window was fetched under rather than to a third state
   graph.setSelectedLanes(['HG00097.1'])
-  expect(graph.rpcPropsCacheKey).not.toBe(eightLanes)
+  expect(graph.settingsFetchInputs).not.toEqual(eightLanes)
   graph.setSelectedLanes(undefined)
   expect(graph.fetchLaneSelection).toBeUndefined()
-  expect(graph.rpcPropsCacheKey).toBe(everyLane)
+  expect(graph.settingsFetchInputs).toEqual(everyLane)
 })
 
 test('the track menu offers the picker once there is a choice, and the way back out of a selection', () => {

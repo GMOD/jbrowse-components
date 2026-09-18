@@ -869,7 +869,7 @@ export function stateModelFactory(
        * The settings axis of this display's fetch key. A lane selection the
        * adapter acts on changes what comes back, so held data fetched under a
        * different selection is stale and has to be refetched — and the
-       * sanctioned way to say so is a field here, which `rpcPropsCacheKey`
+       * sanctioned way to say so is a field here, which `settingsFetchInputs`
        * folds into `currentFetchKey`, rather than a term hand-folded into
        * `viewSignature`. Reads only user-controlled state (the picker's choice,
        * else the track's config), never anything a fetch produced, which is

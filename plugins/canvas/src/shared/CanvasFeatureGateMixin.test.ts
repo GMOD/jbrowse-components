@@ -72,7 +72,7 @@ describe('the density commit takes the tier guard', () => {
 
     const issued = display.gateFetchState()
     swapAdapterConfig(track)
-    expect(display.byteGateAdapterKey).not.toBe(issued.tierKey)
+    expect(display.byteGateAdapterConfig).not.toEqual(issued.tierKey)
 
     display.commitGateMeasurements(DENSE, issued)
 

@@ -4,7 +4,7 @@ import { autorun } from 'mobx'
 import { createTestEnvironment } from './testEnv.ts'
 
 // `isCacheValid`, `regionHasData` and `rpcProps` are read from reactive
-// contexts — the `FetchVisibleRegions` autorun and the `rpcPropsCacheKey`
+// contexts — the `FetchVisibleRegions` autorun and the `settingsFetchInputs`
 // computed. Declared in an `.actions()` block they become MST actions, MobX runs
 // them untracked, the observables they read (`view.bpPerPx` here, settings in
 // `rpcProps`) register no dependency, and the caller silently keeps a stale

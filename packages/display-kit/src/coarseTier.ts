@@ -62,7 +62,8 @@ export function resolveFetchSuspended({
  */
 export interface CoarseTierRead {
   regions: BufferedVisibleRegion[]
-  key: string
+  /** `CoarseTierMixin.coarseTierIssueKey` at issue, compared with `isDataCurrent` */
+  key: unknown
 }
 
 export interface CoarseTierEntry<P> {

@@ -9,7 +9,10 @@ import type { AssemblyManager, Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
-import type { KeyedFetchHost } from '@jbrowse/display-kit/KeyedFetchMixin'
+import type {
+  FetchKey,
+  KeyedFetchHost,
+} from '@jbrowse/display-kit/KeyedFetchMixin'
 
 export interface ComparativeFetchContext extends FetchContext {
   adapterConfig: Record<string, unknown>
@@ -39,7 +42,7 @@ interface ComparativeFetchHost extends KeyedFetchHost, FetchSkeletonHost {
 /** what `prepare` captures, beside the display's own args */
 interface ComparativeIssue<TArgs> {
   args: TArgs
-  key: string
+  key: FetchKey
   adapterConfig: Record<string, unknown>
 }
 

@@ -10,10 +10,8 @@ import GCContentPlugin from '../index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // The three GC parameters reach the worker through `adapterConfig`, not as
-// top-level RPC args — and `adapterConfig` is a structural arg, deliberately
-// absent from the invalidation key. So the ONLY thing that makes a changed
-// window size or GC mode refetch is their presence in `rpcProps()`, which
-// `SettingsInvalidate` watches via `rpcPropsCacheKey`.
+// top-level RPC args, and are listed in `rpcProps()` too; `SettingsInvalidate`
+// watches both through `settingsFetchInputs`.
 //
 // They used to sit outside it, with `setGCMode` / `setGCContentParams` each
 // calling `reload()` by hand. That covered the track menu and nothing else: any
@@ -94,18 +92,18 @@ async function createDisplay() {
 
 test('each GC parameter is a cache key, so changing it invalidates the fetch', async () => {
   const { display } = await createDisplay()
-  const initial = display.rpcPropsCacheKey
+  const initial = display.settingsFetchInputs
 
   display.setGCMode('skew')
-  const afterMode = display.rpcPropsCacheKey
-  expect(afterMode).not.toBe(initial)
+  const afterMode = display.settingsFetchInputs
+  expect(afterMode).not.toEqual(initial)
 
   display.setGCContentParams({ windowSize: 50, windowDelta: 100 })
-  const afterWindowSize = display.rpcPropsCacheKey
-  expect(afterWindowSize).not.toBe(afterMode)
+  const afterWindowSize = display.settingsFetchInputs
+  expect(afterWindowSize).not.toEqual(afterMode)
 
   display.setGCContentParams({ windowSize: 50, windowDelta: 10 })
-  expect(display.rpcPropsCacheKey).not.toBe(afterWindowSize)
+  expect(display.settingsFetchInputs).not.toEqual(afterWindowSize)
 })
 
 // The step menu caps itself at the current windowSize, but that cap can't see a

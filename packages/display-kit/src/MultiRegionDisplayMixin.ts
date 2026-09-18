@@ -1,14 +1,14 @@
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { getContainingTrack, getSession } from '@jbrowse/core/util/mstUtils'
 import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { compareStructural } from 'mobx'
 
 import FetchMixin from './FetchMixin.ts'
 import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
-import { fetchInputsCurrent, makeFetchInputs } from './fetchInputs.ts'
+import { makeFetchInputs } from './fetchInputs.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
@@ -390,34 +390,20 @@ export default function MultiRegionDisplayMixin() {
       // override. `zoomFetchKey` and `regionHasData` are views for the same
       // reason.
       .views(self => {
-        const { settings, inputs } = makeFetchInputs(self)
+        const inputs = makeFetchInputs(self)
         return {
           /**
            * #getter
            * What a fetch issued right now would stamp on a region: the
-           * settings tier (`rpcProps()` and the adapter config) and the zoom
-           * tier (the display's `zoomFetchArgs()` object, or its
-           * `zoomFetchKey` string where it has not been converted).
-           * `fetchRegions` captures it before the RPC goes out and stamps it
-           * beside the loaded region; `isCacheValid` compares against it.
-           *
-           * A **value**, not a string. The inputs already exist as the object
-           * the display sends the worker, so a second serialized spelling of
-           * them is one more thing to keep in step — and `JSON.stringify`,
-           * which was that spelling, cannot tell an `undefined`-valued field
-           * from an absent one.
+           * settings tier (`FetchMixin.settingsFetchInputs`, the tier
+           * `staleSettingsDrawn` compares alone) and the zoom tier (the
+           * display's `zoomFetchArgs()` object, or its `zoomFetchKey` string
+           * where it has not been converted). `fetchRegions` captures it
+           * before the RPC goes out and stamps it beside the loaded region;
+           * `isCacheValid` compares against it.
            */
           get fetchInputs(): FetchInputs {
             return inputs.get()
-          },
-          /**
-           * #getter
-           * The settings tier alone, which `staleSettingsDrawn` compares: the
-           * scrim goes up on a settings or adapter change and stays down on a
-           * zoom.
-           */
-          get settingsFetchInputs(): unknown {
-            return settings.get()
           },
         }
       })
@@ -471,7 +457,7 @@ export default function MultiRegionDisplayMixin() {
         isCacheValid(displayedRegionIndex: number): boolean {
           return (
             self.regionHasData(displayedRegionIndex) &&
-            fetchInputsCurrent(
+            isDataCurrent(
               self.loadedRegions.get(displayedRegionIndex)?.fetchInputs,
               self.fetchInputs,
             )
@@ -495,8 +481,8 @@ export default function MultiRegionDisplayMixin() {
          * `dataSuperseded` — the one that used to come from `SettingsInvalidate`
          * emptying the coverage map, and the reason it no longer has to.
          *
-         * False on a zoom by construction: `LoadedRegion.settingsKey` is the
-         * key minus its zoom axis, so a moved `zoomFetchKey` raises no scrim.
+         * False on a zoom by construction: it compares the stamp's `settings`
+         * tier alone, so a moved zoom tier raises no scrim.
          * That is the whole distance from the declined fold, which compared the
          * whole key and put the overlay 250 ms into every zoom.
          */
@@ -509,7 +495,7 @@ export default function MultiRegionDisplayMixin() {
               const loaded = self.loadedRegions.get(block.displayedRegionIndex)
               return (
                 loaded !== undefined &&
-                !compareStructural(loaded.fetchInputs.settings, settings)
+                !isDataCurrent(loaded.fetchInputs.settings, settings)
               )
             })
           )

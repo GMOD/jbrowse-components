@@ -1,7 +1,7 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { largestRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingTrack } from '@jbrowse/core/util'
-import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { autorunOnReadyView } from './displayAutoruns.ts'
@@ -35,11 +35,11 @@ export interface RegionTooLargeHost {
   /** `FetchMixin`'s: the retry every composing display carries, which `forceLoad` runs after the approval */
   reload: () => void
   /**
-   * `FetchMixin`'s serialized `rpcProps()`, which both foundations compose
-   * beside this mixin. A term of the measurement, never of the budget — see
+   * `FetchMixin`'s settings axis, which both foundations compose beside this
+   * mixin. A term of the measurement, never of the budget — see
    * `gateViewport`.
    */
-  rpcPropsCacheKey: string
+  settingsFetchInputs: unknown
 }
 
 function host(self: object) {
@@ -83,7 +83,7 @@ export default function RegionTooLargeMixin() {
        * axis — the viewport AND the settings it asked under. Separate from
        * `byteEstimate` because a density refusal measures no bytes.
        */
-      gateMeasuredViewportKey: undefined as string | undefined,
+      gateMeasuredViewportKey: undefined as unknown,
     }))
     .views(self => ({
       /**
@@ -161,8 +161,8 @@ export default function RegionTooLargeMixin() {
        * commit, so the stamp names the settings the worker actually counted
        * under.
        *
-       * The settings term is `rpcPropsCacheKey`, the axis both families already
-       * invalidate data on. It belongs in the measurement because the worker's
+       * The settings term is `settingsFetchInputs`, the axis every family
+       * invalidates data on. It belongs in the measurement because the worker's
        * density probe counts ADMITTED features (`densityGate`'s `admit`), so a
        * filter admitting almost nothing is a different measurement of the same
        * viewport — and while staleness was viewport-only, the main thread never
@@ -182,18 +182,11 @@ export default function RegionTooLargeMixin() {
           .join(',')
         return {
           spanBp: view.visibleBp,
-          key: `${regions}|${host(self).rpcPropsCacheKey}`,
+          key: { regions, settings: host(self).settingsFetchInputs },
         }
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * Which tier the estimate is about, as a comparable string.
-       */
-      get byteGateAdapterKey(): string {
-        return adapterConfigKey(self.byteGateAdapterConfig)
-      },
       /**
        * #getter
        * Whether the span on screen is at or above `AUTO_FORCE_LOAD_BP`, the one
@@ -226,7 +219,10 @@ export default function RegionTooLargeMixin() {
        * (`ClearByteEstimateOnNavOrTierSwap`) rather than marking it stale.
        */
       get gateMeasurementStale(): boolean {
-        return self.gateMeasuredViewportKey !== self.gateViewport?.key
+        return !isDataCurrent(
+          self.gateMeasuredViewportKey,
+          self.gateViewport?.key,
+        )
       },
     }))
     .views(self => ({
@@ -283,7 +279,7 @@ export default function RegionTooLargeMixin() {
         return {
           viewport: self.gateViewport,
           gated: self.gateActive,
-          tierKey: self.gateEnabled ? self.byteGateAdapterKey : undefined,
+          tierKey: self.gateEnabled ? self.byteGateAdapterConfig : undefined,
         }
       },
     }))
@@ -372,7 +368,7 @@ export default function RegionTooLargeMixin() {
           applyGateEvent(self, {
             kind: 'measurement',
             issued,
-            currentTierKey: self.byteGateAdapterKey,
+            currentTierKey: self.byteGateAdapterConfig,
             bytes: largestRegionBytes(perRegionBytes),
             partial,
           })
@@ -398,7 +394,7 @@ export default function RegionTooLargeMixin() {
               return
             }
             void view.displayedRegions
-            void self.byteGateAdapterKey
+            void self.byteGateAdapterConfig
             self.clearByteEstimate()
           },
           { name: 'ClearByteEstimateOnNavOrTierSwap' },

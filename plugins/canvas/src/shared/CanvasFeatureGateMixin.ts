@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -15,7 +16,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 export interface GateHost {
   configuration: Instance<LinearCanvasBaseDisplayConfigModel>
   densityGateActive: boolean
-  byteGateAdapterKey: string
+  byteGateAdapterConfig: Record<string, unknown>
 }
 
 function host(self: object) {
@@ -133,7 +134,8 @@ export default function CanvasFeatureGateMixin() {
         const { viewport, tierKey } = issued
         if (
           !viewport ||
-          (tierKey !== undefined && tierKey !== host(self).byteGateAdapterKey)
+          (tierKey !== undefined &&
+            !isDataCurrent(tierKey, host(self).byteGateAdapterConfig))
         ) {
           return
         }

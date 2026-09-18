@@ -1,4 +1,5 @@
 import { adapterByteLimit, overByteBudget } from '@jbrowse/core/rpc/byteBudget'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { getDisplayStr } from '@jbrowse/core/util/numericUtils'
 
 /**
@@ -46,19 +47,22 @@ export interface GateViewport {
   spanBp: number
   /**
    * The measurement's identity: the stretch of genome on screen and the
-   * settings it is asked under. `gateMeasurementStale` compares this key.
-   * `RegionTooLargeMixin.gateViewport` builds it and says why the settings are
-   * in there.
+   * settings it is asked under, as a value `gateMeasurementStale` compares with
+   * `isDataCurrent`. `RegionTooLargeMixin.gateViewport` builds it and says why
+   * the settings are in there.
    */
-  key: string
+  key: unknown
 }
 
 /** The gate as it stood when a fetch was issued; its result is judged by this. */
 export interface GateFetchState {
   viewport: GateViewport | undefined
   gated: boolean
-  /** `byteGateAdapterKey` at issue; undefined when the display never gates. */
-  tierKey: string | undefined
+  /**
+   * `byteGateAdapterConfig` at issue, the config snapshot itself; undefined
+   * when the display never gates.
+   */
+  tierKey: unknown
 }
 
 /**
@@ -80,7 +84,7 @@ export interface GateCommitHost {
 /** Everything a sequence of gate events moves. */
 export interface GateState {
   byteEstimate: ByteEstimate | undefined
-  gateMeasuredViewportKey: string | undefined
+  gateMeasuredViewportKey: unknown
   forceLoadTrack: boolean
 }
 
@@ -88,7 +92,7 @@ export type GateEvent =
   | {
       kind: 'measurement'
       issued: GateFetchState
-      currentTierKey: string | undefined
+      currentTierKey: unknown
       /** absent when the fetch measured no bytes */
       bytes?: number
       /**
@@ -124,7 +128,7 @@ export function nextGateState(prev: GateState, event: GateEvent): GateState {
       const { viewport, gated, tierKey } = issued
       if (
         viewport === undefined ||
-        (tierKey !== undefined && tierKey !== currentTierKey)
+        (tierKey !== undefined && !isDataCurrent(tierKey, currentTierKey))
       ) {
         return prev
       }

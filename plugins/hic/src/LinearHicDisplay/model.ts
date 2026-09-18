@@ -415,7 +415,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * entering, a zoom (static blocks re-snap, and the binsize may step) —
        * refetches. Undefined until the view is measured and the `.hic` header
        * has landed, which is the prerequisite gate. The normalization axis
-       * rides in through the `rpcPropsCacheKey` half the mixin appends.
+       * rides in through the `settingsFetchInputs` half the mixin pairs it
+       * with.
        *
        * `activeNormalization` reading the fetched header list is safe for the
        * reason ARCHITECTURE.md's loop-trap section gives: the contact fetch

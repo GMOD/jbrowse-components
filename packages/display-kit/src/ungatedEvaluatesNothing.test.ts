@@ -73,11 +73,12 @@ describe('the adapter key is read exactly where the gate needs it', () => {
 
   it('is evaluated by a commit while the gate is on', () => {
     const { display, countEvaluations } = countingHost(true)
+    const tierKey = display.byteGateAdapterConfig
     const before = countEvaluations()
     display.commitFetchBytes([500], {
       viewport: VIEWPORT,
       gated: true,
-      tierKey: display.byteGateAdapterKey,
+      tierKey,
     })
     expect(countEvaluations() - before).toBeGreaterThan(0)
     expect(display.byteEstimate?.bytes).toBe(500)

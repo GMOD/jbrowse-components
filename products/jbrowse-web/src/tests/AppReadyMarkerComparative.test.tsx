@@ -274,7 +274,7 @@ test('a canceled synteny ribbon is finished for the marker until Retry', async (
       linearSyntenyDisplays: {
         displayPhase: string
         fetchCanceled: boolean
-        currentFetchKey: string
+        currentFetchKey: unknown
         cancelFetchByUser: () => void
         reload: () => void
       }[]
@@ -317,7 +317,7 @@ test('a canceled synteny ribbon is finished for the marker until Retry', async (
 
   const key = display.currentFetchKey
   view.views[0]!.scrollTo(view.views[0]!.offsetPx + 4000)
-  expect(display.currentFetchKey).not.toBe(key)
+  expect(display.currentFetchKey).not.toEqual(key)
   await new Promise(resolve => setTimeout(resolve, 1500))
   expect(display.fetchCanceled).toBe(true)
   expect(display.displayPhase).toBe('canceled')

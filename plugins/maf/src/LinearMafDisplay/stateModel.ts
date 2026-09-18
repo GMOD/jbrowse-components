@@ -878,7 +878,7 @@ export default function stateModelFactory(
          * change re-reads it.
          */
         get coarseReadKey() {
-          return self.rpcPropsCacheKey
+          return self.settingsFetchInputs
         },
       }))
       .views(self => ({

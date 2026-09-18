@@ -870,23 +870,23 @@ describe('gate budgets are not RPC cache keys', () => {
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.resolvedByteLimit()).toBeDefined()
     expect(display.maxFeatureDensity).toBeDefined()
-    const above = display.rpcPropsCacheKey
+    const above = display.settingsFetchInputs
 
     view.zoomTo(20)
     expect(view.visibleBp).toBeLessThan(20_000)
     expect(display.maxFeatureDensity).toBeUndefined()
     expect(display.resolvedByteLimit()).toBeDefined()
-    expect(display.rpcPropsCacheKey).toBe(above)
+    expect(display.settingsFetchInputs).toEqual(above)
   })
 
   it('keeps the cache key stable when a budget slot is edited', () => {
     const { display, view } = createLargeDisplay()
     view.zoomTo(62.5)
-    const before = display.rpcPropsCacheKey
+    const before = display.settingsFetchInputs
 
     setConf(display, 'maxFeatureScreenDensity', 42)
     setConf(display, 'fetchSizeLimit', 12_345)
-    expect(display.rpcPropsCacheKey).toBe(before)
+    expect(display.settingsFetchInputs).toEqual(before)
   })
 
   it('a raised fetchSizeLimit releases the gate through the verdict', async () => {
