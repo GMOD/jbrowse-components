@@ -190,7 +190,7 @@ async function rootSubmenuRows(page: Page) {
     ].map(el => {
       const r = el.getBoundingClientRect()
       return {
-        testid: el.getAttribute('data-testid')!,
+        testid: el.dataset.testid!,
         x: r.left + 24,
         y: (r.top + r.bottom) / 2,
       }
@@ -227,7 +227,7 @@ async function toggleCheckbox(page: Page, trackId: string) {
       }
       const r = cb.getBoundingClientRect()
       return {
-        testid: cb.getAttribute('data-testid'),
+        testid: cb.dataset.testid,
         x: r.left + 30,
         y: (r.top + r.bottom) / 2,
       }
@@ -243,7 +243,7 @@ async function toggleCheckbox(page: Page, trackId: string) {
       const before = await page.evaluate(
         (id: string) =>
           document
-            .querySelector(`[data-testid="${id}"]`)
+            .querySelector(`[data-testid="${CSS.escape(id)}"]`)
             ?.getAttribute('aria-checked'),
         target.testid,
       )
@@ -492,12 +492,9 @@ try {
     groups.set(key, [...(groups.get(key) || []), s])
   }
   console.log(
-    '\n' +
-      'interaction'.padEnd(52) +
-      'n'.padStart(4) +
-      'toDom'.padStart(8) +
-      'toFrame'.padStart(9) +
-      'evtDur'.padStart(8),
+    `\n${'interaction'.padEnd(52)}${'n'.padStart(4)}${'toDom'.padStart(
+      8,
+    )}${'toFrame'.padStart(9)}${'evtDur'.padStart(8)}`,
   )
   for (const [k, ss] of groups) {
     console.log(
