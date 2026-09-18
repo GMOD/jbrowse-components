@@ -1,8 +1,18 @@
-import { getClip } from '@jbrowse/cigar-utils'
+import {
+  isAbnormalPairDirection,
+  pairDirection,
+} from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_UNMAPPED,
+  getClip,
+} from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { getTag } from '@jbrowse/modifications-utils'
 
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -74,6 +84,35 @@ export interface BreakpointSerializedFeature {
   mate?: BreakpointMate
 }
 
+// Mirrors what getMatchedAlignmentFeatures/getBadlyPairedAlignments
+// (BreakpointSplitView/featureMatching.ts) keep, so a read dropped here never
+// crosses the RPC with its full tags (MM/ML on haplotagged long reads) for
+// nothing. Same flag constants and pair-direction helpers as that side. A
+// feature with no `flags` isn't an alignment and always passes through.
+export function keepAlignmentFeature(feature: Feature) {
+  const flags = feature.get('flags') as number | undefined
+  if (flags === undefined) {
+    return true
+  }
+  if (flags & SAM_FLAG_UNMAPPED) {
+    return false
+  }
+  // getTag, not get('tags'): this runs on every fetched read, and the full
+  // tags decode allocates a Record per read to answer one presence check
+  if (getTag(feature, 'SA')) {
+    return true
+  }
+  if (!(flags & SAM_FLAG_PAIRED)) {
+    return false
+  }
+  return (
+    !(flags & SAM_FLAG_PROPER_PAIR) ||
+    isAbnormalPairDirection(
+      pairDirection(feature.get('pair_orientation') as string | undefined),
+    )
+  )
+}
+
 export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegions<'BreakpointGetFeatures'> {
   name = 'BreakpointGetFeatures' as const
 
@@ -105,29 +144,33 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
       },
     )
 
-    return features.map((feature): BreakpointSerializedFeature => {
-      const cigar = feature.get('CIGAR') as string | undefined
-      const strand = feature.get('strand')
-      return {
-        uniqueId: feature.id(),
-        start: feature.get('start'),
-        end: feature.get('end'),
-        refName: feature.get('refName'),
-        strand,
-        flags: feature.get('flags') as number | undefined,
-        name: feature.get('name'),
-        id: feature.get('id'),
-        tags: feature.get('tags') as
-          | ({ SA?: string } & Record<string, unknown>)
-          | undefined,
-        pair_orientation: feature.get('pair_orientation') as string | undefined,
-        type: feature.get('type'),
-        ALT: feature.get('ALT') as string[] | undefined,
-        INFO: feature.get('INFO') as BreakpointVcfInfo | undefined,
-        mate: feature.get('mate') as BreakpointMate | undefined,
-        clipLengthAtStartOfRead:
-          cigar && strand !== undefined ? getClip(cigar, strand) : undefined,
-      }
-    })
+    return features
+      .filter(keepAlignmentFeature)
+      .map((feature): BreakpointSerializedFeature => {
+        const cigar = feature.get('CIGAR') as string | undefined
+        const strand = feature.get('strand')
+        return {
+          uniqueId: feature.id(),
+          start: feature.get('start'),
+          end: feature.get('end'),
+          refName: feature.get('refName'),
+          strand,
+          flags: feature.get('flags') as number | undefined,
+          name: feature.get('name'),
+          id: feature.get('id'),
+          tags: feature.get('tags') as
+            | ({ SA?: string } & Record<string, unknown>)
+            | undefined,
+          pair_orientation: feature.get('pair_orientation') as
+            | string
+            | undefined,
+          type: feature.get('type'),
+          ALT: feature.get('ALT') as string[] | undefined,
+          INFO: feature.get('INFO') as BreakpointVcfInfo | undefined,
+          mate: feature.get('mate') as BreakpointMate | undefined,
+          clipLengthAtStartOfRead:
+            cigar && strand !== undefined ? getClip(cigar, strand) : undefined,
+        }
+      })
   }
 }
