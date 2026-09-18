@@ -41,12 +41,10 @@ export interface FetchInputsHost extends IStateTreeNode {
    * one fact twice, and the two spellings drift.
    *
    * Alignments fills it with its per-base bin and detail tier, canvas with
-   * its resolved glyph mode and peptide flag. A display that has not been
-   * converted leaves this undefined and its `zoomFetchKey` string is the zoom
-   * tier instead.
+   * its resolved glyph mode and peptide flag. A display whose worker reads no
+   * zoom leaves it undefined, and its zoom tier never moves.
    */
   zoomFetchArgs?: () => object
-  zoomFetchKey: string
 }
 
 /**
@@ -118,7 +116,7 @@ export function makeSettingsFetchInputs(self: SettingsFetchInputsHost) {
  */
 export function makeFetchInputs(self: FetchInputsHost) {
   const zoom = stableIdentityComputed(() =>
-    snapshotInputs(self.zoomFetchArgs?.call(self) ?? self.zoomFetchKey),
+    snapshotInputs(self.zoomFetchArgs?.call(self)),
   )
   return stableIdentityComputed((): FetchInputs => ({
     settings: self.settingsFetchInputs,

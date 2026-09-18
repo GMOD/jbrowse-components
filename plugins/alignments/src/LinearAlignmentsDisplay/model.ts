@@ -3117,10 +3117,10 @@ export default function stateModelFactory(
          * zoom it is drawn at. That is the half an export lands in, since a
          * reader zooms and then reaches for the menu.
          *
-         * A value compare, never a second spelling of the key. Restating the
-         * key's string format on the live side would latch this true the day the
-         * key grows a second axis, and a latched supersession is an export that
-         * hangs to `awaitSvgReady`'s timeout rather than one that fails.
+         * A value compare, never a second derivation of `zoomFetchArgs`.
+         * Restating the args on the live side would latch this true the day
+         * they grow a field, and a latched supersession is an export that hangs
+         * to `awaitSvgReady`'s timeout rather than one that fails.
          */
         get dataSuperseded(): boolean {
           return (

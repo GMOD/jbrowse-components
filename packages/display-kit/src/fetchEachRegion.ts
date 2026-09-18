@@ -1,5 +1,6 @@
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
+import { runInAction } from 'mobx'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
@@ -311,19 +312,24 @@ export async function fetchRegionsBatched<R extends RegionPayload>(
   await self.fetchRegions(regions, async ctx => {
     const result = await opts.call(regions, ctx)
     if (!ctx.isStale()) {
-      self.commitFetchBytes([measuredBytes(result)], issued)
-      // One payload covers the whole set, so a refusal refuses the set: nothing
-      // is committed and nothing is marked loaded, for the reason spelled out
-      // in `RegionFetchContext`.
-      if (!isRegionRefused(result)) {
-        opts.commit(result)
-        for (const { displayedRegionIndex } of regions) {
-          ctx.commitRegion(
-            displayedRegionIndex,
-            payloadFor(displayedRegionIndex, result),
-          )
+      // One transaction, so no observer sees the display's payload beside the
+      // spans the previous batch marked loaded — an export gate did, after a
+      // pan left the view inside the old span and off the new one.
+      runInAction(() => {
+        self.commitFetchBytes([measuredBytes(result)], issued)
+        // One payload covers the whole set, so a refusal refuses the set:
+        // nothing is committed and nothing is marked loaded, for the reason
+        // spelled out in `RegionFetchContext`.
+        if (!isRegionRefused(result)) {
+          opts.commit(result)
+          for (const { displayedRegionIndex } of regions) {
+            ctx.commitRegion(
+              displayedRegionIndex,
+              payloadFor(displayedRegionIndex, result),
+            )
+          }
         }
-      }
+      })
     }
   })
 }

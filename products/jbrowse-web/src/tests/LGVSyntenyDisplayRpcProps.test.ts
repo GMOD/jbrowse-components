@@ -156,8 +156,8 @@ test('a tiered adapter offers the level-of-detail menu', async () => {
 })
 
 // The bug this whole resolution point exists for: pinning a tier must move the
-// value the fetch asks for, which is `lodTier` — a `zoomFetchKey` term and an
-// RPC call-site argument since `0e17f6f305`, not an `rpcProps` field
+// value the fetch asks for, which is `lodTier` — a `zoomFetchArgs` field since
+// `0e17f6f305`, not an `rpcProps` field
 test('pinning a tier overrides the zoom-based answer', async () => {
   const { display } = await syntenyDisplay(tiered(0.5))
   expect(display.lodTier).toBe('coarse')

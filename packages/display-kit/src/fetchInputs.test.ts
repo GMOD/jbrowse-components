@@ -17,7 +17,6 @@ function inputsOver(rpcProps: () => unknown, zoom: () => object) {
       return settings.get()
     },
     zoomFetchArgs: zoom,
-    zoomFetchKey: '',
   })
 }
 
@@ -134,21 +133,8 @@ describe('fetchInputs', () => {
     expect(() => stamped.rpcProps.ids.push('b')).toThrow()
   })
 
-  it('falls back to the zoomFetchKey string for a display that declares no args', () => {
-    const key = observable.box('16')
-    const inputs = makeFetchInputs({
-      settingsFetchInputs: {},
-      get zoomFetchKey() {
-        return key.get()
-      },
-    })
-    const dispose = observed(inputs)
-    const before = inputs.get()
-    expect(before.zoom).toBe('16')
-    runInAction(() => {
-      key.set('8')
-    })
-    expect(isDataCurrent(before, inputs.get())).toBe(false)
-    dispose()
+  it('leaves the zoom tier undefined for a display that declares no args', () => {
+    const inputs = makeFetchInputs({ settingsFetchInputs: {} })
+    expect(inputs.get().zoom).toBeUndefined()
   })
 })

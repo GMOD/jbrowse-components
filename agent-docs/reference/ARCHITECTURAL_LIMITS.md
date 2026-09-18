@@ -1178,9 +1178,7 @@ only on a real violation):
   `.views()`, not `.actions()`.** MobX runs actions untracked, so the reads register no
   dependency and callers keep a stale answer. A declaration of one of those
   names directly inside an `.actions(…)` block is an eslint error
-  (`no-restricted-syntax`, which carries the reason); `zoomFetchKey` is spared
-  by being a getter, because MST throws on one declared inside `.actions()`. It
-  was a hand-copied `getMembers(display).actions` assertion per display family,
+  (`no-restricted-syntax`, which carries the reason). It was a hand-copied `getMembers(display).actions` assertion per display family,
   then one `afterAttach` read for every display composing a fetch foundation,
   and is now neither. **The general move applies to a hook the same way it
   applies to a getter: the block a member is written in is syntax, so the

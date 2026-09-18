@@ -70,7 +70,7 @@ displays cannot drift on `MIN_BINNED_BP_PER_PX`.
   does, not as an `rpcProps` field — a zoom-swinging value in the payload is a
   `SettingsInvalidate` that drops every fetched region
   ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) §"How the verdict is built", and
-  "Neither worker budget may be an RPC cache key"). `zoomFetchKey` carries the
+  "Neither worker budget may be an RPC cache key"). `zoomFetchArgs` carries the
   per-region half, and `dataSuperseded` keeps an SVG export from sampling data
   the settled zoom has already moved past.
 
@@ -213,7 +213,7 @@ every mode, and the single row that took two took both at the same bin.
 **Nothing was cancelled, because a zoom cannot cancel.** No call in the table
 aborted: `planRegionFetch` answers `idle / inFlight` while `isLoading`, so an
 octave crossed mid-fetch waits for the running fetch, lets it commit under its
-now-stale `regionFetchKey`, and issues the next off `fetchGeneration`. The
+now-stale `fetchInputs` stamp, and issues the next off `fetchGeneration`. The
 `livePerBaseBinBp` JSDoc's "latest-wins cancels the RPC" describes the abort
 rotation, and the rotation is never reached from a zoom.
 

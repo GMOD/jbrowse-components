@@ -28,7 +28,7 @@ reason the gate measures bytes.
 
 Two earlier tiers also put their tier choice in `rpcProps()`, where crossing
 the threshold mid-gesture fired `SettingsInvalidate` and dropped every loaded
-region; both have since moved to their displays' `zoomFetchKey`.
+region; both have since moved to their displays' `zoomFetchArgs`.
 
 ## Decision
 

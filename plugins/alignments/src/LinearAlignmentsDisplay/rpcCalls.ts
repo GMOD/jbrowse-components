@@ -68,7 +68,7 @@ export async function fetchFeatureDetails(
       // offsets, so ids only match within one tier — querying the default
       // (fine) tier for a feature drawn from the coarse one found nothing, and
       // the details silently never came. Recorded rather than read live because
-      // a tier flip is a `zoomFetchKey` move: the held regions keep drawing
+      // a tier flip is a `zoomFetchArgs` move: the held regions keep drawing
       // until the refetch lands, at the tier they were fetched at.
       lodMode: info.lodMode,
     },

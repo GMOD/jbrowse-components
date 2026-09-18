@@ -56,6 +56,16 @@ export const MAX_STORED_REGIONS = 32
  * autoruns in `afterAttach` and exposes overridable hooks (`fetchNeeded`,
  * `rpcProps`, `zoomFetchArgs`, `regionHasData`, `gateEnabled`) plus
  * the `fetchRegions` / `loadedRegions` machinery.
+ *
+ * `rpcProps()` and `zoomFetchArgs()` are what the display's RPC is sent, and
+ * the foundation stamps both beside every region a fetch loads. They differ in
+ * what a move shows: an `rpcProps` move supersedes the in-flight fetch and
+ * scrims the held data, while a `zoomFetchArgs` move lets the held regions draw
+ * until the refetch lands, so a value that swings with zoom goes in
+ * `zoomFetchArgs`. A zoom rule that is no worker argument, such as a payload
+ * answering only the zoom it was fetched at, is a `regionHasData` answer. The
+ * mixin looks both up rather than declaring them, so a display keeps its narrow
+ * return types through MST's `.views()` chain.
  */
 export default function MultiRegionDisplayMixin() {
   return (
@@ -249,52 +259,6 @@ export default function MultiRegionDisplayMixin() {
         },
 
         /**
-         * #getter
-         * Overridable hook (default `''`): the zoom-dependent term of what a
-         * fetch issued right now would produce for a region — the one axis of
-         * the fetch key the display supplies, where the settings and adapter
-         * axes are the mixin's (`fetchInputs` below). The variant matrix
-         * returns its zoom in matrix mode only; canvas and alignments state
-         * theirs through `zoomFetchArgs`, and wiggle through the adapter's
-         * `zoomRange`.
-         *
-         * Here and NOT in `rpcProps()`: a zoom-swinging value in the RPC
-         * payload runs `SettingsInvalidate` on every crossing — the in-flight
-         * fetch superseded, the scrim raised over the held data, and the
-         * display blanked where it drops settings-baked data — see
-         * REGION_TOO_LARGE.md §"How the verdict is built" — where a key term
-         * marks the held regions stale and lets them draw, unscrimmed, until
-         * the refetch lands.
-         *
-         * A getter, so the observables it reads register as dependencies of
-         * `FetchVisibleRegions`; MobX runs an action untracked and the autorun
-         * would keep a stale answer.
-         */
-        get zoomFetchKey(): string {
-          return ''
-        },
-
-        /**
-         * #method
-         * Overridable hook, and the converted form of `zoomFetchKey` above:
-         * the zoom-derived worker arguments as an **object**, which the
-         * display spreads into its own RPC call and the foundation stamps
-         * beside every region the call loads. A display that fills this leaves
-         * `zoomFetchKey` alone; the foundation prefers this when it exists.
-         *
-         * The key and the argument are the same fact, and declaring them
-         * separately lets them disagree. A `zoomFetchKey` that reads no
-         * observable is memoized for the display's life while the call goes on
-         * sending a live value, and a key naming a threshold while the call
-         * sends the mode behind it marks the data stale on a crossing the
-         * worker never sees.
-         *
-         * Looked up dynamically rather than declared, so a display keeps its
-         * narrow return type through MST's `.views()` chain — the same reason
-         * `rpcProps` is not declared here.
-         */
-
-        /**
          * #method
          * Overridable hook: whether the display can draw what this region is
          * marked loaded over, at the zoom the view has.
@@ -313,7 +277,8 @@ export default function MultiRegionDisplayMixin() {
          * map has to answer. The multi-row display's override survives for the
          * auto-partition reconciliation (`regionHasPinnedData`).
          *
-         * A view, not an action, for the reason `zoomFetchKey` is a getter.
+         * A view, not an action, so the reads it makes register as
+         * dependencies of `FetchVisibleRegions`.
          */
         regionHasData(displayedRegionIndex: number): boolean {
           const payload = self.loadedRegions.get(displayedRegionIndex)?.payload
@@ -354,14 +319,14 @@ export default function MultiRegionDisplayMixin() {
          * reader zooms and then reaches for the menu. What may NOT go in is a
          * change that could still be taken back: this fails hung, not stale.
          *
-         * So state the live-vs-settled half as a **value** compare and leave key
-         * strings alone. The settled half — the stamp a fetch committed under
-         * against the key a fetch now would use — is the foundation's already,
-         * through the `isCacheValid` term in `dataCurrent`, and an override
-         * restating it buys nothing: a second derivation of the key's vocabulary
-         * reads `"16|fine"` against a live `"16"` the day the key grows an axis,
-         * latches this true, and every export of the display then waits out
-         * `awaitSvgReady`'s backstop instead of failing.
+         * So state the live-vs-settled half as a **value** compare and leave
+         * the stamp alone. The settled half — the stamp a fetch committed under
+         * against the `zoomFetchArgs` a fetch now would send — is the
+         * foundation's already, through the `isCacheValid` term in
+         * `dataCurrent`, and an override restating it buys nothing: a second
+         * derivation misses the field the args gain next, latches this true,
+         * and every export of the display then waits out `awaitSvgReady`'s
+         * backstop instead of failing.
          */
         get dataSuperseded(): boolean {
           return false
@@ -387,7 +352,7 @@ export default function MultiRegionDisplayMixin() {
       // That worked only by accident — the autorun happened to read
       // `view.visibleRegions`, which moves in lockstep — which made "don't let
       // this be your only dependency" an unwritten precondition on every
-      // override. `zoomFetchKey` and `regionHasData` are views for the same
+      // override. `zoomFetchArgs` and `regionHasData` are views for the same
       // reason.
       .views(self => {
         const inputs = makeFetchInputs(self)
@@ -397,8 +362,7 @@ export default function MultiRegionDisplayMixin() {
            * What a fetch issued right now would stamp on a region: the
            * settings tier (`FetchMixin.settingsFetchInputs`, the tier
            * `staleSettingsDrawn` compares alone) and the zoom tier (the
-           * display's `zoomFetchArgs()` object, or its `zoomFetchKey` string
-           * where it has not been converted). `fetchRegions` captures it
+           * display's `zoomFetchArgs()` object). `fetchRegions` captures it
            * before the RPC goes out and stamps it beside the loaded region;
            * `isCacheValid` compares against it.
            */
@@ -448,10 +412,10 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #method
          * Whether the data held for a region still answers the current view.
-         * Not a hook a display fills: a display states its rule as its zoom
-         * tier (`zoomFetchKey`, or a `zoomFetchArgs` object where it sends
-         * one) and `regionHasData` (does what the last one stored still
-         * answer), and this compares the whole input set against the one the
+         * Not a hook a display fills: a display states its rule as
+         * `zoomFetchArgs` (what a fetch now would send the worker) and
+         * `regionHasData` (does what the last one stored still answer), and
+         * this compares the whole input set against the one the
          * region was fetched under.
          */
         isCacheValid(displayedRegionIndex: number): boolean {

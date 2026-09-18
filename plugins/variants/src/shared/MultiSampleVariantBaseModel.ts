@@ -456,6 +456,15 @@ export default function MultiSampleVariantBaseModelF(
          * `perRegionCellData` entry, and the matrix payload is flat.
          */
         cellDataRegionIndices: new Set<number>() as ReadonlySet<number>,
+        /**
+         * #volatile
+         * The zoom the current `cellData` was fetched at, set in matrix mode
+         * alone. Matrix columns are the features of exactly the span on
+         * screen, so after a zoom inside the loaded span the held payload
+         * still lays out features the view no longer shows. Undefined answers
+         * at every zoom, as regular mode's position-drawn payload does.
+         */
+        cellDataBpPerPx: undefined as number | undefined,
       }))
       .actions(self => ({
         /**
@@ -467,9 +476,11 @@ export default function MultiSampleVariantBaseModelF(
         setCellData(
           data: CellDataResult | undefined,
           displayedRegionIndices: Iterable<number> = [],
+          bpPerPx?: number,
         ) {
           self.cellData = data
           self.cellDataRegionIndices = new Set(displayedRegionIndices)
+          self.cellDataBpPerPx = bpPerPx
         },
       }))
       .views(self => ({
@@ -482,10 +493,15 @@ export default function MultiSampleVariantBaseModelF(
          * fetch marks only the regions it issued as loaded, but replaces the
          * whole payload — so a region an earlier batch loaded keeps its
          * `loadedRegions` entry with nothing behind it, and without this
-         * check reads as cache-valid and draws blank.
+         * check reads as cache-valid and draws blank. In matrix mode, also
+         * whether it was fetched at the zoom on screen (`cellDataBpPerPx`).
          */
         regionHasData(displayedRegionIndex: number): boolean {
-          return self.cellDataRegionIndices.has(displayedRegionIndex)
+          const fetchedAt = self.cellDataBpPerPx
+          return (
+            self.cellDataRegionIndices.has(displayedRegionIndex) &&
+            (fetchedAt === undefined || fetchedAt === self.host.bpPerPx)
+          )
         },
         /**
          * #method
@@ -1636,7 +1652,7 @@ export default function MultiSampleVariantBaseModelF(
           }
         },
       }))
-      .views(self => ({
+      .views(() => ({
         /**
          * #getter
          * Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes
@@ -1655,25 +1671,6 @@ export default function MultiSampleVariantBaseModelF(
          */
         get prefersOffset() {
           return true
-        },
-
-        /**
-         * #getter
-         * Matrix mode draws columns by feature index across the full width, so
-         * the set of features belongs to the visible region at the *current*
-         * zoom — zooming in/out changes which features show even when the
-         * viewport stays spatially inside loaded data, so cached cells at a
-         * different bpPerPx are stale (wiggle uses the same strict-zoom rule,
-         * adr-008). Regular mode draws each variant at its genomic position, so
-         * spatial coverage alone suffices and the empty key holds every region
-         * a fetch has loaded.
-         *
-         * A getter, not an action: as an action MobX untracks the `bpPerPx`
-         * read and `FetchVisibleRegions` keeps a stale answer
-         * (`isCacheValidTracking.test.ts`).
-         */
-        get zoomFetchKey(): string {
-          return cellDataMode === 'matrix' ? String(self.host.bpPerPx) : ''
         },
 
         /**
@@ -1768,6 +1765,7 @@ export default function MultiSampleVariantBaseModelF(
           // `fetchNeeded` is about to mark loaded — no second view read across
           // the async boundary.
           const args = rpcArgs(self)
+          const fetchedAt = cellDataMode === 'matrix' ? view.bpPerPx : undefined
           // One RPC serves every region, so the whole batch is held or none of
           // it is, and `fetchRegionsBatched` marks them loaded together.
           await fetchRegionsBatched(self, regions, {
@@ -1783,6 +1781,7 @@ export default function MultiSampleVariantBaseModelF(
               self.setCellData(
                 result,
                 regions.map(r => r.displayedRegionIndex),
+                fetchedAt,
               )
             },
           })

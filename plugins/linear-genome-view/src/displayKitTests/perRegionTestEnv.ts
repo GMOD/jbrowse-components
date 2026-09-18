@@ -105,10 +105,10 @@ function makeStateModel(
       /** every `fetchNeeded` call, as the region list it was handed */
       fetchLog: [] as IndexedRegion[][],
       /**
-       * What `zoomFetchKey` answers. A volatile, not a `control` knob, and
-       * that is the point: a real display's key reads view state, so the
-       * autorun re-runs when it moves. A plain closure value would be memoized
-       * by the computed and never invalidate.
+       * What `zoomFetchArgs` answers. A volatile, not a `control` knob, and
+       * that is the point: a real display's args read view state, so the
+       * autorun re-runs when they move. A plain closure value would be
+       * memoized by the computed and never invalidate.
        */
       fetchKey: '',
     }))
@@ -139,8 +139,8 @@ function makeStateModel(
       get densityTooLarge() {
         return control.densityTooLarge
       },
-      get zoomFetchKey() {
-        return self.fetchKey
+      zoomFetchArgs() {
+        return { key: self.fetchKey }
       },
     }))
     .actions(self => ({

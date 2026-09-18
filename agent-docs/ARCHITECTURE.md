@@ -170,25 +170,23 @@ is declared in `STATES_NO_RULES`.
   real work — but the order is a permutation the main thread applies for free,
   and sent unsorted it re-enters the cache key anyway. See [row
   order](reference/FETCH_KEYS.md#row-order-is-not-a-fetch-input).
-- Don't write a `zoomFetchKey` or `zoomFetchArgs` that reads no observable. The hook is a getter,
-  so MST makes it a computed, and a key over non-observable state is memoized
-  for the display's life — the first fetch is cached forever and nothing
-  refetches it. See [per-region zoom-staleness](reference/ZOOM_FETCH_KEYS.md#per-region-zoom-staleness).
-- Don't spell a second tier as a `zoomFetchKey` value, or as a `regionHasData`
+- Don't write a `zoomFetchArgs` that reads no observable. The foundation reads
+  it inside a computed, and args over non-observable state are memoized for the
+  display's life — the first fetch is cached forever and nothing refetches it. See [per-region zoom-staleness](reference/ZOOM_FETCH_KEYS.md#per-region-zoom-staleness).
+- Don't spell a second tier as a `zoomFetchArgs` field, or as a `regionHasData`
   answer over a second map stamped into `loadedRegions`. A coarse tier is its
-  own store with its own span (`CoarseTierMixin`); a key naming it reads as
+  own store with its own span (`CoarseTierMixin`); an input naming it reads as
   stale the moment the display swaps tiers and refetches the tier it already
   holds, and a shared stamp narrows the coarse span to the detail's. See
   [per-region zoom-staleness](reference/ZOOM_FETCH_KEYS.md#per-region-zoom-staleness), and [the hook
   table](reference/DISPLAY_HOOKS.md#display-hooks-and-their-defaults) for what every other
   unoverridden hook leaves you with.
-- Don't restate `zoomFetchKey`'s string vocabulary in a second derivation. The
-  foundation compares the stamp against the key already, as `dataCurrent`'s
-  `isCacheValid` term, so a supersession compare states only the live-vs-settled
-  half and states it as a **value** compare; a second spelling reads `"16|fine"`
-  against a live `"16"` the day the key grows an axis, latches true, and every
-  export of that display waits out `awaitSvgReady`'s backstop instead of
-  failing.
+- Don't restate the zoom tier in a second derivation. The foundation compares
+  the stamp against `zoomFetchArgs` already, as `dataCurrent`'s `isCacheValid`
+  term, so a supersession compare states only the live-vs-settled half and
+  states it as a **value** compare; a second derivation misses the field the
+  args gain next, latches true, and every export of that display waits out
+  `awaitSvgReady`'s backstop instead of failing.
   `LinearAlignmentsDisplay`'s `dataSuperseded` is the worked example. See
   [per-region zoom-staleness](reference/ZOOM_FETCH_KEYS.md#per-region-zoom-staleness).
 

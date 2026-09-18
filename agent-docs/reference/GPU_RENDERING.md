@@ -759,8 +759,9 @@ so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
   undo that. A display composing it is itself lazily registered, so it reaches
   the subpath from inside its own loader.
 - `WiggleCommonMixin()` — `ScoreFieldConfigMixin` plus wiggle's palette,
-  rendering type, summary mode, resolution and the strict-`bpPerPx`
-  `zoomFetchKey`.
+  rendering type, summary mode and resolution. Its zoom rule is the `zoomRange`
+  the adapter puts on each payload
+  ([ADR-125](../architecture-decision-records/adr-125-the-adapter-declares-the-zoom-range-its-answer-serves.md)).
 
 GWAS's Manhattan does **not** compose `linearWiggleDisplayModelFactory`. It builds
 its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixin()`
@@ -768,11 +769,8 @@ its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixi
 `scoreAxisConfigSchemaFields`, all from `@jbrowse/wiggle-core`. It ships its own
 `GetManhattanData` RPC (per-feature points, not pre-binned density), implements
 its own `ManhattanRenderingBackend` with its own pass, and is zoom-independent:
-it overrides neither per-region cache hook, so it sits on the empty
-`zoomFetchKey` and no zoom invalidates a region it has loaded. That falls out
-of which mixin it composes rather than needing a statement of its own — the
-strict-`bpPerPx` rule is `WiggleCommonMixin`'s, and Manhattan composes only the
-score config `WiggleCommonMixin` itself sits on top of.
+it declares no `zoomFetchArgs` and its payload carries no `zoomRange`, so no
+zoom invalidates a region it has loaded.
 
 ### Upload patterns
 

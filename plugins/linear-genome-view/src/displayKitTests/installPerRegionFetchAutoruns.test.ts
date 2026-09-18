@@ -289,7 +289,7 @@ describe('the region fetch key', () => {
     const { display } = setup()
     await quiet(display)
 
-    // no viewport move: `zoomFetchKey` is a view, so what it reads is in this
+    // no viewport move: `zoomFetchArgs` is a view, so what it reads is in this
     // autorun's dependency set and moving the key is the whole trigger. As an
     // action MobX would run it untracked and this would never re-run.
     display.setFetchKey('zoomed')
@@ -527,12 +527,12 @@ describe('the dependency set is the contract', () => {
     'LinearGenomeView.windowWidthBp',
   ]
   // The two tiers of `fetchInputs`, reached through `isCacheValid` on a covered
-  // block. Both hook lookups are dynamic, so a display declaring neither still
-  // registers the existence probe: `rpcProps?` for the settings tier and
-  // `zoomFetchArgs?` for the zoom tier, which falls back to `zoomFetchKey`. The
-  // rest is the track's adapter config read through `getConf` — its slots, the
-  // observability probes `readConfObject` makes on them, and one MST snapshot
-  // computed, which MobX names by allocation order and so is normalized below.
+  // block. Both hook lookups are dynamic, so a display declaring no `rpcProps`
+  // still registers its existence probe; this one declares `zoomFetchArgs`, so
+  // the zoom tier is its `fetchKey` read, listed below. The rest is the track's
+  // adapter config read through `getConf` — its slots, the observability probes
+  // `readConfObject` makes on them, and one MST snapshot computed, which MobX
+  // names by allocation order and so is normalized below.
   const fetchKeyAxes = [
     'ComputedValue@<id>',
     'CytobandAdapterConfigurationSchema.cytobandLocation',
@@ -547,7 +547,6 @@ describe('the dependency set is the contract', () => {
     'FeatureTrackConfigurationSchema.trackId',
     'FeatureTrackConfigurationSchema.trackId?',
     'PerRegionTestDisplay.rpcProps?',
-    'PerRegionTestDisplay.zoomFetchArgs?',
   ]
 
   function dependencies(display: PerRegionTestDisplay) {

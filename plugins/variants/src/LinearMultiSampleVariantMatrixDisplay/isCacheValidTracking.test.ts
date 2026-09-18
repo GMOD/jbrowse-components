@@ -16,8 +16,7 @@ import { createTestEnvironment } from './testEnv.ts'
 // is masked. Two pins, then — the declaration site below, and the tracking
 // behavior it buys further down. Getters can't regress this way (MST throws on a
 // getter inside `.actions()`), which is why the gate's opt-in is now the boolean
-// getter `gateEnabled` and the zoom rule the getter
-// `zoomFetchKey`. See packages/display-kit/CLAUDE.md.
+// getter `gateEnabled`. See packages/display-kit/CLAUDE.md.
 test('the reactive method hooks are views, not actions', () => {
   const { display } = createTestEnvironment().createDisplay()
   const { actions } = getMembers(display)
@@ -42,6 +41,7 @@ test('isCacheValid re-evaluates for callers when bpPerPx changes', () => {
   display.setCellData(
     { mode: 'matrix' } as unknown as Parameters<typeof display.setCellData>[0],
     [0],
+    view.bpPerPx,
   )
 
   const seen: boolean[] = []
@@ -50,8 +50,8 @@ test('isCacheValid re-evaluates for callers when bpPerPx changes', () => {
   })
   expect(seen).toEqual([true])
 
-  // Matrix mode is zoom-cache-strict, so a zoom change alone invalidates the
-  // cache. As an action this second entry never arrived.
+  // Matrix data answers only the zoom it was fetched at, so a zoom change
+  // alone invalidates the cache. As an action this second entry never arrived.
   view.zoomTo(20)
   expect(view.bpPerPx).not.toBe(10)
   expect(seen).toEqual([true, false])

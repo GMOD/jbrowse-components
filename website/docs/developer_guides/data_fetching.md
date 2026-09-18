@@ -59,8 +59,10 @@ extend past the viewport, so after a small pan they still cover the block and
 nothing is fetched. `isCacheValid` checks whether the data held for a region is
 still valid for the current view, by comparing the whole fetch key; a display
 does not override it. A display whose data goes stale for reasons the bounds
-can't detect reports that through `zoomFetchKey` (the zoom term of what a fetch
-now would produce) or `regionHasData` (whether the last fetch stored anything).
+can't detect reports that through `zoomFetchArgs` (the zoom-derived arguments a
+fetch now would send the worker, which the foundation stamps beside each region)
+or `regionHasData` (whether what the last fetch stored still answers at this
+zoom).
 
 ## Implementing fetchNeeded
 

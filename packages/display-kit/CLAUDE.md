@@ -59,23 +59,21 @@ What follows is local.
 
 `no-restricted-syntax` covers the four method-shaped hooks — declaring
 `rpcProps`, `zoomFetchArgs`, `regionHasData` or `isCacheValid` inside an
-`.actions(…)` block is a lint error, and `zoomFetchKey` needs no rule because
-MST throws on a getter declared inside `.actions()`. `assertDisplayContract` is
-what stayed a runtime check: it reports a fetch foundation whose `afterAttach`
-ran twice on one display, which no spelling in one file predicts.
-`makeRetryContractCheck` is the same idea for retry: it reports when a
-`reloadCounter` bump re-runs the autorun and the gate still declines — the dead
-Retry button. Every fetch installer installs them, `installFetch` included — a
-**secondary** fetch on a display whose foundation already installed them passes
-no `contract` and skips both, or the double-attach report fires on the fetch
-that is not the double. Opt out with `fetchInert` if the display deliberately
-isn't fetching — the loading scrim and the SVG export read the same hook
-(ADR-082). A two-stage `reload()` says `awaitingPrerequisite` instead (HiC,
-whose contacts fetch declines until the header lands; variants, until
-`sourcesBase` does), which **defers** the verdict to the run after the
-prerequisite arrives rather than waiving it. Reports reach the jest gate through
-`console.error`, so a harness replacing it opts itself out; a test provoking a
-violation calls `takeContractReports()`.
+`.actions(…)` block is a lint error. `assertDisplayContract` is what stayed a
+runtime check: it reports a fetch foundation whose `afterAttach` ran twice on
+one display, which no spelling in one file predicts. `makeRetryContractCheck` is
+the same idea for retry: it reports when a `reloadCounter` bump re-runs the
+autorun and the gate still declines — the dead Retry button. Every fetch
+installer installs them, `installFetch` included — a **secondary** fetch on a
+display whose foundation already installed them passes no `contract` and skips
+both, or the double-attach report fires on the fetch that is not the double. Opt
+out with `fetchInert` if the display deliberately isn't fetching — the loading
+scrim and the SVG export read the same hook (ADR-082). A two-stage `reload()`
+says `awaitingPrerequisite` instead (HiC, whose contacts fetch declines until
+the header lands; variants, until `sourcesBase` does), which **defers** the
+verdict to the run after the prerequisite arrives rather than waiving it.
+Reports reach the jest gate through `console.error`, so a harness replacing it
+opts itself out; a test provoking a violation calls `takeContractReports()`.
 
 Both flags are getters on `FetchMixin` — and `fetchInert` on
 `ChordVariantDisplay` and on the breakpoint split view too, the two fetches that
@@ -236,17 +234,18 @@ Each lane fetch stamps its key on the display (`loadedKey`), and the hook is
 "specs exist and the stamp is not the current key" — which a lane fetch always
 clears, since one failed lane drops out of an otherwise committed map.
 
-**A live window ahead of a debounced key.** Alignments' `perBaseBinBp` reads
+**A live window ahead of a debounced input.** Alignments' `perBaseBinBp` reads
 `subPixelBinBp` off the 500ms-debounced `coarseBpPerPx`, and the stamp beside a
-loaded region IS that settled bin — so stamp and key agree by construction for
-the whole debounce, while the wall on screen is already several octaves coarser
-than the zoom it is drawn at. The hook is `perBaseBinBp !== livePerBaseBinBp`.
+loaded region IS that settled bin — so the stamp and `zoomFetchArgs` agree by
+construction for the whole debounce, while the wall on screen is already several
+octaves coarser than the zoom it is drawn at. The hook is
+`perBaseBinBp !== livePerBaseBinBp`.
 
-**A value compare, never a second spelling of the key.** The foundation runs the
-stamp-vs-key compare already, so an override restating it buys nothing: a second
-derivation of the key's vocabulary reads `"16|fine"` against a live `"16"` the
-day the key grows an axis, latches `dataSuperseded` true, and every export of
-that display waits out `awaitSvgReady`'s backstop instead of failing.
+**A value compare, never a second derivation of the zoom tier.** The foundation
+compares the stamp against `zoomFetchArgs` already, so an override restating it
+buys nothing: a second derivation misses the field the args gain next, latches
+`dataSuperseded` true, and every export of that display waits out
+`awaitSvgReady`'s backstop instead of failing.
 
 ## Fetching
 

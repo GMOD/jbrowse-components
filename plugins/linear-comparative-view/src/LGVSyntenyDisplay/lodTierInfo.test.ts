@@ -49,7 +49,7 @@ function zoomOut(view: ReturnType<typeof createSyntenyEnv>['view']) {
 }
 
 // The tier is the zoom axis of the fetch key and a call-site argument, not a
-// settings field: a flip moves `zoomFetchKey` alone, so the held regions draw
+// settings field: a flip moves `zoomFetchArgs` alone, so the held regions draw
 // on until the refetch lands instead of being superseded and scrimmed. Off the
 // settled zoom, so a gesture through the threshold reads as superseded until
 // it lands, and refetches once.

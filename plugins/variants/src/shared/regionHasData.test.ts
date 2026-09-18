@@ -1,3 +1,5 @@
+import { waitFor } from '@testing-library/react'
+
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
 
 // One RPC serves every region of a fetch and its payload replaces the last one
@@ -51,4 +53,50 @@ test('clearing the payload clears every region', () => {
   display.clearDisplaySpecificData()
   expect(display.isCacheValid(0)).toBe(false)
   expect(display.isCacheValid(1)).toBe(false)
+})
+
+// Regular mode draws each variant at its genomic position, so its payload
+// answers at every zoom; only the matrix records the zoom it fetched at.
+test('a regular-mode fetch stays current across a zoom', async () => {
+  jest.useFakeTimers()
+  const { display, view, mockRpcCall } = createTestEnvironment().createDisplay()
+  mockRpcCall.mockImplementation((_sid: string, method: string) =>
+    method === 'MultiSampleVariantGetSources'
+      ? Promise.resolve({ sources: [{ name: 'HG001' }], warnings: [] })
+      : method === 'MultiSampleVariantGetCellData'
+        ? Promise.resolve({
+            mode: 'regular',
+            perRegionCellData: {},
+            sampleInfo: {},
+            rowNames: [],
+            hasPhased: false,
+            hasPhasedOrHaploid: false,
+            hasSecondaryAlt: false,
+            hasUnphased: false,
+            hasNoCall: false,
+            paintedDomain: [],
+            hasConsequence: false,
+            hasSvType: false,
+            hasPhaseSet: false,
+            svTypeColors: {},
+            simplifiedFeatures: [],
+            genotypeDict: [],
+            sampleNames: ['HG001'],
+          })
+        : Promise.resolve([]),
+  )
+  view.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 },
+  ])
+  view.zoomTo(20)
+  jest.advanceTimersByTime(1000)
+  await jest.runAllTimersAsync()
+  await waitFor(() => {
+    expect(display.dataCurrent).toBe(true)
+  })
+
+  view.zoomTo(10)
+  expect(display.cellDataBpPerPx).toBeUndefined()
+  expect(display.dataCurrent).toBe(true)
+  jest.useRealTimers()
 })
