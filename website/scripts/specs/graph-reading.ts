@@ -20,13 +20,8 @@ const NONHUMAN_CONFIG = local(
   'test_data/graphgenomeview/pangenome_nonhuman.json',
 )
 
-// The label the halo overlay puts on each bubble is the click target that opens
-// it. The overlay lists the biggest bubble first, so the first label in the DOM
-// is the window's largest bubble whatever the window.
-const FIRST_HALO_LABEL = '[data-testid="graph-bubble-halo-label"]'
 const WALK_SELECT = '[data-testid="graph-walk-select"]'
 const WALK_READOUT = '[data-testid="graph-walk-readout"]'
-const BACK_BUTTON = '[data-testid="graph-unpop-bubble"]'
 
 // ---------------------------------------------------------------------------
 // HPRC, the LPA KIV-2 window
@@ -35,12 +30,6 @@ const BACK_BUTTON = '[data-testid="graph-unpop-bubble"]'
 // The 130 kb window pangenome/hprc_lpa_kiv2 draws, which opens part 4. LPA's
 // own start is in frame so the gene lane labels it.
 const LPA_WINDOW = 'chr6:160,525,000-160,655,000'
-const LPA_REGION = {
-  refName: 'chr6',
-  assemblyName: 'hg38',
-  start: 160525000,
-  end: 160655000,
-}
 // The KIV-2 bubble's own interval, which the eight-haplotype GBZ cut was made
 // on, and the domain both the linear lane and the graph paint their ramp over.
 const KIV2_BUBBLE_WINDOW = 'chr6:160,616,002-160,646,753'
@@ -79,59 +68,6 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
     height: 100,
     color: referencePositionColor(domain),
   }
-}
-
-function kiv2LinearView() {
-  return {
-    type: 'LinearGenomeView',
-    assembly: 'hg38',
-    loc: LPA_WINDOW,
-    tracks: [
-      hg38GeneLane(70),
-      hprcBubblesLane(95),
-      hprcSegmentsLane(LPA_REGION),
-    ],
-  }
-}
-
-// The window part 4 opens on, force-directed and haloed; the popped figure
-// clicks the array's label here.
-const KIV2_HALOS_URL = sessionSpec(HPRC_CONFIG, {
-  views: [
-    kiv2LinearView(),
-    {
-      type: 'GraphGenomeView',
-      loadedTrackId: 'hprc_minigraph_segments',
-      loadedRegion: LPA_REGION,
-      layoutMode: 'force',
-      colorScheme: 'reference-position',
-      paneHeight: 480,
-    },
-  ],
-})
-
-// The array's label clicked: the graph becomes the 29 segments the bubble row
-// names, laid out the same way, with the button back to the window. The popped
-// graph derives its own bubble from its layering, since no index row describes
-// the inside of a bubble.
-const kiv2PoppedSpec: ScreenshotSpec = {
-  mode: 'url',
-  name: 'pangenome/graph_kiv2_popped',
-  url: KIV2_HALOS_URL,
-  actions: [
-    { type: 'delay', ms: 1500 },
-    { type: 'click', selector: FIRST_HALO_LABEL },
-    { type: 'waitForSelector', selector: BACK_BUTTON, timeout: 120000 },
-    { type: 'waitForAppSettled' },
-    { type: 'delay', ms: 4000 },
-  ],
-  readySelector: TOOLBAR_READY,
-  readyTimeout: 120000,
-  settleMs: 5000,
-  viewportWidth: 1400,
-  viewportHeight: 1125,
-  hideTooltip: true,
-  annotations: [{ type: 'box', anchor: { selector: BACK_BUTTON } }],
 }
 
 function kiv2WalksGraphView() {
@@ -210,21 +146,56 @@ const kiv2WalksSpec: ScreenshotSpec = {
   ],
 }
 
+// One colour scheme: `uniform` paints the GRCh38 bar the blue the legend gives
+// shared sequence, where the reference-position ramp made it the one rainbow
+// row. The linear view is all of LPA, so the array reads as a stretch of it.
 const kiv2WalkRowsSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_kiv2_walk_rows',
   url: sessionSpec(HPRC_CONFIG, {
     views: [
-      kiv2WalksLinearView(),
-      { ...kiv2WalksGraphView(), layoutMode: 'walkrows', paneHeight: 300 },
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: LPA_WINDOW,
+        tracks: [hg38GeneLane(50), hprcBubblesLane(80)],
+      },
+      {
+        ...kiv2WalksGraphView(),
+        layoutMode: 'walkrows',
+        colorScheme: 'uniform',
+        paneHeight: 300,
+      },
     ],
   }),
   readySelector: TOOLBAR_READY,
   readyTimeout: 240000,
   viewportWidth: 1400,
-  viewportHeight: 780,
+  viewportHeight: 760,
   hideTooltip: true,
   actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
+  annotations: [
+    {
+      type: 'box',
+      anchor: { track: 'hprc_minigraph_bubbles', locus: KIV2_BUBBLE_WINDOW },
+      pad: 3,
+    },
+    {
+      type: 'text',
+      text: 'the KIV-2 array, which each bar below walks across',
+      fontSize: 18,
+      maxWidth: 520,
+      textAlign: 'end',
+      anchor: {
+        track: 'hprc_minigraph_bubbles',
+        locus: KIV2_BUBBLE_WINDOW,
+        alignX: 'left',
+        fracY: 0,
+        dx: -16,
+        dy: 20,
+      },
+    },
+  ],
 }
 
 // ---------------------------------------------------------------------------
@@ -313,7 +284,6 @@ const nntHalosSpec: ScreenshotSpec = {
 }
 
 export const graphReadingSpecs: ScreenshotSpec[] = [
-  kiv2PoppedSpec,
   kiv2WalksSpec,
   kiv2WalkRowsSpec,
   nntHalosSpec,

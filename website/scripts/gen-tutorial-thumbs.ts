@@ -460,10 +460,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   pangenome_graph_reading: {
     // The KIV-2 window force-directed with its bubbles haloed: the knot of
     // loops and the labels naming each bubble, below the linear lanes.
-    // xband starts right of the "each loop is a copy" callout.
+    // xband starts right of the kringle-copies callout.
     src: 'pangenome/hprc_lpa_kiv2.png',
     band: [0.72, 0.96],
-    xband: [0.46, 1],
+    xband: [0.52, 1],
   },
   pangenome_hprc_part5: {
     src: 'pangenome/hprc_abca7_repeat_units.png',

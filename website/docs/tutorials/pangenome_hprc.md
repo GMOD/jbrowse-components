@@ -423,7 +423,7 @@ genes around it.
 
 <Video src="/media/pangenome/hprc_out_to_haplotype.mp4" caption="The MHC class II cut with NA20809 haplotype 2 loaded: the allele hovered for its contributing assembly, its menu opened, the Open in NA20809.2 entry adding a view of that haplotype's chromosome 6, and that view zoomed out to the CAT genes around it." />
 
-<Figure caption="The same launch as a still. Above, the MHC class II window on hg38 and the cut made from it, colored by reference position with alleles charcoal, and the NA20809.2 allele ringed. Below, the view its Open in entry opened: NA20809 haplotype 2 on its own chromosome 6, where the rGFA segments lane draws the node's own segments in charcoal because they have no hg38 coordinate, and its CAT annotation, which has HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
+<Figure caption="The same launch in two frames. First, the MHC class II window on hg38 and the cut made from it, colored by reference position with alleles charcoal, the NA20809.2 allele ringed and its right-click menu open with the Open in NA20809.2 entry boxed. Second, the view that entry opened, under the same cut: NA20809 haplotype 2 on its own chromosome 6, where the rGFA segments lane draws the ringed node as the boxed charcoal segment, since it has no hg38 coordinate, and its CAT annotation, which has HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
 
 On GRCh38 the ringed allele attaches across the 12 kb of backbone the band
 marks, and that 12 kb covers most of _HLA-DRB5_. On NA20809 haplotype 2 the same

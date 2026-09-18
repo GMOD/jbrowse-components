@@ -85,14 +85,36 @@ trgt merge --vcf *.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf
 
 ## Every haplotype's walk through the repeat
 
-The session below opens _ABCA7_ with the TRGT track, and under it a graph view
-cut from `hprc_v2_1_gbz_lanes` over the same window for every haplotype the
-graph holds, drawn in **Walk rows** from the **Layout** dropdown:
+The session below opens _ABCA7_ with the TRGT track and the catalogue's own row
+for the VNTR, carried inline as a session track, and under them a graph view cut
+from `hprc_v2_1_gbz_lanes` over the same window for every haplotype the graph
+holds, drawn in **Walk rows** from the **Layout** dropdown with **Uniform** from
+the **Color** dropdown:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
   "defaultSession": {
     "name": "ABCA7 VNTR, walk rows",
+    "sessionTracks": [
+      {
+        "type": "FeatureTrack",
+        "trackId": "abca7_vntr",
+        "name": "Tandem repeat catalogue (adotto)",
+        "assemblyNames": ["hg38"],
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "features": [
+            {
+              "uniqueId": "abca7_vntr",
+              "refName": "chr19",
+              "start": 1049407,
+              "end": 1050096,
+              "name": "ABCA7 VNTR"
+            }
+          ]
+        }
+      }
+    ],
     "views": [
       {
         "type": "LinearGenomeView",
@@ -104,6 +126,11 @@ graph holds, drawn in **Walk rows** from the **Layout** dropdown:
             "type": "LinearBasicDisplay",
             "showOnlyGenes": true,
             "displayMode": "compact",
+            "height": 40
+          },
+          {
+            "trackId": "abca7_vntr",
+            "type": "LinearBasicDisplay",
             "height": 40
           },
           {
@@ -123,6 +150,7 @@ graph holds, drawn in **Walk rows** from the **Layout** dropdown:
           "end": 1050096
         },
         "layoutMode": "walkrows",
+        "colorScheme": "uniform",
         "paneHeight": 600
       }
     ]
@@ -132,9 +160,8 @@ graph holds, drawn in **Walk rows** from the **Layout** dropdown:
 
 Each row is one haplotype's walk between the reference nodes flanking the
 window, drawn on its own bp axis: blue where GRCh38 carries the same sequence,
-purple where it does not.
-
-<Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first, under the linear view of the same window with the TRGT record. GRCh38 is the short bar at the top, and the expansions are the purple stretches." src="/img/pangenome/hprc_abca7_walk_rows.png" />
+purple where it does not. GRCh38's own walk is the short bar at the top, the
+span the catalogue lane marks.
 
 ## TRGT's calls on the same bars
 
@@ -147,7 +174,7 @@ genotype's order, which is the genotyper's own and says nothing about which
 assembled haplotype is which, so the walks and the alleles are paired by length.
 A readout turns red where its walk and its allele are more than 10% apart.
 
-<Figure caption="The same rows with the TRGT record picked in the Repeat dropdown, boxed. Each bar is tiled by the motif, and a black tick marks the allele TRGT called for that walk. A red readout is a walk far from its allele." src="/img/pangenome/hprc_abca7_repeat_units.png" />
+<Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first, with the TRGT record picked in the Repeat dropdown, boxed. The catalogue lane marks the VNTR on GRCh38, whose walk is the short blue bar at the top. Each bar is tiled by the motif, and a black tick marks the allele TRGT called for that walk. A red readout is a walk far from its allele." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
 ## The samples where they disagree
 
@@ -160,12 +187,37 @@ and assemblies part, and two carrying a walk the view declines to score.
 {
   "defaultSession": {
     "name": "ABCA7 VNTR, where reads and assemblies disagree",
+    "sessionTracks": [
+      {
+        "type": "FeatureTrack",
+        "trackId": "abca7_vntr",
+        "name": "Tandem repeat catalogue (adotto)",
+        "assemblyNames": ["hg38"],
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "features": [
+            {
+              "uniqueId": "abca7_vntr",
+              "refName": "chr19",
+              "start": 1049407,
+              "end": 1050096,
+              "name": "ABCA7 VNTR"
+            }
+          ]
+        }
+      }
+    ],
     "views": [
       {
         "type": "LinearGenomeView",
         "assembly": "hg38",
         "loc": "chr19:1,049,000-1,050,500",
         "tracks": [
+          {
+            "trackId": "abca7_vntr",
+            "type": "LinearBasicDisplay",
+            "height": 40
+          },
           {
             "trackId": "hprc_abca7_trgt",
             "type": "LinearVariantDisplay",
@@ -183,6 +235,7 @@ and assemblies part, and two carrying a walk the view declines to score.
           "end": 1050096
         },
         "layoutMode": "walkrows",
+        "colorScheme": "uniform",
         "repeatTrackId": "hprc_abca7_trgt",
         "repeatKey": "chr19:1049406-1050096",
         "walkRowSamples": [

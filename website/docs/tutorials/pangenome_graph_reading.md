@@ -87,8 +87,6 @@ so the popped graph derives its own bubbles from the way its nodes layer along
 the reference, and a bubble inside a bubble gets a separate label to click in
 turn.
 
-<Figure caption="The array's segments popped out of the window and drawn separately. Each loop is a run of kringle copies a haplotype walks and the reference misses, and the popped graph's label gives the number of routes it holds." src="/img/pangenome/graph_kiv2_popped.png" />
-
 Every loop here is a different number of copies. The drawing shows that much and
 nothing more: the rGFA records which segments exist and how they link, and no
 haplotype walks through it, so nothing in this file identifies who takes which
@@ -138,9 +136,10 @@ one at a time answers that for one haplotype. Pick **Walk rows** in the
 **Layout** dropdown instead: each haplotype's walk becomes a bar on its own bp
 axis, blue where GRCh38 carries the same sequence and purple where it does not,
 longest first, so the copies each haplotype adds read as the length of its
-purple stretch.
+purple stretch. Pick **Uniform** from the **Color** dropdown too, so GRCh38's
+own bar is drawn in the same blue.
 
-<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, with the linear lanes of the same window above. The purple stretch of each bar is kringle copies GRCh38 does not carry, and the readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
+<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles lane. The purple stretch of each bar is kringle copies GRCh38 does not carry, and the readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
 ## Check it against the index
 

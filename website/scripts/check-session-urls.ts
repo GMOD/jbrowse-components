@@ -187,8 +187,13 @@ for (const { file, text } of docsMatching(docsDir, SESSION_FENCE)) {
       )
       return
     }
+    const sessionTracks = (
+      session as { sessionTracks?: { trackId?: string }[] }
+    ).sessionTracks
     const haveTracks = new Set(
-      (config.tracks ?? []).map(t => t.trackId).filter(id => id !== undefined),
+      [...(config.tracks ?? []), ...(sessionTracks ?? [])]
+        .map(t => t.trackId)
+        .filter(id => id !== undefined),
     )
     const haveAssemblies = new Set(
       (config.assemblies ?? []).map(a => a.name).filter(n => n !== undefined),

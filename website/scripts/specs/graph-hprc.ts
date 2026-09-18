@@ -890,6 +890,8 @@ const HPRC_HAPLOTYPE_CONFIG = local(
   'test_data/graphgenomeview/hprc_haplotype.json',
 )
 const HAPLOTYPE = 'NA20809.2'
+// HPRC_ALLELE's own span on the haplotype, which the launched pane is titled by
+const HAPLOTYPE_ALLELE_LOCUS = 'CM094351.1:32,495,297-32,497,076'
 // `<trackId>-<displayType>`, the id a track shown with no explicit displayId
 // gets (packages/core/src/util/tracks.ts); the launched pane shows its lanes
 // that way. The lane is HPRC's CAT annotation of this haplotype, sliced to the
@@ -1041,7 +1043,30 @@ const ABCA7_CONFIG = encodeURIComponent(
 )
 const ABCA7_REPEAT_KEY = 'chr19:1049406-1050096'
 
-function abca7Views(repeatKey: string) {
+// The adotto catalogue's row for the VNTR (adotto_repeats.hg38.bed.gz,
+// chr19:1049407-1050096), the record TRGT genotyped. A FromConfigAdapter is
+// not among the adapters the walk rows read repeats from, so the Repeat
+// dropdown still offers only the TRGT record.
+const ABCA7_VNTR_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'abca7_vntr',
+  name: 'Tandem repeat catalogue (adotto)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'FromConfigAdapter',
+    features: [
+      {
+        uniqueId: 'abca7_vntr',
+        refName: 'chr19',
+        start: 1049407,
+        end: 1050096,
+        name: 'ABCA7 VNTR',
+      },
+    ],
+  },
+}
+
+function abca7Views() {
   return [
     {
       type: 'LinearGenomeView',
@@ -1053,6 +1078,11 @@ function abca7Views(repeatKey: string) {
           type: 'LinearBasicDisplay',
           showOnlyGenes: true,
           displayMode: 'compact',
+          height: 40,
+        },
+        {
+          trackId: ABCA7_VNTR_TRACK.trackId,
+          type: 'LinearBasicDisplay',
           height: 40,
         },
         {
@@ -1072,7 +1102,9 @@ function abca7Views(repeatKey: string) {
         end: 1050096,
       },
       layoutMode: 'walkrows',
-      repeatKey,
+      colorScheme: 'uniform',
+      repeatTrackId: 'hprc_abca7_trgt',
+      repeatKey: ABCA7_REPEAT_KEY,
       paneHeight: 600,
     },
   ]
@@ -2135,43 +2167,19 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // height, so a shorter frame crops the drawing rather than scaling it.
     viewportHeight: 1170,
     hideTooltip: true,
-    // Why this locus and not another deeply traversed bubble: KIV-2 copy number
-    // is the reason anyone measures LPA, and nothing in a chain of loops says
-    // so. On review the figure read as an arbitrary tangle.
-    //
-    // The reading pill sits in the canvas's top-left corner (see it below);
-    // it used to hang off s338849+, the first node of the GRCh38 walk, until
-    // release 2.1's layout carried that drop off the capture.
     annotations: [
+      // s343607+ is HG02391#2's 68 kb segment inside the array bubble, the
+      // longest node in the cut and the widest loop in the drawing
       {
         type: 'text',
-        // HOW TO READ THE CHAIN, which is what turns it from a tangle into an
-        // object (review: the figure "read as an arbitrary tangle"). The pill
-        // used to carry the clinical significance instead — that answered the
-        // same review, but the page's own paragraph directly above the figure
-        // now says it in nearly the same words, so the pill was spending the
-        // frame's largest annotation on a sentence the reader had just read.
-        // What neither the prose nor the box below states is that the loops ARE
-        // the copies, which is the whole reason a graph is the right picture
-        // here.
-        text: 'each loop is a copy of the repeat, and haplotypes differ in how many they walk',
-        fontSize: 22,
-        // wrapped rather than hard-broken: a newline is a paragraph break that
-        // still wraps at maxWidth on its own, so authored line ends land in the
-        // middle of the pill
-        maxWidth: 420,
-        // On the canvas rather than on a node: through release 2.0 this hung
-        // off the first GRCh38 node, dropped into the empty part of the force
-        // drawing, and 2.1's layout put that node where the drop landed off
-        // the capture. The bottom-left corner is empty: the plugin's bubble
-        // labels and gene pins now take the top of the pane.
-        anchor: {
-          selector: '[data-testid="graph-genome-canvas"]',
-          alignX: 'left',
-          alignY: 'bottom',
-        },
-        dx: 20,
-        dy: -110,
+        text: 'kringle copies one haplotype carries and GRCh38 does not',
+        fontSize: 20,
+        maxWidth: 260,
+        leader: true,
+        anchor: { view: 1, graphNode: 's343607+' },
+        textAlign: 'end',
+        dx: -60,
+        dy: 20,
       },
       // WHERE it is: the widest bar in the bubbles lane, whose record is
       // `chr6:160,616,002-160,646,753` in release 2.1. The UniProt lane above
@@ -2404,50 +2412,90 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // arrives at its lanes' default heights, which no session pins
     viewportHeight: 1250,
     hideTooltip: true,
-    actions: [
-      // the auto-fit has to have finished before the anchor means anything
-      { type: 'delay', ms: 2000 },
-      { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
-      { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
-      { type: 'click', text: `Open in ${HAPLOTYPE}` },
-      // the launched pane's own gene lane, fetched off hgdownload, not a delay
+    // Two frames, on review: the node's menu with the entry taken, then the pane
+    // it opens with the node's own segment boxed and joined to the ring.
+    stages: [
       {
-        type: 'waitForSelector',
-        selector: HAPLOTYPE_GENES_READY,
-        timeout: 180000,
+        viewportHeight: 820,
+        actions: [
+          // the auto-fit has to have finished before the anchor means anything
+          { type: 'delay', ms: 2000 },
+          { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
+          { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { view: 1, graphNode: HPRC_ALLELE },
+            radius: 20,
+            strokeWidth: 3,
+          },
+          { type: 'box', anchor: { text: `Open in ${HAPLOTYPE}` } },
+        ],
       },
-      // 1.8 kb to ~28 kb, so the allele sits among the haplotype's own genes
-      ...launchedZoomOut(6),
-      { type: 'delay', ms: 3000 },
-    ],
-    annotations: [
       {
-        type: 'circle',
-        anchor: { view: 1, graphNode: HPRC_ALLELE },
-        radius: 20,
-        strokeWidth: 3,
+        // reloaded at full height: the launched pane's lanes do not load
+        // below the first frame's fold
+        url: hprcHaplotypeSession(420),
+        viewportHeight: 1170,
+        actions: [
+          { type: 'delay', ms: 2000 },
+          { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
+          { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
+          { type: 'click', text: `Open in ${HAPLOTYPE}` },
+          // the launched pane's own gene lane, fetched off hgdownload
+          {
+            type: 'waitForSelector',
+            selector: HAPLOTYPE_GENES_READY,
+            timeout: 180000,
+          },
+          // 1.8 kb to ~28 kb, so the allele sits among the haplotype's own genes
+          ...launchedZoomOut(6),
+          { type: 'delay', ms: 3000 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { view: 1, graphNode: HPRC_ALLELE },
+            radius: 20,
+            strokeWidth: 3,
+          },
+          {
+            type: 'box',
+            anchor: {
+              view: 2,
+              track: SEGMENTS_TRACK,
+              locus: HAPLOTYPE_ALLELE_LOCUS,
+            },
+            pad: 4,
+          },
+          {
+            type: 'arrow',
+            fromAnchor: { view: 1, graphNode: HPRC_ALLELE, dy: 22 },
+            anchor: {
+              view: 2,
+              track: SEGMENTS_TRACK,
+              locus: HAPLOTYPE_ALLELE_LOCUS,
+              fracY: 0,
+              dy: -6,
+            },
+            strokeWidth: 3,
+          },
+        ],
       },
     ],
-  },
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_abca7_walk_rows',
-    url: sessionSpec(ABCA7_CONFIG, { views: abca7Views('') }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 240000,
-    viewportWidth: 1400,
-    viewportHeight: 1020,
-    hideTooltip: true,
-    actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
   {
     mode: 'url',
     name: 'pangenome/hprc_abca7_repeat_units',
-    url: sessionSpec(ABCA7_CONFIG, { views: abca7Views(ABCA7_REPEAT_KEY) }),
+    url: sessionSpec(ABCA7_CONFIG, {
+      sessionTracks: [ABCA7_VNTR_TRACK],
+      views: abca7Views(),
+    }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 1020,
+    viewportHeight: 1095,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
     annotations: [
@@ -2461,20 +2509,14 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/hprc_abca7_disagreements',
     url: sessionSpec(ABCA7_CONFIG, {
+      sessionTracks: [ABCA7_VNTR_TRACK],
       views: [
         {
-          ...abca7Views(ABCA7_REPEAT_KEY)[0],
-          tracks: [
-            {
-              trackId: 'hprc_abca7_trgt',
-              type: 'LinearVariantDisplay',
-              height: 40,
-            },
-          ],
+          ...abca7Views()[0],
+          tracks: abca7Views()[0].tracks.slice(1),
         },
         {
-          ...abca7Views(ABCA7_REPEAT_KEY)[1],
-          repeatTrackId: 'hprc_abca7_trgt',
+          ...abca7Views()[1],
           // three samples whose calls land on both walks, two where reads and
           // assemblies part, and two carrying a walk the view leaves unscored:
           // HG02559's second allele has no spanning read, HG04199's second walk
@@ -2495,7 +2537,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: TOOLBAR_READY,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 720,
+    viewportHeight: 775,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
