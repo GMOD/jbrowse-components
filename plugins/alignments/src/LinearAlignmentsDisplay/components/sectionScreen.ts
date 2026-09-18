@@ -83,3 +83,17 @@ export function sectionBandBottom(
 ) {
   return Math.min(m.canvasHeight, contentScreenY(pileupTop + pileupHeight, m))
 }
+
+// Whether screen-Y `y` falls on the part of a section's pileup that is drawn:
+// below the clip ceiling, where ungrouped rows scroll under the sticky bands,
+// and above the band bottom.
+export function onPileupBand(
+  section: { topOffset: number; pileupHeight: number },
+  y: number,
+  m: ScrollModel,
+) {
+  return (
+    y >= bandScreenTop(section.topOffset, m) &&
+    y < sectionBandBottom(section.topOffset, section.pileupHeight, m)
+  )
+}

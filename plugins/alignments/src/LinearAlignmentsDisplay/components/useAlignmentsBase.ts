@@ -17,6 +17,7 @@ import {
 import { findSectionAtY } from './findSectionAtY.ts'
 import { contextMenuTargetForHit, performHitTest } from './hitTestPipeline.ts'
 import { PAN_DRAGGING, PAN_MOVED } from './panState.ts'
+import { onPileupBand } from './sectionScreen.ts'
 import {
   formatArcLineTooltip,
   formatArcTooltip,
@@ -101,7 +102,11 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             // The hovered section's own coverage band (gated to 0 when off).
             coverageHeight: picked.section.coverageHeight,
             coverageMaxDepth: model.coverageDomain?.[1],
-            pileupVisible: picked.section.pileupHeight > 0,
+            overPileup: onPileupBand(
+              picked.section,
+              canvasY,
+              model.scrollModel,
+            ),
           })
         : { type: 'none' })
     return { resolved, picked, result }

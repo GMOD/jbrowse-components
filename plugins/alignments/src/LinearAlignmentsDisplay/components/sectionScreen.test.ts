@@ -2,6 +2,7 @@ import {
   bandOnScreen,
   bandScreenTop,
   contentScreenY,
+  onPileupBand,
   sectionBandBottom,
 } from './sectionScreen.ts'
 
@@ -45,5 +46,23 @@ describe('bandOnScreen', () => {
   it('is false when the band is fully above or below the canvas', () => {
     expect(bandOnScreen(-60, 50, grouped)).toBe(false) // bottom at -10
     expect(bandOnScreen(601, 20, grouped)).toBe(false)
+  })
+})
+
+describe('onPileupBand', () => {
+  const section = { topOffset: 90, pileupHeight: 400 }
+  it('excludes the sticky strips an ungrouped pileup scrolls under', () => {
+    const scrolled = { isGrouped: false, scrollTop: 120, canvasHeight: 600 }
+    expect(onPileupBand(section, 70, scrolled)).toBe(false)
+    expect(onPileupBand(section, 90, scrolled)).toBe(true)
+  })
+  it('stops at the band bottom', () => {
+    expect(onPileupBand(section, 449, ungrouped)).toBe(true)
+    expect(onPileupBand(section, 450, ungrouped)).toBe(false)
+  })
+  it('is empty for a collapsed band', () => {
+    expect(onPileupBand({ topOffset: 90, pileupHeight: 0 }, 90, grouped)).toBe(
+      false,
+    )
   })
 })

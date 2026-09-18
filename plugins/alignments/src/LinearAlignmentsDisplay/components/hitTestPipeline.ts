@@ -208,11 +208,10 @@ export interface HitTestOptions {
   // the interbase histogram bar heights for hit-testing. Undefined until the
   // debounced autoscale resolves.
   coverageMaxDepth: number | undefined
-  // False when this section's pileup band is collapsed to zero height
-  // (`showPileup` off, or a collapsed group): reads are laid out but not drawn,
-  // so the per-read/cigar/modification tests must be skipped to avoid resolving
-  // a hover over the empty band. Coverage/indicator tests still run.
-  pileupVisible: boolean
+  // Whether the cursor is on the drawn part of this section's pileup
+  // (`onPileupBand`). Reads are laid out under a collapsed band and scroll
+  // under the sticky ones, so the per-read tests answer nothing off it.
+  overPileup: boolean
 }
 
 // What a pileup mark's `hitNearest` is asked over: the block as a `RenderBlock`,
@@ -418,7 +417,7 @@ export function performHitTest(
   resolved: ResolvedBlock,
   options: HitTestOptions,
 ): HitTestResult {
-  const { state, coverageHeight, coverageMaxDepth, pileupVisible } = options
+  const { state, coverageHeight, coverageMaxDepth, overPileup } = options
   const {
     showInterbaseIndicators,
     coverageSnpMinFrequency,
@@ -481,9 +480,7 @@ export function performHitTest(
     }
   }
 
-  // A collapsed pileup band (showPileup off / collapsed group) lays reads out
-  // but never paints them, so don't resolve hovers over the empty band.
-  if (!pileupVisible) {
+  if (!overPileup) {
     return { type: 'none' }
   }
 

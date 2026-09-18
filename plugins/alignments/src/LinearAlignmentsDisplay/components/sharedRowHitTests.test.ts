@@ -111,7 +111,7 @@ const OPTS: HitTestOptions = {
   // 0 = the coverage band is off, so the row tests own every y
   coverageHeight: 0,
   coverageMaxDepth: undefined,
-  pileupVisible: true,
+  overPileup: true,
 }
 
 function hover(resolved: ResolvedBlock) {

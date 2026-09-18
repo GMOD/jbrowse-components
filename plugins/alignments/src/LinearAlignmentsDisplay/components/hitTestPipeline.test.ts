@@ -134,7 +134,7 @@ function opts(
     }),
     coverageHeight: 50,
     coverageMaxDepth: undefined,
-    pileupVisible: true,
+    overPileup: true,
     ...rest,
   }
 }
