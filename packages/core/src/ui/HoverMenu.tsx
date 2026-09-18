@@ -7,7 +7,10 @@ import type { PopoverOrigin } from '@mui/material'
 
 // A Menu a hovering pointer can cross into: the root (which spans the viewport)
 // is click-through so the gap between the opener row and the panel doesn't
-// swallow the pointer, while the paper itself stays interactive.
+// swallow the pointer, while the paper itself stays interactive. That root can
+// never deliver a click to a backdrop, so it renders none.
+//
+// Mounted only while its submenu is open, which is why it takes no `open`.
 //
 // Only CascadingMenu's submenus render this, so it takes exactly what they pass
 // — the root's pointer-events and the paper slot are its whole point, and a
@@ -19,7 +22,6 @@ import type { PopoverOrigin } from '@mui/material'
 // root and so means "the pointer arrived here", not "the pointer is somewhere
 // over the viewport".
 function HoverMenu({
-  open,
   anchorEl,
   onClose,
   onMouseEnter,
@@ -29,7 +31,6 @@ function HoverMenu({
   zIndex,
   children,
 }: {
-  open: boolean
   anchorEl: HTMLElement | null
   onClose: () => void
   onMouseEnter?: () => void
@@ -42,12 +43,13 @@ function HoverMenu({
 }) {
   return (
     <Menu
-      open={open}
+      open
       anchorEl={anchorEl}
       onClose={onClose}
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
       style={{ pointerEvents: 'none', zIndex }}
+      hideBackdrop
       slotProps={{
         paper: {
           style: { pointerEvents: 'auto' },

@@ -1,4 +1,4 @@
-import { createContext, use, useEffect, useRef, useState } from 'react'
+import { createContext, memo, use, useEffect, useMemo, useState } from 'react'
 
 import {
   Divider,
@@ -12,7 +12,6 @@ import {
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
-import { useEventCallback } from '../util/useEventCallback.ts'
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { resolveSubMenu, staysOpenOnClick } from './MenuTypes.ts'
@@ -123,48 +122,43 @@ function useCascadingMenu() {
 const submenuAimGraceMs = 120
 
 /**
- * Which submenu of ONE list is open, plus the hover intent that moves it.
+ * The hover intent that moves which submenu of ONE list is open.
  *
  * A click or ArrowRight says where the pointer meant to go and acts at once. A
  * hover is read against {@link isAimedAtPanel}: outside the cone it acts at
  * once too, and inside it defers, because the rows between a submenu row and
  * its panel are exactly the ones a pointer on its way there has to cross.
+ *
+ * Built once per list, so every row gets the same handlers and a row whose
+ * open state didn't change skips the re-render a hover triggers.
  */
-function useSubmenuHover() {
-  const [openSubmenu, setOpenSubmenu] = useState<string | undefined>()
+function createSubmenuHover(setOpenSubmenu: (key: string | undefined) => void) {
+  let openKey: string | undefined
   // the open panel's paper, so the cone has a real edge to open onto. Written
   // by whichever CascadingSubmenu is open and cleared as it closes, so at most
   // one submenu of this list ever owns it
-  const panelRef = useRef<HTMLElement | null>(null)
+  const panelRef: React.RefObject<HTMLElement | null> = { current: null }
   // where the pointer was when the open panel opened — the cone's tip
-  const apex = useRef<AimPoint | undefined>(undefined)
-  const pending = useRef<
+  let apex: AimPoint | undefined
+  let pending:
     | {
         key: string | undefined
         point: AimPoint
         timer: ReturnType<typeof setTimeout>
       }
     | undefined
-  >(undefined)
 
   const cancelPending = () => {
-    if (pending.current) {
-      clearTimeout(pending.current.timer)
-      pending.current = undefined
+    if (pending) {
+      clearTimeout(pending.timer)
+      pending = undefined
     }
   }
-  useEffect(
-    () => () => {
-      if (pending.current) {
-        clearTimeout(pending.current.timer)
-      }
-    },
-    [],
-  )
 
   const commit = (key: string | undefined, point?: AimPoint) => {
     cancelPending()
-    apex.current = key === undefined ? undefined : point
+    apex = key === undefined ? undefined : point
+    openKey = key
     setOpenSubmenu(key)
   }
 
@@ -174,20 +168,19 @@ function useSubmenuHover() {
   // moving anywhere at all
   const aimAt = (point: AimPoint) => {
     const panel = panelRef.current
-    const tip = apex.current
-    if (!panel || !tip) {
+    if (!panel || !apex) {
       return 'unmeasured' as const
     }
     const rect = panel.getBoundingClientRect()
     if (rect.width === 0 && rect.height === 0) {
       return 'unmeasured' as const
     }
-    return isAimedAtPanel(point, tip, rect) ? ('inside' as const) : 'outside'
+    return isAimedAtPanel(point, apex, rect) ? ('inside' as const) : 'outside'
   }
 
   const defer = (key: string | undefined, point: AimPoint) => {
     cancelPending()
-    pending.current = {
+    pending = {
       key,
       point,
       timer: setTimeout(() => {
@@ -196,57 +189,68 @@ function useSubmenuHover() {
     }
   }
 
-  // Watched only while a panel is up, and only a deferred change is waiting on
-  // it. A row's own hover cannot answer this alone: the pointer can leave the
-  // cone without ever crossing into another row, by turning around inside the
-  // one it is already on.
-  const onPointerMove = useEventCallback((event: MouseEvent) => {
-    const deferred = pending.current
-    if (!deferred) {
-      return
+  // the pointer arrived at a row wanting `key` open — undefined from a row with
+  // no submenu, i.e. "close whatever is"
+  const hoverSubmenu = (key: string | undefined, point: AimPoint) => {
+    if (key === openKey) {
+      cancelPending()
+    } else if (openKey === undefined || aimAt(point) === 'outside') {
+      // nothing to protect, or a pointer that was never heading for the open
+      // panel: either way there is nothing to wait for
+      commit(key, point)
+    } else {
+      defer(key, point)
     }
-    const aim = aimAt({ x: event.clientX, y: event.clientY })
-    if (aim === 'outside') {
-      commit(deferred.key, deferred.point)
-    } else if (aim === 'inside') {
-      // still traveling, so the grace starts over — it is there to catch a
-      // pointer that stops, and this one has not
-      defer(deferred.key, deferred.point)
-    }
-  })
-  useEffect(() => {
-    if (openSubmenu === undefined) {
-      return
-    }
-    document.addEventListener('mousemove', onPointerMove)
-    return () => {
-      document.removeEventListener('mousemove', onPointerMove)
-    }
-  }, [openSubmenu, onPointerMove])
+  }
 
   return {
-    openSubmenu,
     panelRef,
     setSubmenu: commit,
-    // the pointer reached the open panel, so whatever was scheduled is stale
-    keepSubmenuOpen: cancelPending,
-    // the pointer arrived at a row wanting `key` open — undefined from a row
-    // with no submenu, i.e. "close whatever is"
-    hoverSubmenu: (key: string | undefined, point: AimPoint) => {
-      if (key === openSubmenu) {
-        cancelPending()
-      } else if (openSubmenu === undefined || aimAt(point) === 'outside') {
-        // nothing to protect, or a pointer that was never heading for the open
-        // panel: either way there is nothing to wait for
-        commit(key, point)
-      } else {
-        defer(key, point)
+    cancelPending,
+    hoverSubmenu,
+    // every row a pointer can rest on asks for the open panel to go away; only
+    // a row that owns a submenu, or the panel itself, keeps one up
+    closeOnHover: (event: React.MouseEvent) => {
+      hoverSubmenu(undefined, { x: event.clientX, y: event.clientY })
+    },
+    // Watched only while a panel is up, and only a deferred change is waiting
+    // on it. A row's own hover cannot answer this alone: the pointer can leave
+    // the cone without ever crossing into another row, by turning around inside
+    // the one it is already on.
+    onPointerMove: (event: MouseEvent) => {
+      const deferred = pending
+      if (!deferred) {
+        return
+      }
+      const aim = aimAt({ x: event.clientX, y: event.clientY })
+      if (aim === 'outside') {
+        commit(deferred.key, deferred.point)
+      } else if (aim === 'inside') {
+        // still traveling, so the grace starts over — it is there to catch a
+        // pointer that stops, and this one has not
+        defer(deferred.key, deferred.point)
       }
     },
   }
 }
 
-type SubmenuHover = ReturnType<typeof useSubmenuHover>
+type SubmenuHover = ReturnType<typeof createSubmenuHover>
+
+function useSubmenuHover() {
+  const [openSubmenu, setOpenSubmenu] = useState<string | undefined>()
+  const [hover] = useState(() => createSubmenuHover(setOpenSubmenu))
+  useEffect(() => hover.cancelPending, [hover])
+  useEffect(() => {
+    if (openSubmenu === undefined) {
+      return
+    }
+    document.addEventListener('mousemove', hover.onPointerMove)
+    return () => {
+      document.removeEventListener('mousemove', hover.onPointerMove)
+    }
+  }, [openSubmenu, hover])
+  return { openSubmenu, hover }
+}
 
 // Identity of a submenu row, used both as its React key and to remember which
 // submenu is open. Deliberately not the array index: the items are re-derived on
@@ -411,11 +415,12 @@ function DisabledTooltip({
 // toggle), whose content stops its own click so using it doesn't also open the
 // submenu. Both go through `MenuItemTrailing`, so they land in the columns the
 // clickable rows reserve rather than in a hand-assembled copy of them.
-function CascadingSubmenu({
+const CascadingSubmenu = memo(function CascadingSubmenu({
   item,
   itemKey,
   inset,
   columns,
+  open,
   hover,
   onNavigateBack,
 }: {
@@ -423,6 +428,7 @@ function CascadingSubmenu({
   itemKey: string
   inset: boolean
   columns: MenuColumnFlags
+  open: boolean
   hover: SubmenuHover
   onNavigateBack?: () => void
 }) {
@@ -430,7 +436,7 @@ function CascadingSubmenu({
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
   // a rebuild can disable the row while its panel is up, and a disabled row has
   // no way left to close it
-  const isOpen = hover.openSubmenu === itemKey && !item.disabled
+  const isOpen = open && !item.disabled
 
   return (
     <>
@@ -466,36 +472,34 @@ function CascadingSubmenu({
           <MenuItemTrailing item={item} columns={columns} />
         </MenuItem>
       </DisabledTooltip>
-      <HoverMenu
-        open={isOpen}
-        anchorEl={anchorEl}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        zIndex={zIndex}
-        // the pointer completed the trip, so drop the close a row it crossed on
-        // the way scheduled
-        onMouseEnter={hover.keepSubmenuOpen}
-        // only while open: a panel MUI is still fading out is not something to
-        // aim at, and this list keeps one cone target for whichever submenu is
-        // up
-        paperRef={isOpen ? hover.panelRef : undefined}
-        onClose={() => {
-          hover.setSubmenu(undefined)
-        }}
-      >
-        <SubMenuList
-          item={item}
-          onNavigateBack={() => {
+      {isOpen ? (
+        <HoverMenu
+          anchorEl={anchorEl}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          zIndex={zIndex}
+          // the pointer completed the trip, so drop the close a row it crossed
+          // on the way scheduled
+          onMouseEnter={hover.cancelPending}
+          paperRef={hover.panelRef}
+          onClose={() => {
             hover.setSubmenu(undefined)
-            anchorEl?.focus()
           }}
-        />
-      </HoverMenu>
+        >
+          <SubMenuList
+            item={item}
+            onNavigateBack={() => {
+              hover.setSubmenu(undefined)
+              anchorEl?.focus()
+            }}
+          />
+        </HoverMenu>
+      ) : null}
     </>
   )
-}
+})
 
-// Resolves the rows inside the panel, which MUI mounts only while it is open:
+// Resolves the rows inside the panel, which mounts only while it is open:
 // a function-form `subMenu` is not called by listing the parent menu. An
 // observer so the observables that builder reads re-render the open panel, the
 // way an array built in the root observer's render already did.
@@ -517,7 +521,7 @@ const SubMenuList = observer(function SubMenuList({
 // One clickable menu row: label (with optional leading icon) plus its trailing
 // value/help/adornment decorations. The menu-wide `columns` flags let every row
 // reserve matching decoration slots so the columns line up down the menu.
-function CascadingMenuItem({
+const CascadingMenuItem = memo(function CascadingMenuItem({
   item,
   inset,
   columns,
@@ -584,7 +588,7 @@ function CascadingMenuItem({
       </MenuItem>
     </DisabledTooltip>
   )
-}
+})
 
 function CascadingMenuList({
   menuItems,
@@ -596,19 +600,16 @@ function CascadingMenuList({
   onNavigateBack?: () => void
 }) {
   const { classes, cx } = useStyles()
-  const hover = useSubmenuHover()
-  // every row a pointer can rest on asks for the open panel to go away; only a
-  // row that owns a submenu, or the panel itself, keeps one up. Whether the ask
-  // is granted now or waited out is the aim cone's call, which is why the
-  // pointer comes with it
-  const closeOnHover = (event: React.MouseEvent) => {
-    hover.hoverSubmenu(undefined, { x: event.clientX, y: event.clientY })
-  }
+  const { openSubmenu, hover } = useSubmenuHover()
+  const { closeOnHover } = hover
 
-  const { hasIcon, columns } = getMenuColumnFlags(menuItems)
-
-  const sortedItems = menuItems.toSorted(
-    (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+  const { hasIcon, columns } = useMemo(
+    () => getMenuColumnFlags(menuItems),
+    [menuItems],
+  )
+  const sortedItems = useMemo(
+    () => menuItems.toSorted((a, b) => (b.priority ?? 0) - (a.priority ?? 0)),
+    [menuItems],
   )
 
   return (
@@ -623,6 +624,7 @@ function CascadingMenuList({
               item={item}
               inset={hasIcon && !item.icon}
               columns={columns}
+              open={openSubmenu === key}
               hover={hover}
               onNavigateBack={onNavigateBack}
             />
