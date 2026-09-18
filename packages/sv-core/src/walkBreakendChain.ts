@@ -1,4 +1,4 @@
-import { svMateLocus, toCanonicalRefName } from './util.ts'
+import { junctionEnds, toCanonicalRefName } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
@@ -30,6 +30,11 @@ export interface Junction {
    * otherwise cannot know at a locus two junctions leave from.
    */
   assemblyIds?: string[]
+  /** which way the sequence each end keeps runs: 1 right, -1 left, 0 unknown */
+  keeps?: number
+  mateKeeps?: number
+  /** the caller's FILTER rejected the record, so it is no way onward */
+  filtered?: boolean
 }
 
 /** A stop on the chain: one panel of the split view. */
@@ -69,30 +74,25 @@ export const BREAKEND_COLOCATION_BP = 1000
 
 /**
  * The junction an SV record describes, or undefined when it names no other end
- * (a single breakend, a symbolic ALT with no END, a plain SNV).
+ * (a single breakend, a symbolic ALT with no END, a plain SNV). Both ends come
+ * from `junctionEnds`, the resolver the split-view launchers use, so a walk
+ * and a launch put a record's panels at the same coordinates.
  *
- * Through `svMateLocus`, so a record's other end is read the same way here as
- * everywhere else in this package — off a BND bracket, off a symbolic allele's
- * CHR2/END, or off the explicit `mate` field a paired adapter writes. Reading
- * only the ALT made the whole chain walk a no-op on bedpe and STAR-Fusion: `BedpeAdapter` and `StarFusionAdapter` file each row under BOTH
- * of its contigs and hand back a feature anchored at whichever end was queried,
- * with `mate` naming the other — the very both-ends answer the walk needs — and
- * this dropped every one of them for having no parseable ALT.
+ * Neither refName reaching here is canonical — the mate's is the ALT's
+ * spelling, the record's own is the adapter's — so both are resolved through
+ * the assembly, which makes this the single place a `Junction` can come from.
  *
- * The assembly argument makes this the single place a `Junction` can come from.
- * Neither refName reaching here is canonical: the mate's is whatever text the
- * ALT spells (`G[A:34200[` → `A`), and the record's own is the *adapter's*,
- * since a fetch renames the query region into the file's names on the way out
- * and nothing renames the features on the way back. So both sides need the same
- * resolution `getBreakendCoveringRegions` has always applied, and doing it here
- * keeps two producers of the same chain using the same names.
+ * `id` is the VCF ID only where MATEID pairs records by it. Anywhere else a
+ * name is not unique — rows of a BEDPE left at `.`, two STAR-Fusion rows of
+ * one gene pair — and a shared one made every candidate read as the record
+ * the walk arrived on.
  */
 export function junctionFromFeature(
   feature: Feature,
   assembly: Assembly,
 ): Junction | undefined {
-  const mate = svMateLocus(feature)
-  if (!mate) {
+  const ends = junctionEnds(feature)
+  if (!ends) {
     return undefined
   }
   const info = feature.get('INFO') as Record<string, unknown> | undefined
@@ -101,15 +101,21 @@ export function junctionFromFeature(
     ...((info?.BEID as string[] | undefined) ?? []),
     ...((info?.ASMID as string[] | undefined) ?? []),
   ]
+  const filter = feature.get('FILTER') as string | string[] | undefined
   const f = toCanonicalRefName(assembly)
   return {
-    id: feature.get('name'),
+    id: mateId === undefined ? feature.id() : feature.get('name'),
     ...(mateId !== undefined && { mateId }),
     ...(assemblyIds.length > 0 && { assemblyIds }),
-    refName: f(feature.get('refName')),
-    pos: feature.get('start'),
-    mateRefName: f(mate.refName),
-    matePos: mate.pos,
+    ...([filter ?? []].flat().some(v => v !== 'PASS' && v !== '.') && {
+      filtered: true,
+    }),
+    refName: f(ends.own.refName),
+    pos: ends.own.pos,
+    keeps: ends.own.keeps,
+    mateRefName: f(ends.mate.refName),
+    matePos: ends.mate.pos,
+    mateKeeps: ends.mate.keeps,
   }
 }
 
@@ -123,6 +129,40 @@ function sameLocus(
   tolerance: number,
 ) {
   return a.refName === b.refName && near(a.pos, b.pos, tolerance)
+}
+
+interface JunctionEndAt {
+  pos: number
+  keeps: number
+}
+
+// The end of `j` at `stop`: stops are built from junction ends, so it is the
+// nearer of the two.
+function endAt(j: Junction, stop: { refName: string; pos: number }) {
+  const distance = (refName: string, pos: number) =>
+    refName === stop.refName ? Math.abs(pos - stop.pos) : Infinity
+  return distance(j.refName, j.pos) <= distance(j.mateRefName, j.matePos)
+    ? { pos: j.pos, keeps: j.keeps ?? 0 }
+    : { pos: j.matePos, keeps: j.mateKeeps ?? 0 }
+}
+
+// How far the two junctions bounding a segment may overlap and still be one
+// molecule's: breakpoint placement and junction microhomology run to a few
+// dozen bases.
+const JUNCTION_OVERLAP_BP = 50
+
+// Whether a molecule that arrived at a locus by `arrival` can leave it by
+// `leaves`. It runs along the reference from the arrival end the way that end
+// keeps, so the departing end has to keep the opposite way — face back at it —
+// and sit on the arrival's kept side. An end whose kept side is unknown is not
+// held to either.
+function continues(arrival: JunctionEndAt, leaves: JunctionEndAt) {
+  return (
+    arrival.keeps === 0 ||
+    leaves.keeps === 0 ||
+    (leaves.keeps === -arrival.keeps &&
+      (leaves.pos - arrival.pos) * arrival.keeps >= -JUNCTION_OVERLAP_BP)
+  )
 }
 
 /**
@@ -204,8 +244,12 @@ export function nextJunctionFrom({
       : fromMateEnd
         ? { refName: j.refName, pos: j.pos }
         : undefined
-    return next === undefined ? [] : [{ junction: j, next }]
+    const leaves = fromThisEnd
+      ? { pos: j.pos, keeps: j.keeps ?? 0 }
+      : { pos: j.matePos, keeps: j.mateKeeps ?? 0 }
+    return next === undefined ? [] : [{ junction: j, next, leaves }]
   })
+  const arrival = arrivedBy === undefined ? undefined : endAt(arrivedBy, stop)
 
   const arrivalIds = new Set(
     [arrivedBy?.id, arrivedBy?.mateId].filter(id => id !== undefined),
@@ -220,6 +264,8 @@ export function nextJunctionFrom({
       : arrivedFrom(arrivedBy, stop, tolerance)
   const fresh = onward.filter(
     o =>
+      o.junction.filtered !== true &&
+      (arrival === undefined || continues(arrival, o.leaves)) &&
       // not the record we arrived on, nor its own mate record: a reciprocal
       // pair is one junction written twice and both spellings sit at this locus
       (o.junction.id === undefined || !arrivalIds.has(o.junction.id)) &&

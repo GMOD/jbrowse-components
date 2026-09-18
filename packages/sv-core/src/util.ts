@@ -260,48 +260,146 @@ export function svMateLocus(feature: Feature) {
 }
 
 /**
- * #api
- * Both ends of a paired record as one loc string an LGV opens side by side,
- * `windowBp` either side of each breakpoint. Each panel is turned so the
- * sequence its end keeps reads left to right into the join: an end keeping the
- * sequence to its right is reversed on the left panel, one keeping its left is
- * reversed on the right. Two ends of one contig closer than a window collapse to
- * the single span between them. `undefined` for a record with one end.
+ * One end of a junction: the base beside the join on the side this end keeps,
+ * 0-based.
  */
-export function pairedEndsLocString(feature: Feature, windowBp: number) {
-  const { k1, k2, paired } = makeFeaturePair(
-    feature,
-    (feature.get('ALT') as string[] | undefined)?.[0],
+export interface JunctionEnd {
+  refName: string
+  pos: number
+  /** which way the sequence this end keeps runs from it: 1 right, -1 left, 0 unknown */
+  keeps: number
+}
+
+function keepsOf(mateDirection: unknown, strand: unknown) {
+  if (typeof mateDirection === 'number') {
+    return mateDirection
+  }
+  // a BEDPE strand names the side of the block the junction is on: `+` its
+  // end, so the block keeps the sequence to its left
+  return strand === 1 ? -1 : strand === -1 ? 1 : 0
+}
+
+function joinBase(
+  self: { start: number; end: number; keeps: number },
+  other: { start: number; end: number },
+) {
+  const keeps =
+    self.keeps || (self.start + self.end <= other.start + other.end ? -1 : 1)
+  return keeps === -1 ? self.end - 1 : self.start
+}
+
+function symbolicKeeps(feature: Feature, alt: string) {
+  if (alt.startsWith('<DEL')) {
+    return [-1, 1] as const
+  }
+  if (alt.startsWith('<DUP')) {
+    return [1, -1] as const
+  }
+  const tra = readTranslocationMate(
+    (feature.get('INFO') as
+      | Parameters<typeof readTranslocationMate>[0]
+      | undefined) ?? {},
   )
-  const window = (end: FeatureEnd, reversed: boolean) =>
-    assembleLocString({
-      refName: end.refName,
-      start: Math.max(0, end.start - windowBp),
-      end: end.start + windowBp,
-    }) + (reversed ? '[rev]' : '')
-  return !paired
-    ? undefined
-    : k1.refName === k2.refName && Math.abs(k1.start - k2.start) < 2 * windowBp
-      ? assembleLocString({
-          refName: k1.refName,
-          start: Math.max(0, Math.min(k1.start, k2.start) - windowBp),
-          end: Math.max(k1.start, k2.start) + windowBp,
-        })
-      : `${window(k1, panelIsTurned(k1, 'left'))} ${window(k2, panelIsTurned(k2, 'right'))}`
+  return [tra?.myKeepsDir ?? 0, tra?.mateKeepsDir ?? 0] as const
 }
 
 /**
  * #api
- * Whether the panel showing this end has to be turned for the join to read left
+ * Where a paired record's junction is at each of its two ends, and which side
+ * of it each end keeps — the one answer every launcher, the row menu and the
+ * chain walk take, whether the record is a VCF breakend, a symbolic SV or a
+ * paired adapter's row (BEDPE, STAR-Fusion). Refnames are as the record spells
+ * them. `undefined` for a record naming no other end.
+ *
+ * A VCF end is its own position. A paired adapter's end is a block, and the
+ * junction is the block's edge on the side the end keeps: stated by
+ * `mateDirection` where the adapter knows it, read off a BEDPE strand
+ * otherwise, and with neither the two blocks face each other.
+ */
+export function junctionEnds(
+  feature: Feature,
+): { own: JunctionEnd; mate: JunctionEnd } | undefined {
+  const refName = feature.get('refName')
+  const mate = feature.get('mate') as
+    | (Partial<FeatureEnd> & { strand?: number })
+    | undefined
+  if (mate?.refName !== undefined && mate.start !== undefined) {
+    const self = {
+      start: feature.get('start'),
+      end: feature.get('end'),
+      keeps: keepsOf(feature.get('mateDirection'), feature.get('strand')),
+    }
+    const far = {
+      start: mate.start,
+      end: mate.end ?? mate.start + 1,
+      keeps: keepsOf(mate.mateDirection, mate.strand),
+    }
+    return {
+      own: { refName, pos: joinBase(self, far), keeps: self.keeps },
+      mate: {
+        refName: mate.refName,
+        pos: joinBase(far, self),
+        keeps: far.keeps,
+      },
+    }
+  }
+  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
+  const parsed = parseSvAlt(feature, alt)
+  if (!parsed || alt === undefined) {
+    return undefined
+  }
+  const [ownKeeps, mateKeeps] =
+    parsed.joinDirection === undefined
+      ? symbolicKeeps(feature, alt)
+      : [parsed.joinDirection, parsed.mateDirection ?? 0]
+  return {
+    own: { refName, pos: feature.get('start'), keeps: ownKeeps },
+    mate: {
+      refName: parsed.mateRefName,
+      pos: parsed.matePos - 1,
+      keeps: mateKeeps,
+    },
+  }
+}
+
+/**
+ * #api
+ * Both ends of a paired record as one loc string an LGV opens side by side,
+ * `windowBp` either side of each junction. Each panel is turned so the sequence
+ * its end keeps reads left to right into the join. Two ends of one contig
+ * closer than a window collapse to the single span between them. `undefined`
+ * for a record with one end.
+ */
+export function pairedEndsLocString(feature: Feature, windowBp: number) {
+  const ends = junctionEnds(feature)
+  if (!ends) {
+    return undefined
+  }
+  const { own, mate } = ends
+  const window = (end: JunctionEnd, side: 'left' | 'right') =>
+    assembleLocString({
+      refName: end.refName,
+      start: Math.max(0, end.pos - windowBp),
+      end: end.pos + windowBp,
+    }) + (panelIsTurned(end.keeps, side) ? '[rev]' : '')
+  return own.refName === mate.refName &&
+    Math.abs(own.pos - mate.pos) < 2 * windowBp
+    ? assembleLocString({
+        refName: own.refName,
+        start: Math.max(0, Math.min(own.pos, mate.pos) - windowBp),
+        end: Math.max(own.pos, mate.pos) + windowBp,
+      })
+    : `${window(own, 'left')} ${window(mate, 'right')}`
+}
+
+/**
+ * #api
+ * Whether the panel showing an end has to be turned for the join to read left
  * to right across the seam: an end keeping the sequence to its RIGHT is
  * reversed on the left panel, one keeping its LEFT is reversed on the right.
- *
- * Stated once because two routes to the same pair of panels read it — the
- * spreadsheet row menu's loc string, and the single-level breakpoint split
- * view's displayed regions.
  */
-export function panelIsTurned(end: FeatureEnd, side: 'left' | 'right') {
-  return end.mateDirection === (side === 'left' ? 1 : -1)
+export function panelIsTurned(keeps: number, side: 'left' | 'right') {
+  return keeps === (side === 'left' ? 1 : -1)
 }
 
 /**
@@ -336,42 +434,10 @@ export function toCanonicalRefName(assembly: Assembly) {
   return (ref: string) => assembly.getCanonicalRefName2(ref)
 }
 
-interface Footprint {
-  start: number
-  end: number
-  strand?: number
-}
-
-const midpoint = (p: Footprint) => (p.start + p.end) / 2
-
-/**
- * The junction-facing edge of one footprint, decided by that footprint's OWN
- * strand, so the two halves of one record agree.
- * `BedpeAdapter` files a row under both of its contigs and answers with the half
- * the query anchored on, so a rule that reads one end's strand for one edge and
- * the other end's for the other opens two different pairs of panels for the same
- * row: `chr1 5000 6000 chr1 8000 9000 . . + +` opened 6000+8000 from the left
- * end and 9000+5000 from the right.
- *
- * A stated strand names the edge: `+` is the block's end and `-` its start,
- * matching what a BEDPE `+ -` row means by "deletion" and `+ +` by "inversion".
- * A 6-8 column BEDPE states neither — `parseStrand` answers 0 — and a record
- * with no orientation has its two blocks simply face each other, which is
- * symmetric in the pair and so order-independent too.
- */
-function junctionEdge(self: Footprint, other: Footprint) {
-  if (self.strand === 1) {
-    return self.end
-  }
-  if (self.strand === -1) {
-    return self.start
-  }
-  return midpoint(self) <= midpoint(other) ? self.end : self.start
-}
-
 /**
  * #api
- * Resolves the two canonical-refName endpoints a breakend/SV feature spans.
+ * The two canonical-refName junction positions a breakend/SV feature spans,
+ * through `junctionEnds`; a record naming no other end spans its own extent.
  */
 export function getBreakendCoveringRegions({
   feature,
@@ -380,50 +446,22 @@ export function getBreakendCoveringRegions({
   feature: Feature
   assembly: Assembly
 }) {
-  const startPos = feature.get('start')
-  const refName = feature.get('refName')
-  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
   const f = toCanonicalRefName(assembly)
-
-  const parsed = parseSvAlt(feature, alt)
-  if (parsed) {
-    return {
-      pos: startPos,
-      refName: f(refName),
-      mateRefName: f(parsed.mateRefName),
-      matePos: parsed.matePos - 1, // convert to 0-based
-    }
-  } else if (feature.get('mate') !== undefined) {
-    const mate = feature.get('mate') as {
-      strand?: number
-      start: number
-      end?: number
-      refName: string
-    }
-    const here = {
-      start: startPos,
-      end: feature.get('end'),
-      strand: feature.get('strand') as number | undefined,
-    }
-    const there = {
-      start: mate.start,
-      end: mate.end ?? mate.start,
-      strand: mate.strand,
-    }
-    return {
-      pos: junctionEdge(here, there),
-      refName: f(refName),
-      mateRefName: f(mate.refName),
-      matePos: junctionEdge(there, here),
-    }
-  } else {
-    return {
-      pos: startPos,
-      refName: f(refName),
-      mateRefName: f(refName),
-      matePos: feature.get('end'),
-    }
-  }
+  const ends = junctionEnds(feature)
+  const refName = f(feature.get('refName'))
+  return ends
+    ? {
+        pos: ends.own.pos,
+        refName,
+        mateRefName: f(ends.mate.refName),
+        matePos: ends.mate.pos,
+      }
+    : {
+        pos: feature.get('start'),
+        refName,
+        mateRefName: refName,
+        matePos: feature.get('end'),
+      }
 }
 
 /**

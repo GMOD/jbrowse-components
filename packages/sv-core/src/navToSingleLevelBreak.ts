@@ -13,13 +13,12 @@ import {
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
-  makeFeaturePair,
+  junctionEnds,
   makeTitle,
   panelIsTurned,
 } from './util.ts'
 
 import type { Track } from './types.ts'
-import type { FeatureEnd } from './util.ts'
 import type {
   AbstractViewContainer,
   AssemblyHost,
@@ -80,16 +79,13 @@ async function orderedBreakendEnds(args: {
     mateRegion: farRegion,
   } = await getBreakendAssemblyRegions(args)
   const { refName, pos, mateRefName, matePos } = coverage
-  const { k1, k2 } = makeFeaturePair(
-    args.feature,
-    (args.feature.get('ALT') as string[] | undefined)?.[0],
-  )
-  const turn = (r: Region, end: FeatureEnd, side: 'left' | 'right') => ({
+  const ends = junctionEnds(args.feature)
+  const turn = (r: Region, keeps: number, side: 'left' | 'right') => ({
     ...r,
-    reversed: refName !== mateRefName && panelIsTurned(end, side),
+    reversed: refName !== mateRefName && panelIsTurned(keeps, side),
   })
-  const region = turn(ownRegion, k1, 'left')
-  const mateRegion = turn(farRegion, k2, 'right')
+  const region = turn(ownRegion, ends?.own.keeps ?? 0, 'left')
+  const mateRegion = turn(farRegion, ends?.mate.keeps ?? 0, 'right')
   return refName === mateRefName && matePos < pos
     ? {
         // refName === mateRefName here, so swapping the positions is the whole

@@ -301,12 +301,13 @@ describe('the junctions the sheet can walk', () => {
     ])
     expect(sheet.svJunctions).toEqual([
       {
-        id: undefined,
-        mateId: undefined,
+        id: 'a',
         refName: 'chr1',
         pos: 100,
+        keeps: -1,
         mateRefName: 'chr5',
         matePos: 899,
+        mateKeeps: -1,
       },
     ])
   })
@@ -369,9 +370,9 @@ describe('the junctions the sheet can walk', () => {
   // every record of the event returns the same event.
   test('a chain written one record per junction walks from its last record', async () => {
     const sheet = sheetWith([
-      bnd('j1', 'chr1', 100, 'C]chr2:201]'),
-      bnd('j2', 'chr2', 200, 'C]chr3:301]'),
-      bnd('j3', 'chr3', 300, 'C]chr4:401]'),
+      bnd('j1', 'chr1', 100, 'C[chr2:201['),
+      bnd('j2', 'chr2', 200, 'C[chr3:301['),
+      bnd('j3', 'chr3', 300, 'C[chr4:401['),
     ])
     const findJunctionsNear = sheet.findJunctionsNear()
     const stops = await walkBreakendChain({
@@ -388,9 +389,9 @@ describe('the junctions the sheet can walk', () => {
 
   test('the own-locus-only filter an adapter is stuck with stops at two', async () => {
     const sheet = sheetWith([
-      bnd('j1', 'chr1', 100, 'C]chr2:201]'),
-      bnd('j2', 'chr2', 200, 'C]chr3:301]'),
-      bnd('j3', 'chr3', 300, 'C]chr4:401]'),
+      bnd('j1', 'chr1', 100, 'C[chr2:201['),
+      bnd('j2', 'chr2', 200, 'C[chr3:301['),
+      bnd('j3', 'chr3', 300, 'C[chr4:401['),
     ])
     const stops = await walkBreakendChain({
       start: sheet.svJunctions[2]!,

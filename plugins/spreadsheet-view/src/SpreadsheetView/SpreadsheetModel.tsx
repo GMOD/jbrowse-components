@@ -16,6 +16,7 @@ import { tallySvTypes } from './svTypeTally.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { Junction } from '@jbrowse/sv-core'
 import type { GridColDef } from '@mui/x-data-grid'
 
 export interface Row {
@@ -195,10 +196,9 @@ export default function stateModelFactory() {
        * the rearrangement goes, and a filter narrowing what is on screen is not
        * a statement about which junctions exist.
        *
-       * Lazily computed and then memoized, so walking a chain off the sheet is
-       * cheaper than asking an adapter — the alternative queries
-       * the callset back through RPC one 2 kb window at a time, and here the
-       * whole thing is already parsed and sitting in memory.
+       * Cached only while something observes it. The walk reads it from async
+       * code outside any reaction, so `findJunctionsNear` takes it once per
+       * walk rather than once per hop.
        */
       get svJunctions() {
         const { assemblyName } = self
@@ -243,13 +243,15 @@ export default function stateModelFactory() {
       }) => Promise<
         { refName: string; pos: number; mateRefName: string; matePos: number }[]
       > {
+        let junctions: Junction[] | undefined
         return region => {
           const inWindow = (refName: string, pos: number) =>
             refName === region.refName &&
             pos >= region.start &&
             pos < region.end
+          junctions ??= this.svJunctions
           return Promise.resolve(
-            this.svJunctions.filter(
+            junctions.filter(
               j =>
                 inWindow(j.refName, j.pos) ||
                 inWindow(j.mateRefName, j.matePos),

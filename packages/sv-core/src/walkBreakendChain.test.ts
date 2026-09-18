@@ -1,5 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { getBreakendCoveringRegions } from './util.ts'
 import {
   junctionFromFeature,
   nextJunctionFrom,
@@ -26,8 +27,33 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 // SVTYPE and MATEID and nothing grouping records -- so the co-location is the
 // only thing that relates them, and following it is what this module does.
 //
-// Positions are 0-based here, as everything downstream of
-// getBreakendCoveringRegions is; the VCF coordinates above are 1-based.
+// Built through junctionFromFeature, so each end carries the side of its
+// breakend it keeps, read off the bracket.
+const lowerCase = { getCanonicalRefName2: (r: string) => r.toLowerCase() }
+
+function bnd(
+  id: string,
+  mateId: string,
+  refName: string,
+  vcfPos: number,
+  alt: string,
+) {
+  return junctionFromFeature(
+    new SimpleFeature({
+      uniqueId: id,
+      name: id,
+      refName,
+      start: vcfPos - 1,
+      end: vcfPos,
+      ALT: [alt],
+      INFO: { SVTYPE: ['BND'], MATEID: [mateId] },
+    }),
+    lowerCase as unknown as Assembly,
+  )!
+}
+
+// Junctions with no kept side, for the walks that are about loci alone.
+// Positions are 0-based; the mate's is given 1-based like a VCF ALT.
 function j(
   id: string,
   mateId: string,
@@ -39,12 +65,36 @@ function j(
   return { id, mateId, refName, pos, mateRefName, matePos: matePos - 1 }
 }
 
-const R12 = j('r_12_1', 'r_12_0', 'chr3', 25_359_567, 'chr10', 58_717_464)
-const R12_MATE = j('r_12_0', 'r_12_1', 'chr10', 58_717_463, 'chr3', 25_359_568)
-const R13 = j('r_13_0', 'r_13_1', 'chr10', 58_717_661, 'chr12', 72_273_294)
-const R13_MATE = j('r_13_1', 'r_13_0', 'chr12', 72_273_293, 'chr10', 58_717_662)
-const R24 = j('r_24_0', 'r_24_1', 'chr12', 72_273_111, 'chr3', 25_359_111)
-const R24_MATE = j('r_24_1', 'r_24_0', 'chr3', 25_359_110, 'chr12', 72_273_112)
+const R12 = bnd('r_12_1', 'r_12_0', 'chr3', 25_359_568, 'G[CHR10:58717464[')
+const R12_MATE = bnd(
+  'r_12_0',
+  'r_12_1',
+  'chr10',
+  58_717_464,
+  ']CHR3:25359568]G',
+)
+const R13 = bnd('r_13_0', 'r_13_1', 'chr10', 58_717_662, 'GC]CHR12:72273294]')
+const R13_MATE = bnd(
+  'r_13_1',
+  'r_13_0',
+  'chr12',
+  72_273_294,
+  'GG]CHR10:58717662]',
+)
+const R24 = bnd(
+  'r_24_0',
+  'r_24_1',
+  'chr12',
+  72_273_112,
+  ']CHR3:25359111]TGAATCCATCAG',
+)
+const R24_MATE = bnd(
+  'r_24_1',
+  'r_24_0',
+  'chr3',
+  25_359_111,
+  'GTGATGGATTCA[CHR12:72273112[',
+)
 
 const COLO829 = [R12, R12_MATE, R13, R13_MATE, R24, R24_MATE]
 
@@ -85,11 +135,18 @@ describe('walkBreakendChain over the COLO829 der(3)', () => {
     expect(stops).toHaveLength(3)
   })
 
-  it('walks the same three from any record in the chain', async () => {
+  // The der(3) molecule runs chr3 -> chr10 -> chr12 -> chr3 inverted, so every
+  // record reads out a run of that path, forwards or reverse-complemented. The
+  // walk used to join loci by distance alone and read r_24_0 out as chr12 ->
+  // chr3 -> chr10, a middle stop no molecule passes through: the chr3 ends of
+  // r_24 and r_12 both keep the sequence to their left.
+  it('walks a run of the molecule from any record in the chain', async () => {
     for (const [start, expected] of [
       [R13, ['chr10', 'chr12', 'chr3']],
-      [R24, ['chr12', 'chr3', 'chr10']],
+      [R13_MATE, ['chr12', 'chr10', 'chr3']],
+      [R24, ['chr10', 'chr12', 'chr3']],
       [R24_MATE, ['chr3', 'chr12', 'chr10']],
+      [R12_MATE, ['chr12', 'chr10', 'chr3']],
     ] as const) {
       const stops = await walkBreakendChain({ start, findJunctionsNear })
       expect(stops.map(s => s.refName)).toEqual(expected)
@@ -467,5 +524,121 @@ describe('walkBreakendChain over a paired-feature chain', () => {
         new Set(['chr1', 'chr2', 'chr3', 'chr4']),
       )
     }
+  })
+})
+
+describe('a hop has to be one a molecule can make', () => {
+  // arrives at chr2:2000 by an end keeping the sequence to its right, so the
+  // molecule runs right along chr2 from there
+  const arrivedBy: Junction = {
+    id: 'in',
+    refName: 'chr1',
+    pos: 1000,
+    keeps: -1,
+    mateRefName: 'chr2',
+    matePos: 2000,
+    mateKeeps: 1,
+  }
+  const stop = { refName: 'chr2', pos: 2000 }
+  const leaving = (pos: number, keeps: number): Junction => ({
+    id: `out-${pos}-${keeps}`,
+    refName: 'chr2',
+    pos,
+    keeps,
+    mateRefName: 'chr7',
+    matePos: 7000,
+    mateKeeps: 1,
+  })
+  const next = (candidate: Junction) =>
+    nextJunctionFrom({
+      stop,
+      arrivedBy,
+      candidates: [candidate],
+      visited: [{ refName: 'chr1', pos: 1000 }, stop],
+    })?.next
+
+  it('leaves by an end facing back at the arrival, on its kept side', () => {
+    expect(next(leaving(2200, -1))).toEqual({ refName: 'chr7', pos: 7000 })
+  })
+
+  it('refuses an end keeping the same side as the arrival', () => {
+    expect(next(leaving(2200, 1))).toBeUndefined()
+  })
+
+  it('refuses an end behind the arrival by more than an overlap', () => {
+    expect(next(leaving(1990, -1))).toBeDefined()
+    expect(next(leaving(1800, -1))).toBeUndefined()
+  })
+
+  it('holds an end with no known side to neither rule', () => {
+    expect(next(leaving(1800, 0))).toBeDefined()
+  })
+
+  // a junction the caller rejected is not evidence the molecule goes there,
+  // and on COLO829 it took the walk through a 25 Mb Too_low_VAF deletion
+  it('skips a record whose FILTER failed', () => {
+    expect(next({ ...leaving(2200, -1), filtered: true })).toBeUndefined()
+  })
+})
+
+describe('junctionFromFeature', () => {
+  const identity = { getCanonicalRefName2: (r: string) => r } as Assembly
+
+  it('marks a record failing FILTER and passes PASS and "."', () => {
+    const at = (FILTER: unknown) =>
+      junctionFromFeature(
+        new SimpleFeature({
+          uniqueId: 'x',
+          refName: 'chr1',
+          start: 99,
+          end: 100,
+          ALT: ['C[chr2:201['],
+          FILTER,
+        }),
+        identity,
+      )?.filtered
+    expect(at('PASS')).toBeUndefined()
+    expect(at('.')).toBeUndefined()
+    expect(at(undefined)).toBeUndefined()
+    expect(at(['Too_low_VAF'])).toBe(true)
+  })
+
+  // Two rows of one BEDPE left at `.`, or two STAR-Fusion rows of one gene
+  // pair, share a name. Keyed on it, the second read as the record the walk
+  // arrived on and the chain stopped with nothing said.
+  it('keys a record without MATEID by its feature id, not its name', () => {
+    const row = (uniqueId: string) =>
+      junctionFromFeature(
+        new SimpleFeature({
+          uniqueId,
+          name: '.',
+          refName: 'chr1',
+          start: 1000,
+          end: 1001,
+          mate: { refName: 'chr2', start: 2000, end: 2001 },
+        }),
+        identity,
+      )!.id
+    expect(row('row0')).not.toBe(row('row1'))
+  })
+
+  // the walk used each block's START while the launch took the strand's edge,
+  // so the same row opened 5000/50000 walked and 7999/52999 launched
+  it('puts a stranded BEDPE row where the launch puts it', () => {
+    const f = new SimpleFeature({
+      uniqueId: 'r',
+      refName: 'chr1',
+      start: 5000,
+      end: 8000,
+      strand: 1,
+      mate: { refName: 'chr5', start: 50000, end: 53000, strand: 1 },
+    })
+    const j = junctionFromFeature(f, identity)!
+    const launched = getBreakendCoveringRegions({
+      feature: f,
+      assembly: identity,
+    })
+    expect([j.pos, j.matePos]).toEqual([launched.pos, launched.matePos])
+    expect([j.pos, j.matePos]).toEqual([7999, 52999])
   })
 })

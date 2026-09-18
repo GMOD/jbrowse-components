@@ -84,26 +84,26 @@ describe('getBreakendCoveringRegions', () => {
       assembly: createMockAssembly(),
     })
 
-    expect(result.pos).toBe(150)
+    expect(result.pos).toBe(149)
     expect(result.refName).toBe('chr1')
     expect(result.mateRefName).toBe('chr2')
     expect(result.matePos).toBe(200)
   })
 
-  // The junction-facing edge of each footprint, decided by that footprint's own
-  // strand: `+` is its end and `-` its start, which is what a BEDPE row means by
-  // `+ -` deletion, `- +` duplication and `+ +` / `- -` inversion. A 6-8 column
-  // BEDPE states neither (`parseStrand` answers 0), and a record with no
-  // orientation has its two blocks face each other.
+  // The base beside the join on the kept side of each block, decided by that
+  // block's own strand: `+` is its last base and `-` its first, which is what a
+  // BEDPE row means by `+ -` deletion, `- +` duplication and `+ +` / `- -`
+  // inversion. A 6-8 column BEDPE states neither (`parseStrand` answers 0), and
+  // a record with no orientation has its two blocks face each other.
   test.each([
     {
       name: 'strandless (a 6-8 column bedpe)',
       strands: [0, 0],
-      ends: [2000, 50000],
+      ends: [1999, 50000],
     },
-    { name: 'a deletion (+ -)', strands: [1, -1], ends: [2000, 50000] },
-    { name: 'a duplication (- +)', strands: [-1, 1], ends: [1000, 51000] },
-    { name: 'an inversion (+ +)', strands: [1, 1], ends: [2000, 51000] },
+    { name: 'a deletion (+ -)', strands: [1, -1], ends: [1999, 50000] },
+    { name: 'a duplication (- +)', strands: [-1, 1], ends: [1000, 50999] },
+    { name: 'an inversion (+ +)', strands: [1, 1], ends: [1999, 50999] },
     { name: 'an inversion (- -)', strands: [-1, -1], ends: [1000, 50000] },
   ])('faces the junction on $name', ({ strands, ends }) => {
     const feature = createMockFeature({

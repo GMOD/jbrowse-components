@@ -15,6 +15,7 @@ export {
   getBreakendCoveringRegions,
   getBreakendMateLocString,
   hasBreakpointSplitView,
+  junctionEnds,
   makeFeaturePair,
   makeTitle,
   navToLoc,
@@ -30,6 +31,7 @@ export type {
   BreakpointSplitViewHost,
   FeatureEnd,
   FeaturePair,
+  JunctionEnd,
   Region,
   ViewWithAssemblyNames,
 } from './util.ts'
