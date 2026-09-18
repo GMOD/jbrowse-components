@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { parseArgs } from './args.ts'
 import { captureJBrowse } from './capture.ts'
 import { resolveAgainstConfig } from './catalog.ts'
-import { listHubTracks } from './hub.ts'
+import { listHubAssemblies, listHubTracks } from './hub.ts'
 import { describePendingDisplays } from './sessionGate.ts'
 import { jbrowseUrl } from './url.ts'
 
@@ -15,7 +15,7 @@ const HELP = `jb2capture — screenshot a live JBrowse 2 view, once it has finis
 USAGE
   jb2capture [flags] --out <file.png>    open a view, wait for it, screenshot it
   jb2capture url [flags]                 print the URL instead of launching a browser
-  jb2capture list <hub> [filter]         list a hosted assembly's trackIds
+  jb2capture list [hub] [filter]         list hosted assemblies, or one's trackIds
 
 WHAT TO SHOW
   --hub <name>          a genomes.jbrowse.org assembly: a UCSC db name (hg38, mm39)
@@ -59,6 +59,7 @@ WAITING
 OTHER
   --headed              run with a visible browser window
   --verbose             print browser console output (GPU noise filtered)
+  --version, -v         the package version
   --help, -h            this text
 
 EXAMPLES
@@ -101,10 +102,18 @@ function urlOptions(args: ParsedArgs) {
 async function runList(positionals: string[]) {
   const [hub, filter] = positionals
   if (!hub) {
-    throw new Error(
-      'list needs an assembly, e.g. `jb2capture list hg38`. ' +
-        'Browse them at https://genomes.jbrowse.org.',
+    const assemblies = await listHubAssemblies()
+    const pad = Math.max(...assemblies.map(a => a.name.length))
+    for (const a of assemblies) {
+      const about = [a.organism, a.description].filter(Boolean).join(' — ')
+      console.log(`  ${a.name.padEnd(pad)}  ${about}`)
+    }
+    console.log(
+      '\nGenArk accessions (GCA_…/GCF_…) work as --hub too; browse them at ' +
+        "https://genomes.jbrowse.org. List one assembly's tracks with " +
+        '`jb2capture list <name> [filter]`.',
     )
+    return
   }
   const tracks = await listHubTracks(hub, filter)
   if (!tracks.length) {
@@ -135,6 +144,13 @@ async function main() {
   })
   if (args.help || argv.length === 0) {
     console.log(HELP)
+    return
+  }
+  if (args.version) {
+    const { version } = JSON.parse(
+      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    ) as { version: string }
+    console.log(version)
     return
   }
   if (first === 'list') {

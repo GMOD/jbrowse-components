@@ -21,6 +21,7 @@ export interface ParsedArgs {
   headed: boolean
   verbose: boolean
   help: boolean
+  version: boolean
   allowUnsettled: boolean
   /** What `list` reads its hub and filter from. Empty for every other form. */
   positionals: string[]
@@ -48,6 +49,7 @@ const OPTIONS = {
   headed: { type: 'boolean', default: false },
   verbose: { type: 'boolean', default: false },
   help: { type: 'boolean', short: 'h', default: false },
+  version: { type: 'boolean', short: 'v', default: false },
   allowUnsettled: { type: 'boolean', default: false },
 } satisfies ParseArgsOptionsConfig
 

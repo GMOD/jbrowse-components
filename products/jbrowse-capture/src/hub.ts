@@ -29,16 +29,13 @@ interface HubConfig {
   [key: string]: unknown
 }
 
-/**
- * Fetch a hosted assembly config from genomes.jbrowse.org by UCSC database name
- * or GenArk accession. Use it to discover which trackIds an assembly publishes
- * before naming them in a session.
- */
-export async function fetchHubConfig(hub: string): Promise<HubConfig> {
-  const url = hubUrl(hub)
-  // Without the signal a stalled connection hangs `jb2capture list` forever:
-  // fetch has no timeout of its own, and this is the one request the tool makes
-  // outside puppeteer's budget.
+const BROWSE_HINT =
+  'See https://genomes.jbrowse.org for the available assemblies.'
+
+// Bounded: fetch has no timeout of its own, and these are the requests the tool
+// makes outside puppeteer's budget, so without it a stalled connection hangs
+// `jb2capture list` forever.
+async function fetchHosted(url: string, what: string) {
   const res = await fetch(url, {
     signal: AbortSignal.timeout(HUB_FETCH_TIMEOUT_MS),
   }).catch((error: unknown) => {
@@ -46,20 +43,51 @@ export async function fetchHubConfig(hub: string): Promise<HubConfig> {
     // on a DNS failure reads as though the request had been given 30s to resolve.
     const timedOut = error instanceof Error && error.name === 'TimeoutError'
     throw new Error(
-      `hub "${hub}" could not be fetched from ${url} ` +
+      `${what} could not be fetched from ${url} ` +
         `(${error instanceof Error ? error.message : error}${
           timedOut ? `, after ${HUB_FETCH_TIMEOUT_MS}ms` : ''
-        }). ` +
-        'See https://genomes.jbrowse.org for the available assemblies.',
+        }). ${BROWSE_HINT}`,
     )
   })
   if (!res.ok) {
     throw new Error(
-      `hub "${hub}" not found (HTTP ${res.status} from ${url}). ` +
-        'See https://genomes.jbrowse.org for the available assemblies.',
+      `${what} not found (HTTP ${res.status} from ${url}). ${BROWSE_HINT}`,
     )
   }
-  return (await res.json()) as HubConfig
+  return res.json() as Promise<unknown>
+}
+
+/**
+ * Fetch a hosted assembly config from genomes.jbrowse.org by UCSC database name
+ * or GenArk accession. Use it to discover which trackIds an assembly publishes
+ * before naming them in a session.
+ */
+export async function fetchHubConfig(hub: string): Promise<HubConfig> {
+  return (await fetchHosted(hubUrl(hub), `hub "${hub}"`)) as HubConfig
+}
+
+interface HostedAssembly {
+  name: string
+  organism?: string
+  description?: string
+}
+
+/**
+ * The UCSC assemblies genomes.jbrowse.org hosts, by name. GenArk accessions
+ * are hosted too, thousands of them, and are not in this list.
+ */
+export async function listHubAssemblies(): Promise<HostedAssembly[]> {
+  const { ucscGenomes = {} } = (await fetchHosted(
+    `${HUB_HOST}/ucsc/list.json`,
+    'the hosted assembly list',
+  )) as { ucscGenomes?: Record<string, Omit<HostedAssembly, 'name'>> }
+  return Object.entries(ucscGenomes)
+    .map(([name, { organism, description }]) => ({
+      name,
+      organism,
+      description,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 }
 
 /**
