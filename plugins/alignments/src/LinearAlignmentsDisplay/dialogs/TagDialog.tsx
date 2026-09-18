@@ -6,40 +6,40 @@ import { observer } from 'mobx-react'
 
 import { COMMON_READ_TAG_PICKS } from '../../shared/commonTags.ts'
 
-interface Tag {
-  type: 'tag'
-  tag: string
-}
-
-const ColorByTagDialog = observer(function ColorByTagDialog({
-  model,
+// Collects one read tag name for whatever the caller does with it: color by it,
+// or sort by it at the center line or at a clicked column. `initialTag` is the
+// tag in use, so reopening tweaks the setting rather than resetting it.
+const TagDialog = observer(function TagDialog({
+  title,
+  prompt,
+  initialTag,
+  onSubmit,
   handleClose,
 }: {
-  model: {
-    colorBy?: { tag?: string }
-    setColorBy: (arg: Tag) => void
-  }
+  title: string
+  prompt: string
+  initialTag: string | undefined
+  onSubmit: (tag: string) => void
   handleClose: () => void
 }) {
-  const [tag, setTag] = useState<string | undefined>(model.colorBy?.tag)
-
+  const [tag, setTag] = useState(initialTag)
   return (
     <SubmitDialog
       open
-      title="Color by tag"
+      title={title}
       submitDisabled={tag === undefined}
       onCancel={handleClose}
       onSubmit={() => {
         if (tag !== undefined) {
-          model.setColorBy({ type: 'tag', tag })
+          onSubmit(tag)
           handleClose()
         }
       }}
     >
-      <Typography>Pick or enter a tag to color by:</Typography>
+      <Typography>{prompt}</Typography>
       <TagTextField
-        defaultValue={model.colorBy?.tag}
         autoFocus
+        defaultValue={initialTag}
         quickPicks={COMMON_READ_TAG_PICKS}
         onValueChange={setTag}
       />
@@ -47,4 +47,4 @@ const ColorByTagDialog = observer(function ColorByTagDialog({
   )
 })
 
-export default ColorByTagDialog
+export default TagDialog

@@ -1,10 +1,4 @@
-import { lazy } from 'react'
-
-import {
-  assembleLocString,
-  getDialogHost,
-  getSession,
-} from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -41,6 +35,7 @@ import {
   copyFeatureInfo,
   withContextMenuFeature,
 } from './contextMenuFeature.ts'
+import { queueSortByTagDialog } from './sortGroup.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
@@ -50,8 +45,6 @@ import type { FeatureLookupModel } from './contextMenuFeature.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
 
 // What the CIGAR / modification / indicator items need, and no more. Split from
 // the read-level surface below because LGVSyntenyDisplay reuses only these — a
@@ -466,24 +459,13 @@ export function getContextMenuItems(
           {
             label: 'Tag...',
             onClick: () => {
-              getDialogHost(self).queueDialog(handleClose => [
-                SortByTagDialog,
-                {
-                  handleClose,
-                  initialTag:
-                    self.sortedBy?.type === 'tag'
-                      ? self.sortedBy.tag
-                      : undefined,
-                  onSubmit: (tag: string) => {
-                    self.setSortedByAtPosition({
-                      type: 'tag',
-                      pos,
-                      refName,
-                      tag,
-                    })
-                  },
+              queueSortByTagDialog(
+                self,
+                self.sortedBy?.type === 'tag' ? self.sortedBy.tag : undefined,
+                tag => {
+                  self.setSortedByAtPosition({ type: 'tag', pos, refName, tag })
                 },
-              ])
+              )
             },
           },
         ],

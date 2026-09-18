@@ -10,12 +10,7 @@ import { COMPACTNESS_PRESETS } from './compactnessPresets.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 
-const SetFeatureHeightDialog = lazy(
-  () => import('../dialogs/SetFeatureHeightDialog.tsx'),
-)
-const SetMaxHeightDialog = lazy(
-  () => import('../dialogs/SetMaxHeightDialog.tsx'),
-)
+const PixelHeightDialog = lazy(() => import('../dialogs/PixelHeightDialog.tsx'))
 
 interface MaxHeightModel {
   maxHeight: number
@@ -31,8 +26,18 @@ export function getMaxHeightMenuItem(model: MaxHeightModel) {
     label: 'Set max layout height...',
     onClick: () => {
       getDialogHost(model).queueDialog(handleClose => [
-        SetMaxHeightDialog,
-        { model, handleClose },
+        PixelHeightDialog,
+        {
+          title: 'Set max layout height',
+          description:
+            'Maximum pixel height of the pileup layout. Reads that pile up beyond this are not stacked; the coverage histogram still reflects the true depth. Raise it for very deep targeted-sequencing data.',
+          label: 'Max layout height (px)',
+          initialValue: model.maxHeight,
+          onSubmit: (height: number) => {
+            model.setMaxHeight(height)
+          },
+          handleClose,
+        },
       ])
     },
   }
@@ -125,11 +130,18 @@ export function getFeatureHeightMenuItem(
           checked: sizeActive && !PRESETS.some(matchesPreset),
           keepMenuOpen: false,
           onClick: () => {
+            // Seeded from the configured (fixed-mode) size, not the resolved
+            // `featureHeight`, which in fit mode is the fractional fit pitch.
             getDialogHost(model).queueDialog(handleClose => [
-              SetFeatureHeightDialog,
+              PixelHeightDialog,
               {
-                model,
-                noun,
+                title: `Custom ${noun} height`,
+                description: `Adjust the ${noun} height. The spacing between ${noun}s is derived from it — a 1px gap once ${noun}s are tall enough, otherwise flush. Setting the height to 1 makes the display very compact.`,
+                label: `${capitalizeFirst(noun)} height (px)`,
+                initialValue: model.configuredFeatureHeight,
+                onSubmit: (height: number) => {
+                  model.setFeatureHeight(height)
+                },
                 handleClose,
               },
             ])

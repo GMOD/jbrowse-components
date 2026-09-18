@@ -19,7 +19,7 @@ import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
+const TagDialog = lazy(() => import('../dialogs/TagDialog.tsx'))
 
 interface ColorByModel {
   colorBy: ColorBy
@@ -114,9 +114,17 @@ function tagItem(model: AnyColorByModel): MenuItem {
     active ? `Tag (${colorBy.tag})...` : 'Tag...',
     colorBy.type === 'tag',
     () => {
-      getDialogHost(model).queueDialog((onClose: () => void) => [
-        ColorByTagDialog,
-        { model, handleClose: onClose },
+      getDialogHost(model).queueDialog((handleClose: () => void) => [
+        TagDialog,
+        {
+          title: 'Color by tag',
+          prompt: 'Pick or enter a tag to color by:',
+          initialTag: colorBy.tag,
+          onSubmit: (tag: string) => {
+            model.setColorBy({ type: 'tag', tag })
+          },
+          handleClose,
+        },
       ])
     },
     {

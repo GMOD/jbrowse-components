@@ -4,7 +4,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
-import SortByTagDialog from './SortByTagDialog.tsx'
+import TagDialog from './TagDialog.tsx'
 
 afterEach(cleanup)
 
@@ -13,7 +13,9 @@ function renderDialog(initialTag?: string) {
   const handleClose = jest.fn()
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <SortByTagDialog
+      <TagDialog
+        title="Sort by tag"
+        prompt="Pick or enter a tag to sort by"
         onSubmit={onSubmit}
         handleClose={handleClose}
         initialTag={initialTag}

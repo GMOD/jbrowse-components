@@ -54,5 +54,8 @@ test('the Custom row hands the dialog the display noun', () => {
   const { subMenu, label } = getFeatureHeightMenuItem(display, 'feature')
   expect(label).toBe('Feature height')
   clickMenuItem(subMenu, 'Custom...')
-  expect(queuedDialogProps[0]).toMatchObject({ noun: 'feature' })
+  expect(queuedDialogProps[0]).toMatchObject({
+    title: 'Custom feature height',
+    label: 'Feature height (px)',
+  })
 })

@@ -15,7 +15,7 @@ import type { GroupBy, SortedBy } from '../../shared/types.ts'
 import type { GroupByDialogModel } from '../dialogs/GroupByDialog.tsx'
 import type { RadioMenuItem } from '@jbrowse/core/ui'
 
-const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
+const TagDialog = lazy(() => import('../dialogs/TagDialog.tsx'))
 const GroupByDialog = lazy(() => import('../dialogs/GroupByDialog.tsx'))
 
 interface SortByModel {
@@ -140,16 +140,9 @@ export function getSortByMenuItem(
       'tag',
       sortTag ? `Tag (${sortTag})...` : 'Tag...',
       () => {
-        getDialogHost(model).queueDialog(handleClose => [
-          SortByTagDialog,
-          {
-            handleClose,
-            initialTag: sortTag,
-            onSubmit: (tag: string) => {
-              model.setSortedBy('tag', tag)
-            },
-          },
-        ])
+        queueSortByTagDialog(model, sortTag, tag => {
+          model.setSortedBy('tag', tag)
+        })
       },
       false,
     ),
@@ -194,6 +187,25 @@ export interface SectionOrderMenuModel {
 // the grouping back with the drawn order as its domain, which refetches, since
 // the worker caps in that order. Absent while chain mode degrades the grouping
 // to one section.
+// The sort-by-tag dialog both sort surfaces open: the track menu sorts at the
+// center line, the read's right-click menu at the clicked column.
+export function queueSortByTagDialog(
+  host: Parameters<typeof getDialogHost>[0],
+  initialTag: string | undefined,
+  sort: (tag: string) => void,
+) {
+  getDialogHost(host).queueDialog(handleClose => [
+    TagDialog,
+    {
+      title: 'Sort by tag',
+      prompt: 'Pick or enter a tag to sort by',
+      initialTag,
+      onSubmit: sort,
+      handleClose,
+    },
+  ])
+}
+
 export function getSectionOrderMenuItems(model: SectionOrderMenuModel) {
   const groupBy = model.effectiveGroupBy
   return groupBy
