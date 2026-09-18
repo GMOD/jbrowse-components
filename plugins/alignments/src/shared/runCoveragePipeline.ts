@@ -254,15 +254,7 @@ function emptyCoverageBand(): ReturnType<typeof computeCoverageBand> {
   return {
     interbaseMaxCount: 0,
     modTooltip: emptyModTooltipIndex(),
-    sashimi: {
-      sashimiX1: new Uint32Array(0),
-      sashimiX2: new Uint32Array(0),
-      sashimiCounts: new Uint32Array(0),
-      sashimiFwd: new Uint32Array(0),
-      sashimiRev: new Uint32Array(0),
-      sashimiDonors: new Uint8Array(0),
-      sashimiAcceptors: new Uint8Array(0),
-    },
+    sashimi: computeSashimiJunctions([]),
     coverageAreaPacked: {
       coverageBinSize: 1,
       coverageGpuBinCount: 0,

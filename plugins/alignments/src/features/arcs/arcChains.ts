@@ -267,12 +267,10 @@ export function computeReadChains(
   regions: RegionInfo[],
   canonicalRefName: CanonicalRefName = refName => refName,
 ): SegAln[][] {
-  const readsByName = new Map<string, ReadEntry[]>()
-  for (const lane of lanes) {
-    for (const [name, entries] of groupReadsByName(lane, regions, '')) {
-      getOrCreate(readsByName, name, () => []).push(...entries)
-    }
-  }
+  const readsByName = groupLaneReadsByName(
+    Array.from(lanes, lane => ['', lane] as const),
+    regions,
+  )
   const chains: SegAln[][] = []
   for (const entries of readsByName.values()) {
     chains.push(
