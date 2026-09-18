@@ -294,11 +294,15 @@ gives an arbitrary slice of bands.
 ### Detail levels
 
 Drag a span across the view and pick **Add detail level**: a closer view of that
-span opens below the tracks, showing the same tracks. Do it again inside the new
-row and a third opens below that — genes over a gene's exons over the reads at
-base level, each row a closer look at the one above it. A trapezoid joins each
-row to the one above, marking the span it opens, the same shape the header
-overview draws between the chromosome and the view.
+span opens below the tracks. Drag a narrower span and a third row opens below
+that — genes over a gene's exons over the reads at base level, each row a closer
+look at the one above it. A trapezoid joins each row to the one above, marking
+the span it opens, the same shape the header overview draws between the
+chromosome and the view.
+
+The dialog asks one thing. **Copy this view's tracks** opens the level showing
+what this view is showing, so Add alone gives a closer look at the same data;
+unchecked, the level opens empty and its own track selector fills it.
 
 The stack stays centred on the view, so adding a level moves the view to the
 middle of the span you dragged.
@@ -315,7 +319,7 @@ under a bar labelled with the span it covers.
 
 <Figure caption="A linear genome view of COLO829 at TP53 with two detail levels: tumour coverage over 200 kb, the gene track below it at 20 kb, and the ONT reads at 2 kb. Each trapezoid marks the span the row below it opens." src="/img/detail_levels.png" />
 
-<Video src="/media/ui/detail_levels.mp4" caption="Building that stack: a span dragged across the view, Add detail level from its menu, the same drag inside the level that opens, and a navigation the whole stack follows." />
+<Video src="/media/ui/detail_levels.mp4" caption="Building that stack: a span dragged across the view, Add detail level from its menu, a narrower drag for the row below that, and a navigation the whole stack follows." />
 
 ### Track label positioning
 

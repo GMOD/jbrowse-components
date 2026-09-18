@@ -1680,7 +1680,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * same selection's "Zoom to region" runs, so the level covers exactly
        * what zooming would have navigated to.
        */
-      addDetailLevelForSpan(start?: BpOffset, end?: BpOffset) {
+      addDetailLevelForSpan(
+        start?: BpOffset,
+        end?: BpOffset,
+        { trackIds }: { trackIds?: string[] } = {},
+      ) {
         if (!start || !end) {
           return undefined
         }
@@ -1690,7 +1694,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.scrollToBp(centerBp - self.windowWidthBp / 2)
         return self.addDetailLevel({
           windowWidthBp,
-          trackIds: self.tracks.map(track => track.configuration.trackId),
+          // the view's own tracks unless the caller named a list, so a level is
+          // a closer look at what is on screen by default and an empty row when
+          // someone asked for one
+          trackIds:
+            trackIds ?? self.tracks.map(track => track.configuration.trackId),
         })
       },
       /**

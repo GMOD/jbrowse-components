@@ -40,6 +40,10 @@ const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 // carries the same `data-field`.
 const BOOKMARK_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
 
+// The button that takes the Add detail level dialog, which is one checkbox the
+// tour leaves checked.
+const DETAIL_LEVEL_SUBMIT = 'form button[type="submit"]'
+
 export const uiVideos: VideoSpec[] = [
   // A LOOP, which is what bookmark_widget.md is about and what neither of its
   // two figures can be. The page's first sentence says a bookmark is "shown as a
@@ -162,9 +166,10 @@ export const uiVideos: VideoSpec[] = [
         say: 'Drag the span you want a closer look at',
       },
       { type: 'waitForText', text: 'Add detail level' },
+      { type: 'click', text: 'Add detail level', hold: 1000 },
       {
         type: 'click',
-        text: 'Add detail level',
+        selector: DETAIL_LEVEL_SUBMIT,
         say: 'It opens below the tracks, showing the same track',
         hold: 900,
       },
@@ -178,7 +183,8 @@ export const uiVideos: VideoSpec[] = [
         say: 'A narrower drag opens a row under that one',
       },
       { type: 'waitForText', text: 'Add detail level' },
-      { type: 'click', text: 'Add detail level', hold: 900 },
+      { type: 'click', text: 'Add detail level', hold: 1000 },
+      { type: 'click', selector: DETAIL_LEVEL_SUBMIT, hold: 900 },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 2500 },
       // The claim, performed: the levels are centred on the view, so a

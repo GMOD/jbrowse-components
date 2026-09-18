@@ -24,6 +24,7 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
 import { detailLevelHost } from './detailLevels.ts'
 import {
+  AddDetailLevelDialog,
   ExportSvgDialog,
   GetSequenceDialog,
   RegionWidthEditorDialog,
@@ -366,7 +367,18 @@ export function buildRubberBandMenuItems(
             label: 'Add detail level',
             icon: LayersIcon,
             onClick: () => {
-              self.addDetailLevelForSpan(leftOffset, rightOffset)
+              getDialogHost(self).queueDialog(handleClose => [
+                AddDetailLevelDialog,
+                {
+                  model: self,
+                  leftOffset,
+                  rightOffset,
+                  handleClose: () => {
+                    handleClose()
+                    self.setOffsets()
+                  },
+                },
+              ])
             },
           },
         ]
