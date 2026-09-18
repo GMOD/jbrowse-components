@@ -239,12 +239,9 @@ export const popgenSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 40,
             },
-            // 240, from 340 (review, on the composed figure: "also make figure
-            // more compressed to use y-screen real estate better"). What this
-            // lane is read for is a RATIO -- one arm's plateau against five arms
-            // of background -- and the ratio is about 3.5:1 here, so it survives
-            // a third off the height. The 100 px is most of what pays for the
-            // gutter the lineage trapezoid is drawn in.
+            // What this lane is read for is a RATIO -- one arm's plateau
+            // against five arms of background -- about 3.5:1, so it survives
+            // a short lane.
             {
               trackId: 'fst_in2lt',
               type: 'LinearWiggleDisplay',
@@ -504,92 +501,98 @@ export const popgenSpecs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
-  // The two halves of the inversion, stacked, because neither reads without the
-  // other. The arm-level half alone cannot say who carries the arrangement --
-  // Fst is one number per window, and a window has no samples in it. The
-  // per-line half alone cannot say the block is unusual, because a single arm
-  // drawn on its own has no background: the whole point of the plateau is that
-  // every OTHER arm sits at the bottom of the same axis.
-  //
-  // WHY THE MOSTLY-GREY GENOTYPE LANE IS THE RESULT rather than a layout
-  // problem to trim, since it looks like one and was once filed as one. The
-  // panel is 161 standard lines to 19 In(2L)t carriers, so ~89% of the rows
-  // ARE homozygous reference, and `referenceDrawingMode: 'skip'` paints them as
-  // the grey field the carriers' block sits on. Shrinking the lane changes the
-  // pixel count and not the ratio; the ratio is what says how rare the
-  // arrangement is. The block sits at the lane's bottom edge for the same kind
-  // of reason: the karyotype facet's domain puts standard first, so the carriers
-  // are the last rows there are.
-  //
-  // The parts stay separate specs rather than becoming one taller session,
-  // because they are different VIEWS of the same tracks -- six arms side by
-  // side against one arm end to end -- and no single LGV shows both. Each also
-  // stays an openable live link through `<Figure links=...>`.
+  // The two halves above as one view: six arms on the host, chr2L with one row
+  // per DGRP line on a detail level under it. A level shares its host's centre,
+  // so the arms are ordered to put chr2L in the middle: chrX and chr3R before
+  // it, 55.6 Mb, nearly balance chr2R, chr3L and chr4 after it, 54.7 Mb.
   {
-    mode: 'compose',
+    mode: 'url',
     name: 'popgen/in2lt_inversion',
-    parts: ['popgen/fst_in2lt_2L', 'popgen/in2lt_per_sample'],
-    // THE LINEAGE, DRAWN (review: "ideally, show that figure two 'comes from'
-    // figure 1 using a 'trapezoid' to show that lineage"). A gutter is what a
-    // trapezoid needs to exist in: stacked flush, the two parts' facing edges
-    // are the same line and the wedge has no height. 160 in the composition's
-    // own px, which is 80 css px of either capture -- paid for out of the two
-    // Fst lanes above, so the whole figure comes out shorter than it was.
-    gutter: 160,
-    // AND A MARGIN DOWN BOTH SIDES (review: "i cant see the left side of the
-    // trapezoid"). It was drawn and it was clipped: chr2L is the row's FIRST
-    // region, so the wedge's narrow end starts at x 12 and its wide end at x 0,
-    // which is a near-vertical line running off the image edge — correct
-    // geometry with nowhere to be. 60 px of white each side puts it inside the
-    // frame. The slant stays slight, because that is what the data says: the
-    // panel this opens is the left end of the row above.
-    sideMargin: 60,
-    // THE NARROW END IS chr2L'S PANEL IN THE TOP ROW, and it is SOLVED FOR
-    // rather than assumed, which is the part worth keeping even though the answer
-    // has since become almost the obvious one.
-    //
-    // The genomic fraction is not automatically the image fraction: chr2L is
-    // 23,513,712 of the 133,880,608 bp the top row lays out (chr2L/2R/3L/3R/4/X,
-    // off api.genome.ucsc.edu's chromosome list), which is 0.17563 of the DATA
-    // AREA, and the data area is whatever the app's own margins leave. The row's
-    // five region dividers are five equations for it, and the residuals are what
-    // make the pair publishable rather than eyeballed:
-    //
-    //   x = L + f * W, least squares over
-    //   f = .17563 .36451 .57447 .81409 .82415  (cumulative arm shares)
-    //   x = 535    1097   1722   2435   2465    (divider columns, 3000 px wide)
-    //   -> L = 12.3, W = 2976.0, every divider predicted to within 0.1 px
-    //
-    // Re-derive by dumping a row of the part PNG through the Fst band and taking
-    // the columns dark across it:
-    //
-    //   convert static/img/popgen/fst_in2lt_2L.png -crop 3000x40+0+600 \
-    //     +repage -colorspace gray txt:- | ...
-    //
-    // AND IT HAS ALREADY MOVED ONCE, which is why the recipe is here. Solved
-    // against the previous app this came out L = 160.6, W = 2678.3 — a 160 px
-    // left gutter and a matching one on the right — because `displayedRegionNames`
-    // fitted through `showAllRegions`, whose 10% margin is framing for "show me
-    // everything" and dead frame for a named subset. `fitBpPerPx` fixed that and
-    // the data area now fills the frame, so a fraction that was 0.0535-0.2103 is
-    // 0.0041-0.1783. Nothing warns about it: the wedge just stops landing on the
-    // chr2L/chr2R divider, which is visible in the figure and in nothing else.
-    //
-    // The wide end is the whole of the bottom part, deliberately: the wedge says
-    // "that slice of the row above opens into this panel", and the panel is the
-    // thing, not its data area. Its own frame border is 4 px of 3000.
-    //
-    // No label on it. A trapezoid between a span and a panel is the idiom for
-    // "this is that, opened up", and the review's other half was to say less.
+    url: `${DM6_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [IN2LT_INVERSION_TRACK, FST_TRACK, IN2LT_SV_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'dm6',
+          displayedRegionNames: [
+            'chrX',
+            'chr3R',
+            'chr2L',
+            'chr2R',
+            'chr3L',
+            'chr4',
+          ],
+          detailConnectorHeight: 64,
+          tracks: [
+            {
+              trackId: 'in2lt_inversion',
+              type: 'LinearBasicDisplay',
+              height: 40,
+            },
+            {
+              trackId: 'fst_in2lt',
+              type: 'LinearWiggleDisplay',
+              height: 160,
+            },
+          ],
+          detailLevels: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'dm6',
+              hideHeader: true,
+              windowWidthBp: 22_400_000,
+              tracks: [
+                {
+                  trackId: 'in2lt_inversion',
+                  type: 'LinearBasicDisplay',
+                  height: 40,
+                },
+                {
+                  trackId: 'fst_in2lt',
+                  type: 'LinearWiggleDisplay',
+                  height: 130,
+                },
+                {
+                  trackId: 'dgrp_In2Lt_sv',
+                  type: 'LinearMultiSampleVariantDisplay',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
     annotations: [
       {
-        type: 'trapezoid',
-        fromAnchor: {
-          selector: '[data-part="0"]',
-          fracX: [0.0041, 0.1783],
+        type: 'text',
+        text: '19 In(2L)t carriers',
+        anchor: {
+          view: [0, 0],
+          track: 'dgrp_In2Lt_sv',
+          locus: 'chr2L:7,000,000',
+          fracY: 0.7,
         },
-        anchor: { selector: '[data-part="1"]' },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          view: [0, 0],
+          track: 'dgrp_In2Lt_sv',
+          locus: 'chr2L:7,000,000',
+          fracY: 0.78,
+        },
+        anchor: {
+          view: [0, 0],
+          track: 'dgrp_In2Lt_sv',
+          locus: 'chr2L:7,000,000',
+          fracY: 0.947,
+        },
       },
     ],
+    readySelector: displayPainted('variant-display'),
+    readyText: 'In(2L)t genotyped',
+    readyTimeout: 120000,
+    viewportHeight: 1150,
+    settleMs: 14000,
   },
 ]

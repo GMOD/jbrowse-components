@@ -93,7 +93,7 @@ or click residue 248 on the 1TUP panel's STRUCT row yourself: the ruler under
 the row and the transcript row above agree on the number, because 1TUP's authors
 numbered their construct the way UniProt numbers the whole protein.
 
-<Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon above a protein view holding the AlphaFold model, 1TUP and 1YCR, with R248 selected on 1TUP. The selection marks its column in 1TUP's alignment and bands the codon on the gene. 1TUP's rows stop where the crystallised core does, and 1YCR's peptide matches a short stretch near the transcript's start." />
+<Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon above a protein view holding the AlphaFold model, 1TUP and 1YCR, with R248 selected on 1TUP and the UniProt feature tracks turned off. The selection marks its column in 1TUP's alignment and bands the codon on the gene. 1TUP's rows stop where the crystallised core does, and 1YCR's peptide matches a short stretch near the transcript's start." />
 
 The selection is magenta on the crystal, where the residue sits in the loop that
 reaches into the DNA's minor groove, and a band on the gene track over the

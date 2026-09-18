@@ -1361,13 +1361,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // The alignment-level case of the same track: the E. coli all-vs-all PAF as
   // lanes over the paa-operon island, under the pggb graph-depth wiggle. The
-  // depth drop names how many genomes carry the island; the lanes name WHICH
-  // — each strain's lane draws its own gene models at its own coordinates,
-  // and the white wedges in the ribbons are the strains whose sequence skips
-  // it. A nameless source also triggers the per-pair link fetch, so the
-  // mate-to-mate gutters carry the file's own direct records for each
-  // adjacent pair. Same-orientation strains adjacent, so the [rev] crossings
-  // sit at one junction.
+  // window holds the island (depth 2, 1,446-1,474 kb) and a depth-5 flank on
+  // each side, so the depth lane reads as a drop and a return. The lanes name
+  // which genomes skip it: their flanks sit side by side, and the ribbons from
+  // NCTC86 close to a wedge. Same-orientation strains adjacent, so the [rev]
+  // crossings sit at one junction.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_island_lanes',
@@ -1380,7 +1378,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearGenomeView',
             assembly: 'K12',
-            loc: 'chr:1,443,000-1,466,000',
+            loc: 'chr:1,436,000-1,484,000',
             // The anchor lane is the only lane the view's own gridlines are
             // true at, so with them on the top lane reads as ruled and the four
             // below as not (review: "i can see gridlines near the top row of
@@ -1406,23 +1404,26 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 12000,
     viewportHeight: 700,
-    // What the lane stack cannot say on its own: the step in the wiggle above
-    // is the count of genomes whose paths cross this stretch, and the lanes
-    // below name which ones they are.
     annotations: [
       {
         type: 'text',
-        text: 'graph depth: the genomes whose paths cross this stretch',
-        fontSize: 17,
-        maxWidth: 320,
-        leader: true,
+        text: 'only 2 of the 5 genomes carry this island',
+        fontSize: 18,
         anchor: {
           track: 'ecoli_pggb_depth',
-          locus: 'chr:1,452,000',
-          fracY: 0.62,
+          locus: 'chr:1,460,000',
+          fracY: 0.35,
         },
-        dx: 40,
-        dy: -70,
+      },
+      {
+        type: 'text',
+        text: 'the other 3 skip it: their flanks join',
+        fontSize: 18,
+        anchor: {
+          track: 'ecoli_ava',
+          locus: 'chr:1,460,000',
+          fracY: 0.42,
+        },
       },
     ],
   },

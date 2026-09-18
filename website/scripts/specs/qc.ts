@@ -462,7 +462,6 @@ export const qcSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    // sized to the app's bottom edge, so the compose's zoom wedge starts on it
     viewportHeight: 622,
     hideSelectors: HIDE_ISOFORM_CHIP,
     // TWO PILLS, ONE MESSAGE. The previous pair said "coverage returns at
@@ -519,77 +518,101 @@ export const qcSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // THE TWO SCALES AS ONE FIGURE (reviewer: "if this is a two part of zooming in
-  // on qc/smn_problematic_regions, then just make it a two part figure"). They
-  // were embedded two sections apart, with the T2T argument between them, and a
-  // reader had to hold the 2.5 Mb frame in mind to know what the 650 kb one was
-  // inside of. Stacked, the second frame is visibly a window into the first: the
-  // block, then the reads in it.
-  //
-  // Both parts render at the default 1400 px, which is what makes a vertical
-  // compose land square. Each stays reachable live on its own, which is why the
-  // parts keep their names.
-  //
-  // STILL TWO FRAMES, and the follow-up review is answered by measuring rather
-  // than by re-cropping ("why not just make this one single screenshot? can we
-  // not load a bam file across 2.5mb? is there a shorter stretch of poor
-  // mappability to help make our point").
-  //
-  // A BAM over 2.5 Mb: NA12878's 30x CRAM carries 11,221 reads in 50 kb here, so
-  // the wide frame is around half a million of them -- several times the 5 MB
-  // fetchSizeLimit both alignment adapters declare, which is force-loadable (the
-  // read frame already force-loads its own 650 kb). The reason is geometry
-  // rather than volume: 2.5 Mb over a 1400 px frame is ~1,800 bp a pixel, so a
-  // 150 bp read is a twelfth of one. A lane there reports how much data is
-  // present and nothing about where any of it landed, which is the entire claim
-  // of the lower frame.
-  //
-  // A shorter stretch: there isn't one that says this. Measured off GIAB's own
-  // alllowmapandsegdupregions over chr5:68-73 Mb -- the block is a single
-  // 1,475,696 bp interval (69,533,889-71,009,585) with a second 435,173 bp one
-  // 5.6 kb past it, and the next largest anywhere in those five megabases is
-  // 4,222 bp. So the size IS the subject: the failure covers a whole gene
-  // neighbourhood rather than scattered sites, and a window narrow enough to
-  // make a read visible cannot show that it has edges.
-  //
-  // THE ZOOM, DRAWN (review: "might use the 'trapezoid' to show that figure 2
-  // is a zoom in"). Stacked alone the lower frame was a second picture of the
-  // same chromosome and nothing said which quarter of the upper one it is; the
-  // wedge says it, and it lands where a reader can check it, because the block's
-  // right-hand edge is visible in both.
-  //
-  // The gutter is what the wedge needs to exist in -- flush, the two facing
-  // edges are one line and it has no height. 120 in the composition's own px,
-  // 60 css px of either capture, paid for several times over by the two frames
-  // coming down 170 css px between them.
-  //
-  // THE NARROW END IS SOLVED FOR, not assumed: the app's data area is inset by
-  // its own margins, so the genomic fraction is not the image fraction. The
-  // upper frame hands over four landmarks whose coordinates are known exactly --
-  // the two edges of each SMN highlight band, which the view draws from
-  // SMN_HIGHLIGHT -- and a least-squares fit over them gives
-  //
-  //   x = L + f * W  ->  L = 9.7, W = 2978.5  (3000 px wide, residuals < 0.8 px)
-  //
-  // the same data area dog10k-size-fst-scan and popgen/in2lt_inversion each
-  // solved for independently against different landmarks. WIDE_LOC is then
-  // 0.660-0.920 of that area, i.e. the fracX below. Re-derive by taking the
-  // columns where the band's warm tint sits and fitting them against
-  // SMN_HIGHLIGHT's own coordinates over OVERVIEW_LOC.
+  // The two scales above as one view: the 2.5 Mb frame's lanes on the host, the
+  // 650 kb read frame's lanes on a detail level under it. A level shares its
+  // host's centre, so the host is centred on WIDE_LOC and widened to 3.45 Mb to
+  // keep the block's left edge and SMN2 in frame.
   {
-    mode: 'compose',
+    mode: 'url',
     name: 'qc/smn_block_and_reads',
-    parts: ['qc/smn_problematic_regions', 'qc/smn_read_placement'],
-    direction: 'vertical',
-    gutter: 120,
+    url: `${HG38_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [na12878Track],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr5:69,450,000-72,900,000',
+          highlight: SMN_HIGHLIGHT,
+          detailConnectorHeight: 64,
+          tracks: [
+            { ...geneTrack(60, true), displayMode: 'compact' },
+            gnomadCoverageTrack(90, 'avg'),
+            {
+              trackId: 'hg38-alllowmapandsegdupregions',
+              type: 'LinearBasicDisplay',
+              height: 40,
+            },
+            {
+              trackId: 'hg38-lrSv1kgOnt',
+              type: 'LinearBasicDisplay',
+              height: 100,
+            },
+          ],
+          detailLevels: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'hg38',
+              hideHeader: true,
+              windowWidthBp: 650_000,
+              highlight: [SMN_HIGHLIGHT[0]!],
+              tracks: [
+                geneTrack(60, true),
+                mappabilityTrack,
+                {
+                  trackId: 'na12878_qc_reads',
+                  type: 'LinearAlignmentsDisplay',
+                  colorBy: { type: 'mappingQuality' },
+                  showLegend: true,
+                  forceLoad: true,
+                  autoscale: 'localsd',
+                  height: 260,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    viewportHeight: 1200,
+    hideSelectors: HIDE_ISOFORM_CHIP,
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 600000,
+    settleMs: 30000,
     annotations: [
       {
-        type: 'trapezoid',
-        fromAnchor: {
-          selector: '[data-part="0"]',
-          fracX: [0.6585, 0.9166],
+        type: 'text',
+        text: 'the dip is mappability: reads that fit in two places are dropped',
+        fontSize: 19,
+        maxWidth: 340,
+        anchor: {
+          track: 'hg38-gnomad3MeanCoverage',
+          locus: 'chr5:70,300,000',
+          fracY: 0.18,
         },
-        anchor: { selector: '[data-part="1"]' },
+      },
+      {
+        type: 'text',
+        text: 'even with long reads, very few calls in this block',
+        fontSize: 18,
+        maxWidth: 340,
+        anchor: {
+          track: 'hg38-lrSv1kgOnt',
+          locus: 'chr5:70,300,000',
+          fracY: 0.55,
+        },
+      },
+      {
+        type: 'text',
+        text: 'SMN1: biallelic loss causes spinal muscular atrophy',
+        fontSize: 18,
+        maxWidth: 330,
+        anchor: {
+          view: [0, 0],
+          track: 'hg38-umap100Quantitative',
+          locus: 'chr5:70,940,000',
+          alignX: 'left',
+          fracY: 0.4,
+        },
       },
     ],
   },

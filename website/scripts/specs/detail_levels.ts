@@ -1,76 +1,55 @@
-import { displayPainted } from '@jbrowse/browser-test-utils'
-
 import { VOLVOX, lgvSession, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// Figures for the detail levels section of basic_usage.md: a linear genome view
-// with two closer views of the same locus stacked under its tracks.
-//
-// Each level is a LinearGenomeView of its own under `detailLevels`, so a
-// session spec writes one the way it writes the view: tracks by id, and a
-// `windowWidthBp` for how wide it is. Regions and centre come from the host.
-// `hideHeader` is what the rubberband's own "Add detail level" sets, so the
-// figure shows the stack a reader gets by dragging rather than a hand-authored
-// one.
-//
-// COLO829 on hg38 rather than volvox (review: "in general, volvox examples are
-// weak. use human if possible. human genome much larger"): the three rows then
-// span 2 Mb, 200 kb and 20 kb of the same locus, which is the range the feature
-// exists for, and each row carries the track that is legible at its own width.
-// The coverage is in 50 kb bins, so the top row is the widest window those bins
-// still draw a profile in rather than a block.
+// A linear genome view with two detail levels under it, on COLO829's hg38 demo
+// at TP53. Each row is the same RefSeq track, so the only thing that changes
+// down the stack is the width: 2 Mb, 200 kb, 20 kb. `hideHeader` is what the
+// rubberband's "Add detail level" sets.
 const CANCER_SV = encodeURIComponent(
   'https://jbrowse.org/demos/cancer_sv/config.json',
 )
+const genes = (height: number) => ({
+  trackId: 'ncbi_refseq_hg38',
+  type: 'LinearBasicDisplay',
+  displayMode: 'compact',
+  height,
+})
 export const detailLevelsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'detail_levels',
-    viewportHeight: 800,
+    viewportHeight: 840,
     url: sessionSpec(CANCER_SV, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: 'chr17:6,676,500-8,676,500',
-          tracks: [{ trackId: 'COLO829_tumor_coverage', height: 110 }],
+          detailConnectorHeight: 64,
+          tracks: [genes(130)],
           detailLevels: [
             {
               type: 'LinearGenomeView',
               assembly: 'hg38',
               hideHeader: true,
               windowWidthBp: 200_000,
-              tracks: [
-                {
-                  trackId: 'ncbi_refseq_hg38',
-                  type: 'LinearBasicDisplay',
-                  displayMode: 'compact',
-                  height: 90,
-                },
-              ],
+              tracks: [genes(110)],
             },
             {
               type: 'LinearGenomeView',
               assembly: 'hg38',
               hideHeader: true,
               windowWidthBp: 20_000,
-              tracks: [
-                {
-                  trackId: 'COLO829_tumor_ont',
-                  type: 'LinearAlignmentsDisplay',
-                  height: 240,
-                  forceLoad: true,
-                },
-              ],
+              tracks: [genes(80)],
             },
           ],
         },
       ],
     }),
-    readySelector: displayPainted('pileup-display'),
-    readyTimeout: 180000,
-    settleMs: 20000,
+    readyText: 'TP53',
+    readyTimeout: 120000,
+    settleMs: 12000,
   },
   {
     mode: 'url',

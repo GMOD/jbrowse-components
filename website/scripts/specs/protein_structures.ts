@@ -7,7 +7,8 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // model, the DNA-bound core domain (1TUP) and the p53 peptide on MDM2 (1YCR),
 // every structure mapped to the same RefSeq transcript. `structures` on
 // LaunchView-ProteinView (protein3d >= 0.11.0) builds it from one link, with
-// the genome view on the left and the protein view on the right.
+// the genome view on the left and the protein view on the right. UniProt's
+// feature tracks are off: the figures are about the alignment rows.
 const R248_CODON = 'chr17:7,674,219-7,674,221'
 const GENES = 'hg38-ncbiRefSeq'
 
@@ -21,6 +22,7 @@ function tp53Session(structures: object[]) {
         height: 340,
         sideBySide: true,
         zoomToBaseLevel: false,
+        showProteinTracks: false,
         connectedView: {
           assembly: 'hg38',
           loc: 'chr17:7,674,161-7,674,280',
@@ -63,7 +65,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     ]),
     ...READY,
     viewportWidth: 2000,
-    viewportHeight: 1530,
+    viewportHeight: 1060,
     annotations: [
       {
         type: 'text',
@@ -86,20 +88,6 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
         dx: -560,
         dy: -45,
       },
-      {
-        type: 'text',
-        text: 'Gap: past the end of the crystallised core',
-        fontSize: 18,
-        maxWidth: 250,
-        textAlign: 'end',
-        anchor: {
-          selector: panel('1TUP'),
-          alignX: 'right',
-          alignY: 'bottom',
-          dx: -30,
-          dy: -90,
-        },
-      },
     ],
   },
   {
@@ -117,7 +105,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
     ]),
     ...READY,
     viewportWidth: 2000,
-    viewportHeight: 1530,
+    viewportHeight: 1060,
     actions: [
       {
         type: 'click',

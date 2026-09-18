@@ -46,12 +46,10 @@ summary file is covered in the
 A summary read costs the span on screen against the summary file, not against
 the alignment, so the tier holds at whole-chromosome scale on an alignment deep
 enough that the tier is the only way to see it at all. The HPRC pangenome is
-that case: a chromosome of human haplotypes draws here with no forced load,
-where the alignment beneath it is refused. Bars shade by score, and human
-haplotypes score at the top of the scale, so presence fills in solid and what
-the picture carries is absence.
-
-<Figure src="/img/maf_summary_hprc_chromosome.png" caption="The HPRC release 2 pangenome alignment across the whole of chr6, read from its summary file: one presence bar per haplotype per aligned run. The gap that runs clear across every row sits under the ideogram's centromere, and individual haplotypes drop out at scattered loci."/>
+that case:
+[open the whole of chr6](https://jbrowse.org/code/jb2/main/?config=test_data/hprc_maf_summary.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%22%2C%22tracks%22%3A%5B%22hprc_v2_0_mc_grch38_summary%22%5D%7D%5D%7D)
+and its 464 haplotypes draw with no forced load, where the alignment beneath
+them is refused.
 
 ## Conservation and per-row identity
 

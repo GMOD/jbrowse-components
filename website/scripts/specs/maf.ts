@@ -50,10 +50,6 @@ export const CE_MAF_FRAMES = 'test_data/ce_maf_frames.json'
 // UCSC hg38 470-way multiz (Zoonomia + more) config.
 export const HG38_470WAY = 'test_data/hg38_multiz470way.json'
 
-// The HPRC release 2.1 alignment with its zoom-out tier wired to the
-// `summaryAdapter` slot — the same track as `hprc_maf.json`, plus the file.
-export const HPRC_MAF_SUMMARY = 'test_data/hprc_maf_summary.json'
-
 // A representative ~30-species slice of the hg38 470-way spanning the major
 // mammalian clades (primates, rodents+glires, laurasiatheria, afrotheria,
 // xenarthra) plus opossum and platypus as marsupial/monotreme outgroups — close
@@ -717,52 +713,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     // and stacked the second read as the next step rather than the alternative
     direction: 'horizontal',
     parts: ['maf_summary_zoomed_out', 'maf_summary_zoomed_in'],
-  },
-  // The summary tier carrying a whole chromosome of the HPRC pangenome. It
-  // draws UNFORCED, where both halves of the 470-way pair above set
-  // `forceLoad`: whole chr6 costs 150,272 bytes from the tier's own index
-  // against the display's 5 MB default, where the alignment underneath it
-  // would ask 3,189,973,830. That is the tier's whole claim, and forcing the
-  // load would hide it.
-  //
-  // The same 33 rows as the C4 figure, because 464 at a chromosome's width is
-  // a pixel a row and reads as noise. Expect a nearly solid block: our
-  // `--summary` score is percent identity, human haplotypes sit at ~0.999, and
-  // `summaryBarAlpha` maps that to nearly opaque. Absence is what the picture
-  // carries, so the window has to be one where absence is visible — a whole
-  // chromosome puts the centromere in frame.
-  {
-    mode: 'url' as const,
-    name: 'maf_summary_hprc_chromosome',
-    url: sessionSpec(HPRC_MAF_SUMMARY, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6',
-          tracks: [
-            {
-              trackId: 'hprc_v2_0_mc_grch38_summary',
-              type: 'LinearMafDisplay',
-              subtreeFilter: HPRC_MAF_ROWS,
-              height: 520,
-              rowProportion: 1,
-            },
-          ],
-        },
-      ],
-    }),
-    // the ruler says `6`, not `chr6`: this config's hg38 carries UCSC's alias
-    // file, so the canonical refName is the Ensembl spelling and `loc` is
-    // resolved through the aliases rather than matching it
-    readyText: '170,805,979',
-    readyTimeout: 120000,
-    viewportWidth: 1100,
-    // the run's own CLIPPED BELOW THE FOLD number, not measured off the PNG
-    viewportHeight: 726,
-    settleMs: 20000,
-    hideTooltip: true,
-    actions: [PARK_CURSOR, { type: 'delay' as const, ms: 2000 }],
   },
 
   // HPRC release 2's minigraph-cactus multiple alignment, read straight off the

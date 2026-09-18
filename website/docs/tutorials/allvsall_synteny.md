@@ -342,7 +342,7 @@ builds from these same strains.
       {
         "type": "LinearGenomeView",
         "assembly": "K12",
-        "loc": "chr:1,443,000-1,466,000",
+        "loc": "chr:1,436,000-1,484,000",
         "tracks": [
           { "trackId": "ecoli_pggb_depth", "height": 60 },
           {
@@ -358,7 +358,7 @@ builds from these same strains.
 }
 ```
 
-<Figure caption="The paa operon island on K-12, read twice: the pangenome graph-depth wiggle steps down where fewer genomes carry the sequence, and the all-vs-all lanes below name them. K-12 and NCTC86 carry the island, and the white wedges in the ribbon bands are the strains whose alignment skips it." src="/img/multiway_synteny/ecoli_island_lanes.png" />
+<Figure caption="The paa operon island on K-12 with a flank on each side. Graph depth drops from five genomes to two across the island and comes back after it. In the all-vs-all lanes below, K-12 and NCTC86 carry the island; CFT073, Sakai and IAI39 go straight from one flank to the other, so the ribbons from NCTC86 close to a wedge over the gap." src="/img/multiway_synteny/ecoli_island_lanes.png" />
 
 ### The gap in the graph genome view {#the-same-gap-drawn-as-a-graph}
 

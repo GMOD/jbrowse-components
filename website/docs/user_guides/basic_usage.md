@@ -317,7 +317,7 @@ under a bar labelled with the span it covers.
 
 <Figure caption="Add detail level in the rubberband menu, over a span dragged across the view." src="/img/detail_levels_menu.png" />
 
-<Figure caption="A linear genome view of COLO829 at TP53 with two detail levels: tumour coverage over 200 kb, the gene track below it at 20 kb, and the ONT reads at 2 kb. Each trapezoid marks the span the row below it opens." src="/img/detail_levels.png" />
+<Figure caption="A linear genome view of hg38 at TP53 with two detail levels, each row the same RefSeq gene track: 2 Mb, then 200 kb, then 20 kb. Each trapezoid marks the span the row below it opens." src="/img/detail_levels.png" />
 
 <Video src="/media/ui/detail_levels.mp4" caption="Building that stack: a span dragged across the view, Add detail level from its menu, a narrower drag for the row below that, and a navigation the whole stack follows." />
 
