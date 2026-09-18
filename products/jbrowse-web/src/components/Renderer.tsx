@@ -25,10 +25,15 @@ const Renderer = observer(function Renderer({
   } = loader
   const err = configError || pluginManagerError
   if (err) {
+    // `data-app-error` is how @jbrowse/capture tells a failed load from a slow
+    // one without waiting out its timeout
     return (
-      <Suspense fallback={null}>
-        <LoaderErrorBanner error={err} />
-      </Suspense>
+      <>
+        <span hidden data-app-error={`${err}`} />
+        <Suspense fallback={null}>
+          <LoaderErrorBanner error={err} />
+        </Suspense>
+      </>
     )
   } else if (crashedSession) {
     return (

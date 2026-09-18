@@ -1,9 +1,10 @@
+import { delay } from './poll.ts'
 import {
   describePendingDisplays,
   pendingDisplayStates,
   waitForSession,
 } from './sessionGate.ts'
-import { delay, waitForAppSettled, waitForDisplaysDone } from './waits.ts'
+import { waitForAppSettled, waitForDisplaysDone } from './waits.ts'
 
 import type { PendingDisplay, SessionExpectations } from './sessionGate.ts'
 import type { Page } from 'puppeteer'

@@ -1,4 +1,5 @@
 export { captureJBrowse, openJBrowse } from './capture.ts'
+export { delay } from './poll.ts'
 export { waitForJBrowseReady } from './ready.ts'
 export {
   APP_CENSUS,
@@ -6,6 +7,7 @@ export {
   pendingDisplayStates,
   pendingDisplayStatesInPage,
   pendingDisplays,
+  readLoadFailureInPage,
   readSessionSummary,
   waitForSession,
 } from './sessionGate.ts'
@@ -23,7 +25,6 @@ export {
   BUSY_SELECTOR,
   LOADING_OVERLAY,
   PENDING_DISPLAYS,
-  delay,
   describePendingDisplaysNow,
   displayById,
   displayPainted,

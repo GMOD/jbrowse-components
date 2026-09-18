@@ -1,3 +1,5 @@
+import { holdTrue } from './poll.ts'
+
 import type { Page } from 'puppeteer'
 
 // The readiness signals in waits.ts are all NEGATIVE: they pass when a selector
@@ -76,14 +78,24 @@ export function readSessionSummaryInPage(): SessionSummary | undefined {
 }
 
 /**
+ * The message the app shows in place of itself when its config, session or
+ * plugins fail to load. Serialized into the page.
+ */
+export function readLoadFailureInPage(): string | undefined {
+  return document.querySelector<HTMLElement>('[data-app-error]')?.dataset
+    .appError
+}
+
+/**
  * Wait until the census exists and the assembly and tracks that were asked for
  * are actually open.
  *
- * Throws on timeout rather than proceeding. A config URL that 404s, a trackId
- * that does not exist in the config, and an assembly name that does not match
- * the one the config declares all fail here, which is the only place they fail
- * at all — each of them otherwise produces a browser that loads, paints its
- * chrome, and photographs beautifully with nothing in it.
+ * A config, session or plugin that fails to load fails here at once, with the
+ * app's own message. A trackId that does not exist in the config, and an
+ * assembly name that does not match the one the config declares, fail here on
+ * timeout, which is the only place they fail at all — each of them otherwise
+ * produces a browser that loads, paints its chrome, and photographs beautifully
+ * with nothing in it.
  */
 export async function waitForSession(
   page: Page,
@@ -93,47 +105,38 @@ export async function waitForSession(
     timeout = 60000,
   }: SessionExpectations & { timeout?: number } = {},
 ) {
-  try {
-    // #region session-gate
-    await page.waitForFunction(
-      (wantAssembly: string | null, wantTracks: string[]) => {
-        const marker = document.querySelector<HTMLElement>('[data-app-tracks]')
-        if (!marker) {
-          return false
-        }
-        try {
-          const openViews = Number(marker.dataset.appViews) || 0
-          const assemblies = JSON.parse(
-            marker.dataset.appAssemblies ?? '[]',
-          ) as string[]
-          const openTracks = JSON.parse(
-            marker.dataset.appTracks ?? '[]',
-          ) as string[]
-          return (
-            openViews > 0 &&
-            (wantAssembly === null || assemblies.includes(wantAssembly)) &&
-            wantTracks.every(id => openTracks.includes(id))
-          )
-        } catch {
-          return false
-        }
-      },
-      { timeout, polling: 250 },
-      assembly ?? null,
-      trackIds,
-    )
-    // #endregion session-gate
-  } catch {
-    // Best-effort: the wait may have failed because the page crashed or
-    // navigated, and an unguarded evaluate here would replace the diagnostic
-    // below with its own opaque error.
-    const summary = await readSessionSummary(page).catch(() => undefined)
-    const found = summary
-      ? `${summary.views} view(s), assemblies [${summary.assemblies.join(', ')}], tracks [${summary.trackIds.join(', ')}]`
+  // a page that navigates or closes under us fails the evaluate, which reads as
+  // nothing there yet and leaves the deadline to decide
+  let summary: SessionSummary | undefined
+  const reached = await holdTrue(
+    async () => {
+      const failure = await page
+        .evaluate(readLoadFailureInPage)
+        .catch(() => undefined)
+      if (failure) {
+        throw new Error(`JBrowse could not load: ${failure}`)
+      }
+      const now = await page
+        .evaluate(readSessionSummaryInPage)
+        .catch(() => undefined)
+      summary = now
+      return (
+        !!now &&
+        now.views > 0 &&
+        (assembly === undefined || now.assemblies.includes(assembly)) &&
+        trackIds.every(id => now.trackIds.includes(id))
+      )
+    },
+    { holdMs: 0, timeout, pollMs: 250 },
+  )
+  if (!reached) {
+    const last = summary
+    const found = last
+      ? `${last.views} view(s), assemblies [${last.assemblies.join(', ')}], tracks [${last.trackIds.join(', ')}]`
       : 'no census on the page at all, so either this is not a JBrowse app or ' +
         'it is older than v5, the first release to publish one'
-    const missing = summary
-      ? trackIds.filter(id => !summary.trackIds.includes(id))
+    const missing = last
+      ? trackIds.filter(id => !last.trackIds.includes(id))
       : trackIds
     const wanted = [
       assembly ? `assembly "${assembly}"` : undefined,
@@ -144,8 +147,8 @@ export async function waitForSession(
     throw new Error(
       `the session never reached the requested state after ${timeout}ms. ` +
         `Wanted ${wanted || 'an open view'}; found ${found}. ` +
-        'A config URL that 404s, a trackId the config does not define, or an ' +
-        'assembly name that does not match the config all look like this.',
+        'A trackId the config does not define, or an assembly name that does ' +
+        'not match the config, looks like this.',
     )
   }
 }

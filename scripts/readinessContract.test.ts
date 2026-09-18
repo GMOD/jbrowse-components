@@ -76,6 +76,17 @@ describe('the readiness contract', () => {
     expect(gate).toContain(`APP_CENSUS = '[data-app-tracks]'`)
   })
 
+  // Without it a config that 404s reads as a page still loading, and capture
+  // waits out its whole timeout before blaming the build.
+  it('the load failure is published and read under the same name', () => {
+    expect(read('products/jbrowse-web/src/components/Renderer.tsx')).toContain(
+      'data-app-error=',
+    )
+    expect(read('products/jbrowse-capture/src/sessionGate.ts')).toContain(
+      "'[data-app-error]'",
+    )
+  })
+
   // capture's fullPage measures the session by these two, the way jb's
   // `overflow` does; renamed on one side, the viewport stops growing and the
   // capture cuts off the views below the window

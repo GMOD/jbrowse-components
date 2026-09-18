@@ -1,16 +1,10 @@
+import { holdTrue } from './poll.ts'
 import {
   describePendingDisplays,
   pendingDisplayStatesInPage,
 } from './sessionGate.ts'
 
 import type { ElementHandle, Page } from 'puppeteer'
-
-// Fixed-duration sleep. Shared by the browser-test suites and the website
-// screenshot generator so the helper isn't redefined per consumer.
-export const delay = (ms: number) =>
-  new Promise<void>(resolve => {
-    setTimeout(resolve, ms)
-  })
 
 // Every best-effort wait below runs through this. They swallow their own timeout
 // on purpose — a slow-but-finishing page should not be failed for being slow,
@@ -364,12 +358,9 @@ export function isPageBusyInPage(busySelector: string): boolean {
  * "nothing is in flight right now", which is what a probe or a benchmark wants
  * between two measured actions.
  *
- * Polled from node rather than in-page: chrome throttles in-page timers and rAF
- * once the tab is not visible, which is the state a headless capture sits in.
- *
  * Returns false on timeout rather than throwing, like its neighbours.
  */
-export async function waitForQuietPeriod(
+export function waitForQuietPeriod(
   page: Page,
   {
     quietMs = 1500,
@@ -377,26 +368,16 @@ export async function waitForQuietPeriod(
     pollMs = 250,
   }: { quietMs?: number; timeout?: number; pollMs?: number } = {},
 ): Promise<boolean> {
-  const deadline = Date.now() + timeout
-  let quietSince: number | undefined
-  while (Date.now() < deadline) {
-    // A page that navigates or closes under us fails the evaluate; treat that
-    // as busy and let the deadline decide, rather than reporting quiet.
-    const busy = await page
-      .evaluate(isPageBusyInPage, BUSY_SELECTOR)
-      .catch(() => true)
-    const now = Date.now()
-    if (busy) {
-      quietSince = undefined
-    } else {
-      quietSince ??= now
-      if (now - quietSince >= quietMs) {
-        return true
-      }
-    }
-    await delay(pollMs)
-  }
-  return false
+  // a page that navigates or closes under us fails the evaluate, which reads
+  // as busy and leaves the deadline to decide
+  return holdTrue(
+    () =>
+      page.evaluate(isPageBusyInPage, BUSY_SELECTOR).then(
+        busy => !busy,
+        () => false,
+      ),
+    { holdMs: quietMs, timeout, pollMs },
+  )
 }
 
 /**
@@ -448,10 +429,6 @@ export function hasAppReadyMarker(page: Page): Promise<boolean> {
  * replaced. Requiring the idle to HOLD costs the hold and no more, and catches
  * the same late-starting work.
  *
- * Polled from Node rather than by `page.waitForSelector`, for the reason
- * `waitForQuietPeriod` is: chrome throttles in-page timers and rAF once the tab
- * is not visible, which is exactly the state a headless capture sits in.
- *
  * Throws on a build too old for the marker rather than falling back — see the
  * body.
  */
@@ -475,27 +452,14 @@ export async function waitForAppSettled(
         'that has not started also satisfies.',
     )
   }
-  const deadline = Date.now() + timeout
-  let readySince: number | undefined
-  while (Date.now() < deadline) {
-    // a page that navigates or closes under us fails the evaluate; treat that as
-    // not-ready and let the deadline decide
-    const ready = await page
-      .evaluate(
-        selector => document.querySelector(selector) !== null,
-        APP_READY,
-      )
-      .catch(() => false)
-    const now = Date.now()
-    if (ready) {
-      readySince ??= now
-      if (now - readySince >= holdMs) {
-        return true
-      }
-    } else {
-      readySince = undefined
-    }
-    await delay(pollMs)
-  }
-  return false
+  return holdTrue(
+    () =>
+      page
+        .evaluate(
+          selector => document.querySelector(selector) !== null,
+          APP_READY,
+        )
+        .catch(() => false),
+    { holdMs, timeout, pollMs },
+  )
 }

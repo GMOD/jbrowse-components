@@ -1,29 +1,17 @@
-import { readSessionSummaryInPage, waitForSession } from './sessionGate.ts'
+import {
+  readLoadFailureInPage,
+  readSessionSummaryInPage,
+  waitForSession,
+} from './sessionGate.ts'
 
 import type { Page } from 'puppeteer'
 
-// evaluate/waitForFunction run the real in-page predicates against jsdom's own
-// document, as readyChain.test.ts does.
+// evaluate runs the real in-page readers against jsdom's own document, as
+// readyChain.test.ts does.
 const gatePage = () =>
   ({
     evaluate: (fn: (...a: unknown[]) => unknown, ...args: unknown[]) =>
       Promise.resolve(fn(...args)),
-    waitForFunction: async (
-      fn: (...a: unknown[]) => unknown,
-      opts: { timeout?: number } = {},
-      ...args: unknown[]
-    ) => {
-      const deadline = Date.now() + (opts.timeout ?? 30000)
-      for (;;) {
-        if (fn(...args)) {
-          return {}
-        }
-        if (Date.now() >= deadline) {
-          throw new Error(`Waiting failed: ${opts.timeout}ms exceeded`)
-        }
-        await new Promise(r => setTimeout(r, 10))
-      }
-    },
   }) as unknown as Page
 
 const census = (views: number, assemblies: string[], trackIds: string[]) => {
@@ -98,8 +86,25 @@ test('an assembly that does not match fails the gate', async () => {
   ).rejects.toThrow(/assembly "hg38".*assemblies \[hg19\]/s)
 })
 
-// The failure a config URL that 404s produces: nothing publishes a census at
-// all, and the message has to say so rather than reporting an empty session.
+// The app renders its error screen instead of a session, which used to read
+// as still loading until the whole timeout had gone.
+test('a load failure fails the gate at once, with the app message', async () => {
+  document.body.innerHTML =
+    '<span hidden data-app-error="Error: HTTP 404 fetching nope.json"></span>'
+  const start = Date.now()
+  await expect(
+    waitForSession(gatePage(), { assembly: 'hg38', timeout: 30000 }),
+  ).rejects.toThrow(
+    'JBrowse could not load: Error: HTTP 404 fetching nope.json',
+  )
+  expect(Date.now() - start).toBeLessThan(1000)
+})
+
+test('no load failure reads as undefined', () => {
+  census(1, ['hg38'], [])
+  expect(readLoadFailureInPage()).toBeUndefined()
+})
+
 test('no census at all is reported as such', async () => {
   await expect(
     waitForSession(gatePage(), { assembly: 'hg38', timeout: 300 }),
