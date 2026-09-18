@@ -224,20 +224,6 @@ export const trackMenuIcon = (trackId: string): ScreenshotAction => ({
   selector: `[data-testid="track_menu_icon"][data-trackid="${trackId}"]`,
 })
 
-// Open the alignments "Read height" submenu and leave it open.
-// CascadingSubmenu opens on click as well as hover (onClick -> onOpen), and a
-// click is deterministic where a hover is timing-sensitive (the pileup keeps
-// re-laying-out while reads stream, so the hovered row can move out from under
-// the cursor). Target the submenu row by its data-testid prefix.
-export const openFeatureHeightSubmenu = (): ScreenshotAction[] => [
-  { type: 'waitForText', text: 'Read height' },
-  {
-    type: 'click',
-    selector: '[data-testid^="cascading-submenu-read_height"]',
-  },
-  { type: 'waitForText', text: 'Super-compact' },
-]
-
 // Park the mouse somewhere that cannot react to it, so no overview-ruler
 // position readout or feature hover is left hanging in the capture.
 //
