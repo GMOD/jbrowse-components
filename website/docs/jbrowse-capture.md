@@ -84,13 +84,19 @@ const { pending, unsettled } = await captureJBrowse({
   out: 'brca1.png',
 })
 
-// or keep the page, to click things and read state back
+// or keep the page, to click things, read state back, or shoot one element
 const { browser, page } = await openJBrowse({ hub: 'mm39', loc: 'Sox2' })
 const tracks = await page.evaluate(
   () => window.JBrowseSession.views[0].tracks.length,
 )
+const view = await page.$('[data-testid^="view-container-"]')
+await view.screenshot({ path: 'view-only.png' })
 await browser.close()
 ```
+
+The CLI covers the common capture and has no flag for the rest. A crop, a click
+before the shot or a hidden element is a line of Puppeteer on the page
+`openJBrowse` returns, and a view or display setting goes in a `--session` spec.
 
 Two waits, depending on what you did:
 

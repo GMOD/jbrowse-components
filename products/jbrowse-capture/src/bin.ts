@@ -22,19 +22,13 @@ WHAT TO SHOW
                         or a GenArk accession (GCA_.../GCF_...)
   --config <url>        a config.json URL, for data that is not hosted there
   --assembly <name>     assembly to open (defaults to --hub)
-  --loc <locstring>     where to go: chr1:1,000-2,000, or several space-separated
-                        for a discontinuous view. On a config with a text index —
-                        every UCSC assembly on genomes.jbrowse.org has one — a
-                        gene name such as BRCA1 also works.
-  --track <trackId>     a track to open; repeat for several. The trackId, the id
-                        without its assembly prefix (clinvarMain for
-                        hg38-clinvarMain) or the display name, checked against
-                        the config before launching, with suggestions on a miss
+  --loc <locstring>     chr1:1,000-2,000, several space-separated, or a gene name
+                        where the config has a text index (hosted ones do)
+  --track <trackId>     a track to open, by trackId or name; repeat for several
   --session <json|path> a full session spec, for several views or per-display
                         settings. Not combinable with --assembly/--loc/--track.
   --instance <url>      JBrowse Web deployment to drive
                         (default https://jbrowse.org/code/jb2/latest/)
-  --sessionName <name>  name shown in the header (default "Screenshot")
 
 THE IMAGE
   --out, -o <file>      .png, .jpg or .webp to write (required unless using a
@@ -50,11 +44,7 @@ WAITING
   --settle <ms>         extra pause before the census and the shot (default 0)
   --allowUnsettled      write the image anyway when a stage times out
 
-  Every stage is waited on for you: the session holding the assembly and tracks
-  you asked for, the view resolving, tracks fetching, and displays painting. A
-  config the app cannot load fails at once. A stage that times out FAILS the
-  run rather than quietly handing back a half-drawn frame — raise --timeout, or
-  pass --allowUnsettled if you want the frame as it stands.
+  A stage that times out fails the run rather than writing a half-drawn frame.
 
 OTHER
   --headed              run with a visible browser window
@@ -94,7 +84,6 @@ function urlOptions(args: ParsedArgs) {
     loc: args.loc,
     tracks: args.tracks.length ? args.tracks : undefined,
     session: args.session ? readSession(args.session) : undefined,
-    sessionName: args.sessionName,
     instance: args.instance,
   }
 }
