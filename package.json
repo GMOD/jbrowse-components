@@ -150,7 +150,7 @@
     "oxlint": "^1.83.0",
     "oxlint-tsgolint": "^7.0.2001",
     "prettier": "^3.9.7",
-    "prettier-plugin-astro": "^1.0.1",
+    "prettier-plugin-astro": "1.0.0",
     "puppeteer": "^25.11.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
