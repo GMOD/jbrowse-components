@@ -204,3 +204,15 @@ test('a display whose renderer failed fails the chain', async () => {
     waitForJBrowseReady(fakePage(), { timeout: 10000 }),
   ).rejects.toThrow(/display\(s\) never painted: hg38-genes is renderError/)
 }, 20000)
+
+// `views` is a session expectation like the other two, so the whole chain has
+// to hand it to the gate rather than a copied subset of the options
+test('a views floor of 0 reaches the gate through the whole chain', async () => {
+  document.body.innerHTML = `<span hidden data-app-phase="ready"
+    data-app-views="0" data-app-assemblies='[]' data-app-tracks='[]'></span>`
+  const report = await waitForJBrowseReady(fakePage(), {
+    views: 0,
+    timeout: 10000,
+  })
+  expect(report.unsettled).toEqual([])
+}, 20000)

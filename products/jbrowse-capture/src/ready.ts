@@ -70,10 +70,10 @@ export async function waitForJBrowseReady(
   page: Page,
   options: ReadyOptions = {},
 ): Promise<ReadyReport> {
-  const { assembly, trackIds, timeout } = options
   // The census the gate reads shares its element with `[data-app-phase]`, so
-  // once it passes the marker is there too.
-  await waitForSession(page, { assembly, trackIds, timeout })
+  // once it passes the marker is there too. Handed the options whole, so every
+  // session expectation reaches it, `views` included.
+  await waitForSession(page, options)
   return waitForFrame(page, options)
 }
 
