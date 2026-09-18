@@ -4,17 +4,17 @@ import {
 } from '@jbrowse/render-core/scoreScale'
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { categoricalColorScale, categoricalScale } from '../ui/colors.ts'
-import { NO_CATEGORY_COLOR } from './color/index.ts'
+import { categoricalScale } from '../ui/colors.ts'
+import { categoricalField } from './categoricalField.ts'
 import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
 import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
-import { NO_VALUE_LABEL, groupKeyComparator } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 
+import type { CategoricalField } from './categoricalField.ts'
 import type { ColorRampStop } from './colorRamp.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
@@ -62,10 +62,7 @@ export type {
   ValueEncoding,
 } from './markEncodingTypes.ts'
 
-// Declared in groupKeys.ts, beside the catch-all section chip it is the key's
-// spelling of; re-exported because `@jbrowse/core/util/markEncoding` is a
-// plugin ABI module and nothing is dropped from one.
-export { NO_VALUE_LABEL } from './groupKeys.ts'
+export { NO_VALUE_LABEL } from './categoricalField.ts'
 
 export const DEFAULT_MARK_COLOR = '#0068d1'
 
@@ -73,11 +70,6 @@ export const DEFAULT_MARK_COLOR = '#0068d1'
 // reads a value that is not finite: a misconfiguration, so it surfaces rather
 // than vanishing, and darker than the no-category grey beside it.
 const FALLBACK_COLOR = cssColorToABGR('#808080')
-
-// A feature with nothing in a categorical field is not a misconfiguration, so
-// it paints what every categorical channel in the tree paints a value-less
-// feature.
-const NO_CATEGORY = cssColorToABGR(NO_CATEGORY_COLOR)
 
 /**
  * #api
@@ -176,68 +168,39 @@ function lutColorAt(lut: Uint8Array, t: number) {
   return packAbgr(lut[o]!, lut[o + 1]!, lut[o + 2]!, lut[o + 3]!)
 }
 
-// The legend order is the facet order: the listed domain first, a listed
-// value the region lacks included, and the rest under `compareGroupKeys`, so
-// a faceted mark coloured by its facet field lists its legend as its chips.
-function categoryOrder(
-  seen: Map<string, number>,
-  domain: (string | number)[] | undefined,
-) {
-  const listed = (domain ?? []).map(String)
-  return [...new Set([...listed, ...seen.keys()])].sort(
-    groupKeyComparator(listed),
-  )
-}
-
 // The categorical arm `color` and `glyph` share: the walk records which
-// distinct value each admitted instance carried, and `resolve` hands every
-// value its entry through a categorical scale, so two regions that met
-// different value sets still agree on every value they share.
-function categoricalChannel(read: ChannelReader, n: number) {
-  const categories = new Map<string, number>()
-  const indexOf = new Int32Array(n)
+// key each admitted instance carried, `''` for none, and `resolve` hands
+// every key met its entry in the field's order, so two regions that met
+// different key sets still agree on every key they share.
+function categoricalChannel(
+  read: ChannelReader,
+  categories: CategoricalField,
+  n: number,
+) {
+  const keys = new Map<string, number>()
+  const indexOf = new Uint32Array(n)
   return {
     indexOf,
     collect(f: Feature, at: number) {
-      const raw = read(f)
-      if (raw === undefined || raw === null || raw === '') {
-        indexOf[at] = -1
-        return
-      }
-      const label = String(raw)
-      let index = categories.get(label)
+      const key = categories.key(read(f))
+      let index = keys.get(key)
       if (index === undefined) {
-        index = categories.size
-        categories.set(label, index)
+        index = keys.size
+        keys.set(key, index)
       }
       indexOf[at] = index
     },
-    resolve<T>(
-      domain: (string | number)[] | undefined,
-      entryOf: (label: string) => T,
-    ) {
-      const ofIndex: T[] = Array.from({ length: categories.size })
-      const entries: { label: string; value: T }[] = []
-      categoryOrder(categories, domain).forEach(label => {
-        const value = entryOf(label)
-        const index = categories.get(label)
-        if (index !== undefined) {
-          ofIndex[index] = value
-        }
-        entries.push({ label, value })
-      })
+    resolve<T>(entryOf: (key: string) => T) {
+      const ofIndex: T[] = Array.from({ length: keys.size })
+      const entries: { value: string; entry: T }[] = []
+      for (const value of [...keys.keys()].sort(categories.compare)) {
+        const entry = entryOf(value)
+        ofIndex[keys.get(value)!] = entry
+        entries.push({ value, entry })
+      }
       return { ofIndex, entries }
     },
   }
-}
-
-function hasMissing(indexOf: Int32Array, count: number) {
-  for (let i = 0; i < count; i++) {
-    if (indexOf[i]! < 0) {
-      return true
-    }
-  }
-  return false
 }
 
 /**
@@ -310,9 +273,16 @@ export function encodeFeatures<L extends LaneName>(
         : channelReader(scaled.field, jexl)
   // A scaled channel resolves after the walk, once the table is known: the
   // category per admitted instance, or a ramp's raw value, kept here.
+  const colorField =
+    scaled?.scale === 'categorical'
+      ? categoricalField(scaled.field, {
+          domain: scaled.domain?.map(String),
+          palette: scaled.palette,
+        })
+      : undefined
   const colorCategories =
-    scaled?.scale === 'categorical' && readColor
-      ? categoricalChannel(readColor, n)
+    colorField && readColor
+      ? categoricalChannel(readColor, colorField, n)
       : undefined
   const rampValues =
     scaled && scaled.scale !== 'categorical'
@@ -321,9 +291,19 @@ export function encodeFeatures<L extends LaneName>(
   const { glyph: glyphEncoding } = encoding
   const glyphScaled =
     glyph && typeof glyphEncoding === 'object' ? glyphEncoding : undefined
-  const glyphCategories = glyphScaled
-    ? categoricalChannel(channelReader(glyphScaled.field, jexl), n)
+  const glyphField = glyphScaled
+    ? categoricalField(glyphScaled.field, {
+        domain: glyphScaled.domain?.map(String),
+      })
     : undefined
+  const glyphCategories =
+    glyphScaled && glyphField
+      ? categoricalChannel(
+          channelReader(glyphScaled.field, jexl),
+          glyphField,
+          n,
+        )
+      : undefined
   const readGlyph = glyph
     ? glyphReader(
         typeof glyphEncoding === 'object' ? undefined : glyphEncoding,
@@ -374,25 +354,24 @@ export function encodeFeatures<L extends LaneName>(
   }
 
   let scale: ColorScaleTable | undefined
-  if (scaled?.scale === 'categorical' && colorCategories && color) {
-    const colorOf = categoricalColorScale(scaled.domain, scaled.palette)
-    const { ofIndex, entries } = colorCategories.resolve(scaled.domain, label =>
-      cssColorToABGR(colorOf(label)),
+  if (
+    scaled?.scale === 'categorical' &&
+    colorField &&
+    colorCategories &&
+    color
+  ) {
+    const { ofIndex, entries } = colorCategories.resolve(key =>
+      cssColorToABGR(colorField.color(key)),
     )
     const { indexOf } = colorCategories
     for (let i = 0; i < count; i++) {
-      const index = indexOf[i]!
-      color[i] = index < 0 ? NO_CATEGORY : ofIndex[index]!
+      color[i] = ofIndex[indexOf[i]!]!
     }
     scale = {
       kind: 'categorical',
       field: scaled.field,
-      entries: [
-        ...entries.map(e => ({ label: e.label, color: e.value })),
-        ...(hasMissing(indexOf, count)
-          ? [{ label: NO_VALUE_LABEL, color: NO_CATEGORY, missing: true }]
-          : []),
-      ],
+      domain: [...colorField.domain],
+      entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
   } else if (scaled && scaled.scale !== 'categorical' && rampValues) {
     const extent = finiteExtremes(rampValues, count)
@@ -424,26 +403,24 @@ export function encodeFeatures<L extends LaneName>(
   }
 
   let glyphScale: GlyphScaleTable | undefined
-  if (glyphScaled && glyphCategories && glyph) {
-    const { ofIndex, entries } = glyphCategories.resolve(
-      glyphScaled.domain,
-      categoricalScale(glyphScaled.domain, glyphScaled.range ?? GLYPH_NAMES),
+  if (glyphScaled && glyphField && glyphCategories && glyph) {
+    const glyphOf = categoricalScale(
+      glyphField.domain,
+      glyphScaled.range ?? GLYPH_NAMES,
+    )
+    const { ofIndex, entries } = glyphCategories.resolve((key): GlyphName =>
+      key === '' ? 'disc' : glyphOf(key),
     )
     const codeOfIndex = Uint8Array.from(ofIndex, name => GLYPH_CODES[name])
     const { indexOf } = glyphCategories
     for (let i = 0; i < count; i++) {
-      const index = indexOf[i]!
-      glyph[i] = index < 0 ? GLYPH_DISC : codeOfIndex[index]!
+      glyph[i] = codeOfIndex[indexOf[i]!]!
     }
     glyphScale = {
       kind: 'glyph',
       field: glyphScaled.field,
-      entries: [
-        ...entries.map(e => ({ label: e.label, glyph: e.value })),
-        ...(hasMissing(indexOf, count)
-          ? [{ label: NO_VALUE_LABEL, glyph: 'disc' as const, missing: true }]
-          : []),
-      ],
+      domain: [...glyphField.domain],
+      entries: entries.map(e => ({ value: e.value, glyph: e.entry })),
     }
   }
 

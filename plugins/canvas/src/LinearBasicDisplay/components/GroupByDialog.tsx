@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
-import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   Button,
   FormControlLabel,

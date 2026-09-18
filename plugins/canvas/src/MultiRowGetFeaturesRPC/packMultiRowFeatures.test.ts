@@ -389,9 +389,9 @@ describe('the legend candidates', () => {
   it('keeps one per (row, name, color), rows as partitionValues indices', () => {
     const red = cssColorToABGR('255,0,0')
     expect(packed(chromHmm).legendCandidates).toEqual([
-      { rowIndex: 0, label: 'TssA', color: red },
-      { rowIndex: 0, label: 'Quies', color: cssColorToABGR('0,255,0') },
-      { rowIndex: 1, label: 'TssA', color: red },
+      { rowIndex: 0, value: 'TssA', color: red },
+      { rowIndex: 0, value: 'Quies', color: cssColorToABGR('0,255,0') },
+      { rowIndex: 1, value: 'TssA', color: red },
     ])
   })
 

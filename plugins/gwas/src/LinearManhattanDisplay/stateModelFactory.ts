@@ -8,6 +8,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import {
   MAX_LEGEND_ENTRIES,
@@ -577,7 +578,6 @@ export function stateModelFactory(
             return [ldScale(this.indexSnpMissing)]
           }
           if (self.colorBy === 'field') {
-            const domain = self.colorDomain
             // Every point of a region carries the same table, so the region is
             // its own source and every entry paints: the display has no rows
             // to hide a color behind.
@@ -592,8 +592,9 @@ export function stateModelFactory(
               }),
               {
                 id: 'field',
-                field: self.colorField,
-                domain: domain.length ? domain : undefined,
+                field: categoricalField(self.colorField, {
+                  domain: self.colorDomain,
+                }),
                 maxItems: MAX_LEGEND_ENTRIES,
               },
             )

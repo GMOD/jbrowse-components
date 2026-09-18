@@ -4,9 +4,13 @@ import { unionLegendCandidates } from '@jbrowse/core/util/legendCandidates'
 import { resolveLocalRowIndices } from './featurePainting.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
-import type { LegendEntry } from '@jbrowse/core/util/legendCandidates'
 
-export type { LegendEntry }
+// A key row keyed by the name its features carry, so a click hides that
+// name's color.
+export interface LegendEntry {
+  label: string
+  color: number
+}
 
 interface ConfiguredLegendEntry {
   label: string
@@ -79,5 +83,7 @@ export function buildColorLegend(
       },
     }
   })
-  return entries.length > 1 ? entries : []
+  return entries.length > 1
+    ? entries.map(({ value, color }) => ({ label: value, color }))
+    : []
 }

@@ -2568,6 +2568,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/categoricalField": {
+      "package": "@jbrowse/core",
+      "names": [
+        "NO_VALUE_LABEL",
+        "STRAND_FIELD",
+        "categoricalField"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/chooseGridPitch": {
       "package": "@jbrowse/core",
       "names": [
@@ -2827,13 +2836,11 @@
       "package": "@jbrowse/core",
       "names": [
         "MAX_GROUPS",
-        "NO_VALUE_LABEL",
         "OVERFLOW_GROUP_KEY",
         "capGroupKeys",
         "carryGroupDomain",
+        "categoryKey",
         "compareGroupKeys",
-        "facetSectionLabel",
-        "facetSectionOrder",
         "groupKeyComparator",
         "groupKeySpaceOf",
         "overflowLabel",
@@ -3274,17 +3281,6 @@
         "calcStdFromSums",
         "rectifyStats",
         "scoresToStats"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/core/util/strandScale": {
-      "package": "@jbrowse/core",
-      "names": [
-        "STRAND_DOMAIN",
-        "STRAND_FIELD",
-        "STRAND_PALETTE",
-        "readStrand",
-        "strandLabel"
       ],
       "worker": "real"
     },

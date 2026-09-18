@@ -2,7 +2,6 @@ import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 
 import {
   makeFeatureData,
@@ -100,11 +99,11 @@ describe('derived color key', () => {
           candidates: [
             {
               rowIndex: 0,
-              label: 'protein_coding',
+              value: 'protein_coding',
               color: cssColorToABGR('red'),
             },
-            { rowIndex: 1, label: 'lncRNA', color: cssColorToABGR('blue') },
-            { rowIndex: 2, label: 'snoRNA', color: cssColorToABGR('green') },
+            { rowIndex: 1, value: 'lncRNA', color: cssColorToABGR('blue') },
+            { rowIndex: 2, value: 'snoRNA', color: cssColorToABGR('green') },
           ],
           rows: [
             { strand: undefined, groupKey: 'protein_coding' },
@@ -118,27 +117,17 @@ describe('derived color key', () => {
     return display
   }
 
-  // What the worker's walk records: a colour per value, and the no-value row
-  // marked as one rather than named as one — `derivedColorScale` places it by
-  // the flag, so a fixture that only spells the label is not staging a
-  // value-less feature.
-  function paintedData(labels: string[]) {
+  // What the worker's walk records: a colour per key, `''` for no value.
+  function paintedData(keys: string[]) {
     return makeFeatureData({
       colorKey: {
-        candidates: labels.map((label, i) =>
-          label === NO_VALUE_LABEL
-            ? {
-                rowIndex: 0,
-                label,
-                color: cssColorToABGR(NO_CATEGORY_COLOR),
-                missing: true,
-              }
-            : {
-                rowIndex: 0,
-                label,
-                color: cssColorToABGR(`hsl(${i * 40}, 70%, 50%)`),
-              },
-        ),
+        candidates: keys.map((value, i) => ({
+          rowIndex: 0,
+          value,
+          color: cssColorToABGR(
+            value === '' ? NO_CATEGORY_COLOR : `hsl(${i * 40}, 70%, 50%)`,
+          ),
+        })),
         rows: [{ strand: undefined, groupKey: undefined }],
       },
     })
@@ -149,30 +138,14 @@ describe('derived color key', () => {
 
   it('keeps the no-value row last under a declared domain', () => {
     const display = coloredDisplay({ field: 'biotype', domain: ['snoRNA'] })
-    display.setRpcData(
-      0,
-      paintedData([NO_VALUE_LABEL, 'protein_coding', 'snoRNA']),
-      ctgA,
-    )
-    expect(keyValues(display)).toEqual([
-      'snoRNA',
-      'protein_coding',
-      NO_VALUE_LABEL,
-    ])
+    display.setRpcData(0, paintedData(['', 'protein_coding', 'snoRNA']), ctgA)
+    expect(keyValues(display)).toEqual(['snoRNA', 'protein_coding', ''])
   })
 
   it('keeps the no-value row last with no domain', () => {
     const display = coloredDisplay({ field: 'biotype' })
-    display.setRpcData(
-      0,
-      paintedData([NO_VALUE_LABEL, 'protein_coding', 'lncRNA']),
-      ctgA,
-    )
-    expect(keyValues(display)).toEqual([
-      'lncRNA',
-      'protein_coding',
-      NO_VALUE_LABEL,
-    ])
+    display.setRpcData(0, paintedData(['', 'protein_coding', 'lncRNA']), ctgA)
+    expect(keyValues(display)).toEqual(['lncRNA', 'protein_coding', ''])
   })
 
   it('lists the painted values in the color domain order', () => {
@@ -209,10 +182,10 @@ describe('derived color key', () => {
       makeFeatureData({
         colorKey: {
           candidates: [
-            { rowIndex: 0, label: '1', color: cssColorToABGR('tomato') },
+            { rowIndex: 0, value: '1', color: cssColorToABGR('tomato') },
             {
               rowIndex: 0,
-              label: '-1',
+              value: '-1',
               color: cssColorToABGR('cornflowerblue'),
             },
           ],
@@ -257,7 +230,7 @@ describe('derived color key', () => {
 
     it('writes the key in its order after the domain, less the no-value row', () => {
       const display = coloredDisplay({ field: 'biotype', domain: ['snoRNA'] })
-      paint(display, ['protein_coding', NO_VALUE_LABEL, 'snoRNA', 'lncRNA'])
+      paint(display, ['protein_coding', '', 'snoRNA', 'lncRNA'])
       pinRow(display)!.onClick()
       expect(display.colorSettings.colorDomain).toEqual([
         'snoRNA',
@@ -298,8 +271,8 @@ describe('derived color key', () => {
       makeFeatureData({
         colorKey: {
           candidates: [
-            { rowIndex: 0, label: 'a', color: cssColorToABGR('red') },
-            { rowIndex: 0, label: 'b', color: cssColorToABGR('red') },
+            { rowIndex: 0, value: 'a', color: cssColorToABGR('red') },
+            { rowIndex: 0, value: 'b', color: cssColorToABGR('red') },
           ],
           rows: [{ strand: undefined, groupKey: undefined }],
         },

@@ -46,6 +46,26 @@ the table and `rampColor`'s texel mapping cannot disagree.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
+## categoricalField
+
+```js
+// type signature
+(field: string, { domain, palette, }?: { domain?: readonly string[] | undefined; palette?: readonly string[] | undefined; }) => CategoricalField
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
+
+## CategoricalField
+
+One categorical field as every channel reads it — a facet's sections, a
+color's palette entries, a key's rows. `key` files a value, `compare`
+orders keys (the `domain` first, the rest by `compareGroupKeys`, `''`
+after them), `label` names a key in a legend, `sectionLabel` on a chip, and
+`color` paints it. A key's color depends only on the key and the
+declaration, so every region agrees on it.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
+
 ## CategoricalRef
 
 A field bound to a categorical scale: each distinct value takes one entry
@@ -54,10 +74,22 @@ of the channel's range — a palette entry for `color`, a glyph name for
 slot it names, anything else hashes in), so every region agrees on a value
 it shares with another at the cost of an occasional collision. A `domain`
 spends the range deliberately: the listed values take it in order, and a
-value the domain leaves out never takes a listed value's entry. The legend
-lists the domain first and the rest sorted.
+value the domain leaves out never takes a listed value's entry. The domain
+orders and spends; it never adds a value the data lacks.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## categoryKey
+
+The key a value files under: `''` for none, a list joined with commas, and
+anything else as its string.
+
+```js
+// type signature
+(value: unknown) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/groupKeys.ts)
 
 ## ChannelReader
 
@@ -174,10 +206,8 @@ transferables.
 
 Stack the facet groups themselves: `stack`'s `groupby` numbers every group
 from 0, so the sections overlap until each one's rows are offset by the
-rows of the groups above it. The order is `facetSectionOrder` over the
-facet's `domain` and the tail past the cap merges into one overflow
-section, the same two rules the chip row reads, so a layout and a reading
-of it agree without sharing state.
+rows of the groups above it, in the field's order, and the tail past the
+cap merges into one overflow section.
 
 A group's height is its own highest row plus one, which is right whether or
 not the `stack` grouped by this field — an ungrouped pack simply leaves one
@@ -185,7 +215,7 @@ group spanning every row.
 
 ```js
 // type signature
-(features: readonly Feature[], { field, domain, as }: FacetSpec) => { features: readonly Feature[]; sections: FacetSection[]; }
+(features: readonly Feature[], { field, domain, as }: FacetSpec, jexl?: JexlInstance | undefined) => { features: readonly Feature[]; sections: FacetSection[]; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -315,17 +345,15 @@ form is what crosses the wire; a reader is built in the worker.
 
 ## NO_VALUE_LABEL
 
-The key row a feature with nothing in a categorical field lands on, so the
-legend says why a mark is grey, or a disc, rather than listing a blank
-value. The same catch-all `facetSectionLabel` chips `field: none`, named for
-a key rather than for a section.
+The row a feature with nothing in a categorical field lands on, so a key
+says why a mark is grey rather than listing a blank value.
 
 ```js
 // type signature
 "(no value)"
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/groupKeys.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
 ## RampRef
 
@@ -333,17 +361,6 @@ The ramp a continuous colour scale samples: a named ramp, or evenly spaced
 CSS colour stops.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
-
-## readStrand
-
-A feature's strand as the scale reads it: one with none is unstranded.
-
-```js
-// type signature
-(feature: Feature) => unknown
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
 
 ## relight
 
@@ -469,47 +486,14 @@ the color string.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
-## STRAND_DOMAIN
-
-```js
-// type signature
-string[]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
-
 ## STRAND_FIELD
-
-Strand as a categorical color field: the values a feature carries, the
-colors strand coloring paints them (red forward, blue reverse, the
-vocabulary the synteny ribbons paint too) and the names a key gives them.
 
 ```js
 // type signature
 "strand"
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
-
-## STRAND_PALETTE
-
-```js
-// type signature
-string[]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
-
-## strandLabel
-
-How a key names a strand value, or undefined for a value that is none.
-
-```js
-// type signature
-(value: string) => string
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/strandScale.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
 ## TransformStep
 

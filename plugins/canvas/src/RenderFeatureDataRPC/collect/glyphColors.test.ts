@@ -191,7 +191,7 @@ describe('boxColor (color by a field)', () => {
     return {
       paint: (box: Feature, level?: Feature) =>
         boxColor(box, ctx, colorKey, level).color,
-      labels: () => colorKey.candidates.map(c => c.label),
+      labels: () => colorKey.candidates.map(c => c.value),
     }
   }
 
@@ -224,10 +224,10 @@ describe('boxColor (color by a field)', () => {
     expect(paint(parts[0]!, transcript)).toBe(categoricalColor(undefined))
   })
 
-  it('names a value-less box the no-value row', () => {
+  it('records a value-less box under the no-value key', () => {
     const { paint, labels } = painter('missing')
     expect(paint(parts[0]!, transcript)).toBe(categoricalColor(undefined))
-    expect(labels()).toEqual(['(no value)'])
+    expect(labels()).toEqual([''])
   })
 
   it('names nothing for a CDS the reading frame paints instead', () => {

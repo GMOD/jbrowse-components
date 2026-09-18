@@ -558,7 +558,8 @@ test('a mark outside its zoom range leaves the shared domain and the legend', ()
         scale: {
           kind: 'categorical',
           field: 'type',
-          entries: [{ label: 'gene', color: 0xff0000ff }],
+          domain: [],
+          entries: [{ value: 'gene', color: 0xff0000ff }],
         },
       },
     ]),
@@ -591,7 +592,8 @@ test('the legend reads the scale table the worker resolved', () => {
         scale: {
           kind: 'categorical',
           field: 'type',
-          entries: [{ label: 'gene', color: 0xff0000ff }],
+          domain: [],
+          entries: [{ value: 'gene', color: 0xff0000ff }],
         },
       },
     ]),
@@ -604,7 +606,8 @@ test('the legend reads the scale table the worker resolved', () => {
       scale: {
         kind: 'categorical',
         field: 'type',
-        entries: [{ label: 'gene', color: 0xff0000ff }],
+        domain: [],
+        entries: [{ value: 'gene', color: 0xff0000ff }],
       },
     },
   ])
@@ -633,17 +636,19 @@ test('a glyph scale over the field the colour classifies folds into one key', ()
         scale: {
           kind: 'categorical',
           field: 'strand',
+          domain: [],
           entries: [
-            { label: '1', color: 0xff0000ff },
-            { label: '-1', color: 0xff00ff00 },
+            { value: '1', color: 0xff0000ff },
+            { value: '-1', color: 0xff00ff00 },
           ],
         },
         glyphScale: {
           kind: 'glyph',
           field: 'strand',
+          domain: [],
           entries: [
-            { label: '1', glyph: 'triangle' },
-            { label: '-1', glyph: 'diamond' },
+            { value: '1', glyph: 'triangle' },
+            { value: '-1', glyph: 'diamond' },
           ],
         },
       },
@@ -659,12 +664,12 @@ test('a glyph scale over the field the colour classifies folds into one key', ()
       entries: [
         {
           value: '1',
-          label: '1',
+          label: 'Forward strand',
           swatches: [{ color: 'rgba(255,0,0,1)', glyph: 'triangle' }],
         },
         {
           value: '-1',
-          label: '-1',
+          label: 'Reverse strand',
           swatches: [{ color: 'rgba(0,255,0,1)', glyph: 'diamond' }],
         },
       ],
@@ -703,9 +708,10 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
         glyphScale: {
           kind: 'glyph',
           field: 'strand',
+          domain: [],
           entries: [
-            { label: '1', glyph: 'triangle' },
-            { label: '-1', glyph: 'diamond' },
+            { value: '1', glyph: 'triangle' },
+            { value: '-1', glyph: 'diamond' },
           ],
         },
       },
@@ -719,9 +725,10 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
       scale: {
         kind: 'glyph',
         field: 'strand',
+        domain: [],
         entries: [
-          { label: '1', glyph: 'triangle' },
-          { label: '-1', glyph: 'diamond' },
+          { value: '1', glyph: 'triangle' },
+          { value: '-1', glyph: 'diamond' },
         ],
       },
     },
@@ -734,12 +741,12 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
       entries: [
         {
           value: '1',
-          label: '1',
+          label: 'Forward strand',
           swatches: [{ color: 'currentColor', glyph: 'triangle' }],
         },
         {
           value: '-1',
-          label: '-1',
+          label: 'Reverse strand',
           swatches: [{ color: 'currentColor', glyph: 'diamond' }],
         },
       ],

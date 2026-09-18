@@ -1,6 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 
 import {
   FEATURE_DEFAULT_COLOR,
@@ -79,8 +79,8 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
-     * The color channel's scale, strand's colors filled in, or undefined
-     * while the `color` slot paints.
+     * The color channel's field, or undefined while the `color` slot
+     * paints.
      */
     get colorEncoding() {
       return featureColorScale(this.colorSettings)

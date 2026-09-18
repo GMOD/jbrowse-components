@@ -57,7 +57,10 @@ test('the cap counts in domain order, so a placed key never merges behind an unp
     (_, i) => `v${String(i).padStart(3, '0')}`,
   )
   const last = keys.at(-1)!
-  const { sectionOf, mergedCount } = capGroupKeys(keys, [last])
+  const { sectionOf, mergedCount } = capGroupKeys(
+    keys,
+    groupKeyComparator([last]),
+  )
   expect(sectionOf(last)).toBe(last)
   expect(sectionOf('v000')).toBe('v000')
   expect(sectionOf(`v0${MAX_GROUPS - 2}`)).toBe(OVERFLOW_GROUP_KEY)
@@ -69,7 +72,7 @@ test('the catch-all stays out of the merge wherever the domain places it', () =>
     '',
     ...Array.from({ length: MAX_GROUPS + 5 }, (_, i) => `v${i}`),
   ]
-  const { sectionOf } = capGroupKeys(keys, [''])
+  const { sectionOf } = capGroupKeys(keys, groupKeyComparator(['']))
   expect(sectionOf('')).toBe('')
   expect(sectionOf('v0')).toBe('v0')
 })
@@ -97,14 +100,31 @@ test('a digit run inside a key compares by magnitude, so chr2 files before chr10
   expect(['v01', 'v1'].sort(compareGroupKeys)).toEqual(['v1', 'v01'])
 })
 
-test('a signed or decimal key compares by magnitude, and a bare sign does not', () => {
+test('numbers sort first by value, then every other key', () => {
   expect(['1', '-1', '0.5', '-', '+'].sort(compareGroupKeys)).toEqual([
-    '+',
-    '-',
     '-1',
     '0.5',
     '1',
+    '+',
+    '-',
   ])
+})
+
+test('the order is transitive, so every input order sorts the same', () => {
+  const keys = ['-2', '-5x', '-10', '1.5', '1.7x', '1.10', 'a', '']
+  const permutations = (xs: string[]): string[][] =>
+    xs.length <= 1
+      ? [xs]
+      : xs.flatMap((x, i) =>
+          permutations([...xs.slice(0, i), ...xs.slice(i + 1)]).map(p => [
+            x,
+            ...p,
+          ]),
+        )
+  const sorted = new Set(
+    permutations(keys).map(p => p.sort(compareGroupKeys).join('|')),
+  )
+  expect([...sorted]).toEqual(['-10|-2|1.10|1.5|-5x|1.7x|a|'])
 })
 
 test('a re-pick in the same key space keeps the domain; a reorder or a new space does not', () => {

@@ -1,7 +1,4 @@
-import {
-  facetSectionOrder,
-  groupKeyComparator,
-} from '@jbrowse/core/util/groupKeys'
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { FacetSection } from '@jbrowse/core/util/markEncoding'
@@ -10,8 +7,7 @@ import type { FacetSection } from '@jbrowse/core/util/markEncoding'
  * The sections across every loaded region: each key's band is the union of
  * the bands the regions gave it, since a group the worker met in two regions
  * need not have packed to the same depth in both. One region — the common
- * case — is its own table exactly. The order is `facetSectionOrder` over the
- * facet's two slots, which is the order the worker stacked them in.
+ * case — is its own table exactly, in the field's order.
  */
 export function foldFacetSections(
   map: ReadonlyMap<number, MarkRegionData>,
@@ -32,8 +28,8 @@ export function foldFacetSections(
     }
   }
   let next = 0
-  const order = facetSectionOrder(field, domain)
-  return [...bands.keys()].sort(groupKeyComparator(order)).map(key => {
+  const { compare } = categoricalField(field, { domain })
+  return [...bands.keys()].sort(compare).map(key => {
     const { label, rowCount } = bands.get(key)!
     const section = { key, label, firstRow: next, rowCount }
     next += rowCount

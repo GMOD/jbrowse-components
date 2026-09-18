@@ -1,4 +1,4 @@
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/groupKeys'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
 

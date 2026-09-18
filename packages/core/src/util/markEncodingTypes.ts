@@ -31,8 +31,8 @@ export type RampRef = 'viridis' | string[]
  * slot it names, anything else hashes in), so every region agrees on a value
  * it shares with another at the cost of an occasional collision. A `domain`
  * spends the range deliberately: the listed values take it in order, and a
- * value the domain leaves out never takes a listed value's entry. The legend
- * lists the domain first and the rest sorted.
+ * value the domain leaves out never takes a listed value's entry. The domain
+ * orders and spends; it never adds a value the data lacks.
  */
 export interface CategoricalRef {
   field: FieldRef
@@ -132,12 +132,9 @@ export type ColorScaleTable =
   | {
       kind: 'categorical'
       field: string
-      /**
-       * `missing` marks the one row that names the absence of a value rather
-       * than one of them, so a key can place it after the values however it
-       * orders them.
-       */
-      entries: { label: string; color: number; missing?: boolean }[]
+      domain: string[]
+      /** Each key met, in the field's order, `''` for no value. */
+      entries: { value: string; color: number }[]
     }
   | {
       kind: 'ramp'
@@ -160,7 +157,8 @@ export type ColorScaleTable =
 export interface GlyphScaleTable {
   kind: 'glyph'
   field: string
-  entries: { label: string; glyph: GlyphName; missing?: boolean }[]
+  domain: string[]
+  entries: { value: string; glyph: GlyphName }[]
 }
 
 /**

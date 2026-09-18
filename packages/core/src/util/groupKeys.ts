@@ -1,5 +1,3 @@
-import { STRAND_DOMAIN, STRAND_FIELD, strandLabel } from './strandScale.ts'
-
 /**
  * The ordering every in-track group-by shares, whatever partitioned the
  * features: named groups first, then the `''` catch-all a dimension files its
@@ -36,30 +34,7 @@ function groupKeyRank(key: string) {
 const NUMERIC = /^-?\d+(\.\d+)?$/
 const DIGIT_RUNS = /\d+|\D+/g
 
-/**
- * Two numeric keys compare by magnitude, so numeric tag values order 1, 2,
- * 10 and a signed field orders -1 before 1. Any other pair compares run by
- * run, a digit run by magnitude and the rest by code point, so chr2 files
- * before chr10 and HP1 before HP10 while '+' stays before '-'. Code point
- * rather than localeCompare keeps the order deterministic across locales. A
- * display merging groups across regions applies this same order, since one
- * region's sort cannot place a group absent from it.
- */
-export function compareGroupKeys(a: string, b: string) {
-  const rankDiff = groupKeyRank(a) - groupKeyRank(b)
-  if (rankDiff !== 0) {
-    return rankDiff
-  }
-  if (a === b) {
-    return 0
-  }
-  if (NUMERIC.test(a) && NUMERIC.test(b)) {
-    const na = Number(a)
-    const nb = Number(b)
-    if (na !== nb) {
-      return na < nb ? -1 : 1
-    }
-  }
+function compareRuns(a: string, b: string) {
   const runsA = a.match(DIGIT_RUNS) ?? []
   const runsB = b.match(DIGIT_RUNS) ?? []
   const shared = Math.min(runsA.length, runsB.length)
@@ -79,7 +54,32 @@ export function compareGroupKeys(a: string, b: string) {
     }
     return x < y ? -1 : 1
   }
-  return runsA.length < runsB.length ? -1 : 1
+  return runsA.length - runsB.length
+}
+
+/**
+ * Numbers first by value, then every other key run by run with digit runs by
+ * magnitude, so -1 before 1 and chr2 before chr10. The two classes never
+ * interleave: a signed or decimal number read run by run orders differently
+ * than by value, and letting them mix made the order intransitive.
+ */
+export function compareGroupKeys(a: string, b: string) {
+  const rankDiff = groupKeyRank(a) - groupKeyRank(b)
+  if (rankDiff !== 0 || a === b) {
+    return rankDiff
+  }
+  const numA = NUMERIC.test(a)
+  const numB = NUMERIC.test(b)
+  if (numA !== numB) {
+    return numA ? -1 : 1
+  }
+  if (numA) {
+    const diff = Number(a) - Number(b)
+    if (diff !== 0) {
+      return diff < 0 ? -1 : 1
+    }
+  }
+  return compareRuns(a, b)
 }
 
 /**
@@ -133,57 +133,18 @@ export function overflowLabel(count: number) {
 }
 
 /**
- * The chip a facet section shows: a strand by name, any other field's value
- * as `field: value`, and its catch-all as `field: none`.
- */
-export function facetSectionLabel(field: string, key: string) {
-  return (
-    (field === STRAND_FIELD ? strandLabel(key) : undefined) ??
-    `${field}: ${key === '' ? 'none' : key}`
-  )
-}
-
-/**
- * #api
- * The key row a feature with nothing in a categorical field lands on, so the
- * legend says why a mark is grey, or a disc, rather than listing a blank
- * value. The same catch-all `facetSectionLabel` chips `field: none`, named for
- * a key rather than for a section.
- */
-export const NO_VALUE_LABEL = '(no value)'
-
-/**
- * The order a facet stacks its sections in, its defaults filled in: the
- * declared `domain`, or forward, reverse and unstranded for a strand facet
- * that declares none. Raw strand keys sort `-1, 0, 1` under
- * `compareGroupKeys`, which stacks the reverse band first and reads as an
- * accident of the encoding.
- */
-export function facetSectionOrder(
-  field: string,
-  domain: readonly string[] = [],
-) {
-  return domain.length === 0 && field === STRAND_FIELD ? STRAND_DOMAIN : domain
-}
-
-/**
  * Which section each key stacks into once the cap applies: the first
- * `MAX_GROUPS` keys in `domain` order keep their own, the rest fold into the
- * overflow section, so a key the domain places never merges behind one it
- * does not. The catch-all `''` is held out of the merge, since "lacking the
- * value" is a distinct answer users look for and it sorts into the very tail
- * this merges. Two callers with the same key set get the same answer, so a
- * layout and a reading of that layout agree on the sections without sharing
- * state.
+ * `MAX_GROUPS` keys in `compare` order keep their own and the rest fold into
+ * the overflow section. The catch-all `''` is held out of the merge, since
+ * "lacking the value" is an answer users look for.
  */
 export function capGroupKeys(
   keys: Iterable<string>,
-  domain?: readonly string[],
+  compare: (a: string, b: string) => number = compareGroupKeys,
 ) {
-  const ordered = [...new Set(keys)].sort(groupKeyComparator(domain))
+  const ordered = [...new Set(keys)].sort(compare)
   const hasUntagged = ordered.includes('')
   const named = ordered.filter(key => key !== '')
-  // > not >=, so the cap only fires when it genuinely merges 2+ groups.
   const merged =
     ordered.length > MAX_GROUPS
       ? named.slice(MAX_GROUPS - (hasUntagged ? 2 : 1))

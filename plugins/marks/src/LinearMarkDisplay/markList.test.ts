@@ -383,14 +383,15 @@ describe('findMarkHit', () => {
   })
 })
 
-test('the legend unions categorical tables across regions and keeps the first colour', () => {
+test("the legend unions categorical tables across regions in the field's order, keeping the first colour", () => {
   const regionA: MarkRegionData = {
     layers: [
       layer([1], [1], [RED], {
         scale: {
           kind: 'categorical',
           field: 'type',
-          entries: [{ label: 'gene', color: RED }],
+          domain: [],
+          entries: [{ value: 'gene', color: RED }],
         },
       }),
     ],
@@ -401,9 +402,10 @@ test('the legend unions categorical tables across regions and keeps the first co
         scale: {
           kind: 'categorical',
           field: 'type',
+          domain: [],
           entries: [
-            { label: 'exon', color: BLUE },
-            { label: 'gene', color: BLUE },
+            { value: 'exon', color: BLUE },
+            { value: 'gene', color: BLUE },
           ],
         },
       }),
@@ -416,9 +418,10 @@ test('the legend unions categorical tables across regions and keeps the first co
       scale: {
         kind: 'categorical',
         field: 'type',
+        domain: [],
         entries: [
-          { label: 'gene', color: RED },
-          { label: 'exon', color: BLUE },
+          { value: 'exon', color: BLUE },
+          { value: 'gene', color: RED },
         ],
       },
     },

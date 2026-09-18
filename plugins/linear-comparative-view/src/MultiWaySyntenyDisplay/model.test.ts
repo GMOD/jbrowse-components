@@ -1,7 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/groupKeys'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'

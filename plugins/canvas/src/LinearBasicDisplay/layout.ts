@@ -1,7 +1,4 @@
-import {
-  facetSectionOrder,
-  groupKeyComparator,
-} from '@jbrowse/core/util/groupKeys'
+import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import {
@@ -10,7 +7,7 @@ import {
   cloneMutableFields,
 } from './applyLayout.ts'
 import { pileupFadeIds } from './densityCollapse.ts'
-import { sectionIdsOf } from './facet.ts'
+import { facetField, sectionIdsOf } from './facet.ts'
 import { applyIsoformGapFloor, planIsoformGapFloor } from './isoformGapFloor.ts'
 import { applyIsoformTrim } from './isoformTrim.ts'
 import { displayModeMetrics } from './layoutInputs.ts'
@@ -62,9 +59,7 @@ function sectionChipPx(inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>) {
 
 function sectionOrder(inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>) {
   const facet = effectiveFacet(inputs)
-  return groupKeyComparator(
-    facet && facetSectionOrder(facet.field, facet.domain),
-  )
+  return facet ? facetField(facet).compare : compareGroupKeys
 }
 
 // Which section every item stacks into, capped over the whole display, or

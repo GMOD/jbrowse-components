@@ -1,11 +1,6 @@
-import {
-  OVERFLOW_GROUP_KEY,
-  capGroupKeys,
-  facetSectionLabel,
-  facetSectionOrder,
-  groupKeyComparator,
-  overflowLabel,
-} from './groupKeys.ts'
+import { categoricalField } from './categoricalField.ts'
+import { fieldReader } from './fieldReader.ts'
+import { OVERFLOW_GROUP_KEY, capGroupKeys, overflowLabel } from './groupKeys.ts'
 import { stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 
@@ -385,10 +380,8 @@ function coverage(features: readonly Feature[], step: CoverageStep) {
  * #api
  * Stack the facet groups themselves: `stack`'s `groupby` numbers every group
  * from 0, so the sections overlap until each one's rows are offset by the
- * rows of the groups above it. The order is `facetSectionOrder` over the
- * facet's `domain` and the tail past the cap merges into one overflow
- * section, the same two rules the chip row reads, so a layout and a reading
- * of it agree without sharing state.
+ * rows of the groups above it, in the field's order, and the tail past the
+ * cap merges into one overflow section.
  *
  * A group's height is its own highest row plus one, which is right whether or
  * not the `stack` grouped by this field — an ungrouped pack simply leaves one
@@ -397,18 +390,19 @@ function coverage(features: readonly Feature[], step: CoverageStep) {
 export function facetRows(
   features: readonly Feature[],
   { field, domain, as = DEFAULT_STACK_AS }: FacetSpec,
+  jexl?: JexlInstance,
 ) {
-  const order = facetSectionOrder(field, domain)
-  const labels = new Map<string, string>()
-  const rows = features.map(f => {
-    const raw = f.get(field)
-    const key = raw === undefined || raw === null ? '' : String(raw)
-    if (!labels.has(key)) {
-      labels.set(key, facetSectionLabel(field, key))
-    }
-    return { feature: f, key, row: Number(f.get(as)) || 0 }
-  })
-  const { sectionOf, mergedCount } = capGroupKeys(labels.keys(), order)
+  const categories = categoricalField(field, { domain })
+  const read = fieldReader(field, jexl)
+  const rows = features.map(f => ({
+    feature: f,
+    key: categories.key(read(f)),
+    row: Number(f.get(as)) || 0,
+  }))
+  const { sectionOf, mergedCount } = capGroupKeys(
+    rows.map(r => r.key),
+    categories.compare,
+  )
   const heights = new Map<string, number>()
   for (const r of rows) {
     r.key = sectionOf(r.key)
@@ -417,12 +411,12 @@ export function facetRows(
   const sections: FacetSection[] = []
   const firstRows = new Map<string, number>()
   let next = 0
-  for (const key of [...heights.keys()].sort(groupKeyComparator(order))) {
+  for (const key of [...heights.keys()].sort(categories.compare)) {
     const rowCount = heights.get(key)!
     const label =
       key === OVERFLOW_GROUP_KEY
         ? overflowLabel(mergedCount)
-        : (labels.get(key) ?? key)
+        : categories.sectionLabel(key)
     sections.push({ key, label, firstRow: next, rowCount })
     firstRows.set(key, next)
     next += rowCount

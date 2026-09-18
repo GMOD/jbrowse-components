@@ -1,22 +1,18 @@
 import { derivedColorScale } from '@jbrowse/core/util/legendCandidates'
 
-import { colorValueLabel } from '../RenderFeatureDataRPC/featureColors.ts'
-
-import type { FeatureColorScale } from '../RenderFeatureDataRPC/featureColors.ts'
 import type {
   FeatureDataResult,
   SectionStamp,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 
 /**
- * The key a color channel's scale derives from what the worker painted, less a
- * color only a hidden section carries: `derivedColorScale` over the candidates
- * the walk recorded, which is the same derivation every channel-backed key
- * runs.
+ * The key a color channel derives from what the worker painted, less a color
+ * only a hidden section carries.
  */
 export function derivedColorKey(
-  scale: FeatureColorScale,
+  field: CategoricalField,
   regions: Iterable<Pick<FeatureDataResult, 'colorKey'>>,
   isHidden?: (section: SectionStamp) => boolean,
 ): ColorScale[] {
@@ -29,11 +25,6 @@ export function derivedColorKey(
         return !(isHidden && section && isHidden(section))
       },
     }),
-    {
-      id: 'color',
-      field: scale.field,
-      domain: scale.domain,
-      labelOf: value => colorValueLabel(scale.field, value),
-    },
+    { id: 'color', field },
   )
 }

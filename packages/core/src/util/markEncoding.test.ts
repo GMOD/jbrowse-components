@@ -9,11 +9,7 @@ import { NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR } from './colorBits.ts'
 import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
-import {
-  NO_VALUE_LABEL,
-  encodeFeatures,
-  encodedChannelTransferables,
-} from './markEncoding.ts'
+import { encodeFeatures, encodedChannelTransferables } from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
 
 import type { GlyphName, LaneName } from './markEncoding.ts'
@@ -106,10 +102,11 @@ test('an unpinned categorical scale colours by value, so two regions agree, and 
   expect(r.scale).toEqual({
     kind: 'categorical',
     field: 'type',
+    domain: [],
     entries: [
-      { label: 'cds', color: of('cds') },
-      { label: 'exon', color: of('exon') },
-      { label: 'gene', color: of('gene') },
+      { value: 'cds', color: of('cds') },
+      { value: 'exon', color: of('exon') },
+      { value: 'gene', color: of('gene') },
     ],
   })
   expect([...r.color]).toEqual(['gene', 'exon', 'gene', 'cds', 'gene'].map(of))
@@ -123,26 +120,23 @@ test('an unpinned categorical scale colours by value, so two regions agree, and 
   expect(other.scale).toEqual({
     kind: 'categorical',
     field: 'type',
+    domain: [],
     entries: [
-      { label: 'gene', color: of('gene') },
-      {
-        label: NO_VALUE_LABEL,
-        color: cssColorToABGR(NO_CATEGORY_COLOR),
-        missing: true,
-      },
+      { value: 'gene', color: of('gene') },
+      { value: '', color: cssColorToABGR(NO_CATEGORY_COLOR) },
     ],
   })
   expect(other.color[1]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
 })
 
-test('a categorical domain pins the order, a palette the colours, and numbers sort numerically', () => {
+test('a categorical domain pins the order and a palette the colours', () => {
   const r = encodeFeatures(
     features,
     {
       color: {
         field: 'strand',
         scale: 'categorical',
-        domain: [1, -1],
+        domain: [-1, 1],
         palette: ['red', 'blue'],
       },
     },
@@ -152,22 +146,30 @@ test('a categorical domain pins the order, a palette the colours, and numbers so
   expect(r.scale).toEqual({
     kind: 'categorical',
     field: 'strand',
+    domain: ['-1', '1'],
     entries: [
-      { label: '1', color: cssColorToABGR('red') },
-      { label: '-1', color: cssColorToABGR('blue') },
+      { value: '-1', color: cssColorToABGR('red') },
+      { value: '1', color: cssColorToABGR('blue') },
     ],
   })
-  const bySortedValue = encodeFeatures(
+})
+
+test('strand brings its own order and colours where the encoding names none', () => {
+  const r = encodeFeatures(
     features,
     { color: { field: 'strand', scale: 'categorical' } },
     ALL,
     { jexl },
   )
-  expect(
-    bySortedValue.scale?.kind === 'categorical'
-      ? bySortedValue.scale.entries.map(e => e.label)
-      : undefined,
-  ).toEqual(['-1', '1'])
+  expect(r.scale).toEqual({
+    kind: 'categorical',
+    field: 'strand',
+    domain: ['1', '-1', '0'],
+    entries: [
+      { value: '1', color: cssColorToABGR('tomato') },
+      { value: '-1', color: cssColorToABGR('cornflowerblue') },
+    ],
+  })
 })
 
 test('two regions agree on a value the domain leaves out, whatever else each met', () => {
@@ -194,7 +196,7 @@ test('two regions agree on a value the domain leaves out, whatever else each met
   expect(busy.color[2]).not.toBe(busy.color[0])
 })
 
-test('the legend lists the domain first, an absent listed value included, then the rest in facet order', () => {
+test('the table lists the values met, the domain first and the rest in facet order', () => {
   const mixed = [
     feature(0, { type: 'exon' }),
     feature(1, { type: '' }),
@@ -210,18 +212,11 @@ test('the legend lists the domain first, an absent listed value included, then t
       { jexl },
     )
     return r.scale?.kind === 'categorical'
-      ? r.scale.entries.map(e => e.label)
+      ? r.scale.entries.map(e => e.value)
       : undefined
   }
-  expect(labels()).toEqual(['9', '10', 'UTR', 'exon', NO_VALUE_LABEL])
-  expect(labels(['exon', 'CDS'])).toEqual([
-    'exon',
-    'CDS',
-    '9',
-    '10',
-    'UTR',
-    NO_VALUE_LABEL,
-  ])
+  expect(labels()).toEqual(['9', '10', 'UTR', 'exon', ''])
+  expect(labels(['exon', 'CDS'])).toEqual(['exon', '9', '10', 'UTR', ''])
 })
 
 test('a ramp scale reads the field through its domain into the LUT', () => {
@@ -377,10 +372,11 @@ test('an unpinned glyph scale derives each glyph from the value, so two regions 
   expect(r.glyphScale).toEqual({
     kind: 'glyph',
     field: 'type',
+    domain: [],
     entries: [
-      { label: 'cds', glyph: of('cds') },
-      { label: 'exon', glyph: of('exon') },
-      { label: 'gene', glyph: of('gene') },
+      { value: 'cds', glyph: of('cds') },
+      { value: 'exon', glyph: of('exon') },
+      { value: 'gene', glyph: of('gene') },
     ],
   })
   expect([...r.glyph]).toEqual(
@@ -396,8 +392,8 @@ test('an unpinned glyph scale derives each glyph from the value, so two regions 
   expect(other.glyph[0]).toBe(CODE[of('exon')])
   expect(other.glyph[1]).toBe(GLYPH_DISC)
   expect(other.glyphScale?.entries).toEqual([
-    { label: 'exon', glyph: of('exon') },
-    { label: NO_VALUE_LABEL, glyph: 'disc', missing: true },
+    { value: 'exon', glyph: of('exon') },
+    { value: '', glyph: 'disc' },
   ])
 })
 
@@ -418,9 +414,10 @@ test('a pinned glyph domain walks the range in order', () => {
   expect(r.glyphScale).toEqual({
     kind: 'glyph',
     field: 'strand',
+    domain: ['1', '-1'],
     entries: [
-      { label: '1', glyph: 'triangle' },
-      { label: '-1', glyph: 'diamond' },
+      { value: '1', glyph: 'triangle' },
+      { value: '-1', glyph: 'diamond' },
     ],
   })
   expect([...r.glyph]).toEqual([

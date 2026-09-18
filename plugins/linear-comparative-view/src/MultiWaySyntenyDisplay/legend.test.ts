@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/groupKeys'
 
 import { laneColorKey, ribbonColorKey, ribbonColorScale } from './legend.ts'
 

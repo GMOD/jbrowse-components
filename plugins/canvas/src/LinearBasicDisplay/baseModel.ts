@@ -15,13 +15,13 @@ import {
   isFeature,
   pluralize,
 } from '@jbrowse/core/util'
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   activeJexlFilters,
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
-import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
@@ -1488,7 +1488,7 @@ export default function baseStateModelFactory(
         const listed = new Set(colorDomain)
         const keyed = this.derivedColorScales.flatMap(scale =>
           scale.kind === 'categorical'
-            ? scale.entries.filter(e => !e.missing).map(entry => entry.value)
+            ? scale.entries.filter(e => e.value !== '').map(e => e.value)
             : [],
         )
         return [...colorDomain, ...keyed.filter(v => !listed.has(v))]

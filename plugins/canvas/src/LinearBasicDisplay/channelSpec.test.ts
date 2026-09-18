@@ -49,11 +49,8 @@ test('strand is a field on both channels, painting its own colors', () => {
   d.applyChannelSpec({ facet: { field: 'strand' }, color: { field: 'strand' } })
   expect(d.facet).toEqual({ field: 'strand', domain: [] })
   expect(d.colorByMode).toBe('strand')
-  expect(d.colorEncoding?.palette).toEqual([
-    'tomato',
-    'cornflowerblue',
-    'goldenrod',
-  ])
+  expect(d.colorEncoding?.color('1')).toBe('tomato')
+  expect(d.colorEncoding?.color('-1')).toBe('cornflowerblue')
   expect(d.channelSpec).toMatchObject({
     facet: { field: 'strand' },
     color: { field: 'strand' },
@@ -65,11 +62,9 @@ test('strand takes a palette like any other field', () => {
   const spec = { color: { field: 'strand', palette: ['red', 'blue'] } }
   expect(d.channelSpecProblems(spec)).toEqual([])
   d.applyChannelSpec(spec)
-  expect(d.colorEncoding).toEqual({
-    field: 'strand',
-    domain: ['1', '-1', '0'],
-    palette: ['red', 'blue'],
-  })
+  expect(d.colorEncoding?.domain).toEqual(['1', '-1', '0'])
+  expect(d.colorEncoding?.color('1')).toBe('red')
+  expect(d.colorEncoding?.color('-1')).toBe('blue')
 })
 
 test('a string color is a constant, and it and a field scale replace each other', () => {

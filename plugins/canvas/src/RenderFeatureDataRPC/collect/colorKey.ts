@@ -1,11 +1,7 @@
-import { categoricalColorScale } from '@jbrowse/core/ui/colors'
-import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
-import { STRAND_FIELD, readStrand } from '@jbrowse/core/util/strandScale'
 
 import { featureColorScale } from '../featureColors.ts'
 
@@ -15,10 +11,9 @@ import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 export interface PaintedValue {
-  label: string
+  key: string
   css: string
   packed: number
-  missing?: boolean
 }
 
 /**
@@ -28,20 +23,12 @@ export interface PaintedValue {
  * values can leave it.
  */
 export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
-  const scale = featureColorScale(config)
-  if (!scale) {
+  const field = featureColorScale(config)
+  if (!field) {
     return undefined
   }
-  const read =
-    scale.field === STRAND_FIELD ? readStrand : fieldReader(scale.field, jexl)
-  const colorOf = categoricalColorScale(scale.domain, scale.palette)
+  const read = fieldReader(field.field, jexl)
   const painted = new Map<string, PaintedValue>()
-  const missing = {
-    label: NO_VALUE_LABEL,
-    css: NO_CATEGORY_COLOR,
-    packed: cssColorToABGR(NO_CATEGORY_COLOR),
-    missing: true,
-  }
   const rows: SectionStamp[] = []
   const rowOf = new Map<string, number>()
   const collector = createLegendCandidateCollector()
@@ -50,14 +37,14 @@ export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
   // A box paints its level's value — a transcript's, for its exons and CDS —
   // or the nearest ancestor's, and its own only where nothing above carries
   // the field.
-  function labelAt(box: Feature, level: Feature) {
+  function valueAt(box: Feature, level: Feature) {
     for (let cur: Feature | undefined = level; cur; cur = cur.parent?.()) {
-      const label = valueText(read(cur))
-      if (label !== '') {
-        return label
+      const value = read(cur)
+      if (valueText(value) !== '') {
+        return value
       }
     }
-    return box === level ? '' : valueText(read(box))
+    return box === level ? undefined : read(box)
   }
 
   return {
@@ -82,20 +69,17 @@ export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
       row = index
     },
     valueOf(box: Feature, level: Feature): PaintedValue {
-      const label = labelAt(box, level)
-      if (label === '') {
-        return missing
-      }
-      let value = painted.get(label)
+      const key = field.key(valueAt(box, level))
+      let value = painted.get(key)
       if (value === undefined) {
-        const css = colorOf(label)
-        value = { label, css, packed: cssColorToABGR(css) }
-        painted.set(label, value)
+        const css = field.color(key)
+        value = { key, css, packed: cssColorToABGR(css) }
+        painted.set(key, value)
       }
       return value
     },
-    record({ label, packed, missing }: PaintedValue) {
-      collector.add(row, label, packed, missing)
+    record({ key, packed }: PaintedValue) {
+      collector.add(row, key, packed)
     },
   }
 }

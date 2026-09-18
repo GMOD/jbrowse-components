@@ -88,7 +88,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
     const layers = requested.map(
       ({ encoding, lanes, transform: own, facet }) => {
         const stepped = own ? runTransforms(shared, own, jexl) : shared
-        const faceted = facet ? facetRows(stepped, facet) : undefined
+        const faceted = facet ? facetRows(stepped, facet, jexl) : undefined
         const features = faceted?.features ?? stepped
         const rowed =
           facet && encoding.row === undefined

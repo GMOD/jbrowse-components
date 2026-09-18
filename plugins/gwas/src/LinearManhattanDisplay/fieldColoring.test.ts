@@ -26,8 +26,9 @@ function payload(
     scale: categories && {
       kind: 'categorical',
       field: 'name',
+      domain: [],
       entries: categories.map(({ value, color }) => ({
-        label: value,
+        value,
         color: cssColorToABGR(color),
       })),
     },

@@ -89,7 +89,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-utrcolor">**utrColor**</span><br><code>string</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-colorbymode">**colorByMode**</span><br><code>"attribute" &#124; "default" &#124; "solid" &#124; "strand"</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-colorbyattribute">**colorByAttribute**</span><br><code>string</code> |  | LinearCanvasBaseDisplay |
-| <span id="getter-colorencoding">**colorEncoding**</span><br><code>FeatureColorScale &#124; undefined</code> | The color channel's scale, strand's colors filled in, or undefined while the `color` slot paints. | LinearCanvasBaseDisplay |
+| <span id="getter-colorencoding">**colorEncoding**</span><br><code>CategoricalField &#124; undefined</code> | The color channel's field, or undefined while the `color` slot paints. | LinearCanvasBaseDisplay |
 | <span id="getter-colorsettings">**colorSettings**</span><br><code>ColorScaleSettings &amp; { color: string &#124; undefined; }</code> | The color slots as written, the scale's three unresolved. | LinearCanvasBaseDisplay |
 | <span id="getter-geneglyphnotice">**geneGlyphNotice**</span><br><code>GeneGlyphNotice &#124; undefined</code> | Overridable hook (default absent): the isoform-collapse control the shared canvas body draws in its bottom-right chip stack, or nothing when the display has no gene glyphs. | LinearCanvasBaseDisplay |
 | <span id="getter-layoutready">**layoutReady**</span><br><code>boolean</code> | Whether features can be laid out: data is fetched, in-bounds, and the view is measured. | LinearCanvasBaseDisplay |

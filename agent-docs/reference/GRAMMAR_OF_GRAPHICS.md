@@ -255,11 +255,10 @@ The seams, named honestly:
   (`laneColorKey`) read colours off `itemRgb` and per-feature `jexl:`, so
   there is no channel behind them to carry a field name or a domain. They
   still run the union's rule — a row IS a colour, named by the first feature
-  carrying it. **The no-value row is a `missing` flag on the
-  entry, not a label a comparator recognises**, and `legendSpecOf` places it
-  last whatever else orders the key: it used to sort by its own name, so a
-  declared `domain` floated `(no value)` above every value the domain did not
-  list, on the bracket the label starts with. What a value-less feature paints
+  carrying it. **A value-less feature files under the empty key `''`**, which
+  the one comparator already places after every value, so the worker tables
+  and the candidates carry no flag for it; the key's `missing` row is derived
+  from that key where the row is made. What a value-less feature paints
   is `NO_CATEGORY_COLOR`, one grey across the encoder, the feature display and
   synteny's unlabelled rows; `#808080` beside it is the misconfiguration
   colour — a `jexl:` colour that yielded a non-string, a ramp value that is
@@ -320,20 +319,23 @@ parsed by `@jbrowse/display-kit/channelSpec` and written by `applyChannelSpec`
 onto `facetField`/`facetDomain`, the flat `colorField`/`colorDomain`/`colorPalette`
 slots or `color`, and the filter override. The spec's facet is the stored pair,
 so nothing translates it and nothing stores the spec. The Group by dialog
-applies a spec too (`groupByChannelSpec`). `strand` is a field on both
-channels: its sections are the raw values `1`, `-1` and `0`, and two rules in
-core carry it wherever it is declared — `facetSectionOrder` stacks forward,
-reverse, unstranded where no `domain` names an order, and `facetSectionLabel`
-names a strand section and chips any other value `field: value`. `facetRows`
-applies the order in the worker, so a declared `facet: 'strand'` on the mark
-display stacks the same way the feature display's `facetField` does; raw strand
-keys sort `-1, 0, 1` under `compareGroupKeys`, which put the reverse band on
-top. Only a facet on another field has the worker stamp a key on
-each feature, so a strand facet never refetches. The worker paints a color by a
-field through `categoricalColorScale` with no jexl, reading a part's value off
-its transcript (the emitter passes the level), and records each value it
-painted with the section its record files under, which `derivedColorKey` hands
-`derivedColorScale` as the key less the hidden sections.
+applies a spec too (`groupByChannelSpec`).
+
+**Every categorical channel reads its field through one object**,
+`categoricalField(field, { domain, palette })`
+(`packages/core/src/util/categoricalField.ts`): `key` files a value, `compare`
+orders keys, `label` and `sectionLabel` name them in a key and on a chip, and
+`color` paints them. The facets, the encoder, the canvas worker's colour walk
+and every derived key construct one, so a value keys, orders, names and paints
+the same way wherever it is read. A field with a vocabulary of its own carries
+it there as data: `strand` files a missing strand as `0`, orders forward,
+reverse, unstranded, names each and paints red, blue and goldenrod, each
+yielding to a declared `domain` or `palette`. Only a facet on another field has
+the canvas worker stamp a key on each feature, so a strand facet never
+refetches. The canvas worker paints a part in its transcript's value (the
+emitter passes the level) and records each key it painted with the section its
+record files under, which `derivedColorKey` hands `derivedColorScale` as the key
+less the hidden sections.
 
 The facet replaced a `frozen` `groupBy` slot,
 `{ type: 'strand' | 'attribute', attribute, domain }`, that the spec translated

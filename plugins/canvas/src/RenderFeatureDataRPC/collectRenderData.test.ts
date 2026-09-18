@@ -1,7 +1,6 @@
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 
 import { collectRenderData } from './collectRenderData.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
@@ -907,13 +906,12 @@ describe('color key', () => {
     })
     expect(result.colorKey).toEqual({
       candidates: [
-        { rowIndex: 0, label: 'protein_coding', color: result.rectColors[0] },
-        { rowIndex: 1, label: 'lncRNA', color: cssColorToABGR('#123456') },
+        { rowIndex: 0, value: 'protein_coding', color: result.rectColors[0] },
+        { rowIndex: 1, value: 'lncRNA', color: cssColorToABGR('#123456') },
         {
           rowIndex: 0,
-          label: NO_VALUE_LABEL,
+          value: '',
           color: cssColorToABGR(NO_CATEGORY_COLOR),
-          missing: true,
         },
       ],
       rows: [

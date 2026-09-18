@@ -1,5 +1,5 @@
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/groupKeys'
 
 import {
   CIGAR_OP_D,

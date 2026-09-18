@@ -2,7 +2,6 @@ import { categoricalValueColor } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import createJexlInstance from '@jbrowse/core/util/jexl'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import {
   GLYPH_DISC,
@@ -140,8 +139,8 @@ test('field colouring is a declared categorical scale, so the table rides in the
   })
   expect(r.scale?.kind).toBe('categorical')
   expect(
-    r.scale?.kind === 'categorical' ? r.scale.entries.map(e => e.label) : [],
-  ).toEqual(['CEU', 'YRI', NO_VALUE_LABEL])
+    r.scale?.kind === 'categorical' ? r.scale.entries.map(e => e.value) : [],
+  ).toEqual(['CEU', 'YRI', ''])
   expect(r.color[0]).toBe(cssColorToABGR(categoricalValueColor('CEU')))
   expect(r.indexFound).toBe(true)
 })

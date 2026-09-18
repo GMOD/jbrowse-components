@@ -1,4 +1,4 @@
-import { NO_VALUE_LABEL } from './groupKeys.ts'
+import { NO_VALUE_LABEL, categoricalField } from './categoricalField.ts'
 import {
   MAX_LEGEND_CANDIDATES,
   MAX_LEGEND_ENTRIES,
@@ -21,14 +21,14 @@ const allRowsPaint = (candidates: readonly LegendCandidate[]) => ({
 
 function collect(triples: [number, string, number][], max?: number) {
   const collector = createLegendCandidateCollector(max)
-  for (const [rowIndex, label, color] of triples) {
-    collector.add(rowIndex, label, color)
+  for (const [rowIndex, value, color] of triples) {
+    collector.add(rowIndex, value, color)
   }
   return collector.candidates
 }
 
 describe('createLegendCandidateCollector', () => {
-  test('keeps each (row, name, color) once, in first-seen order', () => {
+  test('keeps each (row, value, color) once, in first-seen order', () => {
     expect(
       collect([
         [0, 'TssA', RED],
@@ -37,17 +37,15 @@ describe('createLegendCandidateCollector', () => {
         [1, 'TssA', RED],
       ]),
     ).toEqual([
-      { rowIndex: 0, label: 'TssA', color: RED },
-      { rowIndex: 0, label: 'Quies', color: GREEN },
+      { rowIndex: 0, value: 'TssA', color: RED },
+      { rowIndex: 0, value: 'Quies', color: GREEN },
       // same pair on another row: a different candidate, because that row may be
       // the only one still painting it
-      { rowIndex: 1, label: 'TssA', color: RED },
+      { rowIndex: 1, value: 'TssA', color: RED },
     ])
   })
 
-  test('keeps a second name on a color the union may need', () => {
-    // the union takes the first NAME for a color, so dropping this by (row,
-    // color) would lose green entirely once 'TssA' is spoken for
+  test('keeps a second value on a color the union may need', () => {
     expect(
       collect([
         [0, 'TssA', RED],
@@ -57,13 +55,10 @@ describe('createLegendCandidateCollector', () => {
     ).toHaveLength(3)
   })
 
-  test('a nameless feature contributes nothing', () => {
-    expect(
-      collect([
-        [0, '', RED],
-        [1, '', GREEN],
-      ]),
-    ).toEqual([])
+  test('the no-value key is a candidate like any other', () => {
+    expect(collect([[0, '', GREEN]])).toEqual([
+      { rowIndex: 0, value: '', color: GREEN },
+    ])
   })
 
   test('the list is bounded whatever the data does', () => {
@@ -79,25 +74,25 @@ describe('createLegendCandidateCollector', () => {
 })
 
 describe('unionLegendCandidates', () => {
-  test('one entry per distinct color, named by the first name in it', () => {
+  test('one entry per distinct color, named by the first value in it', () => {
     const candidates = collect([
       [0, 'TssA', RED],
       [0, 'Quies', GREEN],
       [1, 'TssAFlnk', RED],
     ])
     expect(unionLegendCandidates([candidates], allRowsPaint)).toEqual([
-      { label: 'TssA', color: RED },
-      { label: 'Quies', color: GREEN },
+      { value: 'TssA', color: RED },
+      { value: 'Quies', color: GREEN },
     ])
   })
 
-  test('a name reused across two colors keeps its first-seen color', () => {
+  test('a value reused across two colors keeps its first-seen color', () => {
     const candidates = collect([
       [0, 'TssA', RED],
       [0, 'TssA', BLUE],
     ])
     expect(unionLegendCandidates([candidates], allRowsPaint)).toEqual([
-      { label: 'TssA', color: RED },
+      { value: 'TssA', color: RED },
     ])
   })
 
@@ -108,8 +103,8 @@ describe('unionLegendCandidates', () => {
       [0, 'Enh', BLUE],
     ])
     expect(unionLegendCandidates([first, second], allRowsPaint)).toEqual([
-      { label: 'TssA', color: RED },
-      { label: 'Enh', color: BLUE },
+      { value: 'TssA', color: RED },
+      { value: 'Enh', color: BLUE },
     ])
   })
 
@@ -123,7 +118,7 @@ describe('unionLegendCandidates', () => {
         candidates: c,
         rowPaintsCandidateColor: rowIndex => rowIndex !== 0,
       })),
-    ).toEqual([{ label: 'Quies', color: GREEN }])
+    ).toEqual([{ value: 'Quies', color: GREEN }])
   })
 
   test('past the entry bar there is no categorical key to show', () => {
@@ -160,43 +155,30 @@ describe('unionLegendCandidates', () => {
 
 describe('derivedColorScale', () => {
   const painted = collect([
-    [0, NO_VALUE_LABEL, GREEN],
+    [0, '', GREEN],
     [0, 'Quies', BLUE],
     [0, 'TssA', RED],
   ])
-  painted[0]!.missing = true
 
-  // A caller reads the entries for what the key lists — the feature display
-  // pins its color domain off them — so they come back in the key's order and
-  // not the order the walk met them.
   const values = (domain?: string[]) =>
-    derivedColorScale([painted], allRowsPaint, { id: 'color', domain }).flatMap(
-      scale => (scale.kind === 'categorical' ? scale.entries : []),
-    )
+    derivedColorScale([painted], allRowsPaint, {
+      id: 'color',
+      field: categoricalField('state', { domain }),
+    }).flatMap(scale => (scale.kind === 'categorical' ? scale.entries : []))
 
   test('orders the values and leaves the no-value row last', () => {
-    expect(values().map(e => e.value)).toEqual([
-      'Quies',
-      'TssA',
-      NO_VALUE_LABEL,
-    ])
+    expect(values().map(e => e.value)).toEqual(['Quies', 'TssA', ''])
   })
 
   test('keeps it last under a declared domain, which never lists it', () => {
-    expect(values(['TssA']).map(e => e.value)).toEqual([
-      'TssA',
-      'Quies',
-      NO_VALUE_LABEL,
-    ])
+    expect(values(['TssA']).map(e => e.value)).toEqual(['TssA', 'Quies', ''])
   })
 
-  test('names the field and carries the domain onto the scale', () => {
+  test('names the field and each key, and carries the domain onto the scale', () => {
     expect(
       derivedColorScale([painted], allRowsPaint, {
         id: 'color',
-        field: 'state',
-        domain: ['TssA'],
-        labelOf: v => (v === 'TssA' ? 'Active TSS' : v),
+        field: categoricalField('state', { domain: ['TssA'] }),
       }),
     ).toMatchObject([
       {
@@ -205,9 +187,9 @@ describe('derivedColorScale', () => {
         title: 'state',
         domain: ['TssA'],
         entries: [
-          { value: 'TssA', label: 'Active TSS' },
+          { value: 'TssA', label: 'TssA' },
           { value: 'Quies', label: 'Quies' },
-          { value: NO_VALUE_LABEL, label: NO_VALUE_LABEL, missing: true },
+          { value: '', label: NO_VALUE_LABEL, missing: true },
         ],
       },
     ])
@@ -217,6 +199,7 @@ describe('derivedColorScale', () => {
     expect(
       derivedColorScale([collect([[0, 'TssA', RED]])], allRowsPaint, {
         id: 'color',
+        field: categoricalField('state'),
       }),
     ).toEqual([])
   })

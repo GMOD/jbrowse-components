@@ -66,11 +66,10 @@ export function collectLegendCandidates({
 >) {
   const collector = createLegendCandidateCollector()
   for (let i = 0; i < featureNames.length; i++) {
-    collector.add(
-      featurePartitionIndex[i]!,
-      featureNames[i]!,
-      featureColors[i]!,
-    )
+    const name = featureNames[i]!
+    if (name !== '') {
+      collector.add(featurePartitionIndex[i]!, name, featureColors[i]!)
+    }
   }
   return collector.candidates
 }

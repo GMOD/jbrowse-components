@@ -1,8 +1,10 @@
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { LegendSwatch } from '@jbrowse/core/ui/legendSpec'
 import type { ScaleTable } from '@jbrowse/core/util/markEncoding'
 
 const RAMP_STOPS = 8
@@ -39,29 +41,43 @@ function copyOf(scale: ScaleTable): ScaleTable {
   }
 }
 
-function unionEntries<E extends { label: string }>(
+function unionEntries<E extends { value: string }>(
   into: E[],
   from: readonly E[],
+  domain: readonly string[],
+  field: string,
 ) {
-  const seen = new Set(into.map(e => e.label))
+  const seen = new Set(into.map(e => e.value))
   for (const entry of from) {
-    if (!seen.has(entry.label)) {
-      seen.add(entry.label)
+    if (!seen.has(entry.value)) {
+      seen.add(entry.value)
       into.push(entry)
     }
   }
+  const { compare } = categoricalField(field, { domain })
+  into.sort((a, b) => compare(a.value, b.value))
 }
 
 function union(current: ScaleTable, next: ScaleTable) {
   switch (current.kind) {
     case 'categorical':
       if (next.kind === 'categorical') {
-        unionEntries(current.entries, next.entries)
+        unionEntries(
+          current.entries,
+          next.entries,
+          current.domain,
+          current.field,
+        )
       }
       break
     case 'glyph':
       if (next.kind === 'glyph') {
-        unionEntries(current.entries, next.entries)
+        unionEntries(
+          current.entries,
+          next.entries,
+          current.domain,
+          current.field,
+        )
       }
       break
     case 'ramp':
@@ -83,12 +99,9 @@ function union(current: ScaleTable, next: ScaleTable) {
 /**
  * The keys the loaded regions carry, one per scaled channel per mark, in
  * mark order with colour before glyph. A categorical table is the union over
- * regions in first-seen order, the no-value row last; a label's entry is the
- * same in every region (a pinned `domain` walks the range, an unpinned one
- * derives from the value). A ramp's domain is the union of the regions' own
- * extremes, or the pinned one where the config listed it — the same number
- * the shapes read as a uniform, so the bar cannot label a value the plot
- * paints elsewhere.
+ * regions in the field's order; a key's entry is the same in every region. A
+ * ramp's domain is the union of the regions' own extremes, or the pinned one
+ * where the config listed it — the same number the shapes read as a uniform.
  */
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,
@@ -139,6 +152,25 @@ function glyphOverSameField(
   return glyph?.scale.kind === 'glyph' ? glyph : undefined
 }
 
+function categoricalKey<E extends { value: string }>(
+  id: string,
+  scale: { field: string; domain: string[]; entries: E[] },
+  swatchOf: (entry: E) => { color: string } | { swatches: LegendSwatch[] },
+): ColorScale {
+  const field = categoricalField(scale.field, { domain: scale.domain })
+  return {
+    kind: 'categorical',
+    id,
+    title: scale.field,
+    entries: scale.entries.map(e => ({
+      value: e.value,
+      label: field.label(e.value),
+      ...swatchOf(e),
+      ...(e.value === '' ? { missing: true } : {}),
+    })),
+  }
+}
+
 /**
  * The keys as the color scales `LegendMixin` derives the legend from. A
  * glyph table is a categorical scale whose swatches are the glyphs, drawn in
@@ -160,43 +192,23 @@ export function markColorScales(sections: MarkLegendSection[]): ColorScale[] {
         if (glyph) {
           folded.add(glyph)
         }
-        const glyphOf = (label: string) =>
+        const glyphOf = (value: string) =>
           glyph?.scale.kind === 'glyph'
-            ? glyph.scale.entries.find(e => e.label === label)?.glyph
+            ? glyph.scale.entries.find(e => e.value === value)?.glyph
             : undefined
         return [
-          {
-            kind: 'categorical',
-            id,
-            title: scale.field,
-            entries: scale.entries.map(e => {
-              const color = abgrToCssRgba(e.color)
-              const g = glyphOf(e.label)
-              const row = g
-                ? {
-                    value: e.label,
-                    label: e.label,
-                    swatches: [{ color, glyph: g }],
-                  }
-                : { value: e.label, label: e.label, color }
-              return e.missing ? { ...row, missing: true } : row
-            }),
-          },
+          categoricalKey(id, scale, ({ value, color }) => {
+            const css = abgrToCssRgba(color)
+            const g = glyphOf(value)
+            return g ? { swatches: [{ color: css, glyph: g }] } : { color: css }
+          }),
         ]
       }
       case 'glyph':
         return [
-          {
-            kind: 'categorical',
-            id,
-            title: scale.field,
-            entries: scale.entries.map(e => ({
-              value: e.label,
-              label: e.label,
-              swatches: [{ color: 'currentColor', glyph: e.glyph }],
-              ...(e.missing ? { missing: true } : {}),
-            })),
-          },
+          categoricalKey(id, scale, e => ({
+            swatches: [{ color: 'currentColor', glyph: e.glyph }],
+          })),
         ]
       case 'ramp':
         return [
@@ -220,7 +232,9 @@ export function colorSection(sections: MarkLegendSection[], markIndex: number) {
 
 /** The category a packed colour names in a categorical table, if any. */
 export function categoryLabel(scale: ScaleTable | undefined, color: number) {
-  return scale?.kind === 'categorical'
-    ? scale.entries.find(e => e.color === color)?.label
-    : undefined
+  if (scale?.kind !== 'categorical') {
+    return undefined
+  }
+  const entry = scale.entries.find(e => e.color === color)
+  return entry && categoricalField(scale.field).label(entry.value)
 }

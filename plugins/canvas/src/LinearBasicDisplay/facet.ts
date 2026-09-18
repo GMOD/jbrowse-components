@@ -1,12 +1,12 @@
 import {
+  STRAND_FIELD,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
+import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
-  facetSectionLabel,
-  facetSectionOrder,
-  groupKeyComparator,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
-import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 
 import { isPlacedRow } from './rowPlacement.ts'
 
@@ -14,6 +14,7 @@ import type {
   FeatureDataResult,
   SectionStamp,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
 /**
@@ -26,16 +27,19 @@ export interface FeatureFacet {
   domain: readonly string[]
 }
 
+// The facet's field, which orders its sections and names their chips.
+export function facetField({ field, domain }: FeatureFacet) {
+  return categoricalField(field, { domain })
+}
+
 // Read off the hit item rather than the feature: the worker stamps what a
 // section needs, and strand is already on every item, so a strand facet
 // never refetches.
-export function featureGroupId(
-  item: SectionStamp,
-  { field }: FeatureFacet,
-): GroupId {
-  const key =
-    field === STRAND_FIELD ? String(item.strand ?? 0) : (item.groupKey ?? '')
-  return { key, label: facetSectionLabel(field, key) }
+function featureGroupId(item: SectionStamp, field: CategoricalField): GroupId {
+  const key = field.key(
+    field.field === STRAND_FIELD ? item.strand : item.groupKey,
+  )
+  return { key, label: field.sectionLabel(key) }
 }
 
 export interface FeatureGroupSection extends GroupId {
@@ -50,25 +54,20 @@ export function sectionIdsOf(
   map: ReadonlyMap<number, FeatureDataResult>,
   facet: FeatureFacet,
 ) {
-  const ids = new Map<string, GroupId>()
+  const field = facetField(facet)
+  const keys = new Set<string>()
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
-      const id = featureGroupId(item, facet)
-      if (!ids.has(id.key)) {
-        ids.set(id.key, id)
-      }
+      keys.add(featureGroupId(item, field).key)
     }
   }
-  const { sectionOf, mergedCount } = capGroupKeys(
-    ids.keys(),
-    facetSectionOrder(facet.field, facet.domain),
-  )
+  const { sectionOf, mergedCount } = capGroupKeys(keys, field.compare)
   const merged: GroupId = {
     key: OVERFLOW_GROUP_KEY,
     label: overflowLabel(mergedCount),
   }
   return (item: SectionStamp): GroupId => {
-    const id = featureGroupId(item, facet)
+    const id = featureGroupId(item, field)
     return sectionOf(id.key) === id.key ? id : merged
   }
 }
@@ -102,9 +101,7 @@ export function featureGroupSections(
       }
     }
   }
-  const compare = groupKeyComparator(
-    facetSectionOrder(facet.field, facet.domain),
-  )
+  const { compare } = facetField(facet)
   const ordered = [...bounds].sort(([a], [b]) => compare(a, b))
   return ordered.map(([key, b], i) => {
     const top = b.top - chipPx

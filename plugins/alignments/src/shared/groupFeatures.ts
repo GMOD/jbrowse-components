@@ -200,7 +200,7 @@ function orderGroups(groups: FeatureGroup[], domain?: readonly string[]) {
   const ordered = groups.sort((a, b) => compare(a.key, b.key))
   const { sectionOf, mergedCount } = capGroupKeys(
     ordered.map(g => g.key),
-    domain,
+    compare,
   )
   if (mergedCount === 0) {
     return ordered

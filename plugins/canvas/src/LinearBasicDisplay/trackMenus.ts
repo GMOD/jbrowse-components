@@ -1,7 +1,7 @@
 import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { radioItems, toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   hiddenGroupsItems,
