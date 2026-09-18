@@ -139,7 +139,7 @@ jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --width 1200 \
   --out gene_name_search.png
 ```
 
-![The BRCA1 gene, reached by typing its name instead of its coordinates](https://jbrowse.org/jb2-figures/jbrowse-img/gene_name_search.634abbba5248.png)
+![The BRCA1 gene, reached by typing its name](https://jbrowse.org/jb2-figures/jbrowse-img/gene_name_search.634abbba5248.png)
 
 `--loc` still takes ordinary locstrings (`chr1:1-10000`,
 `1:1,000,000-1,100,000`, or `all`); a name that isn't a locstring is looked up
@@ -321,7 +321,7 @@ jb2export --hub hg38 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
-![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.82749bd6f26f.png)
+![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in a separate section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.82749bd6f26f.png)
 
 ### Breakpoint split views
 
@@ -371,7 +371,7 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --loc chr12:72,272,512-72,273,712 --width 1000 --out sv_review_normal.png
 ```
 
-![The same three loci in the matched normal, with no connecting curves in any panel](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_normal.593787f22ddb.png)
+![The three der(3) loci in the matched normal, with no connecting curves in any panel](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_normal.593787f22ddb.png)
 
 Both commands carry these two modifiers:
 
@@ -1081,7 +1081,7 @@ jb2export --config data/volvox/config.json --assembly volvox --track volvox_sv \
   --loc ctgA:1-50,000 --width 1200 --out volvox_config.png
 ```
 
-![Structural-variant calls over 50 kb of volvox ctgA, read from a config whose VCF is a localPath rather than a URL](https://jbrowse.org/jb2-figures/jbrowse-img/volvox_config.744ba8204bcd.png)
+![Structural-variant calls over 50 kb of volvox ctgA, read from a config whose VCF is a localPath](https://jbrowse.org/jb2-figures/jbrowse-img/volvox_config.744ba8204bcd.png)
 
 localPaths resolve relative to the config file supplied, so with
 `--config data/volvox/config.json` and `"localPath": "volvox.dup.vcf.gz"` this
@@ -1103,7 +1103,7 @@ jb2export --config data/config.json --session data/skbr3/session.json \
   --assembly hg19 --width 1400 --out skbr3_session.png
 ```
 
-![SKBR3 whole-genome read coverage, restored from a saved session file rather than described on the command line](https://jbrowse.org/jb2-figures/jbrowse-img/skbr3_session.325e8668f0a6.png)
+![SKBR3 whole-genome read coverage, restored from a saved session file](https://jbrowse.org/jb2-figures/jbrowse-img/skbr3_session.325e8668f0a6.png)
 
 The session names its tracks by trackId, so the `--config` you pass has to be
 the one those ids come from — `data/config.json` here, which defines hg19 and
@@ -1175,7 +1175,7 @@ jb2export --fasta data/volvox/volvox.fa \
   --width 1200 --out snpcov.png
 ```
 
-![The same volvox alignments as a coverage histogram alone, with the read pileup hidden](https://jbrowse.org/jb2-figures/jbrowse-img/snpcov.38194d761a26.png)
+![The bundled volvox alignments as a coverage histogram alone, with the read pileup hidden](https://jbrowse.org/jb2-figures/jbrowse-img/snpcov.38194d761a26.png)
 
 ## Parameters
 
