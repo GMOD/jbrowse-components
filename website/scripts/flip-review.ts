@@ -14,6 +14,8 @@
 // server uses. Editing the file directly instead — a jq pipeline, an editor —
 // races a running server: both rewrite the whole map, so whichever lands second
 // silently drops every verdict recorded since it read.
+import { describeFile, readManifest } from './figure-paths.ts'
+import { figurePath } from './figure-store.ts'
 import { imageHash, updateReport } from './screenshot-review-lib.ts'
 
 const [, , cmd, name, note] = process.argv
@@ -38,6 +40,14 @@ if (cmd === 'remove') {
     // no hash is taken at face value forever — it could never resurface when
     // the image finally lands.
     throw new Error(`no PNG for ${name}; nothing to hash a verdict against`)
+  }
+  // `figures:pull` keeps a stale local render over the published one, so a
+  // verdict stamped here could name a picture nobody else sees
+  const rel = figurePath(name)
+  if (readManifest().get(rel)?.sha256 !== describeFile(rel).sha256) {
+    throw new Error(
+      `${rel} differs from figures.lock: push it if it is the render being answered, or move it aside and pnpm figures:pull`,
+    )
   }
   // An answered entry is hashed against the CURRENT image on purpose. It should
   // surface for one reason — that it has been answered — rather than also as

@@ -70,7 +70,10 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
   server rewrite the whole map, so an unlocked write drops every verdict
   recorded since it read, and a reviewer is usually running the server while you
   work. `flip-review.ts` and the server share one lock (`updateReport` in
-  `@jbrowse/browser-test-utils`); anything outside it does not.
+  `@jbrowse/browser-test-utils`); anything outside it does not. It refuses a PNG
+  that differs from `figures.lock`: the primary checkout keeps stale local
+  renders through `figures:pull`, and a verdict stamped on one names a picture
+  nobody else sees.
 - Housekeeping after structural edits:
   - Changed a **gallery** spec's URL, or added/removed/renamed a spec →
     `pnpm gen:gallery-links` (CI gate: `pnpm autogen --check`).

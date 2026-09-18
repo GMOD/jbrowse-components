@@ -281,8 +281,10 @@ function checkObject(
   inDisplayDefaults: boolean,
   report: (msg: string) => void,
 ) {
+  // a session view's own keys are model state, not slots; its tracks still are
+  const isViewState = typeof obj.type === 'string' && obj.type.endsWith('View')
   for (const [key, value] of Object.entries(obj)) {
-    const decls = inv.declsBySlot.get(key)
+    const decls = isViewState ? undefined : inv.declsBySlot.get(key)
     // a `jexl:` callback is a per-feature expression rather than one of the
     // enum's literals, so it is never a violation however the slot is typed
     if (
