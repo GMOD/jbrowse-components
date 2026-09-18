@@ -664,7 +664,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         views: [
           {
             type: 'LinearSyntenyView',
-            colorBy: 'strand',
+            colorBy: { field: 'strand' },
             // CURVES, and they are what makes three overlapping chains
             // separable (review: "confusing screenshot ... maybe with
             // transparent cigar indels and showcurves"). Straight ribbons over

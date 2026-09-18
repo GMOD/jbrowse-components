@@ -1,10 +1,7 @@
 import type { ColorModeSurface } from './colorModes.ts'
 import type { AttributeRange } from './colorRamps.ts'
-import type {
-  AttributeColorBy,
-  MeasurementColorBy,
-  SyntenyColorBy,
-} from './colorUtils.ts'
+import type { SyntenyColorBy } from './colorUtils.ts'
+import type { ValueColorBy } from './syntenyColorBy.ts'
 import type { ColorableTrack } from './trackColors.ts'
 
 export interface ColorByMenuTrack {
@@ -89,9 +86,6 @@ export interface TrackColorsModel {
   setTrackColor: (trackId: string, value: string | undefined) => void
   clearTrackColors: () => void
 }
-
-/** A mode the Color by value submenu offers: a measurement, or a column. */
-export type ValueColorBy = MeasurementColorBy | AttributeColorBy
 
 export interface ColorByMenuTarget<
   Structural extends SyntenyColorBy = SyntenyColorBy,

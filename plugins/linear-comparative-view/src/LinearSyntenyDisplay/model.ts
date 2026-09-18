@@ -558,6 +558,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           featureData,
           colorBy: this.effectiveColorBy,
           trackColor: this.trackColor,
+          valueColor: this.view.colorByValue,
           opacityByIdentity,
           drawLocationMarkers: this.view.drawLocationMarkers,
           groundColor: this.groundColor,

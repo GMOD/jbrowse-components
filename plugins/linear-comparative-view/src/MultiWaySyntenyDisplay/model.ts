@@ -40,6 +40,8 @@ import {
   lodTierAt,
   LodTierInfoMixin,
   orderAttributeLabels,
+  syntenyColorByOf,
+  syntenyColorFor,
   trackHasLodTiers,
   widenAttributeRanges,
 } from '@jbrowse/synteny-core'
@@ -91,7 +93,7 @@ import {
 } from './multiwayGeometry.ts'
 import { multiwayBlocks } from './multiwayMarks.ts'
 import { ribbonParams } from './multiwayRenderTypes.ts'
-import { ribbonColorByOf, ribbonColorFor } from './ribbonColorBy.ts'
+import { RIBBON_COLOR_FIELDS } from './ribbonColorConfigSchema.ts'
 
 import type {
   SyntenyRenderState,
@@ -113,7 +115,7 @@ import type {
   MultiWayRenderState,
   MultiWayRenderingBackend,
 } from './multiwayRenderTypes.ts'
-import type { RibbonColorBy, RibbonColorSnapshot } from './ribbonColorBy.ts'
+import type { RibbonColorBy } from './ribbonColorConfigSchema.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -124,7 +126,12 @@ import type {
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { AttributeRange, LodMode, LodTier } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  LodMode,
+  LodTier,
+  SyntenyColorSnapshot,
+} from '@jbrowse/synteny-core'
 import type React from 'react'
 
 /** what the pointer is over: a gene, a placement box or a ribbon */
@@ -404,7 +411,7 @@ export function stateModelFactory(
           self.clickedTarget = undefined
         }
       }
-      function ribbonColorSetting(): RibbonColorSnapshot {
+      function ribbonColorSetting(): SyntenyColorSnapshot {
         return {
           value: getConf(self, ['ribbonColor', 'value']),
           field: getConf(self, ['ribbonColor', 'field']),
@@ -534,7 +541,7 @@ export function stateModelFactory(
         setRibbonColorBy(mode: RibbonColorBy) {
           self.configuration.setSubschema(
             'ribbonColor',
-            ribbonColorFor(mode, ribbonColorSetting()),
+            syntenyColorFor(mode, ribbonColorSetting()),
           )
           // the way back from a label order or a span one window fixed: the
           // ribbons re-key from the features in hand
@@ -687,10 +694,13 @@ export function stateModelFactory(
        * #getter
        */
       get ribbonColorBy(): RibbonColorBy {
-        return ribbonColorByOf({
-          scale: getConf(self, ['ribbonColor', 'scale']),
-          field: getConf(self, ['ribbonColor', 'field']),
-        })
+        return syntenyColorByOf(
+          {
+            scale: getConf(self, ['ribbonColor', 'scale']),
+            field: getConf(self, ['ribbonColor', 'field']),
+          },
+          RIBBON_COLOR_FIELDS,
+        )
       },
       /**
        * #getter

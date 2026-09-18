@@ -1,4 +1,4 @@
-import type { SyntenyColorBy } from './colorUtils.ts'
+import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 
 // The one launch key LinearSyntenyView and DotplotView share: a thing to DO on
 // load, with no property behind it. Each view's own Commands interface extends
@@ -17,9 +17,10 @@ export interface SyntenyViewSharedCommands {
 // Everything below the commands is a declared property of both models, so MST
 // lands it natively off the view object and no launcher interprets it.
 export interface SyntenyViewSharedInit extends SyntenyViewSharedCommands {
-  // Initial colorBy. Use 'query' (chromosome painting) for whole-genome
-  // views where the default red is hard to distinguish across many ribbons.
-  colorBy?: SyntenyColorBy
+  // The colour object every track paints with (`SyntenyColor`): a field such
+  // as `{ field: 'query' }` (chromosome painting) for whole-genome views where
+  // the default red is hard to distinguish across many ribbons.
+  colorBy?: SyntenyColorSnapshot
   // Per-feature alignment-length filter applied at the renderer. Hides
   // chains shorter than this many bp; cuts the genome-scale hairball.
   minAlignmentLength?: number

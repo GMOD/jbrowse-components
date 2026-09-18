@@ -305,7 +305,7 @@ function haplotypeSession(
         type: 'LinearSyntenyView',
         // strand is the whole point here: it is what makes the inverted block
         // the one sweep crossing an otherwise same-color frame
-        colorBy: 'strand',
+        colorBy: { field: 'strand' },
         drawCurves: true,
         tracks: [['hg002v1.2_mat_vs_pat']],
         ...viewProps,
@@ -556,7 +556,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           // and the 493 inverted chains are invisible without it; in strand
           // color they are the blue ticks on a red line. Same red-forward /
           // blue-reverse vocabulary as the gene lanes below (STRAND_COLOR).
-          colorBy: 'strand',
+          colorBy: { field: 'strand' },
           views: WHOLE_GENOME_AXES,
           tracks: ['hg002v1.2_mat_vs_pat'],
         },

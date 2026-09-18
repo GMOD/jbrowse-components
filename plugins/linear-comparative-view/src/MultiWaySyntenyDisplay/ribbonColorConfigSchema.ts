@@ -3,12 +3,15 @@ import {
   colorChannelOptions,
   colorChannelSlots,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { SYNTENY_COLOR_SCALES } from '@jbrowse/synteny-core'
 
-/**
- * The ribbon's `scale` is the set/map switch alone: a field's type is read
- * off the fetched values, a span for numbers and a label list for text.
- */
-export const RIBBON_COLOR_SCALES = ['none'] as const
+import type { ColorByOver } from '@jbrowse/synteny-core'
+
+/** The fields the ribbons read as a mode of their own; a view reads more. */
+export const RIBBON_COLOR_FIELDS = ['strand'] as const
+
+/** The modes a ribbon paints, as the synteny Color by menu offers them. */
+export type RibbonColorBy = ColorByOver<(typeof RIBBON_COLOR_FIELDS)[number]>
 
 /**
  * #config RibbonColor
@@ -47,7 +50,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
       defaultValue: 'rgba(130,130,130,0.3)',
     },
     ...colorChannelSlots({
-      scales: RIBBON_COLOR_SCALES,
+      scales: SYNTENY_COLOR_SCALES,
       scaleName: 'RibbonColorScale',
       field:
         "what colours a ribbon: strand reads the record's strand against the anchor (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)",

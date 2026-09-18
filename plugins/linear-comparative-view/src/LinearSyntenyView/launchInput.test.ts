@@ -64,10 +64,30 @@ test('any declared property lands natively, named nowhere in the launch path', a
 test('a property a composed mixin contributes lands too', async () => {
   const view = await open({
     views: ROWS,
-    colorBy: 'query',
+    colorBy: { field: 'query' },
   })
-  expect(view.colorBy).toBe('query')
   expect(view.colorByMode).toBe('query')
+  expect(getSnapshot(view).colorBy).toEqual({ field: 'query' })
+})
+
+// The spec is the session: a colorBy written as the object comes back as the
+// object, and the reader refuses the shapes a config cannot hold.
+test('colorBy round-trips a session spec and refuses a stray key', async () => {
+  const view = await open({
+    views: ROWS,
+    colorBy: { field: 'gene_group', domain: ['B1', 'A1a'] },
+  })
+  expect(view.colorByMode).toBe('attribute:gene_group')
+  expect(view.colorDomain).toEqual(['B1', 'A1a'])
+  expect(getSnapshot(view).colorBy).toEqual({
+    field: 'gene_group',
+    domain: ['B1', 'A1a'],
+  })
+  await expect(
+    open({ views: ROWS, colorBy: { fields: 'strand' } }),
+  ).rejects.toThrow(
+    'SyntenyColor takes value, field, scale and domain, not fields',
+  )
 })
 
 test('an omitted property keeps its default', async () => {
@@ -94,8 +114,10 @@ describe('the v4 nested form', () => {
   // The v4 demos wrote `"init": { "colorBy": "reference", … }` and v4 applied
   // it, so unwrapping has to reach a declared property too.
   test('a declared property nested inside it lands', async () => {
-    const view = await open({ init: { views: ROWS, colorBy: 'reference' } })
-    expect(view.colorBy).toBe('reference')
+    const view = await open({
+      init: { views: ROWS, colorBy: { field: 'reference' } },
+    })
+    expect(view.colorByMode).toBe('reference')
     expect(warnings()).toEqual([DEPRECATED])
   })
 })

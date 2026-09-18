@@ -171,6 +171,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               rpcData,
               colorBy: this.colorBy,
               trackColor: this.trackColor,
+              valueColor: this.view.colorByValue,
               nameOrder: this.paintedChromosomeOrder,
               attributeRanges: this.view.attributeRanges,
               hideUnlabelled: this.view.hideUnlabelled,

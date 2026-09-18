@@ -156,7 +156,7 @@ left off its axis:
           { "assembly": "EMU", "displayedRegionNames": ["EMU*"] }
         ],
         "tracks": ["RES_EMU"],
-        "colorBy": "attribute:gene_group",
+        "colorBy": { "field": "gene_group" },
         "autoDiagonalize": true,
         "lineWidth": 4,
         "height": 860
@@ -213,7 +213,7 @@ is the figure.
           ["BFL_EMU"],
           ["EMU_CLAa"]
         ],
-        "colorBy": "attribute:gene_group",
+        "colorBy": { "field": "gene_group" },
         "hideUnlabelled": true,
         "autoDiagonalize": true,
         "drawCurves": true,

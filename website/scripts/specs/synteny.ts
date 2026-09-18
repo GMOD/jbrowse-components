@@ -276,7 +276,7 @@ function tnnt3Session(view: Record<string, unknown> = {}) {
     views: [
       {
         type: 'LinearSyntenyView',
-        colorBy: 'strand',
+        colorBy: { field: 'strand' },
         tracks: [['hg38_hs1_synteny']],
         ...view,
         views: [
@@ -942,7 +942,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearSyntenyView',
           tracks: ['grape_peach_synteny_mcscan'],
           drawCurves: false,
-          colorBy: 'query',
+          colorBy: { field: 'query' },
           // higher alpha + a taller synteny band give the ribbons room to read,
           // and autoDiagonalize reorders the panels into clean diagonals
           // (increase height, add opacity, diagonalize; then opacity
@@ -972,7 +972,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'multiway_synteny/grape_peach_cacao',
     // Rows peach / cacao / grape. One grape_peach_cacao_blocks track (listing
     // all three assemblies) backs both bands — the view tells the adapter which
-    // pair each band draws. colorBy:'reference' anchors every level on the
+    // pair each band draws. colorBy: { field: 'reference' } anchors every level on the
     // middle row (cacao, shared by both bands) so a cacao chromosome carries ONE
     // color as it's traced up into peach and down into grape. autoDiagonalize
     // reorders/flips each lower axis to follow the one above.
@@ -1007,7 +1007,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['grape_peach_cacao_blocks'],
               ['grape_peach_cacao_blocks'],
             ],
-            colorBy: 'reference',
+            colorBy: { field: 'reference' },
             autoDiagonalize: true,
           },
         ],
@@ -1096,7 +1096,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['grape_peach_cacao_blocks'],
             ],
             drawCurves: true,
-            colorBy: 'reference',
+            colorBy: { field: 'reference' },
           },
         ],
       },
@@ -1632,7 +1632,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
             ],
             tracks: [['primate_orthologs']],
-            colorBy: 'target',
+            colorBy: { field: 'target' },
             autoDiagonalize: true,
             levelHeights: [300],
             alpha: 1,
@@ -1914,7 +1914,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
             ],
             tracks: ['wheat_homoeologs'],
-            colorBy: 'dnds',
+            colorBy: { field: 'dnds' },
           },
         ],
       },
@@ -2027,7 +2027,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
             ],
             tracks: ['oat_homoeologs'],
-            colorBy: 'dnds',
+            colorBy: { field: 'dnds' },
           },
         ],
       },
@@ -2167,7 +2167,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
             ],
             tracks: [['primate_orthologs']],
-            colorBy: 'dnds',
+            colorBy: { field: 'dnds' },
             alpha: 0.95,
             drawCurves: true,
           },
@@ -2281,7 +2281,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['vertebrates_orthogroups'],
               ['vertebrates_orthogroups'],
             ],
-            colorBy: 'reference',
+            colorBy: { field: 'reference' },
             // On, and it runs on every level including the last (review: "the
             // last comparison with zebrafish is particularly scrambled, unclear
             // if autodiagonalization is working there"). Checked against a
@@ -2392,7 +2392,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['solanaceae_orthogroups'],
               ['solanaceae_orthogroups'],
             ],
-            colorBy: 'reference',
+            colorBy: { field: 'reference' },
             autoDiagonalize: true,
             sameScale: true,
             collapseEmptyRows: true,
@@ -2442,7 +2442,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['drosophila_orthogroups'],
               ['drosophila_orthogroups'],
             ],
-            colorBy: 'reference',
+            colorBy: { field: 'reference' },
             autoDiagonalize: true,
             sameScale: true,
             collapseEmptyRows: true,
@@ -2488,7 +2488,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['grasses_orthogroups'],
               ['grasses_orthogroups'],
             ],
-            colorBy: 'reference',
+            colorBy: { field: 'reference' },
             autoDiagonalize: true,
             // One bp/px down the stack, see the wheat spec below. This set has
             // the widest size spread of the three (brachypodium 0.27 Gb to
@@ -2653,7 +2653,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // - the single-vs-double reading, in color as well as in count.
             // 'reference', which the three whole-genome figures use, degenerates
             // here: every row is one or two chromosomes.
-            colorBy: 'target',
+            colorBy: { field: 'target' },
             // straight chords, for the reason the whole-genome grasses figure
             // gives: a curve leaves its row vertically and only bends toward its
             // partner mid-band, so where two fans overlap they braid instead of
@@ -2726,7 +2726,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['wheat_orthogroups'],
               ['wheat_orthogroups'],
             ],
-            colorBy: 'reference',
+            colorBy: { field: 'reference' },
             autoDiagonalize: true,
             // One bp/px down the whole stack instead of fitting each row to the
             // pane. This set is the case for it: the rows run 4.2 Gb (diploid
@@ -2876,7 +2876,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // figures use to keep a chromosome one color across several bands -
             // degenerates here: one band, and every link lands on the same
             // single bottom-row chromosome, so it paints the figure one color.
-            colorBy: 'query',
+            colorBy: { field: 'query' },
             // off. The three segments are the figure, and their order along 4A
             // is a fact about 4A; reordering and flipping the top row to
             // straighten the ribbons would rewrite the thing being shown.
@@ -2942,7 +2942,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_pangenome',
-    // colorBy:'default' (not 'query'): these are single-chromosome strains, so
+    // the default colour, not `{ field: 'query' }`: these are single-chromosome strains, so
     // per-query-name coloring paints everything one near-uniform color and adds
     // no signal (query-name coloring is only useful with multiple
     // chromosomes). Default red ribbons read cleaner here.
@@ -3032,7 +3032,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             ],
             tracks: [['ecoli_ava']],
             drawCurves: true,
-            colorBy: 'default',
           },
         ],
       },
@@ -3369,7 +3368,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // uses, because strand is what the two halves have in common:
             // LGVSyntenyDisplay colors its lanes by strand already, so an
             // inversion is blue in the lane AND a blue ribbon in the band.
-            colorBy: 'strand',
+            colorBy: { field: 'strand' },
             minAlignmentLength: 10000,
             collapseEmptyRows: true,
             levelHeights: [120, 120, 120, 120],
@@ -3658,7 +3657,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           minAlignmentLength: 500000,
           drawCurves: false,
           autoDiagonalize: true,
-          colorBy: 'query',
+          colorBy: { field: 'query' },
           alpha: 0.4,
           levelHeights: [350],
           views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
@@ -4850,7 +4849,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   //
   //  - THE WINDOW. 4.8 Mb rather than the whole 23.9 Mb MSY, so the dispersed
   //    repeat content that IS the scatter is ~a fifth as much of it.
-  //  - `colorBy: 'strand'`, which is the one encoding a dotplot cannot spare an
+  //  - `colorBy: { field: 'strand' }`, which is the one encoding a dotplot cannot spare an
   //    axis for. A palindrome arm meets its partner inverted, so the crossings
   //    the plot draws as an X are the minus-strand colour and the collinear
   //    self-match running the length of the panel is the plus-strand one.
@@ -4872,7 +4871,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           tracks: ['hs1_chrY_self'],
-          colorBy: 'strand',
+          colorBy: { field: 'strand' },
           drawCurves: true,
           cigarMode: 'matches',
           minAlignmentLength: 100000,

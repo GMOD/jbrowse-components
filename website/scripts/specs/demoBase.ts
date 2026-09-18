@@ -70,7 +70,6 @@ export function ecoliAvaStack(trackId: string) {
     // signal on a whole-genome stack. The live ecoli_pangenome demo omits it,
     // so an explicit value does not mark the track edited on every load.
     drawCurves: false,
-    colorBy: 'default',
     minAlignmentLength: 10000,
     levelHeights: [110, 110, 110, 110],
     collapseEmptyRows: true,

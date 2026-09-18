@@ -31,7 +31,7 @@ identity. Anything worth keeping gets pinned.
 
 ### attributeColorBy
 
-The colorBy string that paints a named feature attribute.
+The colorBy mode that paints a named feature attribute.
 
 ```js
 // type signature
@@ -95,25 +95,9 @@ than over an assumed white.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
-### coerceColorBy
-
-Coerce a persisted colorBy string (stored as plain `types.string` for
-snapshot-compat) to a valid `SyntenyColorBy`. Unknown values fall back to
-'default'; the retired 'identityDiverging' and 'meanQueryIdentity' modes map to
-'identity' so old saved sessions keep rendering instead of hitting an unhandled
-switch case.
-
-```js
-// type signature
-(value: string | undefined) => SyntenyColorBy
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
-
 ### colorByAttributeName
 
-The attribute a colorBy names, or undefined for a named preset. `attribute:`
-with nothing after it never reaches here — coerceColorBy rejects it.
+The attribute a colorBy mode names, or undefined for a named preset.
 
 ```js
 // type signature
@@ -264,5 +248,31 @@ module exists to prevent — see the header.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
+
+### syntenyColorByOf
+
+The mode a synteny colour object paints, in the colour functions' terms. `reads`
+are the structural fields the surface has a reader for: a field outside them and
+outside the measurement presets is a declared column.
+
+```js
+// type signature
+<S extends StructuralColorBy>({ scale, field }: SyntenyColorSnapshot, reads: readonly S[]) => ColorByOver<S>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
+
+### syntenyColorFor
+
+The colour object that paints `mode`, written over `current`: the default keeps
+the field and its order under `scale: 'none'` for a switch back, and a field
+keeps its order only when it is the one already named.
+
+```js
+// type signature
+(mode: SyntenyColorBy, current: SyntenyColorSnapshot) => SyntenyColorSnapshot
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
 
 <!-- API_DOCS_END -->

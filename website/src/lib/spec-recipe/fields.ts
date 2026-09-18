@@ -26,6 +26,8 @@ import {
   COLOR_MODES,
   VALUE_MODES_LABEL,
 } from '../../../../packages/synteny-core/src/colorModes.ts'
+import { syntenyColorByOf } from '../../../../packages/synteny-core/src/syntenyColorBy.ts'
+import { SYNTENY_VIEW_FIELDS } from '../../../../packages/synteny-core/src/syntenyColorConfigSchema.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { SHOW_LABELS_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts'
@@ -274,29 +276,34 @@ const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
 // named presets. There is no fixed label to look up, so the column supplies it.
 const SYNTENY_ATTRIBUTE_PREFIX = 'attribute:'
 
-// The multi-way display's `ribbonColor` object as the synteny mode its Color
-// by... radios carry: `none` is `default`, a field its `attribute:` mode, and
-// a field under another scale waits unread.
-function ribbonColorMode(value: unknown) {
+// A synteny colour object (the views' `colorBy`, the multi-way display's
+// `ribbonColor`) as the mode the Color by radios carry. `reads` are the
+// structural fields that surface offers. A colour string paints through no
+// radio, so it maps to nothing.
+function syntenyColorMode(
+  value: unknown,
+  reads: readonly (typeof SYNTENY_VIEW_FIELDS)[number][],
+) {
   const color = asRecord(value)
-  const field = asString(color?.field)
-  const scale = asString(color?.scale) ?? (field ? 'categorical' : undefined)
-  return scale === 'categorical'
-    ? field
-      ? `${SYNTENY_ATTRIBUTE_PREFIX}${field}`
-      : 'default'
-    : scale === 'none'
-      ? 'default'
-      : scale
+  const scale = asString(color?.scale)
+  return color
+    ? syntenyColorByOf(
+        {
+          field: asString(color.field),
+          scale: scale === 'none' ? scale : undefined,
+        },
+        reads,
+      )
+    : undefined
 }
 
-function syntenyColorLabel(value: unknown) {
-  return typeof value === 'string'
-    ? (SYNTENY_COLOR_MODES[value] ??
+function syntenyColorLabel(value: string | undefined) {
+  return value === undefined
+    ? undefined
+    : (SYNTENY_COLOR_MODES[value] ??
         (value.startsWith(SYNTENY_ATTRIBUTE_PREFIX)
           ? `${VALUE_MODES_LABEL} → ${value.slice(SYNTENY_ATTRIBUTE_PREFIX.length)}`
           : undefined))
-    : undefined
 }
 
 // The two multi-sample variant displays share one base model, so one path
@@ -1126,7 +1133,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   ribbonColor: (value, { displayType }) => {
-    const label = syntenyColorLabel(ribbonColorMode(value))
+    const label = syntenyColorLabel(syntenyColorMode(value, ['strand']))
     return label && displayType === 'MultiWaySyntenyDisplay'
       ? { path: `${TRACK_MENU} → Color by... → ${label}` }
       : undefined
@@ -1797,7 +1804,8 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined
   },
   colorBy: (value, { viewType }) => {
-    const label = syntenyColorLabel(value)
+    const mode = syntenyColorMode(value, SYNTENY_VIEW_FIELDS)
+    const label = syntenyColorLabel(mode)
     // Both comparative views carry the same palette button; only the header it
     // sits in differs.
     const header =
@@ -1810,7 +1818,7 @@ export const viewFields: Record<string, FieldRecipe> = {
       ? {
           path: `${header} → palette button → ${label}`,
           note:
-            value === 'reference'
+            mode === 'reference'
               ? 'The palette button\'s tooltip reads "Color by: ...". Reference is offered only in a stacked view of three or more genomes, where there is a shared reference to trace.'
               : 'The palette button\'s tooltip reads "Color by: ...".',
         }

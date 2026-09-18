@@ -1,15 +1,22 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
-import { types } from '@jbrowse/mobx-state-tree'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { colorByScale } from './colorLegend.ts'
 import { continuousRampConfig, isAttributeLabels } from './colorRamps.ts'
-import { coerceColorBy, colorByAttributeName } from './colorUtils.ts'
+import { colorByAttributeName } from './colorUtils.ts'
+import { syntenyColorByOf, syntenyColorFor } from './syntenyColorBy.ts'
+import {
+  SYNTENY_VIEW_FIELDS,
+  syntenyColorConfigSchema,
+} from './syntenyColorConfigSchema.ts'
 import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
 import type { CigarOpMask, ColorChip } from './colorLegend.ts'
 import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
+import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
@@ -103,21 +110,19 @@ export function TrackColorsMixin() {
     .model({
       /**
        * #property
-       * The color-by mode every track in the view renders with.
+       * The colour every track in the view paints with, a
+       * [SyntenyColor](/docs/config/syntenycolor) object: `{ field: "strand" }`,
+       * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
+       * a measurement (`identity`, `mappingQual`, `dnds`) or a column the
+       * tracks declare, with `domain` ordering a text column's labels; a
+       * colour string paints every alignment. Unset, the default scheme
+       * paints.
        */
-      colorBy: types.stripDefault(types.string, 'default'),
+      colorBy: syntenyColorConfigSchema,
       /**
        * #property
-       * The order a text column's labels take under `colorBy:
-       * 'attribute:<column>'`: the labels listed here first, the rest sorted.
-       * A label's color is its position in that order, so this moves the
-       * drawing and the key together. Empty leaves the first-seen order.
-       */
-      colorDomain: types.array(types.string),
-      /**
-       * #property
-       * trackId -> explicit color under `colorBy: 'track'`. Absent means the
-       * track takes an automatic slot from the palette.
+       * trackId -> explicit color under `colorBy: { field: 'track' }`. Absent
+       * means the track takes an automatic slot from the palette.
        */
       trackColors: types.map(types.string),
       /**
@@ -211,6 +216,33 @@ export function TrackColorsMixin() {
     .views(self => ({
       /**
        * #getter
+       * The `colorBy` object as its snapshot holds it.
+       */
+      get colorBySetting(): SyntenyColorSnapshot {
+        return {
+          value: readConfObject(self.colorBy, 'value'),
+          field: readConfObject(self.colorBy, 'field'),
+          scale: readConfObject(self.colorBy, 'scale'),
+          domain: readConfObject(self.colorBy, 'domain'),
+        }
+      },
+      /**
+       * #getter
+       * `colorBy.value`: the colour every alignment paints under the default
+       * mode in place of the view's own scheme, or undefined for that scheme.
+       */
+      get colorByValue(): string | undefined {
+        return this.colorBySetting.value
+      },
+      /**
+       * #getter
+       * `colorBy.domain`, the order a text column's labels take.
+       */
+      get colorDomain(): readonly string[] {
+        return this.colorBySetting.domain ?? []
+      },
+      /**
+       * #getter
        * Distinct numeric columns across the overlaid tracks, in first-seen
        * order — two tracks declaring `dn` offer one `dn` mode, not two.
        */
@@ -247,7 +279,7 @@ export function TrackColorsMixin() {
         const widened = self
           .loadedAttributeRanges()
           .reduce(widenAttributeRanges, self.seenAttributeRanges)
-        return orderAttributeLabels(widened, self.colorDomain)
+        return orderAttributeLabels(widened, this.colorDomain)
       },
       /**
        * #getter
@@ -267,8 +299,8 @@ export function TrackColorsMixin() {
     .views(self => ({
       /**
        * #getter
-       * trackId -> the color it draws in under `colorBy: 'track'`. Assigned
-       * across the whole view rather than per display, so an automatic slot
+       * trackId -> the color it draws in under `colorBy: { field: 'track' }`.
+       * Assigned across the whole view rather than per display, so an automatic slot
        * can't duplicate a color pinned on a sibling.
        */
       get trackColorAssignments(): Map<string, string> {
@@ -276,11 +308,10 @@ export function TrackColorsMixin() {
       },
       /**
        * #getter
-       * `colorBy` coerced to a mode the renderers know, since the property is a
-       * plain string for snapshot-compat.
+       * The mode `colorBy` paints, in the colour functions' terms.
        */
       get colorByMode(): SyntenyColorBy {
-        return coerceColorBy(self.colorBy)
+        return syntenyColorByOf(self.colorBySetting, SYNTENY_VIEW_FIELDS)
       },
       /**
        * #getter
@@ -328,7 +359,7 @@ export function TrackColorsMixin() {
       /**
        * #getter
        * Legend rows naming the overlaid tracks — one per track with its palette
-       * color, however many levels it is on, and only under `colorBy: 'track'`,
+       * color, however many levels it is on, and only under `colorBy: { field: 'track' }`,
        * since every other mode has a fixed legend of its own.
        */
       get colorLegendChips(): ColorChip[] {
@@ -423,20 +454,18 @@ export function TrackColorsMixin() {
         },
         /**
          * #action
-         * Set the view-wide mode, and rescale the ramp, which is the only way
-         * back from a domain one outlying window widened.
-         */
-        /**
-         * #action
          */
         setHideUnlabelled(value: boolean) {
           self.hideUnlabelled = value
         },
         /**
          * #action
+         * Set the view-wide mode over the `colorBy` object, and rescale the
+         * ramp, which is the only way back from a domain one outlying window
+         * widened.
          */
-        setColorBy(value: SyntenyColorBy) {
-          self.colorBy = value
+        setColorBy(mode: SyntenyColorBy) {
+          self.colorBy = cast(syntenyColorFor(mode, self.colorBySetting))
           forgetSeenRanges()
         },
         /**
@@ -446,11 +475,11 @@ export function TrackColorsMixin() {
          * fetches found them in.
          */
         setColorDomain(domain: string[]) {
-          self.colorDomain.replace(domain)
+          self.colorBy = cast({ ...self.colorBySetting, domain })
         },
         /**
          * #action
-         * Pin one track's color under `colorBy: 'track'`, or release it back to
+         * Pin one track's color under `colorBy: { field: 'track' }`, or release it back to
          * an automatic palette slot.
          */
         setTrackColor(trackId: string, value: string | undefined) {

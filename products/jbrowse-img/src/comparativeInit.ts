@@ -1,3 +1,5 @@
+import { syntenyColorFor } from '@jbrowse/synteny-core'
+
 import { pairSyntenyTrackIds, syntenyTrackLevels } from './syntenyTracks.ts'
 
 import type { Config, Opts } from './types.ts'
@@ -40,7 +42,10 @@ function definedOnly<T extends object>(obj: T): Partial<T> {
 function sharedComparativeKnobs(opts: Opts): SyntenyViewSharedInit {
   return {
     autoDiagonalize: opts.autoDiagonalize ? true : undefined,
-    colorBy: opts.colorBy,
+    colorBy:
+      opts.colorBy === undefined
+        ? undefined
+        : syntenyColorFor(opts.colorBy, {}),
     minAlignmentLength: opts.minAlignmentLength,
   }
 }

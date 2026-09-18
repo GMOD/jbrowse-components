@@ -239,7 +239,7 @@ export type ExportSvgOptions = ViewExportSvgOptions
  *   type: 'DotplotView',
  *   views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
  *   tracks: ['hg38_vs_mm10.paf'],
- *   colorBy: 'query',
+ *   colorBy: { field: 'query' },
  * }
  * ```
  * `autoDiagonalize` and a per-axis `loc` on each `views` entry are the other

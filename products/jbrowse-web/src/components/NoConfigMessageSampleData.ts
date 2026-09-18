@@ -137,7 +137,7 @@ const hs1Mm39DotplotSpec = encodeURIComponent(
         tracks: ['hs1ToMm39.over.chain.pif'],
         views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
         autoDiagonalize: true,
-        colorBy: 'query',
+        colorBy: { field: 'query' },
         minAlignmentLength: 1000000,
       },
     ],

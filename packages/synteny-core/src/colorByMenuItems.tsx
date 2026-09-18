@@ -5,10 +5,11 @@ import { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
 import { continuousRampConfig, resolveCategoricalMode } from './colorRamps.ts'
 import { attributeColorBy } from './colorUtils.ts'
 
-import type { ColorByMenuTarget, ValueColorBy } from './colorByMenuTarget.ts'
+import type { ColorByMenuTarget } from './colorByMenuTarget.ts'
 import type { ColorModeEntry } from './colorModes.ts'
 import type { CategoricalMode } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
+import type { ValueColorBy } from './syntenyColorBy.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ModeEntry<Mode extends SyntenyColorBy> {

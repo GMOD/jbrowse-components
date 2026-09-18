@@ -64,7 +64,7 @@
           }
         ],
         "tracks": [["sorghum_tauschii"], ["sorghum_wheat"]],
-        "colorBy": "attribute:copies",
+        "colorBy": { "field": "copies" },
         "autoDiagonalize": false
       }
     ]

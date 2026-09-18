@@ -55,10 +55,9 @@ const cigarModes = [
   'full',
 ] as const satisfies readonly CigarMode[]
 
-// Synteny ribbon coloring, the `colorBy` slot of the comparative views' init.
-// Validated rather than passed through as a bare string: the view coerces an
-// unknown mode back to 'default' (coerceColorBy), so a typo like `--colorBy
-// quary` silently rendered the default red instead of reporting itself.
+// Synteny ribbon coloring, written as the comparative views' `colorBy` object
+// (`syntenyColorFor`). The flag keeps the mode names and is validated here so
+// a typo like `--colorBy quary` reports itself.
 const syntenyColorByModes = [
   'default',
   'strand',

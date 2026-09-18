@@ -117,7 +117,6 @@ export { runDiagonalize } from './runDiagonalize.ts'
 export { prepareDiagonalizeAdapter } from './prepareDiagonalizeAdapter.ts'
 export {
   attributeColorBy,
-  coerceColorBy,
   colorByAttributeName,
   legendChipColor,
   colorSchemes,
@@ -146,8 +145,26 @@ export type {
   ColorByMenuTarget,
   ColorByMenuTrack,
   TrackColorsModel,
-  ValueColorBy,
 } from './colorByMenuTarget.ts'
+export {
+  SYNTENY_COLOR_SCALES,
+  SYNTENY_VIEW_FIELDS,
+  syntenyColorConfigSchema,
+} from './syntenyColorConfigSchema.ts'
+export type {
+  SyntenyColorScale,
+  SyntenyColorSnapshot,
+} from './syntenyColorConfigSchema.ts'
+export {
+  syntenyColorByOf,
+  syntenyColorField,
+  syntenyColorFor,
+} from './syntenyColorBy.ts'
+export type {
+  ColorByOver,
+  StructuralColorBy,
+  ValueColorBy,
+} from './syntenyColorBy.ts'
 // the palette button itself, not just the menu inside it — the two headers had a
 // copy each and only one of them said which mode it was in
 export { default as ColorBySelector } from './ColorBySelector.tsx'

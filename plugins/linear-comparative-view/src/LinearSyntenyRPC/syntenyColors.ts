@@ -99,6 +99,7 @@ export function computeSyntenyColors({
   featureData,
   colorBy,
   trackColor,
+  valueColor,
   opacityByIdentity,
   drawLocationMarkers,
   groundColor,
@@ -111,6 +112,9 @@ export function computeSyntenyColors({
   colorBy: SyntenyColorBy
   // the display's slot in the view's track palette; only read by colorBy:'track'
   trackColor: string
+  // the view's `colorBy.value`: what the match blocks paint under the default
+  // mode in place of the red, when set
+  valueColor?: string
   opacityByIdentity?: boolean
   // The location-marker toggle, which is a color decision rather than a fetch
   // one — the geometry always carries the ticks. Independent of colorBy: markers
@@ -138,8 +142,10 @@ export function computeSyntenyColors({
     nameOrder,
     attributeRanges,
     hideUnlabelled,
-    // a ribbon's unpainted state is the red match block
-    defaultColor: MISSING_VALUE_COLOR,
+    defaultColor:
+      valueColor === undefined
+        ? MISSING_VALUE_COLOR
+        : cssColorToABGR(valueColor),
   })
   const { I: colorI, D: colorD, N: colorN } = buildIndelColors(colorBy)
   const marker = drawLocationMarkers

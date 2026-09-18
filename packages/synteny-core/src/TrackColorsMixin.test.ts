@@ -1,4 +1,5 @@
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
 
@@ -186,9 +187,77 @@ test('the track legend lists a track on several levels once', () => {
         ]
       },
     }))
-    .create({ colorBy: 'track' })
+    .create({ colorBy: { field: 'track' } })
   expect(view.colorLegendChips).toEqual([
     { label: 'orthogroups', color: view.trackColorFor('ortho') },
     { label: 'other', color: view.trackColorFor('other') },
   ])
+})
+
+// The view's `colorBy` is one SyntenyColor object: a field the view reads as a
+// mode of its own, a measurement preset, a declared column, or a colour.
+describe('the colorBy object', () => {
+  const view = (colorBy: unknown) =>
+    TrackColorsMixin().create({ colorBy } as never)
+
+  it('reads the structural fields as their modes', () => {
+    for (const field of ['strand', 'query', 'target', 'reference', 'track']) {
+      expect(view({ field }).colorByMode).toBe(field)
+    }
+  })
+
+  it('reads a preset by the attribute it paints, and any other field as a column', () => {
+    expect(view({ field: 'mappingQual' }).colorByMode).toBe('mappingQuality')
+    expect(view({ field: 'dnds' }).colorByMode).toBe('dnds')
+    expect(view({ field: 'gene_group' }).colorByMode).toBe(
+      'attribute:gene_group',
+    )
+  })
+
+  it('lifts a colour string into value, which the default mode paints', () => {
+    const v = view('grey')
+    expect(v.colorByMode).toBe('default')
+    expect(v.colorByValue).toBe('grey')
+    expect(getSnapshot(v).colorBy).toEqual({ value: 'grey' })
+  })
+
+  it('refuses a mode string where a colour goes, naming the value', () => {
+    expect(() => view('strand')).toThrow('strand')
+  })
+
+  it('refuses a key the object does not declare', () => {
+    expect(() => view({ fields: 'strand' })).toThrow(
+      'SyntenyColor takes value, field, scale and domain, not fields',
+    )
+  })
+
+  it('clears on null and on omission', () => {
+    expect(view(null).colorByMode).toBe('default')
+    expect(view(undefined).colorByMode).toBe('default')
+    expect(getSnapshot(view(null)).colorBy).toBeUndefined()
+  })
+
+  it('writes the whole object from a picked mode, keeping the field under none', () => {
+    const v = view({ field: 'gene_group', domain: ['B1'] })
+    v.setColorBy('default')
+    expect(getSnapshot(v).colorBy).toEqual({
+      field: 'gene_group',
+      domain: ['B1'],
+      scale: 'none',
+    })
+    expect(v.colorByMode).toBe('default')
+    v.setColorBy('attribute:gene_group')
+    expect(getSnapshot(v).colorBy).toEqual({
+      field: 'gene_group',
+      domain: ['B1'],
+    })
+    v.setColorBy('query')
+    expect(getSnapshot(v).colorBy).toEqual({ field: 'query' })
+    v.setColorDomain(['chr2'])
+    expect(getSnapshot(v).colorBy).toEqual({
+      field: 'query',
+      domain: ['chr2'],
+    })
+    expect(v.colorDomain).toEqual(['chr2'])
+  })
 })

@@ -214,7 +214,7 @@ Surveyed `~/src/vendor/{ntSynt-viz,plotsr,SVbyEye,SafFire,jupiterplot}` against 
 current stack. The overriding conclusion is that **the render/model/color surface is
 already comprehensive** — `SyntenyColorBy` covers `default·strand·query·target·
 reference·identity·mappingQuality·dnds`, plus `opacityByIdentity`,
-`fadeThinAlignments`, N-way stacked views, `colorBy:'reference'` chromosome-painting,
+`fadeThinAlignments`, N-way stacked views, `colorBy: { field: 'reference' }` chromosome-painting,
 and `MultiGenomePAFAdapter`. So the remaining wins are **leaf parsers that map a popular
 file onto the EXISTING SyntenyTrack render path**, never new render/color surface. Each
 below reuses the renderer unchanged (the `MCScanBlocksAdapter` / `MultiGenomePAFAdapter`
@@ -239,9 +239,9 @@ template: "one file backs N-1 pairwise tracks, no renderer change").
   already claimed by `MashMapAdapter` in the guesser — so it must be `adapterHint`-only;
   (2) its only value over "just convert to PAF" is preserving SV type (SYN/INV/TRANS/DUP),
   and surfacing that is where cross-cutting surface lives. Cheap path if built: parse type
-  into a **feature attribute** (tooltip only) and rely on existing `colorBy:'strand'` for
+  into a **feature attribute** (tooltip only) and rely on existing `colorBy: { field: 'strand' }` for
   inversions — inversions already read via strand, which is ~80% of plotsr's visual value
-  with zero new `colorBy` arm. Only add `colorBy:'svType'` (touches ~4 exhaustive switches +
+  with zero new `colorBy` arm. Only add an `svType` mode (touches ~4 exhaustive switches +
   legend + SVG + Canvas2D + dotplot) if the trans/dup distinction proves it earns the tax.
   Cross-ref "Explicit SV-type classification" above — same conclusion, now with the guesser
   collision + rubric spelled out.

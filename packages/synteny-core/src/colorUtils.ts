@@ -62,19 +62,9 @@ export const colorSchemes = {
 
 export type ColorScheme = keyof typeof colorSchemes
 
-// Closed set of color-scheme keys shared between linear-comparative-view and
-// dotplot-view UIs and worker code. Stored in MST models as plain
-// `types.string` for snapshot-compat but every API surface — the menu
-// builder, the setter, the color-function dispatch — uses this literal so
-// the compiler covers every case.
-//
-// The type is derived from the value list rather than declared alongside it:
-// coerceColorBy needs a runtime membership test, and two hand-maintained copies
-// would let a newly added mode typecheck everywhere while coerceColorBy
-// silently rejected it back to 'default'.
-//
-// #valueList colorBy — and a third copy is what the URL parameters page had,
-// which named nine of these ten and had done since `dnds` was added.
+// The runtime modes the colour functions, legends and menus dispatch on. A
+// view or display holds a colour object (`SyntenyColor`, `RibbonColor`) and
+// `syntenyColorByOf` maps it onto one of these.
 const syntenyColorByValues = [
   'default',
   'strand',
@@ -109,19 +99,9 @@ export type MeasurementColorBy = Extract<
   'identity' | 'mappingQuality' | 'dnds'
 >
 
-const syntenyColorBySet: ReadonlySet<string> = new Set(syntenyColorByValues)
-
-function isSyntenyColorBy(value: string): value is SyntenyColorBy {
-  return (
-    syntenyColorBySet.has(value) ||
-    (value.startsWith(ATTRIBUTE_PREFIX) &&
-      value.length > ATTRIBUTE_PREFIX.length)
-  )
-}
-
 /**
  * #api
- * The colorBy string that paints a named feature attribute.
+ * The colorBy mode that paints a named feature attribute.
  */
 export function attributeColorBy(attribute: string): AttributeColorBy {
   return `${ATTRIBUTE_PREFIX}${attribute}`
@@ -129,28 +109,12 @@ export function attributeColorBy(attribute: string): AttributeColorBy {
 
 /**
  * #api
- * The attribute a colorBy names, or undefined for a named preset. `attribute:`
- * with nothing after it never reaches here — coerceColorBy rejects it.
+ * The attribute a colorBy mode names, or undefined for a named preset.
  */
 export function colorByAttributeName(colorBy: SyntenyColorBy) {
   return colorBy.startsWith(ATTRIBUTE_PREFIX)
     ? colorBy.slice(ATTRIBUTE_PREFIX.length)
     : undefined
-}
-
-/**
- * #api
- * Coerce a persisted colorBy string (stored as plain `types.string` for
- * snapshot-compat) to a valid `SyntenyColorBy`. Unknown values fall back to
- * 'default'; the retired 'identityDiverging' and 'meanQueryIdentity' modes map
- * to 'identity' so old saved sessions keep rendering instead of hitting an
- * unhandled switch case.
- */
-export function coerceColorBy(value: string | undefined): SyntenyColorBy {
-  if (value === 'identityDiverging' || value === 'meanQueryIdentity') {
-    return 'identity'
-  }
-  return value !== undefined && isSyntenyColorBy(value) ? value : 'default'
 }
 
 /**

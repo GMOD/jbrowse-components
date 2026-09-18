@@ -11,7 +11,8 @@ tutorial_category: Synteny & comparative genomics
 An allopolyploid carries several near-complete copies of its own genome, so one
 assembly goes on both axes of a dotplot. jcvi chains a protein self-alignment
 into syntenic anchors, `kaks_from_pairs.py` measures dN and dS on each anchor,
-and `colorBy: dnds` paints selection pressure across the whole karyotype.
+and `colorBy: { field: 'dnds' }` paints selection pressure across the whole
+karyotype.
 
 ## Prerequisites
 

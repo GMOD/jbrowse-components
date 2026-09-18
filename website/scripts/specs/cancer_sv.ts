@@ -726,7 +726,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           ],
           tracks: [['der3_vs_hg38']],
           drawCurves: true,
-          colorBy: 'reference',
+          colorBy: { field: 'reference' },
           levelHeights: [88],
         },
       ],

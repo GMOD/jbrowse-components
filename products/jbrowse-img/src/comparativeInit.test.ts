@@ -48,7 +48,7 @@ describe('syntenyViewKnobs', () => {
     ).toEqual({
       autoDiagonalize: true,
       drawCurves: true,
-      colorBy: 'query',
+      colorBy: { field: 'query' },
       cigarMode: 'full',
       minAlignmentLength: 10_000,
       levelHeights: [300, 300],
@@ -107,7 +107,7 @@ describe('dotplotInit', () => {
     ).toEqual({
       views: [{ assembly: 'a' }, { assembly: 'b' }],
       tracks: [],
-      colorBy: 'query',
+      colorBy: { field: 'query' },
       minAlignmentLength: 5000,
       autoDiagonalize: true,
     })

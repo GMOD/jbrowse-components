@@ -70,6 +70,7 @@ export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   attributeRanges: Record<string, AttributeRange>
   observeAttributeRanges: (ranges: Record<string, AttributeRange>) => void
   colorByMode: SyntenyColorBy
+  colorByValue: string | undefined
   hideUnlabelled: boolean
   // a track's slot in the view's palette, keyed by trackId
   trackColorFor: (trackId: string) => string

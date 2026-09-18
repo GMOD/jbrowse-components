@@ -116,7 +116,7 @@ function takeOutRow(row: LinearGenomeViewModel) {
  *   views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
  *   tracks: ['hg38_vs_mm10.paf'],
  *   drawCurves: true,
- *   colorBy: 'query',
+ *   colorBy: { field: 'query' },
  * }
  * ```
  * The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,

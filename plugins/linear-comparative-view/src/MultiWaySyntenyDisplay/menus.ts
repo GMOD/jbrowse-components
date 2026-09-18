@@ -14,7 +14,7 @@ import { laneResetLabel } from './laneSelection.ts'
 
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
-import type { RibbonColorBy } from './ribbonColorBy.ts'
+import type { RibbonColorBy } from './ribbonColorConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AttributeRange } from '@jbrowse/synteny-core'
 

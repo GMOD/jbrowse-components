@@ -126,7 +126,7 @@ test('a track shown after a settings change inherits them', async () => {
 }, 45000)
 
 // Two alignment files drawn into one plot used to be indistinguishable — same
-// mode, same black points. colorBy:'track' is what tells them apart, and the
+// mode, same black points. colorBy: { field: 'track' } is what tells them apart, and the
 // palette is assigned by the view so a color pinned on one shifts what the
 // other can automatically take.
 async function twoOverlaidTracks() {

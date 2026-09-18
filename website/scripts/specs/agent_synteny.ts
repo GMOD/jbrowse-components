@@ -45,7 +45,7 @@ function flySynteny(
     drawCurves: false,
     // Red forward, blue reverse, which is the one thing the colinear frame and
     // the inversion frames differ by.
-    colorBy: 'strand',
+    colorBy: { field: 'strand' },
     // Each row shows one arm, so every alignment to an unplaced scaffold draws
     // a mate mark labelled with its chrUn_NW_ contig, and a few hundred of them
     // cover the band these figures are about.
@@ -99,7 +99,7 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
             { assembly: MAU, displayedRegionNames: ARMS },
           ],
           tracks: [PIF],
-          colorBy: 'strand',
+          colorBy: { field: 'strand' },
           height: 760,
         },
       ],

@@ -129,7 +129,7 @@
           ["wheat_orthogroups"],
           ["wheat_orthogroups"]
         ],
-        "colorBy": "reference",
+        "colorBy": { "field": "reference" },
         "autoDiagonalize": true,
         "sameScale": true,
         "collapseEmptyRows": true

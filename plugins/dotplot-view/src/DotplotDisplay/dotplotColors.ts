@@ -30,6 +30,7 @@ export function createDotplotColorFunction(
   attributeRanges: Record<string, AttributeRange>,
   nameOrder?: readonly string[],
   hideUnlabelled?: boolean,
+  valueColor?: string,
 ) {
   return createComparativeColorFunction({
     colorBy,
@@ -38,7 +39,8 @@ export function createDotplotColorFunction(
     nameOrder,
     attributeRanges,
     hideUnlabelled,
-    defaultColor: POINT_COLOR,
+    defaultColor:
+      valueColor === undefined ? POINT_COLOR : cssColorToABGR(valueColor),
   })
 }
 
@@ -53,6 +55,7 @@ export function computeDotplotColors({
   rpcData,
   colorBy,
   trackColor,
+  valueColor,
   nameOrder,
   attributeRanges,
   hideUnlabelled,
@@ -62,6 +65,9 @@ export function computeDotplotColors({
   colorBy: SyntenyColorBy
   // the display's slot in the view's track palette; only read by colorBy:'track'
   trackColor: string
+  // the view's `colorBy.value`: what the points paint under the default mode
+  // in place of black, when set
+  valueColor?: string
   // Chromosome order of the axis assembly the painting mode keys on; see
   // `DotplotDisplay.paintedChromosomeOrder`.
   nameOrder?: readonly string[]
@@ -78,6 +84,7 @@ export function computeDotplotColors({
     attributeRanges,
     nameOrder,
     hideUnlabelled,
+    valueColor,
   )
   const out = new Uint32Array(instanceCount)
   for (let i = 0; i < instanceCount; i++) {
