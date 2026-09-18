@@ -258,7 +258,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'the graph names no carrier',
+        text: 'graph alleles, listed without their carriers',
         fontSize: 18,
         leader: true,
         anchor: {

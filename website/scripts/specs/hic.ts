@@ -154,7 +154,7 @@ export const hicSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'GM12878 — normal karyotype: nothing between the two chromosomes',
+        text: 'GM12878, normal karyotype: no chr9-chr22 contacts',
         anchor: {
           track: 'hic_gm12878_insitu',
           fracY: 0,

@@ -677,7 +677,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
             // reader reads that as the regions matching, which is exactly the
             // thing that is not true here. The message is only "you are lost,
             // and this button gets you back".
-            text: '(1) The panels have drifted apart -- synteny ribbons are not matching here',
+            text: '(1) The two panels show non-matching sequence, so the synteny ribbons do not line up here',
           },
           // The control, ringed, in the state it is about to leave. It is a
           // 44px icon among the view's other header icons, so nothing in the

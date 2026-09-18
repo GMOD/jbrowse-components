@@ -159,8 +159,8 @@ export const readMarksSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'a red bar stands up: a deletion on both copies',
-        maxWidth: 300,
+        text: 'a tall red bar: a deletion on both copies',
+        maxWidth: 420,
         fontSize: 18,
         leader: true,
         anchor: {
@@ -172,7 +172,7 @@ export const readMarksSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'centromere: repeats mis-map pairs',
+        text: 'centromere: pairs mis-mapped in repeats',
         fontSize: 18,
         leader: true,
         anchor: {

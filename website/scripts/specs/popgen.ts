@@ -410,7 +410,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
           fracY: 0.12,
           alignX: 'left',
         },
-        text: 'Called sites hold up, so what fell is allele frequencies',
+        text: 'Called sites fall less, so the dip is in allele frequencies',
         fontSize: 15,
         maxWidth: 440,
       },

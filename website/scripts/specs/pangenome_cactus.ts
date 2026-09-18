@@ -385,7 +385,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     // One clause each, naming the operation. They were three sentences apiece —
     // the mechanism spelled out on the image (reviewer: "the red callouts are a
     // little wordy ... use technical terminology if it helps"), which is what a
-    // caption is for. `collapses`/`keeps each copy at its own offset` is the
+    // caption is for. `collapses`/`keeps the copies apart` is the
     // whole difference between the two builders, and the pair of curves under
     // them is the evidence.
     //
@@ -409,7 +409,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Minigraph-Cactus keeps each copy at its own offset',
+        text: 'Minigraph-Cactus keeps the copies apart',
         maxWidth: 430,
         fontSize: 16,
         textAlign: 'end',
