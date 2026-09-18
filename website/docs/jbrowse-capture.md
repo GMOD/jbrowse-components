@@ -47,9 +47,10 @@ decides the answer:
 1. **The census.** `AppReadyMarker` publishes what is open as `data-app-views`,
    `data-app-assemblies` and `data-app-tracks`, and the gate reads that one
    element: at least one view, your assembly among them, every trackId you named
-   actually open. A config URL that 404s, a trackId the config does not define
-   and an assembly name that does not match the config all fail here, loudly,
-   and this is the only place they fail at all.
+   actually open. A trackId the config does not define and an assembly name that
+   does not match the config fail here, loudly, and this is the only place they
+   fail at all. A config, session or plugin the app cannot load fails here at
+   once, with the app's own message, which it publishes as `data-app-error`.
 2. **`[data-app-phase="ready"]`, held.** The session renders it when no view is
    resolving an assembly and no display is fetching. It has to hold for a beat,
    not merely be true once: a display drops to `ready` in the gap between one
@@ -61,10 +62,10 @@ not working, so it reads `ready` over an error banner. `data-display-drawn` is
 the stricter question, and the census of what is still unpainted goes in the
 error.
 
-**A build that publishes no `[data-app-phase]` is an error, not a slower path.**
-The fallback chain that used to run there was those negative signals plus a
-seen-busy-then-quiet heuristic to compensate for them, and it existed for builds
-older than the marker. Point `--instance` at a build that has it.
+**The instance has to be JBrowse v5 or later**, the first release to publish the
+marker. Capture reads the instance's `version.txt` before launching a browser
+and refuses an older build there, rather than waiting out a timeout on a page
+that will never say it has finished.
 
 ## Library
 
@@ -126,12 +127,12 @@ Two fields on a successful capture:
 
 - **`unsettled`** — stages that hit their timeout. Empty unless you asked to
   proceed anyway.
-- **`pending`** — displays still reporting unpainted when the shutter fired.
-  Read after `settle`, not before it, so the frame it describes is the frame
-  that was captured; a display that finished during the settle is not in it, and
-  no longer fails the run either. Whatever is left lands in `unsettled` too,
-  carrying each display's own phase — `loading` is a slow fetch, `error` a
-  banner, `ready` a display claiming it finished without drawing.
+- **`pending`** — displays still reporting unpainted when the shutter fired,
+  each with its own phase: `loading` is a slow fetch, `error` a banner, `ready`
+  a display claiming it finished without drawing. Read after `settle`, not
+  before it, so the frame it describes is the frame that was captured; a display
+  that finished during the settle is not in it, and no longer fails the run
+  either. Whatever is left lands in `unsettled` too.
 
 ## CLI
 
