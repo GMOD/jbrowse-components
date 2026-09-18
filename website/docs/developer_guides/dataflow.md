@@ -106,9 +106,9 @@ and what that range decoded to, and neither answer changes while the session
 runs. Both are evicted, never invalidated, and what evicts them is
 [](/docs/developer_guides/memory). `rpcDataMap` can hold a wrong answer: it
 keeps what the worker computed under one set of settings, so
-`SettingsInvalidate` watches the serialized `rpcProps()` and refetches every
-region when that string changes, drawing the old answer under a scrim until the
-new one lands.
+`SettingsInvalidate` watches the `rpcProps()` payload as a value and refetches
+every region when it changes, drawing the old answer under a scrim until the new
+one lands.
 [The cache key](/docs/developer_guides/data_fetching#rpcprops-the-cache-key)
 says what may go in it.
 
