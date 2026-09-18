@@ -2386,9 +2386,10 @@ export const uiSpecs: ScreenshotSpec[] = [
   },
 
   // Roadmap Epigenomics 2015 (Nature 518:317), Fig. 3a: all 127 epigenomes over
-  // ~3.7 Mb of chr9 from FAM205A to ALDH1B1, in Roadmap's tissue order with the
-  // group stripe beside the rows. Promoter columns run through every row, and
-  // PAX5 is in a transcribed state only in the B cell rows and GM12878.
+  // ~3.7 Mb of chr9 from FAM205A to ALDH1B1, in Roadmap's tissue order. At 900
+  // px a row is tall enough to carry its label, tinted by tissue group.
+  // Promoter columns run through every row, and PAX5 is in a transcribed state
+  // only in the B cell rows and GM12878.
   {
     mode: 'url',
     name: 'chromhmm',
@@ -2408,10 +2409,14 @@ export const uiSpecs: ScreenshotSpec[] = [
           trackId: 'roadmap_chromhmm_multirow_hg19',
           type: 'LinearMultiRowFeatureDisplay',
           rowGroups: roadmapFigureRowGroups(),
-          height: 760,
+          height: 900,
         },
       ],
     }),
+    actions: [
+      { type: 'waitForText', text: 'Show 3 more…', timeout: 120000 },
+      { type: 'click', text: 'Show 3 more…' },
+    ],
     annotations: [
       {
         type: 'box',
@@ -2421,11 +2426,24 @@ export const uiSpecs: ScreenshotSpec[] = [
         },
         pad: 2,
       },
+      {
+        type: 'text',
+        text: 'PAX5 transcribed in the B cell rows',
+        leader: true,
+        // rows 40 and 41 of 127 in ROADMAP_FIGURE_GROUPS order
+        anchor: {
+          track: 'roadmap_chromhmm_multirow_hg19',
+          locus: 'chr9:36,900,000',
+          fracY: 40.5 / 127,
+        },
+        dx: -260,
+        dy: -60,
+      },
     ],
     readyText: 'ChromHMM',
     readyTimeout: 180000,
     settleMs: 10000,
-    viewportHeight: 1090,
+    viewportHeight: 1230,
   },
 
   // Rinn et al. 2007 (Cell 129:1311), Fig. 3: lung fibroblasts keep the 3'

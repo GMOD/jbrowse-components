@@ -110,7 +110,7 @@ section by its value: red and blue by strand, or one color per value, with a key
 naming them. It starts ticked unless the track already has a color of its own,
 and unticking it returns the default color.
 
-<Figure caption="NCBI RefSeq genes on hg38 grouped by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip, with the divider between them marking where one strand's rows end." src="/img/gene_track_group_by_strand.png" />
+<Figure caption="NCBI RefSeq genes on hg38 grouped and colored by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip and in its strand's color." src="/img/gene_track_group_by_strand.png" />
 
 ### Writing the grouping as JSON
 

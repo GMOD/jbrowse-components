@@ -15,7 +15,7 @@ becomes a single track with one config, one adapter, and one fetch.
 Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
 **Display types → Multi-row feature display (painting)**.
 
-<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM as a multi-row track, all 127 epigenomes over chr9 in tissue order, with NCBI RefSeq genes above. Each row takes the state color the file carries: promoters are red in every tissue, and PAX5 (boxed) is in a transcribed state only in the B cell rows." />
+<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM as a multi-row track, all 127 epigenomes over chr9 in tissue order, each row labelled and tinted by its tissue group, with NCBI RefSeq genes above. Each row takes the state color the file carries: promoters are red in every tissue, and PAX5 (boxed) is in a transcribed state only in the B cell rows." />
 
 ## Turning a feature track into rows
 

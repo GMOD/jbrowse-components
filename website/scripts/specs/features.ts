@@ -368,11 +368,10 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 425,
   },
 
-  // Collapse introns + RNA-seq sashimi: PTEN (hg38) with the MANE transcript
-  // and a direct-RNA nanopore track. Right-clicking the gene and choosing
-  // Group by strand: the forward-strand genes pack into one section above the
-  // reverse-strand ones, each under a chip naming it. A gene-dense window, so
-  // both sections hold several genes and the divider between them reads.
+  // Group by strand with Also color by strand ticked, the dialog's default:
+  // the forward-strand genes pack into one section above the reverse-strand
+  // ones, each under a chip naming it, and each section takes its strand's
+  // color. A gene-dense window, so both sections hold several genes.
   {
     mode: 'url',
     name: 'gene_track_group_by_strand',
@@ -380,7 +379,14 @@ export const featuresSpecs: ScreenshotSpec[] = [
       assembly: 'hg38',
       loc: GROUPING_WINDOW,
       trackLabels: 'offset',
-      tracks: [{ ...GROUPING_TRACK, facetField: 'strand', height: 310 }],
+      tracks: [
+        {
+          ...GROUPING_TRACK,
+          facetField: 'strand',
+          colorField: 'strand',
+          height: 310,
+        },
+      ],
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
