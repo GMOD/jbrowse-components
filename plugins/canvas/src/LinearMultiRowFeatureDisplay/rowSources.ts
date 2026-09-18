@@ -63,20 +63,24 @@ export function applyRowGroups(
  * The one place "color a whole row" is decided, in CSS rather than ABGR because
  * the sidebar label is tinted with the same color its row paints in. An
  * `undefined` row falls through to the worker-baked per-feature `color`, so
- * per-row and per-feature coloring compose.
+ * per-row and per-feature coloring compose. The palette is dealt over
+ * `paletteOrder`, the rows as discovered, and looked up by name, so a reorder or
+ * a clade focus moves a row without recoloring it; undefined deals none.
  */
 export function resolveRowColorStrings(
-  sources: MultiRowSource[],
+  rows: MultiRowSource[],
   sampleColorMap: Record<string, string>,
-  colorSlotIsDefault: boolean,
+  paletteOrder: readonly MultiRowSource[] | undefined,
 ): (string | undefined)[] {
-  return sources.map((s, i) => {
+  const slot = new Map(paletteOrder?.map((s, i) => [s.name, i]))
+  return rows.map(s => {
+    const i = slot.get(s.name)
     return (
       s.color ??
       sampleColorMap[s.name] ??
-      (colorSlotIsDefault
-        ? categoricalPalette[i % categoricalPalette.length]
-        : undefined)
+      (i === undefined
+        ? undefined
+        : categoricalPalette[i % categoricalPalette.length])
     )
   })
 }

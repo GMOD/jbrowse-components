@@ -446,19 +446,13 @@ export default function stateModelFactory(
        * and the worker-baked per-feature color paints instead.
        */
       get rowColorStringsByIndex(): (string | undefined)[] {
-        // Resolved over the unfiltered rows, then read back per display row:
-        // the fallback palette indexes by position, so resolving over the
-        // filtered list would recolor every surviving row when the user focuses
-        // a clade.
-        const colors = resolveRowColorStrings(
-          self.editableSources,
+        return resolveRowColorStrings(
+          self.sources,
           self.sampleColorMap,
-          self.colorConfig === undefined && !self.usedItemRgb,
+          self.colorConfig === undefined && !self.usedItemRgb
+            ? self.sourcesWithoutLayout
+            : undefined,
         )
-        const byName = new Map(
-          self.editableSources.map((s, i) => [s.name, colors[i]] as const),
-        )
-        return self.sources.map(s => byName.get(s.name))
       },
     }))
     .views(self => ({

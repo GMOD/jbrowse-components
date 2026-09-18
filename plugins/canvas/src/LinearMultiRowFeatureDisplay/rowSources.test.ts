@@ -4,16 +4,25 @@ import { orderPartitionValues, resolveRowColorStrings } from './rowSources.ts'
 
 const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
 
-test('resolveRowColorStrings: default color slot → palette by display index', () => {
-  expect(resolveRowColorStrings(rows, {}, true)).toEqual([
+test('resolveRowColorStrings: default color slot → palette by discovery order', () => {
+  expect(resolveRowColorStrings(rows, {}, rows)).toEqual([
     categoricalPalette[0],
     categoricalPalette[1],
     categoricalPalette[2],
   ])
 })
 
+test('resolveRowColorStrings: a reordered row keeps its color', () => {
+  const reordered = [rows[2]!, rows[0]!, rows[1]!]
+  expect(resolveRowColorStrings(reordered, {}, rows)).toEqual([
+    categoricalPalette[2],
+    categoricalPalette[0],
+    categoricalPalette[1],
+  ])
+})
+
 test('resolveRowColorStrings: customized color slot → no palette (per-feature wins)', () => {
-  expect(resolveRowColorStrings(rows, {}, false)).toEqual([
+  expect(resolveRowColorStrings(rows, {}, undefined)).toEqual([
     undefined,
     undefined,
     undefined,
@@ -21,7 +30,7 @@ test('resolveRowColorStrings: customized color slot → no palette (per-feature 
 })
 
 test('resolveRowColorStrings: sampleColorMap beats palette, per row', () => {
-  expect(resolveRowColorStrings(rows, { dad: 'blue' }, true)).toEqual([
+  expect(resolveRowColorStrings(rows, { dad: 'blue' }, rows)).toEqual([
     categoricalPalette[0],
     'blue',
     categoricalPalette[2],
@@ -31,7 +40,7 @@ test('resolveRowColorStrings: sampleColorMap beats palette, per row', () => {
 test("resolveRowColorStrings: a row's own color (dialog) beats sampleColorMap", () => {
   const edited = [{ name: 'mom', color: 'black' }, { name: 'dad' }]
   expect(
-    resolveRowColorStrings(edited, { mom: 'red', dad: 'blue' }, true),
+    resolveRowColorStrings(edited, { mom: 'red', dad: 'blue' }, edited),
   ).toEqual(['black', 'blue'])
 })
 
