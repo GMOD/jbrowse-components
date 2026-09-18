@@ -22,11 +22,19 @@ set -euo pipefail
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 
+# downloads to "$out.part" and moves it into place on success, so a run killed
+# mid-download is never mistaken next time for one that finished
+fetch() {
+  local url=$1 out=$2; shift 2
+  curl "$@" -o "$out.part" "$url" && mv "$out.part" "$out"
+}
+
 # fetched on demand so a bare `curl -O` of this one script still works
 HELPERS=(sv_multihop.py depmap_to_jbrowse.py lift_bnd_vcf.py)
 for h in "${HELPERS[@]}"; do
-  [ -f "$HERE/$h" ] || curl -fsSL -o "$HERE/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+  [ -f "$HERE/$h" ] || fetch \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" \
+    "$HERE/$h" -fsSL
 done
 
 OUTDIR="${1:-cancer_sv_build}"
@@ -41,6 +49,20 @@ jb() {
   if command -v jbrowse >/dev/null 2>&1; then jbrowse "$@"; else npx -y @jbrowse/cli "$@"; fi
 }
 
+# drops rows for the alt/decoy contigs bedGraphToBigWig would otherwise reject
+# as absent from .fai; $1 is a bedGraph or bedGraph.gz, $2 the bigWig to write
+bg_to_bigwig() {
+  local src=$1 bw=$2
+  local tmp="$bw.bg"
+  case "$src" in
+    *.gz) gzip -dc "$src" ;;
+    *) cat "$src" ;;
+  esac | sort -k1,1 -k2,2n |
+    awk 'NR==FNR{ok[$1];next} ($1 in ok)' hg38.chrom.sizes - > "$tmp"
+  bedGraphToBigWig "$tmp" hg38.chrom.sizes "$bw"
+  rm -f "$tmp" "$src"
+}
+
 ONT=https://ont-open-data.s3.amazonaws.com/colo829_2024.03
 WF="$ONT/wf_somatic_variation/sup"
 TUMOUR_CRAM="$WF/COLO829_tumor.ht.cram"
@@ -49,33 +71,30 @@ NORMAL_BAM="$ONT/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam"
 # ---------------------------------------------------------------- reference
 # The same GRCh38 build the ONT alignments used; samtools needs it to decode the
 # CRAM, and sv_multihop.py aligns against it.
-[ -f GRCh38.fa ] || curl -fL "$WF/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta" -o GRCh38.fa
-[ -f GRCh38.fa.fai ] || curl -fL "$WF/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta.fai" -o GRCh38.fa.fai
+[ -f GRCh38.fa ] ||
+  fetch "$WF/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta" GRCh38.fa -fL
+[ -f GRCh38.fa.fai ] ||
+  fetch "$WF/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta.fai" GRCh38.fa.fai -fL
 cut -f1,2 GRCh38.fa.fai > hg38.chrom.sizes
 
 # ------------------------------------------------------- COLO829 SV calls
 [ -f "$DEMO/COLO829.somatic-sv.vcf.gz" ] ||
-  curl -fL "$WF/COLO829.wf-somatic-sv.vcf.gz" -o "$DEMO/COLO829.somatic-sv.vcf.gz"
+  fetch "$WF/COLO829.wf-somatic-sv.vcf.gz" "$DEMO/COLO829.somatic-sv.vcf.gz" -fL
 [ -f "$DEMO/COLO829.somatic-sv.vcf.gz.tbi" ] ||
-  curl -fL "$WF/COLO829.wf-somatic-sv.vcf.gz.tbi" -o "$DEMO/COLO829.somatic-sv.vcf.gz.tbi"
+  fetch "$WF/COLO829.wf-somatic-sv.vcf.gz.tbi" "$DEMO/COLO829.somatic-sv.vcf.gz.tbi" -fL
 
 # mosdepth's 50 kb windows, which is all the copy-number resolution the figures need
 for s in tumor normal; do
   [ -f "$DEMO/COLO829_$s.coverage.bw" ] && continue
   curl -fL "$WF/COLO829/qc/coverage/COLO829_$s.regions.bed.gz" -o "cov_$s.bed.gz"
-  # drop the alt/decoy contigs bedGraphToBigWig would reject as absent from .fai
-  gzip -dc "cov_$s.bed.gz" | sort -k1,1 -k2,2n |
-    awk 'NR==FNR{ok[$1];next} ($1 in ok)' hg38.chrom.sizes - > "cov_$s.bg"
-  bedGraphToBigWig "cov_$s.bg" hg38.chrom.sizes "$DEMO/COLO829_$s.coverage.bw"
-  rm -f "cov_$s.bg" "cov_$s.bed.gz"
+  bg_to_bigwig "cov_$s.bed.gz" "$DEMO/COLO829_$s.coverage.bw"
 done
 
 # ------------------------------------------------ the multi-hop reconstruction
-# `chains` is the search step and needs nothing but the VCF; its output is what
-# supplies the --loci list below.
+# `chains` prints a --loci suggestion per chain; chain 1's is pinned below.
 python3 "$HERE/sv_multihop.py" chains "$DEMO/COLO829.somatic-sv.vcf.gz" --min-hops 3
 
-if [ ! -f "$DEMO/der3_RARB.derivative.fa.gz" ]; then
+if [ ! -f "$DEMO/der3_RARB.vs_reference.pif.gz" ]; then
   python3 "$HERE/sv_multihop.py" derive \
     --aln "$TUMOUR_CRAM" --ref GRCh38.fa \
     --loci chr10:58717464,chr12:72273112,chr3:25359111 \
@@ -97,10 +116,10 @@ fi
 # Four PacBio runs across two ENCODE experiments; the released alignments are
 # unsorted, so each is sorted before merging.
 ENCODE_ISOSEQ=(ENCFF433YKW ENCFF092NLB ENCFF515YRZ ENCFF475XQX)
-if [ ! -f "$DEMO/K562_isoseq.bam" ]; then
+if [ ! -f "$DEMO/K562_isoseq.bam.bai" ]; then
   sorted=()
   for f in "${ENCODE_ISOSEQ[@]}"; do
-    [ -f "$f.bam" ] || curl -fL "https://www.encodeproject.org/files/$f/@@download/$f.bam" -o "$f.bam"
+    [ -f "$f.bam" ] || fetch "https://www.encodeproject.org/files/$f/@@download/$f.bam" "$f.bam" -fL
     [ -f "s_$f.bam" ] || samtools sort -@ 4 -o "s_$f.bam" "$f.bam"
     sorted+=("s_$f.bam")
   done
@@ -112,18 +131,15 @@ fi
 # Figshare file ids are per-release and stable; K562 is model ACH-000551, whose
 # WGS copy-number profile is PR-aheaZL.
 [ -f OmicsFusionFiltered.csv ] ||
-  curl -fL "https://ndownloader.figshare.com/files/51065693" -o OmicsFusionFiltered.csv
+  fetch "https://ndownloader.figshare.com/files/51065693" OmicsFusionFiltered.csv -fL
 [ -f OmicsCNSegmentsProfile.csv ] ||
-  curl -fL "https://ndownloader.figshare.com/files/51065333" -o OmicsCNSegmentsProfile.csv
+  fetch "https://ndownloader.figshare.com/files/51065333" OmicsCNSegmentsProfile.csv -fL
 
 python3 "$HERE/depmap_to_jbrowse.py" fusions OmicsFusionFiltered.csv ACH-000551 \
   "$DEMO/K562.star-fusion.tsv"
 if [ ! -f "$DEMO/K562_cn.bw" ]; then
   python3 "$HERE/depmap_to_jbrowse.py" segments OmicsCNSegmentsProfile.csv PR-aheaZL K562_cn.bedGraph
-  sort -k1,1 -k2,2n K562_cn.bedGraph |
-    awk 'NR==FNR{ok[$1];next} ($1 in ok)' hg38.chrom.sizes - > K562_cn.sorted.bedGraph
-  bedGraphToBigWig K562_cn.sorted.bedGraph hg38.chrom.sizes "$DEMO/K562_cn.bw"
-  rm -f K562_cn.bedGraph K562_cn.sorted.bedGraph
+  bg_to_bigwig K562_cn.bedGraph "$DEMO/K562_cn.bw"
 fi
 
 # ------------------------------------------------- K562 DNA breakpoints (ENCODE)
@@ -139,20 +155,26 @@ fi
 # hg19, so it is lifted. Both of a breakend's coordinates move, not just POS --
 # see lift_bnd_vcf.py, which is where that is done and explained.
 K562_10X_SV=ENCFF863MPP
-if [ ! -f "$DEMO/K562.10x-large-sv.vcf.gz" ]; then
+if [ ! -f "$DEMO/K562.10x-large-sv.vcf.gz.tbi" ]; then
   [ -f "$K562_10X_SV.vcf.gz" ] ||
-    curl -fL "https://www.encodeproject.org/files/$K562_10X_SV/@@download/$K562_10X_SV.vcf.gz" \
-      -o "$K562_10X_SV.vcf.gz"
+    fetch "https://www.encodeproject.org/files/$K562_10X_SV/@@download/$K562_10X_SV.vcf.gz" \
+      "$K562_10X_SV.vcf.gz" -fL
   # hgdownload.soe is the canonical host; the euro mirror keeps the same chain
   # under /gbdb and is the fallback when the US host is unreachable.
   [ -f hg19ToHg38.over.chain.gz ] ||
-    curl -fsSL -o hg19ToHg38.over.chain.gz \
-      "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz" ||
-    curl -fsSL -o hg19ToHg38.over.chain.gz \
-      "https://hgdownload-euro.soe.ucsc.edu/gbdb/hg19/liftOver/hg19ToHg38.over.chain.gz"
+    fetch "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz" \
+      hg19ToHg38.over.chain.gz -fsSL ||
+    fetch "https://hgdownload-euro.soe.ucsc.edu/gbdb/hg19/liftOver/hg19ToHg38.over.chain.gz" \
+      hg19ToHg38.over.chain.gz -fsSL
   if [ ! -x ./liftOver ]; then
-    curl -fsSL -o liftOver "https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver" ||
-      curl -fsSL -o liftOver "https://hgdownload-euro.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver"
+    case "$(uname -s)-$(uname -m)" in
+      Linux-x86_64) UCSC_OS=linux.x86_64 ;;
+      Darwin-x86_64) UCSC_OS=macOSX.x86_64 ;;
+      Darwin-arm64) UCSC_OS=macOSX.arm64 ;;
+      *) echo "no UCSC liftOver build for $(uname -s) $(uname -m)" >&2; exit 1 ;;
+    esac
+    fetch "https://hgdownload.soe.ucsc.edu/admin/exe/$UCSC_OS/liftOver" liftOver -fsSL ||
+      fetch "https://hgdownload-euro.soe.ucsc.edu/admin/exe/$UCSC_OS/liftOver" liftOver -fsSL
     chmod +x liftOver
   fi
   python3 "$HERE/lift_bnd_vcf.py" "$K562_10X_SV.vcf.gz" hg19ToHg38.over.chain.gz \
@@ -215,7 +237,7 @@ jb add-track "$DEMO/K562.10x-large-sv.vcf.gz" --load copy \
   --name 'K562 DNA breakpoints (10X linked reads, lifted to hg38)' \
   --trackId K562_10x_sv --assemblyNames hg38 --out "$APP" --force
 
-jb text-index --out "$APP" --force || true
+jb text-index --out "$APP" --force
 
 echo
 echo "Done. Serve it with:"

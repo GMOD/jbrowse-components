@@ -44,7 +44,12 @@ STARFUSION_COLUMNS = [
 
 
 def fusions(source, model_id, out_path):
-    rows = [r for r in csv.DictReader(open(source)) if r['ModelID'] == model_id]
+    reader = csv.DictReader(open(source))
+    missing = [c for c in STARFUSION_COLUMNS if c not in reader.fieldnames]
+    if missing:
+        sys.exit(f"{source} has no column(s) {', '.join(missing)}; "
+                 f"header has {', '.join(reader.fieldnames)}")
+    rows = [r for r in reader if r['ModelID'] == model_id]
     if not rows:
         sys.exit(f'no fusion calls for {model_id} in {source}')
     # strongest evidence first, so the track reads top-down like the caller's own
@@ -53,7 +58,7 @@ def fusions(source, model_id, out_path):
     with open(out_path, 'w') as out:
         out.write('#' + '\t'.join(STARFUSION_COLUMNS) + '\n')
         for r in rows:
-            out.write('\t'.join(r.get(c, '') or '.' for c in STARFUSION_COLUMNS) + '\n')
+            out.write('\t'.join(r[c] or '.' for c in STARFUSION_COLUMNS) + '\n')
     print(f'{len(rows)} fusion calls -> {out_path}')
 
 

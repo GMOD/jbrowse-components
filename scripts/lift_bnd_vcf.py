@@ -65,10 +65,10 @@ def lift(in_vcf, chain, liftover, out_vcf, workdir):
     # One BED interval per DISTINCT locus. A junction's two records name each
     # other, so every coordinate appears at least twice; deduping keeps the lift
     # from reporting the same failure four times.
-    wanted = {}
+    wanted = set()
     for f in records:
         for chrom, pos in loci_of(f[0], f[1], f[4]):
-            wanted[(chrom, pos)] = True
+            wanted.add((chrom, pos))
     src = work / "bnd_loci.bed"
     with src.open("w") as fh:
         for chrom, pos in wanted:
@@ -103,25 +103,30 @@ def lift(in_vcf, chain, liftover, out_vcf, workdir):
 
     # A record survives only if every locus it names survived, and then only if
     # its MATEID partner also survived -- a lone breakend whose partner is gone
-    # is a dangling reference, not a call.
+    # is a dangling reference, not a call. Tracked by index, not by ID: an ID of
+    # `.` is common and not unique, and keying by ID lets one lifted `.` record
+    # vouch for an unliftable one that just happens to share it.
     def liftable(f):
         return all(loc in new_pos for loc in loci_of(f[0], f[1], f[4]))
 
-    by_id = {f[2]: f for f in records}
-    survivors = {f[2] for f in records if liftable(f)}
+    id_to_indices = {}
+    for i, f in enumerate(records):
+        id_to_indices.setdefault(f[2], []).append(i)
+    survivors = {i for i, f in enumerate(records) if liftable(f)}
     mate_of = {}
-    for f in records:
+    for i, f in enumerate(records):
         m = re.search(r"MATEID=([^;\t]+)", f[7])
         if m:
-            mate_of[f[2]] = m.group(1)
+            mate_of[i] = m.group(1)
     kept = [
         f
-        for f in records
-        if f[2] in survivors
-        # a record with no MATEID is judged on its own; one with a MATEID it
-        # cannot find is dropped, since the partner is what the ALT points at
-        and (f[2] not in mate_of or mate_of[f[2]] in survivors)
-        and (f[2] not in mate_of or mate_of[f[2]] in by_id)
+        for i, f in enumerate(records)
+        if i in survivors
+        # a record with no MATEID is judged on its own; one with a MATEID
+        # naming no surviving record is dropped, since the partner is what
+        # the ALT points at
+        and (i not in mate_of
+             or any(j in survivors for j in id_to_indices.get(mate_of[i], [])))
     ]
 
     def rewrite(f):

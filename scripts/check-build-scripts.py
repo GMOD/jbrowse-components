@@ -1610,6 +1610,41 @@ check("fusions selects one model", len(lines) - 1, 2)
 check("fusions puts the strongest call first",
       lines[1].split("\t")[0], "BCR--ABL1")
 
+# A column StarFusionAdapter looks for by name that the header never had is a
+# silent empty track, not an error, if a missing column and an empty value both
+# collapse to '.'. Missing has to refuse and name the column; empty stays '.'.
+no_col_src = os.path.join(d, "fusions_no_col.csv")
+with open(no_col_src, "w") as fh:
+    fh.write("ModelID,FusionName,JunctionReadCount,SpanningFragCount,SpliceType,"
+             "LeftGene,LeftBreakpoint,RightGene,LargeAnchorSupport,"
+             "FFPM,LeftBreakDinuc,LeftBreakEntropy,RightBreakDinuc,RightBreakEntropy,"
+             "annots\n"
+             "M1,BCR--ABL1,182,163,X,A,chr22:23290413:+,B,YES,3.99,GT,1,AG,1,x\n")
+try:
+    with contextlib.redirect_stdout(quiet):
+        depmap.fusions(no_col_src, "M1", os.path.join(d, "sf_no_col.tsv"))
+    no_col_msg = "wrote a file"
+except SystemExit as e:
+    no_col_msg = str(e)
+check("fusions refuses a header with no RightBreakpoint column, naming it",
+      "RightBreakpoint" in no_col_msg, True)
+check("fusions' refusal lists the columns actually present",
+      "LeftBreakpoint" in no_col_msg, True)
+
+empty_val_src = os.path.join(d, "fusions_empty_val.csv")
+with open(empty_val_src, "w") as fh:
+    fh.write("ModelID,FusionName,JunctionReadCount,SpanningFragCount,SpliceType,"
+             "LeftGene,LeftBreakpoint,RightGene,RightBreakpoint,LargeAnchorSupport,"
+             "FFPM,LeftBreakDinuc,LeftBreakEntropy,RightBreakDinuc,RightBreakEntropy,"
+             "annots\n"
+             "M1,BCR--ABL1,182,163,X,A,chr22:23290413:+,B,chr9:130854064:+,,3.99,"
+             "GT,1,AG,1,\n")
+empty_val_out = os.path.join(d, "sf_empty_val.tsv")
+with contextlib.redirect_stdout(quiet):
+    depmap.fusions(empty_val_src, "M1", empty_val_out)
+check("fusions turns an empty VALUE into '.', unlike a missing column",
+      open(empty_val_out).read().splitlines()[1].split("\t")[8], ".")
+
 seg_src = os.path.join(d, "seg.csv")
 with open(seg_src, "w") as fh:
     fh.write("ProfileID,Chromosome,Start,End,SegmentMean,NumProbes,Status\n"
@@ -1690,6 +1725,25 @@ except SystemExit as e:
     symbolic_refused = "symbolic allele" in str(e)
 check("lift refuses a symbolic allele rather than passing its END through",
       symbolic_refused, True)
+
+# A caller that never assigns IDs leaves every record's ID column '.', and
+# `survivors` keyed by ID let one lifted '.' record vouch for another that
+# isn't -- rewrite then raised KeyError on the unliftable one's own locus.
+dotid_in = os.path.join(d, "dotid.vcf")
+with open(dotid_in, "w") as fh:
+    fh.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+             "chr1\t100\t.\tT\tT[chr2:200[\t.\tPASS\tSVTYPE=BND\n"
+             "chrUn\t50\t.\tC\tC[chr5:600[\t.\tPASS\tSVTYPE=BND\n")
+dotid_out = os.path.join(d, "dotid_out.vcf")
+with contextlib.redirect_stderr(quiet_err):
+    dotid_kept, dotid_total = lift_bnd.lift(
+        dotid_in, "chain", fake_liftover, dotid_out, os.path.join(d, "dotid_work"))
+check("lift keeps a liftable '.'-ID record despite another '.' record failing",
+      [l.split("\t")[:2] for l in open(dotid_out).read().splitlines()
+       if not l.startswith("#")],
+      [["chr1", "1100"]])
+check("lift drops the unliftable '.'-ID record instead of crashing on it",
+      (dotid_kept, dotid_total), (1, 2))
 
 # mcscanx_to_anchors.py: the MCScan adapters throw on a gene id missing from the
 # BED and silently mis-draw a block whose columns are the wrong way round, so
