@@ -1,7 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { defaultFilterFlags } from '../shared/util.ts'
-import { filterChainFeatures } from './executeRenderAlignmentData.ts'
+import { filterChainFeatures } from './filterChainFeatures.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 

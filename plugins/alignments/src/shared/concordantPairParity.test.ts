@@ -5,7 +5,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
-import { filterChainFeatures } from '../RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
+import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatures.ts'
 import { isConcordantPairRead } from './buildBaseFeatureData.ts'
 import { defaultFilterFlags } from './util.ts'
 
