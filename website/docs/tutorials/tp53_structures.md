@@ -55,7 +55,8 @@ The link is a session spec naming the gene's locus, its RefSeq transcript
 model and two PDB ids. The plugin resolves each id to a file, translates the
 transcript's CDS against hg38, aligns every structure to that translation, and
 superposes the structures with TM-align. The figures in the next two sections
-show that session.
+open one structure of that session each, with the **Color** menu on Mapped
+chain: the chain the transcript encodes is blue and everything else is grey.
 
 Each alignment panel puts the transcript's translation on the GENOME row and the
 structure's own sequence on the STRUCT row, with a residue ruler under them in
@@ -93,12 +94,14 @@ or click residue 248 on the 1TUP panel's STRUCT row yourself: the ruler under
 the row and the transcript row above agree on the number, because 1TUP's authors
 numbered their construct the way UniProt numbers the whole protein.
 
-<Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon above a protein view holding the AlphaFold model, 1TUP and 1YCR, with R248 selected on 1TUP and the UniProt feature tracks turned off. The selection marks its column in 1TUP's alignment and bands the codon on the gene. 1TUP's rows stop where the crystallised core does, and 1YCR's peptide matches a short stretch near the transcript's start." />
+<Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon beside 1TUP with R248 selected. The crystal's three copies of p53's core are blue on grey DNA, R248 is magenta on each with its neighbours drawn as sticks, and a band marks its codon on the gene." />
 
-The selection is magenta on the crystal, where the residue sits in the loop that
-reaches into the DNA's minor groove, and a band on the gene track over the
-codon. Hover the codon and the residue lights on both structures at once, since
-both map it; hover the intron beside the exon and nothing lights anywhere.
+A session that opens on a residue focuses it the way clicking it in 3D does:
+R248 and the residues and bases around it are drawn as sticks, and on one copy
+its side chain reaches into the DNA's minor groove. A band on the gene track
+marks the codon. Hover the codon and the residue lights on both structures at
+once, since both map it; hover the intron beside the exon and nothing lights
+anywhere.
 
 ## The complex maps the right chain
 
@@ -110,14 +113,14 @@ The 1YCR panel's **Mapped chain** picker shows both. The plugin picked the
 peptide, whose alignment is a short exact match near the start of the transcript
 row; MDM2 is listed above it.
 
-<Figure src="/img/protein/tp53_mapped_chain.png" caption="The same session with 1YCR's Mapped chain picker open. Chain B, the p53 peptide, is the mapped one; Chain A above it is MDM2." />
+<Figure src="/img/protein/tp53_mapped_chain.png" caption="1YCR with its Mapped chain picker open. Chain B, the p53 peptide, is the mapped one, blue against grey MDM2; Chain A above it in the picker is MDM2." />
 
-Switch the picker to Chain A. The alignment is recomputed against MDM2, and the
-GENOME row becomes a scatter of gapped fragments, since nothing in the
-transcript encodes it; hovering the structure now reaches no consistent codon.
-Switch back to Chain B and the peptide's alignment returns. In a complex of two
-paralogs, the plugin's automatic choice can land on the wrong chain, and the
-picker switches it.
+Switch the picker to Chain A. The alignment is recomputed against MDM2, MDM2
+turns blue, and the GENOME row becomes a scatter of gapped fragments, since
+nothing in the transcript encodes it; hovering the structure now reaches no
+consistent codon. Switch back to Chain B and the peptide's alignment returns. In
+a complex of two paralogs, the plugin's automatic choice can land on the wrong
+chain, and the picker switches it.
 
 ## Checking the hotspot against the sequence
 

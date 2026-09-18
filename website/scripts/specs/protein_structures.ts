@@ -3,29 +3,41 @@ import { PROTEIN3D_CONFIG } from './features.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The tutorials/tp53_structures page: one session holding TP53's AlphaFold
-// model, the DNA-bound core domain (1TUP) and the p53 peptide on MDM2 (1YCR),
-// every structure mapped to the same RefSeq transcript. `structures` on
-// LaunchView-ProteinView (protein3d >= 0.11.0) builds it from one link, with
-// the genome view on the left and the protein view on the right. UniProt's
-// feature tracks are off: the figures are about the alignment rows.
+// The tutorials/tp53_structures page: TP53's AlphaFold model, the DNA-bound
+// core domain (1TUP) and the p53 peptide on MDM2 (1YCR), each mapped to the
+// same RefSeq transcript. `structures` on LaunchView-ProteinView builds the
+// session from one link, genome view left, protein view right. The mapped-chain
+// colour scheme paints the chain the transcript encodes and greys the rest;
+// protein3d releases before it coerce the name to the default chain colouring.
 const R248_CODON = 'chr17:7,674,219-7,674,221'
 const GENES = 'hg38-ncbiRefSeq'
 
-function tp53Session(structures: object[]) {
+function tp53Session({
+  structures,
+  loc,
+  height,
+  showAlignment,
+}: {
+  structures: object[]
+  loc: string
+  height: number
+  showAlignment: boolean
+}) {
   return sessionSpec(PROTEIN3D_CONFIG, {
     views: [
       {
         type: 'ProteinView',
         structures,
         transcriptId: 'NM_000546.6',
-        height: 340,
+        height,
         sideBySide: true,
         zoomToBaseLevel: false,
         showProteinTracks: false,
+        showAlignment,
+        colorScheme: 'mapped-chain',
         connectedView: {
           assembly: 'hg38',
-          loc: 'chr17:7,674,161-7,674,280',
+          loc,
           tracks: [
             { trackId: GENES, geneGlyphMode: 'longestCoding', height: 50 },
           ],
@@ -46,26 +58,26 @@ const READY = {
   hideSelectors: ['.msp-background-tasks'],
 }
 
-const panel = (pdb: string) => `[data-structure="${pdb}"]`
 const CHAIN_B_OPTION = '[role="listbox"] li[role="option"]:nth-child(2)'
 
 export const proteinStructuresSpecs: ScreenshotSpec[] = [
   {
-    // R248, the DNA-contact hotspot, pre-selected on 1TUP through
-    // initialResidues, which names the residue the way the papers do: inclusive
-    // author numbering. The selection lights the residue in 3D, its column in
-    // 1TUP's alignment, and its codon on the genome view, which opens on the
-    // codon so the band is three bases of readable sequence.
+    // R248, the DNA-contact hotspot, pre-selected on 1TUP by author numbering.
+    // The seeded selection frames the camera on the residue, focuses it so it
+    // and its neighbours draw as sticks, and bands its codon on the genome view.
     mode: 'url',
     name: 'protein/tp53_hotspot',
-    url: tp53Session([
-      { uniprotId: 'P04637' },
-      { pdbId: '1TUP', initialResidues: { start: 248, end: 248 } },
-      { pdbId: '1YCR' },
-    ]),
+    url: tp53Session({
+      structures: [
+        { pdbId: '1TUP', initialResidues: { start: 248, end: 248 } },
+      ],
+      loc: 'chr17:7,674,161-7,674,280',
+      height: 720,
+      showAlignment: false,
+    }),
     ...READY,
     viewportWidth: 2000,
-    viewportHeight: 1060,
+    viewportHeight: 1000,
     annotations: [
       {
         type: 'text',
@@ -78,38 +90,38 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'R248 on 1TUP',
+        text: 'R248 in magenta, with the residues and bases around it',
+        maxWidth: 520,
         fontSize: 18,
-        leader: true,
-        // the panel's click-range highlight, the one element marking the column
         anchor: {
-          selector: `${panel('1TUP')} span[style*="rgba(0, 120, 255, 0.3)"]`,
+          selector: '[data-testid="protein-view-molstar"]',
+          alignX: 'left',
+          alignY: 'top',
         },
-        dx: -560,
-        dy: -45,
+        dx: 200,
+        dy: 40,
       },
     ],
   },
   {
-    // 1YCR's Mapped chain picker open. Each alignment panel carries the
-    // structure it aligns in data-structure, so the picker is addressed by name
-    // rather than by position -- 1TUP has one too, its DNA strands being
-    // entities. The p53 peptide, Chain B, is checked; MDM2 above it is the
-    // chain the transcript does not encode.
+    // 1YCR alone, with its Mapped chain picker open. The p53 peptide, Chain B,
+    // is checked, so it is the one coloured chain on grey MDM2.
     mode: 'url',
     name: 'protein/tp53_mapped_chain',
-    url: tp53Session([
-      { uniprotId: 'P04637' },
-      { pdbId: '1TUP' },
-      { pdbId: '1YCR' },
-    ]),
+    url: tp53Session({
+      structures: [{ pdbId: '1YCR' }],
+      loc: 'chr17:7,668,000-7,688,000',
+      height: 640,
+      showAlignment: true,
+    }),
     ...READY,
     viewportWidth: 2000,
-    viewportHeight: 1060,
+    viewportHeight: 1000,
     actions: [
       {
         type: 'click',
-        selector: `${panel('1YCR')} [data-testid="protein-mapped-chain"] [role="combobox"]`,
+        selector:
+          '[data-structure="1YCR"] [data-testid="protein-mapped-chain"] [role="combobox"]',
       },
       { type: 'waitForText', text: 'Chain A (109 aa)' },
       { type: 'delay', ms: 1000 },

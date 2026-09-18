@@ -8,6 +8,7 @@
 autoscale
 color
 colorDomain
+colorScheme
 connectedView
 connectedViewId
 contigThickness
@@ -32,6 +33,7 @@ repeatKey
 repeatTrackId
 rowGroups
 sampleColorMap
+showAlignment
 showBranchLength
 showBubbles
 showDeletionEdges
