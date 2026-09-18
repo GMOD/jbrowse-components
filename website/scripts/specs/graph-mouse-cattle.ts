@@ -145,6 +145,26 @@ const dock2Spec: ScreenshotSpec = {
   // one. SLACK_WARN_PX reports the other direction if this ever over-shoots.
   viewportHeight: 1260,
   hideTooltip: true,
+  annotations: [
+    {
+      type: 'text',
+      text: 'C57BL/6J, the reference',
+      fontSize: 18,
+      leader: true,
+      anchor: { view: 1, graphNode: 's110010685+' },
+      dx: 20,
+      dy: -110,
+    },
+    {
+      type: 'text',
+      text: 'sequence C57BL/6J lacks',
+      fontSize: 18,
+      leader: true,
+      anchor: { view: 1, graphNode: 's110050877+' },
+      dx: -230,
+      dy: 10,
+    },
+  ],
 }
 
 // ---------------------------------------------------------------------------
