@@ -161,7 +161,7 @@ fields to `{}`: two states of either field would be one key, and a change
 between them a **silently dead cache axis**. `compareStructural` counts keys
 and compares own fields, so both are distinct states, pinned in
 `fetchInputs.test.ts`
-([ADR-131](../architecture-decision-records/adr-131-fetch-keys-are-values-compared-structurally.md)).
+([ADR-132](../architecture-decision-records/adr-132-fetch-keys-are-values-compared-structurally.md)).
 A value stamp has a hazard of its own instead: a live collection mutated in
 place behind it. `snapshotInputs` closes that by rebuilding and freezing it,
 which leaves a class instance mutated in place as the one case to avoid — build

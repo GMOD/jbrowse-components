@@ -3,7 +3,7 @@ status: Accepted
 summary: "Every fetch key holds its settings and adapter axes as values, and `isDataCurrent` compares them with `compareStructural`. `FetchMixin.settingsFetchInputs` is the one settings axis — the `rpcProps()` payload and the adapter config in a structural computed — which the per-region stamp, the keyed families' `currentFetchKey`, the byte gate's viewport key and MAF's summary read all hold; an adapter config snapshot is its own key everywhere else. `rpcPropsCacheKey` and `adapterConfigKey` are gone. A hand-built view signature stays a string"
 ---
 
-# ADR-131: Fetch keys are values, compared structurally
+# ADR-132: Fetch keys are values, compared structurally
 
 ## Status
 
