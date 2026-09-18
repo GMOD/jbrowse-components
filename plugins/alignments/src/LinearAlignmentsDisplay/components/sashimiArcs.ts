@@ -23,8 +23,7 @@ export const SASHIMI_SIDES = [
   'down',
 ] as const satisfies readonly SashimiSide[]
 
-// The heights the two sub-bands are cut from. Both are display-global settings,
-// so the model satisfies this shape directly.
+// The heights the two sub-bands are cut from: the model's `bandHeights`.
 export interface SashimiBandHeights {
   coverageHeight: number
   sashimiArcsHeight: number

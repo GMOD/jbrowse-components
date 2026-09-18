@@ -78,3 +78,25 @@ describe('resizable band height floor', () => {
     expect(display.readConnectionsHeight).toBe(9)
   })
 })
+
+// A band dragged tall stays tall in its slot when the track is later made
+// shorter, and a config can state any height. The layout reserved the bound
+// height while the axis ticks, the arc draw band and the sashimi strips drew
+// the raw one, so the bars and their axis disagreed and arcs painted over the
+// pileup.
+describe('a stated band height past its ceiling', () => {
+  it('is drawn at the height the layout reserves', () => {
+    const display = createDisplay()
+    display.configuration.setSlot('coverageHeight', 5000)
+    display.configuration.setSlot('sashimiArcsHeight', 5000)
+    display.configuration.setSlot('readConnectionsHeight', 5000)
+    const ceiling = display.fitTargetHeight - 20
+    expect(display.bandHeights).toEqual({
+      coverageHeight: ceiling,
+      sashimiArcsHeight: ceiling,
+      readConnectionsHeight: ceiling,
+    })
+    expect(display.sections.sections[0]!.coverageHeight).toBe(ceiling)
+    expect(display.belowCoverageBands.coverageHeight).toBe(ceiling)
+  })
+})

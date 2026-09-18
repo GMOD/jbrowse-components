@@ -144,7 +144,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   return sections.flatMap(section =>
     SASHIMI_SIDES.map(side => {
       const arcs = section[side]
-      const band = sashimiSideBand(section, side, model)
+      const band = sashimiSideBand(section, side, model.bandHeights)
       const screenTop = bandScreenTop(band.top, scroll)
       // A grouped display re-renders this whole overlay on every scroll frame
       // (each section's screen top moves), so an off-screen lane's paths would

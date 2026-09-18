@@ -100,7 +100,7 @@ export default function SashimiArcsSvg({
   const nodeId = svgNodeId(model)
   return model.sashimiArcSections.flatMap(section =>
     SASHIMI_SIDES.map(side => {
-      const band = sashimiSideBand(section, side, model)
+      const band = sashimiSideBand(section, side, model.bandHeights)
       return (
         <SashimiSide
           key={`${section.groupKey}-${side}`}

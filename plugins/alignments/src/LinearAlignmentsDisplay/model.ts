@@ -24,7 +24,11 @@ import {
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
-import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import {
+  MIN_BAND_HEIGHT,
+  boundBandHeight,
+  clampBandHeight,
+} from '@jbrowse/core/util/bandHeight'
 import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -1012,7 +1016,7 @@ export default function stateModelFactory(
           return this.coverageDepthDomain
             ? computeCoverageTicks(
                 this.coverageDepthDomain,
-                self.coverageHeight,
+                this.bandHeights.coverageHeight,
                 self.scaleType,
                 getConf(self, 'symlogConstant'),
               )
@@ -1289,23 +1293,31 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The legal range for a band height that is *stated* — by a config, a
-         * session snapshot or a menu — rather than dragged, which
-         * `resizableBandBounds` covers. Off `fitTargetHeight`, the raw slot,
-         * since this feeds the layout `height` is derived from in grow mode.
-         *
-         * The ceiling leaves the pileup a row to be squashed into, and so
-         * applies only where there is a pileup: an SNP-coverage track is band
-         * all the way down.
+         * The three band heights as every consumer draws them: the slots bound
+         * to their legal range. A config, a session snapshot or a menu states
+         * these rather than dragging them, so nothing else clamps them — and a
+         * band dragged tall stays tall in its slot while the track shrinks under
+         * it. The ceiling leaves the pileup a row to be squashed into, and so
+         * applies only where there is a pileup. Off `fitTargetHeight`, the raw
+         * slot, since this feeds the layout `height` is derived from in grow
+         * mode.
          */
-        get statedBandBounds() {
+        get bandHeights() {
           const pileupReservePx = self.showPileup ? MIN_BAND_HEIGHT : 0
-          return {
+          const bounds = {
             min: 0,
             max: Math.max(
               MIN_BAND_HEIGHT,
               self.fitTargetHeight - pileupReservePx,
             ),
+          }
+          return {
+            coverageHeight: boundBandHeight(self.coverageHeight, bounds),
+            readConnectionsHeight: boundBandHeight(
+              self.readConnectionsHeight,
+              bounds,
+            ),
+            sashimiArcsHeight: boundBandHeight(self.sashimiArcsHeight, bounds),
           }
         },
         /**
@@ -1318,14 +1330,11 @@ export default function stateModelFactory(
          */
         get belowCoverageBandsSettings(): BelowCoverageBandsSettings {
           return {
+            ...this.bandHeights,
             showCoverage: self.showCoverage,
-            coverageHeight: self.coverageHeight,
             readConnections: self.readConnections,
             readConnectionsDown: self.readConnectionsDown,
-            readConnectionsHeight: self.readConnectionsHeight,
             showSashimiArcs: self.showSashimiArcs,
-            sashimiArcsHeight: self.sashimiArcsHeight,
-            bandBounds: this.statedBandBounds,
           }
         },
 
@@ -2628,8 +2637,7 @@ export default function stateModelFactory(
               // the hosts' own `view.width` read safe — and which the empty
               // result above has already passed through.
               viewWidthPx: view.width,
-              coverageHeight: self.coverageHeight,
-              sashimiArcsHeight: self.sashimiArcsHeight,
+              ...self.bandHeights,
             })
           },
         }
@@ -2837,13 +2845,13 @@ export default function stateModelFactory(
          * section's own scroll; the chrome drops the ones off screen.
          */
         get valueScales(): ValueScale[] {
-          const { coverageHeight, scrollModel: scroll, renderSections } = self
+          const { scrollModel: scroll, renderSections } = self
           const scales: ValueScale[] = []
           if (self.showCoverage && self.coverageDepthDomain) {
             scales.push({
               domain: self.coverageDepthDomain,
               scaleType: self.scaleType,
-              height: coverageHeight,
+              height: self.bandHeights.coverageHeight,
               ticks: self.coverageTicks,
               side: self.showsGroupLabels ? 'right' : 'left',
               bandTops: renderSections.map(section =>

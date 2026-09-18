@@ -4,7 +4,6 @@ import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadConnectionsMode } from './constants.ts'
 import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
-import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 import type { Band } from '@jbrowse/core/util/bandLayout'
 
 // This display's band order, stated once: what a section reserves above its
@@ -157,10 +156,6 @@ export interface BelowCoverageBandsInput {
   // resolved against the mode + score filter by `groupsWithSashimiDownArcs`
   // (mode lives there, not here: 'auto' has to inspect the junctions to know).
   hasSashimiDownArcs: boolean
-  // The range every band height is bound to at read time. These are config
-  // slots, so a config or a session snapshot states one directly and passes no
-  // drag clamp.
-  bandBounds?: BandBounds
 }
 
 // Whether the sashimi junctions reserve the strip below coverage: only with the
@@ -214,11 +209,10 @@ export function totalBelowCoverageOverhead(
 export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
   const hasArcsBand = reservesArcsBand(s) && s.hasArcs
   const hasSashimiBand = reservesSashimiBand(s)
-  const bounds = s.bandBounds
   const { top, reserved, bottom } = stackBands(BAND_ORDER, {
-    coverage: { active: s.showCoverage, height: s.coverageHeight, bounds },
-    arcs: { active: hasArcsBand, height: s.readConnectionsHeight, bounds },
-    sashimi: { active: hasSashimiBand, height: s.sashimiArcsHeight, bounds },
+    coverage: { active: s.showCoverage, height: s.coverageHeight },
+    arcs: { active: hasArcsBand, height: s.readConnectionsHeight },
+    sashimi: { active: hasSashimiBand, height: s.sashimiArcsHeight },
   })
   return {
     // The coverage band's reserved height, 0 when off — what the render state
@@ -246,10 +240,6 @@ export interface SectionBandOpts {
   readConnectionsHeight?: number
   showSashimiArcs?: boolean
   sashimiArcsHeight?: number
-  // The range each stated height is bound to at read time — the same slot
-  // `belowCoverageBandsGeometry` takes, so the pooled geometry and the
-  // per-section stacking cannot resolve one band to two heights.
-  bandBounds?: BandBounds
   // Floor on the distance to the next section's top, so a section shorter than
   // its own label chip still leaves room for it (the chip is anchored at the
   // section top, so without this consecutive chips overlap). Only the stacking
@@ -273,14 +263,12 @@ export function computeStackedSections(
 ): SectionsLayout {
   const showCoverage = opts.showCoverage ?? true
   const readConnections = opts.readConnections ?? 'off'
-  const bounds = opts.bandBounds
   // Loop-invariant: the heights are display-global, so the coverage band is one
   // spec and one resolved reserve for every section — and that number is what
   // places the arcs, rather than a pair `computeArcBand` re-combines.
   const coverage: Band = {
     active: showCoverage,
     height: opts.coverageHeight,
-    bounds,
   }
   const arcBand = computeArcBand({
     coverageReservedPx: reservedPx(coverage),
@@ -311,12 +299,10 @@ export function computeStackedSections(
       arcs: {
         active: hasArcsBand,
         height: opts.readConnectionsHeight ?? 0,
-        bounds,
       },
       sashimi: {
         active: hasSashimiBand,
         height: opts.sashimiArcsHeight ?? 0,
-        bounds,
       },
     })
     // Up-mode arcs overlay coverage and reserve nothing, so an arc-less lane

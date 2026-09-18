@@ -429,68 +429,21 @@ test('belowCoverageBandsGeometry: coverage off spends 0px', () => {
   ).toBe(0)
 })
 
-test('belowCoverageBandsGeometry: a stated height is bound at read time', () => {
-  // These heights are config slots, so a config or hand-edited session can
-  // state any number and no drag clamp ever sees it. Unbounded, a 300px
-  // coverage band on a 250px track floors the pileup at 0 AND carries the
-  // band's own resize handle below the canvas, leaving no way back.
-  //
-  // The floor is deliberately 0, not MIN_BAND_HEIGHT: that one is a constraint
-  // on dragging, and applying it here would grow the 1-4px sashimi bands that
-  // legitimately arrive.
-  const bounds = { min: 0, max: 230 }
-  expect(
-    belowCoverageBandsGeometry({
-      ...baseBands,
-      coverageHeight: 300,
-      bandBounds: bounds,
-    }).coverageHeight,
-  ).toBe(230)
-  expect(
-    belowCoverageBandsGeometry({
-      ...baseBands,
-      coverageHeight: 3,
-      bandBounds: bounds,
-    }).coverageHeight,
-  ).toBe(3)
-})
-
-// One-section layout (groupKey '') with a coverage band of 45 and 4 pileup rows.
-// THE TWO FOLDS RESOLVE ONE BAND TO ONE HEIGHT. A stated height is bound at
-// READ time, so a config or a hand-edited session naming one outside the range
-// is clamped by whoever reads it — and only the pooled geometry was passing
-// `bandBounds`. The per-section stacking reserved the raw 4000, and
-// `computeArcBand` re-combined `showCoverage` with the raw height on top of
-// that, so the ungrouped section's pileup top and the geometry's `bottom` — the
-// same number by construction — disagreed by 3880px.
-test('a stated height out of bounds is clamped the same by both folds', () => {
-  const bounds = { min: 8, max: 120 }
-  const settings = { ...baseBands, coverageHeight: 4000, bandBounds: bounds }
-  const pooled = belowCoverageBandsGeometry(settings)
+// The arcs draw in the strip the section reserves for them, off one number.
+// `computeArcBand` sized the draw band from the raw slot while the strip was
+// reserved at the bound one, so a band taller than its ceiling drew over the
+// sashimi strip and the pileup below it.
+test('the down-mode arc draw band is the strip the section reserves', () => {
   const { sections } = computeStackedSections([lane({ key: '', maxY: 4 })], {
-    coverageHeight: 4000,
+    coverageHeight: 45,
     rowHeight: 10,
-    bandBounds: bounds,
-  })
-
-  expect(pooled.coverageHeight).toBe(120)
-  expect(sections[0]!.coverageHeight).toBe(120)
-  expect(sections[0]!.pileupTop).toBe(pooled.bottom)
-})
-
-// ...and the arcs are placed against that same resolved number, rather than
-// against a `showCoverage`/raw-height pair recombined a third time.
-test('the arc band overlays the clamped coverage height, not the stated one', () => {
-  const { sections } = computeStackedSections([lane({ key: '', maxY: 4 })], {
-    coverageHeight: 4000,
-    rowHeight: 10,
-    bandBounds: { min: 8, max: 120 },
-    coverageYOffset: 5,
     readConnections: 'arc',
-    readConnectionsHeight: 60,
+    readConnectionsDown: true,
+    readConnectionsHeight: 35,
   })
-
-  expect(sections[0]!.arcBandHeight).toBe(115)
+  const s = sections[0]!
+  expect(s.arcBandTop).toBe(s.coverageTop + s.coverageHeight)
+  expect(s.arcBandTop + s.arcBandHeight).toBe(s.pileupTop)
 })
 
 const ungrouped: SectionsLayout = computeStackedSections(
