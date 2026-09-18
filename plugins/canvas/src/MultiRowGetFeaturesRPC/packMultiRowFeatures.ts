@@ -25,11 +25,6 @@ function evalColorSlot(
   }
 }
 
-/**
- * The clustering RPC resolves colors through this same function, because rows
- * there cluster by which colors fall at which positions — a drift between the
- * two would order the rows on colors nobody sees.
- */
 export function makeFeatureColorResolver(
   colorConfig: string | undefined,
   jexl: JexlInstance,

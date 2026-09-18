@@ -259,7 +259,7 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Map of partition value to color, applied in the worker over the
+       * Map of partition value to color, painting that whole row over the
        * per-feature `color`.
        */
       get sampleColorMap(): Record<string, string> {
@@ -424,10 +424,7 @@ export default function stateModelFactory(
        * blocks only when no cluster tree already names this order.
        */
       get sources(): MultiRowSource[] {
-        const rows = filterRowsBySubtree(
-          self.editableSources,
-          self.subtreeFilter,
-        )
+        const rows = self.clusterableSources
         return applyRowGroups(rows, self.rowGroups, {
           partition: !(self.root && treeDescribesRows(self.root, rows)),
         })

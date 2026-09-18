@@ -195,7 +195,7 @@ test('a numeric name column is a label, not an absent name', () => {
   expect(r.featureNames).toEqual(['12', '0'])
 })
 
-describe('makeFeatureColorResolver (shared with clustering)', () => {
+describe('makeFeatureColorResolver', () => {
   const resolve = (colorConfig: string | undefined) =>
     features.map(makeFeatureColorResolver(colorConfig, createJexlInstance()))
 
