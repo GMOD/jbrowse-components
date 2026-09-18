@@ -1,3 +1,5 @@
+import { leaves } from '@jbrowse/tree-sidebar/hierarchy'
+
 import { createTestEnvironment, ctgA, ctgB } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -42,6 +44,24 @@ describe('the dendrogram positions only while it describes the rows', () => {
 
     expect(rowNames(display)).toEqual(['c', 'a', 'b'])
     expect(display.hierarchy).toBeDefined()
+  })
+
+  // Three 5 px rows are 15 px of content in a track floored at 20 px, and the
+  // leaves belong on the rows, not spread over the floor.
+  it('puts each leaf on its row where the track is taller than the rows', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setRpcData(0, regionData(['a', 'b', 'c']), ctgA)
+    display.setLayoutAndClusterTree(
+      [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
+      '((c,a),b);',
+    )
+    display.setRowHeight(5)
+
+    expect(display.height).toBeGreaterThan(15)
+    const rowCenters = leaves(display.hierarchy!)
+      .map(leaf => leaf.x)
+      .sort((p, q) => p - q)
+    expect(rowCenters).toEqual([2.5, 7.5, 12.5])
   })
 
   // No `setLayout` call happens here: the rows move because a later region

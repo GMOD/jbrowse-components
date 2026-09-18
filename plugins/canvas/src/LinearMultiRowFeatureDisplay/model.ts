@@ -690,7 +690,7 @@ export default function stateModelFactory(
         return computeClusterHierarchy(
           self.root,
           self.sources,
-          self.height,
+          self.nrow * self.effectiveRowHeight,
           self.treeAreaWidth,
           self.showBranchLength,
         )
