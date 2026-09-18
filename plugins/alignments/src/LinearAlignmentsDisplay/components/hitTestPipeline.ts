@@ -11,6 +11,7 @@ import {
 } from '../../features/insertion/mark.ts'
 import { MISMATCH_MARK, mismatchHit } from '../../features/mismatch/mark.ts'
 import { hitTestModification } from '../../features/modification/hitTest.ts'
+import { modificationsEnabled } from '../../features/modification/mark.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { SOFTCLIP_BASES_MARK } from '../../features/softclipBases/mark.ts'
 import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
@@ -511,10 +512,11 @@ export function performHitTest(
   if (inReadBand) {
     // Modification before CIGAR: a modified+mismatched base resolves as a
     // modification hit, not a mismatch hit. Per-base like the mismatch step, so
-    // it drops out at the same zoom; `modFlatbush` is undefined outside
-    // modification mode, which makes this a no-op there.
+    // it drops out at the same zoom. Gated on the mark's own gate because the
+    // index outlives a switch away from modification coloring until the
+    // refetch lands, and until then the calls are not drawn.
     const modificationHit =
-      bpPerPx <= SNP_HIT_MAX_BP_PER_PX
+      bpPerPx <= SNP_HIT_MAX_BP_PER_PX && modificationsEnabled(state)
         ? hitTestModification(resolved, coords, featureHeight)
         : undefined
     // `hitTestCigarItem` owns the zoom regime, so this reads the same at every

@@ -408,6 +408,43 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
   })
 })
 
+// The index outlives a switch away from modification coloring until the
+// refetch lands, while the mark stops drawing at once.
+describe('a modification call answers only while the mark draws', () => {
+  const fb = new Flatbush(1)
+  fb.add(100, 0, 100, 0)
+  fb.finish()
+  const resolved = {
+    ...makeResolved({
+      modificationPositions: new Uint32Array([100]),
+      modificationYs: new Uint16Array([0]),
+      modificationColors: new Uint32Array([0xff0000ff]),
+      modFlatbush: fb,
+    }),
+    bpRange: [0, 200] as [number, number],
+  }
+
+  it('is hit under a modification scheme', () => {
+    const result = performHitTest(
+      100,
+      55,
+      resolved,
+      opts({ showModifications: true }),
+    )
+    expect(result.type).toBe('modification')
+  })
+
+  it('is not hit once the scheme is switched away', () => {
+    const result = performHitTest(
+      100,
+      55,
+      resolved,
+      opts({ showModifications: false }),
+    )
+    expect(result.type).not.toBe('modification')
+  })
+})
+
 describe('a mismatch its quality fade leaves unpainted hands the hover to its read', () => {
   const resolved = {
     ...makeResolved({

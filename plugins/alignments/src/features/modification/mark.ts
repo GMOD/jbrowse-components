@@ -21,7 +21,10 @@ const identity = (packed: number) => packed
 // the call's confidence is carried in the COLOUR the worker packed. Its hit test
 // is NOT this shape's: `hitTestModification` is a Flatbush nearest-neighbour
 // query, which answers out of Hilbert order and picks by distance where every
-// mark scan walks rows backwards.
+// mark scan walks rows backwards. That query answers to the mark's gate all the
+// same, which is why the gate is named.
+export const modificationsEnabled = (s: RenderState) => s.showModifications
+
 export const MODIFICATION_MARK = defineMark({
   shape: pileupShape({
     id: 'modification',
@@ -53,5 +56,5 @@ export const MODIFICATION_MARK = defineMark({
     keys: data.modificationColors,
   }),
   params: (state: RenderState) => state,
-  enabled: s => s.showModifications,
+  enabled: modificationsEnabled,
 })
