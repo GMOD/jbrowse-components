@@ -442,7 +442,9 @@ export function partitionChains(
  * orders the sections, which the main thread does, so a reorder refetches
  * nothing.
  */
-export function workerGroupBy(groupBy: GroupBy | undefined) {
+export function workerGroupBy(
+  groupBy: GroupBy | undefined,
+): GroupBy | undefined {
   return groupBy === undefined
     ? undefined
     : groupBy.type === 'tag'
