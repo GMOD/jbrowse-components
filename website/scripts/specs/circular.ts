@@ -138,15 +138,14 @@ export const circularSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // Hovering the widest X ribbon fills it in the hover colour and the
-  // browser's tooltip names the alignment: both loci and which way round they
-  // read, the row the PIF holds. The click that opens the feature details
-  // panel is not filmed: the panel reads its containing view as a linear one
-  // and throws on the circle today.
+  // Hovering the widest X ribbon fills it in the hover colour. The browser's
+  // native tooltip naming both loci does not reach a headless capture.
   {
     mode: 'url',
     name: 'circular_synteny/ribbon_hover',
-    url: circularSyntenyView(['chr1', 'chr2', 'chrX'], [DENSITY_RING, BLOCKS]),
+    url: circularSyntenyView(['chr1', 'chr2', 'chrX'], [DENSITY_RING, BLOCKS], {
+      showLegend: true,
+    }),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 180000,
     settleMs: 10000,
@@ -157,8 +156,7 @@ export const circularSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'Hovered: the tooltip names both ends of the block and its strand',
-        maxWidth: 260,
+        text: 'Hovered ribbon',
         leader: true,
         // the overlay resolves no chord anchor, so the pill points at the
         // path's own box; the id is the PIF row's index and the perspective it

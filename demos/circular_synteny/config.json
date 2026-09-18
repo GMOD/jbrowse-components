@@ -106,7 +106,7 @@
     {
       "type": "SyntenyTrack",
       "trackId": "hg38ToMm39_blocks",
-      "name": "hg38 vs mm39 (liftOver chains of 100 kb and over)",
+      "name": "Synteny blocks",
       "assemblyNames": ["mm39", "hg38"],
       "adapter": {
         "type": "PairwiseIndexedPAFAdapter",
@@ -118,7 +118,7 @@
     {
       "type": "QuantitativeTrack",
       "trackId": "hg38ToMm39_gene_density",
-      "name": "hg38 and mm39 gene density (RefSeq curated genes per 100 kb)",
+      "name": "Genes per 100 kb",
       "assemblyNames": ["hg38", "mm39"],
       "adapter": {
         "type": "BigWigAdapter",

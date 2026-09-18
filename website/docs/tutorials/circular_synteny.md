@@ -98,7 +98,7 @@ the genome it lifts to, so for hg38ToMm39 that is mouse:
 {
   "type": "SyntenyTrack",
   "trackId": "hg38ToMm39_blocks",
-  "name": "hg38 vs mm39 (liftOver chains of 100 kb and over)",
+  "name": "Synteny blocks",
   "assemblyNames": ["mm39", "hg38"],
   "adapter": {
     "type": "PairwiseIndexedPAFAdapter",
@@ -236,7 +236,7 @@ is opened as a density strip whose colour is the average over each pixel's bins:
 {
   "type": "QuantitativeTrack",
   "trackId": "hg38ToMm39_gene_density",
-  "name": "hg38 and mm39 gene density (RefSeq curated genes per 100 kb)",
+  "name": "Genes per 100 kb",
   "assemblyNames": ["hg38", "mm39"],
   "adapter": {
     "type": "BigWigAdapter",
@@ -297,7 +297,7 @@ the alignment: its span in each genome and which way round the two read. The
 widest ribbon on the three-chromosome circle is the X block that runs reverse
 between the two genomes, which is why it twists.
 
-<Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle. It crosses itself between the two X arcs, which is the reverse strand; the tooltip names its span in each genome." />
+<Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle, filled grey. It crosses itself between the two X arcs, which is the reverse strand; the hover tooltip names its span in each genome." />
 
 The tooltip's two loci are the row the PIF holds. `tabix` returns it from the
 blocks file at the human coordinate the tooltip starts at, and from the full

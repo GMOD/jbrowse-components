@@ -156,7 +156,7 @@ def served(name):
 density = {
     'type': 'QuantitativeTrack',
     'trackId': f'{pair}_gene_density',
-    'name': f'{target} and {query} gene density (RefSeq curated genes per 100 kb)',
+    'name': 'Genes per 100 kb',
     'assemblyNames': [target, query],
     'adapter': {
         'type': 'BigWigAdapter',
@@ -169,7 +169,7 @@ query_assembly, query_genes = hub_parts(query)
 synteny = {
     'type': 'SyntenyTrack',
     'trackId': f'{pair}_blocks',
-    'name': f'{target} vs {query} (liftOver chains of 100 kb and over)',
+    'name': 'Synteny blocks',
     'assemblyNames': [query, target],
     'adapter': {
         'type': 'PairwiseIndexedPAFAdapter',
