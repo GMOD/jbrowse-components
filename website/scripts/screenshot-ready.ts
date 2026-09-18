@@ -1,21 +1,20 @@
 // Getting a page to the state a figure is supposed to show, and knowing when it
-// is there.
-//
-// The waits themselves live in @jbrowse/browser-test-utils (shared with the
-// browser-test suites and the desktop harness); what is here is the ORDER they
-// have to run in, which is the part that took the bugs to learn.
+// is there. The gates are @jbrowse/capture's: the census says the session holds
+// what the spec asked for, and the frame gate holds `[data-app-phase="ready"]`
+// and waits for every display to paint.
 import {
-  hasAppReadyMarker,
-  waitForAppReady,
-  waitForDisplayPhases,
-  waitForDisplaysDone,
-  waitForLoadingComplete,
-  waitForQuiescent,
-  waitForViewPhases,
+  assemblyFromSession,
+  trackIdsFromSession,
+  waitForFrame,
+  waitForSession,
 } from '@jbrowse/browser-test-utils'
 
 import { textSelector, waitForVisible } from './actions.ts'
-import { debugDump, markPageAlive } from './screenshot-asserts.ts'
+import {
+  debugDump,
+  declaredSession,
+  markPageAlive,
+} from './screenshot-asserts.ts'
 
 import type {
   BrowserScreenshotSpec,
@@ -24,61 +23,58 @@ import type {
 } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
-// The readiness stack's own two defaults. They live here rather than in
-// screenshot-options.ts because importing that module PARSES process.argv and
-// exits on `--help`, which its own header says nothing outside a screenshot run
-// should trigger — and this module has a second caller now
-// (generate-video.ts), whose CLI takes different flags and died on its own
-// `--list` before it reached main().
-//
-// Maximum time to wait for canvas displays to signal paint-complete via their
-// *-done testids. A timeout (proceed if it expires), not a fixed floor.
-const DEFAULT_SETTLE_MS = 2500
-// Default ceiling for the ready-selector / loading-overlay / quiescent waits.
-// Slow remote-data specs raise it via spec.readyTimeout.
+// Here rather than in screenshot-options.ts, because importing that module
+// parses process.argv, and generate-video.ts takes other flags.
 const DEFAULT_READY_TIMEOUT_MS = 30000
 
 // The ceiling for every wait a spec is subject to. readyText is only the track
 // label (present well before a slow remote BAM finishes), so a spec that says it
 // needs longer gets that everywhere — the fixed default otherwise cut off slow
 // whole-genome-alignment blocks mid-load and captured a "Loading" panel.
-export function readyTimeoutOf(spec: BrowserScreenshotSpec) {
+function readyTimeoutOf(spec: BrowserScreenshotSpec) {
   return spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS
 }
 
-// One round of the post-first-paint settle: nothing is drawing, no display is
-// still in its `loading` phase, and every canvas display has painted. Each keys
-// off a different signal, and none is sufficient alone — see the waits' own docs
-// in @jbrowse/browser-test-utils.
-//
-// FETCH FIRST, THEN PAINT. `data-display-drawn` is canvasDrawn (first paint),
-// which a display can reach on an empty canvas while its fetch is still in
-// flight, so waiting on it *before* the phase gate proves nothing about content;
-// waiting after it means every display has both finished fetching and drawn what
-// it fetched. That ordering is what lets a spec's `readySelector` stay a single
-// `displayPainted('…')` instead of a hand-written `body:has(…):not(:has(…))`
-// puzzle enumerating each panel — the generic pair below already says "all of
-// them, fetched and painted" for every display DisplayChrome wraps.
-//
-// The paint wait keeps its short `settleMs` bound, which is now the right size
-// for it: it starts once nothing is fetching, so it is waiting out a repaint,
-// not a download. Ordered the other way it expired mid-fetch on every slow
-// figure and — being best-effort — was swallowed silently.
-async function settlePass(page: Page, spec: BrowserScreenshotSpec) {
-  await waitForQuiescent(page, { timeout: readyTimeoutOf(spec) })
-  await waitForDisplayPhases(page, readyTimeoutOf(spec))
-  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+// What the census has to show before the frame gate means anything: the
+// assembly and trackIds the spec's own session opens. A spec that opens no view
+// (an assembly-manager or import-dialog figure) or loads a config's default
+// session declares nothing to check, so there only the session has to exist.
+function sessionExpectations(spec: SessionUrlSpec | EmbeddedSpec) {
+  if (spec.mode === 'embedded') {
+    return {}
+  }
+  const session = declaredSession(spec)
+  return session && Array.isArray(session.views) && session.views.length > 0
+    ? {
+        assembly: assemblyFromSession(session),
+        trackIds: trackIdsFromSession(session),
+      }
+    : { views: 0 }
 }
 
-// Wait out a spec's readiness signals before capture: its readyText/readySelector
-// become visible, the loading overlay clears, any in-track "Loading…"/"Rendering…"
-// indicator quiesces, and canvas displays signal paint-complete.
-//
+// The marker held, every display painted, and nothing canceled or unpainted —
+// the gate after anything that changes the frame, a click or a resize as much
+// as a navigation. `allowUnsettled` takes the frame as it stands.
+export async function waitForSpecFrame(
+  page: Page,
+  spec: BrowserScreenshotSpec,
+) {
+  try {
+    await waitForFrame(page, {
+      timeout: readyTimeoutOf(spec),
+      allowUnsettled: spec.allowUnsettled,
+    })
+  } catch (e) {
+    await debugDump(page, spec.name)
+    throw e
+  }
+}
+
 export async function waitForReady(
   page: Page,
   spec: SessionUrlSpec | EmbeddedSpec,
 ): Promise<void> {
-  const readyTimeout = readyTimeoutOf(spec)
+  const timeout = readyTimeoutOf(spec)
   const readySelectors = [
     spec.readyText ? textSelector(spec.readyText) : undefined,
     spec.readySelector,
@@ -88,58 +84,15 @@ export async function waitForReady(
     return
   }
   try {
-    // first: while a view reads data-view-phase=loading it has mounted no
-    // displays, so the spec's own ready selector and every display-level signal
-    // below are all silent, and a capture would land on a bare spinner
-    if (!spec.allowUnsettled) {
-      await waitForViewPhases(page, readyTimeout)
-    }
+    await waitForSession(page, { ...sessionExpectations(spec), timeout })
     for (const selector of readySelectors) {
-      await waitForVisible(page, selector, { timeout: readyTimeout })
+      await waitForVisible(page, selector, { timeout })
     }
-    // the loading-overlay wait is the one that hard-fails on a view that never
-    // finishes; quiescent/displays-done are best-effort by design
-    await waitForLoadingComplete(page, {
-      waitForDownloads: true,
-      timeout: readyTimeout,
-    })
-    // ...and then the one selector that answers the whole question: the session
-    // renders `[data-app-phase="ready"]` when nothing is loading, so it cannot
-    // be true before the app starts. Every wait above it is an ABSENCE, and an
-    // absence is equally true of a page that has not begun — so a build without
-    // the marker is a stale `products/jbrowse-web/build`, not a build to fall
-    // back for. It used to fall back, and a corpus captured that way had its
-    // blank-frame race still open with nothing in any artifact saying so.
-    if (!(await hasAppReadyMarker(page))) {
-      throw new Error(
-        `${spec.name}: the page publishes no [data-app-phase], so there is no ` +
-          'positive signal that it finished. Rebuild jbrowse-web.',
-      )
-    }
-    await waitForAppReady(page, { timeout: readyTimeout })
   } catch (e) {
     await debugDump(page, spec.name)
     throw e
   }
-  await settlePass(page, spec)
-  // Belt and braces for the displays that publish no phase (non-LGV views, and
-  // anything not routed through DisplayChrome): re-run while an overlay is still
-  // up. Bounded, so a view that never finishes fails through assertRenderSettled
-  // with a frame to look at instead of hanging here.
-  for (let pass = 0; pass < 2; pass++) {
-    const stillLoading = await page.evaluate(
-      () =>
-        document.querySelectorAll('[data-testid="loading-overlay"]').length > 0,
-    )
-    if (!stillLoading) {
-      break
-    }
-    await waitForLoadingComplete(page, {
-      waitForDownloads: true,
-      timeout: readyTimeout,
-    })
-    await settlePass(page, spec)
-  }
+  await waitForSpecFrame(page, spec)
 }
 
 async function waitForPlainPage(

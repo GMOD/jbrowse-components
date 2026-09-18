@@ -21,8 +21,6 @@ import {
   createTestServer,
   findChromeExecutable,
   isBrowserConsoleNoise,
-  waitForDisplayPhases,
-  waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
@@ -78,7 +76,7 @@ import {
   trustCapturePlugins,
   waitForRasterize,
 } from './screenshot-page.ts'
-import { captureUrl, readyTimeoutOf } from './screenshot-ready.ts'
+import { captureUrl, waitForSpecFrame } from './screenshot-ready.ts'
 import {
   pct,
   printSummary,
@@ -174,10 +172,10 @@ async function renderSpecToTemp(
 
   await captureUrl(page, spec, port)
 
-  await runActions(page, spec.name, spec.actions)
-  // same as in captureStages: actions can kick off a re-render, so wait it out
-  // before asserting/capturing rather than racing it
-  await waitForDisplayPhases(page, readyTimeoutOf(spec))
+  if (spec.actions?.length) {
+    await runActions(page, spec.name, spec.actions)
+    await waitForSpecFrame(page, spec)
+  }
   await assertViewsPresent(page, spec)
   await assertViewsRendered(page, spec.name)
   if (!spec.allowUnsettled) {
@@ -462,7 +460,7 @@ async function captureEachStage(
     // Resized after the actions, not before: a stage typically acts on chrome
     // the previous stage opened (a context menu, a popover), which the resize
     // would move or dismiss. Width is left alone — the frames stack with
-    // `-append`. The phase wait below covers the re-layout the resize starts.
+    // `-append`. The frame wait below covers the re-layout the resize starts.
     const viewport = page.viewport()
     if (
       stage.viewportHeight &&
@@ -473,23 +471,10 @@ async function captureEachStage(
       await page.setViewport({ ...viewport, height })
       // setViewport resolves on the CDP call, not on the page having laid out
       // at the new size, so the frame could be taken mid-reflow. Wait for the
-      // page to agree about its own height rather than sleeping on it; the
-      // display-phase wait below then covers the re-render the resize starts.
+      // page to agree about its own height rather than sleeping on it.
       await page.waitForFunction(h => window.innerHeight === h, {}, height)
     }
-    // A stage's actions can start work of their own — alignments_sort_by_base's
-    // second stage clicks "Sort by base at position", an async re-sort — and the
-    // shot used to race it, landing on the pre-sort order often enough to drift
-    // 17% between runs. Wait for the phases the actions disturbed; a no-op when
-    // the stage only opened a menu.
-    //
-    // Views before displays: an action that launches a view (every launch-dialog
-    // figure's second stage) leaves a view whose lazily-imported component is
-    // still in flight, and a display-level wait is vacuous while no display has
-    // mounted — so the shot landed on ViewWrapper's Suspense spinner and the
-    // frame published a bare "Loading" panel under a correct view header.
-    await waitForViewPhases(page, readyTimeoutOf(spec))
-    await waitForDisplayPhases(page, readyTimeoutOf(spec))
+    await waitForSpecFrame(page, spec)
     await shoot(page, spec, stage.annotations, stageFiles[i]!)
     if (!spec.crop) {
       await recordOverflow(page, spec.name)

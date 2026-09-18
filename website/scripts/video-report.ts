@@ -142,7 +142,7 @@ export function printVideoSummary(failures: string[]) {
   const unpainted = filmed.filter(tour => tour.unpainted.length > 0)
   if (unpainted.length > 0) {
     printReport(
-      `DISPLAYS NOT PAINTED AT THE LAST FRAME (${unpainted.length}) — the tour ends on a blank track, which is also the frame the poster comes from; raise the spec's settleMs or the last wait's timeout`,
+      `DISPLAYS NOT PAINTED AT THE LAST FRAME (${unpainted.length}) — the tour ends on a blank track, which is also the frame the poster comes from; raise the last wait's timeout`,
       unpainted.map(
         ({ name, unpainted: ids }) => `• ${name}: ${ids.join(', ')}`,
       ),

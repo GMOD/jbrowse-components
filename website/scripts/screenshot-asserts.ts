@@ -38,23 +38,28 @@ function declaredSubviews(views: unknown): DeclaredView[] {
     : []
 }
 
-function declaredViews(spec: BrowserScreenshotSpec): DeclaredView[] {
-  let declared: DeclaredView[] = []
-  if (spec.mode === 'url') {
-    const query = spec.url.slice(spec.url.indexOf('?') + 1)
-    const session = new URLSearchParams(query).get('session')
-    if (session?.startsWith('spec-')) {
-      try {
-        const parsed: unknown = JSON.parse(session.slice('spec-'.length))
-        if (typeof parsed === 'object' && parsed !== null) {
-          declared = declaredSubviews((parsed as { views?: unknown }).views)
-        }
-      } catch {
-        // a non-spec session (share link, encoded snapshot) declares nothing
-      }
-    }
+// A share link, an encoded snapshot or a bare config declares no session.
+export function declaredSession(
+  spec: BrowserScreenshotSpec,
+): { views?: unknown } | undefined {
+  if (spec.mode !== 'url') {
+    return undefined
   }
-  return declared
+  const query = spec.url.slice(spec.url.indexOf('?') + 1)
+  const session = new URLSearchParams(query).get('session')
+  if (!session?.startsWith('spec-')) {
+    return undefined
+  }
+  try {
+    const parsed: unknown = JSON.parse(session.slice('spec-'.length))
+    return typeof parsed === 'object' && parsed !== null ? parsed : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function declaredViews(spec: BrowserScreenshotSpec): DeclaredView[] {
+  return declaredSubviews(declaredSession(spec)?.views)
 }
 
 // The semantic counterpart to the per-symptom checks below: a spec that asks for

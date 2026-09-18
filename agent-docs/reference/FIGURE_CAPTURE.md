@@ -283,11 +283,11 @@ and swallows timeouts, so it isn't a reliable capture gate on its own. Pick a
 data-derived, actually-drawn element (legend, a rendered label) for
 `readySelector`.
 
-Note that `settleMs` is purely the **timeout** on that wait, never a floor: a
-page whose displays are all painted (or that has no canvas display at all —
-a menu, widget, or import-form figure) proceeds immediately. It used to burn the
-full duration whenever no wrapper matched, which made it read like a fixed
-sleep and invited tuning it as one.
+The generator's paint wait runs after `[data-app-phase="ready"]` has held, is
+bounded by the spec's `readyTimeout`, and fails the spec over a display still
+unpainted at the end (capture's `waitForFrame`). A page with no canvas display
+at all — a menu, widget, or import-form figure — passes it at once. A spec's
+`settleMs` is unread.
 
 
 ## A lost WebGL context commits a blank canvas, and the run says nothing
@@ -314,7 +314,7 @@ Two things follow.
   default, each a browser with its own contexts, so a figure that stacks GPU
   displays — a multi-panel synteny view, a breakpoint split view with a pileup
   per panel — loses them under a sweep and keeps them when filtered alone. Run
-  such a spec on its own rather than raising its `settleMs`.
+  such a spec on its own.
 
 **A page crash is the same failure one step further on**, and that one at least
 fails loudly: `Page crashed!`, a retry in a fresh browser, and the spec reported

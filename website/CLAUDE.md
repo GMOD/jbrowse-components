@@ -187,14 +187,15 @@ the tour was filmed in.
   `blank below the last content`, not off the PNG.** Neither sees a display
   whose content overflows its own fixed height; on a pileup,
   `heightMode: 'grow'` turns that into page height they can see.
-- **`DISPLAYS NOT PAINTED AT CAPTURE` names a frame that may be blank.** Raise
-  `settleMs` or fix the display; don't accept a plausible-looking figure.
-- **`READIED WITHOUT THE APP MARKER` means the build is stale, not the spec.**
-  Readiness is one positive selector the session publishes,
-  `[data-app-phase="ready"]`, and a `products/jbrowse-web/build` older than it
-  falls back to gates a half-loaded app also satisfies. That is not theoretical:
-  the marker landed while the build beside it predated it by a day, so the whole
-  corpus was being captured on the old race with nothing saying so. Rebuild.
+- **Readiness is `@jbrowse/capture`'s gates**: the census holds the spec's
+  assembly and trackIds, `[data-app-phase="ready"]` holds, and every display
+  paints (`waitForReady` in `scripts/screenshot-ready.ts`). A spec that times
+  out there is slow or broken; raise `readyTimeout` or fix the display, and
+  never reach for a sleep. `no census on the page at all` means
+  `products/jbrowse-web/build` is stale. Rebuild.
+- **`DISPLAYS NOT PAINTED AT CAPTURE` names a frame that may be blank**, from a
+  spec that set `allowUnsettled` or a display that went blank after the gate.
+  Don't accept a plausible-looking figure.
 - **A sleep that waits on APP WORK is `{ type: 'waitForAppSettled' }`.** A click
   that navigates, launches, re-sorts or refetches leaves work running that every
   other wait in the spec is silent about — the menu going away is not the pileup

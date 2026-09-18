@@ -962,10 +962,9 @@ export const ldSpecs: ScreenshotSpec[] = [
       ],
     })}&sessionName=Screenshot`,
     // One testid, not a selector enumerating the four lanes: the generator's
-    // own settle already waits for every DisplayChrome-wrapped display to leave
-    // `loading` and then to paint (see settlePass in generate-screenshots.ts),
-    // which is what "all four are done" means. This only has to hold until the
-    // first LD panel exists to settle on.
+    // frame gate already waits for every display to finish and paint (see
+    // waitForReady in screenshot-ready.ts), which is what "all four are done"
+    // means. This only has to hold until the first LD panel exists.
     readySelector: displayPainted('ld-display'),
     // 180s. The data is small; what takes the time is the anoGam3 hub's
     // chrom.sizes off hgdownload.soe.ucsc.edu, which times out and refetches

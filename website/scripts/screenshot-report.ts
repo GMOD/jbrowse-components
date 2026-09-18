@@ -32,20 +32,11 @@ import { specs } from './screenshot-specs.ts'
 import type { CommitResult } from './image-pipeline.ts'
 import type { Page } from 'puppeteer'
 
-// Which displays had still not reported their first paint when the frame was
-// taken, for the end-of-run report.
-//
-// Every settle wait is best-effort — waitForDisplaysDone swallows its own
-// timeout — so "all painted" and "we stopped waiting" leave the same trace:
-// none. The result is a committed PNG with a blank track in it and a run that
-// reported success. `PENDING_DISPLAYS` is exported for exactly this
-// post-condition re-check, and both sibling harnesses (jbrowse-web's
-// browser-tests and the desktop selenium harness) already do it; this is the
-// only capture path that did not.
-//
-// Reported rather than fatal: a display that never paints is usually a spec
-// whose settleMs is too short for its data, which is a number to raise, not a
-// figure to fail. What it must not be is invisible.
+// Displays still reporting no paint when the frame was taken, for the
+// end-of-run report. The frame gate fails a spec over one unless the spec sets
+// `allowUnsettled`, so what lands here opted out of that gate, or went unpainted
+// after it — either way a frame that may show a blank track, and one that must
+// not pass unnoticed.
 export async function recordUnpainted(page: Page, name: string) {
   const pending = await page.evaluate(
     selector =>
@@ -205,7 +196,7 @@ export function printSummary(totals: RunTotals) {
   }
   if (unpaintedDisplays.size > 0) {
     printReport(
-      `DISPLAYS NOT PAINTED AT CAPTURE (${unpaintedDisplays.size}) — the settle gave up waiting, so these frames may show a blank track; raise the spec's settleMs, or fix the display that never reports done`,
+      `DISPLAYS NOT PAINTED AT CAPTURE (${unpaintedDisplays.size}) — these frames may show a blank track; fix the display that never reports done, or drop the spec's allowUnsettled so the run fails on it`,
       [...unpaintedDisplays].map(
         ([name, ids]) => `• ${name}.png: ${ids.join(', ')}`,
       ),

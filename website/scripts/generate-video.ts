@@ -725,7 +725,6 @@ async function main() {
             url: spec.url,
             readySelector: spec.readySelector,
             readyTimeout: spec.readyTimeout,
-            settleMs: spec.settleMs,
           })
           log(`${spec.name}: filming`)
           const filmed = await film(page, spec, stem)
