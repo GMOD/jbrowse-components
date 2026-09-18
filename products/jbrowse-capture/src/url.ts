@@ -1,5 +1,5 @@
 import { hubUrl } from './hub.ts'
-import { sessionSpecParam } from './session.ts'
+import { savedSessionParam, sessionSpecParam } from './session.ts'
 
 // The public JBrowse Web build the docs' own figure links point at. Any other
 // deployment works the same way, including a local `npx serve` of a build.
@@ -20,7 +20,12 @@ export interface JBrowseUrlOptions {
   loc?: string
   /** trackIds from the config to open. */
   tracks?: string[]
-  /** The full session spec, for anything the three fields above cannot say. */
+  /** A session spec, for anything the three fields above cannot say. */
+  spec?: object
+  /**
+   * A session saved with "Export session...": the `{ session: {...} }`
+   * document, or the snapshot inside it.
+   */
   session?: object
   /** Name the session carries once opened. */
   sessionName?: string
@@ -29,20 +34,24 @@ export interface JBrowseUrlOptions {
 }
 
 /**
- * A session spec says which assembly, locations and tracks to open, and the URL
- * can carry either it or those three, never both.
+ * A spec or a saved session says which assembly, locations and tracks to open,
+ * and the URL can carry one of the three ways of saying so, never two.
  */
 export function assertSessionStandsAlone({
+  spec,
   session,
   assembly,
   loc,
   tracks,
 }: JBrowseUrlOptions) {
-  if (session && (assembly || loc || tracks?.length)) {
+  if (spec && session) {
+    throw new Error('pass a session spec or a saved session, not both')
+  }
+  if ((spec || session) && (assembly || loc || tracks?.length)) {
     throw new Error(
-      'a session spec says which assembly, locations and tracks to open, so it ' +
-        'cannot be combined with assembly, loc or tracks (--assembly, --loc, ' +
-        '--track): put them in the spec',
+      'a session spec or saved session says which assembly, locations and ' +
+        'tracks to open, so it cannot be combined with assembly, loc or tracks ' +
+        '(--assembly, --loc, --track): put them in the session',
     )
   }
 }
@@ -55,11 +64,12 @@ export function assertSessionStandsAlone({
  * Two ways to say where to go, and they are not interchangeable. `assembly` /
  * `loc` / `tracks` become the [URL parameters](https://jbrowse.org/jb2/docs/urlparams/),
  * which route `loc` through the config's text-search index, so a **gene name**
- * works there. `session` becomes a
+ * works there. `spec` becomes a
  * [session spec](https://jbrowse.org/jb2/docs/urlparams/#session-spec), which
  * can describe several views and per-display settings but whose `init.loc` is
- * parsed as a locstring only and throws on a gene name. Pass one or the other:
- * `&loc=` starts a fresh session, so the URL cannot carry both.
+ * parsed as a locstring only and throws on a gene name, and `session` opens a
+ * saved session as it was exported. Pass one of the three: `&loc=` starts a
+ * fresh session, so the URL cannot carry two.
  */
 export function jbrowseUrl({
   hub,
@@ -67,11 +77,12 @@ export function jbrowseUrl({
   assembly,
   loc,
   tracks,
+  spec,
   session,
   sessionName,
   instance = PUBLIC_INSTANCE,
 }: JBrowseUrlOptions) {
-  assertSessionStandsAlone({ session, assembly, loc, tracks })
+  assertSessionStandsAlone({ spec, session, assembly, loc, tracks })
   // In the fragment, which never reaches a server: a whole session spec in the
   // query string can exceed the request-line limit and come back HTTP 414.
   const params = new URLSearchParams()
@@ -81,8 +92,10 @@ export function jbrowseUrl({
     }
   }
   set('config', config ?? (hub ? hubUrl(hub) : undefined))
-  if (session) {
-    set('session', sessionSpecParam(session))
+  if (spec) {
+    set('session', sessionSpecParam(spec))
+  } else if (session) {
+    set('session', savedSessionParam(session))
   } else {
     set('assembly', assembly ?? hub)
     set('loc', loc)

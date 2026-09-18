@@ -8,6 +8,7 @@ export interface ParsedArgs {
   assembly?: string
   loc?: string
   tracks: string[]
+  spec?: string
   session?: string
   instance?: string
   out?: string
@@ -34,6 +35,7 @@ const OPTIONS = {
   config: { type: 'string' },
   assembly: { type: 'string' },
   loc: { type: 'string' },
+  spec: { type: 'string' },
   session: { type: 'string' },
   instance: { type: 'string' },
   out: { type: 'string', short: 'o' },

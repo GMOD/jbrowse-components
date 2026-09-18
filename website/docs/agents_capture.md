@@ -35,7 +35,7 @@ npx @jbrowse/capture --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 -o br
 ## your own config, or a whole session spec
 npx @jbrowse/capture --config https://example.org/config.json --assembly mygenome \
   --loc "chr3:25,325,000-25,361,000" --track my_track -o out.png
-npx @jbrowse/capture --hub hg38 --session spec.json -o out.png
+npx @jbrowse/capture --hub hg38 --spec spec.json -o out.png
 ```
 
 - `--hub` names a [hosted assembly](/docs/agents_hosted_data), `--config` any

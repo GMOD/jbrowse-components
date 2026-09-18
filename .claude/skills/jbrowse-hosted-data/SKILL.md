@@ -145,7 +145,7 @@ data as a session track, nothing written to disk.
 ```
 
 ```bash
-npx @jbrowse/capture --hub hg38 --session spec.json -o mine.png
+npx @jbrowse/capture --hub hg38 --spec spec.json -o mine.png
 ```
 
 `assemblyNames` names the hub's assembly; the view's `tracks` mixes a hosted id

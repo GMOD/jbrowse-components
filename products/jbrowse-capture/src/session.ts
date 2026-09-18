@@ -16,12 +16,33 @@ export function encodeSessionSpec(session: object): string {
   return encodeURIComponent(sessionSpecParam(session))
 }
 
-type TrackEntry = string | { trackId?: string }
+/**
+ * The `session=` value that opens a session saved with "Export session...".
+ * Takes the exported `{ session: {...} }` document or the snapshot inside it.
+ */
+export function savedSessionParam(session: object): string {
+  return `json-${JSON.stringify({ session: savedSnapshot(session) })}`
+}
+
+/** The snapshot inside an exported session document, or the snapshot itself. */
+export function savedSnapshot(session: object): object {
+  const inner = (session as { session?: unknown }).session
+  return typeof inner === 'object' && inner !== null ? inner : session
+}
+
+// a spec names a track by id or `{trackId, displaySnapshot}`; a saved snapshot
+// by `{configuration}`, which is the trackId, or a session track's whole config
+type TrackEntry =
+  | string
+  | { trackId?: string; configuration?: string | { trackId?: string } }
 
 interface SpecShape {
   views?: {
     // a circular view takes a list, one arc per genome
     assembly?: string | string[]
+    // where a saved snapshot keeps its assembly
+    displayedRegions?: { assemblyName?: string }[]
+    assemblyNames?: string[]
     // a synteny spec's `tracks` may be nested — one string[] per level (the
     // gap between adjacent rows), the shape normalizeTrackLevels accepts
     tracks?: (TrackEntry | string[])[]
@@ -33,17 +54,22 @@ interface SpecShape {
 }
 
 /**
- * The assembly a session spec's first view opens, if it names one.
+ * The assembly the first view of a session spec or saved snapshot opens, if it
+ * names one.
  *
  * The session gate needs this because a spec can be loaded against any config —
- * `--hub hg38 --session spec.json` where the spec opens a different assembly is
+ * `--hub hg38 --spec spec.json` where the spec opens a different assembly is
  * legitimate, and defaulting the expectation to the hub name would fail a
  * perfectly good capture.
  */
 export function assemblyFromSession(session: object): string | undefined {
   const find = (views: SpecShape['views']): string | undefined => {
     for (const view of views ?? []) {
-      const found = [view.assembly ?? []].flat()[0] ?? find(view.views)
+      const found =
+        [view.assembly ?? []].flat()[0] ??
+        view.displayedRegions?.[0]?.assemblyName ??
+        view.assemblyNames?.[0] ??
+        find(view.views)
       if (found) {
         return found
       }
@@ -54,21 +80,25 @@ export function assemblyFromSession(session: object): string | undefined {
 }
 
 /**
- * Every trackId a session spec asks a view to open, including nested views (a
- * synteny or breakpoint-split spec puts its LGVs one level down).
+ * Every trackId a session spec or saved snapshot opens, including nested views
+ * (a synteny or breakpoint-split view puts its LGVs one level down).
  *
  * Used as the session gate's expectation: it is what turns "the browser loaded"
- * into "the tracks I named are open", and a spec is the one input where the
+ * into "the tracks I named are open", and a session is the one input where the
  * caller has not spelled those ids out separately.
  */
 export function trackIdsFromSession(session: object): string[] {
-  // an entry may be a bare id or `{trackId, displaySnapshot}`; an object
-  // without a trackId is malformed rather than a track to expect, so it drops
-  // out here instead of gating on undefined
+  // an entry that names no trackId is malformed rather than a track to expect,
+  // so it drops out here instead of gating on undefined
+  const idOf = (t: TrackEntry) =>
+    typeof t === 'string'
+      ? t
+      : (t.trackId ??
+        (typeof t.configuration === 'string'
+          ? t.configuration
+          : t.configuration?.trackId))
   const idsOf = (tracks: TrackEntry[] | undefined): string[] =>
-    (tracks ?? [])
-      .map(t => (typeof t === 'string' ? t : t.trackId))
-      .filter(id => id !== undefined)
+    (tracks ?? []).map(idOf).filter(id => id !== undefined)
   const collect = (views: SpecShape['views']): string[] =>
     (views ?? []).flatMap(view => [
       // a nested entry is a synteny spec's per-level list; these used to be

@@ -124,3 +124,29 @@ test('a spec naming no assembly expects none', () => {
     undefined,
   )
 })
+
+// "Export session..." writes the live snapshot, which names a track by its
+// `configuration` (the trackId, or a session track's whole config) and keeps
+// its assembly on the displayed regions
+test('a saved snapshot yields its trackIds and assembly', () => {
+  const snapshot = {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: [{ assemblyName: 'hg38', refName: 'chr17' }],
+        tracks: [
+          { type: 'FeatureTrack', configuration: 'hg38-genes' },
+          {
+            type: 'FeatureTrack',
+            configuration: { trackId: 'my-session-track' },
+          },
+        ],
+      },
+    ],
+  }
+  expect(trackIdsFromSession(snapshot)).toEqual([
+    'hg38-genes',
+    'my-session-track',
+  ])
+  expect(assemblyFromSession(snapshot)).toBe('hg38')
+})

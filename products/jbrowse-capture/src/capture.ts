@@ -12,7 +12,11 @@ import { resolveAgainstConfig } from './catalog.ts'
 import { assertImagePath } from './imagePath.ts'
 import { assertSupportedInstance } from './instanceVersion.ts'
 import { waitForFrame, waitForJBrowseReady } from './ready.ts'
-import { assemblyFromSession, trackIdsFromSession } from './session.ts'
+import {
+  assemblyFromSession,
+  savedSnapshot,
+  trackIdsFromSession,
+} from './session.ts'
 import { sessionOverflowInPage } from './sessionOverflow.ts'
 import { PUBLIC_INSTANCE, assertSessionStandsAlone, jbrowseUrl } from './url.ts'
 
@@ -101,15 +105,16 @@ export async function openJBrowse(
     // never go idle, and the session gate below is a far better "it is up"
     // signal than the absence of requests.
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout })
-    const { session, assembly, hub, tracks } = urlOptions
+    const { spec, session, assembly, hub, tracks } = urlOptions
+    const opens = spec ?? (session && savedSnapshot(session))
     // Spread rather than listed, so every ready option arrives by construction:
     // a hand-copied list is what once dropped `allowUnsettled`.
     const report = await waitForJBrowseReady(page, {
       ...options,
       timeout,
-      // a spec may open another assembly than the hub that supplies its config
-      assembly: session ? assemblyFromSession(session) : (assembly ?? hub),
-      trackIds: trackIds ?? (session ? trackIdsFromSession(session) : tracks),
+      // a session may open another assembly than the hub that supplies its config
+      assembly: opens ? assemblyFromSession(opens) : (assembly ?? hub),
+      trackIds: trackIds ?? (opens ? trackIdsFromSession(opens) : tracks),
     })
     return { browser, page, url, ...report }
   } catch (error) {

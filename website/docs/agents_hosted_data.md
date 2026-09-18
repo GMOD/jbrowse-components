@@ -177,9 +177,8 @@ and no assembly is built.
 - The view's `tracks` list mixes a hosted `trackId` with the one just defined.
 - In the app the same object goes to `jb.loadSessionSpec`, and for one file with
   no spec `jb.addTrack({ location })` infers the track type from the extension.
-- From a script,
-  `npx @jbrowse/capture --hub hg38 --session spec.json -o mine.png` opens it, or
-  `@jbrowse/capture url` prints it as a link.
+- From a script, `npx @jbrowse/capture --hub hg38 --spec spec.json -o mine.png`
+  opens it, or `@jbrowse/capture url` prints it as a link.
 - Your file must be reachable by the browser: a public URL with CORS enabled, or
   a local server.
 - Its refNames must match the assembly or one of the hub's aliases, so a VCF

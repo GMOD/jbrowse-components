@@ -114,11 +114,11 @@ describe('against a served config', () => {
     await expect(resolveAgainstConfig(options)).resolves.toBe(options)
   })
 
-  test('a session spec passes through unread', async () => {
+  test('a spec passes through unread', async () => {
     const options = {
       instance: base,
       config: 'data/config.json',
-      session: { views: [] },
+      spec: { views: [] },
     }
     await expect(resolveAgainstConfig(options)).resolves.toBe(options)
   })

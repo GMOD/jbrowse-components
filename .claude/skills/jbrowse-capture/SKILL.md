@@ -49,9 +49,10 @@ npx @jbrowse/capture --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 -o ou
 ```
 
 Both take `--hub` (a hosted assembly), `--config <url>`, `--loc` (locstring, or
-a gene name where the config has a text index), and repeatable `--track`.
-`npx @jbrowse/capture --help` for the rest; `--session <file.json>` takes a
-whole session spec.
+a gene name where the config has a text index), and repeatable `--track`. Both
+take a session spec as `--spec <file.json>`, and `--session <file.json>` opens a
+session saved with File → Export session. `npx @jbrowse/capture --help` for the
+rest.
 
 ## Where the app comes from
 

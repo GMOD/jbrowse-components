@@ -25,8 +25,8 @@ WHAT TO SHOW
   --loc <locstring>     chr1:1,000-2,000, several space-separated, or a gene name
                         where the config has a text index (hosted ones do)
   --track <trackId>     a track to open, by trackId or name; repeat for several
-  --session <json|path> a full session spec, for several views or per-display
-                        settings. Not combinable with --assembly/--loc/--track.
+  --spec <json|path|->  a session spec, for several views or per-display settings
+  --session <path|->    a session saved with File → Export session
   --instance <url>      JBrowse Web deployment to drive
                         (default https://jbrowse.org/code/jb2/latest/)
 
@@ -65,15 +65,25 @@ EXAMPLES
     --loc "chr3:25,325,000-25,361,000 chr10:58,716,500-58,718,500" -o two.png
 `
 
-function readSession(value: string): object {
-  const text = value.trimStart().startsWith('{')
-    ? value
-    : readFileSync(value, 'utf8')
+// inline JSON, `-` for stdin, or a path: the forms `jb2export --spec` reads
+function readJson(flag: string, value: string): object {
+  const text =
+    value === '-'
+      ? readFileSync(0, 'utf8')
+      : value.trimStart().startsWith('{')
+        ? value
+        : readFileSync(value, 'utf8')
   const parsed: unknown = JSON.parse(text)
   if (typeof parsed !== 'object' || parsed === null) {
-    throw new Error('--session must be a JSON object')
+    throw new Error(`--${flag} must be a JSON object`)
   }
   return parsed
+}
+
+// a bare view object is the one-view spec it would be wrapped in
+function readSpec(value: string): object {
+  const spec = readJson('spec', value)
+  return 'type' in spec && !('views' in spec) ? { views: [spec] } : spec
 }
 
 function urlOptions(args: ParsedArgs) {
@@ -83,7 +93,8 @@ function urlOptions(args: ParsedArgs) {
     assembly: args.assembly,
     loc: args.loc,
     tracks: args.tracks.length ? args.tracks : undefined,
-    session: args.session ? readSession(args.session) : undefined,
+    spec: args.spec ? readSpec(args.spec) : undefined,
+    session: args.session ? readJson('session', args.session) : undefined,
     instance: args.instance,
   }
 }

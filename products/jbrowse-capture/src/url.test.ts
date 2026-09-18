@@ -1,6 +1,6 @@
 import { jbrowseUrl } from './url.ts'
 
-const session = {
+const spec = {
   views: [
     {
       type: 'LinearGenomeView',
@@ -25,8 +25,26 @@ function readSession(url: string) {
   ) as unknown
 }
 
-test('the session survives the round trip', () => {
-  expect(readSession(jbrowseUrl({ hub: 'hg38', session }))).toEqual(session)
+test('the spec survives the round trip', () => {
+  expect(readSession(jbrowseUrl({ hub: 'hg38', spec }))).toEqual(spec)
+})
+
+// "Export session..." writes `{ session: {...} }`, which is what `json-` reads;
+// the bare snapshot inside it is accepted too, and wrapped the same way
+test.each([
+  ['the exported document', { session: { name: 'saved', views: [] } }],
+  ['the snapshot inside it', { name: 'saved', views: [] }],
+])('a saved session opens as json-, from %s', (_name, session) => {
+  const value = params(jbrowseUrl({ hub: 'hg38', session })).get('session')!
+  expect(JSON.parse(value.replace(/^json-/, ''))).toEqual({
+    session: { name: 'saved', views: [] },
+  })
+})
+
+test('a spec and a saved session together are refused', () => {
+  expect(() =>
+    jbrowseUrl({ hub: 'hg38', spec, session: { views: [] } }),
+  ).toThrow('pass a session spec or a saved session, not both')
 })
 
 test('a hub becomes its genomes.jbrowse.org config URL and names the assembly', () => {
@@ -43,13 +61,13 @@ test('tracks join into one comma-separated parameter', () => {
   expect(params(url).get('tracks')).toBe('a,b')
 })
 
-test('a session carries the config and nothing the spec already says', () => {
-  expect(
-    Object.fromEntries(params(jbrowseUrl({ hub: 'hg38', session }))),
-  ).toEqual({
-    config: 'https://jbrowse.org/ucsc/hg38/config.json',
-    session: expect.stringMatching(/^spec-\{/),
-  })
+test('a spec carries the config and nothing the spec already says', () => {
+  expect(Object.fromEntries(params(jbrowseUrl({ hub: 'hg38', spec })))).toEqual(
+    {
+      config: 'https://jbrowse.org/ucsc/hg38/config.json',
+      session: expect.stringMatching(/^spec-\{/),
+    },
+  )
 })
 
 // The URL can carry only one of them, and the session gate used to wait for
@@ -58,8 +76,8 @@ test.each([
   ['assembly', { assembly: 'hg38' }],
   ['loc', { loc: 'BRCA1' }],
   ['tracks', { tracks: ['a'] }],
-])('a session refuses %s beside it', (_name, extra) => {
-  expect(() => jbrowseUrl({ hub: 'hg38', session, ...extra })).toThrow(
+])('a spec refuses %s beside it', (_name, extra) => {
+  expect(() => jbrowseUrl({ hub: 'hg38', spec, ...extra })).toThrow(
     'cannot be combined with assembly, loc or tracks',
   )
 })

@@ -113,8 +113,8 @@ async function fetchCatalog(url: string) {
  * typo fails here with suggestions rather than as a session-gate timeout.
  *
  * A config this cannot fetch or parse passes through unchanged, and the app
- * reports it. A session spec passes through too, since it may declare tracks
- * of its own that no config lists.
+ * reports it. A spec or saved session passes through too, since it may declare
+ * tracks of its own that no config lists.
  */
 export async function resolveAgainstConfig(
   options: JBrowseUrlOptions,
@@ -124,6 +124,7 @@ export async function resolveAgainstConfig(
     config,
     assembly,
     tracks,
+    spec,
     session,
     instance = PUBLIC_INSTANCE,
   } = options
@@ -133,7 +134,7 @@ export async function resolveAgainstConfig(
     : hub
       ? hubUrl(hub)
       : undefined
-  if (session || !url || (!wanted && !tracks?.length)) {
+  if (spec || session || !url || (!wanted && !tracks?.length)) {
     return options
   }
   const catalog = await fetchCatalog(url)
