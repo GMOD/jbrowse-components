@@ -79,18 +79,6 @@ orders and spends; it never adds a value the data lacks.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
-## categoryKey
-
-The key a value files under: `''` for none, a list joined with commas, and
-anything else as its string.
-
-```js
-// type signature
-(value: unknown) => string
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/groupKeys.ts)
-
 ## ChannelReader
 
 A channel read per feature: the compiled form of a FieldRef, and

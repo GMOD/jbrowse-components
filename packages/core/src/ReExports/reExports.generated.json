@@ -2848,7 +2848,6 @@
         "OVERFLOW_GROUP_KEY",
         "capGroupKeys",
         "carryGroupDomain",
-        "categoryKey",
         "compareGroupKeys",
         "groupKeyComparator",
         "groupKeySpaceOf",
