@@ -45,6 +45,34 @@ describe('highlightSearchResultFeature', () => {
     ])
   })
 
+  it('replaces the last search highlight and keeps the right-click ones', () => {
+    const { display, view } = setup()
+    const rightClicked = {
+      startBp: 100,
+      endBp: 200,
+      name: 'Apple',
+      featureId: 'apple',
+    }
+    display.addFeatureHighlightForItem(rightClicked, 'ctgA')
+    for (const locString of ['ctgA:1051..3902', 'ctgA:5001..6000']) {
+      highlightSearchResultFeature({
+        result: highlight({ locString }),
+        model: view,
+        assemblyName: 'volvox',
+      })
+    }
+    expect(highlightsOf(display)).toEqual([
+      {
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        name: 'Apple',
+        featureId: 'apple',
+      },
+      { refName: 'ctgA', start: 5000, end: 6000, name: 'EDEN' },
+    ])
+  })
+
   it('does nothing for a hit that names only a refName', () => {
     const { display, view } = setup()
     highlightSearchResultFeature({

@@ -6,7 +6,7 @@ import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface FeatureHighlightCapableDisplay {
-  setFeatureHighlights: (highlights: FeatureHighlight[]) => void
+  setSearchHighlight: (highlight: FeatureHighlight) => void
 }
 
 function isFeatureHighlightCapable(
@@ -15,8 +15,8 @@ function isFeatureHighlightCapable(
   return (
     typeof d === 'object' &&
     d !== null &&
-    'setFeatureHighlights' in d &&
-    typeof d.setFeatureHighlights === 'function'
+    'setSearchHighlight' in d &&
+    typeof d.setSearchHighlight === 'function'
   )
 }
 
@@ -52,7 +52,7 @@ export function highlightSearchResultFeature({
       )
       for (const display of track?.displays ?? []) {
         if (isFeatureHighlightCapable(display)) {
-          display.setFeatureHighlights([highlight])
+          display.setSearchHighlight(highlight)
         }
       }
     }

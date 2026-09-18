@@ -142,6 +142,20 @@ export function featureHighlightActions(self: FeatureHoverHost) {
 
     /**
      * #action
+     * A text search's highlight replaces the previous search's and leaves the
+     * right-click ones, which carry a `featureId`, alone.
+     */
+    setSearchHighlight(highlight: FeatureHighlight) {
+      this.setFeatureHighlights([
+        ...self.featureHighlights
+          .filter(h => h.featureId !== undefined)
+          .map(h => getSnapshot(h)),
+        highlight,
+      ])
+    },
+
+    /**
+     * #action
      */
     // Manual highlights accumulate, deduped on the stored featureId so a gene
     // never collides with a separately highlighted transcript sharing its
