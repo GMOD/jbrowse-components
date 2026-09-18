@@ -182,6 +182,26 @@ within a row of one, with an overlapping name already placed. Between stretches
 at the same x it takes one from each lane before a second from either, or the
 lane drawn first took every row a short band has.
 
+*2026-09-18:* **aligned bp decides every contest in the strip**, since nothing
+else in a zoomed-out lane tells a 12Mb block from a 200bp scrap — both draw at
+the 1.5px floor. The label rows used to go left to right, so at whole-genome
+zoom the three rows went to whatever sat furthest left and the chromosome most
+of the window aligns to could go unnamed. Candidates now go strongest first, a
+stretch weighing every alignment in it rather than its widest one, and the lane
+interleave above survives as the tie-break. The hover and the click take the
+same measure one alignment at a time — the longest under the pointer, where
+both used to take the last one the scan reached: the adapter's arrival order
+for class A, and for class C the SMALLEST, since the feature table arrives in
+`compareDrawOrder` and its pickable tier runs large to small. Colored marks
+paint weakest first so the composite ends on the contig the pointer would name.
+
+That is the opposite of the rule `compareDrawOrder` gives ribbons, where small
+on top is what keeps an inversion inside a match reachable, and the reason is
+that a ribbon is a shape a reader can see inside. A mark is 1.5px of grey in a
+column of hundreds: "what is under the pointer" has no visible answer to be
+faithful to, so the useful one is the block. A short alignment nested inside a
+long one is what that costs, and the long one is what the reader pointed at.
+
 *2026-08-20:* the marks are the BACKGROUND and the label is the finding, so they
 are not the same grey. At full `text.secondary` the strip read as the loudest
 thing in a band of 0.2-alpha ribbons, which inverts what a reader should look at

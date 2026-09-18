@@ -308,7 +308,9 @@ against.
 default. Each mark sits where the alignment is on the panel it does have,
 stopping short of the ribbons so it cannot be read as an alignment to whatever
 is directly below. A run of marks to one contig carries that contig's name;
-where several contigs cover the same stretch, their names stack.
+where several contigs cover the same stretch, their names stack. Zoom out far
+enough and more stretches want a name than the band has rows to give, and the
+rows go to the ones with the most sequence aligned.
 
 **Which panel a mark lands on is decided by which one still has the alignment.**
 An alignment is undrawable as soon as _either_ of its ends leaves its own panel,
@@ -327,7 +329,9 @@ file; turning it off drops both the query and the marks.
 
 A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
 zoom is most of them. Hover any mark and it names the contig it points at, and
-how many alignments on this band go there.
+how many alignments on this band go there. Marks stack into a column at
+whole-genome zoom, and a pointer over one answers with the longest alignment in
+it, which is the alignment a click then follows.
 
 Clicking a mark shows that mate on the facing panel. A contig the panel is
 already displaying is scrolled to, so the rest of what it was showing stays.

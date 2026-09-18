@@ -195,6 +195,18 @@ function pointerOnStrip(strip: StripGeometry, y: number) {
   return y >= strip.markY && y <= strip.markY + strip.markHeight
 }
 
+// Aligned bp, the same number the `minAlignmentLength` floor reads, decides
+// every contest a zoomed-out strip has more entrants than room for: which
+// stretch gets one of the three label rows, which contig a pointer over a
+// column of stacked marks names, and which color is painted last. Summed over
+// whatever is competing — one alignment where a pointer picks one, a whole
+// stretch where a name covers one. A whole-genome band puts a 12Mb block and a
+// 200bp scrap in the same pixel, and nothing else in the lane tells them apart:
+// both draw at the 1.5px floor.
+function markAlignedBp(data: OffscreenMateDataset, i: number) {
+  return data.lengths[i]!
+}
+
 export interface OffscreenMateMark {
   refName: string
   // the facing row displays this contig and has scrolled off it, as opposed to
@@ -202,8 +214,8 @@ export interface OffscreenMateMark {
   displayed: boolean
 }
 
-// The mark under a point, or undefined. Where marks overlap the one drawn
-// last wins, which is the one on top.
+// The mark under a point, or undefined. Where marks overlap the longest
+// alignment wins, which is the one painted last.
 export function offscreenMateAt(
   lane: OffscreenMateLane,
   x: number,
@@ -214,11 +226,16 @@ export function offscreenMateAt(
     return undefined
   }
   let hit: OffscreenMateMark | undefined
+  let hitBp = -Infinity
   forEachMark(lane, (data, _d, i, mx, w) => {
     if (x >= mx && x <= mx + w) {
-      hit = {
-        refName: offscreenMateRefName(data, i),
-        displayed: data.mateAxis !== undefined,
+      const bp = markAlignedBp(data, i)
+      if (bp > hitBp) {
+        hitBp = bp
+        hit = {
+          refName: offscreenMateRefName(data, i),
+          displayed: data.mateAxis !== undefined,
+        }
       }
     }
   })
@@ -243,7 +260,7 @@ export interface OffscreenMateSpan {
 }
 
 // The union of every alignment under the point, since a mark is a column of
-// them, and the contig of the one on top
+// them, and the contig of the longest one — the same one the hover named
 export function offscreenMateSpanAt(
   lane: OffscreenMateLane,
   x: number,
@@ -256,10 +273,15 @@ export function offscreenMateSpanAt(
   const spans = new Map<string, OffscreenMateLocus>()
   const drawn = new Map<string, OffscreenMateLocus>()
   let top: string | undefined
+  let topBp = -Infinity
   forEachMark(lane, (data, _d, i, mx, w) => {
     if (x >= mx && x <= mx + w) {
       const refName = offscreenMateRefName(data, i)
-      top = refName
+      const bp = markAlignedBp(data, i)
+      if (bp > topBp) {
+        topBp = bp
+        top = refName
+      }
       extendSpan(spans, refName, data.mateStarts[i]!, data.mateEnds[i]!)
       const { mateAxis } = data
       if (mateAxis) {
@@ -298,6 +320,9 @@ interface LaneMarks {
   widths: Float64Array
   dataset: Uint32Array
   entry: Uint32Array
+  // the longest alignment in the lane, which is what an uncolored lane brings
+  // to the paint order
+  strongest: number
 }
 
 function laneMarks(lane: OffscreenMateLane): LaneMarks | undefined {
@@ -314,25 +339,36 @@ function laneMarks(lane: OffscreenMateLane): LaneMarks | undefined {
   const dataset = new Uint32Array(capacity)
   const entry = new Uint32Array(capacity)
   let count = 0
-  forEachMark(lane, (_data, d, i, x, w) => {
+  let strongest = 0
+  forEachMark(lane, (data, d, i, x, w) => {
+    const bp = markAlignedBp(data, i)
     xs[count] = x
     widths[count] = w
     dataset[count] = d
     entry[count] = i
     count++
+    strongest = Math.max(strongest, bp)
   })
-  return { lane, strip, count, xs, widths, dataset, entry }
+  return { lane, strip, count, xs, widths, dataset, entry, strongest }
+}
+
+// A mark's own length, reached through the same two indices its contig is
+function laneMarkAlignedBp({ lane, dataset, entry }: LaneMarks, i: number) {
+  return markAlignedBp(lane.datasets[dataset[i]!]!, entry[i]!)
 }
 
 // The marks of a lane grouped by a key resolved once per contig: group
 // membership is an integer read per mark, and `keyFor` runs once per
 // (dataset, contig id), which is what keeps a 250k-mark repaint off the
 // string path.
-function groupMarks<K>(
-  { lane, count, dataset, entry }: LaneMarks,
-  keyFor: (refName: string) => K,
-) {
-  const groups: { key: K; refName: string; marks: number[] }[] = []
+function groupMarks<K>(marks: LaneMarks, keyFor: (refName: string) => K) {
+  const { lane, count, dataset, entry } = marks
+  const groups: {
+    key: K
+    refName: string
+    marks: number[]
+    strongest: number
+  }[] = []
   const groupByKey = new Map<K, number>()
   const groupById = lane.datasets.map(d =>
     new Int32Array(d.mateRefNameDict.length).fill(-1),
@@ -348,14 +384,16 @@ function groupMarks<K>(
       const known = groupByKey.get(key)
       if (known === undefined) {
         g = groups.length
-        groups.push({ key, refName, marks: [] })
+        groups.push({ key, refName, marks: [], strongest: 0 })
         groupByKey.set(key, g)
       } else {
         g = known
       }
       groupById[d]![id] = g
     }
-    groups[g]!.marks.push(i)
+    const group = groups[g]!
+    group.marks.push(i)
+    group.strongest = Math.max(group.strongest, laneMarkAlignedBp(marks, i))
   }
   return groups
 }
@@ -365,6 +403,8 @@ interface LabelRun {
   x: number
   end: number
   textWidth: number
+  // every alignment the stretch holds, which is how it ranks for a row
+  alignedBp: number
 }
 
 // Each contig's marks joined where they sit closer than a reader could tell
@@ -381,6 +421,7 @@ function labelRuns(marks: LaneMarks, measure: (text: string) => number) {
   const { width } = lane
   const colX = new Float64Array(width + 1).fill(Infinity)
   const colEnd = new Float64Array(width + 1).fill(-Infinity)
+  const colBp = new Float64Array(width + 1)
   const runs: LabelRun[] = []
   for (const { refName, marks: list } of groupMarks(marks, name => name)) {
     const touched: number[] = []
@@ -392,6 +433,7 @@ function labelRuns(marks: LaneMarks, measure: (text: string) => number) {
       }
       colX[c] = Math.min(colX[c]!, x)
       colEnd[c] = Math.max(colEnd[c]!, x + widths[i]!)
+      colBp[c] = colBp[c]! + laneMarkAlignedBp(marks, i)
     }
     const textWidth = measure(refName)
     const mergeGap = textWidth * LABEL_MERGE_GAP_LABELS
@@ -401,12 +443,14 @@ function labelRuns(marks: LaneMarks, measure: (text: string) => number) {
       const end = colEnd[c]!
       if (run && x - run.end <= mergeGap) {
         run.end = Math.max(run.end, end)
+        run.alignedBp += colBp[c]!
       } else {
-        run = { refName, x, end, textWidth }
+        run = { refName, x, end, textWidth, alignedBp: colBp[c]! }
         runs.push(run)
       }
       colX[c] = Infinity
       colEnd[c] = -Infinity
+      colBp[c] = 0
     }
   }
   return runs
@@ -451,10 +495,16 @@ interface LabelSlot {
 }
 
 // Every lane at once, because the two strips' labels stack inward and meet in
-// the middle. Candidates go left to right, interleaving one from each lane
+// the middle. Candidates go strongest first, interleaving one from each lane
 // before a second from either, so where both lanes cover the same pixels the
 // top strip does not take every row. A stretch is measured by the part in
 // view, so one wider than the window can still be named.
+//
+// Strongest first is what a zoomed-out band needs and a zoomed-in one cannot
+// tell apart: at whole-genome zoom a dozen stretches overlap in the pixels
+// three rows have room for, and taken left to right the rows went to whatever
+// sat furthest left — a scrap of an alignment to an unplaced contig outranking
+// the chromosome most of the window aligns to.
 function placeLabels(
   lanes: { runs: LabelRun[]; baselines: number[] }[],
   width: number,
@@ -464,10 +514,10 @@ function placeLabels(
   const candidates = lanes
     .flatMap(({ runs, baselines }) =>
       [...runs]
-        .sort((a, b) => a.x - b.x)
+        .sort((a, b) => b.alignedBp - a.alignedBp || a.x - b.x)
         .map((run, rank) => ({ run, baselines, rank })),
     )
-    .sort((a, b) => a.run.x - b.run.x || a.rank - b.rank)
+    .sort((a, b) => b.run.alignedBp - a.run.alignedBp || a.rank - b.rank)
   for (const { run, baselines } of candidates) {
     const from = Math.max(run.x, 0)
     const to = Math.min(run.end, width)
@@ -500,31 +550,44 @@ function placeLabels(
   return placed
 }
 
+interface ColorGroup {
+  paths: { marks: LaneMarks; list?: number[] }[]
+  strongest: number
+}
+
 // One path per color rather than a fill per mark: the color carries alpha, so
 // marks filled separately composite against each other and a dense strip
 // saturates to a solid bar. Marks of different colors do composite, which is
 // honest. An uncolored lane, the common one, is rected straight from its
 // arrays with no grouping at all.
 function fillMarks(ctx: Ctx2D, marks: LaneMarks[], markColor: string) {
-  const byColor = new Map<string, { marks: LaneMarks; list?: number[] }[]>()
+  const byColor = new Map<string, ColorGroup>()
   for (const m of marks) {
     const colorFor = m.lane.markColorFor
     const groups = colorFor
-      ? groupMarks(m, colorFor).map(g => ({ key: g.key, list: g.marks }))
-      : [{ key: markColor, list: undefined }]
-    for (const { key, list } of groups) {
+      ? groupMarks(m, colorFor).map(g => ({
+          key: g.key,
+          list: g.marks,
+          strongest: g.strongest,
+        }))
+      : [{ key: markColor, list: undefined, strongest: m.strongest }]
+    for (const { key, list, strongest } of groups) {
       let group = byColor.get(key)
       if (!group) {
-        group = []
+        group = { paths: [], strongest: 0 }
         byColor.set(key, group)
       }
-      group.push({ marks: m, list })
+      group.paths.push({ marks: m, list })
+      group.strongest = Math.max(group.strongest, strongest)
     }
   }
-  for (const [fillStyle, group] of byColor) {
+  // Weakest color first, so the longest alignment is the one the composite
+  // ends on and the hit test answers with the mark on top, as it says
+  const ordered = [...byColor].sort((a, b) => a[1].strongest - b[1].strongest)
+  for (const [fillStyle, { paths }] of ordered) {
     ctx.fillStyle = fillStyle
     const path = new CappedPath(ctx, 'fill')
-    for (const { marks: m, list } of group) {
+    for (const { marks: m, list } of paths) {
       const { xs, widths, strip, count } = m
       if (list) {
         for (const i of list) {

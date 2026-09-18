@@ -411,10 +411,13 @@ test('a mark the length floor hid is not hittable either', () => {
   expect(offscreenMateAt(layout, 20, 3)).toBeUndefined()
 })
 
-// Overlapping marks: the canvas paints later over earlier, so the answer has to
-// be the one the reader can see.
-test('where two overlap, the hit is the one drawn on top', () => {
-  const layout = {
+// Overlapping marks composite into one grey, so nothing is literally on top:
+// a reader pointing at a column of stacked marks is asking about the block in
+// it, not about the scrap that landed on the same pixel. The alignment the
+// answer names is the longest one under the pointer, whichever order the
+// anchors arrived in.
+test('where two overlap, the hit is the longer alignment', () => {
+  const overlap = (names: string[]) => ({
     ...params,
     datasets: [
       data(
@@ -422,11 +425,16 @@ test('where two overlap, the hit is the one drawn on top', () => {
           [100, 400],
           [150, 350],
         ],
-        ['ctgB', 'ctgC'],
+        names,
       ),
     ],
-  }
-  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgC')
+  })
+  expect(offscreenMateAt(overlap(['ctgB', 'ctgC']), 20, 3)?.refName).toBe(
+    'ctgB',
+  )
+  expect(offscreenMateAt(overlap(['ctgC', 'ctgB']), 20, 3)?.refName).toBe(
+    'ctgC',
+  )
 })
 
 // The merge is per stretch, not per contig: grape chr5 syntenic to two separate
@@ -573,6 +581,75 @@ test('a stretch with no free row goes unlabelled', () => {
   }
 })
 
+// WHICH THREE, once more stretches want a row than the band has rows. Taken
+// left to right the answer was whichever sat furthest left, so at
+// whole-genome zoom a single scrap of an alignment outranked the chromosome
+// most of the window aligns to. These four cover the same pixels and arrive
+// weakest first, so arrival order and length order disagree on every one.
+test('when the rows run out, the strongest stretches take them', () => {
+  const { ctx, texts } = fakeCtx()
+  draw(
+    ctx,
+    [
+      {
+        datasets: [
+          data(
+            [
+              [2000, 8000],
+              [0, 10000],
+              [0, 10000],
+              [1000, 9000],
+              [0, 10000],
+              [1000, 9000],
+              [2000, 8000],
+            ],
+            [
+              'ctgDDD',
+              'ctgCCC',
+              'ctgBBB',
+              'ctgBBB',
+              'ctgAAA',
+              'ctgAAA',
+              'ctgAAA',
+            ],
+          ),
+        ],
+      },
+    ],
+    { width: 1000, height: 50 },
+  )
+  expect(texts.map(t => t.text)).toEqual(['ctgAAA', 'ctgBBB', 'ctgCCC'])
+  // and the strongest takes the row nearest its own edge
+  expect(texts.map(t => t.y)).toEqual([16, 28, 40])
+})
+
+// A stretch is what its alignments add up to, not its widest one: a syntenic
+// block broken into a hundred pieces by rearrangement is the strongest thing
+// in the window and draws as a hundred narrow marks.
+test('a stretch ranks on every alignment in it, not its longest', () => {
+  const { ctx, texts } = fakeCtx()
+  const pieces: [number, number][] = []
+  for (let i = 0; i < 20; i++) {
+    pieces.push([i * 500, i * 500 + 400])
+  }
+  draw(
+    ctx,
+    [
+      {
+        datasets: [
+          data(
+            pieces,
+            pieces.map(() => 'ctgMANY'),
+          ),
+          data([[2000, 8000]], ['ctgONE']),
+        ],
+      },
+    ],
+    { width: 1000, height: 18 },
+  )
+  expect(texts.map(t => t.text)).toEqual(['ctgMANY'])
+})
+
 // A compact band has no room to stack into, and the rows must not run past it
 // into the view below.
 test('a short band keeps the labels on one row', () => {
@@ -601,14 +678,14 @@ test('two displays over one stretch are named on two rows, not one', () => {
   expect(new Set(texts.map(t => t.y)).size).toBe(2)
 })
 
-// ...and the same reason the single-display scan runs backwards: the second
-// display's marks are painted over the first's.
-test('where two displays overlap, the hit is the one drawn on top', () => {
+// ...and the scan crosses the displays for the same reason: which of two
+// tracks the longer alignment came off is not something a reader can see.
+test('where two displays overlap, the hit is the longer alignment', () => {
   const layout = {
     ...params,
     datasets: [data([[100, 400]], ['ctgB']), data([[150, 350]], ['ctgC'])],
   }
-  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgC')
+  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgB')
 })
 
 // A band with no room for the first baseline gets no labels rather than a row
@@ -833,12 +910,32 @@ describe('marks colored by the contig they name', () => {
         markColorFor: (refName: string) => `color:${refName}`,
       },
     ])
-    expect(fills.map(f => f.style)).toEqual(['color:chr7', 'color:chr2'])
-    expect(fills.map(f => f.rects.length)).toEqual([2, 1])
+    expect(fills.map(f => f.style)).toEqual(['color:chr2', 'color:chr7'])
+    expect(fills.map(f => f.rects.length)).toEqual([1, 2])
+  })
+
+  // Which is also the order they go down in: colors composite, so the one a
+  // dense strip ends on is the one that reads, and the contig the pointer
+  // answers with has to be the contig the pixel looks like.
+  test('the longest alignment picks the color painted last', () => {
+    const { ctx, fills } = fakeCtx()
+    const strongLast = [
+      [300, 900],
+      [100, 200],
+    ] as [number, number][]
+    draw(ctx, [
+      {
+        datasets: [data(strongLast, ['chr7', 'chr2'])],
+        markColorFor: (refName: string) => `color:${refName}`,
+      },
+    ])
+    expect(fills.map(f => f.style)).toEqual(['color:chr2', 'color:chr7'])
   })
 
   // The two lanes hold contigs of different assemblies, and only one of them is
-  // usually keyed the way the ribbons are.
+  // usually keyed the way the ribbons are. They hang off opposite edges, so the
+  // order between them decides nothing a reader sees; it is the same length
+  // order the rest of the band paints in.
   test('a colored lane and a grey one share a band', () => {
     const { ctx, fills } = fakeCtx()
     draw(ctx, [
@@ -848,7 +945,7 @@ describe('marks colored by the contig they name', () => {
       },
       { datasets: [data([[500, 700]], ['chr2'])], side: 'bottom' as const },
     ])
-    expect(fills.map(f => f.style)).toEqual(['color:chr7', 'red'])
+    expect(fills.map(f => f.style)).toEqual(['red', 'color:chr7'])
   })
 })
 
@@ -906,21 +1003,21 @@ test('...but never across the contigs sharing that column', () => {
       data(
         [
           [100, 110],
-          [100, 110],
+          [100, 200],
         ],
         ['ctgB', 'ctgC'],
         [
           [9000, 9100],
-          [4000, 4100],
+          [4000, 4200],
         ],
       ),
     ],
   }
-  // ctgC is drawn last, so it is what the reader sees on top and what the hit
-  // test answers with
+  // ctgC holds the longer of the two alignments, so it is what the hover named
+  // and what the click follows
   expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
     refName: 'ctgC',
-    locus: { start: 4000, end: 4100 },
+    locus: { start: 4000, end: 4200 },
     mateCumBp: undefined,
   })
 })
