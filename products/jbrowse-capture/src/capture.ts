@@ -10,10 +10,10 @@ import {
 } from './browser.ts'
 import { assertImagePath } from './imagePath.ts'
 import { assertSupportedInstance } from './instanceVersion.ts'
-import { waitForJBrowseReady } from './ready.ts'
+import { waitForFrame, waitForJBrowseReady } from './ready.ts'
 import { assemblyFromSession, trackIdsFromSession } from './session.ts'
+import { sessionOverflowInPage } from './sessionOverflow.ts'
 import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
-import { waitForAppSettled } from './waits.ts'
 
 import type { ReadyOptions, ReadyReport } from './ready.ts'
 import type { JBrowseUrlOptions } from './url.ts'
@@ -120,12 +120,10 @@ export interface CaptureOptions extends OpenOptions {
    */
   out?: string
   /**
-   * Capture the whole scrollable page rather than the viewport. Implemented by
-   * growing the viewport to the page height and re-settling, never by
-   * `page.screenshot({ fullPage: true })` — puppeteer implements that flag with
-   * the same viewport resize but shoots immediately, and the capture can return
-   * before the content re-rasters (measured in the browser-test suites as a
-   * 10–25% image diff that moves run to run).
+   * Capture every view rather than the viewport: the viewport grows by however
+   * far the session runs past it, and the frame is waited for again. Never
+   * puppeteer's `fullPage`, which measures the document (always the window's
+   * height here) and shoots before the resized content re-rasters.
    */
   fullPage?: boolean
 }
@@ -147,40 +145,22 @@ export async function captureJBrowse(
     assertImagePath(out)
     mkdirSync(dirname(out), { recursive: true })
   }
-  const { browser, page, url, ...report } = await openJBrowse(openOptions)
+  const { browser, page, url, ...opened } = await openJBrowse(openOptions)
   try {
-    if (fullPage) {
-      const viewport = page.viewport()
-      const pageHeight = await page.evaluate(() =>
-        Math.ceil(
-          Math.max(
-            document.documentElement.scrollHeight,
-            document.body.scrollHeight,
-          ),
-        ),
-      )
-      if (viewport && pageHeight > viewport.height) {
-        await page.setViewport({ ...viewport, height: pageHeight })
-        // The resize invalidates the raster and can start work (a display that
-        // grew gained rows to draw), so the frame has to settle again — on the
-        // same budget the chain used, and with its outcome reported. Dropping
-        // the outcome made this the one stage that could give up and still
-        // report `unsettled: []`, over the frame most likely to be half-drawn.
-        const settled = await waitForAppSettled(page, {
-          timeout: openOptions.timeout ?? DEFAULT_TIMEOUT,
-        })
-        if (!settled) {
-          report.unsettled.push('the app never re-settled after the resize')
-          if (!openOptions.allowUnsettled) {
-            throw new Error(
-              `gave up waiting after ${openOptions.timeout ?? DEFAULT_TIMEOUT}ms: ` +
-                'the app never re-settled after the fullPage resize. Raise the ' +
-                'timeout, or pass allowUnsettled (--allowUnsettled) to capture ' +
-                'the frame as it stands.',
-            )
-          }
-        }
-      }
+    let report: ReadyReport = opened
+    const overflow = fullPage ? await page.evaluate(sessionOverflowInPage) : 0
+    const viewport = page.viewport()
+    if (viewport && overflow > 0) {
+      await page.setViewport({
+        ...viewport,
+        height: viewport.height + overflow,
+      })
+      // the resize repaints, and can start work, so the report describes the
+      // frame after it
+      report = await waitForFrame(page, {
+        ...openOptions,
+        timeout: openOptions.timeout ?? DEFAULT_TIMEOUT,
+      })
     }
     const image = await page.screenshot({ path: out })
     return { url, image, ...report }

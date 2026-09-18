@@ -75,4 +75,19 @@ describe('the readiness contract', () => {
     }
     expect(gate).toContain(`APP_CENSUS = '[data-app-tracks]'`)
   })
+
+  // capture's fullPage measures the session by these two, the way jb's
+  // `overflow` does; renamed on one side, the viewport stops growing and the
+  // capture cuts off the views below the window
+  it('the layout testids fullPage measures are rendered under those names', () => {
+    const overflow = read('products/jbrowse-capture/src/sessionOverflow.ts')
+    expect(read('packages/app-core/src/ui/App/ViewContainer.tsx')).toContain(
+      'data-testid={`view-container-${',
+    )
+    expect(read('packages/app-core/src/ui/App/ViewStack.tsx')).toContain(
+      'data-testid="view-stack-overscroll"',
+    )
+    expect(overflow).toContain('[data-testid^="view-container-"]')
+    expect(overflow).toContain('[data-testid="view-stack-overscroll"]')
+  })
 })

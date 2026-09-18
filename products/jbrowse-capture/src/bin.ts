@@ -37,7 +37,8 @@ THE IMAGE
   --width <px>          viewport width (default 1400)
   --height <px>         viewport height (default 900)
   --scale <n>           device pixel ratio (default 2)
-  --fullPage            capture the whole scrollable page, not just the viewport
+  --fullPage            grow the image until every view fits, not just the
+                        --height of the viewport
 
 WAITING
   --timeout <ms>        budget per wait stage (default 60000)

@@ -63,20 +63,30 @@ export interface ReadyReport {
  */
 export async function waitForJBrowseReady(
   page: Page,
-  {
-    timeout = 60000,
-    settleMs = 0,
-    assembly,
-    trackIds,
-    allowUnsettled = false,
-  }: ReadyOptions = {},
+  options: ReadyOptions = {},
 ): Promise<ReadyReport> {
-  const unsettled: string[] = []
-
+  const { assembly, trackIds, timeout } = options
   // The census the gate reads shares its element with `[data-app-phase]`, so
   // once it passes the marker is there too.
   await waitForSession(page, { assembly, trackIds, timeout })
+  return waitForFrame(page, options)
+}
 
+/**
+ * The half of `waitForJBrowseReady` after the session gate: the marker held,
+ * every display painted, and the census of what did not. Run again after
+ * anything that changes the frame without changing the session, such as a
+ * viewport resize.
+ */
+export async function waitForFrame(
+  page: Page,
+  {
+    timeout = 60000,
+    settleMs = 0,
+    allowUnsettled = false,
+  }: Omit<ReadyOptions, keyof SessionExpectations> = {},
+): Promise<ReadyReport> {
+  const unsettled: string[] = []
   const ready = await waitForAppSettled(page, { timeout })
   if (!ready) {
     unsettled.push('the app never held itself ready')
