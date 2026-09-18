@@ -419,10 +419,10 @@ test('a bar or point naming no y is refused where the config is read', () => {
 test('an encoding channel refuses a key it does not declare', () => {
   expect(() =>
     createTestEnvironment([
-      { shape: 'span', encoding: { color: { feild: 'strand' } } },
+      { shape: 'span', encoding: { color: { colour: 'strand' } } },
     ]).createDisplay(),
   ).toThrow(
-    'MarkColor takes value, field, scale, domain, palette and ramp, not feild',
+    'MarkColor takes value, field, scale, domain, palette and ramp, not colour',
   )
   expect(() =>
     createTestEnvironment([

@@ -3700,7 +3700,13 @@
     "@jbrowse/display-kit/colorConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "CATEGORICAL_COLOR_SCALES",
+        "COLOR_SCALES",
+        "colorChannelOptions",
+        "colorChannelSlots",
         "colorConfigSchema",
+        "colorPaletteSlot",
+        "colorRampSlot",
         "normalizeChannel",
         "paintedScale"
       ],

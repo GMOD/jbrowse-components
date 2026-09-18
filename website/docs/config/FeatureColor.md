@@ -23,7 +23,9 @@ _See the **Config slots** section below for all available configuration fields._
 
 The canvas feature displays' `color` setting: a CSS colour or `jexl:`
 callback in `value`, or a field whose values each take a palette colour,
-with a key. A string is the constant; the object binds the field.
+with a key. A string is the constant; the object binds the field, and
+`scale: "none"` beside a field paints the constant while keeping the field
+for the way back.
 
 ## Config slots
 
@@ -33,6 +35,7 @@ These slots go on a display entry: `"displays": [{ "type": "FeatureColor", ... }
 | Slot | Description |
 | --- | --- |
 | <span id="slot-value">**value**</span><br>`maybeColor` | A CSS colour, or a jexl callback over `feature` returning one. Writing `color: "red"` or `color: "jexl:…"` lands here. Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.<br>_callback args:_ `feature` |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | A feature field, or a `jexl:` expression over `feature`, whose values each paint one palette colour, with a key saying which. A transcript and all its parts paint the transcript's value, or its gene's where the transcript has none. `strand` paints forward tomato and reverse cornflowerblue unless `domain` or `palette` says otherwise. |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | The values that take the palette first, in order. A value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it. |
-| <span id="slot-palette">**palette**</span><br>`stringArray` = <code>[]</code> | The CSS colours `domain` hands out, in order, continuing into the default palette past its end. Empty is the default palette. |
+| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a feature field, or a jexl expression over feature, whose values each paint one palette colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or palette says otherwise |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical) | none paints value and keeps the field for a switch back; categorical a palette colour per value of field; unset follows field |
+| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | the values that take the palette first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it |
+| <span id="slot-palette">**palette**</span><br>`stringArray` = <code>[]</code> | CSS colors the domain values take, in order, continuing into the default palette past its end |

@@ -2914,6 +2914,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | string)"
             },
             {
+              "name": "scale",
+              "type": "(JexlString | (FeatureColorScale | undefined))"
+            },
+            {
               "name": "domain",
               "type": "(JexlString | string[])"
             },
@@ -3991,6 +3995,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | (FeatureColorScale | undefined))"
             },
             {
               "name": "domain",
@@ -5461,11 +5469,11 @@ export const configManifest: ConfigManifest = {
                       "type": "(JexlString | (MarkColorScale | undefined))"
                     },
                     {
-                      "name": "palette",
+                      "name": "domain",
                       "type": "(JexlString | string[])"
                     },
                     {
-                      "name": "domain",
+                      "name": "palette",
                       "type": "(JexlString | string[])"
                     },
                     {

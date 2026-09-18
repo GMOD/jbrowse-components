@@ -36,7 +36,7 @@ color → Attribute on the feature display lost the attribute, because
 FeatureColor had no `scale` and Solid color had to drop the field for the
 object to say "constant", while the same round trip on the Manhattan display
 kept it. Three of the mark display's channel objects declared a `shorthand`
-but not `closed`, so `encoding: { color: { feild: 'strand' } }` loaded with no
+but not `closed`, so `encoding: { color: { colour: 'strand' } }` loaded with no
 error and the key vanished, against ADR-133's rule that all seven refuse an
 undeclared key.
 
@@ -66,7 +66,11 @@ type and default are the display's (`maybeColor` on FeatureColor so a BED
 slot table rather than a schema so the config docs generator, which reads a
 `#config` block off the `ConfigurationSchema(...)` call that declares it and
 recovers spread-in slots from a single-parameter factory, keeps one page per
-object.
+object. MarkColor moved to `markColorConfigSchema.ts` for the same reason: a
+spread inside a schema declared apart from the display's `#config` block is
+invisible to that block, so the mark display's page lost the colour rows until
+MarkColor had a `#config` page of its own, which `marks.encoding.color` now
+links.
 
 **`none` is the set/map switch on every object, and `paintedScale` is the one
 reader**: `none` while no `field` is named, else the written `scale`, or the

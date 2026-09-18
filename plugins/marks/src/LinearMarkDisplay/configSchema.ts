@@ -1,11 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import {
-  COLOR_SCALES,
-  colorChannelOptions,
-  colorChannelSlots,
-  colorPaletteSlot,
-  colorRampSlot,
   normalizeChannel,
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -18,9 +12,12 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
+import { markColorSchema } from './markColorConfigSchema.ts'
 
-import type { ColorScaleName } from '@jbrowse/display-kit/colorConfigSchema'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+export { markColorScale } from './markColorConfigSchema.ts'
+export type { MarkColorScale } from './markColorConfigSchema.ts'
 
 export const MARK_SHAPES = ['bar', 'point', 'span'] as const
 export type MarkShapeName = (typeof MARK_SHAPES)[number]
@@ -30,22 +27,8 @@ export type MarkSourceName = (typeof MARK_SOURCES)[number]
 
 export const DEFAULT_POINT_DIAMETER_PX = 4
 
-export type MarkColorScale = ColorScaleName
-
 const MARK_GLYPH_SCALES = ['none', 'categorical'] as const
 export type MarkGlyphScale = (typeof MARK_GLYPH_SCALES)[number]
-
-/**
- * The scale a mark's colour paints through: left unset beside a `field`,
- * `linear` with a `ramp` and `categorical` without.
- */
-export function markColorScale(color: {
-  scale: MarkColorScale | undefined
-  field: string
-  ramp: readonly string[]
-}) {
-  return paintedScale(color, color.ramp.length > 0 ? 'linear' : 'categorical')
-}
 
 /** The scale a mark's glyph is drawn through: `categorical` beside a `field`. */
 export function markGlyphScale(glyph: {
@@ -54,37 +37,6 @@ export function markGlyphScale(glyph: {
 }) {
   return paintedScale(glyph, 'categorical')
 }
-
-const markColorSchema = ConfigurationSchema(
-  'MarkColor',
-  {
-    /**
-     * #slot marks.encoding.color.value
-     * A CSS colour, or a jexl callback over `feature` returning one, for a
-     * mark whose colour is not a scale. Writing `color: 'red'` or
-     * `color: 'jexl:…'` directly on the encoding lands here.
-     */
-    value: {
-      type: 'color',
-      defaultValue: DEFAULT_MARK_COLOR,
-      description: 'CSS colour or jexl callback',
-      contextVariable: ['feature'],
-    },
-    ...colorChannelSlots({
-      scales: COLOR_SCALES,
-      scaleName: 'MarkColorScale',
-      field:
-        'the feature field a scale reads, or a jexl callback over feature, which is slower per feature and so the opt-in',
-      scale:
-        'how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without',
-      domain:
-        "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes",
-    }),
-    ...colorPaletteSlot,
-    ...colorRampSlot,
-  },
-  colorChannelOptions('color'),
-)
 
 const markGlyphSchema = ConfigurationSchema(
   'MarkGlyph',
@@ -256,7 +208,7 @@ const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
    * #slot marks.encoding.color
    * The mark's colour: a CSS colour, a jexl callback returning one, or an
    * object binding a field to a categorical or continuous scale. A scale is
-   * what the legend describes.
+   * what the legend describes. See [MarkColor](MarkColor).
    */
   color: markColorSchema,
   /**

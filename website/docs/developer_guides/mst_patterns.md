@@ -364,19 +364,19 @@ block. `LinearVariantDisplay`'s legend getters use both, one line apart:
 /**
  * #getter
  */
-// True when features are colored by their most severe consequence impact,
-// which a color field painting over the slot is not.
 get colorsByConsequenceImpact() {
-  const { value: color, field: colorField } = self.colorSettings
-  return !colorField && color === CONSEQUENCE_IMPACT_JEXL
+  return (
+    !self.colorEncoding &&
+    self.colorSettings.value === CONSEQUENCE_IMPACT_JEXL
+  )
 },
 /**
  * #getter
  */
-// True when features are colored by their structural-variant class.
 get colorsBySvType() {
-  const { value: color, field: colorField } = self.colorSettings
-  return !colorField && color === SV_TYPE_COLOR_JEXL
+  return (
+    !self.colorEncoding && self.colorSettings.value === SV_TYPE_COLOR_JEXL
+  )
 },
 /**
  * #getter

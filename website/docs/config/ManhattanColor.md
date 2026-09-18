@@ -20,7 +20,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ```
 
 ```js
-{ type: 'LinearManhattanDisplay', color: { scale: 'ld' } }
+{ type: 'LinearManhattanDisplay', color: { field: 'ld' } }
 ```
 
 _See the **Config slots** section below for all available configuration fields._
@@ -28,7 +28,7 @@ _See the **Config slots** section below for all available configuration fields._
 The Manhattan display's `color` setting: one CSS colour or `jexl:` callback
 for every point, a field whose values each take a palette colour with a key,
 or LocusZoom colouring by r² to the index SNP. A string is the constant; a
-`field` binds the palette; `scale: "ld"` reads the `GWASAdapter`'s
+`field` binds the palette; `field: "ld"` reads the `GWASAdapter`'s
 `ldAdapter`.
 
 ## Config slots
@@ -39,7 +39,7 @@ These slots go on a display entry: `"displays": [{ "type": "ManhattanColor", ...
 | Slot | Description |
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | A CSS colour, or a jexl callback over `feature` returning one, for every point under the `none` scale. Writing `color: "red"` lands here.<br>_callback args:_ `feature` |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The feature field whose values each take a palette colour, with a key listing the values met: `name`, `refName`, a BED extra column, a GFF attribute. A value keeps its colour across regions and sessions. |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, ld) | How the points take their colour. `none` paints `value`; `categorical` a palette colour per value of `field`; `ld` each point's r² to the index SNP, read from the `GWASAdapter`'s `ldAdapter` sub-adapter. Unset, a `field` reads through `categorical` and no field paints `value`. A `field` under `none` or `ld` is kept for a switch back. |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | The field's values that take the palette first, in order, in the key as on the points; the rest follow sorted, each on a colour no listed value paints. |
-| <span id="slot-palette">**palette**</span><br>`stringArray` = <code>[]</code> | The CSS colours `domain` hands out, in order, continuing into the default palette past its end. Empty is the default palette. |
+| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the feature field whose values each take a palette colour, with a key listing the values met: name, refName, a BED extra column, a GFF attribute; ld is each point's r² to the index SNP, read from the GWASAdapter's ldAdapter |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical) | none paints value and keeps the field for a switch back; categorical a palette colour per value of field; unset follows field |
+| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | the field's values that take the palette first, in order, in the key as on the points; the rest follow sorted, each on a colour no listed value paints |
+| <span id="slot-palette">**palette**</span><br>`stringArray` = <code>[]</code> | CSS colors the domain values take, in order, continuing into the default palette past its end |

@@ -13,7 +13,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ```
 
 ```js
-{ type: 'MultiWaySyntenyDisplay', ribbonColor: { scale: 'strand' } }
+{ type: 'MultiWaySyntenyDisplay', ribbonColor: { field: 'strand' } }
 ```
 
 ```js
@@ -26,8 +26,9 @@ Auto-generated config schema for the current JBrowse release — see the [config
 _See the **Config slots** section below for all available configuration fields._
 
 The multi-way synteny display's `ribbonColor` setting: one colour for every
-ribbon, a scheme the synteny view also paints, or a column the table
-declares in `attributeColumns`. A string is the constant.
+ribbon, or a field each ribbon carries — the record's strand, a measurement
+on its preset ramp (`identity`, `mappingQual`, `dnds`), or a column the
+table declares in `attributeColumns`. A string is the constant.
 
 ## Config slots
 
@@ -36,7 +37,7 @@ These slots go on a display entry: `"displays": [{ "type": "RibbonColor", ... }]
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(130,130,130,0.3)'</code> | The colour of every ribbon under the `none` scale, and of a pair carrying no value under the others. Writing `ribbonColor: "grey"` lands here. Every scale keeps its opacity. |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | A column the table declares in `attributeColumns`: a ramp over the values seen for numbers, one colour per label for text (or the colour a `color` column put beside it). |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, strand, identity, mappingQuality, dnds) | What colours a ribbon. `none` paints `value`; `categorical` reads `field`; `strand` reads the record's strand — the two placements' orientations against the anchor multiplied out — and not the drawn twist, so a lane drawn flipped still shows its inversions; `identity`, `mappingQuality` and `dnds` paint the synteny view's ramps. Unset, a `field` reads through `categorical` and no field paints `value`. A `field` under another scale is kept for a switch back. |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | The order a text column's labels take: the labels listed here first, the rest sorted. A label's colour is its position, so this moves the key and the ribbons together. Left empty the labels stay in the order the fetches first met them. |
+| <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(130,130,130,0.3)'</code> | The colour of every ribbon under the `none` scale, and of a pair carrying no value under a field. Writing `ribbonColor: "grey"` lands here. Every field keeps its opacity. |
+| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what colours a ribbon: strand reads the record's strand against the anchor (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it) |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none) | none paints value and keeps the field for a switch back; unset, a field paints |
+| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | the order a text column's labels take: the labels listed here first, the rest sorted; a label's colour is its position, so this moves the key and the ribbons together; left empty the labels stay in the order the fetches first met them |

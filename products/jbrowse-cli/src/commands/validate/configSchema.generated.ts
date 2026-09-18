@@ -3402,12 +3402,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/CssColorOrJexl"
             },
             "field": {
-              "description": "feature field (or jexl expression) to color by, one palette color per value.",
+              "description": "a feature field, or a jexl expression over feature, whose values each paint one palette colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or palette says otherwise.",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
+            "scale": {
+              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value of field; unset follows field.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "none",
+                    "categorical"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
             "domain": {
-              "description": "values that take the palette first, in order.",
+              "description": "the values that take the palette first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it.",
               "anyOf": [
                 {
                   "type": "array",
@@ -3428,7 +3442,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "palette": {
-              "description": "CSS colors the values take, in order.",
+              "description": "CSS colors the domain values take, in order, continuing into the default palette past its end.",
               "$ref": "#/$defs/StringArrayOrJexl"
             }
           },
@@ -4952,22 +4966,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "rgba(130,130,130,0.3)"
             },
             "field": {
-              "description": "a declared attribute column to color by.",
+              "description": "what colours a ribbon: strand reads the record's strand against the anchor (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
             "scale": {
-              "description": "none, categorical, strand, identity, mappingQuality or dnds; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; unset, a field paints.",
               "anyOf": [
                 {
-                  "enum": [
-                    "none",
-                    "categorical",
-                    "strand",
-                    "identity",
-                    "mappingQuality",
-                    "dnds"
-                  ]
+                  "const": "none"
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -4975,7 +4982,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "the order a text column's labels take.",
+              "description": "the order a text column's labels take: the labels listed here first, the rest sorted; a label's colour is its position, so this moves the key and the ribbons together; left empty the labels stay in the order the fetches first met them.",
               "anyOf": [
                 {
                   "type": "array",
@@ -7270,18 +7277,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "#0068d1"
             },
             "field": {
-              "description": "feature field whose values color the points.",
+              "description": "the feature field whose values each take a palette colour, with a key listing the values met: name, refName, a BED extra column, a GFF attribute; ld is each point's r² to the index SNP, read from the GWASAdapter's ldAdapter.",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
             "scale": {
-              "description": "none, categorical or ld; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value of field; unset follows field.",
               "anyOf": [
                 {
                   "enum": [
                     "none",
-                    "categorical",
-                    "ld"
+                    "categorical"
                   ]
                 },
                 {
@@ -7290,7 +7296,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "values that take the palette first, in order.",
+              "description": "the field's values that take the palette first, in order, in the key as on the points; the rest follow sorted, each on a colour no listed value paints.",
               "anyOf": [
                 {
                   "type": "array",
@@ -7311,7 +7317,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "palette": {
-              "description": "CSS colors the values take, in order.",
+              "description": "CSS colors the domain values take, in order, continuing into the default palette past its end.",
               "$ref": "#/$defs/StringArrayOrJexl"
             }
           },
@@ -7524,12 +7530,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "#0068d1"
             },
             "field": {
-              "description": "feature field, or jexl callback.",
+              "description": "the feature field a scale reads, or a jexl callback over feature, which is slower per feature and so the opt-in.",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
             "scale": {
-              "description": "none, categorical, linear or log; unset follows field.",
+              "description": "how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without.",
               "anyOf": [
                 {
                   "enum": [
@@ -7544,12 +7550,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "palette": {
-              "description": "categorical colours, in order.",
-              "$ref": "#/$defs/StringArrayOrJexl"
-            },
             "domain": {
-              "description": "category order, or a ramp [min, max].",
+              "description": "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes.",
               "anyOf": [
                 {
                   "type": "array",
@@ -7569,8 +7571,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "palette": {
+              "description": "CSS colors the domain values take, in order, continuing into the default palette past its end.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            },
             "ramp": {
-              "description": "viridis, or CSS colour stops.",
+              "description": "viridis, or two or more CSS colour stops; empty is viridis.",
               "$ref": "#/$defs/StringArrayOrJexl"
             }
           },
