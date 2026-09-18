@@ -54,7 +54,8 @@ export interface AnnotationAnchor {
   vLocus?: string
   // which view to resolve against: an index into `session.views` (default 0).
   // An array descends through nested `.views` — `[0, 1]` is the second LGV of a
-  // comparative/breakpoint-split view.
+  // comparative/breakpoint-split view — or an LGV's `.detailLevels`, so `[0, 0]`
+  // is the first detail level under view 0.
   view?: number | number[]
   // config `trackId` of the track supplying the y band and the x origin. Its
   // rendering container is the same element the blocks draw into, so a locus
@@ -311,6 +312,7 @@ export function drawAnnotationOverlay(
   interface AnchorableView {
     id: string
     views?: AnchorableView[]
+    detailLevels?: AnchorableView[]
     assemblyNames?: string[]
     getHighlightCoords?: (region: {
       assemblyName?: string
@@ -330,7 +332,7 @@ export function drawAnnotationOverlay(
     let view = (window as unknown as { JBrowseSession?: AnchorableView })
       .JBrowseSession
     for (const i of path) {
-      view = view?.views?.[i]
+      view = (view?.views ?? view?.detailLevels)?.[i]
     }
     if (!view) {
       return undefined
