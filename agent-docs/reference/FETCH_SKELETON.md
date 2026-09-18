@@ -226,7 +226,7 @@ out of it on any run that decides not to fetch — and can then never wake the
 autorun again. Arc is the shape that exposed this: its `prepare` declines while
 `dataCurrent`, which goes true on every successful fetch, so with
 `reloadCounter` read under the gate `reload()` was silently dead. The viewport
-and the `rpcProps()` cache key (`FetchMixin.rpcPropsCacheKey`, for the reason
+and the `rpcProps()` cache key (`FetchMixin.settingsFetchInputs`, for the reason
 in "the cache key is the return value, not the reads") are the global family's
 other two trigger axes, and both ride `currentFetchKey`, which `prepare` and the
 freshness gate read on every run the gates let through — so any state that can

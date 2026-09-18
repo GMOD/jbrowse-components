@@ -151,11 +151,6 @@ is declared in `STATES_NO_RULES`.
 - Don't pass `sessionId` twice. `RpcManager.call` injects the first argument
   into the payload, and `AssertNoCallLevelFields` fails a registry entry that
   declares it. See [the pattern](#rpcprops--gpuprops-pattern).
-- Don't ship a `rpcProps()` field whose distinct states serialize identically
-  on a **global-family** display, where `JSON.stringify` *is* the comparison: a
-  class without `toJSON` flattens to `{}` and an `undefined` drops its key — a
-  silently dead cache axis that raises no error. The per-region family compares
-  structurally and has neither blind spot. See [the cache key](reference/FETCH_KEYS.md#the-cache-key-is-the-return-value-not-the-reads).
 - Don't build a config payload by subtracting from a whole-config snapshot. Pick
   the slots the worker reads, off a key list the compiler checks exhaustive
   against the interface it reads them through; a name nobody thought to exclude
@@ -627,7 +622,7 @@ MST view methods (not getters), so subclasses extend them via super-capture:
 
 | Method | Consumer | Invalidation route |
 | --- | --- | --- |
-| `rpcProps()` | `rpcManager.call(..., { ...self.rpcProps(), ... })` — RPC payload | The payload as a **value**, never the call — per-region: `settingsFetchInputs` moves and `SettingsInvalidate` supersedes the fetch; global: `installGlobalFetchAutorun` reads the serialized `rpcPropsCacheKey` |
+| `rpcProps()` | `rpcManager.call(..., { ...self.rpcProps(), ... })` — RPC payload | The payload as a **value**, never the call: `settingsFetchInputs` moves — per-region, `SettingsInvalidate` supersedes the fetch; keyed families, `currentFetchKey` moves with it |
 | `gpuProps()` | `buildSourceRenderData(data, self.gpuProps())` — encoder input | Upload callback reads it — re-encodes every cached region, main thread, no RPC |
 | Derived region map | Upload callback iterates it in place of raw `rpcDataMap` | Upload autorun reads it — re-uploads without an RPC roundtrip |
 | `renderState` | `backend.render(state)` per frame | Render callback reads it — repaint |

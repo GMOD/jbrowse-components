@@ -63,7 +63,7 @@ The estimate survives `clearAllRpcData()`, so a pan doesn't flicker the banner.
 One autorun on the mixin, `ClearByteEstimateOnNavOrTierSwap`, drops it when
 the estimate stops describing the fetch the display would make: chromosome
 navigation (`displayedRegionIndex` is reused) and a tier swap
-(`byteGateAdapterKey` changes — MAF's summary tier at 20 kb). `forceLoadTrack`
+(`byteGateAdapterConfig` changes — MAF's summary tier at 20 kb). `forceLoadTrack`
 survives both.
 
 **Neither budget is an RPC cache key.** `resolvedByteLimit()` and canvas's

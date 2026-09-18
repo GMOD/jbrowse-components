@@ -679,12 +679,12 @@ describe('the level-of-detail tier', () => {
     expect(display.hasLodCapableAdapter).toBe(true)
     expect(display.lodTier).toBe('fine')
     const before = display.currentFetchKey
-    expect(before?.view).toContain('|fine|')
+    expect(before?.view).toMatch(/\|fine$/)
 
     display.setLodMode('coarse')
     expect(display.lodTier).toBe('coarse')
     expect(display.currentFetchKey).not.toEqual(before)
-    expect(display.currentFetchKey?.view).toContain('|coarse|')
+    expect(display.currentFetchKey?.view).toMatch(/\|coarse$/)
     expect(menuLabels(display)).toContain('Level of detail')
   })
 

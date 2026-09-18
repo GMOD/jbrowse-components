@@ -214,10 +214,7 @@ refetch whenever any of them changed. That has two consequences:
 - Only fields that reach the **return** are cache keys. A value merely consulted
   while building the payload invalidates nothing.
 - The comparison is structural, so an `undefined` field and a class instance
-  with no own fields are distinct states. Global-family displays
-  (`GlobalFetchMixin`) still serialize the payload to a string
-  (`rpcPropsCacheKey`), where those two shapes collapse; prefer primitives and
-  plain arrays there.
+  with no own fields are distinct states.
 
 `rpcProps` goes in a `.views()` block and returns only the settings the worker
 reads:

@@ -82,11 +82,9 @@ site does anymore.
 
 `adapterConfig` is provided by `BaseDisplayModel` (via
 `getConf(this.parentTrack, 'adapter')`) — a **structural** arg, so it is not in
-`rpcProps()`, and its own axis of every fetch key: `FetchMixin.adapterConfigKey`
-(`adapterConfigKey` from `@jbrowse/core/util`, the one spelling every fetch
-family uses) rides beside `rpcPropsCacheKey` in the global family's
-`currentFetchKey`, and inside the per-region family's `settingsFetchInputs`, so a track re-pointed in the config editor
-refetches. GC content folds `gcMode` / `windowSize` / `windowDelta` into the
+`rpcProps()`, and it rides beside the payload in `FetchMixin.settingsFetchInputs`,
+the settings axis every fetch family keys on, so a track re-pointed in the
+config editor refetches. GC content folds `gcMode` / `windowSize` / `windowDelta` into the
 `GCContentAdapter` config its `adapterConfig` getter builds and lists them in
 `rpcProps()` as well; both axes now see them, and either alone would do.
 
@@ -135,12 +133,11 @@ per-region display with no settings-driven refetch (e.g.
 
 ## The cache key is the return value, not the reads
 
-Both families invalidate on the payload's **value** — never on the raw call.
-The global family serializes it (`serializeRpcProps`, through one getter,
-`FetchMixin.rpcPropsCacheKey`, read in `installGlobalFetchAutorun`'s trigger
-list); the per-region family holds it in a structural computed
-(`settingsFetchInputs`, `display-kit/fetchInputs.ts`) that `SettingsInvalidate`
-watches.
+Every family invalidates on the payload's **value** — never on the raw call.
+`FetchMixin.settingsFetchInputs` (`display-kit/fetchInputs.ts`) holds it with
+the adapter config in one structural computed: `SettingsInvalidate` watches it
+and each loaded region stamps it, the keyed families fold it into
+`currentFetchKey`, and the byte gate measures under it.
 
 The reason is that **building the payload reads far more observables than it
 returns**, so tracking the call tracks all of them:
@@ -152,28 +149,28 @@ returns**, so tracking the call tracks all of them:
 - HiC's `activeNormalization` consults `availableNormalizations`, which is
   **fetched** (`CoreGetInfo`) — a read that has nothing to do with user intent
 
-Serializing collapses both: only a change in what's returned invalidates. And it
-has to be a string rather than a `.rpcProps()` comparison, because a fresh object
-never compares equal.
+The structural computed collapses both: a recomputation that returns equal
+content keeps the previous value, so only a change in what's returned
+invalidates. Regression-tested in `installGlobalFetchAutorun.test.ts` ("ignores
+an observable rpcProps() reads but does not return") and `fetchInputs.test.ts`
+("holds the settings identity across a read the payload does not return").
 
-The inverse hazard, in the global family where `JSON.stringify` *is* the
-comparison: a field whose
-distinct states serialize identically is a **silently dead cache axis** — changing
-it refetches nothing and raises no error. A class instance needs a `toJSON` or it
-flattens to `{}` (`SerializableFilterChain` has one, which is what makes the
-variant displays' `filters` field a real key), and an `undefined` value drops its
-key entirely, so it can't be distinguished from a sibling state that also drops.
-Prefer primitives and plain arrays. Regression-tested in
-`installGlobalFetchAutorun.test.ts` ("ignores an observable rpcProps() reads but
-does not return"), which fails if the trigger goes back to the raw call. The
-per-region family's structural compare has neither blind spot — an `undefined`
-field and a fieldless class instance are both distinct states there — pinned in
-`fetchInputs.test.ts`.
+The compare is structural, not a serialized string, because `JSON.stringify`
+drops an `undefined`-valued key and flattens a class with no own enumerable
+fields to `{}`: two states of either field would be one key, and a change
+between them a **silently dead cache axis**. `compareStructural` counts keys
+and compares own fields, so both are distinct states, pinned in
+`fetchInputs.test.ts`
+([ADR-131](../architecture-decision-records/adr-131-fetch-keys-are-values-compared-structurally.md)).
+A value stamp has a hazard of its own instead: a live collection mutated in
+place behind it. `snapshotInputs` closes that by rebuilding and freezing it,
+which leaves a class instance mutated in place as the one case to avoid — build
+a fresh one.
 
 ## Pick the payload out of the snapshot; never subtract from it
 
-Serializing fixes *which reads* invalidate. It does nothing about **which slots
-are in the payload**, and that is a second, separate hazard for any display whose
+Keying on the returned value fixes *which reads* invalidate. It does nothing
+about **which slots are in the payload**, and that is a second, separate hazard for any display whose
 `rpcProps()` starts from `fullConfSnapshot`: the snapshot carries
 every slot the display's schema *and every schema it inherits* declare, so the
 payload's contents are decided by whatever the display does with it.
@@ -358,8 +355,8 @@ the RPC, and each pays for it in a different currency:
 The shared rule: **a fetch argument may name the row *set*, never the row
 order.** The set is real work — a focused clade is a fraction of the cells or
 the sequence — while the order is a permutation the main thread can apply for
-free. Sent unsorted, a set puts the order back in through the JSON cache key
-even though no worker reads it, so sort it.
+free. Sent unsorted, a set puts the order back in through the cache key, which
+compares arrays in order, even though no worker reads it — so sort it.
 
 A drag-reorder, a "Group by", a clustering run and a genotype sort are then all
 re-uploads of bytes already in hand; under positional row identity each of them

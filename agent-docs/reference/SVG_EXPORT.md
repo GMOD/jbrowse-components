@@ -499,14 +499,14 @@ Consumers — `computeSvgReady`, the `settled` capture gates, BreakpointSplitVie
 overlays — read `dataCurrent` and never the mechanism, so a display *composes* a
 freshness answer rather than choosing which of the names to expose.
 
-`isDataCurrent(loadedSignature, currentSignature)` (`@jbrowse/core/util`,
-`loaded !== undefined && loaded === current`) is the shared rule for the second
-row. On the LGV global family the whole compare lives on `GlobalFetchMixin`: a
-display supplies only `viewSignature` (arc and HiC over static blocks — HiC
-appending its binsize — LD over dynamic blocks), the mixin appends the
-`rpcPropsCacheKey` settings axis, stamps the issued signature at commit, and
-drops it on `reload()`. Dotplot + linear-comparative synteny keep their own
-fetch-input signatures (ADR-054); only the final compare is shared with them.
+`isDataCurrent(loaded, current)` (`@jbrowse/core/util`,
+`loaded !== undefined && compareStructural(loaded, current)`) is the shared rule
+for the second row. Both keyed families run the whole compare on
+`KeyedFetchMixin` (ADR-105): a display supplies only `viewSignature` (arc and
+HiC over static blocks — HiC appending its binsize — LD over dynamic blocks,
+synteny and dotplot over their region sets, zoom buckets and LOD tier), the
+mixin pairs it with the `settingsFetchInputs` axis, stamps the issued key at
+commit, and drops it on `reload()`.
 
 ## On-screen capture gate (`settled` → `*_canvas_done`)
 

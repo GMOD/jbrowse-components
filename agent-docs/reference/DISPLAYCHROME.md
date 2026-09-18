@@ -531,7 +531,7 @@ families had drifted into saying one thing two ways:
 | concept | was | is |
 | --- | --- | --- |
 | "a prerequisite has not landed" | option one side, getter the other | `FetchMixin.awaitingPrerequisite` |
-| "the RPC cache key" | `rpcPropsCacheKey` getter one side, a local `computed` over the same `serializeRpcProps` the other | `FetchMixin.rpcPropsCacheKey` |
+| "the RPC cache key" | `rpcPropsCacheKey` getter one side, a local `computed` over the same `serializeRpcProps` the other | `FetchMixin.rpcPropsCacheKey`, since folded with the adapter into `FetchMixin.settingsFetchInputs` (ADR-131) |
 | "the byte gate skips this run" | `regionTooLarge && !gateMeasurementStale`, written out in both autoruns under near-identical paragraphs | `RegionTooLargeMixin.gateSkipsMeasuredViewport` |
 
 None of the three changed behavior — each was already the same value computed

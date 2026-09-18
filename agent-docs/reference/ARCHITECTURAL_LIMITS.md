@@ -1245,7 +1245,7 @@ only on a real violation):
   for what each display bails on.
 
 - **A display that omits `rpcProps()` gets no settings invalidation, silently.**
-  `rpcPropsCacheKey` returns `''`, so `SettingsInvalidate` (installed on every
+  `settingsFetchInputs` then carries only the adapter config, so `SettingsInvalidate` (installed on every
   per-region display since 2026-09, for the adapter axis it also watches) fires
   on no setting — correct for `LinearReferenceSequenceDisplay`,
   indistinguishable from an omission for everyone else. Checkable only behind an explicit opt-out
