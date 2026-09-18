@@ -90,7 +90,7 @@ in full and of the format-typed displays only where it says so.
 | scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, hatches and rules (`packages/wiggle-core/src/ScoreScaleMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
-| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer; a mark's `facet` stacks one section of rows per value of a field, with a chip |
+| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer; the display's `facetField` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
 | coordinates | a transform of the plane | genomic x along a strip, and the circular view's ring pass over it: the view is a `RegionHost` whose axis is the circumference, a display renders its strip as into a linear track, and one pass per ring resamples the strip's canvas in polar coordinates (`plugins/circular-view/src/rings/`, [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)) | polar, as a resampling of the finished picture rather than a twin per shape — measured at 4.3 ms a ring against 5.4–6.8 ms for the twin, exact at every bin width; the dotplot stays a display |
 
 The encoding — field to channel, evaluated once — is the grammar's central
@@ -266,62 +266,57 @@ The seams, named honestly:
 
 ## The facet stage
 
-A row facet — partition the features on a categorical field, stack one section
-per value, name each with a chip — is answered three times over one set of
-shared pieces. The feature display's "Group by..."
-(`plugins/canvas/src/LinearBasicDisplay/facet.ts`) and the alignments
-display's (`plugins/alignments/src/shared/groupFeatures.ts`) are two; the mark
-display's declared `facet: { field }` is the third, and the only one the
-grammar spells. There the worker offsets each group's rows by the groups above
-it and answers a section table (`facetRows`,
-`packages/core/src/util/featureTransforms.ts`), the display folds the regions'
-tables into one layout and re-offsets every region onto it
-(`plugins/marks/src/LinearMarkDisplay/facet.ts`), and the chip row reads that
-layout — the stack transform with an offset over it, not a fourth partition.
+A row facet — split the features on a field's value, stack one section per
+value, name each with a chip — is answered three times. The feature display's
+"Group by..." (`plugins/canvas/src/LinearBasicDisplay/facet.ts`) and the mark
+display's facet read the same two slots, `facetField` and `facetDomain`
+(`packages/display-kit/src/facetConfigSchemaFields.ts`); the alignments
+display keeps its `groupBy` (`plugins/alignments/src/shared/groupFeatures.ts`),
+whose dimensions are not fields.
 
-The shared pieces are the key order and the `MAX_GROUPS` cap
-(`packages/core/src/util/groupKeys.ts`, in core so a worker can reach them):
-a facet channel's optional `domain` lists the sections that stack first and
-the rest follow sorted (every value the data holds, with no domain). The cap
-reads the key set alone, in natural order: a domain orders the sections and
-never decides which exist, so no worker request carries one and a reorder
-refetches nothing. The multi-row and multiway synteny displays' `domain`
-slots, the feature display's `facetDomain`,
-the alignments display's `groupBy.domain`, the mark's `facet.domain` and the colour and glyph channels'
-legend order are one word and one rule (`groupKeyComparator`); the four
-tree-sidebar displays (MAF, multi-wiggle, the two multi-sample variant ones and
-multi-row features) share that word as a `domain` row-order slot, read as
-`rowDomain` and applied under `layout`, where only multi-row features sorts the
-rows it leaves unlisted — for the other three a supplied phylogeny's leaf order
-and a file's sample order mean something, so those rows keep the order they
-arrived in (`orderRowsByDomain`); where a tree describes the rows the slot is a
-preference rather than a placement, rotating the tree towards the declared order
-as far as the topology allows (`rotateNewickByDomain`, ggtree's `rotate`) and
-reading the rows off its leaves, so a declared order never costs the dendrogram;
-a re-pick of the
-same grouping from a menu keeps the domain (`carryGroupDomain`), and the
-runtime half is one menu, `sectionOrderMenuItems` in `groupByMenu.ts`, the
-Sections (or Lanes) submenu with a move and a hide per section and a reset,
-whose move writes the whole drawn order back as the domain (`mergeDomain`),
-the radio submenu (`groupByMenu.ts`), the chips and dividers
-(`GroupLabelChips.tsx`), and the hidden sections with their key-space reset
-(`HiddenGroupsMixin.ts`). A colour channel's legend order is that same word and
-that same rule: `CategoricalScale.domain` sorts a key's rows
-(`packages/core/src/ui/colorScale.ts`), and the displays that declare one — the
-GWAS and multi-row `colorDomain` slots, the multiway `ribbonColorDomain`, the
-synteny views' `colorDomain` prop — set it where the colours are assigned, so
-the row and the paint agree. The mark display's is `encoding.color.domain`,
-documented in `website/docs/config_guides/mark_display.md`.
+**The mark display's facet is the grammar's**
+([ADR-130](../architecture-decision-records/adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)).
+The display's own `transform` runs, the facet splits what it answers, and each
+mark runs its own steps over each section alone (`facetLayers`,
+`packages/core/src/util/featureTransforms.ts`), so a faceted display is the
+unfaceted one drawn once per section — a `stack` packs each section on its
+own, a `coverage` counts each section's depth, and a rowless mark sits on each
+section's first row. `featureTransforms.test.ts` pins that equivalence. The
+main thread folds the regions' section tables into one layout
+(`plugins/marks/src/LinearMarkDisplay/facet.ts`): the cap over every region's
+keys, the domain's order, the hidden sections gone from the drawn layers and
+their hit index, and the key and the value axis read off what is drawn.
 
-The feature display's facet is two flat settings, `facetField` and
-`facetDomain`, and **Edit as JSON...** in its Group by and Color by attribute
-dialogs reads and writes them in the mark display's words:
+The shared rules are the key, the order and the cap. Every channel keys,
+orders and names a value through `categoricalField` (below), and
+`capGroupKeys` (`packages/core/src/util/groupKeys.ts`) merges the tail past
+`MAX_GROUPS` by the key set alone, in natural order. **A domain orders and
+never decides which sections exist**, so no worker request carries one and a
+reorder refetches nothing: the listed values stack first, the rest follow
+sorted, and a listed value the data lacks takes no section. The multi-row and
+multiway synteny displays' `domain` slots, the feature and mark displays'
+`facetDomain`, the alignments display's `groupBy.domain` and the colour and
+glyph channels' legend order are that one word and rule
+(`groupKeyComparator`); a key over the facet's own field lists its rows in the
+sections' order. The four tree-sidebar displays (MAF, multi-wiggle and the two
+multi-sample variant ones) share the word as a `domain` row-order slot, read as
+`rowDomain` and applied under `layout`: their unlisted rows keep the order they
+arrived in (`orderRowsByDomain`), since a phylogeny's leaf order and a file's
+sample order mean something, and where a tree describes the rows the domain
+rotates it as far as the topology allows (`rotateNewickByDomain`, ggtree's
+`rotate`) rather than costing the dendrogram. The runtime half is one menu,
+`sectionOrderMenuItems` in `groupByMenu.ts`, whose move writes the whole drawn
+order back as the domain (`mergeDomain`); a re-pick of the same grouping keeps
+the domain (`carryGroupDomain`); the chips are `GroupLabelChips.tsx`, and the
+hidden sections with their key-space reset `HiddenGroupsMixin.ts`.
+
+**Edit as JSON...** in the feature display's Group by and Color by attribute
+dialogs reads and writes the flat slots in the mark display's words:
 `{ facet: { field, domain }, color: "css" | { field, domain, palette }, filter }`,
 parsed by `@jbrowse/display-kit/channelSpec` and written by `applyChannelSpec`
-onto `facetField`/`facetDomain`, the flat `colorField`/`colorDomain`/`colorPalette`
-slots or `color`, and the filter override. The spec's facet is the stored pair,
-so nothing translates it and nothing stores the spec. The Group by dialog
-applies a spec too (`groupByChannelSpec`).
+onto `facetField`/`facetDomain`, `colorField`/`colorDomain`/`colorPalette` or
+`color`, and the filter override. The Group by dialog applies a spec too
+(`groupByChannelSpec`).
 
 **Every categorical channel reads its field through one object**,
 `categoricalField(field, { domain, palette })`
@@ -349,7 +344,8 @@ top-level slot is and needs `liftField` for its string shorthand. A sub-schema
 read no longer costs its typing: `getConf` and `readConfObject` check a
 `['facet', 'field']` path segment by segment and type its value
 (`ConfigurationSlotPath`), measured at +0.6% instantiations. The mark display
-keeps its sub-schemas, because a mark list repeats them. Two proposals were
+keeps its marks' sub-schemas, because a mark list repeats them; its facet, one
+per display, is the flat pair. Two proposals were
 declined in review: filter shorthands such as `{ field, oneOf }` (jexl is the
 filter language, and reading structure back out of jexl is the fragile half);
 and the color as a `{ value, field, scale, domain, palette }` sub-schema shaped

@@ -225,17 +225,19 @@ so a `stack` packs each section on its own rows and a `coverage` counts each
 section's depth:
 
 ```json
-{
-  "type": "LinearMarkDisplay",
-  "facetField": "sample",
-  "marks": [
-    {
-      "shape": "span",
-      "transform": [{ "type": "stack" }],
-      "encoding": { "row": "row" }
-    }
-  ]
-}
+"displays": [
+  {
+    "type": "LinearMarkDisplay",
+    "facetField": "sample",
+    "marks": [
+      {
+        "shape": "span",
+        "transform": [{ "type": "stack" }],
+        "encoding": { "row": "row" }
+      }
+    ]
+  }
+]
 ```
 
 The field is read the way a channel reads one: a name, a dotted path into a
@@ -244,24 +246,26 @@ to be computed first, the display's own `transform` runs before the facet splits
 the features:
 
 ```json
-{
-  "type": "LinearMarkDisplay",
-  "transform": [
-    { "type": "formula", "expr": "jexl:getTag(feature,'HP')", "as": "HP" }
-  ],
-  "facetField": "HP",
-  "facetDomain": ["2", "1"],
-  "marks": [
-    {
-      "shape": "span",
-      "transform": [{ "type": "stack" }],
-      "encoding": {
-        "row": "row",
-        "color": { "field": "HP", "scale": "categorical" }
+"displays": [
+  {
+    "type": "LinearMarkDisplay",
+    "transform": [
+      { "type": "formula", "expr": "jexl:getTag(feature,'HP')", "as": "HP" }
+    ],
+    "facetField": "HP",
+    "facetDomain": ["2", "1"],
+    "marks": [
+      {
+        "shape": "span",
+        "transform": [{ "type": "stack" }],
+        "encoding": {
+          "row": "row",
+          "color": { "field": "HP", "scale": "categorical" }
+        }
       }
-    }
-  ]
-}
+    ]
+  }
+]
 ```
 
 Sections order a name with a number in it by that number, so chr2 before chr10,
