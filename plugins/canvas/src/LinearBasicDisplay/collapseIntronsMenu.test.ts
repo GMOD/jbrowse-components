@@ -1,4 +1,4 @@
-import { isFeature } from '@jbrowse/core/util'
+import { getSession, isFeature } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 
 import {
@@ -8,6 +8,7 @@ import {
 import { createTestEnvironment, rightClick } from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
@@ -181,10 +182,12 @@ describe('collapse introns context menu', () => {
     const { display, session, mockRpcCall } = createDisplay()
     mockRpcCall.mockResolvedValue({ feature: fullGene })
     const other = { name: 'other' }
-    const { get } = session.assemblyManager
+    const { assemblyManager } = getSession(display)
     jest
-      .spyOn(session.assemblyManager, 'get')
-      .mockImplementation(name => (name === 'other' ? other : get(name)))
+      .spyOn(assemblyManager, 'get')
+      .mockImplementation((name: string) =>
+        name === 'other' ? (other as unknown as Assembly) : undefined,
+      )
     display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), {
       ...ctgA,
       assemblyName: 'other',
