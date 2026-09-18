@@ -239,7 +239,7 @@ and a session or a config authors the same thing as `domain`.
           {
             "trackId": "primate_orthologs",
             "type": "MultiWaySyntenyDisplay",
-            "ribbonColor": { "scale": "strand" },
+            "ribbonColor": { "field": "strand" },
             "height": 620
           }
         ]

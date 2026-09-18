@@ -77,7 +77,7 @@
           "displayId": "giant_bmi_ld-LinearManhattanDisplay",
           "type": "LinearManhattanDisplay",
           "height": 250,
-          "color": { "scale": "ld" },
+          "color": { "field": "ld" },
           "scatterPointSize": 8
         }
       ]

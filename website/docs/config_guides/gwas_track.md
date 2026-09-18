@@ -9,7 +9,7 @@ guide_category: Track types
 A `GWASTrack` renders association results as a Manhattan plot. The main work is
 prep: a bgzipped, tabix-indexed BED-like file whose score column is in -log₁₀(p)
 units (or set `scoreTransform` to convert). Add a PLINK `.ld` file and
-`color: { "scale": "ld" }` to color points by linkage disequilibrium to an index
+`color: { "field": "ld" }` to color points by linkage disequilibrium to an index
 SNP. Any `FeatureTrack` can draw the same plot from one of its numeric columns —
 see [any scored feature file](#any-scored-feature-file).
 
@@ -70,7 +70,7 @@ why the header is commented with `#`.
 
 ## Example
 
-`color: { "scale": "ld" }` on the display colors points by r² to the index SNP
+`color: { "field": "ld" }` on the display colors points by r² to the index SNP
 and needs an `ldAdapter` sub-adapter on the `GWASAdapter`; swap in
 `PlinkLDTabixAdapter` for an indexed `.ld.gz`. A bare `color` string is a CSS
 literal or a `jexl:` expression per feature, and `scatterPointSize` sets the
@@ -92,7 +92,7 @@ point diameter in px ([](/docs/config/linearmanhattandisplay)):
     }
   },
   "displayDefaults": {
-    "color": { "scale": "ld" }
+    "color": { "field": "ld" }
   }
 }
 ```

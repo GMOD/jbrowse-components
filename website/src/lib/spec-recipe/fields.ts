@@ -367,7 +367,7 @@ function manhattanColorStep(
 ): FieldStep | undefined {
   const colorBy = `${TRACK_MENU} → Color by`
   const field = scale.scale === 'none' ? undefined : asString(scale.field)
-  if (scale.scale === 'ld') {
+  if (field === 'ld') {
     return {
       path: `${colorBy} → LD to index SNP`,
       note: "Needs a PLINK .ld file as the GWASAdapter's ldAdapter.",
@@ -397,7 +397,7 @@ function colorStep(
     return manhattanColorStep(scale)
   }
   if (scale) {
-    const field = asString(scale.field)
+    const field = scale.scale === 'none' ? undefined : asString(scale.field)
     if (!field || !hasChannelMenus(displayType)) {
       return undefined
     }

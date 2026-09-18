@@ -169,7 +169,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(atGate).toEqual({ indexSnp: TOP_SNP, regions: 2 })
   })
 
-  // The same gate, for the `ld` scale with no ldAdapter configured. LD coloring
+  // The same gate, for the `ld` field with no ldAdapter configured. LD coloring
   // is inert there, but the auto-pick still writes indexSnp and the write is
   // what clears the load, so gating supersession on the adapter exported the
   // empty lane anyway.
