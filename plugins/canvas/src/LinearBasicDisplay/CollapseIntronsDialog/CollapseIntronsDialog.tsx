@@ -17,11 +17,11 @@ import {
 import { observer } from 'mobx-react'
 
 import { getFeatureName } from '../../RenderFeatureDataRPC/labelUtils.ts'
+import { getSplicedParts } from '../../RenderFeatureDataRPC/splicedParts.ts'
 import { isCDS, isExon } from '../../RenderFeatureDataRPC/util.ts'
 import {
   collapseIntrons,
   collapsedRegionsFor,
-  getSplicedParts,
   replaceIntrons,
   runIntronAction,
 } from './util.ts'

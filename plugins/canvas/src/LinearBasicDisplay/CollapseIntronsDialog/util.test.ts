@@ -3,9 +3,6 @@ import {
   buildCollapsedRegions,
   buildCollapsedViewSnapshot,
   collapsedRegionsFor,
-  featureHasSplicedParts,
-  getSplicedParts,
-  getTranscripts,
   replaceIntrons,
 } from './util.ts'
 
@@ -67,117 +64,6 @@ function intronArgs(opts: {
 }
 
 describe('CollapseIntrons utilities', () => {
-  describe('getSplicedParts', () => {
-    it('extracts exons from transcripts', () => {
-      const transcripts = [
-        feat({
-          subfeatures: [
-            feat({ type: 'exon' }),
-            feat({ type: 'intron' }),
-            feat({ type: 'exon' }),
-          ],
-        }),
-      ]
-      expect(getSplicedParts(transcripts)).toHaveLength(2)
-    })
-
-    it('extracts CDS from transcripts', () => {
-      const transcripts = [
-        feat({
-          subfeatures: [feat({ type: 'CDS' }), feat({ type: 'UTR' })],
-        }),
-      ]
-      expect(getSplicedParts(transcripts)).toHaveLength(1)
-    })
-
-    it('handles transcripts with no subfeatures', () => {
-      expect(getSplicedParts([feat()])).toHaveLength(0)
-    })
-  })
-
-  describe('featureHasSplicedParts', () => {
-    it.each(['exon', 'CDS', 'match_part', 'block'])(
-      'returns true when subfeatures include a %s',
-      type => {
-        expect(
-          featureHasSplicedParts(feat({ subfeatures: [feat({ type })] })),
-        ).toBe(true)
-      },
-    )
-
-    it('returns false when subfeatures contain no spliced part', () => {
-      expect(
-        featureHasSplicedParts(feat({ subfeatures: [feat({ type: 'UTR' })] })),
-      ).toBe(false)
-    })
-
-    it('returns false when feature has no subfeatures', () => {
-      expect(featureHasSplicedParts(feat())).toBe(false)
-    })
-  })
-
-  describe('getTranscripts', () => {
-    it('returns [] for undefined feature', () => {
-      expect(getTranscripts(undefined)).toEqual([])
-    })
-
-    it('wraps a transcript-shaped feature (exons directly under it) in [feature]', () => {
-      const f = feat({ subfeatures: [feat({ type: 'exon' })] })
-      expect(getTranscripts(f)).toEqual([f])
-    })
-
-    it('returns subfeatures for a gene-shaped feature (transcripts under it)', () => {
-      const transcript = feat({ subfeatures: [feat({ type: 'exon' })] })
-      expect(getTranscripts(feat({ subfeatures: [transcript] }))).toEqual([
-        transcript,
-      ])
-    })
-
-    it('drops gene subfeatures that carry no exon/CDS of their own', () => {
-      const transcript = feat({ subfeatures: [feat({ type: 'exon' })] })
-      const childless = feat({ type: 'tRNA' })
-      expect(
-        getTranscripts(feat({ subfeatures: [transcript, childless] })),
-      ).toEqual([transcript])
-    })
-
-    it('prefers the mRNA children of a gene that also carries stray exons', () => {
-      const transcript = feat({
-        type: 'mRNA',
-        subfeatures: [feat({ type: 'exon' })],
-      })
-      const gene = feat({
-        type: 'gene',
-        subfeatures: [feat({ type: 'exon' }), transcript],
-      })
-      expect(getTranscripts(gene)).toEqual([transcript])
-    })
-
-    it('stays one transcript when its exons nest their own CDS rows', () => {
-      const mrna = feat({
-        type: 'mRNA',
-        subfeatures: [
-          feat({ type: 'exon', subfeatures: [feat({ type: 'CDS' })] }),
-          feat({ type: 'exon' }),
-        ],
-      })
-      expect(getTranscripts(mrna)).toEqual([mrna])
-    })
-
-    it('wraps a match whose children are match_parts', () => {
-      const match = feat({
-        type: 'cDNA_match',
-        subfeatures: [feat({ type: 'match_part' })],
-      })
-      expect(getTranscripts(match)).toEqual([match])
-    })
-
-    it('wraps a BED12 feature whose children are blocks', () => {
-      const bed = feat({ subfeatures: [feat({ type: 'block' })] })
-      expect(getTranscripts(bed)).toEqual([bed])
-    })
-  })
-
   describe('buildCollapsedRegions', () => {
     const args = { refName: 'ctgA', assembly }
 

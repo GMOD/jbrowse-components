@@ -18,6 +18,7 @@ const gene = makeFlatbushItem({
   name: 'EDEN',
   startBp: 1050,
   endBp: 9000,
+  collapsibleIntrons: true,
 })
 
 function isoform(featureId: string, type: string): SubfeatureInfo {
@@ -185,17 +186,19 @@ describe('collapse introns context menu', () => {
   })
 })
 
-// The gate is a type test, so these ask the menu itself rather than
-// re-asserting the predicate core already pins.
+// The worker decides whether there is a gap to close, because the isoforms it
+// trimmed and the parts the `subParts` slot withheld never reach here;
+// splicedParts.test.ts pins that decision. The menu only reads its answer.
 describe('which right-clicked features are offered a collapse', () => {
-  function offersCollapse(type: string | undefined) {
+  function offersCollapse(collapsibleIntrons: boolean | undefined) {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const item = makeFlatbushItem({
       featureId: 'f1',
-      type,
+      type: 'gene',
       startBp: 1050,
       endBp: 9000,
+      collapsibleIntrons,
     })
     display.setRpcData(0, makeFeatureData({ flatbushItems: [item] }), ctgA)
     rightClick(display, item)
@@ -203,21 +206,16 @@ describe('which right-clicked features are offered a collapse', () => {
     return items.some(m => 'label' in m && m.label === 'Collapse introns')
   }
 
-  it.each(['gene', 'mRNA', 'lnc_RNA', 'cDNA_match', 'EST_match', 'match'])(
-    'offers it on %s',
-    type => {
-      expect(offersCollapse(type)).toBe(true)
-    },
-  )
+  it('offers it on a feature the worker found a gap in', () => {
+    expect(offersCollapse(true)).toBe(true)
+  })
 
-  it.each([
-    'exon',
-    'match_part',
-    'repeat_region',
-    'intergenic_region',
-    undefined,
-  ])('withholds it from %s', type => {
-    expect(offersCollapse(type)).toBe(false)
+  it('withholds it from a feature whose parts leave no gap', () => {
+    expect(offersCollapse(false)).toBe(false)
+  })
+
+  it('withholds it from data that predates the field', () => {
+    expect(offersCollapse(undefined)).toBe(false)
   })
 })
 
@@ -228,6 +226,7 @@ describe('the collapsed view is titled the way the track labels', () => {
     name: 'dystrophin',
     startBp: 1050,
     endBp: 9000,
+    collapsibleIntrons: true,
   })
   const labelledIsoform = {
     ...isoform('EDEN.1', 'mRNA'),

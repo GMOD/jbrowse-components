@@ -16,6 +16,7 @@ const gene = makeFlatbushItem({
   name: 'EDEN',
   startBp: 1050,
   endBp: 9000,
+  collapsibleIntrons: true,
 })
 
 test('the display keeps every member a published plugin reaches for', () => {

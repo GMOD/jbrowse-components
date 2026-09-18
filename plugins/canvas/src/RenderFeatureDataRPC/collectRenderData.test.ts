@@ -813,6 +813,69 @@ describe('collectRenderData transcript coords', () => {
   })
 })
 
+// The menu row reads this off the wire, so the answer has to come from the
+// FEATURE: a gene whose parts the `subParts` slot or an isoform trim left
+// undrawn still has a gap the dialog can close.
+describe('collectRenderData collapsible introns', () => {
+  const exon = (id: string, start: number, end: number) =>
+    mockFeature({ type: 'exon', id, start, end })
+
+  function spliced(id: string, type: string, parts: Feature[]) {
+    return mockFeature({ type, id, start: 0, end: 500, subfeatures: parts })
+  }
+
+  const twoExons = (id: string) => [
+    exon(`${id}-e1`, 0, 100),
+    exon(`${id}-e2`, 400, 500),
+  ]
+
+  function flagOf(feature: Feature) {
+    const result = collect(findGlyph(feature, config)({ feature, config }))
+    return result.flatbushItems.find(i => i.featureId === feature.id())!
+      .collapsibleIntrons
+  }
+
+  it('marks a spliced transcript', () => {
+    expect(flagOf(spliced('tx1', 'mRNA', twoExons('tx1')))).toBe(true)
+  })
+
+  it('marks the gene stacking it', () => {
+    const gene = mockFeature({
+      type: 'gene',
+      id: 'g1',
+      start: 0,
+      end: 500,
+      subfeatures: [spliced('tx1', 'mRNA', twoExons('tx1'))],
+    })
+    expect(flagOf(gene)).toBe(true)
+  })
+
+  it('marks a match whose match_parts leave a gap', () => {
+    const parts = [
+      mockFeature({ type: 'match_part', id: 'm1-p1', start: 0, end: 100 }),
+      mockFeature({ type: 'match_part', id: 'm1-p2', start: 400, end: 500 }),
+    ]
+    expect(flagOf(spliced('m1', 'cDNA_match', parts))).toBe(true)
+  })
+
+  it('leaves a single-exon transcript unmarked', () => {
+    const tx = spliced('tx1', 'mRNA', [exon('tx1-e1', 0, 500)])
+    expect(flagOf(tx)).toBe(false)
+  })
+
+  it('leaves a gene carrying no parts unmarked', () => {
+    expect(
+      flagOf(mockFeature({ type: 'gene', id: 'g1', start: 0, end: 500 })),
+    ).toBe(false)
+  })
+
+  it('stays marked when the layout drew none of the parts', () => {
+    const tx = spliced('tx1', 'mRNA', twoExons('tx1'))
+    const result = collect(boxLayout(tx))
+    expect(result.flatbushItems[0]!.collapsibleIntrons).toBe(true)
+  })
+})
+
 describe('color key', () => {
   const genes = [
     mockFeature({

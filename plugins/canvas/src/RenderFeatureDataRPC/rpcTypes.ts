@@ -245,6 +245,11 @@ export interface FlatbushItem extends HitItemBase {
   // unless a facet other than strand asked for it.
   groupKey?: string
   densityFade: boolean
+  // Whether "Collapse introns" has a gap to close here. Decided in the worker
+  // because only the worker holds the whole feature: on the main thread an
+  // isoform the trim dropped and an exon the `subParts` slot left undrawn look
+  // like a feature that never had them. Absent in fixtures predating the field.
+  collapsibleIntrons?: boolean
   // Present on a gene stacking more than one child.
   isoformStack?: IsoformStack
 }

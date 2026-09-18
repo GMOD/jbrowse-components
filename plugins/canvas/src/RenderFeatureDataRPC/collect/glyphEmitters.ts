@@ -10,6 +10,7 @@ import {
   readFeatureName,
   subfeatureLabelText,
 } from '../labelUtils.ts'
+import { collapsibleIntronsOf } from '../splicedParts.ts'
 import { featureType } from '../util.ts'
 import {
   centerShrink,
@@ -759,6 +760,7 @@ export function processFeatureRecord(
     // A standalone transcript registers no SubfeatureInfo, so its exon bounds
     // ride here instead.
     transcript: transcriptCoords(layout),
+    collapsibleIntrons: collapsibleIntronsOf(feature),
     // Fade eligibility, per feature — the per-rect decision is layout's alone.
     densityFade: layout.glyphType === 'Box',
     labelRows: layout.labelRows,

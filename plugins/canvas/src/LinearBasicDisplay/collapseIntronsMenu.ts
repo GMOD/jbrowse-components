@@ -4,8 +4,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getSession,
-  isGeneLikeType,
-  isSequenceMatchType,
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -15,7 +13,7 @@ import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
 import {
   getTranscripts,
   hasCollapsibleIntrons,
-} from './CollapseIntronsDialog/util.ts'
+} from '../RenderFeatureDataRPC/splicedParts.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
@@ -26,16 +24,6 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
-
-/**
- * The two type families whose parts are separated by introns: a gene or one of
- * its transcripts, and a sequence alignment, whose `match_part` children are
- * the aligned blocks. A gene answers by type rather than by what its glyph
- * drew, because its own introns belong to the transcripts it stacks.
- */
-export function offersCollapseIntrons(type: string | undefined) {
-  return isGeneLikeType(type) || isSequenceMatchType(type)
-}
 
 // Structural rather than the model's instance type: the factory calls this
 // builder, so importing its type back here is a circular reference.

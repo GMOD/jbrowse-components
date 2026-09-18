@@ -16,10 +16,7 @@ import {
   mergeIsoformPicks,
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import baseStateModelFactory from './baseModel.ts'
-import {
-  collapseIntronsMenuItem,
-  offersCollapseIntrons,
-} from './collapseIntronsMenu.ts'
+import { collapseIntronsMenuItem } from './collapseIntronsMenu.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
 import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
@@ -370,7 +367,7 @@ export default function stateModelFactory(
           const info = self.contextMenuInfo
           const data =
             info && self.laidOutDataMap.get(info.displayedRegionIndex)
-          return info && offersCollapseIntrons(info.item.type)
+          return info?.item.collapsibleIntrons
             ? [
                 ...base,
                 collapseIntronsMenuItem(
