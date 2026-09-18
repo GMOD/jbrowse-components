@@ -230,15 +230,17 @@ export function workerColorBy(colorBy: ColorBy): ColorBy | undefined {
   return COLOR_SCHEMES[colorBy.type].workerExtracts ? colorBy : undefined
 }
 
-// Upgrade a persisted colorBy to canonical form: the retired standalone
-// `methylation` scheme becomes `modifications` with `fillUnmarked` set (its
-// cytosine context preserved), the retired `stranded` alias becomes the
-// `firstOfPairStrand` it always meant, and the retired `insertSizeGradient`
-// becomes the `insertSize` it shared every threshold and bucket with. Applied in
-// the model's `colorBy` getter so no live code — extraction, menu, legend,
-// shader dispatch — ever sees a removed type. Idempotent on already-canonical
-// values.
-export function normalizeColorBy(colorBy: PersistedColorBy): ColorBy {
+// Upgrade a persisted colorBy to canonical form: `methylation` becomes
+// `modifications` with `fillUnmarked` set, `stranded` becomes
+// `firstOfPairStrand` and `insertSizeGradient` becomes `insertSize`. A type the
+// registry doesn't know — a typo, a scheme renamed since a session was saved —
+// falls back to plain coloring, since every lookup keyed on ColorSchemeType
+// throws on it.
+export function normalizeColorBy(value: unknown): ColorBy {
+  if (!isRegisteredColorScheme(value)) {
+    return { type: 'normal' }
+  }
+  const colorBy = value
   return colorBy.type === 'methylation'
     ? {
         type: 'modifications',
@@ -251,25 +253,16 @@ export function normalizeColorBy(colorBy: PersistedColorBy): ColorBy {
         : colorBy
 }
 
-// widened for the `includes` check below, which takes an arbitrary string
 const legacyTypes: readonly string[] = LEGACY_COLOR_SCHEME_TYPES
 
-// A persisted `colorBy` value is only usable once its `.type` still names a
-// registered scheme: the lookups above (colorSchemeLabel, isModificationScheme,
-// the model's colorSchemeIndexFor) are total over ColorSchemeType by design and
-// throw on anything else, so a stale/renamed name from a saved session must be
-// rejected before it reaches them. The retired names are accepted here
-// (normalizeColorBy upgrades them at read time) so legacy sessions keep
-// resolving.
-export function isRegisteredColorScheme(
-  value: unknown,
-): value is PersistedColorBy {
+function isRegisteredColorScheme(value: unknown): value is PersistedColorBy {
   return (
     typeof value === 'object' &&
     value !== null &&
     'type' in value &&
     typeof value.type === 'string' &&
-    (value.type in COLOR_SCHEMES || legacyTypes.includes(value.type))
+    (Object.hasOwn(COLOR_SCHEMES, value.type) ||
+      legacyTypes.includes(value.type))
   )
 }
 

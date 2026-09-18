@@ -1,8 +1,8 @@
 import {
   COLOR_SCHEMES,
   isDataFillScheme,
-  isRegisteredColorScheme,
   normalizeColorBy,
+  workerColorBy,
 } from './colorSchemes.ts'
 
 // The retired names never reach live code: normalizeColorBy upgrades them in
@@ -55,20 +55,18 @@ describe('normalizeColorBy', () => {
   })
 })
 
-describe('isRegisteredColorScheme', () => {
-  test('accepts registered schemes and the retired names a session may hold', () => {
-    expect(isRegisteredColorScheme({ type: 'insertSize' })).toBe(true)
-    expect(isRegisteredColorScheme({ type: 'methylation' })).toBe(true)
-    expect(isRegisteredColorScheme({ type: 'stranded' })).toBe(true)
-    expect(isRegisteredColorScheme({ type: 'insertSizeGradient' })).toBe(true)
-  })
-
-  test('rejects anything the lookups would throw on', () => {
-    expect(isRegisteredColorScheme({ type: 'notAScheme' })).toBe(false)
-    expect(isRegisteredColorScheme({})).toBe(false)
-    expect(isRegisteredColorScheme(undefined)).toBe(false)
-    expect(isRegisteredColorScheme('strand')).toBe(false)
-  })
+test('an unknown colorBy falls back to plain coloring rather than reaching a lookup that throws', () => {
+  for (const value of [
+    { type: 'perBaseLettering' },
+    { type: 'toString' },
+    {},
+    undefined,
+    'strand',
+  ]) {
+    const colorBy = normalizeColorBy(value)
+    expect(colorBy).toEqual({ type: 'normal' })
+    expect(() => workerColorBy(colorBy)).not.toThrow()
+  }
 })
 
 // Spelled out rather than re-derived, because the derivation is what is under
