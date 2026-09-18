@@ -840,6 +840,7 @@
         "getConf",
         "getConfigurationSchemaDefinition",
         "getConfigurationSchemaMetadata",
+        "getConfigurationSchemaOptions",
         "getSlotDefinition",
         "getTypeNamesFromExplicitlyTypedUnion",
         "hydrateTrackConfig",
@@ -848,13 +849,14 @@
         "isConfigurationModel",
         "isConfigurationSchemaType",
         "isConfigurationSlot",
+        "isConfigurationSubschema",
         "isConstantEntry",
         "isSlotDefinitionEntry",
-        "liftField",
-        "liftValue",
         "makeSlotFacade",
         "mergeFormatCallbacks",
+        "preProcessConfigSnapshot",
         "preProcessSlotValues",
+        "preProcessSnapshotWith",
         "readConfObject",
         "readConfigValue",
         "setConf",
@@ -3699,6 +3701,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/colorConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "colorConfigSchema",
+        "normalizeColor"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/configSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -3845,10 +3855,12 @@
         "react-dom"
       ]
     },
-    "@jbrowse/display-kit/facetConfigSchemaFields": {
+    "@jbrowse/display-kit/facetConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "facetConfigSchemaFields"
+        "facetConfigSchema",
+        "facetSettingOf",
+        "normalizeFacet"
       ],
       "worker": "real"
     },

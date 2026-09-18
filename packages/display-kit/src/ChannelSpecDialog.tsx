@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { MonospaceTextField, SubmitDialog } from '@jbrowse/core/ui'
+import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -12,7 +13,8 @@ export interface ChannelSpecHost {
   channelSpec: ChannelSpec
   channelSpecExamples: { spec: string; description: string }[]
   channelSpecProblems: (spec: ChannelSpec) => string[]
-  applyChannelSpec: (spec: ChannelSpec) => void
+  applyDisplaySettings: (settings: Record<string, unknown>) => unknown
+  setJexlFilters: (filters?: string[]) => void
 }
 
 function readSpec(host: ChannelSpecHost, text: string) {
@@ -42,6 +44,18 @@ function summarize(spec: ChannelSpec, current: ChannelSpec) {
   )
 }
 
+// `facet` and `color` are the display's own settings and land through the
+// same door a session spec or an agent uses; `filter` is the runtime list.
+function apply(host: ChannelSpecHost, spec: ChannelSpec) {
+  const { filter, ...settings } = spec
+  if (Object.keys(settings).length > 0) {
+    host.applyDisplaySettings(settings)
+  }
+  if (filter !== undefined) {
+    host.setJexlFilters(filter?.map(ensureJexlPrefix) ?? [])
+  }
+}
+
 const ChannelSpecDialog = observer(function ChannelSpecDialog({
   model,
   seed,
@@ -67,7 +81,7 @@ const ChannelSpecDialog = observer(function ChannelSpecDialog({
       onCancel={handleClose}
       onSubmit={() => {
         if (spec) {
-          model.applyChannelSpec(spec)
+          apply(model, spec)
           handleClose()
         }
       }}

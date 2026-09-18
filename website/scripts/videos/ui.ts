@@ -530,7 +530,7 @@ export const uiVideos: VideoSpec[] = [
     tailMs: 4000,
   },
 
-  // The runtime half of `facetDomain` and `colorDomain`: a grouping picked
+  // The runtime half of the facet's and the color's `domain`: a grouping picked
   // from the dialog, one section moved from the Sections submenu, then the
   // key's values pinned into the color domain.
   {

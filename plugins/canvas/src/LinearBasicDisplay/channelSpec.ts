@@ -4,10 +4,10 @@ import {
   stringToJexlExpression,
 } from '@jbrowse/core/util/jexlStrings'
 
-import type { ColorScaleSettings } from '../RenderFeatureDataRPC/featureColors.ts'
 import type { FeatureFacet } from './facet.ts'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 export const CHANNEL_SPEC_EXAMPLES = [
   { spec: '{ "facet": "strand" }', description: 'one section per strand' },
@@ -39,6 +39,8 @@ export const CHANNEL_SPEC_EXAMPLES = [
   },
 ]
 
+// The two objects as "Edit as JSON..." shows them: the string form for a
+// constant color, and no key for an empty list.
 export function facetOf(facet: FeatureFacet | undefined): ChannelSpec['facet'] {
   return facet
     ? {
@@ -49,18 +51,18 @@ export function facetOf(facet: FeatureFacet | undefined): ChannelSpec['facet'] {
 }
 
 export function colorOf({
-  color,
-  colorField,
-  colorDomain,
-  colorPalette,
-}: ColorScaleSettings & { color: string | undefined }): ChannelSpec['color'] {
-  return colorField
+  value,
+  field,
+  domain,
+  palette,
+}: ColorSetting): ChannelSpec['color'] {
+  return field
     ? {
-        field: colorField,
-        ...(colorDomain.length ? { domain: [...colorDomain] } : {}),
-        ...(colorPalette.length ? { palette: [...colorPalette] } : {}),
+        field,
+        ...(domain.length ? { domain: [...domain] } : {}),
+        ...(palette.length ? { palette: [...palette] } : {}),
       }
-    : (color ?? null)
+    : (value ?? null)
 }
 
 export function filterOf(activeFilters: string[]) {

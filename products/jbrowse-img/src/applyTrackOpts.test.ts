@@ -425,11 +425,11 @@ describe('color routing', () => {
   test('color:strand and color:attribute:<name> name the field the canvas displays color by', () => {
     for (const category of ['feature', 'variant'] as const) {
       expect(buildDisplaySnapshot(category, ['color:strand']).snap).toEqual({
-        colorField: 'strand',
+        color: { field: 'strand' },
       })
       expect(
         buildDisplaySnapshot(category, ['color:attribute:gene_biotype']).snap,
-      ).toEqual({ colorField: 'gene_biotype' })
+      ).toEqual({ color: { field: 'gene_biotype' } })
     }
     // wiggle has no strand notion — 'strand' stays a literal color there
     expect(buildDisplaySnapshot('wiggle', ['color:strand']).snap.color).toBe(

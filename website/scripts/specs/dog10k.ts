@@ -1684,7 +1684,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // the swatch are independent.
   //
   // STAYS CLUSTERED, whatever the window. A grouped-by-size variant was
-  // rendered (facetField: 'size', window narrowed to the differentiated core) and is
+  // rendered (facet: 'size', window narrowed to the differentiated core) and is
   // the wrong figure twice over: the page's result is that clustering on
   // genotypes RECOVERS the size classes, which grouping by size assumes rather
   // than shows, and it is no more legible at card size, because the toy/giant

@@ -65,10 +65,10 @@ describe('getPortableSettings', () => {
 
   it('ports a plain color and the non-jexl slots', () => {
     const { display, target, targetId } = setup('#ff0000')
-    display.setColorBy('population')
+    display.setRowColor('population')
     display.getPortableSettings(targetId)
     expect(target.featureColor).toBe('#ff0000')
-    expect(readConfObject(target, 'colorBy')).toBe('population')
+    expect(readConfObject(target, 'rowColor')).toBe('population')
   })
 
   // Both are config slots, so they have to go through the slot copy: `height`
@@ -120,11 +120,14 @@ describe('getPortableSettings', () => {
 
   it('ports the facet field and its band order', () => {
     const { display, target, targetId } = setup('')
-    display.setFacet('population')
-    setConf(display, 'facetDomain', ['EUR', 'AFR'])
+    display.applyDisplaySettings({
+      facet: { field: 'population', domain: ['EUR', 'AFR'] },
+    })
     display.getPortableSettings(targetId)
-    expect(readConfObject(target, 'facetField')).toBe('population')
-    expect([...readConfObject(target, 'facetDomain')]).toEqual(['EUR', 'AFR'])
+    expect(readConfObject(target, 'facet')).toEqual({
+      field: 'population',
+      domain: ['EUR', 'AFR'],
+    })
   })
 
   // The tree's provenance and the subtree filter are the two pieces of

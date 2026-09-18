@@ -395,7 +395,7 @@
               "as": "nm"
             }
           ],
-          "facetField": "nm",
+          "facet": "nm",
           "marks": [
             {
               "shape": "span",
@@ -458,7 +458,7 @@
         {
           "type": "LinearMarkDisplay",
           "displayId": "marks_multi_rows-LinearMarkDisplay",
-          "facetField": "source",
+          "facet": "source",
           "marks": [
             {
               "shape": "bar",

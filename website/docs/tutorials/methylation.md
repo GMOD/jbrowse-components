@@ -142,8 +142,8 @@ The aggregate and the reads below it split the same way, molecule by molecule,
 with the same haplotype on the same side.
 
 The same split can be declared in a config: a
-[mark display](/docs/config_guides/mark_display#facets) with `facetField: "HP"`
-opens with one band of rows per haplotype, named by a chip.
+[mark display](/docs/config_guides/mark_display#facets) with `facet: "HP"` opens
+with one band of rows per haplotype, named by a chip.
 
 See the
 [alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for

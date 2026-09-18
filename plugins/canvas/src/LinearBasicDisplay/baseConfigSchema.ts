@@ -1,7 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import { facetConfigSchemaFields } from '@jbrowse/display-kit/facetConfigSchemaFields'
+import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -93,53 +94,13 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         advanced: true,
       },
       /**
-       * #slot
+       * #slot color
+       * The main fill of each feature: a CSS color or a jexl expression
+       * (`"goldenrod"`, `"jexl:…"`), or `{ field, domain, palette }` to paint
+       * each value of a field its own palette color, with a key. The object's
+       * slots are listed at [FeatureColor](/docs/config/featurecolor).
        */
-      // `maybeColor` so unset stays distinct from every real color: unset
-      // means a feature's own itemRgb paints it, and a concrete default would
-      // swallow anyone writing that exact color.
-      color: {
-        type: 'maybeColor',
-        description:
-          "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod",
-        contextVariable: ['feature'],
-      },
-      /**
-       * #slot
-       * A feature field, or a `jexl:` expression over `feature`, whose values
-       * each paint one palette color, and a key saying which; it wins over
-       * `color` while set. A transcript and all its parts paint the
-       * transcript's value, or its gene's where the transcript has none.
-       * `strand` paints forward tomato and reverse cornflowerblue unless
-       * `colorDomain` or `colorPalette` says otherwise.
-       */
-      colorField: {
-        type: 'string',
-        defaultValue: '',
-        description:
-          'feature field (or jexl expression) to color by, one palette color per value, with a key',
-      },
-      /**
-       * #slot
-       * The `colorField` values that take the palette first, in order. A
-       * value left out keeps a color derived from itself that no listed value
-       * paints, so every region agrees on it.
-       */
-      colorDomain: {
-        type: 'stringArray',
-        defaultValue: [],
-        description: 'colorField values that take the palette first, in order',
-      },
-      /**
-       * #slot
-       * The CSS colors `colorDomain` hands out, in order, continuing into the
-       * default palette past its end. Empty is the default palette.
-       */
-      colorPalette: {
-        type: 'stringArray',
-        defaultValue: [],
-        description: 'CSS colors the colorField values take, in order',
-      },
+      color: colorConfigSchema,
       /**
        * #slot
        */
@@ -187,7 +148,13 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'Feature height preset, `normal` by default; `compact` and `superCompact` shrink the rows, and `collapsed` packs every feature onto a single row with all labels hidden',
         defaultValue: 'normal',
       },
-      ...facetConfigSchemaFields,
+      /**
+       * #slot facet
+       * One labelled section of the track per value of a field: `"strand"`,
+       * or `{ field, domain }` with the order its sections stack in. The
+       * object's slots are listed at [Facet](/docs/config/facet).
+       */
+      facet: facetConfigSchema,
       /**
        * #slot
        */

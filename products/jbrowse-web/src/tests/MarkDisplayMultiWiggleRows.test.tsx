@@ -27,7 +27,7 @@ function config() {
           {
             type: 'LinearMarkDisplay',
             displayId: 'multiwig_marks-marks',
-            facetField: 'source',
+            facet: 'source',
             marks: [{ shape: 'bar', encoding: { y: 'score' } }],
           },
         ],

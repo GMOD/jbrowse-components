@@ -26,6 +26,7 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -73,6 +74,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
+import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -83,7 +85,7 @@ type VariantHoverFields = Record<string, unknown> & {
   name: string
 }
 
-// The `colorBy` scale itself: one color per value of the attribute, built over
+// The `rowColor` scale itself: one color per value of the attribute, built over
 // every adapter row. Over the adapter rows rather than the drawn ones because
 // `paletteColorsByRow` ranks values by how many rows carry them — resolved over
 // a subtree-filtered or haplotype-expanded list, focusing a clade would re-rank
@@ -177,9 +179,7 @@ const PORTABLE_CONFIG_KEYS = [
   'domain',
   'referenceDrawingMode',
   'shadeByDosage',
-  'colorBy',
-  'facetField',
-  'facetDomain',
+  'rowColor',
   // the sidebar width is a drag on a config slot, like `height`: returned in
   // the instance snapshot instead, MST would drop it and a display-type switch
   // would silently reset the gutter
@@ -241,13 +241,13 @@ export function sortSourcesByAttribute<S extends Record<string, unknown>>(
 // no-op rather than an error, so a config naming a column the metadata doesn't
 // have degrades to unfaceted instead of breaking the display.
 export function maybeApplyFacet<S extends Record<string, unknown>>(
-  field: string,
-  domain: readonly string[],
+  facet: FacetSetting | undefined,
   sources: S[],
 ): S[] | undefined {
-  if (!field) {
+  if (!facet) {
     return undefined
   }
+  const { field, domain } = facet
   if (sources.some(source => field in source)) {
     return sortSourcesByAttribute(sources, field, domain)
   }
@@ -257,14 +257,15 @@ export function maybeApplyFacet<S extends Record<string, unknown>>(
 // Warn about both arrangement attributes at once, from the three actions that
 // can newly pair one with a source list: the load, and each setter.
 function warnUnknownArrangementAttributes(
-  self: { colorBy: string; facetField: string },
+  self: { rowColor: string; facet: FacetSetting | undefined },
   sources: Source[],
 ) {
-  if (self.colorBy && !sources.some(source => self.colorBy in source)) {
-    warnMissingAttribute('colorBy', self.colorBy, sources)
+  if (self.rowColor && !sources.some(source => self.rowColor in source)) {
+    warnMissingAttribute('rowColor', self.rowColor, sources)
   }
-  if (self.facetField && !sources.some(source => self.facetField in source)) {
-    warnMissingAttribute('facet', self.facetField, sources)
+  const field = self.facet?.field
+  if (field && !sources.some(source => field in source)) {
+    warnMissingAttribute('facet', field, sources)
   }
 }
 
@@ -303,7 +304,7 @@ function fetchRegionsForMode(
  * #category display
  *
  * #example
- * `renderingMode`, `colorBy`, and `minorAlleleFrequencyFilter` are config slots
+ * `renderingMode`, `rowColor`, and `minorAlleleFrequencyFilter` are config slots
  * (see `SharedVariantConfigSchema`) read at runtime through `getConf` and
  * written through `self.configuration.setSlot` — they are NOT plain MST
  * properties. Set them in a track's `displays` array to change the default:
@@ -340,13 +341,13 @@ function fetchRegionsForMode(
  * 1. the row `domain` seeds the adapter order (the samples it names lead),
  * 2. `layout` is merged over that seed,
  * 3. phased mode expands each row to its haplotypes,
- * 4. `colorBy` tints and `facetField` bands the result.
+ * 4. `rowColor` tints and `facet` bands the result.
  *
  * So `clearLayout` is the whole reset, "Reset row order" appears exactly when
  * `layout` is non-empty, and nothing has to re-derive an arrangement when a
  * setting changes. The same shape MAF and multi-wiggle already had.
  *
- * **The `colorBy` scale wins over a color the row already carried** — a
+ * **The `rowColor` scale wins over a color the row already carried** — a
  * `samplesTsv` `color` column, one the arrangement dialog wrote, one an older
  * session persisted into `layout`. A channel bound to a variable beats a
  * per-row constant, which is also what keeps every pre-change session looking
@@ -354,11 +355,11 @@ function fetchRegionsForMode(
  * function of the attribute, so recomputing it reproduces what that session
  * stored. "Color by… → (none)" is what hands the row back its own color.
  *
- * **The `facetField` band yields while a cluster tree describes the rows**, the
+ * **The `facet` band yields while a cluster tree describes the rows**, the
  * mechanism `LinearMultiRowFeatureDisplay` uses for its row groups: the
  * dendrogram positions leaf *i* on row *i*, so a band that moved rows under it
  * would draw it against the wrong ones. A clustering run therefore never has to
- * write the `facetField` slot — a session spec setting both keeps both.
+ * write the `facet` slot — a session spec setting both keeps both.
  */
 export default function MultiSampleVariantBaseModelF(
   configSchema: SharedVariantConfigModel,
@@ -704,24 +705,20 @@ export default function MultiSampleVariantBaseModelF(
          * override). Drives the sidebar row coloring and the legend's group
          * section; '' means no grouping.
          */
-        get colorBy(): string {
-          return getConf(self, 'colorBy')
+        get rowColor(): string {
+          return getConf(self, 'rowColor')
         },
         /**
          * #getter
-         * Sample-metadata attribute whose values band the rows; '' leaves the
+         * The `facet` object as written: the sample-metadata attribute whose
+         * values band the rows, and the band order; undefined leaves the
          * existing order alone.
          */
-        get facetField(): string {
-          return getConf(self, 'facetField')
-        },
-        /**
-         * #getter
-         * The band order the facet declares: the values listed come first, in
-         * this order, and the rest follow sorted.
-         */
-        get facetDomain(): string[] {
-          return getConf(self, 'facetDomain')
+        get facet(): FacetSetting | undefined {
+          return facetSettingOf({
+            field: getConf(self, ['facet', 'field']),
+            domain: getConf(self, ['facet', 'domain']),
+          })
         },
         /**
          * #getter
@@ -808,26 +805,35 @@ export default function MultiSampleVariantBaseModelF(
           /**
            * #action
            * Recolor sample rows by a metadata attribute (e.g. 'population'), or
-           * pass '' to clear the coloring. Records the choice in the `colorBy`
+           * pass '' to clear the coloring. Records the choice in the `rowColor`
            * config slot, which is the whole of it: the tint is resolved on every
            * read of `sources`, so a recolor moves no rows, drops no cluster tree
            * and writes nothing into `layout`.
            */
-          setColorBy(colorBy: string) {
-            setConf(self, 'colorBy', colorBy)
+          setRowColor(rowColor: string) {
+            setConf(self, 'rowColor', rowColor)
             warnUnknownArrangementAttributes(self, self.sourcesVolatile ?? [])
           },
           /**
            * #action
            * Band the sample rows so each value of a metadata attribute (e.g.
-           * 'population') is contiguous, or pass '' to clear the facet. Records
-           * the choice in the `facetField` config slot, which is the whole of
-           * it: the banding is applied on every read of `sources`, over whatever
-           * `layout` holds, and it yields while a cluster tree describes those
-           * rows.
+           * 'population') is contiguous, or pass '' to clear the facet. Writes
+           * the `facet` object, keeping a declared band order while the field
+           * is the one already banding, which is the whole of it: the banding
+           * is applied on every read of `sources`, over whatever `layout`
+           * holds, and it yields while a cluster tree describes those rows.
            */
           setFacet(field: string) {
-            setConf(self, 'facetField', field)
+            const current = self.facet
+            self.configuration.setSubschema(
+              'facet',
+              field
+                ? {
+                    field,
+                    domain: field === current?.field ? current.domain : [],
+                  }
+                : {},
+            )
             warnUnknownArrangementAttributes(self, self.sourcesVolatile ?? [])
           },
           /**
@@ -997,12 +1003,12 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * The `colorBy` scale, attribute value -> color, held apart from the
+         * The `rowColor` scale, attribute value -> color, held apart from the
          * rows so a drag or a clade focus does not rebuild it over the whole
          * cohort. `undefined` when there is nothing to color by.
          */
         get rowPalette(): ReadonlyMap<string, string> | undefined {
-          return colorByPalette(self.colorBy, self.sourcesVolatile ?? [])
+          return colorByPalette(self.rowColor, self.sourcesVolatile ?? [])
         },
 
         // Five views on the source list, each with a different consumer:
@@ -1019,7 +1025,7 @@ export default function MultiSampleVariantBaseModelF(
         //   what it is handed into `layout`, where a palette color has no
         //   business.
         // - sources: rendering view — sourcesBase + phased expansion (reads
-        //   sampleInfo) + the `colorBy` tint + the `facetField` band.
+        //   sampleInfo) + the `rowColor` tint + the `facet` band.
         // - editableSources: dialog view — like `sources` but without the
         //   subtree filter, so submit doesn't wipe filtered samples from
         //   `layout`, and without the tint and the band, so submit persists
@@ -1047,8 +1053,8 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * The display rows: `sourcesBase` expanded for phased rendering when
          * sampleInfo is available (sources already carrying HP, from clustering,
-         * pass through unchanged), then tinted by `colorBy` and banded by
-         * `facetField`.
+         * pass through unchanged), then tinted by `rowColor` and banded by
+         * `facet`.
          *
          * Expansion comes first so both channels read a haplotype row's own
          * copy of its sample's metadata — a phased clustering run writes
@@ -1086,12 +1092,11 @@ export default function MultiSampleVariantBaseModelF(
               : base
           const palette = self.rowPalette
           const tinted = palette
-            ? applyColorByPalette(rows, self.colorBy, palette)
+            ? applyColorByPalette(rows, self.rowColor, palette)
             : rows
           return self.root && treeDescribesRows(self.root, rows)
             ? tinted
-            : (maybeApplyFacet(self.facetField, self.facetDomain, tinted) ??
-                tinted)
+            : (maybeApplyFacet(self.facet, tinted) ?? tinted)
         },
         /**
          * #getter
@@ -1102,7 +1107,7 @@ export default function MultiSampleVariantBaseModelF(
          * other sample appended after it. Same reason the other row displays'
          * `editableSources` sit upstream of `filterRowsBySubtree`.
          *
-         * Neither the `colorBy` tint nor the `facetField` band is on these rows:
+         * Neither the `rowColor` tint nor the `facet` band is on these rows:
          * submit writes them straight to `layout`, so a channel resolved here
          * would be persisted as if the reader had picked it row by row.
          */
@@ -1430,7 +1435,7 @@ export default function MultiSampleVariantBaseModelF(
          *
          * Sorts `editableSources`, so the label and labelColor only `layout`
          * holds move with each row and nothing has to be merged back — and so
-         * the order written back carries no `colorBy` tint, which those rows
+         * the order written back carries no `rowColor` tint, which those rows
          * deliberately do not have.
          */
         sortByGenotype(featureId: string) {
@@ -1506,7 +1511,7 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #action
-         * Narrow the rows to one `colorBy` group, by the group's value — `''`
+         * Narrow the rows to one `rowColor` group, by the group's value — `''`
          * for the rows the attribute is blank on.
          */
         focusGroup(value: string) {
@@ -1518,7 +1523,7 @@ export default function MultiSampleVariantBaseModelF(
             focusRowGroup(
               self,
               rows,
-              s => String(s[self.colorBy] ?? '') === value,
+              s => String(s[self.rowColor] ?? '') === value,
             )
           }
         },
@@ -1587,7 +1592,7 @@ export default function MultiSampleVariantBaseModelF(
          * #method
          * Called by BaseTrackModel.replaceDisplay when switching between the
          * regular and matrix variant displays. The config-slot settings
-         * (colorBy, renderingMode, etc.) now live on each display's own
+         * (rowColor, renderingMode, etc.) now live on each display's own
          * config-schema node rather than a display-instance override map, so
          * porting them means writing directly into the *target* display's
          * config (via setSlot) rather than spreading them into the new
@@ -1606,12 +1611,14 @@ export default function MultiSampleVariantBaseModelF(
               .displays as {
               displayId: string
               setSlot: SetSlotFn
+              setSubschema: SetSlotFn
             }[]
             const target = displays.find(d => d.displayId === newDisplayId)
             if (target) {
               for (const key of PORTABLE_CONFIG_KEYS) {
                 target.setSlot(key, getConf(self, key))
               }
+              target.setSubschema('facet', getConf(self, 'facet'))
               // Raw, never through getConf: featureColor can hold a `jexl:...`
               // string, and getConf evaluates one on read with no `feature`
               // bound — so the consequence-impact preset
@@ -1686,7 +1693,7 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * `LegendMixin`'s hook: the cell coloring, the insertion marker where
-         * one is drawn, and (when colorBy is set) the sample-grouping coloring
+         * one is drawn, and (when rowColor is set) the sample-grouping coloring
          * shown on the sidebar row labels. Whether the marker is keyed is
          * `drawsInsertionMarkers`' answer, the painter's own test on the
          * painter's own blocks.
@@ -1701,7 +1708,7 @@ export default function MultiSampleVariantBaseModelF(
             shadeByDosage: self.shadeByDosage,
             featureColor: self.featureColor,
             svTypeColors: self.svTypeColors,
-            colorBy: self.colorBy,
+            colorBy: self.rowColor,
             sources: self.sources,
             insertionMarkers: self.drawsInsertionMarkers,
           })

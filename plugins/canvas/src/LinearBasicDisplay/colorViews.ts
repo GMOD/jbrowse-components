@@ -8,8 +8,8 @@ import {
   featureColorScale,
 } from '../RenderFeatureDataRPC/featureColors.ts'
 
-import type { ColorScaleSettings } from '../RenderFeatureDataRPC/featureColors.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface ColorHost {
@@ -41,7 +41,7 @@ export function colorViews(self: ColorHost) {
     // Raw slot rather than getConf: a jexl color evaluated without a feature
     // throws, and a jexl string is no CSS color anyway.
     get featureColor() {
-      const raw = self.conf.color
+      const raw = self.conf.color.value
       return raw !== undefined && !isJexl(raw) ? raw : FEATURE_DEFAULT_COLOR
     },
 
@@ -59,28 +59,27 @@ export function colorViews(self: ColorHost) {
      * #getter
      */
     get colorByMode(): 'default' | 'strand' | 'attribute' | 'solid' {
-      const { color, colorField } = self.conf
-      return colorField === STRAND_FIELD
-        ? 'strand'
-        : colorField || (color !== undefined && isJexl(color))
-          ? 'attribute'
-          : color === undefined
-            ? 'default'
-            : 'solid'
+      const { value, field } = this.colorSettings
+      if (field) {
+        return field === STRAND_FIELD ? 'strand' : 'attribute'
+      }
+      if (value === undefined) {
+        return 'default'
+      }
+      return isJexl(value) ? 'attribute' : 'solid'
     },
 
     /**
      * #getter
      */
     get colorByAttribute(): string {
-      const { colorField } = self.conf
-      return colorField === STRAND_FIELD ? '' : colorField
+      const { field } = this.colorSettings
+      return field === STRAND_FIELD ? '' : field
     },
 
     /**
      * #getter
-     * The color channel's field, or undefined while the `color` slot
-     * paints.
+     * The color channel's field, or undefined while `color.value` paints.
      */
     get colorEncoding() {
       return featureColorScale(this.colorSettings)
@@ -88,14 +87,14 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
-     * The color slots as written, the scale's three unresolved.
+     * The `color` object as written, its `value` raw.
      */
-    get colorSettings(): ColorScaleSettings & { color: string | undefined } {
+    get colorSettings(): ColorSetting {
       return {
-        color: self.conf.color,
-        colorField: getConf(self, 'colorField'),
-        colorDomain: getConf(self, 'colorDomain'),
-        colorPalette: getConf(self, 'colorPalette'),
+        value: self.conf.color.value,
+        field: getConf(self, ['color', 'field']),
+        domain: getConf(self, ['color', 'domain']),
+        palette: getConf(self, ['color', 'palette']),
       }
     },
   }

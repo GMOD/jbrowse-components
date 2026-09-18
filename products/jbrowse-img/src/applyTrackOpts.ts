@@ -137,17 +137,20 @@ export type AssertCompactnessMatchesUpstream = AssertTrue<
     : false
 >
 
-// The canvas displays paint a CSS color or jexl from `color`, and a field's
-// values through `colorField`: `color:strand` and `color:attribute:X` name the
-// field, and anything else is the color.
+// The canvas displays' `color` is a CSS color or jexl, or `{ field }` for a
+// field's values through a palette: `color:strand` and `color:attribute:X`
+// name the field, and anything else is the color.
 function canvasColor(value: string, arg: string | undefined) {
-  return value === 'strand'
-    ? { colorField: 'strand' }
-    : value === 'attribute'
-      ? {
-          colorField: parseStr('color:attribute', arg ?? '', 'attribute name'),
-        }
-      : { color: value }
+  return {
+    color:
+      value === 'strand'
+        ? { field: 'strand' }
+        : value === 'attribute'
+          ? {
+              field: parseStr('color:attribute', arg ?? '', 'attribute name'),
+            }
+          : value,
+  }
 }
 
 // The `heightMode` config-slot values, pinned to the upstream union so a mode
@@ -212,9 +215,7 @@ interface DisplaySnapshot {
   // see there for why this one slot cannot ride in on the snapshot.
   filterBy?: FilterBySnapshot
   // wiggle / score
-  color?: string
-  // the canvas-based displays' categorical color field
-  colorField?: string
+  color?: string | { field: string }
   useBicolor?: boolean
   autoscale?: string
   minScore?: number
@@ -249,8 +250,6 @@ type WiggleConfigSlotKey =
 // divergently-named `configForceLoad` getter, so `keyof` the instance misses it
 // the same way it misses the wiggle slots above.
 type BaseConfigSlotKey = 'forceLoad'
-// The canvas displays read `colorField` through `colorEncoding`.
-type CanvasConfigSlotKey = 'colorField'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
@@ -259,7 +258,6 @@ type DisplayKeys =
   | keyof WiggleDisplayModel
   | WiggleConfigSlotKey
   | BaseConfigSlotKey
-  | CanvasConfigSlotKey
 
 export type UnknownSnapshotKeys = Exclude<keyof DisplaySnapshot, DisplayKeys>
 export type AssertSnapshotKeysExist = AssertNever<UnknownSnapshotKeys>
@@ -720,7 +718,7 @@ const modifiers: Record<string, Modifier> = {
         // explicit `useBicolor` from the JSON escape hatch.
         r.snap.color = value
       } else {
-        // Feature/variant: LinearCanvasBaseDisplay's `color` or `colorField`. A
+        // Feature/variant: LinearCanvasBaseDisplay's `color`. A
         // jexl with more than one colon can't survive this modifier's
         // `split(':')`, so it goes through the JSON escape hatch.
         Object.assign(r.snap, canvasColor(value, arg))

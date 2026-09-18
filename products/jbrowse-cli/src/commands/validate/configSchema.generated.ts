@@ -3372,6 +3372,68 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "FeatureColor": {
+      "title": "FeatureColor",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "CSS colour or jexl callback.",
+              "$ref": "#/$defs/StringOrJexl"
+            },
+            "field": {
+              "description": "feature field (or jexl expression) to color by, one palette color per value.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            },
+            "domain": {
+              "description": "values that take the palette first, in order.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            },
+            "palette": {
+              "description": "CSS colors the values take, in order.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Facet": {
+      "title": "Facet",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"field\\": ... }\`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "field": {
+              "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            },
+            "domain": {
+              "description": "values whose sections stack first, in order.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "CanvasFeatureLabels": {
       "title": "CanvasFeatureLabels",
       "type": "object",
@@ -3510,21 +3572,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0.1
         },
         "color": {
-          "description": "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.",
-          "$ref": "#/$defs/StringOrJexl"
-        },
-        "colorField": {
-          "description": "feature field (or jexl expression) to color by, one palette color per value, with a key.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "colorDomain": {
-          "description": "colorField values that take the palette first, in order.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
-        "colorPalette": {
-          "description": "CSS colors the colorField values take, in order.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "$ref": "#/$defs/FeatureColor"
         },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
@@ -3569,14 +3617,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "normal"
         },
-        "facetField": {
-          "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "facetDomain": {
-          "description": "facetField values whose sections stack first, in order.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+        "facet": {
+          "$ref": "#/$defs/Facet"
         },
         "geneGlyphMode": {
           "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
@@ -5141,21 +5183,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0.1
         },
         "color": {
-          "description": "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.",
-          "$ref": "#/$defs/StringOrJexl"
-        },
-        "colorField": {
-          "description": "feature field (or jexl expression) to color by, one palette color per value, with a key.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "colorDomain": {
-          "description": "colorField values that take the palette first, in order.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
-        "colorPalette": {
-          "description": "CSS colors the colorField values take, in order.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "$ref": "#/$defs/FeatureColor"
         },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
@@ -5200,14 +5228,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "normal"
         },
-        "facetField": {
-          "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "facetDomain": {
-          "description": "facetField values whose sections stack first, in order.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+        "facet": {
+          "$ref": "#/$defs/Facet"
         },
         "geneGlyphMode": {
           "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
@@ -5460,19 +5482,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
-        "colorBy": {
+        "rowColor": {
           "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog.",
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
-        "facetField": {
-          "description": "sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "facetDomain": {
-          "description": "facetField values whose bands stack first, in order.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+        "facet": {
+          "$ref": "#/$defs/Facet"
         },
         "referenceDrawingMode": {
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
@@ -5659,19 +5675,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
-        "colorBy": {
+        "rowColor": {
           "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog.",
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
-        "facetField": {
-          "description": "sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "facetDomain": {
-          "description": "facetField values whose bands stack first, in order.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+        "facet": {
+          "$ref": "#/$defs/Facet"
         },
         "referenceDrawingMode": {
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
@@ -7811,14 +7821,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/MarkTransformStep"
           }
         },
-        "facetField": {
-          "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "facetDomain": {
-          "description": "facetField values whose sections stack first, in order.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+        "facet": {
+          "$ref": "#/$defs/Facet"
         },
         "minScore": {
           "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",

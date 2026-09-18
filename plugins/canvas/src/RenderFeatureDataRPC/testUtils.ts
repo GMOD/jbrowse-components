@@ -22,10 +22,25 @@ export function labelsMap(
   return new Map(Object.entries(entries))
 }
 
-export function mockDisplayConfig(
-  overrides: Partial<DisplayConfig> = {},
-): DisplayConfig {
+/** A fixture's `color` in the shorthand a config takes: a string is the constant. */
+export type MockDisplayConfigOverrides = Partial<
+  Omit<DisplayConfig, 'color'>
+> & {
+  color?: string | Partial<DisplayConfig['color']>
+}
+
+export function mockDisplayConfig({
+  color,
+  ...overrides
+}: MockDisplayConfigOverrides = {}): DisplayConfig {
   return {
+    color: {
+      value: undefined,
+      field: '',
+      domain: [],
+      palette: [],
+      ...(typeof color === 'string' ? { value: color } : color),
+    },
     featureHeight: 10,
     subfeatureLabels: 'none',
     transcriptTypes: ['mRNA'],
@@ -39,10 +54,6 @@ export function mockDisplayConfig(
     jexlFilters: [],
     hideSourceFeatures: true,
     // the `maybeColor` slots default to unset, as a real config does
-    color: undefined,
-    colorField: '',
-    colorDomain: [],
-    colorPalette: [],
     connectorColor: undefined,
     utrColor: undefined,
     labels: {

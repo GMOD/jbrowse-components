@@ -34,7 +34,7 @@ import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
  * #example
  * Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
  * whose first column is the sample name and whose other columns are per-sample
- * attributes (e.g. `population`), then `colorBy` one of those attributes to
+ * attributes (e.g. `population`), then `rowColor` one of those attributes to
  * color the sidebar rows on load. `referenceDrawingMode: 'skip'` (the default)
  * paints the background solid grey and draws only ALT alleles on top, which
  * makes overlapping structural variants easier to see; `'draw'` paints the
@@ -55,7 +55,7 @@ import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
  *     {
  *       type: 'LinearMultiSampleVariantDisplay',
  *       height: 800,
- *       colorBy: 'population',
+ *       rowColor: 'population',
  *       referenceDrawingMode: 'skip',
  *     },
  *   ],

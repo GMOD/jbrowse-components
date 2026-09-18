@@ -379,8 +379,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           ...GROUPING_TRACK,
-          facetField: 'strand',
-          colorField: 'strand',
+          facet: 'strand',
+          color: { field: 'strand' },
           height: 310,
         },
       ],

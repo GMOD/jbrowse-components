@@ -5,6 +5,8 @@ import {
 import {
   getConf,
   getConfigurationSchemaDefinition,
+  getConfigurationSchemaOptions,
+  isConfigurationSubschema,
   isSlotDefinitionEntry,
   readConfObject,
 } from '@jbrowse/core/configuration'
@@ -1249,20 +1251,26 @@ function locationsOf(value: unknown) {
 interface SlotDescription {
   type: string
   description?: string
-  defaultValue: unknown
+  defaultValue?: unknown
+  /** a nested object's own slots, and the slot its string shorthand lifts into */
+  slots?: Record<string, SlotDescription>
+  shorthand?: string
 }
 
 // Vocabulary introspection: every config slot a live config node's schema
 // defines, so code never has to guess which settings keys exist — an unknown
 // key is not an error, only an entry in applyDisplaySettings' `unapplied` list.
+// A nested object (`facet`, `color`) lists its own slots, and the slot its
+// string shorthand lifts into.
 function describeSlots(
   conf: AnyConfigurationModel,
 ): Record<string, SlotDescription> {
   const definition = getConfigurationSchemaDefinition(conf) ?? {}
   return Object.fromEntries(
-    Object.entries(definition).flatMap(([name, def]) =>
-      isSlotDefinitionEntry(def)
-        ? [
+    Object.entries(definition).flatMap(
+      ([name, def]): [string, SlotDescription][] => {
+        if (isSlotDefinitionEntry(def)) {
+          return [
             [
               name,
               {
@@ -1272,7 +1280,25 @@ function describeSlots(
               },
             ],
           ]
-        : [],
+        }
+        if (isConfigurationSubschema(conf, name)) {
+          const node = conf[name] as AnyConfigurationModel
+          const shorthand = getConfigurationSchemaOptions(node)?.shorthand
+          return [
+            [
+              name,
+              {
+                type: mst
+                  .getType(node)
+                  .name.replace(/ConfigurationSchema$/, ''),
+                slots: describeSlots(node),
+                ...(shorthand ? { shorthand } : {}),
+              },
+            ],
+          ]
+        }
+        return []
+      },
     ),
   )
 }
@@ -1302,7 +1328,7 @@ const JB_HELP = `jb drives this JBrowse app programmatically (window.jb in a bro
 
 Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?, limit?) answers { total, tracks } with the trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is not an error, it lands in applyDisplaySettings' "unapplied" list as { key, reason }, so read the report; jb.inspect(node) — jb.view(), jb.trackModel('someTrackId'), session.views[0] — for its getters, actions and modelType.
 
-The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). A feature or variant track groups, colors and filters with its activeDisplay.applyChannelSpec({ facet: { field: 'strand', domain? }, color: { field: 'type' } or a CSS color, filter: [jexl] }), where null clears a channel and one left out stays; activeDisplay.channelSpec reads them back. Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }), which replaces the session; jb.addView(oneViewSpec) opens one more view beside what is open; jb.setSession(document) rewrites the session as a document — what jb.mst.getSnapshot(jb.session) answers, edited: a view keeps its id and is patched in place, loc on it navigates, a { trackId } entry in its tracks opens that track. Act on a view with await view.navToLocString('BRCA1' or 'chr1:1-1000'), which also SHOWS the track whose search index answered a gene name unless a 4th arg { showHitTrack: false } says not to; await view.launchTrack(trackId, {}, settings) shows a track with settings, view.hideTrack(trackId) hides it. Arrange open views into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }), a leaf naming view ids or session.views indexes; await jb.fitToWindow() shrinks what is open until the session fits the window; add data with jb.addTrack({ location }) (an absolute path or a URL), or show a track the catalog already holds with jb.addTrack({ trackId, settings? }); read data with await jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses. Anything lower level is jb.require('@jbrowse/core/util') and friends, the module registry plugins link against. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
+The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). A feature or variant track groups and colors through two settings, track.applyDisplaySettings({ facet: 'strand' or { field, domain? }, color: a CSS color or { field: 'type', domain?, palette? } }), where null clears one; it filters with activeDisplay.setJexlFilters([jexl]). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }), which replaces the session; jb.addView(oneViewSpec) opens one more view beside what is open; jb.setSession(document) rewrites the session as a document — what jb.mst.getSnapshot(jb.session) answers, edited: a view keeps its id and is patched in place, loc on it navigates, a { trackId } entry in its tracks opens that track. Act on a view with await view.navToLocString('BRCA1' or 'chr1:1-1000'), which also SHOWS the track whose search index answered a gene name unless a 4th arg { showHitTrack: false } says not to; await view.launchTrack(trackId, {}, settings) shows a track with settings, view.hideTrack(trackId) hides it. Arrange open views into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }), a leaf naming view ids or session.views indexes; await jb.fitToWindow() shrinks what is open until the session fits the window; add data with jb.addTrack({ location }) (an absolute path or a URL), or show a track the catalog already holds with jb.addTrack({ trackId, settings? }); read data with await jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses. Anything lower level is jb.require('@jbrowse/core/util') and friends, the module registry plugins link against. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
 
 Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions(), jb.addTrack and jb.getFeatures over a visible region throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which. A synteny or breakpoint view's viewId also covers its rows: the named view answers when it can, and otherwise its rows do.
 

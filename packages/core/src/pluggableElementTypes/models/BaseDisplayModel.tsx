@@ -3,6 +3,7 @@ import { hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   getConf,
   isConfigurationSlot,
+  isConfigurationSubschema,
   preProcessSlotValues,
 } from '../../configuration/index.ts'
 import {
@@ -253,8 +254,10 @@ function stateModelFactory() {
        * were applied. Each key runs through the display config schema's
        * `preProcessSnapshot` (shorthand expansions and legacy-key migrations,
        * as `showTrackGeneric` applies to a session spec's inline track keys),
-       * then writes the matching config slot. Keys that are not slots come
-       * back in `unapplied` as `{ key, reason }`, so a caller can tell a
+       * then writes the matching config slot. A key naming a sub-schema
+       * (`facet`, `color`) replaces the whole object, its string shorthand
+       * lifted by that schema, and `null` clears it. Keys that are not slots
+       * come back in `unapplied` as `{ key, reason }`, so a caller can tell a
        * misspelling from a key that has an action instead of a slot.
        *
        * `allowSetters` also routes a non-slot key to a single-argument action
@@ -298,6 +301,11 @@ function stateModelFactory() {
               // compile-time type
               // eslint-disable-next-line no-restricted-syntax
               configuration.setSlot(key, value)
+              applied.push(key)
+              continue
+            }
+            if (isConfigurationSubschema(configuration, key)) {
+              configuration.setSubschema(key, value ?? {})
               applied.push(key)
               continue
             }

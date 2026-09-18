@@ -7,7 +7,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // "Group rows by..." is the banding twin of "Color by... → Samples": same
 // candidate attributes off the samplesTsv columns, writing the `facet.field`
-// slot instead of `colorBy`. The user guide has always described the banding as
+// slot instead of `rowColor`. The user guide has always described the banding as
 // interactive; only the config slot was.
 function display(sources?: Source[]) {
   const { display } = createTestEnvironment().createDisplay()
@@ -48,7 +48,7 @@ test('picking an attribute bands the rows and ticks itself', () => {
     population.onClick()
   }
 
-  expect(d.facetField).toBe('population')
+  expect(d.facet?.field).toBe('population')
   // No domain, so the bands sort: AFR before EUR, whatever their sizes. The
   // band is resolved on the read, so nothing lands in `layout`.
   expect(d.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
@@ -64,5 +64,5 @@ test('None turns the facet off', () => {
   if ('onClick' in none) {
     none.onClick()
   }
-  expect(d.facetField).toBe('')
+  expect(d.facet).toBeUndefined()
 })

@@ -23,7 +23,7 @@ export interface PaintedValue {
  * values can leave it.
  */
 export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
-  const field = featureColorScale(config)
+  const field = featureColorScale(config.color)
   if (!field) {
     return undefined
   }

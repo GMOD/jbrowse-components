@@ -137,13 +137,20 @@ export function boxColor(
   const slot = isUtrBox && config.utrColor !== undefined ? 'utrColor' : 'color'
   const scaled =
     slot === 'color' ? colorKey?.valueOf(feature, level) : undefined
+  const raw = slot === 'color' ? config.color.value : config.utrColor
 
   const fill = scaled
     ? scaled.css
-    : config[slot] === undefined
+    : raw === undefined
       ? (inheritedBedColor(feature) ??
         BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
-      : readConfigValueSafe<string>(config, slot, feature, jexl, INVALID_COLOR)
+      : readConfigValueSafe<string>(
+          config,
+          slot === 'color' ? ['color', 'value'] : slot,
+          feature,
+          jexl,
+          INVALID_COLOR,
+        )
 
   const featureStrand = feature.get('strand')
   const featurePhase = feature.get('phase')

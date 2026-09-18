@@ -31,7 +31,7 @@ import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
  * #example
  * Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
  * whose first column is the sample name and whose other columns are per-sample
- * attributes (e.g. `population`), then `colorBy` one of those attributes to
+ * attributes (e.g. `population`), then `rowColor` one of those attributes to
  * color the matrix rows on load (same metadata mechanism as the regular
  * `LinearMultiSampleVariantDisplay`):
  * ```js
@@ -49,7 +49,7 @@ import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
  *     {
  *       type: 'LinearMultiSampleVariantMatrixDisplay',
  *       height: 400,
- *       colorBy: 'population',
+ *       rowColor: 'population',
  *     },
  *   ],
  * }

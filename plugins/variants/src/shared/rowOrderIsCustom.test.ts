@@ -9,7 +9,7 @@ const SOURCES = [
 
 function colored() {
   const { display } = createTestEnvironment().createDisplay()
-  display.setColorBy('population')
+  display.setRowColor('population')
   display.setSources(SOURCES)
   return display
 }
@@ -55,7 +55,7 @@ test('a reorder is custom, and the reset clears it', () => {
 
 test('a second color-by still writes no layout', () => {
   const display = colored()
-  display.setColorBy('super_pop')
+  display.setRowColor('super_pop')
 
   expect(display.layout).toHaveLength(0)
   expect(display.rowOrderIsCustom).toBe(false)

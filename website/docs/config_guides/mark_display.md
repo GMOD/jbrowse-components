@@ -218,17 +218,16 @@ band its field names.
 
 ## Facets
 
-The display's `facetField` gives each value of a field its own band of rows,
-named by a chip a reader can hide the section from. The facet splits the
-features first, and every mark then runs its own steps over each section alone,
-so a `stack` packs each section on its own rows and a `coverage` counts each
-section's depth:
+The display's `facet` gives each value of a field its own band of rows, named by
+a chip a reader can hide the section from. The facet splits the features first,
+and every mark then runs its own steps over each section alone, so a `stack`
+packs each section on its own rows and a `coverage` counts each section's depth:
 
 ```json
 "displays": [
   {
     "type": "LinearMarkDisplay",
-    "facetField": "sample",
+    "facet": "sample",
     "marks": [
       {
         "shape": "span",
@@ -252,8 +251,7 @@ the features:
     "transform": [
       { "type": "formula", "expr": "jexl:getTag(feature,'HP')", "as": "HP" }
     ],
-    "facetField": "HP",
-    "facetDomain": ["2", "1"],
+    "facet": { "field": "HP", "domain": ["2", "1"] },
     "marks": [
       {
         "shape": "span",
@@ -269,14 +267,14 @@ the features:
 ```
 
 Sections order a name with a number in it by that number, so chr2 before chr10,
-and the rest by code point. `facetDomain` is the section order: the values
-listed stack first, in that order, and the rest follow sorted. Past forty
+and the rest by code point. The facet's `domain` is the section order: the
+values listed stack first, in that order, and the rest follow sorted. Past forty
 sections the tail merges into one, chosen by that natural order, so a domain
 orders the sections and never changes which exist.
 
 **Sections** in the track menu lists the sections drawn, each with **Move up**,
-**Move down** and **Hide section**; a move writes the drawn order back as
-`facetDomain`, and **Reset section order** clears it. A hidden section leaves
+**Move down** and **Hide section**; a move writes the drawn order back as the
+facet's `domain`, and **Reset section order** clears it. A hidden section leaves
 the legend and the value axis along with the plot.
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>

@@ -1,0 +1,114 @@
+---
+status: Accepted
+summary: "A display's facet and its categorical colour are one config object each — `facet: \"HP\" | { field, domain }` and `color: \"red\" | \"jexl:…\" | { field, domain, palette }` — replacing the flat `facetField`/`facetDomain`/`colorField`/`colorDomain`/`colorPalette` slots on the feature, mark and multi-sample variant displays, where the row tint is `rowColor`. A string is the channel's one-value form and lifts into the object; an object replaces the channel whole and `null` clears it; a `domain` or `palette` with no `field`, or a key the object does not declare, is refused when the snapshot is read. `applyDisplaySettings` writes a sub-schema, `describeSlots` lists one, and Edit as JSON is an editor over the two settings rather than a translation onto flat slots"
+---
+
+# ADR-131: A categorical channel is one config object
+
+## Status
+
+Accepted (2026-09-18). Supersedes the "two flat slots" sentence of
+[ADR-130](adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md),
+whose level and semantics for the facet stand.
+
+## Context
+
+The feature display's Group by and Color by attribute, the mark display's
+facet and the multi-sample variant displays' row banding each stored one
+declaration — a field, and the order or the palette its values take — as two
+to four top-level slots: `facetField`/`facetDomain`,
+`colorField`/`colorDomain`/`colorPalette` beside `color`, and the variants'
+`colorBy`. Everything else in the product already spoke the nested form: the
+mark display's `encoding.color` is `{ value, field, scale, domain, palette }`
+lifted from a string, Edit as JSON showed
+`{ facet: { field, domain }, color: { field, domain, palette } }`, the worker
+request carried `facet: { field }`, every channel read its field through
+`categoricalField(field, { domain, palette })`, and the agent guide described
+the nested spec. The flat file format was the one place a user learned a
+second shape.
+
+Two reviews ran the same day. The first kept the slots flat: `color` could not
+be a colour and a sub-schema at once, `applyDisplaySettings` wrote only
+top-level slots, the mark display already exposed flat getters, and the
+conversion was half a day for no new capability. The second, told that
+breaking changes are free in this cycle and that effort does not choose a
+design, answered each point and reversed it.
+
+## Decision
+
+**Each categorical channel is one config sub-schema**, shared from
+`@jbrowse/display-kit`:
+
+- `facet` (`facetConfigSchema`): `{ field, domain }`. `"strand"` lifts to
+  `{ field: "strand" }`. On the feature, mark and multi-sample variant
+  displays.
+- `color` (`colorConfigSchema`, `FeatureColor`): `{ value, field, domain,
+  palette }`. `"red"` and `"jexl:…"` lift to `{ value }`; `value` is a
+  `maybeColor`, so an unset colour still lets a BED `itemRgb` paint. On the
+  canvas base display, so the feature and variant displays.
+- The multi-sample variant displays' row tint is `rowColor`, a plain field
+  name. It is not `color`: the cells there are coloured by genotype, and
+  `color` would read as the cells' colour.
+
+The rules a writer can rely on:
+
+- **A string is the channel's one-value form.** For a channel with a constant
+  the string is the constant; for one that is only ever a field, the field.
+  `{ value }` exists only as what a colour string lifts into, and no example
+  shows it.
+- **An object replaces the channel; `null` clears it.** There is no merge. A
+  writer that changes only the order (the Sections menu, Pin distinct colors)
+  knows the field and writes the whole object back.
+- **The shorthand is declared, not conventional.** `ConfigurationSchema`
+  takes `shorthand: 'field'` (or `'value'`), lifts a bare string into that
+  slot on every path a snapshot arrives by, and the JSON schema generator,
+  `describeSlots` and the config editor read the declaration rather than
+  probing the preprocessor. The mark display's `MarkColor`, `MarkGlyph` and
+  `MarkValue` declare theirs the same way.
+- **The object's preprocessor refuses what a config cannot hold**: a
+  `domain` or `palette` with no `field`, a `domain` that is not a list, or a
+  key the object does not declare. MST drops an undeclared key in silence, so
+  `normalizeFacet` and `normalizeColor` throw instead, on load and through
+  every writer.
+- **The keys keep their names.** `color: "red"` needs no change.
+
+**The writers are the generic ones.** `applyDisplaySettings` gained a
+sub-schema branch (`setSubschema`, which runs the object's own lift), so a
+session spec, `jb.applyDisplaySettings({ facet: 'strand', color: { field } })`
+and Edit as JSON all write the same door; Edit as JSON parses its text through
+`preProcessConfigSnapshot`, the lift and checks `create` applies, and hands
+`facet` and `color` to `applyDisplaySettings` and `filter` to
+`setJexlFilters`, and `applyChannelSpec`, `facetOf`-as-writer and the
+hand-written channel checks are gone. `describeSlots` lists a sub-schema with
+its own slots and the declared shorthand.
+`jbrowse validate` reports a misspelt key inside the object and a wrong type at
+`facet.field`, because the generated JSON schema of a lifted sub-schema is
+`anyOf [string, object]` with `additionalProperties: false`.
+
+## Consequences
+
+- One declaration is one key, so a domain cannot drift from its field, and
+  `setFacet`, `setColorScale` and `setFeatureColor` each write one object
+  where they wrote two to four slots in step.
+- A display-type switch ports the object through `setSubschema` beside the
+  slots it ports through `setSlot` (`getPortableSettings`).
+- No migration from the flat slots. A config written with `facetField`,
+  `colorField` or `colorBy` on these displays is reported by the validator and
+  ignored by the reader.
+- The website's spec-recipe reads the object: a `color` object is the Color
+  by... attribute path, a `facet` with a `domain` adds the Sections step, and
+  `rowColor` is Color by... → Samples.
+- The alignments display's `groupBy` and the GWAS, multiway and synteny colour
+  slots are the next candidates for the same shape and are not part of this
+  record.
+
+## Rejected alternatives
+
+- **Keep the slots flat.** Every reason given was about the code: `color`
+  already holds a string and an object through its declared shorthand on the mark
+  display; the `applyDisplaySettings` branch is a few lines; the flat getters
+  were ADR-130's own commit; and a validator that flags the dialog's spelling
+  as an error is an argument against flat, not for it.
+- **Merge an object into the stored one.** A partial write that leaves a stale
+  `domain` under a new `field` is the drift the object exists to prevent.
+- **Call the variants' tint `color`.** The genotype cells own that word there.

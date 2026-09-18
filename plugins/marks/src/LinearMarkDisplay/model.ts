@@ -40,6 +40,7 @@ import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -113,6 +114,7 @@ import type {
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { CoarseTierMode } from '@jbrowse/display-kit/coarseTier'
+import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -419,17 +421,13 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The field whose values each take their own band of rows, or `''`.
+       * The `facet` object as written, or undefined while unfaceted.
        */
-      get facetField(): string {
-        return getConf(self, 'facetField')
-      },
-      /**
-       * #getter
-       * The facet's declared section order.
-       */
-      get facetDomain(): string[] {
-        return getConf(self, 'facetDomain')
+      get facet(): FacetSetting | undefined {
+        return facetSettingOf({
+          field: getConf(self, ['facet', 'field']),
+          domain: getConf(self, ['facet', 'domain']),
+        })
       },
       /**
        * #getter
@@ -438,9 +436,7 @@ export function stateModelFactory(
        */
       get groupKeySpace(): string {
         return groupKeySpaceOf(
-          this.facetField
-            ? { type: 'facet', field: this.facetField }
-            : undefined,
+          this.facet ? { type: 'facet', field: this.facet.field } : undefined,
         )
       },
       /**
@@ -621,9 +617,10 @@ export function stateModelFactory(
        * and less the hidden ones, and where each key's rows start.
        */
       get facetLayout(): FacetLayout {
+        const { field = '', domain = [] } = self.facet ?? {}
         return facetLayout(
           self.featurePayloads.values(),
-          categoricalField(self.facetField, { domain: self.facetDomain }),
+          categoricalField(field, { domain }),
           self.hiddenGroupKeys,
         )
       },
@@ -636,7 +633,7 @@ export function stateModelFactory(
        * region a span came from.
        */
       get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
-        return self.facetField
+        return self.facet
           ? remapFacetRows(self.featurePayloads, self.facetLayout)
           : self.featurePayloads
       },
@@ -841,7 +838,7 @@ export function stateModelFactory(
             })),
             ...stepsOf(self.conf.transform, self.host.bpPerPx),
           ],
-          ...(self.facetField ? { facet: { field: self.facetField } } : {}),
+          ...(self.facet ? { facet: { field: self.facet.field } } : {}),
         }
       },
       /**
@@ -994,8 +991,8 @@ export function stateModelFactory(
       get colorScales() {
         return markColorScales(
           this.legendSections,
-          self.facetField
-            ? categoricalField(self.facetField, { domain: self.facetDomain })
+          self.facet
+            ? categoricalField(self.facet.field, { domain: self.facet.domain })
             : undefined,
         )
       },
@@ -1095,7 +1092,16 @@ export function stateModelFactory(
        * The Sections menu's reorder lands on the declaration.
        */
       setFacetDomain(domain: string[]) {
-        setConf(self, 'facetDomain', domain)
+        if (self.facet) {
+          self.conf.setSubschema('facet', { field: self.facet.field, domain })
+        }
+      },
+      /**
+       * #action
+       * A field's own bands, in their sorted order.
+       */
+      setFacetField(field: string) {
+        self.conf.setSubschema('facet', field ? { field } : {})
       },
       /**
        * #action
@@ -1194,7 +1200,7 @@ export function stateModelFactory(
         const fields = self.plotFields ?? { numeric: [], categorical: [] }
         self.conf.setSubschemaArray('marks', plotMarks(spec, fields))
         if (fields.facet) {
-          setConf(self, 'facetField', fields.facet)
+          self.setFacetField(fields.facet)
         }
       },
       /**
@@ -1260,7 +1266,7 @@ export function stateModelFactory(
           }),
           ...sectionOrderMenuItems({
             sections: self.facetLayout.sections,
-            domain: self.facetDomain,
+            domain: self.facet?.domain ?? [],
             setDomain: domain => {
               self.setFacetDomain(domain)
             },
@@ -1352,7 +1358,7 @@ export function stateModelFactory(
             if (marks) {
               self.conf.setSubschemaArray('marks', marks)
               if (fields.facet) {
-                setConf(self, 'facetField', fields.facet)
+                self.setFacetField(fields.facet)
               }
             } else {
               self.openPlotFieldDialog()

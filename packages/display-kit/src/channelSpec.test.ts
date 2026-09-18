@@ -21,19 +21,15 @@ test('a string facet is a field, and a string color is a constant', () => {
   })
 })
 
-test("the mark display's categorical color parses to the scale it names", () => {
+test('a color object is the field with its order and palette, and a lifted constant reads back as the string', () => {
   expect(
     parse({
-      color: {
-        field: 'strand',
-        scale: 'categorical',
-        domain: ['-1', '1'],
-        palette: ['blue', 'red'],
-      },
+      color: { field: 'strand', domain: [-1, 1], palette: ['blue', 'red'] },
     }),
   ).toEqual({
     color: { field: 'strand', domain: ['-1', '1'], palette: ['blue', 'red'] },
   })
+  expect(parse({ color: { value: 'red' } })).toEqual({ color: 'red' })
 })
 
 test('a channel left out stays out, and null is kept to clear one', () => {
@@ -53,18 +49,26 @@ test('a numeric domain value is the string a group key is', () => {
   })
 })
 
+// The object checks are the config objects' own (`normalizeFacet`, `normalizeColor`),
+// so what the box refuses is what a config file cannot hold either.
 test.each([
   [{ group: 'x' }, 'The channels are facet, color and filter, not group'],
-  [{ facet: { field: '' } }, 'facet.field names a field'],
+  [{ facet: { field: '' } }, 'facet is a field name'],
+  [{ facet: {} }, 'facet is a field name'],
   [
     { facet: { field: 'x', order: [] } },
     'facet takes field and domain, not order',
   ],
   [{ facet: { field: 'x', domain: 'a' } }, 'facet.domain is a list'],
-  [{ color: { field: 'x', value: 'red' } }, 'not value'],
-  [{ color: {} }, 'color.field names a field'],
-  [{ color: { field: 'x', scale: 'linear' } }, 'color.scale is categorical'],
+  [{ facet: { domain: ['a'] } }, 'facet.domain orders the sections of a field'],
+  [{ color: {} }, 'color is a CSS color'],
+  [{ color: '' }, 'color is a CSS color'],
+  [
+    { color: { field: 'x', scale: 'categorical' } },
+    'color takes value, field, domain and palette, not scale',
+  ],
   [{ color: { field: 'x', palette: 'red' } }, 'color.palette is a list'],
+  [{ color: { palette: ['red'] } }, 'color.domain and color.palette scale'],
   [{ filter: [1] }, 'filter is a jexl expression'],
 ])('%j is refused: %s', (spec, message) => {
   expect(() => parse(spec)).toThrow(message)

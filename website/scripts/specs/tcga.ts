@@ -360,9 +360,10 @@ function mutationTrack({
         // somatic data this separates truncating (HIGH) from missense
         // (MODERATE) without a per-figure color table.
         featureColor: 'jexl:impactColor(feature)',
-        facetField,
-        facetDomain,
-        colorBy,
+        ...(facetField
+          ? { facet: { field: facetField, domain: facetDomain } }
+          : {}),
+        rowColor: colorBy,
       },
     ],
   }
@@ -484,9 +485,10 @@ function mutationFigure({
   return kgUrl({
     sessionTracks: [
       mutationTrack({
-        facetField,
-        facetDomain,
-        colorBy,
+        ...(facetField
+          ? { facet: { field: facetField, domain: facetDomain } }
+          : {}),
+        rowColor: colorBy,
         height,
         lineZoneHeight,
       }),
@@ -814,9 +816,9 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // (truncating) cells crowd into the lobular band and the much larger ductal
   // band above it is nearly empty.
   //
-  // Faceted AND colored by the same column: `facetField` makes each histology's rows
+  // Faceted AND colored by the same column: `facet` makes each histology's rows
   // contiguous and its domain puts ductal above lobular, which is the order the
-  // caption reads; `colorBy` puts the color strip in the gutter that says which
+  // caption reads; `rowColor` puts the color strip in the gutter that says which
   // band is which. Without the strip the bands are unlabeled row ranges.
   //
   // The connector fan is half the result here. CDH1 is a tumor suppressor and its

@@ -71,7 +71,6 @@ export type {
   ResolvedHighlights,
 } from './LinearBasicDisplay/featureHighlight.ts'
 export type { FitStage } from './LinearBasicDisplay/fitLadder.ts'
-export type { ColorScaleSettings } from './RenderFeatureDataRPC/featureColors.ts'
 export type { FitDrops } from './LinearBasicDisplay/fitNotes.ts'
 export type { IncrementalLayout } from './LinearBasicDisplay/layout.ts'
 export { layoutRegionKey } from './LinearBasicDisplay/layoutInputs.ts'

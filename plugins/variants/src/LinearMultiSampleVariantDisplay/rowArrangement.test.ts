@@ -28,7 +28,7 @@ function rowNames(display: { sources: { name: string }[] }) {
 describe('recoloring does not disturb the arrangement', () => {
   it('keeps a clustered order and its tree when coloring by a sample attribute', () => {
     const display = clusteredDisplay()
-    display.setColorBy('population')
+    display.setRowColor('population')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.clusterTree).toBe(CLUSTERED_TREE)
@@ -39,8 +39,8 @@ describe('recoloring does not disturb the arrangement', () => {
 
   it('clearing the coloring strips the palette without resetting the order', () => {
     const display = clusteredDisplay()
-    display.setColorBy('population')
-    display.setColorBy('')
+    display.setRowColor('population')
+    display.setRowColor('')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.clusterTree).toBe(CLUSTERED_TREE)
@@ -62,7 +62,7 @@ describe('recoloring does not disturb the arrangement', () => {
       '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S1 HP0,S1 HP1));',
     )
 
-    display.setColorBy('population')
+    display.setRowColor('population')
 
     expect(rowNames(display)).toEqual(haplotypes.map(s => s.name))
     expect(display.hierarchy).toBeDefined()
@@ -110,7 +110,7 @@ describe('the facet bands over the layout', () => {
     display.setFacet('population')
 
     expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
-    expect(display.facetField).toBe('population')
+    expect(display.facet?.field).toBe('population')
     expect(display.clusterTree).toBe('((S0,S1),S2);')
     expect(display.hierarchy).toBeDefined()
   })
@@ -213,7 +213,7 @@ describe('the config `domain` seeds the sample order', () => {
   it('does not re-seed a dragged order on a recolor', () => {
     const display = domainDisplay(['S2'])
     display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
-    display.setColorBy('population')
+    display.setRowColor('population')
 
     expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
     expect(display.rowOrderIsCustom).toBe(true)
@@ -224,7 +224,7 @@ describe('the config `domain` seeds the sample order', () => {
     const clustered = [{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }]
     const tree = '((S1,S0),S2);'
     display.setLayoutAndClusterTree(clustered, tree)
-    display.setColorBy('population')
+    display.setRowColor('population')
 
     expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
     expect(display.clusterTree).toBe(tree)
@@ -262,11 +262,11 @@ describe('a rendering-mode switch renames the rows', () => {
   it('keeps the configured coloring on the renamed rows', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
-    display.setColorBy('population')
+    display.setRowColor('population')
 
     display.setPhasedMode('phased')
 
-    expect(display.colorBy).toBe('population')
+    expect(display.rowColor).toBe('population')
     expect(display.sources.every(s => s.labelColor)).toBe(true)
     const byName = Object.fromEntries(
       display.sources.map(s => [s.name, s.labelColor]),
@@ -307,7 +307,7 @@ describe('an adapter swap to a new cohort', () => {
   it('resets a stale arrangement, its tree and its subtree filter', () => {
     const display = clusteredDisplay()
     display.setSubtreeFilter(['S2', 'S0'])
-    display.setColorBy('population')
+    display.setRowColor('population')
 
     const cohortB = [
       { name: 'T0', population: 'EAS' },
@@ -363,7 +363,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   // menu still showed Population ticked. Nothing re-seeds it afterwards.
   it('keeps the colorBy palette through a sort', () => {
     const display = sortableDisplay()
-    display.setColorBy('population')
+    display.setRowColor('population')
     const before = new Map(display.sources.map(s => [s.name, s.labelColor]))
     expect([...before.values()].every(Boolean)).toBe(true)
 
@@ -393,7 +393,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
         S2: { maxPloidy: 2 },
       },
     } as unknown as Parameters<typeof display.setCellData>[0])
-    display.setColorBy('population')
+    display.setRowColor('population')
     const before = new Map(display.sources.map(s => [s.name, s.labelColor]))
     expect(display.sources).toHaveLength(6)
     expect([...before.values()].every(Boolean)).toBe(true)

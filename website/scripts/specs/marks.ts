@@ -155,7 +155,7 @@ const SNRPN_FACET_TRACK = {
       transform: [
         { type: 'formula', expr: "jexl:getTag(feature,'HP')", as: 'HP' },
       ],
-      facetField: 'HP',
+      facet: 'HP',
       marks: [
         {
           shape: 'span',

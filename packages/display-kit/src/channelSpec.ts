@@ -1,11 +1,14 @@
+import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
 import { compareStructural } from 'mobx'
 
+import { colorConfigSchema } from './colorConfigSchema.ts'
+import { facetConfigSchema } from './facetConfigSchema.ts'
+
 /**
- * A display's grouping, color and filter written as grammar-of-graphics
- * channels, in the words the mark display's config uses: `facet` stacks one
- * section per value of a field, `color` paints by a field or a constant, and
- * `filter` keeps the features its jexl expressions pass. A channel the spec
- * leaves out is left as it is, and `null` clears one.
+ * A display's grouping, color and filter as "Edit as JSON..." shows them:
+ * `facet` and `color` are the display's own settings, in the shape their
+ * config objects take, and `filter` is the runtime jexl list of Filter by....
+ * A channel the spec leaves out is left as it is, and `null` clears one.
  */
 export interface ChannelSpec {
   facet?: { field: string; domain?: string[] } | null
@@ -22,95 +25,53 @@ export type ColorChannel =
   | string
   | {
       field: string
-      scale?: 'categorical'
       domain?: string[]
       palette?: string[]
     }
 
 export const CHANNELS = ['facet', 'color', 'filter'] as const
 
-type Channel = (typeof CHANNELS)[number]
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function fieldName(channel: Channel, value: unknown) {
-  if (typeof value !== 'string' || !value.trim()) {
-    throw new Error(`${channel}.field names a field, as a non-empty string`)
-  }
-  return value.trim()
-}
-
-function onlyKeys(channel: Channel, obj: object, keys: string[]) {
-  const extra = Object.keys(obj).filter(key => !keys.includes(key))
-  if (extra.length) {
-    throw new Error(
-      `${channel} takes ${keys.join(' and ')}, not ${extra.join(', ')}`,
-    )
-  }
+function strings(value: unknown) {
+  return Array.isArray(value) ? value.map(String) : undefined
 }
 
 function parseFacet(value: unknown): ChannelSpec['facet'] {
   if (value === null) {
     return null
   }
-  if (typeof value === 'string') {
-    return { field: fieldName('facet', value) }
-  }
-  if (!isRecord(value)) {
+  const { field, domain } = preProcessConfigSnapshot(facetConfigSchema, value)
+  if (typeof field !== 'string' || !field.trim()) {
     throw new Error('facet is a field name or { "field": …, "domain": [...] }')
   }
-  onlyKeys('facet', value, ['field', 'domain'])
-  const { field, domain } = value
-  return {
-    field: fieldName('facet', field),
-    ...(domain === undefined
-      ? {}
-      : { domain: stringList('facet.domain', domain) }),
-  }
-}
-
-function stringList(channel: string, value: unknown) {
-  if (!Array.isArray(value)) {
-    throw new Error(`${channel} is a list`)
-  }
-  return value.map(String)
+  const order = strings(domain)
+  return { field: field.trim(), ...(order?.length ? { domain: order } : {}) }
 }
 
 function parseColor(value: unknown): ChannelSpec['color'] {
   if (value === null) {
     return null
   }
-  if (typeof value === 'string') {
-    if (!value.trim()) {
-      throw new Error(
-        'color is a CSS color, a jexl: expression or { "field": … }',
-      )
+  const lifted = preProcessConfigSnapshot(colorConfigSchema, value)
+  const field = typeof lifted.field === 'string' ? lifted.field.trim() : ''
+  if (field) {
+    const domain = strings(lifted.domain)
+    const palette = strings(lifted.palette)
+    return {
+      field,
+      ...(domain?.length ? { domain } : {}),
+      ...(palette?.length ? { palette } : {}),
     }
-    return value.trim()
   }
-  if (!isRecord(value)) {
+  if (typeof lifted.value !== 'string' || !lifted.value.trim()) {
     throw new Error(
       'color is a CSS color, a jexl: expression or { "field": … }',
     )
   }
-  onlyKeys('color', value, ['field', 'scale', 'domain', 'palette'])
-  const { field, scale, domain, palette } = value
-  if (scale !== undefined && scale !== 'categorical') {
-    throw new Error(
-      "color.scale is categorical here; a ramp over a number is the mark display's",
-    )
-  }
-  return {
-    field: fieldName('color', field),
-    ...(domain === undefined
-      ? {}
-      : { domain: stringList('color.domain', domain) }),
-    ...(palette === undefined
-      ? {}
-      : { palette: stringList('color.palette', palette) }),
-  }
+  return lifted.value.trim()
 }
 
 function parseFilter(value: unknown): ChannelSpec['filter'] {
@@ -129,7 +90,9 @@ function parseFilter(value: unknown): ChannelSpec['filter'] {
 
 /**
  * Throws a message naming the channel at fault, so the box can show it
- * under the text as it is typed.
+ * under the text as it is typed. `facet` and `color` go through the lift and
+ * the checks their config objects apply on load, so what the box accepts is
+ * what a config file may hold.
  */
 export function parseChannelSpec(text: string): ChannelSpec {
   const value: unknown = JSON.parse(text)

@@ -21,7 +21,8 @@ function setup({
       { spec: '{ "facet": "strand" }', description: 'one section per strand' },
     ],
     channelSpecProblems: jest.fn(() => problems),
-    applyChannelSpec: jest.fn(),
+    applyDisplaySettings: jest.fn(),
+    setJexlFilters: jest.fn(),
   }
   const handleClose = jest.fn()
   const utils = render(
@@ -56,16 +57,31 @@ test('a seed from the form it came from is what the box opens on', () => {
   })
 })
 
-test('says what a spec changes, and applies the spec as parsed', () => {
+test('says what a spec changes, and hands the settings to the display and the filter to its setter', () => {
   const { type, getByText, apply, model, handleClose } = setup()
-  type({ facet: null, color: { field: 'gene_biotype' } })
-  expect(getByText('Sets color. Clears facet')).toBeInTheDocument()
+  type({
+    facet: null,
+    color: { field: 'gene_biotype' },
+    filter: ["feature.type == 'gene'"],
+  })
+  expect(getByText('Sets color, filter. Clears facet')).toBeInTheDocument()
   fireEvent.click(apply)
-  expect(model.applyChannelSpec).toHaveBeenCalledWith({
+  expect(model.applyDisplaySettings).toHaveBeenCalledWith({
     facet: null,
     color: { field: 'gene_biotype' },
   })
+  expect(model.setJexlFilters).toHaveBeenCalledWith([
+    "jexl:feature.type == 'gene'",
+  ])
   expect(handleClose).toHaveBeenCalled()
+})
+
+test('a spec naming only a filter writes no setting', () => {
+  const { type, apply, model } = setup()
+  type({ filter: null })
+  fireEvent.click(apply)
+  expect(model.applyDisplaySettings).not.toHaveBeenCalled()
+  expect(model.setJexlFilters).toHaveBeenCalledWith([])
 })
 
 test('a facet with no domain over an ordered one says its sections sort', () => {

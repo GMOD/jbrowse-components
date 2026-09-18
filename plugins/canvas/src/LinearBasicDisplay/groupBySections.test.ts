@@ -1,4 +1,4 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
@@ -174,7 +174,10 @@ test('the Sections menu moves a section and writes the drawn order as the domain
   const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
   const moveDown = resolveSubMenu(first)[1] as { onClick: () => void }
   moveDown.onClick()
-  expect(getConf(display, 'facetDomain')).toEqual(['protein_coding', 'lncRNA'])
+  expect(getConf(display, ['facet', 'domain'])).toEqual([
+    'protein_coding',
+    'lncRNA',
+  ])
   expect(display.groupSections.map(s => s.key)).toEqual([
     'protein_coding',
     'lncRNA',
@@ -187,8 +190,9 @@ test('the Sections menu moves a section and writes the drawn order as the domain
 test('re-picking the same field from the dialog keeps a curated domain', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  setConf(display, 'facetField', 'biotype')
-  setConf(display, 'facetDomain', ['lncRNA'])
+  display.applyDisplaySettings({
+    facet: { field: 'biotype', domain: ['lncRNA'] },
+  })
   display.applyGroupBy('biotype', true)
   expect(display.facet?.domain).toEqual(['lncRNA'])
   display.applyGroupBy('gene_type', true)

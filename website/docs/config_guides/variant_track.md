@@ -159,7 +159,7 @@ SAMPLE003	EUR	Western	control
 SAMPLE004	EAS	Pacific	case
 ```
 
-`colorBy` on the display names one of those columns, and each distinct value
+`rowColor` on the display names one of those columns, and each distinct value
 gets its own palette color:
 
 ```json addtrack
@@ -178,13 +178,13 @@ gets its own palette color:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "colorBy": "population"
+      "rowColor": "population"
     }
   ]
 }
 ```
 
-- **A column `colorBy` names that the TSV lacks** logs a console warning and
+- **A column `rowColor` names that the TSV lacks** logs a console warning and
   skips the coloring
 - **Sample names match exactly.** A TSV matching some of the VCF's samples draws
   those and reports the ones it dropped; one matching none fails the track. The

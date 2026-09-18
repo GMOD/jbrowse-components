@@ -2897,7 +2897,7 @@
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "volvox multi-sample sv-LinearMultiSampleVariantDisplay",
           "referenceDrawingMode": "draw",
-          "colorBy": "population"
+          "rowColor": "population"
         }
       ]
     },

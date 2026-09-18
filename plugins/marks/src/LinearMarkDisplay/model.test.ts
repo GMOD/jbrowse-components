@@ -1,6 +1,5 @@
 import { createElement } from 'react'
 
-import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
@@ -1021,7 +1020,7 @@ const FACET_MARKS = [
 
 function facetedEnvironment(display: Record<string, unknown> = {}) {
   return createTestEnvironment(FACET_MARKS, REGION, 'BedAdapter', {
-    facetField: 'sample',
+    facet: 'sample',
     ...display,
   })
 }
@@ -1046,7 +1045,7 @@ test('bars faceted by a field stand in a band each, the axis ruling every band',
     [{ shape: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { facetField: 'source' },
+    { facet: 'source' },
   )
   const { display } = createDisplay()
   expect(display.rpcProps().layers[0]!.lanes).toContain('row')
@@ -1087,7 +1086,7 @@ test('bars faceted by a field stand in a band each, the axis ruling every band',
 
 test('the facet reaches the worker on the request, and the sections band the plot', () => {
   const { display } = facetedEnvironment().createDisplay()
-  expect(display.facetField).toBe('sample')
+  expect(display.facet?.field).toBe('sample')
   expect(display.rpcProps().facet).toEqual({ field: 'sample' })
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
   expect(display.facetLayout).toMatchObject({
@@ -1103,7 +1102,7 @@ test('the facet reaches the worker on the request, and the sections band the plo
 
 test('a display transform runs before the facet splits the features', () => {
   const { display } = facetedEnvironment({
-    facetField: 'nm',
+    facet: 'nm',
     transform: [
       { type: 'formula', expr: "jexl:getTag(feature,'NM')", as: 'nm' },
     ],
@@ -1118,7 +1117,7 @@ test('a display transform runs before the facet splits the features', () => {
 
 test('a facet domain orders the folded sections and stays off the worker request', () => {
   const { display } = facetedEnvironment({
-    facetDomain: ['b'],
+    facet: { field: 'sample', domain: ['b'] },
   }).createDisplay()
   expect(display.rpcProps().facet).toEqual({ field: 'sample' })
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
@@ -1148,11 +1147,11 @@ test('the Sections menu moves a section and writes the drawn order as the facet 
   const fetched = display.rpcProps()
   const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
   ;(resolveSubMenu(first)[1] as { onClick: () => void }).onClick()
-  expect(display.facetDomain).toEqual(['b', 'a'])
+  expect(display.facet?.domain).toEqual(['b', 'a'])
   expect(display.rpcProps()).toEqual(fetched)
   expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b', 'a'])
   ;(rows()[2] as { onClick: () => void }).onClick()
-  expect(display.facetDomain).toEqual([])
+  expect(display.facet?.domain).toEqual([])
 })
 
 test('two regions fold into one row space, the deeper pack setting each band', () => {
@@ -1234,7 +1233,7 @@ test('a hidden section leaves the key and the axis the way it leaves the plot', 
     ],
     REGION,
     'BedAdapter',
-    { facetField: 'sample' },
+    { facet: 'sample' },
   ).createDisplay()
   const RED = 0xff0000ff
   const BLUE = 0xffff0000
@@ -1288,7 +1287,7 @@ test("a key over the facet's field follows the sections' order", () => {
     ],
     REGION,
     'BedAdapter',
-    { facetField: 'sample', facetDomain: ['b'] },
+    { facet: { field: 'sample', domain: ['b'] } },
   ).createDisplay()
   display.setRpcData(
     0,
@@ -1331,7 +1330,7 @@ test('moving the facet field drops what was hidden, the keys having meant that f
   const before = display.groupKeySpace
   display.hideGroup('a')
   expect(display.hiddenGroups.size).toBe(1)
-  setConf(display, 'facetField', 'type')
+  display.setFacetField('type')
   expect(display.groupKeySpace).not.toBe(before)
   expect(display.hiddenGroups.size).toBe(0)
 })

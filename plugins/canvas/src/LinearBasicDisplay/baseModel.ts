@@ -21,7 +21,6 @@ import {
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
-import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
@@ -29,12 +28,12 @@ import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { channelSpecChanges } from '@jbrowse/display-kit/channelSpec'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import {
   autorunOnReadyView,
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/displayAutoruns'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -437,14 +436,13 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
-       * The `facetField` and `facetDomain` slots, or undefined while
-       * ungrouped.
+       * The `facet` object as written, or undefined while ungrouped.
        */
       get facet(): FeatureFacet | undefined {
-        const field = getConf(self, 'facetField')
-        return field
-          ? { field, domain: getConf(self, 'facetDomain') }
-          : undefined
+        return facetSettingOf({
+          field: getConf(self, ['facet', 'field']),
+          domain: getConf(self, ['facet', 'domain']),
+        })
       },
 
       /**
@@ -453,7 +451,7 @@ export default function baseStateModelFactory(
        * field that issued it, so moving the field drops what was hidden.
        */
       get groupKeySpace(): string {
-        return getConf(self, 'facetField')
+        return getConf(self, ['facet', 'field'])
       },
 
       /**
@@ -1151,30 +1149,36 @@ export default function baseStateModelFactory(
 
         /**
          * #action
+         * Paints every feature one constant, a CSS color or a `jexl:`
+         * callback; undefined lets each feature's own color paint.
          */
         setFeatureColor(color?: string) {
-          setConf(self, 'color', color)
-          setConf(self, 'colorField', '')
-          setConf(self, 'colorDomain', [])
-          setConf(self, 'colorPalette', [])
+          self.configuration.setSubschema(
+            'color',
+            color === undefined ? {} : { value: color },
+          )
         },
 
         /**
          * #action
-         * Paints by a field's values through a categorical scale in the
-         * `color` slot's place; undefined returns the painting to that slot.
+         * Paints by a field's values through a categorical scale; undefined
+         * returns to the default color.
          */
         setColorScale(scale?: {
           field: string
-          domain?: string[]
-          palette?: string[]
+          domain?: readonly string[]
+          palette?: readonly string[]
         }) {
-          if (scale) {
-            setConf(self, 'color', undefined)
-          }
-          setConf(self, 'colorField', scale?.field ?? '')
-          setConf(self, 'colorDomain', scale?.domain ?? [])
-          setConf(self, 'colorPalette', scale?.palette ?? [])
+          self.configuration.setSubschema(
+            'color',
+            scale
+              ? {
+                  field: scale.field,
+                  domain: [...(scale.domain ?? [])],
+                  palette: [...(scale.palette ?? [])],
+                }
+              : {},
+          )
         },
 
         /**
@@ -1212,12 +1216,16 @@ export default function baseStateModelFactory(
 
       /**
        * #action
-       * Writes both facet slots, an unnamed domain as empty; undefined is
+       * Writes the `facet` object, an unnamed domain as empty; undefined is
        * ungrouped. The stack starts over from the top.
        */
       setFacet(facet?: { field: string; domain?: readonly string[] }) {
-        setConf(self, 'facetField', facet?.field ?? '')
-        setConf(self, 'facetDomain', [...(facet?.domain ?? [])])
+        self.configuration.setSubschema(
+          'facet',
+          facet
+            ? { field: facet.field, domain: [...(facet.domain ?? [])] }
+            : {},
+        )
         self.setScrollTop(0)
       },
 
@@ -1481,14 +1489,14 @@ export default function baseStateModelFactory(
        * does not, in the key's order and less the no-value row.
        */
       get pinnedColorDomain(): string[] {
-        const { colorDomain } = self.colorSettings
-        const listed = new Set(colorDomain)
+        const { domain } = self.colorSettings
+        const listed = new Set(domain)
         const keyed = this.derivedColorScales.flatMap(scale =>
           scale.kind === 'categorical'
             ? scale.entries.filter(e => e.value !== '').map(e => e.value)
             : [],
         )
-        return [...colorDomain, ...keyed.filter(v => !listed.has(v))]
+        return [...domain, ...keyed.filter(v => !listed.has(v))]
       },
       /**
        * #method
@@ -1501,7 +1509,7 @@ export default function baseStateModelFactory(
         field: string | undefined,
         colorByGroup: boolean,
       ): ChannelSpec {
-        const { colorField } = self.colorSettings
+        const { field: colorField } = self.colorSettings
         const current = facetOf(self.facet)
         const wasGroupColor =
           colorField !== '' &&
@@ -1536,44 +1544,32 @@ export default function baseStateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * Writes each channel the spec changes onto the slot its menu writes,
-       * and clears one the spec names `null`.
-       */
-      applyChannelSpec(spec: ChannelSpec) {
-        const { sets, clears } = channelSpecChanges(spec, self.channelSpec)
-        const changed = new Set([...sets, ...clears])
-        if (changed.has('facet')) {
-          self.setFacet(spec.facet ?? undefined)
-        }
-        if (changed.has('color')) {
-          if (spec.color && typeof spec.color !== 'string') {
-            self.setColorScale(spec.color)
-          } else {
-            self.setFeatureColor(spec.color ?? undefined)
-          }
-        }
-        if (changed.has('filter')) {
-          self.setJexlFilters(spec.filter?.map(ensureJexlPrefix) ?? [])
-        }
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
        * The categorical analogue of the Score menu's "Pin current min/max"
        * (ADR-124): writes `pinnedColorDomain`, so every value the key lists
        * spends its own palette color in key order, where the hash could give
        * two values one color.
        */
       pinColorDomain() {
-        setConf(self, 'colorDomain', self.pinnedColorDomain)
+        const { field, palette } = self.colorSettings
+        self.setColorScale({ field, domain: self.pinnedColorDomain, palette })
       },
       /**
        * #action
-       * What the Group by dialog applies.
+       * What the Group by dialog applies: the channels its choice changes,
+       * through the setters the menus use.
        */
       applyGroupBy(field: string | undefined, colorByGroup: boolean) {
-        self.applyChannelSpec(self.groupByChannelSpec(field, colorByGroup))
+        const { facet, color } = self.groupByChannelSpec(field, colorByGroup)
+        if (facet !== undefined) {
+          self.setFacet(facet ?? undefined)
+        }
+        if (color !== undefined) {
+          if (color && typeof color !== 'string') {
+            self.setColorScale(color)
+          } else {
+            self.setFeatureColor(color ?? undefined)
+          }
+        }
       },
       /**
        * #action
@@ -1581,11 +1577,9 @@ export default function baseStateModelFactory(
        * the domain and palette while it is the field already painting.
        */
       colorByField(field: string) {
-        const { colorField, colorDomain, colorPalette } = self.colorSettings
+        const { field: current, domain, palette } = self.colorSettings
         self.setColorScale(
-          field === colorField
-            ? { field, domain: [...colorDomain], palette: [...colorPalette] }
-            : { field },
+          field === current ? { field, domain, palette } : { field },
         )
       },
       /**
@@ -1629,8 +1623,8 @@ export default function baseStateModelFactory(
             {
               model: self,
               handleClose,
-              color: self.colorSettings.color,
-              colorField: self.colorSettings.colorField,
+              color: self.colorSettings.value,
+              colorField: self.colorSettings.field,
             },
           ])
         },

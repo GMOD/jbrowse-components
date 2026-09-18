@@ -90,7 +90,7 @@ interface TrackMenuSelf extends GroupByMenuSelf {
   openFilterDialog: () => void
 }
 
-// The Sections submenu is the runtime half of `facetDomain`: a move writes
+// The Sections submenu is the runtime half of the facet's `domain`: a move writes
 // the drawn order there.
 export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
   const { facet } = self
@@ -243,19 +243,19 @@ function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
 }
 
 interface ColorPinSelf {
-  colorSettings: { colorField: string; colorDomain: readonly string[] }
+  colorSettings: { field: string; domain: readonly string[] }
   pinnedColorDomain: readonly string[]
   pinColorDomain: () => void
 }
 
 function pinColorsItems(self: ColorPinSelf): MenuItem[] {
-  const { colorField, colorDomain } = self.colorSettings
-  return colorField
+  const { field, domain } = self.colorSettings
+  return field
     ? [
         { type: 'divider' },
         {
           label: 'Pin distinct colors',
-          disabled: self.pinnedColorDomain.length === colorDomain.length,
+          disabled: self.pinnedColorDomain.length === domain.length,
           onClick: () => {
             self.pinColorDomain()
           },

@@ -168,9 +168,11 @@ const IN2LT_SV_TRACK = {
       // The domain puts the 161 standard lines first and the 19 carriers last,
       // which is the order the figure's prose reads off the lane. Sorted, the
       // carriers would lead: 'In(2L)t' precedes 'Standard'.
-      facetField: 'karyotype',
-      facetDomain: ['Standard', 'In(2L)t'],
-      colorBy: 'karyotype',
+      facet: {
+        field: 'karyotype',
+        domain: ['Standard', 'In(2L)t'],
+      },
+      rowColor: 'karyotype',
       // The carrier block has to out-contrast the hom-ref field, and by default
       // it doesn't: hom-ref genotypes paint #CCCCCC, the same gray as an empty
       // canvas, so the figure read as a blank track. featureColor repaints only

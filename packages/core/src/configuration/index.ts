@@ -22,6 +22,7 @@ export type {
 
 export {
   getConfigurationSchemaDefinition,
+  getConfigurationSchemaOptions,
   // exported for scripts/generateConfigManifest.ts, which needs the
   // preProcessSnapshot off a schema whose pluggable type does not expose one —
   // TextSearchAdapterType, where the shorthand is nonetheless the documented
@@ -45,8 +46,10 @@ export { mergeFormatCallbacks } from './mergeFormatCallbacks.ts'
 export { readConfObject, readConfigValue } from './readConfObject.ts'
 export { getConf, setConf } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'
-export { liftField } from './liftField.ts'
-export { liftValue } from './liftValue.ts'
+export {
+  preProcessConfigSnapshot,
+  preProcessSnapshotWith,
+} from './snapshotPreprocess.ts'
 export { expandTabixShorthand, tabixIndexSnapshot } from './tabixShorthand.ts'
 export { tabixIndexFields } from './tabixIndexFields.ts'
 export { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
@@ -54,6 +57,7 @@ export { toCallbackValue, toFixedValue } from './configurationSlot.ts'
 export {
   getSlotDefinition,
   isConfigurationSlot,
+  isConfigurationSubschema,
   makeSlotFacade,
   preProcessSlotValues,
   slotChoices,

@@ -3,6 +3,7 @@ import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configurat
 import type { SubfeatureLabels } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 export {
   DISPLAY_MODES,
@@ -73,13 +74,11 @@ export interface DisplayConfig {
   // union makes any new direct read a type error rather than a Float32Array full
   // of NaN.
   featureHeight: number | string
-  // `maybeColor` slots: undefined means unset, so the feature's own BED color
-  // paints it. Not the same as any concrete color.
-  color: string | undefined
-  // A field here paints through a categorical scale and wins over `color`.
-  colorField: string
-  colorDomain: string[]
-  colorPalette: string[]
+  // The `color` object: a `value` that is a `maybeColor` (undefined means
+  // unset, so the feature's own BED color paints it), or a `field` that paints
+  // through a categorical scale and wins over the value.
+  color: ColorSetting
+  // `maybeColor` slots, as `color.value`.
   connectorColor: string | undefined
   utrColor: string | undefined
   labels: {
@@ -111,9 +110,6 @@ const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   hideSourceFeatures: true,
   featureHeight: true,
   color: true,
-  colorField: true,
-  colorDomain: true,
-  colorPalette: true,
   connectorColor: true,
   utrColor: true,
   labels: true,

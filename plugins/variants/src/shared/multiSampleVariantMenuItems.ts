@@ -262,9 +262,9 @@ export function variantTrackMenuItems(
               },
               ...sampleAttributeItems(
                 self.colorByAttributes,
-                self.colorBy,
+                self.rowColor,
                 arg => {
-                  self.setColorBy(arg)
+                  self.setRowColor(arg)
                 },
               ),
             ]
@@ -300,7 +300,7 @@ export function variantTrackMenuItems(
             icon: WorkspacesIcon,
             subMenu: sampleAttributeItems(
               self.colorByAttributes,
-              self.facetField,
+              self.facet?.field ?? '',
               arg => {
                 self.setFacet(arg)
               },

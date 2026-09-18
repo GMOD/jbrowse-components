@@ -8,6 +8,7 @@ import { createColorKey } from './colorKey.ts'
 import { boxColor } from './glyphColors.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
+import type { MockDisplayConfigOverrides } from '../testUtils.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const jexl = createJexlInstance()
@@ -180,11 +181,17 @@ describe('boxColor (color by a field)', () => {
   const parts = transcript!.get('subfeatures')!
 
   function painter(
-    colorField: string,
-    extra: Partial<DisplayConfig> = {},
+    field: string,
+    { color, ...extra }: MockDisplayConfigOverrides = {},
     colorByCDS = false,
   ) {
-    const config = mockDisplayConfig({ colorField, ...extra })
+    const config = mockDisplayConfig({
+      ...extra,
+      color: {
+        ...(typeof color === 'string' ? { value: color } : color),
+        field,
+      },
+    })
     const colorKey = createColorKey(config, jexl)!
     colorKey.enterRecord({ strand: undefined, groupKey: undefined })
     const ctx = { config, colorByCDS, jexl }

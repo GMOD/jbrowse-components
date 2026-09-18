@@ -51,7 +51,7 @@ test('sidebar row color swatches export', () => {
     { name: 'HG001', population: 'EUR' },
     { name: 'HG002', population: 'AFR' },
   ])
-  model.setColorBy('population')
+  model.setRowColor('population')
   const colors = model.sources
     .map(s => s.labelColor)
     .filter(c => c !== undefined)
@@ -86,7 +86,7 @@ test('colorBy adds a titled sample-grouping section to the exported key', () => 
     { name: 'HG001', population: 'EUR' },
     { name: 'HG002', population: 'AFR' },
   ])
-  model.setColorBy('population')
+  model.setRowColor('population')
   const { getByText } = renderKey(model)
   getByText('Genotypes')
   getByText('Population')

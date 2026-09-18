@@ -36,6 +36,7 @@ export interface SchemaMetadata {
     explicitlyTyped?: boolean
     explicitIdentifier?: string
     implicitIdentifier?: string | boolean
+    shorthand?: string
     preProcessSnapshot?: (snap: unknown) => unknown
     requires?: { when: Record<string, string[]>; slots: string[] }[]
   }
@@ -478,7 +479,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       }
     }
     return {
-      string: lifts('probe'),
+      string: meta.options.shorthand !== undefined,
       uri: lifts({ uri: 'probe' }),
     }
   }
@@ -507,9 +508,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   // string shorthand lifts into with that target slot non-empty.
   function namesAValue(sub: SchemaMetadata | undefined): JsonSchema {
     const target =
-      sub && liftedForms(sub).string
-        ? stringTarget(sub, sub.definition)
-        : undefined
+      sub && liftedForms(sub).string ? stringTarget(sub) : undefined
     return target
       ? {
           anyOf: [
@@ -584,7 +583,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           anyOf: [
             {
               type: 'string',
-              description: `Shorthand for \`{ "${stringTarget(meta, properties)}": ... }\`.`,
+              description: `Shorthand for \`{ "${stringTarget(meta)}": ... }\`.`,
             },
             object,
           ],
@@ -630,18 +629,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   }
 
   // The slot a bare string lands on, read off the lift itself.
-  function stringTarget(
-    meta: SchemaMetadata,
-    properties: Record<string, unknown>,
-  ) {
-    const out = meta.options.preProcessSnapshot?.('probe') as
-      | Record<string, unknown>
-      | undefined
-    return (
-      Object.keys(out ?? {}).find(
-        k => out?.[k] === 'probe' && k in properties,
-      ) ?? 'value'
-    )
+  // The slot a bare string lifts into, as the schema declares it.
+  function stringTarget(meta: SchemaMetadata) {
+    return meta.options.shorthand ?? 'value'
   }
 
   const LEGACY: JsonSchema = {

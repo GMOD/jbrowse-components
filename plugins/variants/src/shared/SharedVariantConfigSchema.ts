@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
@@ -136,20 +137,21 @@ export default function sharedVariantConfigFactory() {
        * persisted. A channel bound to a variable beats a per-row constant;
        * clear this to hand each row back its own color.
        */
-      colorBy: {
+      rowColor: {
         type: 'string',
         defaultValue: '',
         description:
           "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog",
       },
       /**
-       * #slot
-       * Name of a sample-metadata attribute (a column in the adapter's
-       * samplesTsvLocation, e.g. 'population') whose values each take their
+       * #slot facet
+       * A sample-metadata attribute (a column in the adapter's
+       * samplesTsvLocation, e.g. `"population"`) whose values each take their
        * own band of rows, so a group-restricted genotype pattern reads as one
-       * band rather than being scattered across the matrix. Bands order by
-       * `facetDomain`, then the way every in-track grouping orders, digits by
-       * magnitude. Empty means the rows keep their existing order.
+       * band rather than being scattered across the matrix; or
+       * `{ field, domain }`, the listed values banding first and the rest
+       * sorted ([Facet](/docs/config/facet)). Unset, the rows keep their
+       * existing order.
        *
        * The band is applied when the rows are read, over whatever order the
        * reader has arranged, so a drag that moves a sample into another band
@@ -158,22 +160,7 @@ export default function sharedVariantConfigFactory() {
        * so a band under it would draw it against the wrong rows. Clear the
        * tree, or reset the row order, to band a clustered track.
        */
-      facetField: {
-        type: 'string',
-        defaultValue: '',
-        description:
-          'sample-metadata attribute whose values take their own band; a cross-band drag snaps back, and the band yields while a cluster tree describes the rows',
-      },
-      /**
-       * #slot
-       * The `facetField` values whose bands stack first, in order; the rest
-       * follow sorted. A listed value the metadata lacks takes no band.
-       */
-      facetDomain: {
-        type: 'stringArray',
-        defaultValue: [],
-        description: 'facetField values whose bands stack first, in order',
-      },
+      facet: facetConfigSchema,
       /**
        * #slot
        * Whether to paint reference alleles: 'skip' (the default) fills the row

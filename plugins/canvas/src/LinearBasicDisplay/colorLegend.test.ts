@@ -240,7 +240,7 @@ describe('derived color key', () => {
       const display = coloredDisplay({ field: 'biotype', domain: ['snoRNA'] })
       paint(display, ['protein_coding', '', 'snoRNA', 'lncRNA'])
       pinRow(display)!.onClick()
-      expect(display.colorSettings.colorDomain).toEqual([
+      expect(display.colorSettings.domain).toEqual([
         'snoRNA',
         'lncRNA',
         'protein_coding',
@@ -255,7 +255,7 @@ describe('derived color key', () => {
       paint(display, ['protein_coding', 'antisense', 'miRNA'])
       expect(pinRow(display)!.disabled).toBe(false)
       pinRow(display)!.onClick()
-      expect(display.colorSettings.colorDomain).toEqual([
+      expect(display.colorSettings.domain).toEqual([
         'lncRNA',
         'protein_coding',
         'antisense',

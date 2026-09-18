@@ -7,7 +7,7 @@ import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
-import type { DisplayConfig } from './renderConfig.ts'
+import type { MockDisplayConfigOverrides } from './testUtils.ts'
 import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -886,7 +886,7 @@ describe('color key', () => {
     mockFeature({ type: 'gene', id: 'g3', start: 400, end: 500 }),
   ]
 
-  function collectAll(overrides: Partial<DisplayConfig>) {
+  function collectAll(overrides: MockDisplayConfigOverrides) {
     return collectRenderData({
       layouts: genes.map(boxLayout),
       regionStart: 0,
@@ -900,9 +900,12 @@ describe('color key', () => {
 
   it('names each value with the color its boxes painted, and the section it files under', () => {
     const result = collectAll({
-      colorField: 'biotype',
-      colorDomain: ['lncRNA'],
-      colorPalette: ['#123456'],
+      color: {
+        value: undefined,
+        field: 'biotype',
+        domain: ['lncRNA'],
+        palette: ['#123456'],
+      },
     })
     expect(result.colorKey).toEqual({
       candidates: [

@@ -679,6 +679,19 @@ why a mark is grey rather than listing a blank value.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
+### preProcessConfigSnapshot
+
+A snapshot as `type` admits it: the same lift and checks `type.create` applies,
+so a dialog or a validator refuses exactly what a config file cannot hold.
+Throws what the schema's `preProcessSnapshot` throws.
+
+```js
+// type signature
+(type: IAnyType, snapshot: unknown) => Record<string, unknown>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
+
 ### RampRef
 
 The ramp a continuous colour scale samples: a named ramp, or evenly spaced CSS

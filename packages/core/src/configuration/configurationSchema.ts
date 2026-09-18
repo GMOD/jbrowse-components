@@ -18,6 +18,7 @@ import {
   isConstantEntry,
   isSlotDefinitionEntry,
 } from './schemaTypes.ts'
+import { preProcessSnapshotWith } from './snapshotPreprocess.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { IsAny } from '../util/types/isAny.ts'
@@ -80,6 +81,13 @@ export interface ConfigurationSchemaOptions<
   actions?: (self: unknown) => any
   views?: (self: unknown) => any
   extend?: (self: unknown) => any
+  /**
+   * The slot a bare string snapshot lifts into, so `color: "red"` and
+   * `color: { value: "red" }` are one config. Applied before
+   * `preProcessSnapshot`, on every path a snapshot arrives by; the JSON schema,
+   * `describeSlots` and the config editor read it here.
+   */
+  shorthand?: string
   preProcessSnapshot?: (
     snapshot: Record<string, unknown>,
   ) => Record<string, unknown>
@@ -312,7 +320,9 @@ function makeConfigurationSchemaModel<
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
     .actions(self => ({
-      setSubschema(slotName: string, data: Record<string, unknown>) {
+      // `data` is whatever the sub-schema's `preProcessSnapshot` takes, a
+      // string shorthand included.
+      setSubschema(slotName: string, data: unknown) {
         if (!subSchemaKeys.has(slotName)) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
         }
@@ -385,8 +395,10 @@ function makeConfigurationSchemaModel<
   for (const hook of hookList(options.extend)) {
     completeModel = completeModel.extend(hook)
   }
-  if (options.preProcessSnapshot) {
-    completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
+  if (options.shorthand !== undefined || options.preProcessSnapshot) {
+    completeModel = completeModel.preProcessSnapshot(snapshot =>
+      preProcessSnapshotWith(options, snapshot),
+    )
   }
 
   const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}

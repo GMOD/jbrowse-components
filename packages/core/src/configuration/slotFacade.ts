@@ -1,4 +1,4 @@
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isArrayType, isMapType } from '@jbrowse/mobx-state-tree'
 
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
@@ -6,7 +6,11 @@ import {
   getConfigurationSchemaDefinition,
   getConfigurationSchemaOptions,
 } from './schemaRegistry.ts'
-import { isSlotDefinitionEntry } from './schemaTypes.ts'
+import {
+  isConfigurationSchemaType,
+  isSlotDefinitionEntry,
+} from './schemaTypes.ts'
+import { preProcessSnapshotWith } from './snapshotPreprocess.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type {
@@ -39,6 +43,18 @@ export function isConfigurationSlot(
 }
 
 /**
+ * Whether `slotName` on a config node is a single nested sub-schema, the kind
+ * `setSubschema` replaces whole (not an array or map of them).
+ */
+export function isConfigurationSubschema(
+  node: AnyConfigurationModel,
+  slotName: string,
+): boolean {
+  const def = getConfigurationSchemaDefinition(node)?.[slotName]
+  return isConfigurationSchemaType(def) && !isArrayType(def) && !isMapType(def)
+}
+
+/**
  * Run `node`'s own schema `preProcessSnapshot` over a partial bag of slot
  * values headed for that config.
  *
@@ -54,8 +70,10 @@ export function preProcessSlotValues(
   node: AnyConfigurationModel,
   values: Record<string, unknown>,
 ): Record<string, unknown> {
-  const preProcess = getConfigurationSchemaOptions(node)?.preProcessSnapshot
-  return preProcess ? preProcess(values) : values
+  return preProcessSnapshotWith(
+    getConfigurationSchemaOptions(node) ?? {},
+    values,
+  )
 }
 
 /**

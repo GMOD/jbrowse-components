@@ -11,7 +11,12 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from './configurationSchema.ts'
-import { getConf, readConfObject } from './index.ts'
+import {
+  getConf,
+  getConfigurationSchemaOptions,
+  preProcessConfigSnapshot,
+  readConfObject,
+} from './index.ts'
 import { isConfigurationModel } from './schemaTypes.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 
@@ -1449,5 +1454,57 @@ describe('readConfObject path resolution', () => {
     const node = schema.create(undefined, { pluginManager })
     expect(readConfObject(node, ['blob', 'present'])).toBe(1)
     expect(readConfObject(node, ['blob', 'absent'])).toBeUndefined()
+  })
+})
+
+describe('a declared shorthand', () => {
+  const Facet = ConfigurationSchema(
+    'ShorthandFacet',
+    {
+      field: { type: 'string', defaultValue: '' },
+      domain: { type: 'stringArray', defaultValue: [] },
+    },
+    {
+      shorthand: 'field',
+      preProcessSnapshot: snap => {
+        if (Array.isArray(snap.domain) && snap.domain.length && !snap.field) {
+          throw new Error('domain needs a field')
+        }
+        return snap
+      },
+    },
+  )
+  const Display = ConfigurationSchema('ShorthandDisplay', { facet: Facet })
+
+  test('lifts a bare string into the declared slot on create', () => {
+    const node = Display.create({ facet: 'strand' })
+    expect(getSnapshot(node)).toEqual({ facet: { field: 'strand' } })
+  })
+
+  test('lifts through setSubschema, and the object form replaces whole', () => {
+    const node = Display.create({})
+    node.setSubschema('facet', 'strand')
+    expect(getSnapshot(node.facet)).toEqual({ field: 'strand' })
+    node.setSubschema('facet', { field: 'type', domain: ['a'] })
+    expect(getSnapshot(node.facet)).toEqual({ field: 'type', domain: ['a'] })
+    node.setSubschema('facet', {})
+    expect(getSnapshot(node)).toEqual({})
+  })
+
+  test("the schema's own preprocessor runs after the lift, on every door", () => {
+    expect(() => Display.create({ facet: { domain: ['a'] } })).toThrow(
+      'domain needs a field',
+    )
+    expect(() => preProcessConfigSnapshot(Facet, { domain: ['a'] })).toThrow(
+      'domain needs a field',
+    )
+    expect(preProcessConfigSnapshot(Facet, 'strand')).toEqual({
+      field: 'strand',
+    })
+  })
+
+  test('is readable off the registered options', () => {
+    const node = Display.create({ facet: 'strand' })
+    expect(getConfigurationSchemaOptions(node.facet)?.shorthand).toBe('field')
   })
 })

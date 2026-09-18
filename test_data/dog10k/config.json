@@ -124,7 +124,7 @@
       "displays": [
         {
           "type": "LinearMultiSampleVariantDisplay",
-          "colorBy": "group",
+          "rowColor": "group",
           "height": 900
         }
       ]
@@ -154,7 +154,7 @@
       "displays": [
         {
           "type": "LinearMultiSampleVariantDisplay",
-          "colorBy": "group",
+          "rowColor": "group",
           "height": 900
         }
       ]
@@ -824,7 +824,7 @@
       "displays": [
         {
           "type": "LinearMultiSampleVariantDisplay",
-          "colorBy": "size",
+          "rowColor": "size",
           "height": 760
         }
       ]

@@ -2903,19 +2903,25 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | (string | undefined))"
-        },
-        {
-          "name": "colorField",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "colorDomain",
-          "type": "(JexlString | string[])"
-        },
-        {
-          "name": "colorPalette",
-          "type": "(JexlString | string[])"
+          "type": "FeatureColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (string | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "palette",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "connectorColor",
@@ -2938,12 +2944,18 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | displayMode)"
         },
         {
-          "name": "facetField",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "facetDomain",
-          "type": "(JexlString | string[])"
+          "name": "facet",
+          "type": "FacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "geneGlyphMode",
@@ -3940,19 +3952,25 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | (string | undefined))"
-        },
-        {
-          "name": "colorField",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "colorDomain",
-          "type": "(JexlString | string[])"
-        },
-        {
-          "name": "colorPalette",
-          "type": "(JexlString | string[])"
+          "type": "FeatureColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (string | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "palette",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "connectorColor",
@@ -3975,12 +3993,18 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | displayMode)"
         },
         {
-          "name": "facetField",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "facetDomain",
-          "type": "(JexlString | string[])"
+          "name": "facet",
+          "type": "FacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "geneGlyphMode",
@@ -4162,16 +4186,22 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "colorBy",
+          "name": "rowColor",
           "type": "(JexlString | string)"
         },
         {
-          "name": "facetField",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "facetDomain",
-          "type": "(JexlString | string[])"
+          "name": "facet",
+          "type": "FacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "referenceDrawingMode",
@@ -4302,16 +4332,22 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "colorBy",
+          "name": "rowColor",
           "type": "(JexlString | string)"
         },
         {
-          "name": "facetField",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "facetDomain",
-          "type": "(JexlString | string[])"
+          "name": "facet",
+          "type": "FacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "referenceDrawingMode",
@@ -5553,12 +5589,18 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "facetField",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "facetDomain",
-          "type": "(JexlString | string[])"
+          "name": "facet",
+          "type": "FacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "minScore",

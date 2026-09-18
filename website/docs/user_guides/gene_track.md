@@ -81,12 +81,12 @@ order** returns them to the sorted order.
 
 <Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by..., with lncRNA and pseudogene in near-identical greens. Sections then moves protein_coding to the top, and Color by... → Pin distinct colors gives each biotype a distinct color." />
 
-The `facetField` setting pre-groups a track, so a shared link opens grouped. It
-names a feature attribute, a dotted path into a structured one such as
-`INFO.SVTYPE`, or `strand`. `facetDomain` is the section order: the values
-listed stack first, in that order, and the rest follow sorted. A reorder from
-the menu writes the same setting, so what a config author declares and what a
-reader arranges are one setting:
+The `facet` setting pre-groups a track, so a shared link opens grouped. As a
+string it names the field: a feature attribute, a dotted path into a structured
+one such as `INFO.SVTYPE`, or `strand`. As an object it adds the section order,
+`{ "field": …, "domain": [...] }`: the values listed stack first, in that order,
+and the rest follow sorted. A reorder from the menu writes the same setting, so
+what a config author declares and what a reader arranges are one setting:
 
 ```json addtrack
 {
@@ -99,8 +99,10 @@ reader arranges are one setting:
     "uri": "https://example.com/GCF_000001405.40.gff.gz"
   },
   "displayDefaults": {
-    "facetField": "gene_biotype",
-    "facetDomain": ["protein_coding", "lncRNA", "pseudogene"]
+    "facet": {
+      "field": "gene_biotype",
+      "domain": ["protein_coding", "lncRNA", "pseudogene"]
+    }
   }
 }
 ```
@@ -115,12 +117,14 @@ and unticking it returns the default color.
 ### Writing the grouping as JSON
 
 **Edit as JSON...**, at the foot of the Group by and Color by attribute dialogs,
-opens the track's grouping, color and filter as three channels. `facet` stacks a
-section per value of a field, in the order its `domain` lists; `color` is a CSS
-color or a jexl expression, or `{ "field": … }` for one color per value;
-`filter` is the list of jexl expressions **Filter by...** edits. Applying a spec
-changes only the channels it names, and `null` clears one. Each of these pastes
-as it is:
+opens the track's grouping, color and filter as three channels. `facet` and
+`color` are the display's two settings of those names, in the shape a config
+file takes them: `facet` stacks a section per value of a field, in the order its
+`domain` lists; `color` is a CSS color or a jexl expression, or `{ "field": … }`
+for one color per value; `filter` is the list of jexl expressions **Filter
+by...** edits. Applying a spec changes only the channels it names, an object
+replaces the setting whole, and `null` clears one. Each of these pastes as it
+is:
 
 - `{ "facet": "strand" }` one section per strand
 - `{ "facet": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"] } }`
@@ -152,18 +156,17 @@ filter alone:
 
 <Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
 
-A facet is the `facetField` and `facetDomain` settings, and a color by a field
-the `colorField`, `colorDomain` and `colorPalette` settings; the track draws a
-key from the values it painted. Every value keeps a color derived from itself,
-so a pan or a reload paints it the same; a `domain` spends the palette on the
-values it lists, in order, and a value it leaves out never takes one of their
-colors. Two unlisted values can share a color, and **Color by... → Pin distinct
-colors** lists every value the key shows in `colorDomain`, in its order, so each
-takes its own. A transcript and all its parts paint the transcript's value, or
-its gene's where the transcript has none. `strand` is a field too, painting
-forward tomato and reverse cornflowerblue unless a domain or palette says
-otherwise. Each channel writes the same setting its menu does, so the Sections
-menu reorders a facet written this way.
+A color by a field is the `color` setting's `{ "field", "domain", "palette" }`
+form, and the track draws a key from the values it painted. Every value keeps a
+color derived from itself, so a pan or a reload paints it the same; a `domain`
+spends the palette on the values it lists, in order, and a value it leaves out
+never takes one of their colors. Two unlisted values can share a color, and
+**Color by... → Pin distinct colors** lists every value the key shows in the
+color's `domain`, in its order, so each takes its own. A transcript and all its
+parts paint the transcript's value, or its gene's where the transcript has none.
+`strand` is a field too, painting forward tomato and reverse cornflowerblue
+unless a domain or palette says otherwise. Each channel is the same setting its
+menu writes, so the Sections menu reorders a facet written this way.
 
 ## Color by CDS
 

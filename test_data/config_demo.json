@@ -4896,7 +4896,7 @@
         {
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf-LinearMultiSampleVariantDisplay",
-          "colorBy": "population"
+          "rowColor": "population"
         }
       ],
       "assemblyNames": ["hg19"]

@@ -142,22 +142,7 @@ const MODIFICATION_BY_TYPE = 'One color per modification type'
 const MODIFICATION_TWO_COLOR =
   'One color per type, plus low-probability & unmodified in blue'
 
-function colorByStep(
-  value: unknown,
-  { displayType }: FieldContext,
-): FieldStep | undefined {
-  // The multi-sample variant displays reach colorBy through their own submenu
-  // and name a sample attribute rather than a scheme, so they are answered
-  // before the alignments registry is consulted at all.
-  if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
-    const attribute = asString(value)
-    return attribute
-      ? {
-          path: `${TRACK_MENU} → Color by... → Samples → ${capitalizeFirst(attribute)}`,
-          note: `The Samples section lists whichever metadata columns your samples carry, so "${attribute}" appears only if yours have it.`,
-        }
-      : undefined
-  }
+function colorByStep(value: unknown): FieldStep | undefined {
   const colorBy = asRecord(value)
   const mods = asRecord(colorBy?.modifications)
   const spelled = asString(colorBy?.type)
@@ -294,7 +279,7 @@ const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
 
 // Mirrors the canvas display's own `colorByMode` getter (colorViews.ts), which
 // is what decides which of the "Color by..." radios reads as checked: a
-// `colorField` of `strand` is 'strand', any other field is 'attribute', and the
+// `color.field` of `strand` is 'strand', any other field is 'attribute', and the
 // `color` slot is a solid color, a preset, or a jexl only the config editor
 // authors.
 //
@@ -321,13 +306,12 @@ const VARIANT_COLOR_PRESETS: Record<string, string> = {
 }
 
 /**
- * The displays composing the canvas base display, which is where the flat
- * channel slots and the dialogs that write them live: `colorField` and
- * `colorDomain` under Color by..., `facetField` and `facetDomain` under Group
- * by..., with Sections for the drawn order. `LinearVariantDisplay` is on the
- * same base as `LinearBasicDisplay` and renames its vocabulary, so every
- * channel step below is a step in one of those menus and one list gates them
- * all.
+ * The displays composing the canvas base display, which is where the two
+ * channel objects and the dialogs that write them live: `color` under Color
+ * by... and `facet` under Group by..., with Sections for the drawn order.
+ * `LinearVariantDisplay` is on the same base as `LinearBasicDisplay` and
+ * renames its vocabulary, so every channel step below is a step in one of
+ * those menus and one list gates them all.
  *
  * Spelled out rather than read off the config manifest, which is 190 kB of
  * JSON that would then be in every page's build graph; the list is derived and
@@ -343,7 +327,36 @@ function hasChannelMenus(displayType: string | undefined) {
   return displayType !== undefined && CHANNEL_MENU_DISPLAYS.has(displayType)
 }
 
+// The canvas displays' `color` object: a string is the constant, and
+// `{ field, domain, palette }` a field through a palette. The dialog names the
+// field; the order and colors it spends are the JSON the same dialog opens.
 function colorStep(
+  value: unknown,
+  context: FieldContext,
+): FieldStep | undefined {
+  const { displayType } = context
+  const scale = asRecord(value)
+  if (scale) {
+    const field = asString(scale.field)
+    if (!field || !hasChannelMenus(displayType)) {
+      return undefined
+    }
+    const colorBy = `${TRACK_MENU} → Color by...`
+    if (asList(scale.domain) || asList(scale.palette)) {
+      return { path: `${colorBy} → Attribute... → Edit as JSON...` }
+    }
+    return field === 'strand' && displayType === 'LinearBasicDisplay'
+      ? { path: `${colorBy} → Strand` }
+      : { path: `${colorBy} → Attribute... → ${field}` }
+  }
+  return constantColorStep(value, context)
+}
+
+function asList(value: unknown) {
+  return Array.isArray(value) && value.length > 0 ? value : undefined
+}
+
+function constantColorStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
@@ -380,74 +393,60 @@ function colorStep(
         }
 }
 
-function colorFieldStep(
+// The multi-sample variant displays' row tint: a sample attribute, named from
+// one menu row over whichever metadata columns the track carries.
+function rowColorStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
-  if (typeof value !== 'string' || !value || !hasChannelMenus(displayType)) {
-    return undefined
-  }
-  const colorBy = `${TRACK_MENU} → Color by...`
-  return value === 'strand' && displayType === 'LinearBasicDisplay'
-    ? { path: `${colorBy} → Strand` }
-    : { path: `${colorBy} → Attribute... → ${value}` }
-}
-
-// The dialog names the field; the order and colors it spends are the JSON the
-// same dialog opens.
-function colorScaleStep(
-  value: unknown,
-  { displayType }: FieldContext,
-): FieldStep | undefined {
-  return Array.isArray(value) && value.length && hasChannelMenus(displayType)
-    ? { path: `${TRACK_MENU} → Color by... → Attribute... → Edit as JSON...` }
+  const attribute = asString(value)
+  return attribute && displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+    ? {
+        path: `${TRACK_MENU} → Color by... → Samples → ${capitalizeFirst(attribute)}`,
+        note: `The Samples section lists whichever metadata columns your samples carry, so "${attribute}" appears only if yours have it.`,
+      }
     : undefined
 }
 
-// The canvas displays' Group by dialog: a radio for strand, and a text field
-// under Attribute for any other field. The section order is the Sections
-// submenu's moves, which write the drawn order. The multi-sample variant
-// displays band their rows from one menu row over whichever metadata columns
-// the track carries, so the recipe names the figure's field, and their band
-// order has no menu row.
-function facetFieldStep(
+// The `facet` object: a string is the field. The canvas displays' Group by
+// dialog has a radio for strand and a text field under Attribute for any other
+// field, and a `domain` is the Sections submenu's moves, which write the drawn
+// order. The multi-sample variant displays band their rows from one menu row
+// over whichever metadata columns the track carries, so the recipe names the
+// figure's field, and their band order has no menu row.
+function facetStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
-  if (typeof value !== 'string' || !value) {
+  const field = asString(value) ?? asString(asRecord(value)?.field)
+  const ordered = !!asList(asRecord(value)?.domain)
+  if (!field) {
     return undefined
   }
   if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
     return {
-      path: `${TRACK_MENU} → Group rows by... → ${capitalizeFirst(value)}`,
-      note: `The submenu lists whichever metadata columns your samples carry, so "${value}" appears only if yours have it.`,
+      path: `${TRACK_MENU} → Group rows by... → ${capitalizeFirst(field)}`,
+      note: `The submenu lists whichever metadata columns your samples carry, so "${field}" appears only if yours have it.${
+        ordered
+          ? ' The band order has no menu row of its own; the figure declares it in the track config.'
+          : ''
+      }`,
     }
   }
   if (!hasChannelMenus(displayType)) {
     return undefined
   }
   const groupBy = `${TRACK_MENU} → Group by...`
-  return value === 'strand'
-    ? { path: `${groupBy} → Strand` }
-    : { path: `${groupBy} → Attribute → ${value}` }
-}
-
-function facetDomainStep(
-  value: unknown,
-  { displayType }: FieldContext,
-): FieldStep | undefined {
-  if (!Array.isArray(value) || !value.length) {
-    return undefined
-  }
-  if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
-    return {
-      path: `${TRACK_MENU} → Group rows by...`,
-      note: 'The band order has no menu row of its own; the figure declares it in the track config.',
-    }
-  }
-  return hasChannelMenus(displayType)
-    ? { path: `${TRACK_MENU} → Sections` }
-    : undefined
+  const picked =
+    field === 'strand'
+      ? `${groupBy} → Strand`
+      : `${groupBy} → Attribute → ${field}`
+  return ordered
+    ? {
+        path: `${picked}, then ${TRACK_MENU} → Sections`,
+        note: 'The Sections submenu moves write the drawn order.',
+      }
+    : { path: picked }
 }
 
 // One shared slider row (makeScatterPointSizeMenuItem) under a submenu each
@@ -841,11 +840,8 @@ const numberField =
 export const trackFields: Record<string, FieldRecipe> = {
   colorBy: colorByStep,
   color: colorStep,
-  colorField: colorFieldStep,
-  colorDomain: colorScaleStep,
-  colorPalette: colorScaleStep,
-  facetField: facetFieldStep,
-  facetDomain: facetDomainStep,
+  rowColor: rowColorStep,
+  facet: facetStep,
   jexlFilters: filterStep,
   jexlFiltersSetting: filterStep,
   // These three are declared by LinearHicDisplay alone, so as with the

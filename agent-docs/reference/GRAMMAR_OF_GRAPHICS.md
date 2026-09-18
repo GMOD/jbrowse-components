@@ -90,7 +90,7 @@ in full and of the format-typed displays only where it says so.
 | scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, hatches and rules (`packages/wiggle-core/src/ScoreScaleMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
-| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer; the display's `facetField` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
+| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer; the display's `facet` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
 | coordinates | a transform of the plane | genomic x along a strip, and the circular view's ring pass over it: the view is a `RegionHost` whose axis is the circumference, a display renders its strip as into a linear track, and one pass per ring resamples the strip's canvas in polar coordinates (`plugins/circular-view/src/rings/`, [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)) | polar, as a resampling of the finished picture rather than a twin per shape — measured at 4.3 ms a ring against 5.4–6.8 ms for the twin, exact at every bin width; the dotplot stays a display |
 
 The encoding — field to channel, evaluated once — is the grammar's central
@@ -268,11 +268,14 @@ The seams, named honestly:
 
 A row facet — split the features on a field's value, stack one section per
 value, name each with a chip — is answered three times. The feature display's
-"Group by..." (`plugins/canvas/src/LinearBasicDisplay/facet.ts`) and the mark
-display's facet read the same two slots, `facetField` and `facetDomain`
-(`packages/display-kit/src/facetConfigSchemaFields.ts`); the alignments
-display keeps its `groupBy` (`plugins/alignments/src/shared/groupFeatures.ts`),
-whose dimensions are not fields.
+"Group by..." (`plugins/canvas/src/LinearBasicDisplay/facet.ts`), the mark
+display's facet and the multi-sample variant displays' row banding read the
+same `facet` object, `"strand"` or `{ field, domain }`
+(`packages/display-kit/src/facetConfigSchema.ts`,
+[ADR-131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md));
+the alignments display keeps its `groupBy`
+(`plugins/alignments/src/shared/groupFeatures.ts`), whose dimensions are not
+fields.
 
 **The mark display's facet is the grammar's**
 ([ADR-130](../architecture-decision-records/adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)).
@@ -294,9 +297,9 @@ orders and names a value through `categoricalField` (below), and
 never decides which sections exist**, so no worker request carries one and a
 reorder refetches nothing: the listed values stack first, the rest follow
 sorted, and a listed value the data lacks takes no section. The multi-row and
-multiway synteny displays' `domain` slots, the feature and mark displays'
-`facetDomain`, the alignments display's `groupBy.domain` and the colour and
-glyph channels' legend order are that one word and rule
+multiway synteny displays' `domain` slots, the feature, mark and multi-sample
+variant displays' `facet.domain`, the alignments display's `groupBy.domain` and
+the colour and glyph channels' legend order are that one word and rule
 (`groupKeyComparator`); a key over the facet's own field lists its rows in the
 sections' order. The four tree-sidebar displays (MAF, multi-wiggle and the two
 multi-sample variant ones) share the word as a `domain` row-order slot, read as
@@ -311,12 +314,13 @@ the domain (`carryGroupDomain`); the chips are `GroupLabelChips.tsx`, and the
 hidden sections with their key-space reset `HiddenGroupsMixin.ts`.
 
 **Edit as JSON...** in the feature display's Group by and Color by attribute
-dialogs reads and writes the flat slots in the mark display's words:
-`{ facet: { field, domain }, color: "css" | { field, domain, palette }, filter }`,
-parsed by `@jbrowse/display-kit/channelSpec` and written by `applyChannelSpec`
-onto `facetField`/`facetDomain`, `colorField`/`colorDomain`/`colorPalette` or
-`color`, and the filter override. The Group by dialog applies a spec too
-(`groupByChannelSpec`).
+dialogs is an editor over the display's two settings and the filter override:
+`{ facet: "strand" | { field, domain }, color: "css" | { field, domain, palette }, filter }`.
+`@jbrowse/display-kit/channelSpec` parses the text through
+`preProcessConfigSnapshot`, the two objects' own lift and checks, so the box
+refuses what a config file cannot hold, and the dialog hands `facet` and
+`color` to `applyDisplaySettings` and `filter` to `setJexlFilters`. The Group by dialog writes the same two settings
+through `setFacet` and `setColorScale` (`groupByChannelSpec`).
 
 **Every categorical channel reads its field through one object**,
 `categoricalField(field, { domain, palette })`
@@ -337,19 +341,12 @@ less the hidden sections.
 The facet replaced a `frozen` `groupBy` slot,
 `{ type: 'strand' | 'attribute', attribute, domain }`, that the spec translated
 to and from; alignments keeps its `groupBy`, whose dimensions are not fields.
-Flat, and the multi-sample variant displays' row facet went flat the same way:
-the frozen slot read as `any` and needed a normalizer to stop a malformed value,
-and a sub-schema is not carried across a display-type switch the way a
-top-level slot is and needs `liftField` for its string shorthand. A sub-schema
-read no longer costs its typing: `getConf` and `readConfObject` check a
-`['facet', 'field']` path segment by segment and type its value
-(`ConfigurationSlotPath`), measured at +0.6% instantiations. The mark display
-keeps its marks' sub-schemas, because a mark list repeats them; its facet, one
-per display, is the flat pair. Two proposals were
-declined in review: filter shorthands such as `{ field, oneOf }` (jexl is the
-filter language, and reading structure back out of jexl is the fragile half);
-and the color as a `{ value, field, scale, domain, palette }` sub-schema shaped
-like the mark display's, for the same reasons as the facet.
+Why the facet and the colour are one config object each rather than flat
+slots, and the flat spelling's one-day life, is
+[ADR-131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md).
+One proposal was declined in review: filter shorthands such as
+`{ field, oneOf }` (jexl is the filter language, and reading structure back out
+of jexl is the fragile half).
 
 The multi-row display's `partitionField` is the same partition with one fixed
 row per value and no chip. What the mark display does not take is the
@@ -378,7 +375,7 @@ the sidebar can be read against both libraries before it is spelled.
 | Arranged row order                 | —                                                  | —                                                      | `layout`: order plus per-row label and colour overrides, written by drag, the arrangement dialog, a clustering run and sort-at-column; "Reset row order" clears it                                    |
 | Order at one column                | —                                                  | —                                                      | `sortRowsBy` and the right-click "Sort rows by … here", ComplexHeatmap's `row_order` from one column                                                                                                |
 | Focus on a clade                   | `viewClade`, `tree_subset`                         | —                                                      | `subtreeFilter`, a row-name set                                                                                                                                                                     |
-| Bands by a field                   | `groupOTU`, then a facet                           | —                                                      | the variant displays' `facetField` and `facetDomain`, resolved over `layout` when the rows are read — so a cross-band drag snaps back, and the band yields while a cluster tree describes the rows, as the multi-row display's `rowGroups` partition does |
+| Bands by a field                   | `groupOTU`, then a facet                           | —                                                      | the variant displays' `facet`, resolved over `layout` when the rows are read — so a cross-band drag snaps back, and the band yields while a cluster tree describes the rows, as the multi-row display's `rowGroups` partition does |
 | Row colour by a field              | `aes(color = field)` over the attached table       | `scale_row_color(field, channel)`                      | the variant displays' `colorBy` (a metadata column), resolved on the read and winning over a `labelColor` the row table holds; the multi-row display's `sampleColorMap` is the explicit map and `rowGroups` the match-to-group form |
 | Row labels                         | `geom_tiplab`                                      | tip labels                                             | `showRowLabels`, `colorRowLabels`                                                                                                                                                                   |
 | Branch lengths                     | `branch.length = "none"` for a cladogram           | —                                                      | `showBranchLength`                                                                                                                                                                                  |

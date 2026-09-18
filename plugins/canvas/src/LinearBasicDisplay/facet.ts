@@ -16,16 +16,14 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
+import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 
 /**
- * The `facetField` and `facetDomain` slots as written. The multi-row display's
- * `partitionField` is the same partition with one fixed row per value; a
- * section here packs its own rows.
+ * The `facet` object as written. The multi-row display's `partitionField` is
+ * the same partition with one fixed row per value; a section here packs its
+ * own rows.
  */
-export interface FeatureFacet {
-  field: string
-  domain: readonly string[]
-}
+export type FeatureFacet = FacetSetting
 
 // The facet's field, which orders its sections and names their chips.
 export function facetField({ field, domain }: FeatureFacet) {

@@ -32,10 +32,12 @@ export function laneDisplayConfig({
     // every mark alike; the BED-color path (`itemRgb`, which `boxColor` falls
     // through to when this is unset) takes only an `r,g,b` triple and would drop
     // the alpha a jexl-authored cell color can carry.
-    color: `jexl:get(feature,'laneColor')`,
-    colorField: '',
-    colorDomain: [],
-    colorPalette: [],
+    color: {
+      value: `jexl:get(feature,'laneColor')`,
+      field: '',
+      domain: [],
+      palette: [],
+    },
     connectorColor: undefined,
     utrColor: undefined,
     featureHeight,

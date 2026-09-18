@@ -55,22 +55,36 @@ function appWithGeneTrack() {
   return createJbApi(pluginManager)
 }
 
-test('a feature track groups, colors and filters through its display, and reads the channels back', async () => {
+test('a feature track groups and colors through the two settings jb.help names, and describeSlots lists them', async () => {
   const jb = appWithGeneTrack()
   await (jb.view() as LinearGenomeViewModel).launchTrack('genes')
-  const display = jb.trackModel('genes')
-    .activeDisplay as unknown as LinearCanvasBaseDisplayModel
-  display.applyChannelSpec({
+  const track = jb.trackModel('genes')
+  const display = track.activeDisplay as unknown as LinearCanvasBaseDisplayModel
+  expect(
+    display.applyDisplaySettings({
+      facet: 'strand',
+      color: { field: 'gene_biotype', domain: ['protein_coding'] },
+    }),
+  ).toMatchObject({ applied: ['facet', 'color'], failed: [] })
+  expect(display.channelSpec).toMatchObject({
     facet: { field: 'strand' },
     color: { field: 'gene_biotype', domain: ['protein_coding'] },
-    filter: ["feature.type == 'gene'"],
   })
-  expect(display.channelSpec).toEqual({
-    facet: { field: 'strand' },
-    color: { field: 'gene_biotype', domain: ['protein_coding'] },
-    filter: ["feature.type == 'gene'"],
-  })
-  expect(jb.getConf(display, 'facetField')).toBe('strand')
-  display.applyChannelSpec({ facet: null })
+  expect(jb.getConf(display, 'facet')).toEqual({ field: 'strand' })
+  display.applyDisplaySettings({ facet: null })
   expect(display.channelSpec.facet).toBeNull()
+  expect(
+    display.applyDisplaySettings({ color: { domain: ['x'] } }).failed,
+  ).toMatchObject([{ key: 'color' }])
+
+  const slots = jb.describeSlots(display.configuration)
+  expect(slots.facet).toMatchObject({
+    type: 'Facet',
+    shorthand: 'field',
+    slots: { field: { type: 'string' }, domain: { type: 'stringArray' } },
+  })
+  expect(slots.color).toMatchObject({
+    type: 'FeatureColor',
+    shorthand: 'value',
+  })
 })

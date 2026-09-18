@@ -1,11 +1,7 @@
-import {
-  ConfigurationSchema,
-  liftField,
-  liftValue,
-} from '@jbrowse/core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import { facetConfigSchemaFields } from '@jbrowse/display-kit/facetConfigSchemaFields'
+import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
@@ -23,6 +19,24 @@ export const MARK_SOURCES = ['features', 'density'] as const
 export type MarkSourceName = (typeof MARK_SOURCES)[number]
 
 export const DEFAULT_POINT_DIAMETER_PX = 4
+
+// A `domain` written as numbers is carried as strings, the one array slot
+// type the schema has.
+function stringDomain(snap: Record<string, unknown>) {
+  return Array.isArray(snap.domain)
+    ? { ...snap, domain: snap.domain.map(String) }
+    : snap
+}
+
+// An object naming a field and no scale reads it through the scale its other
+// slots imply, a `ramp` linear and anything else categorical, so a field is
+// never silently ignored.
+function inferScale(snap: Record<string, unknown>) {
+  const obj = stringDomain(snap)
+  return typeof obj.field === 'string' && obj.field && obj.scale === undefined
+    ? { ...obj, scale: obj.ramp === undefined ? 'categorical' : 'linear' }
+    : obj
+}
 
 const markColorSchema = ConfigurationSchema(
   'MarkColor',
@@ -101,7 +115,7 @@ const markColorSchema = ConfigurationSchema(
       description: 'viridis, or CSS colour stops',
     },
   },
-  { preProcessSnapshot: liftValue },
+  { shorthand: 'value', preProcessSnapshot: inferScale },
 )
 
 const markGlyphSchema = ConfigurationSchema(
@@ -163,7 +177,7 @@ const markGlyphSchema = ConfigurationSchema(
       description: 'category order',
     },
   },
-  { preProcessSnapshot: liftValue },
+  { shorthand: 'value', preProcessSnapshot: inferScale },
 )
 
 const markValueSchema = ConfigurationSchema(
@@ -221,7 +235,7 @@ const markValueSchema = ConfigurationSchema(
       description: 'shared or independent y axis',
     },
   },
-  { preProcessSnapshot: liftField },
+  { shorthand: 'field', preProcessSnapshot: stringDomain },
 )
 
 const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
@@ -619,7 +633,14 @@ export function configSchemaFactory() {
        * reads is made, such as a formula lifting a read's tag.
        */
       transform: types.array(transformStepSchema),
-      ...facetConfigSchemaFields,
+      /**
+       * #slot facet
+       * One band of rows per value of a field, split after `transform` and
+       * before any mark's own steps: `"HP"`, or `{ field, domain }` with the
+       * order the bands stack in. The object's slots are listed at
+       * [Facet](/docs/config/facet).
+       */
+      facet: facetConfigSchema,
       ...scoreAxisConfigSchemaFields,
       /**
        * #slot origin

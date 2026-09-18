@@ -58,6 +58,19 @@ returns the pristine mirror beside it. The two have the same content;
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)
 
+## preProcessConfigSnapshot
+
+A snapshot as `type` admits it: the same lift and checks `type.create`
+applies, so a dialog or a validator refuses exactly what a config file
+cannot hold. Throws what the schema's `preProcessSnapshot` throws.
+
+```js
+// type signature
+(type: IAnyType, snapshot: unknown) => Record<string, unknown>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
+
 ## readConfObject
 
 Given a configuration model (an instance of a ConfigurationSchema), read the

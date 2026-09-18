@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's facet moves off `marks[].facet` onto the display as the flat `facetField`/`facetDomain` pair the feature display already had, with a display-level `transform` running before it. The worker splits the features by the facet key and runs each mark's own steps over each section alone, so a faceted display is the unfaceted one drawn once per section; the main thread caps over every region's keys, orders by the domain, and derives the drawn layers, the key and the value axis from the sections left visible, and `stack.groupby` goes"
+summary: "The mark display's facet moves off `marks[].facet` onto the display as the setting the feature display already had (spelled as two flat slots here, one `facet` object since ADR-131), with a display-level `transform` running before it. The worker splits the features by the facet key and runs each mark's own steps over each section alone, so a faceted display is the unfaceted one drawn once per section; the main thread caps over every region's keys, orders by the domain, and derives the drawn layers, the key and the value axis from the sections left visible, and `stack.groupby` goes"
 ---
 
 # ADR-130: A facet is the display's, and splits before each layer's steps
@@ -38,10 +38,12 @@ could not say that:
 
 ## Decision
 
-**The facet is the display's two flat slots**, `facetField` and
-`facetDomain`, spread from `facetConfigSchemaFields` into the feature and mark
-displays alike. **A display-level `transform`** takes the same steps a mark
-does and runs before the facet, where a field the facet reads is made.
+**The facet is the display's**, one setting the feature and mark displays
+share. This record spelled it as two flat slots, `facetField` and
+`facetDomain`; [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md)
+supersedes that spelling with the `facet` object the same day, and the level
+and semantics here stand. **A display-level `transform`** takes the same steps
+a mark does and runs before the facet, where a field the facet reads is made.
 
 **The worker splits before each mark's steps** (`facetLayers`): the display's
 steps run, the features split on `categoricalField(field).key`, each mark's

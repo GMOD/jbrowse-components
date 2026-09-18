@@ -351,9 +351,11 @@ const agKaryotypeTrack = (
       // is dosage order, which the figure's prose reads off the lane: the
       // three classes come out as contiguous blocks, standard at the top and
       // homozygous inverted at the bottom.
-      facetField: 'karyotype',
-      facetDomain: ['2L+a/2L+a', '2La/2L+a', '2La/2La'],
-      colorBy: 'karyotype',
+      facet: {
+        field: 'karyotype',
+        domain: ['2L+a/2L+a', '2La/2L+a', '2La/2La'],
+      },
+      rowColor: 'karyotype',
       // 'skip', the default: the display fills the whole lane with
       // REFERENCE_COLOR in CSS and paints only ALT cells on top, so the lane is
       // a solid grey field with the carriers' blocks on it (review: "it should
@@ -1197,7 +1199,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               // in a megabase of unlinked sequence on each side, which is
               // exactly the variation that does NOT travel with the haplotype.
               clusterRegion: 'chr2:135,787,850-135,876,467',
-              colorBy: 'population',
+              rowColor: 'population',
               // the common, block-tagging variants. Unfiltered, this window is
               // mostly rare variation and the slab is buried in speckle.
               minorAlleleFrequencyFilter: 0.35,

@@ -147,16 +147,16 @@ describe('colorBy config slot', () => {
       type: 'SharedVariantDisplay',
       displayId: 'test-colorby-1',
     })
-    expect(readConfObject(config, 'colorBy')).toBe('')
+    expect(readConfObject(config, 'rowColor')).toBe('')
   })
 
   it('can be set to a metadata attribute name', () => {
     const config = configSchema.create({
       type: 'SharedVariantDisplay',
       displayId: 'test-colorby-2',
-      colorBy: 'population',
+      rowColor: 'population',
     })
-    expect(readConfObject(config, 'colorBy')).toBe('population')
+    expect(readConfObject(config, 'rowColor')).toBe('population')
   })
 })
 
@@ -323,29 +323,29 @@ describe('maybeApplyFacet', () => {
   ]
 
   it('returns undefined when the field is unset (order untouched)', () => {
-    expect(maybeApplyFacet('', [], sources)).toBeUndefined()
+    expect(maybeApplyFacet(undefined, sources)).toBeUndefined()
   })
 
   it('bands by the requested attribute', () => {
-    expect(maybeApplyFacet('pop', [], sources)!.map(s => s.name)).toEqual([
-      's2',
-      's1',
-      's3',
-    ])
+    expect(
+      maybeApplyFacet({ field: 'pop', domain: [] }, sources)!.map(s => s.name),
+    ).toEqual(['s2', 's1', 's3'])
   })
 
   it("stacks the domain's values first", () => {
-    expect(maybeApplyFacet('pop', ['EUR'], sources)!.map(s => s.name)).toEqual([
-      's1',
-      's3',
-      's2',
-    ])
+    expect(
+      maybeApplyFacet({ field: 'pop', domain: ['EUR'] }, sources)!.map(
+        s => s.name,
+      ),
+    ).toEqual(['s1', 's3', 's2'])
   })
 
   // silent for the reason `colorByPalette`'s absent case is
   it('returns undefined, silently, when the attribute is absent', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    expect(maybeApplyFacet('nonexistent', [], sources)).toBeUndefined()
+    expect(
+      maybeApplyFacet({ field: 'nonexistent', domain: [] }, sources),
+    ).toBeUndefined()
     expect(warn).not.toHaveBeenCalled()
     warn.mockRestore()
   })

@@ -137,13 +137,13 @@ the census shows authors using them as shared.
 `groupBy` now names one mechanism. It is an object naming a partition on the
 alignments and LGV synteny displays, and every value takes its own stacked
 section with its own chips, its own collapse and its own `domain`. The feature
-display partitions on a field, so it spells the same stack as two flat
-settings, `facetField` and `facetDomain` (GRAMMAR_OF_GRAPHICS.md, "The facet
+display partitions on a field, so it spells the same stack as one setting,
+`facet: "strand" | { field, domain }` (GRAMMAR_OF_GRAPHICS.md, "The facet
 stage"). The multi-sample variant displays' row banding used to answer to
 `groupBy` while doing something else — sorting the rows by a sample-metadata
-column, with no sections, no chips and no domain — and it is spelled
-`facetField` and `facetDomain` instead, the feature display's two settings
-(`maybeApplyFacet` and `sortSourcesByAttribute` in
+column, with no sections, no chips and no domain — and it is spelled `facet`
+instead, the feature display's setting (`maybeApplyFacet` and
+`sortSourcesByAttribute` in
 `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). The census counts
 the key as the corpus spelled it when the record was written, so the `groupBy`
 row above still holds the feature and variant displays' entries.
@@ -287,11 +287,11 @@ that none defines — plus the migration warnings.
   class the block exists**: `LinearMarkDisplay`'s `marks[].encoding`, evaluated
   once in the worker —
   [ADR-107](../architecture-decision-records/adr-107-the-quantitative-class-is-authored-in-config.md).
-  The feature display takes the categorical channels as INPUT: **Edit as
-  JSON...** reads `{ facet, color, filter }` and writes each onto the slot its
-  menu writes (`LinearCanvasBaseDisplay.applyChannelSpec`), so nothing stores
-  the block and the flat keys stay the format (GRAMMAR_OF_GRAPHICS.md, "The
-  facet stage").
+  The feature display's categorical channels are two settings, `facet` and
+  `color`, each one config object with a string shorthand
+  ([ADR-131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md));
+  **Edit as JSON...** is an editor over them and the filter override, and
+  stores no block of its own (GRAMMAR_OF_GRAPHICS.md, "The facet stage").
 - *First-class `Scale` objects.* One consumer set (`scaleType` / `minScore` /
   `maxScore` / `autoscale`) is already shared by the wiggle, Manhattan,
   alignments-coverage and MAF-coverage displays through `@jbrowse/wiggle-core`,
