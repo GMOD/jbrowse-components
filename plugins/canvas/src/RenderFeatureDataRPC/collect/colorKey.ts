@@ -2,6 +2,7 @@ import { categoricalColorScale } from '@jbrowse/core/ui/colors'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { valueText } from '@jbrowse/core/util/groupKeys'
 import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 import { STRAND_FIELD, readStrand } from '@jbrowse/core/util/strandScale'
@@ -18,14 +19,6 @@ export interface PaintedValue {
   css: string
   packed: number
   missing?: boolean
-}
-
-function labelOf(value: unknown) {
-  return value === undefined || value === null
-    ? ''
-    : Array.isArray(value)
-      ? value.map(String).join(',')
-      : String(value)
 }
 
 /**
@@ -59,12 +52,12 @@ export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
   // the field.
   function labelAt(box: Feature, level: Feature) {
     for (let cur: Feature | undefined = level; cur; cur = cur.parent?.()) {
-      const label = labelOf(read(cur))
+      const label = valueText(read(cur))
       if (label !== '') {
         return label
       }
     }
-    return box === level ? '' : labelOf(read(box))
+    return box === level ? '' : valueText(read(box))
   }
 
   return {

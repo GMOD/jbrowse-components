@@ -1,4 +1,5 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
+import { valueText } from '@jbrowse/core/util/groupKeys'
 
 import { LITERAL } from '../colorClasses.ts'
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
@@ -692,20 +693,6 @@ function emitGlyph(
   GLYPH_EMITTERS[layout.glyphType](layout, place, ctx, collector)
 }
 
-// A multi-valued attribute joins, so two features carrying the same list land
-// in one section; a missing one is the '' catch-all.
-function groupKeyOf(feature: Feature, ctx: RenderContext) {
-  if (ctx.readGroupKey === undefined) {
-    return undefined
-  }
-  const value = ctx.readGroupKey(feature)
-  return value === undefined || value === null
-    ? ''
-    : Array.isArray(value)
-      ? value.map(String).join(',')
-      : String(value)
-}
-
 export function processFeatureRecord(
   layout: FeatureLayout,
   ctx: RenderContext,
@@ -743,7 +730,10 @@ export function processFeatureRecord(
     })
   }
 
-  const groupKey = groupKeyOf(feature, ctx)
+  const groupKey =
+    ctx.readGroupKey === undefined
+      ? undefined
+      : valueText(ctx.readGroupKey(feature))
   collector.flatbushItems.push({
     kind: 'feature',
     featureId: feature.id(),

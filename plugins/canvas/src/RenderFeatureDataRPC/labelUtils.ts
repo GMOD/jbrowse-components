@@ -1,3 +1,5 @@
+import { valueText } from '@jbrowse/core/util/groupKeys'
+
 import { readConfigValueSafe } from './renderConfig.ts'
 import { hasVisibleText } from './util.ts'
 
@@ -6,15 +8,8 @@ import type { GlyphType } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
-// A label value may arrive as a multi-valued array — a GFF attribute whose
-// value held unescaped commas — so width measurement and truncation downstream
-// always see text.
 function toLabelString(value: unknown) {
-  if (value === undefined || value === null) {
-    return undefined
-  }
-  const text = Array.isArray(value) ? value.join(',') : String(value)
-  return text.length > 0 ? text : undefined
+  return valueText(value) || undefined
 }
 
 export function getFeatureName(feature: Feature): string | undefined {

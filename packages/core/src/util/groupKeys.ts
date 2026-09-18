@@ -16,6 +16,19 @@ export const OVERFLOW_GROUP_KEY = '\u0000overflow'
 // closed set, a tag or an attribute, whose value space is the file's.
 export const MAX_GROUPS = 40
 
+/**
+ * The text a field value groups, colors and labels by: a missing value is the
+ * `''` catch-all, and a multi-valued attribute joins, so two features carrying
+ * the same list land together.
+ */
+export function valueText(value: unknown): string {
+  return value === undefined || value === null
+    ? ''
+    : Array.isArray(value)
+      ? value.map(String).join(',')
+      : String(value)
+}
+
 function groupKeyRank(key: string) {
   return key === '' ? 1 : key === OVERFLOW_GROUP_KEY ? 2 : 0
 }

@@ -6,7 +6,15 @@ import {
   compareGroupKeys,
   groupKeyComparator,
   groupKeySpaceOf,
+  valueText,
 } from './groupKeys.ts'
+
+test('a missing value is the catch-all and a list joins', () => {
+  expect(valueText(undefined)).toBe('')
+  expect(valueText(null)).toBe('')
+  expect(valueText(['a', 2])).toBe('a,2')
+  expect(valueText(0)).toBe('0')
+})
 
 test('a domain places the keys it lists first, and the rest sort behind them', () => {
   const keys = ['10', 'key2', '', 'key5', '2', 'key3']

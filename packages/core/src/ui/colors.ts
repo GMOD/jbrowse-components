@@ -1,6 +1,7 @@
 import * as convert from '../util/color-bits/convert.ts'
 import { NO_CATEGORY_COLOR, relight } from '../util/color/index.ts'
 import { cssColorToNormalizedRgb } from '../util/colorBits.ts'
+import { valueText } from '../util/groupKeys.ts'
 
 const category10 = [
   '#1f77b4',
@@ -314,12 +315,10 @@ export function categoricalColor(
   domain: readonly string[] = [],
   palette: readonly string[] = [],
 ) {
-  if (value === undefined || value === null || value === '') {
+  const label = valueText(value)
+  if (label === '') {
     return NO_CATEGORY_COLOR
   }
-  const label = Array.isArray(value)
-    ? value.map(String).join(',')
-    : String(value)
   return domain.length === 0 && palette.length === 0
     ? categoricalValueColor(label)
     : cachedColorScale(domain, palette)(label)
