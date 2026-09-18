@@ -5,7 +5,7 @@ export {
   resolveTrackId,
 } from './catalog.ts'
 export { delay } from './poll.ts'
-export { waitForJBrowseReady } from './ready.ts'
+export { waitForFrame, waitForJBrowseReady } from './ready.ts'
 export {
   APP_CENSUS,
   describePendingDisplays,
@@ -34,7 +34,6 @@ export {
   displayById,
   displayPainted,
   displaySettled,
-  hasAppReadyMarker,
   isPageBusyInPage,
   waitForAppReady,
   waitForAppSettled,

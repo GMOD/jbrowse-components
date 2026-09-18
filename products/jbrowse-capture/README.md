@@ -49,7 +49,8 @@ decides the answer:
 2. **`[data-app-phase="ready"]`, held.** The session renders it when no view is
    resolving an assembly and no display is fetching. It has to hold for a beat,
    not merely be true once: a display drops to `ready` in the gap between one
-   fetch finishing and the debounced next one starting.
+   fetch finishing and the debounced next one starting. The hold also waits out
+   a view body still loading its code, which the marker cannot see.
 
 Then one negative gate, which is meaningful only after those two and answers
 what they do not — the marker is about WORK, and a display whose fetch failed is
@@ -92,9 +93,11 @@ before the shot or a hidden element is a line of Puppeteer on the page
 Two waits, depending on what you did:
 
 - **`waitForJBrowseReady(page)`** is the wait on its own, for a page you
-  navigated yourself. The individual stages (`waitForSession`,
-  `waitForLoadingComplete`, `waitForDisplaysDone`, `waitForQuiescent`, ...) are
-  exported too, and each one documents what it can and cannot tell you.
+  navigated yourself. `waitForFrame(page)` is its second half alone, for a page
+  whose session you already gated, after a resize or a click. The individual
+  stages (`waitForSession`, `waitForLoadingComplete`, `waitForDisplaysDone`,
+  `waitForQuiescent`, ...) are exported too, and each one documents what it can
+  and cannot tell you.
 - **`waitForAppSettled(page)`** is the wait after you CLICK something. A page
   that is loading starts out `loading` and the transition into `ready` is it
   finishing; a page you just clicked is already `ready` and stays that way until

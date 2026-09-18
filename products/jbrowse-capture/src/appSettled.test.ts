@@ -50,6 +50,18 @@ test('work that starts after the wait does resets the hold', async () => {
   clearTimeout(finishedAt)
 })
 
+test('a view body still waiting on its component keeps the app unsettled', async () => {
+  document.body.innerHTML = `<span hidden data-app-phase="ready"></span>
+    <span data-view-component-pending="true"></span>`
+  const arrived = setTimeout(() => {
+    setPhase('ready')
+  }, 100)
+  const start = Date.now()
+  await expect(waitForAppSettled(jsdomPage(), FAST)).resolves.toBe(true)
+  expect(Date.now() - start).toBeGreaterThanOrEqual(100 + FAST.holdMs)
+  clearTimeout(arrived)
+})
+
 test('an app still working when the timeout expires reports false', async () => {
   setPhase('loading')
   await expect(

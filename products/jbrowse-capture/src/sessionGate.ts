@@ -25,6 +25,11 @@ export interface SessionExpectations {
    * the default set alone when the id you passed does not exist at all.
    */
   trackIds?: string[]
+  /**
+   * The fewest open views that count. Default 1; 0 accepts a session that
+   * opened none, such as one loaded to show a dialog.
+   */
+  views?: number
 }
 
 /**
@@ -102,6 +107,7 @@ export async function waitForSession(
   {
     assembly,
     trackIds = [],
+    views = 1,
     timeout = 60000,
   }: SessionExpectations & { timeout?: number } = {},
 ) {
@@ -122,7 +128,7 @@ export async function waitForSession(
       summary = now
       return (
         !!now &&
-        now.views > 0 &&
+        now.views >= views &&
         (assembly === undefined || now.assemblies.includes(assembly)) &&
         trackIds.every(id => now.trackIds.includes(id))
       )
@@ -146,7 +152,7 @@ export async function waitForSession(
       .join(' and ')
     throw new Error(
       `the session never reached the requested state after ${timeout}ms. ` +
-        `Wanted ${wanted || 'an open view'}; found ${found}. ` +
+        `Wanted ${wanted || (views > 0 ? 'an open view' : 'a session')}; found ${found}. ` +
         'A trackId the config does not define, or an assembly name that does ' +
         'not match the config, looks like this.',
     )

@@ -283,29 +283,30 @@ export function waitForDisplayPhases(
   )
 }
 
+/**
+ * A view whose MODEL is initialized but whose lazily-imported React component
+ * has not arrived: ViewWrapper's Suspense spinner. The app marker cannot see
+ * it, since the model it reads is finished, so a view clicked into existence
+ * reads `ready` for as long as its chunk takes to load.
+ */
+const VIEW_COMPONENT_PENDING = '[data-view-component-pending]'
+
 // The view-level counterpart: ViewContainer publishes `data-view-phase` from the
 // view model's own phase, and `loading` means the view is still waiting on its
 // assembly (or on init's navigation) and has mounted no displays at all. Every
 // display-level wait above is silent in that state — there is nothing to be
 // loading yet — so a capture taken then lands on a bare spinner.
 //
-// The `data-view-component-pending` half is the case the phase attribute cannot
-// report: a view whose MODEL is initialized but whose lazily-imported React
-// component has not arrived, so ViewContainer publishes a non-loading phase over
-// a body that is still ViewWrapper's Suspense spinner. A session loaded at page
-// load has usually won that race by the time anything else settles; a view
-// CLICKED into existence fetches its chunk only then, and its frame is the one a
-// launch-dialog figure is about.
-//
 // NOT best-effort, unlike its neighbours: a view that never leaves `loading` has
 // no content to fall through to, so the timeout IS the diagnosis and the caller
 // should surface it.
 export function waitForViewPhases(page: Page, timeoutMs: number) {
   return page.waitForFunction(
-    () =>
+    (pending: string) =>
       document.querySelector('[data-view-phase="loading"]') === null &&
-      document.querySelector('[data-view-component-pending]') === null,
+      document.querySelector(pending) === null,
     { timeout: timeoutMs, polling: 'mutation' },
+    VIEW_COMPONENT_PENDING,
   )
 }
 
@@ -403,8 +404,7 @@ export function waitForAppReady(
   return settled(page.waitForSelector(APP_READY, { timeout, visible: false }))
 }
 
-/** Whether this build publishes the app-level readiness marker at all. */
-export function hasAppReadyMarker(page: Page): Promise<boolean> {
+function hasAppReadyMarker(page: Page): Promise<boolean> {
   return page.evaluate(
     () => document.querySelector('[data-app-phase]') !== null,
   )
@@ -434,6 +434,9 @@ export function hasAppReadyMarker(page: Page): Promise<boolean> {
  * replaced. Requiring the idle to HOLD costs the hold and no more, and catches
  * the same late-starting work.
  *
+ * The hold also requires no view body to be waiting on its lazy component,
+ * which the marker cannot see.
+ *
  * Throws on a build too old for the marker rather than falling back — see the
  * body.
  */
@@ -461,8 +464,11 @@ export async function waitForAppSettled(
     () =>
       page
         .evaluate(
-          selector => document.querySelector(selector) !== null,
+          (ready, pending) =>
+            document.querySelector(ready) !== null &&
+            document.querySelector(pending) === null,
           APP_READY,
+          VIEW_COMPONENT_PENDING,
         )
         .catch(() => false),
     { holdMs, timeout, pollMs },
