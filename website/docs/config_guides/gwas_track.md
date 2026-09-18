@@ -113,10 +113,12 @@ types**), and two slots choose what it reads:
   — gives each distinct value of a column its own color and draws a key of the
   values met. A value takes the same color in every region and session. The
   track menu's **Color by** submenu switches between a single color, a field and
-  LD. The object's [`domain`](/docs/config/manhattancolor/#slot-domain) is the
-  order those values take, in the key and in the palette: the values it lists
-  come first, in that order, and the rest follow sorted. A scan whose tiers read
-  high to low names them here, and `palette` hands them colors.
+  LD, and keeps the field and its order through a switch, so picking the field
+  again finds them. The object's
+  [`domain`](/docs/config/manhattancolor/#slot-domain) is the order those values
+  take, in the key and in the palette: the values it lists come first, in that
+  order, and the rest follow sorted. A scan whose tiers read high to low names
+  them here, and `palette` hands them colors.
 
 ```json addtrack
 {
