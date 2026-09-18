@@ -7,176 +7,37 @@ import { planMarks } from '@jbrowse/render-core/marks'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
-import { emptyConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
-import { emptyLinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
-import { emptyOverlapsUploadData } from '../../features/overlap/types.ts'
-import {
-  buildReadFields,
-  emptyReadFields,
-} from '../../features/read/buildRegion.ts'
 import { paintArcBand } from './arcMarks.ts'
-import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
+import {
+  ALIGNMENTS_COVERAGE_MARKS,
+  coverageRegionOf,
+  emptyCoverageRegion,
+} from './coverageMarks.ts'
 import { PILEUP_MARKS } from './pileupMarks.ts'
 import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
-import type { ConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
-import type { CoverageRegionFields } from '../../features/coverage/types.ts'
-import type { GapUploadData } from '../../features/gap/types.ts'
-import type { LinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
-import type { MismatchUploadData } from '../../features/mismatch/types.ts'
-import type { ModificationUploadData } from '../../features/modification/types.ts'
-import type { OverlapsUploadData } from '../../features/overlap/types.ts'
-import type { PerBaseLetterUploadData } from '../../features/perBaseLetter/types.ts'
-import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
-import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
-import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
+import type { AlignmentsCoverageRegion } from './coverageMarks.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
-  CigarUploadData,
   RenderBlock,
   RenderState,
   SectionRender,
 } from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-export interface Canvas2DRegionData
-  extends
-    ReadRegionFields,
-    ArcsUploadData,
-    ConnectingLinesUploadData,
-    CoverageRegionFields,
-    GapUploadData,
-    LinkedReadLinesUploadData,
-    MismatchUploadData,
-    ModificationUploadData,
-    OverlapsUploadData,
-    PerBaseQualityUploadData,
-    InterbaseUploadData,
-    PerBaseLetterUploadData {
-  softclipBasePositions: Uint32Array
-  softclipBaseYs: Uint16Array
-  softclipBaseBases: Uint8Array
-  snpPackedBuffer: ArrayBuffer
-  modCovPackedBuffer: ArrayBuffer
-  interbasePackedBuffer: ArrayBuffer
-  interbaseMaxCount: number
-  indicatorPackedBuffer: ArrayBuffer
+// One region key's three feeds: the laid-out payload the pileup marks read,
+// absent for an arcs-only or density region; the coverage band's region, built
+// the way the GPU renderer builds it; and the arc band's feed.
+export interface Canvas2DRegion {
+  pileup: PileupDataResult | undefined
+  coverage: AlignmentsCoverageRegion
+  arcs: ArcsUploadData
 }
 
-// Builds all CIGAR-derived canvas fields. The merged interbase array travels
-// whole, with the three counts that partition it as
-// [insertions | softclips | hardclips]: the insertion and clip marks declare
-// their own slice of it, so the packer, the painter and the hit test bound
-// their walks by one expression rather than three.
-function buildCigarFields(data: CigarUploadData) {
-  return {
-    // gap positions store [start, end] pairs
-    gapPositions: data.gapPositions,
-    gapYs: data.gapYs,
-    gapTypes: data.gapTypes,
-    gapFrequencies: data.gapFrequencies,
-    mismatchPositions: data.mismatchPositions,
-    mismatchYs: data.mismatchYs,
-    mismatchBases: data.mismatchBases,
-    mismatchFrequencies: data.mismatchFrequencies,
-    mismatchQuals: data.mismatchQuals,
-    interbasePositions: data.interbasePositions,
-    interbaseYs: data.interbaseYs,
-    interbaseLengths: data.interbaseLengths,
-    interbaseFrequencies: data.interbaseFrequencies,
-    interbaseTypes: data.interbaseTypes,
-    numInsertions: data.numInsertions,
-    numSoftclips: data.numSoftclips,
-    numHardclips: data.numHardclips,
-    softclipBasePositions: data.softclipBasePositions,
-    softclipBaseYs: data.softclipBaseYs,
-    softclipBaseBases: data.softclipBaseBases,
-  }
-}
-
-const EMPTY_PILEUP_FIELDS: Canvas2DRegionData = {
-  ...emptyReadFields(),
-  gapPositions: new Uint32Array(0),
-  gapYs: new Uint16Array(0),
-  gapTypes: new Uint8Array(0),
-  gapFrequencies: new Uint8Array(0),
-  mismatchPositions: new Uint32Array(0),
-  mismatchYs: new Uint16Array(0),
-  mismatchBases: new Uint8Array(0),
-  mismatchFrequencies: new Uint8Array(0),
-  mismatchQuals: new Uint8Array(0),
-  interbasePositions: new Uint32Array(0),
-  interbaseYs: new Uint16Array(0),
-  interbaseLengths: new Uint32Array(0),
-  interbaseFrequencies: new Uint8Array(0),
-  interbaseTypes: new Uint8Array(0),
-  numInsertions: 0,
-  numSoftclips: 0,
-  numHardclips: 0,
-  softclipBasePositions: new Uint32Array(0),
-  softclipBaseYs: new Uint16Array(0),
-  softclipBaseBases: new Uint8Array(0),
-  modificationPositions: new Uint32Array(0),
-  modificationYs: new Uint16Array(0),
-  modificationColors: new Uint32Array(0),
-  perBaseQualPositions: new Uint32Array(0),
-  perBaseQualYs: new Uint16Array(0),
-  perBaseQualScores: new Uint8Array(0),
-  perBaseLetterPositions: new Uint32Array(0),
-  perBaseLetterYs: new Uint16Array(0),
-  perBaseLetterBases: new Uint8Array(0),
-  coveragePackedBuffer: new ArrayBuffer(0),
-  coverageMaxDepth: 0,
-  coverageBinSize: 1,
-  snpPackedBuffer: new ArrayBuffer(0),
-  modCovPackedBuffer: new ArrayBuffer(0),
-  interbasePackedBuffer: new ArrayBuffer(0),
-  interbaseMaxCount: 0,
-  indicatorPackedBuffer: new ArrayBuffer(0),
-  ...emptyArcsUploadData(),
-  ...emptyConnectingLinesUploadData(),
-  ...emptyLinkedReadLinesUploadData(),
-  ...emptyOverlapsUploadData(),
-}
-
-function buildPileupRegion(
-  data: PileupDataResult,
-  arcs: ArcsUploadData | undefined,
-): Canvas2DRegionData {
-  return {
-    ...buildReadFields(data),
-    ...buildCigarFields(data),
-    modificationPositions: data.modificationPositions,
-    modificationYs: data.modificationYs,
-    modificationColors: data.modificationColors,
-    perBaseQualPositions: data.perBaseQualPositions,
-    perBaseQualYs: data.perBaseQualYs,
-    perBaseQualScores: data.perBaseQualScores,
-    perBaseLetterPositions: data.perBaseLetterPositions,
-    perBaseLetterYs: data.perBaseLetterYs,
-    perBaseLetterBases: data.perBaseLetterBases,
-    coveragePackedBuffer: data.coveragePackedBuffer,
-    coverageMaxDepth: data.coverageMaxDepth,
-    coverageBinSize: data.coverageBinSize,
-    snpPackedBuffer: data.snpPackedBuffer,
-    modCovPackedBuffer: data.modCovPackedBuffer,
-    interbasePackedBuffer: data.interbasePackedBuffer,
-    interbaseMaxCount: data.interbaseMaxCount,
-    indicatorPackedBuffer: data.indicatorPackedBuffer,
-    connectingLinePositions: data.connectingLinePositions,
-    connectingLineYs: data.connectingLineYs,
-    linkedReadLinePositions: data.linkedReadLinePositions,
-    linkedReadLineYs: data.linkedReadLineYs,
-    linkedReadLineColorTypes: data.linkedReadLineColorTypes,
-    numLinkedReadLines: data.numLinkedReadLines,
-    overlapPositions: data.overlapPositions,
-    overlapYs: data.overlapYs,
-    ...(arcs ?? emptyArcsUploadData()),
-  }
-}
+const EMPTY_ARCS = emptyArcsUploadData()
 
 /**
  * Pure builder: turns the model's observable per-section inputs into the
@@ -186,32 +47,34 @@ function buildPileupRegion(
  * keys equal the raw region index, so ungrouped is byte-identical.
  */
 export function buildAlignmentsRegionMap(sources: AlignmentsSources) {
-  const regions = new Map<number, Canvas2DRegionData>()
+  const regions = new Map<number, Canvas2DRegion>()
   sources.sections.forEach((section, s) => {
     for (const [regionIdx, data] of section.laidOutPileupMap) {
-      regions.set(
-        sectionRegionKey(s, regionIdx),
-        buildPileupRegion(data, section.arcsRpcDataMap.get(regionIdx)),
-      )
+      regions.set(sectionRegionKey(s, regionIdx), {
+        pileup: data,
+        coverage: coverageRegionOf(data),
+        arcs: section.arcsRpcDataMap.get(regionIdx) ?? EMPTY_ARCS,
+      })
     }
     // Arc-only regions (arcs arrived for a region with no pileup) attach to
     // this same section.
     for (const [regionIdx, arcs] of section.arcsRpcDataMap) {
       if (!section.laidOutPileupMap.has(regionIdx)) {
         regions.set(sectionRegionKey(s, regionIdx), {
-          ...EMPTY_PILEUP_FIELDS,
-          ...arcs,
+          pileup: undefined,
+          coverage: emptyCoverageRegion(),
+          arcs,
         })
       }
     }
   })
-  // The density tier's bins, into section 0's keys — every other field empty,
-  // so the pileup layers paint nothing and the band's depth-bar layer paints
-  // the bins.
+  // The density tier's bins, into section 0's keys, where the band's depth-bar
+  // layer paints them.
   for (const [regionIdx, coverage] of sources.densityRegions) {
     regions.set(sectionRegionKey(0, regionIdx), {
-      ...EMPTY_PILEUP_FIELDS,
-      ...coverage,
+      pileup: undefined,
+      coverage: { ...emptyCoverageRegion(), ...coverage },
+      arcs: EMPTY_ARCS,
     })
   }
   return regions
@@ -246,7 +109,7 @@ export class Canvas2DAlignmentsRenderer
   extends Canvas2DRenderingBackendBase
   implements AlignmentsRenderingBackend
 {
-  private regions: ReadonlyMap<number, Canvas2DRegionData> = new Map()
+  private regions: ReadonlyMap<number, Canvas2DRegion> = new Map()
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
@@ -281,7 +144,7 @@ export class Canvas2DAlignmentsRenderer
  */
 export function drawAlignmentBlocks(
   ctx: Ctx2D,
-  regions: ReadonlyMap<number, Canvas2DRegionData>,
+  regions: ReadonlyMap<number, Canvas2DRegion>,
   blocks: RenderBlock[],
   state: RenderState,
 ) {
@@ -330,7 +193,7 @@ export function drawAlignmentBlocks(
           ): e is {
             sec: SectionRender
             sectionState: RenderState
-            region: Canvas2DRegionData
+            region: Canvas2DRegion
           } => Boolean(e.region),
         )
       return found.length > 0 ? found : undefined
@@ -353,26 +216,29 @@ export function drawAlignmentBlocks(
             sec.covClipHeight,
             () => {
               for (const mark of ALIGNMENTS_COVERAGE_MARKS) {
-                mark.paintBlock(ctx, region, block, sectionState)
+                mark.paintBlock(ctx, region.coverage, block, sectionState)
               }
             },
           )
         }
 
-        withClip(
-          ctx,
-          scissorX,
-          sec.pileupClipTop,
-          scissorW,
-          sec.pileupClipHeight,
-          () => {
-            // The pileup marks in `PILEUP_MARKS` order — the GPU renderer draws
-            // the same plan — with the per-section `sectionState`.
-            for (const mark of pileup.marks) {
-              mark.paintBlock(ctx, region, block, sectionState)
-            }
-          },
-        )
+        const { pileup: pileupRegion } = region
+        if (pileupRegion) {
+          withClip(
+            ctx,
+            scissorX,
+            sec.pileupClipTop,
+            scissorW,
+            sec.pileupClipHeight,
+            () => {
+              // The pileup marks in `PILEUP_MARKS` order — the GPU renderer
+              // draws the same plan — with the per-section `sectionState`.
+              for (const mark of pileup.marks) {
+                mark.paintBlock(ctx, pileupRegion, block, sectionState)
+              }
+            },
+          )
+        }
 
         // Up- and down-mode arcs both draw here, after the pileup. The band
         // never overlaps the pileup region, and up-mode arcs still land in front
@@ -384,7 +250,7 @@ export function drawAlignmentBlocks(
           withClip(ctx, scissorX, arcBand.top, scissorW, arcBand.height, () => {
             // The same four marks in the same order the GPU draws, so a layer
             // cannot be reordered on one backend alone.
-            paintArcBand(ctx, region, block, {
+            paintArcBand(ctx, region.arcs, block, {
               ...sectionState,
               arcBand,
               screenWidthPx: scissorW,

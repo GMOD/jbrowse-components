@@ -4,13 +4,11 @@ import {
 } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { intronAlpha } from '../../shaders/slang/gap.js.generated.ts'
 import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.consts.generated.ts'
-import { readIdAt } from '../../shared/readIdentity.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { CoverageRegionFields } from '../../features/coverage/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { ReadIdentity } from '../../shared/readIdentity.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
@@ -24,35 +22,6 @@ export type {
   ModCoverageUploadData,
   ReadUploadData,
 } from '../../shared/uploadTypes.ts'
-
-export function buildReadIdToIndex(d: ReadIdentity) {
-  const m = new Map<string, number>()
-  for (let i = 0; i < d.readKeys.length; i++) {
-    m.set(readIdAt(d, i)!, i)
-  }
-  return m
-}
-
-// Its only consumers are the chain/selection overlay bounds, which do nothing
-// unless a read is hovered or selected — so on a cold render the map is built
-// over every fetched read and never read. At ultra-deep coverage that made it
-// the single largest main-thread cost (~104ms of 660ms busy). Deferring to the
-// first lookup keeps it off the initial-render path; `model.readIdIndexMap` is
-// gated the same way one layer up.
-//
-// It is also where the id STRINGS get built at all, now that the worker ships
-// keys (shared/readIdentity.ts) — the overlays match against
-// `featureIdUnderMouse`, which is a string. Same deferral, so a cold render
-// still builds none of them.
-export function lazyReadIdToIndex(d: ReadIdentity) {
-  let map: Map<string, number> | undefined
-  return () => {
-    if (map === undefined) {
-      map = buildReadIdToIndex(d)
-    }
-    return map
-  }
-}
 
 export interface RenderState {
   scrollTop: number

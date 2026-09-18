@@ -318,12 +318,6 @@ export interface SortedBy {
 // once per recolour. Every fill path — GPU, Canvas2D, SVG export, legend — then
 // reads that baked category and never this.
 //
-// It said "read by every fill path … read.slang is the one twin that must still
-// be hand-mirrored", which stopped being true when the classification moved to
-// the CPU: read.slang has no `chainHasSupp` and takes `colorCategory` (ATTR10).
-// The array was still threaded into `ReadRegionFields` and `Canvas2DRegionData`
-// on the strength of that sentence, where nothing read it.
-//
 // FLAGS, NOT A 0-4 ENUM, and the difference is not cosmetic. The two things this
 // byte carries are answers to unrelated questions asked of different units —
 // which way does this CHAIN point (a sign, from the chain's primary) and how did

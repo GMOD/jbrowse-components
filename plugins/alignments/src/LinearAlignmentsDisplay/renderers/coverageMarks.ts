@@ -3,6 +3,7 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
 
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { RGBColor } from '../../shaders/colors.ts'
 import type { RenderState } from './rendererTypes.ts'
 import type {
@@ -17,6 +18,43 @@ import type {
 /** The band's region as this display's worker packs it, modification slices included. */
 export type AlignmentsCoverageRegion = CoverageBandRegion &
   CoverageBandModBuffer
+
+const EMPTY_BUFFER = new ArrayBuffer(0)
+
+// The band region of a key with no pileup feed: an arcs-only region, or the
+// density tier's, which spreads its bins over it.
+export function emptyCoverageRegion(): AlignmentsCoverageRegion {
+  return {
+    coveragePackedBuffer: EMPTY_BUFFER,
+    coverageMaxDepth: 0,
+    coverageBinSize: 1,
+    snpPackedBuffer: EMPTY_BUFFER,
+    modCovPackedBuffer: EMPTY_BUFFER,
+    interbasePackedBuffer: EMPTY_BUFFER,
+    interbaseMaxCount: 0,
+    indicatorPackedBuffer: EMPTY_BUFFER,
+  }
+}
+
+// The band region of a laid-out payload, which both renderers paint the band
+// from. A region with no coverage bars keeps the empty region's neutral scaling
+// values rather than a stale peak; `computeInterbaseCoverage` already reports 0
+// for a region with no interbase events, so that one needs no conditional.
+export function coverageRegionOf(
+  data: PileupDataResult,
+): AlignmentsCoverageRegion {
+  const hasCoverage = data.coverageGpuBinCount > 0
+  return {
+    coveragePackedBuffer: data.coveragePackedBuffer,
+    coverageMaxDepth: hasCoverage ? data.coverageMaxDepth : 0,
+    coverageBinSize: hasCoverage ? data.coverageBinSize : 1,
+    snpPackedBuffer: data.snpPackedBuffer,
+    modCovPackedBuffer: data.modCovPackedBuffer,
+    interbasePackedBuffer: data.interbasePackedBuffer,
+    interbaseMaxCount: data.interbaseMaxCount,
+    indicatorPackedBuffer: data.indicatorPackedBuffer,
+  }
+}
 
 type BandColorState = Pick<RenderState, 'colors' | 'showModifications'>
 

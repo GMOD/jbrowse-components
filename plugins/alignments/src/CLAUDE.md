@@ -58,7 +58,7 @@ the per-base steps drop out above `SNP_HIT_MAX_BP_PER_PX` there.
 `start`/`end`). The three interbase marks are the case: the worker lays that
 array out as (insertions, softclips, hardclips), so the bound is what keeps one
 hover from scanning the whole thing three times to reject most of it on a type
-byte the layout already guarantees. `Canvas2DRegionData` therefore carries the
+byte the layout already guarantees. Both renderers therefore hand the marks the
 merged array the worker ships rather than pre-sliced views of it.
 
 **The coverage band's five directories hold no `packGpu.ts`, `drawCanvas.ts` or

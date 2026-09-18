@@ -1,5 +1,4 @@
 import {
-  buildReadIdToIndex,
   computeArcBand,
   interbaseRangeEnds,
   pileupCellWidth,
@@ -81,35 +80,6 @@ function makeState(
     ...overrides,
   }
 }
-
-describe('buildReadIdToIndex', () => {
-  it('maps each id to its index', () => {
-    const m = buildReadIdToIndex({
-      readKeys: ['a', 'b', 'c'],
-      readIdPrefix: undefined,
-    })
-    expect(m.get('a')).toBe(0)
-    expect(m.get('b')).toBe(1)
-    expect(m.get('c')).toBe(2)
-  })
-
-  // The numeric branch is where the string is built rather than read, so the
-  // map's keys are what a hover matches `featureIdUnderMouse` against.
-  it('spells numeric keys through the prefix', () => {
-    const m = buildReadIdToIndex({
-      readKeys: new Float64Array([7, 90210]),
-      readIdPrefix: 'abc-',
-    })
-    expect(m.get('abc-7')).toBe(0)
-    expect(m.get('abc-90210')).toBe(1)
-  })
-
-  it('returns empty map for no reads', () => {
-    expect(
-      buildReadIdToIndex({ readKeys: [], readIdPrefix: undefined }).size,
-    ).toBe(0)
-  })
-})
 
 describe('interbaseRangeEnds', () => {
   it('computes cumulative ends', () => {

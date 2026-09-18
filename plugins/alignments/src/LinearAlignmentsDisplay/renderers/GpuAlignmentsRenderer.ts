@@ -20,6 +20,8 @@ import { ARC_BAND_MARKS } from './arcMarks.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   type AlignmentsCoverageRegion,
+  coverageRegionOf,
+  emptyCoverageRegion,
 } from './coverageMarks.ts'
 import { PILEUP_MARKS } from './pileupMarks.ts'
 import {
@@ -47,46 +49,6 @@ import type { InstancePass } from '@jbrowse/render-core/instancePass'
 import type { MarkPlan } from '@jbrowse/render-core/marks'
 
 export { PALETTE_UNIFORM_FIELDS } from './pileupUniforms.ts'
-
-// Pure LocalRegion constructor — the shape a region with no pileup feed gets
-// (arcs whose mate is off-screen bring their own region key).
-function emptyRegion(): RegionMeta {
-  return {
-    coveragePackedBuffer: EMPTY_BUFFER,
-    coverageMaxDepth: 0,
-    coverageBinSize: 1,
-    snpPackedBuffer: EMPTY_BUFFER,
-    modCovPackedBuffer: EMPTY_BUFFER,
-    interbasePackedBuffer: EMPTY_BUFFER,
-    interbaseMaxCount: 0,
-    indicatorPackedBuffer: EMPTY_BUFFER,
-  }
-}
-
-const EMPTY_BUFFER = new ArrayBuffer(0)
-
-// Pure: the per-region metadata `renderBlocks` reads each frame, derived from
-// the same payload the uploads pack. Deliberately separate from the uploads, so
-// a region whose data is unchanged can rebuild this (a handful of field reads)
-// while skipping the pack — see `syncRegion`. The conditional mirrors the
-// uploads' own guard: a region with no coverage bars keeps `emptyRegion`'s
-// neutral scaling values rather than a stale peak.
-function regionMeta(data: PileupDataResult): RegionMeta {
-  const hasCoverage = data.coverageGpuBinCount > 0
-  return {
-    coveragePackedBuffer: data.coveragePackedBuffer,
-    coverageMaxDepth: hasCoverage ? data.coverageMaxDepth : 0,
-    coverageBinSize: hasCoverage ? data.coverageBinSize : 1,
-    snpPackedBuffer: data.snpPackedBuffer,
-    modCovPackedBuffer: data.modCovPackedBuffer,
-    interbasePackedBuffer: data.interbasePackedBuffer,
-    // No conditional twin of the two above: `computeInterbaseCoverage` already
-    // reports 0 for a region with no interbase events, which is the same "keep
-    // the neutral scaling value rather than a stale peak" answer.
-    interbaseMaxCount: data.interbaseMaxCount,
-    indicatorPackedBuffer: data.indicatorPackedBuffer,
-  }
-}
 
 // What a region's GPU buffers were last packed from. Only the identities are
 // held, never the payload itself — a region evicted from `rpcDataMap` must not
@@ -293,7 +255,7 @@ export class GpuAlignmentsRenderer
   ) {
     const arcPack = arcs ? { arcs, baseWidth: arcLineWidth } : EMPTY_ARC_PACK
     this.regions.set(idx, {
-      ...(data ? regionMeta(data) : emptyRegion()),
+      ...(data ? coverageRegionOf(data) : emptyCoverageRegion()),
       arcPack,
     })
     const prev = this.uploaded.get(idx)
@@ -361,7 +323,7 @@ export class GpuAlignmentsRenderer
    */
   private syncDensityRegion(idx: number, coverage: CoverageRegionFields) {
     this.regions.set(idx, {
-      ...emptyRegion(),
+      ...emptyCoverageRegion(),
       ...coverage,
       arcPack: EMPTY_ARC_PACK,
     })
