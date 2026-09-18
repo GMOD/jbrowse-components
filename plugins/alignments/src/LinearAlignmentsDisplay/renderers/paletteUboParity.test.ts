@@ -100,8 +100,6 @@ function frameUniforms() {
       showModifications: false,
       colors: COLORS,
       sections: [SECTION],
-      readConnections: 'arc',
-      readConnectionsHeight: 20,
     }),
   )
   const arc = hal.uniformsOf(hal.draws().find(d => d.passId === 'arc')!)!

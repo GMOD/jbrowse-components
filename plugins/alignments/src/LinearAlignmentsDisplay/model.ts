@@ -2701,7 +2701,6 @@ export default function stateModelFactory(
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             coverageHeight: self.belowCoverageBands.coverageHeight,
-            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
             coverageMinDepth: self.coverageDepthDomain?.[0],
             coverageMaxDepth: self.coverageDepthDomain?.[1],
             coverageScaleType: self.coverageScaleType,
@@ -2723,9 +2722,6 @@ export default function stateModelFactory(
             showPerBaseQuality: self.showPerBaseQuality,
             showPerBaseLetter: self.showPerBaseLetter,
             showOutline: self.showOutline,
-            readConnections: self.readConnections,
-            readConnectionsDown: self.readConnectionsDown,
-            readConnectionsHeight: self.readConnectionsHeight,
             pileupTopOffset: self.coverageDisplayHeight,
             coverageTopOffset: 0,
             sections: buildSectionRenders(self.sections, {

@@ -87,8 +87,6 @@ function frameWrites() {
       canvasHeight: 100,
       sections: SECTIONS,
       pileupTopOffset: 0,
-      readConnections: 'arc',
-      readConnectionsHeight: 20,
     }),
   )
   return {

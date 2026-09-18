@@ -50,7 +50,6 @@ function bandState(overrides: Partial<RenderState> = {}) {
     colors: COLORS,
     showInterbaseIndicators: true,
     coverageHeight: 60,
-    coverageYOffset: 5,
     coverageMaxDepth: 200,
     coverageSnpMinFrequency: 0.1,
     sections: [

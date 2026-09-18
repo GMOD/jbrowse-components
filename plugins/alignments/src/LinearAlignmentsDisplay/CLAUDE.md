@@ -237,10 +237,10 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - **The scalebar inset is `YSCALEBAR_LABEL_OFFSET` on both backends and must
   stay a constant.** The band marks write it into the `covYOffset` uniform
   themselves, and `coverageLayout` supplies it to the same generated twin for
-  every painter and the y-axis ticks. `RenderState.coverageYOffset` reaches only
-  the arc band's anchor; give the band a different value and the bars move while
-  `interbaseBarHeightPx` and the ticks beside them do not, splitting the band
-  against itself inside one frame.
+  every painter and the y-axis ticks. The section layout's `coverageYOffset`
+  reaches only the arc band's anchor; give the band a different value and the
+  bars move while `interbaseBarHeightPx` and the ticks beside them do not,
+  splitting the band against itself inside one frame.
 - `computeArcBand` is the single source of truth, decoupled from `showCoverage`.
   Arc and sashimi strips are reserved **per section**; `coverageDisplayHeight`
   and the fit-height row budget stay global, since re-deriving them from

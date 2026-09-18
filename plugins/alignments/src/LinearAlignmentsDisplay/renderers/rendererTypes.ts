@@ -63,7 +63,6 @@ export interface RenderState {
   // or hit test reads one number and never re-derives the gate from a flag
   // beside it. The model resolves it (`coverageDisplayHeight`).
   coverageHeight: number
-  coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
   // The autoscaled coverage domain, `coverageDomain[0]` and `[1]`. Both ends,
   // because a `minScore` bound moves the baseline the bars draw flat at — for a
   // long time only the max was carried here and the min was silently dropped, so
@@ -118,9 +117,6 @@ export interface RenderState {
   // passes availH/pxPerBp (zoom-proportional); read-cloud mode passes the
   // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
   arcsYDomainBp?: number
-  readConnections: ReadConnectionsMode
-  readConnectionsDown: boolean
-  readConnectionsHeight: number
   // Pileup row 0 top, screen px before scrollTop subtraction (GPU `covOffset`
   // uniform, Canvas2D `pileupRowY` base). For ungrouped this is the sticky
   // coverage height; the renderers override it per section while looping.
