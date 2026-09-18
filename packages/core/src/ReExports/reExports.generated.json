@@ -2836,7 +2836,8 @@
         "facetSectionOrder",
         "groupKeyComparator",
         "groupKeySpaceOf",
-        "overflowLabel"
+        "overflowLabel",
+        "valueText"
       ],
       "worker": "real"
     },
