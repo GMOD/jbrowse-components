@@ -165,7 +165,7 @@
      out-specifies it. See src/styles/layers.css. */
   @layer widget {
     /* The trigger is a bare button around the image: it must not add a box of its
-           own, so figure/prose image styling still applies to the <img> inside. */
+             own, so figure/prose image styling still applies to the <img> inside. */
     .lightbox-trigger {
       display: block;
       width: 100%;
@@ -185,10 +185,10 @@
     }
 
     /* The page behind a modal <dialog> still scrolls, and locking `body` cannot
-           stop it here: BaseLayout's `html { overflow-x: hidden }` means body's
-           overflow no longer propagates to the viewport. So lock the element that
-           actually scrolls — and reserve the scrollbar's width in both states, or the
-           page jumps sideways by that width as the scrollbar comes and goes. */
+             stop it here: BaseLayout's `html { overflow-x: hidden }` means body's
+             overflow no longer propagates to the viewport. So lock the element that
+             actually scrolls — and reserve the scrollbar's width in both states, or the
+             page jumps sideways by that width as the scrollbar comes and goes. */
     html {
       scrollbar-gutter: stable;
     }
@@ -230,7 +230,7 @@
       box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
     }
     /* Sized by the image up to the viewport box, then scrolls: a figure taller
-           than the screen stays at full width and legible instead of being shrunk. */
+             than the screen stays at full width and legible instead of being shrunk. */
     .lightbox-scroll {
       max-height: 80vh;
       overflow-y: auto;
@@ -276,7 +276,7 @@
       font-size: 0.85rem;
     }
     /* On a scrollable figure the hint holds its space and only its ink goes away
-           at the bottom, so the caption doesn't jump as the reader scrolls. */
+             at the bottom, so the caption doesn't jump as the reader scrolls. */
     .lightbox-fig[data-scrollable] .lightbox-hint {
       display: block;
       visibility: hidden;
