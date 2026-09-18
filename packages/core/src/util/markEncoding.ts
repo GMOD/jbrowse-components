@@ -391,6 +391,7 @@ export function encodeFeatures<L extends LaneName>(
       kind: 'categorical',
       field: scaled.field,
       domain: [...colorField.domain],
+      ...(scaled.palette ? { palette: [...scaled.palette] } : {}),
       entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
   } else if (scaled && scaled.scale !== 'categorical' && rampValues) {
@@ -440,6 +441,7 @@ export function encodeFeatures<L extends LaneName>(
       kind: 'glyph',
       field: glyphScaled.field,
       domain: [...glyphField.domain],
+      ...(glyphScaled.range ? { range: [...glyphScaled.range] } : {}),
       entries: entries.map(e => ({ value: e.value, glyph: e.entry })),
     }
   }

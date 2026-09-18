@@ -976,14 +976,12 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the colour keys the loaded regions carry, one per scaled mark
-       * drawing at the view's zoom
+       * the colour keys the loaded regions carry, one per scale the marks
+       * drawing at the view's zoom resolve through
        */
       get legendSections() {
         const { visible } = self.markView
-        return buildMarkLegend(self.rpcDataMap.values()).filter(
-          s => visible[s.markIndex],
-        )
+        return buildMarkLegend(self.rpcDataMap.values(), i => !!visible[i])
       },
       /**
        * #getter

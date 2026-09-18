@@ -557,7 +557,7 @@ test('a mark outside its zoom range leaves the shared domain and the legend', ()
   view.zoomTo(8)
   expect(display.markView.visible).toEqual([false, true])
   expect(display.domain).toEqual([0, 900])
-  expect(display.legendSections.map(s => s.markIndex)).toEqual([1])
+  expect(display.legendSections.flatMap(s => s.markIndexes)).toEqual([1])
 })
 
 test('the legend reads the scale table the worker resolved', () => {
@@ -585,7 +585,7 @@ test('the legend reads the scale table the worker resolved', () => {
   )
   expect(display.legendSections).toEqual([
     {
-      markIndex: 0,
+      markIndexes: [0],
       channel: 'color',
       scale: {
         kind: 'categorical',
@@ -596,6 +596,77 @@ test('the legend reads the scale table the worker resolved', () => {
     },
   ])
   expect(display.showLegend).toBe(true)
+})
+
+// Two marks over one field through one declaration paint a value alike, so
+// two keys listing the same rows said it twice.
+test('two marks colouring by one field through one palette share a key', () => {
+  const strandTable = (
+    entries: { value: string; color: number }[],
+    palette?: string[],
+  ): Layer['scale'] => ({
+    kind: 'categorical',
+    field: 'strand',
+    domain: [],
+    ...(palette ? { palette } : {}),
+    entries,
+  })
+  const marks = [
+    {
+      shape: 'bar',
+      encoding: {
+        y: 'score',
+        color: { field: 'strand', scale: 'categorical' },
+      },
+    },
+    {
+      shape: 'bar',
+      encoding: {
+        y: 'score',
+        color: { field: 'strand', scale: 'categorical' },
+      },
+    },
+  ]
+  const shared = createTestEnvironment(marks).createDisplay().display
+  shared.setRpcData(
+    0,
+    result([
+      { y: [1], scale: strandTable([{ value: '1', color: 0xff0000ff }]) },
+      { y: [2], scale: strandTable([{ value: '-1', color: 0xff00ff00 }]) },
+    ]),
+    REGION,
+  )
+  expect(shared.legendSections).toEqual([
+    {
+      markIndexes: [0, 1],
+      channel: 'color',
+      scale: strandTable([
+        { value: '1', color: 0xff0000ff },
+        { value: '-1', color: 0xff00ff00 },
+      ]),
+    },
+  ])
+  expect(shared.colorScales.map(s => s.id)).toEqual(['mark-0-1-color'])
+
+  const apart = createTestEnvironment(marks).createDisplay().display
+  apart.setRpcData(
+    0,
+    result([
+      {
+        y: [1],
+        scale: strandTable([{ value: '1', color: 0xff0000ff }], ['red']),
+      },
+      {
+        y: [2],
+        scale: strandTable([{ value: '1', color: 0xff0000ff }], ['blue']),
+      },
+    ]),
+    REGION,
+  )
+  expect(apart.colorScales.map(s => s.id)).toEqual([
+    'mark-0-color',
+    'mark-1-color',
+  ])
 })
 
 // Colour and glyph over one field listed the same values twice under one
@@ -704,7 +775,7 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
   )
   expect(display.legendSections).toEqual([
     {
-      markIndex: 0,
+      markIndexes: [0],
       channel: 'glyph',
       scale: {
         kind: 'glyph',

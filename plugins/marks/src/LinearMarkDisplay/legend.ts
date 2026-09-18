@@ -12,9 +12,14 @@ const RAMP_STOPS = 8
 
 export type ScaledChannel = 'color' | 'glyph'
 
-/** One scaled channel's key: the table its worker resolved, by mark. */
+/**
+ * One scaled channel's key: the table the worker resolved, and the marks it
+ * is the key of. Marks whose channel reads one field through one declared
+ * order and palette (or glyph range) share a section, the way ggplot2 keeps
+ * one scale per aesthetic across layers; a ramp is each mark's own.
+ */
 export interface MarkLegendSection {
-  markIndex: number
+  markIndexes: number[]
   channel: ScaledChannel
   scale: ScaleTable
 }
@@ -83,47 +88,82 @@ function union(current: ScaleTable, next: ScaleTable) {
   }
 }
 
+// What a section is keyed on: the declaration that assigns a categorical
+// value its colour or glyph, so two marks sharing it share the key; a ramp
+// stays the mark's, its domain being the uniform that mark's shapes read.
+function sectionKey(markIndex: number, scale: ScaleTable) {
+  switch (scale.kind) {
+    case 'ramp':
+      return JSON.stringify(['ramp', markIndex])
+    case 'categorical':
+      return JSON.stringify([
+        'categorical',
+        scale.field,
+        scale.domain,
+        scale.palette ?? [],
+      ])
+    case 'glyph':
+      return JSON.stringify([
+        'glyph',
+        scale.field,
+        scale.domain,
+        scale.range ?? [],
+      ])
+  }
+}
+
 /**
- * The keys the loaded regions carry, one per scaled channel per mark, in
- * mark order with colour before glyph. A categorical table is the union over
- * regions in the field's order; a key's entry is the same in every region. A
- * ramp's domain is the union of the regions' own extremes, or the pinned one
- * where the config listed it — the same number the shapes read as a uniform.
+ * The keys the loaded regions carry, one per scale, in the order of the first
+ * mark drawing through each with colour before glyph. A categorical table is
+ * the union over regions and over the marks declaring it alike, in the
+ * field's order; a key's entry is the same in every region. A ramp's domain is
+ * the union of the regions' own extremes, or the pinned one where the config
+ * listed it — the same number the shapes read as a uniform.
  */
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,
+  showsMark: (markIndex: number) => boolean = () => true,
 ): MarkLegendSection[] {
-  const sections: MarkLegendSection[] = []
+  const sections = new Map<string, MarkLegendSection>()
   for (const region of regions) {
     region.layers.forEach((layer, markIndex) => {
+      if (!showsMark(markIndex)) {
+        return
+      }
       for (const { channel, tableOf } of CHANNELS) {
         const scale = tableOf(layer)
         if (!scale) {
           continue
         }
-        const current = sections.find(
-          s => s.markIndex === markIndex && s.channel === channel,
-        )
-        if (current) {
-          union(current.scale, scale)
+        const key = sectionKey(markIndex, scale)
+        const current = sections.get(key)
+        if (!current) {
+          sections.set(key, {
+            markIndexes: [markIndex],
+            channel,
+            scale: copyOf(scale),
+          })
         } else {
-          sections.push({ markIndex, channel, scale: copyOf(scale) })
+          if (!current.markIndexes.includes(markIndex)) {
+            current.markIndexes.push(markIndex)
+          }
+          union(current.scale, scale)
         }
       }
     })
   }
-  sections.sort(
+  return [...sections.values()].sort(
     (a, b) =>
-      a.markIndex - b.markIndex ||
+      a.markIndexes[0]! - b.markIndexes[0]! ||
       CHANNELS.findIndex(c => c.channel === a.channel) -
         CHANNELS.findIndex(c => c.channel === b.channel),
   )
-  return sections
 }
 
-// A mark's glyph table over the same field its categorical colour reads:
-// the two keys would list the same values twice under one title, so the
-// colour key draws the glyph as its swatch and the glyph key is folded away.
+// A glyph table over the same field a categorical colour reads, on marks
+// that colour also keys: the two keys would list the same values twice under
+// one title, so the colour key draws the glyph as its swatch and the glyph
+// key is folded away.
 function glyphOverSameField(
   sections: MarkLegendSection[],
   colour: MarkLegendSection,
@@ -131,10 +171,10 @@ function glyphOverSameField(
   const field = colour.scale.kind === 'categorical' && colour.scale.field
   const glyph = sections.find(
     s =>
-      s.markIndex === colour.markIndex &&
       s.channel === 'glyph' &&
       s.scale.kind === 'glyph' &&
-      s.scale.field === field,
+      s.scale.field === field &&
+      s.markIndexes.every(i => colour.markIndexes.includes(i)),
   )
   return glyph?.scale.kind === 'glyph' ? glyph : undefined
 }
@@ -182,8 +222,8 @@ export function markColorScales(
     if (folded.has(section)) {
       return []
     }
-    const { markIndex, channel, scale } = section
-    const id = `mark-${markIndex}-${channel}`
+    const { markIndexes, channel, scale } = section
+    const id = `mark-${markIndexes.join('-')}-${channel}`
     switch (scale.kind) {
       case 'categorical': {
         const glyph = glyphOverSameField(sections, section)
@@ -234,8 +274,9 @@ export function markColorScales(
 
 /** The colour key of one mark, if its colour is a scale. */
 export function colorSection(sections: MarkLegendSection[], markIndex: number) {
-  return sections.find(s => s.markIndex === markIndex && s.channel === 'color')
-    ?.scale
+  return sections.find(
+    s => s.channel === 'color' && s.markIndexes.includes(markIndex),
+  )?.scale
 }
 
 /** The category a packed colour names in a categorical table, if any. */

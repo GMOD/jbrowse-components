@@ -147,6 +147,7 @@ test('a categorical domain pins the order and a palette the colours', () => {
     kind: 'categorical',
     field: 'strand',
     domain: ['-1', '1'],
+    palette: ['red', 'blue'],
     entries: [
       { value: '-1', color: cssColorToABGR('red') },
       { value: '1', color: cssColorToABGR('blue') },
@@ -415,6 +416,7 @@ test('a pinned glyph domain walks the range in order', () => {
     kind: 'glyph',
     field: 'strand',
     domain: ['1', '-1'],
+    range: ['triangle', 'diamond'],
     entries: [
       { value: '1', glyph: 'triangle' },
       { value: '-1', glyph: 'diamond' },

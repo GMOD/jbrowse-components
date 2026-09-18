@@ -414,7 +414,7 @@ test("the legend unions categorical tables across regions, keeping the first col
   const sections = buildMarkLegend([regionA, regionB])
   expect(sections).toEqual([
     {
-      markIndex: 0,
+      markIndexes: [0],
       channel: 'color',
       scale: {
         kind: 'categorical',

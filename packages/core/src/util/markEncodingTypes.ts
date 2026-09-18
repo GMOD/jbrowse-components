@@ -133,6 +133,8 @@ export type ColorScaleTable =
       kind: 'categorical'
       field: string
       domain: string[]
+      /** The declared palette, the other half of what assigns a key its colour. */
+      palette?: string[]
       /** Each key met, in the field's order, `''` for no value. */
       entries: { value: string; color: number }[]
     }
@@ -158,6 +160,7 @@ export interface GlyphScaleTable {
   kind: 'glyph'
   field: string
   domain: string[]
+  range?: GlyphName[]
   entries: { value: string; glyph: GlyphName }[]
 }
 
