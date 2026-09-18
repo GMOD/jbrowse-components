@@ -215,10 +215,6 @@ export const displayPainted = (testid: string) =>
 export const displaySettled = (testid: string) =>
   `[data-testid="${testid}"][data-display-phase="ready"]`
 
-/** One display, by its config's `displayId` rather than by type. */
-export const displayById = (displayId: string) =>
-  `[data-display-id="${displayId}"]`
-
 // Wait until no display is still pending its first paint AND could still reach
 // it: a pending display publishing `loading`, or publishing no phase at all (a
 // build older than the attribute), is still coming; a terminal phase is not. The

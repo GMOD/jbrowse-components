@@ -443,7 +443,7 @@ true (this silently burned full snapshot timeouts).
   more.
 
   Don't hand-write the conjunction. `displayPainted(base)` /
-  `displaySettled(base)` / `displayById(id)` come from `@jbrowse/capture`
+  `displaySettled(base)` come from `@jbrowse/capture`
   (re-exported by `@jbrowse/browser-test-utils`) for selector strings, and
   `findDisplayPainted` / `findAnyDisplayPainted` are the jest waits
   (`products/jbrowse-web/src/tests/util.tsx`) — the jest ones report *which*

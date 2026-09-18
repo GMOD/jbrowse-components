@@ -1,58 +1,37 @@
 export { captureJBrowse, openJBrowse } from './capture.ts'
-export {
-  resolveAgainstConfig,
-  resolveAssemblyName,
-  resolveTrackId,
-} from './catalog.ts'
 export { delay } from './poll.ts'
 export { waitForFrame, waitForJBrowseReady } from './ready.ts'
 export {
-  APP_CENSUS,
   describePendingDisplays,
-  pendingDisplayStates,
   pendingDisplayStatesInPage,
-  readLoadFailureInPage,
-  readSessionSummary,
-  tooLargeDisplaysInPage,
   waitForSession,
 } from './sessionGate.ts'
-export { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
-export { fetchHubConfig, hubUrl, listHubTracks } from './hub.ts'
+export { jbrowseUrl } from './url.ts'
 export {
   assemblyFromSession,
   encodeSessionSpec,
-  sessionSpecParam,
   sessionSpecQuery,
   trackIdsFromSession,
 } from './session.ts'
 export {
-  APP_READY,
-  BUSY_SELECTOR,
-  LOADING_OVERLAY,
   PENDING_DISPLAYS,
-  describePendingDisplaysNow,
-  displayById,
   displayPainted,
   displaySettled,
-  isPageBusyInPage,
   waitForAppReady,
   waitForAppSettled,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
-  waitForQuietPeriod,
   waitForSelectorAttributed,
   waitForViewPhases,
 } from './waits.ts'
 export {
   BASE_CHROME_ARGS,
-  SANDBOX_CHROME_ARGS,
   findChromeExecutable,
   isBrowserConsoleNoise,
 } from './browser.ts'
 
-export type { Catalog } from './catalog.ts'
 export type {
   CaptureOptions,
   CaptureResult,
@@ -60,9 +39,5 @@ export type {
   OpenResult,
 } from './capture.ts'
 export type { ReadyOptions, ReadyReport } from './ready.ts'
-export type {
-  PendingDisplay,
-  SessionExpectations,
-  SessionSummary,
-} from './sessionGate.ts'
+export type { PendingDisplay, SessionExpectations } from './sessionGate.ts'
 export type { JBrowseUrlOptions } from './url.ts'

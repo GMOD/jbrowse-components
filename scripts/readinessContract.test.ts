@@ -73,7 +73,7 @@ describe('the readiness contract', () => {
       expect(marker).toContain(attr)
       expect(gate).toContain(attr)
     }
-    expect(gate).toContain(`APP_CENSUS = '[data-app-tracks]'`)
+    expect(gate).toContain(`querySelector<HTMLElement>('[data-app-tracks]')`)
   })
 
   // Without it a config that 404s reads as a page still loading, and capture

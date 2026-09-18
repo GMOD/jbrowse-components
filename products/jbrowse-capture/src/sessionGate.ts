@@ -32,40 +32,23 @@ export interface SessionExpectations {
   views?: number
 }
 
-/**
- * The census the app publishes beside its phase: `AppReadyMarker` renders
- * `data-app-views` (a count), and `data-app-assemblies` / `data-app-tracks`
- * (JSON string arrays of what is open).
- *
- * One element answers the whole gate. Each view declares what it holds and
- * `openViews`/`openTracks` reduce over those declarations (ADR-103), so nothing
- * here has to know that a synteny view keeps its tracks on levels and its rows
- * on sub-views — the duck-typed walk of `window.JBrowseSession` that used to
- * live here, and drifted against the copy in `isPageBusyInPage`, is gone with
- * the builds that needed it.
- *
- * `scripts/readinessContract.test.ts` pins the attribute names against the
- * marker, since neither package may import the other.
- */
-export const APP_CENSUS = '[data-app-tracks]'
-
 export interface SessionSummary {
   views: number
   assemblies: string[]
   trackIds: string[]
 }
 
-/** What the page currently has open, or undefined if there is no census yet. */
-export function readSessionSummary(
-  page: Page,
-): Promise<SessionSummary | undefined> {
-  return page.evaluate(readSessionSummaryInPage)
-}
-
-// Serialized into the page, so it can only call what it declares. Exported for
-// its test: it reads the document and nothing else, so calling it in node
-// against a staged DOM exercises the very function puppeteer serializes, rather
-// than a copy of it that can drift.
+/**
+ * The census the app publishes beside its phase: `AppReadyMarker` renders
+ * `data-app-views` (a count), and `data-app-assemblies` / `data-app-tracks`
+ * (JSON string arrays of what is open). Each view declares what it holds and
+ * `openViews`/`openTracks` reduce over those declarations (ADR-103), so
+ * nothing here has to know which property a container view keeps its children
+ * on. `scripts/readinessContract.test.ts` pins the attribute names against the
+ * marker, since neither package may import the other.
+ *
+ * Serialized into the page, so it can only call what it declares.
+ */
 export function readSessionSummaryInPage(): SessionSummary | undefined {
   const marker = document.querySelector<HTMLElement>('[data-app-tracks]')
   if (!marker) {

@@ -1,13 +1,10 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 
-import { displayById, displayPainted, displaySettled } from './waits.ts'
+import { displayPainted, displaySettled } from './waits.ts'
 
-// The three builders exist so that "this display, painted" is written once
-// rather than spelled out at each call site (ADR-065). Their whole output is a
-// selector string, and agents_capture.md quotes those strings to say what each
-// one waits for — so the doc splices this test rather than copying them.
+// The builders exist so that "this display, painted" is written once rather
+// than spelled out at each call site (ADR-065).
 test('the composite selectors name the type and the readiness separately', () => {
-  // #region display-selectors
   // `data-testid` names the display TYPE and never changes; readiness is a
   // separate attribute. "Has the pileup painted" is therefore a conjunction,
   // and these builders write it for you — pass one to `page.waitForSelector`.
@@ -20,10 +17,6 @@ test('the composite selectors name the type and the readiness separately', () =>
   expect(displaySettled('pileup-display')).toBe(
     '[data-testid="pileup-display"][data-display-phase="ready"]',
   )
-
-  // One display by its config's `displayId`, rather than every display of a type.
-  expect(displayById('my_pileup')).toBe('[data-display-id="my_pileup"]')
-  // #endregion display-selectors
 })
 
 // The suffix convention these replaced (`-done` on the chrome displays, `_done`

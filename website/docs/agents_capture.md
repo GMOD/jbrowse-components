@@ -75,8 +75,8 @@ For one display rather than the whole app:
   never changes; `data-display-id` names the individual display.
 - Readiness is a separate attribute: `[data-display-phase="ready"]` once its
   fetch is done, `[data-display-drawn="true"]` once it has painted.
-- `displaySettled`, `displayPainted` and `displayById` in `@jbrowse/capture`
-  build the combined selectors.
+- `displaySettled` and `displayPainted` in `@jbrowse/capture` build the combined
+  selectors.
 - A dotplot and a synteny level publish no phase, so they report through
   `data-display-drawn` alone, and `pending` in the capture result names anything
   that had still not painted.
