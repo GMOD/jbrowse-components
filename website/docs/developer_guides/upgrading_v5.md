@@ -417,10 +417,9 @@ Two things did change:
   `setWindow(windowWidthBp, windowStartBp)` is the action, and a snapshot naming
   `windowWidthBp` is restored as that window at any width. Building one out of
   `bpPerPx` means inventing a width for the scale to be relative to, which is
-  what the old pair made unavoidable — `buildReadVsRefSpec` and
-  `buildDerivativeVsRefSpec` both computed `bpPerPx: refLen / viewWidth` from a
-  width threaded in from their caller, and both now say `windowWidthBp: refLen`
-  and take no width at all.
+  what the old pair made unavoidable — `buildReadVsRefSpec` computed
+  `bpPerPx: refLen / viewWidth` from a width threaded in from its caller, and
+  now says `windowWidthBp: refLen` and takes no width at all.
 
 ## A view reports an unknown key
 
