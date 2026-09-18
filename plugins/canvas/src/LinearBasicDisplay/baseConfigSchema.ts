@@ -97,8 +97,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot color
        * The main fill of each feature: a CSS color or a jexl expression
        * (`"goldenrod"`, `"jexl:…"`), or `{ field, domain, palette }` to paint
-       * each value of a field its own palette color, with a key. The object's
-       * slots are listed at [FeatureColor](/docs/config/featurecolor).
+       * each value of a field its own palette color, with a key.
        */
       color: colorConfigSchema,
       /**
@@ -151,8 +150,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot facet
        * One labelled section of the track per value of a field: `"strand"`,
-       * or `{ field, domain }` with the order its sections stack in. The
-       * object's slots are listed at [Facet](/docs/config/facet).
+       * or `{ field, domain }` with the order its sections stack in.
        */
       facet: facetConfigSchema,
       /**

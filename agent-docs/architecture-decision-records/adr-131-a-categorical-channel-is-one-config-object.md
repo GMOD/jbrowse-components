@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display's facet and its categorical colour are one config object each — `facet: \"HP\" | { field, domain }` and `color: \"red\" | \"jexl:…\" | { field, domain, palette }` — replacing the flat `facetField`/`facetDomain`/`colorField`/`colorDomain`/`colorPalette` slots on the feature, mark and multi-sample variant displays, where the row tint is `rowColor`, and the alignments displays' `groupBy`, now the same `facet` with read dimensions and `tags.HP` as fields. The GWAS and multi-way colours are one object too, with a `scale` naming each display's own schemes. A string is the channel's one-value form and lifts into the object; an object replaces the channel whole and `null` clears it; a `domain` or `palette` with no `field`, or a key the object does not declare, is refused when the snapshot is read. `applyDisplaySettings` writes a sub-schema, `describeSlots` lists one, and Edit as JSON is an editor over the two settings rather than a translation onto flat slots"
+summary: "A display's facet and its categorical colour are one config object each — `facet: \"HP\" | { field, domain }` and `color: \"red\" | \"jexl:…\" | { field, domain, palette }` — replacing the flat `facetField`/`facetDomain`/`colorField`/`colorDomain`/`colorPalette` slots on the feature, mark and multi-sample variant displays, where the row tint is `rowColor`, and the alignments displays' `groupBy`, now the same `facet` with read dimensions and `tags.HP` as fields. The GWAS and multi-way colours are one object too, with a `scale` naming each display's own schemes. A string is the channel's one-value form and lifts into the object; an object replaces the channel whole and `null` clears it; a key the object does not declare is refused when the snapshot is read (ADR-133 dropped this record's refusals of slot combinations). `applyDisplaySettings` writes a sub-schema, `describeSlots` lists one, and Edit as JSON is an editor over the two settings rather than a translation onto flat slots"
 ---
 
 # ADR-131: A categorical channel is one config object
@@ -69,9 +69,12 @@ The rules a writer can rely on:
   `MarkValue` declare theirs the same way.
 - **The object refuses what a config cannot hold**, on load and through
   every writer: a key it does not declare, which MST would drop in silence,
-  through `ConfigurationSchema`'s declared `closed` option; and through its own
-  preprocessor (`normalizeFacet`, `normalizeColor`), a `domain` or `palette`
-  that is not a list or that names no `field`.
+  through `ConfigurationSchema`'s declared `closed` option; and a `domain` or
+  `palette` that is not a list. This record also refused a `domain` or
+  `palette` naming no `field`, which
+  [ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md) dropped:
+  the config editor writes one slot at a time and saved objects it then could
+  not reload.
 - **The keys keep their names.** `color: "red"` needs no change.
 
 **The writers are the generic ones.** `applyDisplaySettings` gained a
@@ -113,21 +116,24 @@ its own slots and the declared shorthand.
   { scale: "ld" }` (`ManhattanColor`), and `ribbonColor: "grey" |
   { scale: "strand" } | { field, domain }` (`RibbonColor`), whose scales are
   the synteny view's scheme names and whose `field` is a declared attribute
-  column. A `field` with no `scale` reads through `categorical`, and a `field`
-  under any other scale is refused (`normalizeScaledColor`). `RibbonColor`
-  declares no `palette`: a label's colour there is its position in
-  synteny-core's palette, which nothing configures. The multi-way model keeps
-  `SyntenyColorBy` as the runtime mode (`colorByOfScale`, `scaleOfColorBy`), so
-  its geometry and menu are unchanged.
+  column. A `field` with no `scale` reads through `categorical`; a `field`
+  under another scale waits unread since
+  [ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md), which
+  also made `scale` unset by default. `RibbonColor` declares no `palette`: a
+  label's colour there is its position in synteny-core's palette, which
+  nothing configures. The multi-way model keeps a synteny mode as the runtime
+  mode (`ribbonColorBy.ts`), so its geometry and menu are unchanged.
 - **The synteny view's `colorBy` stays a mode string**: a view property with
   launch keys and v4 `init` compatibility, not a track config slot.
   `ChordSyntenyDisplay`'s `colorBy` (`default | chromosome | strand`) has no
   field mode, so like alignments' `colorBy` it selects a scheme and is outside
   this decision.
-- What a review of the landing left open — the editor's per-slot writes,
-  `displayDefaults` routing across colour objects of different shapes, and
-  scale switches that drop the field — is in
-  `agent-docs/handoffs/categorical-channel-review-followups.md`.
+- A review of the landing found the config editor's per-slot writes and the
+  menus' scale switches at odds with the object's refusals
+  ([ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md)), and
+  `displayDefaults` sending a colour object to displays whose `color` has
+  another shape
+  ([ADR-134](adr-134-displaydefaults-routes-a-value-to-the-displays-that-take-it.md)).
 
 ## Rejected alternatives
 
@@ -143,5 +149,6 @@ its own slots and the declared shorthand.
   grounds that a read dimension is not a field. On an AlignmentsTrack,
   `displayDefaults` routes `facet` to the mark display as well, whose `facet`
   refused that shape, so the cookbook's phased-reads config failed to load.
-  Routing a key only to the displays that accept its value would have worked
-  around it; one shape removed the collision.
+  One shape removed the collision; ADR-134's routing by value would now also
+  have avoided it, but two facet shapes would still be one channel spelt
+  twice.

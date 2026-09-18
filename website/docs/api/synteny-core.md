@@ -34,7 +34,7 @@ The colorBy string that paints a named feature attribute.
 
 ```js
 // type signature
-(attribute: string) => SyntenyColorBy
+(attribute: string) => `attribute:${string}`
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
@@ -125,7 +125,7 @@ is painting, and the per-track swatches once more than one track overlays.
 
 ```js
 // type signature
-(target: ColorByMenuTarget) => MenuItem[]
+<S extends SyntenyColorBy>(target: ColorByMenuTarget<S>) => MenuItem[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuItems.tsx)
@@ -139,23 +139,10 @@ target.
 
 ```js
 // type signature
-(model: TrackColorsModel, { pointBased, showReference, }: { pointBased: boolean; showReference: boolean; }) => ColorByMenuTarget
+(model: TrackColorsModel, { pointBased, showReference, }: { pointBased: boolean; showReference: boolean; }) => ColorByMenuTarget<SyntenyColorBy>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuTarget.ts)
-
-## colorByOfScale
-
-A colour object's `scale` and `field` as the mode the colour functions
-paint: `none` is `default`, `categorical` the field's `attribute:` mode, and
-any other scale the scheme of that name.
-
-```js
-// type signature
-({ scale, field, }: { scale: string; field: string; }) => SyntenyColorBy
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
 ## colorByScale
 
@@ -274,15 +261,3 @@ drift this module exists to prevent — see the header.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
-
-## scaleOfColorBy
-
-The `scale` and `field` a colour object spells a mode with, for a menu that
-picks one: colorByOfScale the other way.
-
-```js
-// type signature
-(colorBy: SyntenyColorBy) => { scale: string; field: string; }
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)

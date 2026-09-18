@@ -87,7 +87,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-featuresarenameless">**featuresAreNameless**</span><br><code>boolean</code> | a gene-level source names its features and groups chain on the names; an alignment-level source (a multi-genome PAF) names nothing, which is what makes the per-pair link fetch worth issuing | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolor">**ribbonColor**</span><br><code>string</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-domain">**domain**</span><br><code>string[]</code> |  | MultiWaySyntenyDisplay |
-| <span id="getter-ribboncolorby">**ribbonColorBy**</span><br><code>SyntenyColorBy</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-ribboncolorby">**ribbonColorBy**</span><br><code>RibbonColorBy</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> | the columns the track declares, each offered as its own ribbon mode. From the config rather than the data, so the menu is right before the first fetch | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolordomain">**ribbonColorDomain**</span><br><code>string[]</code> | the `ribbonColor.domain` order a text column's labels take. A label's color is its position in that list, so this is the ribbons' order as much as the key's | MultiWaySyntenyDisplay |
 | <span id="getter-ribbonattributeranges">**ribbonAttributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> | what the ribbon modes paint from: each channel's span, and a text column's labels in `ribbonColorDomain` order | MultiWaySyntenyDisplay |
@@ -235,7 +235,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setdeclaredlanes">**setDeclaredLanes**</span><br><code>(lanes: DeclaredLane[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setselectedlanes">**setSelectedLanes**</span><br><code>(names: string[] &#124; undefined) =&gt; void</code> | draw only `names`, unhiding everything; undefined puts the lanes back to `configuredLanes`, or every lane | MultiWaySyntenyDisplay |
 | <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
-| <span id="action-setribboncolorby">**setRibbonColorBy**</span><br><code>(mode: SyntenyColorBy) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setribboncolorby">**setRibbonColorBy**</span><br><code>(mode: RibbonColorBy) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setribboncolordomain">**setRibbonColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |

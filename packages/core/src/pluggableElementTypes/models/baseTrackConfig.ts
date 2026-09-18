@@ -302,18 +302,16 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       /**
        * #slot
        * jexl callbacks that add, rewrite or hide fields in this track's
-       * feature-details panel. Four slots, listed at
-       * [FormatDetails](/docs/config/formatdetails), and the same schema exists
-       * session-wide as `configuration.formatDetails`.
+       * feature-details panel. The same schema exists session-wide as
+       * `configuration.formatDetails`.
        */
       formatDetails: FormatDetailsConfigSchemaFactory(),
 
       /**
        * #slot
        * jexl callbacks that add, rewrite or hide fields in this track's About
-       * dialog. Two slots, listed at
-       * [FormatAbout](/docs/config/formatabout), and the same schema exists
-       * session-wide as `configuration.formatAbout`.
+       * dialog. The same schema exists session-wide as
+       * `configuration.formatAbout`.
        */
       formatAbout: FormatAboutConfigSchemaFactory(),
     },

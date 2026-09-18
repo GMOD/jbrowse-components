@@ -3393,7 +3393,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "domain": {
               "description": "values that take the palette first, in order.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             },
             "palette": {
               "description": "CSS colors the values take, in order.",
@@ -3424,7 +3441,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "domain": {
               "description": "values whose sections stack first, in order.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             }
           },
           "patternProperties": {
@@ -4908,7 +4942,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none, categorical, strand, identity, mappingQuality or dnds.",
+              "description": "none, categorical, strand, identity, mappingQuality or dnds; unset follows field.",
               "anyOf": [
                 {
                   "enum": [
@@ -4923,12 +4957,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/JexlString"
                 }
-              ],
-              "default": "none"
+              ]
             },
             "domain": {
               "description": "the order a text column's labels take.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             }
           },
           "patternProperties": {
@@ -7210,7 +7260,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none, categorical or ld.",
+              "description": "none, categorical or ld; unset follows field.",
               "anyOf": [
                 {
                   "enum": [
@@ -7222,12 +7272,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/JexlString"
                 }
-              ],
-              "default": "none"
+              ]
             },
             "domain": {
               "description": "values that take the palette first, in order.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             },
             "palette": {
               "description": "CSS colors the values take, in order.",
@@ -7448,7 +7514,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none, categorical, linear or log.",
+              "description": "none, categorical, linear or log; unset follows field.",
               "anyOf": [
                 {
                   "enum": [
@@ -7461,8 +7527,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/JexlString"
                 }
-              ],
-              "default": "none"
+              ]
             },
             "palette": {
               "description": "categorical colours, in order.",
@@ -7522,7 +7587,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none or categorical.",
+              "description": "none or categorical; unset follows field.",
               "anyOf": [
                 {
                   "enum": [
@@ -7533,8 +7598,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/JexlString"
                 }
-              ],
-              "default": "none"
+              ]
             },
             "range": {
               "description": "glyph names, in order.",
@@ -8240,30 +8304,425 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "FeatureTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearBasicDisplaySlots"
+          "properties": {
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
+            "forceLoad": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/LinearArcDisplaySlots"
+            "height": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots"
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/mouseover"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/LinearMarkDisplaySlots"
+            "heightMode": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/heightMode"
+            },
+            "growMaxHeight": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/growMaxHeight"
+            },
+            "densityTier": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/densityTier"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/densityTier"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
+                }
+              ]
+            },
+            "densityTierBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/densityTierBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/densityTierBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
+                }
+              ]
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
+            "maxFeatureScreenDensity": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxFeatureScreenDensity"
+            },
+            "showLegend": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
+                }
+              ]
+            },
+            "showLabels": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showLabels"
+            },
+            "maxLabelFeatureDensity": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxLabelFeatureDensity"
+            },
+            "maxDescriptionFeatureDensity": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxDescriptionFeatureDensity"
+            },
+            "color": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/color"
+                }
+              ]
+            },
+            "connectorColor": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/connectorColor"
+            },
+            "utrColor": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/utrColor"
+            },
+            "outlineColor": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outlineColor"
+            },
+            "featureHeight": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/featureHeight"
+            },
+            "displayMode": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayMode"
+                },
+                {
+                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/displayMode"
+                }
+              ]
+            },
+            "facet": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+                }
+              ]
+            },
+            "geneGlyphMode": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/geneGlyphMode"
+            },
+            "subfeatureLabels": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subfeatureLabels"
+            },
+            "displayDirectionalChevrons": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayDirectionalChevrons"
+            },
+            "transcriptTypes": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptTypes"
+            },
+            "canonicalTranscriptField": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/canonicalTranscriptField"
+            },
+            "canonicalTranscriptTags": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/canonicalTranscriptTags"
+            },
+            "containerTypes": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/containerTypes"
+            },
+            "subParts": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subParts"
+            },
+            "impliedUTRs": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/impliedUTRs"
+            },
+            "hideSourceFeatures": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/hideSourceFeatures"
+            },
+            "labels": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/labels"
+            },
+            "showOnlyGenes": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showOnlyGenes"
+            },
+            "legend": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/legend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/legend"
+                }
+              ]
+            },
+            "renderer": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
+                },
+                {
+                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/renderer"
+                }
+              ]
+            },
+            "autoHeight": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/autoHeight"
+            },
+            "showDescriptions": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
+            },
+            "color1": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color1"
+            },
+            "color2": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color2"
+            },
+            "color3": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color3"
+            },
+            "outline": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline"
+            },
+            "partitionField": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/partitionField"
+            },
+            "clusterField": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/clusterField"
+            },
+            "lengthField": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/lengthField"
+            },
+            "sampleColorMap": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/sampleColorMap"
+            },
+            "rowHeight": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowHeight"
+            },
+            "rowProportion": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowSeparators"
+            },
+            "colorRowLabels": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/colorRowLabels"
+            },
+            "colorDomain": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/colorDomain"
+            },
+            "rowGroups": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
+            },
+            "showTree": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowLabels"
+            },
+            "domain": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/domain"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/treeAreaWidth"
+            },
+            "thickness": {
+              "$ref": "#/$defs/LinearArcDisplaySlots/properties/thickness"
+            },
+            "label": {
+              "$ref": "#/$defs/LinearArcDisplaySlots/properties/label"
+            },
+            "arcHeight": {
+              "$ref": "#/$defs/LinearArcDisplaySlots/properties/arcHeight"
+            },
+            "caption": {
+              "$ref": "#/$defs/LinearArcDisplaySlots/properties/caption"
+            },
+            "minScore": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/minScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
+                }
+              ]
+            },
+            "scoreField": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scoreField"
+            },
+            "maxScore": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
+                }
+              ]
+            },
+            "scaleType": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scaleType"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
+                }
+              ]
+            },
+            "autoscale": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/autoscale"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
+                }
+              ]
+            },
+            "numStdDev": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/numStdDev"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
+                }
+              ]
+            },
+            "displayCrossHatches": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+                }
+              ]
+            },
+            "significanceLine": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/significanceLine"
+            },
+            "minimalTicks": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+                }
+              ]
+            },
+            "scatterPointSize": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
+                }
+              ]
+            },
+            "marks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
+            },
+            "transform": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "origin": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -8358,21 +8817,281 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "AlignmentsTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots"
+          "properties": {
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/LinearMarkDisplaySlots"
+            "forceLoad": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+                }
+              ]
+            },
+            "height": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
+                }
+              ]
+            },
+            "mouseover": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mouseover"
+            },
+            "featureHeight": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/featureHeight"
+            },
+            "heightMode": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/heightMode"
+            },
+            "growMaxHeight": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/growMaxHeight"
+            },
+            "densityTier": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/densityTier"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
+                }
+              ]
+            },
+            "densityTierBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/densityTierBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
+                }
+              ]
+            },
+            "readConnectionsLineWidth": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnectionsLineWidth"
+            },
+            "showSashimiLabels": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showSashimiLabels"
+            },
+            "hideNonCanonicalJunctions": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideNonCanonicalJunctions"
+            },
+            "maxHeight": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxHeight"
+            },
+            "colorBy": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorBy"
+            },
+            "filterBy": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/filterBy"
+            },
+            "facet": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+                }
+              ]
+            },
+            "collapseGroupRows": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/collapseGroupRows"
+            },
+            "autoscale": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/autoscale"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
+                }
+              ]
+            },
+            "minScore": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
+                }
+              ]
+            },
+            "maxScore": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
+                }
+              ]
+            },
+            "scaleType": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scaleType"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
+                }
+              ]
+            },
+            "symlogConstant": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/symlogConstant"
+            },
+            "numStdDev": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/numStdDev"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
+                }
+              ]
+            },
+            "mismatchAlpha": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mismatchAlpha"
+            },
+            "showLowFreqMismatches": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showLowFreqMismatches"
+            },
+            "showLegend": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
+                }
+              ]
+            },
+            "sortedBy": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sortedBy"
+            },
+            "largeFeaturesFirst": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/largeFeaturesFirst"
+            },
+            "splicedReadsFirst": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/splicedReadsFirst"
+            },
+            "showOutline": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showOutline"
+            },
+            "linkedReads": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/linkedReads"
+            },
+            "showBezierConnections": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showBezierConnections"
+            },
+            "showCoverage": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showCoverage"
+            },
+            "showPileup": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showPileup"
+            },
+            "coverageHeight": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/coverageHeight"
+            },
+            "coverageSnpMinFrequency": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/coverageSnpMinFrequency"
+            },
+            "showMismatches": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showMismatches"
+            },
+            "showInterbaseIndicators": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showInterbaseIndicators"
+            },
+            "flipStrandLongReadChains": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/flipStrandLongReadChains"
+            },
+            "colorSupplementaryChains": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorSupplementaryChains"
+            },
+            "drawInter": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawInter"
+            },
+            "drawProperPairArcs": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawProperPairArcs"
+            },
+            "minInterchromSupport": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minInterchromSupport"
+            },
+            "drawLongRange": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawLongRange"
+            },
+            "arcColorByType": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/arcColorByType"
+            },
+            "readConnections": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnections"
+            },
+            "readConnectionsDown": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnectionsDown"
+            },
+            "showSashimiArcs": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showSashimiArcs"
+            },
+            "sashimiArcsMode": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimiArcsMode"
+            },
+            "minSashimiScore": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minSashimiScore"
+            },
+            "sashimiArcsHeight": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimiArcsHeight"
+            },
+            "readConnectionsHeight": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnectionsHeight"
+            },
+            "showSoftClipping": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showSoftClipping"
+            },
+            "marks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
+            },
+            "transform": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+            },
+            "origin": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -8467,30 +9186,268 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "SyntenyTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/ChordSyntenyDisplaySlots"
+          "properties": {
+            "bezierRadiusRatio": {
+              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/bezierRadiusRatio"
             },
-            {
-              "$ref": "#/$defs/DotplotDisplaySlots"
+            "colorBy": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorBy"
+                },
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/LinearSyntenyDisplaySlots"
+            "color": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/color"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots"
+            "colorSelected": {
+              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorSelected"
             },
-            {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots"
+            "colorHover": {
+              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorHover"
+            },
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
+            },
+            "forceLoad": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/forceLoad"
+                }
+              ]
+            },
+            "height": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/height"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/mouseover"
+                }
+              ]
+            },
+            "featureHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/featureHeight"
+            },
+            "heightMode": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/heightMode"
+            },
+            "growMaxHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/growMaxHeight"
+            },
+            "densityTier": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTier"
+            },
+            "densityTierBpPerPx": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTierBpPerPx"
+            },
+            "readConnectionsLineWidth": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsLineWidth"
+            },
+            "showSashimiLabels": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSashimiLabels"
+            },
+            "hideNonCanonicalJunctions": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideNonCanonicalJunctions"
+            },
+            "maxHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
+            },
+            "filterBy": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
+            },
+            "facet": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/facet"
+            },
+            "collapseGroupRows": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/collapseGroupRows"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/autoscale"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxScore"
+            },
+            "scaleType": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scaleType"
+            },
+            "symlogConstant": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/symlogConstant"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/numStdDev"
+            },
+            "mismatchAlpha": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha"
+            },
+            "showLowFreqMismatches": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showLowFreqMismatches"
+            },
+            "showLegend": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLegend"
+                }
+              ]
+            },
+            "sortedBy": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sortedBy"
+            },
+            "largeFeaturesFirst": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/largeFeaturesFirst"
+            },
+            "splicedReadsFirst": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/splicedReadsFirst"
+            },
+            "showOutline": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showOutline"
+            },
+            "linkedReads": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"
+            },
+            "showBezierConnections": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showBezierConnections"
+            },
+            "showCoverage": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showCoverage"
+            },
+            "showPileup": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showPileup"
+            },
+            "coverageHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/coverageHeight"
+            },
+            "coverageSnpMinFrequency": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/coverageSnpMinFrequency"
+            },
+            "showMismatches": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showMismatches"
+            },
+            "showInterbaseIndicators": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showInterbaseIndicators"
+            },
+            "flipStrandLongReadChains": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/flipStrandLongReadChains"
+            },
+            "colorSupplementaryChains": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorSupplementaryChains"
+            },
+            "drawInter": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawInter"
+            },
+            "drawProperPairArcs": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawProperPairArcs"
+            },
+            "minInterchromSupport": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minInterchromSupport"
+            },
+            "drawLongRange": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawLongRange"
+            },
+            "arcColorByType": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/arcColorByType"
+            },
+            "readConnections": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnections"
+            },
+            "readConnectionsDown": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsDown"
+            },
+            "showSashimiArcs": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSashimiArcs"
+            },
+            "sashimiArcsMode": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimiArcsMode"
+            },
+            "minSashimiScore": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minSashimiScore"
+            },
+            "sashimiArcsHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimiArcsHeight"
+            },
+            "readConnectionsHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsHeight"
+            },
+            "showSoftClipping": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSoftClipping"
+            },
+            "lodMode": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/lodMode"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/lodMode"
+                }
+              ]
+            },
+            "hideSelfAlignments": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSelfAlignments"
+            },
+            "utrColor": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
+            },
+            "domain": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/domain"
+            },
+            "ribbonColor": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/ribbonColor"
+            },
+            "hideUnlabelled": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/hideUnlabelled"
+            },
+            "drawCurves": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/drawCurves"
+            },
+            "bridgeSkippedLanes": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/bridgeSkippedLanes"
+            },
+            "showLaneTicks": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLaneTicks"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -8573,21 +9530,120 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "ReferenceSequenceTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots"
+          "properties": {
+            "height": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/height"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots"
+            "showForward": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showForward"
+            },
+            "showReverse": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showReverse"
+            },
+            "showTranslation": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showTranslation"
+            },
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/fetchSizeLimit"
+            },
+            "forceLoad": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/forceLoad"
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
+            },
+            "useBicolor": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/useBicolor"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/color"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/maxScore"
+            },
+            "scaleType": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/autoscale"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/numStdDev"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/displayCrossHatches"
+            },
+            "scoreField": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreField"
+            },
+            "resolution": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/resolution"
+            },
+            "symlogConstant": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/symlogConstant"
+            },
+            "posColor": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/posColor"
+            },
+            "negColor": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/negColor"
+            },
+            "bicolorPivot": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/bicolorPivot"
+            },
+            "densityColorRamp": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/densityColorRamp"
+            },
+            "numQuantile": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/numQuantile"
+            },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/lineWidth"
+            },
+            "maxGapMultiple": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/maxGapMultiple"
+            },
+            "showLegend": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showLegend"
+            },
+            "scoreRules": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreRules"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/summaryScoreMode"
+            },
+            "windowSize": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/windowSize"
+            },
+            "windowDelta": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/windowDelta"
+            },
+            "gcMode": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -8682,33 +9738,489 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "VariantTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/ChordVariantDisplaySlots"
+          "properties": {
+            "bezierRadiusRatio": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/bezierRadiusRatio"
             },
-            {
-              "$ref": "#/$defs/LinearVariantDisplaySlots"
+            "onChordClick": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/onChordClick"
             },
-            {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots"
+            "strokeColor": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColor"
             },
-            {
-              "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots"
+            "strokeColorSelected": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorSelected"
             },
-            {
-              "$ref": "#/$defs/LinearPairedArcDisplaySlots"
+            "strokeColorHover": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorHover"
             },
-            {
-              "$ref": "#/$defs/LinearMarkDisplaySlots"
+            "renderer": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ChordVariantDisplaySlots/properties/renderer"
+                },
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/renderer"
+                }
+              ]
+            },
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
+            },
+            "forceLoad": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+                }
+              ]
+            },
+            "height": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/mouseover"
+                }
+              ]
+            },
+            "heightMode": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/heightMode"
+            },
+            "growMaxHeight": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/growMaxHeight"
+            },
+            "densityTier": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/densityTier"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
+                }
+              ]
+            },
+            "densityTierBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/densityTierBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
+                }
+              ]
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
+            "maxFeatureScreenDensity": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxFeatureScreenDensity"
+            },
+            "showLegend": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
+                }
+              ]
+            },
+            "showLabels": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showLabels"
+            },
+            "maxLabelFeatureDensity": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxLabelFeatureDensity"
+            },
+            "maxDescriptionFeatureDensity": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxDescriptionFeatureDensity"
+            },
+            "color": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/color"
+                }
+              ]
+            },
+            "connectorColor": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/connectorColor"
+            },
+            "utrColor": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/utrColor"
+            },
+            "outlineColor": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outlineColor"
+            },
+            "featureHeight": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/featureHeight"
+            },
+            "displayMode": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/displayMode"
+            },
+            "facet": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+                }
+              ]
+            },
+            "geneGlyphMode": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/geneGlyphMode"
+            },
+            "subfeatureLabels": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/subfeatureLabels"
+            },
+            "displayDirectionalChevrons": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/displayDirectionalChevrons"
+            },
+            "transcriptTypes": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/transcriptTypes"
+            },
+            "canonicalTranscriptField": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/canonicalTranscriptField"
+            },
+            "canonicalTranscriptTags": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/canonicalTranscriptTags"
+            },
+            "containerTypes": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/containerTypes"
+            },
+            "subParts": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/subParts"
+            },
+            "impliedUTRs": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/impliedUTRs"
+            },
+            "hideSourceFeatures": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/hideSourceFeatures"
+            },
+            "labels": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/labels"
+            },
+            "autoHeight": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/autoHeight"
+            },
+            "showDescriptions": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
+            },
+            "color1": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color1"
+            },
+            "color2": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color2"
+            },
+            "color3": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color3"
+            },
+            "outline": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outline"
+            },
+            "lineZoneHeight": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/lineZoneHeight"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/lineZoneHeight"
+                }
+              ]
+            },
+            "rowHeight": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rowHeight"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/rowHeight"
+                }
+              ]
+            },
+            "showTree": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showTree"
+                }
+              ]
+            },
+            "showBranchLength": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showBranchLength"
+                }
+              ]
+            },
+            "showRowLabels": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showRowLabels"
+                }
+              ]
+            },
+            "domain": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/domain"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/domain"
+                }
+              ]
+            },
+            "treeAreaWidth": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
+            },
+            "showRowSeparators": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showRowSeparators"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showRowSeparators"
+                }
+              ]
+            },
+            "showTooltips": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showTooltips"
+                }
+              ]
+            },
+            "renderingMode": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/renderingMode"
+                }
+              ]
+            },
+            "featureColor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/featureColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/featureColor"
+                }
+              ]
+            },
+            "shadeByDosage": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/shadeByDosage"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/shadeByDosage"
+                }
+              ]
+            },
+            "minorAlleleFrequencyFilter": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minorAlleleFrequencyFilter"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/minorAlleleFrequencyFilter"
+                }
+              ]
+            },
+            "maxMissingnessFilter": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/maxMissingnessFilter"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/maxMissingnessFilter"
+                }
+              ]
+            },
+            "rowColor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rowColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/rowColor"
+                }
+              ]
+            },
+            "referenceDrawingMode": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/referenceDrawingMode"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/referenceDrawingMode"
+                }
+              ]
+            },
+            "showInsertionGlyphs": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showInsertionGlyphs"
+            },
+            "showVariantLane": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showVariantLane"
+            },
+            "variantLaneHeight": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLaneHeight"
+            },
+            "variantLaneLabels": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLaneLabels"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/lineWidth"
+            },
+            "minScore": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/minScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
+                }
+              ]
+            },
+            "marks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
+            },
+            "transform": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
+            },
+            "scaleType": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+            },
+            "origin": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -8803,18 +10315,56 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "LDTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LDTrackDisplaySlots"
+          "properties": {
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/fetchSizeLimit"
+            },
+            "forceLoad": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/forceLoad"
+            },
+            "height": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/height"
+            },
+            "mouseover": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/mouseover"
+            },
+            "lineZoneHeight": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight"
+            },
+            "ldMetric": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/ldMetric"
+            },
+            "showLegend": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLegend"
+            },
+            "showLDTriangle": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLDTriangle"
+            },
+            "squashToHeight": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/squashToHeight"
+            },
+            "maxVariantSeparation": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxVariantSeparation"
+            },
+            "showVerticalGuides": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showVerticalGuides"
+            },
+            "showLabels": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLabels"
+            },
+            "tickHeight": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/tickHeight"
+            },
+            "useGenomicPositions": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/useGenomicPositions"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -8909,21 +10459,189 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "QuantitativeTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots"
+          "properties": {
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
-            {
-              "$ref": "#/$defs/LinearMarkDisplaySlots"
+            "height": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
+                }
+              ]
+            },
+            "useBicolor": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/useBicolor"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
+            },
+            "minScore": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
+                }
+              ]
+            },
+            "maxScore": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
+                }
+              ]
+            },
+            "scaleType": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
+                }
+              ]
+            },
+            "autoscale": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
+                }
+              ]
+            },
+            "numStdDev": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
+                }
+              ]
+            },
+            "displayCrossHatches": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+                }
+              ]
+            },
+            "scoreField": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
+            },
+            "resolution": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
+            },
+            "symlogConstant": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/symlogConstant"
+            },
+            "posColor": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/posColor"
+            },
+            "negColor": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/negColor"
+            },
+            "bicolorPivot": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/bicolorPivot"
+            },
+            "densityColorRamp": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/densityColorRamp"
+            },
+            "numQuantile": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numQuantile"
+            },
+            "scatterPointSize": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
+                }
+              ]
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
+            },
+            "maxGapMultiple": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
+            },
+            "showLegend": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
+                }
+              ]
+            },
+            "scoreRules": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreRules"
+            },
+            "minimalTicks": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+                }
+              ]
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+            },
+            "forceLoad": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+            },
+            "densityTier": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
+            },
+            "densityTierBpPerPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
+            },
+            "marks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
+            },
+            "transform": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "facet": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "origin": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -9018,21 +10736,198 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "MultiQuantitativeTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots"
+          "properties": {
+            "minScore": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/minScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/LinearMarkDisplaySlots"
+            "maxScore": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/maxScore"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
+                }
+              ]
+            },
+            "scaleType": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scaleType"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
+                }
+              ]
+            },
+            "autoscale": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/autoscale"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
+                }
+              ]
+            },
+            "numStdDev": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/numStdDev"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
+                }
+              ]
+            },
+            "displayCrossHatches": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/displayCrossHatches"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+                }
+              ]
+            },
+            "scoreField": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scoreField"
+            },
+            "resolution": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/resolution"
+            },
+            "symlogConstant": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/symlogConstant"
+            },
+            "posColor": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/posColor"
+            },
+            "negColor": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/negColor"
+            },
+            "bicolorPivot": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/bicolorPivot"
+            },
+            "densityColorRamp": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/densityColorRamp"
+            },
+            "numQuantile": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/numQuantile"
+            },
+            "scatterPointSize": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scatterPointSize"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
+                }
+              ]
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/lineWidth"
+            },
+            "maxGapMultiple": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/maxGapMultiple"
+            },
+            "height": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
+                }
+              ]
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/defaultRendering"
+            },
+            "minimalTicks": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/minimalTicks"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+                }
+              ]
+            },
+            "showTree": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showRowLabels"
+            },
+            "domain": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/domain"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/treeAreaWidth"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showRowSeparators"
+            },
+            "showLegend": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
+                }
+              ]
+            },
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+            },
+            "forceLoad": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+            },
+            "densityTier": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
+            },
+            "densityTierBpPerPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
+            },
+            "marks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
+            },
+            "transform": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "facet": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "origin": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -9127,18 +11022,98 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "GCContentTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots"
+          "properties": {
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/defaultRendering"
+            },
+            "height": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/height"
+            },
+            "useBicolor": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/useBicolor"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/color"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/maxScore"
+            },
+            "scaleType": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/autoscale"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/numStdDev"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/displayCrossHatches"
+            },
+            "scoreField": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scoreField"
+            },
+            "resolution": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/resolution"
+            },
+            "symlogConstant": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/symlogConstant"
+            },
+            "posColor": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/posColor"
+            },
+            "negColor": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/negColor"
+            },
+            "bicolorPivot": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/bicolorPivot"
+            },
+            "densityColorRamp": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/densityColorRamp"
+            },
+            "numQuantile": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/numQuantile"
+            },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scatterPointSize"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/lineWidth"
+            },
+            "maxGapMultiple": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/maxGapMultiple"
+            },
+            "showLegend": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showLegend"
+            },
+            "scoreRules": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scoreRules"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/minimalTicks"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/summaryScoreMode"
+            },
+            "windowSize": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/windowSize"
+            },
+            "windowDelta": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/windowDelta"
+            },
+            "gcMode": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/gcMode"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -9233,18 +11208,98 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "MafTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearMafDisplaySlots"
+          "properties": {
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/fetchSizeLimit"
+            },
+            "forceLoad": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/forceLoad"
+            },
+            "height": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/height"
+            },
+            "mouseover": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/mouseover"
+            },
+            "rowHeight": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowHeight"
+            },
+            "rowProportion": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowProportion"
+            },
+            "showAllLetters": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAllLetters"
+            },
+            "mismatchRendering": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/mismatchRendering"
+            },
+            "showAsUpperCase": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAsUpperCase"
+            },
+            "showTree": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showRowLabels"
+            },
+            "domain": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/domain"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/treeAreaWidth"
+            },
+            "showLegend": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showLegend"
+            },
+            "showCoverage": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showCoverage"
+            },
+            "showAlignments": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAlignments"
+            },
+            "coverageHeight": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/coverageHeight"
+            },
+            "showConservation": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showConservation"
+            },
+            "conservationHeight": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/conservationHeight"
+            },
+            "conservationMode": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/conservationMode"
+            },
+            "rowIdentityMode": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowIdentityMode"
+            },
+            "rowIdentityAutoZoom": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowIdentityAutoZoom"
+            },
+            "showAnnotations": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAnnotations"
+            },
+            "showTranslation": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showTranslation"
+            },
+            "colorByChromosome": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/colorByChromosome"
+            },
+            "showReferenceRow": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showReferenceRow"
+            },
+            "showInversions": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showInversions"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -9339,18 +11394,41 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "HicTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearHicDisplaySlots"
+          "properties": {
+            "height": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/height"
+            },
+            "colorScheme": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/colorScheme"
+            },
+            "showLegend": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/showLegend"
+            },
+            "resolutionBias": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/resolutionBias"
+            },
+            "useLogScale": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/useLogScale"
+            },
+            "useColorPercentile": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/useColorPercentile"
+            },
+            "showResolutionControls": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/showResolutionControls"
+            },
+            "selectedNormalization": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/selectedNormalization"
+            },
+            "squashToHeight": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/squashToHeight"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [
@@ -9445,18 +11523,53 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDefaults": {
           "title": "GWASTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the \`displays\` array.",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots"
+          "properties": {
+            "height": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/height"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/color"
+            },
+            "scoreField": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scoreField"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxScore"
+            },
+            "scaleType": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/autoscale"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/numStdDev"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
+            },
+            "significanceLine": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/significanceLine"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
+            },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
+            },
+            "showLegend": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
             }
-          ],
-          "properties": {},
+          },
           "patternProperties": {
             "^_+comment": {}
           },
-          "unevaluatedProperties": false
+          "additionalProperties": false
         }
       },
       "required": [

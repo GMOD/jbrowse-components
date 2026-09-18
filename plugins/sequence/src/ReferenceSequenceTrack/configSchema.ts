@@ -90,8 +90,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       /**
        * #slot
        * jexl callbacks that add, rewrite or hide fields in this track's About
-       * dialog. Two slots, listed at
-       * [FormatAbout](/docs/config/formatabout).
+       * dialog.
        */
       formatAbout: FormatAboutConfigSchemaFactory(),
     },

@@ -652,8 +652,7 @@ export function configSchemaFactory() {
        * #slot facet
        * One band of rows per value of a field, split after `transform` and
        * before any mark's own steps: `"HP"`, or `{ field, domain }` with the
-       * order the bands stack in. The object's slots are listed at
-       * [Facet](/docs/config/facet).
+       * order the bands stack in.
        */
       facet: facetConfigSchema,
       ...scoreAxisConfigSchemaFields,

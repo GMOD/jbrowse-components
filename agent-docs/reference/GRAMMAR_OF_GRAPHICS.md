@@ -317,7 +317,8 @@ dialogs is an editor over the display's two settings and the filter override:
 `{ facet: "strand" | { field, domain }, color: "css" | { field, domain, palette }, filter }`.
 `@jbrowse/display-kit/channelSpec` parses the text through
 `preProcessConfigSnapshot`, the two objects' own lift and checks, so the box
-refuses what a config file cannot hold, and the dialog hands `facet` and
+refuses what a config file cannot hold, and a spec naming no field or colour
+besides; the dialog hands `facet` and
 `color` to `applyDisplaySettings` and `filter` to `setJexlFilters`. The Group by dialog writes the same two settings
 through `setFacet` and `setColorScale` (`groupByChannelSpec`).
 

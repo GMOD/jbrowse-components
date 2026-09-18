@@ -3837,7 +3837,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "scale",
-              "type": "(JexlString | RibbonColorScale)"
+              "type": "(JexlString | (RibbonColorScale | undefined))"
             },
             {
               "name": "domain",
@@ -5303,7 +5303,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "scale",
-              "type": "(JexlString | ManhattanColorScale)"
+              "type": "(JexlString | (ManhattanColorScale | undefined))"
             },
             {
               "name": "domain",
@@ -5458,7 +5458,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "scale",
-                      "type": "(JexlString | MarkColorScale)"
+                      "type": "(JexlString | (MarkColorScale | undefined))"
                     },
                     {
                       "name": "palette",
@@ -5488,7 +5488,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "scale",
-                      "type": "(JexlString | MarkGlyphScale)"
+                      "type": "(JexlString | (MarkGlyphScale | undefined))"
                     },
                     {
                       "name": "range",

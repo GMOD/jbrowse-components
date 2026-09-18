@@ -861,6 +861,7 @@
         "readConfigValue",
         "setConf",
         "slotChoices",
+        "slotValueRefusal",
         "tabixIndexFields",
         "tabixIndexSnapshot",
         "toCallbackValue",
@@ -3698,8 +3699,8 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "colorConfigSchema",
-        "normalizeColor",
-        "normalizeScaledColor"
+        "normalizeChannel",
+        "paintedScale"
       ],
       "worker": "real"
     },
@@ -3853,8 +3854,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "facetConfigSchema",
-        "facetSettingOf",
-        "normalizeFacet"
+        "facetSettingOf"
       ],
       "worker": "real"
     },

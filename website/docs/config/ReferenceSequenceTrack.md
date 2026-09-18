@@ -57,4 +57,4 @@ These slots are top-level fields of the track config, alongside `trackId` and `n
 | <span id="slot-sequencetype">**sequenceType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'dna'</code> | either dna or pep |
 | <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the track |
 | <span id="slot-metadata">**metadata**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | anything to add about this track |
-| <span id="slot-formatabout">**formatAbout**</span><br><code>FormatAboutConfigSchemaFactory()</code> | jexl callbacks that add, rewrite or hide fields in this track's About dialog. Two slots, listed at [FormatAbout](/docs/config/formatabout). |
+| <span id="slot-formatabout">**formatAbout**</span><br>[FormatAbout](../formatabout) | jexl callbacks that add, rewrite or hide fields in this track's About dialog. |

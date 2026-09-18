@@ -49,8 +49,9 @@ manifest's type set, key for key.
 - Every registered type gets `$defs/<Name>Slots` (the slot table, open) and
   `$defs/<Name>` (closed: `type`, the identifier, `allOf: [<Name>Slots]`,
   `unevaluatedProperties: false`). The split is what lets a track's
-  `displayDefaults` intersect its displays' tables and a session track entry
-  intersect one display's slots and state without restating either.
+  `displayDefaults` refer to its displays' slots (an `anyOf` per key since
+  ADR-134) and a session track entry intersect one display's slots and state
+  without restating either.
 - A group is a union dispatched by `if: {type: X} then: $ref X`, one arm per
   type. A `type` no arm names passes with its keys unchecked — a plugin
   registers types the schema never saw, and JBrowse is loud about a type
@@ -134,7 +135,8 @@ key, `init` nesting.
   on it in a dev build; a production build stores the value unchecked. The
   manifest checked key names only. The fences moved the setting onto an
   explicit `LinearBasicDisplay` entry; `collectDisplayOverrides` routing by
-  slot acceptance rather than by name is the fix in core, not made here.
+  slot acceptance rather than by name is the fix in core, made by
+  [ADR-134](adr-134-displaydefaults-routes-a-value-to-the-displays-that-take-it.md).
 - **Seven fixtures carried session and view keys nothing declares** — a
   session's `margin` and `width`, a synteny view's dotplot-era `fontSize`,
   `tickSize` and `htextRotation`, an LGV's `bookmarkHighlightsVisible`, a

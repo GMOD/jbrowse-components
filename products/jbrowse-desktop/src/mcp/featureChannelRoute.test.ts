@@ -74,7 +74,7 @@ test('a feature track groups and colors through the two settings jb.help names, 
   display.applyDisplaySettings({ facet: null })
   expect(display.channelSpec.facet).toBeNull()
   expect(
-    display.applyDisplaySettings({ color: { domain: ['x'] } }).failed,
+    display.applyDisplaySettings({ color: { field: 'x', scale: 'ld' } }).failed,
   ).toMatchObject([{ key: 'color' }])
 
   const slots = jb.describeSlots(display.configuration)

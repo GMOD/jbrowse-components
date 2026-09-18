@@ -44,16 +44,18 @@ import { join } from 'node:path'
 import { docFiles, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir } from './paths.ts'
 
-// Slot rows come in three spellings, because only the kinds with a glossary
-// entry are linked, and a sub-schema slot has no kind to name:
+// Slot rows come in four spellings, because only the kinds with a glossary
+// entry are linked, and a sub-schema slot has no kind to name — it links its
+// schema's page where one documents it, and shows its source otherwise:
 //   | <span id="slot-autoscale">**autoscale**</span><br>[`stringEnum`](...) (local, localsd) = <code>'local'</code> | ...
 //   | <span id="slot-displaymode">**displayMode**</span><br>`maybeStringEnum` (normal, compact) = <code>'normal'</code> | ...
-//   | <span id="slot-facet">**facet**</span><br><code>facetConfigSchema</code> | ...
+//   | <span id="slot-facet">**facet**</span><br>[Facet](../facet) | ...
+//   | <span id="slot-marks">**marks**</span><br><code>types.array(markSchema)</code> | ...
 // Matching only the linked form silently drops every `maybeStringEnum` /
 // `stringArray` slot, and every sub-schema, which then reads as "no schema
 // defines this".
 const SLOT_ROW =
-  /id="slot-[a-z0-9.]+">\*\*([A-Za-z0-9.]+)\*\*<\/span><br>(?:\[?`(\w+)`(?:\]\([^)]*\))?(?:\s*\(([^)]*)\))?|<code>)/
+  /id="slot-[a-z0-9.]+">\*\*([A-Za-z0-9.]+)\*\*<\/span><br>(?:\[?`(\w+)`(?:\]\([^)]*\))?(?:\s*\(([^)]*)\))?|<code>|\[\w+\]\(\.\.\/)/
 
 // the kind a row with no kind cell declares: a sub-schema, whose value is its
 // object or the string its shorthand lifts

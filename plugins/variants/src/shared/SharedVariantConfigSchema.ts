@@ -150,8 +150,7 @@ export default function sharedVariantConfigFactory() {
        * own band of rows, so a group-restricted genotype pattern reads as one
        * band rather than being scattered across the matrix; or
        * `{ field, domain }`, the listed values banding first and the rest
-       * sorted ([Facet](/docs/config/facet)). Unset, the rows keep their
-       * existing order.
+       * sorted. Unset, the rows keep their existing order.
        *
        * The band is applied when the rows are read, over whatever order the
        * reader has arranged, so a drag that moves a sample into another band

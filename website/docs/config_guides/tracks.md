@@ -83,7 +83,7 @@ config with several assemblies. Name it there.
 
 Appearance settings belong to a track's **displays**, the ways a track can be
 drawn. A `displayDefaults` object routes each setting to every display whose
-schema has a slot by that name:
+slot by that name takes the value:
 
 ```json addtrack
 {
@@ -101,7 +101,10 @@ schema has a slot by that name:
 
 - **Differently named slots land on different displays.** `color` reaches the
   linear display and `strokeColor` the circular (chord) one.
-- **A shared name reaches every display.** `height` sets all of them.
+- **A shared name reaches every display that takes the value.** `height` sets
+  all of them; `color: { "field": "type" }` reaches the displays whose `color`
+  paints by a field, and a value no display takes fails the track's load, naming
+  why.
 - **A name no display defines is ignored**, with a console warning so typos show
   up.
 

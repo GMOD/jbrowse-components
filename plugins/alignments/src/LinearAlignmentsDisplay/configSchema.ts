@@ -181,7 +181,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * dimension (`strand`, `firstOfPairStrand`, `pairOrientation`,
        * `splitRead`, `mapq`, `mateAssembly`), a tag (`tags.HP`), or any
        * other field. `{ field: "tags.HP", domain: ["2", "1"] }` stacks the
-       * listed values first. See [Facet](Facet).
+       * listed values first.
        */
       facet: facetConfigSchema,
       /**
