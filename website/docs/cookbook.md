@@ -267,7 +267,7 @@ pass every expression, on variant tracks too:
     "height": 400,
     "colorBy": { "type": "mappingQuality" },
     "showSoftClipping": true,
-    "groupBy": { "type": "tag", "tag": "HP" },
+    "facet": "tags.HP",
     "filterBy": {
       "flagExclude": 1540,
       "flagInclude": 0,
@@ -279,8 +279,8 @@ pass every expression, on variant tracks too:
 
 - `colorBy` also takes `strand`, `pairOrientation`, `insertSize`, `tag`, and
   `modifications`
-- `groupBy` also takes `strand`, `firstOfPairStrand`, `pairOrientation`,
-  `supplementary`, and `mapq`
+- `facet` also takes `strand`, `firstOfPairStrand`, `pairOrientation`,
+  `splitRead`, `mapq`, or any read field
 - `flagExclude` 1540 hides unmapped, vendor-failed, and duplicate reads; 3844
   also hides secondary and supplementary
   ([flag explainer](https://broadinstitute.github.io/picard/explain-flags.html))

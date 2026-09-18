@@ -435,9 +435,7 @@ export function stateModelFactory(
        * facet that issued it, so moving the field drops what was hidden.
        */
       get groupKeySpace(): string {
-        return groupKeySpaceOf(
-          this.facet ? { type: 'facet', field: this.facet.field } : undefined,
-        )
+        return groupKeySpaceOf(this.facet)
       },
       /**
        * #getter

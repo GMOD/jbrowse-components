@@ -29,14 +29,16 @@ read likewise.
   group allocates region-width depth arrays and its own GPU coverage buffer.
 - `mapq` bins by confidence, not by decade — real MAPQ is bimodal at the
   aligner's ceiling.
-- `tag` and `mateAssembly` are the two the DATA decides, and they are answered
-  at opposite ends. `tag` has a dialog, which scans the visible blocks and
-  blocks Submit on the count (`tagGroupingVerdict`, which also names the other
-  end — a tag no read carries). `mateAssembly` has no point of choice to refuse
-  at: an all-vs-all track names its mates from the file, an unlisted sample
-  falling back to its bare PanSN prefix (`assemblyForPanSNName`), so config
-  cannot bound the count and only a second scan could. It is told after the fact
-  instead, by the overflow lane's own chip (`overflowLabel`).
+- A tag or field facet and `mateAssembly` are the ones the DATA decides, and
+  they are answered at opposite ends. A tag has a dialog, which scans the
+  visible blocks and blocks Submit on the count (`tagGroupingVerdict`, which
+  also names the other end — a tag no read carries); a field written in config
+  has no point of choice and falls to the overflow lane. `mateAssembly` has no
+  point of choice either: an all-vs-all track names its mates from the file, an
+  unlisted sample falling back to its bare PanSN prefix
+  (`assemblyForPanSNName`), so config cannot bound the count and only a second
+  scan could. It is told after the fact instead, by the overflow lane's own chip
+  (`overflowLabel`).
 - The `''` untagged group is held out of the overflow merge — reads _lacking_
   the tag are a distinct answer users look for.
 - **The cap is per call, so the overflow lane's COUNT is not.** Each region
@@ -45,12 +47,13 @@ read likewise.
 - Chain mode allows only dimensions that resolve one chain to one key —
   `fragmentLevel` (the chain's representative read answers for the fragment)
   **or** a `chainKey` that answers for the whole chain, which is why
-  `isChainGroupableType` derives the answer instead of reading a third field.
-  `fragmentLevel` is **not** "every read yields the same key": a supplementary
-  segment carries its own strand and its own `pair_orientation`, so it disagrees
-  with its primary and the fragment's answer is the primary read1's. A new
-  `GroupByType` member is a compile error until it's classified, and each
-  entry's `type` is pinned to its own registry key.
+  `isChainGroupable` derives the answer instead of reading a third field. A tag
+  or field facet describes the fragment. `fragmentLevel` is **not** "every read
+  yields the same key": a supplementary segment carries its own strand and its
+  own `pair_orientation`, so it disagrees with its primary and the fragment's
+  answer is the primary read1's. A new `ReadDimension` member is a compile error
+  until it's classified, and each entry's `field` is pinned to its own registry
+  key.
 - Key generators must cover **both** worlds this pipeline serves — hence
   `strand` over `SAM_FLAG_REVERSE`, and `getMappingQuality`.
 - Chain numbering is **per worker call**, so anything unioning chains across

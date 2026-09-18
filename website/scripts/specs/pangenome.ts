@@ -543,7 +543,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // traced read by read. Grouping puts them in two labelled
               // sections, so "18 of 38 carry an SA tag" is a thing you can see
               // rather than count.
-              groupBy: { type: 'splitRead' },
+              facet: 'splitRead',
               height: 210,
             },
             {

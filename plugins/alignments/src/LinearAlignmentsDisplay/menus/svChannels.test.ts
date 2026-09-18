@@ -12,7 +12,7 @@ import {
 function mockModel(initial: Partial<SvChannelsSettings> = {}) {
   return {
     showPileup: true,
-    groupBy: undefined as SvChannelsSettings['groupBy'],
+    facet: undefined as SvChannelsSettings['facet'],
     // Both sides modelled honestly, because the bug lived in the gap between
     // them: the getter always resolves ('off' when nothing is set), and only
     // the setter can say unset. `readConnectionsWritten` is what reached the
@@ -26,8 +26,8 @@ function mockModel(initial: Partial<SvChannelsSettings> = {}) {
     setShowPileup(show: boolean) {
       this.showPileup = show
     },
-    setGroupBy(groupBy?: SvChannelsSettings['groupBy']) {
-      this.groupBy = groupBy
+    setFacet(facet?: SvChannelsSettings['facet']) {
+      this.facet = facet
     },
     setReadConnections(mode?: SvChannelsSettings['readConnections']) {
       this.readConnectionsWritten = mode
@@ -46,7 +46,7 @@ test('the preset writes all four settings, not a subset', () => {
   const model = mockModel()
   applySvChannels(model, SV_CHANNELS_ON)
   expect(model.showPileup).toBe(false)
-  expect(model.groupBy).toEqual({ type: 'pairOrientation' })
+  expect(model.facet).toEqual({ field: 'pairOrientation' })
   expect(model.readConnections).toBe('arc')
   expect(model.drawProperPairArcs).toBe(false)
 })
@@ -65,7 +65,7 @@ test('clicking the menu row turns the arrangement on, then back off', () => {
   getSvChannelsMenuItem(model).onClick()
   expect(isSvChannelsActive(model)).toBe(false)
   expect(model.showPileup).toBe(true)
-  expect(model.groupBy).toBeUndefined()
+  expect(model.facet).toBeUndefined()
   expect(model.drawProperPairArcs).toBe(true)
 })
 
@@ -97,7 +97,7 @@ test.each([
 // `isSvChannelsActive` fails a test rather than passing on the other three.
 test.each([
   ['showPileup', { showPileup: true }],
-  ['groupBy', { groupBy: { type: 'strand' as const } }],
+  ['facet', { facet: { field: 'strand' } }],
   ['readConnections', { readConnections: 'cloud' as const }],
   ['drawProperPairArcs', { drawProperPairArcs: true }],
 ])('changing %s alone leaves the arrangement', (_name, override) => {
@@ -112,6 +112,6 @@ test('flipping the arcs above the coverage stays in the arrangement', () => {
 })
 
 test('an ungrouped display does not read as grouped by pair orientation', () => {
-  const model = mockModel({ ...SV_CHANNELS_ON, groupBy: undefined })
+  const model = mockModel({ ...SV_CHANNELS_ON, facet: undefined })
   expect(isSvChannelsActive(model)).toBe(false)
 })

@@ -509,7 +509,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // draws its own message instead of reads. What actually arrives is
           // ~300 reads.
           forceLoad: true,
-          groupBy: { type: 'strand' },
+          facet: 'strand',
           colorBy: { type: 'strand' },
           // ~150 reads a strand and each one 1-3 kb against a 3.4 kb window, so
           // almost every read gets a row of its own: at 2px the two pileups are
@@ -594,7 +594,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               trackId: 'hg002_nanopore_hp',
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
-              groupBy: { type: 'strand' },
+              facet: 'strand',
               // the reads stay on screen under each band (reviewer: hiding them
               // is confusing), colored by the same dimension the grouping used —
               // so the section a band belongs to is readable off the reads
@@ -1300,7 +1300,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
 
   // Phased HG002 ONT reads grouped AND colored by the HP tag (alignments_track.md
   // "Sort, color, and filter by tag"). Replaces a 5-stage menu-walkthrough figure
-  // with the single end state: groupBy + colorBy HP splits the pileup into one
+  // with the single end state: facet + colorBy HP splits the pileup into one
   // tinted section per haplotype, so the phased reads read at a glance. Same
   // built-in HP grouping the smalldel figure uses, on the same HG002 ultralong
   // ONT track; forceLoad lifts the force-load gate, readySelector waits
@@ -1323,7 +1323,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               height: 500,
               forceLoad: true,
-              groupBy: { type: 'tag', tag: 'HP' },
+              facet: 'tags.HP',
               colorBy: { type: 'tag', tag: 'HP' },
             },
           ],
@@ -1698,7 +1698,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
-          groupBy: { type: 'firstOfPairStrand' },
+          facet: 'firstOfPairStrand',
           // reads under each band, colored by the dimension that grouped them
           // (reviewer: the coverage-only frame was a boring image). The switch
           // at the gene boundary then shows twice — as the fill of the two

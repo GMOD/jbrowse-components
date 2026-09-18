@@ -267,15 +267,15 @@ The seams, named honestly:
 ## The facet stage
 
 A row facet — split the features on a field's value, stack one section per
-value, name each with a chip — is answered three times. The feature display's
-"Group by..." (`plugins/canvas/src/LinearBasicDisplay/facet.ts`), the mark
-display's facet and the multi-sample variant displays' row banding read the
-same `facet` object, `"strand"` or `{ field, domain }`
+value, name each with a chip — is answered four times, all from one `facet`
+object, `"strand"` or `{ field, domain }`
 (`packages/display-kit/src/facetConfigSchema.ts`,
-[ADR-131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md));
-the alignments display keeps its `groupBy`
-(`plugins/alignments/src/shared/groupFeatures.ts`), whose dimensions are not
-fields.
+[ADR-131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md)):
+the feature display's "Group by..." (`plugins/canvas/src/LinearBasicDisplay/facet.ts`),
+the mark display's facet, the multi-sample variant displays' row banding and
+the alignments displays' sections, where a read dimension (`pairOrientation`,
+`splitRead`, ...) and a tag (`tags.HP`) are fields too
+(`plugins/alignments/src/shared/groupFeatures.ts`).
 
 **The mark display's facet is the grammar's**
 ([ADR-130](../architecture-decision-records/adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)).

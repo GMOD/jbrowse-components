@@ -134,12 +134,12 @@ third is exactly the set a grammar would call encoding and scale: `height`,
 `domain`. The names are flat and per-display, but the concepts are shared and
 the census shows authors using them as shared.
 
-`groupBy` now names one mechanism. It is an object naming a partition on the
-alignments and LGV synteny displays, and every value takes its own stacked
-section with its own chips, its own collapse and its own `domain`. The feature
-display partitions on a field, so it spells the same stack as one setting,
-`facet: "strand" | { field, domain }` (GRAMMAR_OF_GRAPHICS.md, "The facet
-stage"). The multi-sample variant displays' row banding used to answer to
+`facet` now names one mechanism, spelled `"strand" | { field, domain }`
+everywhere (GRAMMAR_OF_GRAPHICS.md, "The facet stage"): every value takes its
+own stacked section with its own chips, its own collapse and its own `domain`.
+On the alignments and LGV synteny displays the field can also be a read
+dimension (`pairOrientation`, `splitRead`, `mapq`, `mateAssembly`) or a tag
+(`tags.HP`). The multi-sample variant displays' row banding used to answer to
 `groupBy` while doing something else — sorting the rows by a sample-metadata
 column, with no sections, no chips and no domain — and it is spelled `facet`
 instead, the feature display's setting (`maybeApplyFacet` and

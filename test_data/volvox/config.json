@@ -578,9 +578,7 @@
           "type": "LinearAlignmentsDisplay",
           "height": 600,
           "displayId": "volvox_alignments_grouped_by_strand_display",
-          "groupBy": {
-            "type": "strand"
-          }
+          "facet": "strand"
         }
       ]
     },

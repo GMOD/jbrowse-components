@@ -59,7 +59,7 @@ try {
   await page.evaluate(() => {
     const display = (window as any).JBrowseSession.views[0].tracks[0]
       .displays[0]
-    display.setGroupBy({ type: 'splitRead' })
+    display.setFacet({ field: 'splitRead' })
   })
   await page.waitForFunction(
     () =>

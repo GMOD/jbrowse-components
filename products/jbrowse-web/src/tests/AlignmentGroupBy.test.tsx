@@ -41,7 +41,7 @@ const config = volvoxConfigWithTracks([
   'spliced',
 ])
 
-// In-track stacked group-by (GROUP_BY_PLAN Stage 5): setGroupBy partitions the
+// In-track stacked group-by (GROUP_BY_PLAN Stage 5): setFacet partitions the
 // single fetch into N sections rendered in one track. Strand grouping yields a
 // forward and a reverse section.
 test('group by strand stacks two sections in one track', async () => {
@@ -55,9 +55,9 @@ test('group by strand stacks two sections in one track', async () => {
   )
   await findDisplayPainted('pileup-display', delay)
 
-  // setGroupBy is the Stage 5 action the dialog's "stack" mode calls.
+  // setFacet is the Stage 5 action the dialog's "stack" mode calls.
   const display = alignmentsDisplay(view)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
 
   // The worker re-partitions; wait until every fetched region carries the two
   // strand groups and the model reports it is grouped into two sections.
@@ -94,7 +94,7 @@ test('group draws per-section paired-end arcs', async () => {
 
   const display = alignmentsDisplay(view)
   display.setReadConnections('arc')
-  display.setGroupBy({ type: 'firstOfPairStrand' })
+  display.setFacet({ field: 'firstOfPairStrand' })
 
   await waitFor(
     () => {
@@ -128,7 +128,7 @@ test('group draws per-section read-cloud lines', async () => {
 
   const display = alignmentsDisplay(view)
   display.setReadConnections('cloud')
-  display.setGroupBy({ type: 'firstOfPairStrand' })
+  display.setFacet({ field: 'firstOfPairStrand' })
 
   await waitFor(
     () => {
@@ -162,7 +162,7 @@ test('group draws per-section sashimi arcs', async () => {
 
   const display = alignmentsDisplay(view)
   display.setShowSashimiArcs(true)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
 
   await waitFor(
     () => {
@@ -201,7 +201,7 @@ test('lowering the sashimi score reveals a group-specific junction', async () =>
 
   const display = alignmentsDisplay(view)
   display.setShowSashimiArcs(true)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
   await waitFor(() => {
     expect(display.sashimiArcSections.length).toBe(2)
   }, delay)
@@ -231,7 +231,7 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
 
   const display = alignmentsDisplay(view)
   display.setLinkedReads('normal')
-  display.setGroupBy({ type: 'tag', tag: 'HP' })
+  display.setFacet({ field: 'tags.HP' })
 
   await waitFor(
     () => {
@@ -275,7 +275,7 @@ test('chain mode ignores a per-read group dimension (single section)', async () 
 
   const display = alignmentsDisplay(view)
   display.setLinkedReads('normal')
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
 
   await waitFor(
     () => {
@@ -302,12 +302,12 @@ test('ungroup restores a single section', async () => {
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
   await waitFor(() => {
     expect(display.isGrouped).toBe(true)
   }, delay)
 
-  display.setGroupBy(undefined)
+  display.setFacet(undefined)
   await waitFor(
     () => {
       expect(display.isGrouped).toBe(false)
@@ -332,7 +332,7 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
   await waitFor(() => {
     expect(display.renderSections.length).toBe(2)
   }, delay)
@@ -367,7 +367,7 @@ test('resizing a group caps its rows independently of the others', async () => {
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
   await waitFor(() => {
     expect(display.renderSections.length).toBe(2)
   }, delay)

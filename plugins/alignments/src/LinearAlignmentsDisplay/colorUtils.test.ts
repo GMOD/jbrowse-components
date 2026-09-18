@@ -534,7 +534,7 @@ describe('firstOfPairStrand: color and grouping agree', () => {
       'firstOfPairStrand',
     )
     const groups = partitionFeatures([feat(strand, flags)], {
-      type: 'firstOfPairStrand',
+      field: 'firstOfPairStrand',
     })
     expect(groups[0]!.key).toBe(category === 'revStrand' ? '-' : '+')
   })

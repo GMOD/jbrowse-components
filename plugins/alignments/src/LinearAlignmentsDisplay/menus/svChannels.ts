@@ -13,7 +13,7 @@ import type { SvChannelsSettings, SvChannelsWrite } from './svChannelsPreset.ts'
 
 export interface SvChannelsModel extends SvChannelsSettings {
   setShowPileup: (show: boolean) => void
-  setGroupBy: (groupBy?: GroupBy) => void
+  setFacet: (facet?: GroupBy) => void
   setReadConnections: (mode?: ReadConnectionsMode) => void
   setDrawProperPairArcs: (draw: boolean) => void
 }
@@ -23,7 +23,7 @@ export function applySvChannels(
   settings: SvChannelsWrite,
 ) {
   model.setShowPileup(settings.showPileup)
-  model.setGroupBy(settings.groupBy)
+  model.setFacet(settings.facet)
   model.setReadConnections(settings.readConnections)
   model.setDrawProperPairArcs(settings.drawProperPairArcs)
 }

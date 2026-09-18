@@ -4026,9 +4026,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "flagExclude": 1540
           }
         },
-        "groupBy": {
-          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pre-group reads by strand, or \`{ type: \\"tag\\", tag: \\"HP\\" }\` for one section per tag value, sorted; an optional \`domain: [\\"2\\", \\"1\\"]\` stacks the listed values first, in that order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+        "facet": {
+          "$ref": "#/$defs/Facet"
         },
         "collapseGroupRows": {
           "description": "Draw each group as a single row rather than a stack.",
@@ -4591,9 +4590,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "flagExclude": 1540
           }
         },
-        "groupBy": {
-          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pre-group reads by strand, or \`{ type: \\"tag\\", tag: \\"HP\\" }\` for one section per tag value, sorted; an optional \`domain: [\\"2\\", \\"1\\"]\` stacks the listed values first, in that order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+        "facet": {
+          "$ref": "#/$defs/Facet"
         },
         "collapseGroupRows": {
           "description": "Draw each group as a single row rather than a stack.",

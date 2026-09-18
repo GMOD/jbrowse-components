@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display's facet and its categorical colour are one config object each — `facet: \"HP\" | { field, domain }` and `color: \"red\" | \"jexl:…\" | { field, domain, palette }` — replacing the flat `facetField`/`facetDomain`/`colorField`/`colorDomain`/`colorPalette` slots on the feature, mark and multi-sample variant displays, where the row tint is `rowColor`. A string is the channel's one-value form and lifts into the object; an object replaces the channel whole and `null` clears it; a `domain` or `palette` with no `field`, or a key the object does not declare, is refused when the snapshot is read. `applyDisplaySettings` writes a sub-schema, `describeSlots` lists one, and Edit as JSON is an editor over the two settings rather than a translation onto flat slots"
+summary: "A display's facet and its categorical colour are one config object each — `facet: \"HP\" | { field, domain }` and `color: \"red\" | \"jexl:…\" | { field, domain, palette }` — replacing the flat `facetField`/`facetDomain`/`colorField`/`colorDomain`/`colorPalette` slots on the feature, mark and multi-sample variant displays, where the row tint is `rowColor`, and the alignments displays' `groupBy`, now the same `facet` with read dimensions and `tags.HP` as fields. A string is the channel's one-value form and lifts into the object; an object replaces the channel whole and `null` clears it; a `domain` or `palette` with no `field`, or a key the object does not declare, is refused when the snapshot is read. `applyDisplaySettings` writes a sub-schema, `describeSlots` lists one, and Edit as JSON is an editor over the two settings rather than a translation onto flat slots"
 ---
 
 # ADR-131: A categorical channel is one config object
@@ -40,8 +40,10 @@ design, answered each point and reversed it.
 `@jbrowse/display-kit`:
 
 - `facet` (`facetConfigSchema`): `{ field, domain }`. `"strand"` lifts to
-  `{ field: "strand" }`. On the feature, mark and multi-sample variant
-  displays.
+  `{ field: "strand" }`. On the feature, mark, multi-sample variant and
+  alignments displays; the alignments displays also take a read dimension
+  (`pairOrientation`, `splitRead`, `mapq`, ...) as the field, and a tag as
+  `tags.HP`.
 - `color` (`colorConfigSchema`, `FeatureColor`): `{ value, field, domain,
   palette }`. `"red"` and `"jexl:…"` lift to `{ value }`; `value` is a
   `maybeColor`, so an unset colour still lets a BED `itemRgb` paint. On the
@@ -98,9 +100,16 @@ its own slots and the declared shorthand.
 - The website's spec-recipe reads the object: a `color` object is the Color
   by... attribute path, a `facet` with a `domain` adds the Sections step, and
   `rowColor` is Color by... → Samples.
-- The alignments display's `groupBy` and the GWAS, multiway and synteny colour
-  slots are the next candidates for the same shape and are not part of this
-  record.
+- **The alignments displays' `groupBy` is `facet` too** (landed the same
+  day). The partitioner resolves a read dimension through its own key
+  generator, a `tags.` field through `getTag` rather than a path read that
+  decodes every tag on the read, and any other field through `fieldReader`.
+  `LGVSyntenyDisplay` inherits it. The model's getter and action are `facet`
+  and `setFacet`; the worker request still says `groupBy`, the partition
+  mechanism's name.
+- The GWAS Manhattan display's `colorBy`/`colorField`/`colorDomain` and the
+  multiway display's `ribbonColor`/`ribbonColorBy`/`ribbonColorDomain` are the
+  remaining candidates: `agent-docs/handoffs/categorical-colour-slots-gwas-and-multiway.md`.
 
 ## Rejected alternatives
 
@@ -112,3 +121,9 @@ its own slots and the declared shorthand.
 - **Merge an object into the stored one.** A partial write that leaves a stale
   `domain` under a new `field` is the drift the object exists to prevent.
 - **Call the variants' tint `color`.** The genotype cells own that word there.
+- **A `{ type, tag, domain }` facet for the alignments displays**, on the
+  grounds that a read dimension is not a field. On an AlignmentsTrack,
+  `displayDefaults` routes `facet` to the mark display as well, whose `facet`
+  refused that shape, so the cookbook's phased-reads config failed to load.
+  Routing a key only to the displays that accept its value would have worked
+  around it; one shape removed the collision.

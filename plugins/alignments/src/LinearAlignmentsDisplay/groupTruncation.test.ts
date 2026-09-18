@@ -69,7 +69,7 @@ function stackedReads(n: number): WorkerPileupData {
   }
 }
 
-// `groupBy` is set BEFORE the data, because it is a tier-1 setting: setting it
+// `facet` is set BEFORE the data, because it is a tier-1 setting: setting it
 // afterwards re-partitions the fetch and clears what was just seeded.
 function seed(
   groups: { key: string; label: string; n: number }[],
@@ -77,7 +77,7 @@ function seed(
 ) {
   const display = createEnv()
   if (opts.grouped || opts.collapseRows) {
-    display.setGroupBy({ type: 'strand' })
+    display.setFacet({ field: 'strand' })
   }
   if (opts.collapseRows) {
     display.setCollapseGroupRows(true)

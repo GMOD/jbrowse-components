@@ -492,15 +492,15 @@ describe('ordering controls in chain mode', () => {
   // every fetched region to re-read byte-identical data.
   test('a per-read grouping leaves the fetch key when chain mode drops it', () => {
     const display = createDisplay()
-    display.setGroupBy({ type: 'strand' })
-    expect(display.rpcProps().groupBy).toEqual({ type: 'strand' })
+    display.setFacet({ field: 'strand' })
+    expect(display.rpcProps().groupBy).toEqual({ field: 'strand' })
 
     display.setLinkedReads('normal')
     expect(display.rpcProps().groupBy).toBeUndefined()
 
     // a chain-groupable dimension still reaches the worker
-    display.setGroupBy({ type: 'tag', tag: 'HP' })
-    expect(display.rpcProps().groupBy).toEqual({ type: 'tag', tag: 'HP' })
+    display.setFacet({ field: 'tags.HP' })
+    expect(display.rpcProps().groupBy).toEqual({ field: 'tags.HP' })
   })
 
   // The collapse is the same shape of no-op, and the one you can arrive at with
@@ -511,7 +511,7 @@ describe('ordering controls in chain mode', () => {
   // whatever the slot says and the label chip words its height button off this.
   test('the collapse stops being in effect when chain mode starts', () => {
     const display = createDisplay()
-    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    display.setFacet({ field: 'tags.HP' })
     display.setCollapseGroupRows(true)
     expect(display.collapseGroupRows).toBe(true)
     expect(display.canCollapseGroupRows).toBe(true)
@@ -1304,7 +1304,7 @@ describe('per-lane state belongs to one grouping key space', () => {
   // then carries into a different grouping.
   function collapsedUntaggedLane() {
     const display = createDisplay({ withRegions: true })
-    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    display.setFacet({ field: 'tags.HP' })
     seedGroups(display, [
       { key: '1', label: 'HP: 1' },
       { key: '', label: 'HP: none' },
@@ -1315,13 +1315,13 @@ describe('per-lane state belongs to one grouping key space', () => {
   }
 
   // The route the setter-only clear missed: the settings editor writes the
-  // `groupBy` slot directly, and Reset track settings drops the config delta
+  // `facet` object directly, and Reset track settings drops the config delta
   // holding it. Neither calls an action of this display.
   test('a slot write that ungroups drops the collapse it would land on', () => {
     const display = collapsedUntaggedLane()
-    display.configuration.setSlot('groupBy', undefined)
+    display.configuration.setSubschema('facet', {})
     seedGroups(display, [{ key: '', label: '' }])
-    expect(display.groupBy).toBeUndefined()
+    expect(display.facet).toBeUndefined()
     expect(display.collapsedGroups.has('')).toBe(false)
     expect(display.lanes.map((l: { maxY: number }) => l.maxY)).toEqual([1])
     // And why that had no way back: the chevron that undoes a collapse hangs
@@ -1335,7 +1335,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     const display = collapsedUntaggedLane()
     display.toggleGroupExpanded('')
     expect(display.groupHeightOverrides.has('')).toBe(true)
-    display.configuration.setSlot('groupBy', undefined)
+    display.configuration.setSubschema('facet', {})
     expect(display.groupHeightOverrides.has('')).toBe(false)
   })
 
@@ -1345,32 +1345,32 @@ describe('per-lane state belongs to one grouping key space', () => {
     const display = createDisplay({ withRegions: true })
     seedGroups(display, [{ key: '', label: '' }])
     display.toggleGroupCollapsed('')
-    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    display.setFacet({ field: 'tags.HP' })
     expect(display.collapsedGroups.has('')).toBe(false)
   })
 
   test('re-picking the grouping keeps its domain, and a reorder keeps the lane state', () => {
     const display = createDisplay({ withRegions: true })
-    display.setGroupBy({ type: 'tag', tag: 'HP', domain: ['2'] })
+    display.setFacet({ field: 'tags.HP', domain: ['2'] })
     seedGroups(display, [
       { key: '1', label: 'HP: 1' },
       { key: '2', label: 'HP: 2' },
     ])
     display.toggleGroupCollapsed('1')
-    display.setGroupBy({ type: 'tag', tag: 'HP' })
-    expect(display.groupBy).toEqual({ type: 'tag', tag: 'HP', domain: ['2'] })
+    display.setFacet({ field: 'tags.HP' })
+    expect(display.facet).toEqual({ field: 'tags.HP', domain: ['2'] })
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
-    display.setGroupBy({ type: 'tag', tag: 'HP', domain: ['1'] })
+    display.setFacet({ field: 'tags.HP', domain: ['1'] })
     expect(display.groupOrder.map(g => g.key)).toEqual(['1', '2'])
     expect(display.collapsedGroups.has('1')).toBe(true)
-    display.setGroupBy({ type: 'tag', tag: 'RG' })
-    expect(display.groupBy).toEqual({ type: 'tag', tag: 'RG' })
+    display.setFacet({ field: 'tags.RG' })
+    expect(display.facet).toEqual({ field: 'tags.RG', domain: [] })
   })
 
   test('the Sections menu moves a lane and writes the drawn order as the domain', () => {
     const display = createDisplay({ withRegions: true })
     expect(hasMenuItem(display.trackMenuItems(), 'Sections')).toBe(false)
-    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    display.setFacet({ field: 'tags.HP' })
     seedGroups(display, [
       { key: '1', label: 'HP: 1' },
       { key: '2', label: 'HP: 2' },
@@ -1384,15 +1384,11 @@ describe('per-lane state belongs to one grouping key space', () => {
     const moveDown = menuSubItems(rows(), 'HP: 1')[1] as { onClick: () => void }
     const fetched = display.rpcProps()
     moveDown.onClick()
-    expect(display.groupBy).toEqual({
-      type: 'tag',
-      tag: 'HP',
-      domain: ['2', '1'],
-    })
+    expect(display.facet).toEqual({ field: 'tags.HP', domain: ['2', '1'] })
     expect(display.rpcProps()).toEqual(fetched)
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
     ;(rows()[2] as { onClick: () => void }).onClick()
-    expect(display.groupBy).toEqual({ type: 'tag', tag: 'HP' })
+    expect(display.facet).toEqual({ field: 'tags.HP', domain: [] })
   })
 
   // Chain mode degrades a per-read dimension to ungrouped (`groupByForMode`)
@@ -1400,11 +1396,11 @@ describe('per-lane state belongs to one grouping key space', () => {
   // menu still reads "Group by MAPQ".
   test('entering chain mode drops the state of a grouping it degrades', () => {
     const display = createDisplay({ withRegions: true })
-    display.setGroupBy({ type: 'mapq' })
+    display.setFacet({ field: 'mapq' })
     seedGroups(display, [{ key: '0', label: 'MAPQ 30+ (high confidence)' }])
     display.toggleGroupCollapsed('0')
     display.setLinkedReads('normal')
-    expect(display.effectiveGroupBy).toBeUndefined()
+    expect(display.effectiveFacet).toBeUndefined()
     expect(display.collapsedGroups.has('0')).toBe(false)
   })
 
@@ -1413,10 +1409,10 @@ describe('per-lane state belongs to one grouping key space', () => {
   // an unrelated lane. Recoverable (both lanes draw a chip) and still wrong.
   test('two digit-keyed dimensions do not inherit one another state', () => {
     const display = createDisplay({ withRegions: true })
-    display.setGroupBy({ type: 'mapq' })
+    display.setFacet({ field: 'mapq' })
     seedGroups(display, [{ key: '0', label: 'MAPQ 30+ (high confidence)' }])
     display.toggleGroupCollapsed('0')
-    display.setGroupBy({ type: 'pairOrientation' })
+    display.setFacet({ field: 'pairOrientation' })
     expect(display.collapsedGroups.has('0')).toBe(false)
   })
 
@@ -1424,7 +1420,7 @@ describe('per-lane state belongs to one grouping key space', () => {
   // dropped: the reaction fires on the key SPACE moving, not on the write.
   test('re-setting the same grouping keeps the state', () => {
     const display = collapsedUntaggedLane()
-    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    display.setFacet({ field: 'tags.HP' })
     expect(display.collapsedGroups.has('')).toBe(true)
   })
 })

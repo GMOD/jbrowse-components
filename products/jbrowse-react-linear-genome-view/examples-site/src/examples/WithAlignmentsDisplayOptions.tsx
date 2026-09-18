@@ -37,7 +37,7 @@ export default function WithAlignmentsDisplayOptions() {
               type: 'LinearAlignmentsDisplay',
               height: 500,
               colorBy: { type: 'tag', tag: 'HP' },
-              groupBy: { type: 'tag', tag: 'HP' },
+              facet: 'tags.HP',
             },
           },
         ],

@@ -274,33 +274,26 @@ export const READ_CATEGORY_KEYS = [
 
 export type ReadCategoryKey = (typeof READ_CATEGORY_KEYS)[number]
 
-// In-track stacked grouping. `type` selects the per-read group-key generator
-// (see shared/groupFeatures.ts). Absent groupBy means a single ungrouped
-// section.
-export type GroupByType =
-  | 'strand'
-  | 'firstOfPairStrand'
-  | 'tag'
-  | 'pairOrientation'
-  | 'splitRead'
-  | 'mapq'
-  | 'mateAssembly'
+// The read dimensions a facet names, each with its own partitioner
+// (shared/groupFeatures.ts). Any other `field` is a tag (`tags.HP`) or a
+// feature field.
+export const READ_DIMENSIONS = [
+  'strand',
+  'firstOfPairStrand',
+  'pairOrientation',
+  'splitRead',
+  'mapq',
+  'mateAssembly',
+] as const
+export type ReadDimension = (typeof READ_DIMENSIONS)[number]
 
-// The dimensions a menu radio can pick whole. `tag` is the one that takes a
-// parameter, so it is the one with a dialog behind it — and the one dimension
-// with no entry in GROUP_BY_LABELS, since no radio ever names it.
-export type ParameterlessGroupByType = Exclude<GroupByType, 'tag'>
-
-// `tag` is required on the tag dimension and absent from every other, which is
-// the shape `normalizeGroupBy` enforces at the config boundary rather than a
-// convention downstream code hopes for: a stray tag beside another dimension
-// names a key space of its own (`groupKeySpaceOf`), so re-picking that same
-// dimension from the menu dropped every lane's collapse and refetched.
-// `domain` is the section order: the keys it lists stack first, the rest
-// follow sorted.
-export type GroupBy =
-  | { type: ParameterlessGroupByType; tag?: undefined; domain?: string[] }
-  | { type: 'tag'; tag: string; domain?: string[] }
+// In-track stacked grouping, the `facet` object as the model and worker carry
+// it. `domain` is the section order: the keys it lists stack first, the rest
+// follow sorted. Absent means a single ungrouped section.
+export interface GroupBy {
+  field: string
+  domain?: readonly string[]
+}
 
 export interface SortedBy {
   type: string

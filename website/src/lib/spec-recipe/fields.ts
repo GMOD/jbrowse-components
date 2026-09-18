@@ -14,7 +14,10 @@ import {
   CODON_ROW_RENDERING,
   ROW_RENDERINGS,
 } from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
-import { GROUP_BY_LABELS } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
+import {
+  GROUP_BY_LABELS,
+  facetTag,
+} from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
 import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/autoscale.ts'
 import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
@@ -209,32 +212,45 @@ function colorByStep(value: unknown): FieldStep | undefined {
 
 // The alignments display and LGVSyntenyDisplay build their "Group by..." submenu
 // from the same groupByRadioMenuItem over the same dimension registry, so one
-// path serves both: every dimension is a radio carrying its registry label.
-// 'tag' is the exception — getGroupByMenuItem drops it from the radios in favor
-// of a 'Tag...' item that opens a dialog for the tag itself.
-function groupByStep(value: unknown): FieldStep | undefined {
-  const groupBy = asRecord(value)
-  const type = asString(groupBy?.type)
-  const tag = asString(groupBy?.tag)
-  if (type === 'tag' || (type === undefined && tag !== undefined)) {
-    return tag
-      ? {
-          path: `${TRACK_MENU} → Group by... → Tag... → enter "${tag}"`,
-          note:
-            tag === 'HP'
-              ? 'HP is the haplotype tag written by phasing tools like WhatsHap or Longphase.'
-              : undefined,
-        }
-      : undefined
+// path serves both: every dimension is a radio carrying its registry label, and
+// a tag is the 'Tag...' item that opens a dialog for the tag itself.
+const ALIGNMENTS_FACET_DISPLAYS = new Set([
+  'LinearAlignmentsDisplay',
+  'LGVSyntenyDisplay',
+])
+
+function facetField(value: unknown) {
+  return asString(value) ?? asString(asRecord(value)?.field)
+}
+
+// A track entry with no display type still says which facet it carries when
+// it names a read dimension or a tag; the one they share with the feature
+// displays (`strand`) reads the same on both menus.
+function namesAlignmentsFacet(value: unknown) {
+  const field = facetField(value) ?? ''
+  return facetTag(field) !== undefined || Object.hasOwn(GROUP_BY_LABELS, field)
+}
+
+function alignmentsFacetStep(value: unknown): FieldStep | undefined {
+  const field = facetField(value)
+  const tag = facetTag(field)
+  if (tag) {
+    return {
+      path: `${TRACK_MENU} → Group by... → Tag... → enter "${tag}"`,
+      note:
+        tag === 'HP'
+          ? 'HP is the haplotype tag written by phasing tools like WhatsHap or Longphase.'
+          : undefined,
+    }
   }
-  // matched by key rather than indexed, so no cast into GroupByType is needed to
-  // look one up by arbitrary JSON (same reason colorByStep scans by value)
-  const label = Object.entries(GROUP_BY_LABELS).find(([k]) => k === type)?.[1]
+  // matched by key rather than indexed, so no cast into ReadDimension is needed
+  // to look one up by arbitrary JSON (same reason colorByStep scans by value)
+  const label = Object.entries(GROUP_BY_LABELS).find(([k]) => k === field)?.[1]
   return label
     ? {
         path: `${TRACK_MENU} → Group by... → ${label}`,
         note:
-          type === 'mateAssembly'
+          field === 'mateAssembly'
             ? 'Synteny tracks only: one section per assembly on the other side of the alignment.'
             : undefined,
       }
@@ -418,7 +434,14 @@ function facetStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
-  const field = asString(value) ?? asString(asRecord(value)?.field)
+  if (
+    displayType
+      ? ALIGNMENTS_FACET_DISPLAYS.has(displayType)
+      : namesAlignmentsFacet(value)
+  ) {
+    return alignmentsFacetStep(value)
+  }
+  const field = facetField(value)
   const ordered = !!asList(asRecord(value)?.domain)
   if (!field) {
     return undefined
@@ -1244,7 +1267,6 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  groupBy: groupByStep,
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number
   // names its preset without a second table to keep in sync

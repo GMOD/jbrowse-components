@@ -332,7 +332,7 @@ describe('the pooled below-coverage bands agree with the sections', () => {
       display.setHeightMode('fit')
       display.setReadConnections(connections)
       display.setReadConnectionsDown(true)
-      display.setGroupBy({ type: 'strand' })
+      display.setFacet({ field: 'strand' })
       display.setRpcData(
         0,
         {
@@ -373,7 +373,7 @@ describe('the pooled below-coverage bands agree with the sections', () => {
       display.setHeightMode('fit')
       display.setReadConnections('arc')
       display.setReadConnectionsDown(true)
-      display.setGroupBy({ type: 'strand' })
+      display.setFacet({ field: 'strand' })
       display.setRpcData(
         0,
         {

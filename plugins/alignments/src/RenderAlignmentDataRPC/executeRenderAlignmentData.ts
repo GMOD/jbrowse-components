@@ -427,8 +427,8 @@ export async function executeRenderAlignmentData({
   }
 
   const featureGroups = isChain
-    ? partitionChains(inputFeatures, effectiveGroupBy)
-    : partitionFeatures(inputFeatures, effectiveGroupBy)
+    ? partitionChains(inputFeatures, effectiveGroupBy, pluginManager.jexl)
+    : partitionFeatures(inputFeatures, effectiveGroupBy, pluginManager.jexl)
   // One prefix for the whole fetch, off the unfiltered feature set so an empty
   // group still gets the same form as its siblings.
   const readIdPrefix = readIdPrefixOf(featuresArray)

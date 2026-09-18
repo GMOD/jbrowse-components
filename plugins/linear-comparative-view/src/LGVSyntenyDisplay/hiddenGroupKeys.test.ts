@@ -1,7 +1,7 @@
 import { createDisplay } from './testEnv.ts'
 
 function hidden(display: ReturnType<typeof createDisplay>) {
-  display.setGroupBy({ type: 'mateAssembly' })
+  display.setFacet({ field: 'mateAssembly' })
   display.setHideSelfAlignments(true)
   return [...display.hiddenGroupKeys].sort()
 }
@@ -25,9 +25,9 @@ test('hides the lane keyed on an alias the track declares', () => {
 test('nothing is hidden under another grouping, or with the option off', () => {
   const display = createDisplay()
   display.setHideSelfAlignments(true)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
   expect(display.hiddenGroupKeys.size).toBe(0)
-  display.setGroupBy({ type: 'mateAssembly' })
+  display.setFacet({ field: 'mateAssembly' })
   display.setHideSelfAlignments(false)
   expect(display.hiddenGroupKeys.size).toBe(0)
 })
@@ -37,7 +37,7 @@ test('nothing is hidden under another grouping, or with the option off', () => {
 // chip the moment the self-lane option was on.
 test('a lane hidden from a chip is hidden alongside the self lane', () => {
   const display = createDisplay()
-  display.setGroupBy({ type: 'mateAssembly' })
+  display.setFacet({ field: 'mateAssembly' })
   display.setHideSelfAlignments(true)
   display.hideGroup('volvox_random')
   expect([...display.hiddenGroupKeys].sort()).toEqual([
@@ -52,9 +52,9 @@ test('a lane hidden from a chip is hidden alongside the self lane', () => {
 // key-space reset drops what the user hid along with the collapses.
 test('changing the grouping forgets what was hidden', () => {
   const display = createDisplay()
-  display.setGroupBy({ type: 'mateAssembly' })
+  display.setFacet({ field: 'mateAssembly' })
   display.hideGroup('volvox_random')
   expect(display.hiddenGroupKeys.has('volvox_random')).toBe(true)
-  display.setGroupBy({ type: 'strand' })
+  display.setFacet({ field: 'strand' })
   expect(display.hiddenGroupKeys.size).toBe(0)
 })

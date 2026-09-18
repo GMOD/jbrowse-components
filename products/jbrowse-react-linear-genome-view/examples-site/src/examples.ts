@@ -168,7 +168,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-group-by-tag',
         title: 'Group alignments by tag',
-        description: 'groupBy splits the pileup into labeled lanes.',
+        description: 'facet splits the pileup into labeled lanes.',
       },
       {
         slug: 'alignments-track-options',

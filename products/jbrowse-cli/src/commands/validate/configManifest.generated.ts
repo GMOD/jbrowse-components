@@ -3249,8 +3249,18 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "groupBy",
-          "type": "(JexlString | frozen)"
+          "name": "facet",
+          "type": "FacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "collapseGroupRows",
@@ -3595,8 +3605,18 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "groupBy",
-          "type": "(JexlString | frozen)"
+          "name": "facet",
+          "type": "FacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "collapseGroupRows",

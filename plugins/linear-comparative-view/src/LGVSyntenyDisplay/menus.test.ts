@@ -2,17 +2,17 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
-import type { ParameterlessGroupByType } from '../../../alignments/src/shared/types.ts'
 import type { CheckboxMenuItem, RadioMenuItem } from '@jbrowse/core/ui'
+import type { ReadDimension } from '@jbrowse/plugin-alignments'
 
 function makeModel(
-  type?: ParameterlessGroupByType,
+  field?: ReadDimension,
   hideSelfAlignments = false,
   isChainMode = false,
 ) {
   return {
-    groupBy: type ? { type } : undefined,
-    setGroupBy: jest.fn(),
+    facet: field ? { field } : undefined,
+    setFacet: jest.fn(),
     isChainMode,
     hideSelfAlignments,
     setHideSelfAlignments: jest.fn(),
@@ -79,12 +79,12 @@ test('picking a dimension sets it; picking None ungroups', () => {
   items(model)
     .find(i => i.label === 'Strand')!
     .onClick()
-  expect(model.setGroupBy).toHaveBeenCalledWith({ type: 'strand' })
+  expect(model.setFacet).toHaveBeenCalledWith({ field: 'strand' })
 
   items(model)
     .find(i => i.label === 'None')!
     .onClick()
-  expect(model.setGroupBy).toHaveBeenCalledWith(undefined)
+  expect(model.setFacet).toHaveBeenCalledWith(undefined)
 })
 
 // `hiddenGroupKeys` only hides a lane under mate-assembly grouping, so under any

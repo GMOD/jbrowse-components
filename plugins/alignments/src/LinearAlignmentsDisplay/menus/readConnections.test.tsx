@@ -54,9 +54,9 @@ function makeModel() {
     setShowPileup(v: boolean) {
       this.showPileup = v
     },
-    groupBy: undefined as GroupBy | undefined,
-    setGroupBy(v?: GroupBy) {
-      this.groupBy = v
+    facet: undefined as GroupBy | undefined,
+    setFacet(v?: GroupBy) {
+      this.facet = v
     },
   }
 }

@@ -214,7 +214,7 @@ const snrpnReadsPanel = ({ grouped = false } = {}) =>
         type: 'LinearAlignmentsDisplay',
         height: 320,
         forceLoad: true,
-        ...(grouped ? { groupBy: { type: 'tag', tag: 'HP' } } : {}),
+        ...(grouped ? { facet: 'tags.HP' } : {}),
         colorBy: {
           type: 'modifications',
           modifications: { fillUnmarked: true },
@@ -536,7 +536,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     annotations: cascadeBoxes(['Group by...', 'Tag...']),
   },
 
-  // The other half: identical to the spec above but for `groupBy` on the HP tag,
+  // The other half: identical to the spec above but for `facet` on the HP tag,
   // which is the whole claim the section makes.
   {
     mode: 'url',
@@ -624,7 +624,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               height: 460,
               forceLoad: true,
-              groupBy: { type: 'tag', tag: 'HP' },
+              facet: 'tags.HP',
               colorBy: {
                 type: 'modifications',
                 modifications: { fillUnmarked: true },

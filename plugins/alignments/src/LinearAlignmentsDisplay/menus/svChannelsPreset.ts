@@ -9,7 +9,7 @@ import type { ReadConnectionsMode } from '../constants.ts'
 /** What the arrangement READS, to decide whether it is in effect. */
 export interface SvChannelsSettings {
   showPileup: boolean
-  groupBy: GroupBy | undefined
+  facet: GroupBy | undefined
   readConnections: ReadConnectionsMode
   drawProperPairArcs: boolean
 }
@@ -48,7 +48,7 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 // drawing its arcs above the coverage band.
 export const SV_CHANNELS_ON: SvChannelsWrite = {
   showPileup: false,
-  groupBy: { type: 'pairOrientation' },
+  facet: { field: 'pairOrientation' },
   readConnections: 'arc',
   drawProperPairArcs: false,
 }
@@ -61,7 +61,7 @@ export const SV_CHANNELS_ON: SvChannelsWrite = {
 // the row was ticked does not come back, since nothing banks what it displaced.
 export const SV_CHANNELS_OFF: SvChannelsWrite = {
   showPileup: true,
-  groupBy: undefined,
+  facet: undefined,
   readConnections: undefined,
   drawProperPairArcs: true,
 }
@@ -69,7 +69,7 @@ export const SV_CHANNELS_OFF: SvChannelsWrite = {
 export function isSvChannelsActive(current: SvChannelsSettings) {
   return (
     current.showPileup === SV_CHANNELS_ON.showPileup &&
-    current.groupBy?.type === SV_CHANNELS_ON.groupBy?.type &&
+    current.facet?.field === SV_CHANNELS_ON.facet?.field &&
     current.readConnections === SV_CHANNELS_ON.readConnections &&
     current.drawProperPairArcs === SV_CHANNELS_ON.drawProperPairArcs
   )

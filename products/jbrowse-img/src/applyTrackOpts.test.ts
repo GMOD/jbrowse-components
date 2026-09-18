@@ -4,9 +4,12 @@ import { buildDisplaySnapshot } from './applyTrackOpts.ts'
 // snapshot (passed to showTrack), instead of a sequence of setter actions.
 
 describe('alignments modifiers', () => {
-  test('group:type:tag sets a groupBy object', () => {
+  test('group:tag:HP facets by the tag, a bare dimension as its string', () => {
     const { snap } = buildDisplaySnapshot('alignments', ['group:tag:HP'])
-    expect(snap.groupBy).toEqual({ type: 'tag', tag: 'HP' })
+    expect(snap.facet).toBe('tags.HP')
+    expect(
+      buildDisplaySnapshot('alignments', ['group:strand']).snap.facet,
+    ).toBe('strand')
   })
 
   test('color sets colorBy', () => {
@@ -463,6 +466,7 @@ describe('modifier values are validated the same way everywhere', () => {
     ['alignments', 'height:8o', /Invalid height/],
     ['alignments', 'color:', /Missing color/],
     ['alignments', 'group:', /Missing group/],
+    ['alignments', 'group:tag', /Missing group:tag/],
     ['alignments', 'sort:', /Missing sort/],
     // a bare `arcs` used to mean OFF, the opposite of every other bare modifier
     ['alignments', 'arcs', /Missing arcs/],

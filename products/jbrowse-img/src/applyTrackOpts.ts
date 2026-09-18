@@ -186,7 +186,7 @@ interface DisplaySnapshot {
   heightMode?: HeightMode
   // alignments
   colorBy?: { type: string; tag?: string }
-  groupBy?: { type: string; tag?: string }
+  facet?: string
   sortedBy?: {
     type: string
     pos: number
@@ -523,7 +523,12 @@ const modifiers: Record<string, Modifier> = {
   group: {
     on: ['alignments'],
     apply: (r, v, tag) => {
-      r.snap.groupBy = { type: parseStr('group', v, 'group type'), tag }
+      const field = parseStr('group', v, 'group field')
+      if (field === 'tag') {
+        r.snap.facet = `tags.${parseStr('group:tag', tag ?? '', 'tag')}`
+      } else {
+        r.snap.facet = field
+      }
     },
   },
   arcs: {

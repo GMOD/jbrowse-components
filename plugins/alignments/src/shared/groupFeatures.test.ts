@@ -1,3 +1,4 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 
@@ -6,8 +7,7 @@ import {
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   groupByForMode,
-  isChainGroupableType,
-  normalizeGroupBy,
+  isChainGroupable,
   partitionChains,
   partitionFeatures,
   workerGroupBy,
@@ -43,7 +43,7 @@ test('strand grouping splits forward/reverse reads', () => {
     feat('b', { flags: 16, strand: -1 }),
     feat('c', { flags: 0, strand: 1 }),
   ]
-  const groups = partitionFeatures(features, { type: 'strand' })
+  const groups = partitionFeatures(features, { field: 'strand' })
   expect(keys(groups)).toEqual(['+', '-'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'c'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b'])
@@ -53,7 +53,7 @@ test('strand grouping splits forward/reverse reads', () => {
 // the reverse flag put every block in '+', silently collapsing the grouping.
 test('strand grouping splits synteny features, which have no SAM flags', () => {
   const features = [feat('a', { strand: 1 }), feat('b', { strand: -1 })]
-  const groups = partitionFeatures(features, { type: 'strand' })
+  const groups = partitionFeatures(features, { field: 'strand' })
   expect(keys(groups)).toEqual(['+', '-'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b'])
@@ -69,7 +69,7 @@ test('first-of-pair strand groups both mates of a pair together', () => {
     feat('r1', { flags: 0x40, strand: 1 }),
     feat('r2', { flags: 0x10 | 0x80, strand: -1 }),
   ]
-  const groups = partitionFeatures(features, { type: 'firstOfPairStrand' })
+  const groups = partitionFeatures(features, { field: 'firstOfPairStrand' })
   expect(keys(groups)).toEqual(['+'])
   expect(groups[0]!.features).toHaveLength(2)
 })
@@ -81,7 +81,7 @@ test('first-of-pair strand groups single-end reads by their own strand', () => {
     feat('fwd', { flags: 0, strand: 1 }),
     feat('rev', { flags: 0x10, strand: -1 }),
   ]
-  const groups = partitionFeatures(features, { type: 'firstOfPairStrand' })
+  const groups = partitionFeatures(features, { field: 'firstOfPairStrand' })
   expect(keys(groups)).toEqual(['+', '-'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['fwd'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['rev'])
@@ -92,7 +92,7 @@ test('first-of-pair strand groups single-end reads by their own strand', () => {
 // than filing every block as forward, exactly as plain `strand` grouping does.
 test('first-of-pair strand falls back to own strand with no SAM flags', () => {
   const features = [feat('a', { strand: 1 }), feat('b', { strand: -1 })]
-  const groups = partitionFeatures(features, { type: 'firstOfPairStrand' })
+  const groups = partitionFeatures(features, { field: 'firstOfPairStrand' })
   expect(keys(groups)).toEqual(['+', '-'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b'])
 })
@@ -104,7 +104,7 @@ test('tag grouping sorts values and pins untagged reads last', () => {
     feat('c', { tags: { HP: 1 } }),
     feat('d', { tags: { HP: 1 } }),
   ]
-  const groups = partitionFeatures(features, { type: 'tag', tag: 'HP' })
+  const groups = partitionFeatures(features, { field: 'tags.HP' })
   expect(keys(groups)).toEqual(['1', '2', ''])
   expect(groups[2]!.label).toBe('HP: none')
   expect(groups[0]!.features.map(f => f.id())).toEqual(['c', 'd'])
@@ -119,7 +119,7 @@ test('numeric tag values order by magnitude, not code point', () => {
     feat('c', {}),
     feat('d', { tags: { RG: 1 } }),
   ]
-  const groups = partitionFeatures(features, { type: 'tag', tag: 'RG' })
+  const groups = partitionFeatures(features, { field: 'tags.RG' })
   expect(keys(groups)).toEqual(['1', '2', '10', ''])
 })
 
@@ -134,7 +134,7 @@ test('mapq buckets by confidence, best first, unavailable last', () => {
     feat('d', { score: 60 }),
     feat('e', { score: 20 }),
   ]
-  const groups = partitionFeatures(features, { type: 'mapq' })
+  const groups = partitionFeatures(features, { field: 'mapq' })
   expect(groups.map(g => g.label)).toEqual([
     'MAPQ 30+ (high confidence)',
     'MAPQ 10-29',
@@ -150,7 +150,7 @@ test('mapq never produces more than its five buckets', () => {
   const features = Array.from({ length: 256 }, (_, score) =>
     feat(`f${score}`, { score }),
   )
-  expect(partitionFeatures(features, { type: 'mapq' })).toHaveLength(5)
+  expect(partitionFeatures(features, { field: 'mapq' })).toHaveLength(5)
 })
 
 // PAF/MashMap features spell mapping quality `mappingQual` and leave `score`
@@ -162,7 +162,7 @@ test('mapq grouping reads the synteny mappingQual field too', () => {
     feat('b', { mappingQual: 0 }),
     feat('c', {}),
   ]
-  const groups = partitionFeatures(features, { type: 'mapq' })
+  const groups = partitionFeatures(features, { field: 'mapq' })
   expect(groups.map(g => g.label)).toEqual([
     'MAPQ 30+ (high confidence)',
     'MAPQ 0 (multi-mapping)',
@@ -180,7 +180,7 @@ test('split-read grouping keeps both pieces of a split read together', () => {
     feat('a-supp', { flags: 0x800, tags: { SA: 'ctgA,1,+,50S50M,60,0;' } }),
     feat('c', { flags: 0, tags: {} }),
   ]
-  const groups = partitionFeatures(features, { type: 'splitRead' })
+  const groups = partitionFeatures(features, { field: 'splitRead' })
   // 'split' sorts before 'unsplit', which is also the order that helps: at an SV
   // locus the reads crossing the breakpoint sit at the top of the pileup.
   expect(groups.map(g => g.label)).toEqual(['Split (SA)', 'Not split'])
@@ -197,7 +197,7 @@ test('split-read grouping counts a supplementary record with no SA tag', () => {
     feat('supp', { flags: 0x800, tags: {} }),
     feat('plain', { flags: 0, tags: {} }),
   ]
-  const groups = partitionFeatures(features, { type: 'splitRead' })
+  const groups = partitionFeatures(features, { field: 'splitRead' })
   expect(groups.map(g => g.label)).toEqual(['Split (SA)', 'Not split'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['supp'])
 })
@@ -213,7 +213,7 @@ test('pair-orientation grouping keys the IGV category, not the raw string', () =
     feat('b', { pair_orientation: 'F2R1' }),
     feat('c', { pair_orientation: 'R1F2' }),
   ]
-  const groups = partitionFeatures(features, { type: 'pairOrientation' })
+  const groups = partitionFeatures(features, { field: 'pairOrientation' })
   expect(groups.map(g => g.label)).toEqual([
     'LR - Normal pair orientation',
     'RL - Mates point outward',
@@ -232,7 +232,7 @@ test('pair-orientation stacks sections in the legend swatch order', () => {
     feat('rl', { pair_orientation: 'R1F2' }),
     feat('none', {}),
   ]
-  const groups = partitionFeatures(features, { type: 'pairOrientation' })
+  const groups = partitionFeatures(features, { field: 'pairOrientation' })
   expect(groups.map(g => g.features[0]!.id())).toEqual([
     'lr',
     'rl',
@@ -252,7 +252,7 @@ test('pair-orientation files an unrecognized orientation as no-orientation', () 
     feat('b', {}),
     feat('c', { pair_orientation: 'F1R2' }),
   ]
-  const groups = partitionFeatures(features, { type: 'pairOrientation' })
+  const groups = partitionFeatures(features, { field: 'pairOrientation' })
   expect(groups.map(g => g.label)).toEqual([
     'LR - Normal pair orientation',
     'No orientation',
@@ -266,7 +266,7 @@ test('mate-assembly grouping splits synteny features by mate assembly', () => {
     feat('b', { mate: { assemblyName: 'cacao' } }),
     feat('c', { mate: { assemblyName: 'cacao' } }),
   ]
-  const groups = partitionFeatures(features, { type: 'mateAssembly' })
+  const groups = partitionFeatures(features, { field: 'mateAssembly' })
   expect(keys(groups)).toEqual(['cacao', 'peach'])
   expect(groups[0]!.label).toBe('cacao')
   expect(groups[0]!.features.map(f => f.id())).toEqual(['b', 'c'])
@@ -279,7 +279,7 @@ test('mate-assembly grouping pins features with no mate assembly last', () => {
     feat('b', {}),
     feat('c', { mate: {} }),
   ]
-  const groups = partitionFeatures(features, { type: 'mateAssembly' })
+  const groups = partitionFeatures(features, { field: 'mateAssembly' })
   expect(keys(groups)).toEqual(['peach', ''])
   expect(groups[1]!.label).toBe('No mate assembly')
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b', 'c'])
@@ -290,25 +290,26 @@ test('mate-assembly grouping pins features with no mate assembly last', () => {
 // `splitRead` is the second — its per-read key differs between a split mate and
 // its unsplit partner — so a reading of `fragmentLevel` alone would drop it from
 // chain mode, where it matters most.
-test('isChainGroupableType allows a fragment-level key or a chainKey', () => {
-  expect(isChainGroupableType('tag')).toBe(true)
-  expect(isChainGroupableType('firstOfPairStrand')).toBe(true)
-  expect(isChainGroupableType('pairOrientation')).toBe(true)
-  expect(isChainGroupableType('mateAssembly')).toBe(true)
-  expect(isChainGroupableType('strand')).toBe(false)
-  expect(isChainGroupableType('splitRead')).toBe(true)
+test('isChainGroupable allows a fragment-level key, a chainKey, a tag or a field', () => {
+  expect(isChainGroupable('tags.HP')).toBe(true)
+  expect(isChainGroupable('name')).toBe(true)
+  expect(isChainGroupable('firstOfPairStrand')).toBe(true)
+  expect(isChainGroupable('pairOrientation')).toBe(true)
+  expect(isChainGroupable('mateAssembly')).toBe(true)
+  expect(isChainGroupable('strand')).toBe(false)
+  expect(isChainGroupable('splitRead')).toBe(true)
   expect(GROUP_BY_DIMENSIONS.splitRead.fragmentLevel).toBe(false)
-  expect(isChainGroupableType('mapq')).toBe(false)
-  expect(isChainGroupableType(undefined)).toBe(false)
+  expect(isChainGroupable('mapq')).toBe(false)
+  expect(isChainGroupable(undefined)).toBe(false)
 })
 
 // Each entry names its own registry key, which is the field the alignments menu
 // maps to radio options — a copy-paste naming a sibling would offer a radio that
 // selects something else. Pinned at runtime as well as in the type because the
 // type is the part a future edit can widen.
-test('every dimension states its own registry key as its type', () => {
+test('every dimension states its own registry key as its field', () => {
   for (const [key, dimension] of Object.entries(GROUP_BY_DIMENSIONS)) {
-    expect(dimension.type).toBe(key)
+    expect(dimension.field).toBe(key)
   }
 })
 
@@ -328,7 +329,7 @@ test('split-read grouping keys a chain off any read carrying SA', () => {
       tags: { SA: 'ctgA,200,+,50M50S,60,0;' },
     }),
   ]
-  const groups = partitionChains(features, { type: 'splitRead' })
+  const groups = partitionChains(features, { field: 'splitRead' })
   expect(groups.map(g => g.label)).toEqual(['Split (SA)'])
   expect(groups[0]!.features).toHaveLength(2)
 })
@@ -353,7 +354,7 @@ test('partitionChains keeps every read of a chain in one group', () => {
     feat('r2a', { name: 'r2', flags: 0x40, tags: { HP: 2 } }),
     feat('r2b', { name: 'r2', flags: 0x80, tags: { HP: 2 } }),
   ]
-  const groups = partitionChains(features, { type: 'tag', tag: 'HP' })
+  const groups = partitionChains(features, { field: 'tags.HP' })
   expect(keys(groups)).toEqual(['1', '2'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['r1a', 'r1b'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['r2a', 'r2b'])
@@ -366,7 +367,7 @@ test('partitionChains keys a chain from its read1 representative', () => {
     feat('mate', { name: 'r1', flags: 0x80 }),
     feat('primary', { name: 'r1', flags: 0x40, tags: { HP: 1 } }),
   ]
-  const groups = partitionChains(features, { type: 'tag', tag: 'HP' })
+  const groups = partitionChains(features, { field: 'tags.HP' })
   expect(keys(groups)).toEqual(['1'])
   expect(groups[0]!.features).toHaveLength(2)
 })
@@ -378,7 +379,7 @@ test('partitionChains ignores supplementary/secondary for the key', () => {
     feat('supp', { name: 'r1', flags: 0x800 }),
     feat('prim', { name: 'r1', flags: 0x80, tags: { HP: 9 } }),
   ]
-  const groups = partitionChains(features, { type: 'tag', tag: 'HP' })
+  const groups = partitionChains(features, { field: 'tags.HP' })
   expect(keys(groups)).toEqual(['9'])
 })
 
@@ -394,8 +395,7 @@ function umiFeatures(count: number) {
 
 test('group count is capped, with the tail merged into one overflow section', () => {
   const groups = partitionFeatures(umiFeatures(MAX_GROUPS + 10), {
-    type: 'tag',
-    tag: 'RX',
+    field: 'tags.RX',
   })
   expect(groups).toHaveLength(MAX_GROUPS)
   const overflow = groups.at(-1)!
@@ -419,8 +419,7 @@ test('group count is capped, with the tail merged into one overflow section', ()
 
 test('exactly MAX_GROUPS values needs no overflow section', () => {
   const groups = partitionFeatures(umiFeatures(MAX_GROUPS), {
-    type: 'tag',
-    tag: 'RX',
+    field: 'tags.RX',
   })
   expect(groups).toHaveLength(MAX_GROUPS)
   expect(groups.map(g => g.key)).not.toContain(OVERFLOW_GROUP_KEY)
@@ -433,7 +432,7 @@ test('exactly MAX_GROUPS values needs no overflow section', () => {
 test('the untagged group survives the cap, pinned just ahead of the overflow', () => {
   // one untagged read plus enough tagged values to trip the cap
   const features = [feat('none', {}), ...umiFeatures(MAX_GROUPS + 5)]
-  const groups = partitionFeatures(features, { type: 'tag', tag: 'RX' })
+  const groups = partitionFeatures(features, { field: 'tags.RX' })
   expect(groups).toHaveLength(MAX_GROUPS)
   expect(groups.map(g => g.key).slice(-2)).toEqual(['', OVERFLOW_GROUP_KEY])
   const untagged = groups.at(-2)!
@@ -455,7 +454,7 @@ test('partitionChains caps groups too, keeping each chain whole', () => {
       feat(`r${i}b`, { name: `q${i}`, flags: 0x80, tags }),
     ]
   }).flat()
-  const groups = partitionChains(features, { type: 'tag', tag: 'RX' })
+  const groups = partitionChains(features, { field: 'tags.RX' })
   expect(groups).toHaveLength(MAX_GROUPS)
   expect(groups.flatMap(g => g.features)).toHaveLength((MAX_GROUPS + 5) * 2)
   // every group holds whole chains, i.e. an even number of reads (both mates)
@@ -464,99 +463,42 @@ test('partitionChains caps groups too, keeping each chain whole', () => {
   }
 })
 
-// The `groupBy` config slot is `frozen`, so anything can be in it. An unknown type
-// used to index the registry to `undefined` and throw inside the worker.
-test('normalizeGroupBy keeps a valid dimension', () => {
-  expect(normalizeGroupBy({ type: 'strand' })).toEqual({ type: 'strand' })
-  expect(normalizeGroupBy({ type: 'tag', tag: 'HP' })).toEqual({
-    type: 'tag',
-    tag: 'HP',
-  })
-})
-
-test('normalizeGroupBy keeps a domain as strings, and reads an empty one as none', () => {
-  expect(normalizeGroupBy({ type: 'tag', tag: 'HP', domain: [2, 1] })).toEqual({
-    type: 'tag',
-    tag: 'HP',
-    domain: ['2', '1'],
-  })
-  expect(normalizeGroupBy({ type: 'strand', domain: ['-'] })).toEqual({
-    type: 'strand',
-    domain: ['-'],
-  })
-  expect(normalizeGroupBy({ type: 'strand', domain: [] })).toEqual({
-    type: 'strand',
-  })
-})
-
 test('the worker partitions in natural order and caps off the key set alone', () => {
   const features = [
     feat('a', { tags: { HP: 2 } }),
     feat('b', {}),
     feat('c', { tags: { HP: 1 } }),
   ]
-  expect(keys(partitionFeatures(features, { type: 'tag', tag: 'HP' }))).toEqual(
-    ['1', '2', ''],
-  )
-  expect(keys(partitionChains(features, { type: 'tag', tag: 'HP' }))).toEqual([
+  expect(keys(partitionFeatures(features, { field: 'tags.HP' }))).toEqual([
+    '1',
+    '2',
+    '',
+  ])
+  expect(keys(partitionChains(features, { field: 'tags.HP' }))).toEqual([
     '1',
     '2',
     '',
   ])
   const last = `v${String(MAX_GROUPS + 9).padStart(3, '0')}`
   const groups = partitionFeatures(umiFeatures(MAX_GROUPS + 10), {
-    type: 'tag',
-    tag: 'RX',
+    field: 'tags.RX',
   })
   expect(groups.at(-1)!.mergedKeys).toContain(last)
 })
 
-test('the worker is sent the dimension and its tag, never the domain', () => {
-  expect(workerGroupBy({ type: 'tag', tag: 'HP', domain: ['2'] })).toEqual({
-    type: 'tag',
-    tag: 'HP',
+test('the worker is sent the field, never the domain', () => {
+  expect(workerGroupBy({ field: 'tags.HP', domain: ['2'] })).toEqual({
+    field: 'tags.HP',
   })
-  expect(workerGroupBy({ type: 'strand', domain: ['-1'] })).toEqual({
-    type: 'strand',
+  expect(workerGroupBy({ field: 'strand', domain: ['-1'] })).toEqual({
+    field: 'strand',
   })
   expect(workerGroupBy(undefined)).toBeUndefined()
 })
 
-// A tag on a dimension that takes no parameter is residue from a hand-written
-// config or an edited session. Carried, it names a key space of its own, so
-// re-picking the SAME dimension from the menu — which writes the bare object —
-// looked like a grouping change: `AlignmentsGroupKeySpaceReset` dropped every
-// lane's collapse and height override, and `rpcProps` refetched the region.
-test('normalizeGroupBy drops a tag the dimension has no use for', () => {
-  expect(normalizeGroupBy({ type: 'strand', tag: 'HP' })).toEqual({
-    type: 'strand',
-  })
-  expect(groupKeySpaceOf(normalizeGroupBy({ type: 'strand', tag: 'HP' }))).toBe(
-    groupKeySpaceOf(normalizeGroupBy({ type: 'strand' })),
-  )
-})
-
-test('normalizeGroupBy rejects anything the registry cannot key', () => {
-  expect(normalizeGroupBy({ type: 'bogus' })).toBeUndefined()
-  // trailing space: the kind of hand-written-config typo that used to throw
-  expect(normalizeGroupBy({ type: 'strand ' })).toBeUndefined()
-  expect(normalizeGroupBy({ type: 42 })).toBeUndefined()
-  expect(normalizeGroupBy({})).toBeUndefined()
-  expect(normalizeGroupBy(null)).toBeUndefined()
-  expect(normalizeGroupBy(undefined)).toBeUndefined()
-  expect(normalizeGroupBy('strand')).toBeUndefined()
-})
-
-// Without a tag name every read keys as '' and collapses into one ": none"
-// section — grouping that looks broken rather than absent.
-test('normalizeGroupBy rejects tag grouping with no tag name', () => {
-  expect(normalizeGroupBy({ type: 'tag' })).toBeUndefined()
-  expect(normalizeGroupBy({ type: 'tag', tag: '' })).toBeUndefined()
-})
-
 test('groupByForMode degrades a per-read dimension in chain mode only', () => {
-  const perRead = { type: 'strand' as const }
-  const chainSafe = { type: 'tag' as const, tag: 'HP' }
+  const perRead = { field: 'strand' as const }
+  const chainSafe = { field: 'tags.HP' }
   expect(groupByForMode(perRead, false)).toBe(perRead)
   expect(groupByForMode(perRead, true)).toBeUndefined()
   expect(groupByForMode(chainSafe, true)).toBe(chainSafe)
@@ -573,25 +515,49 @@ test("'' is the ungrouped lane's key and several dimensions' catch-all", () => {
   const keyUnder = (groupBy?: GroupBy) =>
     partitionFeatures([untagged], groupBy)[0]!.key
   expect(keyUnder()).toBe('')
-  expect(keyUnder({ type: 'tag', tag: 'HP' })).toBe('')
-  expect(keyUnder({ type: 'pairOrientation' })).toBe('')
-  expect(keyUnder({ type: 'mateAssembly' })).toBe('')
+  expect(keyUnder({ field: 'tags.HP' })).toBe('')
+  expect(keyUnder({ field: 'pairOrientation' })).toBe('')
+  expect(keyUnder({ field: 'mateAssembly' })).toBe('')
 })
 
 test('groupKeySpaceOf separates the groupings that share a key', () => {
   const groupings: (GroupBy | undefined)[] = [
     undefined,
-    { type: 'tag', tag: 'HP' },
-    { type: 'tag', tag: 'RG' },
-    { type: 'pairOrientation' },
-    { type: 'mateAssembly' },
+    { field: 'tags.HP' },
+    { field: 'tags.RG' },
+    { field: 'pairOrientation' },
+    { field: 'mateAssembly' },
   ]
   const spaces = groupings.map(g => groupKeySpaceOf(g))
   expect(new Set(spaces).size).toBe(spaces.length)
 })
 
-test('groupKeySpaceOf answers the same for two equal groupings', () => {
-  expect(groupKeySpaceOf({ type: 'tag', tag: 'HP' })).toBe(
-    groupKeySpaceOf({ type: 'tag', tag: 'HP' }),
+test('a field no read dimension names keys by its value, labelled by the field', () => {
+  const features = [
+    feat('a', { sample: 'tumor' }),
+    feat('b', {}),
+    feat('c', { sample: 'normal' }),
+  ]
+  const groups = partitionFeatures(features, { field: 'sample' })
+  expect(keys(groups)).toEqual(['normal', 'tumor', ''])
+  expect(groups.map(g => g.label)).toEqual([
+    'sample: normal',
+    'sample: tumor',
+    'sample: none',
+  ])
+})
+
+test('a jexl field keys by what the expression answers', () => {
+  const jexl = new PluginManager().jexl
+  const features = [
+    feat('a', { template_length: 900 }),
+    feat('b', { template_length: 200 }),
+  ]
+  const groups = partitionFeatures(
+    features,
+    { field: "jexl:get(feature,'template_length') > 500" },
+    jexl,
   )
+  expect(keys(groups)).toEqual(['false', 'true'])
+  expect(groups[1]!.features.map(f => f.id())).toEqual(['a'])
 })

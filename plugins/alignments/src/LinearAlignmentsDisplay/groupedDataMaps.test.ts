@@ -247,11 +247,11 @@ test('cross-region strand: reverse-only early region does not stack above forwar
   // Region 0 has only reverse reads, so the worker emits ['-']; region 1 has
   // both and emits ['+','-']. A first-seen merge would leave reverse first.
   const region0 = partitionRegion([feat('a', { flags: 16, strand: -1 })], {
-    type: 'strand',
+    field: 'strand',
   })
   const region1 = partitionRegion(
     [feat('b', { flags: 0, strand: 1 }), feat('c', { flags: 16, strand: -1 })],
-    { type: 'strand' },
+    { field: 'strand' },
   )
   expect(region0.groups.map(g => g.key)).toEqual(['-'])
   expect(region1.groups.map(g => g.key)).toEqual(['+', '-'])
@@ -267,7 +267,7 @@ test('cross-region strand: reverse-only early region does not stack above forwar
 test('cross-region tag: untagged-only early region stays last after merge', () => {
   // Region 0 has only untagged reads (worker emits ['']); region 1 adds HP 1.
   // First-seen would pin '' first; the merge must restore untagged-last.
-  const groupBy: GroupBy = { type: 'tag', tag: 'HP' }
+  const groupBy: GroupBy = { field: 'tags.HP' }
   const region0 = partitionRegion([feat('a', {})], groupBy)
   const region1 = partitionRegion(
     [feat('b', { tags: { HP: 1 } }), feat('c', {})],

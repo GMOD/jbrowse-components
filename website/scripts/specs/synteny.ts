@@ -465,7 +465,7 @@ const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
           {
             trackId: 'ecoli_ava',
             type: 'LGVSyntenyDisplay',
-            groupBy: { type: 'mateAssembly' },
+            facet: 'mateAssembly',
             hideSelfAlignments: true,
             featureHeight: 14,
             height: 135,
@@ -495,7 +495,7 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
           {
             trackId: 'ecoli_ava',
             type: 'LGVSyntenyDisplay',
-            groupBy: { type: 'mateAssembly' },
+            facet: 'mateAssembly',
             hideSelfAlignments: true,
             featureHeight: 14,
             height: 135,
@@ -1149,7 +1149,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // assembly, so the adapter serves every pair the table covers at once and the
   // grape row carries its peach and its cacao orthologs together;
   // "Group by... > Mate assembly" splits that into one labelled lane per genome.
-  // Baked into the session (groupBy on the track entry) rather than driven
+  // Baked into the session (facet on the track entry) rather than driven
   // through the menu, so the figure can't drift from it.
   //
   // Same window as the gene-ortholog figure above (grape 11), so the two are the
@@ -1181,7 +1181,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'grape_peach_cacao_blocks',
                 type: 'LGVSyntenyDisplay',
-                groupBy: { type: 'mateAssembly' },
+                facet: 'mateAssembly',
                 // an anchor block is short at this zoom, and what the figure is
                 // about is which lane has one, so the bars get some thickness
                 featureHeight: 14,
@@ -3087,7 +3087,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // same all-vs-all track in a PLAIN LGV. With no second row there is no target
   // assembly, so the adapter draws K-12 against every other sample at once, and
   // LGVSyntenyDisplay's "Group by... > Mate assembly" splits that into one
-  // section per strain. Baked into the session (groupBy on the track entry)
+  // section per strain. Baked into the session (facet on the track entry)
   // rather than driven through the menu, so the figure can't drift from it.
   //
   // The window is read off the PAF, not chosen for looks. K-12's phenylacetate
@@ -3156,7 +3156,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'ecoli_ava',
                 type: 'LGVSyntenyDisplay',
-                groupBy: { type: 'mateAssembly' },
+                facet: 'mateAssembly',
                 // "Group by... > Hide self-alignment lane". K-12 cannot have a
                 // line against itself — all_vs_all.paf is built with
                 // `minimap2 -X`, which skips each sequence's own diagonal — so
@@ -3329,7 +3329,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   {
                     trackId: 'ecoli_ava',
                     type: 'LGVSyntenyDisplay',
-                    groupBy: { type: 'mateAssembly' },
+                    facet: 'mateAssembly',
                     // The K12 lane can hold no self-alignment — all_vs_all.paf
                     // is built with `minimap2 -X`, which skips each sequence's
                     // own diagonal — so it is hidden rather than explained away.
@@ -5071,7 +5071,7 @@ export const syntenyVideoFixtures = {
             {
               trackId: 'grape_peach_cacao_blocks',
               type: 'LGVSyntenyDisplay',
-              groupBy: { type: 'mateAssembly' },
+              facet: 'mateAssembly',
               featureHeight: 14,
               height: 140,
             },

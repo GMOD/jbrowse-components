@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -175,18 +176,17 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         advanced: true,
       },
       /**
-       * #slot
+       * #slot facet
+       * In-track stacked grouping, one labelled section per value: a read
+       * dimension (`strand`, `firstOfPairStrand`, `pairOrientation`,
+       * `splitRead`, `mapq`, `mateAssembly`), a tag (`tags.HP`), or any
+       * other field. `{ field: "tags.HP", domain: ["2", "1"] }` stacks the
+       * listed values first. See [Facet](Facet).
        */
-      groupBy: {
-        type: 'frozen',
-        defaultValue: null,
-        description:
-          'In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand, or `{ type: "tag", tag: "HP" }` for one section per tag value, sorted; an optional `domain: ["2", "1"]` stacks the listed values first, in that order (null = ungrouped)',
-        advanced: true,
-      },
+      facet: facetConfigSchema,
       /**
        * #slot
-       * Only consulted while `groupBy` is in effect. Collapsing trades the
+       * Only consulted while `facet` is in effect. Collapsing trades the
        * per-group stack for one lane per group, with overlap depth carried by
        * the tint shading instead of by row count — the compact reading for a
        * track with many groups (an all-vs-all synteny track's mate genomes). A

@@ -71,18 +71,11 @@ test('the catch-all stays out of the merge', () => {
   expect(sectionOf(`v${MAX_GROUPS}`)).toBe(OVERFLOW_GROUP_KEY)
 })
 
-test('the key space is the dimension and its parameter, never the domain', () => {
-  const plain = groupKeySpaceOf({ type: 'attribute', attribute: 'biotype' })
-  expect(
-    groupKeySpaceOf({
-      type: 'attribute',
-      attribute: 'biotype',
-      domain: ['lncRNA'],
-    }),
-  ).toBe(plain)
-  expect(
-    groupKeySpaceOf({ type: 'attribute', attribute: 'gene_type' }),
-  ).not.toBe(plain)
+test('the key space is the field, never the domain', () => {
+  const plain = groupKeySpaceOf({ field: 'biotype' })
+  expect(groupKeySpaceOf({ field: 'biotype', domain: ['lncRNA'] })).toBe(plain)
+  expect(groupKeySpaceOf({ field: 'gene_type' })).not.toBe(plain)
+  expect(groupKeySpaceOf(undefined)).toBe('')
 })
 
 test('a digit run inside a key compares by magnitude, so chr2 files before chr10', () => {
@@ -121,26 +114,21 @@ test('the order is transitive, so every input order sorts the same', () => {
   expect([...sorted]).toEqual(['-10|-2|1.10|1.5|-5x|1.7x|a|'])
 })
 
-test('a re-pick in the same key space keeps the domain; a reorder or a new space does not', () => {
-  const current: { type: string; attribute: string; domain?: string[] } = {
-    type: 'attribute',
-    attribute: 'biotype',
+test('a re-pick of the same field keeps the domain; a reorder or a new field does not', () => {
+  const current: { field: string; domain?: string[] } = {
+    field: 'biotype',
     domain: ['lncRNA'],
   }
-  expect(
-    carryGroupDomain({ type: 'attribute', attribute: 'biotype' }, current),
-  ).toEqual(current)
-  expect(
-    carryGroupDomain(
-      { type: 'attribute', attribute: 'biotype', domain: [] },
-      current,
-    ),
-  ).toEqual({ type: 'attribute', attribute: 'biotype', domain: [] })
-  expect(
-    carryGroupDomain({ type: 'attribute', attribute: 'gene_type' }, current),
-  ).toEqual({ type: 'attribute', attribute: 'gene_type' })
+  expect(carryGroupDomain({ field: 'biotype' }, current)).toEqual(current)
+  expect(carryGroupDomain({ field: 'biotype', domain: [] }, current)).toEqual({
+    field: 'biotype',
+    domain: [],
+  })
+  expect(carryGroupDomain({ field: 'gene_type' }, current)).toEqual({
+    field: 'gene_type',
+  })
   expect(carryGroupDomain(undefined, current)).toBeUndefined()
-  expect(
-    carryGroupDomain({ type: 'attribute', attribute: 'biotype' }, undefined),
-  ).toEqual({ type: 'attribute', attribute: 'biotype' })
+  expect(carryGroupDomain({ field: 'biotype' }, undefined)).toEqual({
+    field: 'biotype',
+  })
 })

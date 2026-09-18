@@ -133,9 +133,11 @@ how many distinct values it found in view first. **Sections** in the track menu
 lists the sections drawn, each with **Move up**, **Move down** and **Hide
 section**, and **Reset section order** returns them to the sorted order.
 
-The `groupBy` config slot pre-groups a track. Its optional `domain` is the
-section order: the values listed stack first, in that order, and the rest follow
-sorted. A reorder from the menu writes the same slot:
+The `facet` setting pre-groups a track, spelled as on the feature tracks: a
+dimension (`"strand"`, `"pairOrientation"`, ...), a tag as `"tags.HP"`, or any
+other read field. The object form adds `domain`, the section order: the values
+listed stack first, in that order, and the rest follow sorted. A reorder from
+the menu writes the same object:
 
 ```json addtrack
 {
@@ -151,7 +153,7 @@ sorted. A reorder from the menu writes the same slot:
     }
   },
   "displayDefaults": {
-    "groupBy": { "type": "tag", "tag": "HP", "domain": ["2", "1"] }
+    "facet": { "field": "tags.HP", "domain": ["2", "1"] }
   }
 }
 ```

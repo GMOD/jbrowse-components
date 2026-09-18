@@ -748,8 +748,8 @@ export default function stateModelFactory(
            * dimension into ungrouped without changing the slot, so the slot alone
            * does not determine which sections come back.
            */
-          get effectiveGroupBy() {
-            return groupByForMode(self.groupBy, self.isChainMode)
+          get effectiveFacet() {
+            return groupByForMode(self.facet, self.isChainMode)
           },
 
           /**
@@ -759,7 +759,7 @@ export default function stateModelFactory(
            * for why a key alone cannot name its grouping.
            */
           get groupKeySpace() {
-            return groupKeySpaceOf(this.effectiveGroupBy)
+            return groupKeySpaceOf(this.effectiveFacet)
           },
 
           /**
@@ -776,7 +776,7 @@ export default function stateModelFactory(
            * two settings alone, so no data is needed.
            */
           get prefersOffset() {
-            return this.effectiveGroupBy !== undefined
+            return this.effectiveFacet !== undefined
           },
 
           /**
@@ -1648,7 +1648,7 @@ export default function stateModelFactory(
             return orderedGroups(
               self.rpcDataMap,
               self.hiddenGroupKeys,
-              this.effectiveGroupBy?.domain,
+              this.effectiveFacet?.domain,
             )
           },
 
@@ -1661,7 +1661,7 @@ export default function stateModelFactory(
            * collapsible — otherwise it reads as an ungrouped track with mysterious
            * blank space above it. `isGrouped` stays about the scroll model (>1
            * section scrolls coverage with its section), which one section doesn't
-           * change. Reads the fetched sections rather than `groupBy` — see
+           * change. Reads the fetched sections rather than `facet` — see
            * `hasNamedGroups` for why the setting is the wrong signal.
            */
           get showsGroupLabels() {
@@ -2959,7 +2959,7 @@ export default function stateModelFactory(
             // reads (see `canSortReads`); and a `groupBy` chain mode drops is
             // reachable the same way, from a session or the settings editor.
             sortTag: self.isChainMode ? undefined : self.sortTag,
-            groupBy: workerGroupBy(self.effectiveGroupBy),
+            groupBy: workerGroupBy(self.effectiveFacet),
             showSoftClipping: self.isChainMode ? false : self.showSoftClipping,
             // showCoverage is here (not just renderState) because the worker
             // skips the entire coverage-band pipeline — including the per-bp GPU
@@ -3404,12 +3404,10 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Set (or remove, when undefined) the in-track stacked grouping
-           * dimension. A tier-1 refetch setting (in `rpcProps`) — the worker
-           * re-partitions the fetch into N sections. Resets the Y scroll since
-           * the stacked content height changes. Ungrouping stores an explicit
-           * `null` override (not a cleared override) so it beats a configured
-           * `groupBy` default rather than falling back to it.
+           * Writes the `facet` object; undefined is ungrouped. A tier-1
+           * refetch setting (in `rpcProps`) — the worker re-partitions the
+           * fetch into N sections. Resets the Y scroll since the stacked
+           * content height changes.
            *
            * Doesn't drop the per-lane state: `HiddenGroupsMixin`'s key-space
            * reset does that for this write and for the ones no action of this
@@ -3417,11 +3415,10 @@ export default function stateModelFactory(
            * current one while the key space holds, so a re-pick from the menu
            * is not a reorder; a reorder is this action with a new domain.
            */
-          setGroupBy(groupBy?: GroupBy) {
-            setConf(
-              self,
-              'groupBy',
-              carryGroupDomain(groupBy, self.groupBy) ?? null,
+          setFacet(facet?: GroupBy) {
+            self.configuration.setSubschema(
+              'facet',
+              carryGroupDomain(facet, self.facet) ?? {},
             )
             self.scrollTop = 0
           },

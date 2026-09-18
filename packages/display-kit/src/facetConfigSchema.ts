@@ -34,9 +34,9 @@ export function normalizeFacet(
 /**
  * #config Facet
  * #category display
- * The row facet shared by the feature, mark and multi-sample variant
- * displays, as their `facet` setting: one labelled section of the track per
- * value of a field. A string is the field; the object adds the order.
+ * The `facet` setting of the feature, mark, multi-sample variant and
+ * alignments displays: one labelled section of the track per value of a
+ * field. A string is the field; the object adds the order.
  *
  * #example
  * ```js
@@ -48,6 +48,12 @@ export function normalizeFacet(
  *   facet: { field: 'gene_biotype', domain: ['protein_coding', 'lncRNA'] },
  * }
  * ```
+ * ```js
+ * {
+ *   type: 'LinearAlignmentsDisplay',
+ *   facet: { field: 'tags.HP', domain: ['1', '2'] },
+ * }
+ * ```
  */
 export const facetConfigSchema = ConfigurationSchema(
   'Facet',
@@ -56,9 +62,11 @@ export const facetConfigSchema = ConfigurationSchema(
      * #slot field
      * The feature field each value of which packs its own labelled section
      * of the track: a field name, a dotted path into a structured field
-     * (`INFO.SVTYPE`), a `jexl:` expression, or `strand`. A feature with
-     * no value stacks last, under `field: none`. Writing `facet: "strand"`
-     * lands here.
+     * (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or
+     * `strand`. A feature with no value stacks last, under `field: none`.
+     * The alignments displays also take a read dimension here:
+     * `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq` or
+     * `mateAssembly`. Writing `facet: "strand"` lands here.
      */
     field: {
       type: 'string',

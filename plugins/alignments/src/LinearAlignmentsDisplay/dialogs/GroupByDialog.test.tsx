@@ -23,16 +23,16 @@ afterEach(() => {
 // is deliberately left enabled in, since the verdict is advice the data supplies
 // and without it the grouping is the one the menu would have applied anyway. The
 // verdict itself is unit-tested below.
-function renderDialog(state: { colorBy: ColorBy; groupBy?: GroupBy }) {
-  const setGroupBy = jest.fn()
+function renderDialog(state: { colorBy: ColorBy; facet?: GroupBy }) {
+  const setFacet = jest.fn()
   const setColorBy = jest.fn()
   const model = {
     id: 'display1',
     colorBy: state.colorBy,
-    groupBy: state.groupBy,
+    facet: state.facet,
     filterBy: {},
     resolvedByteLimit: () => undefined,
-    setGroupBy,
+    setFacet,
     setColorBy,
   } as unknown as GroupByDialogModel
   render(
@@ -40,7 +40,7 @@ function renderDialog(state: { colorBy: ColorBy; groupBy?: GroupBy }) {
       <GroupByDialog model={model} handleClose={() => {}} />
     </ThemeProvider>,
   )
-  return { setGroupBy, setColorBy }
+  return { setFacet, setColorBy }
 }
 
 const checkbox = () => screen.getByRole('checkbox') as HTMLInputElement
@@ -69,10 +69,10 @@ function submit() {
 // The box is a default until it is clicked, and the tag it defaults against is
 // the one in the box — not the one the model held when the dialog opened. Reads
 // already colored by HP, grouped by nothing: the box used to open unticked
-// (there was no groupBy to compare against), and unticked means "don't color by
+// (there was no facet to compare against), and unticked means "don't color by
 // this tag", so submitting reset the HP coloring the user could see.
 test('typing the tag the reads are already colored by keeps that coloring', async () => {
-  const { setGroupBy, setColorBy } = renderDialog({
+  const { setFacet, setColorBy } = renderDialog({
     colorBy: { type: 'tag', tag: 'HP' },
   })
   expect(checkbox().checked).toBe(false)
@@ -80,7 +80,7 @@ test('typing the tag the reads are already colored by keeps that coloring', asyn
   expect(checkbox().checked).toBe(true)
   await settleScan()
   submit()
-  expect(setGroupBy).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
+  expect(setFacet).toHaveBeenCalledWith({ field: 'tags.HP' })
   expect(setColorBy).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
 })
 
@@ -137,7 +137,7 @@ test('an uncolored track defaults to coloring by the grouped tag', async () => {
 test('unticking drops the matching coloring and stays unticked', async () => {
   const { setColorBy } = renderDialog({
     colorBy: { type: 'tag', tag: 'HP' },
-    groupBy: { type: 'tag', tag: 'HP' },
+    facet: { field: 'tags.HP' },
   })
   expect(checkbox().checked).toBe(true)
   fireEvent.click(checkbox())

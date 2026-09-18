@@ -26,7 +26,7 @@ test('the curated colour schemes are the four synteny ones', () => {
 })
 
 // An all-vs-all track stacks one section per mate assembly, so this display
-// inherits the alignments base's `groupBy.domain` and has to offer the same
+// inherits the alignments base's `facet.domain` and has to offer the same
 // reorder menu over it.
 function seedSections(
   display: ReturnType<typeof createDisplay>,
@@ -56,7 +56,7 @@ test('no Sections menu until a second mate-assembly lane is fetched', () => {
       i => 'label' in i && i.label === 'Sections',
     ),
   ).toBe(false)
-  display.setGroupBy({ type: 'mateAssembly' })
+  display.setFacet({ field: 'mateAssembly' })
   seedSections(display, ['volvox_random'])
   expect(
     (display.trackMenuItems() as MenuItem[]).some(
@@ -69,7 +69,7 @@ test('Move down on a lane writes the drawn order as the domain', () => {
   const display = createDisplay({
     trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_two'],
   })
-  display.setGroupBy({ type: 'mateAssembly' })
+  display.setFacet({ field: 'mateAssembly' })
   seedSections(display, ['volvox_random', 'volvox_two'])
   expect(
     sectionRows(display).map(i => ('label' in i ? i.label : undefined)),
@@ -79,8 +79,8 @@ test('Move down on a lane writes the drawn order as the domain', () => {
     onClick: () => void
   }
   moveDown.onClick()
-  expect(display.groupBy).toEqual({
-    type: 'mateAssembly',
+  expect(display.facet).toEqual({
+    field: 'mateAssembly',
     domain: ['volvox_two', 'volvox_random'],
   })
   expect(display.groupOrder.map((g: { key: string }) => g.key)).toEqual([

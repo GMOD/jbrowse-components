@@ -96,7 +96,7 @@ Answerable from settings alone, before any data:
 
 - **`prefersOffset`** — will the grouping be HONORED? Positions the track label,
   which is placed before data lands and must not jump afterwards. Chain mode
-  degrades a per-read dimension (`groupByForMode`), so this is not "is `groupBy`
+  degrades a per-read dimension (`groupByForMode`), so this is not "is `facet`
   set".
 - **`canCollapseGroupRows`** / **`canSizeGroupHeights`** / **`canSortReads`** —
   may the control be OFFERED? Each is absent rather than disabled where it would

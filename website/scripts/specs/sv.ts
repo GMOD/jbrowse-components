@@ -648,7 +648,7 @@ export const svSpecs: ScreenshotSpec[] = [
 
   // The 27bp heterozygous deletion in HG002 ONT reads at ~1:63,006,xxx (hg19),
   // used to drive a group-by-HP example. A single HG002 ultralong-ONT
-  // track uses the display's groupBy:{type:'tag',tag:'HP'} option, which splits
+  // track uses the display's facet:{type:'tag',tag:'HP'} option, which splits
   // the pileup into one subtrack per HP value at render time (the newer built-in
   // grouping — no manually-filtered duplicate session tracks). The heterozygous
   // deletion concentrates in a single haplotype, so it shows in one group and
@@ -677,7 +677,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               height: 400,
               forceLoad: true,
-              groupBy: { type: 'tag', tag: 'HP' },
+              facet: 'tags.HP',
               colorBy: { type: 'tag', tag: 'HP' },
             },
           ],
@@ -912,7 +912,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'HG02768.final',
               type: 'LinearAlignmentsDisplay',
               showPileup: false,
-              groupBy: { type: 'pairOrientation' },
+              facet: 'pairOrientation',
               readConnections: 'arc',
               readConnectionsDown: true,
               drawProperPairArcs: false,
@@ -1007,7 +1007,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // no longer needs a paragraph painted over the pileup saying it.
               // Grouping survives linked-reads mode because splitRead defines a
               // chain key (a fragment is split if any of its reads is).
-              groupBy: { type: 'splitRead' },
+              facet: 'splitRead',
             },
           ],
         },
@@ -1019,7 +1019,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // picture, potentially extra-wide screenshot. it is also groupby sa in both
     // first and second screenshots, should be only in second"). It used to be
     // two stages, the Group by menu over the pileup and then the grouping — but
-    // the session already carries `groupBy: splitRead`, which is what the live
+    // the session already carries `facet: splitRead`, which is what the live
     // link has to open, so the menu frame showed the radio checked over the
     // applied result and both frames were the same picture. The menu path is a
     // sentence, and the section under the figure is where it belongs.

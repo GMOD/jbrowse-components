@@ -162,7 +162,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           const assemblyName = self.view.assemblyNames[0]
           if (
             !this.hideSelfAlignments ||
-            self.groupBy?.type !== 'mateAssembly' ||
+            self.facet?.field !== 'mateAssembly' ||
             assemblyName === undefined
           ) {
             return NO_HIDDEN_GROUPS
@@ -312,7 +312,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             ...getFiltersMenuItems(self),
             getSyntenyGroupByMenuItem(self),
             // An all-vs-all track stacks a section per mate assembly, and this
-            // display inherits `groupBy.domain` from the alignments base, so the
+            // display inherits `facet.domain` from the alignments base, so the
             // reorder menu is the base's too.
             ...getSectionOrderMenuItems(self),
             ...getSyntenyShowMenuItems(self),

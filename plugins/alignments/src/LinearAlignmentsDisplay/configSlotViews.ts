@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 
 import { normalizeColorBy } from '../shared/colorSchemes.ts'
-import { normalizeGroupBy } from '../shared/groupFeatures.ts'
 import { normalizeFilterBy } from '../shared/types.ts'
 
 import type {
@@ -221,15 +221,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * In-track stacked grouping dimension (undefined = ungrouped). Falls
-     * back to the `groupBy` config slot, so a track can be pre-grouped
-     * declaratively. Sent to the worker via rpcProps; the worker partitions
-     * one fetch into N sections. The slot is `frozen` (unvalidated JSON), so
-     * `normalizeGroupBy` is the chokepoint that keeps an unrecognized type or
-     * a tag grouping with no tag name from reaching the worker.
+     * The `facet` object as written, undefined while ungrouped. The worker
+     * partitions one fetch into a section per value of its field.
      */
-    get groupBy(): GroupBy | undefined {
-      return normalizeGroupBy(getConf(self, 'groupBy'))
+    get facet(): GroupBy | undefined {
+      return facetSettingOf({
+        field: getConf(self, ['facet', 'field']),
+        domain: getConf(self, ['facet', 'domain']),
+      })
     },
     /**
      * #getter

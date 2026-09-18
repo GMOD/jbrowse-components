@@ -1,12 +1,9 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { groupByRadioMenuItem as sharedGroupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 
-import { isChainGroupableType } from '../../shared/groupFeatures.ts'
+import { isChainGroupable } from '../../shared/groupFeatures.ts'
 
-import type {
-  GroupByType,
-  ParameterlessGroupByType,
-} from '../../shared/types.ts'
+import type { ReadDimension } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The shared builder, with chain mode as the `offered` rule: chain layout can
@@ -17,16 +14,14 @@ export function groupByRadioMenuItem({
   isChainMode = false,
   ...rest
 }: Omit<
-  Parameters<
-    typeof sharedGroupByRadioMenuItem<ParameterlessGroupByType, GroupByType>
-  >[0],
+  Parameters<typeof sharedGroupByRadioMenuItem<ReadDimension, string>>[0],
   'offered'
 > & {
   isChainMode?: boolean
 }) {
-  return sharedGroupByRadioMenuItem<ParameterlessGroupByType, GroupByType>({
+  return sharedGroupByRadioMenuItem<ReadDimension, string>({
     ...rest,
-    offered: type => !isChainMode || isChainGroupableType(type),
+    offered: field => !isChainMode || isChainGroupable(field),
   })
 }
 

@@ -4,8 +4,10 @@ import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
 import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
+import { TAG_FIELD_PREFIX, facetTag } from '../../shared/groupByLabels.ts'
 import {
   GROUP_BY_DIMENSIONS,
+  isReadDimension,
   pickGroupByOptions,
 } from '../../shared/groupFeatures.ts'
 import { isInterbaseType } from '../../shared/types.ts'
@@ -157,16 +159,15 @@ export function getSortByMenuItem(
   }
 }
 
-// Dimensions this display offers: the non-hidden ones, in registry order. `tag`
-// is dropped because it needs a tag name, so it is added back below as a
-// dialog-opener rather than a direct select. Chain mode's narrowing is not here —
-// `groupByRadioMenuItem` applies it to whatever it is handed, so this display and
-// LGVSyntenyDisplay can't answer it differently. Built once, like the synteny
-// menu's own list: the registry is a module constant, so a menu open cannot
-// produce a different answer.
+// Dimensions this display offers: the non-hidden ones, in registry order. A tag
+// is added below as a dialog-opener rather than a direct select. Chain mode's
+// narrowing is not here — `groupByRadioMenuItem` applies it to whatever it is
+// handed, so this display and LGVSyntenyDisplay can't answer it differently.
+// Built once, like the synteny menu's own list: the registry is a module
+// constant, so a menu open cannot produce a different answer.
 const GROUP_OPTIONS = pickGroupByOptions(
   ...Object.values(GROUP_BY_DIMENSIONS).flatMap(d =>
-    !d.hidden && d.type !== 'tag' ? [d.type] : [],
+    d.hidden ? [] : [d.field],
   ),
 )
 
@@ -177,13 +178,13 @@ export interface GroupByMenuModel extends GroupByDialogModel {
 }
 
 export interface SectionOrderMenuModel {
-  effectiveGroupBy: GroupBy | undefined
+  effectiveFacet: GroupBy | undefined
   groupOrder: readonly { key: string; label: string }[]
-  setGroupBy: (groupBy?: GroupBy) => void
+  setFacet: (facet?: GroupBy) => void
   hideGroup: (key: string) => void
 }
 
-// The Sections submenu is the runtime half of `groupBy.domain`: a move writes
+// The Sections submenu is the runtime half of `facet.domain`: a move writes
 // the grouping back with the drawn order as its domain, which refetches, since
 // the worker caps in that order. Absent while chain mode degrades the grouping
 // to one section.
@@ -207,42 +208,45 @@ export function queueSortByTagDialog(
 }
 
 export function getSectionOrderMenuItems(model: SectionOrderMenuModel) {
-  const groupBy = model.effectiveGroupBy
-  return groupBy
+  const facet = model.effectiveFacet
+  return facet
     ? sectionOrderMenuItems({
         sections: model.groupOrder,
-        domain: groupBy.domain ?? [],
+        domain: facet.domain ?? [],
         setDomain: domain => {
-          model.setGroupBy({ ...groupBy, domain })
+          model.setFacet({ ...facet, domain })
         },
         hideGroup: model.hideGroup,
       })
     : []
 }
 
-// Every offered dimension selects directly except `tag`, which needs a tag name
-// (+ optional color-by-tag), so it goes last as a dialog-opener — mirroring the
-// sort menu's "Tag...". `groupByRadioMenuItem` resolves which radio is ticked
-// against what it was handed, so a stored-but-unoffered dimension ticks "None"
-// here without this call site restating the rule.
+// Every offered dimension selects directly; a tag needs its name (+ optional
+// color-by-tag), so it goes last as a dialog-opener — mirroring the sort menu's
+// "Tag...". Its radio is the tag prefix, which no field can equal. A field
+// written in config that no radio names gets a radio of its own, so the menu
+// never ticks "None" over a grouped track.
 export function getGroupByMenuItem(model: GroupByMenuModel) {
-  const { groupBy } = model
-  // Named like the sort and color menus' tag rows once a tag is picked.
-  const groupTag = groupBy?.type === 'tag' ? groupBy.tag : undefined
+  const field = model.facet?.field
+  const tag = facetTag(field)
+  const other =
+    field !== undefined && tag === undefined && !isReadDimension(field)
+      ? field
+      : undefined
   return groupByRadioMenuItem({
-    current: groupBy?.type,
+    current: tag === undefined ? field : TAG_FIELD_PREFIX,
     options: GROUP_OPTIONS,
     isChainMode: model.isChainMode,
-    onSelect: type => {
-      model.setGroupBy({ type })
+    onSelect: field => {
+      model.setFacet({ field })
     },
     onNone: () => {
-      model.setGroupBy(undefined)
+      model.setFacet(undefined)
     },
     extra: [
       {
-        type: 'tag',
-        label: groupTag ? `Tag (${groupTag})...` : 'Tag...',
+        type: TAG_FIELD_PREFIX,
+        label: tag ? `Tag (${tag})...` : 'Tag...',
         onClick: () => {
           getDialogHost(model).queueDialog(handleClose => [
             GroupByDialog,
@@ -250,6 +254,9 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
           ])
         },
       },
+      ...(other === undefined
+        ? []
+        : [{ type: other, label: other, onClick: () => {} }]),
     ],
   })
 }

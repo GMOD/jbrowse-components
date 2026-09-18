@@ -25,7 +25,7 @@ import type { FieldStep } from './fields.ts'
 // The SECOND member belongs in the plugin, not here. One arrangement does not
 // pay for a registry, and this list is the cheapest place to put it while the
 // count is one; a second — methylation is the candidate, `colorBy:
-// modifications` beside `groupBy: tag HP`, which specs/methylation.ts already
+// modifications` beside `facet: 'tags.HP'`, which specs/methylation.ts already
 // carries as a `grouped` boolean — makes the vocabulary something the menu and
 // the recipes share, and it moves to a UI-free leaf module in
 // plugins/alignments the way COMPACTNESS_PRESETS did.
@@ -45,8 +45,12 @@ const ARRANGEMENTS: Arrangement[] = [
     menu: 'Read connections',
     displayType: 'LinearAlignmentsDisplay',
     settings: { ...SV_CHANNELS_ON },
-    matches: settings =>
-      isSvChannelsActive(settings as unknown as SvChannelsSettings),
+    // a spec spells a bare dimension as its string; the preset compares the object
+    matches: ({ facet, ...settings }) =>
+      isSvChannelsActive({
+        ...settings,
+        facet: typeof facet === 'string' ? { field: facet } : facet,
+      } as unknown as SvChannelsSettings),
   },
 ]
 

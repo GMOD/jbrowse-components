@@ -16,6 +16,7 @@ import { observer } from 'mobx-react'
 
 import { COMMON_READ_TAG_PICKS } from '../../shared/commonTags.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
+import { TAG_FIELD_PREFIX, facetTag } from '../../shared/groupByLabels.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
 import type { ColorBy, FilterBy, GroupBy } from '../../shared/types.ts'
@@ -38,8 +39,8 @@ export interface GroupByDialogModel extends IStateTreeNode {
   // fetch's budget rather than running unbounded beside a refused track.
   resolvedByteLimit: () => number | undefined
   colorBy: ColorBy
-  groupBy?: GroupBy
-  setGroupBy: (groupBy?: GroupBy) => void
+  facet?: GroupBy
+  setFacet: (facet?: GroupBy) => void
   setColorBy: (colorBy: ColorBy) => void
 }
 
@@ -90,7 +91,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
 }) {
   const { model, handleClose } = props
   // Pre-fill from the active grouping so reopening tweaks it rather than resets.
-  const [groupByTag, setGroupByTag] = useState(model.groupBy?.tag ?? '')
+  const [groupByTag, setGroupByTag] = useState(
+    facetTag(model.facet?.field) ?? '',
+  )
   // Undefined until the box is actually clicked, so until then it tracks the tag
   // being typed (`defaultColorByTag`); a click pins the answer, since from then
   // on it is the user's and not a default.
@@ -142,7 +145,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   )
 
   const handleSubmit = () => {
-    model.setGroupBy({ type: 'tag', tag: groupByTag })
+    model.setFacet({ field: `${TAG_FIELD_PREFIX}${groupByTag}` })
     const scheme = nextColorScheme(model.colorBy, groupByTag, colorByTag)
     if (scheme) {
       model.setColorBy(scheme)

@@ -107,18 +107,18 @@ export function groupKeyComparator(domain?: readonly string[]) {
 }
 
 /**
- * The domain a re-pick keeps: a grouping set from a menu or dialog names no
- * domain, so one landing in the key space the current grouping already
- * occupies carries the current order along. A reorder names its own domain
- * and passes through, an empty one included.
+ * The domain a re-pick keeps: a facet set from a menu or dialog names no
+ * domain, so one naming the field the current facet already reads carries
+ * the current order along. A reorder names its own domain and passes
+ * through, an empty one included.
  */
 export function carryGroupDomain<
-  T extends { type: string; domain?: readonly string[] },
+  T extends { field: string; domain?: readonly string[] },
 >(next: T | undefined, current: T | undefined): T | undefined {
   return next !== undefined &&
     next.domain === undefined &&
     current?.domain !== undefined &&
-    groupKeySpaceOf(next) === groupKeySpaceOf(current)
+    next.field === current.field
     ? { ...next, domain: current.domain }
     : next
 }
@@ -164,26 +164,14 @@ export interface GroupId {
 }
 
 /**
- * Identity of the key space a grouping hands out keys in: the dimension plus
- * whatever parameter it takes (a tag, an attribute). A key means nothing on
- * its own, since `''` is both the ungrouped section and every dimension's
- * catch-all, so anything keyed by group key is dropped when this moves. The
- * `domain` only orders the keys and is no part of the space, so a reorder
- * keeps what a reader hid.
+ * Identity of the key space a facet hands out keys in: its field. A key means
+ * nothing on its own, since `''` is both the ungrouped section and every
+ * field's catch-all, so anything keyed by group key is dropped when this
+ * moves. The `domain` only orders the keys and is no part of the space, so a
+ * reorder keeps what a reader hid.
  */
 export function groupKeySpaceOf(
-  groupBy:
-    | { type: string; domain?: readonly string[]; [param: string]: unknown }
-    | undefined,
+  facet: { field: string; domain?: readonly string[] } | undefined,
 ) {
-  if (groupBy === undefined) {
-    return ''
-  }
-  const { type, ...params } = groupBy
-  return [
-    type,
-    ...Object.entries(params)
-      .filter(([k, v]) => k !== 'domain' && typeof v === 'string')
-      .map(([, v]) => v),
-  ].join('\0')
+  return facet?.field ?? ''
 }

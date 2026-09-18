@@ -16,8 +16,8 @@ import type {
 } from '@jbrowse/plugin-alignments'
 
 interface GroupByModel {
-  groupBy?: GroupBy
-  setGroupBy: (groupBy?: GroupBy) => void
+  facet?: GroupBy
+  setFacet: (facet?: GroupBy) => void
   // A synteny track carries the inherited `linkedReads` slot, so chain layout is
   // reachable here from a config or session even though this menu offers no way
   // in. `groupByRadioMenuItem` needs it to drop the per-read dimensions the
@@ -37,14 +37,14 @@ const GROUP_OPTIONS = pickGroupByOptions('mateAssembly', 'strand', 'mapq')
 
 export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   const item = groupByRadioMenuItem({
-    current: model.groupBy?.type,
+    current: model.facet?.field,
     options: GROUP_OPTIONS,
     isChainMode: model.isChainMode,
-    onSelect: type => {
-      model.setGroupBy({ type })
+    onSelect: field => {
+      model.setFacet({ field })
     },
     onNone: () => {
-      model.setGroupBy(undefined)
+      model.setFacet(undefined)
     },
   })
   // Appended after the shared builder's dimension radios, behind a divider so a
@@ -60,7 +60,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
     ...item,
     subMenu: [
       ...resolveSubMenu(item),
-      ...(model.groupBy?.type === 'mateAssembly'
+      ...(model.facet?.field === 'mateAssembly'
         ? [
             { type: 'divider' as const },
             toggleItem(

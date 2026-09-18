@@ -4,6 +4,8 @@ import {
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
@@ -14,7 +16,7 @@ import {
 import { PAIR_DIRECTION_NUM } from './buildBaseFeatureData.ts'
 import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
-import { GROUP_BY_LABELS } from './groupByLabels.ts'
+import { GROUP_BY_LABELS, facetTag } from './groupByLabels.ts'
 import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
 import {
   MAPQ_UNAVAILABLE,
@@ -25,9 +27,10 @@ import {
   getStrand,
 } from './util.ts'
 
-import type { GroupBy, GroupByType, ParameterlessGroupByType } from './types.ts'
+import type { GroupBy, ReadDimension } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 export {
   MAX_GROUPS,
@@ -57,8 +60,8 @@ interface GroupKey {
 // Interned, one per section, because a grouped fetch walks every read. Spelling
 // each out also makes a dimension's sections countable here, which is the "keep
 // every dimension a closed set" rule of ../RenderAlignmentDataRPC/CLAUDE.md —
-// `tag` and `mateAssembly` are the two that can't be listed, and MAX_GROUPS
-// guards them.
+// `mateAssembly`, a tag and a field are the ones that can't be listed, and
+// MAX_GROUPS guards them.
 const FWD_STRAND_GROUP: GroupKey = { key: '+', label: 'Forward strand' }
 const REV_STRAND_GROUP: GroupKey = { key: '-', label: 'Reverse strand' }
 const FWD_FIRST_OF_PAIR_GROUP: GroupKey = {
@@ -90,13 +93,6 @@ function firstOfPairStrandKey(feature: Feature): GroupKey {
     FWD_FIRST_OF_PAIR_GROUP,
     REV_FIRST_OF_PAIR_GROUP,
   )
-}
-
-function tagKey(feature: Feature, tag: string): GroupKey {
-  const value = extractFeatureTagValue(feature, tag)
-  return value === ''
-    ? { key: '', label: `${tag}: none` }
-    : { key: value, label: `${tag}: ${value}` }
 }
 
 // The IGV category (LR/RL/RR/LL) through `pairDirection`, never the raw
@@ -234,40 +230,21 @@ function singleSection(features: Feature[]): FeatureGroup[] {
   return [{ key: '', label: '', features }]
 }
 
-// The registry lookup, split on the one dimension that takes a parameter. Every
-// other entry's `key` has the identical signature, so the second branch is one
-// call and not a case per dimension — and `tag` reaches its own entry with its
-// own grouping, which is what makes `groupBy.tag` a string there.
-function featureGroupKey(feature: Feature, groupBy: GroupBy) {
-  return groupBy.type === 'tag'
-    ? GROUP_BY_DIMENSIONS.tag.key(feature, groupBy)
-    : GROUP_BY_DIMENSIONS[groupBy.type].key(feature, groupBy)
-}
-
 // Partition the fetched reads into ordered groups, one group key per read.
 export function partitionFeatures(
   features: Feature[],
   groupBy: GroupBy | undefined,
+  jexl?: JexlInstance,
 ): FeatureGroup[] {
   if (!groupBy) {
     return singleSection(features)
   }
+  const { key } = groupKeyer(groupBy.field, jexl)
   const groups = new Map<string, FeatureGroup>()
   for (const feature of features) {
-    appendFeature(groups, feature, featureGroupKey(feature, groupBy))
+    appendFeature(groups, feature, key(feature))
   }
   return orderGroups([...groups.values()])
-}
-
-// A whole chain's key: the dimension's own answer where it states one, else the
-// representative read's. `tag` has no `chainKey`, so the branch also carries the
-// narrowing the registry lookup needs.
-function chainGroupKey(chain: Feature[], groupBy: GroupBy) {
-  const fromChain =
-    groupBy.type === 'tag'
-      ? undefined
-      : GROUP_BY_DIMENSIONS[groupBy.type].chainKey?.(chain, groupBy)
-  return fromChain ?? featureGroupKey(chainRepresentative(chain), groupBy)
 }
 
 // The read a chain's group key comes from: a primary, preferring read1 so the
@@ -287,17 +264,8 @@ function chainRepresentative(chain: Feature[]): Feature {
   return primary ?? chain[0]!
 }
 
-// The grouping an entry's key generators are handed: the tag dimension's, which
-// carries the tag, or the shared shape every other dimension has. Written as a
-// conditional rather than an `Extract` so the six parameterless entries land on
-// ONE type — that is what lets `featureGroupKey` reach them through a single
-// registry lookup instead of a branch per dimension.
-type GroupByOf<K extends GroupByType> = K extends 'tag'
-  ? Extract<GroupBy, { type: 'tag' }>
-  : Exclude<GroupBy, { type: 'tag' }>
-
-export interface GroupByDimension<K extends GroupByType = GroupByType> {
-  type: K
+export interface GroupByDimension<K extends ReadDimension = ReadDimension> {
+  field: K
   // Whether the dimension describes the FRAGMENT rather than the record, so
   // `partitionChains` can key a whole chain off its representative read.
   //
@@ -310,49 +278,41 @@ export interface GroupByDimension<K extends GroupByType = GroupByType> {
   // because a chain has no single answer: its two mates genuinely point opposite
   // ways and map with their own confidence.
   //
-  // Whether chain mode HONORS the dimension is `isChainGroupableType`.
+  // Whether chain mode HONORS the dimension is `isChainGroupable`.
   fragmentLevel: boolean
   // Not meaningful for ordinary alignment reads, so it is kept out of the general
   // "Group by..." radios and surfaced by the display that supports it —
   // LGVSyntenyDisplay's menus.ts owns mateAssembly.
   hidden?: boolean
-  // `groupBy` is passed for tag grouping, which needs `groupBy.tag` — and gets
-  // it, rather than a `?? ''`, because the parameter is this dimension's own
-  // grouping and not the whole union.
-  key: (feature: Feature, groupBy: GroupByOf<K>) => GroupKey
+  key: (feature: Feature) => GroupKey
   // Key for a whole chain, for a dimension the representative read cannot answer
   // for — it answers "is the primary read1 like this", not "is any read of this
   // fragment". Supplying one is also what makes a per-read dimension groupable in
-  // chain mode (`isChainGroupableType`).
-  chainKey?: (chain: Feature[], groupBy: GroupByOf<K>) => GroupKey
+  // chain mode (`isChainGroupable`).
+  chainKey?: (chain: Feature[]) => GroupKey
 }
 
-// The one registry of group-by dimensions. Keyed by GroupByType, so a new member
-// of the union is a compile error until it is classified here; each entry's
-// `type` is pinned to its own key, because `offeredGroupByTypes` maps to that
-// field and a plain Record would accept one naming a sibling. Insertion order is
-// the menu order. Labels live in the React-free groupByLabels.ts (see its
-// header), joined to this registry by `pickGroupByOptions` alone.
+// The one registry of read dimensions. Keyed by ReadDimension, so a new member
+// is a compile error until it is classified here; each entry's `field` is
+// pinned to its own key, because `pickGroupByOptions` maps to that field and a
+// plain Record would accept one naming a sibling. Insertion order is the menu
+// order. Labels live in the React-free groupByLabels.ts (see its header),
+// joined to this registry by `pickGroupByOptions` alone.
 export const GROUP_BY_DIMENSIONS: {
-  [K in GroupByType]: GroupByDimension<K>
+  [K in ReadDimension]: GroupByDimension<K>
 } = {
   strand: {
-    type: 'strand',
+    field: 'strand',
     fragmentLevel: false,
     key: strandKey,
   },
   firstOfPairStrand: {
-    type: 'firstOfPairStrand',
+    field: 'firstOfPairStrand',
     fragmentLevel: true,
     key: firstOfPairStrandKey,
   },
-  tag: {
-    type: 'tag',
-    fragmentLevel: true,
-    key: (feature, groupBy) => tagKey(feature, groupBy.tag),
-  },
   pairOrientation: {
-    type: 'pairOrientation',
+    field: 'pairOrientation',
     fragmentLevel: true,
     key: pairOrientationKey,
   },
@@ -361,35 +321,77 @@ export const GROUP_BY_DIMENSIONS: {
   // being dropped there. One mate can be split where the other is not, and the
   // fragment has split evidence if either does, which no single read answers.
   splitRead: {
-    type: 'splitRead',
+    field: 'splitRead',
     fragmentLevel: false,
     key: splitReadKey,
     chainKey: chain => (chainIsSplit(chain) ? SPLIT_GROUP : UNSPLIT_GROUP),
   },
   mapq: {
-    type: 'mapq',
+    field: 'mapq',
     fragmentLevel: false,
     key: mapqKey,
   },
   mateAssembly: {
-    type: 'mateAssembly',
+    field: 'mateAssembly',
     fragmentLevel: true,
     hidden: true,
     key: mateAssemblyKey,
   },
 }
 
-// Whether chain mode can honor a dimension: the chain has to resolve to one key,
+export function isReadDimension(field: string): field is ReadDimension {
+  return Object.hasOwn(GROUP_BY_DIMENSIONS, field)
+}
+
+function readDimension(field: string) {
+  return isReadDimension(field) ? GROUP_BY_DIMENSIONS[field] : undefined
+}
+
+// A field no read dimension names keys by its value, labelled the way the
+// feature displays label a section. A tag reads through the tag block's
+// targeted decode (`extractFeatureTagValue`), since this runs per read and
+// `get('tags')` decodes every tag on it to answer one.
+function valueKeyer(
+  field: string,
+  jexl: JexlInstance | undefined,
+): GroupByDimension['key'] {
+  const tag = facetTag(field)
+  const { key, sectionLabel } = categoricalField(tag ?? field)
+  const read =
+    tag === undefined
+      ? fieldReader(field, jexl)
+      : (feature: Feature) => extractFeatureTagValue(feature, tag)
+  return feature => {
+    const value = key(read(feature))
+    return { key: value, label: sectionLabel(value) }
+  }
+}
+
+// What a facet's field partitions by: a read dimension's own keys, or the
+// field's value. Built once per fetch, so the per-read call is the keyer alone.
+function groupKeyer(
+  field: string,
+  jexl?: JexlInstance,
+): Pick<GroupByDimension, 'key' | 'chainKey'> {
+  return readDimension(field) ?? { key: valueKeyer(field, jexl) }
+}
+
+// Whether chain mode can honor a facet: the chain has to resolve to one key,
 // which holds when the representative read answers for the fragment or when the
-// dimension states the chain's key itself. Derived rather than asserted as a
-// third field, so a `chainKey` written without a matching flag can't sit there
-// unreachable while the dimension degrades to ungrouped.
-export function isChainGroupableType(type: GroupByType | undefined) {
-  if (type === undefined) {
+// dimension states the chain's key itself. A tag or a field describes the
+// fragment. Derived rather than asserted as a third field, so a `chainKey`
+// written without a matching flag can't sit there unreachable while the
+// dimension degrades to ungrouped.
+export function isChainGroupable(field: string | undefined) {
+  if (field === undefined) {
     return false
   }
-  const { fragmentLevel, chainKey } = GROUP_BY_DIMENSIONS[type]
-  return fragmentLevel || chainKey !== undefined
+  const dimension = readDimension(field)
+  return (
+    dimension === undefined ||
+    dimension.fragmentLevel ||
+    dimension.chainKey !== undefined
+  )
 }
 
 // The grouping a fetch can actually honor. A per-read dimension in chain mode (an
@@ -400,17 +402,15 @@ export function groupByForMode(
   groupBy: GroupBy | undefined,
   isChainMode: boolean,
 ) {
-  return isChainMode && !isChainGroupableType(groupBy?.type)
-    ? undefined
-    : groupBy
+  return isChainMode && !isChainGroupable(groupBy?.field) ? undefined : groupBy
 }
 
 // Dimensions as menu radio options, in the given order: the one join between the
 // registry above and the label table, so no call site re-spells a label. The
 // alignments menu takes every non-hidden dimension, LGVSyntenyDisplay a curated
 // three. Mirrors pickColorOptions.
-export function pickGroupByOptions(...types: ParameterlessGroupByType[]) {
-  return types.map(type => ({ type, label: GROUP_BY_LABELS[type] }))
+export function pickGroupByOptions(...fields: ReadDimension[]) {
+  return fields.map(field => ({ type: field, label: GROUP_BY_LABELS[field] }))
 }
 
 // Partition for chain (linked-reads) mode: reads sharing a QNAME form one chain
@@ -419,17 +419,19 @@ export function pickGroupByOptions(...types: ParameterlessGroupByType[]) {
 export function partitionChains(
   features: Feature[],
   groupBy: GroupBy | undefined,
+  jexl?: JexlInstance,
 ): FeatureGroup[] {
   if (!groupBy) {
     return singleSection(features)
   }
+  const { key, chainKey } = groupKeyer(groupBy.field, jexl)
   const chains = new Map<string, Feature[]>()
   for (const feature of features) {
     getOrCreate(chains, featureChainKey(feature), () => []).push(feature)
   }
   const groups = new Map<string, FeatureGroup>()
   for (const chain of chains.values()) {
-    const groupKey = chainGroupKey(chain, groupBy)
+    const groupKey = chainKey?.(chain) ?? key(chainRepresentative(chain))
     for (const feature of chain) {
       appendFeature(groups, feature, groupKey)
     }
@@ -438,59 +440,11 @@ export function partitionChains(
 }
 
 /**
- * What the worker partitions by: the dimension and its tag. The domain only
- * orders the sections, which the main thread does, so a reorder refetches
- * nothing.
+ * What the worker partitions by: the field. The domain only orders the
+ * sections, which the main thread does, so a reorder refetches nothing.
  */
 export function workerGroupBy(
   groupBy: GroupBy | undefined,
 ): GroupBy | undefined {
-  return groupBy === undefined
-    ? undefined
-    : groupBy.type === 'tag'
-      ? { type: groupBy.type, tag: groupBy.tag }
-      : { type: groupBy.type }
-}
-
-// Resolve a persisted `groupBy` into one the partitioners can run, or `undefined`
-// when they can't. The slot is `frozen` — unvalidated JSON from a hand-written
-// config or an older session — and an unrecognized `type` indexes the registry to
-// `undefined` and throws inside the worker, failing the whole track, while `tag`
-// with no tag name collapses every read into one `"<tag>: none"` section. The
-// display's `groupBy` getter runs this, so the menu, the layout and `rpcProps`
-// all see only values the registry can key.
-//
-// `tag` is carried by the one dimension that takes a parameter and dropped from
-// every other, so "a tag is present exactly when the dimension is `tag`" holds
-// downstream rather than being hoped for. Two things key off the WHOLE object
-// and so can see a stray one: the fetch cache key, and `groupKeySpaceOf` — under
-// which a hand-written `{type:'strand', tag:'HP'}` names a different key space
-// than the identical grouping the menu writes, so re-picking Strand from the
-// menu there dropped every lane's collapse and refetched the region.
-export function normalizeGroupBy(groupBy: unknown): GroupBy | undefined {
-  const obj =
-    typeof groupBy === 'object' && groupBy !== null ? groupBy : undefined
-  const type = readStringField(obj, 'type')
-  if (type === undefined || !isGroupByType(type)) {
-    return undefined
-  }
-  const rawDomain = obj === undefined ? undefined : Reflect.get(obj, 'domain')
-  const domain =
-    Array.isArray(rawDomain) && rawDomain.length > 0
-      ? { domain: rawDomain.map(String) }
-      : {}
-  if (type !== 'tag') {
-    return { type, ...domain }
-  }
-  const tag = readStringField(obj, 'tag')
-  return tag ? { type, tag, ...domain } : undefined
-}
-
-function readStringField(obj: object | undefined, field: string) {
-  const value = obj === undefined ? undefined : Reflect.get(obj, field)
-  return typeof value === 'string' ? value : undefined
-}
-
-function isGroupByType(type: string): type is GroupByType {
-  return Object.hasOwn(GROUP_BY_DIMENSIONS, type)
+  return groupBy === undefined ? undefined : { field: groupBy.field }
 }
