@@ -29,6 +29,25 @@ export interface JBrowseUrlOptions {
 }
 
 /**
+ * A session spec says which assembly, locations and tracks to open, and the URL
+ * can carry either it or those three, never both.
+ */
+export function assertSessionStandsAlone({
+  session,
+  assembly,
+  loc,
+  tracks,
+}: JBrowseUrlOptions) {
+  if (session && (assembly || loc || tracks?.length)) {
+    throw new Error(
+      'a session spec says which assembly, locations and tracks to open, so it ' +
+        'cannot be combined with assembly, loc or tracks (--assembly, --loc, ' +
+        '--track): put them in the spec',
+    )
+  }
+}
+
+/**
  * The URL that opens a JBrowse Web instance onto a described view. Useful on its
  * own: an agent can hand this to a human, or paste it into a report, without
  * launching a browser at all.
@@ -52,13 +71,7 @@ export function jbrowseUrl({
   sessionName,
   instance = PUBLIC_INSTANCE,
 }: JBrowseUrlOptions) {
-  if (session && (assembly || loc || tracks?.length)) {
-    throw new Error(
-      'a session spec says which assembly, locations and tracks to open, so it ' +
-        'cannot be combined with assembly, loc or tracks (--assembly, --loc, ' +
-        '--track): put them in the spec',
-    )
-  }
+  assertSessionStandsAlone({ session, assembly, loc, tracks })
   // In the fragment, which never reaches a server: a whole session spec in the
   // query string can exceed the request-line limit and come back HTTP 414.
   const params = new URLSearchParams()

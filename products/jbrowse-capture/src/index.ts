@@ -1,4 +1,9 @@
 export { captureJBrowse, openJBrowse } from './capture.ts'
+export {
+  resolveAgainstConfig,
+  resolveAssemblyName,
+  resolveTrackId,
+} from './catalog.ts'
 export { delay } from './poll.ts'
 export { waitForJBrowseReady } from './ready.ts'
 export {
@@ -48,6 +53,7 @@ export {
   isBrowserConsoleNoise,
 } from './browser.ts'
 
+export type { Catalog } from './catalog.ts'
 export type {
   CaptureOptions,
   CaptureResult,

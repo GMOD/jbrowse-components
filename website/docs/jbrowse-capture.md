@@ -19,7 +19,10 @@ npx @jbrowse/capture --hub hg38 --loc BRCA1 \
 
 `--hub` names an assembly on [genomes.jbrowse.org](https://genomes.jbrowse.org),
 which hosts a ready-made JBrowse config per UCSC and GenArk genome, and `--loc`
-takes a gene name because those configs ship a text index.
+takes a gene name because those configs ship a text index. `--track` takes a
+trackId, the id without its assembly prefix (`clinvarMain`) or the track's
+display name; capture checks each one and the assembly against the config before
+launching a browser, and a miss fails at once with suggestions.
 
 ## Knowing when JBrowse has finished rendering
 
@@ -47,10 +50,11 @@ decides the answer:
 1. **The census.** `AppReadyMarker` publishes what is open as `data-app-views`,
    `data-app-assemblies` and `data-app-tracks`, and the gate reads that one
    element: at least one view, your assembly among them, every trackId you named
-   actually open. A trackId the config does not define and an assembly name that
-   does not match the config fail here, loudly, and this is the only place they
-   fail at all. A config, session or plugin the app cannot load fails here at
-   once, with the app's own message, which it publishes as `data-app-error`.
+   actually open. A trackId or assembly that capture could not check against the
+   config before launching (a session spec's, or a config it could not fetch)
+   fails here if it never opens. A config, session or plugin the app cannot load
+   fails here at once, with the app's own message, which it publishes as
+   `data-app-error`.
 2. **`[data-app-phase="ready"]`, held.** The session renders it when no view is
    resolving an assembly and no display is fetching. It has to hold for a beat,
    not merely be true once: a display drops to `ready` in the gap between one

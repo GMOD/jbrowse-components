@@ -8,12 +8,13 @@ import {
   findChromeExecutable,
   isBrowserConsoleNoise,
 } from './browser.ts'
+import { resolveAgainstConfig } from './catalog.ts'
 import { assertImagePath } from './imagePath.ts'
 import { assertSupportedInstance } from './instanceVersion.ts'
 import { waitForFrame, waitForJBrowseReady } from './ready.ts'
 import { assemblyFromSession, trackIdsFromSession } from './session.ts'
 import { sessionOverflowInPage } from './sessionOverflow.ts'
-import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
+import { PUBLIC_INSTANCE, assertSessionStandsAlone, jbrowseUrl } from './url.ts'
 
 import type { ReadyOptions, ReadyReport } from './ready.ts'
 import type { JBrowseUrlOptions } from './url.ts'
@@ -69,15 +70,17 @@ export async function openJBrowse(
     onConsole,
     timeout = DEFAULT_TIMEOUT,
     trackIds,
-    ...urlOptions
+    ...given
   } = options
+  assertSessionStandsAlone(given)
+  await assertSupportedInstance(given.instance ?? PUBLIC_INSTANCE)
+  const urlOptions = await resolveAgainstConfig(given)
   // a named session keeps the header free of the timestamp an unnamed one gets,
   // which otherwise differs on every capture of the same view
   const url = jbrowseUrl({
     ...urlOptions,
     sessionName: urlOptions.sessionName ?? 'Screenshot',
   })
-  await assertSupportedInstance(urlOptions.instance ?? PUBLIC_INSTANCE)
   const browser = await puppeteer.launch({
     headless,
     executablePath,

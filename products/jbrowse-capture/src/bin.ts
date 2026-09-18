@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 
 import { parseArgs } from './args.ts'
 import { captureJBrowse } from './capture.ts'
+import { resolveAgainstConfig } from './catalog.ts'
 import { listHubTracks } from './hub.ts'
 import { describePendingDisplays } from './sessionGate.ts'
 import { jbrowseUrl } from './url.ts'
@@ -25,7 +26,10 @@ WHAT TO SHOW
                         for a discontinuous view. On a config with a text index —
                         every UCSC assembly on genomes.jbrowse.org has one — a
                         gene name such as BRCA1 also works.
-  --track <trackId>     a track to open; repeat for several
+  --track <trackId>     a track to open; repeat for several. The trackId, the id
+                        without its assembly prefix (clinvarMain for
+                        hg38-clinvarMain) or the display name, checked against
+                        the config before launching, with suggestions on a miss
   --session <json|path> a full session spec, for several views or per-display
                         settings. Not combinable with --assembly/--loc/--track.
   --instance <url>      JBrowse Web deployment to drive
@@ -138,7 +142,7 @@ async function main() {
     return
   }
   if (first === 'url') {
-    console.log(jbrowseUrl(urlOptions(args)))
+    console.log(jbrowseUrl(await resolveAgainstConfig(urlOptions(args))))
     return
   }
   if (!args.out) {
