@@ -44,10 +44,11 @@ const MIXED_SV_TYPE = 'MIXED'
 
 // Canonical SV-type buckets in legend order, with their predefined colors and
 // human-readable labels. Colors are `set1` entries — the palette unrecognized
-// tokens draw from — except insertion's and copy number's. Set1's purple sat
-// beside insertion's, and its pink beside the magenta a het insertion shades
-// to, so copy number takes teal. Any type not listed here gets an
-// auto-assigned palette color and shows its raw token as the label.
+// tokens draw from — except insertion's and copy number's. Copy number takes a
+// dark brown: set1's purple sits beside insertion's, its pink beside the
+// magenta a het insertion shades to, and teal beside the green an
+// auto-assigned CPX takes. Any type not listed here gets an auto-assigned
+// palette color and shows its raw token as the label.
 export const PREDEFINED_SV_TYPES = [
   { type: 'DEL', label: 'Deletion', color: '#e41a1c' },
   { type: 'DUP', label: 'Duplication', color: '#377eb8' },
@@ -55,7 +56,7 @@ export const PREDEFINED_SV_TYPES = [
   // display and this one
   { type: 'INS', label: 'Insertion', color: '#800080' },
   { type: 'INV', label: 'Inversion', color: '#ff7f00' },
-  { type: 'CNV', label: 'Copy number', color: '#1b9e77' },
+  { type: 'CNV', label: 'Copy number', color: '#5c3a1e' },
   { type: 'BND', label: 'Breakend', color: '#a65628' },
   { type: MIXED_SV_TYPE, label: 'Mixed', color: '#999999' },
 ] as const
