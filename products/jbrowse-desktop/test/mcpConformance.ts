@@ -545,14 +545,20 @@ try {
   const pngHeight = (data: string | undefined) =>
     data === undefined ? 0 : Buffer.from(data, 'base64').readUInt32BE(20)
   const innerHeight = (await run('return window.innerHeight')).value as number
+  // taller than the window, so a capture of the viewport cannot pass: the app
+  // scrolls a column rather than the document, and a fullPage that measured the
+  // document came back the window's height and passed a `>=` check anyway
+  await run(
+    'session.views[0].tracks[0].displays[0].setHeight(window.innerHeight * 2); await jb.waitReady()',
+  )
   const whole = await client.callAll('screenshot', { fullPage: true })
   const wholeImage = whole.find(c => c.type === 'image')
   const wholeText = JSON.parse(whole.find(c => c.type === 'text')?.text ?? '{}')
   check(
-    'a fullPage screenshot captures the laid-out document and says how big it is',
+    'a fullPage screenshot captures a session taller than the window',
     wholeImage !== undefined &&
-      pngHeight(wholeImage.data) >= pngHeight(shotImage?.data) &&
-      wholeText.page?.height >= innerHeight,
+      pngHeight(wholeImage.data) > innerHeight * 2 &&
+      wholeText.page?.height > innerHeight * 2,
     { viewportCss: innerHeight, page: wholeText.page },
   )
   const wholeCropped = await client.callAll('screenshot', {

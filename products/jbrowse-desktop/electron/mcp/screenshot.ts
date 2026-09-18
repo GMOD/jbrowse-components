@@ -142,14 +142,17 @@ interface CapturedImage {
 }
 
 // capturePage sees the viewport and nothing past it, and a session taller than
-// the window is the common case in every filmed take. The devtools protocol
-// captures the laid-out document instead, by widening the viewport for the one
-// frame — the same thing puppeteer's fullPage does.
+// the window is the common case in every filmed take. The document is no help:
+// a column inside the app scrolls, so the document is always the window's
+// height. So the viewport grows by `grow`, the session's own overflow as the
+// settle measured it, for the one capture, and the app settles again at that
+// size before the shot.
 async function captureFullPage(
   contents: BrowserWindow['webContents'],
   args: Record<string, unknown>,
   scale: number,
   relay: Relay,
+  grow: number,
 ): Promise<CapturedImage | { error: string }> {
   const dbg = contents.debugger
   // DevTools is the attacher `screenshot` checks for by name, because it is the
@@ -163,7 +166,26 @@ async function captureFullPage(
       error: `fullPage needs the devtools protocol and something else is holding it (${e instanceof Error ? e.message : String(e)}) — close DevTools, or screenshot the viewport instead`,
     }
   }
+  let grown = false
   try {
+    if (grow > 0) {
+      const { cssLayoutViewport } = (await dbg.sendCommand(
+        'Page.getLayoutMetrics',
+      )) as { cssLayoutViewport: { clientWidth: number; clientHeight: number } }
+      await dbg.sendCommand('Emulation.setDeviceMetricsOverride', {
+        width: cssLayoutViewport.clientWidth,
+        height: cssLayoutViewport.clientHeight + grow,
+        deviceScaleFactor: 0,
+        mobile: false,
+      })
+      grown = true
+      await relay(
+        'wait_ready',
+        { timeoutMs: SCREENSHOT_WAIT_MS },
+        relayBudget(SCREENSHOT_WAIT_MS),
+      )
+      await relay('paint', {}, PAINT_WAIT_MS)
+    }
     const metrics = (await dbg.sendCommand('Page.getLayoutMetrics')) as {
       cssContentSize?: { width: number; height: number }
       contentSize: { width: number; height: number }
@@ -186,8 +208,25 @@ async function captureFullPage(
       data: atScale(Buffer.from(shot.data, 'base64'), clip.width, scale),
     }
   } finally {
+    if (grown) {
+      await dbg.sendCommand('Emulation.clearDeviceMetricsOverride')
+    }
     dbg.detach()
   }
+}
+
+/**
+ * How far the session runs below the window, in CSS pixels, from the
+ * `offscreen` report the settle carries. Zero when the settle reported none.
+ */
+export function overflowOf(settled: BridgeToolResult) {
+  const { offscreen } = resultFields(settled.result) as {
+    offscreen?: { pageHeight?: number; windowHeight?: number }
+  }
+  return Math.max(
+    0,
+    Math.ceil((offscreen?.pageHeight ?? 0) - (offscreen?.windowHeight ?? 0)),
+  )
 }
 
 export function createScreenshotTool({
@@ -255,7 +294,9 @@ export function createScreenshotTool({
     try {
       painted = await relay('paint', {}, PAINT_WAIT_MS)
       captured = fullPage
-        ? await takeTurn(() => captureFullPage(contents, args, scale, relay))
+        ? await takeTurn(() =>
+            captureFullPage(contents, args, scale, relay, overflowOf(settled)),
+          )
         : {
             rect: crop.rect,
             data: atScale(

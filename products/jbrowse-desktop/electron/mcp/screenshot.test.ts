@@ -11,6 +11,7 @@ import {
   documentRect,
   isMeasured,
   isRect,
+  overflowOf,
   pngSize,
   requestedScale,
 } from './screenshot.ts'
@@ -99,5 +100,19 @@ describe('pngSize', () => {
     png.writeUInt32BE(1234, 16)
     png.writeUInt32BE(567, 20)
     expect(pngSize(png)).toEqual({ width: 1234, height: 567 })
+  })
+})
+
+describe('overflowOf', () => {
+  it('is how far the settle measured the session past the window', () => {
+    expect(
+      overflowOf({
+        result: { offscreen: { pageHeight: 1186.4, windowHeight: 1000 } },
+      }),
+    ).toBe(187)
+  })
+  it('is zero when the settle reported no overflow', () => {
+    expect(overflowOf({ result: { settled: true } })).toBe(0)
+    expect(overflowOf({ error: 'timed out' })).toBe(0)
   })
 })
