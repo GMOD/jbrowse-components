@@ -49,7 +49,7 @@
     "@jbrowse/react-app2": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
     "canvas": "^3.2.3",
-    "jsdom": "^30.0.1",
+    "jsdom": "^30.1.0",
     "mobx": "^7.0.3",
     "mobx-react": "^10.0.2",
     "react": "^19.3.0",

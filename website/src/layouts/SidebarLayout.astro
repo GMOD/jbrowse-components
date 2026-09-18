@@ -65,11 +65,11 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     border-right: 1px solid var(--color-border);
     overflow-y: auto;
     /* No top padding: a `position: sticky` child (the docs filter box) is
-       clamped to its containing block, which is this element's *content* box,
-       so any padding here becomes a strip the child pins below and scrolled
-       rows show through. The first child carries the gap as a margin instead —
-       a margin doesn't move the containing-block edge, so the child still pins
-       flush with the top of the scrollport. */
+           clamped to its containing block, which is this element's *content* box,
+           so any padding here becomes a strip the child pins below and scrolled
+           rows show through. The first child carries the gap as a margin instead —
+           a margin doesn't move the containing-block edge, so the child still pins
+           flush with the top of the scrollport. */
     padding: 0 0 1rem;
     position: sticky;
     top: var(--nav-height);
@@ -98,8 +98,8 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     border-radius: 3px;
     transition: background 0.15s;
     /* Hanging indent, so the few labels long enough to wrap don't read as two
-       entries. The negative indent pulls the first line back to the 12px the
-       shorthand above sets. */
+           entries. The negative indent pulls the first line back to the 12px the
+           shorthand above sets. */
     padding-left: calc(12px + 1em);
     text-indent: -1em;
   }
@@ -183,8 +183,8 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     font-weight: inherit;
     border-radius: 0;
     /* Cancel the hanging indent every other sidebar link carries: here the row's
-       first line starts after the caret, and a -1em pull puts the label on top
-       of it — which reads as the category having lost its disclosure arrow. */
+           first line starts after the caret, and a -1em pull puts the label on top
+           of it — which reads as the category having lost its disclosure arrow. */
     text-indent: 0;
   }
   .sidebar :global(summary > .summary-link:hover) {
