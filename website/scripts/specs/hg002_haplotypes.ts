@@ -415,7 +415,6 @@ const CAPTURE = {
   viewportWidth: 1400,
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 120000,
-  settleMs: 10000,
 } satisfies Partial<ScreenshotSpec>
 
 // One haplotype per axis, in one place. The same two strings are the axes'
@@ -486,7 +485,6 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     // dropdowns are what has to have populated
     readySelector: '[data-testid="import-form"]',
     readyTimeout: 120000,
-    settleMs: 3000,
     viewportWidth: 950,
     // Measured back from the run's below-the-fold report every time the form's
     // own height moved: 505 until each axis took its own row and the chromosome
@@ -569,7 +567,6 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     // spread. Same remote chain read, so the same generous timeout.
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
     // Not 1400 like the two frames below: the view's height is fixed
     // (defaultHeight, and a session spec has no way to set it), so width is the
     // only aspect control there is and 1400 gives a plot twice as wide as it is

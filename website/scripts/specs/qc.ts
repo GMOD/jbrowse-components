@@ -376,7 +376,6 @@ export const qcSpecs: ScreenshotSpec[] = [
     hideSelectors: HIDE_ISOFORM_CHIP,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 600000,
-    settleMs: 30000,
     // WHY THE LOCUS IS WORTH THE TROUBLE (review: "put red text annotation that
     // the genes there are medically relevant"). Every lane in both frames says
     // the same thing about mappability, and none of them says why anyone would
@@ -577,7 +576,6 @@ export const qcSpecs: ScreenshotSpec[] = [
     hideSelectors: HIDE_ISOFORM_CHIP,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 600000,
-    settleMs: 30000,
     annotations: [
       {
         type: 'text',
@@ -766,7 +764,6 @@ export const qcSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 180000,
-    settleMs: 15000,
     // ANCHORED to the ribbon band, which this used to say was impossible: the
     // band is not a track, so annotationOverlay's model path (which resolves an
     // LGV's trackRefs) cannot reach it, and the caption was fixed css

@@ -360,7 +360,6 @@ const TNNT3_FRAME = {
   viewportHeight: 520,
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 120000,
-  settleMs: 12000,
 }
 
 // The two files one MCScan run writes, each drawn on its own and stacked into
@@ -417,7 +416,6 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
-    settleMs: 8000,
     // two collapsed scalebar rows around one 260px band
     viewportHeight: 445,
     annotations: [
@@ -667,7 +665,6 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
     url,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
   }
   return [
     {
@@ -834,7 +831,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 424,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 12000,
     annotations: [
       {
         type: 'text',
@@ -868,7 +864,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 691,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
-    settleMs: 12000,
   },
   // synteny_te_vapb_sva was here and is DELETED (review: "not very interesting,
   // delete"). It was a third drawing of one claim: an SVA_F in a VAPB intron,
@@ -888,7 +883,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 667,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
-    settleMs: 12000,
   },
 
   {
@@ -931,7 +925,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 60000,
-    settleMs: 8000,
   },
 
   {
@@ -964,7 +957,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
-    settleMs: 10000,
   },
 
   // Multi-way synteny demos: grape_peach_cacao for the multiway_synteny.md
@@ -1023,7 +1015,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
   },
 
   // Gene-level ortholog zoom: drill into a ~75 kb window of the conserved
@@ -1112,7 +1103,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 12000,
     // THE RIBBONS ARE ACCURATE AND THE "DOUBLING" IS THE FINDING (reviewer: "i
     // think previously this had less 'doubling' of ribbons. please check that
     // the new ribbons are accurate. not sure if it is due to isoforms").
@@ -1208,7 +1198,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     viewportHeight: 478,
   },
 
@@ -1271,7 +1260,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // models that fill the lanes
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     viewportHeight: 680,
   },
 
@@ -1285,7 +1273,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/lgv_track_clicked',
-    settleMs: 12000,
     url: LGV_TRACK_ZOOM_SESSION,
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
@@ -1355,7 +1342,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     // the graph read is a chain of range requests against two hosted files
     readyTimeout: 240000,
-    settleMs: 15000,
     viewportHeight: 860,
   },
 
@@ -1403,7 +1389,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     viewportHeight: 700,
     annotations: [
       {
@@ -1457,7 +1442,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     viewportHeight: 660,
   },
 
@@ -1505,7 +1489,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     viewportHeight: 660,
   },
 
@@ -1551,7 +1534,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     viewportHeight: 660,
   },
 
@@ -1587,7 +1569,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 180000,
-    settleMs: 15000,
     viewportHeight: 820,
   },
 
@@ -1623,7 +1604,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 180000,
-    settleMs: 15000,
     viewportHeight: 860,
   },
 
@@ -1662,7 +1642,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
     viewportHeight: 600,
     annotations: [
       {
@@ -1707,7 +1686,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    settleMs: 20000,
     viewportHeight: 1340,
   },
 
@@ -1741,7 +1719,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    settleMs: 20000,
     viewportHeight: 1340,
   },
 
@@ -1777,7 +1754,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    settleMs: 20000,
     viewportHeight: 1000,
   },
 
@@ -1811,7 +1787,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    settleMs: 20000,
     viewportHeight: 1000,
   },
 
@@ -1846,7 +1821,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    settleMs: 20000,
     viewportHeight: 1000,
   },
 
@@ -1863,7 +1837,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: GRASSES_RICE_LANES,
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     viewportHeight: 660,
   },
 
@@ -1948,7 +1921,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 300000,
-    settleMs: 15000,
     // 1000 left 233 css px of blank under the plot, per the run's own report
     viewportHeight: 767,
     // Narrower than the 1400 default, and it is the CELLS this is for: the
@@ -2062,7 +2034,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 300000,
-    settleMs: 15000,
     viewportHeight: 767,
     // square-ish cells, same reason as the wheat plot above
     viewportWidth: 900,
@@ -2204,7 +2175,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
     ),
     readyTimeout: 300000,
-    settleMs: 12000,
     // 640 left 60 css px of blank under the bottom row, per the run's report
     viewportHeight: 580,
     // WHAT THE COLOUR MEANS, on the drawing (reviewer: "add red text box
@@ -2364,7 +2334,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
     viewportHeight: 1000,
     // The one published result this stack is evidence for, named on the band
     // that shows it (reviewer: "add a small number (1-2) red box text
@@ -2436,7 +2405,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
     viewportHeight: 1000,
   },
 
@@ -2487,7 +2455,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
     viewportHeight: 1000,
   },
 
@@ -2562,7 +2529,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
     // five collapsed scalebar rows and four 180px bands
     viewportHeight: 1000,
   },
@@ -2723,7 +2689,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 12000,
   },
 
   // orthofinder_synteny.md: wheat's own polyploidy/domestication history, not
@@ -2795,7 +2760,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // (`synteny_canvas_done`), so this only raises the ceiling; it does not
     // sleep, and a render that never completes still fails, just later.
     readyTimeout: 300000,
-    settleMs: 15000,
     // six collapsed scalebar rows and five 170px bands. 1120 cut the bottom
     // row's scalebar in half, which is the row that names timopheevii's
     // sequences; 1165 cleared it but left a dead strip under the frame.
@@ -2936,7 +2900,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
     // two collapsed scalebar rows and one 430px band
     viewportHeight: 640,
     // NAMING THE TWO BLOCKS ON THE FIGURE (reviewer: "add red box text
@@ -2996,7 +2959,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: ECOLI_AVA_STACK_HEIGHT,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
   },
 
   // The "Add gene tracks" payoff for allvsall_synteny.md: what a ribbon gap
@@ -3078,7 +3040,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 560,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
     // Point out the stx2 island (the reviewer's ask). The box and arrow ANCHOR
     // to the stx2B gene's own label text, so they track the actual gene at
     // capture time instead of hand-tuned pixels landing on a neighbor.
@@ -3254,7 +3215,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // setting now and stopped existing; graph.ts states the whole trap.
     readySelector: `body:has(${GRAPH_DRAWN}) ${displayPainted('pileup-display')}`,
     readyTimeout: 120000,
-    settleMs: 12000,
     // name the island, since "three lanes stop here" is only interesting once
     // the reader knows what stops. One line; the rest is in the caption.
     annotations: [
@@ -3420,7 +3380,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 890,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
   },
 
   // The Linear synteny view import form for the allvsall_synteny.md "From the
@@ -3443,7 +3402,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readyText: 'Select a view to launch',
     readyTimeout: 60000,
-    settleMs: 1000,
     // Quick start is a short form (a select, the rows it implies, Launch), so
     // this is sized to the form rather than the taller manual row stack
     viewportHeight: 356,
@@ -3566,7 +3524,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
-    settleMs: 10000,
     // just the app, and enough for the lower panel's own synteny row: the old
     // capture left the bottom ~28% of the PNG blank
     viewportHeight: 640,
@@ -3604,7 +3561,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 60000,
-    settleMs: 8000,
   },
 
   // mcscan_synteny.md's own thesis, which had no figure: an anchor is a gene
@@ -3680,7 +3636,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
-    settleMs: 8000,
     // two 70px gene lanes, their scalebars and a 220px band; 560 cut 53px off
     // the bottom, which is the peach gene lane the figure is half about
     viewportHeight: 616,
@@ -3718,7 +3673,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // 2bit genomes + S3 PIF make that whole-genome fetch slow, so allow
     // generous headroom.
     readyTimeout: 180000,
-    settleMs: 15000,
   },
 
   // hg38 vs T2T-CHM13 at TNNT3, reproducing the genomes.jbrowse.org/demos/
@@ -3919,7 +3873,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('pileup-display'),
     // the UCSC hub config is ~570 tracks and pulls three remote plugins
     readyTimeout: 120000,
-    settleMs: 10000,
     stages: [
       {
         // taller than the other three: the Launch cascade opens below the
@@ -4136,7 +4089,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1800,
     viewportHeight: 820,
-    settleMs: 60000,
     annotations: [
       {
         type: 'text',
@@ -4172,7 +4124,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // this figure is about picking the two assemblies, which is Manual
     readyText: 'Quick start',
     readyTimeout: 60000,
-    settleMs: 3000,
     viewportWidth: 1500,
     // tall enough to include the optional synteny-track row below the assembly
     // selectors and the full wrapped helper text — 400 clipped the card's bottom
@@ -4386,7 +4337,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 806,
     // giant remote assembly PAF; synteny_canvas_done can exceed 90s, so settle
     // long rather than gate on it
-    settleMs: 45000,
   },
 
   // H. pylori synteny tutorial (synteny_visualization.md) — live hpylori demo
@@ -4406,7 +4356,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // Manual rather than capture a mode the surrounding prose doesn't describe
     readyText: 'Quick start',
     readyTimeout: 60000,
-    settleMs: 3000,
     actions: [
       { type: 'click', text: 'Manual' },
       { type: 'waitForText', text: 'Select assemblies for dotplot view' },
@@ -4434,7 +4383,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    settleMs: 18000,
   },
 
   {
@@ -4444,7 +4392,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: hpyloriSyntenyWithGenes(),
     readyText: 'NC_018939.1',
     readyTimeout: 60000,
-    settleMs: 12000,
   },
 
   // The "Coloring genes by ortholog" section of synteny_visualization.md: the
@@ -4477,7 +4424,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NC_018939.1',
     readyTimeout: 60000,
-    settleMs: 12000,
     // the default 800 clips the bottom strain's gene labels
     viewportHeight: 822,
     // half of a side-by-side pair — see color_by_attribute_steps
@@ -4503,7 +4449,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: hpyloriSyntenyWithGenes(),
     readyText: 'NC_018939.1',
     readyTimeout: 60000,
-    settleMs: 8000,
     // the dialog is what the frame is for, and it opens centred over a stack
     // whose lower half is the other two strains
     viewportHeight: 822,
@@ -4597,7 +4542,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // canvas reporting an empty draw
     readySelector: '[aria-label*="synteny warning"]',
     readyTimeout: 120000,
-    settleMs: 6000,
     // an empty band is the point here, so the shoot-time settled check has to
     // allow a view with nothing drawn in it
     allowUnsettled: true,
@@ -4624,7 +4568,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: sessionSpec(VOLVOX, { views: [] }),
     readyText: 'Select a view to launch',
     viewportWidth: 900,
-    settleMs: 2000,
     // slightly shorter crop for both frames
     crop: { x: 0, y: 0, width: 900, height: 460 },
     stages: [
@@ -4682,7 +4625,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 60000,
-    settleMs: 5000,
     actions: [
       // small rubberband-drag over a single diagonal block in the lower-left
       // (a focused subsection, not the whole region — reviewer; ~75% of the
@@ -4762,7 +4704,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('dotplot_webgl_canvas'),
     // 21 MB PIF plus the hs1 chrom.sizes, both remote
     readyTimeout: 180000,
-    settleMs: 10000,
     // THE TWO STRUCTURES, BOXED (reviewer: "this is kind of chaotic, we might
     // need to cross reference paper ... is the liftover even accurately
     // representing this"). The caption already named both, but a reader has to
@@ -4857,7 +4798,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // longer exists, so this spec could not have regenerated
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 180000,
-    settleMs: 10000,
     annotations: [
       // Which crossing the lower part opens. A dotplot anchor is a locstring
       // per axis, so this follows the plot rather than a measured pixel.
@@ -4962,7 +4902,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     // 21 MB PIF plus the hs1 chrom.sizes, both remote
     readyTimeout: 180000,
-    settleMs: 10000,
     // WHAT THE TWO COLOURS ARE, and nothing else (review: "reduce wordiness.
     // just say, palindrome, is a full match (red) and inverted match (blue)").
     // It was four lines answering an older round's "is this an alignment
@@ -5030,7 +4969,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 90000,
-    settleMs: 10000,
   },
   ...launchMenuStills(),
 ]
@@ -5274,7 +5212,6 @@ function launchMenuStills(): ScreenshotSpec[] {
       url: ECOLI_ONE_VS_ALL_LANES,
       readySelector: displayPainted('pileup-display'),
       readyTimeout: 120000,
-      settleMs: 8000,
       viewportHeight: 440,
       hideTooltip: true,
       actions: [
@@ -5327,7 +5264,6 @@ function launchMenuStills(): ScreenshotSpec[] {
       ),
       readySelector: displaySettled('multiway-synteny-display'),
       readyTimeout: 120000,
-      settleMs: 12000,
       viewportHeight: 520,
       hideTooltip: true,
       actions: [
@@ -5349,7 +5285,6 @@ function launchMenuStills(): ScreenshotSpec[] {
       url: ECOLI_MAF_ROWS,
       readySelector: displayPainted('maf-display'),
       readyTimeout: 180000,
-      settleMs: 8000,
       viewportHeight: 560,
       hideTooltip: true,
       actions: [

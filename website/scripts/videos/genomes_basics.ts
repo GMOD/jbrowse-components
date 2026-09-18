@@ -69,7 +69,6 @@ export const genomesBasicsVideos: VideoSpec[] = [
     // the slowest host anything on this page touches.
     readySelector: displayReady(`${gnomadTrackId}-LinearBasicDisplay`),
     readyTimeout: 240000,
-    settleMs: 12000,
     steps: [
       // The camera parks the pointer at the top middle of the frame, which on a
       // full-width LGV is the overview's cytoband strip, and the view writes
@@ -155,7 +154,6 @@ export const genomesBasicsVideos: VideoSpec[] = [
     viewportHeight: 520,
     readySelector: displayReady('hg38-ncbiRefSeq-LinearBasicDisplay'),
     readyTimeout: 180000,
-    settleMs: 10000,
     steps: [
       { type: 'hover', selector: WORDMARK, hold: 0 },
       // One gene track, which is what the section before this one leaves on

@@ -45,7 +45,6 @@ export const proteinVideos: VideoSpec[] = [
     // once the loading overlay clears and the tracks may still be fetching. The
     // first take that raced it right-clicked a gene lane that had not drawn and
     // failed on the launcher that never appeared.
-    settleMs: 12000,
     steps: [
       // What the settle above cannot assert, asserted POSITIVELY: the gene the
       // tour right-clicks has drawn its label. It used to wait for no lane to

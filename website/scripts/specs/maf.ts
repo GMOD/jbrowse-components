@@ -328,7 +328,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 716,
-    settleMs: 18000,
     hideTooltip: true,
     // park the cursor in the nav bar so no coverage-band hover tooltip lingers
     // over the capture
@@ -383,7 +382,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     // it had been spelled `heightOverride`, a dead key silently dropped, so the
     // display was capturing at its fit-to-content height rather than at 470.
     viewportHeight: 810,
-    settleMs: 12000,
     actions: [
       // an ORANGE cell in a non-reference row. The hover used to land on the
       // ce11 row, which is the reference: its tooltip necessarily reads
@@ -451,7 +449,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // taller frame so all 26 compact rows + the grow-mode gene lane sit inside
     viewportHeight: 716,
-    settleMs: 12000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
@@ -522,7 +519,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportHeight: 940,
     // all ~470 species over remote UCSC data — long settle so the heatmap is
     // fully painted and the loading indicator has cleared before capture
-    settleMs: 35000,
     hideTooltip: true,
     actions: [{ type: 'delay', ms: 2000 }],
   },
@@ -604,7 +600,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     // it had been spelled `heightOverride`, a dead key silently dropped, so the
     // display had been taller than the 460 the spec asked for.
     viewportHeight: 765,
-    settleMs: 18000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
@@ -686,7 +681,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     // sized off the run's own CLIPPED/blank report, not off the PNG: 800 was
     // right for the 460px display, and the display is 380 now.
     viewportHeight: 720,
-    settleMs: 18000,
     hideTooltip: true,
     annotations: [
       {

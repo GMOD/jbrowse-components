@@ -102,7 +102,6 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
-    settleMs: 6000,
     viewportHeight: 460,
   },
 
@@ -175,7 +174,6 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'RepeatMasker',
     readyTimeout: 60000,
-    settleMs: 6000,
     // narrower too, which also brings the legend in off the right edge
     viewportWidth: 1200,
     viewportHeight: 465,
@@ -232,7 +230,6 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'RepeatMasker',
     readyTimeout: 60000,
-    settleMs: 6000,
     viewportWidth: 1200,
     viewportHeight: 465,
   },
@@ -308,7 +305,6 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
-    settleMs: 8000,
     // 840 clipped 15 css px off the last trace once the gene track grew
     viewportHeight: 860,
   },

@@ -55,9 +55,7 @@ const glyph = {
 
 // Both figures gate on the gene lane having actually painted rather than on the
 // liver track's NAME appearing, which is in the DOM as soon as the track opens
-// and says nothing about the three canvases under it. Neither spec carried a
-// settleMs either, so the capture's only protection was the run's own
-// paint check.
+// and says nothing about the three canvases under it.
 const DTU_READY = displayReady('feature-display')
 
 export const dtuSpecs: ScreenshotSpec[] = [
@@ -91,7 +89,6 @@ export const dtuSpecs: ScreenshotSpec[] = [
       tracks: [coverage('muscle_plus'), coverage('liver_plus'), glyph],
     }),
     readySelector: DTU_READY,
-    settleMs: 4000,
     viewportHeight: 730,
     annotations: [
       {

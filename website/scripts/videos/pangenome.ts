@@ -361,7 +361,6 @@ export const pangenomeVideos: VideoSpec[] = [
     // exist yet.
     readySelector: K12_GENES_READY,
     readyTimeout: 120000,
-    settleMs: 3000,
     steps: [
       ...addGraphTrackSteps(PGGB_SEGMENTS_TRACK_JSON),
       {
@@ -415,7 +414,6 @@ export const pangenomeVideos: VideoSpec[] = [
     viewportHeight: 1110,
     readySelector: K12_GENES_READY,
     readyTimeout: 120000,
-    settleMs: 3000,
     steps: [
       ...addGraphTrackSteps(cactusVideoFixtures.segmentsTrackJson),
       {
@@ -476,7 +474,6 @@ export const pangenomeVideos: VideoSpec[] = [
     // Long, because the opening frame has to have SETTLED INTO its banner: the
     // segments lane measures the fetch it is refusing, and a shorter settle
     // films an empty lane that fills with a warning a second later.
-    settleMs: 9000,
     steps: [
       // the pointer off the overview's cytoband strip, where the camera parks it
       { type: 'hover', selector: '[aria-label="JBrowse"]' },
@@ -549,7 +546,6 @@ export const pangenomeVideos: VideoSpec[] = [
     viewportHeight: 1250,
     readySelector: ROWS_DRAWN,
     readyTimeout: 120000,
-    settleMs: 5000,
     steps: [
       // The pointer off the overview's cytoband strip, where the camera parks
       // it: the view writes the position under the pointer into its own title
@@ -610,7 +606,6 @@ export const pangenomeVideos: VideoSpec[] = [
     viewportHeight: 1120,
     readySelector: GENES_READY,
     readyTimeout: 120000,
-    settleMs: 4000,
     steps: [
       ...addGraphTrackSteps(HPRC_SEGMENTS_TRACK_JSON),
       // Submit dismisses the widget itself (finishAddTrack), so the drawer
@@ -702,7 +697,6 @@ export const pangenomeVideos: VideoSpec[] = [
     viewportHeight: 1000,
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
-    settleMs: 8000,
     steps: [
       {
         type: 'rightclick',
@@ -747,7 +741,6 @@ export const pangenomeVideos: VideoSpec[] = [
     viewportHeight: 750,
     readySelector: hprcClusterFixtures.ready,
     readyTimeout: 360000,
-    settleMs: 8000,
     steps: [
       {
         type: 'click',
@@ -797,7 +790,6 @@ export const pangenomeVideos: VideoSpec[] = [
     viewportHeight: 1280,
     readySelector: TOOLBAR_READY,
     readyTimeout: 180000,
-    settleMs: 8000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       {
@@ -867,7 +859,6 @@ export const pangenomeVideos: VideoSpec[] = [
     viewportHeight: 1490,
     readySelector: TOOLBAR_READY,
     readyTimeout: 300000,
-    settleMs: 8000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       {

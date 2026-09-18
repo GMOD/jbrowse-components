@@ -648,7 +648,6 @@ export const ldSpecs: ScreenshotSpec[] = [
     // 42 MB of genotypes across the two lanes, the pooled one on 2504 samples
     readyTimeout: 600000,
     viewportHeight: 1070,
-    settleMs: 8000,
     annotations: [
       {
         type: 'text',
@@ -781,7 +780,6 @@ export const ldSpecs: ScreenshotSpec[] = [
     })}&sessionName=Screenshot`,
     readySelector: displayPainted('wiggle-display'),
     readyTimeout: 120000,
-    settleMs: 8000,
     // 450, not the 390 the lane and its chrome add up to: at 390 the axis was
     // cut off below 0.2 and the noise floor went with it, which is the half of
     // the picture that makes the peak a peak. Neither of the run's own reports
@@ -997,7 +995,6 @@ export const ldSpecs: ScreenshotSpec[] = [
     // under that callout. Worth doing only together with re-anchoring both
     // callouts, which is a bigger change than the 100 px it returns.
     viewportHeight: 1395,
-    settleMs: 8000,
     // One box per population around its LD panel and karyotype lane, so the
     // label says which pair of tracks it covers (review: "reduce the red text
     // boxes to the bare minimum"). The box's lower edge also sits under Gabon's
@@ -1216,7 +1213,6 @@ export const ldSpecs: ScreenshotSpec[] = [
     // slow half now — the standalone triangle figure allowed 300 s for a wider
     // window
     readyTimeout: 300000,
-    settleMs: 8000,
     // The samples table is the whole 1000 Genomes release and the VCF is the
     // six-population subsample, so the app warns that it dropped the samples it
     // has no rows for, correctly and every time. The toast lands over the

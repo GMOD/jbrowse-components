@@ -923,7 +923,6 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     // reached, so it fetches for longer than the plain cut does
     readyTimeout: 180000,
     allowUnsettled: true,
-    settleMs: 8000,
     // half the composed width each
     viewportWidth: 750,
     // the linear view's two lanes on top of the graph pane the halves used to be
@@ -1037,7 +1036,6 @@ function localSubgraphSpec(): ScreenshotSpec {
     readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
     allowUnsettled: true,
-    settleMs: 8000,
     // full width now that this is one frame rather than half of a `+append`
     viewportWidth: 1000,
     // sized to its own content: the anchored layout has a pinned aspect ratio —
@@ -1274,7 +1272,6 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
     // the pggb cut fetches and lays out two orders of magnitude more nodes
     readyTimeout: 180000,
     allowUnsettled: true,
-    settleMs: 8000,
     // half the composed width each
     viewportWidth: 750,
     // The graph pane caps at 600 px and zoom-to-fit works against that box, so
@@ -1485,7 +1482,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
-    settleMs: 5000,
     viewportWidth: 1000,
     viewportHeight: 620,
     hideTooltip: true,
@@ -1570,7 +1566,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
-    settleMs: 8000,
     viewportWidth: 1100,
     viewportHeight: 1100,
     hideTooltip: true,
@@ -1683,7 +1678,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 120000,
-    settleMs: 5000,
     viewportWidth: 1000,
     viewportHeight: 610,
     hideTooltip: true,
@@ -1766,7 +1760,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readySelector:
       'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
     readyTimeout: 120000,
-    settleMs: 5000,
     viewportWidth: 1000,
     viewportHeight: 840,
     hideTooltip: true,
@@ -1966,7 +1959,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readySelector: `body:has([data-testid="graph-path-legend"]) ${GRAPH_DRAWN}`,
     readyTimeout: 120000,
     allowUnsettled: true,
-    settleMs: 10000,
     viewportWidth: 1000,
     // the force pane runs to its 600px cap here and the five-row legend fits
     // inside it, plus the gene lane and the five MAF rows above; 1130 cut 15
@@ -2056,7 +2048,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
-    settleMs: 4000,
     viewportWidth: 1000,
     viewportHeight: 590,
     hideTooltip: true,
@@ -2244,7 +2235,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
     allowUnsettled: true,
-    settleMs: 8000,
     viewportWidth: 1000,
     // the three strain rows (a gene lane each, and the segments lane on K12),
     // the two ribbon bands and the graph pane, all three shorter than the 1580
@@ -2362,7 +2352,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     }),
     readyText: SEGMENT_LABEL,
     readyTimeout: 90000,
-    settleMs: 3000,
     viewportWidth: 1000,
     // enough for the linear view plus the open context menu, which is the taller
     // of the two states; the launched graph gets its own height on its stage
@@ -2691,7 +2680,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 8000,
     // wider than the 1000 the tighter crop used: 5x more CFT073 in frame at the
     // same 1000 px would have cost the gene lane its labels, which the caption
     // reads the cluster's names out of
@@ -2758,7 +2746,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     url: LAUNCH_OUT_URL,
     readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
-    settleMs: 3000,
     viewportWidth: 1000,
     viewportHeight: 360,
     hideTooltip: true,
@@ -2921,7 +2908,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
-    settleMs: 3000,
     viewportWidth: 1000,
     // the taller frame, which is the force drawing plus its cascade
     viewportHeight: 820,

@@ -132,7 +132,6 @@ export const epigenomicsVideos: VideoSpec[] = [
     viewportHeight: 848,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
-    settleMs: 20000,
     steps: [
       // The camera opens with the pointer at the top middle of the frame, which
       // in this layout is the overview ruler — and an LGV writes the position
@@ -196,7 +195,6 @@ export const epigenomicsVideos: VideoSpec[] = [
     viewportHeight: 890,
     readySelector: MULTIROW_READY,
     readyTimeout: 300000,
-    settleMs: 8000,
     steps: [
       // The unclustered stack, held. This is the before, and a reader who has
       // just scrolled past the clustered figure needs a moment to see that this

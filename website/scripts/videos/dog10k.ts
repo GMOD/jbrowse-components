@@ -50,7 +50,6 @@ export const dog10kVideos: VideoSpec[] = [
     viewportHeight: 960,
     readySelector: displaySettled('variant-matrix-display'),
     readyTimeout: 180000,
-    settleMs: 5000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // Two seconds on the opening state before anything is clicked. The whole

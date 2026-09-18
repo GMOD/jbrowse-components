@@ -57,7 +57,6 @@ function flySynteny(
 const SYNTENY_FRAME = {
   readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 120000,
-  settleMs: 8000,
   viewportWidth: 1400,
   // 620 cut 41 css px off the mauritiana gene row, per the run's own CONTENT
   // CLIPPED report
@@ -107,7 +106,6 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 120000,
-    settleMs: 20000,
     viewportWidth: 1000,
     viewportHeight: 900,
   },

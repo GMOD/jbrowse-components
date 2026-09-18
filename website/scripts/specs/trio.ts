@@ -247,7 +247,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 60000,
-    settleMs: 12000,
   },
 
   // Multi-sample variant display (matrix view), with the track menu open on the
@@ -267,7 +266,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 60000,
-    settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       ...menuCascade([
@@ -300,7 +298,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 60000,
-    settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       ...menuCascade(['Rendering mode', 'Phased']),
@@ -328,7 +325,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 60000,
-    settleMs: 12000,
   },
 
   // hap-ibd haplotype blocks painted with LinearMultiRowFeatureDisplay: a row
@@ -359,7 +355,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     // painting is drawn into
     readySelector: '[data-testid="multirow_canvas"]',
     readyTimeout: 60000,
-    settleMs: 3000,
   },
 
   // The hap-ibd painting stacked above the same trio VCF in the phased
@@ -486,7 +481,6 @@ export const trioSpecs: ScreenshotSpec[] = [
       annotations: crossoverHighlights({ loc, crossover, ...highlights }),
       readyText: 'chr1',
       readyTimeout: 60000,
-      settleMs: 28000,
       // sized to the content: the painting carries no color legend, so the
       // default 800 left ~200 px of page background under the variant track
       viewportHeight: 598,

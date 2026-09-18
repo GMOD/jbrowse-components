@@ -108,7 +108,6 @@ const workspace = (
 const gates = {
   readySelector: BOTH_READY,
   readyTimeout: 240000,
-  settleMs: 20000,
   hideTooltip: true,
 } as const
 

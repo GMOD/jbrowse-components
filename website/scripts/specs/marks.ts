@@ -211,7 +211,6 @@ export const marksSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
-    settleMs: 6000,
     viewportHeight: 400,
   },
 
@@ -235,7 +234,6 @@ export const marksSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
-    settleMs: 8000,
     viewportHeight: 370,
   },
 
@@ -248,7 +246,6 @@ export const marksSpecs: ScreenshotSpec[] = [
     url: aluMarksUrl('chr1:150,000,000-153,000,000'),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
-    settleMs: 6000,
     viewportHeight: 370,
     stages: [
       {},
@@ -285,7 +282,6 @@ export const marksSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 150000,
-    settleMs: 12000,
     viewportHeight: 610,
   },
 
@@ -314,7 +310,6 @@ export const marksSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
-    settleMs: 6000,
     viewportHeight: 520,
     hideSelectors: ['.MuiTooltip-popper'],
     hideTooltip: true,
@@ -357,7 +352,6 @@ function aluAgeSpec(
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
-    settleMs: 8000,
     ...extra,
   } as ScreenshotSpec
 }

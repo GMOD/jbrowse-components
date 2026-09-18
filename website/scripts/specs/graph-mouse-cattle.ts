@@ -136,7 +136,6 @@ const dock2Spec: ScreenshotSpec = {
   }),
   readySelector: TOOLBAR_READY,
   readyTimeout: 300000,
-  settleMs: 15000,
   viewportWidth: 1400,
   // The tallest figure in the file, and the run measured it rather than the
   // spec guessing: at 1150 it reported 181 css px of the graph pane below the
@@ -235,7 +234,6 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 300000,
-    settleMs: 15000,
     viewportWidth: 1400,
     // No graph pane and no segments lane (review: "unclear what i'm looking
     // at"): the anchored drawing's rank rows restated the lanes, and what the
@@ -295,7 +293,6 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 300000,
-    settleMs: 15000,
     viewportWidth: 1400,
     viewportHeight: 550,
     hideTooltip: true,

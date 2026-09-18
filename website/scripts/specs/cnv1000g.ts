@@ -182,7 +182,6 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('multi-wiggle-display'),
     readyTimeout: 120000,
     viewportHeight: 830,
-    settleMs: 8000,
   },
 
   // The control. UGT2B17 is a biallelic deletion, and there the two
@@ -235,7 +234,6 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     readySelector: CLUSTERED_READY,
     readyTimeout: 300000,
     viewportHeight: 875,
-    settleMs: 15000,
   },
 
   // The whole panel, not one population: all 2504 individuals over the same
@@ -292,7 +290,6 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     readySelector: CLUSTERED_READY,
     readyTimeout: 300000,
     viewportHeight: 960,
-    settleMs: 10000,
     // 2504 rows floored to 1px: sub-pixel row-boundary jitter between runs
     diffThreshold: 0.02,
     // WHAT THE BLOCK IS (review: "add red text annotation box about what this

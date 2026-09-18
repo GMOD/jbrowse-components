@@ -26,7 +26,6 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
     readyText: 'Whole chromosome',
     viewportWidth: 1100,
     viewportHeight: 975,
-    settleMs: 2000,
     liveLabel: 'Open the HPRC page',
     diffThreshold: 0.02,
     annotations: [
@@ -67,7 +66,6 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
     }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
-    settleMs: 4000,
     viewportHeight: 1310,
     hideTooltip: true,
   },

@@ -571,7 +571,6 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
-    settleMs: 4000,
     // half the composed width each
     viewportWidth: 820,
     viewportHeight,
@@ -1230,7 +1229,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 300000,
-    settleMs: 15000,
     viewportWidth: 1400,
     // No graph pane (review: "the whole chromosome is too busy frankly and
     // linearized view is sortofpointless, we have thelinaergenomeview"). The
@@ -1439,7 +1437,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
     allowUnsettled: true,
-    settleMs: 8000,
     viewportWidth: 1000,
     viewportHeight: 1040,
     hideTooltip: true,
@@ -1594,7 +1591,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
     allowUnsettled: true,
-    settleMs: 8000,
     viewportWidth: 1000,
     // 1580 while the graph half was FMMM, whose drawing is squarer than 11 rows
     // of backbone: the anchored pane came out 238 px shorter. Then 118 shorter
@@ -1748,7 +1744,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     allowUnsettled: true,
-    settleMs: 8000,
     viewportWidth: 1000,
     // the two ribbon bands, the three lanes between them and the bottom row's
     // ruler, plus a gene lane on each haplotype row and 60 px off the lower band
@@ -1954,7 +1949,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     // the graph's own fetch is ~7 s here and the node box is anchored through the
     // view's nodePositions, so a shorter settle can capture before there are any
-    settleMs: 14000,
     // the force layout's "Computing layout" overlay can go up after readiness
     actions: [
       {
@@ -2161,7 +2155,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // the force drawing has no row labels to wait on
     readySelector: TOOLBAR_READY,
     readyTimeout: 180000,
-    settleMs: 6000,
     viewportWidth: 1000,
     // Sized off the run's blank-below-content report. The graph pane is a fixed
     // height, so a shorter frame crops the drawing rather than scaling it.
@@ -2319,7 +2312,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // a CSS OR and fire on whichever landed first.
     readySelector: `body:has(${GRAPH_DRAWN}):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) ${displayPainted('variant-display')}[data-display-phase="ready"]`,
     readyTimeout: 360000,
-    settleMs: 5000,
     viewportWidth: 1000,
     // the gene lane, the segments lane, the 464-row callset, and the graph pane
     // under them — the force drawing is about as tall as it is wide where the
@@ -2406,7 +2398,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     url: hprcHaplotypeSession(420),
     readySelector: TOOLBAR_READY,
     readyTimeout: 180000,
-    settleMs: 8000,
     viewportWidth: 1100,
     // off the run's own below-the-fold report at 1150: the launched pane
     // arrives at its lanes' default heights, which no session pins

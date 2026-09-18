@@ -266,7 +266,6 @@ export interface SessionUrlSpec extends CommonSpecFields {
   readySelector?: string // CSS selector to wait for before settle
   readyTimeout?: number // ms override for the ready wait (default 30000)
   waitUntil?: 'networkidle0' | 'domcontentloaded' // override goto waitUntil
-  settleMs?: number
   actions?: ScreenshotAction[]
 }
 
@@ -301,7 +300,6 @@ export interface EmbeddedSpec extends CommonSpecFields {
   readyText?: string // text to wait for before settle (e.g. a track label)
   readySelector?: string // CSS selector to wait for before settle
   readyTimeout?: number // ms override for the ready wait (default 30000)
-  settleMs?: number
 }
 
 // Stack already-rendered PNGs into one combined figure. Each `parts`

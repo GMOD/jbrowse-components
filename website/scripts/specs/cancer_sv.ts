@@ -464,7 +464,6 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       // under load. The files answer in under half a second, so the ceiling is
       // decode-and-draw, not the fetch. Same fix as orthofinder_synteny/wheat.
       readyTimeout: 300000,
-      settleMs: 15000,
       // Where each half's reads were aligned, on the half itself (reviewer: "if
       // it was shown how this was done, it is ideal e.g. text blurb saying
       // 'reads aligned to the derived contig'"). It has to be on-image rather
@@ -543,7 +542,6 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       }),
       readyText: '32,5',
       readyTimeout: 90000,
-      settleMs: 15000,
       // The other half of the same label, and the one the reviewer asked for by
       // name. Short enough to stay one line: the first version named the tool
       // too ("... (sv_multihop.py derive)") and wrapped to three lines that
@@ -1478,7 +1476,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // 300000 for the same reason as realigned_reads_reference above: this waits
     // on the COLO829 CRAM and failed every CI sweep at 90000.
     readyTimeout: 300000,
-    settleMs: 8000,
     stages: [
       {
         // The record right-clicked by its own floating label, not by a viewport
@@ -1737,7 +1734,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // the view's own chrome
     readyText: 'JunctionReadCount',
     readyTimeout: 60000,
-    settleMs: 15000,
   })),
   // The fourth frame: where a triaged row GOES. Every row of the table above
   // carries the menu that opens it.
@@ -1889,7 +1885,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'K562 PacBio Iso-Seq (ENCODE)',
     readyTimeout: 120000,
-    settleMs: 15000,
     annotations: [
       {
         type: 'text' as const,
@@ -2178,7 +2173,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'K562 copy-number segments (DepMap WGS)',
     readyTimeout: 120000,
-    settleMs: 8000,
     annotations: [
       {
         type: 'text',

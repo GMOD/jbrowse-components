@@ -105,7 +105,6 @@ function readsSpec(
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
-    settleMs: 8000,
     hideSelectors: ['.MuiChip-root'],
     viewportHeight: height + 300,
   }
@@ -152,7 +151,6 @@ export const readMarksSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
-    settleMs: 8000,
     viewportHeight: 470,
     // The tallest bar outside the centromere is the homozygous deletion the
     // tutorial names at 34.2 Mb.

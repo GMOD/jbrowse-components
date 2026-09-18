@@ -587,7 +587,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // the review's "the heatmap is sliced at the bottom edge" was this figure's
     // 900px viewport cutting the last ~60 rows
     viewportHeight: 1120,
-    settleMs: 20000,
     // 1104 rows floored to 1px: sub-pixel row-boundary jitter between runs, so
     // the gate sits above the default
     diffThreshold: 0.02,
@@ -684,7 +683,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     viewportWidth: 1500,
     viewportHeight: 1024,
-    settleMs: 15000,
     diffThreshold: 0.02,
     // Two labels, both about what the coloring cannot say on a white page.
     //
@@ -771,7 +769,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportWidth: 1900,
     // the display plus the view's own chrome (ruler, header, track label)
     viewportHeight: SUBTYPE_ROWS_HEIGHT + 210,
-    settleMs: 10000,
     annotations: [
       // row 1, HER2+ gain: the amplicon that names the subtype. To the RIGHT of
       // its locus, over chr18-22 where this row is flat; chr17 sits far enough
@@ -860,7 +857,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     viewportHeight:
       MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
-    settleMs: 10000,
     // The bands are row ranges with a color strip in the gutter, and the legend
     // is the only thing that says which range is which -- so the figure's whole
     // result (this band, not that one) has to be read off a key in the far

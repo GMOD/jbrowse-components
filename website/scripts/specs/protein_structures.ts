@@ -48,11 +48,10 @@ function tp53Session({
 }
 
 // Both the model state and molstar's raster: the ready test id flips once every
-// structure has its alignment, and settleMs is the paint beat after that.
+// structure has its alignment.
 const READY = {
   readySelector: '[data-testid="protein-view-ready"]',
   readyTimeout: 120000,
-  settleMs: 6000,
   // molstar's background-task toast sits at the bottom of the canvas well after
   // the model reports ready with three structures loading
   hideSelectors: ['.msp-background-tasks'],

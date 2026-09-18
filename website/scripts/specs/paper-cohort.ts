@@ -73,7 +73,6 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     viewportWidth: WIDTH,
     viewportHeight: 820,
-    settleMs: 10000,
     hideTooltip: true,
     actions: [
       {
@@ -121,7 +120,6 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     viewportWidth: WIDTH,
     viewportHeight: 700,
-    settleMs: 10000,
     diffThreshold: 0.02,
   },
   {

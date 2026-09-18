@@ -57,7 +57,6 @@ export const scatacSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 120000,
-    settleMs: 15000,
     // 12 rows plus the gene track. The app is content-sized here, so this is
     // the app's own height and not a crop: raising it only adds page background
     // below the frame, which the run reports as slack.

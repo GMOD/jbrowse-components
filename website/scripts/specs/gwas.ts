@@ -32,7 +32,6 @@ export const gwasSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('manhattan-display'),
     readyTimeout: 90000,
     viewportHeight: 470,
-    settleMs: 12000,
   },
 
   // LocusZoom-style LD r² coloring at the STAT4 locus on hg19 (SLE summary
@@ -68,6 +67,5 @@ export const gwasSpecs: ScreenshotSpec[] = [
     // Manhattan(200) + gene strip(90) + headers/ruler/overview clear the crop
     viewportHeight: 520,
     // settle past the index auto-pick + recolor fetch that follows first paint
-    settleMs: 12000,
   },
 ]

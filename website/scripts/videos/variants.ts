@@ -42,7 +42,6 @@ export const variantVideos: VideoSpec[] = [
     viewportHeight: 620,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
-    settleMs: 12000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The state the page's first figure is of, held: one lane, one box per

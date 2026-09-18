@@ -23,7 +23,6 @@ export const geneDensitySpecs: ScreenshotSpec[] = [
     }),
     readyText: 'RefSeq curated genes',
     readyTimeout: 60000,
-    settleMs: 6000,
   },
   // 10 Mb over 1q21 to 1q23, where the gene fetch fits and the two repeat
   // fetches still do not: features on the first track, bands on the other two.
@@ -37,7 +36,6 @@ export const geneDensitySpecs: ScreenshotSpec[] = [
     }),
     readyText: 'RefSeq curated genes',
     readyTimeout: 60000,
-    settleMs: 6000,
     // three tracks, so the default 800 left 184 css px of blank under them
     viewportHeight: 620,
   },

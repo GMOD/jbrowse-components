@@ -582,7 +582,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // could capture the track before the painting appears
     readySelector: '[data-testid="floating-legend"]',
     readyTimeout: 60000,
-    settleMs: 3000,
     // all 64 haplotype rows plus the color legend, no page background below
     viewportHeight: 905,
     // Row pitch is 700px / 64 rows = 10.94px, and the two bands the pills name
@@ -726,7 +725,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr37',
     readyTimeout: 90000,
-    settleMs: 6000,
     // gene track, the OMIA lane, all 36 sample rows and the genotype legend
     viewportHeight: 1003,
     // What the deletion does, beside the column that carries it. The legend can
@@ -841,7 +839,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr6',
     readyTimeout: 90000,
-    settleMs: 6000,
     // gene track, then the variant track: its lane, all 86 sample rows, the
     // group swatch legend and the genotype legend under it. Both halves stay
     // the same height, since the pair is read across.
@@ -935,7 +932,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr15',
     readyTimeout: 90000,
-    settleMs: 6000,
     viewportHeight: 1323,
     // Same two facts as the AMY2B pill and the same height in the lane, so the
     // pair reads as one figure: what the LOC symbol is, and which way this one
@@ -1029,7 +1025,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('manhattan-display'),
     readyTimeout: 120000,
-    settleMs: 10000,
     // 460, tracking the lane's own 240 (was 600 for 380)
     viewportHeight: 460,
     // Three known body-size loci among the top windows, named. A reader cannot
@@ -1132,7 +1127,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('manhattan-display'),
     readyTimeout: 120000,
-    settleMs: 6000,
     // the gene lane, all 240 px of the score lane, and its bottom border: at 700
     // the lowest windows sat on the frame edge, and 716 was that fixed against a
     // 380 lane
@@ -1276,7 +1270,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr18',
     readyTimeout: 90000,
-    settleMs: 6000,
     // an annotation lane per retrocopy, the gene lane and the 55-row sample block
     // between them, and the two synteny bands. Sized by the generator's
     // below-the-fold check, which still reported 10.5 css px under the fold at
@@ -1439,7 +1432,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr30',
     readyTimeout: 90000,
-    settleMs: 6000,
     // sequence + gene track plus all 39 sample rows and the genotype legend.
     // 870 (pre-sequence-track) cut the last wolf row's block against the frame.
     // The variant lane is a band inside the matrix rather than the separate 60px
@@ -1612,7 +1604,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector:
       'body:has([data-testid="tree_sidebar_dendrogram"]) [data-testid="multirow-row-labels"]',
     readyTimeout: 180000,
-    settleMs: 8000,
     // gene track, the CpG lane, the 380px panel and the 300px collection lane,
     // their headers, and the copy-number key
     viewportHeight: 1140,
@@ -1757,7 +1748,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // on real completion rather than on a duration guess
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
     readyTimeout: 120000,
-    settleMs: 5000,
     // gene track, the Fst lane, the 760px matrix, their headers and the keys
     // 620 rather than 760 on the matrix (reviewer: "you can reduce height of
     // the multi-sample variantdisplay potentially"), which is as far as this

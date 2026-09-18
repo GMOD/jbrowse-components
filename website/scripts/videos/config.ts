@@ -32,7 +32,6 @@ export const configVideos: VideoSpec[] = [
     viewportHeight: 860,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
-    settleMs: 10000,
     steps: [
       // The camera parks the pointer at the top middle of the frame, which on a
       // full-width LGV is the overview ruler, and the view writes whatever is

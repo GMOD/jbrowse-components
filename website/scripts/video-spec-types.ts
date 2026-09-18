@@ -69,7 +69,6 @@ export interface VideoSpec {
   // camera, so the first frame is the app ready rather than the app loading.
   readySelector?: string
   readyTimeout?: number
-  settleMs?: number
   steps: VideoStep[]
   // Seconds into the finished clip to take the <video poster> from. Defaults to
   // the last frame, which is the state the tour ends in.

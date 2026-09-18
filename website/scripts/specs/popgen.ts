@@ -256,7 +256,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     // inversion(40) + fst(240) + 2 track headers + ruler/overview + app bar
     viewportHeight: 560,
-    settleMs: 14000,
   },
 
   // Tajima's D + π at Cyp6g1 (chr2R:12,185,667): the two-part hard-sweep signature
@@ -359,7 +358,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
     // tajd(150) + pi(120) + sites(100) + genes(115) + 4 headers + ruler/overview
     // + app bar. 945 - 135 of track.
     viewportHeight: 810,
-    settleMs: 12000,
     // WHAT THE JOINT DIP MEANS, and what the third lane rules out (review: "try
     // to also add red text annotation explaining significance").
     //
@@ -509,6 +507,5 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readyText: 'In(2L)t genotyped',
     readyTimeout: 120000,
     viewportHeight: 1150,
-    settleMs: 14000,
   },
 ]

@@ -292,7 +292,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readyText: 'MethylDackel',
     // remote CRAM (x3 copies, one adapter) + gene GFF + three bigWigs
     readyTimeout: 90000,
-    settleMs: 20000,
     // genes + the repeat lane + aggregate(3 rows) + 3 compact pileups +
     // headers/ruler/overview
     viewportHeight: 995,
@@ -460,7 +459,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     // was 20000 — the prior capture committed while alignments were still
     // downloading (progress bars baked into the PNG), so give it more room
-    settleMs: 45000,
     // taller so both alignment tracks' full pileup (compact mode still stacks
     // many rows for this depth) fit below the gene + promoter context tracks.
     // 1000 clipped 24 css px off the bottom lane, per the run's own report
@@ -519,7 +517,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     url: snrpnReadsPanel(),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    settleMs: 15000,
     // cpg(40) + gene(90) + reads(320) + chrome
     viewportHeight: 730,
     // the track menu icon keeps its "Track settings" tooltip after the click,
@@ -547,7 +544,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     url: snrpnReadsPanel({ grouped: true }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    settleMs: 15000,
     // cpg(40) + gene(90) + reads(320) + chrome
     viewportHeight: 730,
     // Three pills, one word each (review: "just use shorter labels of just HP1
@@ -640,7 +636,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    settleMs: 15000,
     // cpg(40) + gene(90) + the merged aggregate(170) + reads(460) + chrome
     viewportHeight: 1085,
     // THE THREE GROUPS, NAMED (reviewer: "Please label HP1, HP2, and HP

@@ -155,7 +155,6 @@ export const syntenyVideos: VideoSpec[] = [
     // be replaced
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     steps: [
       // park the pointer off the cytoband strip so the opening frame carries
       // no coordinate chip
@@ -244,7 +243,6 @@ export const syntenyVideos: VideoSpec[] = [
     viewportHeight: 750,
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // the lanes, held: one per grass under rice's own genes
@@ -323,7 +321,6 @@ export const syntenyVideos: VideoSpec[] = [
     viewportHeight: 900,
     readySelector: '::-p-text(Quick start)',
     readyTimeout: 120000,
-    settleMs: 4000,
     steps: [
       { type: 'delay', ms: 1200 },
       // Quick start is the default because the config ships synteny tracks, and
@@ -490,7 +487,6 @@ export const syntenyVideos: VideoSpec[] = [
     viewportHeight: 768,
     readySelector: '::-p-text(Select a view to launch)',
     readyTimeout: 120000,
-    settleMs: 4000,
     steps: [
       { type: 'delay', ms: 1800 },
       {
@@ -605,7 +601,6 @@ export const syntenyVideos: VideoSpec[] = [
     // A whole-genome chain read in one go, which is the figures' own budget for
     // this session.
     readyTimeout: 120000,
-    settleMs: 10000,
     steps: [
       // The camera opens with the pointer at the top middle, which in a synteny
       // view is the maternal panel's own ruler -- and the view writes what is
@@ -709,7 +704,6 @@ export const syntenyVideos: VideoSpec[] = [
     // neither adapter has an indexed variant.
     readySelector: DOTPLOT_DRAWN,
     readyTimeout: 180000,
-    settleMs: 6000,
     steps: [
       // The scattered state, held. It is the half of the comparison the page
       // does not have.
@@ -823,7 +817,6 @@ export const syntenyVideos: VideoSpec[] = [
     viewportHeight: 640,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     steps: [
       { type: 'delay', ms: 2000 },
       // Both ends are loci rather than pixels: a measured x is correct only at
@@ -935,7 +928,6 @@ export const syntenyVideos: VideoSpec[] = [
     viewportHeight: 640,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     steps: [
       // The lanes, held: one per strain, which is the reading this section is
       // going FROM.
@@ -1062,7 +1054,6 @@ export const syntenyVideos: VideoSpec[] = [
     // ~570 tracks of UCSC hub config, three remote plugins, and hs1 resolved
     // through the hub plugin as the chain track names it.
     readyTimeout: 180000,
-    settleMs: 10000,
     steps: [
       // The camera opens with the pointer parked at the top middle of the frame,
       // which in this layout is the overview's cytoband strip -- so the first
@@ -1181,7 +1172,6 @@ export const syntenyVideos: VideoSpec[] = [
     viewportHeight: 1410,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 180000,
-    settleMs: 12000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       {
@@ -1331,7 +1321,6 @@ export const syntenyVideos: VideoSpec[] = [
     viewportHeight: 1260,
     readySelector: displayPainted('maf-display'),
     readyTimeout: 180000,
-    settleMs: 8000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 2500, say: 'The alignment, one row per strain' },

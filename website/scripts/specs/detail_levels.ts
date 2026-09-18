@@ -49,7 +49,6 @@ export const detailLevelsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'TP53',
     readyTimeout: 120000,
-    settleMs: 12000,
   },
   {
     mode: 'url',
@@ -61,7 +60,6 @@ export const detailLevelsSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_alignments'],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
     // A drag across the view, since the span is what the item takes: dragging
     // is the gesture, and the menu that opens on release is where the figure's
     // one boxed row is.

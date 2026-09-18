@@ -33,7 +33,6 @@ export const annotationSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'Tiberius gene predictions',
     readyTimeout: 90000,
-    settleMs: 4000,
     viewportHeight: 500,
   },
 ]

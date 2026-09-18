@@ -150,7 +150,6 @@ export const hicSpecs: ScreenshotSpec[] = [
     // chr9xchr22) at 5kb bins, over range requests into a 55GB and a 20GB file.
     // Measured ~50s for the pair here; 4 minutes is headroom, not an expectation.
     readyTimeout: 240000,
-    settleMs: 20000,
     annotations: [
       {
         type: 'text',
@@ -290,6 +289,5 @@ export const hicSpecs: ScreenshotSpec[] = [
     viewportHeight: 573,
     readySelector: displayPainted('wiggle-display'),
     readyTimeout: 240000,
-    settleMs: 12000,
   },
 ]

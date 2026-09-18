@@ -30,7 +30,6 @@ export const qtlVideos: VideoSpec[] = [
     viewportHeight: 850,
     readySelector: displaySettled('multirow-display'),
     readyTimeout: 180000,
-    settleMs: 14000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The before, held. A reader who has already scrolled past the sorted

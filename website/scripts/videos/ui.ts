@@ -69,7 +69,6 @@ export const uiVideos: VideoSpec[] = [
     viewportHeight: 360,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
-    settleMs: 10000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1800 },
@@ -155,7 +154,6 @@ export const uiVideos: VideoSpec[] = [
     viewportHeight: 700,
     readySelector: displayPainted('feature-display'),
     readyTimeout: 120000,
-    settleMs: 8000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 2000 },
@@ -226,7 +224,6 @@ export const uiVideos: VideoSpec[] = [
     viewportHeight: 640,
     readySelector: '::-p-text(ctgA)',
     readyTimeout: 60000,
-    settleMs: 4000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
@@ -292,7 +289,6 @@ export const uiVideos: VideoSpec[] = [
     viewportHeight: 900,
     readySelector: '::-p-text(ctgA)',
     readyTimeout: 60000,
-    settleMs: 4000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
@@ -350,7 +346,6 @@ export const uiVideos: VideoSpec[] = [
     viewportHeight: 700,
     readySelector: '::-p-text(ctgA)',
     readyTimeout: 60000,
-    settleMs: 4000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1600 },
@@ -411,7 +406,6 @@ export const uiVideos: VideoSpec[] = [
     viewportHeight: 900,
     readySelector: '::-p-text(ctgA)',
     readyTimeout: 60000,
-    settleMs: 4000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
@@ -485,7 +479,6 @@ export const uiVideos: VideoSpec[] = [
     viewportHeight: 640,
     readySelector: '::-p-text(Tools)',
     readyTimeout: 60000,
-    settleMs: 3000,
     steps: [
       { type: 'delay', ms: 1800 },
       {
@@ -548,7 +541,6 @@ export const uiVideos: VideoSpec[] = [
     viewportHeight: 740,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
-    settleMs: 10000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
@@ -622,7 +614,6 @@ export const uiVideos: VideoSpec[] = [
     viewportHeight: 860,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
-    settleMs: 10000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },

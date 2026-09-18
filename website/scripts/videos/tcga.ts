@@ -30,7 +30,6 @@ export const tcgaVideos: VideoSpec[] = [
     // stack is 1104 rows of a 5.7MB BED even at this window.
     readySelector: tcgaVideoFixtures.painted,
     readyTimeout: 300000,
-    settleMs: 12000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The holds are long by the pangenome tours' standard, and deliberately.
@@ -90,7 +89,6 @@ export const tcgaVideos: VideoSpec[] = [
     // The matrix has to be carrying its 979 rows before the camera starts.
     readySelector: tcgaMutationVideoFixtures.matrixDone,
     readyTimeout: 300000,
-    settleMs: 10000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'waitForText', text: tcgaMutationVideoFixtures.gene },

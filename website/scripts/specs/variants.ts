@@ -70,7 +70,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 550,
     readyText: 'ctgA',
-    settleMs: 3000,
   },
 
   {
@@ -90,7 +89,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
   },
 
   // Multi-sample variant display colored by consequence impact, on REAL data:
@@ -133,7 +131,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
     // samples 81%". 120000 also crosses SLOW_READY_TIMEOUT_MS, which is honest:
     // a reader opening this figure's live link waits for the same computation.
     readyTimeout: 120000,
-    settleMs: 2000,
     viewportHeight: 705,
   },
 
@@ -159,7 +156,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 90000,
-    settleMs: 18000,
     viewportHeight: 705,
   },
 
@@ -175,7 +171,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_test_vcf'],
     }),
     readyText: 'ctgA',
-    settleMs: 3000,
     // tall enough that the whole SAMPLES genotype-frequency table (low in the
     // variant-details panel) clears the viewport bottom — the callouts anchor
     // to its header, and the reviewer wanted its rows fully visible
@@ -235,7 +230,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    settleMs: 8000,
     viewportHeight: 700,
     stages: [
       {
@@ -299,7 +293,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('variant-matrix-display'),
     readyTimeout: 120000,
-    settleMs: 15000,
     // Close the TOP lane's genotype key. Both lanes draw the same five entries
     // over the same palette, and each copy hides the right ~13% of its own
     // matrix — in a figure whose whole argument is how the two textures differ

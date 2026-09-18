@@ -102,7 +102,6 @@ export const embeddedSpecs: ScreenshotSpec[] = [
     },
     readyText: 'NCBI RefSeq Genes',
     readyTimeout: 90000,
-    settleMs: 15000,
     viewportWidth: 1200,
     viewportHeight: 1000,
     diffThreshold: 0.02,

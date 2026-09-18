@@ -81,7 +81,6 @@ export const svVideos: VideoSpec[] = [
     viewportHeight: 640,
     readySelector: '::-p-text(Select a view to launch)',
     readyTimeout: 120000,
-    settleMs: 4000,
     steps: [
       { type: 'delay', ms: 1800 },
       {
@@ -174,7 +173,6 @@ export const svVideos: VideoSpec[] = [
     // past the byte gate at all.
     readySelector: displaySettled('pileup-display'),
     readyTimeout: 300000,
-    settleMs: 12000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The wall of soft clipping at the two chr3 breakpoints, held: it is the
@@ -304,7 +302,6 @@ export const svVideos: VideoSpec[] = [
     // loading; the gate above covers that instead, so what is left to settle for
     // is the record and gene lanes painting.
     readyTimeout: 300000,
-    settleMs: 30000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The before, held. It is the frame the whole clip is measured against,
@@ -426,7 +423,6 @@ export const svVideos: VideoSpec[] = [
     // while the lane is empty.
     readySelector: displaySettled('multi-wiggle-display'),
     readyTimeout: 180000,
-    settleMs: 12000,
     steps: [
       { type: 'hover', selector: WORDMARK, hold: 0 },
       // The state the track arrives in: one filled row per sample, each on its

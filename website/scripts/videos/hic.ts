@@ -70,7 +70,6 @@ export const hicVideos: VideoSpec[] = [
     // at three region pairs per track; the opening window here is one region and
     // therefore cheaper, and the navigation below pays the figure's price.
     readyTimeout: 240000,
-    settleMs: 20000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // One region, held: each lane is a chromosome against itself, and there is

@@ -203,7 +203,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_cram'],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
     // The dialog is taller than the app window behind it, so what sits below it
     // is page background and the run reads that as slack: 121 css px at the
     // default 800. It re-centres as the viewport shrinks, so the blank closes at
@@ -332,7 +331,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'RefSeq',
     readyTimeout: 60000,
-    settleMs: 6000,
     viewportHeight: 500,
   },
 
@@ -364,7 +362,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI genes',
     readyTimeout: 30000,
-    settleMs: 4000,
     viewportHeight: 425,
   },
 
@@ -390,7 +387,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
-    settleMs: 4000,
     viewportHeight: 520,
     hideTooltip: true,
     // The chips are the feature: wait for the second one, which appears only
@@ -463,7 +459,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
-    settleMs: 6000,
     viewportHeight: 590,
     hideTooltip: true,
     // Two-stage walkthrough: (1) right-click the gene to reveal the Collapse
@@ -545,7 +540,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
-    settleMs: 8000,
     viewportHeight: 900,
     actions: [
       { type: 'click', text: 'HBB' },
@@ -585,7 +579,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
-    settleMs: 8000,
     viewportHeight: 900,
     actions: [
       { type: 'click', text: 'SELENOP' },
@@ -608,7 +601,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [{ trackId: 'gff3tabix_genes', height: 300 }],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
     // shorter browser; the details panel scrolls so this only trims
     // empty space below the ringed hyperlink
     viewportHeight: 680,
@@ -656,7 +648,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [{ trackId: 'gff3tabix_genes', height: 300 }],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
     viewportHeight: 900,
     actions: [
       { type: 'click', anchor: APPLE3_MRNA },
@@ -683,7 +674,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
-    settleMs: 12000,
   },
 
   // Connected genome + protein demo (TP53 / UniProt P04637). One ProteinView
@@ -722,7 +712,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 90000,
-    settleMs: 6000,
     // The TP53 nuclear export signal (UniProt Motif 339-350): short, and alone
     // on its row, so the clicked bar and its band read cleanly. `scroll` centres
     // it in the alignment panel's scroller first.

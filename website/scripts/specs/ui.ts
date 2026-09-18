@@ -543,7 +543,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     name: 'top_level_menus',
     url: `?config=${VOLVOX}&sessionName=Screenshot`,
     readyText: 'ctgA',
-    settleMs: 2500,
     actions: [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'Linear genome view' },
@@ -562,7 +561,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     name: 'no_build_final',
     url: '?config=test_data/no_build_plugin/config.json&sessionName=Screenshot',
     readyText: 'Citations',
-    settleMs: 3000,
     viewportWidth: 1200,
     // short capture: the launcher and the widget's citation both sit near the
     // top, so a tall viewport would just be empty white below them
@@ -588,7 +586,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
-    settleMs: 8000,
     // smaller capture window in both dimensions
     viewportWidth: 1150,
     viewportHeight: 560,
@@ -633,7 +630,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     viewportWidth: 1100,
     viewportHeight: 400,
-    settleMs: 4000,
     actions: [
       {
         type: 'type',
@@ -671,7 +667,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 550,
     readyText: 'ctgA',
-    settleMs: 5000,
     actions: [
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
       { type: 'waitForText', text: 'Zoom to region' },
@@ -688,7 +683,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     name: 'display_settings_url_snapshot',
     url: settingsVideoFixtures.settledSession,
     readyText: 'volvox-sv (cram)',
-    settleMs: 5000,
     viewportHeight: 540,
     crop: { x: 0, y: 0, width: 1500, height: 445 },
   },
@@ -757,7 +751,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'HG002',
     readyTimeout: 60000,
     viewportHeight: 1200,
-    settleMs: 20000,
   },
 
   // Multi-sample variant display on the 1000 Genomes phase-3 SV ensemble
@@ -823,7 +816,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: '1KGP',
     readyTimeout: 90000,
     viewportHeight: 800,
-    settleMs: 35000,
     hideTooltip: true,
     actions: [
       // The variant under the pointer is what the sort keys on, so the
@@ -893,7 +885,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // lane was sliced off mid-labels, cutting the genes the SV calls line up
     // against
     viewportHeight: 800,
-    settleMs: 35000,
     hideTooltip: true,
     actions: [
       // the same inversion `multisv` sorts on, named the same way, so the two
@@ -968,7 +959,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // lane. The record lane's floating SV-type key used to be hidden by
     // selector here; it is gone with the jexl that produced it.
     viewportHeight: 1230,
-    settleMs: 35000,
     hideTooltip: true,
     actions: [
       // the clustering RPC over 2504 rows finishes well after first paint, and
@@ -1156,7 +1146,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // three 200px tracks over the grown gene lane; the run's own
     // clipped/blank-below report is what corrects this
     viewportHeight: 1000,
-    settleMs: 90000,
   },
 
   // Trio SV: the Kinh-Vietnamese trio (HG02030 child / HG02031 mother / HG02032
@@ -1269,7 +1258,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // 874 for the 13.5 the run reported still below the fold after the arc
     // legend gained its short-insert row.
     viewportHeight: 874,
-    settleMs: 25000,
   },
 
   // sv_visualization.md: the TRA feature-details panel with its
@@ -1285,7 +1273,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['breast_cancer_sniffles_hg19_traonly_tabix'],
     }),
     readyText: '84,871',
-    settleMs: 5000,
     // tall viewport so the full-height feature-details panel shows the
     // LaunchBreakendPanel link below the long TRA INFO table
     viewportHeight: 1100,
@@ -1389,7 +1376,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // connecting splines are fully captured
     viewportHeight: 1000,
     readyTimeout: 60000,
-    settleMs: 15000,
   },
 
   // Read-vs-reference of a SKBR3 PacBio read spanning a ~634bp insertion
@@ -1413,7 +1399,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'SKBR3',
     readyTimeout: 60000,
-    settleMs: 8000,
     hideTooltip: true,
     // the synteny read-vs-ref panel below the pileup gets clipped at the default
     // 800px viewport, so give it extra room. Sized to the content: 950 left
@@ -1475,7 +1460,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_cram_alignments'],
     }),
     readyText: 'ctgA',
-    settleMs: 5000,
     // Each label sits in the clear band immediately next to the control it names,
     // with a SHORT arrow into it (minimize arrow length, place text next
     // to its target, don't pile every pill at the top). Two tiers track the
@@ -1538,7 +1522,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_cram_alignments'],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
     viewportWidth: 1000,
     viewportHeight: 455,
     annotations: [
@@ -1580,7 +1563,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // menu path and the (now denser) add-track form are legible
     viewportWidth: 1200,
     viewportHeight: 620,
-    settleMs: 3000,
     actions: [
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },
@@ -1628,7 +1610,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 600,
     readyText: 'ctgA',
-    settleMs: 3000,
     // two-stage: the top frame circles the track-selector icon in the LGV header
     // (circle the header "tracklist" icon, not the view menu); the
     // bottom frame opens that selector, rings the add-track FAB, and boxes the
@@ -1686,7 +1667,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // two-frame version needed 680 to hold the taller of the two
     viewportHeight: 540,
     readyText: 'ctgA',
-    settleMs: 4000,
     actions: [
       // open the track selector so the track-list entry menu icon is visible
       ...openTrackSelector('menu'),
@@ -1731,7 +1711,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
     actions: [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
       ...menuCascade(['Show...', 'Overlapping']),
@@ -1762,7 +1741,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
     // shorter browser in each stage
     viewportHeight: 640,
     stages: [
@@ -1808,7 +1786,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // smaller capture window in both dimensions
     viewportWidth: 1150,
     viewportHeight: 470,
-    settleMs: 3000,
     actions: [
       // open the track selector to get a widget in the drawer
       ...openTrackSelector('menu'),
@@ -1871,7 +1848,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 550,
     readyText: 'ctgA',
-    settleMs: 4000,
     actions: [
       { type: 'click', selector: '[data-testid="share-button"]' },
       { type: 'waitForText', text: 'Copy the URL below' },
@@ -1899,7 +1875,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // shorter viewport so both stacked panels stay tight
     viewportHeight: 440,
-    settleMs: 10000,
     actions: [
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
       { type: 'waitForText', text: 'Bookmark region' },
@@ -1929,7 +1904,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
-    settleMs: 10000,
     viewportHeight: 520,
     actions: [
       // create a bookmark via rubberband
@@ -1994,7 +1968,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [],
     }),
     readyText: 'ctgA',
-    settleMs: 3000,
     actions: [
       // open the track selector directly via the header button so the LGV view
       // menu never opens (the view menu was left open in the capture)
@@ -2030,7 +2003,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // smaller window keeps the focus on the track-list + recently-used dropdown
     viewportWidth: 1100,
     viewportHeight: 600,
-    settleMs: 8000,
     // single frame: open a track so it lands in "recently used", then open the
     // recently-used dropdown and highlight both the trigger icon and the popover
     // together (one stage with both the icon and the popover ringed)
@@ -2091,7 +2063,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     viewportHeight: 560,
-    settleMs: 4000,
     actions: [
       // open track selector
       ...openTrackSelector('menu'),
@@ -2154,7 +2125,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       loc: 'ctgA:1-20000',
     }),
     readyText: 'ctgA',
-    settleMs: 3000,
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Plugin store' },
@@ -2192,7 +2162,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     // smaller window keeps the focus on the compact import form
     viewportWidth: 900,
     viewportHeight: 231,
-    settleMs: 2000,
     actions: [
       // the ViewLauncher BUTTON, not the menu group that used to share this
       // wording: the group is `Launch` now, this one is still `Launch view`
@@ -2211,7 +2180,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     name: 'add_hg38_assembly',
     url: sessionSpec(DEMO_CONFIG, { views: [] }),
     readyText: 'Select a view to launch',
-    settleMs: 2000,
     actions: [...openAssemblyManager(), { type: 'delay', ms: 1500 }],
   },
 
@@ -2228,7 +2196,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 600,
     readyText: 'ctgA',
-    settleMs: 3000,
     actions: [...openTrackSelector('text'), { type: 'delay', ms: 1000 }],
   },
 
@@ -2244,7 +2211,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    settleMs: 3000,
     actions: [
       ...openTrackSelector('text'),
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
@@ -2273,7 +2239,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    settleMs: 3000,
     // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
     actions: [...openTrackSelector('text'), { type: 'delay', ms: 1000 }],
@@ -2290,7 +2255,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    settleMs: 3000,
     // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
     actions: [...openTrackSelector('text'), { type: 'delay', ms: 1000 }],
@@ -2312,7 +2276,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'Tools',
     viewportWidth: 1000,
     viewportHeight: 540,
-    settleMs: 2000,
     hideTooltip: true,
     actions: openAssemblyManager(),
   },
@@ -2327,7 +2290,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'Tools',
     viewportWidth: 1000,
     viewportHeight: 540,
-    settleMs: 2000,
     hideTooltip: true,
     actions: openAssemblyManager(),
   },
@@ -2345,7 +2307,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'Tools',
     viewportWidth: 1000,
     viewportHeight: 480,
-    settleMs: 2000,
     hideTooltip: true,
     stages: [
       {
@@ -2375,7 +2336,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'It worked!',
     viewportWidth: 1200,
     viewportHeight: 154,
-    settleMs: 1500,
     // subject IS the missing-config landing page: the absent config.json 404s
     expectedConsole: [
       'HTTP 404 fetching config.json',
@@ -2444,7 +2404,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
     readyText: 'ChromHMM',
     readyTimeout: 180000,
-    settleMs: 10000,
     viewportHeight: 1230,
   },
 
@@ -2498,7 +2457,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
     readyText: 'ChromHMM',
     readyTimeout: 120000,
-    settleMs: 6000,
     viewportHeight: 620,
     hideSelectors: ['[data-testid="subtree_filter_hint"]'],
   },
@@ -2522,7 +2480,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     viewportWidth: 1000,
     viewportHeight: 560,
-    settleMs: 6000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       ...menuCascade(['Display types', 'Multi-row feature display (painting)']),
@@ -2577,7 +2534,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'RepeatMasker',
     readyTimeout: 60000,
     viewportWidth: 1000,
-    settleMs: 6000,
     // the rows plus the ruler and track header; sized from the run's own
     // below-the-fold report
     viewportHeight: 470,

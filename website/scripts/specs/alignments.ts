@@ -191,7 +191,6 @@ function strandSpecificSpec(): ScreenshotSpec {
     }),
     readyText: 'RPL7A',
     readyTimeout: 60000,
-    settleMs: 15000,
     // the gene track, the sashimi/coverage band and the pileup
     viewportHeight: 718,
     hideTooltip: true,
@@ -262,7 +261,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 550,
     readyText: 'ctgA',
-    settleMs: 4000,
   },
 
   {
@@ -276,7 +274,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     viewportHeight: 400,
     readyText: 'ctgA',
-    settleMs: 3000,
     actions: openTrackSelector('menu'),
   },
 
@@ -298,7 +295,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // wider window per reviewer, shorter height to trim empty space below pileup
     viewportWidth: 900,
     viewportHeight: 450,
-    settleMs: 4000,
     // soft-clip overhang renders dense per-base sequence letters, far more
     // glyphs per pixel than a typical track-label spec, so sub-pixel
     // glyph-positioning jitter (see DEFAULT_DIFF_THRESHOLD comment) adds up to
@@ -378,7 +374,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     viewportHeight: 805,
-    settleMs: 25000,
   },
 
   // Soft clipping, two-stage figure: top frame opens the track menu's "Show..."
@@ -408,7 +403,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // Launch. Rendered at all three.
     viewportWidth: 1100,
     viewportHeight: 620,
-    settleMs: 4000,
     // result frame renders dense per-base sequence letters in the soft-clip
     // overhang (see alignments_soft_clipped's diffThreshold comment)
     diffThreshold: 0.02,
@@ -531,7 +525,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // included
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     // off the run's own below-the-fold report
     viewportHeight: 1015,
     hideTooltip: true,
@@ -620,7 +613,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    settleMs: 12000,
     viewportHeight: 690,
     hideTooltip: true,
     // THE COLUMN, MARKED (review: "it might be good to make this screenshot on
@@ -734,7 +726,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_sv_cram'],
     }),
     readyText: 'ctgA',
-    settleMs: 6000,
     hideTooltip: true,
     actions: [
       { type: 'rightclick', anchor: CTX_MENU_READ },
@@ -783,7 +774,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_sv_cram'],
     }),
     readyText: 'ctgA',
-    settleMs: 4000,
     // The dialog is centred, so the blank the run reports below it is half of
     // any extra height; driving it to zero would crop away the pileup the
     // dialog floats over.
@@ -840,7 +830,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // height 500 gives the right-click context menu breathing room below its last
     // item instead of clipping it at the frame edge (menu cut off)
     crop: { x: 0, y: 0, width: 1100, height: 500 },
-    settleMs: 5000,
     hideTooltip: true,
     // two-stage: top frame is the right-click "SNP/Mismatch → Sort by base at
     // position" menu; bottom frame closes the menu to show the resulting sorted
@@ -968,7 +957,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'B2M',
     readyTimeout: 60000,
-    settleMs: 15000,
   },
 
   {
@@ -997,7 +985,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('hic-display'),
     readyTimeout: HIC_READY_TIMEOUT,
     slowLiveSession: false,
-    settleMs: 10000,
   },
 
   // No two-windows-on-chr8 figure. It showed the region-pair fetch on two
@@ -1087,7 +1074,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // under a minute, so this is headroom rather than an expectation.
     readyTimeout: HIC_WHOLE_GENOME_READY_TIMEOUT,
     slowLiveSession: false,
-    settleMs: 15000,
   },
 
   // The two halves of the faint-contacts comparison. Same region, same ramp;
@@ -1128,7 +1114,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('hic-display'),
     readyTimeout: HIC_READY_TIMEOUT,
     slowLiveSession: false,
-    settleMs: 10000,
     annotations: [
       {
         type: 'text' as const,
@@ -1176,7 +1161,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('hic-display'),
     readyTimeout: HIC_READY_TIMEOUT,
     slowLiveSession: false,
-    settleMs: 10000,
   },
 
   // The same modifications CRAM shown twice in ONE ultra-wide frame — top row in
@@ -1263,7 +1247,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'CpG',
     readyTimeout: 60000,
-    settleMs: 35000,
     hideTooltip: true,
     // no track menu in this frame: the mode radios carry no color swatches at
     // that level, so the open menu covered half the reads to show nothing the
@@ -1350,7 +1333,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     viewportHeight: 700,
-    settleMs: 15000,
   },
 
   // Companion to alignments/haplotype: shows HOW to reach grouping — the track
@@ -1386,7 +1368,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     viewportHeight: 550,
-    settleMs: 15000,
     hideTooltip: true,
     // Three-stage figure: stage 1 is the menu path (track menu ->
     // Group by... submenu, the inner item boxed); stage 2 is the dialog that item
@@ -1476,7 +1457,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG002',
     readyTimeout: 60000,
-    settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       ...menuCascade(['Read height', 'Compact']),
@@ -1517,7 +1497,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG002',
     readyTimeout: 60000,
-    settleMs: 12000,
     viewportHeight: 560,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
@@ -1546,7 +1525,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // shorter viewport (rather than a crop) so the result frame isn't mostly
     // whitespace while still leaving room for the deep "Read connections" submenu
     viewportHeight: 600,
-    settleMs: 5000,
     // dismissing the menu leaves the track-menu button hovered, so MUI paints
     // its "Track settings" tooltip into the result frame. `hideTooltip` rather
     // than a `.MuiTooltip-popper` hideSelector, which hid it from the capture
@@ -1610,7 +1588,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ACTB',
     readyTimeout: 60000,
-    settleMs: 15000,
     viewportHeight: 800,
   },
 
@@ -1649,7 +1626,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ACTB',
     readyTimeout: 60000,
-    settleMs: 15000,
     viewportHeight: 760,
   },
 
@@ -1679,7 +1655,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ACTB',
     readyTimeout: 60000,
-    settleMs: 15000,
     // tall enough for the 620px compact pileup + the coverage band + chrome
     viewportHeight: 960,
   },
@@ -1738,7 +1713,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    settleMs: 12000,
     // the run reported 107 css px clipped below the fold at 780
     viewportHeight: 890,
     hideTooltip: true,

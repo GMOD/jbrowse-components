@@ -210,7 +210,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
-    settleMs: 4000,
     viewportWidth: 1000,
     viewportHeight: 890,
     hideTooltip: true,
@@ -243,7 +242,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     viewportHeight: ECOLI_AVA_STACK_HEIGHT,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
   },
 
   // The two builders' depth curves in one frame, which is the comparison both
@@ -364,7 +362,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     // the gene lane plus the whole 300px two-row stack, with room for the
     // bottom row's 0 tick (640 left it on the frame edge)
     viewportHeight: 690,
-    settleMs: 15000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
     // One callout per row, saying why THAT row does what it does (reviewer:
@@ -459,7 +456,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 480,
-    settleMs: 15000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
@@ -557,7 +553,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     // figures stack cleanly in the docs at the same scale
     viewportWidth: 1040,
     viewportHeight: 380,
-    settleMs: 15000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },

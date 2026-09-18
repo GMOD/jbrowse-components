@@ -121,7 +121,6 @@ export const qtlSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     // gene lane(50) + manhattan(200) + full painting(460) + headers clear crop
     viewportHeight: 1000,
-    settleMs: 16000,
     // Anchored to the gene's own rendered label, which is a DOM node, so
     // `alignX: 'right'` starts the pill at that label's right edge and the 12
     // is a gap rather than a position. A `locus` anchor cannot do this job: a
@@ -154,7 +153,6 @@ export const qtlSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     // chrome + manhattan(140) + painting(420) clears the bottom crop
     viewportHeight: 840,
-    settleMs: 16000,
     hideTooltip: true,
     actions: [
       // Right-click the painting at the peak the sort keys on, resolved through

@@ -105,7 +105,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'Scatter',
     readyTimeout: 60000,
-    settleMs: 6000,
     viewportHeight: 765,
   },
 
@@ -244,7 +243,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'GC content',
     readyTimeout: 60000,
-    settleMs: 8000,
     // origin track(50) + content(~100) + taller skew(160) + headers/ruler/
     // overview; crop off the empty viewport below the three tracks
     crop: { x: 0, y: 0, width: 1500, height: 640 },
@@ -335,7 +333,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'COLO829',
     readyTimeout: 60000,
-    settleMs: 15000,
     // tall enough for the whole open view menu plus the Navigation submenu
     // beside it in stage 1, which a 560px frame cut off short. Per-frame heights
     // rather than one `crop`: the menu needs twice the height the resulting view
@@ -400,7 +397,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_microarray_multi'],
     }),
     readyText: 'ctgA',
-    settleMs: 5000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       ...menuCascade(['Plot type', 'Multi-row', 'XY plot']),
@@ -420,7 +416,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       loc: 'ctgA:1-20000',
     }),
     readyText: 'ctgA',
-    settleMs: 3000,
     // smaller capture in both dimensions; narrower than default but
     // still wide enough for the category "..." menu to cascade without clipping,
     // and the "Integration test" wiggle category renders within this height
@@ -485,7 +480,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       loc: 'ctgA:1-20000',
     }),
     readyText: 'ctgA',
-    settleMs: 3000,
     // shorter/narrower window — the add-track form is short and the LGV pane
     // behind it is mostly empty
     viewportWidth: 1300,
@@ -589,7 +583,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('multi-wiggle-display'),
     readyTimeout: 90000,
     viewportHeight: 620,
-    settleMs: 15000,
     stages: [
       {
         // top frame: the Cluster rows by score dialog open, before clustering

@@ -33,7 +33,6 @@ export const methylationVideos: VideoSpec[] = [
     viewportHeight: 740,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
-    settleMs: 15000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The before, held: an interleaved mix of methylated and unmethylated

@@ -107,7 +107,6 @@ export const scrnaSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 120000,
-    settleMs: 15000,
     viewportWidth: 1900,
     // nine rows plus the gene lane and the view's chrome
     viewportHeight: 730,
@@ -167,7 +166,6 @@ export const scrnaSpecs: ScreenshotSpec[] = [
     // The pseudobulk lane above stays multi-row (review: "i do not like the
     // multixyplot remove"), where its own sidebar names its nine rows.
     readyTimeout: 120000,
-    settleMs: 20000,
     // the per-cell track's 620 rows have to reach their own bottom edge: the
     // monocyte block is the last of the nine cell-type blocks, so a frame that
     // ends early cuts off the one band the figure is about

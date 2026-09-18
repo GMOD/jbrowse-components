@@ -102,7 +102,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportHeight: ECOLI_AVA_STACK_HEIGHT,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    settleMs: 15000,
   },
   // Projection 3: the graph's whole-genome alignment as a MAF, projected onto
   // K12. The coverage band on top, then one row per strain (K12 reference first),
@@ -167,7 +166,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the variant lane plus one MAF row per sample and the coverage band
     viewportHeight: 660,
-    settleMs: 15000,
     hideTooltip: true,
     actions: [
       // The variant lane's own key, dismissed through the button it carries.
@@ -298,7 +296,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the 240px lane plus its legend and the view chrome
     viewportHeight: 450,
-    settleMs: 15000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
     // ONE ARM MARKED, AND MARKED IN THE DOTPLOT TOO (review: "still
@@ -359,7 +356,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 120000,
-    settleMs: 20000,
     // the rows figure's width, so the two stack flush
     viewportWidth: 1000,
     viewportHeight: 640,
@@ -483,7 +479,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // fits the 150px depth track plus the whole 240px stack
     viewportHeight: 640,
-    settleMs: 15000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
@@ -579,7 +574,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // gene lane + the pileup with its coverage band + the depth wiggle + the
     // MAF's five rows and its coverage band
     viewportHeight: 865,
-    settleMs: 20000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },

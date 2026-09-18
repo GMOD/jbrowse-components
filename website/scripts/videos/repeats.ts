@@ -39,7 +39,6 @@ export const repeatVideos: VideoSpec[] = [
     viewportHeight: 520,
     readySelector: '::-p-text(RepeatMasker)',
     readyTimeout: 60000,
-    settleMs: 6000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The packed lane, held: every class in one row, which is the state the

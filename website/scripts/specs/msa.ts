@@ -338,7 +338,6 @@ export const msaSpecs: ScreenshotSpec[] = [
     // the UCSC hub config is ~570 tracks and pulls four remote plugins, the
     // same reason the two specs above raise this
     readyTimeout: 120000,
-    settleMs: 4000,
     hideTooltip: true,
     viewportHeight: 390,
   },
