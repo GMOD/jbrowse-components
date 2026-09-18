@@ -68,10 +68,6 @@ export async function openJBrowse(
     onConsole,
     timeout = DEFAULT_TIMEOUT,
     trackIds,
-    // `assembly` is deliberately NOT pulled out here: it is both a URL option
-    // (which assembly to open) and the session gate's expectation (which
-    // assembly must end up open), and destructuring it for the second use would
-    // have dropped it from the first, silently.
     ...urlOptions
   } = options
   const url = jbrowseUrl(urlOptions)
@@ -96,29 +92,15 @@ export async function openJBrowse(
     // never go idle, and the session gate below is a far better "it is up"
     // signal than the absence of requests.
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout })
+    const { session, assembly, hub, tracks } = urlOptions
+    // Spread rather than listed, so every ready option arrives by construction:
+    // a hand-copied list is what once dropped `allowUnsettled`.
     const report = await waitForJBrowseReady(page, {
-      // Spread, not a hand-copied field list. `OpenOptions extends
-      // ReadyOptions`, so every present and future ready option arrives here by
-      // construction. Listing them by hand is what dropped `allowUnsettled`:
-      // it was declared, documented, recommended by this function's own timeout
-      // message, and silently never forwarded, so `--allowUnsettled` did
-      // nothing and a timing-out stage always threw. Overridden below: the
-      // defaulted timeout, and the two options derived from the URL.
       ...options,
       timeout,
-      // A session spec's own assembly wins over the hub name. `--hub hg38
-      // --session spec.json` where the spec opens something else is legitimate
-      // (the hub is just supplying the config), and expecting the hub name there
-      // would fail a capture that is entirely correct.
-      assembly: urlOptions.session
-        ? (urlOptions.assembly ?? assemblyFromSession(urlOptions.session))
-        : (urlOptions.assembly ?? urlOptions.hub),
-      trackIds:
-        trackIds ??
-        urlOptions.tracks ??
-        (urlOptions.session
-          ? trackIdsFromSession(urlOptions.session)
-          : undefined),
+      // a spec may open another assembly than the hub that supplies its config
+      assembly: session ? assemblyFromSession(session) : (assembly ?? hub),
+      trackIds: trackIds ?? (session ? trackIdsFromSession(session) : tracks),
     })
     return { browser, page, url, ...report }
   } catch (error) {

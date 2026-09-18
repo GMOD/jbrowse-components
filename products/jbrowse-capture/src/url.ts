@@ -39,20 +39,26 @@ export interface JBrowseUrlOptions {
  * works there. `session` becomes a
  * [session spec](https://jbrowse.org/jb2/docs/urlparams/#session-spec), which
  * can describe several views and per-display settings but whose `init.loc` is
- * parsed as a locstring only and throws on a gene name. Pass one or the other;
- * `session` wins, and the URL params are dropped rather than silently starting
- * the fresh session that `&loc=` otherwise forces.
+ * parsed as a locstring only and throws on a gene name. Pass one or the other:
+ * `&loc=` starts a fresh session, so the URL cannot carry both.
  */
 export function jbrowseUrl({
   hub,
   config,
-  assembly = hub,
+  assembly,
   loc,
   tracks,
   session,
   sessionName,
   instance = PUBLIC_INSTANCE,
 }: JBrowseUrlOptions) {
+  if (session && (assembly || loc || tracks?.length)) {
+    throw new Error(
+      'a session spec says which assembly, locations and tracks to open, so it ' +
+        'cannot be combined with assembly, loc or tracks (--assembly, --loc, ' +
+        '--track): put them in the spec',
+    )
+  }
   const configUrl = config ?? (hub ? hubUrl(hub) : undefined)
   const url = new URL(instance)
   // URL's own encoder, not a hand-built query string: a config URL contains
@@ -68,7 +74,7 @@ export function jbrowseUrl({
   if (session) {
     set('session', sessionSpecParam(session))
   } else {
-    set('assembly', assembly)
+    set('assembly', assembly ?? hub)
     set('loc', loc)
     set('tracks', tracks?.join(','))
   }

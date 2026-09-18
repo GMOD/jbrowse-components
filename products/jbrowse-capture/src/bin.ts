@@ -26,7 +26,7 @@ WHAT TO SHOW
                         gene name such as BRCA1 also works.
   --track <trackId>     a track to open; repeat for several
   --session <json|path> a full session spec, for several views or per-display
-                        settings. Replaces --assembly/--loc/--track.
+                        settings. Not combinable with --assembly/--loc/--track.
   --instance <url>      JBrowse Web deployment to drive
                         (default https://jbrowse.org/code/jb2/latest/)
   --sessionName <name>  name the opened session carries

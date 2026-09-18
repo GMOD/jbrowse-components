@@ -40,12 +40,23 @@ test('tracks join into one comma-separated parameter', () => {
   expect(new URL(url).searchParams.get('tracks')).toBe('a,b')
 })
 
-test('a session suppresses the url parameters it would fight with', () => {
-  const url = jbrowseUrl({ hub: 'hg38', loc: 'BRCA1', tracks: ['a'], session })
-  expect(params(url)).toEqual({
+test('a session carries the config and nothing the spec already says', () => {
+  expect(params(jbrowseUrl({ hub: 'hg38', session }))).toEqual({
     config: 'https://jbrowse.org/ucsc/hg38/config.json',
     session: expect.stringMatching(/^spec-\{/),
   })
+})
+
+// The URL can carry only one of them, and the session gate used to wait for
+// the dropped --track, timing out on a track the config does define.
+test.each([
+  ['assembly', { assembly: 'hg38' }],
+  ['loc', { loc: 'BRCA1' }],
+  ['tracks', { tracks: ['a'] }],
+])('a session refuses %s beside it', (_name, extra) => {
+  expect(() => jbrowseUrl({ hub: 'hg38', session, ...extra })).toThrow(
+    'cannot be combined with assembly, loc or tracks',
+  )
 })
 
 test('an explicit config wins over a hub, which still names the assembly', () => {
