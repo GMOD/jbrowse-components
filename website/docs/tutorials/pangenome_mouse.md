@@ -91,7 +91,7 @@ Speer families and the immunoglobulin heavy chain locus without a curated list.
 The densest window it returns is a single bubble inside one intron of `Dock2`,
 at `chr11:34,516,044-34,560,497`:
 
-<Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane holds nothing but intron, the bubbles lane is a single row, the allele inventory draws each alternative path at its real size, and the graph carries one label naming the whole cut as a superbubble, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and every charcoal stretch is sequence it lacks, so each loop is a place where other strains depart from the reference." src="/img/pangenome/mouse_dock2.png" />
+<Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane shows only intron, the bubbles lane is a single row, the allele inventory draws each alternative path at its real size, and the graph carries one label naming the whole cut as a superbubble, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and every charcoal stretch is sequence it lacks, so each loop is a place where other strains depart from the reference." src="/img/pangenome/mouse_dock2.png" />
 
 Because the ranking reads the graph, the method repeats on a panel nobody has
 written about yet.

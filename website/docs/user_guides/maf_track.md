@@ -198,7 +198,7 @@ deletion in the block is where the alignment put it, and no synteny file is
 involved. The reference row carries the tracks this view had open, the MAF
 included; the species row carries its own gene track where the session has one.
 
-<Figure caption="The menu a drag across the rows raises on the E. coli pggb alignment: three submenus, the open one listing each strain the drag covers at its own locus." src="/img/maf_row_menu.png" />
+<Figure caption="The menu a drag across the rows raises on the E. coli pggb alignment: three submenus, the open one listing each strain the drag covers at that strain's locus." src="/img/maf_row_menu.png" />
 
 ## Row layout and the species tree
 

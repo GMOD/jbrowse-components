@@ -79,7 +79,7 @@ grouping clears them. **Sections** in the track menu lists the sections drawn,
 each with **Move up**, **Move down** and **Hide section**, and **Reset section
 order** returns them to the sorted order.
 
-<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by..., with lncRNA and pseudogene in near-identical greens. Sections then moves protein_coding to the top, and Color by... → Pin distinct colors gives each biotype its own color." />
+<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by..., with lncRNA and pseudogene in near-identical greens. Sections then moves protein_coding to the top, and Color by... → Pin distinct colors gives each biotype a distinct color." />
 
 The `facetField` setting pre-groups a track, so a shared link opens grouped. It
 names a feature attribute, a dotted path into a structured one such as
@@ -150,7 +150,7 @@ filter alone:
 }
 ```
 
-<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype in the palette color its place in the color's domain gives it." />
+<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
 
 A facet is the `facetField` and `facetDomain` settings, and a color by a field
 the `colorField`, `colorDomain` and `colorPalette` settings; the track draws a
@@ -193,7 +193,7 @@ Declare what the colors mean in the `legend` slot; the key draws over the track,
 and you can dismiss it. See the
 [jexl configuration guide](/docs/config_guides/jexl).
 
-<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38): ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is the cassette exon that tells the two colored transcripts apart." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
+<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38): ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is the cassette exon, which only one of the two colored transcripts includes." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 
 The [differential transcript usage tutorial](/docs/tutorials/dtu) has the track
 configuration behind that figure and the pipeline that writes the attributes.
@@ -214,7 +214,7 @@ that code. The first codon shows as `M` when it is a valid start for that table
 (including `GTG` or `TTG`); the track applies and highlights any `transl_except`
 override (e.g. selenocysteine `U`).
 
-<Figure caption="The selenoprotein GPX1 on hg19. Its in-frame UGA codon is recoded to selenocysteine via the GFF transl_except attribute, so codon 49 draws as a highlighted U rather than a stop. The reference sequence track's plain six-frame translation above still shows a stop there." src="/img/gene_track_selenocysteine.png" />
+<Figure caption="The selenoprotein GPX1 on hg19. Its in-frame UGA codon is recoded to selenocysteine via the GFF transl_except attribute, so codon 49 draws as a highlighted U. The reference sequence track's plain six-frame translation above still shows a stop there." src="/img/gene_track_selenocysteine.png" />
 
 ## Mature peptides (polyproteins)
 
@@ -245,7 +245,7 @@ the track's `labels.name` reads it:
 See the [jexl configuration guide](/docs/config_guides/jexl) for the expression
 syntax.
 
-<Figure caption="The enterovirus D (GCF_000861205.1) ORF1 polyprotein. The CDS is cleaved into its mature peptides (VP0, VP1–VP4, the 2A–2C and 3A–3D proteins), each drawn on its own row in a distinct color; hovering a region shows its product name." src="/img/gene_track_mature_peptides.png" />
+<Figure caption="The enterovirus D (GCF_000861205.1) ORF1 polyprotein. The CDS is cleaved into its mature peptides (VP0, VP1–VP4, the 2A–2C and 3A–3D proteins), each on a separate row in a distinct color; hovering a region shows its product name." src="/img/gene_track_mature_peptides.png" />
 
 ## Reading a feature's protein sequence
 

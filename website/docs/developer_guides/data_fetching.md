@@ -52,7 +52,7 @@ clear. Keeping the estimate stops the banner flickering on an ordinary clear.
 
 ## The whole fetch chain
 
-<Figure caption="The too-large gate releases itself. No code clears the banner; a blocked display re-measures at each settled viewport until the window is small enough to fetch. The dashed edge carries that re-measurement as the second of its two returns." src="/img/fetch_chain.png" />
+<Figure caption="A blocked display re-measures at each settled viewport and fetches once the window is small enough, which clears the banner. The dashed edge carries that re-measurement as the second of its two returns." src="/img/fetch_chain.png" />
 
 `isBlockCovered` compares the block against the loaded bounds. The loaded bounds
 extend past the viewport, so after a small pan they still cover the block and

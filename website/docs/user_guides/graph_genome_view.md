@@ -289,7 +289,7 @@ opened bubble. Click a label to open that bubble alone, with a button back. An
 opened bubble derives the bubbles inside it, so a superbubble opens level by
 level. **View menu → Settings → Mark bubbles** turns the halos off.
 
-<Figure caption="The LPA window force-directed with its bubbles haloed and named, LPA pinned under the backbone with its exons along the reference nodes, and the halo labels each a click from opening their bubble." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="The LPA window force-directed with its bubbles haloed and named, LPA pinned under the backbone with its exons along the reference nodes, and clicking a halo label opens its bubble." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 The view draws the session's gene track onto the backbone. Exons are dark
 stretches along the reference nodes that carry them, and each gene's name is
@@ -347,7 +347,7 @@ same way, so a segment can be found in either. A hop is one step, so the right
 half still ends in a loose end. The hop expands only over off-reference
 segments, so it does not pull in the backbone on either side of the window.
 
-<Figure caption="The paa island cut from the same segments track twice, each under the linear view it was made from. Left, at Graph context None, the two boxed nodes end in mid-air. Right, at 1 hop, the red ring marks the interior the extra queries found, closing them into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+<Figure caption="The paa island cut from the same segments track twice, each under the linear view it was made from. Left, at Graph context None, each of the two boxed nodes has an unlinked end. Right, at 1 hop, the red ring marks the interior nodes the extra queries fetched, which link the two into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
 A **2 hops** setting handles a graph with alleles nested inside alleles. On this
 window 1 hop already closes the cut, while HPRC's amylase window keeps growing
@@ -431,7 +431,7 @@ The same event drawn as an alignment is independent evidence. The graph's
 insertion comes from the graph's segment and link indexes. The alignment below
 comes from a whole-genome alignment made without the graph.
 
-<Figure caption="The same insertion as an alignment, K12 above and CFT073 below, each panel at its own scale. The flanking chains align ribbon to ribbon at both frame edges, and everything CFT073 carries between them aligns to nothing in K12." src="/img/pangenome/rgfa_insertion_synteny.png" />
+<Figure caption="The same insertion as an alignment, K12 above and CFT073 below, the two panels at different scales. The flanking chains align ribbon to ribbon at both frame edges, and the CFT073 sequence between them has no alignment to K12." src="/img/pangenome/rgfa_insertion_synteny.png" />
 
 The [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) puts the same kind
 of panel beside its own graph.

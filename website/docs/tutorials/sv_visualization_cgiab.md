@@ -657,7 +657,7 @@ Click the chord joining chr3 and chr13, then open the tumor PacBio HiFi reads on
 each panel of the breakpoint split view it launches and set **Read height** →
 **Compact**.
 
-<Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, suggesting a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
+<Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, evidence of a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
 
 The chr3-chr13 junction is one breakend of a larger event, and interchromosomal
 translocations in HG008 are frequently complex this way

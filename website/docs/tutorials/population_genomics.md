@@ -228,7 +228,7 @@ segregates alongside the resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
 number costs a window called sites.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip together over the highlighted window against their background either side. The count under them falls too, but nothing like as far."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip together over the highlighted window against their background either side. The count under them falls too, but much less."/>
 
 Each pair of values reads differently:
 

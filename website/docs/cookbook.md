@@ -181,7 +181,7 @@ names what each color stands for:
 }
 ```
 
-<Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray. The key over the track is the legend slot, spelling out what each color stands for." src="/img/cookbook_color_by_type.png"/>
+<Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat gets the color of its repClass, and classes missing from the table draw gray. The key over the track is the legend slot." src="/img/cookbook_color_by_type.png"/>
 
 [](/docs/config_guides/customizing_feature_colors) covers reading the type list
 off the file and moving an outgrown callback into a plugin.
@@ -339,7 +339,7 @@ autoscale draws a flat sample at the same height as an amplified one. Past a
 handful of samples, generate `subadapters` from your samplesheet
 ([multi-quantitative tracks](/docs/config_guides/multiquantitative_track)).
 
-<Figure caption="An eight-sample MultiQuantitativeTrack across 1.5 Mb of chr1 (multirowline), each 1000 Genomes individual its own color on a shared 0 to 5 copy-number scale. Every row sits at two copies through the flanks; only the amylase cluster in the middle separates them, from one copy to four." src="/img/cookbook_multiwig.png"/>
+<Figure caption="An eight-sample MultiQuantitativeTrack across 1.5 Mb of chr1 (multirowline), one color per 1000 Genomes individual on a shared 0 to 5 copy-number scale. Every row sits at two copies through the flanks; only the amylase cluster in the middle separates them, from one copy to four." src="/img/cookbook_multiwig.png"/>
 
 ## Variant tracks
 

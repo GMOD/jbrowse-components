@@ -191,7 +191,7 @@ E-cadherin loss is the defining lesion of lobular breast cancer
 To get that window, right-click _CDH1_ in the gene lane, choose **Collapse
 introns**, and **Replace current view** (see [](/docs/user_guides/gene_track)):
 
-<Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's own context menu, and the 979-tumor matrix redrawn over the coding sequence." />
+<Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's context menu, and the 979-tumor matrix redrawn over the coding sequence." />
 
 Two more things in that figure travel to any gene-scale matrix:
 

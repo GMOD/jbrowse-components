@@ -83,7 +83,7 @@ K562 carries the Philadelphia chromosome, t(9;22)(q34;q11)
 _ABL1_ on chr9. GM12878 has a normal karyotype. Both have deep in situ Hi-C from
 the same ENCODE lab and pipeline.
 
-<Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) as two windows in one linear view, GM12878 above and K562 below. The wedge between each panel's own triangles is chr9 against chr22: empty in GM12878, a dense arrowed block in K562." links="Open this view=hic/bcr_abl1_translocation" />
+<Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) as two windows in one linear view, GM12878 above and K562 below. The wedge between the two panels' triangles is chr9 against chr22: empty in GM12878, a dense arrowed block in K562." links="Open this view=hic/bcr_abl1_translocation" />
 
 The paired triangles are the same in both panels: chr9 and chr22 each fold
 normally in K562.

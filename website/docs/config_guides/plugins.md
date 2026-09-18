@@ -46,7 +46,7 @@ format and in what the path resolves against:
 `umdLoc`/`esmLoc` suit a plugin file that lives beside config.json, and `cjsUrl`
 is for jbrowse-desktop, since Electron does not load ESM.
 
-<Figure src="/img/plugin_store.png" caption="Opening the plugin store from the Tools menu. Plugins installed via the config (here UMDUrlPlugin) show a lock icon in the Installed plugins section, indicating they cannot be removed through the GUI. The Available plugins list below offers one-click installs."/>
+<Figure src="/img/plugin_store.png" caption="Opening the plugin store from the Tools menu. Plugins installed via the config (here UMDUrlPlugin) show a lock icon in the Installed plugins section, and the GUI cannot remove them. The Available plugins list below offers one-click installs."/>
 
 ## See also
 

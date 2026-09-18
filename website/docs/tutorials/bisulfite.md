@@ -247,7 +247,7 @@ RefSeq accessions this assembly uses, so it loads with no aliasing.
 
 <Figure caption="TAIR10 genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
-<Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu, under the TAIR10 genes, the RepeatMasker lane and the aggregate MethylDackel rows: red holds over the LTR element through all three contexts and drains from the gene body." />
+<Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu, under the TAIR10 genes, the RepeatMasker lane and the aggregate MethylDackel rows: the LTR element stays red in all three contexts, and the gene body is red only in CpG." />
 
 ## Reproduce it end to end
 

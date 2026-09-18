@@ -200,7 +200,7 @@ annotations, so it joins only a handful of lanes), and between the flanks each
 lane draws whatever annotation it holds, with no ribbon to it. That is the
 accessory genome, the part a symbol join cannot connect.
 
-<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The six K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, wzzB and ugd chains run through and the cluster between them is that strain's own, joined to nothing." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The six K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, wzzB and ugd chains run through and the cluster between them is specific to that strain, with no ribbon to any other lane." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 The variable loci need a homology call across the proteomes to fill the table:
 an [OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or the

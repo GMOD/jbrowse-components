@@ -162,7 +162,7 @@ matrix in the same track:
   further, and the file carries a color per class in its `itemRgb` column, so
   the track paints itself with no color configuration.
 
-<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1, a B-cell identity gene, is A in the B-cell line and B in the leukemia line while the frame edges agree. No contact matrix here, since the eigenvector is that computation over one, published." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1, a B-cell identity gene, is A in the B-cell line and B in the leukemia line while the frame edges agree. The figure has no contact matrix, because the published eigenvector is computed from one." links="Open this view=hic/compartment_switch" />
 
 Two things about that figure are worth copying whenever you compare compartments
 between samples, since getting either wrong invents a difference.

@@ -181,13 +181,13 @@ follow button fills the lane and closes the ribbon. Turn it off to pan the
 paternal panel by hand, and right-click a chain block for **Move other panel to
 the matching region**, the same walk done once.
 
-<Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks on each haplotype's own coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks in each haplotype's coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
 
 The clip below opens 2 Mb into the collinear chain past the inversion, both
 panels typed to the same coordinates, where the Liftoff lanes name the same
 genes about 240 kb out of register.
 
-<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Maternal over paternal at chr8:13-15 Mb with the gene lanes and location markers on. The follow button places the paternal panel from the maternal one through the chain, so the same genes land under each other and the markers stand upright, and the panel below keeps pace as the top one is dragged 2.4 Mb along." />
+<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Maternal over paternal at chr8:13-15 Mb with the gene lanes and location markers on. The follow button places the paternal panel from the maternal one through the chain, so the same genes line up under each other and the markers are vertical, and the panel below follows as the top one is dragged 2.4 Mb along." />
 
 **Location markers**, in the header's settings menu, draws lines through each
 ribbon at regular positions, joining a point on the top row to where it maps on

@@ -25,7 +25,7 @@ Two more with a shell beside the app, filmed against only the JBrowse window.
 The captions are what the agent said and sent; only the questions were written
 in advance.
 
-<Video src="/media/mcp/agent_synteny_take1.mp4" caption="Asked to open two fly genomes side by side with no published alignment between them, add a whole-genome dotplot, and find the largest inversion. The agent ran minimap2 in the background, merged the two hosted configs, and read the answer off the alignment before navigating to it." />
+<Video src="/media/mcp/agent_synteny_take1.mp4" caption="Asked to open two fly genomes side by side with no published alignment between them, add a whole-genome dotplot, and find the largest inversion. The agent ran minimap2 in the background, merged the two hosted configs, and found the answer in the alignment before navigating to it." />
 
 <Video src="/media/mcp/agent_derivative_take1.mp4" caption="Asked to find a somatic rearrangement chaining three chromosomes, rebuild the allele from the tumor reads, show the reads on it next to the reference, and prove no read clips at a junction. The agent built the contig from the reads, loaded it as an assembly, and audited every CIGAR at every junction." />
 

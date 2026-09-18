@@ -53,7 +53,7 @@ carries each axis' ruler ticks across the plot. At whole-genome zoom neither
 axis has room to number itself, so the gridlines row says **none at this zoom**
 while it stays ticked.
 
-<Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that every block still draws as a single dot and no diagonal survives. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
+<Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that every block still draws as a single dot and no diagonal remains. The horizontal band across grape chr12 is a repeat-rich region." src="/img/dotplot.png" />
 
 When a plot still reads as specks after Min length, the pair is too divergent
 for a whole-genome view to say anything; the next move is a smaller window.
@@ -66,7 +66,7 @@ repeats draw as crossings off it. Everything else on the plot is real too: the
 male-specific Y is dense in dispersed repeats, and at any minimum length that
 keeps the palindromes those blocks are drawn as well.
 
-<Figure caption="T2T-CHM13v2 chrY aligned to itself over the euchromatic male-specific region, at a 25 kb minimum length. Boxed on the diagonal, the TSPY tandem array; boxed off it, the P1 to P5 Yq palindrome family, each arm meeting its own inverted copy." src="/img/dotplot_self_chry.png" />
+<Figure caption="T2T-CHM13v2 chrY aligned to itself over the euchromatic male-specific region, at a 25 kb minimum length. Boxed on the diagonal, the TSPY tandem array; boxed off it, the P1 to P5 Yq palindrome family, each arm matching its inverted copy." src="/img/dotplot_self_chry.png" />
 
 The tandem array and the inverted repeats are both described in the T2T-CHM13 Y
 chromosome paper
@@ -84,7 +84,7 @@ own copies of the same Y-linked families, RBMY1B and RBMY1A1 on one side against
 RBMY1D and RBMY1E on the other, CDY10P and CDY11P either side of the centre. The
 unpainted gaps inside the arms are where the two copies differ.
 
-<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length, where four crossings survive. Bottom, one of them in a linear synteny view, colored by strand, with the genes beneath each panel. The pinched magenta ribbon is the inverted alignment." src="/img/synteny_self_chry_palindromes.png" />
+<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length, where four crossings remain. Bottom, one of them in a linear synteny view, colored by strand, with the genes beneath each panel. The pinched magenta ribbon is the inverted alignment." src="/img/synteny_self_chry_palindromes.png" />
 
 Which view to reach for is a question of how many alignments are in frame. Every
 ribbon spans the full height of the strip, so ribbons stack rather than

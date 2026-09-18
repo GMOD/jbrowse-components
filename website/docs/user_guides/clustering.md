@@ -17,7 +17,7 @@ naming what is being clustered.
 | [Multi-quantitative](/docs/user_guides/multiquantitative_track) | Cluster rows by score...      | each subtrack's signal profile |
 | [Multi-row feature](/docs/user_guides/multirow_feature_track)   | Cluster rows by similarity... | a feature attribute per bin    |
 
-<Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="Cluster rows by genotype on a multi-sample variant track: the rows arrive in the callset's own order, and the run reorders them and draws the dendrogram beside them." />
+<Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="Cluster rows by genotype on a multi-sample variant track: the rows start in callset order, and clustering reorders them and draws the dendrogram beside them." />
 
 Clustering reads **only the region currently in view**, so it describes one
 window: a clustered painting is genome-wide relatedness only when the view is

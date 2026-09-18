@@ -158,7 +158,7 @@ Any pair of the set opens as a two-row view. This one puts Aegilops tauschii's
 seven chromosomes over bread wheat 4A, with the palette button's **Query**
 painting each link by the tauschii chromosome it leaves.
 
-<Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track. Color by → Query gives each chromosome its own color, and 4A resolves into three blocks in order along it: 4D, then 5D, then 7D." src="/img/orthofinder_synteny/wheat_4a.png" />
+<Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track. Color by → Query gives each chromosome a distinct color, and 4A resolves into three blocks in order along it: 4D, then 5D, then 7D." src="/img/orthofinder_synteny/wheat_4a.png" />
 
 6D and the other three uninvolved chromosomes reach 4A only as scattered
 singletons. The blocks are the 4AL/5AL and 4AL/7BS translocation pair,
@@ -240,7 +240,7 @@ as the outgroup. Their gene counts are similar and their genome sizes are not,
 the difference being repeat sequence between the genes. On one bp/px a row's
 length is its genome size.
 
-<Figure caption="Five nightshade-family genomes stacked on OrthoFinder orthogroups: tomato, potato, pepper, Nicotiana attenuata, coffee, all on one bp per pixel. Pepper's row is by far the longest while answering tomato gene for gene, and coffee's is the shortest." src="/img/orthofinder_synteny/solanaceae.png" />
+<Figure caption="Five nightshade-family genomes stacked on OrthoFinder orthogroups: tomato, potato, pepper, Nicotiana attenuata, coffee, all on one bp per pixel. Pepper's row is by far the longest while matching tomato gene for gene, and coffee's is the shortest." src="/img/orthofinder_synteny/solanaceae.png" />
 
 _N. attenuata_ is still on scaffolds, which the correspondence print shows as a
 low best-partner share. Its genes are spread over thousands of sequences, of
@@ -288,7 +288,7 @@ Every genome keeps the two dozen genes in this tomato window. Pepper and _N.
 attenuata_ need several times the anchor's span for them, and the lane header
 shows the intergenic expansion as a number.
 
-<Figure caption="A tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in its own coordinates. Every lane opens up more of its own genome than the anchor window to hold the same genes, the pepper and N. attenuata lanes most of all, with the multiple in each header." src="/img/multiway_synteny/solanaceae_lanes.png" />
+<Figure caption="A tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in that genome's coordinates. Every lane spans more of its genome than the anchor window to hold the same genes, the pepper and N. attenuata lanes most of all, with the multiple in each header." src="/img/multiway_synteny/solanaceae_lanes.png" />
 
 Every lane's genes stay in the anchor's order; the coffee lane is `[rev]`.
 
@@ -403,7 +403,7 @@ extra ribbons stay on the band the duplication is about.
 At one locus the two ribbons are countable. Sorghum sits over rice as the
 control, sharing the grasses' ancestry without maize's duplication.
 
-<Figure caption="One rice locus between sorghum and maize, off the same grasses_orthogroups track, with each genome's gene track under its row. Sorghum answers a rice gene with one ortholog and maize with two, one into each of the two maize regions, and the genes that kept only one maize copy sit among them." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
+<Figure caption="One rice locus between sorghum and maize, off the same grasses_orthogroups track, with each genome's gene track under its row. Sorghum has one ortholog per rice gene and maize has two, one into each of the two maize regions, and the genes that kept only one maize copy sit among them." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
 
 The genes with a single maize ribbon lost a copy after the duplication.
 

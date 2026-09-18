@@ -65,7 +65,7 @@ Table filters are reflected in the circular view.
 
 <Figure caption="The SV inspector with filter applied." src="/img/sv_inspector_importform_filtered.png" />
 
-<Video src="/media/sv/inspector_route.mp4" caption="The same callset from the Add menu onward: the import form, the URL and assembly it wants, the table and circle it opens, and a chromosome typed into the table filter taking the chords with it." />
+<Video src="/media/sv/inspector_route.mp4" caption="The same callset from the Add menu onward: the import form, the URL and assembly it takes, the table and circle it opens, and a chromosome typed into the table filter, which filters the chords too." />
 
 ## Launching breakpoint split view
 

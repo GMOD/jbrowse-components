@@ -124,7 +124,7 @@ Add the third assembly and both alignments the same way as above, then:
 
 Open each strain's gene track from its own track selector.
 
-<Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, and each strain's gene track from that row's own track selector." />
+<Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, and each strain's gene track from the track selector for that row." />
 
 <Figure caption="Three H. pylori strains stacked with a gene track on each genome. Ribbons connect aligned blocks between adjacent genomes, and genes such as prfB, fliR, cbf2 and efp line up across all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 

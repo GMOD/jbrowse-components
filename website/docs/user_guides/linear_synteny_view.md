@@ -370,7 +370,7 @@ The human/chimp synteny alignment plus RepeatMasker resolves a lineage-specific
 insertion an order of magnitude smaller than the L1HS above, and it is still a
 gap in the alignment with the element named at the indel:
 
-<Figure caption="A human-specific AluYb8 (~0.3 kb) in PICALM, inserted downstream of a conserved AluY present in both species. A small insertion still reads clearly as an indel." src="/img/synteny_te_picalm_alu.png" />
+<Figure caption="A human-specific AluYb8 (~0.3 kb) in PICALM, inserted downstream of a conserved AluY present in both species. Even an insertion this small draws as a visible indel." src="/img/synteny_te_picalm_alu.png" />
 
 ## See also
 

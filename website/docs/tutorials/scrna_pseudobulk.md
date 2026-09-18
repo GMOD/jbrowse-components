@@ -185,7 +185,7 @@ rows in the figure below:
 Take the row order and colors from the single-cell object, so related lineages
 stay adjacent and a row keeps the color its cluster had on the UMAP.
 
-<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal walks down the diagonal." src="/img/scrna/marker_panel.png" />
+<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal runs down the diagonal." src="/img/scrna/marker_panel.png" />
 
 A marker gene reads as the height of its 3' spike from row to row. The figure is
 on a log scale, because every row shares one axis.

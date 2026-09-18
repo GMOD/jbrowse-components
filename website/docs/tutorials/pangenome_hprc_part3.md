@@ -374,7 +374,7 @@ take **Open in hs1**. The view that opens is hs1's own chr17, where the node
 draws as one long dark bar in the segments lane and RepeatMasker tiles it with
 long L1 elements.
 
-<Figure caption="A donor node on both coordinate systems: the GRCh38 window, with the bubble it sits in and the rGFA segments in reference-position colors; the graph cut from it, where the boxed charcoal node is the sequence hg38 has no coordinate for, haloed as a bubble and labelled a repeat array; then that node on hs1's own chr17, drawn as one dark bar under RepeatMasker, which is tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
+<Figure caption="A donor node on both coordinate systems: the GRCh38 window, with the bubble it sits in and the rGFA segments in reference-position colors; the graph cut from it, where the boxed charcoal node is the sequence hg38 has no coordinate for, haloed as a bubble and labelled a repeat array; then that node on hs1's chr17, drawn as one dark bar under RepeatMasker, which is tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
 
 With two assemblies loaded the graph's own **Launch** menu offers **Linear
 synteny view** as well, one panel per contributor at the locus each contributes

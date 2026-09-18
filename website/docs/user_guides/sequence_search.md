@@ -86,7 +86,7 @@ With more than one motif in the list, **Launch as one track** puts every motif's
 matches in one track, distinguishable only by name, and **Launch one track per
 motif** gives each its own lane.
 
-<Video src="/media/ui/sequence_search_motifs.mp4" caption="The route on a view with no tracks open: the view menu's Sequence search, the Motif list mode and the enzymes it arrives prefilled with, three of them kept, and a lane per enzyme scanned out of the reference." />
+<Video src="/media/ui/sequence_search_motifs.mp4" caption="The route on a view with no tracks open: the view menu's Sequence search, the Motif list mode and the enzymes it prefills, three of them kept, and a lane per enzyme scanned out of the reference." />
 
 ## Ship a search in config.json
 

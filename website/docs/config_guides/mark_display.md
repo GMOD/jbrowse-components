@@ -133,7 +133,7 @@ other mark.
 One mark per display may ask for it: the chrome has one place to put a second
 axis, and a config declaring two is refused when it is read.
 
-<Figure src="/img/mark_display/two_axes.png" caption="Reads as a mark display: each read's mapping quality on the left axis, and the coverage over them as bars on an axis of their own on the right."/>
+<Figure src="/img/mark_display/two_axes.png" caption="Reads as a mark display: each read's mapping quality on the left axis, and the coverage over them as bars on a separate axis on the right."/>
 
 ## Colour scales
 
@@ -250,7 +250,7 @@ colour scale's `domain` is, on the row channel instead of the colour one:
 **Move down** and **Hide section**; a move writes the drawn order back as the
 facet's `domain`, and **Reset section order** clears it.
 
-<Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a band of its own under the chip that names it, and the untagged reads in a third."/>
+<Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 
 ## Transforms
 

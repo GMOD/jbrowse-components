@@ -101,7 +101,7 @@ the legend order and colours.
 
 Open it on a few tens of kilobases of 1q21.
 
-<Figure src="/img/alu_age/locus.png" caption="Alu copies over a window of 1q21, one bar per copy with its divergence from its consensus as the height and its lineage as the colour. The AluY bars are the shortest in the window and the AluJ bars the tallest, with AluS between; the fossil monomers stand with AluJ." />
+<Figure src="/img/alu_age/locus.png" caption="Alu copies over a window of 1q21, one bar per copy with its divergence from its consensus as the height and its lineage as the colour. The AluY bars are the shortest in the window and the AluJ bars the tallest, with AluS between; the fossil monomers are as tall as AluJ." />
 
 `maxBpPerPx` stops the mark drawing once the view is wider than that. Hover a
 bar for its values; click it to open the row.

@@ -101,7 +101,7 @@ tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz \
 Several of the chains it returns are long, they overlap each other on both
 sides, and some of them run backwards.
 
-<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on its own SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
+<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on that assembly's SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
 
 The gene order is the same in both assemblies (_SMN2_ first, then _SMN1_), so
 this is two copies similar enough that a whole-genome chainer can join either

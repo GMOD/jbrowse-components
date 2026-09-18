@@ -182,7 +182,7 @@ view. They are not saved to a session or a shared link, and changing the
 grouping dimension clears them, since a section name means nothing under a
 different dimension.
 
-<Figure caption="HG002 ONT reads grouped and colored by the HP tag. The pileup splits into one tinted section per haplotype, so phased reads and their haplotype-correlated SNPs read at a glance." src="/img/alignments/haplotype.png" />
+<Figure caption="HG002 ONT reads grouped and colored by the HP tag. The pileup splits into one tinted section per haplotype, so each haplotype's reads and SNPs sit in a separate section." src="/img/alignments/haplotype.png" />
 
 Grouping by `HP` is also how to check that a heterozygous variant's supporting
 reads sit on one haplotype; see
@@ -232,7 +232,7 @@ happens to the read height, then to the track height:
   height so the whole pileup fits, shrinking as coverage deepens. No preset
   reads as selected while fitting; picking one drops back to fixed
 
-<Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to track height selected. Because the size is computed while fitting, none of the presets above it read as selected." />
+<Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to track height selected. Because the size is computed while fitting, none of the presets above it is selected." />
 
 Fit mode adapts to how much room a pileup has: drag the track taller or shorter
 and the reads re-fit. Reads draw no taller than the Normal preset and no smaller
@@ -284,7 +284,7 @@ secondaries, or keep only properly-paired reads), by read name, or by tag value
 radios keep only spliced reads (a reference skip, `N`, in the CIGAR) or only
 unspliced ones. The coverage histogram follows the filter.
 
-<Figure caption="The Filter options dialog with HP typed as the tag. A value of * keeps every read carrying the tag; the SAM flag masks sit behind their own section, which by default excludes unmapped, QC-fail and duplicate reads." src="/img/alignments/filter_dialog.png" />
+<Figure caption="The Filter options dialog with HP typed as the tag. A value of * keeps every read carrying the tag; the SAM flag masks sit in a separate section, which by default excludes unmapped, QC-fail and duplicate reads." src="/img/alignments/filter_dialog.png" />
 
 Right-click a read for the **Filter** submenu: _Filter for this read_, _Filter
 for this haplotype (HP:n)_ and _Filter for this read group (RG:x)_ read their
@@ -360,7 +360,7 @@ the insert size.
 distance between mates**, so the insert-size distribution is visible directly
 and short-insert (insertion-supporting) pairs lift away from the background.
 
-<Figure caption="Read cloud on a synthetic SV dataset. Reads are stratified by log distance between mates, surfacing insertion pairs (pink) against the background." src="/img/alignments/read_cloud.png" />
+<Figure caption="Read cloud on a synthetic SV dataset. Reads are stratified by log distance between mates, which separates the insertion pairs (pink) from the background." src="/img/alignments/read_cloud.png" />
 
 ## Going to a read's mate
 

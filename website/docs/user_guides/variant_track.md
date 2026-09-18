@@ -11,7 +11,7 @@ breakends. **Color by...** buckets variants by SnpEff/VEP consequence severity
 or SV type with one click, or colors by any INFO field via a jexl expression
 (e.g. minor allele frequency).
 
-<Figure caption="Variant track indicating an SNV alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
+<Figure caption="Variant track marking an SNV beside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
 ## Display types
 

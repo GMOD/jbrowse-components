@@ -187,7 +187,7 @@ the axis, so a bar means the same fraction wherever you navigate.
 `posColor`/`negColor` reuse the stack's colors. Placed above the stack, each
 peak sits over a stripe:
 
-<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
+<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
 
 Each bar is the fraction of the cohort carrying a call past the cutoff, with no
 background model or significance test;

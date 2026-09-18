@@ -265,7 +265,7 @@ The BED holds 11,327 rows, small enough to fetch whole at any zoom. A
 }
 ```
 
-<Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the right axis count the pairs between 2 and 10 kb per bin. The centromere, from 26 to 32 Mb, saturates both; outside it the bars stand up in a handful of places, each under a short stack of dark points." />
+<Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the right axis count the pairs between 2 and 10 kb per bin. The centromere, from 26 to 32 Mb, saturates both; outside it the bars rise in a handful of places, each under a short stack of dark points." />
 
 The bar at 34.2 Mb is a homozygous deletion; the one at 32.9 Mb is the intron
 above.

@@ -475,7 +475,7 @@ and a local build swaps in the `ecoli_cactus` prefix written above.
 The segments draw as an ordinary track on K12, and **Track menu → Launch → Graph
 genome view (this region)** cuts a subgraph at whatever is on screen.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session, the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) run from the segments lane's own menu, painting the lane in the graph's colors as the graph loads." />
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session, the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) run from the segments lane's menu, painting the lane in the graph's colors as the graph loads." />
 
 A kilobase or two is the width to open one at. Past the flagellar operon, K12
 carries an IS1 element the other four skip. A second copy of the segments track,
@@ -504,7 +504,7 @@ covers what the walk can be trusted for, and the graph size past which
 raster the [pggb tutorial](/docs/tutorials/pangenome_ecoli#compared-to-odgi-viz)
 also shows: one row per strain, graph node order on the horizontal axis.
 
-<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order, so nothing lines up with a gene or coordinate. The gold band marks the locus carried over to the figure below." src="/img/pangenome_cactus/graph.png" />
+<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order, so its positions do not correspond to genes or coordinates. The gold band marks the locus carried over to the figure below." src="/img/pangenome_cactus/graph.png" />
 
 The `odgi pav` track shows the same information. Drawing it on K12's coordinates
 in the raster's row order and colors leaves the horizontal axis as the only

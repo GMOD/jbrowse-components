@@ -152,7 +152,7 @@ class, each with its own coverage curve and arcs.
 - The outward-pointing band, where a tandem duplication would go, stays near
   empty
 
-<Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles standing on one pair of breakpoints, the normal band's coverage runs on unremarked, and the outward-pointing band is near empty." src="/img/sv_channels.png" />
+<Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles ending on one pair of breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band is near empty." src="/img/sv_channels.png" />
 
 The call also names a duplicated copy in its `INFO.CPX_INTERVALS`, and no band
 shows it. A copy landing beside its origin leaves pair orientation alone, so

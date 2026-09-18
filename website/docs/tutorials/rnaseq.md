@@ -129,7 +129,7 @@ read (PacBio IsoSeq, Nanopore) often spans a whole transcript, aligning across
 every exon with one `N` skip per intron. JBrowse derives the same arcs and
 connectors from those skips:
 
-<Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. A long read often spans all of a transcript's exons at once, producing a long, clean spliced alignment." src="/img/rnaseq/longread_isoseq.png" />
+<Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. A long read often spans all of a transcript's exons, so one spliced alignment covers the whole transcript." src="/img/rnaseq/longread_isoseq.png" />
 
 ## Reading a deep pileup
 

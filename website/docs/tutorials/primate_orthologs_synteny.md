@@ -249,7 +249,7 @@ and a session or a config authors the same thing as `domain`.
 }
 ```
 
-<Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing the RefSeq gene models annotated on its chromosome. Every lane keeps the block in order; the siamang lane reads it backwards, so its header reads [rev] and its ribbons are the reversed-strand ones, drawn straight because the lane is mirrored." src="/img/multiway_synteny/primate_tp53_lanes.png" />
+<Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing the RefSeq gene models annotated on its chromosome. Every lane has the block in order; the siamang lane has it reversed, so its header shows [rev] and its ribbons are the reversed-strand ones, drawn straight because the lane is mirrored." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Zoomed out to four megabases the same track reads as a synteny painting, and
 color separates forward blocks from reversed ones. A block painted as reversed

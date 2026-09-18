@@ -504,7 +504,7 @@ clears the outline.
 
 <Figure caption="The same lanes cut to a few genes, with one ribbon clicked. Each ribbon links one gene to its ortholog in the lane below; the clicked group carries an outline down the lanes that chain it, and the details panel opens on the pair the click landed on." src="/img/multiway_synteny/lgv_track_clicked.png" />
 
-<Video src="/media/synteny/multiway_zoom_out.mp4" caption="The grape lanes from gene scale back out to the block: a hovered ribbon reads one ortholog group down the stack, and each zoom-out re-fits every lane's own frame to the anchor's widening window." />
+<Video src="/media/synteny/multiway_zoom_out.mp4" caption="The grape lanes from gene scale back out to the block: a hovered ribbon reads one ortholog group down the stack, and each zoom-out re-fits every lane's frame to the anchor's widening window." />
 
 ## Restacking around a locus
 

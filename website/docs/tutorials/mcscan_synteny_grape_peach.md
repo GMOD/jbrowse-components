@@ -208,7 +208,7 @@ whether the genes inside hold their order.
 
 Zoom to one block with both gene tracks on and set to **Show only genes**.
 
-<Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line drawn across each gene's own extent; the genes between them have no anchor in this run." src="/img/mcscan_synteny/gene_level.png" />
+<Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line drawn across the extent of each gene; the genes between them have no anchor in this run." src="/img/mcscan_synteny/gene_level.png" />
 
 Most genes carry no ribbon, since MCScan anchors only the pairs it could call
 confidently. Zooming further widens the ribbons, since the file records only
@@ -220,7 +220,7 @@ Either track also loads in a dotplot (**Add → Dotplot view**), where a gene pa
 is one point and a block a run of them. The axes start in index order;
 **Re-order chromosomes** sorts the vertical axis to follow the horizontal one.
 
-<Video src="/media/synteny/dotplot_reorder.mp4" caption="The axes as they open, in each assembly's own index order, and then re-sorted. The reorder is a dialog off the dotplot header's overflow menu; it reports how many grape chromosomes it moved and how many it flipped." />
+<Video src="/media/synteny/dotplot_reorder.mp4" caption="The axes as they open, in each assembly's index order, and then re-sorted. The reorder is a dialog off the dotplot header's overflow menu; it reports how many grape chromosomes it moved and how many it flipped." />
 
 <Figure caption="Peach against grape after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block." src="/img/mcscan_synteny/dotplot.png" />
 

@@ -183,7 +183,7 @@ reference unplaced, and the lane's own annotation has no model there to draw.
 The flanking genes, _CFH_ on one side and _CFHR4_ onward on the other, place in
 every lane.
 
-<Figure caption="The CFH cluster on hg38 over eight HPRC haplotype lanes placed by the graph's own alignment, each lane drawing that haplotype's CAT gene models on its contig. The non-carrier lanes align straight through; in the carrier lanes the alignment stops before CFHR3 and resumes past CFHR1, and nothing is drawn in between." src="/img/multiway_synteny/hprc_cfh_haplotypes.png" />
+<Figure caption="The CFH cluster on hg38 over eight HPRC haplotype lanes placed by the graph's alignment, each lane drawing that haplotype's CAT gene models on its contig. The non-carrier lanes align straight through; in the carrier lanes the alignment stops before CFHR3 and resumes past CFHR1, and nothing is drawn in between." src="/img/multiway_synteny/hprc_cfh_haplotypes.png" />
 
 The four carriers also sort together, at the bottom of this stack, because lane
 order is densest first over the fetched window and a lane whose alignment skips

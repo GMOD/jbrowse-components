@@ -330,7 +330,7 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
 file's `itemRgb`. The white gaps are where a strain has no untangle segment on
 that stretch of K12.
 
-<Figure caption="The untangle projection read two ways, with each of IAI39's five inverted arms boxed in its own color in both. Above, one row per strain over the whole K12 chromosome, red where the strain runs backwards and white where it has no segment at all; only IAI39 is inverted at length. Below, K12 against IAI39 as a dotplot, where every descending segment is an inversion." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
+<Figure caption="The untangle projection read two ways, with each of IAI39's five inverted arms boxed in a distinct color in both. Above, one row per strain over the whole K12 chromosome, red where the strain runs backwards and white where it has no segment at all; only IAI39 is inverted at length. Below, K12 against IAI39 as a dotplot, where every descending segment is an inversion." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
 
 A box of one color marks the same arm in both panels. `selfCov` in the popup
 goes above 1 where a segment lands on a reference span the same strain also
@@ -672,7 +672,7 @@ pggb rendered the graph in 1D with
 [`odgi layout`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_layout.html)
 (`*.lay.draw.png`). The figure below is `odgi viz` re-run at a printable size.
 
-<Figure caption="The same five-strain graph drawn by odgi viz, one row per strain. The axis is graph node order rather than K12 coordinates, so nothing lines up with a gene or a chromosome position." src="/img/pangenome/graph.png" />
+<Figure caption="The five-strain graph drawn by odgi viz, one row per strain. The axis is graph node order, so its positions do not correspond to genes or to K12 coordinates." src="/img/pangenome/graph.png" />
 
 One row per strain over a horizontal axis of graph node order; the brackets
 under the rows are the links. The JBrowse projections keep one row per strain
@@ -779,7 +779,7 @@ The clip below takes that from the beginning: a K12 session carrying the plugin
 and its gene track, the block above added through **Open track... → Add
 pangenome graph track**, and the graph cut from the window that leaves.
 
-<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the track above added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the segments lane's own menu cutting the graph below. The nodes that arrive are the blocks the lane above draws, and the cut paints that lane in the graph's own colors." />
+<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the track above added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the segments lane's menu cutting the graph below. The graph's nodes are the blocks the lane above draws, and the cut paints that lane in the graph's colors." />
 
 A node's drawn length is proportional to its sequence by default, so one long
 arm can swallow the rest of the drawing. **Bubble spread → Compress lengths**
@@ -838,7 +838,7 @@ to find an event and the fine one to open it: a tier node's **Open in K12**
 takes the linear view to the span it stands for, inside the kilobase the fine
 index draws at.
 
-<Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the fine index: hovering the node marks the K12 span it stands for in the linear view above, and the node's own Open in K12 entry lands the view on that span, where the segments lane draws." />
+<Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the fine index: hovering the node marks the K12 span it stands for in the linear view above, and the node's Open in K12 entry moves the view to that span, where the segments lane draws." />
 
 Switching **Layout** to **Sample rows** gives each strain its own row. On this
 graph a row means carriage, since it names a path that walks the segment; on an
@@ -921,7 +921,7 @@ and pick **Open in CFT073**: it opens CFT073 at `1,048,515` with CFT073's gene
 track. The **Launch** cascade in the view menu is the whole-window version of
 the same thing.
 
-<Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's own menu opened on the CFT073 allele, and the view its Open in entry adds: CFT073 on its own coordinates, with its gene track already under it." />
+<Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's menu opened on the CFT073 allele, and the view its Open in entry adds: CFT073 in CFT073 coordinates, with its gene track already under it." />
 
 Seven K12 genes sit inside the span the two links bridge (the _elf_ fimbrial
 operon _elfA_, _elfD_, _elfC_, _elfG_, and _ycbU_, _ycbV_, _ycbF_), with _ssuE_
