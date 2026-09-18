@@ -57,9 +57,8 @@ test('tooLarge phase commits TooLargeMessage and replaces the canvas', async () 
   // still says which display the banner stands for, which is how a capture
   // warns about it; with no testid, since no display body is on screen
   expect(
-    container
-      .querySelector('[data-display-phase="tooLarge"]')
-      ?.getAttribute('data-display-id'),
+    container.querySelector<HTMLElement>('[data-display-phase="tooLarge"]')
+      ?.dataset.displayId,
   ).toBe('test-display')
   expect(queryByTestId('probe-display')).toBeNull()
 })
@@ -74,9 +73,8 @@ test('renderError phase commits DisplayRenderErrorOverlay and replaces the canva
   await findByTestId('reload_button') // retry affordance committed
   expect(queryByTestId('probe-canvas')).toBeNull()
   expect(
-    container
-      .querySelector('[data-display-phase="renderError"]')
-      ?.getAttribute('data-display-id'),
+    container.querySelector<HTMLElement>('[data-display-phase="renderError"]')
+      ?.dataset.displayId,
   ).toBe('test-display')
 })
 

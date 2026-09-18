@@ -90,10 +90,10 @@ export function resolveTrackId(
     .filter(t => `${t.trackId} ${trackName(t)}`.toLowerCase().includes(target))
     .slice(0, 8)
     .map(t => t.trackId)
-  throw new Error(
-    `--track "${input}" is not in the config` +
-      (suggestions.length ? `. Did you mean: ${suggestions.join(', ')}?` : ''),
-  )
+  const hint = suggestions.length
+    ? `. Did you mean: ${suggestions.join(', ')}?`
+    : ''
+  throw new Error(`--track "${input}" is not in the config${hint}`)
 }
 
 async function fetchCatalog(url: string) {
