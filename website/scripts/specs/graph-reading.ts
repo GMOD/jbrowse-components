@@ -164,6 +164,10 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
         ...kiv2WalksGraphView(),
         layoutMode: 'walkrows',
         colorScheme: 'uniform',
+        // GRCh38's bar is the graph's own backbone nodes, the other rows are
+        // flat bars; at depth width its nodes swelled and thinned by carriage
+        nodeWidth: 'uniform',
+        contigThickness: 12,
         paneHeight: 300,
       },
     ],

@@ -127,11 +127,12 @@ option it greys out rather than disappearing, reading _(no structural variants
 found)_ on a callset that carries none.
 
 The common classes get fixed colors, so the legend reads the same across tracks:
-deletion (red), duplication (blue), insertion (green), inversion (orange), copy
-number (purple), and breakend (brown). Any other `SVTYPE` token gets an
-auto-assigned color and shows its raw token in the legend, and a record whose
-alleles span more than one class is flagged **Mixed** (grey). The legend lists
-only the classes actually present in the loaded region.
+deletion (red), duplication (blue), insertion (purple), inversion (orange), copy
+number (dark brown), and breakend (brown). A het cell draws its class color
+paler, as in the default coloring, and the legend shows both shades. Any other
+`SVTYPE` token gets an auto-assigned color and shows its raw token in the
+legend, and a record whose alleles span more than one class is flagged **Mixed**
+(grey). The legend lists only the classes actually present in the loaded region.
 
 Copy-number alleles written as `<CN0>`, `<CN1>`, `<CN3>`, ... are colored on an
 absolute rainbow by copy number (low copy blue, ascending to red), so different
@@ -141,7 +142,7 @@ copy number.
 The class is read from the ALT allele (`<DEL>`, `<CN3>`, breakend notation),
 falling back to `INFO/SVTYPE` when the ALT is a plain sequence.
 
-<Figure caption="1000 Genomes SV ensemble callset on chr19 colored by SV type, each alt-carrying cell taking its variant's class color. The legend names every class present, including the callset's complex (CPX) events." src="/img/multisv_svtype.png" />
+<Figure caption="1000 Genomes SV ensemble callset on chr19 colored by SV type, each alt-carrying cell taking its variant's class color, pale for a het and full for a hom. The legend names every class present, including the callset's complex (CPX) events, with both shades beside each." src="/img/multisv_svtype.png" />
 
 This preset also has a
 [`featureColor` value](/docs/config_guides/variant_track#coloring-cells-by-the-variant)

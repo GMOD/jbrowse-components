@@ -2388,8 +2388,10 @@ export const uiSpecs: ScreenshotSpec[] = [
   // Roadmap Epigenomics 2015 (Nature 518:317), Fig. 3a: all 127 epigenomes over
   // ~3.7 Mb of chr9 from FAM205A to ALDH1B1, in Roadmap's tissue order. At 900
   // px a row is tall enough to carry its label, tinted by tissue group.
-  // Promoter columns run through every row, and PAX5 is in a transcribed state
-  // only in the B cell rows and GM12878.
+  // Promoter columns run through every row. Over PAX5, strong transcription
+  // with genic enhancers (4_Tx + 6_EnhG) is B cells and GM12878 only; spleen,
+  // PBMCs, iPS/ES lines and H9 neural progenitors carry transcription without
+  // the enhancers.
   {
     mode: 'url',
     name: 'chromhmm',
@@ -2428,7 +2430,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'PAX5 transcribed in the B cell rows',
+        text: 'PAX5 transcribed, with genic enhancers, in B cells only',
         leader: true,
         // rows 40 and 41 of 127 in ROADMAP_FIGURE_GROUPS order
         anchor: {

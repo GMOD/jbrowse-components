@@ -332,7 +332,8 @@ walks through the same reading, there for gene names. With no gene names:
 
 Above the lanes sits the pggb graph-depth wiggle the
 [E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli#pangenome-depth-projection-core-vs-accessory)
-builds from these same strains.
+builds from these same strains, and a jexl `color` paints the island's genes red
+by name in every lane.
 
 ```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
 {
@@ -349,7 +350,9 @@ builds from these same strains.
             "trackId": "ecoli_ava",
             "type": "MultiWaySyntenyDisplay",
             "domain": ["NCTC86", "CFT073", "Sakai", "IAI39"],
-            "height": 340
+            "height": 340,
+            "color": "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? '#d62728' : 'goldenrod'",
+            "showLegend": false
           }
         ]
       }
@@ -358,7 +361,7 @@ builds from these same strains.
 }
 ```
 
-<Figure caption="The paa operon island on K-12 with a flank on each side. Graph depth drops from five genomes to two across the island and comes back after it. In the all-vs-all lanes below, K-12 and NCTC86 carry the island; CFT073, Sakai and IAI39 go straight from one flank to the other, so the ribbons from NCTC86 close to a wedge over the gap." src="/img/multiway_synteny/ecoli_island_lanes.png" />
+<Figure caption="The paa operon island on K-12 with a flank on each side. Graph depth drops from five genomes to two across the island and comes back after it. In the all-vs-all lanes below, each genome's island genes (feaR, tynA and the paa operon) are red: K-12 and NCTC86 carry them, while CFT073, Sakai and IAI39 annotate none and go straight from one flank to the other." src="/img/multiway_synteny/ecoli_island_lanes.png" />
 
 ### The gap in the graph genome view {#the-same-gap-drawn-as-a-graph}
 

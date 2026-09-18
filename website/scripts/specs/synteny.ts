@@ -1359,13 +1359,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 860,
   },
 
-  // The alignment-level case of the same track: the E. coli all-vs-all PAF as
-  // lanes over the paa-operon island, under the pggb graph-depth wiggle. The
-  // window holds the island (depth 2, 1,446-1,474 kb) and a depth-5 flank on
-  // each side, so the depth lane reads as a drop and a return. The lanes name
-  // which genomes skip it: their flanks sit side by side, and the ribbons from
-  // NCTC86 close to a wedge. Same-orientation strains adjacent, so the [rev]
-  // crossings sit at one junction.
+  // The E. coli all-vs-all PAF as lanes over the paa-operon island (depth 2,
+  // 1,446-1,474 kb) with a depth-5 flank on each side, under the pggb
+  // graph-depth wiggle. Each lane colors its own GFF's island genes (feaR,
+  // feaB, tynA, paaZ-paaY) red by name, so presence is red in a lane and
+  // absence is none: CFT073, Sakai and IAI39 annotate none of them.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_island_lanes',
@@ -1394,6 +1392,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 type: 'MultiWaySyntenyDisplay',
                 domain: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'],
                 height: 340,
+                color:
+                  "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? '#d62728' : 'goldenrod'",
+                showLegend: false,
               },
             ],
           },
@@ -1407,22 +1408,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'only 2 of the 5 genomes carry this island',
+        text: 'island genes in red: K-12 and NCTC86 only',
         fontSize: 18,
         anchor: {
           track: 'ecoli_pggb_depth',
           locus: 'chr:1,460,000',
           fracY: 0.35,
-        },
-      },
-      {
-        type: 'text',
-        text: 'the other 3 skip it: their flanks join',
-        fontSize: 18,
-        anchor: {
-          track: 'ecoli_ava',
-          locus: 'chr:1,460,000',
-          fracY: 0.42,
         },
       },
     ],
