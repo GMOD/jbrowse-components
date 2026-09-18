@@ -55,7 +55,6 @@ How to drive JBrowse once it is running. New here? Start with the
 ## Analysis
 
 - [](/docs/user_guides/clustering)
-- [](/docs/user_guides/derivative_allele)
 - [](/docs/user_guides/sv_visualization)
 
 ## Tutorials

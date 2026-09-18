@@ -117,11 +117,7 @@ export const figureContentTypes: Record<string, string> = {
 // homepage and the blog have linked `/img/screenshot.webp` for years; that
 // generator asserts every path it writes is named here, so a new one cannot
 // quietly become a stored figure.
-const derivedFigureDirs = [
-  'tutorial-thumbs/',
-  // drawn from committed reads by gen-segment-maps.ts, no capture involved
-  'segment-maps/',
-]
+const derivedFigureDirs = ['tutorial-thumbs/']
 const derivedFigureFiles = new Set([
   'screenshot.webp',
   'desktop-available-genomes.webp',

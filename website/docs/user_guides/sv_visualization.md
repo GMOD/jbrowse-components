@@ -296,12 +296,12 @@ rearrangement. See
 
 <Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions, the ordinary pileup above and the read drawn against the reference below. Each gap in the diagonal is sequence the read carries and the reference does not." src="/img/read_vs_ref_insertion.png" />
 
-### Reconstructing a derivative allele
+### Rebuilding a derivative allele
 
-Where several long reads cross the same junctions in the same order, **Launch →
-Reconstruct derivative allele...** groups them by route and draws the allele the
-chosen route describes. What it needs, how to judge its list and how far its
-recall reaches are in [](/docs/user_guides/derivative_allele).
+Where long reads cross every junction of a rearrangement, the allele they carry
+can be rebuilt as a sequence and loaded as an assembly of its own, with the
+reads realigned to it. [](/docs/tutorials/cancer_sv) rebuilds COLO829's der(3)
+that way with `sv_multihop.py derive`.
 
 ## Signatures by SV type
 
@@ -354,9 +354,8 @@ into a static picture.
 
 A read with several supplementary alignments visits more than two loci, and the
 view grows a panel per locus. The COLO829 tutorial follows one such chain across
-three chromosomes, and
-[builds this view from the reads](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
-with **Launch → Reconstruct derivative allele...** on the tumor track.
+three chromosomes and
+[opens this view from a callset record](/docs/tutorials/cancer_sv#following-the-chain-across-panels).
 
 <Figure caption="A COLO829 chain through chr3, chr10 and chr12 and back to chr3, one panel per locus with the tumor pileup in each. The splines carry the same molecules from panel to panel, in the order the reads cross the junctions." src="/img/cancer_sv/multihop_split_view.png" />
 
@@ -375,9 +374,7 @@ click on a chord drawn from that same file, and only for the stacked shape.
 The walk treats two junctions leaving one locus as one molecule, which the
 caller does not assert, so it stops where that would be a guess: two open
 continuations at a locus, or a continuation leading back to a locus already on
-screen. To work from the reads themselves instead, use
-[Reconstruct derivative allele](/docs/user_guides/derivative_allele), which
-ranks whole routes by how many molecules independently take each.
+screen.
 
 ## Phasing heterozygous SVs
 
@@ -425,25 +422,23 @@ this through with the HG008 phased tumor assembly.
 
 ## Summary
 
-| Display / setting             | How to enable                   | Best for                                           |
-| ----------------------------- | ------------------------------- | -------------------------------------------------- |
-| Pileup (default)              | Default lower panel             | Base-level detail, individual reads                |
-| Color by pair orientation     | Color by in track menu          | Abnormal orientation patterns (RL/LL/RR)           |
-| Color by insert size          | Color by in track menu          | Insert size anomalies (pileup)                     |
-| Read arcs                     | Read connections in track menu  | Overview of long-range connections                 |
-| SV channels                   | Read connections in track menu  | One band per orientation class, with arcs          |
-| Read cloud                    | Read connections in track menu  | Counting discordant pairs, orientation per read    |
-| Linear read vs ref            | Right-click on any read         | Complex alignment of a single long read            |
-| Reconstruct derivative allele | Launch in the track menu        | The route several long reads agree on              |
-| Breakpoint split view         | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
-| Group by HP tag               | Group by in track menu          | Confirming heterozygous SVs on one haplotype       |
-| Dotplot view                  | Launch from the Add menu        | Chromosome-scale rearrangements (de novo assembly) |
-| Linear synteny view           | Add menu or dotplot selection   | Base-level alignment between two genomes           |
+| Display / setting         | How to enable                   | Best for                                           |
+| ------------------------- | ------------------------------- | -------------------------------------------------- |
+| Pileup (default)          | Default lower panel             | Base-level detail, individual reads                |
+| Color by pair orientation | Color by in track menu          | Abnormal orientation patterns (RL/LL/RR)           |
+| Color by insert size      | Color by in track menu          | Insert size anomalies (pileup)                     |
+| Read arcs                 | Read connections in track menu  | Overview of long-range connections                 |
+| SV channels               | Read connections in track menu  | One band per orientation class, with arcs          |
+| Read cloud                | Read connections in track menu  | Counting discordant pairs, orientation per read    |
+| Linear read vs ref        | Right-click on any read         | Complex alignment of a single long read            |
+| Breakpoint split view     | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
+| Group by HP tag           | Group by in track menu          | Confirming heterozygous SVs on one haplotype       |
+| Dotplot view              | Launch from the Add menu        | Chromosome-scale rearrangements (de novo assembly) |
+| Linear synteny view       | Add menu or dotplot selection   | Base-level alignment between two genomes           |
 
 ## See also
 
 - [](/docs/user_guides/alignments_track)
-- [](/docs/user_guides/derivative_allele)
 - [SV inspector](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/circular_view)
 - [](/docs/user_guides/variant_track)

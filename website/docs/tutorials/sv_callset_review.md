@@ -152,13 +152,9 @@ Take the coordinates from an image's filename, open the
 through to the breakpoint split view, with the gene track and read details
 attached.
 
-For a junction that is one hop of something larger, the alignments track menu's
-**Reconstruct derivative allele...** groups the reads in view by the route their
-split alignments describe. COLO829's der(3) is three junctions across three
-chromosomes, and the [multi-hop tutorial](/docs/tutorials/cancer_sv) follows it
-the rest of the way.
-
-<Video src="/media/sv/derivative_allele_route.mp4" caption="The junction the figures above are of, taken the rest of the way in the browser: the tumor track menu, the routes the reads describe with the count behind each one, and Breakpoint split view replacing the window with one panel per segment of the route." />
+A junction can be one hop of something larger. COLO829's der(3) is three
+junctions across three chromosomes, and the
+[multi-hop tutorial](/docs/tutorials/cancer_sv) follows it the rest of the way.
 
 ## Other callers
 

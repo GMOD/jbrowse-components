@@ -2,7 +2,6 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import {
   DEMO_CONFIG,
-  DERIVATIVE_ROUTE_LABEL,
   HG00151_ONT_1000G_ADAPTER,
   HG002_NANOPORE_HP_TRACK,
   PARK_CURSOR,
@@ -10,9 +9,7 @@ import {
   cgiabUrl,
   kgUrl,
   lgvSession,
-  reconstructDerivativeAllele,
   sessionSpec,
-  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -1361,8 +1358,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // The READS are not in this frame, and the reason is now editorial rather
   // than forced. A level is what this lane is for -- 2 kb bins against a fixed
   // axis, which is what makes "half" readable -- and the reads' own account of
-  // the junction is two figures down the page, in the breakpoint split view and
-  // the derivative reconstruction.
+  // the junction is further down the page, in the breakpoint split view.
   //
   // It was forced once, and the record is worth keeping. The demo slice used to
   // be cut at 139,986,414, 18 kb short of this window, so a pileup drew the
@@ -1524,115 +1520,6 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // 760 cut the CNV lane off, 196 css px of it by the run's own report
     viewportHeight: 956,
-  },
-
-  // The reconstruction picker over the same junction the split view above
-  // draws, for the "three ways" walkthrough. The two other witnesses are
-  // already on the page (the benchmark BND in the SV inspector figure, the
-  // tumour contig in the synteny/dotplot ones), so the one picture missing is
-  // what the READS say on their own.
-  //
-  // A single frame, and deliberately the DIALOG rather than the view it draws.
-  // The view is a two-segment synteny panel that looks like every other one on
-  // this page; the ranked list is the thing this section is about, because the
-  // rows under the top one are terminal-repeat mismapping and the walkthrough
-  // asks the reader to read them as such.
-  //
-  // BOTH demo slices are displayed, and that is what makes the list a list.
-  // Shot on the chr3 side alone the picker offers exactly ONE route, because
-  // the routes the walkthrough asks the reader to weigh against it are built
-  // from chr13 reads whose other end lands in some other chromosome's terminal
-  // repeat — chr13's q-terminus is inside the second slice and chr3's window is
-  // nowhere near a telomere. `computeReadChains` is fed one entry per displayed
-  // region, so a region that is not on screen contributes no chain, however
-  // fully its reads' SA tags describe one.
-  //
-  // The two `loc` regions are the exact windows `realReads.cgiab.test.ts`
-  // builds its fixture from — so the figure and the test read the same records,
-  // and the ranked list here is the one those three `it`s assert against. They
-  // sit inside the demo slice's own cut with room to spare, which is what makes
-  // the read counts in the list the full BAM's; when the slice was narrower
-  // than these windows the chr13 arm lost routes off its left edge and the
-  // ranking was partly an artifact of the cut.
-  {
-    mode: 'url',
-    name: 'sv_cgiab/three_ways',
-    url: cgiabUrl({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          loc: 'chr3:139,936,789-139,986,329 chr13:114,317,474-114,353,942',
-          assembly: 'GRCh38_GIABv3',
-          tracks: [
-            {
-              trackId:
-                'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
-              type: 'LinearVariantDisplay',
-              height: 40,
-            },
-            {
-              trackId: 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
-              type: 'LinearAlignmentsDisplay',
-              featureHeight: 1,
-              height: 320,
-              forceLoad: true,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'HG008-T_PacBio',
-    readyTimeout: 180000,
-    viewportHeight: 710,
-    hideTooltip: true,
-    actions: [
-      trackMenuIcon('HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3'),
-      ...reconstructDerivativeAllele(180000),
-    ],
-    // How the dialog was opened. The label is the one the actions above drive
-    // (DERIVATIVE_ROUTE_LABEL), so the two pages name one route identically
-    // because they read one string, not because someone kept them matching.
-    annotations: [
-      {
-        type: 'text',
-        text: DERIVATIVE_ROUTE_LABEL,
-        fontSize: 17,
-        maxWidth: 300,
-        anchor: {
-          track: 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
-          alignX: 'left',
-          dx: 8,
-          fracY: 0.8,
-        },
-      },
-      // Which row to read and why, since the dialog cannot say: the top route's
-      // ends are where the benchmark and the tumour contig put the junction, and
-      // none of the rows under it land there (realReads.cgiab.test.ts).
-      {
-        type: 'text',
-        text: 'the benchmark junction, also on the tumor assembly contig',
-        fontSize: 17,
-        maxWidth: 330,
-        leader: true,
-        dx: 110,
-        anchor: {
-          selector: '[data-testid="derivative-path-chr13-chr3rev"]',
-          alignX: 'right',
-        },
-      },
-      {
-        type: 'text',
-        text: 'the rest: reads mismapped in chromosome-end repeats',
-        fontSize: 17,
-        maxWidth: 330,
-        leader: true,
-        dx: 110,
-        anchor: {
-          selector: '[data-testid="derivative-toggle-weak-routes"]',
-          alignX: 'right',
-        },
-      },
-    ],
   },
 
   {

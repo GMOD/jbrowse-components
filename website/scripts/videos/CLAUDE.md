@@ -47,12 +47,11 @@ refilm and none of which the run reports.
 - **A hold is where the pointer is, not where the click was.** The last click
   before a held end state leaves the pointer on whatever now occupies that spot,
   and a re-layout moves what that is: `Replace current view` sat where the
-  breakpoint split view then drew a junction arc, so
-  `sv/derivative_allele_route` held its four panels for five seconds under a
-  tooltip naming both ends of that arc by feature uuid. The same
-  `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` before the
-  hold, which `sv/multisample_sort` already takes for the crosshair its matrix
-  draws. It is not only menus that need blurring.
+  breakpoint split view then drew a junction arc, so a clip held its panels for
+  five seconds under a tooltip naming both ends of that arc by feature uuid. The
+  same `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` before
+  the hold, which `sv/multisample_sort` already takes for the crosshair its
+  matrix draws. It is not only menus that need blurring.
 - **A display-type switch does not carry the old display's height.**
   `replaceDisplay` builds the new one from its own config, so a multi-row
   painting arriving at the default height fits every row it discovers into the

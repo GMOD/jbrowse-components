@@ -89,9 +89,8 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
     // order, so the last one seen when a tag turns up is the one above it.
     let section = ''
     // Named for the spec rather than numbered, so a clip added above one keeps
-    // every link to it working. A page embedding the same clip twice — two
-    // tutorials share derivative_allele_route — would otherwise mint the id
-    // twice and check-duplicate-ids would fail the build.
+    // every link to it working. A page embedding the same clip twice would
+    // otherwise mint the id twice and check-duplicate-ids would fail the build.
     const anchorFor = (name: string) => {
       const stem = name ? `video-${name.replaceAll('/', '-')}` : 'video-embed'
       let id = stem

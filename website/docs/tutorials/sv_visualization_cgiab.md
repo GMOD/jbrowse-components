@@ -680,18 +680,10 @@ both under `cluster_3` alongside two further breakends and tags them
 `EVENTTYPE=CHROMOPLEXY`. A caller can group junctions into an event because it
 sees the whole callset at once. It cannot show which molecule carries them.
 
-**The reads.** Put both breakpoint loci on screen and, from the tumor PacBio
-HiFi track's menu, choose **Launch → Reconstruct derivative allele...**. The
-reads in the window are grouped by the route their split alignments describe,
-each offered with the number of reads that independently take it. The top route
-runs chr13 forward into the junction and then down chr3 inverted, the
-orientation the black splines above draw. The matched normal is the control and
-a track away: the tumor reads split at this position, the normal reads read
-through it.
-
-<Figure caption="Reconstruct derivative allele over both breakpoint loci of the tumor PacBio HiFi track. The top route, chr13 forward then chr3 inverted, is the junction the benchmark and the tumor assembly both name; the rows under it are reads mismapped in chromosome-end repeats." src="/img/sv_cgiab/three_ways.png" />
-
-<Video src="/media/sv/derivative_allele_route.mp4" caption="The same route end to end, on the COLO829 melanoma chain: the track menu, the ranked routes, and Draw as Breakpoint split view replacing the window with one panel per locus on the route." />
+**The reads.** In the breakpoint split view above, the black splines join each
+tumor PacBio HiFi read's chr13 piece to its chr3 piece: chr13 forward into the
+junction, then down chr3 inverted. The matched normal is the control and a track
+away: the tumor reads split at this position, the normal reads read through it.
 
 **The assembly.** The synteny track loaded earlier shows the same thing from no
 reads at all. The C-GIAB assembly resolves both loci onto a single tumor contig,

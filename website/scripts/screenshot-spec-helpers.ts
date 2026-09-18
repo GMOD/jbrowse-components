@@ -322,33 +322,6 @@ export const openTrackSelector = (
   },
 ]
 
-// Track menu -> Launch -> Reconstruct derivative allele..., waited out to
-// the candidate list. Four figures across the cancer_sv and sv pages take this
-// route, and sv.ts's own comment used to promise they were "in the same shape
-// and wording" — a promise a helper keeps instead.
-//
-// The wait is the reconstruction itself, which walks every read's SA chain over
-// the pileup, so the caller states the timeout its own coverage earns.
-export const reconstructDerivativeAllele = (
-  timeout: number,
-): ScreenshotAction[] => [
-  { type: 'click', text: 'Launch' },
-  { type: 'click', text: 'Reconstruct derivative allele...' },
-  {
-    type: 'waitForSelector',
-    selector: '[data-testid="derivative-path-candidates"]',
-    timeout,
-  },
-]
-
-// The same route as a callout, for the frames that show the dialog and have to
-// say how it was reached. Beside the actions rather than typed out per figure,
-// the same way `cascadeBoxes` pairs with `menuCascade`: a reworded menu item is
-// then one edit, where four hand-written copies drift one at a time and the
-// figure keeps asserting a click path the spec no longer takes.
-export const DERIVATIVE_ROUTE_LABEL =
-  'Track menu → Launch → Reconstruct derivative allele...'
-
 export function cgiabUrl(session?: object) {
   if (!session) {
     return CGIAB_BASE

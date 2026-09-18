@@ -130,25 +130,12 @@ approves it for the rest of the session.
 ## Following the chain across panels
 
 A breakpoint split view, the right half of the figure above, stacks the loci the
-chain visits and draws the reads that leave one panel and arrive in another. The
-reads already carry which loci those are and in what order, so the view is built
-from them. On the tumor track, **Launch → Reconstruct derivative allele...**
-lists the routes the reads describe; pick one, set **Draw as** to **Breakpoint
-split view** and choose **Replace current view**, and the launching view is
-replaced by a panel per locus of that route, in the order the reads cross it,
-carrying the tracks that view had.
-
-<Video src="/media/sv/derivative_allele_route.mp4" caption="The route over the chr3 breakpoints: the tumor track menu, the routes the reads describe with the read count and segment sizes behind each one, and Breakpoint split view replacing the window with a panel per locus. The soft-clipped tails at the start return as the curves between panels." />
-
-This chain ends inverted at the chr3 junction it starts from, so its last
-segment shares the first panel and the view has three. Every panel opens on the
-same span, centered on the junction its segment carries. **Add → Breakpoint
-split view** builds a view whose loci you already know, one row per panel.
-
-A single record opens the same way. Right-click it in the variant track and
-choose **Open breakpoint split view**: one dialog asks for the shape, two
-stacked panels or one row spanning both breakends, and the window each panel
-opens at.
+chain visits and draws the reads that leave one panel and arrive in another.
+**Add → Breakpoint split view** builds a view whose loci you already know, one
+row per panel. The callset already knows them, so the view can also open from a
+record. Right-click it in the variant track and choose **Open breakpoint split
+view**: one dialog asks for the shape, two stacked panels or one row spanning
+both breakends, and the window each panel opens at.
 
 A BND names one partner, so the record on its own is two loci. **Follow further
 breakends at each end** walks the callset: at each end of the chain it looks for
@@ -169,101 +156,13 @@ introduced.
 
 Stacked panels describe the event in reference coordinates. Laid out along the
 derivative, it shows the order and orientation of its pieces. The next section
-builds that view from the reads on screen; the one after rebuilds the allele's
-sequence for the base-level checks.
-
-## Reconstructing the derivative allele in the browser
-
-A split read is an ordered, oriented list of reference intervals, and so is a
-derivative allele. With the tumor reads open at a breakpoint, the alignments
-track menu's **Reconstruct derivative allele...** groups the reads in view by
-the path their split alignments describe and offers each path with the number of
-reads behind it. Each row draws its segments to scale: a rearrangement is
-usually a long arm carrying short inserts, and a read the aligner chopped into
-pieces is a row of equal blocks.
-
-Each row leads with the route as a lettered string, the reference cut into
-pieces at every breakpoint and a prime on a piece crossed against it. **Save
-segment map (SVG)** writes that map for the picked route as a figure, and **Copy
-caption** puts the string and each letter's coordinates on the clipboard.
-
-COLO829 is the easiest case for this reconstruction: ONT reads tens of kilobases
-long, an event that moves whole arms, and 29 molecules crossing all three loci.
-Junctions under 1 kb are mostly missed, because the aligner writes them inside a
-read's CIGAR rather than as a split alignment.
-[](/docs/user_guides/derivative_allele#what-the-reconstruction-needs) covers
-what the reconstruction needs and how to weigh a route once it appears.
-
-The result is the view **Linear read vs ref** produces from a read, with the
-lower panel holding the path a group of reads agrees on. Running **Linear read
-vs ref** on one supporting read is the single-molecule evidence behind a
-candidate. Whatever else was open comes along onto the reference panel. **Open
-in new view** appends the reconstruction below the pileup; **Replace current
-view** puts it in that view's place, which the figures here use.
-
-### A fold-back on one chromosome
-
-The smallest allele this menu produces is two segments on one chromosome.
-COLO829 has one on chr9, where the tumor reads run out at 28,031,837 and resume
-inverted from 28,059,142: the arm turns around and continues backwards, a
-fold-back. A second call anchors 28 bp from the first, the pattern repeated
-breakage-fusion-bridge cycles leave behind.
-
-The fold-back's row names the same chromosome twice, once inverted, and its
-strip draws two blocks of one color whose arrows point at each other. Rows tied
-on read count are ordered by segment count. More than one row means more than
-one allele, because reads reaching the anchors from different directions
-describe different routes through the same breakpoints.
-
-The reads alone cannot confirm which route is correct, so the check comes from
-outside them. COLO829's multi-platform truth set was called on short reads, long
-reads, linked reads and optical maps, and validated by capture sequencing and
-PCR. Loaded as a track beside the pileup, it puts a validated call at every
-junction all three rows cross, so the two rows tied on read count are two
-alleles through one locus.
-
-<Figure caption="Top: the candidate list at the chr9 fold-back anchors. Bottom: the two-segment fold-back drawn, two windows of chr9 above with the truth set's validated calls, the allele below. The ribbons leave chr9 at a validated call and cross where the arm turns around." src="/img/cancer_sv/foldback_reconstruction.png" />
-
-Reconstruction reads SA tags, so the arm a read returns from can be off screen.
-
-### The der(3) allele, four segments across three chromosomes
-
-The same menu at the chr3 breakpoint returns two rows. The first is the whole
-event: an arm of chr3, 199 bp of chr10, 183 bp of chr12 inverted, then chr3
-inverted, and each of its three junctions is a call in the truth set. Its two
-chr3 arms end where the longest supporting read ends. The second row is two
-reads in which the aligner did not place the chr12 piece, so their chain skips
-it.
-
-**Save segment map (SVG)** on the first row writes this figure.
-
-<Figure caption="The der(3) route as a segment map: chr3 cut into A B C by the returning arm's edges, the copies the derivative carries of each stepped above, and the derivative below with B carried twice, forward in the arm and inverted at the end." src="/img/segment-maps/cancer_sv_der3.svg" />
-
-The reconstruction is anchored on the window the pileup was showing, so the
-reference row is tens of kilobases of chr3 with the two insert loci a few pixels
-wide at its right-hand end. The next two sections open those junctions at base
-scale.
-
-<Figure caption="Top: the candidate list over the tumor pileup and the truth set, each row's segments drawn to scale; the top row's junctions are validated calls, and the second row's reads lack the chr12 piece. Bottom: the synteny view the top row draws, reference above and allele below, a ribbon per segment." src="/img/cancer_sv/derivative_autogenerated.png" />
-
-Paths are identified by their junctions alone, and a chain is folded together
-with its reverse complement before counting, which puts this event on one row.
-
-The output is a proposal. The path is assembled from where the reads' alignments
-start and stop, so it inherits whatever the aligner got wrong, and reads
-mismapped into a repeat produce a confident-looking path. Deciding whether the
-reads' own bases support a junction takes a sequence to align them to, which is
-the next section.
+rebuilds the allele's sequence and lays the event out along it.
 
 ## Reconstructing the allele's sequence
 
-`derive` builds the allele's **sequence**: it pulls the reads spanning every
+`sv_multihop.py derive` rebuilds the allele: it pulls the reads spanning every
 locus, takes the longest as a backbone, polishes it into a consensus with the
 rest, aligns that consensus back to the reference, and realigns the reads to it.
-The in-app picker builds the same command: **Copy derive command** in the
-**Reconstruct derivative allele** dialog writes this command for the route you
-picked, with the track's alignment file and both sides of every junction filled
-in.
 
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
