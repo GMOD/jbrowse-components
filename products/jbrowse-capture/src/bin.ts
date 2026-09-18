@@ -29,7 +29,7 @@ WHAT TO SHOW
                         settings. Not combinable with --assembly/--loc/--track.
   --instance <url>      JBrowse Web deployment to drive
                         (default https://jbrowse.org/code/jb2/latest/)
-  --sessionName <name>  name the opened session carries
+  --sessionName <name>  name shown in the header (default "Screenshot")
 
 THE IMAGE
   --out, -o <file>      .png, .jpg or .webp to write (required unless using a

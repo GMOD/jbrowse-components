@@ -71,7 +71,12 @@ export async function openJBrowse(
     trackIds,
     ...urlOptions
   } = options
-  const url = jbrowseUrl(urlOptions)
+  // a named session keeps the header free of the timestamp an unnamed one gets,
+  // which otherwise differs on every capture of the same view
+  const url = jbrowseUrl({
+    ...urlOptions,
+    sessionName: urlOptions.sessionName ?? 'Screenshot',
+  })
   await assertSupportedInstance(urlOptions.instance ?? PUBLIC_INSTANCE)
   const browser = await puppeteer.launch({
     headless,
