@@ -31,14 +31,11 @@ export interface FetchInputsHost extends IStateTreeNode {
    * display spreads into its RPC call**, which is the whole point of the hook:
    * a display that sends `bpPerPx` and keys on `String(bpPerPx)` has written
    * one fact twice, and the two spellings drift (canvas keys a peptide
-   * threshold while it sends a glyph mode; alignments keys a bin and a tier and
-   * compares the same two again in `dataSuperseded`).
+   * threshold while it sends a glyph mode).
    *
-   * A display that has not been converted leaves this undefined and its
-   * `zoomFetchKey` string is the zoom tier instead — which since ADR-125 is
-   * every display in the tree, the adapter's `getZoomRange` having taken the
-   * zoom off the wiggle and mark displays. The hook stays for a plugin display
-   * over an adapter that reads `bpPerPx`.
+   * Alignments fills it with its per-base bin and detail tier. A display that
+   * has not been converted leaves this undefined and its `zoomFetchKey` string
+   * is the zoom tier instead.
    */
   zoomFetchArgs?: () => object
   zoomFetchKey: string

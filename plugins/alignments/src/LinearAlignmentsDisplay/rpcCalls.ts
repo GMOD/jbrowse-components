@@ -96,15 +96,11 @@ export interface FetchFeaturesSelf {
     'adapterConfig' | 'sequenceAdapter' | 'regions' | keyof GatedFetchArgs
   >
   resolvedByteLimit: () => number | undefined
-  // The per-base sampling stride, at the call site rather than in `rpcProps()`
-  // because it swings with zoom and would otherwise be an RPC cache key. What
-  // keeps it from being a cache key that never invalidates is that the display
-  // also spells it as its `zoomFetchKey`, so a region fetched under one bin is
-  // not read back under another.
-  perBaseBinBp: number
-  // The detail tier, at the call site for the same reason — undefined where the
-  // adapter has one tier to serve.
-  lodTier: LodTier | undefined
+  // The per-base sampling stride and the detail tier, at the call site rather
+  // than in `rpcProps()` because they swing with zoom. The foundation stamps the
+  // same object beside each region it loads, so a region fetched under one bin
+  // or tier is not read back under another.
+  zoomFetchArgs: () => Pick<RenderAlignmentDataArgs, 'perBaseBinBp' | 'lodMode'>
 }
 
 // One RPC for both pileup and chain modes; the worker branches on `linkedReads`
@@ -117,7 +113,6 @@ export function fetchFeaturesForRegion(
   return ctx.callRpc('RenderAlignmentData', {
     ...rpcArgs(self),
     regions: [region],
-    perBaseBinBp: self.perBaseBinBp,
-    lodMode: self.lodTier,
+    ...self.zoomFetchArgs(),
   })
 }

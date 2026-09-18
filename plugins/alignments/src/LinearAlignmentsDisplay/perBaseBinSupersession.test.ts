@@ -48,7 +48,7 @@ describe('per-base bin supersession', () => {
     simulateLoaded(env)
 
     expect(display.perBaseBinBp).toBe(8)
-    expect(display.zoomFetchKey).toBe('8')
+    expect(display.zoomFetchArgs().perBaseBinBp).toBe(8)
     expect(display.isCacheValid(0)).toBe(true)
     expect(display.dataSuperseded).toBe(false)
     expect(display.svgReady).toBe(true)
@@ -87,7 +87,7 @@ describe('per-base bin supersession', () => {
     view.settleCoarseBlocks()
     simulateLoaded(env)
 
-    expect(display.zoomFetchKey).toBe('1')
+    expect(display.zoomFetchArgs().perBaseBinBp).toBe(1)
     expect(display.isCacheValid(0)).toBe(true)
     expect(display.dataSuperseded).toBe(false)
     expect(display.svgReady).toBe(true)

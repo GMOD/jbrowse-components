@@ -62,7 +62,10 @@ test('a tier flip is a zoom-key move, not a settings change', async () => {
   await flush()
   const settings = display.settingsFetchInputs
   expect(display.lodTier).toBe('coarse')
-  expect(display.zoomFetchKey).toBe('1|coarse')
+  expect(display.zoomFetchArgs()).toEqual({
+    perBaseBinBp: 1,
+    lodMode: 'coarse',
+  })
   expect(display.rpcProps()).not.toHaveProperty('lodMode')
 
   view.zoomTo(5000)
@@ -73,7 +76,7 @@ test('a tier flip is a zoom-key move, not a settings change', async () => {
   view.setNewView(5000, 0)
   expect(display.lodTier).toBe('fine')
   expect(display.dataSuperseded).toBe(false)
-  expect(display.zoomFetchKey).toBe('1|fine')
+  expect(display.zoomFetchArgs()).toEqual({ perBaseBinBp: 1, lodMode: 'fine' })
   expect(display.settingsFetchInputs).toEqual(settings)
 
   // the mode is a config slot, and picking one still moves only the zoom key
@@ -90,7 +93,7 @@ test('a file with no coarse tier resolves fine once its info lands, whatever the
   expect(display.lodTier).toBe('coarse')
   await flush()
   expect(display.lodTier).toBe('fine')
-  expect(display.zoomFetchKey).toBe('1|fine')
+  expect(display.zoomFetchArgs()).toEqual({ perBaseBinBp: 1, lodMode: 'fine' })
   display.setLodMode('coarse')
   expect(display.lodTier).toBe('fine')
 })

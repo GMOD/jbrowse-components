@@ -53,8 +53,8 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // displays, whose PIF adapters carry a coarse no-CIGAR tier for zoomed-out
   // views; read adapters have no tiers and ignore it. A call-site argument
   // rather than an `rpcProps()` field, like `perBaseBinBp` below: it swings
-  // with zoom, and the display spells it as its `zoomFetchKey`, so a tier flip
-  // refetches the regions on screen and leaves the rest alone.
+  // with zoom, and the display declares it in its `zoomFetchArgs`, so a tier
+  // flip refetches the regions on screen and leaves the rest alone.
   lodMode?: LodTier
   linkedReads?: 'off' | 'normal'
   /**
@@ -64,8 +64,8 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
    *
    * A call-site argument rather than an `rpcProps()` field, for the reason
    * `byteLimit` is one — it swings with zoom, and in the payload each swing is a
-   * `SettingsInvalidate` that drops every fetched region. The display spells it
-   * as its `zoomFetchKey` instead, so a bin flip refetches the regions on
+   * `SettingsInvalidate` that drops every fetched region. The display declares
+   * it in its `zoomFetchArgs` instead, so a bin flip refetches the regions on
    * screen and leaves the rest alone ("Neither worker budget may be an RPC cache
    * key", in REGION_TOO_LARGE.md §"How the verdict is built").
    */

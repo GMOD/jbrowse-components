@@ -189,7 +189,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * #getter
          * The tier this display's fetch asks for: the alignments base's hook,
          * resolved here on the main thread off the SETTLED zoom. It is the
-         * base's `zoomFetchKey` term and rides the RPC at the call site, so a
+         * base's `zoomFetchArgs` term and rides the RPC at the call site, so a
          * tier flip refetches the regions on screen while they keep drawing —
          * and, being settled, a gesture travelling through the threshold does
          * not hand `FetchVisibleRegions` a tier of a zoom it never stops at,

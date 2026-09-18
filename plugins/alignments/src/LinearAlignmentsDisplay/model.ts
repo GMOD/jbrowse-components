@@ -2986,8 +2986,8 @@ export default function stateModelFactory(
          * Overridable hook (default undefined, "whatever the adapter picks"):
          * the detail tier a fetch issued now asks a tiered adapter for, off the
          * settled zoom. `LGVSyntenyDisplay` resolves it for the tiered PIF
-         * adapters. A `zoomFetchKey` term and a call-site RPC argument rather
-         * than an `rpcProps` field, for the reason `perBaseBinBp` below is.
+         * adapters. In `zoomFetchArgs` rather than `rpcProps`, for the reason
+         * `perBaseBinBp` below is.
          */
         get lodTier(): LodTier | undefined {
           return undefined
@@ -3020,7 +3020,7 @@ export default function stateModelFactory(
          * paint floor to a whole one, so the wall stays unbroken.
          *
          * Not an `rpcProps` field — see `perBaseBinBp` on the RPC args for why a
-         * zoom-swinging value belongs at the call site, and `zoomFetchKey`
+         * zoom-swinging value belongs at the call site, and `zoomFetchArgs`
          * below for what invalidates on it instead.
          */
         get perBaseBinBp() {
@@ -3042,7 +3042,7 @@ export default function stateModelFactory(
          * octaves coarser than the zoom it is drawn at — and it is the half an
          * export lands in, since a reader zooms and then reaches for the menu.
          *
-         * It stays out of `zoomFetchKey`, which drives the refetch, and the
+         * It stays out of `zoomFetchArgs`, which drives the refetch, and the
          * reason is not that a live key would flip more often — the
          * quantization means it flips per octave either way, and wiggle keys on
          * live `bpPerPx` outright (ADR-008). It is that `FetchVisibleRegions`
@@ -3085,21 +3085,20 @@ export default function stateModelFactory(
       }))
       .views(self => ({
         /**
-         * #getter
-         * `MultiRegionDisplayMixin`'s per-region content axis: what a fetch
-         * issued right now would produce. Only the per-base bin and the detail
-         * tier move it, so for a read track in every other color mode this is
-         * one constant string and a zoom never refetches on its account; a bin
-         * or tier flip refetches the regions on screen and leaves the rest of
-         * the held data alone, which is the whole reason neither is in
-         * `rpcProps`.
+         * #method
+         * `MultiRegionDisplayMixin`'s per-region content axis: the zoom-derived
+         * worker arguments, which the fetch spreads into its RPC and the
+         * foundation stamps beside every region it loads. Only the per-base
+         * bin and the detail tier move it, so for a read track in every other
+         * color mode a zoom never refetches on its account; a bin or tier flip
+         * refetches the regions on screen and leaves the rest of the held data
+         * alone, which is the whole reason neither is in `rpcProps`.
          *
          * Its own views block, after the getters it reads, for the reason
          * `rpcProps` has one.
          */
-        get zoomFetchKey() {
-          const bin = String(self.perBaseBinBp)
-          return self.lodTier === undefined ? bin : `${bin}|${self.lodTier}`
+        zoomFetchArgs() {
+          return { perBaseBinBp: self.perBaseBinBp, lodMode: self.lodTier }
         },
       }))
       .views(self => ({
