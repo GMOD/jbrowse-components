@@ -101,14 +101,28 @@ test('rows with a per-row color override contribute nothing', () => {
 test('a category only an overridden row carries is left out', () => {
   const withRowOnly = regionData({
     ...region,
-    featureNames: ['TssA', 'Quies', 'Quies', 'Quies'],
+    featureNames: ['TssA', 'TssA', 'Quies', 'Enh'],
     featureColors: Uint32Array.from([
-      0xff0000ff, 0xff00ff00, 0xff00ff00, 0xff00ff00,
+      0xff0000ff, 0xff0000ff, 0xff00ff00, 0xffabcdef,
     ]),
   })
   expect(
     buildColorLegend([withRowOnly], rowIndexByValue, [0xff123456, undefined]),
-  ).toEqual([{ label: 'Quies', color: 0xff00ff00 }])
+  ).toEqual([
+    { label: 'Quies', color: 0xff00ff00 },
+    { label: 'Enh', color: 0xffabcdef },
+  ])
+})
+
+test('a painting in one color has no key', () => {
+  const oneColor = regionData({
+    ...region,
+    featureColors: new Uint32Array(4).fill(0xff0000ff),
+    featureNames: ['seg1', 'seg2', 'seg3', 'seg4'],
+  })
+  expect(
+    buildColorLegend([oneColor], rowIndexByValue, [undefined, undefined]),
+  ).toEqual([])
 })
 
 test('all rows overridden reads no regions at all', () => {

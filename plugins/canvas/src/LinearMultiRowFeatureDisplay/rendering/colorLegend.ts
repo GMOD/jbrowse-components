@@ -48,7 +48,9 @@ export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
 /**
  * The categorical color key for a per-feature-colored painting. A row with a
  * per-row color override paints every block that one color, so it contributes
- * nothing here — the legend describes the `color` axis, not the row axis.
+ * nothing here — the legend describes the `color` axis, not the row axis. One
+ * color keys nothing (`legendIsReadable`), so a `color: 'steelblue'` track gets
+ * no key named after its first feature.
  */
 export function buildColorLegend(
   regions: Iterable<MultiRowRegionData>,
@@ -64,7 +66,7 @@ export function buildColorLegend(
   ) {
     return []
   }
-  return unionLegendCandidates(regions, data => {
+  const entries = unionLegendCandidates(regions, data => {
     const rowForLocal = resolveLocalRowIndices(
       data.partitionValues,
       rowIndexByValue,
@@ -77,4 +79,5 @@ export function buildColorLegend(
       },
     }
   })
+  return entries.length > 1 ? entries : []
 }
