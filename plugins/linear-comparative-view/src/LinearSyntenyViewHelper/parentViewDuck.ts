@@ -5,7 +5,6 @@ import type {
   AttributeRange,
   ComparativeSurface,
   LodMode,
-  SyntenyColorBy,
 } from '@jbrowse/synteny-core'
 
 // The containing LinearSyntenyView, as seen from a level and from the synteny
@@ -64,12 +63,12 @@ export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   // The assembly the chromosome-painting modes key on, so a region keeps its
   // color as it is traced across levels. Undefined until a row knows its own.
   anchorAssemblyName: string | undefined
-  // The view's accumulated domain per numeric attribute, which an
-  // `attribute:<name>` ramp scales to — widened by every fetch that lands, so a
+  // The view's accumulated domain per numeric attribute, which a column's
+  // ramp scales to — widened by every fetch that lands, so a
   // pan does not re-scale the colors under the reader.
   attributeRanges: Record<string, AttributeRange>
   observeAttributeRanges: (ranges: Record<string, AttributeRange>) => void
-  colorByMode: SyntenyColorBy
+  colorByField: string
   colorByValue: string | undefined
   hideUnlabelled: boolean
   // a track's slot in the view's palette, keyed by trackId

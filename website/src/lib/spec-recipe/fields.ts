@@ -26,8 +26,7 @@ import {
   COLOR_MODES,
   VALUE_MODES_LABEL,
 } from '../../../../packages/synteny-core/src/colorModes.ts'
-import { syntenyColorByOf } from '../../../../packages/synteny-core/src/syntenyColorBy.ts'
-import { SYNTENY_VIEW_FIELDS } from '../../../../packages/synteny-core/src/syntenyColorConfigSchema.ts'
+import { paintedField } from '../../../../packages/synteny-core/src/syntenyColorBy.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { SHOW_LABELS_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts'
@@ -266,44 +265,30 @@ function alignmentsFacetStep(value: unknown): FieldStep | undefined {
 // read 'Query name' and 'Reference name'.
 const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
   COLOR_MODES.map(m => [
-    m.value,
+    m.field,
     m.kind === 'value' ? `${VALUE_MODES_LABEL} → ${m.label}` : m.label,
   ]),
 )
 
-// `attribute:<column>` is the open arm of the mode list: a track's declared
-// numeric columns are each offered under the column's own name, below the
-// named presets. There is no fixed label to look up, so the column supplies it.
-const SYNTENY_ATTRIBUTE_PREFIX = 'attribute:'
-
 // A synteny colour object (the views' `colorBy`, the multi-way display's
-// `ribbonColor`) as the mode the Color by radios carry. `reads` are the
-// structural fields that surface offers. A colour string paints through no
-// radio, so it maps to nothing.
-function syntenyColorMode(
-  value: unknown,
-  reads: readonly (typeof SYNTENY_VIEW_FIELDS)[number][],
-) {
+// `ribbonColor`) as the field the Color by radios carry, `''` for Default. A
+// colour string paints through no radio, so it maps to nothing.
+function syntenyColorField(value: unknown) {
   const color = asRecord(value)
   const scale = asString(color?.scale)
   return color
-    ? syntenyColorByOf(
-        {
-          field: asString(color.field),
-          scale: scale === 'none' ? scale : undefined,
-        },
-        reads,
-      )
+    ? paintedField({
+        field: asString(color.field),
+        scale: scale === 'none' ? scale : undefined,
+      })
     : undefined
 }
 
-function syntenyColorLabel(value: string | undefined) {
-  return value === undefined
+// A declared column has no fixed label but its own name, under Color by value.
+function syntenyColorLabel(field: string | undefined) {
+  return field === undefined
     ? undefined
-    : (SYNTENY_COLOR_MODES[value] ??
-        (value.startsWith(SYNTENY_ATTRIBUTE_PREFIX)
-          ? `${VALUE_MODES_LABEL} → ${value.slice(SYNTENY_ATTRIBUTE_PREFIX.length)}`
-          : undefined))
+    : (SYNTENY_COLOR_MODES[field] ?? `${VALUE_MODES_LABEL} → ${field}`)
 }
 
 // The two multi-sample variant displays share one base model, so one path
@@ -1133,7 +1118,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   ribbonColor: (value, { displayType }) => {
-    const label = syntenyColorLabel(syntenyColorMode(value, ['strand']))
+    const label = syntenyColorLabel(syntenyColorField(value))
     return label && displayType === 'MultiWaySyntenyDisplay'
       ? { path: `${TRACK_MENU} → Color by... → ${label}` }
       : undefined
@@ -1804,7 +1789,7 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined
   },
   colorBy: (value, { viewType }) => {
-    const mode = syntenyColorMode(value, SYNTENY_VIEW_FIELDS)
+    const mode = syntenyColorField(value)
     const label = syntenyColorLabel(mode)
     // Both comparative views carry the same palette button; only the header it
     // sits in differs.

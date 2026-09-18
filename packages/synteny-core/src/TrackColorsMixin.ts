@@ -5,8 +5,7 @@ import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { colorByScale } from './colorLegend.ts'
 import { continuousRampConfig, isAttributeLabels } from './colorRamps.ts'
-import { colorByAttributeName } from './colorUtils.ts'
-import { syntenyColorByOf, syntenyColorFor } from './syntenyColorBy.ts'
+import { paintedField, syntenyColorFor } from './syntenyColorBy.ts'
 import {
   SYNTENY_VIEW_FIELDS,
   syntenyColorConfigSchema,
@@ -15,11 +14,20 @@ import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
 import type { CigarOpMask, ColorChip } from './colorLegend.ts'
 import type { AttributeRange } from './colorRamps.ts'
-import type { SyntenyColorBy } from './colorUtils.ts'
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
+
+const STRUCTURAL_FIELDS: ReadonlySet<string> = new Set(SYNTENY_VIEW_FIELDS)
+
+function isColumnField(field: string) {
+  return (
+    field !== '' &&
+    !STRUCTURAL_FIELDS.has(field) &&
+    !(field in continuousRampConfig)
+  )
+}
 
 // A label list only ever gains labels, in the order they were first seen, and
 // a label's file color is whichever was seen first. A text column meeting a
@@ -97,7 +105,7 @@ export function orderAttributeLabels(
  * #stateModel TrackColorsMixin
  *
  * The color-by state shared by every view that can draw more than one synteny
- * track at once: the view-wide mode and the palette that tells overlaid tracks
+ * track at once: the view-wide colour object and the palette that tells overlaid tracks
  * apart.
  *
  * A view supplies only `colorableTrackConfigs` — the dotplot walks its flat
@@ -111,7 +119,7 @@ export function TrackColorsMixin() {
       /**
        * #property
        * The colour every track in the view paints with, a
-       * [SyntenyColor](/docs/config/syntenycolor) object: `{ field: "strand" }`,
+       * [](/docs/config/syntenycolor) object: `{ field: "strand" }`,
        * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
        * a measurement (`identity`, `mappingQual`, `dnds`) or a column the
        * tracks declare, with `domain` ordering a text column's labels; a
@@ -134,15 +142,15 @@ export function TrackColorsMixin() {
     .volatile(() => ({
       /**
        * #volatile
-       * The mode whose legend the reader closed. The legend comes back with the
-       * next mode that has one, so a dismissal is scoped to the mode it was
-       * made in rather than being a setting to find again.
+       * The field whose legend the reader closed. The legend comes back with
+       * the next field that has one, so a dismissal is scoped to the field it
+       * was made in rather than being a setting to find again.
        */
       colorLegendDismissedFor: undefined as string | undefined,
       /**
        * #volatile
        * The widest span each numeric channel has been seen to cover, over every
-       * fetch this view has taken — what keeps an `attribute:<column>` ramp from
+       * fetch this view has taken — what keeps a column's ramp from
        * re-scaling under a pan. Widened by `observeAttributeRanges`, dropped by
        * `resetAttributeRanges`, read through `attributeRanges`, which is where
        * the reasoning is.
@@ -253,7 +261,7 @@ export function TrackColorsMixin() {
        * #getter
        * The span each numeric channel covers: unioned over the loaded displays,
        * and over every fetch this view has already taken (`seenAttributeRanges`).
-       * An `attribute:<column>` mode has no declared domain, so this is what its
+       * A column has no declared domain, so this is what its
        * ramp scales to, what the legend labels it with, and — since it is the
        * one domain — what the two cannot disagree about.
        *
@@ -308,10 +316,10 @@ export function TrackColorsMixin() {
       },
       /**
        * #getter
-       * The mode `colorBy` paints, in the colour functions' terms.
+       * The field `colorBy` paints by, `''` for the default colour.
        */
-      get colorByMode(): SyntenyColorBy {
-        return syntenyColorByOf(self.colorBySetting, SYNTENY_VIEW_FIELDS)
+      get colorByField(): string {
+        return paintedField(self.colorBySetting)
       },
       /**
        * #getter
@@ -327,11 +335,11 @@ export function TrackColorsMixin() {
        * screen — their colors are the menu preview's.
        */
       get hasLegendKey(): boolean {
-        const mode = this.colorByMode
+        const field = this.colorByField
         return (
-          mode === 'track' ||
-          mode in continuousRampConfig ||
-          colorByAttributeName(mode) !== undefined
+          field === 'track' ||
+          field in continuousRampConfig ||
+          isColumnField(field)
         )
       },
       /**
@@ -342,7 +350,8 @@ export function TrackColorsMixin() {
        */
       get showLegend(): boolean {
         return (
-          this.hasLegendKey && self.colorLegendDismissedFor !== this.colorByMode
+          this.hasLegendKey &&
+          self.colorLegendDismissedFor !== this.colorByField
         )
       },
     }))
@@ -363,7 +372,7 @@ export function TrackColorsMixin() {
        * since every other mode has a fixed legend of its own.
        */
       get colorLegendChips(): ColorChip[] {
-        if (self.colorByMode !== 'track') {
+        if (self.colorByField !== 'track') {
           return []
         }
         const names = new Map(
@@ -386,7 +395,7 @@ export function TrackColorsMixin() {
         if (!self.hasLegendKey) {
           return []
         }
-        const scale = colorByScale(self.colorByMode, {
+        const scale = colorByScale(self.colorByField, {
           pointBased: self.legendPointBased(),
           cigarOps: self.legendCigarOps(),
           trackChips: self.colorLegendChips,
@@ -397,8 +406,7 @@ export function TrackColorsMixin() {
         // only a text column's rows are the reader's to order; a track
         // palette and a ramp key what they key
         return [
-          scale.kind === 'categorical' &&
-          colorByAttributeName(self.colorByMode) !== undefined
+          scale.kind === 'categorical' && isColumnField(self.colorByField)
             ? { ...scale, domain: [...self.colorDomain] }
             : scale,
         ]
@@ -460,12 +468,12 @@ export function TrackColorsMixin() {
         },
         /**
          * #action
-         * Set the view-wide mode over the `colorBy` object, and rescale the
-         * ramp, which is the only way back from a domain one outlying window
-         * widened.
+         * Set the field the view paints by over the `colorBy` object (`''`
+         * for the default colour), and rescale the ramp, which is the only way
+         * back from a domain one outlying window widened.
          */
-        setColorBy(mode: SyntenyColorBy) {
-          self.colorBy = cast(syntenyColorFor(mode, self.colorBySetting))
+        setColorBy(field: string) {
+          self.colorBy = cast(syntenyColorFor(field, self.colorBySetting))
           forgetSeenRanges()
         },
         /**
@@ -505,14 +513,14 @@ export function TrackColorsMixin() {
          * only, so picking another mode brings its key up.
          */
         setShowLegend(show: boolean) {
-          self.colorLegendDismissedFor = show ? undefined : self.colorByMode
+          self.colorLegendDismissedFor = show ? undefined : self.colorByField
         },
         /**
          * #action
          * One section is the whole key here.
          */
         dismissLegendSection() {
-          self.colorLegendDismissedFor = self.colorByMode
+          self.colorLegendDismissedFor = self.colorByField
         },
       }
     })

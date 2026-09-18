@@ -85,14 +85,14 @@ describe('createComparativeColorFunction', () => {
   test('only the unpainted default differs between the two views', () => {
     const data = inputs()
     const ribbon = createComparativeColorFunction({
-      colorBy: 'default',
+      field: '',
       data,
       trackColor: '#123456',
       defaultColor: MISSING_VALUE_COLOR,
       attributeRanges: {},
     })
     const point = createComparativeColorFunction({
-      colorBy: 'default',
+      field: '',
       data,
       trackColor: '#123456',
       defaultColor: 0xff000000,
@@ -104,14 +104,14 @@ describe('createComparativeColorFunction', () => {
     // and every other mode answers identically whatever the default is
     for (const colorBy of ['strand', 'track', 'query', 'target'] as const) {
       const a = createComparativeColorFunction({
-        colorBy,
+        field: colorBy,
         data,
         trackColor: '#123456',
         defaultColor: MISSING_VALUE_COLOR,
         attributeRanges: {},
       })
       const b = createComparativeColorFunction({
-        colorBy,
+        field: colorBy,
         data,
         trackColor: '#123456',
         defaultColor: 0xff000000,
@@ -134,7 +134,7 @@ describe('createComparativeColorFunction', () => {
       mateRefNameIds: new Uint32Array([0, 0, 0, 0]),
     })
     const fn = createComparativeColorFunction({
-      colorBy: 'identity',
+      field: 'identity',
       data,
       trackColor: '#123456',
       defaultColor: MISSING_VALUE_COLOR,
@@ -155,7 +155,7 @@ describe('createComparativeColorFunction', () => {
       mateRefNameIds: new Uint32Array([0, 0]),
     })
     const fn = createComparativeColorFunction({
-      colorBy: 'identity',
+      field: 'identity',
       data,
       trackColor: '#123456',
       defaultColor: 0xff000000,
@@ -165,7 +165,7 @@ describe('createComparativeColorFunction', () => {
     expect(fn(1)).not.toBe(MISSING_VALUE_COLOR)
   })
 
-  // The domain an `attribute:<name>` ramp scales to is the CALLER'S, which is
+  // The domain a column's ramp scales to is the CALLER'S, which is
   // what stops a pan from re-coloring what is already on screen: a fetch's
   // payload only knows the span of the slice it holds, and the view accumulates
   // one that settles. Two calls over the same values under two domains have to
@@ -181,7 +181,7 @@ describe('createComparativeColorFunction', () => {
       attributeRanges: Record<string, { min: number; max: number }>,
     ) =>
       createComparativeColorFunction({
-        colorBy: 'attribute:goc',
+        field: 'goc',
         data,
         trackColor: '#123456',
         defaultColor: 0,
@@ -210,8 +210,8 @@ describe('createComparativeColorFunction', () => {
       attributeRanges: {},
     }
     expect(
-      createComparativeColorFunction({ ...args, colorBy: 'reference' })(0),
-    ).toBe(createComparativeColorFunction({ ...args, colorBy: 'query' })(0))
+      createComparativeColorFunction({ ...args, field: 'reference' })(0),
+    ).toBe(createComparativeColorFunction({ ...args, field: 'query' })(0))
   })
 })
 
@@ -227,7 +227,7 @@ describe('a categorical attribute', () => {
 
   test('paints the palette by view order and the file color where given', () => {
     const fn = createComparativeColorFunction({
-      colorBy: 'attribute:group',
+      field: 'group',
       data,
       trackColor: '#000',
       defaultColor: 0,
@@ -243,7 +243,7 @@ describe('a categorical attribute', () => {
 
   test('hideUnlabelled draws the unlabelled row at zero alpha and leaves the rest', () => {
     const fn = createComparativeColorFunction({
-      colorBy: 'attribute:group',
+      field: 'group',
       data,
       trackColor: '#000',
       defaultColor: 0,
@@ -257,7 +257,7 @@ describe('a categorical attribute', () => {
 
   test('a numeric column under the same mode string still ramps', () => {
     const fn = createComparativeColorFunction({
-      colorBy: 'attribute:group',
+      field: 'group',
       data: inputs({
         attributes: { group: new Float32Array([0, 10]) },
         attributeRanges: { group: { min: 0, max: 10 } },

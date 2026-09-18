@@ -36,7 +36,7 @@ const ColorBySelector = observer(function ColorBySelector({
   return (
     <CascadingMenuButton
       data-testid="color_by_menu"
-      tooltip={`Color by: ${colorByShortLabel(model.colorByMode)}`}
+      tooltip={`Color by: ${colorByShortLabel(model.colorByField)}`}
       menuItems={colorByMenuItems(
         colorByMenuTargetFor(model, { pointBased, showReference }),
       )}

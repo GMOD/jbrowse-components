@@ -64,7 +64,7 @@ describe('createDotplotColorFunction', () => {
 
   test('default returns the shared point color (black)', () => {
     const data = fakeRpcData()
-    const fn = createDotplotColorFunction('default', data, TRACK_COLOR, {})
+    const fn = createDotplotColorFunction('', data, TRACK_COLOR, {})
     expect(unpack(fn(0))).toEqual({ r: 0, g: 0, b: 0, a: 255 })
     expect(unpack(fn(0))).toMatchObject(
       rgbOfHex(colorSchemes.default.pointColor),
@@ -114,7 +114,7 @@ describe('createDotplotColorFunction', () => {
   // every packed color stays opaque and a drag never invalidates this array.
   // It used to be baked in here, which made a drag recompute the colors,
   // re-pack every instance and re-upload the buffer once per frame.
-  test.each(['default', 'strand', 'track', 'identity', 'query'] as const)(
+  test.each(['', 'strand', 'track', 'identity', 'query'] as const)(
     '%s packs a fully opaque color',
     colorBy => {
       const data = fakeRpcData()
@@ -187,7 +187,7 @@ describe('computeDotplotColors', () => {
     const colors = computeDotplotColors({
       instanceData,
       rpcData,
-      colorBy: 'strand',
+      field: 'strand',
       trackColor: TRACK_COLOR,
       attributeRanges: {},
     })
@@ -224,7 +224,7 @@ describe('computeDotplotColors', () => {
     const colors = computeDotplotColors({
       instanceData,
       rpcData,
-      colorBy: 'strand',
+      field: 'strand',
       trackColor: TRACK_COLOR,
       attributeRanges: {},
     })

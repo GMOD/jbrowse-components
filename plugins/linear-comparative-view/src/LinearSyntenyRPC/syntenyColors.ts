@@ -16,11 +16,7 @@ import {
   KIND_MARKER,
 } from '../LinearSyntenyDisplay/shaders/syntenyTypes.generated.ts'
 
-import type {
-  AttributeRange,
-  ColorFunctionInputs,
-  SyntenyColorBy,
-} from '@jbrowse/synteny-core'
+import type { AttributeRange, ColorFunctionInputs } from '@jbrowse/synteny-core'
 
 // Per-instance kind tag. Determines how the color for an instance is derived
 // from the parent feature's strand/refName/featureIdx and the current colorBy
@@ -74,9 +70,9 @@ const MARKER_COLOR_HIDDEN = packAbgr(0, 0, 0, 0)
 
 // I/D/N indel colors for the active scheme (strand recolors N/D purple). Both
 // schemes always define I/D/N, so these are unconditional.
-function buildIndelColors(colorBy: SyntenyColorBy) {
+function buildIndelColors(field: string) {
   const { cigarColors } =
-    colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
+    field === 'strand' ? colorSchemes.strand : colorSchemes.default
   return {
     I: cssColorToABGR(cigarColors.I),
     D: cssColorToABGR(cigarColors.D),
@@ -97,7 +93,7 @@ interface InstanceInputs {
 export function computeSyntenyColors({
   instanceData,
   featureData,
-  colorBy,
+  field,
   trackColor,
   valueColor,
   opacityByIdentity,
@@ -109,8 +105,8 @@ export function computeSyntenyColors({
 }: {
   instanceData: InstanceInputs
   featureData: ColorFunctionInputs
-  colorBy: SyntenyColorBy
-  // the display's slot in the view's track palette; only read by colorBy:'track'
+  field: string
+  // the display's slot in the view's track palette; only read under 'track'
   trackColor: string
   // the view's `colorBy.value`: what the match blocks paint under the default
   // mode in place of the red, when set
@@ -129,14 +125,14 @@ export function computeSyntenyColors({
   // Only the display knows it — the assembly's refName list is a session fact,
   // not something in the feature data — so it is passed in rather than derived.
   nameOrder?: readonly string[]
-  // The domain an `attribute:<name>` ramp scales to — the view's accumulated
+  // The domain a column's ramp scales to — the view's accumulated
   // one, not this fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
   hideUnlabelled?: boolean
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createComparativeColorFunction({
-    colorBy,
+    field,
     data: featureData,
     trackColor,
     nameOrder,
@@ -147,7 +143,7 @@ export function computeSyntenyColors({
         ? MISSING_VALUE_COLOR
         : cssColorToABGR(valueColor),
   })
-  const { I: colorI, D: colorD, N: colorN } = buildIndelColors(colorBy)
+  const { I: colorI, D: colorD, N: colorN } = buildIndelColors(field)
   const marker = drawLocationMarkers
     ? markerColor(groundColor)
     : MARKER_COLOR_HIDDEN

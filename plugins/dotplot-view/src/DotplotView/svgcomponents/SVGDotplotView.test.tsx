@@ -217,7 +217,7 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
     // legend is drawn outside the plot rect
     display.setInstanceData(fakeDotplotInstanceData(0))
   }
-  view.setColorBy('attribute:goc')
+  view.setColorBy('goc')
 
   expect(view.attributeRanges).toEqual({ goc: { min: 0, max: 75 } })
   const legend = legendContents(await renderToSvg(view, {}))

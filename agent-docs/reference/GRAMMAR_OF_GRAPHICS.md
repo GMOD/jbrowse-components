@@ -232,20 +232,22 @@ The seams, named honestly:
   and a field left without a scale takes the display's default the way
   `scale_type` picks one from the data. The ribbon's `strand`, `identity`,
   `mappingQual` and `dnds` are fields with a vocabulary or ramp of their own,
-  as synteny-core's `continuousRampConfig` already keyed them, and
-  `syntenyColorByOf` (`packages/synteny-core/src/syntenyColorBy.ts`) maps a
-  colour object onto the synteny runtime modes
+  as synteny-core's `continuousRampConfig` keys them
   ([ADR-135](../architecture-decision-records/adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)).
+  `paintedField` (`packages/synteny-core/src/syntenyColorBy.ts`) reads the
+  field out of a colour object, and the field is what the colour functions,
+  legends and menus dispatch on — there is no mode vocabulary beside it.
   What stays local: a field under `none` is the menus' switch-back memory,
   which ggplot2 has no place for since a plot specification is a value.
 - **A view-level colour is the plot-level `aes()` every layer inherits.** The
   linear synteny and dotplot views' `colorBy` is the same `SyntenyColor`
   object the multi-way display holds per layer as `ribbonColor`, with the
-  structural modes as fields the views read — `strand`, `query`, `target`,
-  `reference`, `track` — beside the presets and the declared columns
+  structural variables as fields — `strand`, `query`, `target`, `reference`,
+  `track` — beside the presets and the declared columns
   ([ADR-137](../architecture-decision-records/adr-137-the-synteny-views-colorby-is-the-colour-object-every-band-inherits.md)).
   ggplot2 has `inherit.aes`; here every band reads the view's object through
-  `TrackColorsMixin`, and a field the surface has no reader for is a column.
+  `TrackColorsMixin`. Which fields a surface offers is its menu's list; a
+  field with no reader behind it falls through to the surface's own colour.
 - **A scale table is per fetched region, and the quantitative ones are
   unioned.** The grammar resolves a scale over the whole dataset; the worker
   sees one region. A categorical entry is a function of the value and the

@@ -14,14 +14,6 @@
 
 export type Rgb = readonly [number, number, number]
 
-/**
- * A colorBy naming a feature attribute rather than a named mode:
- * `attribute:goc_score`. Stored in the same plain string the model already
- * holds, so per-track overrides, the checked state in the menu and saved
- * sessions all keep working with no new property.
- */
-export const ATTRIBUTE_PREFIX = 'attribute:'
-
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t
 }
@@ -125,14 +117,13 @@ export function dndsNorm(value: number) {
 }
 
 /**
- * A continuous color-by mode: which feature attribute it paints, the colormap,
+ * A continuous colour field: which feature attribute it paints, the colormap,
  * and the domain that maps a raw value into it.
  *
- * The mode is a value rather than a switch arm, so the mode list does not grow
- * by one enum member, one menu entry, one legend arm, one LUT, one
- * typed array and one RPC transfer entry per measurement someone wants to see.
- * A track carrying a column nobody anticipated is reached as
- * `attribute:<column>`, built from this same shape at read time.
+ * A value rather than a switch arm, so the field list does not grow by one
+ * enum member, one menu entry, one legend arm, one LUT, one typed array and
+ * one RPC transfer entry per measurement someone wants to see. A column nobody
+ * anticipated is built from this same shape at read time.
  */
 export interface ContinuousMode {
   /** the per-feature numeric attribute this reads */
@@ -150,13 +141,13 @@ export interface ContinuousMode {
   maxLabel: string
 }
 
-// The named presets. Each carries domain knowledge a column name cannot: that
-// identity is a fraction, that MAPQ tops out at minimap2's 60, that dN/dS is
-// read against 1 rather than against its own maximum. That is the whole reason
-// presets stay named — a generic mode scaled to the data would put dN/dS's
-// pivot wherever the visible range happened to fall.
+// The preset fields, keyed by the attribute each reads. Each carries domain
+// knowledge a column name cannot: that identity is a fraction, that MAPQ tops
+// out at minimap2's 60, that dN/dS is read against 1 rather than against its
+// own maximum — a ramp scaled to the data would put dN/dS's pivot wherever the
+// visible range happened to fall.
 export const continuousRampConfig: Record<
-  'identity' | 'mappingQuality' | 'dnds',
+  'identity' | 'mappingQual' | 'dnds',
   ContinuousMode
 > = {
   identity: {
@@ -166,7 +157,7 @@ export const continuousRampConfig: Record<
     minLabel: '0%',
     maxLabel: '100%',
   },
-  mappingQuality: {
+  mappingQual: {
     attribute: 'mappingQual',
     toRgb: cividisRgb,
     maxValue: 60,
@@ -215,21 +206,18 @@ export interface CategoricalMode {
 }
 
 /**
- * The mode an `attribute:<name>` colorBy paints with when that column carries
- * text: one color per distinct label, ordinal by the order the labels were
- * first seen across the view, so a label keeps its color as the window moves.
+ * How a column carrying text paints: one color per distinct label, ordinal by
+ * the order the labels were first seen across the view, so a label keeps its
+ * color as the window moves. Undefined for a field whose values are numbers,
+ * a preset, or the constant.
  */
 export function resolveCategoricalMode(
-  colorBy: string,
+  field: string,
   ranges?: Record<string, AttributeRange>,
 ): CategoricalMode | undefined {
-  if (!colorBy.startsWith(ATTRIBUTE_PREFIX)) {
-    return undefined
-  }
-  const attribute = colorBy.slice(ATTRIBUTE_PREFIX.length)
-  const range = ranges?.[attribute]
+  const range = field ? ranges?.[field] : undefined
   return range && isAttributeLabels(range)
-    ? { attribute, labels: range.labels, colors: range.colors }
+    ? { attribute: field, labels: range.labels, colors: range.colors }
     : undefined
 }
 
@@ -240,40 +228,35 @@ function domainLabel(value: number) {
 }
 
 /**
- * The mode a colorBy string paints with, or undefined if it is not a continuous
- * one (strand, query, track, ...).
- *
- * A preset's domain is fixed and means the same thing in every view. An
- * `attribute:<name>` mode has no such knowledge, so it takes the observed span
- * of that attribute and says so by labelling the legend with the actual
- * numbers — a RELATIVE scale, which is the honest reading when nothing declares
- * what the column's range is supposed to be.
+ * How a numeric field paints: a preset's fixed ramp, or a viridis ramp over
+ * the observed span of a declared column, labelled with the actual numbers —
+ * a RELATIVE scale, the honest reading when nothing declares what the
+ * column's range is supposed to be. Undefined for a text column and the
+ * constant. A structural field (strand, query, track, ...) is the caller's
+ * to dispatch before asking here.
  */
 export function resolveContinuousMode(
-  colorBy: string,
+  field: string,
   ranges?: Record<string, AttributeRange>,
 ): ContinuousMode | undefined {
-  const preset = (continuousRampConfig as Record<string, ContinuousMode>)[
-    colorBy
-  ]
+  if (!field) {
+    return undefined
+  }
+  const preset = (continuousRampConfig as Record<string, ContinuousMode>)[field]
   if (preset) {
     return preset
   }
-  if (!colorBy.startsWith(ATTRIBUTE_PREFIX)) {
-    return undefined
-  }
-  const attribute = colorBy.slice(ATTRIBUTE_PREFIX.length)
-  const range = ranges?.[attribute]
+  const range = ranges?.[field]
   if (range && isAttributeLabels(range)) {
     return undefined
   }
-  // no data yet, or an attribute nothing carried: a flat domain would divide by
+  // no data yet, or a column nothing carried: a flat domain would divide by
   // zero, and rampNorm answers 0 for it, so the ribbons stay at the ramp's
   // bottom rather than painting garbage
   const min = range?.min ?? 0
   const max = range?.max ?? 0
   return {
-    attribute,
+    attribute: field,
     toRgb: viridisRgb,
     minValue: min,
     maxValue: max,

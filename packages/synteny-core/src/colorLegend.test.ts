@@ -20,7 +20,7 @@ test('continuous modes get a gradient ramp with bounded domain labels', () => {
     expect(identity.background).toMatch(/^linear-gradient/)
   }
 
-  const mapq = getColorBySwatch('mappingQuality')
+  const mapq = getColorBySwatch('mappingQual')
   if (mapq?.kind === 'ramp') {
     expect(mapq.maxLabel).toBe('60')
   }
@@ -29,7 +29,7 @@ test('continuous modes get a gradient ramp with bounded domain labels', () => {
 // Default (no cigarOps) is the static menu preview: match + the two indel ops
 // a typical alignment carries. The rare N (skip) op is opt-in.
 test('default/strand modes show labeled chips including CIGAR indels', () => {
-  const def = getColorBySwatch('default')
+  const def = getColorBySwatch('')
   expect(def?.kind).toBe('chips')
   if (def?.kind === 'chips') {
     expect(def.chips.map(c => c.label)).toEqual([
@@ -53,11 +53,11 @@ test('default/strand modes show labeled chips including CIGAR indels', () => {
 // painted on screen: no indels -> just the block/strand chips; N present ->
 // a "skip" chip appears (unlike the static preview, which omits it).
 test('cigarOps drives which indel chips the legend shows', () => {
-  const none = getColorBySwatch('default', { cigarOps: NO_CIGAR_OPS })
+  const none = getColorBySwatch('', { cigarOps: NO_CIGAR_OPS })
   if (none?.kind === 'chips') {
     expect(none.chips.map(c => c.label)).toEqual(['match'])
   }
-  const insertionOnly = getColorBySwatch('default', { cigarOps: CIGAR_OP_I })
+  const insertionOnly = getColorBySwatch('', { cigarOps: CIGAR_OP_I })
   if (insertionOnly?.kind === 'chips') {
     expect(insertionOnly.chips.map(c => c.label)).toEqual([
       'match',
@@ -78,7 +78,7 @@ test('cigarOps drives which indel chips the legend shows', () => {
 })
 
 test('point-based views (pointBased) drop the CIGAR chips', () => {
-  const def = getColorBySwatch('default', { pointBased: true })
+  const def = getColorBySwatch('', { pointBased: true })
   if (def?.kind === 'chips') {
     expect(def.chips.map(c => c.label)).toEqual(['alignment'])
     expect(def.chips[0]!.color).toBe('#000')
@@ -117,7 +117,7 @@ test('the fallback note names what the mode is actually doing', () => {
 // one, the grey its unlabelled rows paint last, and past the readable cap it
 // says how many labels it left out.
 test('a categorical attribute lists a chip per label', () => {
-  const swatch = getColorBySwatch('attribute:group', {
+  const swatch = getColorBySwatch('group', {
     attributeRanges: {
       group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
     },
@@ -137,7 +137,7 @@ test('a categorical attribute lists a chip per label', () => {
     expect(swatch.chips[1]!.color).toBe('#4DB5E3')
     expect(swatch.chips[0]!.color).toBeDefined()
   }
-  const many = getColorBySwatch('attribute:group', {
+  const many = getColorBySwatch('group', {
     attributeRanges: {
       group: {
         labels: Array.from({ length: 35 }, (_, i) => `L${i}`),
@@ -168,7 +168,7 @@ test('colorByScale carries a ramp with its own end labels', () => {
 })
 
 test('colorByScale composites chips by alpha and notes the keyless modes', () => {
-  const chips = colorByScale('default', { pointBased: true, alpha: 0.5 })
+  const chips = colorByScale('', { pointBased: true, alpha: 0.5 })
   expect(chips.kind).toBe('categorical')
   if (chips.kind === 'categorical') {
     expect(chips.entries.map(e => e.label)).toEqual(['alignment'])

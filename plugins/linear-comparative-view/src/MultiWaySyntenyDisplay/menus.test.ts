@@ -122,7 +122,7 @@ function trackModel({
     openLaneSelection: () => {
       calls.push('open picker')
     },
-    ribbonColorBy: 'default' as const,
+    ribbonColorField: '',
     setRibbonColorBy: () => {},
     ribbonColorAttributes: [],
     ribbonAttributeRanges: {},

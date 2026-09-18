@@ -6,7 +6,7 @@ import {
 
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { AttributeRange, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { AttributeRange } from '@jbrowse/synteny-core'
 
 // The color function itself is `createComparativeColorFunction` in
 // synteny-core — the palette, the chromosome-order laps, the ramp LUTs and the
@@ -24,7 +24,7 @@ import type { AttributeRange, SyntenyColorBy } from '@jbrowse/synteny-core'
 const POINT_COLOR = cssColorToABGR(colorSchemes.default.pointColor)
 
 export function createDotplotColorFunction(
-  colorBy: SyntenyColorBy,
+  field: string,
   data: DotplotRpcData,
   trackColor: string,
   attributeRanges: Record<string, AttributeRange>,
@@ -33,7 +33,7 @@ export function createDotplotColorFunction(
   valueColor?: string,
 ) {
   return createComparativeColorFunction({
-    colorBy,
+    field,
     data,
     trackColor,
     nameOrder,
@@ -53,7 +53,7 @@ export function createDotplotColorFunction(
 export function computeDotplotColors({
   instanceData,
   rpcData,
-  colorBy,
+  field,
   trackColor,
   valueColor,
   nameOrder,
@@ -62,8 +62,8 @@ export function computeDotplotColors({
 }: {
   instanceData: DotplotInstanceData
   rpcData: DotplotRpcData
-  colorBy: SyntenyColorBy
-  // the display's slot in the view's track palette; only read by colorBy:'track'
+  field: string
+  // the display's slot in the view's track palette; only read under 'track'
   trackColor: string
   // the view's `colorBy.value`: what the points paint under the default mode
   // in place of black, when set
@@ -78,7 +78,7 @@ export function computeDotplotColors({
 }) {
   const { instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createDotplotColorFunction(
-    colorBy,
+    field,
     rpcData,
     trackColor,
     attributeRanges,

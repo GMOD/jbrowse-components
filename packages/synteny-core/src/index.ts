@@ -116,8 +116,6 @@ export type {
 export { runDiagonalize } from './runDiagonalize.ts'
 export { prepareDiagonalizeAdapter } from './prepareDiagonalizeAdapter.ts'
 export {
-  attributeColorBy,
-  colorByAttributeName,
   legendChipColor,
   colorSchemes,
   defaultCigarColors,
@@ -125,12 +123,7 @@ export {
   hashString,
   strandCigarColors,
 } from './colorUtils.ts'
-export type {
-  AttributeColorBy,
-  ColorScheme,
-  MeasurementColorBy,
-  SyntenyColorBy,
-} from './colorUtils.ts'
+export type { ColorScheme } from './colorUtils.ts'
 export { bandGroundColor, bandInk } from './bandGround.ts'
 export { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 export {
@@ -155,16 +148,7 @@ export type {
   SyntenyColorScale,
   SyntenyColorSnapshot,
 } from './syntenyColorConfigSchema.ts'
-export {
-  syntenyColorByOf,
-  syntenyColorField,
-  syntenyColorFor,
-} from './syntenyColorBy.ts'
-export type {
-  ColorByOver,
-  StructuralColorBy,
-  ValueColorBy,
-} from './syntenyColorBy.ts'
+export { paintedField, syntenyColorFor } from './syntenyColorBy.ts'
 // the palette button itself, not just the menu inside it — the two headers had a
 // copy each and only one of them said which mode it was in
 export { default as ColorBySelector } from './ColorBySelector.tsx'
@@ -190,7 +174,6 @@ export {
 export { comparativeTooltipLines } from './comparativeTooltipLines.ts'
 export type { ComparativeTooltipSide } from './comparativeTooltipLines.ts'
 export {
-  ATTRIBUTE_PREFIX,
   continuousRampConfig,
   dnDsRatio,
   isAttributeLabels,

@@ -3,13 +3,11 @@ import { paletteColorAt } from '@jbrowse/synteny-core'
 
 import { offscreenMateMarkColorFor } from './offscreenMateMarkColors.ts'
 
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
-
 const ORDER = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7']
 
-function level(...modes: SyntenyColorBy[]) {
-  return modes.map(effectiveColorBy => ({
-    effectiveColorBy,
+function level(...fields: string[]) {
+  return fields.map(paintedField => ({
+    paintedField,
     paintedChromosomeOrder: ORDER,
   }))
 }
@@ -27,8 +25,8 @@ test('and grey when they are keyed by the axis it merely sits on', () => {
 })
 
 test('and grey against a mode with no per-contig key at all', () => {
-  for (const mode of ['default', 'strand', 'identity', 'track'] as const) {
-    expect(offscreenMateMarkColorFor(level(mode), 'top')).toBeUndefined()
+  for (const field of ['', 'strand', 'identity', 'track']) {
+    expect(offscreenMateMarkColorFor(level(field), 'top')).toBeUndefined()
   }
 })
 

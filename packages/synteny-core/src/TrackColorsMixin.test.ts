@@ -5,8 +5,8 @@ import { TrackColorsMixin } from './TrackColorsMixin.ts'
 
 import type { AttributeRange } from './colorRamps.ts'
 
-// The floating legend is one box for the whole view, so the domain it labels an
-// `attribute:<column>` ramp with has to be one answer for every loaded display.
+// The floating legend is one box for the whole view, so the domain it labels a
+// column's ramp with has to be one answer for every loaded display.
 // A per-display answer is what makes that one legend lie.
 function viewWith(loaded: Record<string, AttributeRange>[]) {
   return TrackColorsMixin()
@@ -92,7 +92,7 @@ describe('the domain accumulated across fetches', () => {
     const view = viewWith([{ dn: { min: 0, max: 1 } }])
     view.observeAttributeRanges({ dn: { min: 0, max: 900 } })
     expect(view.attributeRanges).toEqual({ dn: { min: 0, max: 900 } })
-    view.setColorBy('attribute:dn')
+    view.setColorBy('dn')
     expect(view.attributeRanges).toEqual({ dn: { min: 0, max: 1 } })
   })
 })
@@ -146,7 +146,7 @@ describe('a categorical column', () => {
 
   it('lists the key in that order too, and only for a column mode', () => {
     const view = viewWith([])
-    view.setColorBy('attribute:group')
+    view.setColorBy('group')
     view.observeAttributeRanges({
       group: { labels: ['B1', 'A1a', 'C1'], colors: {} },
     })
@@ -202,21 +202,19 @@ describe('the colorBy object', () => {
 
   it('reads the structural fields as their modes', () => {
     for (const field of ['strand', 'query', 'target', 'reference', 'track']) {
-      expect(view({ field }).colorByMode).toBe(field)
+      expect(view({ field }).colorByField).toBe(field)
     }
   })
 
   it('reads a preset by the attribute it paints, and any other field as a column', () => {
-    expect(view({ field: 'mappingQual' }).colorByMode).toBe('mappingQuality')
-    expect(view({ field: 'dnds' }).colorByMode).toBe('dnds')
-    expect(view({ field: 'gene_group' }).colorByMode).toBe(
-      'attribute:gene_group',
-    )
+    expect(view({ field: 'mappingQual' }).colorByField).toBe('mappingQual')
+    expect(view({ field: 'dnds' }).colorByField).toBe('dnds')
+    expect(view({ field: 'gene_group' }).colorByField).toBe('gene_group')
   })
 
   it('lifts a colour string into value, which the default mode paints', () => {
     const v = view('grey')
-    expect(v.colorByMode).toBe('default')
+    expect(v.colorByField).toBe('')
     expect(v.colorByValue).toBe('grey')
     expect(getSnapshot(v).colorBy).toEqual({ value: 'grey' })
   })
@@ -232,21 +230,21 @@ describe('the colorBy object', () => {
   })
 
   it('clears on null and on omission', () => {
-    expect(view(null).colorByMode).toBe('default')
-    expect(view(undefined).colorByMode).toBe('default')
+    expect(view(null).colorByField).toBe('')
+    expect(view(undefined).colorByField).toBe('')
     expect(getSnapshot(view(null)).colorBy).toBeUndefined()
   })
 
   it('writes the whole object from a picked mode, keeping the field under none', () => {
     const v = view({ field: 'gene_group', domain: ['B1'] })
-    v.setColorBy('default')
+    v.setColorBy('')
     expect(getSnapshot(v).colorBy).toEqual({
       field: 'gene_group',
       domain: ['B1'],
       scale: 'none',
     })
-    expect(v.colorByMode).toBe('default')
-    v.setColorBy('attribute:gene_group')
+    expect(v.colorByField).toBe('')
+    v.setColorBy('gene_group')
     expect(getSnapshot(v).colorBy).toEqual({
       field: 'gene_group',
       domain: ['B1'],

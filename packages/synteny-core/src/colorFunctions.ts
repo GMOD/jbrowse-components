@@ -19,7 +19,6 @@ import type {
   ContinuousMode,
   Rgb,
 } from './colorRamps.ts'
-import type { SyntenyColorBy } from './colorUtils.ts'
 
 /**
  * The per-feature color function both comparative views build from a fetch
@@ -131,9 +130,9 @@ function buildLut(toRgb: (norm: number) => Rgb) {
 }
 
 // One LUT per colormap, cached by the colormap function itself rather than by
-// mode: several modes share viridis, and an `attribute:<name>` mode has no fixed
-// identity to key on. Built a handful of times for the life of the process,
-// where the dotplot used to rebuild one per recolor pass.
+// field: several fields share viridis, and a column has no fixed identity to
+// key on. Built a handful of times for the life of the process, where the
+// dotplot used to rebuild one per recolor pass.
 const lutCache = new Map<(norm: number) => Rgb, Uint32Array>()
 
 function lutFor(toRgb: (norm: number) => Rgb) {
@@ -225,17 +224,19 @@ export interface ColorFunctionInputs {
 }
 
 /**
- * `colorBy` resolved to a packed-ABGR color per FEATURE index.
+ * The colour `field` resolved to a packed-ABGR color per FEATURE index: `''`
+ * paints `defaultColor`, the structural fields what an alignment is, a preset
+ * or column its ramp or label palette.
  *
  * `defaultColor` is the one thing the two views legitimately disagree on: a
  * synteny ribbon's unpainted state is the red match block, a dotplot point's is
  * plain black (`colorSchemes.default.pointColor`, its conventional line color).
- * Everything above it is shared, including 'reference' — a stacked-view mode
+ * Everything above it is shared, including 'reference' — a stacked-view field
  * that each synteny level resolves to query/target before it gets here, and
  * that a two-genome dotplot has no anchor for, so both fall back to query.
  */
 export function createComparativeColorFunction({
-  colorBy,
+  field,
   data,
   trackColor,
   defaultColor,
@@ -243,9 +244,9 @@ export function createComparativeColorFunction({
   attributeRanges,
   hideUnlabelled = false,
 }: {
-  colorBy: SyntenyColorBy
+  field: string
   data: ColorFunctionInputs
-  // the display's slot in the view's track palette; only read by colorBy:'track'
+  // the display's slot in the view's track palette; only read under 'track'
   trackColor: string
   defaultColor: number
   // Chromosome order of the assembly the chromosome-painting modes key on, so a
@@ -253,7 +254,7 @@ export function createComparativeColorFunction({
   // Only the display knows it — the assembly's refName list is a session fact,
   // not something in the feature data — so it is passed in rather than derived.
   nameOrder?: readonly string[]
-  // The domain an `attribute:<name>` ramp scales to. A VIEW-level input, like
+  // The domain a column's ramp scales to. A VIEW-level input, like
   // `nameOrder` and for the same reason: a fetch's payload knows only the span
   // of the slice it holds, and painting from that re-maps every feature onto
   // the ramp each time the window rolls over — a ribbon in the middle of the
@@ -266,22 +267,9 @@ export function createComparativeColorFunction({
   // shows only the rows that carry a label
   hideUnlabelled?: boolean
 }): (index: number) => number {
-  // Every continuous mode in one arm, preset or attribute, so the switch below
-  // does not grow per measurement.
-  const continuous = resolveContinuousMode(colorBy, attributeRanges)
-  if (continuous) {
-    return makeContinuousColorFunction(continuous, data.attributes)
-  }
-  const categorical = resolveCategoricalMode(colorBy, attributeRanges)
-  if (categorical) {
-    return makeCategoricalColorFunction(
-      categorical,
-      data.attributes,
-      data.attributeRanges,
-      hideUnlabelled ? HIDDEN_UNLABELLED_COLOR : UNLABELLED_COLOR,
-    )
-  }
-  switch (colorBy) {
+  switch (field) {
+    case '':
+      return () => defaultColor
     // One flat color for every alignment in this track, so overlaid tracks are
     // told apart by hue rather than all painting the conventional default.
     case 'track': {
@@ -299,7 +287,20 @@ export function createComparativeColorFunction({
         data.mateRefNameIds,
         nameOrder,
       )
-    default:
-      return () => defaultColor
   }
+  // Every ramp in one arm, preset or column, so the switch above does not
+  // grow per measurement.
+  const continuous = resolveContinuousMode(field, attributeRanges)
+  if (continuous) {
+    return makeContinuousColorFunction(continuous, data.attributes)
+  }
+  const categorical = resolveCategoricalMode(field, attributeRanges)
+  return categorical
+    ? makeCategoricalColorFunction(
+        categorical,
+        data.attributes,
+        data.attributeRanges,
+        hideUnlabelled ? HIDDEN_UNLABELLED_COLOR : UNLABELLED_COLOR,
+      )
+    : () => defaultColor
 }

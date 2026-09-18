@@ -31,7 +31,11 @@ describe('viewSettingsFromSpec', () => {
   it('leaves a setting the flags never mention alone', () => {
     expect(
       viewSettingsFromSpec(spec, syntenyViewKnobs({ colorBy: 'query' })),
-    ).toMatchObject({ alpha: 0.9, drawCurves: true, colorBy: 'query' })
+    ).toMatchObject({
+      alpha: 0.9,
+      drawCurves: true,
+      colorBy: { field: 'query' },
+    })
   })
 
   it('leaves a spec boolean alone when the flag is off', () => {
@@ -44,10 +48,10 @@ describe('viewSettingsFromSpec', () => {
 
   it('merges only the shared knobs for a dotplot', () => {
     const settings = viewSettingsFromSpec(
-      { type: 'DotplotView', views: [], colorBy: 'target' },
+      { type: 'DotplotView', views: [], colorBy: { field: 'target' } },
       dotplotViewKnobs({ colorBy: 'query', alpha: 0.2 }),
     )
-    expect(settings).toMatchObject({ colorBy: 'query' })
+    expect(settings).toMatchObject({ colorBy: { field: 'query' } })
     expect(settings).not.toHaveProperty('alpha')
   })
 })

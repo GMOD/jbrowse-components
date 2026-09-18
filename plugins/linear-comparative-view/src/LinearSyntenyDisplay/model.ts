@@ -44,7 +44,6 @@ import type {
   AttributeRange,
   CigarOpMask,
   LodTier,
-  SyntenyColorBy,
   SyntenyFeatureLanes,
 } from '@jbrowse/synteny-core'
 
@@ -58,8 +57,8 @@ export interface SyntenyFeatureData extends SyntenyFeatureLanes {
   // declares, so switching between them recolors on the main thread with no
   // refetch. Float32 with -1 for missing, which is why there is no valid bitmap.
   attributes: Record<string, Float32Array>
-  // What each channel actually spanned, ignoring the -1s. The domain an
-  // `attribute:<name>` mode scales to, and the numbers its legend is labelled
+  // What each channel actually spanned, ignoring the -1s. The domain a
+  // column's ramp scales to, and the numbers its legend is labelled
   // with; the presets have fixed domains and ignore this.
   attributeRanges: Record<string, AttributeRange>
   // True when at least one feature in this RPC response carried an alignment
@@ -556,7 +555,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         return computeSyntenyColors({
           instanceData,
           featureData,
-          colorBy: this.effectiveColorBy,
+          field: this.paintedField,
           trackColor: this.trackColor,
           valueColor: this.view.colorByValue,
           opacityByIdentity,
@@ -580,7 +579,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * The chromosome order the chromosome-painting modes color by: the
-       * refNames of whichever of this level's two assemblies `effectiveColorBy`
+       * refNames of whichever of this level's two assemblies `paintedField`
        * resolved to, in the assembly's own order. Undefined for every other
        * mode, and while the assembly is still loading — the color function
        * falls back to its hash there.
@@ -589,12 +588,12 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * a color must not change with which chromosomes happen to be in view.
        */
       get paintedChromosomeOrder(): readonly string[] | undefined {
-        const colorBy = this.effectiveColorBy
-        if (colorBy !== 'query' && colorBy !== 'target') {
+        const field = this.paintedField
+        if (field !== 'query' && field !== 'target') {
           return undefined
         }
         const pair = this.parentHelper.rowPair
-        const row = colorBy === 'query' ? pair?.v0 : pair?.v1
+        const row = field === 'query' ? pair?.v0 : pair?.v1
         const assemblyName = row?.assemblyNames[0]
         return assemblyName === undefined
           ? undefined
@@ -608,7 +607,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * This track's slot in the view's palette, used by `colorBy: 'track'`.
+       * This track's slot in the view's palette, used by the `track` field.
        * Assigned by the view, not locally: pinning a color on one track shifts
        * which automatic slots its siblings can take.
        */
@@ -617,32 +616,30 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The view's mode, before the per-level 'reference' remap. This is the
-       * user-facing answer — the legend title reads it, so a 'reference' view
-       * reports 'reference' rather than the query/target each level resolved
-       * it to.
+       * The field the view paints by, before the per-level 'reference' remap.
+       * This is the user-facing answer — the legend title reads it, so a
+       * 'reference' view reports 'reference' rather than the query/target each
+       * level resolved it to.
        */
-      get colorByMode(): SyntenyColorBy {
-        return this.view.colorByMode
+      get colorByField(): string {
+        return this.view.colorByField
       },
       /**
        * #getter
-       * `colorByMode` resolved for this specific level, for the renderer.
-       * 'reference' is a stacked-view mode that colors every level by the shared
-       * anchor assembly's chromosome names; each level maps it to 'query' or
-       * 'target' depending on which of its two assemblies is the anchor, so the
-       * coloring stays consistent across levels. Every other mode passes
-       * through.
+       * `colorByField` resolved for this specific level, for the renderer.
+       * 'reference' colors every level by the shared anchor assembly's
+       * chromosome names; each level maps it to 'query' or 'target' depending
+       * on which of its two assemblies is the anchor, so the coloring stays
+       * consistent across levels. Every other field passes through.
        *
        * A level touching NEITHER anchor side (the C-D level of an A-B-C-D
        * stack anchored on B) falls through to 'query': it cannot color by an
        * assembly it does not draw, so the cross-level color continuity stops at
-       * that level while the legend still reads "reference". Inherent to the mode; surfacing it is parked with the
-       * other legend work.
+       * that level while the legend still reads "reference".
        */
-      get effectiveColorBy(): SyntenyColorBy {
-        const colorBy = this.colorByMode
-        if (colorBy === 'reference') {
+      get paintedField(): string {
+        const field = this.colorByField
+        if (field === 'reference') {
           const anchor = this.view.anchorAssemblyName
           const pair = this.parentHelper.rowPair
           const queryAsm = pair?.v0.assemblyNames[0]
@@ -651,7 +648,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
             ? 'target'
             : 'query'
         }
-        return colorBy
+        return field
       },
       /**
        * #getter

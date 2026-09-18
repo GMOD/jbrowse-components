@@ -312,7 +312,7 @@ describe('the ribbons', () => {
       stack: s,
       laneLinks: undefined,
       ribbonColor: 'rgba(130,130,130,0.4)',
-      ribbonColorBy: 'strand',
+      ribbonColorField: 'strand',
       drawCurves: false,
       bridgeSkippedLanes: false,
     })
@@ -338,7 +338,7 @@ describe('the ribbons', () => {
       stack: s,
       laneLinks: undefined,
       ribbonColor: 'rgba(130,130,130,0.4)',
-      ribbonColorBy: 'strand',
+      ribbonColorField: 'strand',
       drawCurves: false,
       bridgeSkippedLanes: false,
     })
@@ -366,7 +366,7 @@ describe('the ribbons', () => {
       stack: s,
       laneLinks: undefined,
       ribbonColor: 'rgba(130,130,130,0.4)',
-      ribbonColorBy: 'identity',
+      ribbonColorField: 'identity',
       drawCurves: false,
       bridgeSkippedLanes: false,
     })
@@ -399,7 +399,7 @@ describe('the ribbons', () => {
       stack: s,
       laneLinks: undefined,
       ribbonColor: 'rgba(130,130,130,0.4)',
-      ribbonColorBy: 'attribute:group',
+      ribbonColorField: 'group',
       attributeRanges: {
         group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
       },
@@ -419,7 +419,7 @@ describe('the ribbons', () => {
         stack: s,
         laneLinks: undefined,
         ribbonColor: 'rgba(130,130,130,0.4)',
-        ribbonColorBy: 'attribute:group',
+        ribbonColorField: 'group',
         attributeRanges: {
           group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
         },
@@ -453,13 +453,13 @@ describe('the ribbons', () => {
         pairFeature('g3', 500, 600),
       ],
     })
-    const colorsBy = (ribbonColorBy: 'dnds' | 'attribute:ks') =>
+    const colorsBy = (ribbonColorField: 'dnds' | 'ks') =>
       ribbonData(
         buildRibbonGeometry({
           stack: s,
           laneLinks: undefined,
           ribbonColor: 'rgba(130,130,130,0.4)',
-          ribbonColorBy,
+          ribbonColorField,
           attributeRanges: {
             dnds: { min: 0.25, max: 2 },
             ks: { min: 0.2, max: 1.6 },
@@ -469,7 +469,7 @@ describe('the ribbons', () => {
         }).cells,
         'ribbons:0',
       ).colors
-    for (const colors of [colorsBy('dnds'), colorsBy('attribute:ks')]) {
+    for (const colors of [colorsBy('dnds'), colorsBy('ks')]) {
       expect(colors[0]).not.toBe(colors[1])
       expect(abgrAlpha(colors[0]!)).toBe(Math.round(0.4 * 255))
       expect(colors[2]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))

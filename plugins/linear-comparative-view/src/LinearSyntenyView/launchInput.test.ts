@@ -66,7 +66,7 @@ test('a property a composed mixin contributes lands too', async () => {
     views: ROWS,
     colorBy: { field: 'query' },
   })
-  expect(view.colorByMode).toBe('query')
+  expect(view.colorByField).toBe('query')
   expect(getSnapshot(view).colorBy).toEqual({ field: 'query' })
 })
 
@@ -77,7 +77,7 @@ test('colorBy round-trips a session spec and refuses a stray key', async () => {
     views: ROWS,
     colorBy: { field: 'gene_group', domain: ['B1', 'A1a'] },
   })
-  expect(view.colorByMode).toBe('attribute:gene_group')
+  expect(view.colorByField).toBe('gene_group')
   expect(view.colorDomain).toEqual(['B1', 'A1a'])
   expect(getSnapshot(view).colorBy).toEqual({
     field: 'gene_group',
@@ -117,7 +117,7 @@ describe('the v4 nested form', () => {
     const view = await open({
       init: { views: ROWS, colorBy: { field: 'reference' } },
     })
-    expect(view.colorByMode).toBe('reference')
+    expect(view.colorByField).toBe('reference')
     expect(warnings()).toEqual([DEPRECATED])
   })
 })

@@ -60,7 +60,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
   expect(view.lineWidth).toBe(3)
   expect(view.lockAspectRatio).toBe(false)
   expect(view.lodMode).toBe('coarse')
-  expect(view.colorByMode).toBe('query')
+  expect(view.colorByField).toBe('query')
   expect(view.minAlignmentLength).toBe(1000)
   expect(view.launch).toEqual({ views: AXES })
 })
@@ -86,7 +86,7 @@ describe('the v4 nested form', () => {
     const view = await open({
       init: { views: AXES, colorBy: { field: 'dnds' } },
     })
-    expect(view.colorByMode).toBe('dnds')
+    expect(view.colorByField).toBe('dnds')
     expect(warnings()).toEqual([DEPRECATED])
   })
 
@@ -97,7 +97,7 @@ describe('the v4 nested form', () => {
           init: { colorBy: { field: 'dnds' } },
           colorBy: { field: 'strand' },
         })
-      ).colorByMode,
+      ).colorByField,
     ).toBe('strand')
   })
 })

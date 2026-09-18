@@ -11,7 +11,7 @@ import { computeSyntenyColors } from './syntenyColors.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
-import type { AttributeRange, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { AttributeRange } from '@jbrowse/synteny-core'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
 
@@ -71,7 +71,7 @@ const ALIGNMENTS = QUERY_CONTIGS.flatMap((refName, qi) =>
       end,
       strand: i % 3 === 0 ? -1 : 1,
       assemblyName: QUERY_ASM,
-      // a declared numeric column, the input an `attribute:<name>` ramp paints.
+      // a declared numeric column, the input its ramp paints.
       // Trends along the axis, so which slice of the file is in hand decides
       // what span the column covers.
       score: Math.round(cumBp / 100),
@@ -149,7 +149,7 @@ type Fetched = Awaited<ReturnType<typeof fetchAt>>
 // own fixed colors and are not what chromosome painting is read off.
 function colorsById(
   fetched: Fetched,
-  colorBy: SyntenyColorBy,
+  colorBy: string,
   attributeRanges: Record<string, AttributeRange>,
 ) {
   const { instanceData, ...featureData } = fetched
@@ -157,7 +157,7 @@ function colorsById(
     groundColor: '#fff',
     instanceData,
     featureData,
-    colorBy,
+    field: colorBy,
     trackColor: '#f00',
     nameOrder: colorBy === 'target' ? TARGET_CONTIGS : QUERY_CONTIGS,
     attributeRanges,
@@ -193,36 +193,33 @@ function paintOrder(fetched: Fetched) {
 const OFFSETS = [0, 1, 2, 3, 4].map(i => (i * GRID_BP) / BP_PER_PX)
 
 describe('a ribbon keeps its color and its place in the stack across a pan', () => {
-  test.each<SyntenyColorBy>(['query', 'target', 'attribute:score'])(
-    'colorBy: %s',
-    async colorBy => {
-      const fetches = await Promise.all(OFFSETS.map(o => fetchAt(o)))
-      // The view's domain, not each payload's. It is accumulated across fetches
-      // (`TrackColorsMixin.attributeRanges`) precisely so that it settles, and
-      // once it has, the same domain paints every window — which is the state
-      // this checks the colors in. A ramp scaled to whatever slice is in hand
-      // instead re-maps every feature each time a pan rolls the window over,
-      // and the ribbon a reader is looking at changes color under them.
-      const ranges = fetches.reduce<Record<string, AttributeRange>>(
-        (acc, f) => widenAttributeRanges(acc, f.attributeRanges),
-        {},
-      )
-      const maps = fetches.map(f => colorsById(f, colorBy, ranges))
-      for (const [i, map] of maps.entries()) {
-        for (const prev of maps.slice(0, i)) {
-          const shared = [...map.keys()].filter(id => prev.has(id))
-          const changed = shared.filter(id => prev.get(id) !== map.get(id))
-          expect({ offsetPx: OFFSETS[i], changed }).toEqual({
-            offsetPx: OFFSETS[i],
-            changed: [],
-          })
-        }
+  test.each(['query', 'target', 'score'])('colorBy: %s', async colorBy => {
+    const fetches = await Promise.all(OFFSETS.map(o => fetchAt(o)))
+    // The view's domain, not each payload's. It is accumulated across fetches
+    // (`TrackColorsMixin.attributeRanges`) precisely so that it settles, and
+    // once it has, the same domain paints every window — which is the state
+    // this checks the colors in. A ramp scaled to whatever slice is in hand
+    // instead re-maps every feature each time a pan rolls the window over,
+    // and the ribbon a reader is looking at changes color under them.
+    const ranges = fetches.reduce<Record<string, AttributeRange>>(
+      (acc, f) => widenAttributeRanges(acc, f.attributeRanges),
+      {},
+    )
+    const maps = fetches.map(f => colorsById(f, colorBy, ranges))
+    for (const [i, map] of maps.entries()) {
+      for (const prev of maps.slice(0, i)) {
+        const shared = [...map.keys()].filter(id => prev.has(id))
+        const changed = shared.filter(id => prev.get(id) !== map.get(id))
+        expect({ offsetPx: OFFSETS[i], changed }).toEqual({
+          offsetPx: OFFSETS[i],
+          changed: [],
+        })
       }
-      // the pans genuinely overlap, or the check above is vacuous
-      const overlap = [...maps[1]!.keys()].filter(id => maps[0]!.has(id))
-      expect(overlap.length).toBeGreaterThan(10)
-    },
-  )
+    }
+    // the pans genuinely overlap, or the check above is vacuous
+    const overlap = [...maps[1]!.keys()].filter(id => maps[0]!.has(id))
+    expect(overlap.length).toBeGreaterThan(10)
+  })
 
   test('paint order', async () => {
     const orders = (await Promise.all(OFFSETS.map(o => fetchAt(o)))).map(

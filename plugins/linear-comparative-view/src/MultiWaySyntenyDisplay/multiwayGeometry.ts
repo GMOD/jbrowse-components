@@ -31,7 +31,7 @@ import type {
   RibbonTarget,
 } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { AttributeRange, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { AttributeRange } from '@jbrowse/synteny-core'
 
 // ribbons narrower than this on both ends are clutter at alignment-record
 // density; the boxes they connect are still drawn in the lanes
@@ -140,13 +140,13 @@ class RibbonBuilder {
  * alpha; an unlabelled pair the reader hid draws at none.
  */
 function ribbonColorer(
-  mode: SyntenyColorBy,
+  field: string,
   slotColor: number,
   attributeRanges: Record<string, AttributeRange>,
   hideUnlabelled: boolean,
 ) {
   const alpha = slotColor >>> 24
-  if (mode === 'strand') {
+  if (field === 'strand') {
     const pos = withAbgrAlpha(
       cssColorToABGR(colorSchemes.strand.posColor),
       alpha,
@@ -157,7 +157,7 @@ function ribbonColorer(
     )
     return (strand: number) => (strand < 0 ? neg : pos)
   }
-  const continuous = resolveContinuousMode(mode, attributeRanges)
+  const continuous = resolveContinuousMode(field, attributeRanges)
   if (continuous) {
     const value = new Float32Array(1)
     const ramp = makeContinuousColorFunction(continuous, {
@@ -168,7 +168,7 @@ function ribbonColorer(
       return value[0] < 0 ? slotColor : withAbgrAlpha(ramp(0), alpha)
     }
   }
-  const categorical = resolveCategoricalMode(mode, attributeRanges)
+  const categorical = resolveCategoricalMode(field, attributeRanges)
   if (categorical) {
     const unlabelled = hideUnlabelled ? withAbgrAlpha(slotColor, 0) : slotColor
     const lut = new Map(
@@ -212,7 +212,7 @@ export function buildRibbonGeometry({
   stack,
   laneLinks,
   ribbonColor,
-  ribbonColorBy = 'default',
+  ribbonColorField = '',
   attributeRanges = {},
   hideUnlabelled = false,
   drawCurves,
@@ -222,7 +222,7 @@ export function buildRibbonGeometry({
   /** per `upper|lower` pair, the direct records fetched for it */
   laneLinks: ReadonlyMap<string, { links: Feature[] }> | undefined
   ribbonColor: string
-  ribbonColorBy?: SyntenyColorBy
+  ribbonColorField?: string
   /** what the ramp and label modes paint from; see the model's `ribbonAttributeRanges` */
   attributeRanges?: Record<string, AttributeRange>
   hideUnlabelled?: boolean
@@ -236,7 +236,7 @@ export function buildRibbonGeometry({
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
   const colorOf = ribbonColorer(
-    ribbonColorBy,
+    ribbonColorField,
     color,
     attributeRanges,
     hideUnlabelled,

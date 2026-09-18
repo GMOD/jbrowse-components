@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The linear synteny and dotplot views' `colorBy` is a `SyntenyColor` object — `\"grey\" | { value, field, scale: 'none', domain }` from the display-kit colour factory, held as the MST property itself so one lift and one set of refusals run on every path — replacing the mode string and the `colorDomain` property. The structural modes are fields the views read (`strand`, `query`, `target`, `reference`, `track`) beside the measurement presets; any other field is a declared column. The object-to-mode map (`syntenyColorByOf`, `syntenyColorFor`) lives in synteny-core and the multi-way display's copy is gone; the runtime mode strings stay the colour functions' form. Supersedes ADR-131's \"the synteny view's `colorBy` stays a mode string\""
+summary: "The linear synteny and dotplot views' `colorBy` is a `SyntenyColor` object — `\"grey\" | { value, field, scale: 'none', domain }` from the display-kit colour factory, held as the MST property itself so one lift and one set of refusals run on every path — replacing the mode string and the `colorDomain` property. The structural modes are fields the views read (`strand`, `query`, `target`, `reference`, `track`) beside the measurement presets; any other field is a declared column. The field is the runtime form: the colour functions, legends, menus and the worker dispatch on it, and the mode vocabulary — `default`, `mappingQuality`, `attribute:<name>` — is gone with the string. Supersedes ADR-131's \"the synteny view's `colorBy` stays a mode string\""
 ---
 
 # ADR-137: The synteny views' `colorBy` is the colour object every band inherits
@@ -56,21 +56,23 @@ the source track — the way the alignments displays take `pairOrientation` and
 documents them; a field outside that list and outside the measurement
 presets is a declared column, on the view as on the ribbon.
 
-**One map, in synteny-core.** `syntenyColorByOf(color, reads)` gives the
-runtime mode for a colour object, where `reads` are the structural fields the
-surface has a reader for — `SYNTENY_VIEW_FIELDS` for the views,
-`RIBBON_COLOR_FIELDS` (`['strand']`) for the multi-way display — so
-`{ field: 'query' }` on a ribbon is a column named `query`, as any field the
-display cannot read is. `syntenyColorFor(mode, current)` writes the object a
-menu pick means: the default keeps the field and its order under
+**The field is what everything dispatches on.** There is no mode string
+between the object and the paint: `paintedField(color)` reads the field out
+(`''` under `scale: 'none'`, which is the default colour), and the colour
+functions, the legends, the menu radios and the worker all switch on that
+string. The structural fields come first in each switch and the ramps after,
+so a preset and a declared column are the same arm — `continuousRampConfig`
+is keyed by the attribute each preset reads (`identity`, `mappingQual`,
+`dnds`), which is the field itself. `syntenyColorFor(field, current)` writes
+the object a menu pick means: `''` keeps the field and its order under
 `scale: 'none'`, and a field keeps its `domain` only when it is the one
-already named, as ADR-133 and the multi-way menu already did.
-`syntenyColorField` names the attribute a mode reads. The multi-way display's
-`ribbonColorBy.ts` is deleted; `coerceColorBy` and the retired spellings it
-mapped are gone with the string. The runtime modes (`default`, `strand`,
-`query`, `target`, `reference`, `track`, `identity`, `mappingQuality`,
-`dnds`, `attribute:<name>`) stay the form the colour functions, legends,
-menus and the worker dispatch on.
+already named, as ADR-133 and the multi-way menu already did. The multi-way
+display's `ribbonColorBy.ts`, the per-surface `reads` lists, the
+`attribute:` prefix, the `SyntenyColorBy` union, `coerceColorBy` and the
+retired spellings it mapped are all deleted. Which structural fields a
+surface offers is its menu's list and nothing else (`['', 'strand']` for the
+ribbons, `SYNTENY_VIEW_FIELDS` for the views); a field a surface has no
+reader for paints its default colour.
 
 **`value` paints.** A colour string lifts into `value`, and under `none` the
 synteny display paints its match blocks and the dotplot its points in that
@@ -87,8 +89,10 @@ the red CIGAR scheme or the black point. The two share the factory, the field
 list and the map.
 
 **The dotplot view converges with the synteny view**, since the property is
-the mixin's. jbrowse-img's `--colorBy` keeps its mode names as the CLI's
-vocabulary and writes the object through `syntenyColorFor`.
+the mixin's. jbrowse-img's `--colorBy` takes the field name and writes
+`{ field }`; its enum is the named fields, checked against
+`SYNTENY_VIEW_FIELDS` and `continuousRampConfig` at build time, and a
+declared column goes through `--spec`.
 
 ## Consequences
 
@@ -110,11 +114,11 @@ vocabulary and writes the object through `syntenyColorFor`.
   pages regenerate; the URL-parameters rows for `colorBy` come off the
   property docstring and the `#valueList` tag is gone with the string list.
 - The website's spec recipe reads the view's `colorBy` and the multi-way
-  display's `ribbonColor` through `syntenyColorByOf`, where it had a hand copy
+  display's `ribbonColor` through `paintedField`, where it had a hand copy
   of the ribbon map that still named the retired `categorical` scale.
 - `colorBy.value` is a state the views did not have: one flat colour for
-  every alignment, which the legend keys nothing for (`hasLegendKey` is the
-  mode's).
+  every alignment, which the legend keys nothing for (`hasLegendKey` reads
+  the field).
 
 ## Rejected alternatives
 
@@ -133,7 +137,9 @@ vocabulary and writes the object through `syntenyColorFor`.
   migrations, and a string that fails at load naming itself is better than
   one coerced to the default in silence, which is what `coerceColorBy` did to
   a typo.
-- **One structural field list for every surface.** The multi-way display has
-  no reader for `query`, `target`, `reference` or `track`; a field with no
-  reader is a declared column, and a list the display cannot honour would say
-  otherwise.
+- **A per-surface `reads` list resolving a field the surface cannot paint
+  into a declared column.** It bought nothing the menu does not already say:
+  either way `{ field: 'query' }` on a ribbon finds no `query` column in the
+  data and paints the ribbon's own colour. Two lists and a generic parameter
+  threaded through the menu, the target and the config schema to reach the
+  same pixel.

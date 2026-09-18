@@ -204,7 +204,7 @@ export function doAfterAttach(
     commit: ({ instanceData, ...featureData }) => {
       // Before the data lands, because the accumulated domain has to outlive
       // this payload: `attributeRanges` reports the span of the SLICE this
-      // window fetched, and the ramp an `attribute:<column>` mode paints would
+      // window fetched, and the ramp a column paints would
       // otherwise re-scale on every pan that rolls the window over.
       self.view.observeAttributeRanges(featureData.attributeRanges)
       self.setRpcData(featureData, instanceData)

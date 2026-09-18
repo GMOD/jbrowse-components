@@ -4,11 +4,10 @@ import { nameColorCss } from '@jbrowse/synteny-core'
 import { MARK_ALPHA } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 
 import type { OffscreenMateSide } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export interface MarkColorDisplay {
-  // the mode this display paints with, 'reference' already resolved
-  effectiveColorBy?: SyntenyColorBy
+  // the field this display paints by, 'reference' already resolved
+  paintedField?: string
   paintedChromosomeOrder?: readonly string[]
 }
 
@@ -25,7 +24,7 @@ export function offscreenMateMarkColorFor(
 ) {
   const axis = NAMED_AXIS[side]
   const keyed =
-    displays.length > 0 && displays.every(d => d.effectiveColorBy === axis)
+    displays.length > 0 && displays.every(d => d.paintedField === axis)
   // asked once per mark, and `nameColorCss` scans the assembly's refName list
   const cache = new Map<string, string>()
   const nameOrder = displays[0]?.paintedChromosomeOrder

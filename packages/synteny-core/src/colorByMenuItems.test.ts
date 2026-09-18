@@ -28,8 +28,8 @@ const trackColors = (tracks: ColorByMenuTrack[]) => ({
 })
 
 const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
-  colorBy: 'default',
-  structuralModes: ['default', 'strand', 'track', 'query', 'target'],
+  colorBy: '',
+  structuralFields: ['', 'strand', 'track', 'query', 'target'],
   attributes: [],
   attributeRanges: {
     identity: { min: 0.5, max: 1 },
@@ -83,7 +83,7 @@ test('a surface lists the structural modes it paints, and one track has no swatc
   const got = labels(
     colorByMenuItems(
       target({
-        structuralModes: ['default', 'strand'],
+        structuralFields: ['', 'strand'],
         trackColors: trackColors([track(0)]),
       }),
     ),
@@ -99,7 +99,7 @@ function viewModel(tracks: number): TrackColorsModel {
     })),
     colorableAttributes: [],
     attributeRanges: {},
-    colorByMode: 'default',
+    colorByField: '',
     hideUnlabelled: false,
     colorDomain: [],
     trackColorFor: () => '#4e79a7',
@@ -118,10 +118,10 @@ test('a view offers Track once two tracks overlay, and Reference across a stack'
     colorByMenuTargetFor(viewModel(tracks), {
       pointBased: false,
       showReference,
-    }).structuralModes
-  expect(modesOf(1, false)).toEqual(['default', 'strand', 'query', 'target'])
+    }).structuralFields
+  expect(modesOf(1, false)).toEqual(['', 'strand', 'query', 'target'])
   expect(modesOf(2, true)).toEqual([
-    'default',
+    '',
     'strand',
     'track',
     'query',
@@ -149,7 +149,7 @@ test('a text column offers its unlabelled toggle and a pin for the labels not ye
   const categorical = (colorDomain: string[]) =>
     colorByMenuItems(
       target({
-        colorBy: 'attribute:group',
+        colorBy: 'group',
         attributeRanges: {
           group: { labels: ['B1', 'A1a', 'C1'], colors: {} },
         },
@@ -263,7 +263,7 @@ test('a declared numeric column is offered as its own mode', () => {
   expect(labels(values)).toContain('goc_score')
   const goc = values.find(i => 'label' in i && i.label === 'goc_score')!
   ;(goc as { onClick: () => void }).onClick()
-  expect(picked).toEqual(['attribute:goc_score'])
+  expect(picked).toEqual(['goc_score'])
 })
 
 // An attribute mode has to show as checked the same as a preset — the mode is
@@ -272,7 +272,7 @@ test('an attribute mode checks like a preset', () => {
   const items = colorByMenuItems(
     target({
       attributes: ['dn'],
-      colorBy: 'attribute:dn',
+      colorBy: 'dn',
     }),
   )
   const dn = valueModes(items).find(i => 'label' in i && i.label === 'dn')!

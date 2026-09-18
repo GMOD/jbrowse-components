@@ -28,17 +28,6 @@ identity. Anything worth keeping gets pinned.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/trackColors.ts)
 
-## attributeColorBy
-
-The colorBy mode that paints a named feature attribute.
-
-```js
-// type signature
-(attribute: string) => `attribute:${string}`
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
-
 ## BAND_GROUND_COLOR
 
 The colour a comparative band is painted on, for every surface that has to
@@ -89,17 +78,6 @@ to rather than over an assumed white.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
-## colorByAttributeName
-
-The attribute a colorBy mode names, or undefined for a named preset.
-
-```js
-// type signature
-(colorBy: SyntenyColorBy) => string | undefined
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
-
 ## colorByMenuItems
 
 The color-by menu shared by the dotplot and linear-synteny palette buttons
@@ -109,7 +87,7 @@ is painting, and the per-track swatches once more than one track overlays.
 
 ```js
 // type signature
-<S extends SyntenyColorBy>(target: ColorByMenuTarget<S>) => MenuItem[]
+(target: ColorByMenuTarget) => MenuItem[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuItems.tsx)
@@ -123,7 +101,7 @@ target.
 
 ```js
 // type signature
-(model: TrackColorsModel, { pointBased, showReference, }: { pointBased: boolean; showReference: boolean; }) => ColorByMenuTarget<SyntenyColorBy>
+(model: TrackColorsModel, { pointBased, showReference, }: { pointBased: boolean; showReference: boolean; }) => ColorByMenuTarget
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuTarget.ts)
@@ -140,7 +118,7 @@ sequence name) is a note row saying so.
 
 ```js
 // type signature
-(colorBy: SyntenyColorBy, {…}?: {…} & { ...; }) => ColorScale
+(field: string, {…}?: {…} & { ...; }) => ColorScale
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
@@ -170,13 +148,12 @@ view rather than a preference, so the caller states it:
 
 ## colorByShortLabel
 
-Short human-readable title for the floating legend header. An
-`attribute:<name>` mode has no title but the column's own name, which is the
-point of it — the reader named that column.
+Short human-readable title for the floating legend header. A column has no
+title but its own name, which is the point of it — the reader named it.
 
 ```js
 // type signature
-(colorBy: SyntenyColorBy) => string
+(field: string) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
@@ -246,28 +223,27 @@ drift this module exists to prevent — see the header.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
 
-## syntenyColorByOf
+## paintedField
 
-The mode a synteny colour object paints, in the colour functions' terms.
-`reads` are the structural fields the surface has a reader for: a field
-outside them and outside the measurement presets is a declared column.
+The field a synteny colour object paints by, or `''` while it paints its
+constant: `scale: 'none'`, or no field named.
 
 ```js
 // type signature
-<S extends StructuralColorBy>({ scale, field }: SyntenyColorSnapshot, reads: readonly S[]) => ColorByOver<S>
+({ scale, field }: SyntenyColorSnapshot) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
 
 ## syntenyColorFor
 
-The colour object that paints `mode`, written over `current`: the default
+The colour object that paints by `field`, written over `current`: `''`
 keeps the field and its order under `scale: 'none'` for a switch back, and
 a field keeps its order only when it is the one already named.
 
 ```js
 // type signature
-(mode: SyntenyColorBy, current: SyntenyColorSnapshot) => SyntenyColorSnapshot
+(field: string, current: SyntenyColorSnapshot) => SyntenyColorSnapshot
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)

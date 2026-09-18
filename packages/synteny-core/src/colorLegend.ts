@@ -5,14 +5,9 @@ import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import { bandGroundColor } from './bandGround.ts'
 import { categoricalColor } from './colorFunctions.ts'
 import { resolveCategoricalMode, resolveContinuousMode } from './colorRamps.ts'
-import {
-  colorByAttributeName,
-  colorSchemes,
-  legendChipColor,
-} from './colorUtils.ts'
+import { colorSchemes, legendChipColor } from './colorUtils.ts'
 
 import type { AttributeRange, Rgb } from './colorRamps.ts'
-import type { SyntenyColorBy } from './colorUtils.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 const rgbCss = ([r, g, b]: Rgb) => `rgb(${r},${g},${b})`
@@ -122,44 +117,44 @@ function indelChips(
 }
 
 const PRESET_LABELS: Record<string, string> = {
-  default: 'Default',
+  '': 'Default',
   strand: 'Strand',
   query: 'Query name',
   target: 'Target name',
   reference: 'Reference name',
   identity: 'Identity',
-  mappingQuality: 'Mapping quality',
+  mappingQual: 'Mapping quality',
   dnds: 'dN/dS',
   track: 'Track',
 }
 
 /**
  * #api
- * Short human-readable title for the floating legend header. An
- * `attribute:<name>` mode has no title but the column's own name, which is the
- * point of it — the reader named that column.
+ * Short human-readable title for the floating legend header. A column has no
+ * title but its own name, which is the point of it — the reader named it.
  */
-export function colorByShortLabel(colorBy: SyntenyColorBy) {
-  return PRESET_LABELS[colorBy] ?? colorByAttributeName(colorBy) ?? colorBy
+export function colorByShortLabel(field: string) {
+  return PRESET_LABELS[field] ?? field
 }
 
-// What a mode with no swatch spec is doing instead. Lives here rather than
+// What a field with no swatch spec is doing instead. Lives here rather than
 // inline in each legend so the HTML and SVG legends can't say different things
 // — the same rule this file already applies to chip colors and ramp stops.
-export function colorByFallbackNote(colorBy: SyntenyColorBy) {
-  return colorBy === 'track'
+export function colorByFallbackNote(field: string) {
+  return field === 'track'
     ? 'Distinct color per track'
     : 'Distinct color per sequence'
 }
 
-// Legend spec for a color-by mode: a gradient ramp for continuous modes, or a
-// set of labeled chips for the structural modes. Returns undefined for the
-// per-name categorical modes (query/target), which have no fixed legend.
-// `pointBased` is true for the dotplot (flat points, no CIGAR); `cigarOps`
-// selects which indel chips the ribbon legend shows — the caller passes the
-// ops actually drawn on screen, defaulting to the static I+D menu preview.
+// Legend spec for a colour field: a gradient ramp for a measurement or numeric
+// column, labeled chips for the structural fields and a text column. Returns
+// undefined for the per-name fields (query/target/reference), which have no
+// fixed legend. `pointBased` is true for the dotplot (flat points, no CIGAR);
+// `cigarOps` selects which indel chips the ribbon legend shows — the caller
+// passes the ops actually drawn on screen, defaulting to the static I+D menu
+// preview.
 export function getColorBySwatch(
-  colorBy: SyntenyColorBy,
+  field: string,
   {
     pointBased = false,
     cigarOps = DEFAULT_CIGAR_OPS,
@@ -173,8 +168,8 @@ export function getColorBySwatch(
     // (this file can't know the track list). Absent or empty falls back to the
     // "distinct color per track" note.
     trackChips?: ColorChip[]
-    // observed span per attribute, which is the domain an `attribute:<name>`
-    // mode scales to and therefore what its ramp has to be labelled with
+    // observed span per attribute, which is the domain a column's ramp
+    // scales to and therefore what it has to be labelled with
     attributeRanges?: Record<string, AttributeRange>
     // the unlabelled rows draw at zero alpha, so the key names no grey
     hideUnlabelled?: boolean
@@ -182,58 +177,8 @@ export function getColorBySwatch(
 ): ColorBySwatchSpec | undefined {
   // dotplot paints flat points and never draws CIGAR ops
   const ops = pointBased ? NO_CIGAR_OPS : cigarOps
-  // Every continuous mode, preset or attribute, reads its ramp and its domain
-  // labels off the one spec the renderer paints from, so a new measurement
-  // needs no arm here at all. For the diverging preset the pivot is the ramp's
-  // own pale middle, which is what the end labels alone cannot say.
-  const continuous = resolveContinuousMode(colorBy, attributeRanges)
-  if (continuous) {
-    return ramp(
-      continuous.toRgb,
-      [continuous.minValue ?? 0, continuous.maxValue],
-      continuous.minLabel,
-      continuous.maxLabel,
-    )
-  }
-  const categorical = resolveCategoricalMode(colorBy, attributeRanges)
-  if (categorical) {
-    const shown = categorical.labels.slice(0, MAX_LEGEND_ENTRIES)
-    const rest = categorical.labels.length - shown.length
-    return {
-      kind: 'chips',
-      chips: [
-        ...shown.map(label => ({
-          color: categoricalColor(categorical, label),
-          label,
-        })),
-        ...(rest > 0 ? [{ label: `+${rest} more` }] : []),
-        // The grey the column's unlabelled rows paint. Named unconditionally,
-        // like every other label here: this key describes the declared
-        // vocabulary rather than the rows in view, and the mode that draws no
-        // grey is the one that hides those rows.
-        ...(hideUnlabelled
-          ? []
-          : [
-              {
-                color: NO_CATEGORY_COLOR,
-                label: NO_VALUE_LABEL,
-                missing: true,
-              },
-            ]),
-      ],
-    }
-  }
-  switch (colorBy) {
-    case 'strand':
-      return {
-        kind: 'chips',
-        chips: [
-          { color: posColor, label: 'forward' },
-          { color: negColor, label: 'reverse' },
-          ...indelChips(strandCigar, ops),
-        ],
-      }
-    case 'default':
+  switch (field) {
+    case '':
       return {
         kind: 'chips',
         // dotplot draws each alignment as one flat point, not the ribbon's red
@@ -245,14 +190,66 @@ export function getColorBySwatch(
               ...indelChips(defaultCigar, ops),
             ],
       }
+    case 'strand':
+      return {
+        kind: 'chips',
+        chips: [
+          { color: posColor, label: 'forward' },
+          { color: negColor, label: 'reverse' },
+          ...indelChips(strandCigar, ops),
+        ],
+      }
     case 'track':
       return trackChips?.length
         ? { kind: 'chips', chips: trackChips }
         : undefined
-    default:
-      // query / target / reference paint a color per sequence name, which has
-      // no fixed key
+    case 'query':
+    case 'target':
+    case 'reference':
+      // a color per sequence name has no fixed key
       return undefined
+  }
+  // Every ramp, preset or column, reads its stops and its domain labels off
+  // the one spec the renderer paints from, so a new measurement needs no arm
+  // here. For the diverging preset the pivot is the ramp's own pale middle,
+  // which is what the end labels alone cannot say.
+  const continuous = resolveContinuousMode(field, attributeRanges)
+  if (continuous) {
+    return ramp(
+      continuous.toRgb,
+      [continuous.minValue ?? 0, continuous.maxValue],
+      continuous.minLabel,
+      continuous.maxLabel,
+    )
+  }
+  const categorical = resolveCategoricalMode(field, attributeRanges)
+  if (!categorical) {
+    return undefined
+  }
+  const shown = categorical.labels.slice(0, MAX_LEGEND_ENTRIES)
+  const rest = categorical.labels.length - shown.length
+  return {
+    kind: 'chips',
+    chips: [
+      ...shown.map(label => ({
+        color: categoricalColor(categorical, label),
+        label,
+      })),
+      ...(rest > 0 ? [{ label: `+${rest} more` }] : []),
+      // The grey the column's unlabelled rows paint. Named unconditionally,
+      // like every other label here: this key describes the declared
+      // vocabulary rather than the rows in view, and the mode that draws no
+      // grey is the one that hides those rows.
+      ...(hideUnlabelled
+        ? []
+        : [
+            {
+              color: NO_CATEGORY_COLOR,
+              label: NO_VALUE_LABEL,
+              missing: true,
+            },
+          ]),
+    ],
   }
 }
 
@@ -267,19 +264,19 @@ export function getColorBySwatch(
  * sequence name) is a note row saying so.
  */
 export function colorByScale(
-  colorBy: SyntenyColorBy,
+  field: string,
   {
     alpha = 1,
     ...opts
   }: Parameters<typeof getColorBySwatch>[1] & { alpha?: number } = {},
 ): ColorScale {
-  const swatch = getColorBySwatch(colorBy, opts)
-  const title = colorByShortLabel(colorBy)
+  const swatch = getColorBySwatch(field, opts)
+  const title = colorByShortLabel(field)
   if (swatch?.kind === 'ramp') {
     const { domain, minLabel, maxLabel, stops } = swatch
     return {
       kind: 'ramp',
-      id: colorBy,
+      id: field,
       title,
       domain,
       stops,
@@ -289,7 +286,7 @@ export function colorByScale(
   const ground = bandGroundColor()
   return {
     kind: 'categorical',
-    id: colorBy,
+    id: field || 'default',
     title,
     entries: swatch
       ? swatch.chips.map(({ color, label, missing }) => ({
@@ -301,6 +298,6 @@ export function colorByScale(
               : legendChipColor(color, alpha, ground),
           ...(missing ? { missing } : {}),
         }))
-      : [{ value: 'note', label: colorByFallbackNote(colorBy) }],
+      : [{ value: 'note', label: colorByFallbackNote(field) }],
   }
 }

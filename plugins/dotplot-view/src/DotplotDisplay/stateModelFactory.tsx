@@ -32,11 +32,7 @@ import type { DotplotHoverHighlight, DotplotRpcData } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
-import type {
-  ComparativeWarning,
-  LodTier,
-  SyntenyColorBy,
-} from '@jbrowse/synteny-core'
+import type { ComparativeWarning, LodTier } from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
 
 // Path coordinates to a tenth of a pixel. Full float precision makes the `d`
@@ -169,7 +165,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           ? computeDotplotColors({
               instanceData,
               rpcData,
-              colorBy: this.colorBy,
+              field: this.colorByField,
               trackColor: this.trackColor,
               valueColor: this.view.colorByValue,
               nameOrder: this.paintedChromosomeOrder,
@@ -196,26 +192,25 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * naming an axis for it would be inventing an answer.
        */
       get paintedChromosomeOrder(): readonly string[] | undefined {
-        const colorBy = this.colorBy
-        if (colorBy !== 'query' && colorBy !== 'target') {
+        const field = this.colorByField
+        if (field !== 'query' && field !== 'target') {
           return undefined
         }
-        const assemblyName =
-          this.view.assemblyNames[colorBy === 'query' ? 0 : 1]
+        const assemblyName = this.view.assemblyNames[field === 'query' ? 0 : 1]
         return assemblyName === undefined
           ? undefined
           : getSession(self).assemblyManager.get(assemblyName)?.refNames
       },
       /**
        * #getter
-       * The plot-wide mode, coerced.
+       * The field the plot paints by.
        */
-      get colorBy(): SyntenyColorBy {
-        return this.view.colorByMode
+      get colorByField(): string {
+        return this.view.colorByField
       },
       /**
        * #getter
-       * This track's slot in the plot's palette, used by `colorBy: 'track'`.
+       * This track's slot in the plot's palette, used by the `track` field.
        * Assigned by the view, not locally: pinning a color on one track shifts
        * which automatic slots its siblings can take.
        */

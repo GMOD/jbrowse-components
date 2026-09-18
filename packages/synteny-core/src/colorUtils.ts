@@ -1,7 +1,5 @@
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 
-import { ATTRIBUTE_PREFIX } from './colorRamps.ts'
-
 /**
  * #api
  * `hashString` is a deterministic non-negative 32-bit hash of a string;
@@ -61,61 +59,6 @@ export const colorSchemes = {
 }
 
 export type ColorScheme = keyof typeof colorSchemes
-
-// The runtime modes the colour functions, legends and menus dispatch on. A
-// view or display holds a colour object (`SyntenyColor`, `RibbonColor`) and
-// `syntenyColorByOf` maps it onto one of these.
-const syntenyColorByValues = [
-  'default',
-  'strand',
-  'query',
-  'target',
-  'reference',
-  'identity',
-  'mappingQuality',
-  'dnds',
-  'track',
-] as const
-
-/**
- * A color-by mode: one of the named presets, or `attribute:<name>` naming a
- * numeric feature attribute the track happens to carry.
- *
- * The open arm keeps this list from gaining a member per measurement anyone
- * wants to see. A preset is a preset because it carries domain knowledge
- * a column name cannot — identity is a fraction, MAPQ tops out at 60, dN/dS
- * pivots at 1 — not because it is the only way to paint a number.
- */
-export type SyntenyColorBy =
-  | (typeof syntenyColorByValues)[number]
-  | AttributeColorBy
-
-/** The mode that paints a column the track declares. */
-export type AttributeColorBy = `${typeof ATTRIBUTE_PREFIX}${string}`
-
-/** The measurements painted on a ramp, under the menu's Color by value. */
-export type MeasurementColorBy = Extract<
-  SyntenyColorBy,
-  'identity' | 'mappingQuality' | 'dnds'
->
-
-/**
- * #api
- * The colorBy mode that paints a named feature attribute.
- */
-export function attributeColorBy(attribute: string): AttributeColorBy {
-  return `${ATTRIBUTE_PREFIX}${attribute}`
-}
-
-/**
- * #api
- * The attribute a colorBy mode names, or undefined for a named preset.
- */
-export function colorByAttributeName(colorBy: SyntenyColorBy) {
-  return colorBy.startsWith(ATTRIBUTE_PREFIX)
-    ? colorBy.slice(ATTRIBUTE_PREFIX.length)
-    : undefined
-}
 
 /**
  * #api

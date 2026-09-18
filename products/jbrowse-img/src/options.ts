@@ -5,7 +5,10 @@ import type { AssertTrue, Covers } from './types.ts'
 import type { defaultThemes } from '@jbrowse/core/ui/theme'
 import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import type {
+  SYNTENY_VIEW_FIELDS,
+  continuousRampConfig,
+} from '@jbrowse/synteny-core'
 
 export interface OptionDef {
   name: string
@@ -55,20 +58,22 @@ const cigarModes = [
   'full',
 ] as const satisfies readonly CigarMode[]
 
-// Synteny ribbon coloring, written as the comparative views' `colorBy` object
-// (`syntenyColorFor`). The flag keeps the mode names and is validated here so
-// a typo like `--colorBy quary` reports itself.
+// Synteny ribbon coloring: the field the comparative views' `colorBy` object
+// paints by. Validated here so a typo like `--colorBy quary` reports itself.
+type SyntenyColorField =
+  | (typeof SYNTENY_VIEW_FIELDS)[number]
+  | keyof typeof continuousRampConfig
+
 const syntenyColorByModes = [
-  'default',
   'strand',
   'query',
   'target',
   'reference',
-  'identity',
-  'mappingQuality',
-  'dnds',
   'track',
-] as const satisfies readonly SyntenyColorBy[]
+  'identity',
+  'mappingQual',
+  'dnds',
+] as const satisfies readonly SyntenyColorField[]
 
 // The built-in theme names, pinned to core's own defaultThemes registry so a
 // theme added or renamed there fails the build here rather than leaving the CLI
@@ -89,15 +94,9 @@ export const themeNames = [
 export type AssertEnumListsCoverUpstream = [
   AssertTrue<Covers<TrackLabelMode, typeof trackLabelModes>>,
   AssertTrue<Covers<CigarMode, typeof cigarModes>>,
-  // Exclude(…, `attribute:${string}`): the CLI enumerates the NAMED modes, and
-  // the open attribute arm is by construction unenumerable. A new named mode
-  // still fails here, which is what this assertion is for.
-  AssertTrue<
-    Covers<
-      Exclude<SyntenyColorBy, `attribute:${string}`>,
-      typeof syntenyColorByModes
-    >
-  >,
+  // the CLI enumerates the named fields; a declared column is by construction
+  // unenumerable and reachable through --spec
+  AssertTrue<Covers<SyntenyColorField, typeof syntenyColorByModes>>,
   AssertTrue<Covers<ThemeName, typeof themeNames>>,
 ]
 

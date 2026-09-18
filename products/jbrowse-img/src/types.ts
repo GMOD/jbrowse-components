@@ -3,7 +3,6 @@ import type { themeNames } from './options.ts'
 import type { Entry } from './parseArgv.ts'
 import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 // Compile-time assertion that a type is empty. Used with `Exclude<...>` to prove
 // a hand-written list covers every member of an upstream union: a member added
@@ -65,7 +64,7 @@ export interface Opts {
   autoDiagonalize?: boolean
   drawCurves?: boolean
   minAlignmentLength?: number
-  colorBy?: SyntenyColorBy
+  colorBy?: string
   alpha?: number
   levelHeights?: number[]
   cigarMode?: CigarMode

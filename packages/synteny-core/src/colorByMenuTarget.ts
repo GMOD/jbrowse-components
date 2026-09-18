@@ -1,13 +1,11 @@
 import type { ColorModeSurface } from './colorModes.ts'
 import type { AttributeRange } from './colorRamps.ts'
-import type { SyntenyColorBy } from './colorUtils.ts'
-import type { ValueColorBy } from './syntenyColorBy.ts'
 import type { ColorableTrack } from './trackColors.ts'
 
 export interface ColorByMenuTrack {
   trackId: string
   name: string
-  /** the color it draws under `colorBy: 'track'` */
+  /** the color it draws under `colorBy: { field: 'track' }` */
   trackColor: string
   /** whether that color was pinned by hand rather than taken from the palette */
   pinned: boolean
@@ -34,22 +32,22 @@ export function colorByMenuTargetFor(
     pinned: color !== undefined,
   }))
   return {
-    colorBy: model.colorByMode,
-    structuralModes: [
-      'default',
+    colorBy: model.colorByField,
+    structuralFields: [
+      '',
       'strand',
-      ...(tracks.length > 1 ? (['track'] as const) : []),
+      ...(tracks.length > 1 ? ['track'] : []),
       'query',
       'target',
-      ...(showReference ? (['reference'] as const) : []),
+      ...(showReference ? ['reference'] : []),
     ],
     attributes: model.colorableAttributes,
     attributeRanges: model.attributeRanges,
     surface: pointBased ? 'points' : 'ribbons',
     hideUnlabelled: model.hideUnlabelled,
     colorDomain: model.colorDomain,
-    setColorBy: value => {
-      model.setColorBy(value)
+    setColorBy: field => {
+      model.setColorBy(field)
     },
     setHideUnlabelled: value => {
       model.setHideUnlabelled(value)
@@ -76,23 +74,22 @@ export interface TrackColorsModel {
   colorableTracks: ColorableTrack[]
   colorableAttributes: string[]
   attributeRanges: Record<string, AttributeRange>
-  colorByMode: SyntenyColorBy
+  colorByField: string
   hideUnlabelled: boolean
   colorDomain: readonly string[]
   trackColorFor: (trackId: string) => string
-  setColorBy: (value: SyntenyColorBy) => void
+  setColorBy: (field: string) => void
   setHideUnlabelled: (value: boolean) => void
   setColorDomain: (domain: string[]) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
   clearTrackColors: () => void
 }
 
-export interface ColorByMenuTarget<
-  Structural extends SyntenyColorBy = SyntenyColorBy,
-> {
-  colorBy: SyntenyColorBy
-  /** the structural modes the surface paints, in `COLOR_MODES` order */
-  structuralModes: readonly Structural[]
+export interface ColorByMenuTarget {
+  /** the field the surface paints by, `''` for its default colour */
+  colorBy: string
+  /** the structural fields the surface paints, in `COLOR_MODES` order */
+  structuralFields: readonly string[]
   /**
    * columns the tracks declare, each offered as its own mode. Taken from the
    * track config rather than from the data so the menu is right before
@@ -110,7 +107,7 @@ export interface ColorByMenuTarget<
   hideUnlabelled: boolean
   /** the order a text column's labels take, which Pin distinct colors writes */
   colorDomain: readonly string[]
-  setColorBy: (value: Structural | ValueColorBy) => void
+  setColorBy: (field: string) => void
   setHideUnlabelled: (value: boolean) => void
   setColorDomain: (domain: string[]) => void
   /** the per-track swatches of a view overlaying tracks */

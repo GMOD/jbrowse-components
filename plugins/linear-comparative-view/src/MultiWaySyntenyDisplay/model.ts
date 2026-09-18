@@ -40,7 +40,7 @@ import {
   lodTierAt,
   LodTierInfoMixin,
   orderAttributeLabels,
-  syntenyColorByOf,
+  paintedField,
   syntenyColorFor,
   trackHasLodTiers,
   widenAttributeRanges,
@@ -93,7 +93,6 @@ import {
 } from './multiwayGeometry.ts'
 import { multiwayBlocks } from './multiwayMarks.ts'
 import { ribbonParams } from './multiwayRenderTypes.ts'
-import { RIBBON_COLOR_FIELDS } from './ribbonColorConfigSchema.ts'
 
 import type {
   SyntenyRenderState,
@@ -115,7 +114,6 @@ import type {
   MultiWayRenderState,
   MultiWayRenderingBackend,
 } from './multiwayRenderTypes.ts'
-import type { RibbonColorBy } from './ribbonColorConfigSchema.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -538,10 +536,10 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setRibbonColorBy(mode: RibbonColorBy) {
+        setRibbonColorBy(field: string) {
           self.configuration.setSubschema(
             'ribbonColor',
-            syntenyColorFor(mode, ribbonColorSetting()),
+            syntenyColorFor(field, ribbonColorSetting()),
           )
           // the way back from a label order or a span one window fixed: the
           // ribbons re-key from the features in hand
@@ -693,14 +691,11 @@ export function stateModelFactory(
       /**
        * #getter
        */
-      get ribbonColorBy(): RibbonColorBy {
-        return syntenyColorByOf(
-          {
-            scale: getConf(self, ['ribbonColor', 'scale']),
-            field: getConf(self, ['ribbonColor', 'field']),
-          },
-          RIBBON_COLOR_FIELDS,
-        )
+      get ribbonColorField(): string {
+        return paintedField({
+          scale: getConf(self, ['ribbonColor', 'scale']),
+          field: getConf(self, ['ribbonColor', 'field']),
+        })
       },
       /**
        * #getter
@@ -1519,7 +1514,7 @@ export function stateModelFactory(
           stack: self.laneStack,
           laneLinks: self.pairLinks,
           ribbonColor: self.ribbonColor,
-          ribbonColorBy: self.ribbonColorBy,
+          ribbonColorField: self.ribbonColorField,
           attributeRanges: self.ribbonAttributeRanges,
           hideUnlabelled: self.hideUnlabelled,
           drawCurves: self.drawCurves,
@@ -1636,7 +1631,7 @@ export function stateModelFactory(
             entries: self.geneLegend,
           },
           ribbonColorScale(
-            self.ribbonColorBy,
+            self.ribbonColorField,
             self.ribbonAttributeRanges,
             self.ribbonColorDomain,
             self.hideUnlabelled,

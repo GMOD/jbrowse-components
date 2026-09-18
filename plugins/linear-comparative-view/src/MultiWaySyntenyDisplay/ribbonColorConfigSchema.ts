@@ -5,14 +5,6 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { SYNTENY_COLOR_SCALES } from '@jbrowse/synteny-core'
 
-import type { ColorByOver } from '@jbrowse/synteny-core'
-
-/** The fields the ribbons read as a mode of their own; a view reads more. */
-export const RIBBON_COLOR_FIELDS = ['strand'] as const
-
-/** The modes a ribbon paints, as the synteny Color by menu offers them. */
-export type RibbonColorBy = ColorByOver<(typeof RIBBON_COLOR_FIELDS)[number]>
-
 /**
  * #config RibbonColor
  * #category display

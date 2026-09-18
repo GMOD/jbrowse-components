@@ -1,8 +1,6 @@
 import {
   LEGEND_CHIP_ALPHA_FLOOR,
-  attributeColorBy,
   blendOverGround,
-  colorByAttributeName,
   legendChipColor,
 } from './colorUtils.ts'
 
@@ -47,9 +45,4 @@ describe('legendChipColor', () => {
       .map(Number) as [number, number, number]
     expect(Math.max(r, g, b)).toBeLessThan(80)
   })
-})
-
-test('an attribute mode names its column', () => {
-  expect(colorByAttributeName(attributeColorBy('goc_score'))).toBe('goc_score')
-  expect(colorByAttributeName('identity')).toBeUndefined()
 })

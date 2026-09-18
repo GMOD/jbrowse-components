@@ -120,7 +120,7 @@ test('a measurement keys the ramp it paints, and nothing where no ribbon carries
 // gave one, the grey its unlabelled rows paint last, and past the readable cap
 // a row saying how many labels it left out.
 test('an attribute ribbon mode keys a row per label', () => {
-  const rows = ribbonColorKey('attribute:group', {
+  const rows = ribbonColorKey('group', {
     group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
   })
   expect(rows.map(r => r.label)).toEqual(['B1', 'A1a', NO_VALUE_LABEL])
@@ -131,8 +131,8 @@ test('an attribute ribbon mode keys a row per label', () => {
     color: NO_CATEGORY_COLOR,
     missing: true,
   })
-  expect(ribbonColorKey('attribute:group')).toEqual([])
-  const many = ribbonColorKey('attribute:group', {
+  expect(ribbonColorKey('group')).toEqual([])
+  const many = ribbonColorKey('group', {
     group: {
       labels: Array.from({ length: 33 }, (_, i) => `L${i}`),
       colors: {},
@@ -146,7 +146,7 @@ test('an attribute ribbon mode keys a row per label', () => {
 // is none on screen for the row to point at.
 test('hiding the unlabelled rows drops the no-value row', () => {
   const ranges = { group: { labels: ['B1'], colors: {} } }
-  expect(
-    ribbonColorKey('attribute:group', ranges, true).map(r => r.label),
-  ).toEqual(['B1'])
+  expect(ribbonColorKey('group', ranges, true).map(r => r.label)).toEqual([
+    'B1',
+  ])
 })

@@ -1409,7 +1409,7 @@ test('the ribbon label table accumulates across fetches and re-keys on a mode pi
         end: 300,
       },
     })
-  display.setRibbonColorBy('attribute:group')
+  display.setRibbonColorBy('group')
   // `color` is parsed for the labels' palette, never offered as a mode
   expect(display.ribbonColorAttributes).toEqual(['group'])
   const group = () => display.ribbonAttributeRanges.group
@@ -1423,7 +1423,7 @@ test('the ribbon label table accumulates across fetches and re-keys on a mode pi
     labels: ['B1', 'A1a', 'C1'],
     colors: { A1a: '#4DB5E3' },
   })
-  display.setRibbonColorBy('attribute:group')
+  display.setRibbonColorBy('group')
   expect(group()).toEqual({ labels: ['C1', 'A1a'], colors: {} })
 })
 
@@ -1456,7 +1456,7 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
     const range = display.ribbonAttributeRanges.group
     return range && 'labels' in range ? range.labels : []
   }
-  display.setRibbonColorBy('attribute:group')
+  display.setRibbonColorBy('group')
   display.setFeatures([row('f1', 'B1'), row('f2', 'A1a'), row('f3', 'C1')])
   expect(labels()).toEqual(['B1', 'A1a', 'C1'])
 
@@ -1481,33 +1481,33 @@ test('a picked ribbon mode is written as the ribbonColor object', () => {
   })
   const ribbonColor = () => getSnapshot(display.configuration.ribbonColor)
   display.configuration.setSubschema('ribbonColor', 'grey')
-  display.setRibbonColorBy('attribute:group')
+  display.setRibbonColorBy('group')
   display.setRibbonColorDomain(['C1'])
-  display.setRibbonColorBy('attribute:group')
+  display.setRibbonColorBy('group')
   expect(ribbonColor()).toEqual({
     value: 'grey',
     field: 'group',
     domain: ['C1'],
   })
-  display.setRibbonColorBy('default')
+  display.setRibbonColorBy('')
   expect(ribbonColor()).toEqual({
     value: 'grey',
     field: 'group',
     domain: ['C1'],
     scale: 'none',
   })
-  expect(display.ribbonColorBy).toBe('default')
+  expect(display.ribbonColorField).toBe('')
   expect(display.ribbonColor).toBe('grey')
-  display.setRibbonColorBy('attribute:group')
-  expect(display.ribbonColorBy).toBe('attribute:group')
+  display.setRibbonColorBy('group')
+  expect(display.ribbonColorField).toBe('group')
   expect(display.ribbonColorDomain).toEqual(['C1'])
   display.setRibbonColorBy('strand')
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'strand' })
-  expect(display.ribbonColorBy).toBe('strand')
-  display.setRibbonColorBy('mappingQuality')
+  expect(display.ribbonColorField).toBe('strand')
+  display.setRibbonColorBy('mappingQual')
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'mappingQual' })
-  expect(display.ribbonColorBy).toBe('mappingQuality')
-  display.setRibbonColorBy('attribute:other')
+  expect(display.ribbonColorField).toBe('mappingQual')
+  display.setRibbonColorBy('other')
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'other' })
 })
 
@@ -1519,27 +1519,22 @@ test('a ribbonColor field is a preset or a column, scale none parks it, and a pa
     },
   })
   display.configuration.setSubschema('ribbonColor', { field: 'group' })
-  expect(display.ribbonColorBy).toBe('attribute:group')
+  expect(display.ribbonColorField).toBe('group')
   expect(() =>
     display.configuration.setSubschema('ribbonColor', {
       field: 'group',
       palette: ['red'],
     }),
   ).toThrow('RibbonColor takes value, field, scale and domain, not palette')
-  for (const [field, mode] of [
-    ['strand', 'strand'],
-    ['identity', 'identity'],
-    ['mappingQual', 'mappingQuality'],
-    ['dnds', 'dnds'],
-  ]) {
+  for (const field of ['strand', 'identity', 'mappingQual', 'dnds']) {
     display.configuration.setSubschema('ribbonColor', { field })
-    expect(display.ribbonColorBy).toBe(mode)
+    expect(display.ribbonColorField).toBe(field)
   }
   display.configuration.setSubschema('ribbonColor', {
     field: 'group',
     scale: 'none',
   })
-  expect(display.ribbonColorBy).toBe('default')
+  expect(display.ribbonColorField).toBe('')
   expect(() =>
     display.configuration.setSubschema('ribbonColor', { scale: 'strand' }),
   ).toThrow()

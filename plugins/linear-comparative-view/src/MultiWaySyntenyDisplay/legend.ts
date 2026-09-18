@@ -11,7 +11,7 @@ import type { Span } from './layoutMultiWay.ts'
 import type { GlyphHit } from './multiwayRenderTypes.ts'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
-import type { AttributeRange, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { AttributeRange } from '@jbrowse/synteny-core'
 
 /**
  * The key for the colors one lane draws, over the hits that lane packed: one
@@ -71,11 +71,11 @@ export function laneColorKey(
  * `default` paints one color and a measurement a ramp (`ribbonColorScale`).
  */
 export function ribbonColorKey(
-  colorBy: SyntenyColorBy,
+  field: string,
   attributeRanges: Record<string, AttributeRange> = {},
   hideUnlabelled = false,
 ): CategoricalEntry[] {
-  if (colorBy === 'strand') {
+  if (field === 'strand') {
     return [
       {
         value: 'same',
@@ -89,10 +89,10 @@ export function ribbonColorKey(
       },
     ]
   }
-  if (!resolveCategoricalMode(colorBy, attributeRanges)) {
+  if (!resolveCategoricalMode(field, attributeRanges)) {
     return []
   }
-  const swatch = getColorBySwatch(colorBy, { attributeRanges, hideUnlabelled })
+  const swatch = getColorBySwatch(field, { attributeRanges, hideUnlabelled })
   return swatch?.kind === 'chips'
     ? swatch.chips.map(({ color, label, missing }) => ({
         value: color === undefined ? '' : label,
@@ -109,26 +109,26 @@ export function ribbonColorKey(
  * value it paints, else `ribbonColorKey`'s rows
  */
 export function ribbonColorScale(
-  colorBy: SyntenyColorBy,
+  field: string,
   attributeRanges: Record<string, AttributeRange>,
   domain?: string[],
   hideUnlabelled = false,
 ): ColorScale {
-  const continuous = resolveContinuousMode(colorBy, attributeRanges)
+  const continuous = resolveContinuousMode(field, attributeRanges)
   if (continuous && continuous.attribute in attributeRanges) {
-    const label = colorByShortLabel(colorBy)
+    const label = colorByShortLabel(field)
     return {
-      ...colorByScale(colorBy, { attributeRanges }),
+      ...colorByScale(field, { attributeRanges }),
       id: 'ribbons',
       title: `Ribbon ${label[0]!.toLowerCase()}${label.slice(1)}`,
     }
   }
-  const labels = resolveCategoricalMode(colorBy, attributeRanges)
+  const labels = resolveCategoricalMode(field, attributeRanges)
   return {
     kind: 'categorical',
     id: 'ribbons',
     title: 'Ribbon colors',
-    entries: ribbonColorKey(colorBy, attributeRanges, hideUnlabelled),
+    entries: ribbonColorKey(field, attributeRanges, hideUnlabelled),
     // strand's pair is fixed and means what it is drawn in, so only the
     // label rows take a declared order
     domain: labels ? domain : undefined,
