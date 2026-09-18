@@ -306,3 +306,26 @@ test('fit ignores a banked height override rather than clipping under it', () =>
   expect(clippedBy(display, '1')).toBe('override')
   expect(display.groupHeightOverrides.has('1')).toBe(true)
 })
+
+// A height drag writes a px per frame, and a lane's layout only changes at a
+// row boundary. A frame inside one row has to leave every placement alone.
+test('a height drag inside one row keeps the layout', () => {
+  const display = seed([
+    { key: '1', label: 'HP: 1', n: 400 },
+    { key: '2', label: 'HP: 2', n: 400 },
+  ])
+  display.setMaxHeight(4000)
+  display.toggleGroupExpanded('1')
+  const { rowHeight } = display
+  const px = display.groupHeightOverrides.get('1')!
+  display.resizeGroupHeight('1', 100 * rowHeight - px)
+  expect(rowsIn(display, 0)).toBe(100)
+  const before = display.laidOutByGroupUncolored
+
+  display.resizeGroupHeight('1', 1)
+  expect(display.laidOutByGroupUncolored).toBe(before)
+
+  display.resizeGroupHeight('1', -rowHeight)
+  expect(rowsIn(display, 0)).toBe(99)
+  expect(display.laidOutByGroupUncolored).not.toBe(before)
+})

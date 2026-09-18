@@ -6,9 +6,8 @@ import {
   collectAcrossGroups,
   fitGroupMaxRows,
   groupMaxY,
-  groupRowCapSignature,
+  groupRowCaps,
   nextGroupHeightOverride,
-  parseGroupRowCaps,
   reclaimFitRows,
   someAcrossGroups,
 } from './groupLayout.ts'
@@ -260,26 +259,13 @@ test('nextGroupHeightOverride: grows past the content, which pads the band', () 
   expect(drag({ dy: -5, existingPx: 500 })).toBe(495)
 })
 
-test('groupRowCapSignature: px inside one row, or past the content, name one cap', () => {
-  const sig = (px: number) => groupRowCapSignature(new Map([['HP: 1', px]]), 20)
+test('groupRowCaps: px inside one row, or past the content, name one cap', () => {
+  const caps = (px: number) => groupRowCaps(new Map([['HP: 1', px]]), 20)
   // every px of a row, and every px of pad past what the reads fill, is one cap
-  expect(sig(100)).toBe(sig(119))
-  expect(sig(100)).not.toBe(sig(120))
-  expect(groupRowCapSignature(new Map(), 20)).toBe('')
-})
-
-test('parseGroupRowCaps: round-trips keys holding the delimiters', () => {
-  const overrides = new Map([
-    ['tag:value', 100],
-    ['a=b|c', 40],
-    ['', 60],
-  ])
-  expect([...parseGroupRowCaps(groupRowCapSignature(overrides, 20))]).toEqual([
-    ['tag:value', { rows: 5, source: 'override' }],
-    ['a=b|c', { rows: 2, source: 'override' }],
-    ['', { rows: 3, source: 'override' }],
-  ])
-  expect(parseGroupRowCaps('').size).toBe(0)
+  expect(caps(100)).toEqual(caps(119))
+  expect(caps(100)).not.toEqual(caps(120))
+  expect(caps(100).get('HP: 1')).toEqual({ rows: 5, source: 'override' })
+  expect(groupRowCaps(new Map(), 20).size).toBe(0)
 })
 
 test('nextGroupHeightOverride: floors at one row', () => {

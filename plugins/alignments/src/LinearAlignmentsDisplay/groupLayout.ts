@@ -758,34 +758,16 @@ export function nextGroupHeightOverride({
   return Math.max(rowHeight, Math.round((existingPx ?? displayedPx) + dy))
 }
 
-// The row caps a set of per-lane height overrides imposes, as a string, so MobX
-// can compare them by VALUE. An override is a BAND height and a cap is a row
-// count, so every px between two row boundaries — and every px past what the
-// lane's reads fill, where the surplus pads the band — names the same caps.
-// Without that gate every frame of a height drag relaid every read out and
-// re-baked every color to produce the identical arrays.
-//
-// `rows:key` per line, key last and unsplit, because a group key is a tag value
-// or a refName and can hold any of the punctuation a delimiter might use — but
-// not a newline, which SAM's printable-character grammar excludes.
-export function groupRowCapSignature(
+// The row caps a set of per-lane height overrides imposes. An override is a
+// BAND height and a cap is a row count, so every px between two row boundaries,
+// and every px past what the lane's reads fill, names the same caps.
+export function groupRowCaps(
   overridesPx: ReadonlyMap<string, number>,
   rowHeight: number,
 ) {
-  return [...overridesPx]
-    .map(([key, px]) => `${maxRowsFor(px, rowHeight)}:${key}`)
-    .join('\n')
-}
-
-// The caps that signature stands for. The round trip is what lets the model hold
-// the caps in a computed whose only input is the string.
-export function parseGroupRowCaps(signature: string) {
   const caps = new Map<string, RowCap>()
-  if (signature) {
-    for (const line of signature.split('\n')) {
-      const split = line.indexOf(':')
-      caps.set(line.slice(split + 1), overrideCap(Number(line.slice(0, split))))
-    }
+  for (const [key, px] of overridesPx) {
+    caps.set(key, overrideCap(maxRowsFor(px, rowHeight)))
   }
   return caps
 }
