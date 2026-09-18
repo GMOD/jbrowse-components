@@ -186,9 +186,8 @@ describe('collapse introns context menu', () => {
   })
 })
 
-// The worker decides whether there is a gap to close, because the isoforms it
-// trimmed and the parts the `subParts` slot withheld never reach here;
-// splicedParts.test.ts pins that decision. The menu only reads its answer.
+// The worker decides whether there is a gap to close (splicedParts.test.ts pins
+// that); the menu only reads its answer.
 describe('which right-clicked features are offered a collapse', () => {
   function offersCollapse(collapsibleIntrons: boolean | undefined) {
     const { createDisplay } = createTestEnvironment()

@@ -8,23 +8,13 @@ import { featureType, getSubfeatures } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
-/**
- * The two type families whose parts are separated by introns: a gene or one of
- * its transcripts, and a sequence alignment, whose `match_part` children are
- * the aligned blocks. A gene answers by type rather than by what its glyph
- * drew, because its own introns belong to the transcripts it stacks.
- */
-export function offersCollapseIntrons(type: string | undefined) {
-  return isGeneLikeType(type) || isSequenceMatchType(type)
-}
-
 // The child shapes whose gaps are introns: exon/CDS on an annotation,
 // match_part on a sequence alignment, and block on a BED12 the gene heuristic
 // declined to promote — an unstranded one, or a track with
 // `disableGeneHeuristic` set.
 const SPLICED_PART_TYPES = new Set(['exon', 'cds', 'match_part', 'block'])
 
-export function isSplicedPartType(type: string | undefined) {
+function isSplicedPartType(type: string | undefined) {
   return type !== undefined && SPLICED_PART_TYPES.has(type.toLowerCase())
 }
 
@@ -76,13 +66,16 @@ export function hasCollapsibleIntrons(transcripts: Feature[]) {
   return transcripts.some(t => hasIntrons([t])) || hasIntrons(transcripts)
 }
 
-// The answer the "Collapse introns" row is offered on. It belongs to the worker
-// because only the worker holds the whole feature: the main thread sees the
-// isoforms the trim kept and the parts the `subParts` slot drew, so a
-// single-exon gene and a gene whose exons went undrawn look alike there.
+/**
+ * Whether "Collapse introns" has a gap to close on this feature. A gap alone is
+ * not enough — a repeat_region's parts leave gaps too — so the type has to be
+ * one whose parts introns separate: a gene or one of its transcripts, or a
+ * sequence alignment, whose `match_part` children are the aligned blocks.
+ */
 export function collapsibleIntronsOf(feature: Feature) {
+  const type = feature.get('type')
   return (
-    offersCollapseIntrons(feature.get('type')) &&
+    (isGeneLikeType(type) || isSequenceMatchType(type)) &&
     hasCollapsibleIntrons(getTranscripts(feature))
   )
 }

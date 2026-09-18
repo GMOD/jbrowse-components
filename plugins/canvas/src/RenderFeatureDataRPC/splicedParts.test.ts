@@ -9,26 +9,6 @@ import {
 
 import type { Feature } from '@jbrowse/core/util'
 
-function mockFeature(
-  subfeatures: { type: string; start: number; end: number }[],
-): Feature {
-  return {
-    get: (key: string) =>
-      key === 'subfeatures'
-        ? subfeatures.map(sf => ({
-            get: (k: string) =>
-              k === 'type'
-                ? sf.type
-                : k === 'start'
-                  ? sf.start
-                  : k === 'end'
-                    ? sf.end
-                    : undefined,
-          }))
-        : undefined,
-  } as unknown as Feature
-}
-
 interface FeatFields {
   type?: string
   subfeatures?: Feature[]
@@ -41,6 +21,11 @@ function feat(fields: FeatFields = {}): Feature {
     get: (k: keyof FeatFields) => fields[k],
   } as unknown as Feature
 }
+
+const part = (type: string, start: number, end: number) =>
+  feat({ type, start, end })
+
+const transcript = (...parts: Feature[]) => feat({ subfeatures: parts })
 
 describe('getSplicedParts', () => {
   it('extracts exons from transcripts', () => {
@@ -102,30 +87,26 @@ describe('getTranscripts', () => {
   })
 
   it('returns subfeatures for a gene-shaped feature (transcripts under it)', () => {
-    const transcript = feat({ subfeatures: [feat({ type: 'exon' })] })
-    expect(getTranscripts(feat({ subfeatures: [transcript] }))).toEqual([
-      transcript,
-    ])
+    const tx = feat({ subfeatures: [feat({ type: 'exon' })] })
+    expect(getTranscripts(feat({ subfeatures: [tx] }))).toEqual([tx])
   })
 
   it('drops gene subfeatures that carry no exon/CDS of their own', () => {
-    const transcript = feat({ subfeatures: [feat({ type: 'exon' })] })
+    const tx = feat({ subfeatures: [feat({ type: 'exon' })] })
     const childless = feat({ type: 'tRNA' })
-    expect(
-      getTranscripts(feat({ subfeatures: [transcript, childless] })),
-    ).toEqual([transcript])
+    expect(getTranscripts(feat({ subfeatures: [tx, childless] }))).toEqual([tx])
   })
 
   it('prefers the mRNA children of a gene that also carries stray exons', () => {
-    const transcript = feat({
+    const tx = feat({
       type: 'mRNA',
       subfeatures: [feat({ type: 'exon' })],
     })
     const gene = feat({
       type: 'gene',
-      subfeatures: [feat({ type: 'exon' }), transcript],
+      subfeatures: [feat({ type: 'exon' }), tx],
     })
-    expect(getTranscripts(gene)).toEqual([transcript])
+    expect(getTranscripts(gene)).toEqual([tx])
   })
 
   it('stays one transcript when its exons nest their own CDS rows', () => {
@@ -159,106 +140,95 @@ describe('hasIntrons', () => {
   })
 
   it('returns false for transcript with no subfeatures', () => {
-    const transcript = { get: () => undefined } as unknown as Feature
-    expect(hasIntrons([transcript])).toBe(false)
+    expect(hasIntrons([feat()])).toBe(false)
   })
 
   it('returns false for single exon', () => {
-    const transcript = mockFeature([{ type: 'exon', start: 100, end: 200 }])
-    expect(hasIntrons([transcript])).toBe(false)
+    expect(hasIntrons([transcript(part('exon', 100, 200))])).toBe(false)
   })
 
   it('returns false for two overlapping exons', () => {
-    const transcript = mockFeature([
-      { type: 'exon', start: 100, end: 200 },
-      { type: 'exon', start: 150, end: 250 },
-    ])
-    expect(hasIntrons([transcript])).toBe(false)
+    expect(
+      hasIntrons([transcript(part('exon', 100, 200), part('exon', 150, 250))]),
+    ).toBe(false)
   })
 
   it('returns false for two adjacent exons', () => {
-    const transcript = mockFeature([
-      { type: 'exon', start: 100, end: 200 },
-      { type: 'exon', start: 200, end: 300 },
-    ])
-    expect(hasIntrons([transcript])).toBe(false)
+    expect(
+      hasIntrons([transcript(part('exon', 100, 200), part('exon', 200, 300))]),
+    ).toBe(false)
   })
 
   it('returns true for two non-overlapping exons', () => {
-    const transcript = mockFeature([
-      { type: 'exon', start: 100, end: 200 },
-      { type: 'exon', start: 300, end: 400 },
-    ])
-    expect(hasIntrons([transcript])).toBe(true)
+    expect(
+      hasIntrons([transcript(part('exon', 100, 200), part('exon', 300, 400))]),
+    ).toBe(true)
   })
 
   it('returns true for multiple exons with introns', () => {
-    const transcript = mockFeature([
-      { type: 'exon', start: 100, end: 200 },
-      { type: 'exon', start: 300, end: 400 },
-      { type: 'exon', start: 500, end: 600 },
-    ])
-    expect(hasIntrons([transcript])).toBe(true)
+    expect(
+      hasIntrons([
+        transcript(
+          part('exon', 100, 200),
+          part('exon', 300, 400),
+          part('exon', 500, 600),
+        ),
+      ]),
+    ).toBe(true)
   })
 
   it('works with CDS instead of exons', () => {
-    const transcript = mockFeature([
-      { type: 'CDS', start: 100, end: 200 },
-      { type: 'CDS', start: 300, end: 400 },
-    ])
-    expect(hasIntrons([transcript])).toBe(true)
+    expect(
+      hasIntrons([transcript(part('CDS', 100, 200), part('CDS', 300, 400))]),
+    ).toBe(true)
   })
 
   it('ignores non-exon/CDS subfeatures', () => {
-    const transcript = mockFeature([
-      { type: 'exon', start: 100, end: 200 },
-      { type: 'intron', start: 200, end: 300 },
-      { type: 'UTR', start: 300, end: 400 },
-    ])
-    expect(hasIntrons([transcript])).toBe(false)
+    expect(
+      hasIntrons([
+        transcript(
+          part('exon', 100, 200),
+          part('intron', 200, 300),
+          part('UTR', 300, 400),
+        ),
+      ]),
+    ).toBe(false)
   })
 
   it('works with multiple transcripts', () => {
-    const transcript1 = mockFeature([{ type: 'exon', start: 100, end: 200 }])
-    const transcript2 = mockFeature([{ type: 'exon', start: 300, end: 400 }])
-    expect(hasIntrons([transcript1, transcript2])).toBe(true)
+    expect(
+      hasIntrons([
+        transcript(part('exon', 100, 200)),
+        transcript(part('exon', 300, 400)),
+      ]),
+    ).toBe(true)
   })
 
   it('handles overlapping exons from multiple transcripts', () => {
-    const transcript1 = mockFeature([{ type: 'exon', start: 100, end: 200 }])
-    const transcript2 = mockFeature([{ type: 'exon', start: 150, end: 250 }])
-    expect(hasIntrons([transcript1, transcript2])).toBe(false)
+    expect(
+      hasIntrons([
+        transcript(part('exon', 100, 200)),
+        transcript(part('exon', 150, 250)),
+      ]),
+    ).toBe(false)
   })
 
-  it('counts match_part and block children the way it counts exons', () => {
-    expect(
-      hasIntrons([
-        mockFeature([
-          { type: 'match_part', start: 100, end: 200 },
-          { type: 'match_part', start: 300, end: 400 },
-        ]),
-      ]),
-    ).toBe(true)
-    expect(
-      hasIntrons([
-        mockFeature([
-          { type: 'block', start: 100, end: 200 },
-          { type: 'block', start: 300, end: 400 },
-        ]),
-      ]),
-    ).toBe(true)
-  })
+  it.each(['match_part', 'block'])(
+    'counts %s children the way it counts exons',
+    type => {
+      expect(
+        hasIntrons([transcript(part(type, 100, 200), part(type, 300, 400))]),
+      ).toBe(true)
+    },
+  )
 })
 
 describe('hasCollapsibleIntrons', () => {
   // The retained-intron gene: the union of the two isoforms' exons is
   // contiguous, so the whole-gene scope collapses nothing while the spliced
   // isoform the dropdown offers collapses fine.
-  const retained = mockFeature([{ type: 'exon', start: 100, end: 400 }])
-  const spliced = mockFeature([
-    { type: 'exon', start: 100, end: 200 },
-    { type: 'exon', start: 300, end: 400 },
-  ])
+  const retained = transcript(part('exon', 100, 400))
+  const spliced = transcript(part('exon', 100, 200), part('exon', 300, 400))
 
   it('passes a gene whose union is contiguous but whose isoform is spliced', () => {
     expect(hasIntrons([retained, spliced])).toBe(false)
@@ -272,10 +242,7 @@ describe('hasCollapsibleIntrons', () => {
 })
 
 describe('collapsibleIntronsOf', () => {
-  const twoExons = [
-    feat({ type: 'exon', start: 100, end: 200 }),
-    feat({ type: 'exon', start: 300, end: 400 }),
-  ]
+  const twoExons = [part('exon', 0, 100), part('exon', 400, 500)]
 
   it.each(['gene', 'mRNA', 'lnc_RNA', 'cDNA_match', 'EST_match', 'match'])(
     'answers for a spliced %s',
@@ -299,18 +266,14 @@ describe('collapsibleIntronsOf', () => {
   })
 
   it('reads the gap through the transcripts of a gene', () => {
-    const gene = (exons: Feature[]) =>
+    const gene = (parts: Feature[]) =>
       feat({
         type: 'gene',
-        subfeatures: [feat({ type: 'mRNA', subfeatures: exons })],
+        subfeatures: [feat({ type: 'mRNA', subfeatures: parts })],
       })
 
     expect(collapsibleIntronsOf(gene(twoExons))).toBe(true)
-    expect(
-      collapsibleIntronsOf(
-        gene([feat({ type: 'exon', start: 100, end: 400 })]),
-      ),
-    ).toBe(false)
+    expect(collapsibleIntronsOf(gene([part('exon', 0, 500)]))).toBe(false)
   })
 
   it('refuses a gene carrying no parts at all', () => {

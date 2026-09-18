@@ -813,9 +813,6 @@ describe('collectRenderData transcript coords', () => {
   })
 })
 
-// The menu row reads this off the wire, so the answer has to come from the
-// FEATURE: a gene whose parts the `subParts` slot or an isoform trim left
-// undrawn still has a gap the dialog can close.
 describe('collectRenderData collapsible introns', () => {
   const exon = (id: string, start: number, end: number) =>
     mockFeature({ type: 'exon', id, start, end })
