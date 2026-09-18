@@ -2,6 +2,7 @@ import { holdTrue } from './poll.ts'
 import {
   describePendingDisplays,
   pendingDisplayStatesInPage,
+  tooLargeDisplaysInPage,
 } from './sessionGate.ts'
 
 import type { ElementHandle, Page } from 'puppeteer'
@@ -144,11 +145,8 @@ export const PENDING_DISPLAYS = '[data-display-drawn="false"]'
  * finished badly and is showing a banner, and `ready` is a display claiming it
  * finished without drawing — a bug in the display rather than in the wait.
  *
- * An EMPTY census is the other answer, and `tooLarge` / `renderError` are why it
- * is not good news. Those two replace the display's subtree outright, so they
- * publish neither attribute and appear here as nothing at all: a wait on such a
- * display can never resolve and can never be reported. Nothing pending means
- * either that, or a selector that was never a display's.
+ * A display showing "too much data" is not pending, and a wait on its body
+ * can never resolve, so the census names those too.
  */
 export async function waitForSelectorAttributed(
   page: Page,
@@ -176,9 +174,18 @@ export async function waitForSelectorAttributed(
 export async function describePendingDisplaysNow(page: Page) {
   try {
     const pending = await page.evaluate(pendingDisplayStatesInPage)
-    return pending.length
-      ? `${pending.length} display(s) had not painted: ${describePendingDisplays(pending)}`
-      : 'no display reported itself unpainted, so either the selector was not on a display or the display is in a terminal phase that publishes nothing (tooLarge, renderError)'
+    const tooLarge = await page.evaluate(tooLargeDisplaysInPage)
+    const found = [
+      pending.length
+        ? `${pending.length} display(s) had not painted: ${describePendingDisplays(pending)}`
+        : undefined,
+      tooLarge.length
+        ? `${tooLarge.length} display(s) show "too much data" in place of their features: ${describePendingDisplays(tooLarge)}`
+        : undefined,
+    ].filter(Boolean)
+    return found.length
+      ? found.join('; ')
+      : 'no display reported itself unpainted, so the selector was not on a display'
   } catch {
     return 'the page could not be queried afterwards (context gone)'
   }
@@ -258,10 +265,8 @@ export function waitForDisplaysDone(
 // DisplayPhase, whose `loading` term covers the entire fetch, so "nothing is
 // loading" is a direct read rather than an inference.
 //
-// Terminal phases (`tooLarge`, `renderError`) replace the display subtree and
-// publish no attribute, so they resolve immediately here — correct, since they
-// are finished, not pending. They're caught as *content* by the caller's own
-// settled check, not by this wait.
+// Terminal phases (`tooLarge`, `renderError`) resolve immediately here, since
+// they are finished, not pending. The caller's census reports them.
 //
 // Best-effort like its neighbours: a display that never leaves `loading` should
 // fail loudly through that settled check, with the frame to look at, rather than

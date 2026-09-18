@@ -103,10 +103,10 @@ Here every stage reports its outcome, and an unsettled one throws by default,
 naming the gate:
 
 ```
-gave up waiting after 2000ms: the loading overlay never cleared (a track fetch
-never finished). Raise the timeout if the page is merely slow; if it never
-finishes, open the same URL in a browser — this gate has no content to fall
-through to.
+gave up waiting after 60000ms: the app never held itself ready; display(s)
+never painted: LinearAlignmentsDisplay (volvox_cram-LinearAlignmentsDisplay) is
+loading. Raise the timeout, or pass allowUnsettled (--allowUnsettled) to capture
+the frame as it stands.
 ```
 
 `allowUnsettled` (`--allowUnsettled`) takes the frame as it stands instead, and
@@ -114,7 +114,7 @@ still tells you what did not settle.
 
 ## Reading the result
 
-Two fields on a successful capture:
+Three fields on a successful capture:
 
 - **`unsettled`** — stages that hit their timeout. Empty unless you asked to
   proceed anyway.
@@ -123,7 +123,12 @@ Two fields on a successful capture:
   a display claiming it finished without drawing. Read after `settle`, not
   before it, so the frame it describes is the frame that was captured; a display
   that finished during the settle is not in it, and no longer fails the run
-  either. Whatever is left lands in `unsettled` too.
+  either. Whatever is left lands in `unsettled` too, as does a display whose
+  renderer failed (`renderError`).
+- **`tooLarge`** — displays showing "Requested too much data" instead of their
+  features, because the region is wider than the track fetches without being
+  asked. The capture still succeeds, since that is the app working as designed,
+  and the CLI prints a warning naming them. Narrow the location to draw them.
 
 ## CLI
 

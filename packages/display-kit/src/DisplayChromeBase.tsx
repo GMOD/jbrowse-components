@@ -12,7 +12,9 @@ import { observer } from 'mobx-react'
 import ChromeHighlight from './ChromeHighlight.tsx'
 import ChromeLegend from './ChromeLegend.tsx'
 import ChromeYAxis from './ChromeYAxis.tsx'
-import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
+import DisplayStatusChromeBase, {
+  ReplacedDisplay,
+} from './DisplayStatusChromeBase.tsx'
 import { isAxisHost } from './axisHost.ts'
 import { isHighlightHost } from './highlightHost.ts'
 import { isLegendHost } from './legendHost.ts'
@@ -206,11 +208,13 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
     // expression, and there is no observable here to stale
     const { RenderError } = overlays
     return (
-      <RenderError
-        error={model.renderError}
-        onRetry={retry}
-        height={model.height}
-      />
+      <ReplacedDisplay model={model} phase={phase}>
+        <RenderError
+          error={model.renderError}
+          onRetry={retry}
+          height={model.height}
+        />
+      </ReplacedDisplay>
     )
   }
   // `phase` is narrowed to DisplayStatusPhase by the return above, which is the

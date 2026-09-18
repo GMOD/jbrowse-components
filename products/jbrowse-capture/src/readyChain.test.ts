@@ -176,3 +176,31 @@ test('a display that paints during settleMs is not reported as never painted', a
   expect(report.pending).toEqual([])
   expect(report.unsettled).toEqual([])
 }, 30000)
+
+// "Too much data" is the app declining a wide region as designed, so the
+// capture goes ahead, and says which displays show the banner.
+test('a too-large display passes the chain and is reported', async () => {
+  app(
+    'ready',
+    `<div style="display: contents" data-display-id="hg38-clinvar"
+          data-display-phase="tooLarge"></div>`,
+  )
+  const report = await waitForJBrowseReady(fakePage(), { timeout: 10000 })
+  expect(report.unsettled).toEqual([])
+  expect(report.tooLarge).toEqual([
+    { name: 'hg38-clinvar', id: 'hg38-clinvar', phase: 'tooLarge' },
+  ])
+}, 20000)
+
+// A render error replaces the display with a Retry banner and publishes no
+// paint flag, so it used to pass as a display that was not there at all.
+test('a display whose renderer failed fails the chain', async () => {
+  app(
+    'ready',
+    `<div style="display: contents" data-display-id="hg38-genes"
+          data-display-phase="renderError"></div>`,
+  )
+  await expect(
+    waitForJBrowseReady(fakePage(), { timeout: 10000 }),
+  ).rejects.toThrow(/display\(s\) never painted: hg38-genes is renderError/)
+}, 20000)

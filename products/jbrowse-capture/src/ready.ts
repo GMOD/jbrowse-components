@@ -2,6 +2,7 @@ import { delay } from './poll.ts'
 import {
   describePendingDisplays,
   pendingDisplayStates,
+  tooLargeDisplaysInPage,
   waitForSession,
 } from './sessionGate.ts'
 import { waitForAppSettled, waitForDisplaysDone } from './waits.ts'
@@ -37,6 +38,11 @@ export interface ReadyReport {
    * display that says it finished without painting.
    */
   pending: PendingDisplay[]
+  /**
+   * Displays showing "too much data" instead of their features. Not a failure,
+   * so never in `unsettled`, but worth saying: the image shows a banner there.
+   */
+  tooLarge: PendingDisplay[]
   /** Wait stages that hit their timeout instead of being satisfied. */
   unsettled: string[]
 }
@@ -137,5 +143,6 @@ export async function waitForFrame(
             'capture the frame as it stands.',
     )
   }
-  return { pending, unsettled }
+  const tooLarge = await page.evaluate(tooLargeDisplaysInPage)
+  return { pending, tooLarge, unsettled }
 }

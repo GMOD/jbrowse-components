@@ -43,6 +43,9 @@ Three things make sharing the logic impossible rather than merely awkward:
   which publishes none of the phase attributes; roughly half of `capture.ts` is
   the fallback chain for builds older than the marker, and `capture.ts:166-168`
   says it can be deleted "the day the oldest supported build has it".
+  (No longer true as of 2026-09-18: the fallback chain is deleted and capture
+  refuses an instance older than v5, so the first two reasons are what keep
+  the logic apart.)
   `jb.waitReady` answers only for the build it ships inside. One reader asking a
   question the other cannot is the point.
 
@@ -62,7 +65,7 @@ than checked:
 | | `@jbrowse/capture` | `jb.waitReady` |
 | --- | --- | --- |
 | pending census | the DOM, `[data-display-drawn="false"]` | the session model |
-| sees `tooLarge` / `renderError` | no — they replace the subtree and publish no attribute | yes |
+| sees `tooLarge` / `renderError` | yes, from the banner's wrapper (since 2026-09-18): warns on the first, fails on the second | yes |
 | displays per track | all that publish the attribute | `activeDisplay` only |
 | nested views | recurses to any depth | recurses to any depth, through `openViews` (since 40bdf53aa9; it flattened one level before) |
 | scope | document-wide | a `root`, because react-app2 mounts two apps |

@@ -683,9 +683,8 @@ also say *which half* failed, which the suffix never could: a
 pileup display mounted" and "it mounted and never painted".
 
 All four ride the **container**, which the two subtree-replacing phases don't
-render — so in `tooLarge`/`renderError` a display publishes none of them, not
-even `data-display-id`. That is deliberate (see `data-display-phase` below), and
-it is why the two helpers that wait on
+render — so in `tooLarge`/`renderError` a display publishes only the id and the
+phase, from `ReplacedDisplay` (see below), and the two helpers that wait on
 `[data-display-id="…"][data-display-drawn="true"]` can never match a too-large
 display.
 
@@ -784,13 +783,14 @@ Two follow-through details, neither visible in a diff:
   chrome is `position: relative` exactly as the container was, so the geometry is
   unchanged.
 
-**`data-display-phase` is published for four of the six phases.** The two
-subtree-replacing ones (`tooLarge`, `renderError`) render their banner *instead
-of* the container that carries the attribute, so a `[data-display-phase]` census
-(`browser-tests/suites/fetch-cancellation.ts`) counts such a display as absent,
-not as terminal — correct for the "nothing is loading" waits built on it
-(`waits.ts`), which is why it stays this way. Don't nest the banner to close the
-gap; that would undo the unmount the whole tree-shape rule exists for.
+**The two subtree-replacing phases publish from a wrapper, not the
+container.** `tooLarge` and `renderError` render their banner *instead of* the
+container, inside `ReplacedDisplay`: a `display: contents` div carrying
+`data-display-id` and `data-display-phase` and nothing else. No `data-testid`,
+since no display body is on screen, and no `data-display-drawn`, so neither
+phase reads as pending. `@jbrowse/capture` warns on the first and fails on the
+second. Don't nest the banner in the container instead; that would undo the
+unmount the whole tree-shape rule exists for.
 
 ### Why the canvas family shares one registered component
 

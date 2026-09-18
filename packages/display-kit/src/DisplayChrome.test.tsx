@@ -49,21 +49,35 @@ function renderChrome(
 test('tooLarge phase commits TooLargeMessage and replaces the canvas', async () => {
   const model = TestChromeModel.create({})
   model.setRegionTooLarge(true, 'Requested too much data')
-  const { findByText, queryByTestId } = renderChrome(model)
+  const { container, findByText, queryByTestId } = renderChrome(model)
 
   await findByText(/Requested too much data/)
   // subtree replacement: the canvas children are not rendered
   expect(queryByTestId('probe-canvas')).toBeNull()
+  // still says which display the banner stands for, which is how a capture
+  // warns about it; with no testid, since no display body is on screen
+  expect(
+    container
+      .querySelector('[data-display-phase="tooLarge"]')
+      ?.getAttribute('data-display-id'),
+  ).toBe('test-display')
+  expect(queryByTestId('probe-display')).toBeNull()
 })
 
 test('renderError phase commits DisplayRenderErrorOverlay and replaces the canvas', async () => {
   const model = TestChromeModel.create({})
   model.setRenderError(new Error('boom-render-error'))
-  const { findByText, findByTestId, queryByTestId } = renderChrome(model)
+  const { container, findByText, findByTestId, queryByTestId } =
+    renderChrome(model)
 
   await findByText(/boom-render-error/)
   await findByTestId('reload_button') // retry affordance committed
   expect(queryByTestId('probe-canvas')).toBeNull()
+  expect(
+    container
+      .querySelector('[data-display-phase="renderError"]')
+      ?.getAttribute('data-display-id'),
+  ).toBe('test-display')
 })
 
 test('error phase overlays DisplayErrorBar while keeping the canvas mounted', async () => {

@@ -8,6 +8,7 @@ export {
   pendingDisplayStatesInPage,
   readLoadFailureInPage,
   readSessionSummary,
+  tooLargeDisplaysInPage,
   waitForSession,
 } from './sessionGate.ts'
 export { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'

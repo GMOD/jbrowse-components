@@ -57,11 +57,7 @@ test('the message keeps the selector and the timeout', async () => {
   ).rejects.toThrow('[data-testid="pileup"] did not appear within 100ms')
 })
 
-// An empty census is a real answer, not a shrug — and NOT the same as good news.
-// `tooLarge` and `renderError` replace the display's subtree, so they publish
-// neither attribute and are absent here: a wait on one of those can never
-// resolve and can never be reported. The message names both readings.
-test('a page with nothing pending names the two readings of that', async () => {
+test('a page with nothing pending says the selector was not a display', async () => {
   document.body.innerHTML =
     '<div data-testid="pileup-display" data-display-drawn="true"></div>'
   await expect(
@@ -69,18 +65,20 @@ test('a page with nothing pending names the two readings of that', async () => {
   ).rejects.toThrow('no display reported itself unpainted')
 })
 
-// The terminal phases, spelled as the DOM spells them: no wrapper at all. This
-// is the case that reads as a timeout forever, and it arrives as an empty
-// census rather than as a phase.
-test('a display in a terminal phase publishes nothing to the census', async () => {
-  document.body.innerHTML = '<div class="tooLargeBanner">Zoom in</div>'
+// A wait on a too-large display's body can never resolve; the banner that
+// replaced it still says which display it is.
+test('a display showing "too much data" is named in the timeout', async () => {
+  document.body.innerHTML =
+    '<div data-display-id="pileup-1" data-display-phase="tooLarge"></div>'
   await expect(
     waitForSelectorAttributed(
       fakePage(),
       '[data-testid="pileup-display"][data-display-drawn="true"]',
       100,
     ),
-  ).rejects.toThrow('tooLarge, renderError')
+  ).rejects.toThrow(
+    '1 display(s) show "too much data" in place of their features: pileup-1 is tooLarge',
+  )
 })
 
 // A navigation or a closed target destroys the context, so the census cannot be

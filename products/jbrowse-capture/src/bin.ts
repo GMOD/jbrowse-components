@@ -144,7 +144,7 @@ async function main() {
   if (!args.out) {
     throw new Error('--out <file.png> is required (or use `jb2capture url`)')
   }
-  const { url, pending, unsettled } = await captureJBrowse({
+  const { url, pending, tooLarge, unsettled } = await captureJBrowse({
     ...urlOptions(args),
     out: args.out,
     width: args.width,
@@ -174,6 +174,12 @@ async function main() {
     console.error(
       `warning: ${pending.length} display(s) had not finished drawing at capture time ` +
         `(${describePendingDisplays(pending)}). Raise --timeout, or --settle for a slow remote file.`,
+    )
+  }
+  if (tooLarge.length) {
+    console.error(
+      `warning: ${tooLarge.length} display(s) show "too much data" instead of their features ` +
+        `(${tooLarge.map(d => d.name).join(', ')}). Narrow --loc to draw them.`,
     )
   }
 }

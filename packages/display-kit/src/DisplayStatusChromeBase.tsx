@@ -145,6 +145,32 @@ function overChrome(props: ChromeDivProps): ChromeDivProps {
   )
 }
 
+/**
+ * The two phases that replace the whole chrome with a banner still say which
+ * display is showing it, so a capture can tell a banner from a display that
+ * never mounted. No `data-testid`: that names a display whose body is on
+ * screen, and `display: contents` keeps the banner's own box the layout.
+ */
+export function ReplacedDisplay({
+  model,
+  phase,
+  children,
+}: {
+  model: { configuration: { displayId: string } }
+  phase: 'tooLarge' | 'renderError'
+  children: ReactNode
+}) {
+  return (
+    <div
+      style={{ display: 'contents' }}
+      data-display-id={model.configuration.displayId}
+      data-display-phase={phase}
+    >
+      {children}
+    </div>
+  )
+}
+
 export default function DisplayStatusChromeBase({
   model,
   phase,
@@ -167,7 +193,11 @@ export default function DisplayStatusChromeBase({
   // Declared above the early return because it is a hook.
   const [cornerEl, setCornerEl] = useState<HTMLDivElement | null>(null)
   if (phase === 'tooLarge') {
-    return <TooLarge model={model} />
+    return (
+      <ReplacedDisplay model={model} phase={phase}>
+        <TooLarge model={model} />
+      </ReplacedDisplay>
+    )
   }
   return (
     <div
@@ -202,10 +232,9 @@ export default function DisplayStatusChromeBase({
       // and `loading` covers the whole fetch, not just the paint; every other
       // published value (`ready`, `error`, `canceled`) is finished. Published so a
       // screenshot/e2e run can wait on the real signal instead of inferring it
-      // from paint flags and overlay text. NOTE the two subtree-replacing
-      // phases (`tooLarge` above, `renderError` in DisplayChromeBase) publish no
-      // attribute at all, since they don't render this container — a
-      // `[data-display-phase]` census counts them as absent, not as terminal.
+      // from paint flags and overlay text. The two subtree-replacing phases
+      // (`tooLarge` above, `renderError` in DisplayChromeBase) publish theirs
+      // on `ReplacedDisplay` instead, with no `data-display-drawn`.
       data-display-phase={phase}
     >
       {/* The corner node reaches the body through context, because the row that

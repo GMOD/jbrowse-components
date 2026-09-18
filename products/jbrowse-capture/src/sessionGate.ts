@@ -153,9 +153,12 @@ export async function waitForSession(
   }
 }
 
-/** One unpainted display and what it says about itself. */
+/** One display and what it says about itself. */
 export interface PendingDisplay {
-  /** the display TYPE, shared by every instance of it */
+  /**
+   * the display TYPE, shared by every instance of it, or its id where a banner
+   * has replaced the display and no type is on the page
+   */
   name: string
   /** which instance, where the display publishes `data-display-id` */
   id?: string
@@ -168,17 +171,19 @@ export interface PendingDisplay {
 }
 
 /**
- * Displays still reporting unpainted, or canceled, each with its own account of
- * itself. The phase separates the cases a bare name runs together —
+ * Displays still reporting unpainted, canceled, or failed to render, each with
+ * its own account of itself. The phase separates the cases a bare name runs
+ * together —
  *
- *   `loading`   still fetching. A slow page or a fetch that never returns.
- *   `error`     finished, badly. Nothing is coming; the picture is a banner.
- *   `canceled`  stopped by the user, and it stays stopped until Retry. It is
- *               in the census painted or not, since the picture is the Retry
- *               overlay whatever was drawn before.
- *   `ready`     it says it is done and reports no paint. That is the display's
- *               bug, not the wait's, and it is the one a longer timeout will
- *               never fix.
+ *   `loading`      still fetching. A slow page or a fetch that never returns.
+ *   `error`        finished, badly. Nothing is coming; the picture is a banner.
+ *   `canceled`     stopped by the user, and it stays stopped until Retry. It is
+ *                  in the census painted or not, since the picture is the
+ *                  Retry overlay whatever was drawn before.
+ *   `renderError`  its renderer failed; the picture is a Retry banner.
+ *   `ready`        it says it is done and reports no paint. That is the
+ *                  display's bug, not the wait's, and it is the one a longer
+ *                  timeout will never fix.
  *
  * Serialized into the page, so a test can call the real function. Read fresh
  * from the DOM at report time rather than from handles the waits held. A handle
@@ -189,12 +194,30 @@ export interface PendingDisplay {
 export function pendingDisplayStatesInPage(): PendingDisplay[] {
   return [
     ...document.querySelectorAll<HTMLElement>(
-      '[data-display-drawn="false"], [data-display-phase="canceled"]',
+      '[data-display-drawn="false"], [data-display-phase="canceled"], [data-display-phase="renderError"]',
     ),
   ].map(el => ({
-    name: el.dataset.testid ?? (el.id || 'unnamed display'),
+    name: el.dataset.testid ?? el.dataset.displayId ?? 'unnamed display',
     id: el.dataset.displayId,
     phase: el.dataset.displayPhase,
+  }))
+}
+
+/**
+ * Displays showing the "too much data" banner in place of their features: the
+ * region is wider than the track fetches without being asked. Not a failure,
+ * since that is the app working as designed, but not the picture either.
+ * Serialized into the page.
+ */
+export function tooLargeDisplaysInPage(): PendingDisplay[] {
+  return [
+    ...document.querySelectorAll<HTMLElement>(
+      '[data-display-phase="tooLarge"]',
+    ),
+  ].map(el => ({
+    name: el.dataset.displayId ?? 'unnamed display',
+    id: el.dataset.displayId,
+    phase: 'tooLarge',
   }))
 }
 
@@ -207,7 +230,7 @@ export function describePendingDisplays(pending: PendingDisplay[]) {
   return pending
     .map(
       d =>
-        `${d.name}${d.id ? ` (${d.id})` : ''} is ${d.phase ?? 'in an unpublished phase'}`,
+        `${d.name}${d.id && d.id !== d.name ? ` (${d.id})` : ''} is ${d.phase ?? 'in an unpublished phase'}`,
     )
     .join('; ')
 }

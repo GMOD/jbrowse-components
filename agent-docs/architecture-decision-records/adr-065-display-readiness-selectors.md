@@ -150,6 +150,8 @@ the three-way phase, and is absent from the published docs and every
   container is not rendered in those phases, so a too-large display matches
   neither the old suffix nor the new composite. Deliberate, and unaffected by
   this ADR — but it is why "wait for painted" can never be the *only* wait.
+  (Since 2026-09-18 both publish `data-display-id` and `data-display-phase`
+  from a wrapper around the banner; still no testid and no paint flag.)
 - **Released builds are unaffected**, and this is worth stating because it looks
   like a compatibility question and is not. `PAINT_CONTRACT_NOTE` records that
   `jbrowse.org/code/jb2/latest` publishes none of the data attributes (measured
