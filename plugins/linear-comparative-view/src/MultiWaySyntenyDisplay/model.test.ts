@@ -1468,9 +1468,10 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
   ).toEqual(['C1', 'A1a', 'B1', NO_VALUE_LABEL])
 })
 
-// The Color by menu picks a synteny mode; the config holds the object. A mode
-// lands as its scale and field, the constant rides along, and re-picking the
-// same column keeps its order.
+// The Color by menu picks a synteny mode; the config holds the object. A
+// scheme lands as its scale with the column and its order kept unread, so
+// picking the column again finds them; re-picking the same column keeps its
+// order, and a new one starts from none.
 test('a picked ribbon mode is written as the ribbonColor object', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
@@ -1486,18 +1487,27 @@ test('a picked ribbon mode is written as the ribbonColor object', () => {
   expect(ribbonColor()).toEqual({
     value: 'grey',
     field: 'group',
-    scale: 'categorical',
     domain: ['C1'],
   })
   display.setRibbonColorBy('strand')
-  expect(ribbonColor()).toEqual({ value: 'grey', scale: 'strand' })
+  expect(ribbonColor()).toEqual({
+    value: 'grey',
+    field: 'group',
+    domain: ['C1'],
+    scale: 'strand',
+  })
   expect(display.ribbonColorBy).toBe('strand')
   display.setRibbonColorBy('default')
-  expect(ribbonColor()).toEqual({ value: 'grey' })
+  expect(display.ribbonColorBy).toBe('default')
   expect(display.ribbonColor).toBe('grey')
+  display.setRibbonColorBy('attribute:group')
+  expect(display.ribbonColorBy).toBe('attribute:group')
+  expect(display.ribbonColorDomain).toEqual(['C1'])
+  display.setRibbonColorBy('attribute:other')
+  expect(ribbonColor()).toEqual({ value: 'grey', field: 'other' })
 })
 
-test('a ribbonColor field reads through its column, and a palette is refused', () => {
+test('a ribbonColor field reads through its column unless a scheme is named, and a palette is refused', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
       type: 'MCScanBlocksAdapter',
@@ -1512,12 +1522,13 @@ test('a ribbonColor field reads through its column, and a palette is refused', (
       palette: ['red'],
     }),
   ).toThrow('RibbonColor takes value, field, scale and domain, not palette')
-  expect(() =>
-    display.configuration.setSubschema('ribbonColor', {
-      field: 'group',
-      scale: 'strand',
-    }),
-  ).toThrow('ribbonColor.field is read by the categorical scale, not strand')
+  display.configuration.setSubschema('ribbonColor', {
+    field: 'group',
+    scale: 'strand',
+  })
+  expect(display.ribbonColorBy).toBe('strand')
+  display.configuration.setSubschema('ribbonColor', { scale: 'categorical' })
+  expect(display.ribbonColorBy).toBe('default')
 })
 
 test('identity ribbons key their ramp only when a record carries an identity', () => {

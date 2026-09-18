@@ -14,8 +14,9 @@ import { laneResetLabel } from './laneSelection.ts'
 
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
+import type { RibbonColorBy } from './ribbonColorBy.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AttributeRange, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { AttributeRange } from '@jbrowse/synteny-core'
 
 export type HeaderLane = Pick<
   Lane,
@@ -41,8 +42,8 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   hiddenLanes: readonly string[]
   showHiddenLanes: () => void
   openLaneSelection: () => void
-  ribbonColorBy: SyntenyColorBy
-  setRibbonColorBy: (mode: SyntenyColorBy) => void
+  ribbonColorBy: RibbonColorBy
+  setRibbonColorBy: (mode: RibbonColorBy) => void
   ribbonColorAttributes: readonly string[]
   ribbonAttributeRanges: Record<string, AttributeRange>
   ribbonColorDomain: readonly string[]
@@ -179,7 +180,7 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
 }
 
 export function colorSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
-  return colorByMenuItems({
+  return colorByMenuItems<'default' | 'strand'>({
     colorBy: model.ribbonColorBy,
     structuralModes: ['default', 'strand'],
     attributes: model.ribbonColorAttributes,

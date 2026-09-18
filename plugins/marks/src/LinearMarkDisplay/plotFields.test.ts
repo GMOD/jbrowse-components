@@ -8,6 +8,8 @@ import {
   specOfMarks,
 } from './plotFields.ts'
 
+import type { MarkColorScale } from './configSchema.ts'
+
 function features(recs: Record<string, unknown>[]) {
   return recs.map(
     (r, i) =>
@@ -115,10 +117,14 @@ function markLike(
   y: string,
   color = '',
   transform: { type: string }[] = [],
+  colorScale?: MarkColorScale,
 ) {
   return {
     shape,
-    encoding: { y: { field: y }, color: { field: color } },
+    encoding: {
+      y: { field: y },
+      color: { field: color, scale: colorScale, ramp: [] },
+    },
     transform,
   }
 }
@@ -136,6 +142,13 @@ test('a single-mark config reopens the dialog on what it declared', () => {
       markLike('bar', 'count', '', [{ type: 'bin' }]),
     ])?.binned,
   ).toBe(true)
+})
+
+test('a colour field kept under the none scale reopens as no colour', () => {
+  expect(
+    specOfMarks([markLike('point', 'score', 'repClass', [], 'none')])
+      ?.colorField,
+  ).toBe('')
 })
 
 test('a config the dialog could not have written reopens empty', () => {

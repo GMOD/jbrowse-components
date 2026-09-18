@@ -9,51 +9,43 @@ export interface ColorSetting {
 }
 
 /**
- * The rules every colour object shares, `name` being the setting's key: a
- * `domain` or `palette` is a list, and one that is not empty scales a
- * `field`, so naming none is refused rather than dropped. A `domain` written
- * as numbers is carried as strings.
+ * What every channel object checks on the way in, `name` being the setting's
+ * key: a `domain` or `palette` is a list, and a `domain` written as numbers is
+ * carried as strings. No combination of slots is refused, since the config
+ * editor writes one slot at a time: a `domain` with no `field`, or a `field`
+ * under a scale that reads none, waits unread until it paints again.
  */
-export function normalizeColor(
-  snap: Record<string, unknown> = {},
-  name = 'color',
-): Record<string, unknown> {
-  const obj = { ...snap }
-  for (const key of ['domain', 'palette']) {
-    if (obj[key] !== undefined && !Array.isArray(obj[key])) {
-      throw new Error(`${name}.${key} is a list`)
-    }
-    if (Array.isArray(obj[key]) && obj[key].length > 0 && !obj.field) {
-      throw new Error(`${name}.${key} scales a field: name one`)
-    }
-  }
-  if (Array.isArray(obj.domain)) {
-    obj.domain = obj.domain.map(String)
-  }
-  return obj
-}
-
-/**
- * A colour object whose `scale` names a display's own schemes beside
- * `categorical`: a `field` with no `scale` reads through `categorical`, and a
- * `field` under any other scale, or `categorical` with no `field`, is refused.
- */
-export function normalizeScaledColor(
+export function normalizeChannel(
   snap: Record<string, unknown> = {},
   name: string,
 ): Record<string, unknown> {
-  const obj = normalizeColor(snap, name)
-  const field = typeof obj.field === 'string' ? obj.field : ''
-  const scale = obj.scale ?? (field ? 'categorical' : undefined)
-  if (field && scale !== 'categorical') {
-    throw new Error(
-      `${name}.field is read by the categorical scale, not ${String(scale)}`,
-    )
+  for (const key of ['domain', 'palette']) {
+    if (snap[key] !== undefined && !Array.isArray(snap[key])) {
+      throw new Error(`${name}.${key} is a list`)
+    }
   }
-  if (scale === 'categorical' && !field) {
-    throw new Error(`${name}.scale categorical reads a field: name one`)
-  }
-  return scale === undefined ? obj : { ...obj, scale }
+  return Array.isArray(snap.domain)
+    ? { ...snap, domain: snap.domain.map(String) }
+    : snap
+}
+
+const FIELD_SCALES: ReadonlySet<string> = new Set([
+  'categorical',
+  'linear',
+  'log',
+])
+
+/**
+ * The scale a colour object paints through: its own `scale`, or, left unset,
+ * `fieldScale` beside a `field` and `none` without one. A scale that reads a
+ * field paints `value` until one is named.
+ */
+export function paintedScale<S extends string>(
+  { scale, field }: { scale: S | undefined; field: string },
+  fieldScale: S,
+): S | 'none' {
+  const written = scale ?? (field ? fieldScale : 'none')
+  return field || !FIELD_SCALES.has(written) ? written : 'none'
 }
 
 /**
@@ -130,6 +122,6 @@ export const colorConfigSchema = ConfigurationSchema(
   {
     shorthand: 'value',
     closed: true,
-    preProcessSnapshot: snap => normalizeColor(snap),
+    preProcessSnapshot: snap => normalizeChannel(snap, 'color'),
   },
 )

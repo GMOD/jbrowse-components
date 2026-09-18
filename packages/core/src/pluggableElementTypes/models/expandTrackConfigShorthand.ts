@@ -1,4 +1,5 @@
 import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
+import { slotValueRefusal } from '../../configuration/slotFacade.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationSchemaType } from '../../configuration/index.ts'
@@ -9,60 +10,52 @@ export interface DisplaySnapshot {
   [key: string]: unknown
 }
 
-// Minimal structural shape of a registered track type — lets the pure helpers be
-// exercised with plain fakes instead of a booted PluginManager.
-interface DisplayTypeLike {
-  name: string
-  configSchema: AnyConfigurationSchemaType
-}
-interface TrackTypeLike {
-  displayTypes: DisplayTypeLike[]
-}
-
-function schemaSlotNames(schema: AnyConfigurationSchemaType) {
-  const meta = getConfigurationSchemaMetadata(schema)
-  return new Set(meta ? Object.keys(meta.definition) : [])
+function declares(schema: AnyConfigurationSchemaType, key: string) {
+  return !!getConfigurationSchemaMetadata(schema)?.definition[key]
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
 }
 
-/** display type name → its config slot names, for one track type. */
-function trackDisplaySlots(trackType: TrackTypeLike) {
-  const displaySlots = new Map<string, Set<string>>()
-  for (const d of trackType.displayTypes) {
-    displaySlots.set(d.name, schemaSlotNames(d.configSchema))
-  }
-  return displaySlots
-}
-
 /**
- * Pure: route each shorthand `displayDefaults: {...}` setting to the display
- * types that define it. A setting goes to every display type whose config schema
- * has that slot, so slot names disambiguate across displays on their own (e.g.
- * `color` → LinearVariantDisplay, `strokeColor` → ChordVariantDisplay). Keys no
- * display defines are returned as `unknownKeys` for the caller to surface.
+ * Route each shorthand `displayDefaults: {...}` setting to the display types
+ * whose slot of that name takes its value, so slot names disambiguate across
+ * displays (`color` → LinearVariantDisplay, `strokeColor` →
+ * ChordVariantDisplay) and so do the values: `color: { scale: 'ld' }` on a
+ * FeatureTrack reaches the Manhattan display and not the feature display,
+ * whose `color` has no scale. A key no display declares is an `unknownKeys`
+ * entry, and one every declaring display refuses a `refused` entry carrying
+ * each display's reason.
  */
 export function collectDisplayOverrides(
   displaySettings: Record<string, unknown>,
-  displaySlots: Map<string, Set<string>>,
+  displaySchemas: ReadonlyMap<string, AnyConfigurationSchemaType>,
 ) {
   const overrides = new Map<string, Record<string, unknown>>()
   const unknownKeys: string[] = []
+  const refused: { key: string; reasons: string[] }[] = []
   for (const [key, value] of Object.entries(displaySettings)) {
-    const targets = [...displaySlots]
-      .filter(([, slots]) => slots.has(key))
-      .map(([name]) => name)
-    if (targets.length) {
-      for (const name of targets) {
-        overrides.set(name, { ...overrides.get(name), [key]: value })
-      }
-    } else {
+    const verdicts = [...displaySchemas]
+      .filter(([, schema]) => declares(schema, key))
+      .map(([name, schema]) => ({
+        name,
+        refusal: slotValueRefusal(schema, key, value),
+      }))
+    const targets = verdicts.filter(v => v.refusal === undefined)
+    if (verdicts.length === 0) {
       unknownKeys.push(key)
+    } else if (targets.length === 0) {
+      refused.push({
+        key,
+        reasons: verdicts.map(v => `${v.name}: ${v.refusal}`),
+      })
+    }
+    for (const { name } of targets) {
+      overrides.set(name, { ...overrides.get(name), [key]: value })
     }
   }
-  return { overrides, unknownKeys }
+  return { overrides, unknownKeys, refused }
 }
 
 /**
@@ -92,7 +85,7 @@ export function mergeOverridesIntoDisplays(
  * Expands the shorthand `displayDefaults` **object** into the explicit `displays`
  * **array**, so users can set display settings without naming the display type
  * or nesting in `displays:[{type,...}]`. `displayDefaults:{color:'green'}` routes
- * each setting to the display type(s) that define that slot, folding them into
+ * each setting to the display type(s) whose slot takes it, folding them into
  * whatever `displays` array the track already has (explicit entries win).
  *
  * `displayDefaults` is kept separate from `displays` (rather than overloading
@@ -137,13 +130,23 @@ export function expandTrackConfigShorthand(
     return snap
   }
 
-  const { overrides, unknownKeys } = collectDisplayOverrides(
+  const { overrides, unknownKeys, refused } = collectDisplayOverrides(
     shorthand,
-    trackDisplaySlots(trackType),
+    new Map(trackType.displayTypes.map(d => [d.name, d.configSchema])),
   )
   for (const key of unknownKeys) {
     console.warn(
       `Track "${trackId}": display setting "${key}" is not a slot on any display of a ${type}`,
+    )
+  }
+  if (refused.length > 0) {
+    throw new Error(
+      refused
+        .map(
+          ({ key, reasons }) =>
+            `Track "${trackId}": no display of a ${type} takes displayDefaults.${key} (${reasons.join('; ')})`,
+        )
+        .join('\n'),
     )
   }
 

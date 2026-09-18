@@ -90,11 +90,15 @@ test('a stored hidden dimension falls back to None', () => {
 })
 
 // A field only a config writes has no radio of its own to pick it from, so
-// the menu adds one rather than ticking None over a grouped track.
-test('a field no radio names gets a checked radio of its own', () => {
+// the menu adds one rather than ticking None over a grouped track, disabled
+// since picking it again changes nothing.
+test('a field no radio names gets a checked, disabled radio of its own', () => {
   const items = radios(makeModel({ field: 'sample' }).model)
   expect(items.map(i => i.label).slice(-2)).toEqual(['Tag...', 'sample'])
   expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['sample'])
+  expect(items.filter(i => 'disabled' in i && i.disabled)).toEqual([
+    expect.objectContaining({ label: 'sample' }),
+  ])
 })
 
 // The dimension radios write a value, so the menu stays up and the ticks move

@@ -275,13 +275,16 @@ const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
 const SYNTENY_ATTRIBUTE_PREFIX = 'attribute:'
 
 // The multi-way display's `ribbonColor` object as the synteny mode its Color
-// by... radios carry: `none` is `default`, a field its `attribute:` mode.
+// by... radios carry: `none` is `default`, a field its `attribute:` mode, and
+// a field under another scale waits unread.
 function ribbonColorMode(value: unknown) {
   const color = asRecord(value)
   const field = asString(color?.field)
   const scale = asString(color?.scale) ?? (field ? 'categorical' : undefined)
-  return scale === 'categorical' && field
-    ? `${SYNTENY_ATTRIBUTE_PREFIX}${field}`
+  return scale === 'categorical'
+    ? field
+      ? `${SYNTENY_ATTRIBUTE_PREFIX}${field}`
+      : 'default'
     : scale === 'none'
       ? 'default'
       : scale
@@ -358,12 +361,12 @@ function hasChannelMenus(displayType: string | undefined) {
 
 // The Manhattan display's `color` object: its Color by submenu picks the
 // scale, and a field is typed into the Field... dialog. The order and colors
-// the values take have no menu row.
+// the values take have no menu row, and a field under `none` waits unread.
 function manhattanColorStep(
   scale: Record<string, unknown>,
 ): FieldStep | undefined {
   const colorBy = `${TRACK_MENU} → Color by`
-  const field = asString(scale.field)
+  const field = scale.scale === 'none' ? undefined : asString(scale.field)
   if (scale.scale === 'ld') {
     return {
       path: `${colorBy} → LD to index SNP`,

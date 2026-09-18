@@ -22,6 +22,7 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -228,16 +229,21 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The `color` object, forwarded to the worker whole. `value` is read
-         * raw rather than through `getConf`, which would evaluate a `jexl:`
-         * callback against no feature and throw; the worker binds `feature`
-         * and evaluates it per point (`colorSlotTransport.test.ts`).
+         * The `color` object, forwarded to the worker whole, its `scale` the
+         * one that paints. `value` is read raw rather than through `getConf`,
+         * which would evaluate a `jexl:` callback against no feature and
+         * throw; the worker binds `feature` and evaluates it per point
+         * (`colorSlotTransport.test.ts`).
          */
         get color(): ManhattanColor {
+          const field = getConf(self, ['color', 'field'])
           return {
             value: self.conf.color.value,
-            field: getConf(self, ['color', 'field']),
-            scale: getConf(self, ['color', 'scale']),
+            field,
+            scale: paintedScale(
+              { scale: getConf(self, ['color', 'scale']), field },
+              'categorical',
+            ),
             domain: getConf(self, ['color', 'domain']),
             palette: getConf(self, ['color', 'palette']),
           }
@@ -601,11 +607,16 @@ export function stateModelFactory(
         /**
          * #action
          * Paints every point `value`, or colors by r² to the index SNP. The
-         * constant rides along, so leaving LD coloring restores it.
+         * rest of the object rides along, so switching back to the field
+         * finds its order and palette.
          */
         setColorScale(scale: Exclude<ManhattanColorScale, 'categorical'>) {
+          const { value, field, domain, palette } = self.color
           self.configuration.setSubschema('color', {
-            value: self.color.value,
+            value,
+            field,
+            domain,
+            palette,
             scale,
           })
         },
@@ -645,8 +656,12 @@ export function stateModelFactory(
          * fetch fires.
          */
         colorByLdToHit(hit: ManhattanHit) {
+          const { value, field, domain, palette } = self.color
           self.configuration.setSubschema('color', {
-            value: self.color.value,
+            value,
+            field,
+            domain,
+            palette,
             scale: 'ld',
           })
           self.indexSnp = `${hit.refName}:${hit.start + 1}`

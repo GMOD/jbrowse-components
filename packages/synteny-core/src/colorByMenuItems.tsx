@@ -5,13 +5,14 @@ import { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
 import { continuousRampConfig, resolveCategoricalMode } from './colorRamps.ts'
 import { attributeColorBy } from './colorUtils.ts'
 
-import type { ColorByMenuTarget } from './colorByMenuTarget.ts'
+import type { ColorByMenuTarget, ValueColorBy } from './colorByMenuTarget.ts'
+import type { ColorModeEntry } from './colorModes.ts'
 import type { CategoricalMode } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-interface ModeEntry {
-  value: SyntenyColorBy
+interface ModeEntry<Mode extends SyntenyColorBy> {
+  value: Mode
   label: string
   helpText: string
   disabledHelpText?: string
@@ -22,10 +23,10 @@ const presetRamps: Record<string, { attribute: string } | undefined> =
 
 const modeOf = new Map(COLOR_MODES.map(mode => [mode.value, mode]))
 
-function structuralModes({
+function structuralModes<S extends SyntenyColorBy>({
   structuralModes,
   surface,
-}: ColorByMenuTarget): ModeEntry[] {
+}: ColorByMenuTarget<S>): ModeEntry<S>[] {
   return structuralModes.flatMap(value => {
     const mode = modeOf.get(value)
     return mode
@@ -44,12 +45,15 @@ function structuralModes({
 // second list is why the first one stops growing: a preset earns its name by
 // carrying domain knowledge a column name cannot — identity is a fraction, MAPQ
 // tops out at 60, dN/dS is read against 1.
-function valueModes({
+function valueModes<S extends SyntenyColorBy>({
   attributes,
   attributeRanges,
-}: ColorByMenuTarget): ModeEntry[] {
+}: ColorByMenuTarget<S>): ModeEntry<ValueColorBy>[] {
   return [
-    ...COLOR_MODES.filter(m => m.kind === 'value').map(m => {
+    ...COLOR_MODES.filter(
+      (m): m is Extract<ColorModeEntry, { kind: 'value' }> =>
+        m.kind === 'value',
+    ).map(m => {
       const channel = presetRamps[m.value]?.attribute
       const seen = channel !== undefined && channel in attributeRanges
       return {
@@ -67,7 +71,10 @@ function valueModes({
   ]
 }
 
-function radios(target: ColorByMenuTarget, modes: ModeEntry[]): MenuItem[] {
+function radios<S extends SyntenyColorBy>(
+  target: ColorByMenuTarget<S>,
+  modes: ModeEntry<S | ValueColorBy>[],
+): MenuItem[] {
   return modes.map(({ label, value, helpText, disabledHelpText }) => ({
     label,
     type: 'radio' as const,
@@ -84,8 +91,8 @@ function radios(target: ColorByMenuTarget, modes: ModeEntry[]): MenuItem[] {
 // Under a text column: hide the rows it leaves unlabelled, and pin the labels
 // seen so far into the domain so each keeps its palette slot in the next
 // session and the next window
-function categoricalItems(
-  target: ColorByMenuTarget,
+function categoricalItems<S extends SyntenyColorBy>(
+  target: ColorByMenuTarget<S>,
   { labels }: CategoricalMode,
 ): MenuItem[] {
   const { colorDomain } = target
@@ -173,7 +180,9 @@ function trackColorItems({
  * surface paints, the measurements one hop in, the text-column rows while one
  * is painting, and the per-track swatches once more than one track overlays.
  */
-export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
+export function colorByMenuItems<S extends SyntenyColorBy>(
+  target: ColorByMenuTarget<S>,
+): MenuItem[] {
   const values = valueModes(target)
   const categorical = resolveCategoricalMode(
     target.colorBy,

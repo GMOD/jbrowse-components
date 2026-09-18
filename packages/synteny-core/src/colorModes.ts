@@ -1,4 +1,4 @@
-import type { SyntenyColorBy } from './colorUtils.ts'
+import type { MeasurementColorBy, SyntenyColorBy } from './colorUtils.ts'
 
 // One table for every surface that colors alignments. The dotplot, the synteny
 // view and the multi-way lanes each had a copy and the help text had drifted,
@@ -13,13 +13,16 @@ export type ColorModeSurface = 'ribbons' | 'points' | 'lanes'
 // sequence it lies on) or a `value` (a number it carries, painted on a ramp).
 // The palette menu lists the first kind at its top level and folds the second
 // under one "Color by value" submenu beside the columns a track declares.
-export const COLOR_MODES: {
-  value: SyntenyColorBy
+export type ColorModeEntry = {
   label: string
-  kind: 'structural' | 'value'
   helpText: string
   surfaceHelpText?: Partial<Record<ColorModeSurface, string>>
-}[] = [
+} & (
+  | { kind: 'structural'; value: SyntenyColorBy }
+  | { kind: 'value'; value: MeasurementColorBy }
+)
+
+export const COLOR_MODES: ColorModeEntry[] = [
   {
     value: 'default',
     kind: 'structural',

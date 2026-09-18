@@ -1,3 +1,6 @@
+import { markColorScale } from './configSchema.ts'
+
+import type { MarkColorScale } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
@@ -156,7 +159,14 @@ export function defaultPlotMarks(fields: PlotFields) {
 
 interface MarkLike {
   shape: string
-  encoding: { y: { field: string }; color: { field: string } }
+  encoding: {
+    y: { field: string }
+    color: {
+      field: string
+      scale: MarkColorScale | undefined
+      ramp: readonly string[]
+    }
+  }
   transform: { type: string }[]
 }
 
@@ -179,7 +189,10 @@ export function specOfMarks(marks: readonly MarkLike[]): PlotSpec | undefined {
   return {
     field: plot.encoding.y.field,
     shape: plot.shape as PlotShape,
-    colorField: plot.encoding.color.field,
+    colorField:
+      markColorScale(plot.encoding.color) === 'none'
+        ? ''
+        : plot.encoding.color.field,
     binned: second !== undefined,
   }
 }

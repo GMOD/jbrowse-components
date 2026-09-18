@@ -98,7 +98,16 @@ const syntenyColorByValues = [
  */
 export type SyntenyColorBy =
   | (typeof syntenyColorByValues)[number]
-  | `${typeof ATTRIBUTE_PREFIX}${string}`
+  | AttributeColorBy
+
+/** The mode that paints a column the track declares. */
+export type AttributeColorBy = `${typeof ATTRIBUTE_PREFIX}${string}`
+
+/** The measurements painted on a ramp, under the menu's Color by value. */
+export type MeasurementColorBy = Extract<
+  SyntenyColorBy,
+  'identity' | 'mappingQuality' | 'dnds'
+>
 
 const syntenyColorBySet: ReadonlySet<string> = new Set(syntenyColorByValues)
 
@@ -114,8 +123,8 @@ function isSyntenyColorBy(value: string): value is SyntenyColorBy {
  * #api
  * The colorBy string that paints a named feature attribute.
  */
-export function attributeColorBy(attribute: string) {
-  return `${ATTRIBUTE_PREFIX}${attribute}` as SyntenyColorBy
+export function attributeColorBy(attribute: string): AttributeColorBy {
+  return `${ATTRIBUTE_PREFIX}${attribute}`
 }
 
 /**
@@ -142,36 +151,6 @@ export function coerceColorBy(value: string | undefined): SyntenyColorBy {
     return 'identity'
   }
   return value !== undefined && isSyntenyColorBy(value) ? value : 'default'
-}
-
-/**
- * #api
- * A colour object's `scale` and `field` as the mode the colour functions
- * paint: `none` is `default`, `categorical` the field's `attribute:` mode, and
- * any other scale the scheme of that name.
- */
-export function colorByOfScale({
-  scale,
-  field,
-}: {
-  scale: string
-  field: string
-}): SyntenyColorBy {
-  return scale === 'categorical'
-    ? attributeColorBy(field)
-    : coerceColorBy(scale === 'none' ? 'default' : scale)
-}
-
-/**
- * #api
- * The `scale` and `field` a colour object spells a mode with, for a menu that
- * picks one: {@link colorByOfScale} the other way.
- */
-export function scaleOfColorBy(colorBy: SyntenyColorBy) {
-  const field = colorByAttributeName(colorBy)
-  return field === undefined
-    ? { scale: colorBy === 'default' ? 'none' : colorBy, field: '' }
-    : { scale: 'categorical', field }
 }
 
 /**

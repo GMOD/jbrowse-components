@@ -49,8 +49,9 @@ test('a numeric domain value is the string a group key is', () => {
   })
 })
 
-// The object checks are the config objects' own (`normalizeFacet`, `normalizeColor`),
-// so what the box refuses is what a config file cannot hold either.
+// The key and list checks are the config objects' own (`closed`,
+// `normalizeChannel`); the box also wants the field or colour a spec is for,
+// where a config may keep an order waiting on one.
 test.each([
   [{ group: 'x' }, 'The channels are facet, color and filter, not group'],
   [{ facet: { field: '' } }, 'facet is a field name'],
@@ -60,7 +61,7 @@ test.each([
     'Facet takes field and domain, not order',
   ],
   [{ facet: { field: 'x', domain: 'a' } }, 'facet.domain is a list'],
-  [{ facet: { domain: ['a'] } }, 'facet.domain orders the sections of a field'],
+  [{ facet: { domain: ['a'] } }, 'facet is a field name'],
   [{ color: {} }, 'color is a CSS color'],
   [{ color: '' }, 'color is a CSS color'],
   [
@@ -68,7 +69,7 @@ test.each([
     'FeatureColor takes value, field, domain and palette, not scale',
   ],
   [{ color: { field: 'x', palette: 'red' } }, 'color.palette is a list'],
-  [{ color: { palette: ['red'] } }, 'color.palette scales a field'],
+  [{ color: { palette: ['red'] } }, 'color is a CSS color'],
   [{ filter: [1] }, 'filter is a jexl expression'],
 ])('%j is refused: %s', (spec, message) => {
   expect(() => parse(spec)).toThrow(message)

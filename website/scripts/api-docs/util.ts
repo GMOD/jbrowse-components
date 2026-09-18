@@ -51,6 +51,9 @@ export interface ExtractedNode {
   // `pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` links to
   // the config named "LinearWiggleDisplay".
   baseConfigName?: string
+  // For `#slot` nodes only: the declId of the sub-schema a slot's value names
+  // (`facet: facetConfigSchema`), so its row can link the schema's own page.
+  valueDeclId?: string
   // For `#stateModel` nodes only: the models passed to this model's
   // `types.compose(...)` call, alias-followed. Lets the state-model generator
   // derive the composition graph from code instead of a hand-authored
@@ -262,7 +265,10 @@ export function extractWithComment(
         filename: node.getSourceFile().fileName,
         selfDeclId: declId,
         baseDeclId: tags.includes('baseConfiguration')
-          ? resolveBaseConfigDeclId(checker, node)
+          ? referencedDeclId(checker, node)
+          : undefined,
+        valueDeclId: tags.includes('slot')
+          ? referencedDeclId(checker, node)
           : undefined,
         baseConfigName:
           tags.includes('baseConfiguration') && ts.isPropertyAssignment(node)
@@ -1070,11 +1076,12 @@ function symbolDeclId(checker: ts.TypeChecker, symbol: ts.Symbol | undefined) {
     : undefined
 }
 
-// For a `baseConfiguration: <expr>` property, the declId of the base config the
-// expr references. Peels call/non-null wrappers to the head identifier
-// (`createBaseTrackConfig(pm)` -> `createBaseTrackConfig`); returns undefined for
-// non-identifier heads like `pluginManager.getDisplayType(...)`.
-function resolveBaseConfigDeclId(checker: ts.TypeChecker, node: ts.Node) {
+// For a `baseConfiguration: <expr>` or sub-schema slot property, the declId of
+// the schema the expr references. Peels call/non-null wrappers to the head
+// identifier (`createBaseTrackConfig(pm)` -> `createBaseTrackConfig`); returns
+// undefined for non-identifier heads like `pluginManager.getDisplayType(...)`
+// and for a slot's object literal.
+function referencedDeclId(checker: ts.TypeChecker, node: ts.Node) {
   if (!ts.isPropertyAssignment(node)) {
     return undefined
   }

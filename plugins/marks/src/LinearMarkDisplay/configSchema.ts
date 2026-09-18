@@ -1,5 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
+import {
+  normalizeChannel,
+  paintedScale,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
@@ -20,22 +24,30 @@ export type MarkSourceName = (typeof MARK_SOURCES)[number]
 
 export const DEFAULT_POINT_DIAMETER_PX = 4
 
-// A `domain` written as numbers is carried as strings, the one array slot
-// type the schema has.
-function stringDomain(snap: Record<string, unknown>) {
-  return Array.isArray(snap.domain)
-    ? { ...snap, domain: snap.domain.map(String) }
-    : snap
+const MARK_COLOR_SCALES = ['none', 'categorical', 'linear', 'log'] as const
+export type MarkColorScale = (typeof MARK_COLOR_SCALES)[number]
+
+const MARK_GLYPH_SCALES = ['none', 'categorical'] as const
+export type MarkGlyphScale = (typeof MARK_GLYPH_SCALES)[number]
+
+/**
+ * The scale a mark's colour paints through: left unset beside a `field`,
+ * `linear` with a `ramp` and `categorical` without.
+ */
+export function markColorScale(color: {
+  scale: MarkColorScale | undefined
+  field: string
+  ramp: readonly string[]
+}) {
+  return paintedScale(color, color.ramp.length > 0 ? 'linear' : 'categorical')
 }
 
-// An object naming a field and no scale reads it through the scale its other
-// slots imply, a `ramp` linear and anything else categorical, so a field is
-// never silently ignored.
-function inferScale(snap: Record<string, unknown>) {
-  const obj = stringDomain(snap)
-  return typeof obj.field === 'string' && obj.field && obj.scale === undefined
-    ? { ...obj, scale: obj.ramp === undefined ? 'categorical' : 'linear' }
-    : obj
+/** The scale a mark's glyph is drawn through: `categorical` beside a `field`. */
+export function markGlyphScale(glyph: {
+  scale: MarkGlyphScale | undefined
+  field: string
+}) {
+  return paintedScale(glyph, 'categorical')
 }
 
 const markColorSchema = ConfigurationSchema(
@@ -67,19 +79,14 @@ const markColorSchema = ConfigurationSchema(
      * #slot marks.encoding.color.scale
      * How `field` becomes a colour. `categorical` hands out palette entries
      * per distinct value; `linear` and `log` read the value through `domain`
-     * into `ramp`. `none` paints `value`. Left out beside a `field`, it is
-     * `linear` with a `ramp` and `categorical` without.
+     * into `ramp`. `none` paints `value`, keeping a `field` for a switch
+     * back. Unset beside a `field`, it is `linear` with a `ramp` and
+     * `categorical` without.
      */
     scale: {
-      type: 'stringEnum',
-      model: types.enumeration('MarkColorScale', [
-        'none',
-        'categorical',
-        'linear',
-        'log',
-      ]),
-      defaultValue: 'none',
-      description: 'none, categorical, linear or log',
+      type: 'maybeStringEnum',
+      model: types.enumeration('MarkColorScale', [...MARK_COLOR_SCALES]),
+      description: 'none, categorical, linear or log; unset follows field',
     },
     /**
      * #slot marks.encoding.color.palette
@@ -115,7 +122,10 @@ const markColorSchema = ConfigurationSchema(
       description: 'viridis, or CSS colour stops',
     },
   },
-  { shorthand: 'value', preProcessSnapshot: inferScale },
+  {
+    shorthand: 'value',
+    preProcessSnapshot: snap => normalizeChannel(snap, 'color'),
+  },
 )
 
 const markGlyphSchema = ConfigurationSchema(
@@ -146,14 +156,13 @@ const markGlyphSchema = ConfigurationSchema(
     /**
      * #slot marks.encoding.glyph.scale
      * `categorical` hands a glyph from `range` to each distinct value of
-     * `field`; `none` draws `value`. Left out beside a `field`, it is
+     * `field`; `none` draws `value`. Unset beside a `field`, it is
      * `categorical`.
      */
     scale: {
-      type: 'stringEnum',
-      model: types.enumeration('MarkGlyphScale', ['none', 'categorical']),
-      defaultValue: 'none',
-      description: 'none or categorical',
+      type: 'maybeStringEnum',
+      model: types.enumeration('MarkGlyphScale', [...MARK_GLYPH_SCALES]),
+      description: 'none or categorical; unset follows field',
     },
     /**
      * #slot marks.encoding.glyph.range
@@ -177,7 +186,10 @@ const markGlyphSchema = ConfigurationSchema(
       description: 'category order',
     },
   },
-  { shorthand: 'value', preProcessSnapshot: inferScale },
+  {
+    shorthand: 'value',
+    preProcessSnapshot: snap => normalizeChannel(snap, 'glyph'),
+  },
 )
 
 const markValueSchema = ConfigurationSchema(
@@ -235,7 +247,10 @@ const markValueSchema = ConfigurationSchema(
       description: 'shared or independent y axis',
     },
   },
-  { shorthand: 'field', preProcessSnapshot: stringDomain },
+  {
+    shorthand: 'field',
+    preProcessSnapshot: snap => normalizeChannel(snap, 'y'),
+  },
 )
 
 const markEncodingSchema = ConfigurationSchema('MarkEncoding', {

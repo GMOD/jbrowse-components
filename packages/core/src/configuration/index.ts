@@ -61,6 +61,7 @@ export {
   makeSlotFacade,
   preProcessSlotValues,
   slotChoices,
+  slotValueRefusal,
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
 export { fullConfSnapshot } from './fullConfSnapshot.ts'

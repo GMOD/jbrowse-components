@@ -1,20 +1,52 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
+import { ConfigurationSchema } from '../../configuration/index.ts'
 import {
   collectDisplayOverrides,
   mergeOverridesIntoDisplays,
 } from './expandTrackConfigShorthand.ts'
 
-// A track with a LinearVariantDisplay ('color' slot) and a ChordVariantDisplay
-// ('strokeColor' slot) — slot names route settings to the right display.
-const displaySlots = new Map([
-  ['LinearBasicDisplay', new Set(['color', 'displayMode', 'height'])],
-  ['ChordVariantDisplay', new Set(['strokeColor', 'height'])],
+const ScaledColor = ConfigurationSchema(
+  'ScaledColor',
+  {
+    value: { type: 'color', defaultValue: 'goldenrod' },
+    scale: {
+      type: 'maybeStringEnum',
+      model: types.enumeration('Scale', ['none', 'ld']),
+    },
+  },
+  { shorthand: 'value', closed: true },
+)
+
+// Three displays of one track: two declare `color`, one as a plain colour
+// slot and one as an object with a scale, and the third names its colour
+// `strokeColor`.
+const displaySchemas = new Map([
+  [
+    'LinearBasicDisplay',
+    ConfigurationSchema('LinearBasicDisplay', {
+      color: { type: 'color', defaultValue: 'goldenrod' },
+      height: { type: 'number', defaultValue: 100 },
+    }),
+  ],
+  [
+    'LinearManhattanDisplay',
+    ConfigurationSchema('LinearManhattanDisplay', { color: ScaledColor }),
+  ],
+  [
+    'ChordVariantDisplay',
+    ConfigurationSchema('ChordVariantDisplay', {
+      strokeColor: { type: 'color', defaultValue: 'goldenrod' },
+      height: { type: 'number', defaultValue: 100 },
+    }),
+  ],
 ])
 
 describe('collectDisplayOverrides', () => {
   test('routes a setting to every display defining that slot', () => {
     const { overrides, unknownKeys } = collectDisplayOverrides(
       { height: 100 },
-      displaySlots,
+      displaySchemas,
     )
     expect(overrides.get('LinearBasicDisplay')).toEqual({ height: 100 })
     expect(overrides.get('ChordVariantDisplay')).toEqual({ height: 100 })
@@ -24,16 +56,43 @@ describe('collectDisplayOverrides', () => {
   test('routes by slot name when displays differ (color vs strokeColor)', () => {
     const { overrides } = collectDisplayOverrides(
       { color: 'green', strokeColor: 'red' },
-      displaySlots,
+      displaySchemas,
     )
     expect(overrides.get('LinearBasicDisplay')).toEqual({ color: 'green' })
+    expect(overrides.get('LinearManhattanDisplay')).toEqual({ color: 'green' })
     expect(overrides.get('ChordVariantDisplay')).toEqual({ strokeColor: 'red' })
+  })
+
+  test('routes a value only to the displays whose slot takes it', () => {
+    const { overrides, refused } = collectDisplayOverrides(
+      { color: { scale: 'ld' } },
+      displaySchemas,
+    )
+    expect([...overrides.keys()]).toEqual(['LinearManhattanDisplay'])
+    expect(refused).toEqual([])
+  })
+
+  test('reports a value every declaring display refuses, with each reason', () => {
+    const { overrides, refused } = collectDisplayOverrides(
+      { color: { scale: 'linear' } },
+      displaySchemas,
+    )
+    expect(overrides.size).toBe(0)
+    expect(refused).toEqual([
+      {
+        key: 'color',
+        reasons: [
+          expect.stringMatching(/^LinearBasicDisplay: .*color slot/),
+          expect.stringMatching(/^LinearManhattanDisplay: /),
+        ],
+      },
+    ])
   })
 
   test('reports keys no display defines', () => {
     const { overrides, unknownKeys } = collectDisplayOverrides(
       { colour: 'green' },
-      displaySlots,
+      displaySchemas,
     )
     expect(overrides.size).toBe(0)
     expect(unknownKeys).toEqual(['colour'])

@@ -63,6 +63,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
 import { binStepWidth } from './autoBin.ts'
+import { markColorScale, markGlyphScale } from './configSchema.ts'
 import { densityRegionData } from './densityLayer.ts'
 import { facetLayout, remapFacetRows } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
@@ -186,10 +187,11 @@ export function declaredDomain(
 // crosses untouched, which is why nothing here reads through `getConf`.
 function encodingOf(mark: MarkConfig): MarkEncoding {
   const { x, x2, y, row, glyph, color } = mark.encoding
+  const colorScale = markColorScale(color)
   const scaled: ColorEncoding =
-    color.scale === 'none'
+    colorScale === 'none'
       ? color.value
-      : color.scale === 'categorical'
+      : colorScale === 'categorical'
         ? {
             field: color.field,
             scale: 'categorical',
@@ -198,7 +200,7 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
           }
         : {
             field: color.field,
-            scale: color.scale,
+            scale: colorScale,
             domain:
               color.domain.length === 2
                 ? [Number(color.domain[0]), Number(color.domain[1])]
@@ -211,7 +213,7 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
                   : [...color.ramp],
           }
   const glyphEncoding: GlyphEncoding =
-    glyph.scale === 'none'
+    markGlyphScale(glyph) === 'none'
       ? (glyph.value as GlyphEncoding)
       : {
           field: glyph.field,
@@ -298,9 +300,11 @@ function stepsOf(
 // would have packed it. A scale has no meaning over a bin the sidecar wrote,
 // and a jexl callback has no feature to read.
 function markConstantColor(mark: MarkConfig): number {
-  const { scale, value } = mark.encoding.color
+  const { color } = mark.encoding
   return cssColorToABGR(
-    scale === 'none' && !value.startsWith('jexl:') ? value : DEFAULT_MARK_COLOR,
+    markColorScale(color) === 'none' && !color.value.startsWith('jexl:')
+      ? color.value
+      : DEFAULT_MARK_COLOR,
   )
 }
 

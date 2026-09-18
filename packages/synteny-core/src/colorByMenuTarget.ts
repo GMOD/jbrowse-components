@@ -1,6 +1,10 @@
 import type { ColorModeSurface } from './colorModes.ts'
 import type { AttributeRange } from './colorRamps.ts'
-import type { SyntenyColorBy } from './colorUtils.ts'
+import type {
+  AttributeColorBy,
+  MeasurementColorBy,
+  SyntenyColorBy,
+} from './colorUtils.ts'
 import type { ColorableTrack } from './trackColors.ts'
 
 export interface ColorByMenuTrack {
@@ -86,10 +90,15 @@ export interface TrackColorsModel {
   clearTrackColors: () => void
 }
 
-export interface ColorByMenuTarget {
+/** A mode the Color by value submenu offers: a measurement, or a column. */
+export type ValueColorBy = MeasurementColorBy | AttributeColorBy
+
+export interface ColorByMenuTarget<
+  Structural extends SyntenyColorBy = SyntenyColorBy,
+> {
   colorBy: SyntenyColorBy
   /** the structural modes the surface paints, in `COLOR_MODES` order */
-  structuralModes: readonly SyntenyColorBy[]
+  structuralModes: readonly Structural[]
   /**
    * columns the tracks declare, each offered as its own mode. Taken from the
    * track config rather than from the data so the menu is right before
@@ -107,7 +116,7 @@ export interface ColorByMenuTarget {
   hideUnlabelled: boolean
   /** the order a text column's labels take, which Pin distinct colors writes */
   colorDomain: readonly string[]
-  setColorBy: (value: SyntenyColorBy) => void
+  setColorBy: (value: Structural | ValueColorBy) => void
   setHideUnlabelled: (value: boolean) => void
   setColorDomain: (domain: string[]) => void
   /** the per-track swatches of a view overlaying tracks */

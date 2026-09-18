@@ -119,16 +119,19 @@ export {
   attributeColorBy,
   coerceColorBy,
   colorByAttributeName,
-  colorByOfScale,
   legendChipColor,
-  scaleOfColorBy,
   colorSchemes,
   defaultCigarColors,
   getQueryColor,
   hashString,
   strandCigarColors,
 } from './colorUtils.ts'
-export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
+export type {
+  AttributeColorBy,
+  ColorScheme,
+  MeasurementColorBy,
+  SyntenyColorBy,
+} from './colorUtils.ts'
 export { bandGroundColor, bandInk } from './bandGround.ts'
 export { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 export {
@@ -143,6 +146,7 @@ export type {
   ColorByMenuTarget,
   ColorByMenuTrack,
   TrackColorsModel,
+  ValueColorBy,
 } from './colorByMenuTarget.ts'
 // the palette button itself, not just the menu inside it — the two headers had a
 // copy each and only one of them said which mode it was in

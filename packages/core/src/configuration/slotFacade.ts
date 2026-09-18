@@ -7,6 +7,7 @@ import {
 
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
+import ConfigSlot from './configurationSlot.ts'
 import {
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
@@ -23,6 +24,7 @@ import type {
   ConfigSlotType,
 } from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 /**
  * The slot's metadata entry, or undefined when `slotName` names a nested
@@ -77,6 +79,38 @@ export function preProcessSlotValues(
 ): Record<string, unknown> {
   const schema = getConfigurationSchemaMetadata(getType(node))
   return schema ? preProcessSnapshotWith(schema, values) : values
+}
+
+/**
+ * Why a config of type `schema` cannot hold `value` at `key`, or undefined
+ * when it can: the schema's own lift first, then the slot's type, or a
+ * sub-schema's lift and checks. Also undefined for a key the schema does not
+ * declare, which is a question for its caller.
+ */
+export function slotValueRefusal(
+  schema: IAnyType,
+  key: string,
+  value: unknown,
+): string | undefined {
+  const meta = getConfigurationSchemaMetadata(schema)
+  const entry = meta?.definition[key]
+  if (!meta || entry === undefined) {
+    return undefined
+  }
+  const subSchema: IAnyType | undefined = isConfigurationSchemaType(entry)
+    ? entry
+    : undefined
+  try {
+    const lifted = preProcessSnapshotWith(meta, { [key]: value })[key]
+    if (subSchema) {
+      subSchema.create(lifted)
+    } else if (isSlotDefinitionEntry(entry) && !ConfigSlot(entry).is(lifted)) {
+      return `${meta.name}.${key} is a ${entry.type} slot and cannot take ${JSON.stringify(value)}`
+    }
+    return undefined
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e)
+  }
 }
 
 /**

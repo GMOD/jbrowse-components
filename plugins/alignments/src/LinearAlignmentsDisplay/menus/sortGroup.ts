@@ -224,8 +224,8 @@ export function getSectionOrderMenuItems(model: SectionOrderMenuModel) {
 // Every offered dimension selects directly; a tag needs its name (+ optional
 // color-by-tag), so it goes last as a dialog-opener — mirroring the sort menu's
 // "Tag...". Its radio is the tag prefix, which no field can equal. A field
-// written in config that no radio names gets a radio of its own, so the menu
-// never ticks "None" over a grouped track.
+// written in config that no radio names gets a checked, disabled radio of its
+// own, so the menu never ticks "None" over a grouped track.
 export function getGroupByMenuItem(model: GroupByMenuModel) {
   const field = model.facet?.field
   const tag = facetTag(field)
@@ -256,7 +256,13 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
       },
       ...(other === undefined
         ? []
-        : [{ type: other, label: other, onClick: () => {} }]),
+        : [
+            {
+              type: other,
+              label: other,
+              disabledHelpText: "Set in the track's config",
+            },
+          ]),
     ],
   })
 }

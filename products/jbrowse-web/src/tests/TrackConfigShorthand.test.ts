@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 import corePlugins from '../corePlugins.ts'
@@ -56,4 +57,44 @@ test('display settings route by slot name across a track’s displays', () => {
   expect(
     readConfObject(display(conf, 'ChordVariantDisplay'), 'strokeColor'),
   ).toBe('#e31a1c')
+})
+
+// A FeatureTrack offers five displays, three of which declare `color` in
+// different shapes: the feature display's field-or-constant object, the
+// Manhattan display's object with a scale, and the arc and multi-row
+// displays' plain colour. A value goes to the displays that take it.
+function hydrateFeatureTrack(displayDefaults: Record<string, unknown>) {
+  const pluginManager = makePluginManager()
+  return pluginManager.getTrackType('FeatureTrack').configSchema.create(
+    {
+      trackId: 'routed',
+      type: 'FeatureTrack',
+      assemblyNames: ['volvox'],
+      adapter: { type: 'Gff3Adapter', uri: 'volvox.gff3' },
+      displayDefaults,
+    },
+    { pluginManager },
+  ) as AnyConfigurationModel & { displays: AnyConfigurationModel[] }
+}
+
+function colorOf(conf: { displays: AnyConfigurationModel[] }, type: string) {
+  return getSnapshot(display(conf, type).color)
+}
+
+test('a colour with a scale reaches only the display whose colour has one', () => {
+  const conf = hydrateFeatureTrack({ color: { scale: 'ld' } })
+  expect(colorOf(conf, 'LinearManhattanDisplay')).toEqual({ scale: 'ld' })
+  expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({})
+})
+
+test('a colour field reaches the displays whose colour is an object', () => {
+  const conf = hydrateFeatureTrack({ color: { field: 'type' } })
+  expect(colorOf(conf, 'LinearManhattanDisplay')).toEqual({ field: 'type' })
+  expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({ field: 'type' })
+})
+
+test('a colour no display takes fails the load, naming every reason', () => {
+  expect(() => hydrateFeatureTrack({ color: { scale: 'linear' } })).toThrow(
+    /no display of a FeatureTrack takes displayDefaults\.color \(LinearBasicDisplay: .*LinearManhattanDisplay: /,
+  )
 })

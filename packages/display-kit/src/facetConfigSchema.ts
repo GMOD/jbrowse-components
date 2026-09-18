@@ -1,29 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { normalizeChannel } from './colorConfigSchema.ts'
+
 /** The `facet` object as written: a field, and the order its sections stack in. */
 export interface FacetSetting {
   field: string
   domain: readonly string[]
-}
-
-/**
- * A `domain` with no `field` to order is refused here rather than dropped, so
- * a config carries no order for a facet it does not have. A `domain` written
- * as numbers is carried as strings.
- */
-export function normalizeFacet(
-  snap: Record<string, unknown> = {},
-): Record<string, unknown> {
-  if (snap.domain !== undefined && !Array.isArray(snap.domain)) {
-    throw new Error('facet.domain is a list')
-  }
-  const domain = Array.isArray(snap.domain)
-    ? snap.domain.map(String)
-    : undefined
-  if (domain?.length && !snap.field) {
-    throw new Error('facet.domain orders the sections of a field: name one')
-  }
-  return domain ? { ...snap, domain } : snap
 }
 
 /**
@@ -81,7 +63,11 @@ export const facetConfigSchema = ConfigurationSchema(
       description: 'values whose sections stack first, in order',
     },
   },
-  { shorthand: 'field', closed: true, preProcessSnapshot: normalizeFacet },
+  {
+    shorthand: 'field',
+    closed: true,
+    preProcessSnapshot: snap => normalizeChannel(snap, 'facet'),
+  },
 )
 
 /** The facet as read back: undefined while ungrouped. */

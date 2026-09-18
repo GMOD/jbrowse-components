@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { normalizeScaledColor } from '@jbrowse/display-kit/colorConfigSchema'
+import { normalizeChannel } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 // How a ribbon takes its colour: `none` paints `value`; `categorical` reads a
@@ -63,18 +63,18 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
     /**
      * #slot scale
      * What colours a ribbon. `none` paints `value`; `categorical` reads
-     * `field`, and is what a `field` with no scale reads through; `strand`
-     * reads the record's strand — the two placements' orientations against
-     * the anchor multiplied out — and not the drawn twist, so a lane drawn
-     * flipped still shows its inversions; `identity`, `mappingQuality` and
-     * `dnds` paint the synteny view's ramps.
+     * `field`; `strand` reads the record's strand — the two placements'
+     * orientations against the anchor multiplied out — and not the drawn
+     * twist, so a lane drawn flipped still shows its inversions; `identity`,
+     * `mappingQuality` and `dnds` paint the synteny view's ramps. Unset, a
+     * `field` reads through `categorical` and no field paints `value`. A
+     * `field` under another scale is kept for a switch back.
      */
     scale: {
-      type: 'stringEnum',
+      type: 'maybeStringEnum',
       model: types.enumeration('RibbonColorScale', [...RIBBON_COLOR_SCALES]),
-      defaultValue: 'none',
       description:
-        'none, categorical, strand, identity, mappingQuality or dnds',
+        'none, categorical, strand, identity, mappingQuality or dnds; unset follows field',
     },
     /**
      * #slot domain
@@ -92,6 +92,6 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
   {
     shorthand: 'value',
     closed: true,
-    preProcessSnapshot: snap => normalizeScaledColor(snap, 'ribbonColor'),
+    preProcessSnapshot: snap => normalizeChannel(snap, 'ribbonColor'),
   },
 )

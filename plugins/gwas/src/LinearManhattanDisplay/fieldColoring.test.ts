@@ -167,14 +167,34 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
-  it('refuses a field under the ld scale, and an undeclared key', () => {
-    const { display } = createTestEnvironment().createDisplay()
-    expect(() =>
-      display.configuration.setSubschema('color', {
+  it('a scale switch keeps the field, its order and palette for the way back', () => {
+    const { display } = createTestEnvironment({
+      color: {
         field: 'population',
-        scale: 'ld',
-      }),
-    ).toThrow('color.field is read by the categorical scale, not ld')
+        domain: ['EUR'],
+        palette: ['red'],
+      },
+    }).createDisplay()
+    display.setColorScale('none')
+    expect(display.color.scale).toBe('none')
+    display.setColorScale('ld')
+    expect(display.color.scale).toBe('ld')
+    display.colorByField('population')
+    expect(display.color).toMatchObject({
+      field: 'population',
+      scale: 'categorical',
+      domain: ['EUR'],
+      palette: ['red'],
+    })
+  })
+
+  it('reads a field under ld as ld, and refuses an undeclared key', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.configuration.setSubschema('color', {
+      field: 'population',
+      scale: 'ld',
+    })
+    expect(display.color.scale).toBe('ld')
     expect(() =>
       display.configuration.setSubschema('color', { colorBy: 'ld' }),
     ).toThrow('ManhattanColor takes value, field, scale, domain and palette')

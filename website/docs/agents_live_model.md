@@ -228,8 +228,10 @@ string is the one-value form, the facet's field or a constant color, and an
 object spells the rest out: `facet: { field, domain }` orders the sections,
 `color: { field, domain, palette }` hands each value a palette color. An object
 replaces the setting whole and `null` clears it. A field is a feature attribute,
-a dotted path such as `INFO.SVTYPE`, or `strand`. The filter is the runtime
-list, `display.setJexlFilters(["jexl:feature.type == 'gene'"])`, and
+a dotted path such as `INFO.SVTYPE`, or `strand`. An alignments track takes the
+same `facet`, its field a read dimension (`pairOrientation`, `mapq`, ...) or a
+tag (`tags.HP`). The filter is the runtime list,
+`display.setJexlFilters(["jexl:feature.type == 'gene'"])`, and
 `display.channelSpec` reads all three back.
 
 A feature's label is whatever `name` it carries, else its `id`, and a file

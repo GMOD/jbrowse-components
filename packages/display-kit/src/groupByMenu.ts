@@ -17,13 +17,12 @@ export interface GroupByRadioOption<T extends string> {
 
 /**
  * A dimension that activates through its own flow rather than a direct select,
- * such as a tag whose radio opens a dialog for the tag name.
+ * such as a tag whose radio opens a dialog for the tag name, or one only a
+ * config can name, which shows checked and cannot be picked.
  */
-export interface GroupByRadioItem<T extends string> {
-  type: T
-  label: string
-  onClick: () => void
-}
+export type GroupByRadioItem<T extends string> =
+  | { type: T; label: string; onClick: () => void }
+  | { type: T; label: string; disabledHelpText: string }
 
 // A stored dimension this menu doesn't offer ticks "None" rather than leaving
 // the group blank, so no caller filters `current` against what it passed in.
@@ -75,6 +74,14 @@ export function groupByRadioMenuItem<T extends string, X extends string = T>({
     keepMenuOpen,
     onClick,
   })
+  const extraRadio = (e: GroupByRadioItem<X>) =>
+    'onClick' in e
+      ? radio(e, e.onClick, false)
+      : {
+          ...radio(e, () => {}),
+          disabled: true,
+          disabledHelpText: e.disabledHelpText,
+        }
   return {
     label: 'Group by...',
     icon: WorkspacesIcon,
@@ -92,7 +99,7 @@ export function groupByRadioMenuItem<T extends string, X extends string = T>({
       ),
       // `false`, not omitted: `staysOpenOnClick` defaults a radio to staying
       // open, which leaves both menus standing over the dialog it just opened.
-      ...extras.map(e => radio(e, e.onClick, false)),
+      ...extras.map(extraRadio),
     ] satisfies MenuItem[],
   }
 }

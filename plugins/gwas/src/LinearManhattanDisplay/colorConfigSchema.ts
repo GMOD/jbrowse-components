@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
-import { normalizeScaledColor } from '@jbrowse/display-kit/colorConfigSchema'
+import { normalizeChannel } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { MANHATTAN_COLOR_SCALES } from '../ManhattanRPC/rpcTypes.ts'
@@ -56,17 +56,17 @@ export const manhattanColorConfigSchema = ConfigurationSchema(
     /**
      * #slot scale
      * How the points take their colour. `none` paints `value`; `categorical`
-     * a palette colour per value of `field`, and is what a `field` with no
-     * scale reads through; `ld` each point's r² to the index SNP, read from
-     * the `GWASAdapter`'s `ldAdapter` sub-adapter.
+     * a palette colour per value of `field`; `ld` each point's r² to the
+     * index SNP, read from the `GWASAdapter`'s `ldAdapter` sub-adapter. Unset,
+     * a `field` reads through `categorical` and no field paints `value`. A
+     * `field` under `none` or `ld` is kept for a switch back.
      */
     scale: {
-      type: 'stringEnum',
+      type: 'maybeStringEnum',
       model: types.enumeration('ManhattanColorScale', [
         ...MANHATTAN_COLOR_SCALES,
       ]),
-      defaultValue: 'none',
-      description: 'none, categorical or ld',
+      description: 'none, categorical or ld; unset follows field',
     },
     /**
      * #slot domain
@@ -93,6 +93,6 @@ export const manhattanColorConfigSchema = ConfigurationSchema(
   {
     shorthand: 'value',
     closed: true,
-    preProcessSnapshot: snap => normalizeScaledColor(snap, 'color'),
+    preProcessSnapshot: snap => normalizeChannel(snap, 'color'),
   },
 )

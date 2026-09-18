@@ -57,6 +57,10 @@ interface Item {
   examples: Example[]
   category?: string
   code: string
+  // a sub-schema slot's schema: its declId as extracted, and the `#config`
+  // page it resolves to once every config is read
+  schemaDeclId?: string
+  schemaPage?: { name: string; id: string }
 }
 interface ConfigHeader {
   name: string
@@ -263,7 +267,7 @@ export function accumulateConfig(
   } else if (obj.type === 'preProcessSnapshot') {
     file.preProcess = item
   } else if (obj.type === 'slot') {
-    file.slots.push(item)
+    file.slots.push({ ...item, schemaDeclId: obj.valueDeclId })
   }
 }
 
@@ -1266,13 +1270,15 @@ function slotAnchor(name: string) {
 // object at all (`pluginManager.pluggableConfigSchemaType('adapter')`, a nested
 // `ConfigurationSchema`) has no type to name, so its source stands in — that
 // expression is the only thing there is to say about it.
-function slotTypeCell(meta: SlotMeta) {
+function slotTypeCell(meta: SlotMeta, schemaPage: Item['schemaPage']) {
   const enums = meta.enumValues ? ` (${meta.enumValues.join(', ')})` : ''
   return meta.type
     ? `${typeLink(meta.type)}${enums}`
-    : codeCell(
-        meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode)),
-      )
+    : schemaPage
+      ? `[${schemaPage.name}](../${schemaPage.id})`
+      : codeCell(
+          meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode)),
+        )
 }
 
 function slotDefaultCell(meta: SlotMeta) {
@@ -1322,7 +1328,7 @@ function slotGroupRow(from: string, count: number) {
 // table.
 function slotRow(item: Item) {
   const { meta } = slotMetaFor(item)
-  const type = slotTypeCell(meta)
+  const type = slotTypeCell(meta, item.schemaPage)
   const dflt = slotDefaultCell(meta)
   const cells = [
     [
@@ -1723,9 +1729,10 @@ function agentSlotLine(item: Item) {
   const enums = meta.enumValues ? ` (${meta.enumValues.join(', ')})` : ''
   const type = meta.type
     ? `${meta.type}${enums}`
-    : flatCode(
+    : (item.schemaPage?.name ??
+      flatCode(
         meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode)),
-      )
+      ))
   const dflt = flatCode(
     meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
   )
@@ -1805,6 +1812,12 @@ export function writeConfigDocs(
   const byName = mapByKey(withHeader, c => c.header.name)
   const index: ConfigIndex = { byDeclId, byName }
   resolveInheritedSlotMeta(withHeader, index)
+  for (const slot of withHeader.flatMap(c => c.slots)) {
+    const schema = slot.schemaDeclId && byDeclId.get(slot.schemaDeclId)
+    if (schema) {
+      slot.schemaPage = { name: schema.header.name, id: schema.header.id }
+    }
+  }
   // All before the write loop, so a run that would emit a blank cell, drop a
   // slot, or write one page for two types fails without having rewritten
   // anything.

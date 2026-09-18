@@ -821,13 +821,29 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       description:
         'The index file beside `uri`, when it is not at the conventional name.',
     }
+    // One schema per key: the slot of every display declaring it, any of
+    // which may take the value, as the loader routes it
+    const declared = new Map<string, JsonSchema[]>()
+    for (const name of displays) {
+      const slots = defs[`${name}Slots`]!.properties as Record<string, unknown>
+      for (const key of Object.keys(slots)) {
+        declared.set(key, [
+          ...(declared.get(key) ?? []),
+          ref(`${name}Slots/properties/${key}`),
+        ])
+      }
+    }
     properties.displayDefaults = {
       title: `${track.name}DisplayDefaults`,
       description:
-        "Display settings routed to whichever of this track's displays declares each key, so the track need not name a display or write the `displays` array.",
-      ...composed(
-        displays.map(name => `${name}Slots`),
-        {},
+        "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
+      ...closed(
+        Object.fromEntries(
+          [...declared].map(([key, slots]) => [
+            key,
+            slots.length === 1 ? slots[0]! : { anyOf: slots },
+          ]),
+        ),
       ),
     }
     def.anyOf = [{ required: ['adapter'] }, { required: ['uri'] }]

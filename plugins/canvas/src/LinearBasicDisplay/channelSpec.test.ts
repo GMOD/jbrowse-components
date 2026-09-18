@@ -101,13 +101,13 @@ test('an object replaces the channel whole, and null clears it', () => {
   expect(d.channelSpec.facet).toEqual({ field: 'biotype' })
 })
 
-test('a domain or palette with no field is refused, and the display keeps what it had', () => {
+test('a domain or palette that is not a list is refused, and the display keeps what it had', () => {
   const d = display()
   d.applyDisplaySettings({ color: { field: 'source' } })
   expect(
     d.applyDisplaySettings({
-      color: { domain: ['a'] },
-      facet: { domain: ['a'] },
+      color: { field: 'source', palette: 'red' },
+      facet: { field: 'source', domain: 'a' },
     }),
   ).toMatchObject({
     applied: [],
