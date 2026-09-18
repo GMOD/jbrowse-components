@@ -389,12 +389,6 @@ export type CoreEncodeFeaturesArgs = {
  */
 export interface FacetSpec {
   field: FieldRef
-  /**
-   * The section order: the values listed here stack first, in this order,
-   * and the rest follow sorted. A value absent from the data takes no
-   * section.
-   */
-  domain?: readonly string[]
   /** The row field the offset is written over, `row` by default. */
   as?: string
 }

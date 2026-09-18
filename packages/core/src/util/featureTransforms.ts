@@ -389,20 +389,17 @@ function coverage(features: readonly Feature[], step: CoverageStep) {
  */
 export function facetRows(
   features: readonly Feature[],
-  { field, domain, as = DEFAULT_STACK_AS }: FacetSpec,
+  { field, as = DEFAULT_STACK_AS }: FacetSpec,
   jexl?: JexlInstance,
 ) {
-  const categories = categoricalField(field, { domain })
+  const categories = categoricalField(field)
   const read = fieldReader(field, jexl)
   const rows = features.map(f => ({
     feature: f,
     key: categories.key(read(f)),
     row: Number(f.get(as)) || 0,
   }))
-  const { sectionOf, mergedCount } = capGroupKeys(
-    rows.map(r => r.key),
-    categories.compare,
-  )
+  const { sectionOf, mergedCount } = capGroupKeys(rows.map(r => r.key))
   const heights = new Map<string, number>()
   for (const r of rows) {
     r.key = sectionOf(r.key)

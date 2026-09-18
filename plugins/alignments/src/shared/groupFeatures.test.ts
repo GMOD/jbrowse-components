@@ -10,6 +10,7 @@ import {
   normalizeGroupBy,
   partitionChains,
   partitionFeatures,
+  workerGroupBy,
 } from './groupFeatures.ts'
 
 import type { GroupBy } from './types.ts'
@@ -488,28 +489,37 @@ test('normalizeGroupBy keeps a domain as strings, and reads an empty one as none
   })
 })
 
-test('a domain stacks the listed values first, and the cap counts in that order', () => {
+test('the worker partitions in natural order and caps off the key set alone', () => {
   const features = [
     feat('a', { tags: { HP: 2 } }),
     feat('b', {}),
     feat('c', { tags: { HP: 1 } }),
   ]
-  expect(
-    keys(
-      partitionFeatures(features, { type: 'tag', tag: 'HP', domain: ['2'] }),
-    ),
-  ).toEqual(['2', '1', ''])
-  expect(
-    keys(partitionChains(features, { type: 'tag', tag: 'HP', domain: ['2'] })),
-  ).toEqual(['2', '1', ''])
+  expect(keys(partitionFeatures(features, { type: 'tag', tag: 'HP' }))).toEqual(
+    ['1', '2', ''],
+  )
+  expect(keys(partitionChains(features, { type: 'tag', tag: 'HP' }))).toEqual([
+    '1',
+    '2',
+    '',
+  ])
   const last = `v${String(MAX_GROUPS + 9).padStart(3, '0')}`
   const groups = partitionFeatures(umiFeatures(MAX_GROUPS + 10), {
     type: 'tag',
     tag: 'RX',
-    domain: [last],
   })
-  expect(groups[0]!.key).toBe(last)
-  expect(groups.at(-1)!.mergedKeys).not.toContain(last)
+  expect(groups.at(-1)!.mergedKeys).toContain(last)
+})
+
+test('the worker is sent the dimension and its tag, never the domain', () => {
+  expect(workerGroupBy({ type: 'tag', tag: 'HP', domain: ['2'] })).toEqual({
+    type: 'tag',
+    tag: 'HP',
+  })
+  expect(workerGroupBy({ type: 'strand', domain: ['-1'] })).toEqual({
+    type: 'strand',
+  })
+  expect(workerGroupBy(undefined)).toBeUndefined()
 })
 
 // A tag on a dimension that takes no parameter is residue from a hand-written

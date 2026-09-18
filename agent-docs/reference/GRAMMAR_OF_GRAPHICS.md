@@ -281,9 +281,11 @@ layout — the stack transform with an offset over it, not a fourth partition.
 
 The shared pieces are the key order and the `MAX_GROUPS` cap
 (`packages/core/src/util/groupKeys.ts`, in core so a worker can reach them):
-a facet channel's optional `domain` lists the sections that stack first, the
-rest follow sorted (every value the data holds, with no domain), and the cap
-counts in that order, so the multi-row and multiway synteny displays' `domain`
+a facet channel's optional `domain` lists the sections that stack first and
+the rest follow sorted (every value the data holds, with no domain). The cap
+reads the key set alone, in natural order: a domain orders the sections and
+never decides which exist, so no worker request carries one and a reorder
+refetches nothing. The multi-row and multiway synteny displays' `domain`
 slots, the feature display's `facetDomain`,
 the alignments display's `groupBy.domain`, the mark's `facet.domain` and the colour and glyph channels'
 legend order are one word and one rule (`groupKeyComparator`); the four

@@ -7,7 +7,7 @@ import {
 import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
-  groupKeyComparator,
+  compareGroupKeys,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
 
@@ -195,13 +195,9 @@ function mapqKey(feature: Feature): GroupKey {
 // cross-region union can exceed MAX_GROUPS when regions expose wildly
 // different value sets; it bounds the per-group region-width cost, which is
 // what actually blows up.
-function orderGroups(groups: FeatureGroup[], domain?: readonly string[]) {
-  const compare = groupKeyComparator(domain)
-  const ordered = groups.sort((a, b) => compare(a.key, b.key))
-  const { sectionOf, mergedCount } = capGroupKeys(
-    ordered.map(g => g.key),
-    compare,
-  )
+function orderGroups(groups: FeatureGroup[]) {
+  const ordered = groups.sort((a, b) => compareGroupKeys(a.key, b.key))
+  const { sectionOf, mergedCount } = capGroupKeys(ordered.map(g => g.key))
   if (mergedCount === 0) {
     return ordered
   }
@@ -260,7 +256,7 @@ export function partitionFeatures(
   for (const feature of features) {
     appendFeature(groups, feature, featureGroupKey(feature, groupBy))
   }
-  return orderGroups([...groups.values()], groupBy.domain)
+  return orderGroups([...groups.values()])
 }
 
 // A whole chain's key: the dimension's own answer where it states one, else the
@@ -438,7 +434,20 @@ export function partitionChains(
       appendFeature(groups, feature, groupKey)
     }
   }
-  return orderGroups([...groups.values()], groupBy.domain)
+  return orderGroups([...groups.values()])
+}
+
+/**
+ * What the worker partitions by: the dimension and its tag. The domain only
+ * orders the sections, which the main thread does, so a reorder refetches
+ * nothing.
+ */
+export function workerGroupBy(groupBy: GroupBy | undefined) {
+  return groupBy === undefined
+    ? undefined
+    : groupBy.type === 'tag'
+      ? { type: groupBy.type, tag: groupBy.tag }
+      : { type: groupBy.type }
 }
 
 // Resolve a persisted `groupBy` into one the partitioners can run, or `undefined`

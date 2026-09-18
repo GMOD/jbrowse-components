@@ -1118,7 +1118,7 @@ test('a faceted mark declares the facet to the worker and bands the plot by its 
   expect(rowsOf(display)).toEqual([0, 1, 2])
 })
 
-test('a facet domain reaches the worker and orders the folded sections', () => {
+test('a facet domain orders the folded sections and stays off the worker request', () => {
   const { createDisplay } = createTestEnvironment([
     {
       ...FACET_MARKS[0],
@@ -1126,10 +1126,7 @@ test('a facet domain reaches the worker and orders the folded sections', () => {
     },
   ])
   const { display } = createDisplay()
-  expect(display.rpcProps().layers[0]!.facet).toEqual({
-    field: 'sample',
-    domain: ['b'],
-  })
+  expect(display.rpcProps().layers[0]!.facet).toEqual({ field: 'sample' })
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
   expect(display.facetLayout).toEqual({
     sections: [
@@ -1155,13 +1152,11 @@ test('the Sections menu moves a section and writes the drawn order onto the face
     'sample: b',
     'Reset section order',
   ])
+  const fetched = display.rpcProps()
   const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
   ;(resolveSubMenu(first)[1] as { onClick: () => void }).onClick()
   expect(display.facetDomain).toEqual(['b', 'a'])
-  expect(display.rpcProps().layers[0]!.facet).toEqual({
-    field: 'sample',
-    domain: ['b', 'a'],
-  })
+  expect(display.rpcProps()).toEqual(fetched)
   expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b', 'a'])
   ;(rows()[2] as { onClick: () => void }).onClick()
   expect(display.facetDomain).toEqual([])

@@ -195,8 +195,7 @@ function facetConfigOf(marks: MarkConfig[]): MarkFacetConfig | undefined {
 }
 
 function facetSpecOf(facet: MarkFacetConfig): FacetSpec {
-  const domain = [...facet.domain]
-  return { field: facet.field, ...(domain.length ? { domain } : {}) }
+  return { field: facet.field }
 }
 
 function encodingOf(mark: MarkConfig): MarkEncoding {

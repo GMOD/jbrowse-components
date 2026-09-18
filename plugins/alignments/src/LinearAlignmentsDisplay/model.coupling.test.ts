@@ -1363,11 +1363,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     ])
     display.toggleGroupCollapsed('1')
     display.setGroupBy({ type: 'tag', tag: 'HP' })
-    expect(display.rpcProps().groupBy).toEqual({
-      type: 'tag',
-      tag: 'HP',
-      domain: ['2'],
-    })
+    expect(display.groupBy).toEqual({ type: 'tag', tag: 'HP', domain: ['2'] })
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
     display.setGroupBy({ type: 'tag', tag: 'HP', domain: ['1'] })
     expect(display.groupOrder.map(g => g.key)).toEqual(['1', '2'])
@@ -1391,12 +1387,14 @@ describe('per-lane state belongs to one grouping key space', () => {
       'Reset section order',
     ])
     const moveDown = menuSubItems(rows(), 'HP: 1')[1] as { onClick: () => void }
+    const fetched = display.rpcProps()
     moveDown.onClick()
-    expect(display.rpcProps().groupBy).toEqual({
+    expect(display.groupBy).toEqual({
       type: 'tag',
       tag: 'HP',
       domain: ['2', '1'],
     })
+    expect(display.rpcProps()).toEqual(fetched)
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
     ;(rows()[2] as { onClick: () => void }).onClick()
     expect(display.groupBy).toEqual({ type: 'tag', tag: 'HP' })

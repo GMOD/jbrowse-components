@@ -71,7 +71,7 @@ import {
   isPerBaseScheme,
   workerColorBy,
 } from '../shared/colorSchemes.ts'
-import { groupByForMode } from '../shared/groupFeatures.ts'
+import { groupByForMode, workerGroupBy } from '../shared/groupFeatures.ts'
 import {
   arcKeyFoldsIntoReadKey,
   LEGEND_MAX_WIDTH,
@@ -2961,7 +2961,7 @@ export default function stateModelFactory(
             // reads (see `canSortReads`); and a `groupBy` chain mode drops is
             // reachable the same way, from a session or the settings editor.
             sortTag: self.isChainMode ? undefined : self.sortTag,
-            groupBy: self.effectiveGroupBy,
+            groupBy: workerGroupBy(self.effectiveGroupBy),
             showSoftClipping: self.isChainMode ? false : self.showSoftClipping,
             // showCoverage is here (not just renderState) because the worker
             // skips the entire coverage-band pipeline — including the per-bp GPU

@@ -51,30 +51,24 @@ test('a domain can place the catch-all and the overflow bucket ahead of named ke
   ).toEqual(['', OVERFLOW_GROUP_KEY, 'a'])
 })
 
-test('the cap counts in domain order, so a placed key never merges behind an unplaced one', () => {
-  const keys = Array.from(
-    { length: MAX_GROUPS + 5 },
-    (_, i) => `v${String(i).padStart(3, '0')}`,
-  )
-  const last = keys.at(-1)!
-  const { sectionOf, mergedCount } = capGroupKeys(
-    keys,
-    groupKeyComparator([last]),
-  )
-  expect(sectionOf(last)).toBe(last)
-  expect(sectionOf('v000')).toBe('v000')
-  expect(sectionOf(`v0${MAX_GROUPS - 2}`)).toBe(OVERFLOW_GROUP_KEY)
+test('the cap keeps the first keys in natural order and merges the tail', () => {
+  const keys = Array.from({ length: MAX_GROUPS + 5 }, (_, i) => `v${i}`)
+  const { sectionOf, mergedCount } = capGroupKeys(keys.toReversed())
+  expect(sectionOf('v0')).toBe('v0')
+  expect(sectionOf(`v${MAX_GROUPS - 2}`)).toBe(`v${MAX_GROUPS - 2}`)
+  expect(sectionOf(`v${MAX_GROUPS - 1}`)).toBe(OVERFLOW_GROUP_KEY)
   expect(mergedCount).toBe(6)
 })
 
-test('the catch-all stays out of the merge wherever the domain places it', () => {
+test('the catch-all stays out of the merge', () => {
   const keys = [
     '',
     ...Array.from({ length: MAX_GROUPS + 5 }, (_, i) => `v${i}`),
   ]
-  const { sectionOf } = capGroupKeys(keys, groupKeyComparator(['']))
+  const { sectionOf } = capGroupKeys(keys)
   expect(sectionOf('')).toBe('')
   expect(sectionOf('v0')).toBe('v0')
+  expect(sectionOf(`v${MAX_GROUPS}`)).toBe(OVERFLOW_GROUP_KEY)
 })
 
 test('the key space is the dimension and its parameter, never the domain', () => {

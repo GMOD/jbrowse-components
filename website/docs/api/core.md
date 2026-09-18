@@ -215,7 +215,7 @@ group spanning every row.
 
 ```js
 // type signature
-(features: readonly Feature[], { field, domain, as }: FacetSpec, jexl?: JexlInstance | undefined) => { features: readonly Feature[]; sections: FacetSection[]; }
+(features: readonly Feature[], { field, as }: FacetSpec, jexl?: JexlInstance | undefined) => { features: readonly Feature[]; sections: FacetSection[]; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
