@@ -146,6 +146,36 @@ export function coerceColorBy(value: string | undefined): SyntenyColorBy {
 
 /**
  * #api
+ * A colour object's `scale` and `field` as the mode the colour functions
+ * paint: `none` is `default`, `categorical` the field's `attribute:` mode, and
+ * any other scale the scheme of that name.
+ */
+export function colorByOfScale({
+  scale,
+  field,
+}: {
+  scale: string
+  field: string
+}): SyntenyColorBy {
+  return scale === 'categorical'
+    ? attributeColorBy(field)
+    : coerceColorBy(scale === 'none' ? 'default' : scale)
+}
+
+/**
+ * #api
+ * The `scale` and `field` a colour object spells a mode with, for a menu that
+ * picks one: {@link colorByOfScale} the other way.
+ */
+export function scaleOfColorBy(colorBy: SyntenyColorBy) {
+  const field = colorByAttributeName(colorBy)
+  return field === undefined
+    ? { scale: colorBy === 'default' ? 'none' : colorBy, field: '' }
+    : { scale: 'categorical', field }
+}
+
+/**
+ * #api
  * The alpha a legend chip is blended at however faint the ribbons are.
  *
  * Matching the chip to the composited ribbon is right down to a point and then

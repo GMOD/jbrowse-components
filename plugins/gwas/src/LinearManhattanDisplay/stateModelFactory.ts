@@ -49,7 +49,8 @@ import { LD_LEGEND, LD_LEGEND_TITLE } from './ldBins.ts'
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type {
-  ManhattanColorBy,
+  ManhattanColor,
+  ManhattanColorScale,
   ManhattanRpcResult,
 } from '../ManhattanRPC/rpcTypes.ts'
 import type {
@@ -227,40 +228,19 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The `color` slot — a CSS color, or a `jexl:` expression — forwarded to
-         * the worker, which binds `feature` and evaluates it once per point
-         * (`makeColorEvaluator`).
-         *
-         * Reads the raw slot value, not `getConf`: this is a transport read, and
-         * `getConf` evaluates a callback against whatever context the call
-         * passes, which here is none. `get(feature,…)` against no feature throws
-         * `reading 'get'`, and that escaped this getter and bannered the whole
-         * display. Pinned end-to-end by colorSlotTransport.test.ts.
+         * The `color` object, forwarded to the worker whole. `value` is read
+         * raw rather than through `getConf`, which would evaluate a `jexl:`
+         * callback against no feature and throw; the worker binds `feature`
+         * and evaluates it per point (`colorSlotTransport.test.ts`).
          */
-        get color(): string {
-          return self.conf.color
-        },
-        /**
-         * #getter
-         * resolved coloring mode: 'normal' uses `color`, 'ld' colors by r² to
-         * the index SNP, 'field' by the distinct values of `colorField`
-         */
-        get colorBy(): ManhattanColorBy {
-          return getConf(self, 'colorBy')
-        },
-        /**
-         * #getter
-         * the feature field 'field' coloring reads
-         */
-        get colorField(): string {
-          return getConf(self, 'colorField')
-        },
-        /**
-         * #getter
-         * the colour field values that key first, the rest following sorted
-         */
-        get colorDomain(): string[] {
-          return getConf(self, 'colorDomain')
+        get color(): ManhattanColor {
+          return {
+            value: self.conf.color.value,
+            field: getConf(self, ['color', 'field']),
+            scale: getConf(self, ['color', 'scale']),
+            domain: getConf(self, ['color', 'domain']),
+            palette: getConf(self, ['color', 'palette']),
+          }
         },
         /**
          * #getter
@@ -279,22 +259,22 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * LD coloring needs a configured .ld adapter; without one the
-         * colorBy='ld' controls are inert, so they're hidden/disabled
+         * LD coloring needs a configured .ld adapter; without one the LD
+         * controls are inert, so they're hidden/disabled
          */
         get hasLdData(): boolean {
           return this.ldAdapterConfig !== undefined
         },
         /**
          * #getter
-         * LD coloring is actually in effect — the mode is on *and* there's an .ld
-         * adapter for it to read. `colorBy` alone can be 'ld' from config with no
-         * adapter configured, in which case the worker falls back to normal
-         * coloring, so every LD affordance (legend, missing-index warning)
+         * LD coloring is actually in effect — the scale is `ld` *and* there's
+         * an .ld adapter for it to read. The scale alone can be `ld` from config
+         * with no adapter configured, in which case the worker paints
+         * `color.value`, so every LD affordance (legend, missing-index warning)
          * keys off this getter.
          */
         get ldColoringActive(): boolean {
-          return this.colorBy === 'ld' && this.hasLdData
+          return this.color.scale === 'ld' && this.hasLdData
         },
         /**
          * #getter
@@ -388,25 +368,18 @@ export function stateModelFactory(
         /**
          * #method
          * fetch inputs watched by SettingsInvalidate — any change (score field,
-         * color, colorBy, color field, index SNP, LD adapter) triggers a
-         * refetch, since the worker reads the field and bakes per-feature
-         * color into the result
+         * color, index SNP, LD adapter) triggers a refetch, since the worker
+         * reads the field and bakes per-feature color into the result
          */
         rpcProps(): {
           scoreField: string
-          color: string
-          colorBy: ManhattanColorBy
-          colorField: string
-          colorDomain: string[]
+          color: ManhattanColor
           indexSnp: string | undefined
           ldAdapterConfig: Record<string, unknown> | undefined
         } {
           return {
             scoreField: self.scoreField,
             color: self.color,
-            colorBy: self.colorBy,
-            colorField: self.colorField,
-            colorDomain: self.colorDomain,
             indexSnp: self.indexSnp,
             ldAdapterConfig: self.ldAdapterConfig,
           }
@@ -547,10 +520,10 @@ export function stateModelFactory(
          * top hit, so `setIndexSnp` — an `rpcProps` field — will clear it and
          * refetch.
          *
-         * The condition is the auto-pick's own, `colorBy === 'ld'` rather than
+         * The condition is the auto-pick's own, the `ld` scale rather than
          * `ldColoringActive`: what invalidates the load is the WRITE, and the
          * autorun writes whether or not an `ldAdapter` is configured. Gating
-         * this on the adapter left `colorBy: 'ld'` with none — a config the
+         * this on the adapter left `{ scale: 'ld' }` with none — a config the
          * getters above document as supported — exporting the empty lane this
          * exists to prevent. On screen that is one invisible tick; an export samples
          * `svgReady` once, and sampling it here captured the doomed load and
@@ -559,7 +532,7 @@ export function stateModelFactory(
          */
         get dataSuperseded(): boolean {
           return (
-            self.colorBy === 'ld' &&
+            self.color.scale === 'ld' &&
             !self.indexSnpPinned &&
             this.topSnp !== undefined &&
             this.topSnp !== self.indexSnp
@@ -577,7 +550,8 @@ export function stateModelFactory(
           if (self.ldColoringActive) {
             return [ldScale(this.indexSnpMissing)]
           }
-          if (self.colorBy === 'field') {
+          const { scale, field, domain, palette } = self.color
+          if (scale === 'categorical') {
             // Every point of a region carries the same table, so the region is
             // its own source and every entry paints: the display has no rows
             // to hide a color behind.
@@ -592,9 +566,7 @@ export function stateModelFactory(
               }),
               {
                 id: 'field',
-                field: categoricalField(self.colorField, {
-                  domain: self.colorDomain,
-                }),
+                field: categoricalField(field, { domain, palette }),
                 maxItems: MAX_LEGEND_ENTRIES,
               },
             )
@@ -628,18 +600,28 @@ export function stateModelFactory(
         },
         /**
          * #action
+         * Paints every point `value`, or colors by r² to the index SNP. The
+         * constant rides along, so leaving LD coloring restores it.
          */
-        setColorBy(mode: ManhattanColorBy) {
-          setConf(self, 'colorBy', mode)
+        setColorScale(scale: Exclude<ManhattanColorScale, 'categorical'>) {
+          self.configuration.setSubschema('color', {
+            value: self.color.value,
+            scale,
+          })
         },
         /**
          * #action
-         * Color by the values of a feature field. Mode and field in one action
-         * so rpcProps settles once and a single refetch fires.
+         * Color by the values of a feature field. Re-picking the field keeps
+         * its order and palette; a new field starts from neither.
          */
         colorByField(field: string) {
-          setConf(self, 'colorBy', 'field')
-          setConf(self, 'colorField', field)
+          const { value, domain, palette } = self.color
+          self.configuration.setSubschema(
+            'color',
+            field === self.color.field
+              ? { value, field, domain, palette }
+              : { value, field },
+          )
         },
         /**
          * #action
@@ -663,7 +645,10 @@ export function stateModelFactory(
          * fetch fires.
          */
         colorByLdToHit(hit: ManhattanHit) {
-          setConf(self, 'colorBy', 'ld')
+          self.configuration.setSubschema('color', {
+            value: self.color.value,
+            scale: 'ld',
+          })
           self.indexSnp = `${hit.refName}:${hit.start + 1}`
           self.indexSnpPinned = true
         },
@@ -722,7 +707,9 @@ export function stateModelFactory(
             ...makeShowSubMenu([
               makeCrossHatchItem(self),
               legendCheckboxItem(self, {
-                disabled: !(self.ldColoringActive || self.colorBy === 'field'),
+                disabled: !(
+                  self.ldColoringActive || self.color.scale === 'categorical'
+                ),
                 disabledHelpText:
                   'Requires LD or field coloring; a single color has no key',
               }),
@@ -734,18 +721,18 @@ export function stateModelFactory(
                 {
                   label: 'Single color',
                   type: 'radio' as const,
-                  checked: self.colorBy === 'normal',
+                  checked: self.color.scale === 'none',
                   onClick: () => {
-                    self.setColorBy('normal')
+                    self.setColorScale('none')
                   },
                 },
                 {
                   label:
-                    self.colorBy === 'field'
-                      ? `Field (${self.colorField})...`
+                    self.color.scale === 'categorical'
+                      ? `Field (${self.color.field})...`
                       : 'Field...',
                   type: 'radio' as const,
-                  checked: self.colorBy === 'field',
+                  checked: self.color.scale === 'categorical',
                   onClick: () => {
                     getDialogHost(self).queueDialog(handleClose => [
                       SetColorFieldDialog,
@@ -756,12 +743,12 @@ export function stateModelFactory(
                 {
                   label: 'LD to index SNP',
                   type: 'radio' as const,
-                  checked: self.colorBy === 'ld',
+                  checked: self.color.scale === 'ld',
                   disabled: !self.hasLdData,
                   disabledHelpText:
                     'Requires a configured LD (PLINK .ld) adapter',
                   onClick: () => {
-                    self.setColorBy('ld')
+                    self.setColorScale('ld')
                   },
                 },
               ],
@@ -775,7 +762,7 @@ export function stateModelFactory(
                 {
                   label: 'Set index SNP to top hit',
                   disabled:
-                    self.colorBy !== 'ld' ||
+                    self.color.scale !== 'ld' ||
                     !self.topSnp ||
                     !self.indexSnpPinned,
                   onClick: () => {
@@ -875,12 +862,12 @@ export function stateModelFactory(
             // refetching forever and never painting. loadedRegions is committed
             // only once a batch fully resolves, making topSnp a fixpoint here, so
             // adopting it costs one recolor fetch and converges. The && chain also
-            // keeps the topSnp rescan off the 'normal' coloring path.
+            // keeps the topSnp rescan off every other coloring path.
             namedAutorun(
               self,
               () => {
                 if (
-                  self.colorBy === 'ld' &&
+                  self.color.scale === 'ld' &&
                   !self.indexSnpPinned &&
                   self.viewportWithinLoadedData &&
                   !self.isLoading &&

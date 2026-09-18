@@ -374,7 +374,7 @@ export const dog10kVideoFixtures = {
           type: 'LinearMultiSampleVariantMatrixDisplay',
           height: 620,
           lineZoneHeight: 34,
-          colorBy: 'size',
+          rowColor: 'size',
         },
       ],
     }),
@@ -482,7 +482,7 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
                 trackId: 'dog10k_fgf4_svs',
                 type: 'LinearMultiSampleVariantDisplay',
                 height: 370,
-                colorBy: 'group',
+                rowColor: 'group',
                 showVariantLane: true,
               },
             ],
@@ -1739,7 +1739,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // are ordered on the columns that separate the panels, then drawn
           // against the flank that shows where the signal stops
           clusterRegion: IGF1_CLUSTER_CORE,
-          colorBy: 'size',
+          rowColor: 'size',
         },
       ],
     }),

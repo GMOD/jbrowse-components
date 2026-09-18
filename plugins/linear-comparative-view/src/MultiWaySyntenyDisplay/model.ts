@@ -33,7 +33,7 @@ import {
   PRESET_ATTRIBUTES,
   bandGroundColor,
   bandInk,
-  coerceColorBy,
+  colorByOfScale,
   colorableColumns,
   declaredAttributes,
   featureAttributeRanges,
@@ -41,6 +41,7 @@ import {
   lodTierAt,
   LodTierInfoMixin,
   orderAttributeLabels,
+  scaleOfColorBy,
   trackHasLodTiers,
   widenAttributeRanges,
 } from '@jbrowse/synteny-core'
@@ -528,7 +529,15 @@ export function stateModelFactory(
          * #action
          */
         setRibbonColorBy(mode: SyntenyColorBy) {
-          setConf(self, 'ribbonColorBy', mode)
+          const next = scaleOfColorBy(mode)
+          const field = getConf(self, ['ribbonColor', 'field'])
+          self.configuration.setSubschema('ribbonColor', {
+            value: getConf(self, ['ribbonColor', 'value']),
+            ...next,
+            ...(next.field && next.field === field
+              ? { domain: getConf(self, ['ribbonColor', 'domain']) }
+              : {}),
+          })
           // the way back from a label order or a span one window fixed: the
           // ribbons re-key from the features in hand
           self.seenAttributeRanges = {}
@@ -541,7 +550,12 @@ export function stateModelFactory(
          * #action
          */
         setRibbonColorDomain(domain: string[]) {
-          setConf(self, 'ribbonColorDomain', domain)
+          self.configuration.setSubschema('ribbonColor', {
+            value: getConf(self, ['ribbonColor', 'value']),
+            field: getConf(self, ['ribbonColor', 'field']),
+            scale: getConf(self, ['ribbonColor', 'scale']),
+            domain,
+          })
         },
         /**
          * #action
@@ -665,7 +679,7 @@ export function stateModelFactory(
        * #getter
        */
       get ribbonColor(): string {
-        return getConf(self, 'ribbonColor')
+        return getConf(self, ['ribbonColor', 'value'])
       },
       /**
        * #getter
@@ -677,7 +691,10 @@ export function stateModelFactory(
        * #getter
        */
       get ribbonColorBy(): SyntenyColorBy {
-        return coerceColorBy(getConf(self, 'ribbonColorBy'))
+        return colorByOfScale({
+          scale: getConf(self, ['ribbonColor', 'scale']),
+          field: getConf(self, ['ribbonColor', 'field']),
+        })
       },
       /**
        * #getter
@@ -690,12 +707,12 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the declared order an `attribute:` mode's labels take. A label's color
+       * the `ribbonColor.domain` order a text column's labels take. A label's color
        * is its position in that list, so this is the ribbons' order as much as
        * the key's
        */
       get ribbonColorDomain(): string[] {
-        return getConf(self, 'ribbonColorDomain')
+        return getConf(self, ['ribbonColor', 'domain'])
       },
       /**
        * #getter

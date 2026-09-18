@@ -1468,6 +1468,58 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
   ).toEqual(['C1', 'A1a', 'B1', NO_VALUE_LABEL])
 })
 
+// The Color by menu picks a synteny mode; the config holds the object. A mode
+// lands as its scale and field, the constant rides along, and re-picking the
+// same column keeps its order.
+test('a picked ribbon mode is written as the ribbonColor object', () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: {
+      type: 'MCScanBlocksAdapter',
+      attributeColumns: ['group'],
+    },
+  })
+  const ribbonColor = () => getSnapshot(display.configuration.ribbonColor)
+  display.configuration.setSubschema('ribbonColor', 'grey')
+  display.setRibbonColorBy('attribute:group')
+  display.setRibbonColorDomain(['C1'])
+  display.setRibbonColorBy('attribute:group')
+  expect(ribbonColor()).toEqual({
+    value: 'grey',
+    field: 'group',
+    scale: 'categorical',
+    domain: ['C1'],
+  })
+  display.setRibbonColorBy('strand')
+  expect(ribbonColor()).toEqual({ value: 'grey', scale: 'strand' })
+  expect(display.ribbonColorBy).toBe('strand')
+  display.setRibbonColorBy('default')
+  expect(ribbonColor()).toEqual({ value: 'grey' })
+  expect(display.ribbonColor).toBe('grey')
+})
+
+test('a ribbonColor field reads through its column, and a palette is refused', () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: {
+      type: 'MCScanBlocksAdapter',
+      attributeColumns: ['group'],
+    },
+  })
+  display.configuration.setSubschema('ribbonColor', { field: 'group' })
+  expect(display.ribbonColorBy).toBe('attribute:group')
+  expect(() =>
+    display.configuration.setSubschema('ribbonColor', {
+      field: 'group',
+      palette: ['red'],
+    }),
+  ).toThrow('RibbonColor takes value, field, scale and domain, not palette')
+  expect(() =>
+    display.configuration.setSubschema('ribbonColor', {
+      field: 'group',
+      scale: 'strand',
+    }),
+  ).toThrow('ribbonColor.field is read by the categorical scale, not strand')
+})
+
 test('identity ribbons key their ramp only when a record carries an identity', () => {
   const display = createDisplay()
   display.setRibbonColorBy('identity')

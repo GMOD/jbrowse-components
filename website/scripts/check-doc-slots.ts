@@ -44,14 +44,20 @@ import { join } from 'node:path'
 import { docFiles, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir } from './paths.ts'
 
-// Slot rows come in two spellings, because only the kinds with a glossary entry
-// are linked:
+// Slot rows come in three spellings, because only the kinds with a glossary
+// entry are linked, and a sub-schema slot has no kind to name:
 //   | <span id="slot-autoscale">**autoscale**</span><br>[`stringEnum`](...) (local, localsd) = <code>'local'</code> | ...
 //   | <span id="slot-displaymode">**displayMode**</span><br>`maybeStringEnum` (normal, compact) = <code>'normal'</code> | ...
+//   | <span id="slot-facet">**facet**</span><br><code>facetConfigSchema</code> | ...
 // Matching only the linked form silently drops every `maybeStringEnum` /
-// `stringArray` slot, which then reads as "no schema defines this".
+// `stringArray` slot, and every sub-schema, which then reads as "no schema
+// defines this".
 const SLOT_ROW =
-  /id="slot-[a-z0-9.]+">\*\*([A-Za-z0-9.]+)\*\*<\/span><br>\[?`(\w+)`(?:\]\([^)]*\))?(?:\s*\(([^)]*)\))?/
+  /id="slot-[a-z0-9.]+">\*\*([A-Za-z0-9.]+)\*\*<\/span><br>(?:\[?`(\w+)`(?:\]\([^)]*\))?(?:\s*\(([^)]*)\))?|<code>)/
+
+// the kind a row with no kind cell declares: a sub-schema, whose value is its
+// object or the string its shorthand lifts
+const SUB_SCHEMA_KIND = 'subSchema'
 
 const ENUM_KINDS = new Set(['stringEnum', 'maybeStringEnum', 'enum'])
 
@@ -107,6 +113,11 @@ function buildInventory() {
   // every slot name and schema name, lowercased — a backticked token matching
   // one of these is prose naming a sibling setting, not a bad value
   const knownNames = new Set<string>(STRUCTURAL_KEYS.map(k => k.toLowerCase()))
+  // A dotted row (`marks.encoding.color.scale`) is a key a nested object writes
+  // by its last segment, so it widens what that key accepts wherever a schema
+  // also declares it bare. It never starts a check of its own: a bare `type`
+  // is a track's, not a transform's.
+  const leafDecls: [string, Decl][] = []
   let schemaCount = 0
 
   for (const file of docFiles(join(docsDir, 'config'))) {
@@ -127,9 +138,9 @@ function buildInventory() {
       if (!m) {
         continue
       }
-      const [, name, kind, values] = m
-      const decl: Decl = { kind: kind! }
-      if (ENUM_KINDS.has(kind!) && values) {
+      const [, name, kind = SUB_SCHEMA_KIND, values] = m
+      const decl: Decl = { kind }
+      if (ENUM_KINDS.has(kind) && values) {
         decl.enumValues = new Set(values.split(',').map(v => v.trim()))
         if (pageId && anchor) {
           enumByAnchor.set(`${pageId}#${anchor}`, decl.enumValues)
@@ -139,6 +150,9 @@ function buildInventory() {
       const list = declsBySlot.get(name!) ?? []
       list.push(decl)
       declsBySlot.set(name!, list)
+      if (name!.includes('.')) {
+        leafDecls.push([name!.split('.').at(-1)!, decl])
+      }
       if (isDisplay) {
         displaySlots.add(name!)
         // `labels.name` means a doc may legitimately write a `labels` object,
@@ -148,6 +162,9 @@ function buildInventory() {
         }
       }
     }
+  }
+  for (const [key, decl] of leafDecls) {
+    declsBySlot.get(key)?.push(decl)
   }
   assertInventoryParsed(declsBySlot, displaySlots)
   return { declsBySlot, displaySlots, enumByAnchor, knownNames, schemaCount }
@@ -231,6 +248,7 @@ function assertInventoryParsed(
     ['jexlFilters', 'stringArray'], // bare, non-enum
     ['height', 'number'], // linked, non-enum
     ['significanceLine', 'maybeNumber'], // linked, maybe*
+    ['facet', SUB_SCHEMA_KIND], // a sub-schema
   ]
   for (const [name, kind] of canaries) {
     if (!declsBySlot.get(name)?.some(d => d.kind === kind)) {

@@ -7,7 +7,6 @@
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
 autoscale
 color
-colorBy
 colorDomain
 colorScheme
 connectedView

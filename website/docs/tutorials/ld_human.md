@@ -222,8 +222,8 @@ The six-population VCF draws the haplotypes one lane below the triangle: a
 in
 [`renderingMode: 'phased'`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-renderingmode)
 gives one row per chromosome and one column per variant, and
-[`colorBy`](/docs/config/sharedvariantdisplay/#slot-colorby) puts population in
-the sidebar stripe.
+[`rowColor`](/docs/config/sharedvariantdisplay/#slot-rowcolor) puts population
+in the sidebar stripe.
 
 ```json addtrack
 {
@@ -242,7 +242,7 @@ the sidebar stripe.
     {
       "type": "LinearMultiSampleVariantMatrixDisplay",
       "renderingMode": "phased",
-      "colorBy": "population",
+      "rowColor": "population",
       "minorAlleleFrequencyFilter": 0.35,
       "forceLoad": true,
       "height": 700

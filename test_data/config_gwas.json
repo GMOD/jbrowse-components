@@ -165,7 +165,7 @@
         {
           "displayId": "sle_gwas_ld-LinearManhattanDisplay",
           "type": "LinearManhattanDisplay",
-          "colorBy": "ld",
+          "color": { "scale": "ld" },
           "height": 250
         }
       ]

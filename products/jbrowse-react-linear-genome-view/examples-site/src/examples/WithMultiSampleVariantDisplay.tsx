@@ -25,7 +25,7 @@ export default function WithMultiSampleVariantDisplay() {
               type: 'LinearMultiSampleVariantDisplay',
               displayId:
                 'volvox_multisample_sv-LinearMultiSampleVariantDisplay',
-              colorBy: 'population',
+              rowColor: 'population',
             },
           ],
         },

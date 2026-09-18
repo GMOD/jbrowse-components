@@ -54,7 +54,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // topSnp a fixpoint.
   it('settles on the global top hit without refetching forever', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      colorBy: 'ld',
+      color: { scale: 'ld' },
     })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
@@ -80,7 +80,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // "Color by LD" toggle, flipped on a display that has already loaded. Every
   // other test here starts in LD mode because that is what a restored session
   // does, and that shape cannot see a toggle whose write fails to reach the
-  // fetch — `setColorBy` writes a config slot, so it invalidates through
+  // fetch — `setColorScale` writes a config slot, so it invalidates through
   // `settingsFetchInputs` rather than through anything the display holds.
   it('adopts the index when the user turns LD colouring on', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
@@ -95,7 +95,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(display.indexSnp).toBeUndefined()
     const beforeToggle = mockRpcCall.mock.calls.length
 
-    display.setColorBy('ld')
+    display.setColorScale('ld')
     await settle(8)
 
     await waitFor(() => {
@@ -111,7 +111,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // livelock as above, reached a different way.
   it('breaks a score tie by region index, not by which region landed first', () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      colorBy: 'ld',
+      color: { scale: 'ld' },
     })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
@@ -145,7 +145,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // shut until the index the data was colored under is the one being kept.
   it('opens the export gate only on data colored under the adopted index', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      colorBy: 'ld',
+      color: { scale: 'ld' },
     })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
@@ -169,13 +169,13 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(atGate).toEqual({ indexSnp: TOP_SNP, regions: 2 })
   })
 
-  // The same gate, for `colorBy: 'ld'` with no ldAdapter configured. LD coloring
+  // The same gate, for the `ld` scale with no ldAdapter configured. LD coloring
   // is inert there, but the auto-pick still writes indexSnp and the write is
   // what clears the load, so gating supersession on the adapter exported the
   // empty lane anyway.
   it('opens the gate on adopted-index data with no ldAdapter configured', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      colorBy: 'ld',
+      color: { scale: 'ld' },
       ldAdapter: false,
     })
     mockRpcCall.mockImplementation(

@@ -1508,3 +1508,34 @@ describe('a declared shorthand', () => {
     expect(getConfigurationSchemaOptions(node.facet)?.shorthand).toBe('field')
   })
 })
+
+describe('a closed schema', () => {
+  const Color = ConfigurationSchema(
+    'ClosedColor',
+    {
+      value: { type: 'color', defaultValue: 'red' },
+      field: { type: 'string', defaultValue: '' },
+    },
+    { shorthand: 'value', closed: true },
+  )
+  const Display = ConfigurationSchema('ClosedDisplay', { color: Color })
+
+  test('refuses a key it does not declare, where MST would drop it', () => {
+    expect(() => Display.create({ color: { fieldName: 'x' } })).toThrow(
+      'ClosedColor takes value and field, not fieldName',
+    )
+    const node = Display.create({})
+    expect(() =>
+      node.setSubschema('color', { field: 'x', scale: 'a' }),
+    ).toThrow('not scale')
+    expect(() => preProcessConfigSnapshot(Color, { domain: [] })).toThrow(
+      'not domain',
+    )
+  })
+
+  test('checks after the lift, so the shorthand still reads', () => {
+    expect(getSnapshot(Display.create({ color: 'blue' }))).toEqual({
+      color: { value: 'blue' },
+    })
+  })
+})

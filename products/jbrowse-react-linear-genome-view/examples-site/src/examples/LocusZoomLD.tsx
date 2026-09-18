@@ -28,7 +28,7 @@ const GIANT_BMI_TRACK = {
   },
   displayDefaults: {
     height: 250,
-    colorBy: 'ld',
+    color: { scale: 'ld' },
   },
 }
 

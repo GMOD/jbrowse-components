@@ -88,6 +88,12 @@ export interface ConfigurationSchemaOptions<
    * `describeSlots` and the config editor read it here.
    */
   shorthand?: string
+  /**
+   * Refuse a snapshot key the schema does not declare, where MST would drop
+   * it in silence. Checked after the `shorthand` lift and before
+   * `preProcessSnapshot`, on the same paths.
+   */
+  closed?: boolean
   preProcessSnapshot?: (
     snapshot: Record<string, unknown>,
   ) => Record<string, unknown>
@@ -395,9 +401,14 @@ function makeConfigurationSchemaModel<
   for (const hook of hookList(options.extend)) {
     completeModel = completeModel.extend(hook)
   }
-  if (options.shorthand !== undefined || options.preProcessSnapshot) {
+  const metadata = { name: modelName, definition: schemaDefinition, options }
+  if (
+    options.shorthand !== undefined ||
+    options.closed ||
+    options.preProcessSnapshot
+  ) {
     completeModel = completeModel.preProcessSnapshot(snapshot =>
-      preProcessSnapshotWith(options, snapshot),
+      preProcessSnapshotWith(metadata, snapshot),
     )
   }
 
@@ -415,7 +426,6 @@ function makeConfigurationSchemaModel<
   // returns for a live config — the config editor's slot facade looks it up
   // from there) and the stripDefault wrapper (what ConfigurationSchema returns
   // and what sub-schema properties hold), so a lookup succeeds from either.
-  const metadata = { definition: schemaDefinition, options }
   registerConfigurationSchema(completeModel, metadata)
   registerConfigurationSchema(wrappedModel, metadata)
 

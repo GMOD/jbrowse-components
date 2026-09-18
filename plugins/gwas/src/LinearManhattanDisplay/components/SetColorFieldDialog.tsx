@@ -13,12 +13,12 @@ const SetColorFieldDialog = observer(function SetColorFieldDialog({
   handleClose,
 }: {
   display: {
-    colorField: string
+    color: { field: string }
     colorByField: (field: string) => void
   }
   handleClose: () => void
 }) {
-  const [value, setValue] = useState(display.colorField)
+  const [value, setValue] = useState(display.color.field)
   const field = value.trim()
 
   return (

@@ -3698,7 +3698,8 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "colorConfigSchema",
-        "normalizeColor"
+        "normalizeColor",
+        "normalizeScaledColor"
       ],
       "worker": "real"
     },

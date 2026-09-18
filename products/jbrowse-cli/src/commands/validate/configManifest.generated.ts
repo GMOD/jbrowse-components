@@ -3825,19 +3825,29 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "ribbonColor",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "ribbonColorBy",
-          "type": "(JexlString | string)"
+          "type": "RibbonColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | RibbonColorScale)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "hideUnlabelled",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "ribbonColorDomain",
-          "type": "(JexlString | string[])"
         },
         {
           "name": "drawCurves",
@@ -5281,19 +5291,29 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "colorBy",
-          "type": "(JexlString | GwasColorBy)"
-        },
-        {
-          "name": "colorField",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "colorDomain",
-          "type": "(JexlString | string[])"
+          "type": "ManhattanColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | ManhattanColorScale)"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "palette",
+              "type": "(JexlString | string[])"
+            }
+          ]
         },
         {
           "name": "scoreField",

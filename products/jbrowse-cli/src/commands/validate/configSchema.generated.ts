@@ -4887,6 +4887,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "RibbonColor": {
+      "title": "RibbonColor",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "the color of the ribbons connecting adjacent lanes.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": "rgba(130,130,130,0.3)"
+            },
+            "field": {
+              "description": "a declared attribute column to color by.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            },
+            "scale": {
+              "description": "none, categorical, strand, identity, mappingQuality or dnds.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "none",
+                    "categorical",
+                    "strand",
+                    "identity",
+                    "mappingQuality",
+                    "dnds"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": "none"
+            },
+            "domain": {
+              "description": "the order a text column's labels take.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "MultiWaySyntenyDisplaySlots": {
       "type": "object",
       "properties": {
@@ -4941,23 +4992,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "ribbonColor": {
-          "description": "the color of the ribbons connecting adjacent lanes.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "rgba(130,130,130,0.3)"
-        },
-        "ribbonColorBy": {
-          "description": "what colors a ribbon, in the synteny view's \`colorBy\` spelling: \`default\` is ribbonColor; \`strand\` reads the record's strand — the two placements' orientations against the anchor multiplied out — and not the drawn twist, so a lane drawn flipped still shows its inversions; \`identity\`, \`mappingQuality\` and \`dnds\` paint the synteny view's ramps; \`attribute:<column>\` reads a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a \`color\` column put beside it). A pair carrying no value keeps ribbonColor, and every mode keeps its opacity. The synteny view's \`track\`, \`query\`, \`target\` and \`reference\` modes paint ribbonColor here.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "default"
+          "$ref": "#/$defs/RibbonColor"
         },
         "hideUnlabelled": {
-          "description": "under an \`attribute:<column>\` text mode, draw only the ribbons whose pair carries a label.",
+          "description": "under a text column, draw only the ribbons whose pair carries a label.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
-        },
-        "ribbonColorDomain": {
-          "description": "the order an \`attribute:<column>\` mode's labels take: the labels listed here first, the rest sorted. The order is the palette's too — a label's color is its position — so this moves the key and the ribbons together. Left empty the labels stay in the order the fetches first met them. The other modes paint a fixed pair or a ramp and ignore it.",
-          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "drawCurves": {
           "description": "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's view-level \`drawCurves\` override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
@@ -4970,7 +5010,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "showLegend": {
-          "description": "show the color key: the anchor lane's drawn gene colors, and what \`ribbonColorBy\` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so a \`color\` slot resolving to one color and a ribbon mode painting nothing key nothing. Defaults to on.",
+          "description": "show the color key: the anchor lane's drawn gene colors, and what \`ribbonColor\` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so a \`color\` slot resolving to one color and a ribbon scale painting nothing key nothing. Defaults to on.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
@@ -7149,6 +7189,58 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "ManhattanColor": {
+      "title": "ManhattanColor",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "CSS color or jexl callback for Manhattan points.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": "#0068d1"
+            },
+            "field": {
+              "description": "feature field whose values color the points.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            },
+            "scale": {
+              "description": "none, categorical or ld.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "none",
+                    "categorical",
+                    "ld"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": "none"
+            },
+            "domain": {
+              "description": "values that take the palette first, in order.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            },
+            "palette": {
+              "description": "CSS colors the values take, in order.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearManhattanDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7158,34 +7250,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 100
         },
         "color": {
-          "description": "CSS color or jexl callback for Manhattan points.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "#0068d1"
-        },
-        "colorBy": {
-          "description": "How to color Manhattan points.",
-          "anyOf": [
-            {
-              "enum": [
-                "normal",
-                "ld",
-                "field"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "normal"
-        },
-        "colorField": {
-          "description": "Feature field whose values color the points under colorBy: field.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "name"
-        },
-        "colorDomain": {
-          "description": "optional legend and palette order for the colour field; listed values first, the rest sorted.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "$ref": "#/$defs/ManhattanColor"
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",

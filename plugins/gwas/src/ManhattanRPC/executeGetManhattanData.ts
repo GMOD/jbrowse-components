@@ -44,19 +44,16 @@ export interface ManhattanReaders {
   indexFound?: boolean
 }
 
-// LD coloring needs a mode, an index and an adapter to read r² from; with any
-// of the three missing the worker falls back to the flat `color` config,
-// which is also the whole of normal coloring mode. Field coloring needs only
-// the mode: the values come off the features themselves.
+// LD coloring needs the scale, an index and an adapter to read r² from; with
+// any of the three missing the worker falls back to `color.value`, which is
+// also the whole of the `none` scale. Field coloring needs only the field: the
+// values come off the features themselves.
 async function makeReaders(
   args: Pick<
     RpcExecuteArgs<'GetManhattanData'>,
     | 'sessionId'
     | 'region'
     | 'color'
-    | 'colorBy'
-    | 'colorField'
-    | 'colorDomain'
     | 'indexSnp'
     | 'ldAdapterConfig'
     | 'ldRefName'
@@ -91,18 +88,19 @@ async function makeReaders(
       ...makeLdEvaluator(ld, indexSnp, region.refName),
       indexFound: ld.indexFound,
     }
-  } else if (args.colorBy === 'field') {
+  } else if (color.scale === 'categorical') {
     return {
       color: {
-        field: args.colorField,
+        field: color.field,
         scale: 'categorical',
-        domain: args.colorDomain?.length ? args.colorDomain : undefined,
+        domain: color.domain.length ? [...color.domain] : undefined,
+        palette: color.palette.length ? [...color.palette] : undefined,
       },
       glyph: defaultGlyph,
     }
   } else {
     return {
-      color: colorEvaluator(color, pluginManager.jexl),
+      color: colorEvaluator(color.value, pluginManager.jexl),
       glyph: defaultGlyph,
     }
   }
@@ -162,9 +160,6 @@ export async function executeGetManhattanData({
     adapterConfig,
     region,
     color,
-    colorBy,
-    colorField,
-    colorDomain,
     scoreField,
     indexSnp,
     ldAdapterConfig,
@@ -192,9 +187,6 @@ export async function executeGetManhattanData({
     sessionId,
     region,
     color,
-    colorBy,
-    colorField,
-    colorDomain,
     indexSnp,
     ldAdapterConfig,
     ldRefName,

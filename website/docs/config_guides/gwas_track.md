@@ -9,9 +9,9 @@ guide_category: Track types
 A `GWASTrack` renders association results as a Manhattan plot. The main work is
 prep: a bgzipped, tabix-indexed BED-like file whose score column is in -log₁₀(p)
 units (or set `scoreTransform` to convert). Add a PLINK `.ld` file and
-`colorBy: "ld"` to color points by linkage disequilibrium to an index SNP. Any
-`FeatureTrack` can draw the same plot from one of its numeric columns — see
-[any scored feature file](#any-scored-feature-file).
+`color: { "scale": "ld" }` to color points by linkage disequilibrium to an index
+SNP. Any `FeatureTrack` can draw the same plot from one of its numeric columns —
+see [any scored feature file](#any-scored-feature-file).
 
 <Figure src="/img/gwas/manhattan.png" caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background."/>
 
@@ -70,11 +70,11 @@ why the header is commented with `#`.
 
 ## Example
 
-`colorBy: "ld"` on the display colors points by r² to the index SNP and needs an
-`ldAdapter` sub-adapter on the `GWASAdapter`; swap in `PlinkLDTabixAdapter` for
-an indexed `.ld.gz`. `color` takes a CSS literal or a `jexl:` expression per
-feature, and `scatterPointSize` sets the point diameter in px
-([](/docs/config/linearmanhattandisplay)):
+`color: { "scale": "ld" }` on the display colors points by r² to the index SNP
+and needs an `ldAdapter` sub-adapter on the `GWASAdapter`; swap in
+`PlinkLDTabixAdapter` for an indexed `.ld.gz`. A bare `color` string is a CSS
+literal or a `jexl:` expression per feature, and `scatterPointSize` sets the
+point diameter in px ([](/docs/config/linearmanhattandisplay)):
 
 ```json addtrack
 {
@@ -92,7 +92,7 @@ feature, and `scatterPointSize` sets the point diameter in px
     }
   },
   "displayDefaults": {
-    "colorBy": "ld"
+    "color": { "scale": "ld" }
   }
 }
 ```
@@ -109,15 +109,14 @@ types**), and two slots choose what it reads:
   column plotted as y. The default `score` is the BED score column (or what the
   adapter's `scoreColumn` rewrote it to); an explicit name reaches a raw column
   of the file. A feature with no finite value there is skipped.
-- [`colorBy: "field"`](/docs/config/linearmanhattandisplay/#slot-colorby) with
-  [`colorField`](/docs/config/linearmanhattandisplay/#slot-colorfield) — gives
-  each distinct value of a column its own color and draws a key of the values
-  met. A value takes the same color in every region and session. The track
-  menu's **Color by** submenu switches between a single color, a field and LD.
-- [`colorDomain`](/docs/config/linearmanhattandisplay/#slot-colordomain) — the
-  order those values take, in the key and in the palette. The values it lists
-  come first, in that order, and the rest follow sorted; left empty every value
-  sorts on its own. A scan whose tiers read high to low names them here.
+- [`color: { "field": "population" }`](/docs/config/manhattancolor/#slot-field)
+  — gives each distinct value of a column its own color and draws a key of the
+  values met. A value takes the same color in every region and session. The
+  track menu's **Color by** submenu switches between a single color, a field and
+  LD. The object's [`domain`](/docs/config/manhattancolor/#slot-domain) is the
+  order those values take, in the key and in the palette: the values it lists
+  come first, in that order, and the rest follow sorted. A scan whose tiers read
+  high to low names them here, and `palette` hands them colors.
 
 ```json addtrack
 {
@@ -133,8 +132,7 @@ types**), and two slots choose what it reads:
     {
       "type": "LinearManhattanDisplay",
       "scoreField": "fst",
-      "colorBy": "field",
-      "colorField": "population",
+      "color": { "field": "population" },
       "significanceLine": 0.25
     }
   ]

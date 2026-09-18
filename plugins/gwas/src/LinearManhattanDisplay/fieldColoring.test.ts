@@ -1,4 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
@@ -47,7 +46,7 @@ describe('LinearManhattanDisplay field coloring', () => {
   // categorical channel shares, whose digit runs compare by magnitude.
   it('derives the color scale from the payloads, merged across regions and sorted', () => {
     const { display } = createTestEnvironment({
-      colorBy: 'field',
+      color: { field: 'name' },
     }).createDisplay()
     expect(display.colorScales).toEqual([])
 
@@ -81,10 +80,9 @@ describe('LinearManhattanDisplay field coloring', () => {
     ])
   })
 
-  it('a colorDomain keys the values it lists first, and rides to the worker', () => {
+  it('a domain keys the values it lists first, and rides to the worker', () => {
     const { display } = createTestEnvironment({
-      colorBy: 'field',
-      colorDomain: ['chr10', 'chr2'],
+      color: { field: 'name', domain: ['chr10', 'chr2'] },
     }).createDisplay()
     display.setRpcData(
       0,
@@ -99,7 +97,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(
       scale?.kind === 'categorical' ? scale.entries.map(e => e.value) : [],
     ).toEqual(['chr10', 'chr2', 'chr1'])
-    expect(display.rpcProps().colorDomain).toEqual(['chr10', 'chr2'])
+    expect(display.rpcProps().color.domain).toEqual(['chr10', 'chr2'])
   })
 
   it('has no key under a single color, and the r² bins under LD coloring', () => {
@@ -107,7 +105,8 @@ describe('LinearManhattanDisplay field coloring', () => {
     display.setRpcData(0, payload(), REGION)
     expect(display.colorScales).toEqual([])
 
-    const ld = createTestEnvironment({ colorBy: 'ld' }).createDisplay().display
+    const ld = createTestEnvironment({ color: { scale: 'ld' } }).createDisplay()
+      .display
     const [scale] = ld.colorScales
     expect(scale?.title).toBe(LD_LEGEND_TITLE)
     expect(
@@ -118,7 +117,8 @@ describe('LinearManhattanDisplay field coloring', () => {
   // Without it an export where nothing matched the index SNP is an all-grey
   // plot under a full r² key that implies the colors mean something.
   it('a missing index SNP adds a note row saying why every point is grey', () => {
-    const ld = createTestEnvironment({ colorBy: 'ld' }).createDisplay().display
+    const ld = createTestEnvironment({ color: { scale: 'ld' } }).createDisplay()
+      .display
     ld.setIndexSnp('ctgA:500')
     ld.setRpcData(0, { ...payload(), indexFound: false }, REGION)
     expect(ld.indexSnpMissing).toBe(true)
@@ -131,16 +131,53 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
-  it('colorByField sets the mode and the field together, and both reach the worker', () => {
-    const { display } = createTestEnvironment().createDisplay()
+  it('colorByField writes the field through the categorical scale, and it reaches the worker', () => {
+    const { display } = createTestEnvironment({
+      color: 'rebeccapurple',
+    }).createDisplay()
     display.colorByField('population')
-    expect(getConf(display, 'colorBy')).toBe('field')
-    expect(getConf(display, 'colorField')).toBe('population')
     expect(display.rpcProps()).toMatchObject({
-      colorBy: 'field',
-      colorField: 'population',
+      color: {
+        value: 'rebeccapurple',
+        field: 'population',
+        scale: 'categorical',
+      },
       scoreField: 'score',
     })
+  })
+
+  it('re-picking the field keeps its order; a new field starts from none', () => {
+    const { display } = createTestEnvironment({
+      color: { field: 'population', domain: ['EUR'] },
+    }).createDisplay()
+    display.colorByField('population')
+    expect(display.color.domain).toEqual(['EUR'])
+    display.colorByField('superpopulation')
+    expect(display.color.domain).toEqual([])
+  })
+
+  it('leaving LD coloring restores the constant', () => {
+    const { display } = createTestEnvironment({
+      color: { value: 'rebeccapurple', scale: 'ld' },
+    }).createDisplay()
+    display.setColorScale('none')
+    expect(display.color).toMatchObject({
+      value: 'rebeccapurple',
+      scale: 'none',
+    })
+  })
+
+  it('refuses a field under the ld scale, and an undeclared key', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    expect(() =>
+      display.configuration.setSubschema('color', {
+        field: 'population',
+        scale: 'ld',
+      }),
+    ).toThrow('color.field is read by the categorical scale, not ld')
+    expect(() =>
+      display.configuration.setSubschema('color', { colorBy: 'ld' }),
+    ).toThrow('ManhattanColor takes value, field, scale, domain and palette')
   })
 
   it('offers the three schemes as one radio submenu, LD greyed without an adapter', () => {

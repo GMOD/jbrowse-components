@@ -179,7 +179,7 @@ test('with LD: adds a LinearManhattanDisplay in ld color mode', () => {
   expect(cfg.displays).toEqual([
     {
       type: 'LinearManhattanDisplay',
-      colorBy: 'ld',
+      color: { scale: 'ld' },
     },
   ])
 })

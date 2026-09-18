@@ -1,10 +1,15 @@
-import { getSnapshot, isArrayType, isMapType } from '@jbrowse/mobx-state-tree'
+import {
+  getSnapshot,
+  getType,
+  isArrayType,
+  isMapType,
+} from '@jbrowse/mobx-state-tree'
 
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
 import {
   getConfigurationSchemaDefinition,
-  getConfigurationSchemaOptions,
+  getConfigurationSchemaMetadata,
 } from './schemaRegistry.ts'
 import {
   isConfigurationSchemaType,
@@ -70,10 +75,8 @@ export function preProcessSlotValues(
   node: AnyConfigurationModel,
   values: Record<string, unknown>,
 ): Record<string, unknown> {
-  return preProcessSnapshotWith(
-    getConfigurationSchemaOptions(node) ?? {},
-    values,
-  )
+  const schema = getConfigurationSchemaMetadata(getType(node))
+  return schema ? preProcessSnapshotWith(schema, values) : values
 }
 
 /**

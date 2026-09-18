@@ -8,38 +8,52 @@ export interface ColorSetting {
   palette: readonly string[]
 }
 
-const COLOR_KEYS = new Set(['value', 'field', 'domain', 'palette'])
-
 /**
- * A key the object does not declare, or a `domain` or `palette` with no
- * `field` to scale, is refused here rather than dropped. A `domain` written
+ * The rules every colour object shares, `name` being the setting's key: a
+ * `domain` or `palette` is a list, and one that is not empty scales a
+ * `field`, so naming none is refused rather than dropped. A `domain` written
  * as numbers is carried as strings.
  */
 export function normalizeColor(
   snap: Record<string, unknown> = {},
+  name = 'color',
 ): Record<string, unknown> {
   const obj = { ...snap }
-  const unknown = Object.keys(obj).filter(key => !COLOR_KEYS.has(key))
-  if (unknown.length > 0) {
-    throw new Error(
-      `color takes value, field, domain and palette, not ${unknown.join(', ')}`,
-    )
-  }
   for (const key of ['domain', 'palette']) {
     if (obj[key] !== undefined && !Array.isArray(obj[key])) {
-      throw new Error(`color.${key} is a list`)
+      throw new Error(`${name}.${key} is a list`)
+    }
+    if (Array.isArray(obj[key]) && obj[key].length > 0 && !obj.field) {
+      throw new Error(`${name}.${key} scales a field: name one`)
     }
   }
   if (Array.isArray(obj.domain)) {
     obj.domain = obj.domain.map(String)
   }
-  const scaled =
-    (Array.isArray(obj.domain) && obj.domain.length > 0) ||
-    (Array.isArray(obj.palette) && obj.palette.length > 0)
-  if (scaled && !obj.field) {
-    throw new Error('color.domain and color.palette scale a field: name one')
-  }
   return obj
+}
+
+/**
+ * A colour object whose `scale` names a display's own schemes beside
+ * `categorical`: a `field` with no `scale` reads through `categorical`, and a
+ * `field` under any other scale, or `categorical` with no `field`, is refused.
+ */
+export function normalizeScaledColor(
+  snap: Record<string, unknown> = {},
+  name: string,
+): Record<string, unknown> {
+  const obj = normalizeColor(snap, name)
+  const field = typeof obj.field === 'string' ? obj.field : ''
+  const scale = obj.scale ?? (field ? 'categorical' : undefined)
+  if (field && scale !== 'categorical') {
+    throw new Error(
+      `${name}.field is read by the categorical scale, not ${String(scale)}`,
+    )
+  }
+  if (scale === 'categorical' && !field) {
+    throw new Error(`${name}.scale categorical reads a field: name one`)
+  }
+  return scale === undefined ? obj : { ...obj, scale }
 }
 
 /**
@@ -113,5 +127,9 @@ export const colorConfigSchema = ConfigurationSchema(
       description: 'CSS colors the values take, in order',
     },
   },
-  { shorthand: 'value', preProcessSnapshot: normalizeColor },
+  {
+    shorthand: 'value',
+    closed: true,
+    preProcessSnapshot: snap => normalizeColor(snap),
+  },
 )

@@ -144,6 +144,19 @@ target.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuTarget.ts)
 
+## colorByOfScale
+
+A colour object's `scale` and `field` as the mode the colour functions
+paint: `none` is `default`, `categorical` the field's `attribute:` mode, and
+any other scale the scheme of that name.
+
+```js
+// type signature
+({ scale, field, }: { scale: string; field: string; }) => SyntenyColorBy
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
+
 ## colorByScale
 
 The active mode's key as one color scale — what a view's `colorScales`
@@ -261,3 +274,15 @@ drift this module exists to prevent — see the header.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
+
+## scaleOfColorBy
+
+The `scale` and `field` a colour object spells a mode with, for a menu that
+picks one: colorByOfScale the other way.
+
+```js
+// type signature
+(colorBy: SyntenyColorBy) => { scale: string; field: string; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)

@@ -1559,7 +1559,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'primate_orthologs',
                 type: 'MultiWaySyntenyDisplay',
-                ribbonColorBy: 'strand',
+                ribbonColor: { scale: 'strand' },
                 height: 620,
               },
             ],
@@ -1594,7 +1594,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'primate_orthologs',
                 type: 'MultiWaySyntenyDisplay',
-                ribbonColorBy: 'strand',
+                ribbonColor: { scale: 'strand' },
                 height: 620,
               },
             ],

@@ -182,7 +182,7 @@ CLUPGR000001	Greek gray wolf	Gray wolf
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "colorBy": "size",
+      "rowColor": "size",
       "height": 760
     }
   ]

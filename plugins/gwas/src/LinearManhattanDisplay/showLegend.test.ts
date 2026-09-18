@@ -11,7 +11,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // and turning the key off lasted only until the track was hidden and reshown.
 // These pin that it persists.
 //
-// `colorBy: 'ld'` throughout, since the row is disabled (though still present,
+// The `ld` scale throughout, since the row is disabled (though still present,
 // and still pinned) under the plain single-color scheme.
 
 function legendRow(items: MenuItem[]) {
@@ -22,7 +22,9 @@ function legendRow(items: MenuItem[]) {
 
 describe('Manhattan showLegend', () => {
   it('is on by default, from the schema rather than a volatile initializer', () => {
-    const { display } = createTestEnvironment({ colorBy: 'ld' }).createDisplay()
+    const { display } = createTestEnvironment({
+      color: { scale: 'ld' },
+    }).createDisplay()
     expect(display.showLegend).toBe(true)
   })
 
@@ -30,7 +32,9 @@ describe('Manhattan showLegend', () => {
   // on the next retick; a config write lands on the display's config node,
   // which outlives the display instance.
   it('an explicit off is written to the config node, so it survives a retick', () => {
-    const { display } = createTestEnvironment({ colorBy: 'ld' }).createDisplay()
+    const { display } = createTestEnvironment({
+      color: { scale: 'ld' },
+    }).createDisplay()
     display.setShowLegend(false)
 
     expect(display.showLegend).toBe(false)

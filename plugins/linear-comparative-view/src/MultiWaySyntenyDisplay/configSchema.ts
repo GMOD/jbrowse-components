@@ -3,6 +3,8 @@ import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { ribbonColorConfigSchema } from './ribbonColorConfigSchema.ts'
+
 /**
  * #config MultiWaySyntenyDisplay
  *
@@ -83,39 +85,20 @@ export function configSchemaFactory() {
         defaultValue: [],
       },
       /**
-       * #slot
+       * #slot ribbonColor
+       * `"rgba(130,130,130,0.3)"` paints every ribbon; `{ scale: "strand" }`
+       * a synteny scheme; `{ field: "group" }` a declared column. See
+       * [RibbonColor](RibbonColor).
        */
-      ribbonColor: {
-        type: 'color',
-        description: 'the color of the ribbons connecting adjacent lanes',
-        defaultValue: 'rgba(130,130,130,0.3)',
-      },
-      /**
-       * #slot
-       */
-      ribbonColorBy: {
-        type: 'string',
-        description:
-          "what colors a ribbon, in the synteny view's `colorBy` spelling: `default` is ribbonColor; `strand` reads the record's strand — the two placements' orientations against the anchor multiplied out — and not the drawn twist, so a lane drawn flipped still shows its inversions; `identity`, `mappingQuality` and `dnds` paint the synteny view's ramps; `attribute:<column>` reads a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a `color` column put beside it). A pair carrying no value keeps ribbonColor, and every mode keeps its opacity. The synteny view's `track`, `query`, `target` and `reference` modes paint ribbonColor here",
-        defaultValue: 'default',
-      },
+      ribbonColor: ribbonColorConfigSchema,
       /**
        * #slot
        */
       hideUnlabelled: {
         type: 'boolean',
         description:
-          'under an `attribute:<column>` text mode, draw only the ribbons whose pair carries a label',
+          'under a text column, draw only the ribbons whose pair carries a label',
         defaultValue: false,
-      },
-      /**
-       * #slot
-       */
-      ribbonColorDomain: {
-        type: 'stringArray',
-        description:
-          "the order an `attribute:<column>` mode's labels take: the labels listed here first, the rest sorted. The order is the palette's too — a label's color is its position — so this moves the key and the ribbons together. Left empty the labels stay in the order the fetches first met them. The other modes paint a fixed pair or a ramp and ignore it",
-        defaultValue: [],
       },
       /**
        * #slot
@@ -141,7 +124,7 @@ export function configSchemaFactory() {
       showLegend: {
         type: 'boolean',
         description:
-          "show the color key: the anchor lane's drawn gene colors, and what `ribbonColorBy` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so a `color` slot resolving to one color and a ribbon mode painting nothing key nothing. Defaults to on",
+          "show the color key: the anchor lane's drawn gene colors, and what `ribbonColor` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so a `color` slot resolving to one color and a ribbon scale painting nothing key nothing. Defaults to on",
         defaultValue: true,
       },
       /**

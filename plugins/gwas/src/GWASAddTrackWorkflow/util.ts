@@ -40,7 +40,8 @@ export function canSubmit({
 // Full GWAS track config. The GWAS data is a bgzipped+tabixed BED
 // (GWASAdapter extends BedTabixAdapter → bedGzLocation + index). When an LD
 // file is supplied, a LinearManhattanDisplay is configured for LocusZoom-style
-// r²-to-index coloring (colorBy 'ld'); the index SNP auto-picks the top hit.
+// r²-to-index coloring (`color: { scale: 'ld' }`); the index SNP auto-picks
+// the top hit.
 export function buildGwasTrackConfig({
   trackId,
   trackName,
@@ -78,7 +79,7 @@ export function buildGwasTrackConfig({
       // neither).
       ...scoreAdapterFields({ scoreColumn, scoreTransform }),
       // LD is a second data source nested on the adapter (like MAF's
-      // annotationAdapter); the Manhattan display reads it for colorBy 'ld'.
+      // annotationAdapter); the Manhattan display reads it under the `ld` scale.
       ...(ldLocation
         ? { ldAdapter: buildLdAdapterConfig(ldLocation, ldIndexLocation) }
         : {}),
@@ -88,7 +89,7 @@ export function buildGwasTrackConfig({
           displays: [
             {
               type: 'LinearManhattanDisplay',
-              colorBy: 'ld',
+              color: { scale: 'ld' },
             },
           ],
         }

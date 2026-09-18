@@ -8,6 +8,8 @@ import type { AnyConfigurationModel } from './types.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 export interface ConfigurationSchemaMetadata {
+  /** the name `ConfigurationSchema` was given, e.g. `FeatureColor` */
+  name: string
   /** the raw slot/sub-schema/constant table, also carrying per-slot editor metadata */
   definition: ConfigurationSchemaDefinition
   /**

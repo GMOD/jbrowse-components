@@ -24,11 +24,11 @@ Minimal `GWASTrack` config. See the
 }
 ```
 
-Taller track, LocusZoom-style coloring: `colorBy: 'ld'` colors each point by
-its r² to the index SNP read from the adapter's `ldAdapter` sub-adapter. The
-LD data is a second source on `GWASAdapter` (mirroring MAF's
-`annotationAdapter`), so it nests under `adapter`, while display-only options
-like `height`/`colorBy` go in `displayDefaults` — see
+Taller track, LocusZoom-style coloring: `color: { scale: 'ld' }` colors
+each point by its r² to the index SNP read from the adapter's `ldAdapter`
+sub-adapter. The LD data is a second source on `GWASAdapter` (mirroring
+MAF's `annotationAdapter`), so it nests under `adapter`, while display-only
+options like `height`/`color` go in `displayDefaults` — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
 
 ```js
@@ -47,7 +47,7 @@ like `height`/`colorBy` go in `displayDefaults` — see
   },
   displayDefaults: {
     height: 400,
-    colorBy: 'ld',
+    color: { scale: 'ld' },
   },
 }
 ```
@@ -70,8 +70,7 @@ column, with the color key derived from the values it meets:
     {
       type: 'LinearManhattanDisplay',
       scoreField: 'fst',
-      colorBy: 'field',
-      colorField: 'population',
+      color: { field: 'population' },
     },
   ],
 }
@@ -95,10 +94,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearManhattanDispl
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | CSS color or jexl callback for Manhattan points<br>_callback args:_ `feature` |
-| <span id="slot-colorby">**colorBy**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (normal, ld, field) = <code>'normal'</code> | How points take their color. 'normal' uses `color`; 'ld' colors each point by its r² to the index SNP, read from the `GWASAdapter`'s `ldAdapter` sub-adapter (LocusZoom-style); 'field' gives each distinct value of `colorField` a color from the categorical palette, and the color key lists the values met. |
-| <span id="slot-colorfield">**colorField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'name'</code> | The feature field `colorBy: 'field'` colors by: `name`, `refName`, a BED extra column, a GFF attribute. Each distinct value takes a palette color derived from the value itself, so a value keeps its color across regions and sessions. |
-| <span id="slot-colordomain">**colorDomain**</span><br>`stringArray` = <code>[]</code> | The order the colour field's values take, in the key and in the palette: the values listed here come first and spend the palette in order, and the rest follow sorted, each on a color no listed value paints. Left empty the values sort on their own, so a domain is how a scan names the tier order its readers expect. |
+| <span id="slot-color">**color**</span><br><code>manhattanColorConfigSchema</code> | `"goldenrod"` or a `jexl:` callback paints every point; `{ field: "population" }` gives each value a palette colour with a key; `{ scale: "ld" }` colours by r² to the index SNP. See [ManhattanColor](ManhattanColor). |
 | <span id="slot-significanceline">**significanceLine**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | Draw a horizontal line across the plot at this score, for the threshold a scan is read against: genome-wide significance on a GWAS, or an empirical outlier cutoff on a differentiation scan. Unset (the default) draws none, since there is no threshold that is right for every scan.<br><br>On the plot's own scale, so it is a `-log10(p)` where the points are and an Fst where `scoreColumn` names an Fst column. The autoscaled y-axis widens to reach it, so a window where nothing clears the threshold still shows the threshold; an explicit `minScore`/`maxScore` that excludes it still wins, and there the line is not drawn. |
 | <span id="slot-minimalticks">**minimalTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Draw only the min/max Y-axis ticks<br>_advanced_ |
 | <span id="slot-scatterpointsize">**scatterPointSize**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>4</code> | Manhattan point diameter in px (adjustable from the track menu). Larger default than wiggle's since Manhattan points are the primary glyph. |

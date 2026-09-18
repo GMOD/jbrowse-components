@@ -1,13 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import { types } from '@jbrowse/mobx-state-tree'
 import {
   remapRetiredAutoscale,
   scoreAxisConfigSchemaFields,
   scoreFieldConfigSchemaFields,
 } from '@jbrowse/wiggle-core'
 
+import { manhattanColorConfigSchema } from './colorConfigSchema.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -48,11 +47,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * Taller track, LocusZoom-style coloring: `colorBy: 'ld'` colors each point by
- * its r² to the index SNP read from the adapter's `ldAdapter` sub-adapter. The
- * LD data is a second source on `GWASAdapter` (mirroring MAF's
- * `annotationAdapter`), so it nests under `adapter`, while display-only options
- * like `height`/`colorBy` go in `displayDefaults` — see
+ * Taller track, LocusZoom-style coloring: `color: { scale: 'ld' }` colors
+ * each point by its r² to the index SNP read from the adapter's `ldAdapter`
+ * sub-adapter. The LD data is a second source on `GWASAdapter` (mirroring
+ * MAF's `annotationAdapter`), so it nests under `adapter`, while display-only
+ * options like `height`/`color` go in `displayDefaults` — see
  * [configuring displays](/docs/config_guides/tracks#configuring-displays):
  * ```js
  * {
@@ -70,7 +69,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   },
  *   displayDefaults: {
  *     height: 400,
- *     colorBy: 'ld',
+ *     color: { scale: 'ld' },
  *   },
  * }
  * ```
@@ -93,8 +92,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     {
  *       type: 'LinearManhattanDisplay',
  *       scoreField: 'fst',
- *       colorBy: 'field',
- *       colorField: 'population',
+ *       color: { field: 'population' },
  *     },
  *   ],
  * }
@@ -106,60 +104,13 @@ export function configSchemaFactory() {
     {
       ...trackHeightConfigSchemaFields(),
       /**
-       * #slot
+       * #slot color
+       * `"goldenrod"` or a `jexl:` callback paints every point;
+       * `{ field: "population" }` gives each value a palette colour with a
+       * key; `{ scale: "ld" }` colours by r² to the index SNP. See
+       * [ManhattanColor](ManhattanColor).
        */
-      color: {
-        type: 'color',
-        defaultValue: DEFAULT_MARK_COLOR,
-        description: 'CSS color or jexl callback for Manhattan points',
-        // What makes the config editor offer this slot's value/callback toggle
-        // at all (SlotEditor gates that switch on a non-empty contextVariable),
-        // and what names `feature` in the callback editor's help. Editor
-        // affordance only — nothing in the read path consults it, and the
-        // display forwards this slot to the worker unevaluated either way.
-        contextVariable: ['feature'],
-      },
-      /**
-       * #slot
-       * How points take their color. 'normal' uses `color`; 'ld' colors each
-       * point by its r² to the index SNP, read from the `GWASAdapter`'s
-       * `ldAdapter` sub-adapter (LocusZoom-style); 'field' gives each distinct
-       * value of `colorField` a color from the categorical palette, and the
-       * color key lists the values met.
-       */
-      colorBy: {
-        type: 'stringEnum',
-        model: types.enumeration('GwasColorBy', ['normal', 'ld', 'field']),
-        defaultValue: 'normal',
-        description: 'How to color Manhattan points',
-      },
-      /**
-       * #slot
-       * The feature field `colorBy: 'field'` colors by: `name`, `refName`, a
-       * BED extra column, a GFF attribute. Each distinct value takes a palette
-       * color derived from the value itself, so a value keeps its color across
-       * regions and sessions.
-       */
-      colorField: {
-        type: 'string',
-        defaultValue: 'name',
-        description:
-          'Feature field whose values color the points under colorBy: field',
-      },
-      /**
-       * #slot
-       * The order the colour field's values take, in the key and in the
-       * palette: the values listed here come first and spend the palette in
-       * order, and the rest follow sorted, each on a color no listed value
-       * paints. Left empty the values sort on their own, so a domain is how a
-       * scan names the tier order its readers expect.
-       */
-      colorDomain: {
-        type: 'stringArray',
-        defaultValue: [],
-        description:
-          'optional legend and palette order for the colour field; listed values first, the rest sorted',
-      },
+      color: manhattanColorConfigSchema,
       ...scoreFieldConfigSchemaFields,
       // The score axis. `scaleType`, `autoscale` and `numStdDev` come with it
       // because `ScoreScaleMixin` reads all five, but only the min/max bounds

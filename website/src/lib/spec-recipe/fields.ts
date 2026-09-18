@@ -274,6 +274,19 @@ const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
 // named presets. There is no fixed label to look up, so the column supplies it.
 const SYNTENY_ATTRIBUTE_PREFIX = 'attribute:'
 
+// The multi-way display's `ribbonColor` object as the synteny mode its Color
+// by... radios carry: `none` is `default`, a field its `attribute:` mode.
+function ribbonColorMode(value: unknown) {
+  const color = asRecord(value)
+  const field = asString(color?.field)
+  const scale = asString(color?.scale) ?? (field ? 'categorical' : undefined)
+  return scale === 'categorical' && field
+    ? `${SYNTENY_ATTRIBUTE_PREFIX}${field}`
+    : scale === 'none'
+      ? 'default'
+      : scale
+}
+
 function syntenyColorLabel(value: unknown) {
   return typeof value === 'string'
     ? (SYNTENY_COLOR_MODES[value] ??
@@ -346,12 +359,40 @@ function hasChannelMenus(displayType: string | undefined) {
 // The canvas displays' `color` object: a string is the constant, and
 // `{ field, domain, palette }` a field through a palette. The dialog names the
 // field; the order and colors it spends are the JSON the same dialog opens.
+// The Manhattan display's `color` object: its Color by submenu picks the
+// scale, and a field is typed into the Field... dialog. The order and colors
+// the values take have no menu row.
+function manhattanColorStep(
+  scale: Record<string, unknown>,
+): FieldStep | undefined {
+  const colorBy = `${TRACK_MENU} → Color by`
+  const field = asString(scale.field)
+  if (scale.scale === 'ld') {
+    return {
+      path: `${colorBy} → LD to index SNP`,
+      note: "Needs a PLINK .ld file as the GWASAdapter's ldAdapter.",
+    }
+  }
+  return field
+    ? {
+        path: `${colorBy} → Field... → enter "${field}"`,
+        note:
+          asList(scale.domain) || asList(scale.palette)
+            ? 'The order and colors the values take have no menu row; the figure declares them in the track config.'
+            : undefined,
+      }
+    : undefined
+}
+
 function colorStep(
   value: unknown,
   context: FieldContext,
 ): FieldStep | undefined {
   const { displayType } = context
   const scale = asRecord(value)
+  if (scale && displayType === 'LinearManhattanDisplay') {
+    return manhattanColorStep(scale)
+  }
   if (scale) {
     const field = asString(scale.field)
     if (!field || !hasChannelMenus(displayType)) {
@@ -1081,8 +1122,8 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Offered only once the reads are grouped, since it is what the groups collapse into.',
         }
       : undefined,
-  ribbonColorBy: (value, { displayType }) => {
-    const label = syntenyColorLabel(value)
+  ribbonColor: (value, { displayType }) => {
+    const label = syntenyColorLabel(ribbonColorMode(value))
     return label && displayType === 'MultiWaySyntenyDisplay'
       ? { path: `${TRACK_MENU} → Color by... → ${label}` }
       : undefined

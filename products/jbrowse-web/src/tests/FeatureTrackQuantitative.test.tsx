@@ -85,7 +85,7 @@ test('a Manhattan scoreField naming no column says so in the corner', async () =
 
 test('Manhattan field coloring derives its key from the values the worker met', async () => {
   const { display, findByTestId } = await openTrack(
-    { type: 'LinearManhattanDisplay', colorBy: 'field', colorField: 'sample' },
+    { type: 'LinearManhattanDisplay', color: { field: 'sample' } },
     'manhattan-display',
   )
   await waitFor(() => {

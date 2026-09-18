@@ -57,7 +57,7 @@ test.each([
   [{ facet: {} }, 'facet is a field name'],
   [
     { facet: { field: 'x', order: [] } },
-    'facet takes field and domain, not order',
+    'Facet takes field and domain, not order',
   ],
   [{ facet: { field: 'x', domain: 'a' } }, 'facet.domain is a list'],
   [{ facet: { domain: ['a'] } }, 'facet.domain orders the sections of a field'],
@@ -65,10 +65,10 @@ test.each([
   [{ color: '' }, 'color is a CSS color'],
   [
     { color: { field: 'x', scale: 'categorical' } },
-    'color takes value, field, domain and palette, not scale',
+    'FeatureColor takes value, field, domain and palette, not scale',
   ],
   [{ color: { field: 'x', palette: 'red' } }, 'color.palette is a list'],
-  [{ color: { palette: ['red'] } }, 'color.domain and color.palette scale'],
+  [{ color: { palette: ['red'] } }, 'color.palette scales a field'],
   [{ filter: [1] }, 'filter is a jexl expression'],
 ])('%j is refused: %s', (spec, message) => {
   expect(() => parse(spec)).toThrow(message)

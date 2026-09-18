@@ -32,8 +32,7 @@ describe('LinearManhattanDisplay config surface', () => {
     expect(display.showCrossHatches).toBe(false)
     expect(display.isDensityMode).toBe(false)
     // Manhattan's own
-    expect(display.color).toBeDefined()
-    expect(display.colorBy).toBe('normal')
+    expect(display.color.scale).toBe('none')
     expect(getConf(display, 'minimalTicks')).toBe(false)
   })
 

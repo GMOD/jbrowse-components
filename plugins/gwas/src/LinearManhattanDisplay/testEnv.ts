@@ -6,7 +6,6 @@ import LinearGenomeViewPlugin, {
 import { configSchemaFactory } from './configSchemaFactory.ts'
 import { stateModelFactory } from './stateModelFactory.ts'
 
-import type { ManhattanColorBy } from '../ManhattanRPC/rpcTypes.ts'
 import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'
 
 // Two displayed regions, because the behaviours worth testing here are about
@@ -22,20 +21,19 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
 /**
  * The shared display harness wired for the Manhattan display.
  *
- * `colorBy` is an environment option rather than a `createDisplay` one because
+ * `color` is an environment option rather than a `createDisplay` one because
  * it is a config slot, and the fetch autorun runs on the leading edge: a slot
  * written after the display attaches is a *user flipping the setting*, which
- * legitimately costs a refetch. A session restoring a track with `colorBy: 'ld'`
- * has the slot before `afterAttach`, so the harness must too, or every LD test
- * measures one round trip that production never makes.
+ * legitimately costs a refetch. A session restoring a track with
+ * `color: { scale: 'ld' }` has the slot before `afterAttach`, so the harness
+ * must too, or every LD test measures one round trip that production never
+ * makes.
  */
 export function createTestEnvironment({
-  colorBy = 'normal',
-  colorDomain,
+  color,
   ldAdapter = true,
 }: {
-  colorBy?: ManhattanColorBy
-  colorDomain?: string[]
+  color?: string | Record<string, unknown>
   ldAdapter?: boolean
 } = {}) {
   const env = createDisplayTestEnvironment<LinearManhattanDisplayModel>({
@@ -60,7 +58,7 @@ export function createTestEnvironment({
     configSchema: () => configSchemaFactory(),
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
     viewModel: linearGenomeViewStateModelFactory,
-    displayConfig: { colorBy, ...(colorDomain ? { colorDomain } : {}) },
+    displayConfig: color === undefined ? {} : { color },
     regions: REGIONS,
     onViewReady: view => {
       view.showAllRegions()

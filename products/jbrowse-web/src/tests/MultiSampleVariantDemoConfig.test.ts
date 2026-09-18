@@ -11,8 +11,8 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // Locks in the v4.1.1 "multi-sample variants colored by population" demo config
 // so it keeps hydrating on this branch: the old `MultiLinearVariantDisplay` type
 // string (renamed to LinearMultiSampleVariantDisplay), the adapter's
-// `samplesTsvLocation` metadata slot, and the display's `colorBy` /
-// `referenceDrawingMode` / `height` slots must all survive.
+// `samplesTsvLocation` metadata slot, and the display's `rowColor` (`colorBy`
+// until ADR-131) / `referenceDrawingMode` / `height` slots must all survive.
 function makePluginManager() {
   return new PluginManager(corePlugins.map(P => new P()))
     .createPluggableElements()
@@ -50,7 +50,7 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
         // renamed display type; the DisplayType alias remaps it on hydrate
         type: 'MultiLinearVariantDisplay',
         referenceDrawingMode: 'draw',
-        colorBy: 'population',
+        rowColor: 'population',
         height: 800,
       },
     ],
@@ -68,7 +68,7 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
     throw new Error('LinearMultiSampleVariantDisplay not found after remap')
   }
 
-  expect(readConfObject(display, 'colorBy')).toBe('population')
+  expect(readConfObject(display, 'rowColor')).toBe('population')
   expect(readConfObject(display, 'height')).toBe(800)
   expect(readConfObject(display, 'referenceDrawingMode')).toBe('draw')
 })
@@ -117,7 +117,7 @@ test('old MultiLinearVariantDisplay instance resolves on session restore', async
             {
               type: 'LinearMultiSampleVariantDisplay',
               displayId: 'cohort-LinearMultiSampleVariantDisplay',
-              colorBy: 'population',
+              rowColor: 'population',
             },
           ],
         },

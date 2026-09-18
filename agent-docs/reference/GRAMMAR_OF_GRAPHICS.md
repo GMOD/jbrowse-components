@@ -237,7 +237,7 @@ The seams, named honestly:
   a pinned `domain` is what fixes a legend for a figure, and the Score menu's
   "Pin current min/max" writes it from what is drawn. The feature display's
   categorical counterpart is "Pin distinct colors" (`pinColorDomain`), which
-  appends the values its key lists to `colorDomain`, since two unlisted values
+  appends the values its key lists to `color.domain`, since two unlisted values
   can hash onto one colour.
 - **A categorical key is derived in one place, from the colours themselves.**
   `derivedColorScale` (`packages/core/src/util/legendCandidates.ts`) is the

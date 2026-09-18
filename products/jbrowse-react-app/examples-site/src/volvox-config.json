@@ -2439,7 +2439,7 @@
         {
           "type": "MultiLinearVariantDisplay",
           "referenceDrawingMode": "draw",
-          "colorBy": "population"
+          "rowColor": "population"
         }
       ]
     },

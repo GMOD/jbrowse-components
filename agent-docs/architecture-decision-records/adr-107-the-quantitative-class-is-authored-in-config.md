@@ -49,7 +49,8 @@ Four moves, one class:
   worker and carried in `rpcProps`. The default reads what the adapter served,
   a `scoreColumn` rewrite included; an explicit name reaches the raw column.
 - **Manhattan colours by a field.** `colorBy` gains `'field'` beside `'normal'`
-  and `'ld'`, with a `colorField` slot; the worker packs the colour per instance
+  and `'ld'`, with a `colorField` slot (one `color: { field }` object since
+  ADR-131); the worker packs the colour per instance
   and ships the value table with the payload (the encoder's categorical
   `ScaleTable`, since 2026-09-09), and `categoricalValueColor`
   derives the colour from the value (integers walk the palette from 1, anything

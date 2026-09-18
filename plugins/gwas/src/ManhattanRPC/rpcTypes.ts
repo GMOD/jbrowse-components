@@ -18,24 +18,29 @@ export function defaultGlyph(feature: Feature) {
   return feature.get('svtype') === 'INS' ? GLYPH_TRIANGLE : GLYPH_DISC
 }
 
-export type ManhattanColorBy = 'normal' | 'ld' | 'field'
+// How Manhattan points take their colour: `none` paints `value`,
+// `categorical` a palette colour per value of `field`, `ld` the r² to the index
+// SNP.
+export const MANHATTAN_COLOR_SCALES = ['none', 'categorical', 'ld'] as const
+export type ManhattanColorScale = (typeof MANHATTAN_COLOR_SCALES)[number]
+
+/** The display's `color` object, carried to the worker whole. */
+export interface ManhattanColor {
+  value: string
+  field: string
+  scale: ManhattanColorScale
+  domain: readonly string[]
+  palette: readonly string[]
+}
 
 export interface GetManhattanDataArgs {
   adapterConfig: Record<string, unknown>
   region: Region
-  // CSS color literal or jexl expression (`jexl:...`). Evaluated per feature
-  // on the worker — the result baked into the payload's `color`. Used in
-  // 'normal' coloring mode.
-  color: string
-  // 'ld' colors each point by its r² to `indexSnp`, read from `ldAdapterConfig`
-  // (a PLINK .ld adapter). 'field' colors by the distinct values of
-  // `colorField`. 'normal' uses `color`.
-  colorBy: ManhattanColorBy
-  colorField: string
-  // Field coloring's declared order: these values key first and walk the
-  // palette in this order, the rest follow sorted. Undefined where the
-  // display declared none, and then the value's own color applies.
-  colorDomain?: string[]
+  // `value` is a CSS color or `jexl:` expression evaluated per feature on the
+  // worker, the result baked into the payload's `color`. Under `ld` each point
+  // takes its r² to `indexSnp`, read from `ldAdapterConfig` (a PLINK .ld
+  // adapter).
+  color: ManhattanColor
   // The feature field plotted on the y axis, `score` unless the display's
   // `scoreField` slot names another
   scoreField: string
@@ -65,7 +70,7 @@ export interface GetManhattanDataArgs {
 export function ldColoringRequested<
   T extends Pick<
     GetManhattanDataArgs,
-    'colorBy' | 'indexSnp' | 'ldAdapterConfig'
+    'color' | 'indexSnp' | 'ldAdapterConfig'
   >,
 >(
   args: T,
@@ -74,7 +79,7 @@ export function ldColoringRequested<
   ldAdapterConfig: Record<string, unknown>
 } {
   return (
-    args.colorBy === 'ld' &&
+    args.color.scale === 'ld' &&
     !!args.indexSnp &&
     args.ldAdapterConfig !== undefined
   )

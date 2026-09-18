@@ -224,8 +224,9 @@ The key cannot see it coming, nothing having moved yet, so `dataCurrent` said
 painted the emptied map — a Manhattan lane with the LD legend and no points,
 exit 0. Fill the hook with the condition the autorun writes under, and gate it
 on the WRITE, not on whether the feature is visibly doing anything:
-`colorBy: 'ld'` with no `ldAdapter` draws no colours but still writes the index,
-and gating on the visible half left exactly the same empty export behind.
+`color: { scale: 'ld' }` with no `ldAdapter` draws no colours but still writes
+the index, and gating on the visible half left exactly the same empty export
+behind.
 
 **A dependent fetch of the display's own.** Multi-way synteny fetches lane genes
 and lane links off the lane frames its ortholog fetch produced, so the signature

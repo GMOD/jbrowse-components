@@ -302,7 +302,7 @@ every gray wolf labelled by country.
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "colorBy": "group",
+      "rowColor": "group",
       "height": 900
     }
   ]
@@ -393,7 +393,7 @@ on the breed group.
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "colorBy": "group",
+      "rowColor": "group",
       "height": 690
     }
   ]
