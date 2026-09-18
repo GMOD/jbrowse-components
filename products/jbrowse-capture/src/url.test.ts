@@ -11,37 +11,42 @@ const session = {
   ],
 }
 
-// The round trip a browser actually performs: parse the query, read the param
-// (which decodes it once), strip the prefix, parse the JSON. A double-encoded
-// spec passes an eyeball check on the URL and fails here.
+// The parameters travel in the fragment, so this reads them from there.
+const params = (url: string) => new URLSearchParams(new URL(url).hash.slice(1))
+
+// The round trip a browser actually performs: parse the fragment, read the
+// param (which decodes it once), strip the prefix, parse the JSON. A
+// double-encoded spec passes an eyeball check on the URL and fails here.
 function readSession(url: string) {
-  const value = new URL(url).searchParams.get('session')!
-  return JSON.parse(value.replace(/^spec-/, '')) as unknown
+  return JSON.parse(
+    params(url)
+      .get('session')!
+      .replace(/^spec-/, ''),
+  ) as unknown
 }
 
-const params = (url: string) =>
-  Object.fromEntries(new URL(url).searchParams.entries())
-
-test('the session survives the query-string round trip', () => {
+test('the session survives the round trip', () => {
   expect(readSession(jbrowseUrl({ hub: 'hg38', session }))).toEqual(session)
 })
 
 test('a hub becomes its genomes.jbrowse.org config URL and names the assembly', () => {
-  const url = new URL(jbrowseUrl({ hub: 'hg38', loc: 'BRCA1' }))
-  expect(url.searchParams.get('config')).toBe(
+  const url = jbrowseUrl({ hub: 'hg38', loc: 'BRCA1' })
+  expect(params(url).get('config')).toBe(
     'https://jbrowse.org/ucsc/hg38/config.json',
   )
-  expect(url.searchParams.get('assembly')).toBe('hg38')
-  expect(url.origin + url.pathname).toBe('https://jbrowse.org/code/jb2/latest/')
+  expect(params(url).get('assembly')).toBe('hg38')
+  expect(url.startsWith('https://jbrowse.org/code/jb2/latest/#')).toBe(true)
 })
 
 test('tracks join into one comma-separated parameter', () => {
   const url = jbrowseUrl({ hub: 'hg38', tracks: ['a', 'b'] })
-  expect(new URL(url).searchParams.get('tracks')).toBe('a,b')
+  expect(params(url).get('tracks')).toBe('a,b')
 })
 
 test('a session carries the config and nothing the spec already says', () => {
-  expect(params(jbrowseUrl({ hub: 'hg38', session }))).toEqual({
+  expect(
+    Object.fromEntries(params(jbrowseUrl({ hub: 'hg38', session }))),
+  ).toEqual({
     config: 'https://jbrowse.org/ucsc/hg38/config.json',
     session: expect.stringMatching(/^spec-\{/),
   })
@@ -61,7 +66,7 @@ test.each([
 
 test('an explicit config wins over a hub, which still names the assembly', () => {
   const url = jbrowseUrl({ hub: 'hg38', config: 'https://x.test/config.json' })
-  expect(params(url)).toEqual({
+  expect(Object.fromEntries(params(url))).toEqual({
     config: 'https://x.test/config.json',
     assembly: 'hg38',
   })
@@ -69,7 +74,7 @@ test('an explicit config wins over a hub, which still names the assembly', () =>
 
 test('instance selects the deployment', () => {
   const url = jbrowseUrl({ instance: 'http://localhost:3000/', hub: 'hg38' })
-  expect(url.startsWith('http://localhost:3000/?')).toBe(true)
+  expect(url.startsWith('http://localhost:3000/#')).toBe(true)
 })
 
 test('no config and no session yields the bare instance', () => {

@@ -59,18 +59,15 @@ export function jbrowseUrl({
         '--track): put them in the spec',
     )
   }
-  const configUrl = config ?? (hub ? hubUrl(hub) : undefined)
-  const url = new URL(instance)
-  // URL's own encoder, not a hand-built query string: a config URL contains
-  // `://` and `?`, and a session spec is a whole JSON document, so appending
-  // either raw produces a link that loads a truncated config and reports
-  // nothing.
+  // In the fragment, which never reaches a server: a whole session spec in the
+  // query string can exceed the request-line limit and come back HTTP 414.
+  const params = new URLSearchParams()
   const set = (key: string, value: string | undefined) => {
     if (value) {
-      url.searchParams.set(key, value)
+      params.set(key, value)
     }
   }
-  set('config', configUrl)
+  set('config', config ?? (hub ? hubUrl(hub) : undefined))
   if (session) {
     set('session', sessionSpecParam(session))
   } else {
@@ -79,5 +76,7 @@ export function jbrowseUrl({
     set('tracks', tracks?.join(','))
   }
   set('sessionName', sessionName)
+  const url = new URL(instance)
+  url.hash = params.toString()
   return url.href
 }
