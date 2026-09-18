@@ -186,7 +186,9 @@ async function rootSubmenuRows(page: Page) {
     const menus = [...document.querySelectorAll('[role="menu"]')]
     const root = menus[0]!
     return [
-      ...root.querySelectorAll(':scope > [data-testid^="cascading-submenu-"]'),
+      ...root.querySelectorAll<HTMLElement>(
+        ':scope > [data-testid^="cascading-submenu-"]',
+      ),
     ].map(el => {
       const r = el.getBoundingClientRect()
       return {
@@ -221,7 +223,7 @@ async function toggleCheckbox(page: Page, trackId: string) {
     const target = await page.evaluate(() => {
       const menus = [...document.querySelectorAll('[role="menu"]')]
       const sub = menus.at(-1)!
-      const cb = sub.querySelector('[role="menuitemcheckbox"]')
+      const cb = sub.querySelector<HTMLElement>('[role="menuitemcheckbox"]')
       if (menus.length < 2 || !cb) {
         return undefined
       }
@@ -298,9 +300,11 @@ async function profileHovers(page: Page, trackId: string) {
   const incl = new Map<string, number>()
   const bucket = new Map<string, number>()
   let busy = 0
-  for (let i = 0; i < profile.samples.length; i++) {
-    const id = profile.samples[i]
-    const dt = profile.timeDeltas[i] || 0
+  const samples = profile.samples ?? []
+  const timeDeltas = profile.timeDeltas ?? []
+  for (let i = 0; i < samples.length; i++) {
+    const id = samples[i]!
+    const dt = timeDeltas[i] ?? 0
     const fn = nodes.get(id)?.callFrame.functionName
     if (fn === '(idle)' || fn === '(program)') {
       continue

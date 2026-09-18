@@ -12,9 +12,9 @@ together
 Position-aggregate features are row-independent, so the worker packs them once
 and the main thread uploads the bytes verbatim.
 
-`regionMeta` is derived separately from the uploads rather than as a side effect
-of one, because a region whose payload is unchanged still needs the metadata
-while skipping every pack.
+`coverageRegionOf` derives a region's band metadata separately from the uploads
+rather than as a side effect of one, because a region whose payload is unchanged
+still needs the metadata while skipping every pack.
 
 ## Group-by
 
