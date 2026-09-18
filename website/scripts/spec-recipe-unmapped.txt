@@ -10,13 +10,16 @@ colorDomain
 connectedView
 connectedViewId
 contigThickness
+detailConnectorHeight
 detailLevels
 diagonalizeAnchorRow
 displayMode
 domain
 fadeThinAlignmentsMode
+geneTrackId
 height
 hideUnlabelled
+highlightedPath
 jexlFiltersSetting
 layoutMode
 legend
@@ -33,6 +36,7 @@ showDeletionEdges
 showGenes
 showGridlines
 showLegend
+showProteinTracks
 showVariantLane
 sideBySide
 structures
