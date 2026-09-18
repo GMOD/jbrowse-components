@@ -209,10 +209,10 @@
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
-    "status": "bad",
-    "note": "unclear what 'story' is here. add red text box annotation if it helps. plotting the raw read depth can be a bit tricky and even misleading to get good biology. ",
-    "reviewedAt": "2026-09-17T22:15:25.368Z",
-    "hash": "1ba1bf5051901625010ab00414489f46fbc87dc8"
+    "status": "answered",
+    "note": "Three callouts name the copy-number states along chr5: two copies where tumor sits on the normal with one BAF band, the gain where BAF splits in two, and the one-copy loss where tumor halves and BAF goes to 0 and 1. The coverage lane is not raw depth: indexcov normalizes each sample to its own median, and the normal is drawn beside the tumor as the reference.",
+    "reviewedAt": "2026-09-18T03:06:25.410Z",
+    "hash": "59ff4a42704ee61079eeacf5caa6e7c08e5655ce"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
@@ -614,10 +614,10 @@
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
-    "status": "bad",
-    "note": "still green. is this expected? i wanted back to blue",
-    "reviewedAt": "2026-09-17T22:16:39.670Z",
-    "hash": "54632bcc324a59879f438484f804d0369931c444"
+    "status": "answered",
+    "note": "Re-rendered against the current build: the alt allele is set1 blue again. The code already had the change and the figure had not been refilmed.",
+    "reviewedAt": "2026-09-18T03:06:27.025Z",
+    "hash": "4b2798122133b1285a2fa0709db0440acf1b7a9d"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -1115,10 +1115,10 @@
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "bad",
-    "note": "this is sort of interestin but its sort of vague, just a couple very thin active rows, and the legend doesnt show all samples. do you like this outcome?\n\nprevious notes:\nRebuilt as Roadmap Epigenomics 2015 (Nature 518:317) Fig. 3a: all 127 epigenomes over the chr9 stretch from FAM205A to ALDH1B1, in the paper's own tissue-group order with the group stripe beside the rows. Promoter columns run through nearly every row and PAX5 is transcribed only in the B cell rows, which is the density the six-row HOXA figure could not carry. That one stays as chromhmm_hoxa_fibroblasts for the domain paragraph. A single-cell version is possible but not on data we host: CATlas (Zhang et al. 2021) publishes 222 per-cell-type hg38 bigWigs, 105 GB in all, and the figure would be a marker-gene staircase over 100+ rows.",
-    "reviewedAt": "2026-09-17T21:52:41.785Z",
-    "hash": "4dabbaae1ff9f9e155d3b8dedeb3434a21d7bdbc"
+    "status": "answered",
+    "note": "Those rows are real. Strong transcription with genic enhancers (green plus yellow) is only in the B cell rows and GM12878, a B-lymphoblastoid line, and the callout now says that. Spleen and blood mononuclear cells show weak transcription because they contain B cells; H9 neural progenitors transcribe PAX5 because it also acts in brain development; a few ES and iPS lines show weak transcription only. Captions corrected to match.",
+    "reviewedAt": "2026-09-18T03:52:01.717Z",
+    "hash": "40f078d9c431563f2dfbe16e0353ed9b890a99a9"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1485,10 +1485,10 @@
   },
   "popgen/tajimad_cyp6g1": {
     "name": "popgen/tajimad_cyp6g1",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-17T22:11:47.264Z",
-    "hash": "505c4dac4df38e98de5ae58d2de432bb2372284f"
+    "status": "answered",
+    "note": "Callout rewritten in the caption sweep: called sites fall less, so the dip is in allele frequencies.",
+    "reviewedAt": "2026-09-18T03:52:13.106Z",
+    "hash": "fa2ac0ec78d910b5f1121267581afe830ddad9e5"
   },
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
@@ -1539,10 +1539,10 @@
   },
   "sv_cgiab/cnv_chr17_loh": {
     "name": "sv_cgiab/cnv_chr17_loh",
-    "status": "bad",
-    "note": "unclear what 'story' is here. add red text box annotation if it helps",
-    "reviewedAt": "2026-09-17T22:14:34.652Z",
-    "hash": "7ba4a82c77c1bafbe757eab33faa416f842b0628"
+    "status": "answered",
+    "note": "Two callouts: the p-arm has one copy left with heterozygosity lost, and the q-arm has two copies of one allele, flat in depth but still split in BAF. That is copy-neutral LOH, which is the story.",
+    "reviewedAt": "2026-09-18T03:06:25.642Z",
+    "hash": "b306b72a065e4839a55d678e9425b3ed94c38da2"
   },
   "feature_height_default": {
     "name": "feature_height_default",
@@ -1620,10 +1620,10 @@
   },
   "multisv_svtype": {
     "name": "multisv_svtype",
-    "status": "bad",
-    "note": "copy number and cpx way too close in color palette now. need to use like dark brown or something\nprevious notes:\nCopy number is teal. Pink was the obvious set1 spare and would have been worse: a het insertion shades from purple to magenta, which is the colour the reader would have matched it to.",
-    "reviewedAt": "2026-09-17T21:59:04.182Z",
-    "hash": "d4028cf49628b4604da75f7f935492a1a47e7a10"
+    "status": "answered",
+    "note": "The legend now shows each SV class with a pale (het) and full (hom) swatch side by side, plus a note saying pale is het and full is hom. The caption and the paragraph above it say so too.",
+    "reviewedAt": "2026-09-18T03:52:01.965Z",
+    "hash": "a3ed80bed01811c9f74fdb8c3c11244ab2ad3853"
   },
   "pangenome_cactus/depth": {
     "name": "pangenome_cactus/depth",
@@ -1675,10 +1675,10 @@
   },
   "sv_cgiab/cnv_depth_baf": {
     "name": "sv_cgiab/cnv_depth_baf",
-    "status": "bad",
-    "note": "consider making the cytoband track 'collapsed' layout\n\nprevious notes:\nThe GRCh38_GIABv3 assembly in the hosted cgiab config carries UCSC hg38 cytobands now, so the ideogram bands the arms, and a cytoband track draws them in the view as well. NOT RE-RENDERED: the page crashed the renderer here, so this figure is the sweep's.",
-    "reviewedAt": "2026-09-17T22:14:58.746Z",
-    "hash": "5de798c0cf3e603abfa23177babde11be4fc6dd7"
+    "status": "answered",
+    "note": "Cytoband track now uses the collapsed layout at 30 px. Re-rendered at a quiet moment; the renderer did not crash.",
+    "reviewedAt": "2026-09-18T03:06:25.867Z",
+    "hash": "73bfaa017d4abb0ec185c7b412e98fb94835ff26"
   },
   "tcga/cohort_cnv_erbb2": {
     "name": "tcga/cohort_cnv_erbb2",
@@ -1817,13 +1817,6 @@
     "note": "resolved: deleted per review (\"kind of boring screenshot. delete. we are too comprehensive about always showing the backbone alongside bandage\"). pangenome_hprc.md keeps a prose description of the anchored layout, so the feature is still documented without the screenshot.",
     "reviewedAt": "2026-07-25T06:00:00.000Z"
   },
-  "popgen/in2lt_per_sample": {
-    "name": "popgen/in2lt_per_sample",
-    "status": "good",
-    "note": "DONE as asked: the '161 standard lines' callout is gone, the carrier label and its arrow stay. It was naming empty lane -- those rows are homozygous reference, so the label sat on blank grey and the only thing it added was ink; the carrier block is the one that needs pointing at, being a tenth of the track at the bottom edge.",
-    "reviewedAt": "2026-08-14T23:27:39.258Z",
-    "hash": "81f030d9d091e8a80a4aae2137e5ba38494899ce"
-  },
   "synteny_hg38_hs1_tnnt3": {
     "name": "synteny_hg38_hs1_tnnt3",
     "status": "good",
@@ -1889,17 +1882,17 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
-    "note": "unclear what this text annotation means...'extract wider region to close it' then if so show them how with multipart figure???",
-    "reviewedAt": "2026-09-17T22:05:54.874Z",
-    "hash": "daa3a295f6a6831fc844cf78e59f210b7227cd49"
+    "status": "answered",
+    "note": "The callout now only says the ringed node's other link lands upstream, outside the cut. Widening the extraction to close it would take about 6,000 segments, so the advice is gone; the tutorial's odgi extract -c 1 is the fix. No multipart figure because it would need a new hosted GFA. The clipped bubble label is gone too.",
+    "reviewedAt": "2026-09-18T03:05:31.730Z",
+    "hash": "59648211cd898746a6f000a6d46633480a1d1cce"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "bad",
-    "note": "this is interesting visually, but what is the 'story'?\n\nprevious notes:\nThe reference-position legend names the span's length beside its two ends, and every bubble label is the short notation now: 135 bp del, 49 bp del, 12 kb ref to 8.6-13 kb with 9 alleles. Published as plugin c14f18b.",
-    "reviewedAt": "2026-09-17T22:10:44.219Z",
-    "hash": "c73b89ac3811914056d4045e5f3cce49ca2e2cc4"
+    "status": "answered",
+    "note": "The story is now one bubble in both panels: blue boxes mark the same K12 segment in the linear lane and the graph, and a ringed pill marks CFT073's allele of it, which has no K12 coordinates and so no block above.",
+    "reviewedAt": "2026-09-18T03:05:32.153Z",
+    "hash": "80a22ad5e7c8f342ad8b6093ac650204ab9cdccf"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
@@ -2043,17 +2036,17 @@
   },
   "pangenome/rgfa_launch_out_menu": {
     "name": "pangenome/rgfa_launch_out_menu",
-    "status": "bad",
-    "note": "use showCurves and transparent indels maybe, and even 'follow' so that it aligns to the top row better?",
-    "reviewedAt": "2026-09-17T22:10:23.498Z",
-    "hash": "c79367947d6f63ed0cf0e48c0d35bcc0c8b2b7e9"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:36:52.284Z",
+    "hash": "71e9ac476b42376a0451fd5f7c68859ff317d43f"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
-    "status": "bad",
-    "note": "the text 'each loop is a copy of the repeat' is nearly meaningless because it just looks like a hairball, unclear what anything is",
-    "reviewedAt": "2026-09-17T22:05:13.486Z",
-    "hash": "5b64e09cbb250fa55a71286da2c9063285c651b8"
+    "status": "answered",
+    "note": "The vague loop caption is gone; a callout now points at the widest loop and says it is kringle copies one haplotype carries and GRCh38 does not, and the linear box still marks where the array is.",
+    "reviewedAt": "2026-09-18T03:06:27.479Z",
+    "hash": "9e4c3d1b9e45dceaf9a8efdf169175718a66ce87"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
@@ -2069,10 +2062,10 @@
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
-    "status": "bad",
-    "note": "unclear what i'm supposed to be seeing. there is a highlight on the teal node on the lineargenomeview, but the ringed node is grey loop. \n",
-    "reviewedAt": "2026-09-17T22:09:58.404Z",
-    "hash": "19c66f5e716df28cf2f6f26da5b52f4ee8c56f72"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:36:46.708Z",
+    "hash": "1b10ad543b29df4b904dd27403e05b06270d06fc"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
@@ -2083,10 +2076,10 @@
   },
   "pangenome/pggb_locus_sample_rows": {
     "name": "pangenome/pggb_locus_sample_rows",
-    "status": "bad",
-    "note": "dunno what is being shown here really. not a strong figure",
-    "reviewedAt": "2026-09-17T22:08:55.607Z",
-    "hash": "1171689ff9b3ef8ec016f53eb82e6e8b84c1a4ad"
+    "status": "answered",
+    "note": "Now a single Sample rows panel with one callout: CFT073's row is one long bar over the K12 span it skips, and its MAF row is empty over the same span. The force half duplicated pggb_strain_launch and was dropped.",
+    "reviewedAt": "2026-09-18T03:05:33.510Z",
+    "hash": "62d74a09acc52533f12d2b5aef0cc523dcc31a29"
   },
   "scatac/pbmc5k_cd8a": {
     "name": "scatac/pbmc5k_cd8a",
@@ -2271,10 +2264,10 @@
   },
   "pangenome/pggb_haplotype_paths": {
     "name": "pangenome/pggb_haplotype_paths",
-    "status": "bad",
-    "note": "dont show deletion arcs by default i think, it is confusing.",
-    "reviewedAt": "2026-09-17T22:08:41.376Z",
-    "hash": "fe8e078c8b0e080c70553b13d7d3f8a6e95cf727"
+    "status": "answered",
+    "note": "Deletion edges are off (the view default). Sakai is picked in the Walk menu, so the insH21 loop fades as the one stretch Sakai's walk skips.",
+    "reviewedAt": "2026-09-18T03:05:33.870Z",
+    "hash": "623af906744252cb92eff539b08a31d8b58598ca"
   },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
@@ -2446,10 +2439,10 @@
   },
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-17T16:31:31.804Z",
-    "hash": "7fd730e85657107e1719d0c3aaac4fc6efdfdda5"
+    "status": "answered",
+    "note": "Callout rewritten in the caption sweep: Minigraph-Cactus keeps the copies apart.",
+    "reviewedAt": "2026-09-18T03:52:13.379Z",
+    "hash": "e934256b5a912fda4bbc3deb93da9adf2e05476e"
   },
   "pangenome/long_reads": {
     "name": "pangenome/long_reads",
@@ -2537,10 +2530,10 @@
   },
   "hic/bcr_abl1_translocation": {
     "name": "hic/bcr_abl1_translocation",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-17T16:26:09.677Z",
-    "hash": "9ff88d98ccbfefaf04148bdc04bc7dcbc985fe2a"
+    "status": "answered",
+    "note": "GM12878 callout rewritten in the caption sweep: normal karyotype, no chr9-chr22 contacts.",
+    "reviewedAt": "2026-09-18T03:52:13.932Z",
+    "hash": "89651099fd0a20be42e06b9f5a1353db9820edca"
   },
   "hic/compartment_switch": {
     "name": "hic/compartment_switch",
@@ -2637,15 +2630,15 @@
     "name": "genomes_msa/launch_sequence",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-17T06:35:36.370Z",
-    "hash": "91af97b326f70014f5bb66de9cc9a59c7de1dad4"
+    "reviewedAt": "2026-09-18T03:32:59.497Z",
+    "hash": "b60644beb59363345bb8a9f9870d758881407451"
   },
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
-    "status": "bad",
-    "note": "the red text annotation is covering up the SV reads area. move to upper left in empty space",
-    "reviewedAt": "2026-09-17T21:50:21.923Z",
-    "hash": "3920266aab39160f1c3d43a90020aab893872073"
+    "status": "answered",
+    "note": "The route callout moved to the empty upper left of the SV lane, with its arrow down to the track menu, clear of the reads. The right half now shows three panels.",
+    "reviewedAt": "2026-09-18T03:06:26.095Z",
+    "hash": "92206fbcfa994766dd133349d4160e9fbf7d203d"
   },
   "feature_plotting_threads": {
     "name": "feature_plotting_threads",
@@ -2703,10 +2696,10 @@
   },
   "pangenome/pggb_carriage_lane": {
     "name": "pangenome/pggb_carriage_lane",
-    "status": "bad",
-    "note": "the legend in the segment carriage is cut off. ",
-    "reviewedAt": "2026-09-17T22:07:27.707Z",
-    "hash": "09da1fccf7a7895983f97c3b2d54422841e34ee0"
+    "status": "answered",
+    "note": "The carriage lane is taller, so the five-row legend shows in full.",
+    "reviewedAt": "2026-09-18T03:05:34.312Z",
+    "hash": "84a75043289ec623f0782e57b697c659df25e15e"
   },
   "pangenome/pggb_untangle_dotplot": {
     "name": "pangenome/pggb_untangle_dotplot",
@@ -2796,10 +2789,10 @@
   },
   "pangenome/pggb_strain_launch": {
     "name": "pangenome/pggb_strain_launch",
-    "status": "bad",
-    "note": "not a strong figure",
-    "reviewedAt": "2026-09-17T22:09:05.841Z",
-    "hash": "8dd23139c2cb4e14087ee0165e64ed58a0dff80c"
+    "status": "answered",
+    "note": "Now both sides of the deletion: K12 above with the bypassed seven-gene span boxed in blue, the CFT073 segment ringed in the graph, and the launched CFT073 view with that segment boxed in red between ssuE and pyrD. Graph pane shortened, bubble labels off.",
+    "reviewedAt": "2026-09-18T03:05:34.699Z",
+    "hash": "a8de33c369400fe7a6463a44767038b1a1f166d6"
   },
   "genomes_basics/multiz_alignment": {
     "name": "genomes_basics/multiz_alignment",
@@ -2844,17 +2837,17 @@
   },
   "qc/smn_block_and_reads": {
     "name": "qc/smn_block_and_reads",
-    "status": "bad",
-    "note": "might benefit from using a true multi-level linear 'context row' (new feature in lienargenomeview)",
-    "reviewedAt": "2026-09-17T22:13:05.294Z",
-    "hash": "5fe4459a0bfb4ebb61629808e0747a395d9362f9"
+    "status": "answered",
+    "note": "The app now outlines every detail level in a dark teal frame, and the trapezoid gets a solid outline and a stronger fill that runs into that frame, so the 650 kb row reads as a zoomed inset of the 3.45 Mb view above it.",
+    "reviewedAt": "2026-09-18T04:10:47.432Z",
+    "hash": "09ee8f2ff73d64f4488a861769eb29382d36a5d3"
   },
   "pangenome/pggb_bubble_tier": {
     "name": "pangenome/pggb_bubble_tier",
-    "status": "bad",
-    "note": "the red text box overlaps a bunch of stuff, and the 'is5' element...how can we tell? figures should speak for themselves better. we shouldn't have to 'guess' about things, there should be features with labels automatically drawn. ",
-    "reviewedAt": "2026-09-17T22:07:08.062Z",
-    "hash": "d54cc2d2b052d958bf2f90de1a4e91647da687b4"
+    "status": "answered",
+    "note": "The overlapping legend is gone. An insertion-sequence lane labels insH21 from K12's own annotation, a blue highlight marks it in the linear view, and a blue box marks its node in the graph at the same x.",
+    "reviewedAt": "2026-09-18T03:06:27.709Z",
+    "hash": "725433f0ca708b257f3e1da0b9d03401f39b7e32"
   },
   "synteny_self_chry_palindromes": {
     "name": "synteny_self_chry_palindromes",
@@ -2886,10 +2879,10 @@
   },
   "hg002_haplotypes_follow_panel": {
     "name": "hg002_haplotypes_follow_panel",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-17T06:36:29.591Z",
-    "hash": "68d6da9e68e9753403a978221cb78ead868d575c"
+    "status": "answered",
+    "note": "Stage 1 callout rewritten in the caption sweep: the two panels show non-matching sequence, so the synteny ribbons do not line up here.",
+    "reviewedAt": "2026-09-18T03:52:13.643Z",
+    "hash": "7ea36d85d43a362439ec5005a805acda100f3b65"
   },
   "jbrowse-img/sv_review_pair": {
     "name": "jbrowse-img/sv_review_pair",
@@ -3152,10 +3145,10 @@
   },
   "popgen/in2lt_inversion": {
     "name": "popgen/in2lt_inversion",
-    "status": "bad",
-    "note": "might benefit from using a true multi-level linear 'context row' (new feature in lienargenomeview)",
-    "reviewedAt": "2026-09-17T22:11:42.223Z",
-    "hash": "f823ce42db5ccbbb53a38bfb8ff7c4e5b1b6297f"
+    "status": "answered",
+    "note": "Re-rendered with the new detail-level styling: the chr2L level is outlined in a teal frame joined to a bolder outlined trapezoid, so it reads as a zoom of the genome-wide row.",
+    "reviewedAt": "2026-09-18T04:10:47.664Z",
+    "hash": "878b4c1179ba8b113d4bd928612c0d2fba0d76d5"
   },
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
@@ -3285,10 +3278,10 @@
   },
   "alphagenome/variant_difference": {
     "name": "alphagenome/variant_difference",
-    "status": "bad",
-    "note": "hard to tell what is going on here, what other aspects are significant. the signficant are in the difference between the two. This needs to be clearly shown via red text boxes, and the multiway wiggle tracks can just be removed and differences shown i think",
-    "reviewedAt": "2026-09-17T21:47:33.097Z",
-    "hash": "d92954560282d2711c66de8aa5ab937da89239e1"
+    "status": "answered",
+    "note": "Reference and alternate tracks are closed and only the three difference rows remain, each with a callout: accessibility gained at the Jurkat insertion, TAL1 transcription rises, H3K27ac gained across the locus.",
+    "reviewedAt": "2026-09-18T03:06:26.556Z",
+    "hash": "5203e001cb0ab1e2c50f45f7ee19524bd991ecbf"
   },
   "alu_age/binned": {
     "name": "alu_age/binned",
@@ -3313,10 +3306,10 @@
   },
   "circular_synteny/ribbon_hover": {
     "name": "circular_synteny/ribbon_hover",
-    "status": "bad",
-    "note": "should have legend",
-    "reviewedAt": "2026-09-17T21:53:11.277Z",
-    "hash": "5b906a94e97ddb84b251bb6bcfa68aa1482d52d1"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:31:30.156Z",
+    "hash": "3e6d574d485703615e12cbe075f9efb95879f0be"
   },
   "circular_synteny/ribbons": {
     "name": "circular_synteny/ribbons",
@@ -3327,24 +3320,24 @@
   },
   "circular_synteny/rings": {
     "name": "circular_synteny/rings",
-    "status": "bad",
-    "note": "try to improve legend please. it looks weird and long winded. shorten track names\n\nprevious notes:\nBuilt in now: Show legend on the circular view menu draws a key naming each ring, chord and ribbon track beside the colour or density ramp it draws in, and the SVG export draws the same key. The overlay is gone from all three circular figures, and this figure's density ring is orange so the ring and the ribbons no longer share one blue.",
-    "reviewedAt": "2026-09-17T21:53:33.832Z",
-    "hash": "f6d92df9b82cc738f36aeab2545d8b6f7aa9a578"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:31:32.314Z",
+    "hash": "ad5ced525da5d99984e5c5f17bf02cd522c41762"
   },
   "circular_view/coverage_ring_chords": {
     "name": "circular_view/coverage_ring_chords",
-    "status": "answered",
-    "note": "The same built-in key, off the tracks themselves.",
-    "reviewedAt": "2026-09-17T19:12:29.252Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:31:38.251Z",
     "hash": "6d25b0017b486d009f5b1153123a5da99b1904f1"
   },
   "circular_synteny/x_control": {
     "name": "circular_synteny/x_control",
-    "status": "bad",
-    "note": "try to improve legend please. it looks weird and long winded. shorten track names\n\nprevious notes:\nThe same built-in key, and the gene density ring is orange against the steel-blue ribbons.",
-    "reviewedAt": "2026-09-17T21:53:41.616Z",
-    "hash": "7ec9a554ef3ffa17b62c1576c61a1b0aeecc6896"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:31:35.573Z",
+    "hash": "e972bf32e51b6e15f0b61fb6e83a77617b3ded4a"
   },
   "display_autoruns": {
     "name": "display_autoruns",
@@ -3425,10 +3418,10 @@
   },
   "multiway_synteny/ecoli_island_lanes": {
     "name": "multiway_synteny/ecoli_island_lanes",
-    "status": "bad",
-    "note": "hard to tell what is going on here. not a interesting screenshot\n\nprevious notes:\nThe gridlines were the view's own, true only at the anchor lane's scale, so they are off and each lane's own ticks are what is left. The depth wiggle is 120 px rather than 60, where the drop from five genomes to two was a 24 px step, and one pill says what the step counts.",
-    "reviewedAt": "2026-09-17T21:59:27.228Z",
-    "hash": "a87ba87756e29331181d6559b2795934a57dbdac"
+    "status": "answered",
+    "note": "Took the gene-name suggestion: every lane colours the island genes red by name (feaR, tynA, the paa operon). K-12 and NCTC86 show the red block; CFT073, Sakai and IAI39 have none and go straight from one flank to the other. One callout instead of two.",
+    "reviewedAt": "2026-09-18T03:52:02.218Z",
+    "hash": "88d2ce50e3a1dcb25d8e7ec93ccc89568752dc22"
   },
   "multiway_synteny/ecoli_symbol_atp_operon": {
     "name": "multiway_synteny/ecoli_symbol_atp_operon",
@@ -3572,10 +3565,10 @@
   },
   "pangenome/bovine_bola": {
     "name": "pangenome/bovine_bola",
-    "status": "bad",
-    "note": "dont like the pink. prefer the older red\n\nprevious notes:\nDONE: the anchored graph pane and the segments lane are gone, since their rank rows restated the lanes. The callset now sits right under the bubbles, with two red labels: 'each red row is a different allele' on the genotype rows and 'the graph names no carrier' on the allele inventory.",
-    "reviewedAt": "2026-09-17T22:00:20.034Z",
-    "hash": "4934d0d9cac35728a363894076bde5e363709736"
+    "status": "answered",
+    "note": "Callout rewritten: graph alleles, listed without their carriers. Captions site-wide swept against the claudish checklist too: about 80 captions in 51 docs and 8 callouts on six figures.",
+    "reviewedAt": "2026-09-18T03:52:00.252Z",
+    "hash": "68c882936135924027b67e8c44e6dc744ee4eb66"
   },
   "pangenome/bovine_whole_chromosome": {
     "name": "pangenome/bovine_whole_chromosome",
@@ -3600,10 +3593,10 @@
   },
   "pangenome/genomes_hprc_mhc_graph": {
     "name": "pangenome/genomes_hprc_mhc_graph",
-    "status": "bad",
-    "note": "might remove the deletion edges, they are weird",
-    "reviewedAt": "2026-09-17T22:00:57.826Z",
-    "hash": "520a73df6750ce1643487f632b6f06b2dabed87a"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:35:42.619Z",
+    "hash": "b8d4a5c29f7a259be286c98486c4e0f12db1be81"
   },
   "pangenome/genomes_hprc_page": {
     "name": "pangenome/genomes_hprc_page",
@@ -3656,17 +3649,17 @@
   },
   "protein/tp53_hotspot": {
     "name": "protein/tp53_hotspot",
-    "status": "bad",
-    "note": "too chaotic of a screenshot really. multiple levels of protein annotations is crazy. how to simplify? think outside the box\n\nprevious notes:\nGenome view on the left, protein view on the right: the spec now uses the plugin's sideBySide launch.",
-    "reviewedAt": "2026-09-17T22:12:14.052Z",
-    "hash": "246530a885a9c2738dcb06867726339906484d8f"
+    "status": "answered",
+    "note": "1TUP alone, in protein3d 0.13's Mapped chain colouring: p53's three core copies are blue and the DNA is grey. R248 opens focused, so it is magenta with its neighbouring residues and bases drawn as sticks, and on one copy its side chain reaches into the minor groove. The alignment rows are hidden.",
+    "reviewedAt": "2026-09-18T13:19:37.495Z",
+    "hash": "d6eafa1883e0c4a163e6d785507cd1ad4814a4cb"
   },
   "protein/tp53_mapped_chain": {
     "name": "protein/tp53_mapped_chain",
-    "status": "bad",
-    "note": "too chaotic of a screenshot really. multiple levels of protein annotations is crazy. how to simplify? think outside the box\n\nGenome view on the left, protein view on the right: the spec now uses the plugin's sideBySide launch.",
-    "reviewedAt": "2026-09-17T22:12:24.908Z",
-    "hash": "f79b1168301a62f60fc8000d2d8fc0372d4d2da8"
+    "status": "answered",
+    "note": "1YCR alone, with one alignment panel instead of three. The Mapped chain colouring makes the p53 peptide blue on grey MDM2 and follows the picker, so no pre-selection is needed. The genome strip shows the whole TP53 gene.",
+    "reviewedAt": "2026-09-18T14:17:03.071Z",
+    "hash": "0bda8ee8cb76da75ec4801a93e530e6771709e05"
   },
   "protein/tp53_three_structures": {
     "name": "protein/tp53_three_structures",
@@ -3677,10 +3670,10 @@
   },
   "read_marks/chromosome": {
     "name": "read_marks/chromosome",
-    "status": "bad",
-    "note": "honestly a confusing figure. it has bars and dots. what is the 'story'? less red text boxes please, simplify.\n\nprevious notes:\nDONE: Three callouts: what the red bars count and that a lone bar is a deletion, the centromere where repeats mis-map pairs and saturate both marks, and a leader to the tallest bar outside it, the deletion NA12878 carries on both copies.",
-    "reviewedAt": "2026-09-17T22:13:42.299Z",
-    "hash": "445eda465bc6ee10fcd3888a420980af05c8f689"
+    "status": "answered",
+    "note": "Down to two callouts, both reworded: a tall red bar is a deletion on both copies, and the centromere is where pairs mis-map in repeats.",
+    "reviewedAt": "2026-09-18T03:52:00.508Z",
+    "hash": "dc846933a5803f5ac9673e9c417371b7dad627c7"
   },
   "render_rates": {
     "name": "render_rates",
@@ -3712,17 +3705,17 @@
   },
   "cancer_sv/k562_amplicon_dna": {
     "name": "cancer_sv/k562_amplicon_dna",
-    "status": "bad",
-    "note": "it is completely unclear how the rna junctions are 'calculated because there is no data for it visible. therefore, this could be a bad screenshot. consider remove (???)\n\nprevious notes:\nThree short labels, each with an arrow to the call it names: the two RNA junctions and the break to chr13. The ticks are the display's breakend glyph, a stem with a tick toward the side the derivative keeps, which the tutorial reads, so they stay.",
-    "reviewedAt": "2026-09-17T21:49:09.515Z",
-    "hash": "b4187d45b733a7fa5747e907cbdb82abd723cae6"
+    "status": "answered",
+    "note": "Kept. The junctions are STAR-Fusion calls from DepMap RNA-seq, loaded as a track; the Iso-Seq reads behind them are in k562_bcr_abl_split above. The callout and caption now say so, and a second callout marks where the copy number steps up at the DNA break, so the story reads: copy number steps at the DNA breaks, the RNA junction lands far from its break, and the chr13 break has no fusion call.",
+    "reviewedAt": "2026-09-18T03:05:22.903Z",
+    "hash": "2d685ec8c6c0a8eea8394c2febea3299587c3dd8"
   },
   "gene_track_group_by_strand": {
     "name": "gene_track_group_by_strand",
-    "status": "bad",
-    "note": "consider making this color+group by strand",
-    "reviewedAt": "2026-09-17T21:55:20.884Z",
-    "hash": "1bcb102dba2987b58119aba209517fdea4cb4cf8"
+    "status": "answered",
+    "note": "Grouped and colored by strand now: forward genes red in the upper section, reverse genes blue in the lower one, with a strand key. That is what the Group by dialog does by default with Also color by strand ticked.",
+    "reviewedAt": "2026-09-18T03:05:25.089Z",
+    "hash": "d38e921b1bb9554a7f564468599a702374cfe6fd"
   },
   "pangenome/mouse_nnt": {
     "name": "pangenome/mouse_nnt",
@@ -3740,9 +3733,9 @@
   },
   "cancer_sv/multihop_split_view": {
     "name": "cancer_sv/multihop_split_view",
-    "status": "bad",
-    "note": "since this is essentially dupe of cancer_sv/multihop_reads, need to make sure this is linked in the guide.\n\nprevious notes:\nSame change as cancer_sv/multihop_reads: three panels, not four, and the panels are 160 px of pileup each so three fill the frame. NOT RE-RENDERED here.",
-    "reviewedAt": "2026-09-17T21:51:18.548Z",
+    "status": "answered",
+    "note": "Re-rendered at three panels. The SV guide paragraph above it now links straight to the cancer_sv tutorial section that builds this view and names the Launch, Reconstruct derivative allele route.",
+    "reviewedAt": "2026-09-18T03:05:22.663Z",
     "hash": "5021c5b21bd12fc526e0a2e8577c8d8a421cbd66"
   },
   "pangenome/hprc_gbz_cfhr_lanes": {
@@ -3787,26 +3780,12 @@
     "reviewedAt": "2026-09-17T06:35:22.407Z",
     "hash": "001d028ba8ad5d3577f361443a23b8ff83529a99"
   },
-  "context_levels": {
-    "name": "context_levels",
-    "status": "bad",
-    "note": "it's impossible to see this is 3 levels from quick glance. need to use same track in each view or something, and taller polygons.",
-    "reviewedAt": "2026-09-17T21:54:46.819Z",
-    "hash": "1263ca7550f0e684f71e0f69585f1642d77d7bd2"
-  },
   "context_levels_menu": {
     "name": "context_levels_menu",
     "status": "good",
     "note": "",
     "reviewedAt": "2026-09-17T16:24:32.633Z",
     "hash": "a706fe3cb3c51b5b4b0e20024087f18c6e4f09d8"
-  },
-  "maf_summary_hprc_chromosome": {
-    "name": "maf_summary_hprc_chromosome",
-    "status": "bad",
-    "note": "this is still an insane black square. it is not good. consider deleting, or this is a bad color scheme to just use all black, consider alternatives.\n\nprevious notes:\nKept, with the reference it was missing: the assembly carries cytobands now, so the gap that runs clear across every row sits under the ideogram's centromere. The black is the summary tier's own shading, since human haplotypes score at the top of the scale, and absence is what the figure is of.",
-    "reviewedAt": "2026-09-17T21:57:34.396Z",
-    "hash": "9add968c9d293750200dffca456e30e796afbaf5"
   },
   "mark_display/facet": {
     "name": "mark_display/facet",
@@ -3817,9 +3796,9 @@
   },
   "mark_display/plot_field": {
     "name": "mark_display/plot_field",
-    "status": "bad",
-    "note": "are you sure that should be unified here?\n\nprevious notes:\nAnswered, nothing built. Two JSON routes exist already: Share, then the settings icon and Plaintext JSON, prints the session JSON a reader can paste back, and jb.applyChannelSpec takes a channel spec for an agent. A paste box in this dialog would be a third spelling of the same state, so if you want one the place for it is the display's own settings dialog, where it would cover every channel rather than this dialog's three fields.",
-    "reviewedAt": "2026-09-17T21:58:03.676Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:33:06.426Z",
     "hash": "1bf40d30390b81f03c0b97cf826f7f1303d4afe0"
   },
   "paper/cohort_cnv": {
@@ -3845,45 +3824,31 @@
   },
   "pangenome/genomes_hprc_loci": {
     "name": "pangenome/genomes_hprc_loci",
-    "status": "bad",
-    "note": "the gene hub link is not working. might delete. see ~/src/jb2hubs",
-    "reviewedAt": "2026-09-17T22:00:42.403Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:35:39.275Z",
     "hash": "8356712939e8994c0755dbe67bd291e172399c36"
-  },
-  "pangenome/graph_kiv2_popped": {
-    "name": "pangenome/graph_kiv2_popped",
-    "status": "bad",
-    "note": "hard to see whats going on in this one. its just a weird tangle, not a good view, not sure what the 'point' is, need red text box annotations if it is supposed to show something specific.",
-    "reviewedAt": "2026-09-17T22:01:34.675Z",
-    "hash": "f181068f51c7cde6a58aac660a95bd82adeabe9b"
   },
   "pangenome/graph_kiv2_walk_rows": {
     "name": "pangenome/graph_kiv2_walk_rows",
-    "status": "bad",
-    "note": "this is confusing, because there is a mix of rainbow graph and tandem repeat coloring. not sure this is good. unclear where the tandem repeat is on the reference. need annotation in bed or something.",
-    "reviewedAt": "2026-09-17T22:02:14.829Z",
-    "hash": "99d1f7f6db05554f32c7c0cecdd121af41fae418"
+    "status": "answered",
+    "note": "A rendering artifact. GRCh38's bar was drawn from the graph's nodes, sized by how many haplotypes carry each one, while the other rows are flat bars. With uniform node width it is now a flat bar like the rest.",
+    "reviewedAt": "2026-09-18T03:52:02.470Z",
+    "hash": "774e98a45582c1a7b05ed32975178a70f6d74abd"
   },
   "pangenome/hprc_abca7_disagreements": {
     "name": "pangenome/hprc_abca7_disagreements",
-    "status": "bad",
-    "note": "this is confusing, because there is a mix of rainbow graph and tandem repeat coloring. not sure this is good. unclear where the tandem repeat is on the reference. need annotation in bed or something.",
-    "reviewedAt": "2026-09-17T22:02:40.616Z",
-    "hash": "095dd54c046bdb3677743fe58fe7d314f62db588"
+    "status": "answered",
+    "note": "GRCh38's bar is now the legend blue, no rainbow; a repeat catalogue lane labelled ABCA7 VNTR marks the repeat on the reference above the TRGT record.",
+    "reviewedAt": "2026-09-18T03:05:30.015Z",
+    "hash": "f69a4316cb4cbe550e987594ced0c154759ae97c"
   },
   "pangenome/hprc_abca7_repeat_units": {
     "name": "pangenome/hprc_abca7_repeat_units",
-    "status": "bad",
-    "note": "this is confusing, because there is a mix of rainbow graph and tandem repeat coloring. not sure this is good. unclear where the tandem repeat is on the reference. need annotation in bed or something.",
-    "reviewedAt": "2026-09-17T22:02:44.062Z",
-    "hash": "d37c5f51e282cd7c5b4aa165a5c2a54b304d3b04"
-  },
-  "pangenome/hprc_abca7_walk_rows": {
-    "name": "pangenome/hprc_abca7_walk_rows",
-    "status": "bad",
-    "note": "reduce number of examples, too many repeat examples in this tutorial, hard to tell what matters",
-    "reviewedAt": "2026-09-17T22:03:06.023Z",
-    "hash": "4fff0c330b684d9b4fed9ae8f65e0b5a3655f161"
+    "status": "answered",
+    "note": "One colour scheme, GRCh38 in the legend blue; a repeat catalogue lane labelled ABCA7 VNTR marks the repeat on the reference; this is now the page's first walk-rows figure.",
+    "reviewedAt": "2026-09-18T03:05:30.482Z",
+    "hash": "0dab9d5d037ec63870a44830d10b359352024ae8"
   },
   "pangenome/hprc_graph_anatomy": {
     "name": "pangenome/hprc_graph_anatomy",
@@ -3894,31 +3859,24 @@
   },
   "pangenome/hprc_haplotype_launch": {
     "name": "pangenome/hprc_haplotype_launch",
-    "status": "bad",
-    "note": "unclear if there was like a right click menu on the red circle or what, and cant tell correspondance between lower panel and graph, and that this was a two step process. make multipart figure if needed before and after",
-    "reviewedAt": "2026-09-17T22:04:41.122Z",
-    "hash": "ba6d37933cef7f7d0f9d95c0e2ebadb50220a3af"
+    "status": "answered",
+    "note": "Two frames now: first the right-click menu on the ringed node with Open in NA20809.2 boxed, then the opened haplotype view with the node's own segment boxed and an arrow from the ring to it.",
+    "reviewedAt": "2026-09-18T03:05:31.369Z",
+    "hash": "ad6ffa773921572a8943e3010b4c960889fe0075"
   },
   "pangenome/mouse_dock2": {
     "name": "pangenome/mouse_dock2",
-    "status": "bad",
-    "note": "unclear what is going on here. why is the graph so crazy here? what does it mean? ",
-    "reviewedAt": "2026-09-17T22:06:25.251Z",
-    "hash": "5fc7eb5f6aaaae00d11f89220a5f19d51a4b20b0"
+    "status": "answered",
+    "note": "The whole cut is one bubble: the coloured path is C57BL/6J, the reference, and the charcoal loops are sequence it lacks, mostly from the wild-derived strains. Two callouts now say so and the caption says each loop is where other strains depart from the reference.",
+    "reviewedAt": "2026-09-18T03:06:25.176Z",
+    "hash": "130617fdd38212664242f2b041be051343146198"
   },
   "pangenome/pggb_untangle_inversion": {
     "name": "pangenome/pggb_untangle_inversion",
-    "status": "bad",
-    "note": "can use multiple colored boxes to highlight more things.",
-    "reviewedAt": "2026-09-17T22:09:22.343Z",
-    "hash": "08a4bc451994c51ce21536e627b5dd708dc3ac84"
-  },
-  "paper/hprc_lanes_graph_force": {
-    "name": "paper/hprc_lanes_graph_force",
-    "status": "bad",
-    "note": "might want to refer in a doc/blog page if unused or delete seems dupe of paper/hprc_lanes_graph_stacked_force also",
-    "reviewedAt": "2026-09-17T22:11:25.801Z",
-    "hash": "a427381663bf5f98ac9675edf6f0dafd3de43716"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-18T03:36:26.917Z",
+    "hash": "308d981bc62c808c33a03d661ad76e0d8b10a4c6"
   },
   "read_marks/depth": {
     "name": "read_marks/depth",
@@ -3940,5 +3898,12 @@
     "note": "",
     "reviewedAt": "2026-09-17T22:14:11.967Z",
     "hash": "6055f5894b15b23f7701c73c0c998be66469a5da"
+  },
+  "detail_levels": {
+    "name": "detail_levels",
+    "status": "answered",
+    "note": "Re-rendered with the new detail-level styling: each of the 200 kb and 20 kb levels sits in a teal frame, joined to the row above by a bolder outlined trapezoid.",
+    "reviewedAt": "2026-09-18T04:10:47.897Z",
+    "hash": "08b7127b57679909178f7aba4b0117fb2b8cca15"
   }
 }
