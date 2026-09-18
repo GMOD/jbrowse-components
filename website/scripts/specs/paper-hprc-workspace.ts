@@ -4,10 +4,8 @@
 // two-haplotype synteny/graph pair specs/graph-hprc.ts stacks vertically
 // (pangenome/hprc_cfhr_deletion).
 //
-// Three arrangements, differing only in the split and the graph's layout, so
-// the paper can pick: side by side with the Bandage force layout, side by side
-// with the anchored one, and stacked, where the graph's backbone sits under the
-// lanes' own x axis on the same coordinates.
+// The paper uses the stacked force layout (hprc_lanes_graph_stacked_force); the
+// others differ only in the split and the graph's layout.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
@@ -151,15 +149,6 @@ const callouts: Annotation[] = [
 ]
 
 export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
-  {
-    mode: 'url',
-    name: 'paper/hprc_lanes_graph_force',
-    url: workspace('force', 'horizontal', 60),
-    viewportWidth: 1900,
-    viewportHeight: 940,
-    ...gates,
-    annotations: callouts,
-  },
   {
     mode: 'url',
     name: 'paper/hprc_lanes_graph_anchored',
