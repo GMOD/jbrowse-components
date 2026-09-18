@@ -483,9 +483,9 @@ private fields; a real implementation belongs inside `BamRecord`, where
 `_computeTags` walk with, so it should be an argument-count change rather than a
 fourth copy of the walk. And the consumer-side alternative — stop reading `SA`
 unconditionally — is **closed, not open**: it was implemented and reverted. Only
-the arc overlay was believed to read `readSuppAlignments`, and
-`derivativePathCandidates` is the second reader, ungated by design, so gating the
-walk emptied the derivative-allele dialog on the default fetch. The `rpcProps`
+the arc overlay was believed to read `readSuppAlignments`, and linked reads and
+the curved connectors read it too, under settings of their own, so gating the
+walk on connections took their off-screen segments away. The `rpcProps`
 entry it needs also invalidates the fetch on a draw toggle, which was the smaller
 of its two problems. The clone half of that saving is taken instead, by shipping
 no array at all when the group has no SA tag anywhere.

@@ -200,9 +200,6 @@ portal with no derivative row; 2 is 1.5 d; 4 is 2 d; 5 is 1-2 d.
 - Whether the first cut is HG008 only (has truth, needs NCBI range requests)
   or COLO829 only (all hosted, no truth). Proposed: HG008 first, COLO829 as
   the second `cliSpec` the same week.
-- Whether a "Draw as: linear genome view" option in the derivative dialog
-  (the multi-region LGV `k562_fusions` hand-builds) ships first, since the
-  card's reference row is that view.
 
 ## Where this stands
 

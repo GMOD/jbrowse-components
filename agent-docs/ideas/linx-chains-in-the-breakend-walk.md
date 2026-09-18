@@ -70,5 +70,7 @@ walk before the behaviour is described in a tutorial.
    all. Worth adding when a callset carrying them is in hand; the `assemblyIds`
    path covers the same evidence one step removed.
 
-The read- and assembly-based reconstruction this complements is
-[derivative-allele-from-assembly-contigs](derivative-allele-from-assembly-contigs.md).
+JBrowse draws an allele only when a tool outside it built one
+([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)),
+so a LINX chain is a route input
+([route-as-a-launch-input](route-as-a-launch-input.md)) as well as a walk hint.

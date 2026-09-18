@@ -1,6 +1,6 @@
 ---
 name: sa-hops-in-the-bezier-overlay
-description: Drawing the split-read hops whose far end nothing fetched — the bezier connector overlay has no mark for them, while the arc band answers the same question twice depending on whether the hop crosses chromosomes. Plus the shared `Chain` type that lost the caller it was proposed for, and what the derivative-allele picker settled.
+description: Drawing the split-read hops whose far end nothing fetched — the bezier connector overlay has no mark for them, while the arc band answers the same question twice depending on whether the hop crosses chromosomes. Plus the shared `Chain` type that lost the caller it was proposed for, and why no allele is built in-app.
 ---
 
 # SA hops in the bezier overlay
@@ -8,10 +8,11 @@ description: Drawing the split-read hops whose far end nothing fetched — the b
 This file was `multi-hop-fusion-chaining`, a four-phase proposal for showing
 cancer multi-hop rearrangements the way
 [SplitThreader](https://github.com/marianattestad/splitthreader) does. Two of its
-phases shipped in August 2026 as the derivative-allele picker, in a shape the
-proposal did not anticipate; two of its open decisions were answered by a rule
-rather than by a design. What is parked here is the additive half of the
-remainder — the marks nobody draws — plus a deflated refactor.
+phases shipped in August 2026 as the derivative-allele picker and were removed
+on 2026-09-18
+([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
+What is parked here is the additive half of the remainder — the marks nobody
+draws — plus a deflated refactor.
 
 **The correctness half is not here, and it shipped.** `68eab1e8c7` stopped the
 overlay drawing a solid junction across segments it never fetched: it walks the
@@ -28,33 +29,20 @@ Read [`reference/SV_MULTIHOP.md`](../reference/SV_MULTIHOP.md) before starting
 any of it — it carries the line this feature area does not cross, and the three
 questions that killed the last idea in it.
 
-## Shipped — do not re-propose
+## Settled — do not re-propose
 
-**A multi-read linearized allele, both panels.** The
-`Reconstruct derivative allele...` track-menu item on `LinearAlignmentsDisplay`
-lists the candidate paths and launches either view, from
-`plugins/linear-comparative-view/src/LinearDerivativeVsRef/`:
-`buildDerivativeVsRefSpec` builds the query-space axis with ribbons to the
-reference (the proposal's panel B), and `buildSplitViewFromPath` builds a
-breakpoint split view with **one panel per segment**, so a path that leaves chr9
-and returns to it inverted gets two chr9 panels rather than one that quietly
-merges the two visits.
-
-**Junction consensus.** `computeDerivativePaths`
-(`plugins/alignments/src/features/derivativePaths/computePaths.ts`) groups the
-chains in view by the path their junctions describe and ranks the groups by how
-many independent reads describe each. It gets those chains by calling
-`unpairedReadChain` from `features/arcs/arcChains.ts` — the existing arc builder,
-unchanged — which is the reason no shared `Chain` type was needed to get there.
+**A multi-read allele built in-app** — a ranked list of routes, a synthetic
+derivative axis, a split view per segment — shipped and was removed
+([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)):
+it proposed routes at ordinary loci and took copy counts from read edges. An
+allele is drawn only when a tool outside JBrowse built it
+([route-as-a-launch-input](route-as-a-launch-input.md)).
 
 **What the fusion contig is built from** is settled in both directions. Offline,
 `scripts/sv_multihop.py derive` polishes the spanning reads into a consensus and
 realigns them onto it. In-app, nothing is built: `projectReadsOntoDerivative`
 placed each supporting read onto the path and was reverted in `e7b4f2b29b`,
 because its evidence was the same chains the path came from.
-
-**Aggregation scope** is settled too: main-thread over the reads already in view
-(`derivativePathCandidates` reads `rawDataByGroup`), no worker scan.
 
 ---
 

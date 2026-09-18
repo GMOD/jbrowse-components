@@ -1,6 +1,6 @@
 ---
 name: route-as-a-launch-input
-description: Make the rearrangement a declarative launch input (`route`, an ordered oriented list of reference intervals with provenance) that any external caller, assembler or karyotype tool can target, so JBrowse renders the evidence around a route it did not compute — the picker, `derive --jbrowse-out`, a hifiasm contig, a LINX derivative chromosome and a gGnome walk all become producers of one object, and the in-app analysis stops growing.
+description: Make the rearrangement a declarative launch input (`route`, an ordered oriented list of reference intervals with provenance) that any external caller, assembler or karyotype tool can target, so JBrowse renders the evidence around a route it did not compute — `derive --jbrowse-out`, a hifiasm contig, a GATK-SV complex record, a LINX derivative chromosome and a gGnome walk all become producers of one object. Since ADR-137 removed the in-app picker, this is the only way JBrowse draws an allele.
 ---
 
 # A route as a launch input
@@ -9,14 +9,14 @@ Agreed in principle with Colin 2026-09-02: "dedicated algorithms will likely
 beat us any day of the week. de novo assemblies are also similarly much more
 powerful." The direction is that JBrowse is controllable by external
 automation to show an SV in the most useful way, not that it is an analysis
-tool. The derivative-allele picker stays as the no-pipeline path and as the
-dissent view; everything else feeds in from outside.
+tool. The in-app derivative-allele picker was removed on 2026-09-18
+([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)),
+so everything feeds in from outside.
 
 ## The object
 
 A route is what every tool in the tutorial's "Related tools" section already
-emits in some form: the picker's `DerivativeCandidate.segments`, `derive`'s
-`vs_reference.paf`, one contig's alignment blocks in a hifiasm PAF, a LINX
+emits in some form: `derive`'s `vs_reference.paf`, one contig's alignment blocks in a hifiasm PAF, a LINX
 derivative chromosome, a gGnome walk, a Severus cluster. One shape, on a view
 in a session spec:
 
@@ -39,16 +39,18 @@ in a session spec:
 ```
 
 - `segments` is ordered along the derivative and each one is oriented; an
-  inverted segment is entered at its high coordinate
-  (`segmentEntryBp`/`segmentExitBp`, and the picker's own rule).
+  inverted segment is entered at its high coordinate.
 - `name`, `source` and `evidence` are provenance the picture prints and never
   reasons about. `source` is what makes the boundary in
   [reference/SV_MULTIHOP.md](../reference/SV_MULTIHOP.md) §"The line this
   feature does not cross" visible on screen: it says who decided.
-- Same key on a `LinearSyntenyView` draws the segment map against a temporary
-  derivative axis (`buildDerivativeVsRefSpec`), on a `BreakpointSplitView` one
-  panel per segment centred on its junction (`buildSplitViewFromPath`). Both
-  builders exist; today only the picker can call them.
+- Same key on a `LinearSyntenyView` draws the segments against a temporary
+  derivative axis, on a `BreakpointSplitView` one panel per segment centred on
+  its junction. The builders for both were deleted with the picker;
+  `git log --diff-filter=D --oneline -- 'plugins/linear-comparative-view/src/LinearDerivativeVsRef/*'`
+  finds the commit that holds them (`buildDerivativeVsRefSpec.ts`,
+  `buildSplitViewFromPath.ts`), and a segment map drawn from a supplied route
+  must print its `source`.
 
 ## What already exists
 
@@ -58,9 +60,13 @@ in a session spec:
   it goes so `automating.md` picks it up through the include.
 - The BND record's "follow further breakends" is a route walked out of a VCF.
   It guesses adjacency; with a Severus or LINX cluster id it would not have to.
-- [derivative-allele-from-assembly-contigs](derivative-allele-from-assembly-contigs.md)
-  already feeds contig blocks through the picker's chain code. With a route
-  input the contig does not need the picker at all: a PAF row set is a route.
+- A contig's PAF rows, sorted by query offset, are a route; the synteny
+  display already chains them for linked reads.
+- A GATK-SV `<CPX>` record carries its own interpretation in `CPX_TYPE` and
+  `CPX_INTERVALS`: 1KGP's `HGSV_2721` (`INVdup`,
+  `INV_chr1:39658980-39660275,DUP_chr1:39660047-39660275`) is the route
+  `A C′ B′ C D`, and its two junctions are the LL and RR pairs the
+  `sv_multisamples` tutorial's SV-channels figure shows.
 - [multihop-sv-review-portal](multihop-sv-review-portal.md) is a consumer — one
   card per route, whoever produced it, with the live link being this spec.
 - Desktop's MCP surface is the agent-driven version of the same verb.
@@ -79,23 +85,14 @@ way `sv_multihop.py` is, and none belongs in core:
 | gGnome | a walk | its ordered signed node list, mapped to intervals |
 | hifiasm / Shasta / sawfish | contig-vs-reference PAF | one contig's rows sorted by query offset, strand from column 5 |
 | `sv_multihop.py derive` | `vs_reference.paf` | the same as above; it is already a PAF |
-| the picker | `DerivativeCandidate` | `segments` as-is, `source: "reads in view"` |
+| GATK-SV | a `<CPX>` record | `CPX_INTERVALS` laid out by `CPX_TYPE` |
 
 ## What this stops
 
-Every in-app proposal that computes a route from reads beyond the current
-picker: reference-concatenated bases on the derivative panel (declined — the
-temporary assembly carries `seq: ''` because the path is a structure, and
-concatenating each segment's reference slice yields a reference-derived contig
-rather than the sample's), reads projected onto the allele (reverted,
-`e7b4f2b29b`),
-the two in
-[derivative-allele-reconstruction-gaps](derivative-allele-reconstruction-gaps.md)
-— deriving from partial spanners, and grouping an in-CIGAR deletion as a
-junction.
-Each moves the picker toward being a caller; the route input moves it the
-other way. They stay parked with their triggers; this is the reason not to
-pull them.
+Every in-app proposal that computes a route from reads, and ADR-137 says why:
+reference-concatenated bases on the derivative panel, reads projected onto the
+allele (reverted, `e7b4f2b29b`), deriving from partial spanners, and grouping
+an in-CIGAR deletion as a junction. Each makes JBrowse a caller.
 
 ## Order of work
 

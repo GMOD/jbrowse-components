@@ -230,8 +230,6 @@ need not have existed, and the redundancy tax of rule 3 paid for nothing.
 
 ## Depth lives elsewhere
 
-- The reconstruction built on top of these chains, and its own rules:
-  [derivative-allele-candidates](derivative-allele-candidates.md).
 - What a chain's colour then means, and which rule outranks which:
   [alignments-decision-tree](alignments-decision-tree.md).
 - The measurements, and the offline tool that answers the same question from a

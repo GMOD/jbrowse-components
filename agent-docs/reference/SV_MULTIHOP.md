@@ -1,6 +1,6 @@
 ---
 name: sv-multihop
-description: How scripts/sv_multihop.py and the in-app picker each reconstruct a derivative allele, the silent-wrong-answer bugs in both now pinned by checks, and the measured COLO829/K562/HG008-T facts the cancer_sv and sv_visualization_cgiab tutorials rest on. Read before touching those figures or the derivative-allele reconstruction.
+description: How scripts/sv_multihop.py reconstructs a derivative allele offline, the silent-wrong-answer bugs pinned by checks, the measured COLO829/K562/HG008-T facts the cancer_sv and sv_visualization_cgiab tutorials rest on, and the batch study behind removing the in-app picker (ADR-137). Read before touching those figures or proposing any in-app reconstruction.
 audience: internal
 kind: dataset
 ---
@@ -60,9 +60,8 @@ read the same 2024 ONT molecules. **The independent confirmation is the
 Valle-Inclán 2022 truth set** (Zenodo 4716169, hg38 liftover): its
 `truthset_8`, `truthset_43` and `truthset_7` are exactly this chain's three
 junctions, in these orientations, called from Illumina (two of them from
-Illumina alone) and validated by capture. The chr9 fold-back's picker rows are
-`truthset_34` (the two-segment row) and `truthset_35` then `_36` on one molecule
-(the three-segment row).
+Illumina alone) and validated by capture. The chr9 fold-back's two junctions
+are `truthset_34`, and `truthset_35` then `_36` on one molecule.
 
 Supporting evidence, all measured rather than eyeballed:
 
@@ -393,8 +392,9 @@ ready-made chain, junction copy number as a tiebreak — is parked in
 
 ## HG008-T, the reconstruction's second dataset
 
-The picker is checked against a second cancer on different chemistry, in
-`realReads.cgiab.test.ts`: C-GIAB's HG008-T at 116x PacBio HiFi, over one
+The in-app picker these measurements checked was removed ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)); they stay as
+the record of what it did. It was checked against a second cancer on different
+chemistry, in `realReads.cgiab.test.ts` (gone with it): C-GIAB's HG008-T at 116x PacBio HiFi, over one
 breakend of the `cluster_3` chromoplexy the `sv_visualization_cgiab` tutorial
 follows. All of the below is measured, against the slice the hosted demo serves
 and the files C-GIAB publishes, and the tutorial's "three ways" walkthrough is
@@ -433,7 +433,7 @@ decides how much of the ranked list a figure of this dialog can show.
 `computeReadChains` takes one pileup entry per displayed region, so a locus that
 is not on screen contributes no chain however completely its reads' SA tags
 describe the join. Measured on `sv_cgiab/three_ways`: over the chr3 slice alone
-the picker offers exactly **one** route, and over both demo slices it offers
+the picker offered exactly **one** route, and over both demo slices it offered
 **seven** — 65 reads, then 10, 5, 4, 3, 2, 2, the runners-up all flagged
 "extends beyond this window". The mismapping the fixture's third `it` asserts
 about is chr13's, and chr3's window is nowhere near a telomere, so the chr3-only
@@ -442,191 +442,12 @@ The spec's two `loc` regions are the demo slice bounds, i.e. the same windows
 `realReads.cgiab.test.ts` builds `REGIONS` from, so figure and fixture read the
 same records.
 
-## The in-app picker's junction tolerance is a distance, not a grid
-
-`computeDerivativePaths` groups reads by the junctions their chains describe,
-and two reads agree on a junction only to within the aligner's placement of it.
-That tolerance was applied as `Math.round(bp / tolerance)` — which asks which
-fixed 20 bp cell a coordinate falls in, not whether two coordinates are close —
-so whether two reads merged depended on where the locus sat rather than on how
-far apart they were. Endpoints 1 bp apart split whenever they straddled a cell
-edge; endpoints 10 bp apart split half the time.
-
-**It moved the published answer.** Swept over one cell width, the COLO829
-der(3) fixture reported its support as anything from 24 to 28 reads and grew a
-spurious second candidate at 14 of the 20 offsets. The chr9 fold-back fixture
-carried the same path as two candidates at nine reads and one, i.e. offered one
-route twice with its support divided.
-
-Endpoints are now clustered per refName before comparison (`buildClusterOf`):
-seeded at the coordinates most reads placed a junction at (ties to the lower),
-each seed claiming, in descending-count order, every unclaimed endpoint within
-the tolerance of it. The properties in `computePaths.test.ts` pin it, each
-sweeping an offset rather than testing one pair, plus a translation-invariance
-check over the real COLO829 records.
-
-The mode-seeding replaced a leader sweep (sorted ascending, a new cluster
-opened when an endpoint is further than the tolerance from the one that OPENED
-the current cluster), which had its own silent divider: anchoring on the LOWEST
-endpoint anybody supplied means one jittered 1-read chain landing just left of
-a stacked junction re-anchors the cluster and cuts the junction's own upper
-placements off into a second one — one allele as two candidates, support
-divided, caused by a chain the `minReads` floor was about to discard anyway.
-Every pinned `realReads.*` count is unchanged by the switch; the swept-outlier
-property in `computePaths.test.ts` is the case that separates the two.
-
-**The cluster rule caps a cluster at the tolerance around its own seed, and
-that is load-bearing.** Linking each endpoint to its nearest neighbour instead —
-single linkage — lets clusters chain, and this data has a real case: COLO829's
-two chr9 fold-back junctions sit **28 bp apart**, and jittered reads between
-them bridge the two into one cluster, merging two alleles into one candidate.
-Two junctions further apart than the tolerance are two modes, so each seeds its
-own cluster. `sv_multihop.py`'s `dedupe_junctions` is not single linkage either:
-it compares each record against the records already KEPT, so a drifting run of
-300/308/316 keeps the two ends and drops only the middle, which
-`check-build-scripts.py` pins ("does not merge transitively"). What it anchors
-on is the first record kept, the leader-sweep shape above, and at a 10 bp
-tolerance over a callset that is the right trade — a caller writes one
-position per record, so there is no pile of reads for a stray to re-anchor.
-
-Two consequences to know about. The der(3) window now returns **two** rows: the
-four-segment allele at 28 reads, and at 2 reads the three-segment route that
-skips the chr12 templated insert — the dissent recorded below, now visible in
-the product rather than only here. And at the chr9 fold-back two routes tie at
-nine reads, so the segment-count tiebreak puts the three-segment route above the
-two-segment fold-back; the picker's rows therefore carry a
-`derivative-path-<segments>-<refNames>` testid and both specs select by it,
-because a spec keyed on row order captures the wrong allele under the right
-caption. **`derivative_autogenerated` and `foldback_reconstruction` are stale
-until re-rendered** for this reason — the candidate lists in both frames are
-what changed.
-
-### A segment's identity within a read is its locus AND its read position
-
-One layer below the clustering, in the chain builder the picker shares with the
-arc band. `unpairedReadChain` collapses a fetched record with the SA-tag twin
-its sibling carries, and the dedup key was refName + start alone — which also
-folds together the PASSES of a read that traverses one locus more than once.
-ecDNA / rolling-circle reads do exactly that: the circle-closing junction
-vanished while the read still counted as support for a linear allele it does
-not describe, and a one-segment circle read's chain dropped outright.
-`segLocusKey` now includes clip-at-start-of-read, which no two segments of one
-read can share and which a record and its SA twin agree on — both sides derive
-the same strand-corrected clip from the same alignment's CIGAR, S and H alike.
-`fetchToPaths.test.ts` pins the circling read through the real extraction.
-
-### And the identity a picked route is held by is the junctions
-
-Same family as the tolerance bug above, one layer up. The dialog is an observer
-over a live getter, opened on a pileup that is usually still streaming, so it
-deliberately holds the user's chosen route rather than a row number. It held it
-by `locString` — which is built from the candidate's `segments`, whose OUTER
-edges come from the group's representative, which is its **widest** chain. One
-wider read joining the group the user already picked therefore rewrote that
-group's locstring, the lookup missed, and the radio dropped silently back to row
-0. No re-ranking needed, which is what the index-holding version at least
-required.
-
-The fix is to hand out the grouping key itself as `pathId`
-(`computeDerivativePaths`), since "these two chains are one allele" is a
-question that file already answers, from the clustered junctions alone. Three
-properties in `computePaths.test.ts` pin it: stable while its own reads widen
-it, distinct between two genuinely different routes, and one id for an allele
-read from either end.
-
-The general shape, worth checking anything new here against: **a candidate's
-junctions are the allele and its outer edges are the reads.** Anything that
-identifies, keys on, or compares a candidate has to be built from the first,
-and `locString`, `segments`, `readCount` and `refNames` are all the second or
-worse. `extendsOffScreen` is the remaining one that is read-derived, and it can
-flip for the same reason; it is informational and shown only when the candidates
-disagree about it, so it has not been worth a field.
-
-**And the junctions are read-derived too, one level down — `pathId` is not a
-stable id, only a better one.** It carries CLUSTERED coordinates, and the
-cluster's LABEL is a coordinate some read supplied. Label it with the sweep's
-own leader — the lowest endpoint anybody placed the junction at — and a read
-landing to the left of the whole cluster renames it, so the route the user
-already picked gets a new id with the allele unchanged. That is the same silent
-drop back to row 0, one layer further down.
-
-**It was the common case, not an edge.** Feeding the 37 real COLO829 tumour
-chains in one at a time, over 40 arrival orders, the der(3) route's `pathId`
-changed a mean of **2.98 times per run, in 37 of the 40 orders**.
-
-The label is now the coordinate **most** reads placed the junction at, ties to
-the lower: **0.10 changes per run, 4 orders in 40**. It is the better
-representative anyway — reads stack exactly on an unambiguous breakpoint, so the
-mode is the called position while the leader is the worst-placed read in the
-pile. That fix moved only the name a cluster answers to; the later mode-seeding
-([above](#the-in-app-pickers-junction-tolerance-is-a-distance-not-a-grid))
-anchors membership on the same mode, so the seed and the label are now one
-coordinate — and every pinned count in `realReads.*` and every tolerance
-property is still unchanged.
-
-The residue is real and irreducible: a route whose two reads disagree about a
-junction has no mode to speak of, so a third read can still rename it. So the
-picker does not trust the id alone either. `selectedCandidateIndex`
-(`buildDerivativeVsRefSpec.ts`) matches on `pathId` first and falls back to the
-route's SHAPE — `derivativePathTestId`, refNames and orientations, which no
-coordinate moves — taking it only when it names exactly one row, since two
-routes of one shape at nearby loci is precisely what a fold-back locus offers
-and guessing between them draws the wrong allele under the right caption.
-
-### And the support count was doubled by a display setting
-
-`readCount` is the only number the picker ranks by, the only one it shows, and
-the one `minReads` filters on — and with the track GROUPED it counted a read
-once per lane that read's segments landed in.
-
-`derivativePathCandidates` chained each lane separately and concatenated the
-results, under a comment saying that lost nothing because a segment in another
-lane is named by the read's own SA tag and `unpairedReadChain` folds it in from
-there. It does, and that is the failure: every lane rebuilds the WHOLE chain on
-its own, from one fetched entry plus that entry's SA tag, so both lanes emit
-identical chains, they group, and the route claims twice its support.
-
-**Group by strand is the case that bites, and it is not a corner.** A read
-crossing an inversion has segments on both strands by definition, which is the
-whole shape a fold-back is made of, so exactly the alleles this feature exists
-for are the ones that double. Two synthetic reads over one inversion report 2
-ungrouped and 4 grouped by strand; grouping by an HP tag a supplementary record
-does not carry does the same thing. Nothing in the dialog says which reading it
-is giving you.
-
-`computeReadChains` now takes the LANES and buckets every one of them under a
-single QNAME map before `resolveReadGroup` sees them, which is the ungrouped
-answer by construction. It also puts the partner segment back on screen as a
-fetched entry rather than an SA record, so `extendsOffScreen` stops claiming a
-path leaves a window both of its ends are drawn in.
-`fetchToPaths.test.ts` pins both, through the real extractor, since every other
-suite under `derivativePaths/` hands the chain builder a single lane and cannot
-see this at all.
-
-### The split view's interior panel needs a junction, not a middle
-
-A `BreakpointSplitView` built from a route opens one panel per segment, each on
-the junction that segment carries: the first the one the path LEAVES by, the
-last the one it ARRIVES at, an interior one the centre between its two. The
-centre answers the question only while both junctions fit in the 10 kb window.
-COLO829's interiors are 199 bp and 183 bp and do; an interior ARM does not, so a
-centred window over a 30 kb segment showed NEITHER end — a panel of ordinary
-reference with no read crossing anything and no curve to either neighbour. It
-now anchors on the arrival junction past that length, keeping the connection to
-the panel above.
-
-Which reference coordinate a junction is depends on the strand, and
-`buildSplitViewFromPath` was spelling that rule a second time as a nested
-ternary nothing held against `computePaths`'s. The pair is exported as
-`segmentEntryBp`/`segmentExitBp` now, for the reason `splitJunctionArc` shares
-`connectionEndpointBps` with the entry path: getting it backwards draws no
-connections rather than wrong ones, so nothing reports it.
-
 ## The batch study, and what it settled
 
-`scripts/derivative_path_study.ts` runs the real `computeReadChains` +
+`scripts/derivative_path_study.ts` ran the real `computeReadChains` +
 `computeDerivativePaths` at every junction two somatic callsets report, with two
-control sets. 215 junctions, two cancers, two chemistries. Run it as
+control sets. Both it and the picker were removed ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)), and
+`git show 7ba0479e7d:scripts/derivative_path_study.ts` has the harness. 215 junctions, two cancers, two chemistries. Run it as
 `fetch <dataset>` then `score <dataset>`; the fetch is minutes of remote range
 queries and the corpus it writes is gitignored and refetchable.
 
@@ -731,7 +552,8 @@ projects to six fields inside the pipeline.
 ## Reads on the allele: built, reverted, do not re-add
 
 The in-app reconstruction (`Reconstruct derivative allele...`, a
-`LinearAlignmentsDisplay` track-menu item) draws the PATH only. A lane placing
+`LinearAlignmentsDisplay` track-menu item, removed by ADR-137) drew the PATH
+only. A lane placing
 each supporting read onto that path — `projectReadsOntoDerivative`, beside
 `computePaths` — was built and then reverted in `e7b4f2b29b`, which is the
 commit to read before proposing it again. It is an attractive idea and the
@@ -780,15 +602,6 @@ says a change to it did not move the published figures. `chains` against
 `COLO829.somatic-sv.vcf.gz` is the same kind of check for the other subcommand:
 its output is quoted in the tutorial (100 junctions, 4 chains, chain 1 is the
 RARB one), so a diff of it is a diff of the docs.
-
-**The picker writes that command.** "Copy derive command" in the
-`Reconstruct derivative allele` dialog (`deriveCommand.ts`) emits `derive` for
-the picked route: `--aln` from the track's BAM/CRAM adapter, `--loci` as both
-sides of every junction read off `observedSegments` (`segmentEntryBp` /
-`segmentExitBp`, so an inverted segment is entered at its high coordinate), and
-`--ref` left as a placeholder because the browser never knows the FASTA. That
-is the handoff between the two tools, and the direction it runs in is the point:
-the picker ranks what the reads say, `derive` builds and checks the sequence.
 
 **`--polish-rounds` defaults to 1 so the byte-for-byte reproduction above
 holds.** One round votes the other reads against the backbone read's own
@@ -907,7 +720,7 @@ Added 2026-09-02 after the question "what else does this". The tutorial's
 | --- | --- | --- |
 | Somatic SV + complex clusters, long reads | [Severus](https://github.com/KolmogorovLab/Severus) (Keskus 2025, Nat Biotech) | Breakpoint graph over phased tumor/normal; benchmarked on COLO829, so it is the cross-check for der(3) |
 | Ordering junctions with CN | LINX (Shale 2022) | Allele-specific CN + centromere constraint; already the doc's answer to "should `chains` order" |
-| Junction-balanced graphs, walks | JaBbA + gGnome (Hadi 2020, Cell) | Closest published analogue to what the picker draws, CN-aware, short-read |
+| Junction-balanced graphs, walks | JaBbA + gGnome (Hadi 2020, Cell) | Closest published analogue to a derivative route, CN-aware, short-read |
 | Haplotype-specific karyotypes | RCK (Aganezov & Raphael 2020) | ILP over evolutionary constraints; academic, needs a solver |
 | Sequence of the allele | hifiasm / Shasta on the pulled reads; sawfish (Saunders 2025) for HiFi | Real assembly against `derive`'s one-backbone consensus; the "external tool can do de novo" case |
 | The figure | ReConPlot (Espejo Valle-Inclán 2023); Ribbon | ReConPlot is aimed at the hand-pieced-figure audience directly |
@@ -922,23 +735,10 @@ at the time of writing).
 Worth stating plainly, because every idea in this area is one step from a
 caller and the steps are individually reasonable.
 
-**JBrowse may aggregate and rank what the reads literally say, and draw the
-result. It may not decide what is true, and it must not emit anything that
-outlives the view.**
-
-Concretely, against [cuteSV's](https://doi.org/10.1186/s13059-020-02107-y) own
-description of a caller as three steps — signature extraction, clustering and
-refinement, then calling and genotyping — the in-app reconstruction does the
-first for free (SA tags are already parsed to draw arcs), a thirty-line version
-of the second (`buildClusterOf`), and none of the third. There is no genotype,
-no likelihood, no FILTER and no VCF out. `computeDerivativePaths` is ~180 lines
-of logic; the other ~1,300 lines of this feature build views, which is a genome
-browser's actual job.
-
-The ancestry to claim is Ribbon and SplitThreader, both cited in the tutorial and
-both visualization tools. The picker is Ribbon with a `GROUP BY`: Ribbon draws
-one read's SA chain against the reference, this groups those chains and counts
-them.
+**JBrowse shows what the reads and the callers literally say, and draws an
+allele only when a tool outside it built one** ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)). The in-app picker sat
+on the wrong side of that line: it proposed routes at 28–40% of ordinary ONT
+loci and took copy counts from where reads stopped.
 
 Three questions killed `projectReadsOntoDerivative`
 ([above](#reads-on-the-allele-built-reverted-do-not-re-add)) and they generalize,
@@ -953,12 +753,6 @@ so ask them of anything new here:
 
 A "no" to any of them means the thing belongs in `scripts/`, or in somebody
 else's program, and not in the browser.
-
-The one capability here that no caller has: it shows every route the reads
-describe, each with its own count, where cuteSV and LINX emit one answer. That
-cuts both ways. The chr9 fold-back's two nine-read rows are two validated
-alleles; the der(3) window's 2-read row that skips the chr12 insert is an
-alignment miss (above), and nothing in the dialog tells the two cases apart.
 
 ## Traps in this worktree
 

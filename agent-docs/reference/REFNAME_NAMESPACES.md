@@ -32,8 +32,8 @@ thing it meets (`dynamicBlocks`, `displayedRegions`, `assembly.refNames`) is
 canonical.
 
 Feature-to-feature comparisons are safe for the same reason: both operands come
-from the same fetch, so they agree. `features/derivativePaths/computePaths.ts`
-and `features/arcs/compute.ts` compare `a.refName !== b.refName` and are
+from the same fetch, so they agree. `features/arcs/compute.ts` compares
+`a.refName !== b.refName` and is
 correct. Only feature-against-view-state straddles.
 
 ## The main-thread normalization layer
@@ -444,29 +444,6 @@ Everything else on that path is adapter-space on both sides on purpose:
 So the dotplot needs no part of the synteny fix. It is not that it was overlooked;
 its answers are about regions it asked for, which is the rule at the top of this
 file.
-
-## One site outside both channels, reasoned rather than probed
-
-`LinearDerivativeVsRef/buildDerivativeVsRefSpec.ts` has two `refName` uses and
-only one of them is a refName at all. `derivativeName(candidate)` is a name this
-function MINTS for the derivative contig (`der_9_9`); it belongs to neither
-namespace and needs nothing. `seg.refName` is the reference contig a segment came
-from, it reaches here off BAM features through `plugin-alignments`'
-`computePaths`, and it becomes both the reference panel's **displayed regions**
-(`lgvRegions`) and the positions of the `FromConfigAdapter` features drawn on
-them.
-
-It is the one site in this whole audit that is a *requested* refName being read
-rather than an un-requested one, which is why it did not look like the others and
-why the rule at the top of this file does not settle it: the two operands agree
-with each other, and the question is instead whether an adapter-spelled name can
-be a view's `displayedRegions` at all.
-
-**Treat this as unverified.** Nothing here has been run — it is reasoned from the
-shape of the code, and this thread's own record is that reasoning about it was
-wrong three times out of four. The probe that settles it: a BAM whose header
-spells a contig as an assembly alias, then read the reference panel's
-`displayedRegions` after building a derivative.
 
 ## A third namespace in the same payload: ASSEMBLY names
 
