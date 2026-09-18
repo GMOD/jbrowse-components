@@ -32,6 +32,12 @@ export function stringifySAM({
 
   lines.push('@PG\tID:jbrowse\tPN:JBrowse\tVN:2')
 
+  // The features arrive in the file's own contig names and the @SQ lines above
+  // use the assembly's, so RNAME and RNEXT are renamed to match them — a record
+  // naming a reference the header doesn't list is invalid SAM.
+  const canonical = (refName: string | undefined) =>
+    refName && assembly ? assembly.getCanonicalRefName2(refName) : refName
+
   for (const feature of features) {
     const start = feature.get('start')
     const nextPos = feature.get('next_pos') as number | undefined
@@ -40,11 +46,11 @@ export function stringifySAM({
       [
         feature.get('name') || '*',
         (feature.get('flags') as number | undefined) ?? 0,
-        feature.get('refName') || '*',
+        canonical(feature.get('refName')) || '*',
         String(start + 1),
         feature.get('score') ?? 255,
         (feature.get('CIGAR') as string | undefined) || '*',
-        (feature.get('next_ref') as string | undefined) || '*',
+        canonical(feature.get('next_ref') as string | undefined) || '*',
         typeof nextPos === 'number' ? String(nextPos + 1) : '0',
         (feature.get('template_length') as number | undefined) ?? 0,
         (feature.get('seq') as string | undefined) || '*',
