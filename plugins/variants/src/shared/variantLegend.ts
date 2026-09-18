@@ -151,23 +151,40 @@ export function getSampleGroupEntries(
     }))
 }
 
-// One swatch per painted domain value, ordered by the scale's own vocabulary
-// and shaded at full dosage — which is the hue itself, so a class swatch and
-// the hom cells of that class are the same color.
+export const DOSAGE_NOTE = 'Pale: het, full: hom'
+
+// One row per painted domain value, ordered by the scale's own vocabulary.
+// Where lightness carries dosage, each row draws its het and hom shades and a
+// note row says which is which; otherwise the row is the hue alone.
 function domainEntries(
   order: readonly string[],
-  painted: readonly string[],
+  inputs: VariantLegendInputs,
   color: (value: string) => string,
   label: (value: string) => string,
-) {
+): CategoricalEntry[] {
+  const painted = inputs.paintedDomain
   const seen = new Set(painted)
   const ranked = order.filter(value => seen.has(value))
   const rest = painted.filter(value => !order.includes(value)).sort()
-  return [...ranked, ...rest].map(value => ({
-    value,
-    label: label(value),
-    color: color(value),
-  }))
+  const values = [...ranked, ...rest]
+  if (inputs.renderingMode === 'phased' || !inputs.shadeByDosage) {
+    return values.map(value => ({
+      value,
+      label: label(value),
+      color: color(value),
+    }))
+  }
+  return [
+    ...values.map(value => ({
+      value,
+      label: label(value),
+      swatches: [
+        { color: shadeByDosage(color(value), 0.5) },
+        { color: color(value) },
+      ],
+    })),
+    ...(values.length ? [entry(DOSAGE_NOTE)] : []),
+  ]
 }
 
 // The cell-coloring scale for a resolved `featureColor` key: the impact tiers
@@ -189,7 +206,7 @@ function getCellColorScale(
       entries: [
         ...domainEntries(
           [...IMPACT_TIERS.map(t => t.tier), UNANNOTATED_IMPACT],
-          inputs.paintedDomain,
+          inputs,
           getImpactColor,
           tier => tier,
         ),
@@ -206,7 +223,7 @@ function getCellColorScale(
       entries: [
         ...domainEntries(
           Object.keys(colors),
-          inputs.paintedDomain,
+          inputs,
           type => colors[type]!,
           svTypeDisplayLabel,
         ),

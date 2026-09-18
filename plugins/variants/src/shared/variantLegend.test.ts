@@ -6,6 +6,7 @@ import {
   UNANNOTATED_IMPACT,
 } from './variantConsequence.ts'
 import {
+  DOSAGE_NOTE,
   getGenotypeEntries,
   getSampleGroupEntries,
   getVariantColorScales,
@@ -177,7 +178,7 @@ describe('getVariantColorScales', () => {
 
   it('lists only the impact tiers a cell was painted for', () => {
     const sections = getVariantColorScales({
-      ...inputs({ paintedDomain: ['MODIFIER', 'HIGH'] }),
+      ...inputs({ paintedDomain: ['MODIFIER', 'HIGH'], shadeByDosage: false }),
       featureColor: CONSEQUENCE_IMPACT_JEXL,
       colorBy: '',
       sources,
@@ -195,7 +196,10 @@ describe('getVariantColorScales', () => {
 
   it('names unannotated records as their own tier, in its own color', () => {
     const [section] = getVariantColorScales({
-      ...inputs({ paintedDomain: ['MODIFIER', UNANNOTATED_IMPACT] }),
+      ...inputs({
+        paintedDomain: ['MODIFIER', UNANNOTATED_IMPACT],
+        shadeByDosage: false,
+      }),
       featureColor: CONSEQUENCE_IMPACT_JEXL,
       colorBy: '',
       sources,
@@ -209,7 +213,7 @@ describe('getVariantColorScales', () => {
 
   it('builds an SV-type section from the painted classes', () => {
     const sections = getVariantColorScales({
-      ...inputs({ paintedDomain: ['INVDUP', 'DEL'] }),
+      ...inputs({ paintedDomain: ['INVDUP', 'DEL'], shadeByDosage: false }),
       featureColor: SV_TYPE_COLOR,
       svTypeColors: { DEL: '#e41a1c', DUP: '#377eb8', INVDUP: '#1f77b4' },
       colorBy: '',
@@ -229,7 +233,7 @@ describe('getVariantColorScales', () => {
 
   it('lists the non-structural class as a member of the SV scale', () => {
     const [section] = getVariantColorScales({
-      ...inputs({ paintedDomain: ['DEL', NON_SV_TYPE] }),
+      ...inputs({ paintedDomain: ['DEL', NON_SV_TYPE], shadeByDosage: false }),
       featureColor: SV_TYPE_COLOR,
       svTypeColors: assignSvTypeColors(['DEL', NON_SV_TYPE]),
       colorBy: '',
@@ -244,7 +248,11 @@ describe('getVariantColorScales', () => {
 
   it('names the no-call fill in an SV-type key when one was painted', () => {
     const [section] = getVariantColorScales({
-      ...inputs({ hasNoCall: true, paintedDomain: ['DEL'] }),
+      ...inputs({
+        hasNoCall: true,
+        paintedDomain: ['DEL'],
+        shadeByDosage: false,
+      }),
       featureColor: SV_TYPE_COLOR,
       svTypeColors: { DEL: '#e41a1c' },
       colorBy: '',
@@ -260,6 +268,41 @@ describe('getVariantColorScales', () => {
         color: REFERENCE_COLOR,
       },
       { value: 'No call', label: 'No call', color: NO_CALL_COLOR },
+    ])
+  })
+
+  it('draws each SV class at het and hom dosage when shading is on', () => {
+    const [section] = getVariantColorScales({
+      ...inputs({ paintedDomain: ['DEL'] }),
+      featureColor: SV_TYPE_COLOR,
+      svTypeColors: { DEL: '#e41a1c' },
+      colorBy: '',
+      sources,
+    })
+    expect(entriesOf(section)!.slice(0, 2)).toEqual([
+      {
+        value: 'DEL',
+        label: 'Deletion',
+        swatches: [
+          { color: shadeByDosage('#e41a1c', 0.5) },
+          { color: '#e41a1c' },
+        ],
+      },
+      { value: DOSAGE_NOTE, label: DOSAGE_NOTE, color: undefined },
+    ])
+  })
+
+  it('keeps one swatch per SV class in phased mode', () => {
+    const [section] = getVariantColorScales({
+      ...inputs({ renderingMode: 'phased', paintedDomain: ['DEL'] }),
+      featureColor: SV_TYPE_COLOR,
+      svTypeColors: { DEL: '#e41a1c' },
+      colorBy: '',
+      sources,
+    })
+    expect(entriesOf(section)!.map(i => i.label)).toEqual([
+      'Deletion',
+      'Reference',
     ])
   })
 
