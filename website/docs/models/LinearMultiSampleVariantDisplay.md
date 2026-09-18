@@ -223,7 +223,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  | [TreeSidebarMixin](../treesidebarmixin#getter-parsedtree) |
 | <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  | [TreeSidebarMixin](../treesidebarmixin#getter-root) |
 | <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> |  | [TreeSidebarMixin](../treesidebarmixin#getter-treehasbranchlengths) |
-| <span id="getter-roworderiscustom">**rowOrderIsCustom**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the rows have been arranged away from the order they arrived in — what "Reset row order" is offered on. A written `layout` here; a display whose config seeds `layout` on load (the multi-sample variant displays' `colorBy` / `groupBy`) overrides it to compare against that seed, so the reset does not appear on a track nobody has touched.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-roworderiscustom) |
+| <span id="getter-roworderiscustom">**rowOrderIsCustom**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether the rows have been arranged away from the order they arrived in — what "Reset row order" is offered on: a written `layout`.</span> | [TreeSidebarMixin](../treesidebarmixin#getter-roworderiscustom) |
 
 ## Methods
 

@@ -105,7 +105,7 @@ const CYP_LAYOUT = CYP_GROUPS.flatMap(({ label, color, n, prefix, from = 1 }) =>
 // A `layout` replaces the sidebar sources wholesale, so supplying only labels
 // left every row with no color and took the swatch column away with it. The
 // group and its color are therefore repeated here, matching the `group` column
-// of dog10k_amy2b_samples.tsv that the track's `colorBy` reads. Wolves are
+// of dog10k_amy2b_samples.tsv that the track's `rowColor` reads. Wolves are
 // labelled by country, because which countries the five carriers come from is
 // the reading this panel supports.
 const AMY2B_COLORS: Record<string, string> = {

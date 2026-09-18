@@ -378,8 +378,8 @@ function groupKeyer(
 
 // Whether chain mode can honor a facet: the chain has to resolve to one key,
 // which holds when the representative read answers for the fragment or when the
-// dimension states the chain's key itself. A tag or a field describes the
-// fragment. Derived rather than asserted as a third field, so a `chainKey`
+// dimension states the chain's key itself. A tag or a field keys the chain off
+// its representative read. Derived rather than asserted as a third field, so a `chainKey`
 // written without a matching flag can't sit there unreachable while the
 // dimension degrades to ungrouped.
 export function isChainGroupable(field: string | undefined) {

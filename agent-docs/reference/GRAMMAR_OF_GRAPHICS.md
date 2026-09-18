@@ -297,9 +297,8 @@ orders and names a value through `categoricalField` (below), and
 never decides which sections exist**, so no worker request carries one and a
 reorder refetches nothing: the listed values stack first, the rest follow
 sorted, and a listed value the data lacks takes no section. The multi-row and
-multiway synteny displays' `domain` slots, the feature, mark and multi-sample
-variant displays' `facet.domain`, the alignments display's `groupBy.domain` and
-the colour and glyph channels' legend order are that one word and rule
+multiway synteny displays' `domain` slots, every display's `facet.domain`
+and the colour and glyph channels' legend order are that one word and rule
 (`groupKeyComparator`); a key over the facet's own field lists its rows in the
 sections' order. The four tree-sidebar displays (MAF, multi-wiggle and the two
 multi-sample variant ones) share the word as a `domain` row-order slot, read as
@@ -340,8 +339,7 @@ less the hidden sections.
 
 The facet replaced a `frozen` `groupBy` slot,
 `{ type: 'strand' | 'attribute', attribute, domain }`, that the spec translated
-to and from; alignments keeps its `groupBy`, whose dimensions are not fields.
-Why the facet and the colour are one config object each rather than flat
+to and from, and the alignments displays' `groupBy` of the same shape. Why the facet and the colour are one config object each rather than flat
 slots, and the flat spelling's one-day life, is
 [ADR-131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md).
 One proposal was declined in review: filter shorthands such as

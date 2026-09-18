@@ -151,7 +151,7 @@
           "type": "LinearMultiSampleVariantMatrixDisplay",
           "displayId": "Ebola-genotypes-LinearMultiSampleVariantMatrixDisplay",
           "height": 400,
-          "colorBy": "region"
+          "rowColor": "region"
         }
       ]
     }

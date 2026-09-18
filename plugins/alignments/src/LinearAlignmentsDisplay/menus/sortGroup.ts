@@ -184,10 +184,6 @@ export interface SectionOrderMenuModel {
   hideGroup: (key: string) => void
 }
 
-// The Sections submenu is the runtime half of `facet.domain`: a move writes
-// the grouping back with the drawn order as its domain, which refetches, since
-// the worker caps in that order. Absent while chain mode degrades the grouping
-// to one section.
 // The sort-by-tag dialog both sort surfaces open: the track menu sorts at the
 // center line, the read's right-click menu at the clicked column.
 export function queueSortByTagDialog(
@@ -207,6 +203,10 @@ export function queueSortByTagDialog(
   ])
 }
 
+// The Sections submenu is the runtime half of `facet.domain`: a move writes
+// the facet back with the drawn order as its domain, which refetches nothing,
+// since the worker is sent no domain. Absent while chain mode degrades the
+// facet to one section.
 export function getSectionOrderMenuItems(model: SectionOrderMenuModel) {
   const facet = model.effectiveFacet
   return facet

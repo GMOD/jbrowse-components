@@ -1077,7 +1077,7 @@ export const ldSpecs: ScreenshotSpec[] = [
   // CLUSTERED, NOT GROUPED, which is the reverse of what the first attempt tried
   // and is the whole design. Grouping by population puts labelled bands down the
   // sidebar but leaves each band in adapter order, so the slab never forms. The
-  // population information is not lost — `colorBy` puts it in the sidebar stripe
+  // population information is not lost — `rowColor` puts it in the sidebar stripe
   // — and it now arrives as a RESULT: the clustering is given no knowledge of
   // rs4988235, and the cluster it finds is the one whose stripe is CEU and FIN.
   //

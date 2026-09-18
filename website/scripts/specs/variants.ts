@@ -137,7 +137,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
   // Multi-sample variant display colored by population: the 1000 Genomes phase 3
   // chr1 callset (2,504 samples) with a population samples-TSV, so the per-sample
   // rows group/color by the 26 population codes. The track config in
-  // config_demo.json sets colorBy: 'population' on its LinearMultiSampleVariantDisplay.
+  // config_demo.json sets rowColor: 'population' on its LinearMultiSampleVariantDisplay.
   // Remote NCBI VCF — give it a long ready timeout and settle.
   {
     mode: 'url',

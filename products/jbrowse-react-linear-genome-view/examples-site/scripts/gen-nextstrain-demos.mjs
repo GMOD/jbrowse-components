@@ -645,7 +645,7 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
             type: 'LinearMultiSampleVariantMatrixDisplay',
             displayId: `${assembly}-genotypes-LinearMultiSampleVariantMatrixDisplay`,
             height: 400,
-            colorBy: 'region',
+            rowColor: 'region',
           },
         ],
       },

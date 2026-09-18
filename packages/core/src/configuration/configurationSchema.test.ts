@@ -1533,6 +1533,19 @@ describe('a closed schema', () => {
     )
   })
 
+  test('admits the comment keys the JSON schema admits', () => {
+    expect(
+      getSnapshot(Display.create({ color: { value: 'blue', _comment: 'x' } })),
+    ).toEqual({ color: { value: 'blue' } })
+  })
+
+  test('reads null as the empty object, which clears the channel', () => {
+    expect(getSnapshot(Display.create({ color: null }))).toEqual({})
+    const node = Display.create({ color: 'blue' })
+    node.setSubschema('color', null)
+    expect(getSnapshot(node)).toEqual({})
+  })
+
   test('checks after the lift, so the shorthand still reads', () => {
     expect(getSnapshot(Display.create({ color: 'blue' }))).toEqual({
       color: { value: 'blue' },

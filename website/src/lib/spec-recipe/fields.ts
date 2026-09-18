@@ -356,9 +356,6 @@ function hasChannelMenus(displayType: string | undefined) {
   return displayType !== undefined && CHANNEL_MENU_DISPLAYS.has(displayType)
 }
 
-// The canvas displays' `color` object: a string is the constant, and
-// `{ field, domain, palette }` a field through a palette. The dialog names the
-// field; the order and colors it spends are the JSON the same dialog opens.
 // The Manhattan display's `color` object: its Color by submenu picks the
 // scale, and a field is typed into the Field... dialog. The order and colors
 // the values take have no menu row.
@@ -384,6 +381,9 @@ function manhattanColorStep(
     : undefined
 }
 
+// The canvas displays' `color` object: a string is the constant, and
+// `{ field, domain, palette }` a field through a palette. The dialog names the
+// field; the order and colors it spends are the JSON the same dialog opens.
 function colorStep(
   value: unknown,
   context: FieldContext,

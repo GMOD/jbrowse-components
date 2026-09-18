@@ -43,16 +43,16 @@ test('displayDefaults shorthand color lands on the LinearBasicDisplay', () => {
   // the object form (displayDefaults: {...}) was expanded to the array form
   // during hydration; the color routed to the display that defines a `color` slot
   const conf = hydrateTrack('gff3tabix_genes_shorthand_color')
-  expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
-    '#6a3d9a',
-  )
+  expect(
+    readConfObject(display(conf, 'LinearBasicDisplay'), ['color', 'value']),
+  ).toBe('#6a3d9a')
 })
 
 test('display settings route by slot name across a track’s displays', () => {
   const conf = hydrateTrack('volvox_filtered_vcf_shorthand')
-  expect(readConfObject(display(conf, 'LinearVariantDisplay'), 'color')).toBe(
-    '#1f78b4',
-  )
+  expect(
+    readConfObject(display(conf, 'LinearVariantDisplay'), ['color', 'value']),
+  ).toBe('#1f78b4')
   expect(
     readConfObject(display(conf, 'ChordVariantDisplay'), 'strokeColor'),
   ).toBe('#e31a1c')

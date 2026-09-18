@@ -222,10 +222,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * Whether the rows have been arranged away from the order they arrived
-       * in — what "Reset row order" is offered on. A written `layout` here; a
-       * display whose config seeds `layout` on load (the multi-sample variant
-       * displays' `colorBy` / `groupBy`) overrides it to compare against that
-       * seed, so the reset does not appear on a track nobody has touched.
+       * in — what "Reset row order" is offered on: a written `layout`.
        */
       get rowOrderIsCustom(): boolean {
         return self.layout.length > 0

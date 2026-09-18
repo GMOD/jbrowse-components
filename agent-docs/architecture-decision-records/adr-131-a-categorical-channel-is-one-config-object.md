@@ -124,6 +124,10 @@ its own slots and the declared shorthand.
   `ChordSyntenyDisplay`'s `colorBy` (`default | chromosome | strand`) has no
   field mode, so like alignments' `colorBy` it selects a scheme and is outside
   this decision.
+- What a review of the landing left open — the editor's per-slot writes,
+  `displayDefaults` routing across colour objects of different shapes, and
+  scale switches that drop the field — is in
+  `agent-docs/handoffs/categorical-channel-review-followups.md`.
 
 ## Rejected alternatives
 

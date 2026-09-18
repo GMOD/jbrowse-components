@@ -210,7 +210,7 @@
           "type": "LinearMultiSampleVariantMatrixDisplay",
           "displayId": "Zika-genotypes-LinearMultiSampleVariantMatrixDisplay",
           "height": 400,
-          "colorBy": "region"
+          "rowColor": "region"
         }
       ]
     },

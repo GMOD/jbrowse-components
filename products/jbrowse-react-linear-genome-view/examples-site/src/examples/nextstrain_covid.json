@@ -187,7 +187,7 @@
           "type": "LinearMultiSampleVariantMatrixDisplay",
           "displayId": "SARS-CoV-2-genotypes-LinearMultiSampleVariantMatrixDisplay",
           "height": 400,
-          "colorBy": "region"
+          "rowColor": "region"
         }
       ]
     }

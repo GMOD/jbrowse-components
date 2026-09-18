@@ -94,7 +94,7 @@ test('bars from a BED score column, coloured by strand, with the key on screen',
   // table the worker resolved has the one entry
   const legend = await findByTestId('floating-legend', {}, { timeout })
   await waitFor(() => {
-    expect(legend.textContent).toContain('1')
+    expect(legend.textContent).toContain('Forward strand')
   })
 }, 30000)
 
@@ -128,7 +128,7 @@ test('the SVG export paints the same bars and carries the key', async () => {
   expect(svg).toContain('height="140" fill="rgb(255,0,0)"')
   // the key, off the same table
   expect(svg).toContain('data-testid="color-legend"')
-  expect(svg).toContain('>1<')
+  expect(svg).toContain('>Forward strand<')
 }, 40000)
 
 test('points over the same file with a jexl colour', async () => {

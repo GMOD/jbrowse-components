@@ -178,7 +178,7 @@
           "type": "LinearMultiSampleVariantMatrixDisplay",
           "displayId": "RSV-A-genotypes-LinearMultiSampleVariantMatrixDisplay",
           "height": 400,
-          "colorBy": "region"
+          "rowColor": "region"
         }
       ]
     }
