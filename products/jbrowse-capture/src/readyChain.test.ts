@@ -79,18 +79,6 @@ test('a trackId that never opens fails the gate, not the paint wait', async () =
   ).rejects.toThrow('the session never reached the requested state')
 })
 
-// The fallback chain that used to run here was every remaining signal, and
-// every one of them is an ABSENCE that an app which has not started also
-// satisfies — so it reported success on an empty browser. Saying so is the
-// answer; a wait that cannot fail is not.
-test('a build with no marker is an error rather than a fallback chain', async () => {
-  document.body.innerHTML = `<span hidden data-app-views="1"
-    data-app-assemblies='["hg38"]' data-app-tracks='["genes"]'></span>`
-  await expect(
-    waitForJBrowseReady(fakePage(), { timeout: 300 }),
-  ).rejects.toThrow('publishes no [data-app-phase]')
-})
-
 // The marker path when the app never reports ready: the stage lands in
 // unsettled under its own name, the census lands beside it naming the display
 // and its phase, and — with allowUnsettled — the caller gets the report rather

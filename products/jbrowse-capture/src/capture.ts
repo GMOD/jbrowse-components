@@ -8,9 +8,10 @@ import {
   findChromeExecutable,
   isBrowserConsoleNoise,
 } from './browser.ts'
+import { assertSupportedInstance } from './instanceVersion.ts'
 import { waitForJBrowseReady } from './ready.ts'
 import { assemblyFromSession, trackIdsFromSession } from './session.ts'
-import { jbrowseUrl } from './url.ts'
+import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
 import { waitForAppSettled } from './waits.ts'
 
 import type { ReadyOptions, ReadyReport } from './ready.ts'
@@ -74,6 +75,7 @@ export async function openJBrowse(
     ...urlOptions
   } = options
   const url = jbrowseUrl(urlOptions)
+  await assertSupportedInstance(urlOptions.instance ?? PUBLIC_INSTANCE)
   const browser = await puppeteer.launch({
     headless,
     executablePath,

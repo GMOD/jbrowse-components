@@ -130,9 +130,8 @@ export async function waitForSession(
     const summary = await readSessionSummary(page).catch(() => undefined)
     const found = summary
       ? `${summary.views} view(s), assemblies [${summary.assemblies.join(', ')}], tracks [${summary.trackIds.join(', ')}]`
-      : 'no census on the page at all — either this is not a JBrowse app, or ' +
-        'it predates the readiness marker, in which case point --instance at a ' +
-        'build that publishes one'
+      : 'no census on the page at all, so either this is not a JBrowse app or ' +
+        'it is older than v5, the first release to publish one'
     const missing = summary
       ? trackIds.filter(id => !summary.trackIds.includes(id))
       : trackIds

@@ -3,12 +3,7 @@ import {
   pendingDisplayStates,
   waitForSession,
 } from './sessionGate.ts'
-import {
-  delay,
-  hasAppReadyMarker,
-  waitForAppSettled,
-  waitForDisplaysDone,
-} from './waits.ts'
+import { delay, waitForAppSettled, waitForDisplaysDone } from './waits.ts'
 
 import type { PendingDisplay, SessionExpectations } from './sessionGate.ts'
 import type { Page } from 'puppeteer'
@@ -78,24 +73,9 @@ export async function waitForJBrowseReady(
 ): Promise<ReadyReport> {
   const unsettled: string[] = []
 
-  // 0. the session exists and holds what was asked for. Positive, and throws.
+  // The census the gate reads shares its element with `[data-app-phase]`, so
+  // once it passes the marker is there too.
   await waitForSession(page, { assembly, trackIds, timeout })
-
-  // 1. and the build publishes the marker at all. Said out loud rather than
-  //    worked around: a chain built from the remaining signals is satisfied by
-  //    a page that has not started, so the fallback that used to run here
-  //    reported success on an empty browser unless it was also given a
-  //    seen-busy-then-quiet gate to compensate. One positive selector replaces
-  //    all of it, and a build too old to have it needs a newer --instance, not
-  //    a wait chain that cannot fail.
-  if (!(await hasAppReadyMarker(page))) {
-    throw new Error(
-      'this page publishes no [data-app-phase], so there is no positive signal ' +
-        'that it has finished — every other readiness attribute is an absence ' +
-        'an app that has not started also satisfies. Point --instance at a ' +
-        'JBrowse build that publishes it.',
-    )
-  }
 
   const ready = await waitForAppSettled(page, { timeout })
   if (!ready) {

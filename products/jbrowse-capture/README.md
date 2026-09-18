@@ -52,10 +52,10 @@ not working, so it reads `ready` over an error banner. `data-display-drawn` is
 the stricter question, and the census of what is still unpainted goes in the
 error.
 
-**A build that publishes no `[data-app-phase]` is an error, not a slower path.**
-The fallback chain that used to run there was those negative signals plus a
-seen-busy-then-quiet heuristic to compensate for them, and it existed for builds
-older than the marker. Point `--instance` at a build that has it.
+**The instance has to be JBrowse v5 or later**, the first release to publish the
+marker. Capture reads the instance's `version.txt` before launching a browser
+and refuses an older build there, rather than waiting out a timeout on a page
+that will never say it has finished.
 
 ## Library
 
