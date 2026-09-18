@@ -107,6 +107,6 @@ test('a dormant field under scale none reaches both colour objects as written', 
 
 test('a colour no display takes fails the load, naming every reason', () => {
   expect(() => hydrateFeatureTrack({ color: { scale: 'linear' } })).toThrow(
-    /no display of a FeatureTrack takes displayDefaults\.color \(LinearBasicDisplay: .*LinearManhattanDisplay: /,
+    /no display of a FeatureTrack takes displayDefaults\.color \(LinearBasicDisplay: [\s\S]*LinearManhattanDisplay: /,
   )
 })

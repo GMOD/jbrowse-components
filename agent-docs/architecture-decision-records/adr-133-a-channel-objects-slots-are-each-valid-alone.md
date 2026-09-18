@@ -63,8 +63,10 @@ starts from neither.
   through, and such a spec changes nothing.
 - The validator no longer flags a `domain` with no `field`. A config that
   writes one gets no colours by field and no error.
-- FeatureColor has no `scale`: its field paints whenever named, and Solid
-  color drops it, as the flat slots before ADR-131 did.
+- ~~FeatureColor has no `scale`: its field paints whenever named, and Solid
+  color drops it, as the flat slots before ADR-131 did.~~ Superseded by
+  [ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md):
+  FeatureColor has `scale`, and Solid color keeps the field under `none`.
 
 ## Rejected alternatives
 

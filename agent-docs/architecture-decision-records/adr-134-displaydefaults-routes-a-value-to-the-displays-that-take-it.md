@@ -60,3 +60,7 @@ over the displays declaring it, where it was the `allOf` of their slot tables.
   the arc display's plain `color` would still refuse an object. MarkColor and
   MarkGlyph do share the rules
   ([ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md)).
+  Superseded by
+  [ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md):
+  `ld` and the ribbon schemes are fields, the four objects share one shape
+  and one `scale` vocabulary, and each display declares the members it paints.

@@ -217,9 +217,26 @@ The seams, named honestly:
 - **A reader channel is where "declared" ends.** Manhattan's LD colouring
   joins each feature against a second adapter through a function
   (`plugins/gwas/src/ManhattanRPC/makeLdEvaluator.ts`) the encoder takes in a
-  channel's place. It runs in the one loop, but nothing about it is a
-  declaration, and the grammar has no equivalent. Every display with a
-  meaning the encoding cannot say will look like this.
+  channel's place. The config spells it as a field, `color: { field: 'ld' }`
+  ([ADR-135](../architecture-decision-records/adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)),
+  which is what it is in the grammar — a variable prepared before the plot —
+  but the reader behind the name is a join, not a declaration, and the
+  grammar has no equivalent. Every display with a meaning the encoding cannot
+  say will look like this.
+- **The colour objects are one shape, and a preset is a field.** FeatureColor,
+  ManhattanColor, RibbonColor and MarkColor are each
+  `{ value, field, scale, domain, palette, ramp }` from one display-kit factory
+  (`colorChannelSlots`), `scale` drawn from `none | categorical | linear | log`
+  with each display declaring the members it paints; `none` is ggplot2's
+  set-versus-map distinction (a parameter beside `aes()` creates no scale),
+  and a field left without a scale takes the display's default the way
+  `scale_type` picks one from the data. The ribbon's `strand`, `identity`,
+  `mappingQual` and `dnds` are fields with a vocabulary or ramp of their own,
+  as synteny-core's `continuousRampConfig` already keyed them, and
+  `ribbonColorBy.ts` maps them onto the synteny runtime modes
+  ([ADR-135](../architecture-decision-records/adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)).
+  What stays local: a field under `none` is the menus' switch-back memory,
+  which ggplot2 has no place for since a plot specification is a value.
 - **A scale table is per fetched region, and the quantitative ones are
   unioned.** The grammar resolves a scale over the whole dataset; the worker
   sees one region. A categorical entry is a function of the value and the
@@ -325,7 +342,8 @@ dialogs is an editor over the display's two settings and the filter override:
 `@jbrowse/display-kit/channelSpec` parses the text through
 `preProcessConfigSnapshot`, the two objects' own lift and checks, so the box
 refuses what a config file cannot hold, and a spec naming no field or colour
-besides; the dialog hands `facet` and
+besides; a `color` whose `scale` is `none` beside a field reads as its
+constant, since the dialog has no dormant-field spelling; the dialog hands `facet` and
 `color` to `applyDisplaySettings` and `filter` to `setJexlFilters`. The Group by dialog writes the same two settings
 through `setFacet` and `setColorScale` (`groupByChannelSpec`).
 
