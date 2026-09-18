@@ -16,7 +16,7 @@ synteny, variants, alignment, or depth.
 **Prerequisites:** the plugin (below), a graph in rGFA or GFA, and the
 contributing assemblies if you want to launch out into them.
 
-<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and use the same reference-position ramp, so a block above and its node below share a hue. The charcoal nodes are the alternate alleles. They have no K12 coordinates, so the linear track does not draw them." src="/img/pangenome/rgfa_subgraph_launch.png" />
+<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and use the same reference-position ramp, so a block above and its node below share a hue: the blue boxes are one segment in both. The charcoal nodes are the alternate alleles, like the ringed one CFT073 carries in place of the boxed segment. They have no K12 coordinates, so the linear track does not draw them." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 :::info Requires the graph genome view plugin
 
@@ -268,7 +268,7 @@ groups rows by the assembly each allele came from. A row then shows what that
 strain does to the reference: the backbone sits on top, and each strain's
 charcoal marks sit under it, tied by grey threads to where they attach.
 
-<Figure caption="460 bp of the pggb graph drawn twice, under the genes, MAF and segments lanes for the same window. Left, Sample rows. Right, the same nodes force-directed, where the locus draws as a shape." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
+<Figure caption="460 bp of the pggb graph in Sample rows, under the genes, MAF and segments lanes for the same window. CFT073's row is one long bar over the K12 span its segment bypasses, and its MAF row is empty over the same span." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 The assembly an allele "came from" depends on the format. On rGFA it is the
 strain that _first contributed_ the sequence, because `SR` is build order and
@@ -425,7 +425,7 @@ The lane is a projection onto K12's coordinates. It has a column for every base
 K12 has and none for a base K12 lacks, so it cannot draw 65 kb that exists only
 in CFT073. The graph holds both, and the node in the lower panel is that 65 kb.
 
-<Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies in the linear view above, across every track there. The ringed node is 65.4 kb carried only by CFT073, and it attaches to K12 across a 2.1 kb band — the interval between the segments the allele leaves and rejoins." src="/img/pangenome/rgfa_hover_sync.png" />
+<Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies in the linear view above, across every track there. The ringed node is 65.4 kb carried only by CFT073, and it leaves and rejoins K12 at either end of the 2.1 kb band, which is the pair of teal K12 segments boxed in blue in the graph." src="/img/pangenome/rgfa_hover_sync.png" />
 
 The same event drawn as an alignment is independent evidence. The graph's
 insertion comes from the graph's segment and link indexes. The alignment below
@@ -471,7 +471,7 @@ them by default, so a node there offers only GRCh38. The
 loads one haplotype from UCSC GenArk under its PanSN name, and the menu needs
 nothing more to offer it.
 
-<Figure caption="Top: the graph's Launch menu over a 50 kb K12 window. Each strain's entry names the locus it contributes, in that strain's coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus." src="/img/pangenome/rgfa_launch_out_menu.png" />
+<Figure caption="Top: the graph's Launch menu over a 50 kb K12 window. Each strain's entry names the locus it contributes, in that strain's coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, here with curved ribbons, transparent indels and Follow switched on so each row tracks the K12 window above it." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
 The per-strain entries show what a strain carries at the locus. K12's
 `asnW`/`asnU`/`asnV` tRNA genes are integration sites for E. coli pathogenicity

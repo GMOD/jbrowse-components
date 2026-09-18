@@ -330,12 +330,12 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
 file's `itemRgb`. The white gaps are where a strain has no untangle segment on
 that stretch of K12.
 
-<Figure caption="The untangle projection read two ways, with the same inverted arm boxed in both. Above, one row per strain over the whole K12 chromosome, red where the strain runs backwards and white where it has no segment at all; only IAI39 is inverted at length. Below, K12 against IAI39 as a dotplot, where every descending segment is an inversion." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
+<Figure caption="The untangle projection read two ways, with each of IAI39's five inverted arms boxed in its own color in both. Above, one row per strain over the whole K12 chromosome, red where the strain runs backwards and white where it has no segment at all; only IAI39 is inverted at length. Below, K12 against IAI39 as a dotplot, where every descending segment is an inversion." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
 
-The box marks the same 594 kb arm in both panels. `selfCov` in the popup goes
-above 1 where a segment lands on a reference span the same strain also lands on
-elsewhere, so `jexl:feature.selfCov>1` in **Edit filters** cuts the lane to the
-collapsed repeats.
+A box of one color marks the same arm in both panels. `selfCov` in the popup
+goes above 1 where a segment lands on a reference span the same strain also
+lands on elsewhere, so `jexl:feature.selfCov>1` in **Edit filters** cuts the
+lane to the collapsed repeats.
 
 ## Pangenome variants projection
 
@@ -830,7 +830,7 @@ The builder ranks an invariant stretch 0 and a bubble 1, so the
 reference-position ramp colors the stretches the strains agree on and paints
 charcoal on the sites they differ at.
 
-<Figure caption="100 kb of K12 around an IS5 element, one node per bubble, as a linear track above and the graph it indexes below. The arrowed bubble is the IS5 element, which K12 carries and the other four skip." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="100 kb of K12 around an IS5 element, one node per bubble, as a linear track above and the graph it indexes below. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip." src="/img/pangenome/pggb_bubble_tier.png" />
 
 Hover a node for the segments it collapsed, how many traversals cross it, and
 its shortest and longest allele. The two tiers are read together, the coarse one
@@ -857,9 +857,9 @@ from CFT073's own coordinates.
 In **Sample rows** the top row is the K12 backbone, and below it each strain's
 marks are the segments it takes instead, in the MAF's own row order.
 
-<Figure caption="460 bp at the ycbF/pyrD boundary in both layouts, under the same MAF lane. Left, Sample rows. Right, the same nodes with the reference axis let go." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
+<Figure caption="460 bp at the ycbF/pyrD boundary in Sample rows, under the MAF lane. CFT073's row is the long bar running off the left edge, and its MAF row is empty over the same span." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
-The dropdown redraws the same nodes into either layout:
+The dropdown redraws the same nodes force-directed:
 
 <Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing drops the axis, and the alternate routes extend from the backbone where the rows had flattened them." />
 
@@ -928,7 +928,7 @@ operon _elfA_, _elfD_, _elfC_, _elfG_, and _ycbU_, _ycbV_, _ycbF_), with _ssuE_
 ending just before it and _pyrD_ starting just after. CFT073 runs _ssuE_
 straight into _pyrD_.
 
-<Figure caption="The 75 bp CFT073 segment ringed in the graph, and the linear view its menu entry opens: CFT073 on its own coordinates, where ssuE runs into pyrD with nothing between them." src="/img/pangenome/pggb_strain_launch.png" />
+<Figure caption="K12 above, with the span the 75 bp CFT073 segment bypasses boxed in blue; that segment ringed in the graph; and the view its Open in CFT073 entry adds below, where the same segment (boxed in red) sits between ssuE and pyrD with no genes between them." src="/img/pangenome/pggb_strain_launch.png" />
 
 The
 [graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
@@ -1058,10 +1058,10 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1299400-1300800 -E -o - 
 ```
 
 The figure keeps the same interval in K12 coordinates above the graph. The gene
-lane names the element (_insH21_, the IS5 transposase), and the broken line in
-the drawing is the deletion edge.
+lane names the element (_insH21_, the IS5 transposase), and the loop in the
+drawing is its node.
 
-<Figure caption="The IS5 bubble cut as a file, so its P lines survive: the interval in K12 coordinates above, the bubble with the strain paths drawn below. Four strokes run along the deletion edge, and the missing one is K12, whose stroke alone runs along the element's node." src="/img/pangenome/pggb_haplotype_paths.png" />
+<Figure caption="The IS5 bubble cut as a file, so its P lines survive: the interval in K12 coordinates above, the bubble with the strain paths drawn below and Sakai picked in the Walk menu. The element's loop fades because Sakai's walk skips it, as the four MAF rows other than K12 do above." src="/img/pangenome/pggb_haplotype_paths.png" />
 
 With the paths in the file, the view derives the bubble itself and labels each
 route through it for the strains that take it (off in the figure, under **Mark

@@ -520,9 +520,9 @@ export const pangenomeVideos: VideoSpec[] = [
     ],
     tailMs: 3000,
   },
-  // THE RE-LAYOUT, on the 460 bp the page draws both ways. The still pair is
-  // pangenome/pggb_locus_sample_rows; what it cannot carry is that the two
-  // drawings are the same nodes, which is the whole of what the dropdown does.
+  // THE RE-LAYOUT, on the 460 bp pangenome/pggb_locus_sample_rows draws in
+  // Sample rows. The clip carries what a still cannot: that the force drawing
+  // is the same nodes, which is the whole of what the dropdown does.
   //
   // IT ENDS ON THE FORCE DRAWING, and it used to switch back. The two states
   // are 440px apart and one frame has to hold both, so whichever one the clip

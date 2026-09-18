@@ -9,7 +9,6 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE } from './demoBase.ts'
 import {
-  ALT_ALLELE_COLOR,
   CARRIAGE_DISPLAY,
   GRAPH_DRAWN,
   TOOLBAR_READY,
@@ -265,6 +264,10 @@ const PATHS_REGION = {
 // pangenome/rgfa_hover_sync` prints the ids a cut contains.
 const HOVERED_ALLELE = 's2037'
 
+// A second callout color, for a box pairing one object across two panels, kept
+// apart from the red that rings a figure's subject
+const SAME_SEGMENT_COLOR = '#1565c0'
+
 // K12's genes, so the linear half of a launch figure says which genes the
 // clicked segment covers rather than being a lane of anonymous blocks. Hosted
 // beside the graph indexes; the fixture config carries only the assembly.
@@ -278,6 +281,13 @@ const K12_GENES_SESSION_TRACK = {
     gffGzLocation: { uri: `${DATA}/K12.gff.gz` },
     index: { location: { uri: `${DATA}/K12.gff.gz.tbi` } },
   },
+}
+
+const K12_IS_TRACK = 'K12_insertion_sequences'
+const K12_IS_SESSION_TRACK = {
+  ...K12_GENES_SESSION_TRACK,
+  trackId: K12_IS_TRACK,
+  name: 'K12 insertion sequences',
 }
 
 // The 50 kb K12 window the launch figures work in, and a segment inside it,
@@ -672,11 +682,13 @@ function pggbLocusSession(
     mafLane = false,
     variantLane = false,
     bubbleSpread,
+    showBubbles,
   }: {
     region: typeof PGGB_LOCUS
     window: string
     mafLane?: boolean
     variantLane?: boolean
+    showBubbles?: boolean
     // omitted leaves the view's own 'auto' (proportional) default; see
     // BUBBLE_SPREADS in the plugin for what each one is an instrument for
     bubbleSpread?: 'auto' | 'open' | 'wide' | 'compress'
@@ -739,6 +751,7 @@ function pggbLocusSession(
         layoutMode,
         colorScheme: 'reference-position',
         ...(bubbleSpread ? { bubbleSpread } : {}),
+        ...(showBubbles === undefined ? {} : { showBubbles }),
       },
     ],
   })
@@ -1015,6 +1028,9 @@ function localSubgraphSpec(): ScreenshotSpec {
           colorScheme: 'depth',
           layoutMode,
           referencePath: 'K12',
+          // the leftmost bubble's label ran off the pane's left edge, and no
+          // bubble is this figure's subject
+          showBubbles: false,
         },
       ],
     }),
@@ -1029,9 +1045,11 @@ function localSubgraphSpec(): ScreenshotSpec {
     // whatever the viewport says.
     viewportHeight,
     hideTooltip: true,
-    // Segment 20 (93 bp of CFT073) has a second link 7 kb outside the
-    // extracted region, in ecoli_pggb.links.bed.gz. A region wide enough to
-    // reach it holds ~6,000 segments against the 48 here.
+    // Segment 20 (93 bp of CFT073) has a second link 7 kb upstream, in
+    // ecoli_pggb.links.bed.gz. The callout states that and gives no advice:
+    // a region wide enough to reach it holds ~6,000 segments against the 48
+    // here, so "extract wider" was the wrong fix, and the tutorial's `-c 1`
+    // is the right one.
     annotations: [
       {
         type: 'circle',
@@ -1041,7 +1059,7 @@ function localSubgraphSpec(): ScreenshotSpec {
       },
       {
         type: 'text',
-        text: "Open end: this node's other link is outside the extracted region. Extract a wider region to close it.",
+        text: "Open end: this CFT073 node's other link lands upstream, outside the cut",
         anchor: { view: 1, graphNode: '20+' },
         dy: -80,
         maxWidth: 340,
@@ -1411,14 +1429,37 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/pggb_bubble_tier',
     url: sessionSpec(CONFIG, {
-      sessionTracks: [K12_GENES_SESSION_TRACK, PGGB_TIER_SESSION_TRACK],
+      sessionTracks: [
+        K12_GENES_SESSION_TRACK,
+        K12_IS_SESSION_TRACK,
+        PGGB_TIER_SESSION_TRACK,
+      ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
           loc: PGGB_TIER_WINDOW,
+          highlight: [
+            {
+              assemblyName: 'K12',
+              refName: 'chr',
+              start: 1299497,
+              end: 1300697,
+              color: 'rgba(21,101,192,0.25)',
+            },
+          ],
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            // K12's own annotation names the element, so the label over the
+            // bubble is drawn by the app (review: "there should be features
+            // with labels automatically drawn"). The full gene lane draws a
+            // hundred genes here and insH21's label is not among the ones
+            // that fit; the graph's gene chips below carry the rest.
+            {
+              trackId: K12_IS_TRACK,
+              type: 'LinearBasicDisplay',
+              jexlFilters: ["startsWith(get(feature,'name') || '','ins')"],
+              height: 50,
+            },
             {
               trackId: PGGB_TIER_TRACK,
               type: 'LinearBasicDisplay',
@@ -1438,6 +1479,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // never mounting -- which reads as the tier failing to load.
           layoutMode: 'auto',
           colorScheme: 'reference-position',
+          geneTrackId: 'K12_genes',
         },
       ],
     }),
@@ -1445,104 +1487,25 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 5000,
     viewportWidth: 1000,
-    // 640: the run's own `blank below the last content` said 160 at 800. The
-    // anchored drawing is two rank rows and the pane sizes to them.
-    viewportHeight: 640,
+    viewportHeight: 620,
     hideTooltip: true,
-    // WHAT CHARCOAL MEANS *IN A TIER*, which is not what it means anywhere else
-    // on this page (review, twice: "im still confused by the black bubbles. are
-    // the black bubbles not in the reference path?"). The honest answer is no,
-    // they are ON it, and the figure was saying the opposite by inheritance:
+    // Charcoal in a tier is a bubble ON K12's coordinates, not an allele off
+    // them: `bubbles_to_tier_bed.py` ranks every bubble 1 and every invariant
+    // stretch 0. The arrowed bubble spans K12 1,299,497-1,300,697, the element
+    // itself; the other four strains take the 1 bp allele.
     //
-    //   $ tabix ecoli_pggb.tier50.segs.bed.gz chr:1290000-1310000
-    //   chr 1295416 1299497 bb_chr_1295416 0 ct:Z:backbone
-    //   chr 1299497 1300697 79945@1299497  1 ct:Z:bubble cn:i:3 cw:i:2 \
-    //                                        cs:i:1 cl:i:1200 cv:i:0
-    //
-    // The arrowed bubble spans 1,200 bp OF K12's own coordinates, and its
-    // longest allele is that same 1,200 bp -- K12 is the strain that carries
-    // the element; the other four take the 1 bp allele. `bubbles_to_tier_bed.py`
-    // gives every bubble rank 1 and every invariant stretch rank 0, so in a tier
-    // rank is `bubble` vs `backbone`, NOT `off-reference` vs `reference`. In the
-    // fine index it does mean off-reference, and both indexes are drawn through
-    // the same reference-position ramp, so the colour looks like the same claim
-    // and is not. The caption said "an allele that is not K12 sequence", which
-    // was false for this figure and is fixed with it.
-    //
-    // So a two-row legend, in the pane's empty top-left corner (the app's own
-    // ramp key is top-right). It is the one thing on the image that a reader
-    // cannot derive from the image.
-    //
-    // THE SAME EVENT the fine figure below opens, named on the node that stands
-    // for it here, so the two figures are visibly about one locus. The id is the
-    // tier's own -- source segment qualified by reference start, which is what
-    // snarls_to_bubble_bed.py emits and what `tabix ecoli_pggb.tier50.segs.bed.gz
-    // chr:1250000-1350000` prints -- so the callout follows the layout rather
-    // than a pixel.
+    // No legend (review: "the red text box overlaps a bunch of stuff"): the
+    // tutorial states what charcoal means just above the figure, and the pill
+    // covered the Reference row's label. The highlight marks the named
+    // feature and its tier block above, and the box its node, which the
+    // anchored layout puts at the same x.
     annotations: [
       {
-        type: 'legend',
-        // 13 is the minimum the overlay clamps to, and it is what makes a
-        // two-row pill fit the 63 css px of blank between the pane's top edge
-        // and its Reference row. The other blank band, under Rank 1, is 56 px
-        // and holds neither size -- rendered there, the pill covered the row
-        // label and the first three bubbles.
-        fontSize: 13,
-        entries: [
-          // the ramp's midpoint over this window, which is the green the
-          // backbone nodes are drawn in across the middle of the frame
-          {
-            label: 'backbone: all five strains agree',
-            color: 'hsl(150,70%,50%)',
-          },
-          {
-            label: 'bubble: they differ, on K12 coordinates',
-            color: ALT_ALLELE_COLOR,
-          },
-        ],
-        // Top left, above the Reference row and left of the app's own ramp key.
-        // A legend always grows DOWN from its anchor (`top = cy`), so a
-        // `alignY: 'bottom'` placement would have to subtract the pill's own
-        // height (padY*2 + rows*round(fontSize*1.5)) -- and there is not enough
-        // room down there anyway; see the fontSize note above.
-        anchor: {
-          selector: '[data-testid="graph-genome-canvas"]',
-          alignX: 'left',
-          alignY: 'top',
-          dx: 16,
-          dy: 6,
-        },
-      },
-      {
-        type: 'text',
-        // A NAME, which is all a label pointing at a node should be. It used to
-        // read "IS5, one node (1.2 kb allele)": the allele size is a specific
-        // value, and "one node" is what the arrow already lands on.
-        text: 'IS5 element',
-        fontSize: 16,
-        maxWidth: 220,
-        anchor: {
-          view: 1,
-          graphNode: PGGB_TIER_IS5_NODE,
-          alignY: 'bottom',
-          dy: 70,
-        },
-      },
-      {
-        type: 'arrow',
-        strokeWidth: 2,
-        fromAnchor: {
-          view: 1,
-          graphNode: PGGB_TIER_IS5_NODE,
-          alignY: 'bottom',
-          dy: 66,
-        },
-        anchor: {
-          view: 1,
-          graphNode: PGGB_TIER_IS5_NODE,
-          alignY: 'bottom',
-          dy: 6,
-        },
+        type: 'box',
+        color: SAME_SEGMENT_COLOR,
+        strokeWidth: 3,
+        pad: 8,
+        anchor: { view: 1, graphNode: PGGB_TIER_IS5_NODE },
       },
     ],
   },
@@ -1580,6 +1543,15 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
       sessionTracks: [PGGB_SEGMENTS_SESSION_TRACK],
       views: [
+        // K12 across the span the CFT073 segment bypasses, so the frame holds
+        // both sides of the event (review: "not a strong figure"): seven
+        // genes between ssuE and pyrD here, none in the launched view below.
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:996,800-1,005,900',
+          tracks: [{ trackId: 'K12_genes', type: 'LinearBasicDisplay' }],
+        },
         {
           // pinned so the menu clicks scope to the graph rather than to the
           // linear view the launch adds under it
@@ -1589,6 +1561,10 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           loadedRegion: PGGB_ROWS_LOCUS,
           layoutMode: 'force',
           colorScheme: 'stable-rank',
+          paneHeight: 420,
+          // the bubble halos and chips said nothing about the one node this
+          // figure is about, and two ran off the pane's edges
+          showBubbles: false,
         },
       ],
     }),
@@ -1596,7 +1572,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 8000,
     viewportWidth: 1100,
-    viewportHeight: 1000,
+    viewportHeight: 1100,
     hideTooltip: true,
     actions: [
       // right-click the allele itself rather than using the view menu: that is
@@ -1607,7 +1583,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       // <locus>` row per launchable target (graphMenuItems.ts). It is not the
       // `Launch` submenu the view and track menus carry, so there is no
       // cascade to drive here.
-      { type: 'rightclick', anchor: { view: 0, graphNode: '118465-' } },
+      { type: 'rightclick', anchor: { view: 1, graphNode: '118465-' } },
       { type: 'waitForText', text: 'Open in CFT073' },
       { type: 'click', text: 'Open in CFT073' },
       // gate on the launched view's own gene track drawing, not on a delay: the
@@ -1616,11 +1592,28 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'CFT073 genes' },
       { type: 'delay', ms: 4000 },
     ],
+    // Red is the CFT073 segment, ringed in the graph and boxed on CFT073's own
+    // axis; blue is the K12 span its two links bypass.
     annotations: [
       {
+        type: 'box',
+        color: SAME_SEGMENT_COLOR,
+        strokeWidth: 3,
+        anchor: { view: 0, track: 'K12_genes', locus: 'chr:997,575-1,004,667' },
+      },
+      {
         type: 'circle',
-        anchor: { view: 0, graphNode: '118465-' },
+        anchor: { view: 1, graphNode: '118465-' },
         radius: 20,
+      },
+      {
+        type: 'box',
+        strokeWidth: 3,
+        anchor: {
+          view: 2,
+          track: 'CFT073_genes',
+          locus: 'chr:1,048,516-1,048,590',
+        },
       },
     ],
   },
@@ -1681,7 +1674,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
               // squeeze, and the lane reads as a single strip of membership
               displayMode: 'collapsed',
               showLabels: 'none',
-              height: 90,
+              // tall enough for the five-row legend the display floats over it
+              height: 150,
               ...CARRIAGE_DISPLAY,
             },
           ],
@@ -1691,8 +1685,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 5000,
     viewportWidth: 1000,
-    // 535 clipped 9 css px off the carriage lane, per the run's own report
-    viewportHeight: 550,
+    viewportHeight: 610,
     hideTooltip: true,
     // WHERE EACH LANE COMES FROM, on the drawing (reviewer: "please make it
     // clear how this figure was made, it is a very cool and important track").
@@ -1752,21 +1745,21 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // ways a reader can name -- CFT073 absent from the left half of the window, the
   // 1 bp nodes taken by some strains and not others.
   //
-  // Drawn twice, side by side, because the two layouts answer different
-  // questions about the same 460 bp and the tutorial asks both. Sample rows says
-  // WHICH strain carries a segment — it is the only figure that does, and the
-  // rows line up with the MAF lane above them row for row. The Bandage force
-  // drawing says what the locus is SHAPED like: the same nodes with nothing
-  // holding them to the reference axis, so the bubbles are visible as bubbles.
-  // Same window, same tracks, same colors, differing only in layoutMode, which
-  // is what makes the pair readable as one graph rather than two.
+  // ONE LAYOUT (review: "dunno what is being shown here really. not a strong
+  // figure"). The force half drew the same 61 nodes pggb_strain_launch draws,
+  // and pggb_layout_switch films the switch between the two. What only this
+  // figure shows is a strain's row: CFT073's segment is drawn as a bar over
+  // the K12 span it replaces, which runs off the left edge.
   {
     mode: 'url',
-    name: 'pangenome/pggb_locus_sample_rows_rows',
+    name: 'pangenome/pggb_locus_sample_rows',
     url: pggbLocusSession('samplerows', {
       region: PGGB_ROWS_LOCUS,
       window: PGGB_ROWS_WINDOW,
       mafLane: true,
+      // the halos and chips stacked over the rows, and one bubble label ran
+      // off the pane's left edge
+      showBubbles: false,
     }),
     // Row labels, not just the toolbar: the layout runs after the graph loads,
     // and the toolbar is up before there is a row to label.
@@ -1774,53 +1767,29 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
     readyTimeout: 120000,
     settleMs: 5000,
-    // half the composed width each
-    viewportWidth: 830,
-    // the two lanes plus the graph's five rows, and nothing under them.
-    //
-    // DO NOT raise this to the force half's 1230 to square the composite. The
-    // white slab `+append` leaves under this side is the sample-rows PANE being
-    // shorter, not the capture; the pane sizes itself to its five rows, so at
-    // 1230 the app frames came out identical and the extra 335 css px landed as
-    // blank page inside this part, which the run then reports as "blank below
-    // the last content". Rendered both ways.
-    viewportHeight: 895,
+    viewportWidth: 1000,
+    viewportHeight: 840,
     hideTooltip: true,
-  },
-  {
-    mode: 'url',
-    name: 'pangenome/pggb_locus_sample_rows_force',
-    url: pggbLocusSession('force', {
-      region: PGGB_ROWS_LOCUS,
-      window: PGGB_ROWS_WINDOW,
-      mafLane: true,
-    }),
-    // No row labels to wait on here, and the FMMM engine is remote: the same
-    // allowUnsettled + long settle the other force half uses.
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 120000,
-    allowUnsettled: true,
-    settleMs: 8000,
-    viewportWidth: 830,
-    // The force drawing fills a box rather than five rows, so this half is
-    // taller and its pane has to be tall enough for the whole drawing: at 1000
-    // the FMMM output ran out the bottom of the pane, and a graph figure cut
-    // off mid-edge reads as a broken layout rather than a tall one. `+append`
-    // pads the shorter half.
-    viewportHeight: 1230,
-    hideTooltip: true,
-  },
-  {
-    mode: 'compose',
-    name: 'pangenome/pggb_locus_sample_rows',
-    // Sample rows first: it is the half the surrounding prose is about, and the
-    // half whose rows pair with the MAF lane. The force half follows as the
-    // same graph with the axis let go.
-    parts: [
-      'pangenome/pggb_locus_sample_rows_rows',
-      'pangenome/pggb_locus_sample_rows_force',
+    // The bar's own anchor is its polyline midpoint, thousands of px off the
+    // left edge, so the pointer goes in from the graph's second row label,
+    // CFT073's. A `text` anchor finds the MAF lane's label first.
+    annotations: [
+      {
+        type: 'text',
+        text: 'CFT073 skips this K12 span, and more off the left edge',
+        fontSize: 16,
+        maxWidth: 260,
+        leader: true,
+        anchor: {
+          selector:
+            '[data-testid="graph-row-label"] + [data-testid="graph-row-label"]',
+          alignX: 'right',
+          dx: 150,
+        },
+        dx: 330,
+        dy: 45,
+      },
     ],
-    direction: 'horizontal',
   },
   // The pggb subgraph, over the linear view of the same locus, in the SAME colors
   // (reviewer: "it would be great if we could get coloring on the linear genome
@@ -1892,8 +1861,10 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // systems in one drawing, neither readable. Grey nodes leave the colour to
   // the paths, which is what this figure is about.
   //
-  // K12's stroke is the one missing from the deletion arc, and that is the
-  // finding rather than a gap: it is the strain that walks the element.
+  // Deletion edges stay at the view's default, off (review: "dont show
+  // deletion arcs by default i think, it is confusing"). What the arc's four
+  // strokes used to say is carried by the Walk instead: Sakai's walk is
+  // picked, so the element's loop fades as the one stretch it skips.
   //
   // FORCE with bubble spread 'open' and layout quality at its top setting.
   // Anchored puts x on the reference, and the deletion arc bows out by 0.35x the
@@ -1956,7 +1927,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         },
         {
           type: 'GraphGenomeView',
-          showDeletionEdges: true,
           // Kept short enough not to truncate: the pane title ellipsised at
           // "...by which strain ...", which reads as a bug rather than as a
           // title. The path legend beside the drawing names the strains, so the
@@ -1981,6 +1951,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           bubbleSpread: 'open',
           colorScheme: 'grey',
           referencePath: 'K12',
+          highlightedPath: 'Sakai#1#chr:1743580-1743789',
           drawPaths: true,
           // No halos or route chips: the IS5 bubble carried a halo label, a
           // route chip, a node label and an arc label for one 1.2 kb event,
@@ -2089,6 +2060,47 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 590,
     hideTooltip: true,
+    // THE STORY IS ONE BUBBLE READ IN BOTH PANELS (review: "what is the
+    // 'story'?"). s1278 is 5.8 kb of K12 and s2272 is CFT073's 8.6 kb allele
+    // of the same stretch: the blue boxes pair the one segment across the
+    // panels, and the ring marks the allele the linear lane cannot draw.
+    annotations: [
+      {
+        type: 'box',
+        color: SAME_SEGMENT_COLOR,
+        strokeWidth: 3,
+        pad: 11,
+        anchor: {
+          view: 0,
+          track: ECOLI_SEGMENTS_TRACK,
+          locus: 'chr:4,063,561-4,069,329',
+          fracY: 0.1,
+        },
+      },
+      {
+        type: 'box',
+        color: SAME_SEGMENT_COLOR,
+        strokeWidth: 3,
+        pad: 8,
+        anchor: { view: 1, graphNode: 's1278' },
+      },
+      {
+        type: 'circle',
+        anchor: { view: 1, graphNode: 's2272' },
+        radius: 20,
+        strokeWidth: 3,
+      },
+      {
+        type: 'text',
+        text: "CFT073's allele of the boxed segment has no K12 coordinates, so no block above",
+        fontSize: 15,
+        maxWidth: 260,
+        leader: true,
+        anchor: { view: 1, graphNode: 's2272' },
+        dx: -90,
+        dy: 40,
+      },
+    ],
   },
   // The paa island as a bubble — the graph answer to the all-vs-all synteny
   // figure, on the same locus (the comment above PAA_RAMP_DOMAIN records the two
@@ -2596,6 +2608,19 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         maxWidth: 230,
         fontSize: 16,
       },
+      // The band's K12 span IS two graph nodes, s403 and s404 (teal in both
+      // panels), and review read the teal highlight above and the grey ring
+      // below as two different things ("the ringed node is grey loop"). The
+      // blue box and the blue pill pair them: the loop leaves at one end of
+      // that span and rejoins at the other.
+      {
+        type: 'box',
+        color: SAME_SEGMENT_COLOR,
+        strokeWidth: 3,
+        pad: 8,
+        anchor: { view: 1, graphNode: 's403' },
+        fromAnchor: { view: 1, graphNode: 's404' },
+      },
       // AND THE BAND SAYS WHAT IT IS, which is the other half of the same
       // complaint ("it is not matching the highlight over the lineargenomeview
       // afaict"). It does match: the band is where the ringed node's two links
@@ -2610,7 +2635,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         // about is in the lower one, so a pronoun points at a panel the reader
         // has not reached. Naming CFT073 here is also what puts the insert in
         // the frame a reader meets first, which is the review's own ask.
-        text: 'the CFT073 insert attaches to K12 inside this band',
+        text: "the K12 span between the insert's two ends",
+        color: SAME_SEGMENT_COLOR,
         // Right edge against the band's LEFT edge, so the pill sits beside the
         // band rather than starting at its midpoint and running off to the
         // right of it — which is what a bare locus anchor does, since textAlign
@@ -2794,6 +2820,30 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             selector: `${LAUNCH_OUT_VIEW} [data-testid="close_view"]`,
           },
           { type: 'delay', ms: 3000 },
+          // Curves, see-through indels and Follow (review: "use showCurves and
+          // transparent indels maybe, and even 'follow' so that it aligns to
+          // the top row better"): each strain opens framed on its own locus,
+          // and Follow moves the four lower rows onto what aligns to K12's
+          // window, so the ribbons run top to bottom instead of fanning out.
+          {
+            type: 'click',
+            selector: '[aria-label="Synteny display settings"]',
+          },
+          { type: 'hover', text: 'CIGAR indels' },
+          { type: 'click', text: 'Transparent indels' },
+          { type: 'click', text: 'Curved lines' },
+          { type: 'press', key: 'Escape' },
+          { type: 'waitForText', text: 'Curved lines', hidden: true },
+          {
+            type: 'click',
+            selector: '[data-testid="follow-synteny-toggle"]',
+          },
+          {
+            type: 'waitForSelector',
+            selector: displayPainted('synteny_canvas'),
+            timeout: 120000,
+          },
+          { type: 'delay', ms: 8000 },
         ],
       },
     ],

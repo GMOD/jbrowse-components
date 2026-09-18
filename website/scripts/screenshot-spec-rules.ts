@@ -220,7 +220,7 @@ export function countRawCallouts(list: ScreenshotSpec[]) {
 // A ratchet for the same reason the one above is: converting a pair moves
 // pixels, so each conversion wants its figure regenerated and they land as
 // figures are touched. Lower LEADER_BASELINE when one does.
-export const LEADER_BASELINE = 23
+export const LEADER_BASELINE = 22
 
 // Only the fields that place the anchor — dx/dy are the offsets that differ
 // BETWEEN the pill and its tail, which is the whole point.

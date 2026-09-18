@@ -29,6 +29,38 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // they are generated and live-linkable like everything else here.
 const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
 
+// IAI39's five reverse untangle runs merged into arms, K12 against IAI39, each
+// boxed in its own color in both panels of pangenome/pggb_untangle_inversion
+// (review: "can use multiple colored boxes to highlight more things"). Red is
+// the rows' own Inverted color, so no box uses it.
+const UNTANGLE_ARMS = [
+  {
+    k12: 'chr:213,443-262,948',
+    iai39: 'chr:449,188-493,004',
+    color: '#ef6c00',
+  },
+  {
+    k12: 'chr:302,899-501,436',
+    iai39: 'chr:228,426-443,280',
+    color: '#2e7d32',
+  },
+  {
+    k12: 'chr:914,963-1,194,177',
+    iai39: 'chr:2,058,958-2,336,701',
+    color: '#6a1b9a',
+  },
+  {
+    k12: 'chr:1,635,838-2,229,302',
+    iai39: 'chr:906,630-1,574,975',
+    color: '#1565c0',
+  },
+  {
+    k12: 'chr:3,946,786-4,171,723',
+    iai39: 'chr:3,083,154-3,330,675',
+    color: '#00838f',
+  },
+]
+
 export const pangenomeSpecs: ScreenshotSpec[] = [
   // Projection 1: the graph's own all-vs-all alignment, the wfmash PAF pggb
   // built the graph FROM (ecoli_pggb_ava), stacked the same way the all-vs-all
@@ -280,16 +312,12 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // No `fracY`, so the box wraps the whole four-row band rather than the
     // IAI39 row alone. That is the point: at this x the three rows above it are
     // grey, so the control is inside the box rather than beside it.
-    annotations: [
-      {
-        type: 'box',
-        strokeWidth: 3,
-        anchor: {
-          track: 'ecoli_pggb_untangle_rows',
-          locus: 'chr:1,635,838-2,229,302',
-        },
-      },
-    ],
+    annotations: UNTANGLE_ARMS.map(({ k12, color }) => ({
+      type: 'box' as const,
+      color,
+      strokeWidth: 3,
+      anchor: { track: 'ecoli_pggb_untangle_rows', locus: k12 },
+    })),
   },
 
   // The same untangle file in a dotplot: the idiomatic comparative picture for
@@ -339,16 +367,12 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // `{hLocus, vLocus}` and resolves through the plot's own axes, so this
     // follows the data rather than a measured pixel. See the note on
     // pggb_untangle_rows for why the pair is marked at all.
-    annotations: [
-      {
-        type: 'box',
-        strokeWidth: 3,
-        anchor: {
-          hLocus: 'chr:1,635,838-2,229,302',
-          vLocus: 'chr:906,630-1,574,975',
-        },
-      },
-    ],
+    annotations: UNTANGLE_ARMS.map(({ k12, iai39, color }) => ({
+      type: 'box' as const,
+      color,
+      strokeWidth: 3,
+      anchor: { hLocus: k12, vLocus: iai39 },
+    })),
   },
   {
     mode: 'compose',
