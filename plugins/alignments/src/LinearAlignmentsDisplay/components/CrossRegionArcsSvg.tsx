@@ -4,6 +4,7 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import CrossRegionArcMarkers from './CrossRegionArcMarkers.tsx'
 import { bandScreenTop } from './sectionScreen.ts'
 
+import type { ColorPalette } from '../renderers/AlignmentsRenderer.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 
 // The export twin of `CrossRegionArcsOverlay`, off the very same
@@ -23,13 +24,15 @@ import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 export default function CrossRegionArcsSvg({
   model,
   width,
+  colors,
 }: {
   model: LinearAlignmentsDisplayModel
   width: number
+  colors: ColorPalette
 }) {
   const scroll = model.scrollModel
   const nodeId = svgNodeId(model)
-  return model.crossRegionArcSections.map(section => (
+  return model.crossRegionArcSectionsIn(colors).map(section => (
     <g
       key={section.groupKey}
       transform={`translate(0,${bandScreenTop(section.bandTop, scroll)})`}

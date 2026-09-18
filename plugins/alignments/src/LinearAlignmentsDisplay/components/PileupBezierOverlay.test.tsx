@@ -25,7 +25,8 @@ jest.mock('@jbrowse/sv-core', () => ({
 jest.mock('./pileupBezierArcs.ts', () => ({
   BEZIER_ARC_STROKE_WIDTH: 1,
   BEZIER_ARC_STROKE_OPACITY: 0.8,
-  computePileupBezierArcsFromModel: () => mockArcs,
+  computePileupBezierArcsFromModel: () =>
+    mockArcs.length ? [{ groupKey: '', clipTop: 0, arcs: mockArcs }] : [],
 }))
 
 afterEach(cleanup)

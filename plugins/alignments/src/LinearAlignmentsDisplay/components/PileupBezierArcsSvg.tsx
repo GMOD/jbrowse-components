@@ -5,11 +5,40 @@ import {
   computePileupBezierArcsFromModel,
 } from './pileupBezierArcs.ts'
 
+import type { ColorPalette } from '../renderers/AlignmentsRenderer.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
+
+// Clips a section's connectors to the canvas below its pileup clip top, in the
+// overlay's own screen coordinates. A nested viewport rather than a clipPath,
+// so neither the overlay nor the export has an id to mint.
+export function BelowClipTop({
+  clipTop,
+  width,
+  height,
+  children,
+}: {
+  clipTop: number
+  width: number
+  height: number
+  children: React.ReactNode
+}) {
+  const clipHeight = Math.max(0, height - clipTop)
+  return (
+    <svg
+      y={clipTop}
+      width={width}
+      height={clipHeight}
+      viewBox={`0 ${clipTop} ${width} ${clipHeight}`}
+    >
+      {children}
+    </svg>
+  )
+}
 
 // Static linked-read bezier arcs for SVG export — same geometry as
-// PileupBezierOverlay, minus the hover/click handlers, and now at the same
+// PileupBezierOverlay, minus the hover/click handlers, and at the same
 // scrollTop: the arcs connect reads, so pinning them to 0 while the reads
 // scrolled left them hanging off the wrong rows.
 //
@@ -19,26 +48,38 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export default function PileupBezierArcsSvg({
   model,
   view,
+  width,
+  colors,
 }: {
   model: LinearAlignmentsDisplayModel
   view: LinearGenomeViewModel
+  width: number
+  colors: ColorPalette
 }) {
-  const arcs = computePileupBezierArcsFromModel(model, view)
-  return arcs.length ? (
+  const sections = computePileupBezierArcsFromModel(model, view, colors)
+  return sections.length ? (
     <g style={{ pointerEvents: 'none' }}>
-      {arcs.map(arc => (
-        <path
-          key={bezierArcKey(arc)}
-          d={arc.d}
-          stroke={arc.stroke}
-          strokeWidth={BEZIER_ARC_STROKE_WIDTH}
-          strokeOpacity={BEZIER_ARC_STROKE_OPACITY}
-          // Exported dashed too: the export is the same geometry from the same
-          // seam, and a junction across unfetched segments reads as a solid
-          // inversion in a figure exactly as it does on screen.
-          strokeDasharray={arc.dash}
-          fill="none"
-        />
+      {sections.map(({ groupKey, clipTop, arcs }) => (
+        <BelowClipTop
+          key={groupKey}
+          clipTop={clipTop}
+          width={width}
+          height={model.height}
+        >
+          {arcs.map(arc => (
+            <path
+              key={bezierArcKey(arc)}
+              d={arc.d}
+              stroke={arc.stroke}
+              strokeWidth={BEZIER_ARC_STROKE_WIDTH}
+              strokeOpacity={BEZIER_ARC_STROKE_OPACITY}
+              // Exported dashed too: a junction across unfetched segments
+              // reads as a solid inversion in a figure exactly as on screen.
+              strokeDasharray={arc.dash}
+              fill="none"
+            />
+          ))}
+        </BelowClipTop>
       ))}
     </g>
   ) : null

@@ -31,11 +31,16 @@ import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 // both scrolled just past an edge takes its visible body with it. The pad is
 // applied to both edges though the curve only reaches downward, which is merely
 // over-inclusive: it keeps a few culled arcs, never drops a visible one.
-function arcIsVisible(sy1: number, sy2: number, viewportBottom: number) {
+function arcIsVisible(
+  sy1: number,
+  sy2: number,
+  viewportTop: number,
+  viewportBottom: number,
+) {
   const reach = BEZIER_CONNECTOR_MAX_REACH_PX
   return (
     Math.min(sy1, sy2) - reach < viewportBottom &&
-    Math.max(sy1, sy2) + reach > 0
+    Math.max(sy1, sy2) + reach > viewportTop
   )
 }
 
@@ -203,7 +208,9 @@ interface Opts {
   featureSpacing: number
   pileupTopOffset: number
   scrollTop: number
-  // Screen-y of this section's band bottom — the visibility cull's lower edge.
+  // Screen-y of this section's pileup clip top and band bottom, the edges the
+  // visibility cull keeps a curve between.
+  viewportTop: number
   viewportBottom: number
   // The themed palette, for the same reason the read fills take one: a baked
   // module palette drew connectors in light-mode colors over dimmed dark-mode
@@ -226,6 +233,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     featureSpacing,
     pileupTopOffset,
     scrollTop,
+    viewportTop,
     viewportBottom,
     colors,
   } = opts
@@ -259,7 +267,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     const sy1 = readScreenY(e1)
     const sy2 = readScreenY(e2)
 
-    if (!arcIsVisible(sy1, sy2, viewportBottom)) {
+    if (!arcIsVisible(sy1, sy2, viewportTop, viewportBottom)) {
       continue
     }
 

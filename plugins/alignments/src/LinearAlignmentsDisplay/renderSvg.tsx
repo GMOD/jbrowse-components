@@ -105,8 +105,17 @@ function AlignmentsSvgBody({
       {overlays ? (
         <>
           <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
-          <CrossRegionArcsSvg model={model} width={canvasWidth} />
-          <PileupBezierArcsSvg model={model} view={model.view} />
+          <CrossRegionArcsSvg
+            model={model}
+            width={canvasWidth}
+            colors={state.colors}
+          />
+          <PileupBezierArcsSvg
+            model={model}
+            view={model.view}
+            width={canvasWidth}
+            colors={state.colors}
+          />
         </>
       ) : null}
       {overlays && model.showsGroupLabels ? (

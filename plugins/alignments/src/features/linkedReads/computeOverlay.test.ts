@@ -95,6 +95,7 @@ const baseOpts = {
   featureSpacing: 2,
   pileupTopOffset: 0,
   scrollTop: 0,
+  viewportTop: 0,
   viewportBottom: 1000,
 }
 
@@ -479,6 +480,16 @@ describe('computePileupBezierArcs — off-screen culling', () => {
     // the endpoints really are above the viewport — the dip is what's visible
     expect(sy1).toBeLessThan(0)
     expect(sy2).toBeLessThan(0)
+  })
+
+  it('culls a curve scrolled wholly under the sticky bands above the pileup', () => {
+    const arcs = computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      viewportTop: 500,
+      pairs: enumerateBezierPairs(new Map([[0, wideInversion]])),
+    })
+    expect(arcs).toHaveLength(0)
   })
 
   it('still culls a curve that is wholly off-screen', () => {

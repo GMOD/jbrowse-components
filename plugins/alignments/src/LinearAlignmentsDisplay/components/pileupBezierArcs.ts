@@ -1,6 +1,6 @@
 import { computePileupBezierArcs } from '../../features/linkedReads/computeOverlay.ts'
 import { makeBpToScreenX } from './alignmentComponentUtils.ts'
-import { sectionBandBottom } from './sectionScreen.ts'
+import { bandScreenTop, sectionBandBottom } from './sectionScreen.ts'
 
 import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
@@ -13,41 +13,45 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export const BEZIER_ARC_STROKE_WIDTH = 1
 export const BEZIER_ARC_STROKE_OPACITY = 0.8
 
-// Single source of truth mapping model + view state to bezier-arc geometry, so
-// the on-screen overlay (PileupBezierOverlay) and the SVG export (renderSvg)
-// cannot drift in which fields feed the curves. Returns [] unless the bezier
-// connection overlay is enabled.
-//
-// Loops `model.renderSections` so every group's pairs get arcs, not just the
-// first; each section supplies its own `topOffset` (pileup band top) and
-// `viewportBottom` (band bottom, via the shared `sectionBandBottom`), mirroring
-// how `computeVisibleLabels`/`readHighlightInk` clip per section.
+export interface BezierArcSection {
+  groupKey: string
+  // Screen-y of the section's pileup clip top. Its reads scroll under the
+  // bands above it, and so do their connectors.
+  clipTop: number
+  arcs: PileupArc[]
+}
+
+// The bezier-arc geometry of every section, shared by the on-screen overlay and
+// the SVG export so the two cannot drift in which fields feed the curves.
+// Empty unless the bezier connection overlay is enabled.
 export function computePileupBezierArcsFromModel(
   model: LinearAlignmentsDisplayModel,
   view: LinearGenomeViewModel,
-): PileupArc[] {
-  // `bezierPairSections` is [] when the overlay is off and memoizes the
-  // scroll-invariant pair enumeration, so a scroll frame only re-runs the
-  // screen projection below.
+  colors = model.colorPalette,
+): BezierArcSection[] {
   const bpToScreenX = makeBpToScreenX(view)
   const scroll = model.scrollModel
-  const result: PileupArc[] = []
+  const result: BezierArcSection[] = []
   for (const sec of model.bezierPairSections) {
-    const bottom = sectionBandBottom(sec.topOffset, sec.pileupHeight, scroll)
-    // Appended one at a time, not spread: a section's arc count is a read
-    // count, and `push(...arr)` passes the array as arguments.
-    for (const arc of computePileupBezierArcs({
+    const clipTop = bandScreenTop(sec.topOffset, scroll)
+    const arcs = computePileupBezierArcs({
       pairs: sec.pairs,
-      colors: model.colorPalette,
+      colors,
       displayedRegions: view.displayedRegions,
       bpToScreenX,
       featureHeight: model.featureHeight,
       featureSpacing: model.featureSpacing,
       pileupTopOffset: sec.topOffset,
       scrollTop: scroll.scrollTop,
-      viewportBottom: bottom,
-    })) {
-      result.push(arc)
+      viewportTop: clipTop,
+      viewportBottom: sectionBandBottom(
+        sec.topOffset,
+        sec.pileupHeight,
+        scroll,
+      ),
+    })
+    if (arcs.length > 0) {
+      result.push({ groupKey: sec.groupKey, clipTop, arcs })
     }
   }
   return result

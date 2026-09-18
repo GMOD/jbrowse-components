@@ -2200,6 +2200,7 @@ export default function stateModelFactory(
           return scope === 'none'
             ? []
             : this.renderSections.map(sec => ({
+                groupKey: sec.groupKey,
                 topOffset: sec.topOffset,
                 pileupHeight: sec.pileupHeight,
                 pairs: enumerateBezierPairs(
@@ -2883,6 +2884,15 @@ export default function stateModelFactory(
          * this shares with the sashimi and ruler walks.
          */
         get crossRegionArcSections() {
+          return this.crossRegionArcSectionsIn(self.colorPalette)
+        },
+
+        /**
+         * #method
+         * `crossRegionArcSections` stroked from `colors`, which the SVG export
+         * passes to draw in its own theme.
+         */
+        crossRegionArcSectionsIn(colors: ColorPalette) {
           const view = self.view
           if (self.readConnections === 'off' || !view.initialized) {
             return NO_CROSS_REGION_ARC_SECTIONS
@@ -2908,7 +2918,7 @@ export default function stateModelFactory(
             regionReversed: i => reversedByRegion[i] ?? false,
             regionScreenExtent: i => extentByRegion[i],
             lineWidth: self.readConnectionsLineWidth,
-            colors: self.colorPalette,
+            colors,
             screenWidthPx: view.width,
             // Once per NUMBER, not once per evaluation, since this getter
             // re-runs on every pan frame — see `reportArcCap`.

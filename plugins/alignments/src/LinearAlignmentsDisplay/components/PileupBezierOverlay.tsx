@@ -4,6 +4,7 @@ import { ARC_HIT_SLOP_PX, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
+import { BelowClipTop } from './PileupBezierArcsSvg.tsx'
 import { PAN_MOVED } from './panState.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
@@ -70,9 +71,8 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
   }
   const { width } = view
 
-  const arcs = computePileupBezierArcsFromModel(model, view)
-
-  if (!arcs.length) {
+  const sections = computePileupBezierArcsFromModel(model, view)
+  if (!sections.length) {
     return null
   }
 
@@ -86,16 +86,6 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
     selectedChain.has(arc.id1) ||
     selectedChain.has(arc.id2)
 
-  // Emphasized curves are painted last so a thin crossing curve can't sit on
-  // top of one. Every arc of the hovered read thickens, not only the one under
-  // the cursor, the way the breakpoint split view thickens a whole chain.
-  const plain: PileupArc[] = []
-  const emphasized: PileupArc[] = []
-  for (const arc of arcs) {
-    const emphasis = arc.readName === hoveredReadName || isSelected(arc)
-    ;(emphasis ? emphasized : plain).push(arc)
-  }
-
   return (
     <svg
       data-testid="pileup-bezier-overlay"
@@ -106,77 +96,97 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
         pointerEvents: 'none',
         height,
         width,
-        overflow: 'visible',
       }}
     >
-      {[...plain, ...emphasized].map(arc => {
-        const arcId = bezierArcKey(arc)
-        const isHovered = arc.readName === hoveredReadName
-        const strokeWidth = isSelected(arc)
-          ? SELECTED_STROKE_WIDTH
-          : isHovered
-            ? HOVERED_STROKE_WIDTH
-            : BEZIER_ARC_STROKE_WIDTH
+      {sections.map(({ groupKey, clipTop, arcs }) => {
+        // Emphasized curves are painted last so a thin crossing curve can't
+        // sit on top of one. Every arc of the hovered read thickens, not only
+        // the one under the cursor, the way the breakpoint split view thickens
+        // a whole chain.
+        const plain: PileupArc[] = []
+        const emphasized: PileupArc[] = []
+        for (const arc of arcs) {
+          const emphasis = arc.readName === hoveredReadName || isSelected(arc)
+          ;(emphasis ? emphasized : plain).push(arc)
+        }
         return (
-          <g key={arcId}>
-            <path
-              data-testid="pileup-bezier-arc"
-              d={arc.d}
-              stroke={arc.stroke}
-              strokeWidth={strokeWidth}
-              strokeOpacity={isHovered ? 1 : BEZIER_ARC_STROKE_OPACITY}
-              strokeDasharray={arc.dash}
-              fill="none"
-              // Inert, with the target path below answering instead — the rule
-              // `CrossRegionArcsOverlay` follows and for its reason:
-              // `pointerEvents: 'stroke'` answers on the INK, so a dashed
-              // connector would hover in its dashes and go dead in its gaps.
-              style={{ pointerEvents: 'none' }}
-            />
-            <path
-              data-testid="pileup-bezier-arc-target"
-              d={arc.d}
-              stroke="transparent"
-              strokeWidth={strokeWidth + 2 * ARC_HIT_SLOP_PX}
-              fill="none"
-              style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
-              onMouseEnter={() => {
-                setHoveredReadName(arc.readName)
-                // Through `setHoverState`, as `CrossRegionArcsOverlay` is: it is
-                // the one write the right-click menu's hover pin can refuse, so
-                // a curve crossed while the menu is open cannot overwrite the
-                // read the menu is acting on.
-                model.setHoverState({
-                  overCigarItem: false,
-                  featureIdUnderMouse: undefined,
-                  mouseoverExtraInformation: arcTooltip(model, arc),
-                  highlightedChainReadIds: hoveredReadIds(model, arc),
-                })
-              }}
-              onMouseLeave={() => {
-                setHoveredReadName(prev =>
-                  prev === arc.readName ? null : prev,
-                )
-                model.clearHoverUnlessPinned()
-              }}
-              onClick={e => {
-                // A pan that started on this curve still ends in a click, as
-                // the canvas `handleClick` says.
-                if (e.currentTarget.closest(PAN_MOVED)) {
-                  return
-                }
-                const svg = e.currentTarget.ownerSVGElement
-                model.selectReadWithChain(
-                  svg
-                    ? nearerEndpoint(
-                        arc,
-                        e.clientX - svg.getBoundingClientRect().left,
+          <BelowClipTop
+            key={groupKey}
+            clipTop={clipTop}
+            width={width}
+            height={height}
+          >
+            {[...plain, ...emphasized].map(arc => {
+              const arcId = bezierArcKey(arc)
+              const isHovered = arc.readName === hoveredReadName
+              const strokeWidth = isSelected(arc)
+                ? SELECTED_STROKE_WIDTH
+                : isHovered
+                  ? HOVERED_STROKE_WIDTH
+                  : BEZIER_ARC_STROKE_WIDTH
+              return (
+                <g key={arcId}>
+                  <path
+                    data-testid="pileup-bezier-arc"
+                    d={arc.d}
+                    stroke={arc.stroke}
+                    strokeWidth={strokeWidth}
+                    strokeOpacity={isHovered ? 1 : BEZIER_ARC_STROKE_OPACITY}
+                    strokeDasharray={arc.dash}
+                    fill="none"
+                    // Inert, with the target path below answering instead — the rule
+                    // `CrossRegionArcsOverlay` follows and for its reason:
+                    // `pointerEvents: 'stroke'` answers on the INK, so a dashed
+                    // connector would hover in its dashes and go dead in its gaps.
+                    style={{ pointerEvents: 'none' }}
+                  />
+                  <path
+                    data-testid="pileup-bezier-arc-target"
+                    d={arc.d}
+                    stroke="transparent"
+                    strokeWidth={strokeWidth + 2 * ARC_HIT_SLOP_PX}
+                    fill="none"
+                    style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                    onMouseEnter={() => {
+                      setHoveredReadName(arc.readName)
+                      // Through `setHoverState`, as `CrossRegionArcsOverlay` is: it is
+                      // the one write the right-click menu's hover pin can refuse, so
+                      // a curve crossed while the menu is open cannot overwrite the
+                      // read the menu is acting on.
+                      model.setHoverState({
+                        overCigarItem: false,
+                        featureIdUnderMouse: undefined,
+                        mouseoverExtraInformation: arcTooltip(model, arc),
+                        highlightedChainReadIds: hoveredReadIds(model, arc),
+                      })
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredReadName(prev =>
+                        prev === arc.readName ? null : prev,
                       )
-                    : arc.id1,
-                )
-              }}
-            />
-          </g>
+                      model.clearHoverUnlessPinned()
+                    }}
+                    onClick={e => {
+                      // A pan that started on this curve still ends in a click, as
+                      // the canvas `handleClick` says.
+                      if (e.currentTarget.closest(PAN_MOVED)) {
+                        return
+                      }
+                      const svg = e.currentTarget.ownerSVGElement
+                      model.selectReadWithChain(
+                        svg
+                          ? nearerEndpoint(
+                              arc,
+                              e.clientX - svg.getBoundingClientRect().left,
+                            )
+                          : arc.id1,
+                      )
+                    }}
+                  />
+                </g>
+              )
+            })}
+          </BelowClipTop>
         )
       })}
     </svg>
