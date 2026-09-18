@@ -135,10 +135,10 @@ const ALU_PLOT_FIELD_TRACK = {
 }
 
 // The haplotagged HG002 ONT reads the methylation tutorial loads
-// (docs/tutorials/methylation.md), declared as a faceted pileup: a formula
-// step lifts the HP tag into a field, the stack packs each haplotype's rows on
-// their own, and the facet offsets the sections so each gets a band under its
-// chip. Reads carrying no tag land in the "HP: none" section.
+// (docs/tutorials/methylation.md), declared as a faceted pileup: the display's
+// formula lifts the HP tag into a field, the facet splits the reads on it, and
+// the stack packs each section on its own under its chip. Reads carrying no
+// tag land in the "HP: none" section.
 const SNRPN_FACET_TRACK = {
   type: 'AlignmentsTrack',
   trackId: 'snrpn_facet',
@@ -152,14 +152,14 @@ const SNRPN_FACET_TRACK = {
     {
       type: 'LinearMarkDisplay',
       displayId: 'snrpn_facet-LinearMarkDisplay',
+      transform: [
+        { type: 'formula', expr: "jexl:getTag(feature,'HP')", as: 'HP' },
+      ],
+      facetField: 'HP',
       marks: [
         {
           shape: 'span',
-          facet: 'HP',
-          transform: [
-            { type: 'formula', expr: "jexl:getTag(feature,'HP')", as: 'HP' },
-            { type: 'stack', groupby: ['HP'] },
-          ],
+          transform: [{ type: 'stack' }],
           encoding: {
             row: 'row',
             color: { field: 'HP', scale: 'categorical' },

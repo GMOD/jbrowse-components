@@ -7650,50 +7650,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "MarkFacet": {
-      "title": "MarkFacet",
-      "anyOf": [
-        {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"field\\": ... }\`."
-        },
-        {
-          "type": "object",
-          "properties": {
-            "field": {
-              "description": "field whose values take their own rows.",
-              "$ref": "#/$defs/StringOrJexl",
-              "default": ""
-            },
-            "domain": {
-              "description": "optional section order; listed values first, the rest sorted; left off, every value the data holds, sorted.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "Mark": {
       "title": "Mark",
       "type": "object",
@@ -7773,9 +7729,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/MarkTransformStep"
           }
         },
-        "facet": {
-          "$ref": "#/$defs/MarkFacet"
-        },
         "source": {
           "description": "features, or density past the fetch budget.",
           "anyOf": [
@@ -7851,6 +7804,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "items": {
             "$ref": "#/$defs/Mark"
           }
+        },
+        "transform": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MarkTransformStep"
+          }
+        },
+        "facetField": {
+          "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "facetDomain": {
+          "description": "facetField values whose sections stack first, in order.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "minScore": {
           "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",

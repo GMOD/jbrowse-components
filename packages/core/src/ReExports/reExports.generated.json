@@ -2730,8 +2730,9 @@
         "DEFAULT_COVERAGE_AS",
         "DEFAULT_STACK_AS",
         "DEFAULT_STACK_FIELDS",
+        "FACET_ROW",
         "aggregateFieldName",
-        "facetRows",
+        "facetLayers",
         "runTransforms"
       ],
       "worker": "real"
@@ -2829,6 +2830,14 @@
       "package": "@jbrowse/core",
       "names": [
         "getRelativeX"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/glyphNames": {
+      "package": "@jbrowse/core",
+      "names": [
+        "GLYPH_CODES",
+        "GLYPH_NAMES"
       ],
       "worker": "real"
     },
@@ -3076,6 +3085,7 @@
         "colorEvaluator",
         "encodeFeatures",
         "encodedChannelTransferables",
+        "hitIndexOf",
         "valueField"
       ],
       "worker": "real"
@@ -3835,6 +3845,13 @@
       "uiVia": [
         "react-dom"
       ]
+    },
+    "@jbrowse/display-kit/facetConfigSchemaFields": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "facetConfigSchemaFields"
+      ],
+      "worker": "real"
     },
     "@jbrowse/display-kit/fetchEachRegion": {
       "package": "@jbrowse/display-kit",

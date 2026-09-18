@@ -205,6 +205,26 @@ function categoricalChannel(
 
 /**
  * #api
+ * The hit index over `count` instances: each a box from `x` to `x2` at its
+ * `y`, or at 0 for a mark with no value.
+ */
+export function hitIndexOf(
+  x: Uint32Array,
+  x2: Uint32Array,
+  y: Float32Array | undefined,
+  count = x.length,
+) {
+  const fb = new Flatbush(count, undefined, Float64Array)
+  for (let i = 0; i < count; i++) {
+    const v = y ? y[i]! : 0
+    fb.add(x[i]!, v, x2[i], v)
+  }
+  fb.finish()
+  return fb
+}
+
+/**
+ * #api
  * Evaluate one encoding over a feature list into dense channel arrays for
  * the lanes named, the scale table each scaled channel came from, the `y`
  * extremes and — when `index` is among the lanes — a hit index.
@@ -424,16 +444,8 @@ export function encodeFeatures<L extends LaneName>(
     }
   }
 
-  let flatbushData: ArrayBuffer | undefined
-  if (has('index') && count > 0) {
-    const fb = new Flatbush(count, undefined, Float64Array)
-    for (let i = 0; i < count; i++) {
-      const v = y ? y[i]! : 0
-      fb.add(x[i]!, v, x2[i], v)
-    }
-    fb.finish()
-    flatbushData = fb.data
-  }
+  const flatbushData =
+    has('index') && count > 0 ? hitIndexOf(x, x2, y, count).data : undefined
 
   const encoded: EncodedChannels = {
     count,

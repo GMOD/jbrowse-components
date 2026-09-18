@@ -1,5 +1,4 @@
-import { facetRows, runTransforms } from './featureTransforms.ts'
-import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from './groupKeys.ts'
+import { FACET_ROW, facetLayers, runTransforms } from './featureTransforms.ts'
 import createJexlInstance from './jexl.ts'
 import { placeRect } from './layouts/placeRect.ts'
 import SimpleFeature from './simpleFeature.ts'
@@ -243,24 +242,6 @@ test('stack padding keeps a row busy past the feature it holds', () => {
   ])
 })
 
-test('stack groups pack independently and each starts at row 0', () => {
-  const out = runTransforms(
-    [
-      feature(0, 20, { sample: 'a' }),
-      feature(5, 25, { sample: 'a' }),
-      feature(0, 20, { sample: 'b' }),
-      feature(5, 25, { sample: 'b' }),
-    ],
-    [{ type: 'stack', groupby: ['sample'] }],
-  )
-  expect(rows(out, 'sample', 'start', 'row')).toEqual([
-    ['a', 0, 0],
-    ['a', 5, 1],
-    ['b', 0, 0],
-    ['b', 5, 1],
-  ])
-})
-
 test('stack reads the interval fields the step names and writes the field as names', () => {
   const out = runTransforms(
     [feature(0, 100, { s: 0, e: 20 }), feature(0, 100, { s: 30, e: 40 })],
@@ -294,95 +275,95 @@ test('stack with placeRect padding assigns the rows placeRect does', () => {
   expect(Math.max(...expected)).toBeGreaterThan(3)
 })
 
-function stacked(features: readonly Feature[], field: string) {
-  return runTransforms(features, [{ type: 'stack', groupby: [field] }])
-}
+const STACK = [{ transform: [{ type: 'stack' as const }] }]
 
-test('a facet offsets each group by the groups above it and names the sections', () => {
-  const { features, sections } = facetRows(
-    stacked(
-      [
-        feature(0, 20, { sample: 'b' }),
-        feature(5, 25, { sample: 'b' }),
-        feature(0, 20, { sample: 'a' }),
-      ],
-      'sample',
-    ),
-    { field: 'sample' },
+test('a facet packs each section on its own and stacks the sections', () => {
+  const { layers, sections } = facetLayers(
+    [
+      feature(0, 20, { sample: 'b' }),
+      feature(5, 25, { sample: 'b' }),
+      feature(0, 20, { sample: 'a' }),
+    ],
+    'sample',
+    STACK,
   )
   expect(sections).toEqual([
-    { key: 'a', label: 'sample: a', firstRow: 0, rowCount: 1 },
-    { key: 'b', label: 'sample: b', firstRow: 1, rowCount: 2 },
+    { key: 'a', firstRow: 0, rowCount: 1 },
+    { key: 'b', firstRow: 1, rowCount: 2 },
   ])
-  expect(rows(features, 'sample', 'start', 'row')).toEqual([
+  expect(rows(layers[0]!, 'sample', 'start', FACET_ROW)).toEqual([
+    ['a', 0, 0],
     ['b', 0, 1],
     ['b', 5, 2],
-    ['a', 0, 0],
   ])
+})
+
+test('a faceted section is the unfaceted layer over its own features, offset', () => {
+  const features = [
+    feature(0, 20, { sample: 'a' }),
+    feature(5, 25, { sample: 'b' }),
+    feature(10, 30, { sample: 'a' }),
+    feature(12, 14, { sample: 'b' }),
+  ]
+  const steps = [{ type: 'stack' as const }]
+  const { layers, sections } = facetLayers(features, 'sample', [
+    { transform: steps },
+  ])
+  for (const { key, firstRow } of sections) {
+    const alone = runTransforms(
+      features.filter(f => f.get('sample') === key),
+      steps,
+    )
+    const faceted = layers[0]!.filter(f => f.get('sample') === key)
+    expect(faceted.map(f => Number(f.get(FACET_ROW)) - firstRow)).toEqual(
+      alone.map(f => f.get('row')),
+    )
+  }
+})
+
+test('a section is as tall as the tallest layer packed it, and a rowless layer sits on its first row', () => {
+  const { layers, sections } = facetLayers(
+    [feature(0, 20, { sample: 'a' }), feature(5, 25, { sample: 'a' })],
+    'sample',
+    [...STACK, {}],
+  )
+  expect(sections).toEqual([{ key: 'a', firstRow: 0, rowCount: 2 }])
+  expect(layers[1]!.map(f => f.get(FACET_ROW))).toEqual([0, 0])
 })
 
 test('a facet orders digit keys by magnitude and files a missing value under its own section', () => {
-  const { sections } = facetRows(
-    stacked(
-      [
-        feature(0, 10, { bin: 10 }),
-        feature(0, 10, { bin: 2 }),
-        feature(0, 10, {}),
-      ],
-      'bin',
-    ),
-    { field: 'bin' },
+  const { sections } = facetLayers(
+    [feature(0, 10, { bin: 10 }), feature(0, 10, { bin: 2 }), feature(0, 10)],
+    'bin',
+    STACK,
   )
-  expect(sections.map(s => [s.key, s.label, s.firstRow])).toEqual([
-    ['2', 'bin: 2', 0],
-    ['10', 'bin: 10', 1],
-    ['', 'bin: none', 2],
-  ])
+  expect(sections.map(s => s.key)).toEqual(['2', '10', ''])
 })
 
-test('a strand facet stacks forward, reverse, unstranded with no domain named', () => {
-  const { sections } = facetRows(
-    stacked(
-      [
-        feature(0, 10, { strand: 0 }),
-        feature(0, 10, { strand: -1 }),
-        feature(0, 10, { strand: 1 }),
-      ],
-      'strand',
-    ),
-    { field: 'strand' },
-  )
-  expect(sections.map(s => [s.key, s.label, s.firstRow])).toEqual([
-    ['1', 'Forward strand', 0],
-    ['-1', 'Reverse strand', 1],
-    ['0', 'No strand', 2],
-  ])
-})
-
-test('a facet merges the tail past the cap into one section', () => {
-  const many = Array.from({ length: MAX_GROUPS + 5 }, (_, i) =>
-    feature(0, 10, { sample: `s${String(i).padStart(3, '0')}` }),
-  )
-  const { features, sections } = facetRows(stacked(many, 'sample'), {
-    field: 'sample',
-  })
-  expect(sections).toHaveLength(MAX_GROUPS)
-  const last = sections.at(-1)!
-  expect(last.key).toBe(OVERFLOW_GROUP_KEY)
-  expect(last.label).toBe('6 merged values')
-  expect(last.rowCount).toBe(1)
-  expect(new Set(features.map(f => f.get('row'))).size).toBe(MAX_GROUPS)
-})
-
-test('a facet over an unstacked list leaves one section spanning every row', () => {
-  const { sections } = facetRows(
-    runTransforms(
-      [feature(0, 20, { sample: 'a' }), feature(5, 25, { sample: 'a' })],
-      [{ type: 'stack' }],
-    ),
-    { field: 'sample' },
+test('a strand facet stacks forward, reverse, unstranded, and a missing strand is unstranded', () => {
+  const { sections } = facetLayers(
+    [
+      feature(0, 10, { strand: 0 }),
+      feature(0, 10, { strand: -1 }),
+      feature(0, 10, { strand: 1 }),
+      feature(0, 10),
+    ],
+    'strand',
+    STACK,
   )
   expect(sections).toEqual([
-    { key: 'a', label: 'sample: a', firstRow: 0, rowCount: 2 },
+    { key: '1', firstRow: 0, rowCount: 1 },
+    { key: '-1', firstRow: 1, rowCount: 1 },
+    { key: '0', firstRow: 2, rowCount: 2 },
   ])
+})
+
+test('a facet reads its field through a jexl expression', () => {
+  const { sections } = facetLayers(
+    [feature(0, 10, { tags: { HP: 1 } }), feature(0, 10, { tags: { HP: 2 } })],
+    "jexl:get(feature,'tags').HP",
+    STACK,
+    createJexlInstance(),
+  )
+  expect(sections.map(s => s.key)).toEqual(['1', '2'])
 })

@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import { facetConfigSchemaFields } from '@jbrowse/display-kit/facetConfigSchemaFields'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -186,30 +187,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'Feature height preset, `normal` by default; `compact` and `superCompact` shrink the rows, and `collapsed` packs every feature onto a single row with all labels hidden',
         defaultValue: 'normal',
       },
-      /**
-       * #slot
-       * The feature field each value of which packs its own labelled section
-       * of the track: a field name, a dotted path into a structured field
-       * (`INFO.SVTYPE`), a `jexl:` expression, or `strand`. A feature with
-       * no value stacks last, under `field: none`. Empty is ungrouped.
-       */
-      facetField: {
-        type: 'string',
-        defaultValue: '',
-        description:
-          'feature field (or jexl expression) to group by, one labelled section per value; `strand` for one per strand',
-      },
-      /**
-       * #slot
-       * The `facetField` values whose sections stack first, in order; the
-       * rest follow sorted. Empty stacks every section sorted, and a `strand`
-       * facet forward, reverse, then unstranded (`1`, `-1`, `0`).
-       */
-      facetDomain: {
-        type: 'stringArray',
-        defaultValue: [],
-        description: 'facetField values whose sections stack first, in order',
-      },
+      ...facetConfigSchemaFields,
       /**
        * #slot
        */

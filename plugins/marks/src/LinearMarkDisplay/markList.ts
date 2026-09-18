@@ -13,6 +13,7 @@ import type Flatbush from '@jbrowse/core/util/flatbush'
 import type {
   Encoded,
   EncodedChannels,
+  FacetSection,
   LaneName,
 } from '@jbrowse/core/util/markEncoding'
 import type {
@@ -74,6 +75,8 @@ function withLanes<L extends ChannelLane>(
 /** One region's payload: `layers[i]` is mark `i`'s channels. */
 export interface MarkRegionData {
   layers: StoredLayer[]
+  /** The sections a facet stacked the layers' rows into. */
+  facet?: FacetSection[]
   zoomRange?: ZoomRange
 }
 

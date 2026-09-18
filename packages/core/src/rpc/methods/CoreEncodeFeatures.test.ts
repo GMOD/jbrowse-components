@@ -101,22 +101,21 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
   )
 })
 
-test('a faceted layer that names no row reads the facet section it stacked into', async () => {
-  const sourced = ['k2', 'k1', 'k2'].map(
-    (source, i) =>
-      new SimpleFeature({
-        uniqueId: `s${i}`,
-        refName: 'ctgA',
-        start: i * 10,
-        end: i * 10 + 5,
-        score: i,
-        source,
-      }),
+test('a facet runs every layer per section and stacks the sections', async () => {
+  const reads = (
+    [
+      ['a', 0, 100, 'k2'],
+      ['b', 10, 90, 'k2'],
+      ['c', 20, 80, 'k1'],
+    ] as const
+  ).map(
+    ([uniqueId, start, end, source]) =>
+      new SimpleFeature({ uniqueId, refName: 'ctgA', start, end, source }),
   )
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
-      getFeaturesArray: async () => sourced,
+      getFeaturesArray: async () => reads,
       getZoomRange: async () => undefined,
       setSequenceAdapterConfig: () => {},
     },
@@ -128,20 +127,28 @@ test('a faceted layer that names no row reads the facet section it stacked into'
     sessionId: 'test',
     adapterConfig: { type: 'AnyAdapter' },
     region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+    facet: { field: 'source' },
     layers: [
       {
-        encoding: { y: 'score' },
+        encoding: { row: 'row' },
+        lanes: ['row'],
+        transform: [{ type: 'stack' }],
+      },
+      {
+        encoding: { y: 'coverage' },
         lanes: ['y', 'row'],
-        facet: { field: 'source' },
+        transform: [{ type: 'coverage' }],
       },
     ],
   })
-  const [layer] = (result as RpcResult<EncodedFeaturesResult>).value.layers
-  expect([...layer!.row!]).toEqual([1, 0, 1])
-  expect(layer!.facet).toEqual([
-    { key: 'k1', label: 'source: k1', firstRow: 0, rowCount: 1 },
-    { key: 'k2', label: 'source: k2', firstRow: 1, rowCount: 1 },
+  const { layers, facet } = (result as RpcResult<EncodedFeaturesResult>).value
+  expect(facet).toEqual([
+    { key: 'k1', firstRow: 0, rowCount: 1 },
+    { key: 'k2', firstRow: 1, rowCount: 2 },
   ])
+  expect([...layers[0]!.row!]).toEqual([0, 1, 2])
+  expect([...layers[1]!.row!]).toEqual([0, 1, 1, 1])
+  expect([...layers[1]!.y!]).toEqual([1, 1, 2, 1])
 })
 
 test("a layer's own transform runs after the shared one, and the other layer sees neither", async () => {

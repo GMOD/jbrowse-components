@@ -98,7 +98,6 @@ export const EMPTY_PLOT_SPEC: PlotSpec = {
 interface MarkSnapshot {
   shape: string
   encoding: Record<string, unknown>
-  facet?: string
   transform?: Record<string, unknown>[]
   minBpPerPx?: number
   maxBpPerPx?: number
@@ -119,7 +118,6 @@ export function plotMarks(spec: PlotSpec, fields: PlotFields): MarkSnapshot[] {
   const plot: MarkSnapshot = {
     shape: spec.shape,
     encoding: { y: spec.field, ...(color ? { color } : {}) },
-    ...(fields.facet ? { facet: fields.facet } : {}),
     ...(spec.binned ? { maxBpPerPx: BINNED_BP_PER_PX } : {}),
   }
   return spec.binned

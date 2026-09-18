@@ -1,6 +1,5 @@
 import { categoricalField } from './categoricalField.ts'
 import { fieldReader } from './fieldReader.ts'
-import { OVERFLOW_GROUP_KEY, capGroupKeys, overflowLabel } from './groupKeys.ts'
 import { stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 
@@ -11,7 +10,7 @@ import type {
   BinStep,
   CoverageStep,
   FacetSection,
-  FacetSpec,
+  FieldRef,
   FlattenStep,
   StackStep,
   TransformStep,
@@ -306,24 +305,20 @@ function stack(features: readonly Feature[], step: StackStep) {
   const as = step.as ?? DEFAULT_STACK_AS
   const [startField, endField] = step.fields ?? DEFAULT_STACK_FIELDS
   const padding = step.padding ?? 0
-  const out: Feature[] = []
-  for (const members of groupMembers(features, step.groupby ?? [])) {
-    members.sort(
-      (a, b) => Number(a.get(startField)) - Number(b.get(startField)),
-    )
-    const rowEnds: number[] = []
-    for (const f of members) {
-      const start = Number(f.get(startField))
-      const end = Number(f.get(endField))
-      let row = 0
-      while (row < rowEnds.length && rowEnds[row]! > start) {
-        row++
-      }
-      rowEnds[row] = (end > start ? end : start) + padding
-      out.push(new DerivedFeature(f, { [as]: row }))
+  const sorted = [...features].sort(
+    (a, b) => Number(a.get(startField)) - Number(b.get(startField)),
+  )
+  const rowEnds: number[] = []
+  return sorted.map(f => {
+    const start = Number(f.get(startField))
+    const end = Number(f.get(endField))
+    let row = 0
+    while (row < rowEnds.length && rowEnds[row]! > start) {
+      row++
     }
-  }
-  return out
+    rowEnds[row] = (end > start ? end : start) + padding
+    return new DerivedFeature(f, { [as]: row })
+  })
 }
 
 /**
@@ -378,53 +373,64 @@ function coverage(features: readonly Feature[], step: CoverageStep) {
 
 /**
  * #api
- * Stack the facet groups themselves: `stack`'s `groupby` numbers every group
- * from 0, so the sections overlap until each one's rows are offset by the
- * rows of the groups above it, in the field's order, and the tail past the
- * cap merges into one overflow section.
- *
- * A group's height is its own highest row plus one, which is right whether or
- * not the `stack` grouped by this field — an ungrouped pack simply leaves one
- * group spanning every row.
+ * The field a faceted layer's features carry their stacked row in.
  */
-export function facetRows(
+export const FACET_ROW = '\u0000row'
+
+function rowOf(value: unknown) {
+  const row = Number(value)
+  return row > 0 ? Math.floor(row) : 0
+}
+
+/**
+ * #api
+ * A faceted request's layers: the features split on `field`'s key, each
+ * layer's own steps run over each section alone, and the sections stacked —
+ * a section's rows start where the one above it ends, and it is as tall as
+ * the tallest layer packed it. Every layer's features come back in section
+ * order carrying their stacked row in `FACET_ROW`, so a faceted display is
+ * the unfaceted one drawn once per section.
+ */
+export function facetLayers(
   features: readonly Feature[],
-  { field, as = DEFAULT_STACK_AS }: FacetSpec,
+  field: FieldRef,
+  layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[],
   jexl?: JexlInstance,
 ) {
   const categories = categoricalField(field)
   const read = fieldReader(field, jexl)
-  const rows = features.map(f => ({
-    feature: f,
-    key: categories.key(read(f)),
-    row: Number(f.get(as)) || 0,
-  }))
-  const { sectionOf, mergedCount } = capGroupKeys(rows.map(r => r.key))
-  const heights = new Map<string, number>()
-  for (const r of rows) {
-    r.key = sectionOf(r.key)
-    heights.set(r.key, Math.max(heights.get(r.key) ?? 0, r.row + 1))
+  const byKey = new Map<string, Feature[]>()
+  for (const f of features) {
+    const key = categories.key(read(f))
+    const members = byKey.get(key)
+    if (members) {
+      members.push(f)
+    } else {
+      byKey.set(key, [f])
+    }
   }
+  const readRows = layers.map(l => fieldReader(l.row ?? DEFAULT_STACK_AS, jexl))
+  const out = layers.map((): Feature[] => [])
   const sections: FacetSection[] = []
-  const firstRows = new Map<string, number>()
   let next = 0
-  for (const key of [...heights.keys()].sort(categories.compare)) {
-    const rowCount = heights.get(key)!
-    const label =
-      key === OVERFLOW_GROUP_KEY
-        ? overflowLabel(mergedCount)
-        : categories.sectionLabel(key)
-    sections.push({ key, label, firstRow: next, rowCount })
-    firstRows.set(key, next)
+  for (const key of [...byKey.keys()].sort(categories.compare)) {
+    const members = byKey.get(key)!
+    const placed = layers.map(({ transform }, l) =>
+      (transform?.length
+        ? runTransforms(members, transform, jexl)
+        : members
+      ).map(f => ({ f, row: rowOf(readRows[l]!(f)) })),
+    )
+    const rowCount = Math.max(1, ...placed.flat().map(p => p.row + 1))
+    placed.forEach((layer, l) => {
+      for (const { f, row } of layer) {
+        out[l]!.push(new DerivedFeature(f, { [FACET_ROW]: next + row }))
+      }
+    })
+    sections.push({ key, firstRow: next, rowCount })
     next += rowCount
   }
-  return {
-    features: rows.map(
-      ({ feature, key, row }) =>
-        new DerivedFeature(feature, { [as]: row + firstRows.get(key)! }),
-    ) as readonly Feature[],
-    sections,
-  }
+  return { layers: out as readonly (readonly Feature[])[], sections }
 }
 
 /**

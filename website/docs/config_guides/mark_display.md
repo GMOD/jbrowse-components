@@ -148,8 +148,8 @@ describes that binding:
   the first entry, continuing into the default palette past its end, for when
   the colours should be spent deliberately. A value it leaves out keeps a colour
   derived from itself that no listed value paints, and follows the listed ones
-  in the legend sorted, the order a facet stacks its sections in; with no
-  `domain` the legend is every value the region holds, sorted.
+  in the legend sorted, the order a facet stacks its sections in. The legend
+  lists the values drawn; a listed value the data lacks takes no row.
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domain": [0, 50], "ramp": ["white", "red"] }`
   reads the value through `domain` into the ramp. `ramp` is `["viridis"]` or two
@@ -218,54 +218,80 @@ band its field names.
 
 ## Facets
 
-A mark's `facet` gives each value of a categorical field its own band of rows,
-named by a chip a reader can hide the section from. The rows come from a `stack`
-grouped by the same field, and the facet stacks the groups themselves:
+The display's `facetField` gives each value of a field its own band of rows,
+named by a chip a reader can hide the section from. The facet splits the
+features first, and every mark then runs its own steps over each section alone,
+so a `stack` packs each section on its own rows and a `coverage` counts each
+section's depth:
 
 ```json
 {
-  "shape": "span",
-  "facet": "sample",
-  "transform": [{ "type": "stack", "groupby": ["sample"] }],
-  "encoding": { "row": "row" }
+  "type": "LinearMarkDisplay",
+  "facetField": "sample",
+  "marks": [
+    {
+      "shape": "span",
+      "transform": [{ "type": "stack" }],
+      "encoding": { "row": "row" }
+    }
+  ]
+}
+```
+
+The field is read the way a channel reads one: a name, a dotted path into a
+structured field (`INFO.SVTYPE`), or a `jexl:` expression. Where the value has
+to be computed first, the display's own `transform` runs before the facet splits
+the features:
+
+```json
+{
+  "type": "LinearMarkDisplay",
+  "transform": [
+    { "type": "formula", "expr": "jexl:getTag(feature,'HP')", "as": "HP" }
+  ],
+  "facetField": "HP",
+  "facetDomain": ["2", "1"],
+  "marks": [
+    {
+      "shape": "span",
+      "transform": [{ "type": "stack" }],
+      "encoding": {
+        "row": "row",
+        "color": { "field": "HP", "scale": "categorical" }
+      }
+    }
+  ]
 }
 ```
 
 Sections order a name with a number in it by that number, so chr2 before chr10,
-and the rest by code point, and the tail past forty merges into one. The object
-form of `facet` takes an optional `domain`, the section order: the values listed
-stack first, in that order, and the rest follow sorted. It is the same key a
-colour scale's `domain` is, on the row channel instead of the colour one:
-
-```json
-{
-  "shape": "span",
-  "facet": { "field": "HP", "domain": ["2", "1"] },
-  "transform": [{ "type": "stack", "groupby": ["HP"] }],
-  "encoding": { "row": "row" }
-}
-```
+and the rest by code point. `facetDomain` is the section order: the values
+listed stack first, in that order, and the rest follow sorted. Past forty
+sections the tail merges into one, chosen by that natural order, so a domain
+orders the sections and never changes which exist.
 
 **Sections** in the track menu lists the sections drawn, each with **Move up**,
-**Move down** and **Hide section**; a move writes the drawn order back as the
-facet's `domain`, and **Reset section order** clears it.
+**Move down** and **Hide section**; a move writes the drawn order back as
+`facetDomain`, and **Reset section order** clears it. A hidden section leaves
+the legend and the value axis along with the plot.
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 
 ## Transforms
 
 A mark's `transform` is a list of steps over the region's features, run in the
-worker before the encoding, in order, each reading what the last answered:
+worker before the encoding, in order, each reading what the last answered. The
+display's own `transform` takes the same steps and runs before every mark's:
 
-| Step        | What it does                                                                                                                                                                                                                   |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                        |
-| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                               |
-| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges over `start` and `end`                                                                                                         |
-| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field                                                                    |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                               |
-| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`                                                                              |
-| `stack`     | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row; `groupby` packs each group on its own rows |
+| Step        | What it does                                                                                                                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                            |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                   |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges over `start` and `end`                                                             |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field                        |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                   |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`                                  |
+| `stack`     | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row |
 
 A `bin` followed by an `aggregate` grouped by `start` and `end` is a density:
 one bar per bin, its height the count of features whose start fell in it.

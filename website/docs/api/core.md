@@ -202,37 +202,45 @@ transferables.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
-## facetRows
+## FACET_ROW
 
-Stack the facet groups themselves: `stack`'s `groupby` numbers every group
-from 0, so the sections overlap until each one's rows are offset by the
-rows of the groups above it, in the field's order, and the tail past the
-cap merges into one overflow section.
-
-A group's height is its own highest row plus one, which is right whether or
-not the `stack` grouped by this field — an ungrouped pack simply leaves one
-group spanning every row.
+The field a faceted layer's features carry their stacked row in.
 
 ```js
 // type signature
-(features: readonly Feature[], { field, as }: FacetSpec, jexl?: JexlInstance | undefined) => { features: readonly Feature[]; sections: FacetSection[]; }
+"\0row"
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
+
+## facetLayers
+
+A faceted request's layers: the features split on `field`'s key, each
+layer's own steps run over each section alone, and the sections stacked —
+a section's rows start where the one above it ends, and it is as tall as
+the tallest layer packed it. Every layer's features come back in section
+order carrying their stacked row in `FACET_ROW`, so a faceted display is
+the unfaceted one drawn once per section.
+
+```js
+// type signature
+(features: readonly Feature[], field: string, layers: readonly {…}[], jexl?: JexlInstance | undefined) => { ...; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
 
 ## FacetSection
 
-One faceted section as the worker stacked it: its sort key, the chip's
-name, the row it starts on and how many rows it holds.
+One faceted section as the worker stacked it: its key, the row it starts on
+and how many rows it holds.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ## FacetSpec
 
-A layer's row facet: partition the features on `field`, and stack each
-value's rows under the groups above it. The rows themselves are a `stack`
-step's, grouped by the same field — the facet is the offset between the
-groups and the section table a display names them from.
+A row facet: split the features on `field`'s value, run every layer's own
+steps over each section alone, and stack the sections, each starting on the
+row after the one above it ends.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -307,6 +315,18 @@ The scale a glyph channel was resolved through: which glyph each value of
 the field took.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## hitIndexOf
+
+The hit index over `count` instances: each a box from `x` to `x2` at its
+`y`, or at 0 for a mark with no value.
+
+```js
+// type signature
+(x: Uint32Array<ArrayBufferLike>, x2: Uint32Array<ArrayBufferLike>, y: Float32Array<ArrayBufferLike> | undefined, count?: number) => Flatbush
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ## LaneName
 
@@ -463,9 +483,8 @@ Assign every feature the lowest row on which it overlaps nothing already
 there — greedy first fit in start order, the packing a pileup is — and
 write it to the field `as` (`row`). `fields` names the interval read
 (`start`, `end`); `padding` is bp of clearance kept between two features
-sharing a row; `groupby` packs each distinct value set on its own rows,
-each numbered from 0. The answer is the input in start order, so a `span`
-encoding `row` stacks it.
+sharing a row. The answer is the input in start order, so a `span`
+encoding `row` stacks it. Under a facet it packs each section on its own.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

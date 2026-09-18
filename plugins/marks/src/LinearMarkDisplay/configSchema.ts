@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import { facetConfigSchemaFields } from '@jbrowse/display-kit/facetConfigSchemaFields'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
@@ -223,42 +224,6 @@ const markValueSchema = ConfigurationSchema(
   { preProcessSnapshot: liftField },
 )
 
-const markFacetSchema = ConfigurationSchema(
-  'MarkFacet',
-  {
-    /**
-     * #slot marks.facet.field
-     * The categorical feature field whose values each take their own band of
-     * rows, one section per value, named by a chip. The rows themselves come
-     * from a `stack` step grouped by the same field — the facet is the offset
-     * between one group's rows and the next, so a section stacks under the
-     * ones above it rather than over them. Sections order by `domain`, then
-     * the way every in-track grouping orders, digits by magnitude, and the
-     * tail past 40 merges into one. Empty for a display with no facet.
-     * Writing `facet: 'type'` directly on the mark lands here.
-     */
-    field: {
-      type: 'string',
-      defaultValue: '',
-      description: 'field whose values take their own rows',
-    },
-    /**
-     * #slot marks.facet.domain
-     * Optional section order: the values listed stack first, in this order,
-     * and the rest follow sorted. Left off, the sections are every value
-     * the data holds, sorted. A listed value the data lacks takes no
-     * section.
-     */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'optional section order; listed values first, the rest sorted; left off, every value the data holds, sorted',
-    },
-  },
-  { preProcessSnapshot: liftField },
-)
-
 const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
   /**
    * #slot marks.encoding.x
@@ -458,8 +423,7 @@ const transformStepSchema = ConfigurationSchema(
      * #slot marks.transform.groupby
      * For an `aggregate` step: the fields whose distinct value sets make
      * the groups — `["start", "end"]` after a `bin`. Empty folds the whole
-     * region into one feature. For a `stack` step: the groups packed on
-     * their own rows, each numbered from 0.
+     * region into one feature.
      */
     groupby: {
       type: 'stringArray',
@@ -544,18 +508,11 @@ const markSchema = ConfigurationSchema(
     /**
      * #slot marks.transform
      * Steps over the region's features before this mark encodes them, in
-     * order, after the display's `jexlFilters`. A `bin` then an `aggregate`
-     * grouped by `start` and `end` is a density: `count` per bin, plotted as
-     * `y`.
+     * order, after the display's own `transform`, and over each section alone
+     * under a facet. A `bin` then an `aggregate` grouped by `start` and `end`
+     * is a density: `count` per bin, plotted as `y`.
      */
     transform: types.array(transformStepSchema),
-    /**
-     * #slot marks.facet
-     * The row facet: a field, or an object naming it, whose values each take
-     * their own band of rows with a chip over it. A reader hides a section
-     * from its chip.
-     */
-    facet: markFacetSchema,
     /**
      * #slot marks.source
      * Where this mark draws from once the byte gate refuses the features.
@@ -655,6 +612,14 @@ export function configSchemaFactory() {
        * Each is a `shape` and an `encoding`.
        */
       marks: types.array(markSchema),
+      /**
+       * #slot transform
+       * Steps over the region's features before the facet splits them and
+       * before any mark's own, after `jexlFilters`: where a field the facet
+       * reads is made, such as a formula lifting a read's tag.
+       */
+      transform: types.array(transformStepSchema),
+      ...facetConfigSchemaFields,
       ...scoreAxisConfigSchemaFields,
       /**
        * #slot origin

@@ -2,6 +2,7 @@ import { createElement } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
@@ -40,6 +41,7 @@ function createTestEnvironment(
   marks: unknown[],
   region = REGION,
   adapterType = 'BedAdapter',
+  display: Record<string, unknown> = {},
 ) {
   return createDisplayTestEnvironment<LinearMarkDisplayModel>({
     plugins: [new LinearGenomeViewPlugin(), new WigglePlugin()],
@@ -49,7 +51,7 @@ function createTestEnvironment(
     configSchema: () => configSchemaFactory(),
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
     viewModel: linearGenomeViewStateModelFactory,
-    displayConfig: { marks },
+    displayConfig: { marks, ...display },
     regions: [region],
     assemblyRegions: [region],
     onViewReady: view => {
@@ -89,24 +91,25 @@ function result(
   layers: {
     y: number[]
     row?: number[]
-    facet?: Layer['facet']
+    color?: number[]
     scale?: Layer['scale']
     glyphScale?: Layer['glyphScale']
   }[],
+  facet?: EncodedFeaturesResult['facet'],
 ): EncodedFeaturesResult {
   return {
-    layers: layers.map(({ y, row, facet, scale, glyphScale }) => ({
+    facet,
+    layers: layers.map(({ y, row, color, scale, glyphScale }) => ({
       count: y.length,
       skipped: 0,
       x: Uint32Array.from(y.map((_, i) => i * 100)),
       x2: Uint32Array.from(y.map((_, i) => i * 100 + 50)),
       y: Float32Array.from(y),
       row: row ? Uint32Array.from(row) : undefined,
-      color: new Uint32Array(y.length),
+      color: color ? Uint32Array.from(color) : new Uint32Array(y.length),
       glyph: new Uint8Array(y.length),
       featureIndex: Uint32Array.from(y.map((_, i) => i)),
       ...extremes(y),
-      facet,
       scale,
       glyphScale,
     })),
@@ -491,13 +494,7 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
         { type: 'flatten' },
         { type: 'flatten', field: 'exons', as: 'nth' },
         { type: 'stack' },
-        {
-          type: 'stack',
-          as: 'lane',
-          fields: ['s', 'e'],
-          padding: 20,
-          groupby: ['sample'],
-        },
+        { type: 'stack', as: 'lane', fields: ['s', 'e'], padding: 20 },
       ],
     },
     { shape: 'bar', encoding: { y: 'score' } },
@@ -521,20 +518,8 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
     { type: 'coverage', as: 'depth' },
     { type: 'flatten', field: undefined, index: undefined },
     { type: 'flatten', field: 'exons', index: 'nth' },
-    {
-      type: 'stack',
-      as: undefined,
-      fields: undefined,
-      padding: undefined,
-      groupby: undefined,
-    },
-    {
-      type: 'stack',
-      as: 'lane',
-      fields: ['s', 'e'],
-      padding: 20,
-      groupby: ['sample'],
-    },
+    { type: 'stack', as: undefined, fields: undefined, padding: undefined },
+    { type: 'stack', as: 'lane', fields: ['s', 'e'], padding: 20 },
   ])
   expect(layers[1]).not.toHaveProperty('transform')
 })
@@ -1031,26 +1016,25 @@ test('a bar sharing the axis keeps it on the plot box, where a bar top is drawn'
 })
 
 const FACET_MARKS = [
-  {
-    shape: 'span',
-    facet: 'sample',
-    transform: [{ type: 'stack', groupby: ['sample'] }],
-    encoding: { row: 'row' },
-  },
+  { shape: 'span', transform: [{ type: 'stack' }], encoding: { row: 'row' } },
 ]
+
+function facetedEnvironment(display: Record<string, unknown> = {}) {
+  return createTestEnvironment(FACET_MARKS, REGION, 'BedAdapter', {
+    facetField: 'sample',
+    ...display,
+  })
+}
 
 // Two sections the worker stacked: 'a' on row 0, 'b' on rows 1 and 2.
 function facetResult(rows: number[]) {
-  return result([
-    {
-      y: rows.map(() => 0),
-      row: rows,
-      facet: [
-        { key: 'a', label: 'sample: a', firstRow: 0, rowCount: 1 },
-        { key: 'b', label: 'sample: b', firstRow: 1, rowCount: 2 },
-      ],
-    },
-  ])
+  return result(
+    [{ y: rows.map(() => 0), row: rows }],
+    [
+      { key: 'a', firstRow: 0, rowCount: 1 },
+      { key: 'b', firstRow: 1, rowCount: 2 },
+    ],
+  )
 }
 
 function rowsOf(display: LinearMarkDisplayModel, region = 0) {
@@ -1058,25 +1042,25 @@ function rowsOf(display: LinearMarkDisplayModel, region = 0) {
 }
 
 test('bars faceted by a field stand in a band each, the axis ruling every band', () => {
-  const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', facet: 'source', encoding: { y: 'score' } },
-  ])
+  const { createDisplay } = createTestEnvironment(
+    [{ shape: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { facetField: 'source' },
+  )
   const { display } = createDisplay()
   expect(display.rpcProps().layers[0]!.lanes).toContain('row')
-  expect(display.rpcProps().layers[0]!.facet).toEqual({ field: 'source' })
+  expect(display.rpcProps().facet).toEqual({ field: 'source' })
   display.setRpcData(
     0,
-    result([
-      {
-        y: [3, 8, 5],
-        row: [0, 1, 2],
-        facet: [
-          { key: 'a', label: 'source: a', firstRow: 0, rowCount: 1 },
-          { key: 'b', label: 'source: b', firstRow: 1, rowCount: 1 },
-          { key: 'c', label: 'source: c', firstRow: 2, rowCount: 1 },
-        ],
-      },
-    ]),
+    result(
+      [{ y: [3, 8, 5], row: [0, 1, 2] }],
+      [
+        { key: 'a', firstRow: 0, rowCount: 1 },
+        { key: 'b', firstRow: 1, rowCount: 1 },
+        { key: 'c', firstRow: 2, rowCount: 1 },
+      ],
+    ),
     REGION,
   )
   expect(display.rowCount).toBe(3)
@@ -1101,13 +1085,12 @@ test('bars faceted by a field stand in a band each, the axis ruling every band',
   expect(single.valueScales[0]!.bandTops).toBeUndefined()
 })
 
-test('a faceted mark declares the facet to the worker and bands the plot by its sections', () => {
-  const { createDisplay } = createTestEnvironment(FACET_MARKS)
-  const { display } = createDisplay()
+test('the facet reaches the worker on the request, and the sections band the plot', () => {
+  const { display } = facetedEnvironment().createDisplay()
   expect(display.facetField).toBe('sample')
-  expect(display.rpcProps().layers[0]!.facet).toEqual({ field: 'sample' })
+  expect(display.rpcProps().facet).toEqual({ field: 'sample' })
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
-  expect(display.facetLayout).toEqual({
+  expect(display.facetLayout).toMatchObject({
     sections: [
       { key: 'a', label: 'sample: a', firstRow: 0, rowCount: 1 },
       { key: 'b', label: 'sample: b', firstRow: 1, rowCount: 2 },
@@ -1118,17 +1101,28 @@ test('a faceted mark declares the facet to the worker and bands the plot by its 
   expect(rowsOf(display)).toEqual([0, 1, 2])
 })
 
+test('a display transform runs before the facet splits the features', () => {
+  const { display } = facetedEnvironment({
+    facetField: 'nm',
+    transform: [
+      { type: 'formula', expr: "jexl:getTag(feature,'NM')", as: 'nm' },
+    ],
+  }).createDisplay()
+  expect(display.rpcProps()).toMatchObject({
+    transform: [
+      { type: 'formula', expr: "jexl:getTag(feature,'NM')", as: 'nm' },
+    ],
+    facet: { field: 'nm' },
+  })
+})
+
 test('a facet domain orders the folded sections and stays off the worker request', () => {
-  const { createDisplay } = createTestEnvironment([
-    {
-      ...FACET_MARKS[0],
-      facet: { field: 'sample', domain: ['b'] },
-    },
-  ])
-  const { display } = createDisplay()
-  expect(display.rpcProps().layers[0]!.facet).toEqual({ field: 'sample' })
+  const { display } = facetedEnvironment({
+    facetDomain: ['b'],
+  }).createDisplay()
+  expect(display.rpcProps().facet).toEqual({ field: 'sample' })
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
-  expect(display.facetLayout).toEqual({
+  expect(display.facetLayout).toMatchObject({
     sections: [
       { key: 'b', label: 'sample: b', firstRow: 0, rowCount: 2 },
       { key: 'a', label: 'sample: a', firstRow: 2, rowCount: 1 },
@@ -1138,9 +1132,8 @@ test('a facet domain orders the folded sections and stays off the worker request
   expect(rowsOf(display)).toEqual([2, 0, 1])
 })
 
-test('the Sections menu moves a section and writes the drawn order onto the facet', () => {
-  const { createDisplay } = createTestEnvironment(FACET_MARKS)
-  const { display } = createDisplay()
+test('the Sections menu moves a section and writes the drawn order as the facet domain', () => {
+  const { display } = facetedEnvironment().createDisplay()
   const sectionsItem = () =>
     display.trackMenuItems().find(i => 'label' in i && i.label === 'Sections')
   expect(sectionsItem()).toBeUndefined()
@@ -1163,21 +1156,17 @@ test('the Sections menu moves a section and writes the drawn order onto the face
 })
 
 test('two regions fold into one row space, the deeper pack setting each band', () => {
-  const { createDisplay } = createTestEnvironment(FACET_MARKS)
-  const { display } = createDisplay()
+  const { display } = facetedEnvironment().createDisplay()
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
   display.setRpcData(
     1,
-    result([
-      {
-        y: [0, 0],
-        row: [0, 1],
-        facet: [
-          { key: 'a', label: 'sample: a', firstRow: 0, rowCount: 2 },
-          { key: 'b', label: 'sample: b', firstRow: 2, rowCount: 1 },
-        ],
-      },
-    ]),
+    result(
+      [{ y: [0, 0], row: [0, 1] }],
+      [
+        { key: 'a', firstRow: 0, rowCount: 2 },
+        { key: 'b', firstRow: 2, rowCount: 1 },
+      ],
+    ),
     REGION,
   )
   expect(display.facetLayout.sections).toEqual([
@@ -1190,34 +1179,114 @@ test('two regions fold into one row space, the deeper pack setting each band', (
   expect(rowsOf(display, 1)).toEqual([0, 1])
 })
 
-test('hiding a section takes its rows out of the plot and lifts the ones below it', () => {
-  const { createDisplay } = createTestEnvironment(FACET_MARKS)
-  const { display } = createDisplay()
+test('the cap reads every region, and the merged values keep bands of their own', () => {
+  const { display } = facetedEnvironment().createDisplay()
+  const keys = Array.from({ length: MAX_GROUPS + 1 }, (_, i) => `v${i}`)
+  const table = (of: string[]) =>
+    of.map((key, i) => ({ key, firstRow: i, rowCount: 1 }))
+  display.setRpcData(
+    0,
+    result([{ y: keys.map(() => 0), row: keys.map((_, i) => i) }], table(keys)),
+    REGION,
+  )
+  const tail = keys.slice(MAX_GROUPS - 1)
+  display.setRpcData(
+    1,
+    result([{ y: [0, 0], row: [0, 1] }], table(tail)),
+    REGION,
+  )
+  const { sections } = display.facetLayout
+  expect(sections).toHaveLength(MAX_GROUPS)
+  expect(sections.at(-1)).toEqual({
+    key: OVERFLOW_GROUP_KEY,
+    label: '2 merged values',
+    firstRow: MAX_GROUPS - 1,
+    rowCount: 2,
+  })
+  expect(rowsOf(display, 0).slice(-2)).toEqual([MAX_GROUPS - 1, MAX_GROUPS])
+  expect(rowsOf(display, 1)).toEqual([MAX_GROUPS - 1, MAX_GROUPS])
+})
+
+test('hiding a section takes its instances out of the drawn layer and lifts the ones below it', () => {
+  const { display } = facetedEnvironment().createDisplay()
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
   display.hideGroup('a')
   expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b'])
   expect(display.rowCount).toBe(2)
-  // The hidden section's instance lands on the row after the last, which the
-  // plot has no height for; the two kept rows move up onto 0 and 1.
-  expect(rowsOf(display)).toEqual([2, 0, 1])
+  const [layer] = display.rpcDataMap.get(0)!.layers
+  expect(layer!.count).toBe(2)
+  expect([...layer!.featureIndex]).toEqual([1, 2])
+  expect(rowsOf(display)).toEqual([0, 1])
   display.showAllGroups()
   expect(rowsOf(display)).toEqual([0, 1, 2])
 })
 
+test('a hidden section leaves the key and the axis the way it leaves the plot', () => {
+  const { display } = createTestEnvironment(
+    [
+      {
+        shape: 'bar',
+        encoding: {
+          y: 'score',
+          color: { field: 'type', scale: 'categorical' },
+        },
+      },
+    ],
+    REGION,
+    'BedAdapter',
+    { facetField: 'sample' },
+  ).createDisplay()
+  const RED = 0xff0000ff
+  const BLUE = 0xffff0000
+  display.setRpcData(
+    0,
+    result(
+      [
+        {
+          y: [3, 90],
+          row: [0, 1],
+          color: [RED, BLUE],
+          scale: {
+            kind: 'categorical',
+            field: 'type',
+            domain: [],
+            entries: [
+              { value: 'exon', color: RED },
+              { value: 'gene', color: BLUE },
+            ],
+          },
+        },
+      ],
+      [
+        { key: 'a', firstRow: 0, rowCount: 1 },
+        { key: 'b', firstRow: 1, rowCount: 1 },
+      ],
+    ),
+    REGION,
+  )
+  const keyed = () =>
+    display.colorScales.flatMap(c =>
+      c.kind === 'categorical' ? c.entries.map(e => e.value) : [],
+    )
+  expect(keyed()).toEqual(['exon', 'gene'])
+  expect(display.domain![1]).toBeGreaterThanOrEqual(90)
+  display.hideGroup('b')
+  expect(keyed()).toEqual(['exon'])
+  expect(display.domain![1]).toBeLessThan(90)
+})
+
 test('moving the facet field drops what was hidden, the keys having meant that field', () => {
-  const { createDisplay } = createTestEnvironment(FACET_MARKS)
-  const { display } = createDisplay()
+  const { display } = facetedEnvironment().createDisplay()
   const before = display.groupKeySpace
   display.hideGroup('a')
   expect(display.hiddenGroups.size).toBe(1)
-  setConf({ configuration: display.conf.marks[0]!.facet }, 'field', 'type')
+  setConf(display, 'facetField', 'type')
   expect(display.groupKeySpace).not.toBe(before)
   expect(display.hiddenGroups.size).toBe(0)
 })
 
 test('the chip row names each section at the top of the rows it labels', () => {
-  const { createDisplay } = createTestEnvironment(FACET_MARKS)
-  const { display } = createDisplay()
+  const { display } = facetedEnvironment().createDisplay()
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
   render(createElement(MarkFacetChips, { model: display, plotHeight: 60 }))
   expect(

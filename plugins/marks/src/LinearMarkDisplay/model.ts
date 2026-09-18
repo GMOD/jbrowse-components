@@ -15,6 +15,7 @@ import {
   pluralize,
   withFeatureDetails,
 } from '@jbrowse/core/util'
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
@@ -62,11 +63,7 @@ import { autorun } from 'mobx'
 
 import { binStepWidth } from './autoBin.ts'
 import { densityRegionData } from './densityLayer.ts'
-import {
-  foldFacetSections,
-  remapFacetRows,
-  visibleFacetLayout,
-} from './facet.ts'
+import { facetLayout, remapFacetRows } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
@@ -106,7 +103,6 @@ import type {
   AggregateOp,
   ColorEncoding,
   EncodedFeaturesResult,
-  FacetSection,
   FacetSpec,
   GlyphEncoding,
   GlyphName,
@@ -143,6 +139,7 @@ function storedRegionData(result: EncodedFeaturesResult): MarkRegionData {
         ? Flatbush.from(layer.flatbushData)
         : undefined,
     })),
+    facet: result.facet,
     zoomRange: result.zoomRange,
   }
 }
@@ -185,19 +182,6 @@ export function declaredDomain(
 
 // The config's raw slot values as the worker's encoding: a `jexl:` string
 // crosses untouched, which is why nothing here reads through `getConf`.
-interface MarkFacetConfig {
-  field: string
-  domain: readonly string[]
-}
-
-function facetConfigOf(marks: MarkConfig[]): MarkFacetConfig | undefined {
-  return marks.find(m => m.facet.field !== '')?.facet
-}
-
-function facetSpecOf(facet: MarkFacetConfig): FacetSpec {
-  return { field: facet.field }
-}
-
 function encodingOf(mark: MarkConfig): MarkEncoding {
   const { x, x2, y, row, glyph, color } = mark.encoding
   const scaled: ColorEncoding =
@@ -250,10 +234,13 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
   }
 }
 
-// The config's step list as the worker's, with the empty slot values that
-// mean "default" left off the wire and an `auto` bin resolved at `bpPerPx`.
-function transformOf(mark: MarkConfig, bpPerPx: number): TransformStep[] {
-  return mark.transform.map((step: MarkTransformStepConfig): TransformStep => {
+// A step list as the worker's, with the empty slot values that mean
+// "default" left off the wire and an `auto` bin resolved at `bpPerPx`.
+function stepsOf(
+  steps: readonly MarkTransformStepConfig[],
+  bpPerPx: number,
+): TransformStep[] {
+  return steps.map((step): TransformStep => {
     const as: string[] = [...step.as]
     switch (step.type) {
       case 'filter': {
@@ -296,7 +283,6 @@ function transformOf(mark: MarkConfig, bpPerPx: number): TransformStep[] {
           as: as[0],
           fields: fields.length === 2 ? [fields[0]!, fields[1]!] : undefined,
           padding: step.padding || undefined,
-          groupby: step.groupby.length > 0 ? [...step.groupby] : undefined,
         }
       }
       default: {
@@ -433,18 +419,17 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The facet field: the categorical field whose values each take their
-       * own band of rows, off the first mark declaring one, or `''`.
+       * The field whose values each take their own band of rows, or `''`.
        */
       get facetField(): string {
-        return facetConfigOf(self.conf.marks)?.field ?? ''
+        return getConf(self, 'facetField')
       },
       /**
        * #getter
-       * The facet's declared section order, off the same mark as the field.
+       * The facet's declared section order.
        */
       get facetDomain(): string[] {
-        return [...(facetConfigOf(self.conf.marks)?.domain ?? [])]
+        return getConf(self, 'facetDomain')
       },
       /**
        * #getter
@@ -544,12 +529,11 @@ export function stateModelFactory(
         const { bpPerPx } = self.host
         return self.conf.marks.map((m: MarkConfig) => {
           const shape: MarkShapeName = m.shape
-          const transform = transformOf(m, bpPerPx)
+          const transform = stepsOf(m.transform, bpPerPx)
           return {
             encoding: encodingOf(m),
             lanes: [...SHAPE_LANES[shape]],
             ...(transform.length > 0 ? { transform } : {}),
-            ...(m.facet.field ? { facet: facetSpecOf(m.facet) } : {}),
           }
         })
       },
@@ -633,26 +617,15 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The facet's sections over every loaded region, in key order.
-       */
-      get facetSections(): FacetSection[] {
-        return self.facetField
-          ? foldFacetSections(
-              self.featurePayloads,
-              self.facetField,
-              self.facetDomain,
-            )
-          : []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Where each visible section sits: the hidden ones gone and the rest
-       * re-cumulated, which is the row space every region is offset onto.
+       * The sections drawn over every loaded region, in the domain's order
+       * and less the hidden ones, and where each key's rows start.
        */
       get facetLayout(): FacetLayout {
-        return visibleFacetLayout(self.facetSections, self.hiddenGroupKeys)
+        return facetLayout(
+          self.featurePayloads.values(),
+          categoricalField(self.facetField, { domain: self.facetDomain }),
+          self.hiddenGroupKeys,
+        )
       },
     }))
     .views(self => ({
@@ -663,7 +636,7 @@ export function stateModelFactory(
        * region a span came from.
        */
       get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
-        return self.facetSections.length > 0
+        return self.facetField
           ? remapFacetRows(self.featurePayloads, self.facetLayout)
           : self.featurePayloads
       },
@@ -854,13 +827,21 @@ export function stateModelFactory(
        * and lanes, and the filters as transform steps, all evaluated in the
        * worker
        */
-      rpcProps(): { layers: LayerRequest[]; transform: TransformStep[] } {
+      rpcProps(): {
+        layers: LayerRequest[]
+        transform: TransformStep[]
+        facet?: FacetSpec
+      } {
         return {
           layers: self.layerRequests,
-          transform: self.activeFilters.map(expr => ({
-            type: 'filter' as const,
-            expr,
-          })),
+          transform: [
+            ...self.activeFilters.map(expr => ({
+              type: 'filter' as const,
+              expr,
+            })),
+            ...stepsOf(self.conf.transform, self.host.bpPerPx),
+          ],
+          ...(self.facetField ? { facet: { field: self.facetField } } : {}),
         }
       },
       /**
@@ -1106,16 +1087,10 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * The Sections menu's reorder lands on the declaration: the mark that
-       * names the facet owns its domain, so the drawn order writes there.
+       * The Sections menu's reorder lands on the declaration.
        */
       setFacetDomain(domain: string[]) {
-        const mark = self.conf.marks.find(
-          (m: MarkConfig) => m.facet.field !== '',
-        )
-        if (mark) {
-          setConf({ configuration: mark.facet }, 'domain', domain)
-        }
+        setConf(self, 'facetDomain', domain)
       },
       /**
        * #action
@@ -1211,10 +1186,11 @@ export function stateModelFactory(
        * it where the user asked for one.
        */
       setPlotMarks(spec: PlotSpec) {
-        self.conf.setSubschemaArray(
-          'marks',
-          plotMarks(spec, self.plotFields ?? { numeric: [], categorical: [] }),
-        )
+        const fields = self.plotFields ?? { numeric: [], categorical: [] }
+        self.conf.setSubschemaArray('marks', plotMarks(spec, fields))
+        if (fields.facet) {
+          setConf(self, 'facetField', fields.facet)
+        }
       },
       /**
        * #action
@@ -1370,6 +1346,9 @@ export function stateModelFactory(
             const marks = defaultPlotMarks(fields)
             if (marks) {
               self.conf.setSubschemaArray('marks', marks)
+              if (fields.facet) {
+                setConf(self, 'facetField', fields.facet)
+              }
             } else {
               self.openPlotFieldDialog()
             }

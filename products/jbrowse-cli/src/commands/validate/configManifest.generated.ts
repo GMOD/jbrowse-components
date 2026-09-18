@@ -5483,20 +5483,6 @@ export const configManifest: ConfigManifest = {
               ]
             },
             {
-              "name": "facet",
-              "type": "MarkFacetConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "field",
-                  "type": "(JexlString | string)"
-                },
-                {
-                  "name": "domain",
-                  "type": "(JexlString | string[])"
-                }
-              ]
-            },
-            {
               "name": "source",
               "type": "(JexlString | MarkSource)"
             },
@@ -5509,6 +5495,70 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | number)"
             }
           ]
+        },
+        {
+          "name": "transform",
+          "type": "MarkTransformStepConfigurationSchema[]",
+          "subSlots": [
+            {
+              "name": "type",
+              "type": "(JexlString | MarkTransformType)"
+            },
+            {
+              "name": "expr",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "step",
+              "type": "(JexlString | (number | \"auto\"))"
+            },
+            {
+              "name": "as",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "fields",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "padding",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "groupby",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "ops",
+              "type": "MarkAggregateOpConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "op",
+                  "type": "(JexlString | MarkAggregateOpName)"
+                },
+                {
+                  "name": "field",
+                  "type": "(JexlString | string)"
+                },
+                {
+                  "name": "as",
+                  "type": "(JexlString | string)"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "facetField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "facetDomain",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "minScore",

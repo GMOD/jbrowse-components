@@ -388,19 +388,20 @@
         {
           "type": "LinearMarkDisplay",
           "displayId": "marks_facet-LinearMarkDisplay",
+          "transform": [
+            {
+              "type": "formula",
+              "expr": "jexl:getTag(feature,'NM')",
+              "as": "nm"
+            }
+          ],
+          "facetField": "nm",
           "marks": [
             {
               "shape": "span",
-              "facet": "nm",
               "transform": [
                 {
-                  "type": "formula",
-                  "expr": "jexl:getTag(feature,'NM')",
-                  "as": "nm"
-                },
-                {
-                  "type": "stack",
-                  "groupby": ["nm"]
+                  "type": "stack"
                 }
               ],
               "encoding": {
@@ -457,10 +458,10 @@
         {
           "type": "LinearMarkDisplay",
           "displayId": "marks_multi_rows-LinearMarkDisplay",
+          "facetField": "source",
           "marks": [
             {
               "shape": "bar",
-              "facet": "source",
               "encoding": {
                 "y": "score"
               }

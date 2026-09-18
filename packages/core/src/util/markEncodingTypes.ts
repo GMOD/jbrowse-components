@@ -206,8 +206,6 @@ export interface EncodedChannels {
   scale?: ColorScaleTable
   /** The glyph channel's table, when `glyph` is a scale. */
   glyphScale?: GlyphScaleTable
-  /** The sections a declared facet stacked, in key order. */
-  facet?: FacetSection[]
 }
 
 /**
@@ -228,8 +226,6 @@ export interface LayerRequest {
   lanes: LaneName[]
   /** This layer's own steps, run after the request's shared ones. */
   transform?: TransformStep[]
-  /** The row facet stacked over the steps' rows, and its section table. */
-  facet?: FacetSpec
 }
 
 /**
@@ -240,6 +236,8 @@ export interface LayerRequest {
  */
 export interface EncodedFeaturesResult {
   layers: EncodedChannels[]
+  /** The sections a facet stacked every layer's rows into. */
+  facet?: FacetSection[]
   bytes?: number
   zoomRange?: ZoomRange
 }
@@ -336,16 +334,14 @@ export interface FlattenStep {
  * there — greedy first fit in start order, the packing a pileup is — and
  * write it to the field `as` (`row`). `fields` names the interval read
  * (`start`, `end`); `padding` is bp of clearance kept between two features
- * sharing a row; `groupby` packs each distinct value set on its own rows,
- * each numbered from 0. The answer is the input in start order, so a `span`
- * encoding `row` stacks it.
+ * sharing a row. The answer is the input in start order, so a `span`
+ * encoding `row` stacks it. Under a facet it packs each section on its own.
  */
 export interface StackStep {
   type: 'stack'
   as?: string
   fields?: [string, string]
   padding?: number
-  groupby?: FieldRef[]
 }
 
 /**
@@ -369,6 +365,8 @@ export type CoreEncodeFeaturesArgs = {
   layers: LayerRequest[]
   /** The steps over the features, in order, before every layer encodes. */
   transform?: TransformStep[]
+  /** Split the features after the shared steps, before each layer's own. */
+  facet?: FacetSpec
   /** Sugar for leading `filter` steps: `jexl:`-prefixed expressions. */
   filters?: string[]
   /**
@@ -382,25 +380,21 @@ export type CoreEncodeFeaturesArgs = {
 
 /**
  * #api
- * A layer's row facet: partition the features on `field`, and stack each
- * value's rows under the groups above it. The rows themselves are a `stack`
- * step's, grouped by the same field — the facet is the offset between the
- * groups and the section table a display names them from.
+ * A row facet: split the features on `field`'s value, run every layer's own
+ * steps over each section alone, and stack the sections, each starting on the
+ * row after the one above it ends.
  */
 export interface FacetSpec {
   field: FieldRef
-  /** The row field the offset is written over, `row` by default. */
-  as?: string
 }
 
 /**
  * #api
- * One faceted section as the worker stacked it: its sort key, the chip's
- * name, the row it starts on and how many rows it holds.
+ * One faceted section as the worker stacked it: its key, the row it starts on
+ * and how many rows it holds.
  */
 export interface FacetSection {
   key: string
-  label: string
   firstRow: number
   rowCount: number
 }
