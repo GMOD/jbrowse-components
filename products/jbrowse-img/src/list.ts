@@ -1,4 +1,4 @@
-import { resolveConfigObject } from './resolveHub.ts'
+import { FETCH_TIMEOUT_MS, resolveConfigObject } from './resolveHub.ts'
 import { trackMatches, trackName, trackType } from './trackFields.ts'
 
 import type { Track } from './types.ts'
@@ -54,7 +54,9 @@ export function formatTracks(hub: string, tracks: Track[], filter?: string) {
 }
 
 async function fetchJson(url: string, context: string) {
-  const res = await fetch(url)
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  })
   if (!res.ok) {
     throw new Error(`${context}: HTTP ${res.status} from ${url}`)
   }

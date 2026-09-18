@@ -10,6 +10,10 @@ import type { Config } from './types.ts'
 // The fetch is core's fetchHub (shared with the embedded mounts), which also
 // stamps each relative URI with the config URL as baseUri.
 
+// fetch has no timeout of its own, and a stalled connection otherwise hangs
+// the command forever
+export const FETCH_TIMEOUT_MS = 30000
+
 function isUrl(str: string) {
   return /^https?:\/\//i.test(str)
 }
@@ -19,7 +23,9 @@ function isUrl(str: string) {
 // here the config is injected as an object, so resolveUriLocation needs the
 // baseUri written on each location.
 async function fetchConfig(url: string) {
-  const res = await fetch(url)
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  })
   if (!res.ok) {
     throw new Error(
       `Failed to fetch --config "${url}": HTTP ${res.status} from ${url}.`,
@@ -49,7 +55,9 @@ export async function resolveConfigObject({
   if (hub) {
     // the same open-record force the --config read applies: `assembly` is
     // filled in by readData, which is the only consumer
-    return (await fetchHub(hub)) as unknown as Config
+    return (await fetchHub(hub, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })) as unknown as Config
   }
   if (config && isUrl(config)) {
     return fetchConfig(config)

@@ -56,4 +56,14 @@ describe('fetchHub', () => {
       /hub "nonexistent" not found \(404/,
     )
   })
+
+  it('hands the signal to fetch, so a caller can bound the wait', async () => {
+    const fetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 200 }))
+    const signal = AbortSignal.timeout(1000)
+
+    await fetchHub('hg38', { signal })
+    expect(fetchSpy).toHaveBeenCalledWith(expect.any(String), { signal })
+  })
 })

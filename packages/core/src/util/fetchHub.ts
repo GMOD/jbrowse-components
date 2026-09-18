@@ -25,9 +25,12 @@ export function hubUrl(hub: string) {
  * the name straight to `createLinearGenomeView({ assembly: 'hg38' })` for the
  * common case; call this directly only to cherry-pick tracks from the catalog.
  */
-export async function fetchHub(hub: string): Promise<HubConfig> {
+export async function fetchHub(
+  hub: string,
+  { signal }: { signal?: AbortSignal } = {},
+): Promise<HubConfig> {
   const url = hubUrl(hub)
-  const response = await fetch(url)
+  const response = await fetch(url, { signal })
   if (response.ok) {
     const config = (await response.json()) as HubConfig
     // hosted configs reference their data relative to the config's own location
