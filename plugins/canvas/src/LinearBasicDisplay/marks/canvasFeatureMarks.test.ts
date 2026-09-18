@@ -159,6 +159,25 @@ describe('draw passes', () => {
     )
   })
 
+  it('skips the chevron pass while chevrons are hidden', () => {
+    const { hal, renderer } = setup()
+    const data = regionData(0, {
+      linePositions: new Uint32Array([100, 400]),
+      lineYs: new Float32Array(1),
+      lineHeights: new Float32Array(1).fill(10),
+      lineColors: new Uint32Array(1).fill(0xff00_00ff),
+      lineDirections: new Int8Array(1).fill(1),
+    })
+    renderer.upload(REGION, data)
+    renderer.renderBlocks([block()], new Map([[REGION, data]]), {
+      ...STATE,
+      hideChevrons: true,
+    })
+    const passes = callsTo(hal, 'drawPass').map(c => c.args[0])
+    expect(passes).toContain('line')
+    expect(passes).not.toContain('chevron')
+  })
+
   it('skips the continuation pass on an interior block', () => {
     const { hal, renderer } = setup()
     renderer.upload(REGION, regionData(2))

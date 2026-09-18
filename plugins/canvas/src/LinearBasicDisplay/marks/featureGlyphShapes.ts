@@ -87,6 +87,7 @@ export interface FeatureGlyphParams {
   scrollY: number
   /** Packed ABGR; 0 for no outline. */
   outlineColor: number
+  hideChevrons?: boolean
 }
 
 /** A box from `startEnd[2i]` to `startEnd[2i+1]`, `height` tall from `y`. */
@@ -313,7 +314,7 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
 
   paintBlock(ctx, channels, block, frame, params) {
     const { startEnd, y: ys, height, direction, color, count } = channels
-    const { scrollY } = params
+    const { scrollY, hideChevrons } = params
     const { canvasWidth, canvasHeight } = frame
     const toX = makeBpMapper(block)
     const setStroke = makeAbgrStroke(ctx)
@@ -335,7 +336,7 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
       // with it.
       const rawDir = direction[i]!
       const dir = block.reversed ? -rawDir : rawDir
-      if (dir !== 0) {
+      if (dir !== 0 && !hideChevrons) {
         ctx.lineWidth = CHEVRON_THICKNESS_PX
         const lineWidthPx = Math.abs(x2 - x1)
         if (showChevrons(lineWidthPx)) {
@@ -386,7 +387,8 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
     const x2 = toX(startEnd[i * 2 + 1]!)
     const y = snapBoxCenterYPx(ys[i]!, height[i]!, params.scrollY)
     const width = Math.abs(x2 - x1)
-    const chevrons = direction[i] !== 0 && showChevrons(width)
+    const chevrons =
+      !params.hideChevrons && direction[i] !== 0 && showChevrons(width)
     const gx = chevrons ? CHEVRON_HALF_W + CHEVRON_THICKNESS_PX / 2 : 0
     const gy = chevrons ? CHEVRON_HALF_H + CHEVRON_THICKNESS_PX / 2 : 0.5
     return {
@@ -414,6 +416,7 @@ export function makeChevronShape(
       pack: c => lineShader.packInstances(c, c.count),
     },
     writeUniforms: writeFeatureGlyphUniforms,
+    paintsBlock: (_block, _frame, params) => !params.hideChevrons,
     paintBlock() {},
   }
 }

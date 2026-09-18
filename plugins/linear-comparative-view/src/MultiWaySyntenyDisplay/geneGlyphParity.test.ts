@@ -71,7 +71,6 @@ const config: DisplayConfig = {
   geneGlyphMode: 'all',
   subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
   impliedUTRs: true,
-  displayDirectionalChevrons: true,
   mouseover: '',
   jexlFilters: [],
   hideSourceFeatures: true,

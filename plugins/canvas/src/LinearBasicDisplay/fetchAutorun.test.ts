@@ -1486,7 +1486,6 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'colorPalette',
     'connectorColor',
     'containerTypes',
-    'displayDirectionalChevrons',
     'featureHeight',
     'hideSourceFeatures',
     'impliedUTRs',

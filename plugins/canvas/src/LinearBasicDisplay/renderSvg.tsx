@@ -43,6 +43,7 @@ export interface RenderSvgModel extends SvgExportable {
   densityPeakReadout: string
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   outlineColorSlot: string
+  displayDirectionalChevrons: boolean
   // Drawn by the shell, over this body — not here. Declared so the export's
   // model still names every guide the figure carries.
   pinnedInk: HighlightRect[]
@@ -90,6 +91,7 @@ function CanvasFeaturesSvgBody({
     canvasWidth,
     canvasHeight: height,
     outlineColor: resolveOutlineColor(model.outlineColorSlot, palette),
+    hideChevrons: !model.displayDirectionalChevrons,
   }
   const fontSize = model.renderedLabelFontSize
   const labelContext = {

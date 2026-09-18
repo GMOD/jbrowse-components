@@ -406,7 +406,17 @@ export default function baseStateModelFactory(
             self.outlineColorSlot,
             getPaletteHost(self).palette,
           ),
+          hideChevrons: !this.displayDirectionalChevrons,
         }
+      },
+
+      /**
+       * #getter
+       * Drawn from the render state, not baked by the worker, so the toggle
+       * refetches nothing.
+       */
+      get displayDirectionalChevrons(): boolean {
+        return getConf(self, 'displayDirectionalChevrons')
       },
 
       /**

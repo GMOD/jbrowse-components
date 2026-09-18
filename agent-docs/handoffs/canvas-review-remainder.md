@@ -1,6 +1,6 @@
 ---
 name: canvas-review-remainder
-description: What the 2026-09-14 review of plugins/canvas (cross-read against alignments' group-by) left unbuilt after seven fixes landed — the "Show chevrons" toggle still refetching where "Show outline" no longer does, an attribute group-by dialog that scans nothing, the nine-part compose ceiling both big displays now nest under, and three span-proportional bin builders. Read before re-reviewing the canvas plugin or proposing a group-by feature.
+description: What the 2026-09-14 review of plugins/canvas (cross-read against alignments' group-by) left unbuilt after seven fixes landed — an attribute group-by dialog that scans nothing, the nine-part compose ceiling both big displays now nest under, and three span-proportional bin builders. Read before re-reviewing the canvas plugin or proposing a group-by feature.
 ---
 
 # Canvas review: what is left
@@ -18,23 +18,7 @@ Permanent homes this file points at rather than repeats:
 - Why canvas keeps its own packer and the mark display its encoder —
   [ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md).
 
-## 1. "Show chevrons" refetches the track
-
-Track menu → Show... → Show chevrons writes `displayDirectionalChevrons`,
-which is a `WORKER_READS` key
-(`plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts`), so the toggle
-changes the fetch key and every loaded region refetches. The worker's only use
-of the flag is `emitPrimitives.ts` § `emitIntronLines`: it zeroes the
-direction lane when chevrons are off. The chevron pass is its own mark off the
-line buffer (`marks/featureGlyphMarks.ts`), so the flag can ride in the render
-state and skip that pass instead, the way `outlineColor` now rides there
-(commit "canvas: resolve the outline color in the render state, not the
-worker"). Emit the direction unconditionally; the SVG export reads the same
-render state. Around 40 lines; a test beside the outline one in
-`RenderFeatureDataRPC/colorClasses.test.ts` § "the theme is not an RPC cache
-key" pins that `rpcProps()` does not move.
-
-## 2. The attribute group-by dialog scans nothing
+## 1. The attribute group-by dialog scans nothing
 
 Canvas's `LinearBasicDisplay/components/GroupByDialog.tsx` takes the attribute
 as a text field. The alignments tag dialog (its own `GroupByDialog.tsx`) scans the loaded reads, shows
@@ -47,7 +31,7 @@ the loaded features carry) from its worker
 gives the canvas dialog the alignments shape. Around 80 lines, half of it
 worker payload.
 
-## 3. The nine-part compose ceiling
+## 2. The nine-part compose ceiling
 
 `types.compose` in the MST fork is typed for nine model parts.
 `LinearCanvasBaseDisplay`, `LinearAlignmentsDisplay` and `LinearMarkDisplay`
@@ -63,7 +47,7 @@ already calls the foundation. The tenth part fails as ~150 "property X does
 not exist" errors across every consumer, not as a ceiling; the memory
 `compose-tenth-part-erases-every-prop` says so.
 
-## 4. Three span-proportional bin builders
+## 3. Three span-proportional bin builders
 
 `MultiRowClusterFeaturesRPC/buildMultiRowMatrix.ts` (bins by midpoint, cell
 budget), `plugins/maf/src/LinearMafClusterIdentityRpc/buildIdentityMatrix.ts`

@@ -73,9 +73,6 @@ export function laneDisplayConfig({
     containerTypes: [],
     subParts: '',
     impliedUTRs: false,
-    // A VCF record never carries a strand, so a chevron would be drawn from an
-    // absent one.
-    displayDirectionalChevrons: false,
     hideSourceFeatures: false,
   }
 }

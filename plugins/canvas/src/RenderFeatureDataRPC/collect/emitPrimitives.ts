@@ -52,19 +52,17 @@ export function emitIntronLines(
     labelRowsAbove: number
     stroke: PackedColor
     flatbushIdx: number
-    showChevrons: boolean
   },
   collector: Collector,
 ) {
   const { transcript, topPx, labelRowsAbove, stroke, flatbushIdx } = args
-  const { showChevrons } = args
   const { lines } = collector
   const feature = transcript.feature
   const start = feature.get('start')
   const end = feature.get('end')
   const lineHeight = transcript.height
   const lineY = topPx + lineHeight / 2
-  const direction = showChevrons ? (feature.get('strand') ?? 0) : 0
+  const direction = feature.get('strand') ?? 0
 
   const pushLine = (lineStart: number, lineEnd: number) => {
     lines.push({

@@ -25,11 +25,12 @@ import {
   rectDrawsOutline,
   rectSpanPx,
 } from '../passes/shaders/rect.js.generated.ts'
-import { arrowShape, rectShape } from './featureGlyphShapes.ts'
+import { arrowShape, lineShape, rectShape } from './featureGlyphShapes.ts'
 
 import type {
   ArrowChannels,
   FeatureGlyphParams,
+  LineChannels,
   RectChannels,
 } from './featureGlyphShapes.ts'
 import type { MarkContext2D, MarkShape } from '@jbrowse/render-core/marks'
@@ -120,6 +121,40 @@ describe('arrow: the box holds the stem and the head', () => {
         { maxDistSq: 100, sliceOne: sliceArrow },
       ),
     ).toEqual([])
+  })
+})
+
+// 180 bp at 2 bp/px is a 90 px intron, wide enough for chevrons.
+describe('line: the render state decides whether chevrons draw', () => {
+  const lines: LineChannels = {
+    startEnd: Uint32Array.from([10, 190]),
+    y: Float32Array.from([10]),
+    height: Float32Array.from([10]),
+    direction: Int8Array.from([1]),
+    color: Uint32Array.from([0xff0000ff]),
+    count: 1,
+  }
+  function strokesPainted(hideChevrons: boolean) {
+    let strokes = 0
+    const ctx = {
+      beginPath() {},
+      moveTo() {},
+      lineTo() {},
+      stroke() {
+        strokes++
+      },
+    } as unknown as MarkContext2D
+    lineShape.paintBlock(ctx, lines, block, frame, {
+      scrollY: 0,
+      outlineColor: 0,
+      hideChevrons,
+    })
+    return strokes
+  }
+
+  test('a hidden chevron leaves the intron line alone', () => {
+    expect(strokesPainted(false)).toBeGreaterThan(1)
+    expect(strokesPainted(true)).toBe(1)
   })
 })
 

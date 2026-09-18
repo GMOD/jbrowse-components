@@ -149,7 +149,6 @@ function processTranscriptLayout(
       labelRowsAbove,
       stroke,
       flatbushIdx,
-      showChevrons: ctx.config.displayDirectionalChevrons,
     },
     collector,
   )

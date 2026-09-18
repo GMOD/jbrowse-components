@@ -62,7 +62,6 @@ export interface DisplayConfig {
   containerTypes: string[]
   subParts: string
   impliedUTRs: boolean
-  displayDirectionalChevrons: boolean
   mouseover: string
   // The raw config slot omits the `jexl:` prefix and the runtime "Filter by..."
   // override carries it; buildFeatureAdmission normalizes both.
@@ -107,7 +106,6 @@ const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   containerTypes: true,
   subParts: true,
   impliedUTRs: true,
-  displayDirectionalChevrons: true,
   mouseover: true,
   jexlFilters: true,
   hideSourceFeatures: true,

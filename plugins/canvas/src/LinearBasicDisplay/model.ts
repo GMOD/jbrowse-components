@@ -100,10 +100,6 @@ export default function stateModelFactory(
         return getConf(self, 'showOnlyGenes')
       },
 
-      get displayDirectionalChevrons(): boolean {
-        return getConf(self, 'displayDirectionalChevrons')
-      },
-
       // Off the debounced zoom, so a gesture crossing the `auto` threshold
       // moves `zoomFetchKey` once it settles, on the layout's cadence.
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {

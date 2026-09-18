@@ -394,18 +394,12 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
 describe('collectRenderData intron chevrons', () => {
   // twoExonTranscript has exons 100-104 and 200-205, so one intron line spans
   // the 104-200 gap.
-  it('sets intron line direction to the strand when chevrons are enabled', () => {
+  // Whether chevrons draw is the render state's call, so the worker ships the
+  // strand either way and the toggle refetches nothing.
+  it('sets intron line direction to the strand', () => {
     const { layout } = twoExonTranscript()
-    const cfg = mockDisplayConfig({ displayDirectionalChevrons: true })
-    const result = collect(layout, { config: cfg })
+    const result = collect(layout, { config: mockDisplayConfig() })
     expect([...result.lineDirections]).toEqual([1])
-  })
-
-  it('zeroes intron line direction when chevrons are disabled', () => {
-    const { layout } = twoExonTranscript()
-    const cfg = mockDisplayConfig({ displayDirectionalChevrons: false })
-    const result = collect(layout, { config: cfg })
-    expect([...result.lineDirections]).toEqual([0])
   })
 })
 

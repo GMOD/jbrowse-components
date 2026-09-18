@@ -147,4 +147,12 @@ describe('the theme is not an RPC cache key', () => {
     display.setShowOutline(false)
     expect(display.renderState.outlineColor).toBe(0)
   })
+
+  it('nor is "Show chevrons", which the render state carries', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    const before = display.rpcProps()
+    display.setDisplayDirectionalChevrons(false)
+    expect(display.rpcProps()).toEqual(before)
+    expect(display.renderState.hideChevrons).toBe(true)
+  })
 })

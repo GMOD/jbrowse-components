@@ -8,6 +8,7 @@ export interface RenderState {
   canvasWidth: number
   canvasHeight: number
   outlineColor: number
+  hideChevrons?: boolean
 }
 
 export type CanvasFeatureRenderingBackend = PerRegionRenderingBackend<
