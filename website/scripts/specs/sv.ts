@@ -2215,6 +2215,42 @@ export const svSpecs: ScreenshotSpec[] = [
     // 830 left 23.6 css px under the fold, by the run's own report
     viewportHeight: 895,
     settleMs: 15000,
+    annotations: [
+      {
+        type: 'text',
+        text: 'two copies: tumor on the normal, one BAF band',
+        maxWidth: 600,
+        fontSize: 18,
+        anchor: {
+          track: 'hg008_bicseq2',
+          locus: 'chr5:6,000,000',
+          fracY: 0.8,
+        },
+      },
+      {
+        type: 'text',
+        text: 'gain: BAF splits in two',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'hg008_bicseq2',
+          locus: 'chr5:38,000,000',
+          fracY: 0.3,
+        },
+        dx: 60,
+        dy: -12,
+      },
+      {
+        type: 'text',
+        text: 'one copy lost: tumor halved, BAF at 0 and 1',
+        fontSize: 18,
+        anchor: {
+          track: 'hg008_bicseq2',
+          locus: 'chr5:100,000,000',
+          fracY: 0.2,
+        },
+      },
+    ],
   },
 
   // Four published CNV callsets over one locus, with the signal that explains
@@ -2449,7 +2485,12 @@ export const svSpecs: ScreenshotSpec[] = [
             // the bands under the ideogram, so p-arm and q-arm read off the
             // frame itself (review: "add cytobands to the assembly and maybe
             // even as track")
-            { trackId: 'grch38_cytobands', type: 'LinearBasicDisplay' },
+            {
+              trackId: 'grch38_cytobands',
+              type: 'LinearBasicDisplay',
+              displayMode: 'collapsed',
+              height: 30,
+            },
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
@@ -2489,7 +2530,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr3',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 960,
+    viewportHeight: 943,
     settleMs: 30000,
     // in the depth lane's empty band on each arm: above the p-arm's points,
     // below the q-arm's
@@ -2848,6 +2889,28 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     viewportHeight: 940,
     settleMs: 20000,
+    annotations: [
+      {
+        type: 'text',
+        text: 'p-arm: one copy left, heterozygosity lost',
+        fontSize: 18,
+        anchor: {
+          track: 'hg008_depth',
+          locus: 'chr17:12,000,000',
+          fracY: 0.15,
+        },
+      },
+      {
+        type: 'text',
+        text: 'q-arm: two copies, both of one allele',
+        fontSize: 18,
+        anchor: {
+          track: 'hg008_depth',
+          locus: 'chr17:45,000,000',
+          fracY: 0.85,
+        },
+      },
+    ],
   },
 
   // SMAD4 (DPC4), the mirror image of the TP53 event: 18q loss with LOH

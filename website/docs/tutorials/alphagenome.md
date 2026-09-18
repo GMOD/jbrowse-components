@@ -237,7 +237,9 @@ Before running one yourself:
 Adding a track from a variant prediction gives two tracks: the reference and
 alternate curves together, and a third row for their difference, where positive
 is a gain from the insertion and negative a loss. Add the CD34+ DNase, polyA
-plus RNA-seq and H3K27ac tracks, and zoom to _TAL1_ and the insertion.
+plus RNA-seq and H3K27ac tracks, and zoom to _TAL1_ and the insertion. The
+figure below closes the reference and alternate tracks and keeps the three
+difference rows.
 
 On the three difference rows, accessibility rises sharply at the insertion
 itself, H3K27ac, the mark of an active enhancer, rises across the locus, and
@@ -252,7 +254,7 @@ reference coordinates before subtracting, the way AlphaGenome's own variant
 scorers do, collapsing the inserted bases onto the base they follow, so every
 difference compares one reference base with itself.
 
-<Figure caption="The Jurkat insertion scored in CD34+ progenitors: reference and alternate predictions for DNase, polyA plus RNA-seq and H3K27ac, then each difference. Accessibility rises at the insertion, while H3K27ac and TAL1 transcription rise with it." src="/img/alphagenome/variant_difference.png" />
+<Figure caption="The Jurkat insertion scored in CD34+ progenitors: the alternate-minus-reference difference for DNase, polyA plus RNA-seq and H3K27ac. Accessibility rises at the insertion, while H3K27ac and TAL1 transcription rise with it." src="/img/alphagenome/variant_difference.png" />
 
 ## What a prediction is, as configuration
 

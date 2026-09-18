@@ -57,6 +57,7 @@ const CD34_SLUG = 'common-myeloid-progenitor-cd34-positive'
 // one the recorded variant prediction covers. Typed rather than right-clicked,
 // and that is not a shortcut — see `variant_difference` below.
 const JURKAT_INSERTION = 'chr1:47239296 C>CCGTTTCCTAACC'
+const VARIANT_TOKEN = 'demo-tal1-variant-cd34'
 
 // A variant with only one neighbour, for the figure that is ABOUT the
 // right-click. `new 3' enhancer 1` starts two bases before `new 3' enhancer 2`,
@@ -412,9 +413,8 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
 
   // The worked example's reading of the Jurkat insertion in CD34+ progenitors:
   // H3K27ac and DNase gained at the insertion, and TAL1 transcription raised.
-  // Each assay gets its reference and alternate pair, then a difference row,
-  // which stays flat right of the insertion because the plugin maps the
-  // alternate prediction back onto reference coordinates. The DNase difference
+  // Only the difference rows stay: the reference and alternate pairs are
+  // closed, since the effect is the difference (review). The DNase difference
   // autoscales to its full range: the default 99th-percentile clip flattens the
   // single-base gains at the insertion and leaves one small loss beside them
   // as the tallest mark on the row.
@@ -454,10 +454,14 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       },
       { type: 'press', key: 'Enter' },
       { type: 'waitForAppSettled' },
+      ...['dnase.0', 'rna_seq.0', 'chip_histone.0'].map(output => ({
+        type: 'click' as const,
+        selector: `[data-testid="track-close-${VARIANT_TOKEN}-both-${output}"]`,
+      })),
+      { type: 'waitForAppSettled' },
       {
         type: 'click',
-        selector:
-          '[data-testid="track_menu_icon"][data-trackid="demo-tal1-variant-cd34-delta-dnase.0"]',
+        selector: `[data-testid="track_menu_icon"][data-trackid="${VARIANT_TOKEN}-delta-dnase.0"]`,
       },
       { type: 'click', selector: '[data-testid="cascading-submenu-score"]' },
       {
@@ -469,19 +473,41 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       { type: 'waitForSelector', selector: '.MuiMenu-root', hidden: true },
       { type: 'waitForAppSettled' },
     ],
-    viewportHeight: 1220,
+    viewportHeight: 740,
     annotations: [
       {
         type: 'text',
-        text: 'Jurkat insertion',
+        text: 'accessibility gained at the Jurkat insertion',
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'tal1_variants',
+          track: `${VARIANT_TOKEN}-delta-dnase.0`,
           locus: 'chr1:47,239,296',
-          fracY: 0.85,
+          fracY: 0.3,
         },
         dx: -60,
+      },
+      {
+        type: 'text',
+        text: 'TAL1 transcription rises',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: `${VARIANT_TOKEN}-delta-rna_seq.0`,
+          locus: 'chr1:47,220,300',
+          fracY: 0.4,
+        },
+        dx: 60,
+      },
+      {
+        type: 'text',
+        text: 'H3K27ac gained across the locus',
+        fontSize: 18,
+        anchor: {
+          track: `${VARIANT_TOKEN}-delta-chip_histone.0`,
+          locus: 'chr1:47,212,300',
+          fracY: 0.3,
+        },
       },
     ],
   },

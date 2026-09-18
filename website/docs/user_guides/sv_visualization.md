@@ -353,8 +353,10 @@ into a static picture.
 ### Multi-hop events
 
 A read with several supplementary alignments visits more than two loci, and the
-view grows a panel per locus. [](/docs/tutorials/cancer_sv) follows one such
-chain across three chromosomes.
+view grows a panel per locus. The COLO829 tutorial follows one such chain across
+three chromosomes, and
+[builds this view from the reads](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
+with **Launch → Reconstruct derivative allele...** on the tumor track.
 
 <Figure caption="A COLO829 chain through chr3, chr10 and chr12 and back to chr3, one panel per locus with the tumor pileup in each. The splines carry the same molecules from panel to panel, in the order the reads cross the junctions." src="/img/cancer_sv/multihop_split_view.png" />
 

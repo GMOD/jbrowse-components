@@ -154,21 +154,21 @@ export const readMarksSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 8000,
     viewportHeight: 470,
-    // review: "unclear what is being shown". What the bars count and what a
-    // lone one means, then the two places that answer differently: the
-    // centromere, where every mark saturates on mis-mapped pairs, and the
-    // tallest bar outside it, the deletion the tutorial names at 34.2 Mb.
+    // The tallest bar outside the centromere is the homozygous deletion the
+    // tutorial names at 34.2 Mb.
     annotations: [
       {
         type: 'text',
-        text: 'Red bars count pairs with a 2-10 kb insert. A bar standing alone is a deletion.',
-        maxWidth: 420,
+        text: 'a red bar stands up: a deletion on both copies',
+        maxWidth: 300,
         fontSize: 18,
+        leader: true,
         anchor: {
           track: 'na12878_chr20_pairs',
-          locus: 'chr20:3,000,000',
-          fracY: 0.15,
+          locus: 'chr20:34,250,000',
+          fracY: 0.3,
         },
+        dx: 80,
       },
       {
         type: 'text',
@@ -181,18 +181,6 @@ export const readMarksSpecs: ScreenshotSpec[] = [
           fracY: 0.5,
         },
         dx: -80,
-      },
-      {
-        type: 'text',
-        text: 'deletion on both copies',
-        fontSize: 18,
-        leader: true,
-        anchor: {
-          track: 'na12878_chr20_pairs',
-          locus: 'chr20:34,250,000',
-          fracY: 0.3,
-        },
-        dx: 80,
       },
     ],
   },
