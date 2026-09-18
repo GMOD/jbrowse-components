@@ -117,19 +117,25 @@ export async function singleLevelFocusedSnapshotFromBreakendFeature({
     session,
     assemblyName,
   })
+  // Each region keeps the side of its breakend that faces the seam: the high
+  // side for the left region and the low side for the right one, swapped when
+  // the region is turned.
+  const { pos, matePos } = coverage
+  const through = (at: number) => at + 1 + windowSize
+  const from = (at: number) => Math.max(0, at - windowSize)
   return {
     coverage,
     snap: singleLevelSnap(feature, [
-      {
-        ...region,
-        end: Math.min(region.end, coverage.pos + 1 + windowSize),
-        assemblyName,
-      },
-      {
-        ...mateRegion,
-        start: Math.max(0, coverage.matePos - windowSize),
-        assemblyName,
-      },
+      region.reversed
+        ? { ...region, start: from(pos), assemblyName }
+        : { ...region, end: Math.min(region.end, through(pos)), assemblyName },
+      mateRegion.reversed
+        ? {
+            ...mateRegion,
+            end: Math.min(mateRegion.end, through(matePos)),
+            assemblyName,
+          }
+        : { ...mateRegion, start: from(matePos), assemblyName },
     ]),
   }
 }
@@ -158,49 +164,46 @@ export async function singleLevelEncompassingSnapshotFromBreakendFeature({
 }
 
 /**
- * Frame the whole breakend span, padded by `windowSize`, across the view.
+ * Frame both breakends with `pad` bp of their region outside each, on the
+ * screen side away from the other end. Which coordinate direction that is
+ * depends on the region: a turned one runs high to low, so its screen-left
+ * padding is the higher coordinate.
  *
- * Both ends are resolved to `BpOffset`s — `moveTo`'s units, bp within a
- * displayed region — rather than to the pixel offsets `bpToPx` reports, and
- * clamped into their region first: a breakend within `windowSize` of a contig's
- * end otherwise names a coordinate no displayed region holds, which reads back
- * as "unable to navigate" for a locus the view is perfectly able to show.
+ * Resolved to `BpOffset`s — `moveTo`'s units — and clamped into the region
+ * holding each breakend: near a contig's end the padded coordinate otherwise
+ * names a coordinate no displayed region holds.
  */
-function moveToEncompass({
+function frameBreakends({
   view,
   refName,
   startPos,
   mateRefName,
   endPos,
-  windowSize,
+  pad,
 }: {
   view: LinearGenomeViewModel
   refName: string
   startPos: number
   mateRefName: string
   endPos: number
-  windowSize: number
+  pad: number
 }) {
   const { displayedRegions } = view
-  const clamped = (name: string, coord: number) => {
-    const r = displayedRegions.find(r => r.refName === name)
-    return r ? Math.min(Math.max(coord, r.start), r.end) : coord
+  const outside = (name: string, coord: number, screenLeft: boolean) => {
+    const r = displayedRegions.find(
+      r => r.refName === name && coord >= r.start && coord <= r.end,
+    )
+    const padded =
+      screenLeft !== (r?.reversed === true) ? coord - pad : coord + pad
+    return bpToOffset({
+      refName: name,
+      coord: r ? Math.min(Math.max(padded, r.start), r.end) : padded,
+      displayedRegions,
+    })
   }
-  const l0 = bpToOffset({
-    refName,
-    coord: clamped(refName, startPos - windowSize),
-    displayedRegions,
-  })
-  const r0 = bpToOffset({
-    refName: mateRefName,
-    coord: clamped(mateRefName, endPos + windowSize),
-    displayedRegions,
-  })
+  const l0 = outside(refName, startPos, true)
+  const r0 = outside(mateRefName, endPos, false)
   if (l0 && r0) {
-    // `orderedBreakendEnds` has already put the ends in row order, but the two
-    // windows can still cross once padded — a pair closer together than
-    // `windowSize` — and moveTo computes a negative bpPerPx from a backwards
-    // pair rather than refusing
     const [a, b] = compareBpOffsets(l0, r0) <= 0 ? [l0, r0] : [r0, l0]
     view.moveTo(a, b)
   } else {
@@ -268,34 +271,14 @@ export async function navToSingleLevelBreak({
   }
   await awaitSplitViewSettled(view)
   const lgv = view.views[0]!
-
-  if (focusOnBreakends === true) {
-    // zoom to show the breakpoints with windowSize padding, centered between
-    // them (matches navToMultiLevelBreak: windowSize bp on each side across the
-    // view width)
-    lgv.zoomTo(breakpointBpPerPx(windowSize, lgv.width))
-
-    // center between the two breakpoints in the displayed regions
-    const l0 = lgv.bpToPx({ coord: startPos, refName })
-    const r0 = lgv.bpToPx({ coord: endPos, refName: mateRefName })
-    if (l0 && r0) {
-      const midPx = (l0.offsetPx + r0.offsetPx) / 2
-      // setNewView rather than scrollTo: the zoom above had to land before
-      // bpToPx could answer, and a bare scroll is one of the continuous paths
-      // that deliberately leaves the coarse blocks where they were
-      lgv.setNewView(lgv.bpPerPx, Math.round(midPx - lgv.width / 2))
-    } else {
-      getNotificationSink(lgv).notify('Unable to navigate to breakpoint')
-    }
-  } else {
-    // for encompassing view, fit the whole range
-    moveToEncompass({
-      view: lgv,
-      refName,
-      startPos,
-      mateRefName,
-      endPos,
-      windowSize,
-    })
-  }
+  const defaultPad = (breakpointBpPerPx(0, lgv.width) * lgv.width) / 2
+  frameBreakends({
+    view: lgv,
+    refName,
+    startPos,
+    mateRefName,
+    endPos,
+    pad:
+      focusOnBreakends === true && windowSize === 0 ? defaultPad : windowSize,
+  })
 }

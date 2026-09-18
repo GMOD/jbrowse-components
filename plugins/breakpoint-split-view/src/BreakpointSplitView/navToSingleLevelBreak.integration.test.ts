@@ -178,6 +178,40 @@ test('each panel is turned the way the join reads across the seam', async () => 
   ])
 })
 
+// A turned region keeps the other side of its breakend, so the junction still
+// sits beside the seam. Trimmed as if unturned, ctgA kept [0, 65001] and read
+// from 65001 down to 0 — the junction 60 kb from the seam, off screen.
+test('a turned panel keeps the side of its breakend that faces the seam', async () => {
+  const { snap } = await singleLevelFocusedSnapshotFromBreakendFeature({
+    session: setup(),
+    assemblyName: 'volvox',
+    feature: breakend('ctgA', 60_000, ']ctgB:20001]A'),
+    windowSize: 5000,
+  })
+
+  expect(snap.views[0]!.displayedRegions).toEqual([
+    expect.objectContaining({ refName: 'ctgA', start: 55_000, end: CTG_LEN }),
+    expect.objectContaining({ refName: 'ctgB', start: 0, end: 25_001 }),
+  ])
+})
+
+test('a focused launch of a turned pair centres on both junctions', async () => {
+  const session = setup()
+  const lgv = await launch(session, {
+    session,
+    assemblyName: 'volvox',
+    feature: breakend('ctgA', 60_000, ']ctgB:20001]A'),
+    windowSize: 5000,
+    focusOnBreakends: true,
+  })
+  const left = lgv.pxToBp(0)
+  const right = lgv.pxToBp(lgv.width)
+  expect(left.refName).toBe('ctgA')
+  expect(right.refName).toBe('ctgB')
+  expectEdgeAt(left, 65_000, lgv.bpPerPx)
+  expectEdgeAt(right, 15_000, lgv.bpPerPx)
+})
+
 // The pair the k562 BCR--ABL1 figure opens: each end already runs into the
 // join, so turning either would read it backwards.
 test('an end already running into the join leaves its panel alone', async () => {
@@ -211,6 +245,34 @@ test('a same-contig pair turns no panel', async () => {
       r => (r as { reversed?: boolean }).reversed,
     ),
   ).toEqual([false, false])
+})
+
+// A window of each region outside each junction: the kept arm, the junction,
+// the flank to the seam, and the same mirrored. Zoomed to twice the window,
+// the old frame showed only the two flanks, with both junctions on its edges.
+test('a focused launch shows a window outside each junction', async () => {
+  const session = setup()
+  const lgv = await launch(session, {
+    session,
+    assemblyName: 'volvox',
+    feature: breakend('ctgA', 60_000, 'A[ctgB:20001['),
+    windowSize: 5000,
+    focusOnBreakends: true,
+  })
+  expectEdgeAt(lgv.pxToBp(0), 55_000, lgv.bpPerPx)
+  expectEdgeAt(lgv.pxToBp(lgv.width), 25_000, lgv.bpPerPx)
+})
+
+test('an encompassing launch pads a turned region on its screen side', async () => {
+  const session = setup()
+  const lgv = await launch(session, {
+    session,
+    assemblyName: 'volvox',
+    feature: breakend('ctgA', 60_000, ']ctgB:20001]A'),
+    windowSize: 5000,
+  })
+  expectEdgeAt(lgv.pxToBp(0), 65_000, lgv.bpPerPx)
+  expectEdgeAt(lgv.pxToBp(lgv.width), 15_000, lgv.bpPerPx)
 })
 
 const STABLE_ID = 'reused_volvox_breakpointsplitview'
