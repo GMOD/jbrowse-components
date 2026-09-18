@@ -4,7 +4,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { observer } from 'mobx-react'
 
-import { detailStackRows } from '../detailLevels.ts'
+import {
+  DETAIL_FRAME_WIDTH,
+  detailLevelColor,
+  detailStackRows,
+} from '../detailLevels.ts'
 import LinearGenomeView from './LinearGenomeView.tsx'
 import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 
@@ -18,7 +22,19 @@ const useStyles = makeStyles()(theme => ({
     display: 'block',
     width: '100%',
     height: '100%',
+    overflow: 'visible',
     pointerEvents: 'none',
+  },
+  level: {
+    position: 'relative',
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      border: `${DETAIL_FRAME_WIDTH}px solid ${detailLevelColor(theme)}`,
+      pointerEvents: 'none',
+      zIndex: 1,
+    },
   },
   // The whole band is the handle — a 4px bar under a 16px trapezoid is a
   // smaller target than the shape it sizes — and `useResizeDrag` rather than
@@ -91,13 +107,16 @@ const DetailLevels = observer(function DetailLevels({
   model: LinearGenomeViewModel
 }) {
   const levels = model.detailLevelViews as LinearGenomeViewModel[]
+  const { classes } = useStyles()
   const rows = detailStackRows(model, levels)
   return rows.length ? (
     <div data-testid={`detail-levels-${model.id}`}>
       {rows.map(({ level, context }) => (
         <Fragment key={level.id}>
           <LevelConnector host={model} context={context} level={level} />
-          <LinearGenomeView model={level} />
+          <div className={classes.level}>
+            <LinearGenomeView model={level} />
+          </div>
         </Fragment>
       ))}
     </div>

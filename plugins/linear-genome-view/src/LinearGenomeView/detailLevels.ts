@@ -11,6 +11,7 @@ import type { LinearGenomeViewModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
 import type { IAnyModelType, IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { Theme } from '@mui/material'
 
 /**
  * A detail level is a LinearGenomeView nested under another one, drawn below
@@ -51,6 +52,21 @@ export interface DetailLevel extends IStateTreeNode {
  */
 export function detailStackRows<T>(host: T, levels: T[]) {
   return levels.map((level, i) => ({ level, context: levels[i - 1] ?? host }))
+}
+
+export const DETAIL_FRAME_WIDTH = 2
+
+/**
+ * The outline a detail level and its connector share. Tertiary is the header
+ * overview's colour, but the dark themes set it near black, so those take its
+ * light shade.
+ */
+export function detailLevelColor(theme: {
+  palette: Pick<Theme['palette'], 'mode' | 'tertiary'>
+}) {
+  return theme.palette.mode === 'dark'
+    ? theme.palette.tertiary.light
+    : theme.palette.tertiary.main
 }
 
 /**

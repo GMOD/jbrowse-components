@@ -298,7 +298,9 @@ span opens below the tracks. Drag a narrower span and a third row opens below
 that — genes over a gene's exons over the reads at base level, each row a closer
 look at the one above it. A trapezoid joins each row to the one above, marking
 the span it opens, the same shape the header overview draws between the
-chromosome and the view.
+chromosome and the view. A frame in the trapezoid's colour outlines each level,
+so a row reads as an inset of the one above rather than a second view at the
+same zoom.
 
 The dialog asks one thing. **Copy this view's tracks** opens the level showing
 what this view is showing, so Add alone gives a closer look at the same data;

@@ -9,6 +9,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
+import { DETAIL_FRAME_WIDTH, detailLevelColor } from '../detailLevels.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { PxSpan, ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -36,9 +37,8 @@ function trapezoidPoints(top: PxSpan, bottom: PxSpan, height: number) {
 const FILL_OPACITY = 0.3
 const STROKE_OPACITY = 0.8
 
-// What the fade leaves at the wide end. Not zero: the two slanted edges are what
-// say which span opened up, and an edge that reaches nothing loses its corner.
-const FADE_FLOOR = 0.12
+const DETAIL_FILL_TOP = 0.6
+const DETAIL_FILL_BOTTOM = 0.2
 
 const useStyles = makeStyles()(theme => ({
   polygon: {
@@ -59,11 +59,10 @@ const useStyles = makeStyles()(theme => ({
  * @param exportSvg - serialize explicit fill/stroke attributes (the split the
  * `getFill/StrokeProps` helpers exist for) instead of the on-screen CSS class,
  * which wouldn't survive into a standalone exported SVG.
- * @param gradient - fade the whole shape out from the narrow overview edge to
- * the wide detail one, the way a figure in a paper draws the same connector.
- * The detail levels ask for it and the header overview does not: the header's
- * is a flat band of chrome the eye reads as one mark, where the levels' is the
- * figure itself, and there the fade is what says which end is the detail.
+ * @param gradient - the detail levels' connector: a fill fading from the narrow
+ * edge to the wide one, outlined in the colour of the frame it opens into, so
+ * the level below reads as an inset of the row above rather than a second view
+ * at the same zoom.
  */
 const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   model,
@@ -100,26 +99,26 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   const points = trapezoidPoints(top, bottom, height)
 
   if (gradient) {
-    // One gradient for both paints, scaled by the two opacities the flat
-    // version fills and strokes at — `fill-opacity` multiplies the stop's
-    // alpha — so the narrow end of a faded connector is exactly the colour of
-    // an unfaded one and only the wide end moves.
     const id = `detail-connector-${svgNodeId(model)}`
     const color = stripAlpha(theme.palette.tertiary.light)
     return (
       <>
         <defs>
           <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity={1} />
-            <stop offset="100%" stopColor={color} stopOpacity={FADE_FLOOR} />
+            <stop offset="0%" stopColor={color} stopOpacity={DETAIL_FILL_TOP} />
+            <stop
+              offset="100%"
+              stopColor={color}
+              stopOpacity={DETAIL_FILL_BOTTOM}
+            />
           </linearGradient>
         </defs>
         <polygon
           points={points}
           fill={`url(#${id})`}
-          fillOpacity={FILL_OPACITY}
-          stroke={`url(#${id})`}
-          strokeOpacity={STROKE_OPACITY}
+          stroke={detailLevelColor(theme)}
+          strokeWidth={DETAIL_FRAME_WIDTH}
+          strokeLinejoin="round"
         />
       </>
     )

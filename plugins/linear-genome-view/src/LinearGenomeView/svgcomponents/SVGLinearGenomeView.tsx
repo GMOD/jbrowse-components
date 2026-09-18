@@ -9,6 +9,7 @@ import { getSession } from '@jbrowse/core/util'
 
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
 import { detailStackRows } from '../detailLevels.ts'
+import SVGDetailLevelFrame from './SVGDetailLevelFrame.tsx'
 import SVGHeader from './SVGHeader.tsx'
 import SVGRowHeader from './SVGRowHeader.tsx'
 import SVGView from './SVGView.tsx'
@@ -129,33 +130,41 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const levelRow = (level: LGV) => {
     const { tracksHeight, displayResults } = rendered.get(level.id)!
     const rowTop = rowTopGap + bandHeight
+    const height = rowTop + rulerHeight + tracksHeight
     return {
       key: level.id,
-      height: rowTop + rulerHeight + tracksHeight,
+      height,
       node: (
-        <g transform={`translate(${exportMargin} ${rowTop})`}>
-          <SVGView
-            view={level}
-            displayResults={displayResults}
-            header={
-              <SVGRowHeader
-                view={level}
-                fontSize={fontSize}
-                rulerHeight={rulerHeight}
-                showAssemblyName={false}
-                showScalebar
-              />
-            }
-            fontSize={fontSize}
-            textHeight={textHeight}
-            trackLabels={trackLabels}
-            trackLabelOffset={trackLabelOffset}
-            contentTop={rulerHeight}
-            tracksHeight={tracksHeight}
-            showGridlines={showGridlines}
-            leftBuffer={exportMargin}
+        <>
+          <g transform={`translate(${exportMargin} ${rowTop})`}>
+            <SVGView
+              view={level}
+              displayResults={displayResults}
+              header={
+                <SVGRowHeader
+                  view={level}
+                  fontSize={fontSize}
+                  rulerHeight={rulerHeight}
+                  showAssemblyName={false}
+                  showScalebar
+                />
+              }
+              fontSize={fontSize}
+              textHeight={textHeight}
+              trackLabels={trackLabels}
+              trackLabelOffset={trackLabelOffset}
+              contentTop={rulerHeight}
+              tracksHeight={tracksHeight}
+              showGridlines={showGridlines}
+              leftBuffer={exportMargin}
+            />
+          </g>
+          <SVGDetailLevelFrame
+            x={exportMargin + trackLabelOffset}
+            width={level.width}
+            height={height}
           />
-        </g>
+        </>
       ),
     }
   }
