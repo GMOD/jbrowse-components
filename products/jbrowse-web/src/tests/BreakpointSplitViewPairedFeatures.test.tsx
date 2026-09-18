@@ -54,7 +54,7 @@ test('pairs the two halves of an interchromosomal bedpe record', async () => {
     'ctgB:1,500..2,500',
   ])
   const match = await waitForMatches(view, 'volvox_bedpe')
-  expect(match.kind).toBe('paired')
+  expect(match.kind).toBe('variant')
 
   const pair = match.layoutMatches.find(chunk =>
     chunk.some(m => m.feature.get('start') === 21681),
@@ -69,14 +69,14 @@ test('pairs the two halves of an interchromosomal bedpe record', async () => {
 }, 40000)
 
 test('pairs the two halves of an interchromosomal STAR-Fusion record', async () => {
-  // volvox.star-fusion.tsv EDEN--IPKMT2 spans A:2700 <-> B:1982. Fusion
-  // features are paired the same way bedpe ones are, differing only in type
+  // volvox.star-fusion.tsv EDEN--IPKMT2 spans A:2700 <-> B:1982. Fusion rows
+  // rejoin exactly as bedpe ones do: on the two ends the record names
   const view = await createBreakpointView('volvox_star_fusion', [
     'ctgA:2,000..3,500',
     'ctgB:1,500..2,500',
   ])
   const match = await waitForMatches(view, 'volvox_star_fusion')
-  expect(match.kind).toBe('paired')
+  expect(match.kind).toBe('variant')
 
   const pair = match.layoutMatches.find(chunk =>
     chunk.some(m => m.feature.get('name') === 'EDEN--IPKMT2'),

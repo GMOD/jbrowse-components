@@ -1,3 +1,5 @@
+import { unwrapFeature } from '@jbrowse/core/util/simpleFeature'
+
 import { junctionEnds, toCanonicalRefName } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -85,12 +87,17 @@ export const BREAKEND_COLOCATION_BP = 1000
  * `id` is the VCF ID only where MATEID pairs records by it. Anywhere else a
  * name is not unique — rows of a BEDPE left at `.`, two STAR-Fusion rows of
  * one gene pair — and a shared one made every candidate read as the record
- * the walk arrived on.
+ * the walk arrived on. Which is what the unwrap is for: a launch out of a jexl
+ * callback (the circular view's chord click) holds a `jexlFeatureProxy`, where
+ * `feature.id` is the record's `id` DATA field rather than the method, so
+ * `id()` threw and the split view never opened. `setSelection` unwraps for the
+ * same reason.
  */
 export function junctionFromFeature(
-  feature: Feature,
+  proxiedOrRaw: Feature,
   assembly: Assembly,
 ): Junction | undefined {
+  const feature = unwrapFeature(proxiedOrRaw)
   const ends = junctionEnds(feature)
   if (!ends) {
     return undefined

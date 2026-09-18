@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { jexlFeatureProxy } from '@jbrowse/core/util/simpleFeature'
 
 import { getBreakendCoveringRegions } from './util.ts'
 import {
@@ -620,6 +621,26 @@ describe('junctionFromFeature', () => {
         identity,
       )!.id
     expect(row('row0')).not.toBe(row('row1'))
+  })
+
+  // A chord click reaches here through a jexl callback, so the feature is a
+  // jexlFeatureProxy: every property resolves to a DATA field, and `id` is a
+  // GFF3-style `ID=` rather than the method. Reading it as a method threw and
+  // the SV inspector opened no view at all.
+  it('keys a proxied feature the same way as the raw one', () => {
+    const feature = new SimpleFeature({
+      uniqueId: 'vcf-6',
+      name: 'bnd_Y',
+      refName: 'chr1',
+      start: 1000,
+      end: 1001,
+      mate: { refName: 'chr2', start: 2000, end: 2001 },
+    })
+    const raw = junctionFromFeature(feature, identity)!
+    expect(junctionFromFeature(jexlFeatureProxy(feature), identity)).toEqual(
+      raw,
+    )
+    expect(raw.id).toBe('vcf-6')
   })
 
   // the walk used each block's START while the launch took the strand's edge,
