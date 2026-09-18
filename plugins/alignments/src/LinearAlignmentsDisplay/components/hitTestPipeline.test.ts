@@ -130,10 +130,9 @@ function opts(
       filterMismatchesByFrequency: true,
       showMismatches: true,
       colorScheme: 0,
+      coverageHeight: 50,
       ...state,
     }),
-    coverageHeight: 50,
-    coverageMaxDepth: undefined,
     overPileup: true,
     ...rest,
   }
@@ -166,7 +165,7 @@ describe('coverage hit — fires at all zoom levels', () => {
       100,
       30,
       resolved,
-      opts({}, { coverageHeight: 0 }),
+      opts({ coverageHeight: 0 }),
     )
     expect(result.type).toBe('none')
   })

@@ -202,13 +202,6 @@ export interface HitTestOptions {
    * and the hit gate one: a mark `enabled` says no to answers no hover.
    */
   state: RenderState
-  // The hovered section's coverage band — 0 when the band is off, which is the
-  // whole gate: the coverage and interbase tests answer nothing in a 0px band.
-  coverageHeight: number
-  // Autoscaled coverage domain max (global across groups), needed to reproduce
-  // the interbase histogram bar heights for hit-testing. Undefined until the
-  // debounced autoscale resolves.
-  coverageMaxDepth: number | undefined
   // Whether the cursor is on the drawn part of this section's pileup
   // (`onPileupBand`). Reads are laid out under a collapsed band and scroll
   // under the sticky ones, so the per-read tests answer nothing off it.
@@ -418,11 +411,13 @@ export function performHitTest(
   resolved: ResolvedBlock,
   options: HitTestOptions,
 ): HitTestResult {
-  const { state, coverageHeight, coverageMaxDepth, overPileup } = options
+  const { state, overPileup } = options
   const {
     showInterbaseIndicators,
     coverageSnpMinFrequency,
     coverageTopOffset,
+    coverageHeight,
+    coverageMaxDepth,
     featureHeight,
     featureSpacing,
     scrollTop,

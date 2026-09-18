@@ -99,9 +99,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
               pileupTopOffset: picked.section.topOffset,
               coverageTopOffset: picked.coverageTopOffset,
             },
-            // The hovered section's own coverage band (gated to 0 when off).
-            coverageHeight: picked.section.coverageHeight,
-            coverageMaxDepth: model.coverageDomain?.[1],
             overPileup: onPileupBand(
               picked.section,
               canvasY,
