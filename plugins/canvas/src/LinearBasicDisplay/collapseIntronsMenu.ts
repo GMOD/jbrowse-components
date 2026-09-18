@@ -18,7 +18,7 @@ import {
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const CollapseIntronsDialog = lazy(
@@ -28,6 +28,7 @@ const CollapseIntronsDialog = lazy(
 // Structural rather than the model's instance type: the factory calls this
 // builder, so importing its type back here is a circular reference.
 interface CollapseIntronsSelf extends IStateTreeNode {
+  loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
   fetchFullFeature: (
     featureId: string,
     displayedRegionIndex: number,
@@ -71,14 +72,14 @@ export function collapseIntronsMenuItem(
             session.notify('No introns found in this feature', 'info')
             return
           }
-          const view = containingLgv(self)
-          const assemblyName = view.assemblyNames[0]
+          const assemblyName =
+            self.loadedRegions.get(displayedRegionIndex)?.assemblyName
           const assembly = assemblyName
             ? session.assemblyManager.get(assemblyName)
             : undefined
           if (!assembly) {
             session.notify(
-              "Could not resolve this view's assembly, which is needed to clamp the collapsed regions",
+              "Could not resolve this feature's assembly, which is needed to clamp the collapsed regions",
               'warning',
             )
             return
@@ -86,7 +87,7 @@ export function collapseIntronsMenuItem(
           session.queueDialog(handleClose => [
             CollapseIntronsDialog,
             {
-              view,
+              view: containingLgv(self),
               transcripts,
               handleClose,
               assembly,

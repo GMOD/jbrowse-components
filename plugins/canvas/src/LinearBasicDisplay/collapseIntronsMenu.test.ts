@@ -174,6 +174,27 @@ describe('collapse introns context menu', () => {
     expect(props.featureName).toBe('EDEN')
   })
 
+  // A view can show two assemblies side by side, and the clamp belongs to the
+  // one the clicked feature was drawn from.
+  it("clamps against the clicked region's assembly, not the view's first", async () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, session, mockRpcCall } = createDisplay()
+    mockRpcCall.mockResolvedValue({ feature: fullGene })
+    const other = { name: 'other' }
+    const { get } = session.assemblyManager
+    jest
+      .spyOn(session.assemblyManager, 'get')
+      .mockImplementation(name => (name === 'other' ? other : get(name)))
+    display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), {
+      ...ctgA,
+      assemblyName: 'other',
+    })
+    rightClick(display, gene)
+    clickCollapse(display)
+
+    expect((await queuedDialogProps(session)).assembly).toBe(other)
+  })
+
   it('passes a non-transcript subpart hit through as a preselection miss', async () => {
     const matureProtein = isoform('EDEN.1.p1', 'mature_protein_region_of_CDS')
     const { display, session } = setup([matureProtein])
