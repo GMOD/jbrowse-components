@@ -5,6 +5,7 @@ import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSwatch } from '@jbrowse/core/ui/legendSpec'
+import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 import type { ScaleTable } from '@jbrowse/core/util/markEncoding'
 
 const RAMP_STOPS = 8
@@ -44,8 +45,6 @@ function copyOf(scale: ScaleTable): ScaleTable {
 function unionEntries<E extends { value: string }>(
   into: E[],
   from: readonly E[],
-  domain: readonly string[],
-  field: string,
 ) {
   const seen = new Set(into.map(e => e.value))
   for (const entry of from) {
@@ -54,30 +53,18 @@ function unionEntries<E extends { value: string }>(
       into.push(entry)
     }
   }
-  const { compare } = categoricalField(field, { domain })
-  into.sort((a, b) => compare(a.value, b.value))
 }
 
 function union(current: ScaleTable, next: ScaleTable) {
   switch (current.kind) {
     case 'categorical':
       if (next.kind === 'categorical') {
-        unionEntries(
-          current.entries,
-          next.entries,
-          current.domain,
-          current.field,
-        )
+        unionEntries(current.entries, next.entries)
       }
       break
     case 'glyph':
       if (next.kind === 'glyph') {
-        unionEntries(
-          current.entries,
-          next.entries,
-          current.domain,
-          current.field,
-        )
+        unionEntries(current.entries, next.entries)
       }
       break
     case 'ramp':
@@ -152,22 +139,30 @@ function glyphOverSameField(
   return glyph?.scale.kind === 'glyph' ? glyph : undefined
 }
 
+// A key over the facet's own field lists its rows in the sections' order, so
+// the key and the chips read top to bottom alike.
 function categoricalKey<E extends { value: string }>(
   id: string,
   scale: { field: string; domain: string[]; entries: E[] },
   swatchOf: (entry: E) => { color: string } | { swatches: LegendSwatch[] },
+  facet: CategoricalField | undefined,
 ): ColorScale {
-  const field = categoricalField(scale.field, { domain: scale.domain })
+  const field =
+    facet?.field === scale.field
+      ? facet
+      : categoricalField(scale.field, { domain: scale.domain })
   return {
     kind: 'categorical',
     id,
     title: scale.field,
-    entries: scale.entries.map(e => ({
-      value: e.value,
-      label: field.label(e.value),
-      ...swatchOf(e),
-      ...(e.value === '' ? { missing: true } : {}),
-    })),
+    entries: scale.entries
+      .toSorted((a, b) => field.compare(a.value, b.value))
+      .map(e => ({
+        value: e.value,
+        label: field.label(e.value),
+        ...swatchOf(e),
+        ...(e.value === '' ? { missing: true } : {}),
+      })),
   }
 }
 
@@ -178,7 +173,10 @@ function categoricalKey<E extends { value: string }>(
  * unless the colour is a categorical scale over the same field, when one key
  * carries both, each swatch the value's glyph in the value's colour.
  */
-export function markColorScales(sections: MarkLegendSection[]): ColorScale[] {
+export function markColorScales(
+  sections: MarkLegendSection[],
+  facet?: CategoricalField,
+): ColorScale[] {
   const folded = new Set<MarkLegendSection>()
   return sections.flatMap((section): ColorScale[] => {
     if (folded.has(section)) {
@@ -197,18 +195,28 @@ export function markColorScales(sections: MarkLegendSection[]): ColorScale[] {
             ? glyph.scale.entries.find(e => e.value === value)?.glyph
             : undefined
         return [
-          categoricalKey(id, scale, ({ value, color }) => {
-            const css = abgrToCssRgba(color)
-            const g = glyphOf(value)
-            return g ? { swatches: [{ color: css, glyph: g }] } : { color: css }
-          }),
+          categoricalKey(
+            id,
+            scale,
+            ({ value, color }) => {
+              const css = abgrToCssRgba(color)
+              const g = glyphOf(value)
+              return g
+                ? { swatches: [{ color: css, glyph: g }] }
+                : { color: css }
+            },
+            facet,
+          ),
         ]
       }
       case 'glyph':
         return [
-          categoricalKey(id, scale, e => ({
-            swatches: [{ color: 'currentColor', glyph: e.glyph }],
-          })),
+          categoricalKey(
+            id,
+            scale,
+            e => ({ swatches: [{ color: 'currentColor', glyph: e.glyph }] }),
+            facet,
+          ),
         ]
       case 'ramp':
         return [

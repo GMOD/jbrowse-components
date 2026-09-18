@@ -992,7 +992,12 @@ export function stateModelFactory(
        * export draw the legend off the tables the worker resolved
        */
       get colorScales() {
-        return markColorScales(this.legendSections)
+        return markColorScales(
+          this.legendSections,
+          self.facetField
+            ? categoricalField(self.facetField, { domain: self.facetDomain })
+            : undefined,
+        )
       },
     }))
     .volatile(self => ({

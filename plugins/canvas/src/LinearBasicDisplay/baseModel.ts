@@ -79,7 +79,7 @@ import {
   resolveRegionColors,
 } from './components/resolveRegionColors.ts'
 import { derivedColorKey } from './derivedColorKey.ts'
-import { featureGroupSections, sectionIdsOf } from './facet.ts'
+import { facetField, featureGroupSections, sectionIdsOf } from './facet.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
@@ -1459,24 +1459,24 @@ export default function baseStateModelFactory(
       /**
        * #getter
        * The key the color channel's scale derives from what the worker
-       * painted, less the values only a hidden section painted: every value
-       * sorted, the scale's domain ahead of the rest.
+       * painted, less the values only a hidden section painted, in the
+       * sections' order where the facet reads the same field.
        */
       get derivedColorScales(): ColorScale[] {
         const scale = self.colorEncoding
         const { facet, hiddenGroupKeys } = self
+        if (!scale) {
+          return []
+        }
         const sectionOf =
           facet && hiddenGroupKeys.size > 0
             ? sectionIdsOf(self.laidOutDataMap, facet)
             : undefined
-        return scale
-          ? derivedColorKey(
-              scale,
-              self.rpcDataMap.values(),
-              sectionOf &&
-                (section => hiddenGroupKeys.has(sectionOf(section).key)),
-            )
-          : []
+        return derivedColorKey(
+          facet?.field === scale.field ? facetField(facet) : scale,
+          self.rpcDataMap.values(),
+          sectionOf && (section => hiddenGroupKeys.has(sectionOf(section).key)),
+        )
       },
       /**
        * #getter

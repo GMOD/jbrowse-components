@@ -1275,6 +1275,57 @@ test('a hidden section leaves the key and the axis the way it leaves the plot', 
   expect(display.domain![1]).toBeLessThan(90)
 })
 
+test("a key over the facet's field follows the sections' order", () => {
+  const { display } = createTestEnvironment(
+    [
+      {
+        shape: 'bar',
+        encoding: {
+          y: 'score',
+          color: { field: 'sample', scale: 'categorical' },
+        },
+      },
+    ],
+    REGION,
+    'BedAdapter',
+    { facetField: 'sample', facetDomain: ['b'] },
+  ).createDisplay()
+  display.setRpcData(
+    0,
+    result(
+      [
+        {
+          y: [1, 2],
+          row: [0, 1],
+          color: [1, 2],
+          scale: {
+            kind: 'categorical',
+            field: 'sample',
+            domain: [],
+            entries: [
+              { value: 'a', color: 1 },
+              { value: 'b', color: 2 },
+            ],
+          },
+        },
+      ],
+      [
+        { key: 'a', firstRow: 0, rowCount: 1 },
+        { key: 'b', firstRow: 1, rowCount: 1 },
+      ],
+    ),
+    REGION,
+  )
+  const keyed = () =>
+    display.colorScales.flatMap(c =>
+      c.kind === 'categorical' ? c.entries.map(e => e.value) : [],
+    )
+  expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b', 'a'])
+  expect(keyed()).toEqual(['b', 'a'])
+  display.setFacetDomain(['a', 'b'])
+  expect(keyed()).toEqual(['a', 'b'])
+})
+
 test('moving the facet field drops what was hidden, the keys having meant that field', () => {
   const { display } = facetedEnvironment().createDisplay()
   const before = display.groupKeySpace

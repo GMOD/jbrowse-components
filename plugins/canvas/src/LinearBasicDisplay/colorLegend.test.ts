@@ -168,6 +168,14 @@ describe('derived color key', () => {
     ])
   })
 
+  it("lists the key in the sections' order where the facet reads the same field", () => {
+    const display = coloredDisplay({ field: 'biotype', domain: ['lncRNA'] })
+    display.setFacet({ field: 'biotype', domain: ['snoRNA', 'protein_coding'] })
+    expect(keyValues(display)).toEqual(['snoRNA', 'protein_coding', 'lncRNA'])
+    display.setFacet({ field: 'source', domain: ['snoRNA'] })
+    expect(keyValues(display)).toEqual(['lncRNA', 'protein_coding', 'snoRNA'])
+  })
+
   it('leaves out a value only a hidden section painted', () => {
     const display = coloredDisplay({ field: 'biotype' })
     display.setFacet({ field: 'biotype' })

@@ -6,7 +6,7 @@ import * as pointShader from '@jbrowse/render-core/shaders/pointMarkIface'
 import * as spanShader from '@jbrowse/render-core/shaders/spanMarkIface'
 
 import { findMarkHit } from './findMarkHit.ts'
-import { buildMarkLegend } from './legend.ts'
+import { buildMarkLegend, markColorScales } from './legend.ts'
 import { buildMarkList } from './markList.ts'
 
 import type {
@@ -383,7 +383,7 @@ describe('findMarkHit', () => {
   })
 })
 
-test("the legend unions categorical tables across regions in the field's order, keeping the first colour", () => {
+test("the legend unions categorical tables across regions, keeping the first colour, and lists them in the field's order", () => {
   const regionA: MarkRegionData = {
     layers: [
       layer([1], [1], [RED], {
@@ -411,7 +411,8 @@ test("the legend unions categorical tables across regions in the field's order, 
       }),
     ],
   }
-  expect(buildMarkLegend([regionA, regionB])).toEqual([
+  const sections = buildMarkLegend([regionA, regionB])
+  expect(sections).toEqual([
     {
       markIndex: 0,
       channel: 'color',
@@ -420,10 +421,15 @@ test("the legend unions categorical tables across regions in the field's order, 
         field: 'type',
         domain: [],
         entries: [
-          { value: 'exon', color: BLUE },
           { value: 'gene', color: RED },
+          { value: 'exon', color: BLUE },
         ],
       },
     },
   ])
+  expect(
+    markColorScales(sections).flatMap(s =>
+      s.kind === 'categorical' ? s.entries.map(e => e.value) : [],
+    ),
+  ).toEqual(['exon', 'gene'])
 })
