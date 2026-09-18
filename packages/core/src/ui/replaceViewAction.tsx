@@ -13,7 +13,7 @@ import type { SubmitFormProps } from './SubmitForm.tsx'
  * the launching view occupies.
  *
  * Every launcher anchored on what a view is already showing — the synteny
- * launches, "read vs ref", the derivative reconstruction — wants exactly this
+ * launches, "read vs ref" — wants exactly this
  * pair, and each had written the same four lines around
  * {@link ReplaceCurrentViewButton}: the guard, the button, its disabled state,
  * and the renaming of Submit that only makes sense once there are two buttons.

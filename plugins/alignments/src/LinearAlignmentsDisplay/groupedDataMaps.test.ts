@@ -383,8 +383,7 @@ test('buildRawDataByGroup regroups regions into per-group region maps', () => {
 })
 
 // The source-level filter every cross-group walk of this map then inherits —
-// the arc scale pooling and the derivative-path chain scan alike, neither of
-// which re-applies `hiddenGroupKeys` on its own.
+// the arc scale pooling does not re-apply `hiddenGroupKeys` on its own.
 test('buildRawDataByGroup drops hidden group keys entirely', () => {
   const shown = data(['a'])
   const hidden = data(['b'])

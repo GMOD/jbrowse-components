@@ -166,9 +166,8 @@ function arrivedFrom(
  * - **more than one junction leaves this stop.** Two continuations mean the
  *   records cannot say which molecule carries which, and picking the closer or
  *   the better-supported one would be this code inventing an answer the caller
- *   declined to give. A reader who wants that comparison has the reads, via
- *   Reconstruct derivative allele, which ranks routes by how many molecules take
- *   each.
+ *   declined to give. The reads in the panels are the evidence a reader weighs
+ *   instead.
  *
  * The exception to the third is a caller that did not decline: when exactly one
  * of the continuations shares an assembly contig with the junction the walk

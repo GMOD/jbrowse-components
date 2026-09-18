@@ -557,10 +557,9 @@ describe('FetchVisibleRegions autorun', () => {
 
   // Connections are a DRAW setting and the fetch must not depend on them. This
   // briefly asserted the opposite, to let the worker skip the per-read SA tag
-  // walk while they were off — but `derivativePathCandidates` reads the same SA
-  // chains and is ungated by design, so the skip took every off-screen split
-  // segment away from the "Reconstruct derivative allele" dialog on the default
-  // fetch. The walk is unconditional again, so this is a repaint.
+  // walk while they were off — but linked reads and the curved connectors read
+  // the same tags under settings of their own. The walk is unconditional again,
+  // so this is a repaint.
   it('does NOT refetch when readConnections toggles', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())

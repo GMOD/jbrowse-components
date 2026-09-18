@@ -5,21 +5,18 @@ import { buildBaseFeatureData } from '../../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../../shared/buildBaseReadArrays.ts'
 import { extractFeatureArrays } from '../../shared/extractFeatureArrays.ts'
 import { buildReadNameBlock } from '../../shared/readNameBlock.ts'
-import { computeReadChains } from '../arcs/arcChains.ts'
-import { computeDerivativePaths } from './computePaths.ts'
+import { collectPendingArcs, groupLaneReadsByName } from './arcChains.ts'
 
+import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { MismatchFeature } from '../../shared/extractCigarFeatures.ts'
+import type { RegionInfo } from './arcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-// A de novo assembly contig aligned to the reference reaches this pipeline as
-// an `LGVSyntenyDisplay`'s PAF blocks, and it is a split read at a larger
-// scale: one name, one block per reference interval, an offset along the
-// contig on each. This class states the contract `SyntenyFeature` meets
-// (`plugins/comparative-adapters/src/SyntenyFeature/contigChain.test.ts` pins
-// its side): `forEachMismatch` is what puts a feature on the
-// `clipLengthAtStartOfRead`-property branch of the extractor, and the name and
-// the offset both come from the block's other side. No SA tag, so a contig's
-// chain is only what the displayed regions fetched.
+// An assembly contig's PAF blocks, as `LGVSyntenyDisplay` feeds them to the
+// arc path: one name, one block per reference interval, and the block's
+// offset along the contig as its read-order key.
+// `plugins/comparative-adapters/src/SyntenyFeature/contigChain.test.ts` pins
+// the `SyntenyFeature` side of this contract.
 class ContigBlock extends SimpleFeature implements MismatchFeature {
   forEachMismatch() {}
 
@@ -64,6 +61,19 @@ const REGIONS = [
   { refName: 'chr13', start: 0, end: 100_000, displayedRegionIndex: 1 },
 ]
 
+function splitArcs(
+  lanes: ReadonlyMap<number, WorkerPileupData>[],
+  regions: RegionInfo[],
+) {
+  return collectPendingArcs(
+    groupLaneReadsByName(
+      lanes.map(lane => ['', lane] as const),
+      regions,
+    ),
+    { drawLongRange: true, drawInter: true, canonicalRefName: r => r },
+  ).filter(arc => arc.isSplit)
+}
+
 function fetchResult(features: Feature[], region: Region) {
   const extracted = extractFeatureArrays(
     features,
@@ -78,9 +88,8 @@ function fetchResult(features: Feature[], region: Region) {
   })
 }
 
-// Two haplotype contigs of one junction: chr13 forward into chr3 inverted, the
-// HG008-T `chr3_chr13_hap1` shape. Each contig's chr13 block comes first on
-// the contig, so the chr3 block carries the larger offset.
+// Two haplotype contigs of one junction, chr13 forward into chr3 inverted:
+// each contig's chr13 block comes first on the contig.
 function lanes(contigs: string[], chr3Blocks = true) {
   const chr13 = contigs.map(contig =>
     contigBlock({
@@ -128,38 +137,14 @@ function lanes(contigs: string[], chr3Blocks = true) {
   ]
 }
 
-test('two contigs over two displayed regions are one route, in contig order', () => {
-  const chains = computeReadChains(lanes(['hap1', 'hap2']), REGIONS)
-  expect(chains).toHaveLength(2)
-  // contig order, not fetch order: chr13 carries offset 0, chr3 offset 20 kb,
-  // and the chr3 region was extracted first
-  expect(chains[0]!.map(s => [s.refName, s.strand, s.clipAtStart])).toEqual([
-    ['chr13', 1, 0],
-    ['chr3', -1, 20_000],
+test('a contig joins its blocks in contig order, not fetch order', () => {
+  const arcs = splitArcs(lanes(['hap1', 'hap2']), REGIONS)
+  expect(arcs.map(a => [a.p1Ref, a.p1Strand, a.p2Ref, a.p2Strand])).toEqual([
+    ['chr13', 1, 'chr3', -1],
+    ['chr13', 1, 'chr3', -1],
   ])
-  const candidates = computeDerivativePaths({ chains, minReads: 1 })
-  expect(candidates).toHaveLength(1)
-  expect(candidates[0]!.readCount).toBe(2)
-  // presented from the lower of the two ends the allele could begin at, which
-  // `orientForDisplay` compares by refName first — lexicographic, so chr13 leads
-  expect(
-    candidates[0]!.observedSegments.map(s => [s.refName, s.strand]),
-  ).toEqual([
-    ['chr13', 1],
-    ['chr3', -1],
-  ])
-  // every block was fetched: nothing here names a segment off screen
-  expect(candidates[0]!.extendsOffScreen).toBe(false)
 })
 
-test('a lone contig still makes a route at the assembly floor of one', () => {
-  const chains = computeReadChains(lanes(['hap1']), REGIONS)
-  expect(computeDerivativePaths({ chains })).toEqual([])
-  expect(computeDerivativePaths({ chains, minReads: 1 })).toHaveLength(1)
-})
-
-test('a contig with one block on screen describes no route', () => {
-  const chains = computeReadChains(lanes(['hap1', 'hap2'], false), REGIONS)
-  expect(chains).toEqual([])
-  expect(computeDerivativePaths({ chains, minReads: 1 })).toEqual([])
+test('a contig with one block on screen makes no junction', () => {
+  expect(splitArcs(lanes(['hap1', 'hap2'], false), REGIONS)).toEqual([])
 })

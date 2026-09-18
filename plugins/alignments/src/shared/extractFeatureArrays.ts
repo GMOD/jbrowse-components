@@ -92,13 +92,9 @@ export function extractFeatureArrays<T extends FeatureData>(
   // The walk is not free — `getTag(feature, 'SA')` scans the read's whole tag
   // block, 18.1ms over 153,677 reads on the deepest short-read fixture — and it
   // was briefly gated on `readConnections !== 'off'` on the grounds that the arc
-  // computation is the only consumer. It is not: `computeReadChains` feeds
-  // `derivativePathCandidates` too, and that getter is deliberately ungated
-  // ("a user who wants a reconstruction should not first have to turn on a
-  // display option that draws something else"). With the gate on, the default
-  // fetch carried no SA, so every off-screen split segment vanished from the
-  // "Reconstruct derivative allele" dialog — which is most of them, since a
-  // translocation's far segment is by definition not in a single-region view.
+  // computation is the only consumer. It is not: linked reads and the curved
+  // connectors read the same tags (`readGroupConnections`) under settings of
+  // their own, so a gate on connections takes their off-screen segments away.
   //
   // What the gate was really buying was the CLONE, and `hasSuppAlignment` keeps
   // that half: structured clone is priced by object count, and on that fixture

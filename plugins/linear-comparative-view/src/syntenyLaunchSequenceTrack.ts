@@ -1,7 +1,5 @@
-// The reference-sequence track snapshot every synteny launch in this plugin
-// puts on its panels — "linear read vs ref" and "reconstruct derivative
-// allele". It was two byte-identical copies in the two directories, which is
-// the shape a shared launcher detail takes right before the copies drift.
+// The reference-sequence track snapshot "linear read vs ref" puts on its
+// panels.
 //
 // `assemblyNames` is passed for a panel drawn against the real reference and
 // omitted for one drawn against a synthetic assembly, where the track config

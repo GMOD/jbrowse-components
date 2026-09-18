@@ -1,18 +1,14 @@
 import { getClip, getLengthOnRef } from '@jbrowse/cigar-utils'
 
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { computeReadChains } from '../features/arcs/arcChains.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
-import type { RegionInfo } from '../features/arcs/arcTypes.ts'
 
 /**
  * One alignment record as `samtools view` prints it, reduced to the columns the
  * connection and chaining code actually consults. Lets a test be built out of
- * real records copied from a real file rather than out of invented numbers: see
- * the `realReads.*.test.ts` fixtures, which carry the samtools command that
- * produced them.
+ * real records copied from a real file rather than out of invented numbers.
  *
  * `strand` is carried rather than derived from `flag`, because converting the
  * reverse flag to a strand is the adapter's job and no other layer is allowed
@@ -64,15 +60,4 @@ export function pileupDataFromSamRecords(
     ...namesToBlock(records.map(rec => rec.name)),
     readSuppAlignments: records.map(rec => rec.SA),
   }
-}
-
-/** The split-read chains those records form when fetched for one region. */
-export function chainsFromSamRecords(
-  records: SamRecordFixture[],
-  region: RegionInfo,
-) {
-  return computeReadChains(
-    [new Map([[0, pileupDataFromSamRecords(records)]])],
-    [region],
-  )
 }

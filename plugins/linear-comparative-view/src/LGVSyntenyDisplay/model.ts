@@ -35,7 +35,6 @@ import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
-import type { DerivativePathEvidence } from '@jbrowse/plugin-alignments'
 import type { LodMode } from '@jbrowse/synteny-core'
 
 /**
@@ -120,17 +119,6 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          */
         get featureNoun() {
           return 'feature'
-        },
-
-        /**
-         * #getter
-         * A chain here is one contig's blocks, and an assembly carries one or
-         * two contigs across a locus, so one is a route. Nothing names a block
-         * the view has not fetched (a PAF line has no SA tag), so a route is only
-         * what is on screen.
-         */
-        get derivativePathEvidence(): DerivativePathEvidence {
-          return { noun: 'contigs', minReads: 1, namesOffScreenSegments: false }
         },
       }))
       .views(self => ({

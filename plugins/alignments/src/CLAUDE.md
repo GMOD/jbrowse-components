@@ -68,10 +68,10 @@ merged array the worker ships rather than pre-sliced views of it.
 `@jbrowse/alignments-core`'s, shared with MAF and declared once in
 `renderers/coverageMarks.ts`.
 
-Two directories are **not** passes and say so by having no `packGpu.ts` —
-`sashimi/` and `derivativePaths/` compute geometry for React SVG overlays, which
-are a separate draw mechanism with no registry. `alignedBaseWalk.ts` is a bare
-shared walk, not a directory at all.
+One directory is **not** a pass and says so by having no `packGpu.ts` —
+`sashimi/` computes geometry for a React SVG overlay, which is a separate draw
+mechanism with no registry. `alignedBaseWalk.ts` is a bare shared walk, not a
+directory at all.
 
 The `clip` layer draws soft AND hard clips from one shader, so `features/clip/`
 owns both emitters and there is no `hardclip/`. `features/softclipBases/` is the
@@ -150,10 +150,9 @@ from tens of thousands up.
   name once per contig. `buildReadInterchrom` compares per SLOT, not per read.
 - **`readSuppAlignments` ships only when some read in the group HAS one.** The
   `getTag(f, 'SA')` walk is unconditional; the absent array saves the clone.
-  **Gating the WALK on `readConnections` is the mistake to not repeat** —
-  `derivativePathCandidates` is a second, ungated consumer, so the default fetch
-  carried no SA and "Reconstruct derivative allele" lost every off-screen split
-  segment. `readConnections` is therefore **not** in `rpcProps`, pinned by
+  **Gating the WALK on `readConnections` is the mistake to not repeat** — linked
+  reads and the curved connectors read the same tags under settings of their
+  own. `readConnections` is therefore **not** in `rpcProps`, pinned by
   `fetchAutorun.test.ts`.
 
 The shared rule: **ask what the consumer actually is before making the shape

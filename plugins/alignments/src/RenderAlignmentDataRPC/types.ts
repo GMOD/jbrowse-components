@@ -320,8 +320,8 @@ export interface WorkerPileupData {
   // Per-read mate position (PNEXT) for main-thread arc computation
   readNextPositions?: Uint32Array
 
-  // Per-read SA tag strings, for the main thread's two chain readers — the arc
-  // computation and `derivativePathCandidates`. Absent when no read in the
+  // Per-read SA tag strings, for the main thread's chain readers — the arc
+  // computation and `readGroupConnections`. Absent when no read in the
   // group carried one, which is the deep short-read case and every synteny one;
   // see `extractFeatureArrays` for why that is the whole of the optimization
   // here and why the walk itself is unconditional.

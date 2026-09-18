@@ -1,10 +1,9 @@
 // The one-contig temporary assembly a launcher registers via
 // `addTemporaryAssembly`, so that a synthetic sequence can be drawn against the
-// reference as if it were a genome. Three launchers mint one: "linear read vs
-// ref" and "dotplot of read vs ref", whose contig is a single read, and
-// "reconstruct derivative allele", whose contig is a path several reads agree
-// on. Kept as one builder so they cannot drift apart — a drift here previously
-// hung DotplotReadVsRef on an unregistered assemblyName.
+// reference as if it were a genome. Two launchers mint one, "linear read vs
+// ref" and "dotplot of read vs ref", whose contig is a single read. Kept as one
+// builder so they cannot drift apart — a drift here previously hung
+// DotplotReadVsRef on an unregistered assemblyName.
 //
 // The return type is annotated inline (an anonymous object type, not a named
 // interface) so it keeps an implicit index signature and stays assignable to
@@ -19,8 +18,7 @@ export function buildSyntheticAssembly({
   trackId,
   uniqueId,
 }: {
-  // The single contig's name, inside the assembly: a read name, or the
-  // derivative allele's own name.
+  // The single contig's name inside the assembly: the read's name.
   refName: string
   assemblyName: string
   // stamp-free label for the panel header; see buildReadVsRefNames

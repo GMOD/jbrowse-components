@@ -3,8 +3,7 @@
 // `addSessionTrackConf` either. Every feature that had moved onto that action
 // therefore went dark HERE and nowhere else: the guard
 // `isSessionWithAddSessionTrack` simply read false, so the spreadsheet view's
-// imported callset track and the derivative-allele reconstruction's segment
-// labels were skipped, silently and only on desktop.
+// imported callset track was skipped, silently and only on desktop.
 //
 // So the mixin defines it too, landing in the config — which on desktop is the
 // one user's own file, saved alongside the session, rather than something a

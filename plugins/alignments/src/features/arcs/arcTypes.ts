@@ -298,10 +298,8 @@ export type CanonicalRefName = (refName: string) => string
 // Chain BUILDING takes only the normalizer, which is why that is the narrower
 // parameter below rather than this bundle. The gates decide whether a junction
 // touching an off-screen segment is emitted as an arc; they say nothing about
-// which segments a read has, so a chain builder handed this whole struct had to
-// be given values for fields it could not read — and `computeReadChains` duly
-// set `drawLongRange: true` under a comment explaining that nothing would look
-// at it.
+// which segments a read has, so a chain builder handed this whole struct would
+// have to be given values for fields it cannot read.
 export interface ArcChainContext {
   drawLongRange: boolean
   drawInter: boolean

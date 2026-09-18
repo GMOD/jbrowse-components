@@ -101,11 +101,8 @@ describe('mateRefName extraction', () => {
 //
 // It was briefly gated on `readConnections !== 'off'` — 18.1ms of tag-block
 // scanning over 153,677 reads, for an array the arc computation was believed to
-// be the only reader of. It is not: `computeReadChains` also feeds
-// `derivativePathCandidates`, which is ungated on purpose, so on the default
-// fetch every off-screen split segment disappeared from the "Reconstruct
-// derivative allele" dialog. A translocation's far segment is off-screen by
-// definition in a single-region view, which is most of what that dialog is for.
+// be the only reader of. It is not: linked reads and the curved connectors
+// read the same tags under settings of their own.
 //
 // What the gate was really worth is the CLONE, and that survives as the
 // `undefined` below: structured clone is priced by object count, so a group with

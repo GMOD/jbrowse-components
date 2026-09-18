@@ -81,23 +81,6 @@ export type { ArcsUploadData } from './features/arcs/types.ts'
 export type { CrossRegionArc } from './features/arcs/arcTypes.ts'
 export type { ArcsByGroupResult } from './features/arcs/compute.ts'
 export type { CrossRegionArcShape } from './features/arcs/crossRegionOverlay.ts'
-export {
-  segmentEntryBp,
-  segmentExitBp,
-} from './features/derivativePaths/computePaths.ts'
-export type {
-  DerivativeCandidate,
-  DerivativePathEvidence,
-  DerivativeSegment,
-} from './features/derivativePaths/computePaths.ts'
-export {
-  derivativeLetterSummary,
-  letterSegments,
-} from './features/derivativePaths/letterSegments.ts'
-export type {
-  ReferencePiece,
-  SegmentLettering,
-} from './features/derivativePaths/letterSegments.ts'
 export type { LinkedPair } from './features/linkedReads/compute.ts'
 export type { BezierArcScope } from './features/linkedReads/computeOverlay.ts'
 export type { MergedJunction } from './features/sashimi/junctions.ts'

@@ -233,58 +233,6 @@ export function unpairedReadChain(
   return [...byPos.values()].sort((a, b) => a.clipAtStart - b.clipAtStart)
 }
 
-/**
- * #api
- * Every fetched read's complete segment chain, in read order. Routed through
- * the same `resolveReadGroup` skeleton the arcs use, so the secondary filter,
- * the readId dedup and the mate partition are applied identically and the two
- * cannot disagree about which segments belong to one read.
- *
- * The arc path turns each chain into junction arcs; `derivativePaths` reads the
- * chains themselves to propose a derivative allele. Sharing the builder is what
- * keeps the proposal's segment ORDER and ORIENTATION honest: read order is not
- * genomic order across an inversion, and `unpairedReadChain` is where that is
- * already resolved.
- *
- * EVERY LANE AT ONCE, which is why this takes a list of data maps rather than
- * one. A display's grouping (by strand, by HP tag, by any tag) partitions reads
- * for DRAWING and says nothing about which molecule carries which junction, so
- * chaining one lane at a time and concatenating the results counts a read once
- * per lane its segments landed in: each lane sees one segment as a fetched entry
- * and the rest through that segment's own SA tag, so it emits a complete chain
- * of its own and the identical chains group. Grouping by strand is the case that
- * bites, because a read crossing an inversion has segments on both strands BY
- * DEFINITION — the der(3) fold-back reported 4 reads for the 2 that exist.
- * Bucketing every lane's entries under one QNAME first is also what puts the
- * partner segment back on screen, so `extendsOffScreen` stops claiming a path
- * leaves a window both of its ends are drawn in.
- *
- * Chains of one segment are dropped: a read with no junction describes no
- * rearrangement.
- */
-export function computeReadChains(
-  lanes: Iterable<ReadonlyMap<number, WorkerPileupData>>,
-  regions: RegionInfo[],
-  canonicalRefName: CanonicalRefName = refName => refName,
-): SegAln[][] {
-  const readsByName = groupLaneReadsByName(
-    Array.from(lanes, lane => ['', lane] as const),
-    regions,
-  )
-  const chains: SegAln[][] = []
-  for (const entries of readsByName.values()) {
-    chains.push(
-      ...resolveReadGroup<ReadEntry, SegAln[]>(entries, {
-        chainMate: segs => [unpairedReadChain(segs, canonicalRefName)],
-        // A mate link joins two mates of one fragment; it is not a junction on
-        // a single molecule, so it contributes no segment to a path.
-        mateLink: () => [],
-      }).filter(chain => chain.length > 1),
-    )
-  }
-  return chains
-}
-
 // The junction between two read-adjacent segments: the first segment's
 // read-trailing (3') edge joined to the next segment's read-leading (5') edge,
 // so a fwd→rev inversion lands on the breakpoint rather than the far edge of the
@@ -519,7 +467,8 @@ interface LanePendingArc {
 // An unpaired (long) read falls out as the case where the partition puts every
 // segment on one side and neither mate hook fires.
 //
-// EVERY LANE AT ONCE, for the reason `computeReadChains` gives above: a lane
+// EVERY LANE AT ONCE. A display's grouping partitions reads for drawing and
+// says nothing about which molecule carries which junction, and a lane
 // holds one segment as a fetched entry and reaches the rest through that
 // segment's SA tag, so resolving lane by lane emitted one junction once per
 // lane its segments landed in, each copy carrying a fraction of the support

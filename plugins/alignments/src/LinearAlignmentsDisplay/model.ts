@@ -59,11 +59,9 @@ import {
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, observable } from 'mobx'
 
-import { computeReadChains } from '../features/arcs/arcChains.ts'
 import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
 import { computeArcsByGroup } from '../features/arcs/compute.ts'
 import { densityCoverageFields } from '../features/coverage/densityBand.ts'
-import { computeDerivativePaths } from '../features/derivativePaths/computePaths.ts'
 import {
   bezierConnectionLegendItems,
   enumerateBezierPairs,
@@ -86,7 +84,6 @@ import {
   readCategoryLabelOverrides,
   readColorCategoryLabel,
 } from '../shared/legendUtils.ts'
-import { medianReadSpan } from '../shared/readSpans.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
@@ -170,10 +167,6 @@ import type {
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
-import type {
-  DerivativeCandidate,
-  DerivativePathEvidence,
-} from '../features/derivativePaths/computePaths.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type {
   ArcColorByType,
@@ -1686,8 +1679,8 @@ export default function stateModelFactory(
           /**
            * #getter
            * The fetched regions as `{refName,start,end,displayedRegionIndex}` —
-           * the shape every per-read region scan takes (`computeArcsByGroup`,
-           * `computeReadChains`). Regions whose fetch hasn't landed are dropped,
+           * the shape every per-read region scan takes (`computeArcsByGroup`).
+           * Regions whose fetch hasn't landed are dropped,
            * so a scan never has to test for a missing entry, and the list is
            * memoized once rather than rebuilt by each consumer.
            */
@@ -1738,10 +1731,9 @@ export default function stateModelFactory(
            * fetched read carries (`1`). Undefined when no assembly is resolved
            * (`loadedAssembly`), where the consumers fall back to identity.
            *
-           * Shared rather than resolved per consumer because both need it for the
+           * Shared rather than resolved per consumer because each needs it for the
            * same reason: without it a same-chromosome split junction reads as
-           * inter-chromosomal, and a derivative path names refNames the view
-           * doesn't have.
+           * inter-chromosomal.
            */
           get canonicalRefName() {
             const assembly = self.loadedAssembly
@@ -1837,91 +1829,6 @@ export default function stateModelFactory(
            */
           get crossRegionArcsByGroup() {
             return this.arcsResult.crossRegionByGroup
-          },
-
-          /**
-           * #getter
-           * Whether there are reads to reconstruct FROM, as opposed to reads that
-           * describe no rearrangement. An empty `derivativePathCandidates` means
-           * either, and they call for opposite responses: widen the window, or
-           * narrow it. A window too large for the track's byte budget renders as
-           * `force load` with nothing behind it, and reporting that as "no path is
-           * supported here" sends a reader looking for an event that was never
-           * fetched.
-           */
-          get hasReadsForDerivativePaths() {
-            return self.rpcDataMap.size > 0
-          },
-
-          /**
-           * #getter
-           * Median aligned length of the reads in view, in bp. The reference span
-           * of one alignment determines whether a read can carry a junction at
-           * all. The picker's empty state reads it to distinguish a library that
-           * cannot describe a rearrangement from a window that happens to hold
-           * none.
-           *
-           * Lazy like any computed, so a pileup pays for this scan only while the
-           * picker is open.
-           */
-          get medianReadSpanBp() {
-            return medianReadSpan(this.rawDataByGroup.values())
-          },
-
-          /**
-           * #getter
-           * What one chain consists of in this display; the picker counts,
-           * thresholds and labels its rows by it. A read pileup chains reads,
-           * needs two to call a
-           * route agreed on, and reaches off-screen segments through SA tags.
-           * `LGVSyntenyDisplay` overrides it: a locus carries one or two contigs,
-           * and a PAF block names nothing the view has not fetched.
-           */
-          get derivativePathEvidence(): DerivativePathEvidence {
-            return { noun: 'reads', minReads: 2, namesOffScreenSegments: true }
-          },
-
-          /**
-           * #getter
-           * Derivative-allele paths the reads in view describe, most-supported
-           * first. Each read's SA chain is already an ordered, oriented list of
-           * reference intervals — a derivative path — so the proposal is a
-           * grouping of those chains rather than any new analysis. Empty when no
-           * reads are loaded, which `hasReadsForDerivativePaths` distinguishes.
-           *
-           * Deliberately NOT gated on `readConnections`: this reads the chains,
-           * not the arcs, and a user who wants a reconstruction should not first
-           * have to turn on a display option that draws something else.
-           */
-          get derivativePathCandidates(): DerivativeCandidate[] {
-            if (!this.hasReadsForDerivativePaths) {
-              return []
-            }
-            // Every lane handed over at once, not chained lane by lane and
-            // concatenated. Grouping (by HP tag, by strand, ...) partitions reads
-            // for display and says nothing about which molecule carries which
-            // junction, so it must not partition the evidence — and chaining per
-            // lane does worse than partition it, it DOUBLES it, because each lane
-            // rebuilds the whole chain from its own segment's SA tag.
-            // `computeReadChains` carries the measurement.
-            //
-            // A HIDDEN lane is not that question and is already gone from
-            // `rawDataByGroup`: those reads aren't partitioned away from the
-            // evidence, they are excluded from the display outright (the
-            // all-vs-all self-alignment lane), so counting their chains would rank
-            // paths on reads the track never draws.
-            //
-            // `canonicalRefName` is the same normalizer the arcs use: an SA tag
-            // names refNames in the BAM's own spelling, and a path whose segments
-            // disagree with the view's refNames navigates nowhere.
-            return computeDerivativePaths({
-              chains: computeReadChains(
-                this.rawDataByGroup.values(),
-                this.loadedRegionInfos,
-                this.canonicalRefName,
-              ),
-              minReads: this.derivativePathEvidence.minReads,
-            })
           },
         }
       })
@@ -2202,7 +2109,7 @@ export default function stateModelFactory(
                 pairs: enumerateBezierPairs(
                   sec.laidOutPileupMap,
                   scope,
-                  // The same normalizer the arcs and the derivative paths take,
+                  // The same normalizer the arcs take,
                   // and what lets a junction name the off-screen segments it
                   // steps over in the view's own refName spelling rather than
                   // the BAM's. Its SA parse belongs to THIS getter's memo, not
@@ -2968,15 +2875,11 @@ export default function stateModelFactory(
             // pileup's low-frequency fade is unaffected (see runCoveragePipeline).
             showCoverage: self.showCoverage,
             linkedReads: self.linkedReads,
-            // `readConnections` is deliberately NOT here. It was, briefly, to
-            // let the worker skip the per-read SA tag walk with connections
-            // off — but `derivativePathCandidates` reads the same chains and is
-            // ungated by design, so the skip silently emptied the
-            // "Reconstruct derivative allele" dialog on the default fetch. The
-            // walk is unconditional again (`extractFeatureArrays` has the
-            // measurements), which puts connections back where the rest of the
-            // arc settings already are: a draw setting that repaints from data
-            // already in memory.
+            // `readConnections` is deliberately NOT here: the per-read SA tag
+            // walk it could gate also feeds linked reads and the curved
+            // connectors, which have settings of their own
+            // (`extractFeatureArrays` has the measurements). So connections
+            // stay a draw setting that repaints from data already in memory.
           }
         },
 

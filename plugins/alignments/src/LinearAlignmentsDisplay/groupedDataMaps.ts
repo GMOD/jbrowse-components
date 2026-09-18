@@ -215,9 +215,8 @@ export function buildReadIdsByChainName(
 //
 // `hidden` drops HERE, not in each consumer, and that is the point: the per-lane
 // consumers look a key up by an already-filtered `groupOrder` and never noticed,
-// while the cross-group walks (`derivativePathCandidates`, the arc scale pooling)
-// each had to remember the rule — and one didn't, ranking derivative-allele paths
-// on chains from a lane the display never draws. `rpcDataMap` stays the
+// while the cross-group walks (the arc scale pooling) each had to remember the
+// rule. `rpcDataMap` stays the
 // unfiltered escape hatch for anything that genuinely wants every lane.
 //
 // Key order is first-seen-across-regions, NOT the stacking order — the very case

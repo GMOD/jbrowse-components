@@ -28,7 +28,7 @@ export function buildReadVsRefNames({
   // one temporary assembly — `addTemporaryAssembly` warns and hands back the
   // FIRST, and the second view draws its ribbons against an axis of the wrong
   // totalLength. The clock still leads, so a session snapshot reads in launch
-  // order. `buildDerivativeVsRefSpec` reached the same shape separately.
+  // order.
   const stamp = `${now()}-${Math.floor(rand() * 1e6)}`
   return {
     shortName,

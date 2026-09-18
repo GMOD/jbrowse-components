@@ -216,8 +216,7 @@ const noHandRolledAttach = {
 //
 // The bare promise form. `when(pred, effect)` is exempt because it is a
 // reaction: a predicate that never comes true leaves it undisposed and its
-// effect unrun, which is a leak rather than a parked caller, and
-// `LinearDerivativeVsRef`'s carries its own `isAlive` escape.
+// effect unrun, which is a leak rather than a parked caller.
 //
 // Arity is how that exemption is spelled, and it is not the same distinction:
 // `when(pred, { timeout })` is promise-form and bounded (mobx rejects it), but

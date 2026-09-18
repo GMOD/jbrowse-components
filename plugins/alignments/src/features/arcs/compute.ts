@@ -879,8 +879,7 @@ export function computeArcsByGroup(
   // COLLECTION IS POOLED, resolution is per lane. Grouping partitions reads for
   // drawing and says nothing about which molecule carries which junction, so
   // chaining one lane at a time counted a read once per lane its segments
-  // landed in — see `collectPendingArcsByLane`, and `computeReadChains` for the
-  // same fix already made for the derivative-path consumer. Each pending arc
+  // landed in — see `collectPendingArcsByLane`. Each pending arc
   // arrives stamped with its fragment's lane, and a lane that produced none
   // still gets its (empty) entry below, since the band reservation reads
   // `byGroup` for every group the display drew.
