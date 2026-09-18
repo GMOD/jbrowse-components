@@ -207,6 +207,16 @@ test('resolves pair orientation for a properly paired record', async () => {
   expect(pair!.get('next_segment_position')).toBe('ctgA:21')
 })
 
+// Both mates of one FR pair have to name the same orientation, or they colour
+// and group apart. With TLEN 0 the sign said both trail: read1 came out R2F1.
+test('both mates of a pair with TLEN 0 name the same orientation', async () => {
+  const adapter = makeAdapter(
+    'p\t99\tctgA\t1\t60\t4M\t=\t21\t0\tACGT\t*\np\t147\tctgA\t21\t60\t4M\t=\t1\t0\tACGT\t*\n',
+  )
+  const mates = await fetch(adapter, 'ctgA')
+  expect(mates.map(f => f.get('pair_orientation'))).toEqual(['F1R2', 'F1R2'])
+})
+
 test('leaves pair orientation unset for an unpaired record', async () => {
   const [exact] = await fetch(makeAdapter(SAM), 'ctgA')
   expect(exact!.get('pair_orientation')).toBeUndefined()

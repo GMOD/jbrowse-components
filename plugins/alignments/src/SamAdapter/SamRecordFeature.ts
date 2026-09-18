@@ -186,7 +186,7 @@ export default class SamRecordFeature implements MismatchFeature {
    * only case the categories describe.
    */
   get pair_orientation() {
-    const { flags, next_ref, refName, template_length } = this.record
+    const { flags, next_ref, next_pos, refName, start } = this.record
     const paired =
       flags & SAM_FLAG_PAIRED &&
       !(flags & SAM_FLAG_UNMAPPED) &&
@@ -198,8 +198,12 @@ export default class SamRecordFeature implements MismatchFeature {
     const first = flags & SAM_FLAG_FIRST_IN_PAIR
     const self = `${flags & SAM_FLAG_REVERSE ? 'R' : 'F'}${first ? 1 : 2}`
     const mate = `${flags & SAM_FLAG_MATE_REVERSE ? 'R' : 'F'}${first ? 2 : 1}`
-    // the leftmost segment leads, which is what TLEN's sign encodes
-    return template_length > 0 ? `${self}${mate}` : `${mate}${self}`
+    // The leftmost segment leads, decided by an order both mates evaluate the
+    // same way — @gmod/bam's rule. TLEN's sign says the same thing only when the
+    // aligner filled it in, and a TLEN of 0 made both mates trail.
+    const selfLeads =
+      next_pos === undefined || next_pos === start ? !!first : start < next_pos
+    return selfLeads ? `${self}${mate}` : `${mate}${self}`
   }
 
   get mismatches() {
