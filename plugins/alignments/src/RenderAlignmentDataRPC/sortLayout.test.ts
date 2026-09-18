@@ -136,7 +136,7 @@ function makePileupData(opts: {
 }
 
 function makeSortedBy(pos: number, type = 'basePair', tag?: string): SortedBy {
-  return { type, pos, refName: 'chr1', assemblyName: 'a', tag }
+  return { type, pos, refName: 'chr1', tag }
 }
 
 /**
@@ -997,7 +997,6 @@ describe('computeMultiRegionLayout', () => {
         type: 'basePair',
         pos: 250,
         refName: 'chr1',
-        assemblyName: 'a',
       },
     })
     // ascending base order A < C < T, each on its own row (all collide at 250)
@@ -1037,7 +1036,6 @@ describe('computeMultiRegionLayout', () => {
         type: 'softclip',
         pos: 260,
         refName: 'chr1',
-        assemblyName: 'a',
       },
     })
     expect(rowMap.get('zClip')).toBeLessThan(rowMap.get('bThrough')!)
@@ -1113,7 +1111,6 @@ describe('computeMultiRegionLayout', () => {
         type: 'basePair',
         pos: 250,
         refName: 'chr1',
-        assemblyName: 'a',
       },
       largeFeaturesFirst: true,
     })
@@ -1197,7 +1194,6 @@ describe('computeMultiRegionLayout', () => {
       type: 'basePair',
       pos: 50,
       refName: 'chr1',
-      assemblyName: 'a',
     })
     const unsorted = args(undefined)
     expect([...sorted.rowMap]).toEqual([...unsorted.rowMap])
@@ -1440,7 +1436,6 @@ describe('the pileup sort is gated on refName in the single-region path too', ()
         type: 'basePair',
         pos: 50,
         refName: sortRefName,
-        assemblyName: 'a',
       },
       showSoftClipping: false,
       regions: new Map([[0, { refName: regionRefName, start: 0, end: 100 }]]),
@@ -1466,7 +1461,6 @@ describe('the pileup sort is gated on refName in the single-region path too', ()
         type: 'basePair',
         pos: 50,
         refName: 'chr1',
-        assemblyName: 'a',
       },
       showSoftClipping: false,
     })

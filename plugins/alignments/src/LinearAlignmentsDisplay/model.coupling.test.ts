@@ -367,7 +367,6 @@ describe('sortedBy refName normalization', () => {
       type: 'base',
       pos: 100,
       refName: 'chrA',
-      assemblyName: 'volvox',
     })
 
     expect(display.sortedBy?.refName).toBe('ctgA')
@@ -389,9 +388,7 @@ describe('sortedBy refName normalization', () => {
     // Cast because this is the one writer the action's signature can't
     // describe: `sortedBy` is a frozen slot, so a config or session spec can
     // put half a sort in it, and that is exactly the input under test.
-    display.setSortSlot({ ...slot, assemblyName: 'volvox' } as Parameters<
-      typeof display.setSortSlot
-    >[0])
+    display.setSortSlot(slot as Parameters<typeof display.setSortSlot>[0])
 
     expect(display.sortedBy).toBeUndefined()
   })
@@ -404,7 +401,6 @@ describe('sortedBy refName normalization', () => {
       type: 'base',
       pos: 100,
       refName: 'ctgA',
-      assemblyName: 'volvox',
     })
     expect(display.sortedBy?.refName).toBe('ctgA')
   })
@@ -481,7 +477,6 @@ describe('ordering controls in chain mode', () => {
       type: 'tag',
       pos: 50,
       refName: 'ctgA',
-      assemblyName: 'volvox',
       tag: 'HP',
     })
     expect(display.rpcProps().sortTag).toBe('HP')

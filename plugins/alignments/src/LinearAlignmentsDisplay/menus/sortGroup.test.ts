@@ -33,7 +33,7 @@ function radio(model: ReturnType<typeof makeModel>, label: string) {
 }
 
 function sorted(type: string): SortedBy {
-  return { type, pos: 100, refName: 'chr1', assemblyName: 'volvox' }
+  return { type, pos: 100, refName: 'chr1' }
 }
 
 const LABELS = [

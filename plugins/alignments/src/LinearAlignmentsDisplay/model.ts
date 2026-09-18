@@ -895,13 +895,14 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether the band stands in for the reads: the tier's verdict AND
-           * somewhere to draw it. "Show coverage" off collapses the band to
-           * nothing, so with it off the reads are fetched and drawn as they
-           * always were. Every term below that empties the pileup reads this,
-           * so the band and the reads never both go missing.
+           * `DensityTierMixin`'s hook: whether the band stands in for the reads,
+           * the tier's verdict AND somewhere to draw it. "Show coverage" off
+           * collapses the band to nothing, so with it off the reads are fetched
+           * and drawn as they always were. The pileup, the axis and the fetch
+           * all read this one term, so the band and the reads never both go
+           * missing.
            */
-          get densityStandsIn() {
+          get coarseTierStandsIn(): boolean {
             return self.coarseTierActive && self.showCoverage
           },
 
@@ -923,7 +924,7 @@ export default function stateModelFactory(
           > {
             const regions = new Map<number, CoverageRegionFields>()
             const { view } = self
-            if (this.densityStandsIn && view.initialized) {
+            if (this.coarseTierStandsIn && view.initialized) {
               const binSize = densityBinSize(view.coarseBpPerPx)
               for (const [displayedRegionIndex, bins] of self.coarseTier) {
                 regions.set(
@@ -969,7 +970,7 @@ export default function stateModelFactory(
            */
           get coverageDomain(): [number, number] | undefined {
             const hidden = self.hiddenGroupKeys
-            return this.densityStandsIn
+            return this.coarseTierStandsIn
               ? this.densityDepthMax > 0
                 ? getNiceDomain({
                     domain: [0, this.densityDepthMax],
@@ -2058,7 +2059,7 @@ export default function stateModelFactory(
           // question is asked of the pass holding both halves
           // (`inkGroupKeys`) — this directory's `hasArcBandInk`-not-`numArcs`
           // rule met one level up.
-          return self.densityStandsIn
+          return self.coarseTierStandsIn
             ? []
             : buildLanes({
                 order: self.groupOrder,
@@ -3206,13 +3207,7 @@ export default function stateModelFactory(
             setConf(self, 'showSashimiArcs', false)
           }
         }
-        function setSortSlot(sortedBy: {
-          type: string
-          pos: number
-          refName: string
-          assemblyName: string
-          tag?: string
-        }) {
+        function setSortSlot(sortedBy: SortedBy) {
           setConf(self, 'largeFeaturesFirst', false)
           setConf(self, 'splicedReadsFirst', false)
           setConf(self, 'sortedBy', sortedBy)
@@ -3338,7 +3333,6 @@ export default function stateModelFactory(
                 // the context-menu sort already goes through.
                 pos: basePaintedAt(centerLineInfo, centerLineInfo.offset),
                 refName: centerLineInfo.refName,
-                assemblyName: centerLineInfo.assemblyName,
                 tag,
               })
               // The sort anchors on the column under the center line, so reveal
@@ -3372,23 +3366,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setSortedByAtPosition(arg: {
-            type: string
-            pos: number
-            refName: string
-            tag?: string
-          }) {
-            const { type, pos, refName, tag } = arg
-            const view = self.view
-            const assemblyName = view.assemblyNames[0]
-            if (assemblyName) {
-              setSortSlot({ type, pos, refName, assemblyName, tag })
-            } else {
-              getNotificationSink(self).notify(
-                'Cannot sort: no assembly loaded in this view.',
-                'warning',
-              )
-            }
+          setSortedByAtPosition(sortedBy: SortedBy) {
+            setSortSlot(sortedBy)
           },
 
           /**
@@ -3928,7 +3907,7 @@ export default function stateModelFactory(
             // paint waits on the band's own read instead.
             render: b =>
               (
-                self.densityStandsIn
+                self.coarseTierStandsIn
                   ? coarseTierPending(self)
                   : !self.hasRegionData
               )
@@ -4089,17 +4068,6 @@ export default function stateModelFactory(
           return true
         },
         // #endregion
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Whether the band is standing in for the features right now — see
-         * `densityStandsIn`, the one term the pileup, the axis and the fetch
-         * all read.
-         */
-        get coarseTierStandsIn() {
-          return self.densityStandsIn
-        },
       }))
       .views(self => ({
         /**

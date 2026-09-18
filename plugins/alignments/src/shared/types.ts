@@ -306,7 +306,6 @@ export interface SortedBy {
   type: string
   pos: number
   refName: string
-  assemblyName: string
   tag?: string
 }
 
