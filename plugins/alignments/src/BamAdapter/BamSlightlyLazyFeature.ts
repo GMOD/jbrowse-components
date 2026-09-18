@@ -227,7 +227,7 @@ export default class BamSlightlyLazyFeature
       case 'next_ref':
         return this.next_ref
       case 'next_pos':
-        return this.next_pos
+        return this.matePos
       case 'template_length':
         return this.template_length
       case 'clipLengthAtStartOfRead':
@@ -265,7 +265,7 @@ export default class BamSlightlyLazyFeature
       type: 'match',
       pair_orientation: this.pair_orientation,
       next_ref: this.next_ref,
-      next_pos: this.next_pos,
+      next_pos: this.matePos,
       next_segment_position: this.next_segment_position,
       uniqueId: this.id(),
     }
@@ -286,6 +286,17 @@ export default class BamSlightlyLazyFeature
    */
   get nextRefId() {
     return this.isPaired() ? this.next_refid : -1
+  }
+
+  /**
+   * `next_pos` as SAM and CRAM report it: undefined where the file has none.
+   * BAM stores that as -1, which a Uint32 per-read array read as bp 4.29e9.
+   * Not an override of `next_pos` itself, which BamRecord's own
+   * `pair_orientation` reads raw.
+   */
+  get matePos() {
+    const pos = this.next_pos
+    return this.isPaired() && pos >= 0 ? pos : undefined
   }
 
   get next_segment_position() {
