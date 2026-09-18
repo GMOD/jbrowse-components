@@ -6,6 +6,7 @@
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
 autoscale
+color
 colorDomain
 connectedView
 connectedViewId
@@ -24,6 +25,7 @@ jexlFiltersSetting
 layoutMode
 legend
 lineWidth
+nodeWidth
 paneHeight
 readConnections
 repeatKey
