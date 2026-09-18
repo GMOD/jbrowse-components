@@ -123,11 +123,14 @@ its own slots and the declared shorthand.
   label's colour there is its position in synteny-core's palette, which
   nothing configures. The multi-way model keeps a synteny mode as the runtime
   mode (`ribbonColorBy.ts`), so its geometry and menu are unchanged.
-- **The synteny view's `colorBy` stays a mode string**: a view property with
-  launch keys and v4 `init` compatibility, not a track config slot.
-  `ChordSyntenyDisplay`'s `colorBy` (`default | chromosome | strand`) has no
-  field mode, so like alignments' `colorBy` it selects a scheme and is outside
-  this decision.
+- ~~**The synteny view's `colorBy` stays a mode string**: a view property with
+  launch keys and v4 `init` compatibility, not a track config slot.~~
+  Superseded by
+  [ADR-137](adr-137-the-synteny-views-colorby-is-the-colour-object-every-band-inherits.md):
+  the synteny and dotplot views' `colorBy` is the `SyntenyColor` object, held
+  as the MST property. `ChordSyntenyDisplay`'s `colorBy`
+  (`default | chromosome | strand`) has no field mode, so like alignments'
+  `colorBy` it selects a scheme and is outside this decision.
 - A review of the landing found the config editor's per-slot writes and the
   menus' scale switches at odds with the object's refusals
   ([ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md)), and

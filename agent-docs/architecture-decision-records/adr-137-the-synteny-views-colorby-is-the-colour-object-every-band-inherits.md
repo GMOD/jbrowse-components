@@ -1,0 +1,139 @@
+---
+status: Accepted
+summary: "The linear synteny and dotplot views' `colorBy` is a `SyntenyColor` object — `\"grey\" | { value, field, scale: 'none', domain }` from the display-kit colour factory, held as the MST property itself so one lift and one set of refusals run on every path — replacing the mode string and the `colorDomain` property. The structural modes are fields the views read (`strand`, `query`, `target`, `reference`, `track`) beside the measurement presets; any other field is a declared column. The object-to-mode map (`syntenyColorByOf`, `syntenyColorFor`) lives in synteny-core and the multi-way display's copy is gone; the runtime mode strings stay the colour functions' form. Supersedes ADR-131's \"the synteny view's `colorBy` stays a mode string\""
+---
+
+# ADR-137: The synteny views' `colorBy` is the colour object every band inherits
+
+## Status
+
+Accepted (2026-09-18). Supersedes one consequence of
+[ADR-131](adr-131-a-categorical-channel-is-one-config-object.md) ("The
+synteny view's `colorBy` stays a mode string"). Extends
+[ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md),
+whose factory and field-not-scale rule this object follows.
+
+## Context
+
+The grammar-of-graphics review that produced ADR-131 through ADR-136 left one
+channel spelt two ways. The multi-way synteny display's `ribbonColor` was a
+colour object — `"grey" | { value, field, scale: 'none', domain }`, where the
+field is `strand`, a measurement preset (`identity`, `mappingQual`, `dnds`)
+or a declared column — and `ribbonColorBy.ts` beside it mapped the object onto
+the synteny runtime modes. The linear synteny view's `colorBy`, shared with
+the dotplot view through `TrackColorsMixin`, was still one of those mode
+strings held as a plain `types.string`, with `coerceColorBy` admitting the
+value and mapping two retired spellings, a separate `colorDomain` property
+carrying the order the string could not, and the open arm spelt
+`attribute:<name>`: a field inside a prefix, the flat shape ADR-131 removed
+everywhere else.
+
+In ggplot2 the view's colour is the plot-level `aes()` every layer inherits
+(`inherit.aes = TRUE`), and the multi-way display's is one layer's own. They
+are one structure. v5 ships no migrations, so nothing held the string in
+place but the work of changing it.
+
+## Decision
+
+**`TrackColorsMixin.colorBy` is the `SyntenyColor` config object**
+(`packages/synteny-core/src/syntenyColorConfigSchema.ts`): `value`
+(`maybeColor`), `field`, `scale` (`none` alone) and `domain` from
+`colorChannelSlots`, with `colorChannelOptions('colorBy')` for the `value`
+shorthand, `closed` and `normalizeChannel`. The schema is the MST property,
+not a frozen snapshot: a config sub-model in a view runs its own
+`preProcessSnapshot` on `create`, `applySnapshot`, a launch spec and the
+mixin's actions (`self.colorBy = cast(snapshot)`), so the string lift, the
+refusal of an undeclared key and the list checks are one code path with the
+display objects'. `colorDomain` is `colorBy.domain`; `hideUnlabelled` and
+`trackColors` stay properties, a filter and a pin table rather than the
+channel.
+
+**The structural modes are fields.** `strand`, `query`, `target`,
+`reference` and `track` are variables an alignment carries — its
+orientation, the sequence at either end, the anchor assembly's chromosome,
+the source track — the way the alignments displays take `pairOrientation` and
+`mapq` as facet fields. `SYNTENY_VIEW_FIELDS` lists them and the slot
+documents them; a field outside that list and outside the measurement
+presets is a declared column, on the view as on the ribbon.
+
+**One map, in synteny-core.** `syntenyColorByOf(color, reads)` gives the
+runtime mode for a colour object, where `reads` are the structural fields the
+surface has a reader for — `SYNTENY_VIEW_FIELDS` for the views,
+`RIBBON_COLOR_FIELDS` (`['strand']`) for the multi-way display — so
+`{ field: 'query' }` on a ribbon is a column named `query`, as any field the
+display cannot read is. `syntenyColorFor(mode, current)` writes the object a
+menu pick means: the default keeps the field and its order under
+`scale: 'none'`, and a field keeps its `domain` only when it is the one
+already named, as ADR-133 and the multi-way menu already did.
+`syntenyColorField` names the attribute a mode reads. The multi-way display's
+`ribbonColorBy.ts` is deleted; `coerceColorBy` and the retired spellings it
+mapped are gone with the string. The runtime modes (`default`, `strand`,
+`query`, `target`, `reference`, `track`, `identity`, `mappingQuality`,
+`dnds`, `attribute:<name>`) stay the form the colour functions, legends,
+menus and the worker dispatch on.
+
+**`value` paints.** A colour string lifts into `value`, and under `none` the
+synteny display paints its match blocks and the dotplot its points in that
+colour in place of the default scheme; insertions and deletions keep their
+colours. The two colour passes take it as `valueColor`, which stands in for
+`defaultColor`. A mode name where a colour goes — `colorBy: 'strand'`, the
+old spelling — fails at load naming the value, by ADR-136's colour-slot
+check.
+
+**`RibbonColor` stays its own declaration.** ADR-135 gives each object its
+own `value` slot with the display's type and default: the ribbon's is a
+`color` defaulting to grey, the view's a `maybeColor` whose unset state is
+the red CIGAR scheme or the black point. The two share the factory, the field
+list and the map.
+
+**The dotplot view converges with the synteny view**, since the property is
+the mixin's. jbrowse-img's `--colorBy` keeps its mode names as the CLI's
+vocabulary and writes the object through `syntenyColorFor`.
+
+## Consequences
+
+- A session, config or spec writes `colorBy: { field: 'strand' }` where it
+  wrote `colorBy: 'strand'`; `{ field: 'gene_group' }` where it wrote
+  `'attribute:gene_group'`; `{ field: 'mappingQual' }` (the attribute's name)
+  where it wrote `'mappingQuality'`; and the order in `colorBy.domain` where
+  it had `colorDomain`. The default has no spelling: omit the key or write
+  `null`. Ten demo configs, `test_data/hs1_vs_mm39`, the tutorials, the
+  URL-parameters example, the website's spec scripts and the web sample data
+  changed spelling; `jbrowse validate` reports the old string as a colour-slot
+  error and a misspelt key inside the object.
+- `TrackColorsMixin.test.ts` and the two `launchInput` suites pin the four
+  structural fields, a preset, a column, the string shorthand, `null`, a
+  misspelt key, a mode string in the colour slot, and a session-spec round
+  trip.
+- The `SyntenyColor` config page, the v5 JSON schema (`anyOf [string,
+  object]` under the view's `colorBy`), the validator manifest and the model
+  pages regenerate; the URL-parameters rows for `colorBy` come off the
+  property docstring and the `#valueList` tag is gone with the string list.
+- The website's spec recipe reads the view's `colorBy` and the multi-way
+  display's `ribbonColor` through `syntenyColorByOf`, where it had a hand copy
+  of the ribbon map that still named the retired `categorical` scale.
+- `colorBy.value` is a state the views did not have: one flat colour for
+  every alignment, which the legend keys nothing for (`hasLegendKey` is the
+  mode's).
+
+## Rejected alternatives
+
+- **A frozen snapshot property with the schema's preprocess run by hand.**
+  Two lifts: the model's `preProcessSnapshot` for a spec and the action's own
+  for a menu pick, drifting apart the way ADR-131's writers had.
+- **One schema for the ribbon and the views.** The `value` defaults differ
+  (grey against the surface's own scheme), and the ribbon's page would
+  document four fields it cannot paint. ADR-135's one-factory rule is the
+  sharing the product needs.
+- **`trackColors` as `colorBy.palette` under `field: 'track'`.** A pin is
+  keyed by track id and the automatic slots avoid every pinned sibling
+  (`assignTrackColors`), which a positional palette cannot say; and
+  `RibbonColor` declares no palette.
+- **Keeping the string with a coercion for the old spellings.** v5 ships no
+  migrations, and a string that fails at load naming itself is better than
+  one coerced to the default in silence, which is what `coerceColorBy` did to
+  a typo.
+- **One structural field list for every surface.** The multi-way display has
+  no reader for `query`, `target`, `reference` or `track`; a field with no
+  reader is a declared column, and a list the display cannot honour would say
+  otherwise.
