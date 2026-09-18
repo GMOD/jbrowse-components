@@ -1,4 +1,5 @@
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { isGeneLikeType } from '@jbrowse/core/util'
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 
 import { featureType } from './util.ts'
@@ -29,19 +30,22 @@ export function buildFeatureAdmission({
     jexl,
   })
 
-  // A runtime display mode rather than a config jexl filter, but applied at the
-  // same admission stage so "what gets drawn" has one answer.
-  const geneLikeTypes = showOnlyGenes
+  // Core's gene-like rule keeps an Ensembl `ncRNA_gene` or a bare `tRNA`; the
+  // configured types and a prokaryote's top-level CDS join it.
+  const geneTypes = showOnlyGenes
     ? new Set(
-        [
-          ...config.transcriptTypes,
-          ...config.containerTypes,
-          'gene',
-          'pseudogene',
-          'CDS',
-        ].map(t => t.toLowerCase()),
+        [...config.transcriptTypes, ...config.containerTypes, 'CDS'].map(t =>
+          t.toLowerCase(),
+        ),
       )
     : undefined
+  const passesGeneGate = (feature: Feature) => {
+    if (!geneTypes) {
+      return true
+    }
+    const type = featureType(feature)
+    return isGeneLikeType(type) || geneTypes.has(type.toLowerCase())
+  }
 
   // An exact uniqueId-membership match; an empty or absent set admits
   // everything.
@@ -70,8 +74,7 @@ export function buildFeatureAdmission({
       (soloSet === undefined || soloSet.has(id)) &&
       !hiddenSet?.has(id) &&
       (!hideSource || feature.get('gbkey') !== 'Src') &&
-      (geneLikeTypes === undefined ||
-        geneLikeTypes.has(featureType(feature).toLowerCase())) &&
+      passesGeneGate(feature) &&
       filterChain.passes(feature)
     )
   }

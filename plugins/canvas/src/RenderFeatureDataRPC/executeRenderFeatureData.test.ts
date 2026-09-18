@@ -89,6 +89,18 @@ describe('buildFeatureAdmission', () => {
     expect(admit(feat('region'))).toBe(false)
   })
 
+  it('showOnlyGenes keeps the gene and RNA types no slot lists', () => {
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig({ transcriptTypes: [], containerTypes: [] }),
+      showOnlyGenes: true,
+    })
+    for (const type of ['ncRNA_gene', 'pseudogene', 'lnc_RNA', 'tRNA', 'CDS']) {
+      expect(admit(feat(type))).toBe(true)
+    }
+    expect(admit(feat('repeat_region'))).toBe(false)
+  })
+
   it('showOnlyGenes and jexlFilters both apply (admission is their AND)', () => {
     const admit = buildFeatureAdmission({
       jexl,

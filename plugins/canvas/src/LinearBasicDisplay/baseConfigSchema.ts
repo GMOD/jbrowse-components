@@ -241,9 +241,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * feature types admitted by the gene-only view (`showOnlyGenes`), plus
-       * the fallback for recognizing a CHILDLESS transcript as one of a
-       * gene's isoforms.
+       * feature types the gene-only view (`showOnlyGenes`) admits beside
+       * every gene, transcript and RNA type, plus the fallback for recognizing
+       * a CHILDLESS transcript as one of a gene's isoforms.
        */
       transcriptTypes: {
         type: 'stringArray',
