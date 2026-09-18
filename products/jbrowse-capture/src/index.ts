@@ -6,7 +6,6 @@ export {
   describePendingDisplays,
   pendingDisplayStates,
   pendingDisplayStatesInPage,
-  pendingDisplays,
   readLoadFailureInPage,
   readSessionSummary,
   waitForSession,

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { parseArgs } from './args.ts'
 import { captureJBrowse } from './capture.ts'
 import { listHubTracks } from './hub.ts'
+import { describePendingDisplays } from './sessionGate.ts'
 import { jbrowseUrl } from './url.ts'
 
 import type { ParsedArgs } from './args.ts'
@@ -46,10 +47,10 @@ WAITING
   --allowUnsettled      write the image anyway when a stage times out
 
   Every stage is waited on for you: the session holding the assembly and tracks
-  you asked for, the view resolving, tracks fetching, displays painting, and any
-  leftover "Loading…" text. A stage that times out FAILS the run rather than
-  quietly handing back a half-drawn frame — raise --timeout, or pass
-  --allowUnsettled if you want the frame as it stands.
+  you asked for, the view resolving, tracks fetching, and displays painting. A
+  config the app cannot load fails at once. A stage that times out FAILS the
+  run rather than quietly handing back a half-drawn frame — raise --timeout, or
+  pass --allowUnsettled if you want the frame as it stands.
 
 OTHER
   --headed              run with a visible browser window
@@ -172,7 +173,7 @@ async function main() {
   if (pending.length) {
     console.error(
       `warning: ${pending.length} display(s) had not finished drawing at capture time ` +
-        `(${pending.join(', ')}). Raise --timeout, or --settle for a slow remote file.`,
+        `(${describePendingDisplays(pending)}). Raise --timeout, or --settle for a slow remote file.`,
     )
   }
 }

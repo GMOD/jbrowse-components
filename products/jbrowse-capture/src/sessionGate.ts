@@ -153,17 +153,6 @@ export async function waitForSession(
   }
 }
 
-/**
- * Displays that were still reporting unpainted, or canceled, at the moment of
- * the call.
- *
- * Distinct from `unsettled`, which says a wait ran out of time. This says what
- * the page looked like when the shutter fired.
- */
-export async function pendingDisplays(page: Page): Promise<string[]> {
-  return (await pendingDisplayStates(page)).map(d => d.name)
-}
-
 /** One unpainted display and what it says about itself. */
 export interface PendingDisplay {
   /** the display TYPE, shared by every instance of it */
@@ -179,11 +168,8 @@ export interface PendingDisplay {
 }
 
 /**
- * The same census, with each display's own account of itself.
- *
- * `pendingDisplays` above answers WHICH, and that was the whole report: every
- * timeout read the same however it was caused. The phase separates the cases a
- * bare name runs together —
+ * Displays still reporting unpainted, or canceled, each with its own account of
+ * itself. The phase separates the cases a bare name runs together —
  *
  *   `loading`   still fetching. A slow page or a fetch that never returns.
  *   `error`     finished, badly. Nothing is coming; the picture is a banner.

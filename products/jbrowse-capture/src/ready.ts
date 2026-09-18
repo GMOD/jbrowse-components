@@ -31,14 +31,12 @@ export interface ReadyOptions extends SessionExpectations {
 }
 
 export interface ReadyReport {
-  /** Displays still reporting unpainted, or canceled, at the end of the wait. */
-  pending: string[]
   /**
-   * The same displays with the phase each one publishes, which is what
-   * separates a slow fetch from a display that says it finished without
-   * painting. Empty whenever `pending` is.
+   * Displays still reporting unpainted, or canceled, at the end of the wait,
+   * each with the phase it publishes: what separates a slow fetch from a
+   * display that says it finished without painting.
    */
-  pendingStates: PendingDisplay[]
+  pending: PendingDisplay[]
   /** Wait stages that hit their timeout instead of being satisfied. */
   unsettled: string[]
 }
@@ -111,9 +109,9 @@ export async function waitForFrame(
   // that painted during `settleMs` was absent from `pending` and still failed
   // the run, while the CLI's own warning recommended raising `--settle` to fix
   // exactly that.
-  const pendingStates = await pendingDisplayStates(page)
-  const canceled = pendingStates.filter(d => d.phase === 'canceled')
-  const unpainted = pendingStates.filter(d => d.phase !== 'canceled')
+  const pending = await pendingDisplayStates(page)
+  const canceled = pending.filter(d => d.phase === 'canceled')
+  const unpainted = pending.filter(d => d.phase !== 'canceled')
   if (unpainted.length > 0) {
     unsettled.push(
       `display(s) never painted: ${describePendingDisplays(unpainted)}`,
@@ -139,5 +137,5 @@ export async function waitForFrame(
             'capture the frame as it stands.',
     )
   }
-  return { pending: pendingStates.map(d => d.name), pendingStates, unsettled }
+  return { pending, unsettled }
 }

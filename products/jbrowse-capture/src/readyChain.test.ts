@@ -97,7 +97,7 @@ test('an app that never goes ready reports the stage and the census', async () =
     'the app never held itself ready',
     'display(s) never painted: pileup is loading',
   ])
-  expect(report.pending).toEqual(['pileup'])
+  expect(report.pending).toEqual([{ name: 'pileup', phase: 'loading' }])
 }, 15000)
 
 // A display in a terminal phase is not coming back, and the two comparative

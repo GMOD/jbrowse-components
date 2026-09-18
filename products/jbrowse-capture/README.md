@@ -118,12 +118,12 @@ Two fields on a successful capture:
 
 - **`unsettled`** — stages that hit their timeout. Empty unless you asked to
   proceed anyway.
-- **`pending`** — displays still reporting unpainted when the shutter fired.
-  Read after `settle`, not before it, so the frame it describes is the frame
-  that was captured; a display that finished during the settle is not in it, and
-  no longer fails the run either. Whatever is left lands in `unsettled` too,
-  carrying each display's own phase — `loading` is a slow fetch, `error` a
-  banner, `ready` a display claiming it finished without drawing.
+- **`pending`** — displays still reporting unpainted when the shutter fired,
+  each with its own phase: `loading` is a slow fetch, `error` a banner, `ready`
+  a display claiming it finished without drawing. Read after `settle`, not
+  before it, so the frame it describes is the frame that was captured; a display
+  that finished during the settle is not in it, and no longer fails the run
+  either. Whatever is left lands in `unsettled` too.
 
 ## CLI
 
