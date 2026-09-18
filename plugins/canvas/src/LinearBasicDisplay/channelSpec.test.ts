@@ -35,6 +35,7 @@ test('facet and color are the two settings, read back as the dialog shows them',
   expect(d.colorSettings).toEqual({
     value: undefined,
     field: 'subtrack',
+    scale: undefined,
     domain: [],
     palette: ['red'],
   })
@@ -88,6 +89,7 @@ test('an object replaces the channel whole, and null clears it', () => {
   expect(d.colorSettings).toEqual({
     value: 'red',
     field: '',
+    scale: undefined,
     domain: [],
     palette: [],
   })
@@ -198,4 +200,27 @@ describe('the Group by dialog applies a channel spec', () => {
     d.applyDisplaySettings({ color: 'purple' })
     expect(d.groupByChannelSpec(undefined, false)).toEqual({ facet: null })
   })
+})
+
+test('Solid color keeps the field, its order and palette under scale none for the way back', () => {
+  const d = display()
+  d.setColorScale({ field: 'biotype', domain: ['lncRNA'], palette: ['red'] })
+  d.setFeatureColor('purple')
+  expect(d.colorByMode).toBe('solid')
+  expect(d.colorEncoding).toBeUndefined()
+  expect(d.channelSpec.color).toBe('purple')
+  expect(d.colorSettings).toMatchObject({
+    value: 'purple',
+    field: 'biotype',
+    scale: 'none',
+  })
+  expect(d.colorByAttribute).toBe('biotype')
+  d.colorByField('biotype')
+  expect(d.colorByMode).toBe('attribute')
+  expect(d.colorEncoding?.domain).toEqual(['lncRNA'])
+  expect(d.colorEncoding?.color('lncRNA')).toBe('red')
+  d.setFeatureColor(undefined)
+  expect(d.colorByMode).toBe('default')
+  expect(d.colorSettings).toMatchObject({ field: 'biotype', scale: 'none' })
+  expect(d.groupByChannelSpec(undefined, false)).toEqual({ facet: null })
 })

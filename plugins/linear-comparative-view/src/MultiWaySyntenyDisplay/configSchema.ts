@@ -86,9 +86,9 @@ export function configSchemaFactory() {
       },
       /**
        * #slot ribbonColor
-       * `"rgba(130,130,130,0.3)"` paints every ribbon; `{ scale: "strand" }`
-       * a synteny scheme; `{ field: "group" }` a declared column. See
-       * [RibbonColor](RibbonColor).
+       * `"rgba(130,130,130,0.3)"` paints every ribbon; `{ field: "strand" }`
+       * the record's strand, `{ field: "identity" }` a preset ramp and
+       * `{ field: "group" }` a declared column. See [RibbonColor](RibbonColor).
        */
       ribbonColor: ribbonColorConfigSchema,
       /**

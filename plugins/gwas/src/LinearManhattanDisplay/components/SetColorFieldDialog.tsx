@@ -4,6 +4,8 @@ import { SubmitDialog } from '@jbrowse/core/ui'
 import TextField from '@mui/material/TextField'
 import { observer } from 'mobx-react'
 
+import { LD_FIELD } from '../colorConfigSchema.ts'
+
 // Free text rather than a pick list: the fields a file carries are only known
 // once its features are, and a BED extra column or GFF attribute is named by
 // whoever wrote the file. Submitting switches the scheme to field coloring in
@@ -18,7 +20,9 @@ const SetColorFieldDialog = observer(function SetColorFieldDialog({
   }
   handleClose: () => void
 }) {
-  const [value, setValue] = useState(display.color.field)
+  const [value, setValue] = useState(
+    display.color.field === LD_FIELD ? '' : display.color.field,
+  )
   const field = value.trim()
 
   return (

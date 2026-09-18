@@ -1,6 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
 
 import {
   FEATURE_DEFAULT_COLOR,
@@ -60,7 +61,7 @@ export function colorViews(self: ColorHost) {
      */
     get colorByMode(): 'default' | 'strand' | 'attribute' | 'solid' {
       const { value, field } = this.colorSettings
-      if (field) {
+      if (paintedScale(this.colorSettings, 'categorical') === 'categorical') {
         return field === STRAND_FIELD ? 'strand' : 'attribute'
       }
       if (value === undefined) {
@@ -93,6 +94,7 @@ export function colorViews(self: ColorHost) {
       return {
         value: self.conf.color.value,
         field: getConf(self, ['color', 'field']),
+        scale: getConf(self, ['color', 'scale']),
         domain: getConf(self, ['color', 'domain']),
         palette: getConf(self, ['color', 'palette']),
       }

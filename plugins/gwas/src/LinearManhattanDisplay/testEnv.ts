@@ -25,7 +25,7 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
  * it is a config slot, and the fetch autorun runs on the leading edge: a slot
  * written after the display attaches is a *user flipping the setting*, which
  * legitimately costs a refetch. A session restoring a track with
- * `color: { scale: 'ld' }` has the slot before `afterAttach`, so the harness
+ * `color: { field: 'ld' }` has the slot before `afterAttach`, so the harness
  * must too, or every LD test measures one round trip that production never
  * makes.
  */

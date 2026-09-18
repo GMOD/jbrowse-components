@@ -46,6 +46,7 @@ import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 
+import { LD_FIELD } from './colorConfigSchema.ts'
 import { LD_LEGEND, LD_LEGEND_TITLE } from './ldBins.ts'
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
@@ -242,7 +243,7 @@ export function stateModelFactory(
             field,
             scale: paintedScale(
               { scale: getConf(self, ['color', 'scale']), field },
-              'categorical',
+              field === LD_FIELD ? 'ld' : 'categorical',
             ),
             domain: getConf(self, ['color', 'domain']),
             palette: getConf(self, ['color', 'palette']),
@@ -529,7 +530,7 @@ export function stateModelFactory(
          * The condition is the auto-pick's own, the `ld` scale rather than
          * `ldColoringActive`: what invalidates the load is the WRITE, and the
          * autorun writes whether or not an `ldAdapter` is configured. Gating
-         * this on the adapter left `{ scale: 'ld' }` with none — a config the
+         * this on the adapter left `{ field: 'ld' }` with none — a config the
          * getters above document as supported — exporting the empty lane this
          * exists to prevent. On screen that is one invisible tick; an export samples
          * `svgReady` once, and sampling it here captured the doomed load and
@@ -580,52 +581,8 @@ export function stateModelFactory(
           return []
         },
       }))
-      .actions(self => ({
-        /**
-         * #action
-         * open the feature details widget for a clicked point
-         */
-        selectFeature(hit: ManhattanHit) {
-          openFeatureWidget(self, {
-            uniqueId: `manhattan-${hit.refName}-${hit.start}`,
-            refName: hit.refName,
-            start: hit.start,
-            end: hit.end,
-            score: hit.score,
-            r2: hit.r2,
-          })
-        },
-        /**
-         * #action
-         * Stage a region as fetched — the store's raw write with this
-         * display's payload shape, so a test stands up a loaded display in one
-         * call. Production goes through `ctx.commitRegion`.
-         */
-        setRpcData(idx: number, data: ManhattanRpcResult, region: Region) {
-          self.setLoadedRegion(idx, region, storedManhattanData(data))
-        },
-        /**
-         * #action
-         * Paints every point `value`, or colors by r² to the index SNP. The
-         * rest of the object rides along, so switching back to the field
-         * finds its order and palette.
-         */
-        setColorScale(scale: Exclude<ManhattanColorScale, 'categorical'>) {
-          const { value, field, domain, palette } = self.color
-          self.configuration.setSubschema('color', {
-            value,
-            field,
-            domain,
-            palette,
-            scale,
-          })
-        },
-        /**
-         * #action
-         * Color by the values of a feature field. Re-picking the field keeps
-         * its order and palette; a new field starts from neither.
-         */
-        colorByField(field: string) {
+      .actions(self => {
+        function colorBy(field: string) {
           const { value, domain, palette } = self.color
           self.configuration.setSubschema(
             'color',
@@ -633,51 +590,101 @@ export function stateModelFactory(
               ? { value, field, domain, palette }
               : { value, field },
           )
-        },
-        /**
-         * #action
-         * Score to draw the threshold line at; undefined removes it.
-         */
-        setSignificanceLine(score?: number) {
-          setConf(self, 'significanceLine', score)
-        },
-        /**
-         * #action
-         */
-        setIndexSnp(snp?: string) {
-          self.indexSnp = snp
-        },
-        /**
-         * #action
-         * right-click "Color by LD to this SNP": switch into LD mode and pin the
-         * index on the clicked point, so the auto-pick stops tracking the top hit.
-         * Keyed by chr:bp (1-based) to match the worker's posKey. All mutations
-         * happen in one action so rpcProps settles once and only a single recolor
-         * fetch fires.
-         */
-        colorByLdToHit(hit: ManhattanHit) {
-          const { value, field, domain, palette } = self.color
-          self.configuration.setSubschema('color', {
-            value,
-            field,
-            domain,
-            palette,
-            scale: 'ld',
-          })
-          self.indexSnp = `${hit.refName}:${hit.start + 1}`
-          self.indexSnpPinned = true
-        },
-        /**
-         * #action
-         * release a pinned index back to auto-tracking, seeded at the current top
-         * hit (the auto-pick autorun then keeps it on the top hit as data loads)
-         */
-        // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST action named for its semantic meaning, not a React hook
-        useTopHitAsIndex() {
-          self.indexSnpPinned = false
-          self.indexSnp = self.topSnp
-        },
-      }))
+        }
+        return {
+          /**
+           * #action
+           * open the feature details widget for a clicked point
+           */
+          selectFeature(hit: ManhattanHit) {
+            openFeatureWidget(self, {
+              uniqueId: `manhattan-${hit.refName}-${hit.start}`,
+              refName: hit.refName,
+              start: hit.start,
+              end: hit.end,
+              score: hit.score,
+              r2: hit.r2,
+            })
+          },
+          /**
+           * #action
+           * Stage a region as fetched — the store's raw write with this
+           * display's payload shape, so a test stands up a loaded display in one
+           * call. Production goes through `ctx.commitRegion`.
+           */
+          setRpcData(idx: number, data: ManhattanRpcResult, region: Region) {
+            self.setLoadedRegion(idx, region, storedManhattanData(data))
+          },
+          /**
+           * #action
+           * `none` paints every point `value`; `categorical` paints the field
+           * again. The rest of the object rides along, so switching back to
+           * the field finds its order and palette.
+           */
+          setColorScale(scale: Exclude<ManhattanColorScale, 'ld'>) {
+            const { value, field, domain, palette } = self.color
+            self.configuration.setSubschema('color', {
+              value,
+              field,
+              domain,
+              palette,
+              scale,
+            })
+          },
+          /**
+           * #action
+           * Color by the values of a feature field. Re-picking the field keeps
+           * its order and palette; a new field starts from neither.
+           */
+          colorByField(field: string) {
+            colorBy(field)
+          },
+          /**
+           * #action
+           * Color each point by its r² to the index SNP: the `ld` field, read
+           * from the adapter's `ldAdapter`.
+           */
+          colorByLd() {
+            colorBy(LD_FIELD)
+          },
+          /**
+           * #action
+           * Score to draw the threshold line at; undefined removes it.
+           */
+          setSignificanceLine(score?: number) {
+            setConf(self, 'significanceLine', score)
+          },
+          /**
+           * #action
+           */
+          setIndexSnp(snp?: string) {
+            self.indexSnp = snp
+          },
+          /**
+           * #action
+           * right-click "Color by LD to this SNP": switch into LD mode and pin the
+           * index on the clicked point, so the auto-pick stops tracking the top hit.
+           * Keyed by chr:bp (1-based) to match the worker's posKey. All mutations
+           * happen in one action so rpcProps settles once and only a single recolor
+           * fetch fires.
+           */
+          colorByLdToHit(hit: ManhattanHit) {
+            colorBy(LD_FIELD)
+            self.indexSnp = `${hit.refName}:${hit.start + 1}`
+            self.indexSnpPinned = true
+          },
+          /**
+           * #action
+           * release a pinned index back to auto-tracking, seeded at the current top
+           * hit (the auto-pick autorun then keeps it on the top hit as data loads)
+           */
+          // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST action named for its semantic meaning, not a React hook
+          useTopHitAsIndex() {
+            self.indexSnpPinned = false
+            self.indexSnp = self.topSnp
+          },
+        }
+      })
       .views(self => ({
         /**
          * #method
@@ -763,7 +770,7 @@ export function stateModelFactory(
                   disabledHelpText:
                     'Requires a configured LD (PLINK .ld) adapter',
                   onClick: () => {
-                    self.setColorScale('ld')
+                    self.colorByLd()
                   },
                 },
               ],

@@ -1,6 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import {
+  COLOR_SCALES,
+  colorChannelOptions,
+  colorChannelSlots,
+  colorPaletteSlot,
+  colorRampSlot,
   normalizeChannel,
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -14,6 +19,7 @@ import { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
 
+import type { ColorScaleName } from '@jbrowse/display-kit/colorConfigSchema'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export const MARK_SHAPES = ['bar', 'point', 'span'] as const
@@ -24,8 +30,7 @@ export type MarkSourceName = (typeof MARK_SOURCES)[number]
 
 export const DEFAULT_POINT_DIAMETER_PX = 4
 
-const MARK_COLOR_SCALES = ['none', 'categorical', 'linear', 'log'] as const
-export type MarkColorScale = (typeof MARK_COLOR_SCALES)[number]
+export type MarkColorScale = ColorScaleName
 
 const MARK_GLYPH_SCALES = ['none', 'categorical'] as const
 export type MarkGlyphScale = (typeof MARK_GLYPH_SCALES)[number]
@@ -65,67 +70,20 @@ const markColorSchema = ConfigurationSchema(
       description: 'CSS colour or jexl callback',
       contextVariable: ['feature'],
     },
-    /**
-     * #slot marks.encoding.color.field
-     * The feature field a scale reads — or a jexl callback over `feature`,
-     * which is slower per feature and so the opt-in.
-     */
-    field: {
-      type: 'string',
-      defaultValue: '',
-      description: 'feature field, or jexl callback',
-    },
-    /**
-     * #slot marks.encoding.color.scale
-     * How `field` becomes a colour. `categorical` hands out palette entries
-     * per distinct value; `linear` and `log` read the value through `domain`
-     * into `ramp`. `none` paints `value`, keeping a `field` for a switch
-     * back. Unset beside a `field`, it is `linear` with a `ramp` and
-     * `categorical` without.
-     */
-    scale: {
-      type: 'maybeStringEnum',
-      model: types.enumeration('MarkColorScale', [...MARK_COLOR_SCALES]),
-      description: 'none, categorical, linear or log; unset follows field',
-    },
-    /**
-     * #slot marks.encoding.color.palette
-     * The CSS colours a categorical scale hands out, in order. Empty uses the
-     * built-in qualitative palette.
-     */
-    palette: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'categorical colours, in order',
-    },
-    /**
-     * #slot marks.encoding.color.domain
-     * For a categorical scale, the values in legend order, walking the
-     * palette from the first entry and continuing into the default palette
-     * past its end; a value left out derives its colour from itself and never
-     * takes a listed value's, so every region agrees. For a linear or log scale, the
-     * `[min, max]` the ramp spans; empty uses each region's own extremes.
-     */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'category order, or a ramp [min, max]',
-    },
-    /**
-     * #slot marks.encoding.color.ramp
-     * A linear or log scale's ramp: `["viridis"]`, or two or more CSS colour
-     * stops spaced evenly. Empty is viridis.
-     */
-    ramp: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'viridis, or CSS colour stops',
-    },
+    ...colorChannelSlots({
+      scales: COLOR_SCALES,
+      scaleName: 'MarkColorScale',
+      field:
+        'the feature field a scale reads, or a jexl callback over feature, which is slower per feature and so the opt-in',
+      scale:
+        'how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without',
+      domain:
+        "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes",
+    }),
+    ...colorPaletteSlot,
+    ...colorRampSlot,
   },
-  {
-    shorthand: 'value',
-    preProcessSnapshot: snap => normalizeChannel(snap, 'color'),
-  },
+  colorChannelOptions('color'),
 )
 
 const markGlyphSchema = ConfigurationSchema(
@@ -188,6 +146,7 @@ const markGlyphSchema = ConfigurationSchema(
   },
   {
     shorthand: 'value',
+    closed: true,
     preProcessSnapshot: snap => normalizeChannel(snap, 'glyph'),
   },
 )
@@ -249,6 +208,7 @@ const markValueSchema = ConfigurationSchema(
   },
   {
     shorthand: 'field',
+    closed: true,
     preProcessSnapshot: snap => normalizeChannel(snap, 'y'),
   },
 )

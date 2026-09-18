@@ -35,6 +35,7 @@ export function laneDisplayConfig({
     color: {
       value: `jexl:get(feature,'laneColor')`,
       field: '',
+      scale: undefined,
       domain: [],
       palette: [],
     },

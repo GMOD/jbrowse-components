@@ -23,7 +23,7 @@ function legendRow(items: MenuItem[]) {
 describe('Manhattan showLegend', () => {
   it('is on by default, from the schema rather than a volatile initializer', () => {
     const { display } = createTestEnvironment({
-      color: { scale: 'ld' },
+      color: { field: 'ld' },
     }).createDisplay()
     expect(display.showLegend).toBe(true)
   })
@@ -33,7 +33,7 @@ describe('Manhattan showLegend', () => {
   // which outlives the display instance.
   it('an explicit off is written to the config node, so it survives a retick', () => {
     const { display } = createTestEnvironment({
-      color: { scale: 'ld' },
+      color: { field: 'ld' },
     }).createDisplay()
     display.setShowLegend(false)
 

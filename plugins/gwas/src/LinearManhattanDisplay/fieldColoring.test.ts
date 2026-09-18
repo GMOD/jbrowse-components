@@ -120,7 +120,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     display.setRpcData(0, payload(), REGION)
     expect(display.colorScales).toEqual([])
 
-    const ld = createTestEnvironment({ color: { scale: 'ld' } }).createDisplay()
+    const ld = createTestEnvironment({ color: { field: 'ld' } }).createDisplay()
       .display
     const [scale] = ld.colorScales
     expect(scale?.title).toBe(LD_LEGEND_TITLE)
@@ -132,7 +132,7 @@ describe('LinearManhattanDisplay field coloring', () => {
   // Without it an export where nothing matched the index SNP is an all-grey
   // plot under a full r² key that implies the colors mean something.
   it('a missing index SNP adds a note row saying why every point is grey', () => {
-    const ld = createTestEnvironment({ color: { scale: 'ld' } }).createDisplay()
+    const ld = createTestEnvironment({ color: { field: 'ld' } }).createDisplay()
       .display
     ld.setIndexSnp('ctgA:500')
     ld.setRpcData(0, { ...payload(), indexFound: false }, REGION)
@@ -173,7 +173,7 @@ describe('LinearManhattanDisplay field coloring', () => {
 
   it('leaving LD coloring restores the constant', () => {
     const { display } = createTestEnvironment({
-      color: { value: 'rebeccapurple', scale: 'ld' },
+      color: { value: 'rebeccapurple', field: 'ld' },
     }).createDisplay()
     display.setColorScale('none')
     expect(display.color).toMatchObject({
@@ -182,7 +182,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
-  it('a scale switch keeps the field, its order and palette for the way back', () => {
+  it('Single color keeps the field, its order and palette for the way back', () => {
     const { display } = createTestEnvironment({
       color: {
         field: 'population',
@@ -192,9 +192,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     }).createDisplay()
     display.setColorScale('none')
     expect(display.color.scale).toBe('none')
-    display.setColorScale('ld')
-    expect(display.color.scale).toBe('ld')
-    display.colorByField('population')
+    display.setColorScale('categorical')
     expect(display.color).toMatchObject({
       field: 'population',
       scale: 'categorical',
@@ -203,13 +201,32 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
-  it('reads a field under ld as ld, and refuses an undeclared key', () => {
-    const { display } = createTestEnvironment().createDisplay()
-    display.configuration.setSubschema('color', {
-      field: 'population',
+  it('LD is the ld field, so it replaces the field and reads as the ld scale', () => {
+    const { display } = createTestEnvironment({
+      color: { field: 'population', domain: ['EUR'] },
+    }).createDisplay()
+    display.colorByLd()
+    expect(display.color).toMatchObject({
+      field: 'ld',
       scale: 'ld',
+      domain: [],
     })
-    expect(display.color.scale).toBe('ld')
+    expect(display.ldColoringActive).toBe(true)
+    display.setColorScale('none')
+    expect(display.color).toMatchObject({ field: 'ld', scale: 'none' })
+    expect(display.ldColoringActive).toBe(false)
+    display.colorByField('population')
+    expect(display.color).toMatchObject({
+      field: 'population',
+      scale: 'categorical',
+    })
+  })
+
+  it('refuses a scale the display cannot paint, and an undeclared key', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    expect(() =>
+      display.configuration.setSubschema('color', { scale: 'ld' }),
+    ).toThrow()
     expect(() =>
       display.configuration.setSubschema('color', { colorBy: 'ld' }),
     ).toThrow('ManhattanColor takes value, field, scale, domain and palette')

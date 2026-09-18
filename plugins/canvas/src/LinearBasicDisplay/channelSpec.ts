@@ -3,6 +3,7 @@ import {
   isJexl,
   stringToJexlExpression,
 } from '@jbrowse/core/util/jexlStrings'
+import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { FeatureFacet } from './facet.ts'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -50,13 +51,9 @@ export function facetOf(facet: FeatureFacet | undefined): ChannelSpec['facet'] {
     : null
 }
 
-export function colorOf({
-  value,
-  field,
-  domain,
-  palette,
-}: ColorSetting): ChannelSpec['color'] {
-  return field
+export function colorOf(color: ColorSetting): ChannelSpec['color'] {
+  const { value, field, domain, palette } = color
+  return paintedScale(color, 'categorical') === 'categorical'
     ? {
         field,
         ...(domain.length ? { domain: [...domain] } : {}),

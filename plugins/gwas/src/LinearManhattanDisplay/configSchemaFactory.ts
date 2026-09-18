@@ -47,7 +47,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * Taller track, LocusZoom-style coloring: `color: { scale: 'ld' }` colors
+ * Taller track, LocusZoom-style coloring: `color: { field: 'ld' }` colors
  * each point by its r² to the index SNP read from the adapter's `ldAdapter`
  * sub-adapter. The LD data is a second source on `GWASAdapter` (mirroring
  * MAF's `annotationAdapter`), so it nests under `adapter`, while display-only
@@ -69,7 +69,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   },
  *   displayDefaults: {
  *     height: 400,
- *     color: { scale: 'ld' },
+ *     color: { field: 'ld' },
  *   },
  * }
  * ```
@@ -107,7 +107,7 @@ export function configSchemaFactory() {
        * #slot color
        * `"goldenrod"` or a `jexl:` callback paints every point;
        * `{ field: "population" }` gives each value a palette colour with a
-       * key; `{ scale: "ld" }` colours by r² to the index SNP. See
+       * key; `{ field: "ld" }` colours by r² to the index SNP. See
        * [ManhattanColor](ManhattanColor).
        */
       color: manhattanColorConfigSchema,

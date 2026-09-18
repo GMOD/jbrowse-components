@@ -22,9 +22,9 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
  * Route each shorthand `displayDefaults: {...}` setting to the display types
  * whose slot of that name takes its value, so slot names disambiguate across
  * displays (`color` → LinearVariantDisplay, `strokeColor` →
- * ChordVariantDisplay) and so do the values: `color: { scale: 'ld' }` on a
- * FeatureTrack reaches the Manhattan display and not the feature display,
- * whose `color` has no scale. A key no display declares is an `unknownKeys`
+ * ChordVariantDisplay) and so do the values: `displayMode: 'compact'` on a
+ * FeatureTrack reaches the feature display and not the arc display, whose
+ * `displayMode` is `arcs | semicircles`. A key no display declares is an `unknownKeys`
  * entry, and one every declaring display refuses a `refused` entry carrying
  * each display's reason.
  */

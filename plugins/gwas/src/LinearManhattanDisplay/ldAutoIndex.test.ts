@@ -54,7 +54,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // topSnp a fixpoint.
   it('settles on the global top hit without refetching forever', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      color: { scale: 'ld' },
+      color: { field: 'ld' },
     })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
@@ -95,7 +95,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(display.indexSnp).toBeUndefined()
     const beforeToggle = mockRpcCall.mock.calls.length
 
-    display.setColorScale('ld')
+    display.colorByLd()
     await settle(8)
 
     await waitFor(() => {
@@ -111,7 +111,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // livelock as above, reached a different way.
   it('breaks a score tie by region index, not by which region landed first', () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      color: { scale: 'ld' },
+      color: { field: 'ld' },
     })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
@@ -145,7 +145,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // shut until the index the data was colored under is the one being kept.
   it('opens the export gate only on data colored under the adopted index', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      color: { scale: 'ld' },
+      color: { field: 'ld' },
     })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
@@ -175,7 +175,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // empty lane anyway.
   it('opens the gate on adopted-index data with no ldAdapter configured', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      color: { scale: 'ld' },
+      color: { field: 'ld' },
       ldAdapter: false,
     })
     mockRpcCall.mockImplementation(

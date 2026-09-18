@@ -1150,13 +1150,18 @@ export default function baseStateModelFactory(
         /**
          * #action
          * Paints every feature one constant, a CSS color or a `jexl:`
-         * callback; undefined lets each feature's own color paint.
+         * callback; undefined lets each feature's own color paint. The field,
+         * its order and palette stay under `scale: 'none'` for the way back.
          */
         setFeatureColor(color?: string) {
-          self.configuration.setSubschema(
-            'color',
-            color === undefined ? {} : { value: color },
-          )
+          const { field, domain, palette } = self.colorSettings
+          self.configuration.setSubschema('color', {
+            ...(color === undefined ? {} : { value: color }),
+            field,
+            domain: [...domain],
+            palette: [...palette],
+            scale: 'none',
+          })
         },
 
         /**
@@ -1511,7 +1516,7 @@ export default function baseStateModelFactory(
         field: string | undefined,
         colorByGroup: boolean,
       ): ChannelSpec {
-        const { field: colorField } = self.colorSettings
+        const colorField = self.colorEncoding?.field ?? ''
         const current = facetOf(self.facet)
         const wasGroupColor =
           colorField !== '' &&
@@ -1626,7 +1631,7 @@ export default function baseStateModelFactory(
               model: self,
               handleClose,
               color: self.colorSettings.value,
-              colorField: self.colorSettings.field,
+              colorField: self.colorEncoding?.field ?? '',
             },
           ])
         },

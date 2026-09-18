@@ -37,6 +37,7 @@ export function mockDisplayConfig({
     color: {
       value: undefined,
       field: '',
+      scale: undefined,
       domain: [],
       palette: [],
       ...(typeof color === 'string' ? { value: color } : color),

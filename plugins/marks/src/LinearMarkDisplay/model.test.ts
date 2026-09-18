@@ -416,6 +416,26 @@ test('a bar or point naming no y is refused where the config is read', () => {
   ).not.toThrow()
 })
 
+test('an encoding channel refuses a key it does not declare', () => {
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'span', encoding: { color: { feild: 'strand' } } },
+    ]).createDisplay(),
+  ).toThrow(
+    'MarkColor takes value, field, scale, domain, palette and ramp, not feild',
+  )
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'point', encoding: { y: 'score', glyph: { shape: 'disc' } } },
+    ]).createDisplay(),
+  ).toThrow('MarkGlyph takes value, field, scale, range and domain, not shape')
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'bar', encoding: { y: { field: 'score', min: 0 } } },
+    ]).createDisplay(),
+  ).toThrow('MarkValue takes field, scale, domain and resolve, not min')
+})
+
 test('two independent marks are refused where the config is read', () => {
   expect(() =>
     createTestEnvironment([

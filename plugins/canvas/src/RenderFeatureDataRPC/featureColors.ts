@@ -1,5 +1,6 @@
 import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -11,13 +12,14 @@ export const FEATURE_DEFAULT_COLOR = featureDefaultColor
 export const UTR_DEFAULT_COLOR = utrDefaultColor
 
 /**
- * The color channel's field, or undefined while `color.field` is empty and
- * `color.value` paints.
+ * The color channel's field, or undefined while `color.value` paints: no
+ * field named, or `scale: 'none'` beside one.
  */
-export function featureColorScale({
-  field,
-  domain,
-  palette,
-}: Pick<ColorSetting, 'field' | 'domain' | 'palette'>) {
-  return field ? categoricalField(field, { domain, palette }) : undefined
+export function featureColorScale(
+  color: Pick<ColorSetting, 'field' | 'scale' | 'domain' | 'palette'>,
+) {
+  const { field, domain, palette } = color
+  return paintedScale(color, 'categorical') === 'categorical'
+    ? categoricalField(field, { domain, palette })
+    : undefined
 }

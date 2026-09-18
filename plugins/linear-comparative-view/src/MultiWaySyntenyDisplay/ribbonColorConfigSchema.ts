@@ -1,32 +1,29 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { normalizeChannel } from '@jbrowse/display-kit/colorConfigSchema'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  colorChannelOptions,
+  colorChannelSlots,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
-// How a ribbon takes its colour: `none` paints `value`; `categorical` reads a
-// column the table declares in `attributeColumns`; the rest are the synteny
-// view's schemes of the same names.
-export const RIBBON_COLOR_SCALES = [
-  'none',
-  'categorical',
-  'strand',
-  'identity',
-  'mappingQuality',
-  'dnds',
-] as const
+/**
+ * The ribbon's `scale` is the set/map switch alone: a field's type is read
+ * off the fetched values, a span for numbers and a label list for text.
+ */
+export const RIBBON_COLOR_SCALES = ['none'] as const
 
 /**
  * #config RibbonColor
  * #category display
  * The multi-way synteny display's `ribbonColor` setting: one colour for every
- * ribbon, a scheme the synteny view also paints, or a column the table
- * declares in `attributeColumns`. A string is the constant.
+ * ribbon, or a field each ribbon carries — the record's strand, a measurement
+ * on its preset ramp (`identity`, `mappingQual`, `dnds`), or a column the
+ * table declares in `attributeColumns`. A string is the constant.
  *
  * #example
  * ```js
  * { type: 'MultiWaySyntenyDisplay', ribbonColor: 'rgba(130,130,130,0.3)' }
  * ```
  * ```js
- * { type: 'MultiWaySyntenyDisplay', ribbonColor: { scale: 'strand' } }
+ * { type: 'MultiWaySyntenyDisplay', ribbonColor: { field: 'strand' } }
  * ```
  * ```js
  * {
@@ -41,57 +38,24 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
     /**
      * #slot value
      * The colour of every ribbon under the `none` scale, and of a pair
-     * carrying no value under the others. Writing `ribbonColor: "grey"`
-     * lands here. Every scale keeps its opacity.
+     * carrying no value under a field. Writing `ribbonColor: "grey"` lands
+     * here. Every field keeps its opacity.
      */
     value: {
       type: 'color',
       description: 'the color of the ribbons connecting adjacent lanes',
       defaultValue: 'rgba(130,130,130,0.3)',
     },
-    /**
-     * #slot field
-     * A column the table declares in `attributeColumns`: a ramp over the
-     * values seen for numbers, one colour per label for text (or the colour a
-     * `color` column put beside it).
-     */
-    field: {
-      type: 'string',
-      defaultValue: '',
-      description: 'a declared attribute column to color by',
-    },
-    /**
-     * #slot scale
-     * What colours a ribbon. `none` paints `value`; `categorical` reads
-     * `field`; `strand` reads the record's strand — the two placements'
-     * orientations against the anchor multiplied out — and not the drawn
-     * twist, so a lane drawn flipped still shows its inversions; `identity`,
-     * `mappingQuality` and `dnds` paint the synteny view's ramps. Unset, a
-     * `field` reads through `categorical` and no field paints `value`. A
-     * `field` under another scale is kept for a switch back.
-     */
-    scale: {
-      type: 'maybeStringEnum',
-      model: types.enumeration('RibbonColorScale', [...RIBBON_COLOR_SCALES]),
-      description:
-        'none, categorical, strand, identity, mappingQuality or dnds; unset follows field',
-    },
-    /**
-     * #slot domain
-     * The order a text column's labels take: the labels listed here first,
-     * the rest sorted. A label's colour is its position, so this moves the key
-     * and the ribbons together. Left empty the labels stay in the order the
-     * fetches first met them.
-     */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: "the order a text column's labels take",
-    },
+    ...colorChannelSlots({
+      scales: RIBBON_COLOR_SCALES,
+      scaleName: 'RibbonColorScale',
+      field:
+        "what colours a ribbon: strand reads the record's strand against the anchor (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)",
+      scale:
+        'none paints value and keeps the field for a switch back; unset, a field paints',
+      domain:
+        "the order a text column's labels take: the labels listed here first, the rest sorted; a label's colour is its position, so this moves the key and the ribbons together; left empty the labels stay in the order the fetches first met them",
+    }),
   },
-  {
-    shorthand: 'value',
-    closed: true,
-    preProcessSnapshot: snap => normalizeChannel(snap, 'ribbonColor'),
-  },
+  colorChannelOptions('ribbonColor'),
 )

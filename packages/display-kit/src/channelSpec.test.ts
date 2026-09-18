@@ -64,9 +64,10 @@ test.each([
   [{ facet: { domain: ['a'] } }, 'facet is a field name'],
   [{ color: {} }, 'color is a CSS color'],
   [{ color: '' }, 'color is a CSS color'],
+  [{ color: { field: 'x', scale: 'none' } }, 'color is a CSS color'],
   [
-    { color: { field: 'x', scale: 'categorical' } },
-    'FeatureColor takes value, field, domain and palette, not scale',
+    { color: { field: 'x', ramp: ['red'] } },
+    'FeatureColor takes value, field, scale, domain and palette, not ramp',
   ],
   [{ color: { field: 'x', palette: 'red' } }, 'color.palette is a list'],
   [{ color: { palette: ['red'] } }, 'color is a CSS color'],

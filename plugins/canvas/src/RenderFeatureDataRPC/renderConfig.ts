@@ -74,9 +74,6 @@ export interface DisplayConfig {
   // union makes any new direct read a type error rather than a Float32Array full
   // of NaN.
   featureHeight: number | string
-  // The `color` object: a `value` that is a `maybeColor` (undefined means
-  // unset, so the feature's own BED color paints it), or a `field` that paints
-  // through a categorical scale and wins over the value.
   color: ColorSetting
   // `maybeColor` slots, as `color.value`.
   connectorColor: string | undefined

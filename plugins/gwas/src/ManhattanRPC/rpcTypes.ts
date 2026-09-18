@@ -18,11 +18,12 @@ export function defaultGlyph(feature: Feature) {
   return feature.get('svtype') === 'INS' ? GLYPH_TRIANGLE : GLYPH_DISC
 }
 
-// How Manhattan points take their colour: `none` paints `value`,
-// `categorical` a palette colour per value of `field`, `ld` the r² to the index
-// SNP.
-export const MANHATTAN_COLOR_SCALES = ['none', 'categorical', 'ld'] as const
-export type ManhattanColorScale = (typeof MANHATTAN_COLOR_SCALES)[number]
+/**
+ * How the worker paints Manhattan points: `none` is `value`, `categorical` a
+ * palette colour per value of `field`, and `ld` the r² to the index SNP,
+ * which the display resolves from `field: 'ld'`.
+ */
+export type ManhattanColorScale = 'none' | 'categorical' | 'ld'
 
 /** The display's `color` object, carried to the worker whole. */
 export interface ManhattanColor {

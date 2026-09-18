@@ -60,9 +60,9 @@ test('display settings route by slot name across a track’s displays', () => {
 })
 
 // A FeatureTrack offers five displays, three of which declare `color` in
-// different shapes: the feature display's field-or-constant object, the
-// Manhattan display's object with a scale, and the arc and multi-row
-// displays' plain colour. A value goes to the displays that take it.
+// different shapes: the feature and Manhattan displays' colour objects, and
+// the arc and multi-row displays' plain colour. A value goes to the displays
+// that take it.
 function hydrateFeatureTrack(displayDefaults: Record<string, unknown>) {
   const pluginManager = makePluginManager()
   return pluginManager.getTrackType('FeatureTrack').configSchema.create(
@@ -81,16 +81,28 @@ function colorOf(conf: { displays: AnyConfigurationModel[] }, type: string) {
   return getSnapshot(display(conf, type).color)
 }
 
-test('a colour with a scale reaches only the display whose colour has one', () => {
-  const conf = hydrateFeatureTrack({ color: { scale: 'ld' } })
-  expect(colorOf(conf, 'LinearManhattanDisplay')).toEqual({ scale: 'ld' })
-  expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({})
-})
+// `ld` is a field the Manhattan display computes, so `{ field: 'ld' }` is a
+// field like any other to the routing and reaches the feature display too,
+// where it paints a field the features lack (ADR-135).
+test.each(['type', 'ld'])(
+  'a colour field %s reaches the displays whose colour is an object',
+  field => {
+    const conf = hydrateFeatureTrack({ color: { field } })
+    expect(colorOf(conf, 'LinearManhattanDisplay')).toEqual({ field })
+    expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({ field })
+  },
+)
 
-test('a colour field reaches the displays whose colour is an object', () => {
-  const conf = hydrateFeatureTrack({ color: { field: 'type' } })
-  expect(colorOf(conf, 'LinearManhattanDisplay')).toEqual({ field: 'type' })
-  expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({ field: 'type' })
+test('a dormant field under scale none reaches both colour objects as written', () => {
+  const conf = hydrateFeatureTrack({ color: { field: 'type', scale: 'none' } })
+  expect(colorOf(conf, 'LinearManhattanDisplay')).toEqual({
+    field: 'type',
+    scale: 'none',
+  })
+  expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({
+    field: 'type',
+    scale: 'none',
+  })
 })
 
 test('a colour no display takes fails the load, naming every reason', () => {

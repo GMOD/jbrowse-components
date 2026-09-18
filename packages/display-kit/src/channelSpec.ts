@@ -1,7 +1,7 @@
 import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
 import { compareStructural } from 'mobx'
 
-import { colorConfigSchema } from './colorConfigSchema.ts'
+import { colorConfigSchema, paintedScale } from './colorConfigSchema.ts'
 import { facetConfigSchema } from './facetConfigSchema.ts'
 
 /**
@@ -57,7 +57,8 @@ function parseColor(value: unknown): ChannelSpec['color'] {
   }
   const lifted = preProcessConfigSnapshot(colorConfigSchema, value)
   const field = typeof lifted.field === 'string' ? lifted.field.trim() : ''
-  if (field) {
+  const scale = typeof lifted.scale === 'string' ? lifted.scale : undefined
+  if (paintedScale({ scale, field }, 'categorical') !== 'none') {
     const domain = strings(lifted.domain)
     const palette = strings(lifted.palette)
     return {
