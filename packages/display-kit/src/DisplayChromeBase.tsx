@@ -12,9 +12,8 @@ import { observer } from 'mobx-react'
 import ChromeHighlight from './ChromeHighlight.tsx'
 import ChromeLegend from './ChromeLegend.tsx'
 import ChromeYAxis from './ChromeYAxis.tsx'
-import DisplayStatusChromeBase, {
-  ReplacedDisplay,
-} from './DisplayStatusChromeBase.tsx'
+import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
+import ReplacedDisplay from './ReplacedDisplay.tsx'
 import { isAxisHost } from './axisHost.ts'
 import { isHighlightHost } from './highlightHost.ts'
 import { isLegendHost } from './legendHost.ts'
