@@ -1,9 +1,7 @@
 import { observer } from 'mobx-react'
 
 import AlignmentConnections from './AlignmentConnections.tsx'
-import Breakends from './Breakends.tsx'
-import PairedFeatures from './PairedFeatures.tsx'
-import Translocations from './Translocations.tsx'
+import Variants from './Variants.tsx'
 
 import type { OverlayKind } from '../types.ts'
 import type { OverlayProps } from './overlayUtils.tsx'
@@ -13,9 +11,7 @@ import type { ComponentType } from 'react'
 // compile error here, not a match that classifies fine and renders nothing.
 const overlayForKind = {
   alignment: AlignmentConnections,
-  translocation: Translocations,
-  paired: PairedFeatures,
-  breakend: Breakends,
+  variant: Variants,
 } satisfies Record<OverlayKind, ComponentType<OverlayProps>>
 
 const Overlay = observer(function Overlay(props: OverlayProps) {

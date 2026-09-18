@@ -1,7 +1,6 @@
 import { makeOffscreenLayout } from '../util.ts'
 import {
   buildBreakpointPath,
-  buildSimplePath,
   chainHighlightRects,
   isDrawnByPileup,
   resolvedPairs,
@@ -11,21 +10,6 @@ import type { LayoutMatch, LayoutRecord, OverlayLevel } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
-
-describe('buildSimplePath', () => {
-  test('builds straight line when y values differ', () => {
-    const path = buildSimplePath(0, 0, 100, 50)
-    expect(path).toBe('M 0 0 L 100 50')
-  })
-
-  test('builds arc when y values are equal (flat line)', () => {
-    const path = buildSimplePath(0, 100, 100, 100)
-    expect(path).toContain('Q')
-    expect(path).toContain('M 0 100')
-    expect(path).toContain('100 100')
-    expect(path).toContain('50 70')
-  })
-})
 
 describe('resolvedPairs', () => {
   const feat = (refName: string) =>

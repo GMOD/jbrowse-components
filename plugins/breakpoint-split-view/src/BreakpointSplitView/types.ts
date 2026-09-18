@@ -87,13 +87,11 @@ export interface OverlayHover {
   id: string
 }
 
-// The discriminant Overlay.tsx dispatches on. 'alignment' comes from an
-// AlignmentsTrack, the rest from a VariantTrack (see classifyVariantFeatures).
-export type OverlayKind = 'alignment' | 'translocation' | 'paired' | 'breakend'
+// The discriminant Overlay.tsx dispatches on, from the track's type.
+export type OverlayKind = 'alignment' | 'variant'
 
 export interface OverlayMatch {
   kind: OverlayKind
-  allFeatures: Map<string, Feature>
   layoutMatches: LayoutMatch[][]
   hasPairedReads?: boolean
 }
@@ -111,7 +109,6 @@ export interface ChainSegment {
 // on any track's layout.
 export interface MatchedChunks {
   kind: OverlayKind
-  allFeatures: Map<string, Feature>
   matched: Feature[][]
   hasPairedReads?: boolean
   chains?: ChainSegment[][]

@@ -26,13 +26,10 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun } from 'mobx'
 
 import {
-  classifyVariantFeatures,
   getBadlyPairedAlignments,
   getClipLengthAtStartOfRead,
   getMatchedAlignmentFeatures,
-  getMatchedBreakendFeatures,
-  getMatchedPairedFeatures,
-  getMatchedTranslocationFeatures,
+  getVariantJunctions,
   hasPairedReads,
   markHiddenSegments,
   readChainSegments,
@@ -588,22 +585,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               : getMatchedAlignmentFeatures(allFeatures)
             result.set(trackId, {
               kind: 'alignment',
-              allFeatures,
               matched,
               hasPairedReads: paired,
               chains: paired ? undefined : matched.map(readChainSegments),
             })
           } else if (type === 'VariantTrack') {
-            const kind = classifyVariantFeatures(allFeatures)
             result.set(trackId, {
-              kind,
-              allFeatures,
-              matched:
-                kind === 'translocation'
-                  ? getMatchedTranslocationFeatures(allFeatures)
-                  : kind === 'paired'
-                    ? getMatchedPairedFeatures(allFeatures)
-                    : getMatchedBreakendFeatures(allFeatures),
+              kind: 'variant',
+              matched: getVariantJunctions(allFeatures),
             })
           }
         }
@@ -621,7 +610,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get overlayMatches(): Map<string, OverlayMatch> {
         const result = new Map<string, OverlayMatch>()
         for (const [trackId, chunk] of this.matchedTrackChunks) {
-          const { kind, allFeatures, matched, hasPairedReads, chains } = chunk
+          const { kind, matched, hasPairedReads, chains } = chunk
           const layoutMatches = this.getMatchedFeaturesInLayout(
             trackId,
             matched,
@@ -636,7 +625,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           }
           result.set(trackId, {
             kind,
-            allFeatures,
             layoutMatches,
             hasPairedReads,
           })

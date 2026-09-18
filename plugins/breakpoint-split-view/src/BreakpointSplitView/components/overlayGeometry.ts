@@ -15,10 +15,10 @@
 // imported from here.** A lazy module importing an eager one is free (the bytes
 // are already down); it is the shared module that costs.
 //
-// findMatchingAlt and computeOverlayX moved here outright — nothing on the model
-// side used them. The four below are duplicated, which is the price of the
-// boundary, and they are all small and pinned by ../util.test.ts and
-// overlayUtils.test.ts on their respective sides.
+// computeOverlayX moved here outright — nothing on the model side used it. The
+// four below are duplicated, which is the price of the boundary, and they are
+// all small and pinned by ../util.test.ts and overlayUtils.test.ts on their
+// respective sides.
 //
 // They read as accidental copies, and a duplication sweep (24aba4d012) undid
 // three of them — pointing this file, BreakpointSplitView.tsx and
@@ -27,33 +27,10 @@
 // eager-bundle budget, which needs a full Astro build to say anything. It
 // measured 678 -> 690 KB gzip on the synteny page. Restored, and
 // ../eagerBoundary.test.ts now fails on the import instead of the bundle.
-import { notEmpty } from '@jbrowse/core/util'
 import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
-import { breakendLocKey, safeParseBreakend } from '@jbrowse/sv-core'
 
 import type { LayoutRecord, OverlayLevel } from '../types.ts'
-import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
-
-// The ALT of feat1 that names feat2's position as its mate, so Breakends can ask
-// which side of the junction it is drawing. Moved off the model side with
-// nothing left behind: only this component ever called it.
-//
-// Through breakendLocKey, because the ALT's spelling of a contig is the caller's
-// and the feature's is the file's CHROM column: nanomonsv writes `chr3` in one
-// and `CHR3` in the other. No alt matched, Breakends drew nothing, and the
-// reader got two panels with no curve between them -- a wrong picture rather
-// than an error.
-export function findMatchingAlt(feat1: Feature, feat2: Feature) {
-  const alts = feat1.get('ALT') as string[] | undefined
-  const target = breakendLocKey(
-    `${feat2.get('refName')}:${feat2.get('start') + 1}`,
-  )
-  return alts
-    ?.map(alt => safeParseBreakend(alt))
-    .filter(notEmpty)
-    .find(bnd => breakendLocKey(bnd.MatePosition ?? '') === target)
-}
 
 // Mirrors VIEW_DIVIDER_HEIGHT in ../util.ts, which is also the CSS height of
 // viewDivider in BreakpointSplitView.tsx. Three numbers that must agree; the

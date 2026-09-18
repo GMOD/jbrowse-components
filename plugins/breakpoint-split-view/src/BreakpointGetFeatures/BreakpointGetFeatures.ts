@@ -46,21 +46,23 @@ export interface BreakpointVcfInfo {
   STRANDS?: string[]
 }
 
-// The opposite endpoint of a bedpe-style paired feature, as emitted by
-// BedpeAdapter. Present on both halves of the pair, each pointing at the other.
+// The opposite endpoint of a paired feature, as emitted by BedpeAdapter and
+// StarFusionAdapter. Present on both halves of the pair, each pointing at the
+// other.
 export interface BreakpointMate {
   refName: string
   start: number
   end: number
   strand?: number
+  mateDirection?: number
 }
 
 // Shape emitted by the worker for each feature. Consumed by `deserializeReturn`
 // which wraps each one in a `SimpleFeature`. Covers both:
 //   1. AlignmentsTrack (BAM/CRAM): strand/flags/pair_orientation/CIGAR-derived
 //      clipLengthAtStartOfRead; rendered by AlignmentConnections.
-//   2. VariantTrack (VCF): ALT/INFO/type=('translocation'|'paired_feature'|
-//      'breakend'); rendered by Translocations, PairedFeatures, or Breakends.
+//   2. VariantTrack: ALT/INFO for a VCF record, `mate` for a paired adapter's;
+//      rendered by Variants.
 // Each feature only populates the fields relevant to its source.
 export interface BreakpointSerializedFeature {
   uniqueId: string
@@ -79,9 +81,14 @@ export interface BreakpointSerializedFeature {
   // Variant-specific
   ALT?: string[]
   INFO?: BreakpointVcfInfo
-  // paired_feature (bedpe) only: the record's other endpoint. Both halves of a
-  // pair carry it, which is what lets getMatchedPairedFeatures rejoin them.
+  // A paired adapter's records only: the record's other endpoint. Both halves
+  // of a pair carry it, which is what lets getVariantJunctions rejoin them.
   mate?: BreakpointMate
+  // Which side of its own junction this end keeps, where the adapter knows it
+  // (STAR-Fusion reads it off the fusion's direction). Without it junctionEnds
+  // falls back to the BEDPE strand rule, which reads a STAR-Fusion acceptor's
+  // gene strand backwards.
+  mateDirection?: number
 }
 
 // Mirrors what getMatchedAlignmentFeatures/getBadlyPairedAlignments
@@ -168,6 +175,7 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
           ALT: feature.get('ALT') as string[] | undefined,
           INFO: feature.get('INFO') as BreakpointVcfInfo | undefined,
           mate: feature.get('mate') as BreakpointMate | undefined,
+          mateDirection: feature.get('mateDirection') as number | undefined,
           clipLengthAtStartOfRead:
             cigar && strand !== undefined ? getClip(cigar, strand) : undefined,
         }

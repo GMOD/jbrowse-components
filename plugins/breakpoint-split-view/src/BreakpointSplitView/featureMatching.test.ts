@@ -1,12 +1,8 @@
-import { findMatchingAlt } from './components/overlayGeometry.ts'
 import {
-  classifyVariantFeatures,
   getBadlyPairedAlignments,
   getClipLengthAtStartOfRead,
   getMatchedAlignmentFeatures,
-  getMatchedBreakendFeatures,
-  getMatchedPairedFeatures,
-  getMatchedTranslocationFeatures,
+  getVariantJunctions,
   hasPairedReads,
   markHiddenSegments,
   readChainSegments,
@@ -47,32 +43,36 @@ function mapOf(...feats: Feature[]) {
   return new Map(feats.map(f => [f.id(), f] as const))
 }
 
-describe('getMatchedBreakendFeatures', () => {
+describe('getVariantJunctions', () => {
   // A at chr1:100 (0-based) = position 101 (1-based) pointing to chr2:200
   // B at chr2:199 (0-based) = position 200 (1-based) pointing to chr1:101
   const A = fakeBnd('a', 'chr1', 100, 'chr2', 200)
   const B = fakeBnd('b', 'chr2', 199, 'chr1', 101)
 
   test('pairs two mutually-referencing BND features', () => {
-    const result = getMatchedBreakendFeatures(mapOf(A, B))
+    const result = getVariantJunctions(mapOf(A, B))
     expect(result).toHaveLength(1)
     expect(result[0]).toHaveLength(2)
   })
 
   test('result is the same regardless of iteration order', () => {
-    expect(getMatchedBreakendFeatures(mapOf(A, B))).toHaveLength(1)
-    expect(getMatchedBreakendFeatures(mapOf(B, A))).toHaveLength(1)
+    expect(getVariantJunctions(mapOf(A, B))).toHaveLength(1)
+    expect(getVariantJunctions(mapOf(B, A))).toHaveLength(1)
   })
 
-  test('unpaired BND produces no matches', () => {
-    expect(getMatchedBreakendFeatures(mapOf(A))).toHaveLength(0)
+  // The overlay draws the curve from the record's ALT, so one half is enough:
+  // a single-ended BND, or a reciprocal pair whose other record fell to a
+  // filter, still gets its junction.
+  test('a BND whose mate record is absent is a chunk of one', () => {
+    const result = getVariantJunctions(mapOf(A))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toHaveLength(1)
   })
 
   test('two independent BND pairs produce two groups', () => {
     const C = fakeBnd('c', 'chr3', 0, 'chr4', 500)
     const D = fakeBnd('d', 'chr4', 499, 'chr3', 1)
-    const result = getMatchedBreakendFeatures(mapOf(A, B, C, D))
-    expect(result).toHaveLength(2)
+    expect(getVariantJunctions(mapOf(A, B, C, D))).toHaveLength(2)
   })
 
   // Verbatim from the COLO829 nanomonsv callset the cancer_sv demo serves: the
@@ -83,91 +83,161 @@ describe('getMatchedBreakendFeatures', () => {
   test('pairs a reciprocal pair whose ALT spells the contig in another case', () => {
     const up1 = fakeBnd('r_12_1', 'chr3', 25_359_567, 'CHR10', 58_717_464)
     const up2 = fakeBnd('r_12_0', 'chr10', 58_717_463, 'CHR3', 25_359_568)
-    const result = getMatchedBreakendFeatures(mapOf(up1, up2))
+    const result = getVariantJunctions(mapOf(up1, up2))
     expect(result).toHaveLength(1)
     expect(result[0]).toHaveLength(2)
   })
 
-  test('two BNDs sharing the same MatePosition are not incorrectly merged', () => {
+  test('two BNDs sharing the same MatePosition are not merged', () => {
     // E and F both point to chr2:200, but are not mates of each other
     const E = fakeBnd('e', 'chr5', 0, 'chr2', 200)
     const F = fakeBnd('f', 'chr6', 0, 'chr2', 200)
-    // B is the real mate of A; E and F are orphans pointing to the same spot
-    const result = getMatchedBreakendFeatures(mapOf(A, B, E, F))
-    // only the real A-B pair should match; E and F land in different buckets
-    expect(result).toHaveLength(1)
+    const result = getVariantJunctions(mapOf(A, B, E, F))
+    // the real A-B pair, plus E and F each alone
+    expect(result).toHaveLength(3)
+    expect(result.filter(chunk => chunk.length === 2)).toHaveLength(1)
   })
-})
 
-describe('getMatchedTranslocationFeatures', () => {
-  function fakeTra(id: string, alt: string[] | undefined) {
+  test('a record naming no other end is dropped', () => {
+    expect(getVariantJunctions(mapOf(fakeFeature('snv', 'SNV')))).toHaveLength(
+      0,
+    )
+  })
+
+  const fakeSymbolic = (
+    id: string,
+    alt: string | undefined,
+    info?: Record<string, unknown>,
+  ) => {
+    const fields: Record<string, unknown> = {
+      refName: 'chr1',
+      start: 100,
+      end: 101,
+      ALT: alt ? [alt] : undefined,
+      INFO: info,
+    }
     return {
       id: () => id,
-      get: (k: string) => (k === 'ALT' ? alt : undefined),
+      get: (k: string) => fields[k],
     } as unknown as Feature
   }
 
-  test('includes features with <TRA> ALT', () => {
-    const t = fakeTra('a', ['<TRA>'])
-    const result = getMatchedTranslocationFeatures(mapOf(t))
-    expect(result).toHaveLength(1)
-    expect(result[0]).toContain(t)
+  test('a TRA states its far end in INFO.CHR2/END', () => {
+    const t = fakeSymbolic('t', '<TRA>', { CHR2: ['chr7'], END: [900] })
+    expect(getVariantJunctions(mapOf(t))).toHaveLength(1)
   })
 
-  test('excludes features with non-TRA ALT', () => {
-    const t = fakeTra('a', ['<DEL>'])
-    expect(getMatchedTranslocationFeatures(mapOf(t))).toHaveLength(0)
+  // Symbolic SVs drew nothing at all before: the per-track classification read
+  // them as breakends and the breakend matcher found no parseable ALT.
+  test('a symbolic DEL with an END is a junction', () => {
+    const d = fakeSymbolic('d', '<DEL>', { END: [900] })
+    expect(getVariantJunctions(mapOf(d))).toHaveLength(1)
   })
 
-  test('does not throw when ALT is undefined', () => {
-    const t = fakeTra('a', undefined)
-    expect(() => getMatchedTranslocationFeatures(mapOf(t))).not.toThrow()
-    expect(getMatchedTranslocationFeatures(mapOf(t))).toHaveLength(0)
+  test('a symbolic allele naming no END is dropped', () => {
+    expect(getVariantJunctions(mapOf(fakeSymbolic('t', '<TRA>')))).toHaveLength(
+      0,
+    )
   })
 
-  test('returns one group per TRA feature', () => {
-    const a = fakeTra('a', ['<TRA>'])
-    const b = fakeTra('b', ['<TRA>'])
-    const result = getMatchedTranslocationFeatures(mapOf(a, b))
-    expect(result).toHaveLength(2)
+  test('ALT undefined does not throw', () => {
+    const t = fakeSymbolic('t', undefined)
+    expect(() => getVariantJunctions(mapOf(t))).not.toThrow()
+    expect(getVariantJunctions(mapOf(t))).toHaveLength(0)
   })
-})
 
-describe('classifyVariantFeatures', () => {
-  test('translocation wins over paired_feature and breakend', () => {
-    expect(
-      classifyVariantFeatures(
+  describe('paired adapter records', () => {
+    interface Endpoint {
+      refName: string
+      start: number
+      end: number
+    }
+
+    // Mirrors BedpeAdapter: one half per endpoint, each anchored at its own end
+    // with `mate` pointing at the other, and a uniqueId whose `-r1`/`-r2`
+    // suffix sits on top of a per-refName index (so the two halves disagree on
+    // the prefix as well as the suffix).
+    const half = (
+      id: string,
+      self: Endpoint,
+      mate: Endpoint,
+      type = 'paired_feature',
+    ) => {
+      const fields: Record<string, unknown> = { ...self, type, mate }
+      return {
+        id: () => id,
+        get: (k: string) => fields[k],
+      } as unknown as Feature
+    }
+
+    const sv1a = { refName: 'chr1', start: 1000, end: 2000 }
+    const sv1b = { refName: 'chr2', start: 3000, end: 4000 }
+    const sv2a = { refName: 'chr1', start: 5000, end: 6000 }
+    const sv2b = { refName: 'chr1', start: 8000, end: 9000 }
+
+    test('groups the two halves of an interchromosomal pair', () => {
+      const result = getVariantJunctions(
         mapOf(
-          fakeFeature('a', 'paired_feature'),
-          fakeFeature('b', 'translocation'),
-          fakeFeature('c', 'breakend'),
+          half('test-chr1-0-r1', sv1a, sv1b),
+          half('test-chr2-0-r2', sv1b, sv1a),
         ),
-      ),
-    ).toBe('translocation')
-  })
+      )
+      expect(result).toHaveLength(1)
+      expect(result[0]).toHaveLength(2)
+    })
 
-  test('paired wins over breakend', () => {
-    expect(
-      classifyVariantFeatures(
-        mapOf(fakeFeature('a', 'breakend'), fakeFeature('b', 'paired_feature')),
-      ),
-    ).toBe('paired')
-  })
+    test('groups the two halves of an intrachromosomal pair', () => {
+      const result = getVariantJunctions(
+        mapOf(
+          half('test-chr1-1-r1', sv2a, sv2b),
+          half('test-chr1-0-r2', sv2b, sv2a),
+        ),
+      )
+      expect(result).toHaveLength(1)
+    })
 
-  test('STAR-Fusion features classify as paired', () => {
-    expect(classifyVariantFeatures(mapOf(fakeFeature('a', 'fusion')))).toBe(
-      'paired',
-    )
-  })
+    test('does not join halves of different records that collide on base id', () => {
+      // test-chr1-0-r1 (SV1) and test-chr1-0-r2 (SV2) share the base id
+      // `test-chr1-0` despite belonging to unrelated records
+      const result = getVariantJunctions(
+        mapOf(
+          half('test-chr1-0-r1', sv1a, sv1b),
+          half('test-chr1-0-r2', sv2b, sv2a),
+        ),
+      )
+      expect(result).toHaveLength(2)
+      expect(result.every(chunk => chunk.length === 1)).toBe(true)
+    })
 
-  test('defaults to breakend', () => {
-    expect(classifyVariantFeatures(mapOf(fakeFeature('a', 'breakend')))).toBe(
-      'breakend',
-    )
-  })
+    // What the `mate` field says, not what the `type` string says: the matcher
+    // used to carry an allowlist of two type strings, so an adapter emitting
+    // the same shape under a third name drew nothing.
+    test('rejoins halves whatever the adapter calls the type', () => {
+      const result = getVariantJunctions(
+        mapOf(
+          half('test-chr1-0-r1', sv1a, sv1b, 'fusion'),
+          half('test-chr2-0-r2', sv1b, sv1a, 'contact'),
+        ),
+      )
+      expect(result).toHaveLength(1)
+      expect(result[0]).toHaveLength(2)
+    })
 
-  test('empty defaults to breakend', () => {
-    expect(classifyVariantFeatures(new Map())).toBe('breakend')
+    test('a lone half is a chunk of one', () => {
+      const result = getVariantJunctions(
+        mapOf(half('test-chr1-0-r1', sv1a, sv1b)),
+      )
+      expect(result).toHaveLength(1)
+      expect(result[0]).toHaveLength(1)
+    })
+
+    test('a paired_feature without a mate is skipped', () => {
+      const noMate = {
+        id: () => 'test-chr1-0-r1',
+        get: (k: string) => (k === 'type' ? 'paired_feature' : undefined),
+      } as unknown as Feature
+      expect(getVariantJunctions(mapOf(noMate))).toHaveLength(0)
+    })
   })
 })
 
@@ -633,104 +703,6 @@ describe('getMatchedAlignmentFeatures', () => {
   })
 })
 
-describe('getMatchedPairedFeatures', () => {
-  interface Endpoint {
-    refName: string
-    start: number
-    end: number
-  }
-
-  // Mirrors BedpeAdapter: one half per endpoint, each anchored at its own end
-  // with `mate` pointing at the other, and a uniqueId whose `-r1`/`-r2` suffix
-  // sits on top of a per-refName index (so the two halves disagree on the
-  // prefix as well as the suffix).
-  const half = (
-    id: string,
-    self: Endpoint,
-    mate: Endpoint,
-    type = 'paired_feature',
-  ) => {
-    const fields: Record<string, unknown> = { ...self, type, mate }
-    return {
-      id: () => id,
-      get: (k: string) => fields[k],
-    } as unknown as Feature
-  }
-
-  const sv1a = { refName: 'chr1', start: 1000, end: 2000 }
-  const sv1b = { refName: 'chr2', start: 3000, end: 4000 }
-  const sv2a = { refName: 'chr1', start: 5000, end: 6000 }
-  const sv2b = { refName: 'chr1', start: 8000, end: 9000 }
-
-  test('groups the two halves of an interchromosomal pair', () => {
-    const result = getMatchedPairedFeatures(
-      mapOf(
-        half('test-chr1-0-r1', sv1a, sv1b),
-        half('test-chr2-0-r2', sv1b, sv1a),
-      ),
-    )
-    expect(result).toHaveLength(1)
-    expect(result[0]).toHaveLength(2)
-  })
-
-  test('groups the two halves of an intrachromosomal pair', () => {
-    const result = getMatchedPairedFeatures(
-      mapOf(
-        half('test-chr1-1-r1', sv2a, sv2b),
-        half('test-chr1-0-r2', sv2b, sv2a),
-      ),
-    )
-    expect(result).toHaveLength(1)
-  })
-
-  test('does not join halves of different records that collide on base id', () => {
-    // test-chr1-0-r1 (SV1) and test-chr1-0-r2 (SV2) share the base id
-    // `test-chr1-0` despite belonging to unrelated records
-    const result = getMatchedPairedFeatures(
-      mapOf(
-        half('test-chr1-0-r1', sv1a, sv1b),
-        half('test-chr1-0-r2', sv2b, sv2a),
-      ),
-    )
-    expect(result).toHaveLength(0)
-  })
-
-  test('ignores features that are not paired_feature type', () => {
-    const result = getMatchedPairedFeatures(
-      mapOf(
-        half('test-chr1-0-r1', sv1a, sv1b, 'breakend'),
-        half('test-chr2-0-r2', sv1b, sv1a, 'breakend'),
-      ),
-    )
-    expect(result).toHaveLength(0)
-  })
-
-  test('a lone half does not match', () => {
-    expect(
-      getMatchedPairedFeatures(mapOf(half('test-chr1-0-r1', sv1a, sv1b))),
-    ).toHaveLength(0)
-  })
-
-  test('groups STAR-Fusion halves, which pair like bedpe but type "fusion"', () => {
-    const result = getMatchedPairedFeatures(
-      mapOf(
-        half('test-chr1-0-r1', sv1a, sv1b, 'fusion'),
-        half('test-chr2-0-r2', sv1b, sv1a, 'fusion'),
-      ),
-    )
-    expect(result).toHaveLength(1)
-    expect(result[0]).toHaveLength(2)
-  })
-
-  test('a paired_feature without a mate is skipped', () => {
-    const noMate = {
-      id: () => 'test-chr1-0-r1',
-      get: (k: string) => (k === 'type' ? 'paired_feature' : undefined),
-    } as unknown as Feature
-    expect(getMatchedPairedFeatures(mapOf(noMate))).toHaveLength(0)
-  })
-})
-
 describe('getClipLengthAtStartOfRead', () => {
   const feat = (fields: Record<string, unknown>) =>
     ({ get: (k: string) => fields[k] }) as unknown as Feature
@@ -813,35 +785,5 @@ describe('markHiddenSegments', () => {
     const chunk = [seg('s0', 0, seg100), seg('s1', 100, seg0)]
     mark(chunk)
     expect(chunk[1]!.hiddenSegmentsBefore).toBeUndefined()
-  })
-})
-
-describe('findMatchingAlt', () => {
-  // A at chr1:100 (0-based) points to chr2:200; B at chr2:199 = position 200
-  const A = fakeBnd('a', 'chr1', 100, 'chr2', 200)
-
-  test('finds the ALT whose MatePosition points at the other feature', () => {
-    const B = fakeBnd('b', 'chr2', 199, 'chr1', 101)
-    expect(findMatchingAlt(A, B)?.MatePosition).toBe('chr2:200')
-  })
-
-  test('returns undefined when no ALT points at the other feature', () => {
-    const other = fakeBnd('c', 'chr9', 0, 'chrX', 1)
-    expect(findMatchingAlt(A, other)).toBeUndefined()
-  })
-
-  // The other half of the COLO829 case above: even once the two features are
-  // bucketed together, Breakends returns no path at all when this finds no alt,
-  // so the curve depends on the two spellings matching here too.
-  test('matches an ALT that spells the contig in another case', () => {
-    const upper = fakeBnd('r_12_1', 'chr3', 25_359_567, 'CHR10', 58_717_464)
-    const mate = fakeBnd('r_12_0', 'chr10', 58_717_463, 'CHR3', 25_359_568)
-    expect(findMatchingAlt(upper, mate)?.MatePosition).toBe('CHR10:58717464')
-  })
-
-  test('returns undefined when the feature has no ALT', () => {
-    const noAlt = fakeFeature('x', 'breakend')
-    const B = fakeBnd('b', 'chr2', 199, 'chr1', 101)
-    expect(findMatchingAlt(noAlt, B)).toBeUndefined()
   })
 })

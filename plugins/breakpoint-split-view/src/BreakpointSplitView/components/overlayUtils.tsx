@@ -10,11 +10,7 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BreakpointTooltip from './BreakpointTooltip.tsx'
-import {
-  computeOverlayRect,
-  computeOverlayX,
-  isOffscreenLayout,
-} from './overlayGeometry.ts'
+import { computeOverlayRect, isOffscreenLayout } from './overlayGeometry.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type {
@@ -180,17 +176,6 @@ export function tickAtPx(
 // same-row links visible; otherwise a straight line.
 const FLAT_ARC_HEIGHT = 30
 
-export function buildSimplePath(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-) {
-  return y1 === y2
-    ? `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1 - FLAT_ARC_HEIGHT} ${x2} ${y2}`
-    : `M ${x1} ${y1} L ${x2} ${y2}`
-}
-
 export function buildBreakpointPath(
   x1: number,
   y1: number,
@@ -349,22 +334,6 @@ export const OverlayPaths = observer(function OverlayPaths({
   )
 })
 
-// The look the three variant kinds share: one success-green curve per feature,
-// emphasizing only itself.
-export function VariantOverlay(
-  props: Omit<OverlayPathsProps, 'stroke' | 'strokeWidth' | 'hoverStrokeWidth'>,
-) {
-  const theme = useTheme()
-  return (
-    <OverlayPaths
-      {...props}
-      stroke={theme.palette.success.main}
-      strokeWidth={5}
-      hoverStrokeWidth={10}
-    />
-  )
-}
-
 // Only `minimized` is needed, so that's all this asks for — a caller with any
 // track-ish thing (including a test double) can use it.
 export function isLevelPairMinimized(
@@ -498,32 +467,4 @@ export function chainHighlightRects({
     }
   }
   return rects
-}
-
-// LEFT-edge screen coords for simple variant overlays (paired/breakend), also
-// dropping off-view coordinates so callers only describe the path they draw.
-export function* canonicalPairs(ctx: OverlayContext) {
-  const { getX, getY, layouts, session } = ctx
-  for (const { f1, f2, level1, level2, c1, c2, f1ref, f2ref } of resolvedPairs(
-    ctx,
-  )) {
-    const rawX1 = getX(level1, f1ref, c1[LEFT])
-    const rawX2 = getX(level2, f2ref, c2[LEFT])
-    if (rawX1 == null || rawX2 == null) {
-      continue
-    }
-    yield {
-      f1,
-      f2,
-      level1,
-      level2,
-      // same clamp AlignmentConnections applies — computeOverlayX
-      x1: computeOverlayX(rawX1, layouts[level1]!.width, c1),
-      x2: computeOverlayX(rawX2, layouts[level2]!.width, c2),
-      y1: getY(level1, c1),
-      y2: getY(level2, c2),
-      tooltip: () => buildPairTooltip(f1, f2),
-      openWidget: variantWidgetOpener(session, f1),
-    }
-  }
 }

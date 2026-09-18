@@ -12,10 +12,11 @@ import {
 } from '@jbrowse/cigar-utils'
 import { assembleLocString, assembleLocStringRaw } from '@jbrowse/core/util'
 import { getTag } from '@jbrowse/modifications-utils'
-import { breakendLocKey, safeParseBreakend } from '@jbrowse/sv-core'
+import { breakendLocKey, junctionEnds } from '@jbrowse/sv-core'
 
 import type { ChainSegment, LayoutMatch } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { JunctionEnd } from '@jbrowse/sv-core'
 
 function bucket<K, V>(map: Map<K, V[]>, key: K, value: V) {
   const arr = map.get(key)
@@ -176,103 +177,36 @@ export function hasPairedReads(features: Map<string, Feature>) {
   return false
 }
 
-export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
-  const candidates = new Map<string, Feature[]>()
-  for (const f of feats.values()) {
-    if (f.get('type') !== 'breakend') {
-      continue
-    }
-    const alts = f.get('ALT') as string[] | undefined
-    if (!alts) {
-      continue
-    }
-    const cur = breakendLocKey(`${f.get('refName')}:${f.get('start') + 1}`)
-    for (const a of alts) {
-      const bnd = safeParseBreakend(a)
-      if (bnd?.MatePosition) {
-        // canonical key so feature A→B and feature B→A land in the same bucket.
-        // breakendLocKey because one end reads the file's CHROM column and the
-        // other the caller's ALT text, and nanomonsv spells the same contig
-        // `chr3` in one and `CHR3` in the other -- so a reciprocal pair got two
-        // keys, multi() dropped both, and the pair the view was opened on had
-        // no curve drawn between its panels.
-        bucket(
-          candidates,
-          [cur, breakendLocKey(bnd.MatePosition)].sort().join('\t'),
-          f,
-        )
-      }
-    }
-  }
-  return multi(candidates)
+function endKey(end: JunctionEnd) {
+  return breakendLocKey(`${end.refName}:${end.pos}`)
 }
 
-// Getting "matched" TRA means just return all TRA
-export function getMatchedTranslocationFeatures(feats: Map<string, Feature>) {
-  const ret: Feature[][] = []
-  for (const f of feats.values()) {
-    if ((f.get('ALT') as string[] | undefined)?.[0] === '<TRA>') {
-      ret.push([f])
+/**
+ * Variant records, one junction per chunk: a record, then the record at its
+ * mate end when the fetch holds one — the other half of a reciprocal BND pair,
+ * or of a row a paired adapter (BEDPE, STAR-Fusion) files under both contigs.
+ * A record written once, or whose mate record fell to a filter, is a chunk of
+ * one, and the overlay draws it to its mate position all the same. Records
+ * naming no other end are dropped.
+ */
+export function getVariantJunctions(feats: Map<string, Feature>) {
+  const byJunction = new Map<
+    string,
+    { feature: Feature; ends: NonNullable<ReturnType<typeof junctionEnds>> }[]
+  >()
+  for (const feature of feats.values()) {
+    const ends = junctionEnds(feature)
+    if (ends) {
+      bucket(
+        byJunction,
+        [endKey(ends.own), endKey(ends.mate)].sort().join('\t'),
+        { feature, ends },
+      )
     }
   }
-  return ret
-}
-
-// Feature types whose adapter emits one record as two halves, each anchored at
-// one endpoint and carrying `mate` pointing at the other: bedpe
-// (`paired_feature`) and STAR-Fusion (`fusion`). They differ only in the type
-// string, so they rejoin identically — see getMatchedPairedFeatures.
-const pairedFeatureTypes = new Set(['paired_feature', 'fusion'])
-
-function isPairedFeature(f: Feature) {
-  const type = f.get('type')
-  return type === undefined ? false : pairedFeatureTypes.has(type)
-}
-
-export function classifyVariantFeatures(features: Map<string, Feature>) {
-  let hasTranslocation = false
-  let hasPaired = false
-  for (const f of features.values()) {
-    if (f.get('type') === 'translocation') {
-      hasTranslocation = true
-      break
-    }
-    if (isPairedFeature(f)) {
-      hasPaired = true
-    }
-  }
-  return hasTranslocation
-    ? ('translocation' as const)
-    : hasPaired
-      ? ('paired' as const)
-      : ('breakend' as const)
-}
-
-// Each half of a paired record is anchored at one endpoint and carries `mate`
-// pointing at the other, so the unordered pair of loc strings is identical for
-// the two halves and unique to the record. Same canonical-key trick as
-// getMatchedBreakendFeatures.
-//
-// Don't be tempted back to the feature's uniqueId: the adapter mints it as
-// `<prefix>-<refName>-<index>-r1|r2`, where the index counts within that
-// refName's bucket. The two halves of one record therefore disagree on both the
-// refName and the index, so stripping the `-r1`/`-r2` suffix neither rejoins a
-// real pair nor keeps unrelated ones apart.
-export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
-  const candidates = new Map<string, Feature[]>()
-  for (const f of feats.values()) {
-    const mate = f.get('mate') as
-      | { refName: string; start: number; end: number }
-      | undefined
-    if (!isPairedFeature(f) || !mate) {
-      continue
-    }
-    const self = assembleLocStringRaw({
-      refName: f.get('refName'),
-      start: f.get('start'),
-      end: f.get('end'),
-    })
-    bucket(candidates, [self, assembleLocStringRaw(mate)].sort().join('\t'), f)
-  }
-  return multi(candidates)
+  return [...byJunction.values()].map(([first, ...rest]) => {
+    const mateKey = endKey(first!.ends.mate)
+    const atMate = rest.find(r => endKey(r.ends.own) === mateKey)
+    return atMate ? [first!.feature, atMate.feature] : [first!.feature]
+  })
 }
