@@ -122,7 +122,8 @@ region cannot be found.
 
 ## getBreakendCoveringRegions
 
-Resolves the two canonical-refName endpoints a breakend/SV feature spans.
+The two canonical-refName junction positions a breakend/SV feature spans,
+through `junctionEnds`; a record naming no other end spans its own extent.
 
 ```js
 // type signature
@@ -143,6 +144,26 @@ or split-view a mate must drop both rather than treat `<DEL>` as a refName.
 ```js
 // type signature
 (breakend?: Breakend | undefined) => string | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
+## junctionEnds
+
+Where a paired record's junction is at each of its two ends, and which side
+of it each end keeps — the one answer every launcher, the row menu and the
+chain walk take, whether the record is a VCF breakend, a symbolic SV or a
+paired adapter's row (BEDPE, STAR-Fusion). Refnames are as the record spells
+them. `undefined` for a record naming no other end.
+
+A VCF end is its own position. A paired adapter's end is a block, and the
+junction is the block's edge on the side the end keeps: stated by
+`mateDirection` where the adapter knows it, read off a BEDPE strand
+otherwise, and with neither the two blocks face each other.
+
+```js
+// type signature
+(feature: Feature) => { own: JunctionEnd; mate: JunctionEnd; } | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -171,11 +192,10 @@ windows for the row menu. Each spelled the 1-based-to-interbase shift itself
 ## pairedEndsLocString
 
 Both ends of a paired record as one loc string an LGV opens side by side,
-`windowBp` either side of each breakpoint. Each panel is turned so the
-sequence its end keeps reads left to right into the join: an end keeping the
-sequence to its right is reversed on the left panel, one keeping its left is
-reversed on the right. Two ends of one contig closer than a window collapse to
-the single span between them. `undefined` for a record with one end.
+`windowBp` either side of each junction. Each panel is turned so the sequence
+its end keeps reads left to right into the join. Two ends of one contig
+closer than a window collapse to the single span between them. `undefined`
+for a record with one end.
 
 ```js
 // type signature
@@ -186,17 +206,13 @@ the single span between them. `undefined` for a record with one end.
 
 ## panelIsTurned
 
-Whether the panel showing this end has to be turned for the join to read left
+Whether the panel showing an end has to be turned for the join to read left
 to right across the seam: an end keeping the sequence to its RIGHT is
 reversed on the left panel, one keeping its LEFT is reversed on the right.
 
-Stated once because two routes to the same pair of panels read it — the
-spreadsheet row menu's loc string, and the single-level breakpoint split
-view's displayed regions.
-
 ```js
 // type signature
-(end: FeatureEnd, side: "left" | "right") => boolean
+(keeps: number, side: "left" | "right") => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
