@@ -9,6 +9,7 @@ import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { isMismatchFeature } from '../shared/extractCigarFeatures.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
+import { filterChainFeatures } from './filterChainFeatures.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
@@ -101,8 +102,11 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
     // Only per-base alignment features can be tallied — the same discriminator
     // the render path uses, rather than a second inline `'forEachMismatch' in f`
     // that could drift from it. `MismatchFeature` satisfies core's
-    // `ConsensusFeature` structurally.
-    const features = featuresArray.filter(f => isMismatchFeature(f))
+    // `ConsensusFeature` structurally. The read-category filters go first, as
+    // they do for the pileup, so the tally is over the reads on screen.
+    const features = filterChainFeatures(featuresArray, filterBy).filter(f =>
+      isMismatchFeature(f),
+    )
 
     // Features are already flag-filtered at fetch time by filterBy; reuse the
     // same flagExclude here so the tally can't re-drop reads the user chose to
