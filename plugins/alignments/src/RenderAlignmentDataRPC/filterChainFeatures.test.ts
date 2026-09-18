@@ -205,6 +205,30 @@ describe('filterChainFeatures singletons', () => {
       names(filterChainFeatures(features, filt({ singletons: 'only' }))),
     ).toEqual(['lone'])
   })
+
+  // A multimapper's secondary alignments come as a pair naming each other's
+  // position. Each keys a chain of its own, so every one read as a read alone
+  // and "Hide reads without a mate" hid secondary pairs with both mates shown.
+  test('a secondary pair with both mates in the window has a mate', () => {
+    const secondary = (id: string, start: number, nextPos: number) =>
+      new SimpleFeature({
+        uniqueId: id,
+        refName: 'ctgA',
+        start,
+        end: start + 100,
+        name: 'multi',
+        flags: 0x1 | 0x100,
+        next_pos: nextPos,
+      })
+    const features = [
+      lone,
+      secondary('multi-1', 1000, 1300),
+      secondary('multi-2', 1300, 1000),
+      secondary('multi-3', 5000, 9000),
+    ]
+    const kept = filterChainFeatures(features, filt({ singletons: 'exclude' }))
+    expect(kept.map(f => f.id())).toEqual(['multi-1', 'multi-2'])
+  })
 })
 
 // Every category is AND-ed: this is the SV export, the split reads of the pairs

@@ -1,5 +1,6 @@
 import {
   SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
@@ -122,6 +123,25 @@ function dedupeById(features: Feature[]) {
   return out
 }
 
+// The key a record shares with its mate for "reads without a mate". A secondary
+// alignment keys a chain of its own (`chainGroupingKey`), but aligners emit a
+// paired read's secondary alignments as pairs whose two records name each
+// other's position, and a secondary pair on screen is not two reads alone.
+function mateKey(f: Feature) {
+  const name = f.get('name')
+  const nextPos = f.get('next_pos') as number | undefined
+  if (!name || !(getFlags(f) & SAM_FLAG_SECONDARY) || nextPos === undefined) {
+    return featureChainKey(f)
+  }
+  const start = f.get('start')
+  return `${name}\0${Math.min(start, nextPos)}\0${Math.max(start, nextPos)}`
+}
+
+function isSingletonChain(mateCounts: Map<string, number>) {
+  return (chain: Feature[]) =>
+    chain.length === 1 && mateCounts.get(mateKey(chain[0]!)) === 1
+}
+
 // Keep the chains a category filter asks for. `'only'` keeps the ones the
 // predicate holds for, `'exclude'` drops them, and absent leaves them alone.
 function keepCategory(
@@ -159,7 +179,18 @@ export function filterChainFeatures(features: Feature[], filterBy?: FilterBy) {
     return deduped
   }
   let rawChains = Object.values(groupBy(deduped, featureChainKey))
-  rawChains = keepCategory(rawChains, singletons, c => c.length === 1)
+  if (singletons !== undefined) {
+    const mateCounts = new Map<string, number>()
+    for (const f of deduped) {
+      const key = mateKey(f)
+      mateCounts.set(key, (mateCounts.get(key) ?? 0) + 1)
+    }
+    rawChains = keepCategory(
+      rawChains,
+      singletons,
+      isSingletonChain(mateCounts),
+    )
+  }
   rawChains = keepCategory(rawChains, properPairs, isProperPairChain)
   rawChains = keepCategory(rawChains, split, chainIsSplit)
   // same key as the dedupe above, for the same reason: this is identity within
