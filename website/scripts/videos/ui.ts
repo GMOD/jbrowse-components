@@ -153,7 +153,7 @@ export const uiVideos: VideoSpec[] = [
     // three gene rows at 100 with their trapezoids, and the menu that opens
     // over them on each release
     viewportHeight: 700,
-    readySelector: displayPainted('linear-basic-display'),
+    readySelector: displayPainted('feature-display'),
     readyTimeout: 120000,
     settleMs: 8000,
     steps: [

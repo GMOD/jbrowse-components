@@ -10,15 +10,16 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // Each level is a LinearGenomeView of its own under `detailLevels`, so a
 // session spec writes one the way it writes the view: tracks by id, and a
 // `windowWidthBp` for how wide it is. Regions and centre come from the host.
-// `hideHeader` is what the menu's own "Add detail level" sets, so the figure
-// shows the stack a reader gets by clicking rather than a hand-authored one.
+// `hideHeader` is what the rubberband's own "Add detail level" sets, so the
+// figure shows the stack a reader gets by dragging rather than a hand-authored
+// one.
 //
 // COLO829 on hg38 rather than volvox (review: "in general, volvox examples are
 // weak. use human if possible. human genome much larger"): the three rows then
-// span 200 kb, 20 kb and 2 kb of the same locus, which is the range the feature
-// exists for, and each row carries the track that is legible at its own width —
-// coverage, genes, reads. The page zooms in as it reads down, the way the
-// header overview above it already does.
+// span 2 Mb, 200 kb and 20 kb of the same locus, which is the range the feature
+// exists for, and each row carries the track that is legible at its own width.
+// The coverage is in 50 kb bins, so the top row is the widest window those bins
+// still draw a profile in rather than a block.
 const CANCER_SV = encodeURIComponent(
   'https://jbrowse.org/demos/cancer_sv/config.json',
 )
@@ -26,27 +27,26 @@ export const detailLevelsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'detail_levels',
-    viewportHeight: 820,
+    viewportHeight: 800,
     url: sessionSpec(CANCER_SV, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr17:7,576,500-7,776,500',
-          tracks: [{ trackId: 'COLO829_tumor_coverage', height: 100 }],
+          loc: 'chr17:6,676,500-8,676,500',
+          tracks: [{ trackId: 'COLO829_tumor_coverage', height: 110 }],
           detailLevels: [
             {
               type: 'LinearGenomeView',
               assembly: 'hg38',
               hideHeader: true,
-              windowWidthBp: 20_000,
+              windowWidthBp: 200_000,
               tracks: [
                 {
                   trackId: 'ncbi_refseq_hg38',
                   type: 'LinearBasicDisplay',
-                  showOnlyGenes: true,
                   displayMode: 'compact',
-                  height: 80,
+                  height: 90,
                 },
               ],
             },
@@ -54,12 +54,12 @@ export const detailLevelsSpecs: ScreenshotSpec[] = [
               type: 'LinearGenomeView',
               assembly: 'hg38',
               hideHeader: true,
-              windowWidthBp: 2000,
+              windowWidthBp: 20_000,
               tracks: [
                 {
                   trackId: 'COLO829_tumor_ont',
                   type: 'LinearAlignmentsDisplay',
-                  height: 260,
+                  height: 240,
                   forceLoad: true,
                 },
               ],
@@ -75,7 +75,7 @@ export const detailLevelsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'detail_levels_menu',
-    viewportHeight: 560,
+    viewportHeight: 420,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:20,000-21,000',
