@@ -44,7 +44,7 @@ import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
  *   adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
  *   displayDefaults: {
  *     height: 200,
- *     scaleType: 'log',
+ *     scales: { y: { type: 'log' } },
  *     color: 'darkgreen',
  *   },
  * }

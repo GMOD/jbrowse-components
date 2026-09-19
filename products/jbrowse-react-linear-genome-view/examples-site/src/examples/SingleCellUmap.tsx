@@ -252,8 +252,7 @@ function tracks(cells: Cells) {
       displayDefaults: {
         defaultRendering: 'multirowdensity',
         height: 420,
-        minScore: 0,
-        maxScore: 4,
+        scales: { y: { domainMin: 0, domainMax: 4 } },
       },
     },
   ]

@@ -21,8 +21,7 @@ export default function WithWiggleTrack() {
             defaultRendering: 'xyplot',
             height: 150,
             color: '#a05195',
-            minScore: 0,
-            maxScore: 1000,
+            scales: { y: { domainMin: 0, domainMax: 1000 } },
           },
         },
       ]}

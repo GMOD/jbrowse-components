@@ -45,8 +45,7 @@
       "displayDefaults": {
         "defaultRendering": "multirowdensity",
         "bicolorPivot": 0,
-        "minScore": -2,
-        "maxScore": 2,
+        "scales": { "y": { "domainMin": -2, "domainMax": 2 } },
         "posColor": "#b2182b",
         "negColor": "#2166ac",
         "height": 760
@@ -66,8 +65,7 @@
         "height": 120,
         "posColor": "#b2182b",
         "negColor": "#2166ac",
-        "minScore": -100,
-        "maxScore": 100
+        "scales": { "y": { "domainMin": -100, "domainMax": 100 } }
       }
     },
     {

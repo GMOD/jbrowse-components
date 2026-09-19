@@ -198,8 +198,7 @@
       "displayDefaults": {
         "defaultRendering": "multirowdensity",
         "bicolorPivot": 2,
-        "minScore": 0,
-        "maxScore": 4,
+        "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
         "posColor": "#b2182b",
         "negColor": "#2166ac"
       }
@@ -1583,7 +1582,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "wiggle_global_autoscale-LinearWiggleDisplay",
-          "autoscale": "global"
+          "scales": { "y": { "autoscale": "local" } }
         }
       ]
     },

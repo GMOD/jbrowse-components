@@ -18,6 +18,6 @@ test('posColor/negColor mean bicolor was intended', () => {
 })
 
 test('no color is left alone', () => {
-  const snap = { scaleType: 'log' }
+  const snap = { resolution: 10 }
   expect(colorImpliesSolid(snap)).toBe(snap)
 })

@@ -242,6 +242,49 @@ test('nothing declared is the linear autoscaled form it always was', () => {
   expect(display.domain).toEqual([0, 8])
 })
 
+// The modes the display gained with the shared factory. A spiky distribution
+// is what tells them apart: `local` spends the whole axis on the one outlier,
+// `localpercentile` clips it and leaves the baseline readable.
+test('the autoscale mode scales.y names is the one the domain takes', () => {
+  const spiky = [...Array.from({ length: 99 }, () => 2), 1000]
+  const local = createTestEnvironment(
+    [{ shape: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { scales: { y: { autoscale: 'local' } } },
+  ).createDisplay().display
+  local.setRpcData(0, result([{ y: spiky }]), REGION)
+  expect(local.domain![1]).toBe(1000)
+
+  const clipped = createTestEnvironment(
+    [{ shape: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { scales: { y: { autoscale: 'localpercentile' } } },
+  ).createDisplay().display
+  clipped.setRpcData(0, result([{ y: spiky }]), REGION)
+  expect(clipped.domain![1]).toBeLessThan(10)
+})
+
+// Both radios derive from `scales.y` now: two scale types declared, and an
+// autoscale member present.
+test('the score menu offers the scale-type and autoscale radios', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  expect(display.scaleTypeChoices).toEqual(['linear', 'log'])
+  const score = display
+    .trackMenuItems()
+    .find(item => 'subMenu' in item && item.label === 'Score')!
+  const rows =
+    'subMenu' in score
+      ? resolveSubMenu(score).map(i => ('label' in i ? i.label : ''))
+      : []
+  expect(rows).toContain('Scale type')
+  expect(rows).toContain('Autoscale type')
+})
+
 test('one end of the declared domain pins and the other autoscales', () => {
   const { createDisplay } = createTestEnvironment(
     [{ shape: 'bar', encoding: { y: 'score' } }],
