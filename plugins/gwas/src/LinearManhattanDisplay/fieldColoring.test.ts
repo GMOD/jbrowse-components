@@ -1,7 +1,8 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { LD_LEGEND, LD_LEGEND_TITLE } from './ldBins.ts'
+import { ldColoringRequested } from '../ManhattanRPC/rpcTypes.ts'
+import { LD_DOMAIN, LD_LEGEND_TITLE, LD_PALETTE, ldLegend } from './ldBins.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -126,7 +127,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(scale?.title).toBe(LD_LEGEND_TITLE)
     expect(
       scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
-    ).toEqual(LD_LEGEND.map(s => s.label))
+    ).toEqual(ldLegend({ domain: [], palette: [] }).map(sw => sw.label))
   })
 
   // Without it an export where nothing matched the index SNP is an all-grey
@@ -201,15 +202,16 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
-  it('LD is the ld field, so it replaces the field and reads as the ld scale', () => {
+  it('LD is the ld field on a threshold scale, whose cuts default to the r² bins', () => {
     const { display } = createTestEnvironment({
       color: { field: 'population', domain: ['EUR'] },
     }).createDisplay()
     display.colorByLd()
     expect(display.color).toMatchObject({
       field: 'ld',
-      scale: 'ld',
-      domain: [],
+      scale: 'threshold',
+      domain: LD_DOMAIN,
+      palette: LD_PALETTE,
     })
     expect(display.ldColoringActive).toBe(true)
     display.setColorScale('none')
@@ -220,6 +222,23 @@ describe('LinearManhattanDisplay field coloring', () => {
       field: 'population',
       scale: 'categorical',
     })
+  })
+
+  it("a config's bare { field: 'ld' } still asks the worker for the five bins", () => {
+    const { display } = createTestEnvironment({
+      color: { field: 'ld' },
+    }).createDisplay()
+    const { color, indexSnp, ldAdapterConfig } = {
+      ...display.rpcProps(),
+      indexSnp: 'rsIndex',
+    }
+    expect(color).toMatchObject({
+      field: 'ld',
+      scale: 'threshold',
+      domain: LD_DOMAIN,
+      palette: LD_PALETTE,
+    })
+    expect(ldColoringRequested({ color, indexSnp, ldAdapterConfig })).toBe(true)
   })
 
   it('refuses a scale the display cannot paint, and an undeclared key', () => {

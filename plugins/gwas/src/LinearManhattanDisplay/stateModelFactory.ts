@@ -14,6 +14,11 @@ import {
   MAX_LEGEND_ENTRIES,
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
+import {
+  numericDomain,
+  thresholdLabels,
+  thresholdPalette,
+} from '@jbrowse/core/util/thresholdScale'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin, {
   legendCheckboxItem,
@@ -47,7 +52,12 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { LD_FIELD } from './colorConfigSchema.ts'
-import { LD_LEGEND, LD_LEGEND_TITLE } from './ldBins.ts'
+import {
+  LD_LEGEND_TITLE,
+  isLdColoring,
+  ldColorDefaults,
+  ldLegend,
+} from './ldBins.ts'
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type {
@@ -118,17 +128,23 @@ const SetColorFieldDialog = lazy(
   () => import('./components/SetColorFieldDialog.tsx'),
 )
 
-// The LD key's rows: the index swatch, the r² bins high to low, the no-data
-// grey — and, where nothing matched the index SNP, a note saying so, or an
-// export where every point is grey sits under a full r² key that implies the
-// colors mean something.
-function ldScale(indexSnpMissing: boolean): ColorScale {
+// The LD key's rows, and — where nothing matched the index SNP — a note saying
+// so, or an export where every point is grey sits under a full r² key that
+// implies the colors mean something.
+function ldScale(
+  color: { domain: readonly string[]; palette: readonly string[] },
+  indexSnpMissing: boolean,
+): ColorScale {
   return {
     kind: 'categorical',
     id: 'ld',
     title: LD_LEGEND_TITLE,
     entries: [
-      ...LD_LEGEND.map(({ label, color }) => ({ value: label, label, color })),
+      ...ldLegend(color).map(({ label, color }) => ({
+        value: label,
+        label,
+        color,
+      })),
       ...(indexSnpMissing
         ? [{ value: 'missing', label: 'Index SNP not in LD data: all grey' }]
         : []),
@@ -238,15 +254,21 @@ export function stateModelFactory(
          */
         get color(): ManhattanColor {
           const field = getConf(self, ['color', 'field'])
+          const scale = paintedScale(
+            { scale: getConf(self, ['color', 'scale']), field },
+            field === LD_FIELD ? 'threshold' : 'categorical',
+          )
+          const written = {
+            domain: getConf(self, ['color', 'domain']) as readonly string[],
+            palette: getConf(self, ['color', 'palette']) as readonly string[],
+          }
           return {
             value: self.conf.color.value,
             field,
-            scale: paintedScale(
-              { scale: getConf(self, ['color', 'scale']), field },
-              field === LD_FIELD ? 'ld' : 'categorical',
-            ),
-            domain: getConf(self, ['color', 'domain']),
-            palette: getConf(self, ['color', 'palette']),
+            scale,
+            ...(isLdColoring({ field, scale })
+              ? ldColorDefaults(written)
+              : written),
           }
         },
         /**
@@ -281,7 +303,7 @@ export function stateModelFactory(
          * keys off this getter.
          */
         get ldColoringActive(): boolean {
-          return this.color.scale === 'ld' && this.hasLdData
+          return isLdColoring(this.color) && this.hasLdData
         },
         /**
          * #getter
@@ -538,7 +560,7 @@ export function stateModelFactory(
          */
         get dataSuperseded(): boolean {
           return (
-            self.color.scale === 'ld' &&
+            isLdColoring(self.color) &&
             !self.indexSnpPinned &&
             this.topSnp !== undefined &&
             this.topSnp !== self.indexSnp
@@ -554,9 +576,29 @@ export function stateModelFactory(
          */
         get colorScales(): ColorScale[] {
           if (self.ldColoringActive) {
-            return [ldScale(this.indexSnpMissing)]
+            return [ldScale(self.color, this.indexSnpMissing)]
           }
           const { scale, field, domain, palette } = self.color
+          if (scale === 'threshold') {
+            // `field: 'ld'` with no adapter paints `value`, so it keys nothing.
+            if (isLdColoring(self.color)) {
+              return []
+            }
+            const labels = thresholdLabels(numericDomain(domain))
+            const colors = thresholdPalette(labels.length, palette)
+            return [
+              {
+                kind: 'categorical',
+                id: 'field',
+                title: field,
+                entries: labels.map((label, i) => ({
+                  value: label,
+                  label,
+                  color: colors[i]!,
+                })),
+              },
+            ]
+          }
           if (scale === 'categorical') {
             // Every point of a region carries the same table, so the region is
             // its own source and every entry paints: the display has no rows
@@ -620,7 +662,7 @@ export function stateModelFactory(
            * again. The rest of the object rides along, so switching back to
            * the field finds its order and palette.
            */
-          setColorScale(scale: Exclude<ManhattanColorScale, 'ld'>) {
+          setColorScale(scale: Exclude<ManhattanColorScale, 'threshold'>) {
             const { value, field, domain, palette } = self.color
             self.configuration.setSubschema('color', {
               value,
@@ -759,7 +801,7 @@ export function stateModelFactory(
                 {
                   label: 'LD to index SNP',
                   type: 'radio' as const,
-                  checked: self.color.scale === 'ld',
+                  checked: isLdColoring(self.color),
                   disabled: !self.hasLdData,
                   disabledHelpText:
                     'Requires a configured LD (PLINK .ld) adapter',
@@ -778,7 +820,7 @@ export function stateModelFactory(
                 {
                   label: 'Set index SNP to top hit',
                   disabled:
-                    self.color.scale !== 'ld' ||
+                    !isLdColoring(self.color) ||
                     !self.topSnp ||
                     !self.indexSnpPinned,
                   onClick: () => {
@@ -883,7 +925,7 @@ export function stateModelFactory(
               self,
               () => {
                 if (
-                  self.color.scale === 'ld' &&
+                  isLdColoring(self.color) &&
                   !self.indexSnpPinned &&
                   self.viewportWithinLoadedData &&
                   !self.isLoading &&

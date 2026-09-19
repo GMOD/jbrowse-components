@@ -1,6 +1,6 @@
 import { GLYPH_DIAMOND } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
+import { ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 import { lookupR2, matchesIndexSnp, posKey } from './ldToIndex.ts'
 import { defaultGlyph } from './rpcTypes.ts'
 
@@ -8,7 +8,8 @@ import type { LdToIndex } from './ldToIndex.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Per-feature LD color, glyph and r² to the index SNP from one shared lookup:
-//   - color: index SNP is purple (ldIndexColor), partners bin by r², absent → grey
+//   - color: index SNP is purple (ldIndexColor), partners take the bin colour
+//            their r² falls in, absent → grey
 //   - glyph: the index is the diamond; everything else keeps its normal glyph
 //   - r²:    1 for the index, the looked-up r² for partners, NaN when absent (so
 //            the tooltip omits it rather than showing a fake 0)
@@ -20,6 +21,7 @@ export function makeLdEvaluator(
   ld: LdToIndex,
   indexSnp: string,
   refName: string,
+  binColor: (r2: number | undefined) => number,
 ) {
   let lastFeature: Feature | undefined
   let isIndex = false
@@ -36,7 +38,7 @@ export function makeLdEvaluator(
   return {
     color(feature: Feature) {
       compute(feature)
-      return isIndex ? ldIndexColor : ldBinColor(r2)
+      return isIndex ? ldIndexColor : binColor(r2)
     },
     r2(feature: Feature) {
       compute(feature)

@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/render-core/scoreScale'
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { categoricalPalette, categoricalScale } from '../ui/colors.ts'
+import { categoricalScale } from '../ui/colors.ts'
 import { categoricalField } from './categoricalField.ts'
 import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
 import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
@@ -17,6 +17,7 @@ import {
   numericDomain,
   thresholdIndex,
   thresholdLabels,
+  thresholdPalette,
 } from './thresholdScale.ts'
 
 import type { CategoricalField } from './categoricalField.ts'
@@ -153,16 +154,6 @@ function rampStops(ramp: RampRef | undefined): readonly ColorRampStop[] {
     return VIRIDIS_STOPS
   }
   return ramp.map(c => cssColorToRgba(c))
-}
-
-// One packed colour per interval of a threshold scale: the palette in order,
-// and the default categorical palette where it runs out.
-function thresholdBinColors(bins: number, palette: readonly string[] = []) {
-  return Uint32Array.from({ length: bins }, (_, i) =>
-    cssColorToABGR(
-      palette[i] ?? categoricalPalette[i % categoricalPalette.length]!,
-    ),
-  )
 }
 
 function lutColorAt(lut: Uint8Array, t: number) {
@@ -314,7 +305,10 @@ export function encodeFeatures<L extends LaneName>(
     : undefined
   const binColors =
     thresholdEncoding && cuts
-      ? thresholdBinColors(cuts.length + 1, thresholdEncoding.palette)
+      ? Uint32Array.from(
+          thresholdPalette(cuts.length + 1, thresholdEncoding.palette),
+          c => cssColorToABGR(c),
+        )
       : undefined
   const { glyph: glyphEncoding } = encoding
   const glyphScaled =

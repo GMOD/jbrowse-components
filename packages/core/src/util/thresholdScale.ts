@@ -1,3 +1,5 @@
+import { categoricalPalette } from '../ui/colors.ts'
+
 /**
  * #api
  * A domain written as strings — the shared `domain` slot is a `stringArray` —
@@ -28,6 +30,21 @@ export function thresholdIndex(
     i++
   }
   return i
+}
+
+/**
+ * #api
+ * The colour of each interval, in order: the declared palette, and the
+ * default categorical palette where it runs out.
+ */
+export function thresholdPalette(
+  bins: number,
+  palette: readonly string[] = [],
+): string[] {
+  return Array.from(
+    { length: bins },
+    (_, i) => palette[i] ?? categoricalPalette[i % categoricalPalette.length]!,
+  )
 }
 
 /**

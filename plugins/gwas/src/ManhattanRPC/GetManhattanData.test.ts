@@ -49,8 +49,8 @@ function args(overrides: Partial<GetManhattanDataArgs> = {}) {
     },
     color: {
       value: 'red',
-      field: '',
-      scale: 'ld' as const,
+      field: 'ld',
+      scale: 'threshold' as const,
       domain: [],
       palette: [],
     },

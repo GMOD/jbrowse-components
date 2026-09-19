@@ -3,6 +3,8 @@ import {
   GLYPH_TRIANGLE,
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
+import { isLdColoring } from '../LinearManhattanDisplay/ldBins.ts'
+
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { Encoded, LaneName } from '@jbrowse/core/util/markEncoding'
 
@@ -20,10 +22,11 @@ export function defaultGlyph(feature: Feature) {
 
 /**
  * How the worker paints Manhattan points: `none` is `value`, `categorical` a
- * palette colour per value of `field`, and `ld` the r² to the index SNP,
- * which the display resolves from `field: 'ld'`.
+ * palette colour per value of `field`, and `threshold` a palette colour per
+ * interval of a numeric one — which over `field: 'ld'` is the r² to the index
+ * SNP, joined from the `ldAdapter` rather than read off the feature.
  */
-export type ManhattanColorScale = 'none' | 'categorical' | 'ld'
+export type ManhattanColorScale = 'none' | 'categorical' | 'threshold'
 
 /** The display's `color` object, carried to the worker whole. */
 export interface ManhattanColor {
@@ -80,7 +83,7 @@ export function ldColoringRequested<
   ldAdapterConfig: Record<string, unknown>
 } {
   return (
-    args.color.scale === 'ld' &&
+    isLdColoring(args.color) &&
     !!args.indexSnp &&
     args.ldAdapterConfig !== undefined
   )

@@ -5,6 +5,8 @@ import {
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
+
+const binColor = ldBinColor({ domain: [], palette: [] })
 import { feat, testLd as ld } from './ldTestHelpers.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 
@@ -13,6 +15,7 @@ test('index SNP (by name): index color, r²=1', () => {
     ld,
     'rsIndex',
     'chr1',
+    binColor,
   )
   const f = feat({ name: 'rsIndex', start: 100 })
   expect(evalColor(f)).toBe(ldIndexColor)
@@ -24,6 +27,7 @@ test('index SNP (by chr:bp): index color, r²=1', () => {
     ld,
     'chr1:100',
     'chr1',
+    binColor,
   )
   const f = feat({ start: 99 })
   expect(evalColor(f)).toBe(ldIndexColor)
@@ -35,9 +39,10 @@ test('partner looked up by name', () => {
     ld,
     'rsIndex',
     'chr1',
+    binColor,
   )
   const f = feat({ name: 'rsB', start: 500 })
-  expect(evalColor(f)).toBe(ldBinColor(0.9))
+  expect(evalColor(f)).toBe(binColor(0.9))
   expect(evalR2(f)).toBe(0.9)
 })
 
@@ -46,9 +51,10 @@ test('partner looked up by position when name is absent', () => {
     ld,
     'rsIndex',
     'chr1',
+    binColor,
   )
   const f = feat({ start: 299 })
-  expect(evalColor(f)).toBe(ldBinColor(0.3))
+  expect(evalColor(f)).toBe(binColor(0.3))
   expect(evalR2(f)).toBe(0.3)
 })
 
@@ -60,12 +66,13 @@ test('a feature named `.` is looked up by position, never by that name', () => {
     ld,
     'rsIndex',
     'chr1',
+    binColor,
   )
   const atPartner = feat({ name: '.', start: 299 })
   expect(evalR2(atPartner)).toBe(0.3)
   const nowhereNear = feat({ name: '.', start: 999 })
   expect(evalR2(nowhereNear)).toBeNaN()
-  expect(evalColor(nowhereNear)).toBe(ldBinColor(undefined))
+  expect(evalColor(nowhereNear)).toBe(binColor(undefined))
 })
 
 test('SNP absent from the LD data: grey color, NaN r²', () => {
@@ -73,14 +80,15 @@ test('SNP absent from the LD data: grey color, NaN r²', () => {
     ld,
     'rsIndex',
     'chr1',
+    binColor,
   )
   const f = feat({ name: 'rsUnknown', start: 999 })
-  expect(evalColor(f)).toBe(ldBinColor(undefined))
+  expect(evalColor(f)).toBe(binColor(undefined))
   expect(evalR2(f)).toBeNaN()
 })
 
 test('glyph: index → diamond, insertion → triangle, others → point', () => {
-  const { glyph: evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { glyph: evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1', binColor)
   expect(evalGlyph(feat({ name: 'rsIndex', start: 100 }))).toBe(GLYPH_DIAMOND)
   expect(evalGlyph(feat({ name: 'rsB', start: 500, svtype: 'INS' }))).toBe(
     GLYPH_TRIANGLE,
@@ -89,7 +97,7 @@ test('glyph: index → diamond, insertion → triangle, others → point', () =>
 })
 
 test('index takes precedence over insertion glyph', () => {
-  const { glyph: evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  const { glyph: evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1', binColor)
   expect(evalGlyph(feat({ name: 'rsIndex', start: 100, svtype: 'INS' }))).toBe(
     GLYPH_DIAMOND,
   )
@@ -100,13 +108,14 @@ test('memoized lookup is independent of color/r² call order', () => {
     ld,
     'rsIndex',
     'chr1',
+    binColor,
   )
   const partner = feat({ name: 'rsB', start: 500 })
   const absent = feat({ name: 'rsUnknown', start: 999 })
   // r² first, then color, then a different feature, then back — each read
   // reflects the feature passed, not a stale memo
   expect(evalR2(partner)).toBe(0.9)
-  expect(evalColor(partner)).toBe(ldBinColor(0.9))
+  expect(evalColor(partner)).toBe(binColor(0.9))
   expect(evalR2(absent)).toBeNaN()
-  expect(evalColor(partner)).toBe(ldBinColor(0.9))
+  expect(evalColor(partner)).toBe(binColor(0.9))
 })

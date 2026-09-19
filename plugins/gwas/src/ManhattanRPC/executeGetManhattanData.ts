@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/core/util/markEncoding'
 import { isLDRecordSource } from '@jbrowse/ld-core'
 
+import { ldBinColor } from '../LinearManhattanDisplay/ldBins.ts'
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 import {
@@ -85,8 +86,18 @@ async function makeReaders(
     )
     checkAbortSignal(signal)
     return {
-      ...makeLdEvaluator(ld, indexSnp, region.refName),
+      ...makeLdEvaluator(ld, indexSnp, region.refName, ldBinColor(color)),
       indexFound: ld.indexFound,
+    }
+  } else if (color.scale === 'threshold') {
+    return {
+      color: {
+        field: color.field,
+        scale: 'threshold',
+        domain: [...color.domain],
+        palette: color.palette.length ? [...color.palette] : undefined,
+      },
+      glyph: defaultGlyph,
     }
   } else if (color.scale === 'categorical') {
     return {

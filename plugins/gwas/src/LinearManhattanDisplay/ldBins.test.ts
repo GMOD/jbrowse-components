@@ -2,55 +2,69 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   LD_INDEX_SWATCH,
-  LD_LEGEND,
   LD_MISSING_SWATCH,
   ldBinColor,
   ldIndexColor,
+  ldLegend,
 } from './ldBins.ts'
 
+const defaults = { domain: [], palette: [] }
+const binOf = ldBinColor(defaults)
+
 test('missing or NaN r² renders grey, distinct from every bin', () => {
-  const grey = ldBinColor(undefined)
-  expect(ldBinColor(Number.NaN)).toBe(grey)
+  const grey = binOf(undefined)
+  expect(binOf(Number.NaN)).toBe(grey)
   for (const r2 of [0, 0.2, 0.4, 0.6, 0.8, 1]) {
-    expect(ldBinColor(r2)).not.toBe(grey)
+    expect(binOf(r2)).not.toBe(grey)
   }
 })
 
 test('the five r² bins are distinct colors', () => {
-  const colors = [0.1, 0.3, 0.5, 0.7, 0.9].map(ldBinColor)
+  const colors = [0.1, 0.3, 0.5, 0.7, 0.9].map(binOf)
   expect(new Set(colors).size).toBe(5)
 })
 
 test('bin edges use >= lower bounds', () => {
   // a value on the boundary lands in the higher bin
-  expect(ldBinColor(0.8)).toBe(ldBinColor(0.95))
-  expect(ldBinColor(0.6)).toBe(ldBinColor(0.75))
-  expect(ldBinColor(0.2)).toBe(ldBinColor(0.35))
+  expect(binOf(0.8)).toBe(binOf(0.95))
+  expect(binOf(0.6)).toBe(binOf(0.75))
+  expect(binOf(0.2)).toBe(binOf(0.35))
   // just below the boundary is the next bin down
-  expect(ldBinColor(0.79)).toBe(ldBinColor(0.6))
-  expect(ldBinColor(0.19)).toBe(ldBinColor(0))
+  expect(binOf(0.79)).toBe(binOf(0.6))
+  expect(binOf(0.19)).toBe(binOf(0))
 })
 
 test('index color is distinct from bin and grey colors', () => {
-  const others = [undefined, 0.1, 0.3, 0.5, 0.7, 0.9].map(ldBinColor)
+  const others = [undefined, 0.1, 0.3, 0.5, 0.7, 0.9].map(binOf)
   expect(others).not.toContain(ldIndexColor)
 })
 
 test('legend swatches and the color lookup share one palette', () => {
-  // index + grey endpoints
   expect(ldIndexColor).toBe(cssColorToABGR(LD_INDEX_SWATCH.color))
-  expect(ldBinColor(undefined)).toBe(cssColorToABGR(LD_MISSING_SWATCH.color))
-  // every legend row's CSS color matches what the lookup paints for that row
+  expect(binOf(undefined)).toBe(cssColorToABGR(LD_MISSING_SWATCH.color))
   const sampleR2: Record<string, number> = {
-    '0.8 – 1.0': 0.9,
+    '≥ 0.8': 0.9,
     '0.6 – 0.8': 0.7,
     '0.4 – 0.6': 0.5,
     '0.2 – 0.4': 0.3,
     '< 0.2': 0.1,
   }
-  for (const { label, color } of LD_LEGEND) {
+  for (const { label, color } of ldLegend(defaults)) {
     if (label in sampleR2) {
-      expect(ldBinColor(sampleR2[label])).toBe(cssColorToABGR(color))
+      expect(binOf(sampleR2[label])).toBe(cssColorToABGR(color))
     }
   }
+})
+
+test('a config moves the cuts and recolours the bins', () => {
+  const custom = { domain: ['0.5'], palette: ['#000080', '#800000'] }
+  const paint = ldBinColor(custom)
+  expect(paint(0.49)).toBe(cssColorToABGR('#000080'))
+  expect(paint(0.5)).toBe(cssColorToABGR('#800000'))
+  expect(ldLegend(custom).map(s => s.label)).toEqual([
+    'Index SNP',
+    '≥ 0.5',
+    '< 0.5',
+    'No LD data',
+  ])
 })
