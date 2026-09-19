@@ -15,6 +15,7 @@ function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
     coverageSnpMinFrequency,
     setCoverageSnpMinFrequency: () => {},
     scaleType: 'linear',
+    scaleTypeChoices: ['linear', 'log', 'symlog'],
     autoscaleType: 'local',
     manualMinScore: undefined,
     manualMaxScore: undefined,

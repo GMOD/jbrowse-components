@@ -508,10 +508,10 @@ export default function stateModelFactory(
           return self.showBezierConnections && !this.isChainMode
         },
       }))
-      // The coverage band's score axis (scaleType / autoscale / min-max + their
-      // setters) is `ScoreScaleMixin`, composed above — the same one the wiggle
-      // family composes, so the shared score menu and SetMinMaxDialog take this
-      // model with no adapter shim and the two can't drift.
+      // The coverage band's value scale (`scales.y` and its setters) is
+      // `ScoreScaleMixin`, composed above — the same one the wiggle family
+      // composes, so the shared score menu and SetMinMaxDialog take this model
+      // with no adapter shim and the two can't drift.
       .views(self => {
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
         let fitCap: IComputedValue<RowCap> | undefined
@@ -1007,9 +1007,9 @@ export default function stateModelFactory(
            * The coverage band's own ladder: octaves against the shader's band
            * box (`computeCoverageTicks`), which `valueScales` hands the chrome
            * in place of the ladder the mixin would derive. The raw
-           * `symlogConstant` slot, which the producer resolves from the same
-           * domain `renderState` does, so the labels sit on the bars rather
-           * than on a second symlog curve.
+           * `scales.y.symlogConstant`, which the producer resolves from the
+           * same domain `renderState` does, so the labels sit on the bars
+           * rather than on a second symlog curve.
            */
           get coverageTicks() {
             return this.coverageDepthDomain
@@ -1017,7 +1017,7 @@ export default function stateModelFactory(
                   this.coverageDepthDomain,
                   this.bandHeights.coverageHeight,
                   self.scaleType,
-                  getConf(self, 'symlogConstant'),
+                  self.symlogConstant,
                 )
               : undefined
           },
@@ -2615,7 +2615,7 @@ export default function stateModelFactory(
             coverageSymlogConstant: resolveSymlogConstant(
               self.coverageDepthDomain?.[0] ?? 0,
               self.coverageDepthDomain?.[1] ?? 0,
-              getConf(self, 'symlogConstant'),
+              self.symlogConstant,
             ),
             coverageSnpMinFrequency: self.coverageSnpMinFrequency,
             showMismatches: self.showMismatches,

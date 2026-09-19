@@ -4,6 +4,7 @@ import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierC
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
+import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { ARC_COLOR_TYPES } from '../shared/arcColorOptions.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
@@ -198,68 +199,20 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         description: 'Draw each group as a single row rather than a stack',
       },
       /**
-       * #slot
+       * #slot scales
+       * The coverage band's value scale — the one thing on this display drawn
+       * against an axis, the pileup having no value and the arcs their own
+       * `arcYScale`. `symlogConstant` starts at 1 rather than the wiggle
+       * family's 0, which makes symlog exactly `log(depth+1)`: the knee sits at
+       * one read, the smallest depth there is.
        */
-      autoscale: {
-        type: 'stringEnum',
-        model: types.enumeration('Coverage autoscale type', [
-          'local',
-          'localsd',
-        ]),
-        defaultValue: 'local',
-        description: 'Coverage autoscale type',
-      },
-      /**
-       * #slot
-       */
-      minScore: {
-        type: 'number',
-        defaultValue: Number.MIN_VALUE,
-        description: 'Minimum coverage depth bound',
-        advanced: true,
-      },
-      /**
-       * #slot
-       */
-      maxScore: {
-        type: 'number',
-        defaultValue: Number.MAX_VALUE,
-        description: 'Maximum coverage depth bound',
-        advanced: true,
-      },
-      /**
-       * #slot
-       */
-      scaleType: {
-        type: 'stringEnum',
-        model: types.enumeration('Coverage scale type', [
-          'linear',
-          'log',
-          'symlog',
-        ]),
-        defaultValue: 'linear',
-        description:
-          'Coverage scale type. "log" floors the domain at a depth of 1, which draws a single-read position at the same height as no coverage at all; "symlog" is log-like higher up and linear through zero, so low depths stay separable',
-      },
-      /**
-       * #slot
-       */
-      symlogConstant: {
-        type: 'number',
-        defaultValue: 1,
-        description:
-          'Width of symlog\'s linear region around zero, in depth units. The default 1 makes symlog exactly log(depth+1), which is the transform read depth wants: the knee sits at one read, the smallest depth there is. 0 means "derive from the domain" (a thousandth of the visible max) — right for a wiggle track, whose units are its own, and wrong here, since it puts the knee a tenth of a read below zero and draws a single stray read a third of the way up a depth-100 band',
-        advanced: true,
-      },
-      /**
-       * #slot
-       */
-      numStdDev: {
-        type: 'number',
-        defaultValue: 3,
-        description: 'Number of standard deviations for localsd autoscale',
-        advanced: true,
-      },
+      scales: scalesSchema(
+        valueScaleSchema({
+          types: ['linear', 'log', 'symlog'],
+          autoscale: { modes: ['local', 'localsd'], default: 'local' },
+          symlogConstant: 1,
+        }),
+      ),
       /**
        * #slot
        */
