@@ -227,6 +227,33 @@ and the second takes the next row.
 Not truncation, and not an alias: `NC_0818…` is ambiguous among grape's own
 contigs, and `refNameAliases` is a config property the strip cannot count on.
 
+*2026-09-18, and the decision the two above were serving:* **a contig draws
+marks only where its sequence is worth about 4px of the band**
+(`MIN_CONTIG_MARK_PX`), which is what "zoomed out" had been missing. Colin: a
+reader zoomed out does not want an overwhelming amount of information from
+small, maybe spurious mates — show those on the way in.
+
+The obvious rule, a pixel floor per ALIGNMENT, is wrong here and the demo says
+so. Peach chr1 over grape chr1 at 34kb/px draws 2,767 marks whose median
+alignment is 3.2kb — 0.09px — and whose largest is 60kb. A 1px floor per
+alignment drops 100% of the marks and 98% of the 11Mb they carry. MCScan anchors
+are gene-sized by construction, so a small alignment is not a spurious one, and
+what a reader sees as noise at that window is a CONTIG with a handful of
+scattered anchors: 3.85Mb to `NC_081809.1` against 22kb to `NC_081806.1`.
+
+So the floor reads the per-contig tally, in pixels, which makes it a
+level-of-detail rule rather than a setting. On that view it drops exactly the
+three scattered contigs (55kb, 25kb, 22kb — 22 marks of 2,767, 0.9% of the
+sequence) and keeps all six real ones; zoom the row to 3Mb and `NC_081813.1`
+comes back at 25.5px of sequence. At whole-genome zoom the floor rises with
+bpPerPx, so only the relationships worth crossing the view for survive.
+`website/scripts/probe-mate-density.ts` re-measures all of it.
+
+It reads the contig rather than the STRETCH because the tally is per contig and
+free (it is the hover's own number), where a stretch is a per-frame merge the
+draw and both hit tests would each have to repeat. What that costs: a contig
+with a strong block here and one stray anchor 20Mb away draws the stray too.
+
 The hover leads with the sequence for the same reason the strip ranks by it —
 `NC_081816.1 · 920Kbp in 176 alignments`. The count stays beside it because
 920Kbp in 4 alignments and 920Kbp in 176 are different things to click into.

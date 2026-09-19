@@ -13,6 +13,18 @@ export const OFFSCREEN_MATE_HEIGHT_PX = 6
 
 export const MIN_OFFSCREEN_MATE_WIDTH_PX = 1.5
 
+// A contig draws marks only where the sequence it holds is worth about this
+// much of the band. Every mark is at least MIN_OFFSCREEN_MATE_WIDTH_PX wide
+// however small its alignment, so a contig with three stray anchors puts down
+// as much ink as one with a syntenic block, and at whole-genome zoom that ink
+// is the whole strip: peach chr1 over grape chr1 draws 2,767 marks whose median
+// alignment is 3.2kb against 34kb per pixel, so nothing there is drawn at its
+// own size. Pixels rather than bp because the question is what a reader can act
+// on: the floor lifts as the window widens and falls as it narrows, so the
+// scattered contigs a wide view cannot use appear on the way in, which is where
+// there is room for them.
+const MIN_CONTIG_MARK_PX = 4
+
 const MAX_BAND_FRACTION = 1 / 3
 
 const MIN_LABEL_PADDING_PX = 6
@@ -184,13 +196,15 @@ function forEachMark(
   ) => void,
 ) {
   const { bpPerPx, offsetPx, width, minAlignmentLength, mateBand } = lane
+  const contigFloor = MIN_CONTIG_MARK_PX * bpPerPx
   for (const [d, data] of lane.datasets.entries()) {
-    const { starts, ends, lengths, mateAxis } = data
+    const { starts, ends, lengths, mateRefNameIds, alignedBp, mateAxis } = data
     for (let i = 0; i < starts.length; i++) {
       const x1 = starts[i]! / bpPerPx - offsetPx
       const x2 = ends[i]! / bpPerPx - offsetPx
       if (
         lengths[i]! >= minAlignmentLength &&
+        (alignedBp[mateRefNameIds[i]!] ?? Infinity) >= contigFloor &&
         x2 >= 0 &&
         x1 <= width &&
         !(mateAxis && ribbonDrawn(mateAxis, i, mateBand))

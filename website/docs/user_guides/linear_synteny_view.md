@@ -307,11 +307,13 @@ against.
 **Off-screen mates** in the settings menu turns the marks on, and it is on by
 default. Each mark sits where the alignment is on the panel it does have,
 stopping short of the ribbons so it cannot be read as an alignment to whatever
-is directly below. A run of marks to one contig carries that contig's name,
-which may be wider than the run itself and overhang it; where several contigs
-cover the same stretch, their names stack. Zoom out far enough and more
-stretches want a name than the band has rows to give, and the rows go to the
-ones with the most sequence aligned.
+is directly below. A contig is marked where the sequence going there is worth
+drawing at the window you are on, so a wide view shows the chromosomes most of
+it aligns to and the scattered ones appear as you zoom in. A run of marks to one
+contig carries that contig's name, which may be wider than the run itself and
+overhang it; where several contigs cover the same stretch, their names stack.
+Zoom out far enough and more stretches want a name than the band has rows to
+give, and the rows go to the ones with the most sequence aligned.
 
 **Which panel a mark lands on is decided by which one still has the alignment.**
 An alignment is undrawable as soon as _either_ of its ends leaves its own panel,

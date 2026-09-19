@@ -77,20 +77,26 @@ function fakeCtx() {
   }
 }
 
+// `contigBp` is what the contig carries over the whole fetch, which the
+// per-contig floor reads: it defaults to the spans handed in, and a test whose
+// subject is one sliver of a real block passes the block's own total.
 function data(
   spans: [number, number][],
   names: string[] = spans.map(() => 'other'),
   mates: [number, number][] = spans,
+  contigBp?: number,
 ): OffscreenMateData {
   const dict = [...new Set(names)]
   return {
     mateRefNameDict: dict,
     counts: Uint32Array.from(dict, () => spans.length),
     alignedBp: Float64Array.from(dict, name =>
-      spans.reduce(
-        (sum, s, i) => (names[i] === name ? sum + (s[1] - s[0]) : sum),
-        0,
-      ),
+      contigBp === undefined
+        ? spans.reduce(
+            (sum, s, i) => (names[i] === name ? sum + (s[1] - s[0]) : sum),
+            0,
+          )
+        : contigBp,
     ),
     starts: Float64Array.from(spans.map(s => s[0])),
     ends: Float64Array.from(spans.map(s => s[1])),
@@ -162,10 +168,53 @@ test('the pan offset moves it, as it moves a ribbon', () => {
   expect(rects[0]!.x).toBe(5)
 })
 
+// One anchor at the edge of a block that is 100kb in total: the block earns the
+// strip, and its smallest piece is drawn where it is rather than nowhere.
 test('a sub-pixel alignment is still a mark', () => {
   const { ctx, rects } = fakeCtx()
-  draw(ctx, [{ datasets: [data([[100, 101]])] }])
+  draw(ctx, [{ datasets: [data([[100, 101]], undefined, undefined, 100_000)] }])
   expect(rects[0]!.w).toBe(MIN_OFFSCREEN_MATE_WIDTH_PX)
+})
+
+// ...but the contig it belongs to has to be worth the ink. Every mark is at
+// least 1.5px however small its alignment, so a contig with a couple of stray
+// anchors draws as much as one with a block, and at a wide enough window that
+// is the whole strip. The floor is in PIXELS, so it lifts with the window.
+test('a contig whose sequence is worth less than a mark draws none', () => {
+  const { ctx, rects } = fakeCtx()
+  // 30bp of contig at 10bp/px is 3px of sequence under a 4px floor
+  draw(ctx, [{ datasets: [data([[100, 130]], ['ctgB'])] }])
+  expect(rects).toEqual([])
+})
+
+// ...and comes back on the way in, which is where there is room for it: the
+// same 30bp against a tenth of the bp per pixel is 30px of sequence.
+test('...and draws them again once the window is narrow enough', () => {
+  const { ctx, rects } = fakeCtx()
+  draw(ctx, [{ bpPerPx: 1, datasets: [data([[100, 130]], ['ctgB'])] }], {
+    width: 1000,
+  })
+  expect(rects).toHaveLength(1)
+})
+
+// The strong contig in the same lane is untouched by its neighbour's fate.
+test('...while a contig that earns it keeps its marks at that window', () => {
+  const { ctx, rects } = fakeCtx()
+  draw(ctx, [
+    {
+      datasets: [
+        data(
+          [
+            [100, 130],
+            [200, 800],
+          ],
+          ['ctgB', 'ctgC'],
+        ),
+      ],
+    },
+  ])
+  expect(rects).toHaveLength(1)
+  expect(rects[0]!.x).toBe(20)
 })
 
 test('one off each side of the window is skipped, the one between is not', () => {
@@ -1035,6 +1084,7 @@ test('...unioned over every alignment stacked under the pointer', () => {
           [9000, 9100],
           [4000, 4100],
         ],
+        100_000,
       ),
     ],
   }
@@ -1063,6 +1113,7 @@ test('...but never across the contigs sharing that column', () => {
           [9000, 9100],
           [4000, 4200],
         ],
+        100_000,
       ),
     ],
   }
@@ -1107,11 +1158,14 @@ function placed(
   spans: [number, number][],
   mateCumBp: [number, number][],
   names?: string[],
+  // a culled lane holds whole chromosomes the facing row has scrolled off, so
+  // its contigs clear the per-contig floor on any window these tests use
+  contigBp = 1_000_000,
 ): OffscreenMateDataset {
   const starts = Float64Array.from(mateCumBp.map(s => s[0]))
   const ends = Float64Array.from(mateCumBp.map(s => s[1]))
   return {
-    ...data(spans, names),
+    ...data(spans, names, undefined, contigBp),
     mateAxis: {
       starts,
       ends,
@@ -1237,7 +1291,7 @@ test('...and never unioned with a lane that has no drawn position', () => {
   const layout = {
     ...params,
     datasets: [
-      data([[100, 110]], ['ctgB'], [[4000, 4100]]),
+      data([[100, 110]], ['ctgB'], [[4000, 4100]], 100_000),
       placed([[100, 110]], [[90_000, 90_100]], ['ctgB']),
     ],
     mateBand: { lo: 0, hi: 1000 },
@@ -1260,7 +1314,7 @@ test('...whichever order the lanes are scanned in', () => {
     ...params,
     datasets: [
       placed([[100, 110]], [[90_000, 90_100]], ['ctgB']),
-      data([[100, 110]], ['ctgB'], [[4000, 4100]]),
+      data([[100, 110]], ['ctgB'], [[4000, 4100]], 100_000),
     ],
     mateBand: { lo: 0, hi: 1000 },
   }
