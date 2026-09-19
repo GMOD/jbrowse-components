@@ -7,7 +7,10 @@ import {
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
-import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
+import {
+  wiggleConfigSchemaFields,
+  wiggleValueScale,
+} from '../shared/wiggleConfigSchemaFields.ts'
 import { MULTI_WIGGLE_RENDERING_TYPES } from '../util.ts'
 
 // Configs are sometimes hand-authored (or copy-pasted from a single-source
@@ -100,6 +103,13 @@ const configSchema = ConfigurationSchema(
   'MultiLinearWiggleDisplay',
   {
     ...wiggleConfigSchemaFields,
+    /**
+     * #slot scales
+     * The y scale the plot is drawn through: `type`, `domainMin`,
+     * `domainMax`, `autoscale`, `numStdDev`, `numQuantile` and
+     * `symlogConstant`.
+     */
+    scales: wiggleValueScale(),
     ...trackHeightConfigSchemaFields({ defaultHeight: 200 }),
     ...summaryScoreModeConfigSchemaFields({ defaultMode: 'avg' }),
     /**

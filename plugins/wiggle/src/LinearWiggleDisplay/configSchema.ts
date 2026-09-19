@@ -4,7 +4,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { colorImpliesSolid } from '../shared/colorImpliesSolid.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
-import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
+import {
+  wiggleConfigSchemaFields,
+  wiggleValueScale,
+} from '../shared/wiggleConfigSchemaFields.ts'
 import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
 
 /**
@@ -91,6 +94,13 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
         'Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.',
     },
     ...wiggleConfigSchemaFields,
+    /**
+     * #slot scales
+     * The y scale the plot is drawn through: `type`, `domainMin`,
+     * `domainMax`, `autoscale`, `numStdDev`, `numQuantile` and
+     * `symlogConstant`.
+     */
+    scales: wiggleValueScale(),
     /**
      * #slot
      */

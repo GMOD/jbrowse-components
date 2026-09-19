@@ -6,16 +6,19 @@ sidebar_label: Mixin -> ScoreAxisMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreAxisMixin.ts).
 
-#crossCuttingMixin Score axis, without a home for it. Nothing — no config slots. Brings the derived half of the score-menu contract: `*Bound` / `hasManualScoreBounds` / `defaultScoreDomain` / `valueScales` / `axes`, over the `scaleType` and `manual*` a composer answers
+Not a cross-cutting mixin any more: ScoreScaleMixin is its one
+composer, and a display takes the axis by taking that. The two stay apart
+because the halves answer different questions — this one derives, the other
+says where the answer is written.
 
 The axis contract apart from where it is written down. `scaleType`,
 `manualMinScore` and `manualMaxScore` are declared here with neutral answers
 and a composing display overrides them, so the bounds, the "is anything
 pinned" question, the ticks and the cross-hatches derive the same way
-wherever the declaration lives. ScoreScaleMixin is the composer that
-backs them with `scoreAxisConfigSchemaFields`, which is what wiggle, the
-multi-wiggle, Manhattan and the alignments coverage band each take; the mark
-display backs the same three from its own `scales.y` sub-schema instead.
+wherever the declaration lives. ScoreScaleMixin is the one composer
+in the tree, backing them with the `scales.y` object every quantitative
+display declares; the split stays because the derived half is what a display
+writing its scale down somewhere else would answer.
 
 The setters are not here. A display cannot set what it has not said where to
 put, so `setScaleType`/`setMinScore`/`setMaxScore` belong to whichever

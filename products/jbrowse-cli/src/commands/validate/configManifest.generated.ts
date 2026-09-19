@@ -3271,28 +3271,40 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "autoscale",
-          "type": "(JexlString | Coverage autoscale type)"
-        },
-        {
-          "name": "minScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "maxScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "scaleType",
-          "type": "(JexlString | Coverage scale type)"
-        },
-        {
-          "name": "symlogConstant",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "numStdDev",
-          "type": "(JexlString | number)"
+          "name": "scales",
+          "type": "ScalesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "ValueScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "(JexlString | ValueScaleType)"
+                },
+                {
+                  "name": "domainMin",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "domainMax",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "symlogConstant",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "autoscale",
+                  "type": "(JexlString | ValueScaleAutoscale)"
+                },
+                {
+                  "name": "numStdDev",
+                  "type": "(JexlString | number)"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "mismatchAlpha",
@@ -3627,28 +3639,40 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "autoscale",
-          "type": "(JexlString | Coverage autoscale type)"
-        },
-        {
-          "name": "minScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "maxScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "scaleType",
-          "type": "(JexlString | Coverage scale type)"
-        },
-        {
-          "name": "symlogConstant",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "numStdDev",
-          "type": "(JexlString | number)"
+          "name": "scales",
+          "type": "ScalesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "ValueScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "(JexlString | ValueScaleType)"
+                },
+                {
+                  "name": "domainMin",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "domainMax",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "symlogConstant",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "autoscale",
+                  "type": "(JexlString | ValueScaleAutoscale)"
+                },
+                {
+                  "name": "numStdDev",
+                  "type": "(JexlString | number)"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "mismatchAlpha",
@@ -4509,39 +4533,15 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | CssColor)"
         },
         {
-          "name": "minScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "maxScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "scaleType",
-          "type": "(JexlString | Scale type)"
-        },
-        {
-          "name": "autoscale",
-          "type": "(JexlString | Autoscale type)"
-        },
-        {
-          "name": "numStdDev",
-          "type": "(JexlString | number)"
+          "name": "scoreField",
+          "type": "(JexlString | string)"
         },
         {
           "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "scoreField",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "resolution",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "symlogConstant",
           "type": "(JexlString | number)"
         },
         {
@@ -4561,10 +4561,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | Density color ramp)"
         },
         {
-          "name": "numQuantile",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "scatterPointSize",
           "type": "(JexlString | number)"
         },
@@ -4575,6 +4571,46 @@ export const configManifest: ConfigManifest = {
         {
           "name": "maxGapMultiple",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "scales",
+          "type": "ScalesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "ValueScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "(JexlString | ValueScaleType)"
+                },
+                {
+                  "name": "domainMin",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "domainMax",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "symlogConstant",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "autoscale",
+                  "type": "(JexlString | ValueScaleAutoscale)"
+                },
+                {
+                  "name": "numStdDev",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "numQuantile",
+                  "type": "(JexlString | number)"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "showLegend",
@@ -4610,39 +4646,15 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "minScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "maxScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "scaleType",
-          "type": "(JexlString | Scale type)"
-        },
-        {
-          "name": "autoscale",
-          "type": "(JexlString | Autoscale type)"
-        },
-        {
-          "name": "numStdDev",
-          "type": "(JexlString | number)"
+          "name": "scoreField",
+          "type": "(JexlString | string)"
         },
         {
           "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "scoreField",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "resolution",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "symlogConstant",
           "type": "(JexlString | number)"
         },
         {
@@ -4662,10 +4674,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | Density color ramp)"
         },
         {
-          "name": "numQuantile",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "scatterPointSize",
           "type": "(JexlString | number)"
         },
@@ -4676,6 +4684,46 @@ export const configManifest: ConfigManifest = {
         {
           "name": "maxGapMultiple",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "scales",
+          "type": "ScalesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "ValueScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "(JexlString | ValueScaleType)"
+                },
+                {
+                  "name": "domainMin",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "domainMax",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "symlogConstant",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "autoscale",
+                  "type": "(JexlString | ValueScaleAutoscale)"
+                },
+                {
+                  "name": "numStdDev",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "numQuantile",
+                  "type": "(JexlString | number)"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "height",
@@ -4762,39 +4810,15 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | CssColor)"
         },
         {
-          "name": "minScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "maxScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "scaleType",
-          "type": "(JexlString | Scale type)"
-        },
-        {
-          "name": "autoscale",
-          "type": "(JexlString | Autoscale type)"
-        },
-        {
-          "name": "numStdDev",
-          "type": "(JexlString | number)"
+          "name": "scoreField",
+          "type": "(JexlString | string)"
         },
         {
           "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "scoreField",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "resolution",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "symlogConstant",
           "type": "(JexlString | number)"
         },
         {
@@ -4814,10 +4838,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | Density color ramp)"
         },
         {
-          "name": "numQuantile",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "scatterPointSize",
           "type": "(JexlString | number)"
         },
@@ -4828,6 +4848,46 @@ export const configManifest: ConfigManifest = {
         {
           "name": "maxGapMultiple",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "scales",
+          "type": "ScalesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "ValueScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "(JexlString | ValueScaleType)"
+                },
+                {
+                  "name": "domainMin",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "domainMax",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "symlogConstant",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "autoscale",
+                  "type": "(JexlString | ValueScaleAutoscale)"
+                },
+                {
+                  "name": "numStdDev",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "numQuantile",
+                  "type": "(JexlString | number)"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "showLegend",
@@ -4891,39 +4951,15 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | CssColor)"
         },
         {
-          "name": "minScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "maxScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "scaleType",
-          "type": "(JexlString | Scale type)"
-        },
-        {
-          "name": "autoscale",
-          "type": "(JexlString | Autoscale type)"
-        },
-        {
-          "name": "numStdDev",
-          "type": "(JexlString | number)"
+          "name": "scoreField",
+          "type": "(JexlString | string)"
         },
         {
           "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "scoreField",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "resolution",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "symlogConstant",
           "type": "(JexlString | number)"
         },
         {
@@ -4943,10 +4979,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | Density color ramp)"
         },
         {
-          "name": "numQuantile",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "scatterPointSize",
           "type": "(JexlString | number)"
         },
@@ -4957,6 +4989,46 @@ export const configManifest: ConfigManifest = {
         {
           "name": "maxGapMultiple",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "scales",
+          "type": "ScalesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "ValueScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "(JexlString | ValueScaleType)"
+                },
+                {
+                  "name": "domainMin",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "domainMax",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "symlogConstant",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "autoscale",
+                  "type": "(JexlString | ValueScaleAutoscale)"
+                },
+                {
+                  "name": "numStdDev",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "numQuantile",
+                  "type": "(JexlString | number)"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "showLegend",
@@ -5328,24 +5400,28 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "minScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "maxScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "scaleType",
-          "type": "(JexlString | Scale type)"
-        },
-        {
-          "name": "autoscale",
-          "type": "(JexlString | Autoscale type)"
-        },
-        {
-          "name": "numStdDev",
-          "type": "(JexlString | number)"
+          "name": "scales",
+          "type": "ScalesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "ValueScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "(JexlString | ValueScaleType)"
+                },
+                {
+                  "name": "domainMin",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "domainMax",
+                  "type": "(JexlString | (number | undefined))"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "displayCrossHatches",
@@ -5642,15 +5718,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "scales",
-          "type": "MarkScalesConfigurationSchema",
+          "type": "ScalesConfigurationSchema",
           "subSlots": [
             {
               "name": "y",
-              "type": "MarkValueScaleConfigurationSchema",
+              "type": "ValueScaleConfigurationSchema",
               "subSlots": [
                 {
                   "name": "type",
-                  "type": "(JexlString | MarkScaleType)"
+                  "type": "(JexlString | ValueScaleType)"
                 },
                 {
                   "name": "domainMin",
@@ -5659,6 +5735,18 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainMax",
                   "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "autoscale",
+                  "type": "(JexlString | ValueScaleAutoscale)"
+                },
+                {
+                  "name": "numStdDev",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "numQuantile",
+                  "type": "(JexlString | number)"
                 }
               ]
             }

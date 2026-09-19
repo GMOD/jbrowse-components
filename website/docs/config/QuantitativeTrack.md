@@ -46,7 +46,7 @@ the `LinearWiggleDisplay`), so you don't have to know display names:
     type: 'BigWigAdapter',
     uri: 'https://example.com/coverage.bw',
   },
-  displayDefaults: { scaleType: 'log', color: 'darkgreen' },
+  displayDefaults: { scales: { y: { type: 'log' } }, color: 'darkgreen' },
 }
 ```
 

@@ -65,12 +65,14 @@ export function valueScaleSchema({
        * cross 0 keeps them. Which of the three a display offers is which of
        * them its renderer places.
        */
+      // #region stringEnumSlot
       type: {
         type: 'stringEnum',
         model: types.enumeration('ValueScaleType', [...scaleTypes]),
         defaultValue: 'linear',
         description: scaleTypes.join(' or '),
       },
+      // #endregion
       /**
        * #slot scales.y.domainMin
        * The bottom of the axis, pinning what would otherwise autoscale to the

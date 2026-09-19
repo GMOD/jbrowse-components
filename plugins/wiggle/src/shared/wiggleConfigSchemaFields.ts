@@ -9,14 +9,14 @@ import {
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { DENSITY_COLOR_RAMPS } from './densityColorRamp.ts'
 
-export const wiggleConfigSchemaFields = {
-  ...scoreFieldConfigSchemaFields,
-  /**
-   * #slot
-   * The y scale the plot is drawn through: `type`, `domainMin`, `domainMax`,
-   * `autoscale`, `numStdDev`, `numQuantile` and `symlogConstant`.
-   */
-  scales: scalesSchema(
+/**
+ * The wiggle family's value scale. Spelled beside the palette rather than in
+ * the table below it because the doc generator recovers a spread slot table by
+ * reading its object literal, and a member built by a call is not one — every
+ * wiggle slot left the config pages the once it was in there.
+ */
+export function wiggleValueScale() {
+  return scalesSchema(
     valueScaleSchema({
       types: ['linear', 'log', 'symlog'],
       autoscale: {
@@ -24,7 +24,11 @@ export const wiggleConfigSchemaFields = {
         default: 'localpercentile',
       },
     }),
-  ),
+  )
+}
+
+export const wiggleConfigSchemaFields = {
+  ...scoreFieldConfigSchemaFields,
   /**
    * #slot
    */

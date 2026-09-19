@@ -9,6 +9,19 @@ Manhattan, mark and coverage displays
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### autoscaleDomainFromSpans
+
+Already-computed stats to the displayed domain, for the `local` / `localsd` /
+`localpercentile` autoscale modes. `localpercentile` re-walks the spans to build
+its histogram; the other modes read the stats alone.
+
+```js
+// type signature
+({…}: { stats: ScoreStats; autoscaleType: string | undefined; numStdDev: number; numQuantile?: number | undefined; spans: ScoreSpan[]; }) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
+
 ### computeAutoscaleDomain
 
 Computes a score domain from the visible feature arrays for the `local` /
@@ -16,7 +29,7 @@ Computes a score domain from the visible feature arrays for the `local` /
 
 ```js
 // type signature
-(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: {…}[], numQuantile?: number) => [...] | undefined
+(autoscaleType: string | undefined, summaryScoreMode: string, numStdDev: number, visibleEntries: {…}[], numQuantile?: number) => [...] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -54,11 +67,12 @@ exactly what it always got.
 ### domainFromStats
 
 Converts score stats into a `[min, max]` domain, applying std-dev expansion for
-the `localsd` autoscale type.
+the `localsd` autoscale type. An `undefined` mode is a display whose scale
+declares none, and takes the plain extremes.
 
 ```js
 // type signature
-(stats: ScoreStats, autoscaleType: string, numStdDev: number) => [number, number]
+(stats: ScoreStats, autoscaleType: string | undefined, numStdDev: number) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -218,6 +232,17 @@ differently, and the alignments coverage band does.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
+
+### ScoreSpan
+
+One block's worth of values to fold into a domain, whatever packed them: a
+wiggle source's interleaved `featurePositions` and its three summary arrays, or
+a mark layer's separate `x`/`x2` and its one `y` lane. `starts[i * stride]` and
+`ends[i * stride + endOffset]` give instance `i`'s span; `low`, `high` and `avg`
+give the two ends of its value and the one the mean is taken over, which are the
+same array wherever the packer ships a single scalar.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
 ### visibleStatsDomain
 

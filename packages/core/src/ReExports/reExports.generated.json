@@ -854,6 +854,7 @@
         "isSlotDefinitionEntry",
         "makeSlotFacade",
         "mergeFormatCallbacks",
+        "mergedSubschemaValue",
         "preProcessConfigSnapshot",
         "preProcessSlotValues",
         "preProcessSnapshotWith",

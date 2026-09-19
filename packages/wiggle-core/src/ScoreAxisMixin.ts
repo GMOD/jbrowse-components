@@ -7,7 +7,10 @@ import type { ValueScale, YAxis } from '@jbrowse/display-ui'
 /**
  * #stateModel ScoreAxisMixin
  * #category display
- * #crossCuttingMixin Score axis, without a home for it. Nothing — no config slots. Brings the derived half of the score-menu contract: `*Bound` / `hasManualScoreBounds` / `defaultScoreDomain` / `valueScales` / `axes`, over the `scaleType` and `manual*` a composer answers
+ * Not a cross-cutting mixin any more: {@link ScoreScaleMixin} is its one
+ * composer, and a display takes the axis by taking that. The two stay apart
+ * because the halves answer different questions — this one derives, the other
+ * says where the answer is written.
  *
  * The axis contract apart from where it is written down. `scaleType`,
  * `manualMinScore` and `manualMaxScore` are declared here with neutral answers

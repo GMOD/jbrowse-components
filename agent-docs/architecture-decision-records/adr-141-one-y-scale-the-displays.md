@@ -7,7 +7,9 @@ summary: "The mark display has one y scale and the display owns it: `scales.y` โ
 
 ## Status
 
-Accepted (2026-09-19). Supersedes
+Accepted (2026-09-19). Generalised by
+[ADR-142](adr-142-one-value-scale-object.md): `scales.y` is now built by a
+shared factory and every quantitative display declares one. Supersedes
 [ADR-113](adr-113-one-scale-rule-in-one-place.md)
 ยง"`encoding.y` carries the value scale" and
 [ADR-115](adr-115-one-mark-may-read-its-own-axis.md)'s

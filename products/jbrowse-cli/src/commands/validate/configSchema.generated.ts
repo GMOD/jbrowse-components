@@ -3986,6 +3986,78 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "ValueScale": {
+      "title": "ValueScale",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "linear or log or symlog.",
+          "anyOf": [
+            {
+              "enum": [
+                "linear",
+                "log",
+                "symlog"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "linear"
+        },
+        "domainMin": {
+          "description": "pinned bottom of the axis; unset autoscales.",
+          "$ref": "#/$defs/NumberOrJexl"
+        },
+        "domainMax": {
+          "description": "pinned top of the axis; unset autoscales.",
+          "$ref": "#/$defs/NumberOrJexl"
+        },
+        "symlogConstant": {
+          "description": "width of symlog's linear region around zero.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 1
+        },
+        "autoscale": {
+          "description": "local or localsd.",
+          "anyOf": [
+            {
+              "enum": [
+                "local",
+                "localsd"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "local"
+        },
+        "numStdDev": {
+          "description": "standard deviations for the localsd autoscale.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 3
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "Scales": {
+      "title": "Scales",
+      "type": "object",
+      "properties": {
+        "y": {
+          "$ref": "#/$defs/ValueScale"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearAlignmentsDisplaySlots": {
       "type": "object",
       "properties": {
@@ -4097,56 +4169,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
-        "autoscale": {
-          "description": "Coverage autoscale type.",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "local"
-        },
-        "minScore": {
-          "description": "Minimum coverage depth bound.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 5e-324
-        },
-        "maxScore": {
-          "description": "Maximum coverage depth bound.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1.7976931348623157e+308
-        },
-        "scaleType": {
-          "description": "Coverage scale type. \\"log\\" floors the domain at a depth of 1, which draws a single-read position at the same height as no coverage at all; \\"symlog\\" is log-like higher up and linear through zero, so low depths stay separable.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log",
-                "symlog"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "linear"
-        },
-        "symlogConstant": {
-          "description": "Width of symlog's linear region around zero, in depth units. The default 1 makes symlog exactly log(depth+1), which is the transform read depth wants: the knee sits at one read, the smallest depth there is. 0 means \\"derive from the domain\\" (a thousandth of the visible max) — right for a wiggle track, whose units are its own, and wrong here, since it puts the knee a tenth of a read below zero and draws a single stray read a third of the way up a depth-100 band.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1
-        },
-        "numStdDev": {
-          "description": "Number of standard deviations for localsd autoscale.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 3
+        "scales": {
+          "$ref": "#/$defs/Scales"
         },
         "mismatchAlpha": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
@@ -4661,56 +4685,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
-        "autoscale": {
-          "description": "Coverage autoscale type.",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "local"
-        },
-        "minScore": {
-          "description": "Minimum coverage depth bound.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 5e-324
-        },
-        "maxScore": {
-          "description": "Maximum coverage depth bound.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1.7976931348623157e+308
-        },
-        "scaleType": {
-          "description": "Coverage scale type. \\"log\\" floors the domain at a depth of 1, which draws a single-read position at the same height as no coverage at all; \\"symlog\\" is log-like higher up and linear through zero, so low depths stay separable.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log",
-                "symlog"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "linear"
-        },
-        "symlogConstant": {
-          "description": "Width of symlog's linear region around zero, in depth units. The default 1 makes symlog exactly log(depth+1), which is the transform read depth wants: the knee sits at one read, the smallest depth there is. 0 means \\"derive from the domain\\" (a thousandth of the visible max) — right for a wiggle track, whose units are its own, and wrong here, since it puts the knee a tenth of a read below zero and draws a single stray read a third of the way up a depth-100 band.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1
-        },
-        "numStdDev": {
-          "description": "Number of standard deviations for localsd autoscale.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 3
+        "scales": {
+          "$ref": "#/$defs/Scales"
         },
         "mismatchAlpha": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
@@ -5936,6 +5912,84 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "ValueScale2": {
+      "title": "ValueScale2",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "linear or log or symlog.",
+          "anyOf": [
+            {
+              "enum": [
+                "linear",
+                "log",
+                "symlog"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "linear"
+        },
+        "domainMin": {
+          "description": "pinned bottom of the axis; unset autoscales.",
+          "$ref": "#/$defs/NumberOrJexl"
+        },
+        "domainMax": {
+          "description": "pinned top of the axis; unset autoscales.",
+          "$ref": "#/$defs/NumberOrJexl"
+        },
+        "symlogConstant": {
+          "description": "width of symlog's linear region around zero.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 0
+        },
+        "autoscale": {
+          "description": "local or localsd or localpercentile.",
+          "anyOf": [
+            {
+              "enum": [
+                "local",
+                "localsd",
+                "localpercentile"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "localpercentile"
+        },
+        "numStdDev": {
+          "description": "standard deviations for the localsd autoscale.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 3
+        },
+        "numQuantile": {
+          "description": "percentile the localpercentile autoscale clips at.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 0.99
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "Scales2": {
+      "title": "Scales2",
+      "type": "object",
+      "properties": {
+        "y": {
+          "$ref": "#/$defs/ValueScale2"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearWiggleDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5972,72 +6026,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
-        "minScore": {
-          "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 5e-324
-        },
-        "maxScore": {
-          "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1.7976931348623157e+308
-        },
-        "scaleType": {
-          "description": "Scale type. \\"log\\" cannot represent 0 or negative scores and floors the domain above them; \\"symlog\\" is log-like away from zero and linear through it, so a track whose scores touch or cross 0 keeps them.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log",
-                "symlog"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "linear"
-        },
-        "autoscale": {
-          "description": "Autoscale type: \\"local\\" uses the min/max in the visible region, \\"localsd\\" uses mean ± numStdDev standard deviations, \\"localpercentile\\" uses the numQuantile-th percentile score as the max (robust to skewed/peaky data).",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd",
-                "localpercentile"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "localpercentile"
-        },
-        "numStdDev": {
-          "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 3
+        "scoreField": {
+          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "score"
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
-        "scoreField": {
-          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "score"
-        },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
-        },
-        "symlogConstant": {
-          "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
@@ -6069,11 +6071,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "default"
         },
-        "numQuantile": {
-          "description": "Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0.99
-        },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -6088,6 +6085,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
+        },
+        "scales": {
+          "$ref": "#/$defs/Scales2"
         },
         "showLegend": {
           "description": "Draw the score color ramp in density mode. Defaults to on.",
@@ -6148,72 +6148,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiLinearWiggleDisplaySlots": {
       "type": "object",
       "properties": {
-        "minScore": {
-          "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 5e-324
-        },
-        "maxScore": {
-          "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1.7976931348623157e+308
-        },
-        "scaleType": {
-          "description": "Scale type. \\"log\\" cannot represent 0 or negative scores and floors the domain above them; \\"symlog\\" is log-like away from zero and linear through it, so a track whose scores touch or cross 0 keeps them.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log",
-                "symlog"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "linear"
-        },
-        "autoscale": {
-          "description": "Autoscale type: \\"local\\" uses the min/max in the visible region, \\"localsd\\" uses mean ± numStdDev standard deviations, \\"localpercentile\\" uses the numQuantile-th percentile score as the max (robust to skewed/peaky data).",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd",
-                "localpercentile"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "localpercentile"
-        },
-        "numStdDev": {
-          "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 3
+        "scoreField": {
+          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "score"
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
-        "scoreField": {
-          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "score"
-        },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
-        },
-        "symlogConstant": {
-          "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
@@ -6245,11 +6193,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "default"
         },
-        "numQuantile": {
-          "description": "Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0.99
-        },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -6264,6 +6207,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
+        },
+        "scales": {
+          "$ref": "#/$defs/Scales2"
         },
         "height": {
           "description": "default height for the track.",
@@ -6410,72 +6356,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
-        "minScore": {
-          "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 5e-324
-        },
-        "maxScore": {
-          "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1.7976931348623157e+308
-        },
-        "scaleType": {
-          "description": "Scale type. \\"log\\" cannot represent 0 or negative scores and floors the domain above them; \\"symlog\\" is log-like away from zero and linear through it, so a track whose scores touch or cross 0 keeps them.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log",
-                "symlog"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "linear"
-        },
-        "autoscale": {
-          "description": "Autoscale type: \\"local\\" uses the min/max in the visible region, \\"localsd\\" uses mean ± numStdDev standard deviations, \\"localpercentile\\" uses the numQuantile-th percentile score as the max (robust to skewed/peaky data).",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd",
-                "localpercentile"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "localpercentile"
-        },
-        "numStdDev": {
-          "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 3
+        "scoreField": {
+          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "score"
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
-        "scoreField": {
-          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "score"
-        },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
-        },
-        "symlogConstant": {
-          "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
@@ -6507,11 +6401,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "default"
         },
-        "numQuantile": {
-          "description": "Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0.99
-        },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -6526,6 +6415,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
+        },
+        "scales": {
+          "$ref": "#/$defs/Scales2"
         },
         "showLegend": {
           "description": "Draw the score color ramp in density mode. Defaults to on.",
@@ -6641,72 +6533,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/CssColorOrJexl",
           "default": "#0068d1"
         },
-        "minScore": {
-          "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 5e-324
-        },
-        "maxScore": {
-          "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1.7976931348623157e+308
-        },
-        "scaleType": {
-          "description": "Scale type. \\"log\\" cannot represent 0 or negative scores and floors the domain above them; \\"symlog\\" is log-like away from zero and linear through it, so a track whose scores touch or cross 0 keeps them.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log",
-                "symlog"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "linear"
-        },
-        "autoscale": {
-          "description": "Autoscale type: \\"local\\" uses the min/max in the visible region, \\"localsd\\" uses mean ± numStdDev standard deviations, \\"localpercentile\\" uses the numQuantile-th percentile score as the max (robust to skewed/peaky data).",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd",
-                "localpercentile"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "localpercentile"
-        },
-        "numStdDev": {
-          "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 3
+        "scoreField": {
+          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "score"
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
-        "scoreField": {
-          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "score"
-        },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
-        },
-        "symlogConstant": {
-          "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
@@ -6738,11 +6578,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "default"
         },
-        "numQuantile": {
-          "description": "Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0.99
-        },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -6757,6 +6592,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
+        },
+        "scales": {
+          "$ref": "#/$defs/Scales2"
         },
         "showLegend": {
           "description": "Draw the score color ramp in density mode. Defaults to on.",
@@ -7328,6 +7166,49 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "ValueScale3": {
+      "title": "ValueScale3",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "linear.",
+          "anyOf": [
+            {
+              "const": "linear"
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "linear"
+        },
+        "domainMin": {
+          "description": "pinned bottom of the axis; unset autoscales.",
+          "$ref": "#/$defs/NumberOrJexl"
+        },
+        "domainMax": {
+          "description": "pinned top of the axis; unset autoscales.",
+          "$ref": "#/$defs/NumberOrJexl"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "Scales3": {
+      "title": "Scales3",
+      "type": "object",
+      "properties": {
+        "y": {
+          "$ref": "#/$defs/ValueScale3"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearManhattanDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7344,54 +7225,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "score"
         },
-        "minScore": {
-          "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 5e-324
-        },
-        "maxScore": {
-          "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1.7976931348623157e+308
-        },
-        "scaleType": {
-          "description": "Scale type (linear or log).",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "linear"
-        },
-        "autoscale": {
-          "description": "Autoscale type: \\"local\\" uses the min/max in the visible region, \\"localsd\\" uses mean ± numStdDev standard deviations, \\"localpercentile\\" uses the numQuantile-th percentile score as the max (robust to skewed/peaky data).",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd",
-                "localpercentile"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "localpercentile"
-        },
-        "numStdDev": {
-          "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 3
+        "scales": {
+          "$ref": "#/$defs/Scales3"
         },
         "displayCrossHatches": {
-          "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
+          "description": "Rule the score axis with horizontal cross hatches at the tick positions.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
@@ -7835,8 +7673,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "MarkValueScale": {
-      "title": "MarkValueScale",
+    "ValueScale4": {
+      "title": "ValueScale4",
       "type": "object",
       "properties": {
         "type": {
@@ -7861,6 +7699,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
           "$ref": "#/$defs/NumberOrJexl"
+        },
+        "autoscale": {
+          "description": "local or localsd or localpercentile.",
+          "anyOf": [
+            {
+              "enum": [
+                "local",
+                "localsd",
+                "localpercentile"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "local"
+        },
+        "numStdDev": {
+          "description": "standard deviations for the localsd autoscale.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 3
+        },
+        "numQuantile": {
+          "description": "percentile the localpercentile autoscale clips at.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 0.99
         }
       },
       "patternProperties": {
@@ -7868,12 +7732,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "MarkScales": {
-      "title": "MarkScales",
+    "Scales4": {
+      "title": "Scales4",
       "type": "object",
       "properties": {
         "y": {
-          "$ref": "#/$defs/MarkValueScale"
+          "$ref": "#/$defs/ValueScale4"
         }
       },
       "patternProperties": {
@@ -7936,7 +7800,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/Facet"
         },
         "scales": {
-          "$ref": "#/$defs/MarkScales"
+          "$ref": "#/$defs/Scales4"
         },
         "origin": {
           "description": "baseline value for bars.",
@@ -8559,29 +8423,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearArcDisplaySlots/properties/caption"
             },
             "minScore": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/minScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minScore"
-                }
-              ]
+              "$ref": "#/$defs/LinearArcDisplaySlots/properties/minScore"
             },
             "scoreField": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scoreField"
             },
-            "maxScore": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxScore"
-            },
-            "scaleType": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scaleType"
-            },
-            "autoscale": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/autoscale"
-            },
-            "numStdDev": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/numStdDev"
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
             },
             "displayCrossHatches": {
               "anyOf": [
@@ -8621,9 +8476,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
-            },
-            "scales": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -8826,23 +8678,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "collapseGroupRows": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/collapseGroupRows"
             },
-            "autoscale": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/autoscale"
-            },
-            "minScore": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minScore"
-            },
-            "maxScore": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxScore"
-            },
-            "scaleType": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scaleType"
-            },
-            "symlogConstant": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/symlogConstant"
-            },
-            "numStdDev": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/numStdDev"
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
             },
             "mismatchAlpha": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mismatchAlpha"
@@ -8946,9 +8790,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
-            },
-            "scales": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -9175,23 +9016,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "collapseGroupRows": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/collapseGroupRows"
             },
-            "autoscale": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/autoscale"
-            },
-            "minScore": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minScore"
-            },
-            "maxScore": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxScore"
-            },
-            "scaleType": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scaleType"
-            },
-            "symlogConstant": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/symlogConstant"
-            },
-            "numStdDev": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/numStdDev"
+            "scales": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
             },
             "mismatchAlpha": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha"
@@ -9448,32 +9274,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "color": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/color"
             },
-            "minScore": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minScore"
-            },
-            "maxScore": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/maxScore"
-            },
-            "scaleType": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scaleType"
-            },
-            "autoscale": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/autoscale"
-            },
-            "numStdDev": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/numStdDev"
+            "scoreField": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreField"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/displayCrossHatches"
             },
-            "scoreField": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreField"
-            },
             "resolution": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/resolution"
-            },
-            "symlogConstant": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/symlogConstant"
             },
             "posColor": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/posColor"
@@ -9487,9 +9295,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "densityColorRamp": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/densityColorRamp"
             },
-            "numQuantile": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/numQuantile"
-            },
             "scatterPointSize": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
             },
@@ -9498,6 +9303,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/maxGapMultiple"
+            },
+            "scales": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scales"
             },
             "showLegend": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showLegend"
@@ -10346,20 +10154,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "color": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
-            "minScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
-            },
-            "maxScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
-            },
-            "scaleType": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
-            },
-            "autoscale": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
-            },
-            "numStdDev": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+            "scoreField": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
             },
             "displayCrossHatches": {
               "anyOf": [
@@ -10371,14 +10167,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "scoreField": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
-            },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
-            },
-            "symlogConstant": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/symlogConstant"
             },
             "posColor": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/posColor"
@@ -10391,9 +10181,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "densityColorRamp": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/densityColorRamp"
-            },
-            "numQuantile": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numQuantile"
             },
             "scatterPointSize": {
               "anyOf": [
@@ -10410,6 +10197,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
+            },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
             },
             "showLegend": {
               "anyOf": [
@@ -10457,9 +10254,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
-            },
-            "scales": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -10572,20 +10366,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
-            "minScore": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/minScore"
-            },
-            "maxScore": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/maxScore"
-            },
-            "scaleType": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scaleType"
-            },
-            "autoscale": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/autoscale"
-            },
-            "numStdDev": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/numStdDev"
+            "scoreField": {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scoreField"
             },
             "displayCrossHatches": {
               "anyOf": [
@@ -10597,14 +10379,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "scoreField": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scoreField"
-            },
             "resolution": {
               "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/resolution"
-            },
-            "symlogConstant": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/symlogConstant"
             },
             "posColor": {
               "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/posColor"
@@ -10617,9 +10393,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "densityColorRamp": {
               "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/densityColorRamp"
-            },
-            "numQuantile": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/numQuantile"
             },
             "scatterPointSize": {
               "anyOf": [
@@ -10636,6 +10409,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/maxGapMultiple"
+            },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
             },
             "height": {
               "anyOf": [
@@ -10711,9 +10494,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
-            },
-            "scales": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -10838,32 +10618,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "color": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/color"
             },
-            "minScore": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/minScore"
-            },
-            "maxScore": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/maxScore"
-            },
-            "scaleType": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scaleType"
-            },
-            "autoscale": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/autoscale"
-            },
-            "numStdDev": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/numStdDev"
+            "scoreField": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scoreField"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/displayCrossHatches"
             },
-            "scoreField": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scoreField"
-            },
             "resolution": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/resolution"
-            },
-            "symlogConstant": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/symlogConstant"
             },
             "posColor": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/posColor"
@@ -10877,9 +10639,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "densityColorRamp": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/densityColorRamp"
             },
-            "numQuantile": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/numQuantile"
-            },
             "scatterPointSize": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scatterPointSize"
             },
@@ -10888,6 +10647,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/maxGapMultiple"
+            },
+            "scales": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scales"
             },
             "showLegend": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showLegend"
@@ -11336,20 +11098,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "scoreField": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scoreField"
             },
-            "minScore": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minScore"
-            },
-            "maxScore": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxScore"
-            },
-            "scaleType": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scaleType"
-            },
-            "autoscale": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/autoscale"
-            },
-            "numStdDev": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/numStdDev"
+            "scales": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"

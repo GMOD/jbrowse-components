@@ -163,17 +163,17 @@ inherits the base's value and the slot is never unset. State
 `frozen` and `maybeFrozen` hold arbitrary JSON. The value is not deeply
 reactive, and reads are typed `any` — the structure is the caller's to assert.
 
-For enums, use `type: 'stringEnum'` and add a `model` field. The score axis's
-`scaleType` slot:
+For enums, use `type: 'stringEnum'` and add a `model` field. The value scale's
+`type` member:
 
-<!-- include: packages/wiggle-core/src/scoreAxisConfigSchemaFields.ts#stringEnumSlot -->
+<!-- include: packages/wiggle-core/src/valueScaleConfigSchema.ts#stringEnumSlot -->
 
 ```ts
-scaleType: {
+type: {
   type: 'stringEnum',
-  model: types.enumeration('Scale type', ['linear', 'log']),
+  model: types.enumeration('ValueScaleType', [...scaleTypes]),
   defaultValue: 'linear',
-  description: 'Scale type (linear or log)',
+  description: scaleTypes.join(' or '),
 },
 ```
 
