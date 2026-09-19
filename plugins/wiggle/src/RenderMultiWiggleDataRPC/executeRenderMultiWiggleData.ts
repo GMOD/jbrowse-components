@@ -4,6 +4,7 @@ import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 
+import { fetchRegionRaws } from '../fetchRegionRaws.ts'
 import { isMultiSource } from '../multiSourceAdapter.ts'
 import {
   featuresToRaw,
@@ -39,6 +40,26 @@ function unionSourcesByName(
 ): SourceInfo[] {
   const seen = new Set(primary.map(s => s.name))
   return [...primary, ...extra.filter(s => !seen.has(s.name))]
+}
+
+// An adapter that hands back typed arrays (BigWig, GCContent) carries one
+// signal and no source column, so grouping its features by `source` would walk
+// every feature to build the one bucket it already is — and would decline the
+// coalesced multi-region pass that is the whole point of handing an adapter
+// every region at once. The one source is unnamed, which is what the fallback
+// below calls a feature with no source too.
+function hasFeatureArrays(adapter: BaseFeatureDataAdapter) {
+  return 'getFeatureArraysMulti' in adapter || 'getFeatureArrays' in adapter
+}
+
+async function getSingleSourceArrays(
+  dataAdapter: BaseFeatureDataAdapter,
+  regions: Region[],
+  opts: FetchOpts,
+): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
+  return [
+    { source: '', raws: await fetchRegionRaws(dataAdapter, regions, opts) },
+  ]
 }
 
 // Plain feature adapter (e.g. BedTabixAdapter/BedGraphAdapter) used directly
@@ -154,7 +175,9 @@ export async function executeRenderMultiWiggleData({
       Promise.all([
         isMulti
           ? dataAdapter.getMultiSourceFeatureArraysMulti(regions, opts)
-          : getFallbackSourceArrays(dataAdapter, regions, opts),
+          : hasFeatureArrays(dataAdapter)
+            ? getSingleSourceArrays(dataAdapter, regions, opts)
+            : getFallbackSourceArrays(dataAdapter, regions, opts),
         dataAdapter.getZoomRange(opts),
       ]),
   )

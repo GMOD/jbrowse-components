@@ -270,3 +270,30 @@ describe('plain feature adapter fallback', () => {
     expect(results[0]!.sources.map(s => s.name)).toEqual(['m', 'z'])
   })
 })
+
+// A BigWig carries one signal and no source column. Walking its features to
+// group them by `source` would build the one bucket they already are, and would
+// decline the coalesced pass over every region at once — which is the whole
+// reason the regions arrive together.
+describe('single-source typed-array adapter', () => {
+  it('takes the batched array path and reports one unnamed source', async () => {
+    const getFeatureArraysMulti = jest
+      .fn()
+      .mockResolvedValue([raw([1, 2]), raw([3])])
+    const getFeaturesArray = jest.fn()
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getZoomRange: async () => undefined,
+      getFeatureArraysMulti,
+      getFeaturesArray,
+    } as never)
+
+    const results = await run({})
+
+    expect(getFeatureArraysMulti).toHaveBeenCalledTimes(1)
+    expect(getFeatureArraysMulti.mock.calls[0]![0]).toEqual(regions)
+    expect(getFeaturesArray).not.toHaveBeenCalled()
+    expect(results.map(r => r.sources.map(s => s.name))).toEqual([[''], ['']])
+    expect(scoresOf(results[0]!, '')).toEqual([1, 2])
+    expect(scoresOf(results[1]!, '')).toEqual([3])
+  })
+})

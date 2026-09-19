@@ -9,7 +9,6 @@ import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow/index.ts'
 import QuantitativeTrackF from './QuantitativeTrack/index.ts'
 import RenderMultiWiggleDataRPCF from './RenderMultiWiggleDataRPC/index.ts'
-import RenderWiggleDataRPCF from './RenderWiggleDataRPC/index.ts'
 import {
   MultiWiggleClusterScoreMatrix,
   MultiWiggleGetScoreMatrix,
@@ -29,7 +28,6 @@ export default class WigglePlugin extends Plugin {
     LinearWiggleDisplayF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
-    RenderWiggleDataRPCF(pm)
     RenderMultiWiggleDataRPCF(pm)
 
     pm.addRpcMethod(() => new MultiWiggleGetScoreMatrix(pm))
