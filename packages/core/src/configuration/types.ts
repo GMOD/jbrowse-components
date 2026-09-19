@@ -83,13 +83,16 @@ export type MergeConfigDef<D, BASE> =
       }
     : D
 
-type ConfigNodeValue<DEF> = DEF extends AnyConfigurationSchemaType
-  ? DEF['Type']
-  : DEF extends string
-    ? string
-    : DEF extends number
-      ? number
-      : SlotValueRawFromDef<DEF>
+type ConfigNodeValue<DEF> =
+  IsAny<DEF> extends true
+    ? any
+    : DEF extends AnyConfigurationSchemaType
+      ? DEF['Type']
+      : DEF extends string
+        ? string
+        : DEF extends number
+          ? number
+          : SlotValueRawFromDef<DEF>
 
 /**
  * The props a config node presents, read off the schema's DEFINITION rather
@@ -97,12 +100,16 @@ type ConfigNodeValue<DEF> = DEF extends AnyConfigurationSchemaType
  * slot reads as its declared value type, a sub-schema as that sub-config's own
  * node, and a bare string/number entry as the volatile constant it becomes.
  *
- * `unknown` for a widened definition, so `AnyConfigurationModel` stays the
- * untyped bag it was — a named member here would make it unassignable to every
- * concrete node.
+ * A plain mapped type, and it has to stay one. Wrapping it in a conditional —
+ * to answer early for a widened definition, say — makes TypeScript measure
+ * DEFINITION as covariant instead of invariant, and it refuses a failed
+ * covariant check on a type argument outright where a failed invariant one
+ * falls back to comparing the two schemas structurally. Structural is the
+ * comparison that matters: a subclass schema's node has every slot the base's
+ * does, while its *definition* restates `defaultValue` and `description` and so
+ * matches nothing. The widened case belongs in `ConfigNodeValue`.
  */
-export type ConfigNodeType<D> =
-  IsAny<D> extends true ? unknown : { [K in keyof D]: ConfigNodeValue<D[K]> }
+export type ConfigNodeType<D> = { [K in keyof D]: ConfigNodeValue<D[K]> }
 
 export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
   ? never

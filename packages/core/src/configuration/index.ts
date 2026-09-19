@@ -11,6 +11,7 @@ export type {
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
   ConfigModelForFields,
+  ConfigNodeType,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotPath,
