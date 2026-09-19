@@ -6,7 +6,8 @@ import {
   LoadingEllipses,
   SubmitDialog,
 } from '@jbrowse/core/ui'
-import { TextField, Typography } from '@mui/material'
+import { pluralize } from '@jbrowse/core/util'
+import { Alert, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { MARK_SHAPE_CHOICES } from '../plotFields.ts'
@@ -17,6 +18,8 @@ export interface PlotFieldDialogModel {
   plotFields: PlotFields | undefined
   plotFieldsError: unknown
   plotSpec: PlotSpec
+  /** How many declared marks a save would replace rather than edit. */
+  plotSpecReplaces: number
   setPlotMarks: (spec: PlotSpec) => void
 }
 
@@ -29,8 +32,9 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
   model: PlotFieldDialogModel
   handleClose: () => void
 }) {
-  const { plotFields, plotFieldsError } = model
+  const { plotFields, plotFieldsError, plotSpecReplaces } = model
   const [spec, setSpec] = useState(model.plotSpec)
+  const [acknowledged, setAcknowledged] = useState(false)
   const colorChoices = plotFields
     ? [...plotFields.numeric, ...plotFields.categorical].sort()
     : []
@@ -44,7 +48,9 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
       open
       title="Plot a field"
       submitText="Apply"
-      submitDisabled={spec.field === ''}
+      submitDisabled={
+        spec.field === '' || (plotSpecReplaces > 0 && !acknowledged)
+      }
       onCancel={handleClose}
       onSubmit={() => {
         model.setPlotMarks(spec)
@@ -54,6 +60,18 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
       <Typography color="text.secondary">
         Draws one mark per feature at the value of the field you pick.
       </Typography>
+      {plotSpecReplaces > 0 ? (
+        <Alert severity="warning">
+          This track declares {plotSpecReplaces}{' '}
+          {pluralize(plotSpecReplaces, 'mark')} saying more than this dialog can
+          read, so applying replaces {plotSpecReplaces > 1 ? 'them' : 'it'}.
+          <LabeledCheckbox
+            checked={acknowledged}
+            onChange={setAcknowledged}
+            label="Replace the declared marks"
+          />
+        </Alert>
+      ) : null}
       {plotFieldsError ? <ErrorBanner error={plotFieldsError} /> : null}
       {!plotFields && !plotFieldsError ? (
         <LoadingEllipses message="Scanning features for fields" />

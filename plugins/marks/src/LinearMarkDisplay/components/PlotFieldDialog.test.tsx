@@ -23,6 +23,7 @@ function setup(model: Partial<PlotFieldDialogModel>) {
           plotFields: { numeric: ['score'], categorical: ['repClass'] },
           plotFieldsError: undefined,
           plotSpec: EMPTY,
+          plotSpecReplaces: 0,
           setPlotMarks,
           ...model,
         }}
@@ -83,4 +84,16 @@ test('a scan error is reported in the dialog', () => {
     plotFieldsError: new Error('no such file'),
   })
   expect(getByText(/no such file/)).toBeTruthy()
+})
+
+// Applying replaces the whole `marks` list, so a config the dialog could not
+// read back loses what it said unless the user has seen that named.
+test('a config the dialog cannot read is named, and Apply waits on the acknowledgement', () => {
+  const { getByText, setPlotMarks } = setup({ plotSpecReplaces: 2 })
+  pick('Value field', 'score')
+  expect(getByText(/declares 2 marks/)).toBeTruthy()
+  expect(getByText('Apply').closest('button')!.disabled).toBe(true)
+  fireEvent.click(getByText('Replace the declared marks'))
+  fireEvent.click(getByText('Apply'))
+  expect(setPlotMarks).toHaveBeenCalledWith({ ...EMPTY, field: 'score' })
 })
