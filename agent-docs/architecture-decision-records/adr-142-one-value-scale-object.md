@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema({ types, autoscale, symlogConstant })` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node. No migration: a v5 config still saying `scaleType: 'log'` loses it"
+summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema({ types, autoscale, symlogConstant })` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node, except on a channel, which a `shorthand` marks. No migration: a v5 config still saying `scaleType: 'log'` loses it"
 ---
 
 # ADR-142: One value-scale object, on every quantitative display
@@ -122,10 +122,16 @@ the node. A settings bag, a session spec or a share link naming one member —
 `{ scales: { y: { domainMin: 5 } } }` — therefore reset `type` and `autoscale`
 with it, and every route through `showTrackGeneric` takes that door.
 `mergedSubschemaValue` puts the incoming members over the node's own snapshot,
-recursing where both sides are plain objects. A string shorthand
-(`facet: 'strand'`) still replaces whole: it is a different form, not a partial
-one. The config editor's own `setSubschema` is untouched — its object is whole,
-and `configurationSchema.test.ts` pins that.
+recursing where both sides are plain objects.
+
+**A `shorthand` is what says a sub-schema is not merged.** A schema that takes a
+bare string — `facet`, `color`, a mark's `glyph` — takes one written value, so
+`{ field: 'biotype' }` after `{ field: 'biotype', domain: [...] }` is a facet
+with no domain; merging would leave the old domain standing with no way to clear
+it, and `channelSpec.test.ts` pins that. `Scales` and `ValueScale` declare no
+shorthand: they are a namespace of independent settings, and naming one is not a
+statement about the others. The config editor's own `setSubschema` is untouched
+— its object is whole, and `configurationSchema.test.ts` pins that.
 
 ## Consequences
 

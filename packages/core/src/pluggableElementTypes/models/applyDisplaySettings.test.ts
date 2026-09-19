@@ -180,13 +180,17 @@ test('a partial sub-schema write merges rather than replacing the node', () => {
   })
 })
 
-// A string is a different form, not a partial one, so it still replaces whole.
-test('a string shorthand replaces the sub-schema', () => {
+// A sub-schema that takes a bare string takes one written value, so an object
+// handed to it is the whole channel: `{ field }` after `{ field, domain }` is a
+// facet with no domain, and a merge would leave the old domain standing with no
+// way to clear it.
+test('a channel — a sub-schema with a shorthand — replaces whole', () => {
   const display = makeDisplay()
   display.applyDisplaySettings({ facet: { field: 'HP', domain: ['1', '2'] } })
+  display.applyDisplaySettings({ facet: { field: 'HP' } })
+  expect(readConfObject(display.configuration, ['facet', 'domain'])).toEqual([])
   display.applyDisplaySettings({ facet: 'strand' })
   expect(readConfObject(display.configuration, ['facet', 'field'])).toBe(
     'strand',
   )
-  expect(readConfObject(display.configuration, ['facet', 'domain'])).toEqual([])
 })

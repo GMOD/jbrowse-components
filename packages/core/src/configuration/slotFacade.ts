@@ -12,6 +12,7 @@ import ConfigSlot from './configurationSlot.ts'
 import {
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
+  getConfigurationSchemaOptions,
 } from './schemaRegistry.ts'
 import {
   isConfigurationSchemaType,
@@ -79,16 +80,18 @@ function deepMerge(
 }
 
 /**
- * What to hand `setSubschema` for a partial write of `slotName`: the sub-schema
- * as it stands, with `value`'s members over it, recursing where both sides are
- * plain objects.
+ * What to hand `setSubschema` for a write of `slotName`: `value` itself where
+ * the sub-schema is a channel, and the node's own snapshot with `value`'s
+ * members over it — recursing where both sides are plain objects — where it is
+ * not.
  *
- * `setSubschema` replaces the node, which is right for the config editor — it
- * hands over a whole object — and wrong for a settings bag, a session spec or a
- * share link, where `{ scales: { y: { domainMin: 5 } } }` means "pin the bottom"
- * and used to reset `type` and `autoscale` with it. A string shorthand
- * (`facet: 'strand'`) still replaces whole: it is a different form, not a
- * partial one.
+ * **A `shorthand` is what tells the two apart.** A sub-schema that takes a bare
+ * string takes one written value, so `{ field: 'biotype' }` after
+ * `{ field: 'biotype', domain: [...] }` is a colour or facet with no domain,
+ * and a merge would leave the old one standing with no way to clear it. A
+ * sub-schema with no shorthand is a namespace of independent settings, where
+ * `{ scales: { y: { domainMin: 5 } } }` means "pin the bottom" and used to
+ * reset `type` and `autoscale` with it.
  */
 export function mergedSubschemaValue(
   node: AnyConfigurationModel,
@@ -99,8 +102,11 @@ export function mergedSubschemaValue(
   if (!isPlainObject(value) || !isStateTreeNode(existing)) {
     return value ?? {}
   }
-  const snap = getSnapshot(existing)
-  return isPlainObject(snap) ? deepMerge(snap, value) : value
+  const snap = getSnapshot(existing as AnyConfigurationModel)
+  return getConfigurationSchemaOptions(existing as AnyConfigurationModel)
+    ?.shorthand === undefined && isPlainObject(snap)
+    ? deepMerge(snap, value)
+    : value
 }
 
 /**
