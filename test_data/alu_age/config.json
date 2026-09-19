@@ -117,11 +117,12 @@
         {
           "type": "LinearMarkDisplay",
           "displayId": "alu_young_share-LinearMarkDisplay",
+          "scales": { "y": { "domainMin": -1.5, "domainMax": 1.5 } },
           "marks": [
             {
               "shape": "bar",
               "encoding": {
-                "y": { "field": "youngLog2", "domain": ["-1.5", "1.5"] },
+                "y": "youngLog2",
                 "color": "jexl:feature.youngLog2 > 0 ? '#d73027' : '#4575b4'"
               }
             }
@@ -142,11 +143,12 @@
         {
           "type": "LinearMarkDisplay",
           "displayId": "alu_strand_share-LinearMarkDisplay",
+          "scales": { "y": { "domainMin": -1.5, "domainMax": 1.5 } },
           "marks": [
             {
               "shape": "bar",
               "encoding": {
-                "y": { "field": "strandLog2", "domain": ["-1.5", "1.5"] },
+                "y": "strandLog2",
                 "color": "jexl:feature.strandLog2 > 0 ? '#d73027' : '#4575b4'"
               }
             }

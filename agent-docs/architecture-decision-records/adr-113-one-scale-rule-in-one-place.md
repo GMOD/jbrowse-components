@@ -7,6 +7,9 @@ summary: "A scale is declared on the channel it scales and resolved wherever it 
 
 ## Status
 
+Superseded by [ADR-141](adr-141-one-y-scale-the-displays.md) for
+§"`encoding.y` carries the value scale"; the colour-ramp half stands.
+
 Accepted (2026-09-10). Closes the two seams
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) named — "the
 scale lives in two places" and "a scale table is per fetched region" — the

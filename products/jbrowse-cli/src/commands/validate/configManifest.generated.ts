@@ -5428,25 +5428,7 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "y",
-                  "type": "MarkValueConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "field",
-                      "type": "(JexlString | string)"
-                    },
-                    {
-                      "name": "scale",
-                      "type": "(JexlString | MarkValueScale)"
-                    },
-                    {
-                      "name": "domain",
-                      "type": "(JexlString | string[])"
-                    },
-                    {
-                      "name": "resolve",
-                      "type": "(JexlString | MarkValueResolve)"
-                    }
-                  ]
+                  "type": "(JexlString | string)"
                 },
                 {
                   "name": "row",
@@ -5543,6 +5525,10 @@ export const configManifest: ConfigManifest = {
                   "type": "(JexlString | number)"
                 },
                 {
+                  "name": "keepEmpty",
+                  "type": "(JexlString | boolean)"
+                },
+                {
                   "name": "groupby",
                   "type": "(JexlString | string[])"
                 },
@@ -5613,6 +5599,10 @@ export const configManifest: ConfigManifest = {
               "type": "(JexlString | number)"
             },
             {
+              "name": "keepEmpty",
+              "type": "(JexlString | boolean)"
+            },
+            {
               "name": "groupby",
               "type": "(JexlString | string[])"
             },
@@ -5651,28 +5641,28 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "minScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "maxScore",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "scaleType",
-          "type": "(JexlString | Scale type)"
-        },
-        {
-          "name": "autoscale",
-          "type": "(JexlString | Autoscale type)"
-        },
-        {
-          "name": "numStdDev",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "displayCrossHatches",
-          "type": "(JexlString | boolean)"
+          "name": "scales",
+          "type": "MarkScalesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "MarkValueScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "(JexlString | MarkScaleType)"
+                },
+                {
+                  "name": "domainMin",
+                  "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "domainMax",
+                  "type": "(JexlString | (number | undefined))"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "origin",
@@ -5688,6 +5678,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "minimalTicks",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
         },
         {

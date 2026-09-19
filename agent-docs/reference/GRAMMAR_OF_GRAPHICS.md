@@ -87,10 +87,10 @@ in full and of the format-typed displays only where it says so.
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own. An adapter with zoom levels is sent the view's `bpPerPx` ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)), so a BigWig answers from the summary tier the wiggle display reads |
 | transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own | whole, layout included — `stack` is a pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
-| scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
+| scale | domain → range, separate from the encoding | the colour and glyph channels carry their own, `{ field, scale, domain, palette \| range \| ramp }`, read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (a quantitative ramp); the value scale is the display's one `scales.y`, which every mark's `encoding.y` field is read through and `ScoreAxisMixin` derives the axis from ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)) | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, hatches and rules (`packages/wiggle-core/src/ScoreScaleMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
-| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer; the display's `facet` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
+| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every drawing mark folds into the display's one y domain, ggplot2's one-scale-per-aesthetic rule ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the domain, legend and row count fold only the marks drawing | y is the plot's, colour and glyph are each mark's; semantic zoom per layer; the display's `facet` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
 | coordinates | a transform of the plane | genomic x along a strip, and the circular view's ring pass over it: the view is a `RegionHost` whose axis is the circumference, a display renders its strip as into a linear track, and one pass per ring resamples the strip's canvas in polar coordinates (`plugins/circular-view/src/rings/`, [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)) | polar, as a resampling of the finished picture rather than a twin per shape — measured at 4.3 ms a ring against 5.4–6.8 ms for the twin, exact at every bin width; the dotplot stays a display |
 
 The encoding — field to channel, evaluated once — is the grammar's central
@@ -168,13 +168,14 @@ ends now print through `formatScore`, the rule the score caption already used.
 
 The seams, named honestly:
 
-- **A scale is declared on its channel and resolved where its cost says.**
-  `encoding.y` carries `{ field, scale, domain }` beside `encoding.color`'s,
-  and `ScoreScaleMixin`'s `declaredValueScale` hook is the resolution: the
-  mark display answers it off the first drawing mark whose `y` names a field,
-  the score menu writes back into it, and `minScore`/`maxScore` are the
-  fallback rather than the meaning
-  ([ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)).
+- **A colour or glyph scale is declared on its channel; the value scale is the
+  plot's.** `encoding.color` and `encoding.glyph` carry
+  `{ field, scale, domain, ... }`, and a positional channel is a bare field:
+  the mark display's `scales.y` is the one scale every `encoding.y` is read
+  through, the score menu writes into it, and `ScoreAxisMixin` derives the
+  ticks and the cross-hatches from it
+  ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md),
+  narrowing [ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)).
   Where a scale resolves still splits by cardinality, and rightly: a
   categorical colour is data and travels packed with the instance, while a
   domain that moves on every autoscale must not touch a buffer
@@ -435,13 +436,14 @@ the row axis in the vocabulary above, and none is a new channel.
   bp per bin, snapped up — so a zoom inside a rung refetches nothing and a
   1,600x sweep in 64 steps costs 11 refetches. GenomeSpy's `multiscale`
   spells the same idea with `stops`.
-- **Scale resolution across layers: y declares it, a categorical colour
-  shares by construction, a ramp does not share.** `encoding.y.resolve:
-  'independent'` gives one mark its own domain and a second axis on the right,
-  on screen and in the export
-  ([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md));
-  a second independent mark is refused, the chrome having one place to put
-  the axis. Two marks colouring or glyphing by one field through one domain
+- **Scale resolution across layers: y never resolves independently, a
+  categorical colour shares by construction, a ramp does not share.** The
+  display owns one y scale and every drawing mark folds into it, which is
+  ggplot2's rule and which withdrew the `resolve: 'independent'` second axis
+  ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)).
+  The form for a config that does want two quantities in one display is a
+  stacked band per mark with a free y, drawn through `ValueScale.bandTops`,
+  and nothing is built for it. Two marks colouring or glyphing by one field through one domain
   and palette share one key section — `buildMarkLegend` keys a section on the
   declaration rather than the mark, the way ggplot2's `ScalesList$add_defaults`
   keeps one scale per aesthetic across layers and `Guides$merge` folds

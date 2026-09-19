@@ -22,26 +22,18 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field or a field with the scale it is read through, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
 | `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run in order over a feature list, each step reading what the last answered |
 | `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
-| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`) and `enabled` inside the entry's zoom range, the wiggle-core score axis **resolved from the declared `encoding.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
+| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`) and `enabled` inside the entry's zoom range, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
-**A scale is declared on the channel it scales** — `y` takes `{ field, scale,
-domain, resolve }` beside the bare field name, the way `color` and `glyph`
-take their own — and the display resolves it rather than owning a second copy
-([ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)).
-`ScoreScaleMixin`'s `declaredValueScale` hook is where that lands: the mark
-display answers it off the first mark drawing at this zoom whose `y` names a
-field, so the axis, its ticks and the shapes read one declaration, and the
-score menu's "Set min/max" writes back into it. The display's
-own `minScore`/`maxScore`/`scaleType` slots are what a mark with no declared
-`y` falls back to. **One mark may read its own axis**: `resolve:
-'independent'` on its `y` folds a domain from its layers alone, hands its
-shapes that domain through `markValueScale` — the one reader the shapes and
-the hit test share — and declares a second `ValueScale` with `side: 'right'`,
-which `DisplayChrome` and `renderDisplaySvg` place without knowing whose it is
-([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)).
-A second such mark is refused where the config is read.
-For wiggle, the multi-wiggle, Manhattan and the coverage band those slots are
-still the axis itself. The declared scale does not cross
+**A positional channel is a field and the value scale is the plot's**, where
+`color` and `glyph` each carry their own scale object.
+The display's own `scales.y` — `type`, `domainMin`, `domainMax` — is the one
+value scale, and every mark's `encoding.y` names a field read through it, so
+the axis, its ticks and every mark's shapes read one declaration and the score
+menu's "Set min/max" writes there
+([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)).
+`ScoreAxisMixin` is the contract it satisfies. For wiggle, the multi-wiggle,
+Manhattan and the coverage band the axis is still the `minScore`/`maxScore`/
+`scaleType` slots, which `ScoreScaleMixin` backs it from. The scale does not cross
 the wire — the worker reads a value and nothing there reads the scale, and
 shipping it would key the fetch on the axis.
 

@@ -7,6 +7,9 @@ summary: "The wiggle family's `global` and `globalsd` autoscale modes were retir
 
 ## Status
 
+Amended by [ADR-141](adr-141-one-y-scale-the-displays.md): the mark display's
+pin lands on `scales.y`, not on the owning mark's `encoding.y.domain`.
+
 Accepted (2026-09-16), recording a retirement made on 2026-06-19 in
 c7ee0eadd1 that no document described. Closes the last two items of the
 2026-09-15 grammar handoff.

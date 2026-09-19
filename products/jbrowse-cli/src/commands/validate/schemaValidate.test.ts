@@ -295,11 +295,11 @@ describe('the schema', () => {
       },
     ])
     expect(
-      problemsOfMarks([{ shape: 'bar', encoding: { y: { field: '' } } }]),
+      problemsOfMarks([{ shape: 'bar', encoding: { y: '' } }]),
     ).not.toEqual([])
   })
 
-  it('takes a y-less span, and every form of a y that names a field', () => {
+  it('takes a y-less span, and a y naming a field', () => {
     expect(
       problemsOfMarks([{ shape: 'span', encoding: { row: 'name' } }]),
     ).toEqual([])
@@ -308,9 +308,7 @@ describe('the schema', () => {
       problemsOfMarks([{ shape: 'bar', encoding: { y: 'score' } }]),
     ).toEqual([])
     expect(
-      problemsOfMarks([
-        { shape: 'point', encoding: { y: { field: 'score', scale: 'log' } } },
-      ]),
+      problemsOfMarks([{ shape: 'point', encoding: { y: 'score' } }]),
     ).toEqual([])
   })
 

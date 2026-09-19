@@ -7440,80 +7440,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "MarkValue": {
-      "title": "MarkValue",
-      "anyOf": [
-        {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"field\\": ... }\`."
-        },
-        {
-          "type": "object",
-          "properties": {
-            "field": {
-              "description": "value field, or jexl callback.",
-              "$ref": "#/$defs/StringOrJexl",
-              "default": ""
-            },
-            "scale": {
-              "description": "linear or log.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "linear",
-                    "log"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ],
-              "default": "linear"
-            },
-            "domain": {
-              "description": "pinned [min, max].",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
-            },
-            "resolve": {
-              "description": "shared or independent y axis.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "shared",
-                    "independent"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ],
-              "default": "shared"
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "MarkColor": {
       "title": "MarkColor",
       "anyOf": [
@@ -7669,10 +7595,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "end"
         },
         "y": {
-          "$ref": "#/$defs/MarkValue"
+          "description": "value field, or jexl callback.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
         },
         "row": {
-          "description": "band field for spans.",
+          "description": "band field; empty follows a stack step.",
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
@@ -7792,8 +7720,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
+        "keepEmpty": {
+          "description": "keep a feature whose array field is empty.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": false
+        },
         "groupby": {
-          "description": "grouping fields.",
+          "description": "grouping fields; empty follows a preceding bin.",
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "ops": {
@@ -7836,24 +7769,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 ],
                 "properties": {
                   "y": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      {
-                        "type": "object",
-                        "required": [
-                          "field"
-                        ],
-                        "properties": {
-                          "field": {
-                            "type": "string",
-                            "minLength": 1
-                          }
-                        }
-                      }
-                    ]
+                    "type": "string",
+                    "minLength": 1
                   }
                 }
               }
@@ -7918,6 +7835,52 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MarkValueScale": {
+      "title": "MarkValueScale",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "linear or log.",
+          "anyOf": [
+            {
+              "enum": [
+                "linear",
+                "log"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "linear"
+        },
+        "domainMin": {
+          "description": "pinned bottom of the axis; unset autoscales.",
+          "$ref": "#/$defs/NumberOrJexl"
+        },
+        "domainMax": {
+          "description": "pinned top of the axis; unset autoscales.",
+          "$ref": "#/$defs/NumberOrJexl"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkScales": {
+      "title": "MarkScales",
+      "type": "object",
+      "properties": {
+        "y": {
+          "$ref": "#/$defs/MarkValueScale"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearMarkDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7972,56 +7935,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "facet": {
           "$ref": "#/$defs/Facet"
         },
-        "minScore": {
-          "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 5e-324
-        },
-        "maxScore": {
-          "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1.7976931348623157e+308
-        },
-        "scaleType": {
-          "description": "Scale type (linear or log).",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "linear"
-        },
-        "autoscale": {
-          "description": "Autoscale type: \\"local\\" uses the min/max in the visible region, \\"localsd\\" uses mean ± numStdDev standard deviations, \\"localpercentile\\" uses the numQuantile-th percentile score as the max (robust to skewed/peaky data).",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd",
-                "localpercentile"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "localpercentile"
-        },
-        "numStdDev": {
-          "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 3
-        },
-        "displayCrossHatches": {
-          "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": false
+        "scales": {
+          "$ref": "#/$defs/MarkScales"
         },
         "origin": {
           "description": "baseline value for bars.",
@@ -8040,6 +7955,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": false
+        },
+        "displayCrossHatches": {
+          "description": "rule the plot at the tick positions.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
@@ -8645,9 +8565,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
                 }
               ]
             },
@@ -8655,44 +8572,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scoreField"
             },
             "maxScore": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
-                }
-              ]
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxScore"
             },
             "scaleType": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scaleType"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
-                }
-              ]
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scaleType"
             },
             "autoscale": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/autoscale"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
-                }
-              ]
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/autoscale"
             },
             "numStdDev": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/numStdDev"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
-                }
-              ]
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/numStdDev"
             },
             "displayCrossHatches": {
               "anyOf": [
@@ -8732,6 +8621,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "scales": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -8935,57 +8827,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/collapseGroupRows"
             },
             "autoscale": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/autoscale"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
-                }
-              ]
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/autoscale"
             },
             "minScore": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
-                }
-              ]
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minScore"
             },
             "maxScore": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
-                }
-              ]
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxScore"
             },
             "scaleType": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scaleType"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
-                }
-              ]
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scaleType"
             },
             "symlogConstant": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/symlogConstant"
             },
             "numStdDev": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/numStdDev"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
-                }
-              ]
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/numStdDev"
             },
             "mismatchAlpha": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mismatchAlpha"
@@ -9090,8 +8947,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+            "scales": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -9104,6 +8961,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
             },
             "jexlFilters": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
@@ -10195,14 +10055,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/lineWidth"
             },
             "minScore": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/minScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
-                }
-              ]
+              "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/minScore"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -10210,20 +10063,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
-            "maxScore": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
-            },
-            "scaleType": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
-            },
-            "autoscale": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
-            },
-            "numStdDev": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+            "scales": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -10236,6 +10077,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
             }
           },
           "patternProperties": {
@@ -10503,54 +10347,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
             "minScore": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
             },
             "maxScore": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
             },
             "scaleType": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
             },
             "autoscale": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
             },
             "numStdDev": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
             },
             "displayCrossHatches": {
               "anyOf": [
@@ -10648,6 +10457,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "scales": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -10761,54 +10573,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "properties": {
             "minScore": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/minScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minScore"
-                }
-              ]
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/minScore"
             },
             "maxScore": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/maxScore"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxScore"
-                }
-              ]
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/maxScore"
             },
             "scaleType": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scaleType"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scaleType"
-                }
-              ]
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scaleType"
             },
             "autoscale": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/autoscale"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/autoscale"
-                }
-              ]
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/autoscale"
             },
             "numStdDev": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/numStdDev"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/numStdDev"
-                }
-              ]
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/numStdDev"
             },
             "displayCrossHatches": {
               "anyOf": [
@@ -10934,6 +10711,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "scales": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"

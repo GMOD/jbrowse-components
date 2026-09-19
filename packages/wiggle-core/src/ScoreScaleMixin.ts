@@ -22,7 +22,7 @@ const confNode = (self: object) => self as ScoreScaleHost
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Score axis, written in the config slots. `scoreAxisConfigSchemaFields`. Brings {@link ScoreAxisMixin} plus `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `manual*` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+ * #crossCuttingMixin Score axis, written in the config slots. `scoreAxisConfigSchemaFields`. Brings `ScoreAxisMixin` plus `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `manual*` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
  * The score axis of a display whose axis IS `minScore`, `maxScore` and
  * `scaleType`: wiggle, the multi-wiggle, Manhattan and the alignments coverage

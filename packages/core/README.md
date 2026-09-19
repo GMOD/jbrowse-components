@@ -653,10 +653,12 @@ lanes the display's shape reads.
 
 ### MarkEncoding
 
-The declared mapping from a feature's fields to a mark's channels. `x` defaults
-to `start` and `x2` to `end`; a mark that plots no value leaves `y` off. `glyph`
-is read by the `point` shape alone, `row` — an integer field, 0 where missing —
-by the `span` shape, which stacks a feature on the band it names.
+The declared mapping from a feature's fields to a mark's channels. Every
+positional channel is a field: `x` defaults to `start` and `x2` to `end`, a mark
+that plots no value leaves `y` off, and the scale `y` is read through belongs to
+the display rather than to the encoding. `glyph` is read by the `point` shape
+alone, `row` — an integer field, 0 where missing — by every shape, which stands
+a feature in the band it names.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -939,33 +941,6 @@ GenomeSpy spells a transform; every step runs in order and the next reads what
 the last answered.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
-
-### ValueEncoding
-
-How a mark's `y` channel resolves: a feature field (or `jexl:` expression) read
-on a linear scale over the loaded regions' extremes, or the same field with the
-scale spelled out — `log` to read the domain logarithmically, `domain` to pin
-`[min, max]` instead of autoscaling. The declaration is the one owner: the
-display's axis, its ticks and the shader's placement are all resolved from it.
-
-`resolve` is which axis the mark reads. `shared` — the default — folds it into
-the display's one y domain with every other mark. `independent` gives it a
-domain folded from its layers alone and a second axis on the right, so a
-coverage run and the raw features can share a plot; one mark per display may ask
-for it.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
-
-### valueField
-
-The field a `y` declaration reads, whichever of its two forms it is written in.
-
-```js
-// type signature
-(y: ValueEncoding) => string
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ### VIRIDIS_STOPS
 

@@ -46,7 +46,6 @@ function markTrackConfig(
 interface MarkDisplayProbe {
   rowCount: number
   domain?: [number, number]
-  independentValueScale?: { domain: [number, number]; field: string }
   axes: { side?: string }[]
   rpcDataMap: ReadonlyMap<
     number,
@@ -426,7 +425,7 @@ test('a stack over the volvox BAM is a declared pileup, its rows packed in the w
   }
 }, 40000)
 
-test('a coverage run and the raw reads keep two domains and two axes', async () => {
+test('a coverage run and the raw reads fold into the one axis', async () => {
   const { view, findByTestId } = await createView(
     markTrackConfig(
       'mark_two_axes',
@@ -435,10 +434,7 @@ test('a coverage run and the raw reads keep two domains and two axes', async () 
         {
           shape: 'bar',
           transform: [{ type: 'coverage' }],
-          encoding: {
-            y: { field: 'coverage', resolve: 'independent' },
-            color: 'blue',
-          },
+          encoding: { y: 'coverage', color: 'blue' },
         },
       ],
       'volvox_bam',
@@ -451,18 +447,14 @@ test('a coverage run and the raw reads keep two domains and two axes', async () 
   expect(el.dataset.displayDrawn).toBe('true')
   const display = probe(view)
   await waitFor(() => {
-    expect(display.independentValueScale).toBeDefined()
+    expect(display.domain).toBeDefined()
   })
-  const depths = [...display.rpcDataMap.values()].flatMap(d => [
-    ...(d.layers[1]!.y ?? []),
-  ])
-  // the coverage layer's own extremes, and not the MAPQ layer's
-  expect(display.independentValueScale!.domain[1]).toBeGreaterThanOrEqual(
-    Math.max(...depths),
+  const plotted = [...display.rpcDataMap.values()].flatMap(d =>
+    d.layers.flatMap(l => [...(l.y ?? [])]),
   )
-  expect(display.independentValueScale!.field).toBe('coverage')
-  expect(display.domain).not.toEqual(display.independentValueScale!.domain)
-  expect(display.axes.map(a => a.side)).toEqual([undefined, 'right'])
+  // one domain over both layers, and one axis to read it on
+  expect(display.domain![1]).toBeGreaterThanOrEqual(Math.max(...plotted))
+  expect(display.axes.map(a => a.side)).toEqual([undefined])
 }, 40000)
 
 test('spans over a VCF stack the variants the worker packed', async () => {

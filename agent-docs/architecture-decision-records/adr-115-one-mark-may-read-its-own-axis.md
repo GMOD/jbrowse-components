@@ -7,6 +7,10 @@ summary: "Three moves at the layer stage. Layout becomes a transform — `stack`
 
 ## Status
 
+Superseded by [ADR-141](adr-141-one-y-scale-the-displays.md) for
+§"`encoding.y.resolve: 'independent'`"; the `stack` step and the three track
+types stand.
+
 Accepted (2026-09-10). Closes
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md)'s "no scale
 resolution across layers" gap for y, narrows its "the config rung covers one

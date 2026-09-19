@@ -3082,8 +3082,7 @@
         "colorEvaluator",
         "encodeFeatures",
         "encodedChannelTransferables",
-        "hitIndexOf",
-        "valueField"
+        "hitIndexOf"
       ],
       "worker": "real"
     },
