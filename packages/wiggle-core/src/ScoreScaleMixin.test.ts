@@ -1,6 +1,6 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 
-import type { ScoreScaleHost } from './ScoreScaleMixin.ts'
+import type { ScoreScaleHost, ValueScaleHost } from './ScoreScaleMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 
 // Typecheck-only, the way `extensionPoints.test.ts` asserts its guarantee: an
@@ -9,16 +9,17 @@ import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 // concrete and checks the name itself, so asking that passes whatever the mixin
 // casts to.
 const scoreScalePin: HostChecksSlotNames<ScoreScaleHost> = true
+const valueScalePin: HostChecksSlotNames<ValueScaleHost> = true
 
-test('the host type checks the slot names the mixin reads through it', () => {
+test('the host type checks the member names the mixin reads through it', () => {
   const host = {} as ScoreScaleHost
   const read = () => {
     // @ts-expect-error
-    return getConf(host, 'scaleTyp')
+    return getConf(host, ['scales', 'y', 'domainMinn'])
   }
   const write = () => {
     // @ts-expect-error
-    setConf(host, 'scaleTyp', 'linear')
+    setConf({} as ValueScaleHost, 'domainMinn', 0)
   }
-  expect([scoreScalePin, read, write]).toHaveLength(3)
+  expect([scoreScalePin, valueScalePin, read, write]).toHaveLength(4)
 })

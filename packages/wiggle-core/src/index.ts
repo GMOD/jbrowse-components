@@ -1,5 +1,10 @@
-export { scoreAxisConfigSchemaFields } from './scoreAxisConfigSchemaFields.ts'
-export type { ScoreAxisConfigModel } from './scoreAxisConfigSchemaFields.ts'
+export { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
+export type {
+  ScalesConfigSchema,
+  ValueScaleAutoscale,
+  ValueScaleConfigSchema,
+  ValueScaleOptions,
+} from './valueScaleConfigSchema.ts'
 
 export { getNiceDomain, getNiceScale, getScale } from './scale.ts'
 export type { ScaleOpts } from './scale.ts'
@@ -14,13 +19,21 @@ export {
 } from './normalize.ts'
 
 export {
+  autoscaleDomainFromSpans,
   autoscaleDomainFromStats,
   computeAutoscaleDomain,
   computeScoreStats,
+  computeSpanStats,
+  datasetSpan,
   domainFromStats,
   getEffectiveScores,
 } from './autoscale.ts'
-export type { Dataset, FeatureArrays, ScoreStats } from './autoscale.ts'
+export type {
+  Dataset,
+  FeatureArrays,
+  ScoreSpan,
+  ScoreStats,
+} from './autoscale.ts'
 
 // The y-axis geometry, named at its own subpaths rather than through the
 // `@jbrowse/display-ui` barrel: the barrel reaches react-dom, and reaching it
@@ -77,6 +90,7 @@ export type {
 } from './scoreMenuItems.ts'
 export { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
+export type { ScoreScaleHost } from './ScoreScaleMixin.ts'
 export {
   WiggleScoreConfigMixin,
   wiggleScoreConfigExtraSlots,
@@ -87,7 +101,6 @@ export {
   DEFAULT_SCORE_FIELD,
   scoreFieldConfigSchemaFields,
 } from './scoreFieldConfigSchemaFields.ts'
-export { remapRetiredAutoscale } from './remapRetiredAutoscale.ts'
 
 export {
   MIN_FILL_WIDTH_PX,

@@ -39,6 +39,48 @@ export interface ScoreStats {
 
 /**
  * #api
+ * One block's worth of values to fold into a domain, whatever packed them: a
+ * wiggle source's interleaved `featurePositions` and its three summary arrays,
+ * or a mark layer's separate `x`/`x2` and its one `y` lane. `starts[i * stride]`
+ * and `ends[i * stride + endOffset]` give instance `i`'s span; `low`, `high` and
+ * `avg` give the two ends of its value and the one the mean is taken over, which
+ * are the same array wherever the packer ships a single scalar.
+ */
+export interface ScoreSpan {
+  count: number
+  starts: Uint32Array
+  ends: Uint32Array
+  stride: number
+  endOffset: number
+  low: Float32Array
+  high: Float32Array
+  avg: Float32Array
+  visStart?: number
+  visEnd?: number
+}
+
+/** The wiggle packer's arrays as a span, under a summary mode. */
+export function datasetSpan(
+  { data, visStart, visEnd }: Dataset,
+  summaryScoreMode: string,
+): ScoreSpan {
+  const { low, high } = boundArrays(summaryScoreMode)
+  return {
+    count: data.numFeatures,
+    starts: data.featurePositions,
+    ends: data.featurePositions,
+    stride: 2,
+    endOffset: 1,
+    low: low(data),
+    high: high(data),
+    avg: data.featureScores,
+    visStart,
+    visEnd,
+  }
+}
+
+/**
+ * #api
  * Per-feature scalar score array for a summary mode: the min/max summary array
  * for `'min'`/`'max'`, otherwise the average score.
  */
@@ -91,18 +133,15 @@ function boundArrays(summaryScoreMode: string) {
 // the second pass O(n) with a fixed, trivial allocation.
 const NUM_HISTOGRAM_BINS = 1024
 
-// First index whose feature STARTS at or after `bp`. `featurePositions` is
-// sorted by start — the same property `findFeatureAtBp` binary-searches on.
-function lowerBoundByStart(
-  featurePositions: Uint32Array,
-  numFeatures: number,
-  bp: number,
-) {
+// First index whose instance STARTS at or after `bp`. `starts` is sorted by
+// start — the same property `findFeatureAtBp` binary-searches on.
+function lowerBoundByStart(span: ScoreSpan, bp: number) {
+  const { starts, stride } = span
   let lo = 0
-  let hi = numFeatures
+  let hi = span.count
   while (lo < hi) {
     const mid = (lo + hi) >> 1
-    if (featurePositions[mid * 2]! >= bp) {
+    if (starts[mid * stride]! >= bp) {
       hi = mid
     } else {
       lo = mid + 1
@@ -126,81 +165,71 @@ function lowerBoundByStart(
  * still test `overlaps` per feature inside the range, so a dataset that broke
  * that assumption could only lose a long early feature, never gain one.
  */
-function visibleIndexRange(
-  featurePositions: Uint32Array,
-  numFeatures: number,
-  visStart: number | undefined,
-  visEnd: number | undefined,
-) {
+function visibleIndexRange(span: ScoreSpan) {
+  const { visStart, visEnd, ends, stride, endOffset } = span
   if (visStart === undefined || visEnd === undefined) {
-    return { from: 0, to: numFeatures }
+    return { from: 0, to: span.count }
   }
-  const to = lowerBoundByStart(featurePositions, numFeatures, visEnd)
-  let from = lowerBoundByStart(featurePositions, numFeatures, visStart)
-  while (from > 0 && featurePositions[(from - 1) * 2 + 1]! > visStart) {
+  const to = lowerBoundByStart(span, visEnd)
+  let from = lowerBoundByStart(span, visStart)
+  while (from > 0 && ends[(from - 1) * stride + endOffset]! > visStart) {
     from--
   }
   return { from, to }
 }
 
-// Min/max/mean/stddev of the visible features for a summary mode, in one pass.
-// Exported (not #api — internal plumbing shared with the wiggle displays) so a
-// caller needing both a domain and the raw extent computes the stats once and
-// feeds them to autoscaleDomainFromStats instead of walking the arrays twice.
-export function computeScoreStats(
-  summaryScoreMode: string,
-  datasets: Dataset[],
-): ScoreStats | undefined {
-  const { low, high } = boundArrays(summaryScoreMode)
+// Half-open overlap test against the span's own window, for the instances the
+// index range admits.
+function spanOverlaps(span: ScoreSpan, i: number) {
+  const { visStart, visEnd, starts, ends, stride, endOffset } = span
+  return (
+    visStart === undefined ||
+    visEnd === undefined ||
+    overlaps(
+      starts[i * stride]!,
+      ends[i * stride + endOffset]!,
+      visStart,
+      visEnd,
+    )
+  )
+}
+
+// Min/max/mean/stddev of the visible instances, in one pass. Exported (not #api
+// — internal plumbing shared with the quantitative displays) so a caller needing
+// both a domain and the raw extent computes the stats once and feeds them to
+// `autoscaleDomainFromSpans` instead of walking the arrays twice.
+export function computeSpanStats(spans: ScoreSpan[]): ScoreStats | undefined {
   let min = Infinity
   let max = -Infinity
   let sum = 0
   let sumSq = 0
   let count = 0
-  for (const { data, visStart, visEnd } of datasets) {
-    const { featureScores, featurePositions, numFeatures } = data
-    // Selecting the arrays once per dataset keeps the mode check out of the
-    // per-feature loop.
-    const minScores = low(data)
-    const maxScores = high(data)
-    const { from, to } = visibleIndexRange(
-      featurePositions,
-      numFeatures,
-      visStart,
-      visEnd,
-    )
+  for (const span of spans) {
+    const { low, high, avg } = span
+    const { from, to } = visibleIndexRange(span)
     for (let i = from; i < to; i++) {
-      if (
-        visStart !== undefined &&
-        visEnd !== undefined &&
-        !overlaps(
-          featurePositions[i * 2]!,
-          featurePositions[i * 2 + 1]!,
-          visStart,
-          visEnd,
-        )
-      ) {
+      if (!spanOverlaps(span, i)) {
         continue
       }
-      // Non-finite scores are skipped rather than folded in: a wig file may
+      // Non-finite values are skipped rather than folded in: a wig file may
       // carry a NaN, and one of them poisons min/max and mean alike, collapsing
       // the whole domain to the [0, 1] stub the callers fall back to.
-      const lo = minScores[i]!
+      const lo = low[i]!
       if (Number.isFinite(lo)) {
         min = Math.min(min, lo)
       }
-      const hi = maxScores[i]!
+      const hi = high[i]!
       if (Number.isFinite(hi)) {
         max = Math.max(max, hi)
       }
-      // Mean/stddev always use featureScores (the average) regardless of
-      // summaryScoreMode; min/max for the domain bounds come from the mode-
-      // selected arrays above. Intentional: sd-based autoscale centers on the
-      // average-value distribution even in whiskers/min/max summary modes.
-      const avg = featureScores[i]!
-      if (Number.isFinite(avg)) {
-        sum += avg
-        sumSq += avg * avg
+      // Mean/stddev always come from `avg` — the average score on the wiggle
+      // side — while min/max come from the mode-selected pair. Intentional:
+      // sd-based autoscale centers on the average-value distribution even in
+      // whiskers/min/max summary modes.
+      const mid = avg[i]!
+      if (Number.isFinite(mid)) {
+        sum += mid
+        sumSq += mid * mid
         count++
       }
     }
@@ -213,14 +242,23 @@ export function computeScoreStats(
   return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
 }
 
+/** `computeSpanStats` over the wiggle packer's datasets. */
+export function computeScoreStats(
+  summaryScoreMode: string,
+  datasets: Dataset[],
+): ScoreStats | undefined {
+  return computeSpanStats(datasets.map(d => datasetSpan(d, summaryScoreMode)))
+}
+
 /**
  * #api
- * Converts score stats into a `[min, max]` domain, applying std-dev
- * expansion for the `localsd` autoscale type.
+ * Converts score stats into a `[min, max]` domain, applying std-dev expansion
+ * for the `localsd` autoscale type. An `undefined` mode is a display whose
+ * scale declares none, and takes the plain extremes.
  */
 export function domainFromStats(
   stats: ScoreStats,
-  autoscaleType: string,
+  autoscaleType: string | undefined,
   numStdDev: number,
 ): [number, number] {
   if (autoscaleType === 'localsd') {
@@ -233,16 +271,16 @@ export function domainFromStats(
   return [stats.scoreMin, stats.scoreMax]
 }
 
-// The `quantile`-th percentile magnitude of one signed side of the score
-// distribution: features are filtered to a single sign (`positiveSide`), their
+// The `quantile`-th percentile magnitude of one signed side of the value
+// distribution: instances are filtered to a single sign (`positiveSide`), their
 // magnitudes binned over `[0, maxMag]`, and the magnitude below which `quantile`
 // of that side's mass falls is returned — clipping the outermost `1 - quantile`
 // as outliers. Returns 0 when the side is empty. A fixed histogram keeps this an
 // O(n) pass with no sort, approximate to ~1/NUM_HISTOGRAM_BINS of maxMag, far
 // finer than the display needs.
 function sideMagnitudePercentile(
-  datasets: Dataset[],
-  scoresFor: (data: FeatureArrays) => Float32Array,
+  spans: ScoreSpan[],
+  valuesFor: (span: ScoreSpan) => Float32Array,
   positiveSide: boolean,
   maxMag: number,
   quantile: number,
@@ -253,29 +291,14 @@ function sideMagnitudePercentile(
   const bins = new Int32Array(NUM_HISTOGRAM_BINS)
   const scale = NUM_HISTOGRAM_BINS / maxMag
   let count = 0
-  for (const { data, visStart, visEnd } of datasets) {
-    const { featurePositions, numFeatures } = data
-    const scores = scoresFor(data)
-    const { from, to } = visibleIndexRange(
-      featurePositions,
-      numFeatures,
-      visStart,
-      visEnd,
-    )
+  for (const span of spans) {
+    const values = valuesFor(span)
+    const { from, to } = visibleIndexRange(span)
     for (let i = from; i < to; i++) {
-      if (
-        visStart !== undefined &&
-        visEnd !== undefined &&
-        !overlaps(
-          featurePositions[i * 2]!,
-          featurePositions[i * 2 + 1]!,
-          visStart,
-          visEnd,
-        )
-      ) {
+      if (!spanOverlaps(span, i)) {
         continue
       }
-      const mag = positiveSide ? scores[i]! : -scores[i]!
+      const mag = positiveSide ? values[i]! : -values[i]!
       if (mag > 0) {
         const bin = Math.min(NUM_HISTOGRAM_BINS - 1, Math.floor(mag * scale))
         bins[bin]!++
@@ -298,10 +321,10 @@ function sideMagnitudePercentile(
   return maxMag
 }
 
-// Builds a `[low, high]` domain by clipping each side of the score distribution
-// to its central `quantile` fraction (e.g. 0.99 → clip the outermost 1% of each
+// Builds a `[low, high]` domain by clipping each side of the value distribution
+// to its central `quantile` fraction (e.g. 0.99 -> clip the outermost 1% of each
 // sign). Unlike localsd it makes no normality assumption, so it stays robust on
-// the heavily skewed score distributions typical of coverage/wiggle data.
+// the heavily skewed distributions typical of coverage/wiggle data.
 //
 // The two signs are clipped INDEPENDENTLY, anchored at 0. A single combined
 // percentile spends its whole budget on the dominant side, so on strongly
@@ -309,26 +332,30 @@ function sideMagnitudePercentile(
 // sparse, small negative tail) the minority tail's 1st percentile lands at or
 // above 0 and the negative extent collapses to a flat band. Measuring each
 // side's percentile from 0 outward keeps a small-but-real opposite tail visible.
-function percentileDomainFromHistogram(
+function percentileDomainFromSpans(
   stats: ScoreStats,
-  summaryScoreMode: string,
   quantile: number,
-  datasets: Dataset[],
+  spans: ScoreSpan[],
 ): [number, number] {
   const { scoreMin, scoreMax } = stats
   if (scoreMax - scoreMin <= 0) {
     return [scoreMin, scoreMax]
   }
-  const arrays = boundArrays(summaryScoreMode)
   const high =
     scoreMax > 0
-      ? sideMagnitudePercentile(datasets, arrays.high, true, scoreMax, quantile)
+      ? sideMagnitudePercentile(
+          spans,
+          span => span.high,
+          true,
+          scoreMax,
+          quantile,
+        )
       : 0
   const negExtent =
     scoreMin < 0
       ? sideMagnitudePercentile(
-          datasets,
-          arrays.low,
+          spans,
+          span => span.low,
           false,
           -scoreMin,
           quantile,
@@ -339,10 +366,31 @@ function percentileDomainFromHistogram(
   return [scoreMin < 0 ? -negExtent : 0, high]
 }
 
-// Turns already-computed stats into the displayed domain for the `local` /
-// `localsd` / `localpercentile` autoscale types. `localpercentile` re-walks the
-// entries to build its histogram; the other types read the stats alone.
-// computeAutoscaleDomain (#api) is the one-shot form.
+/**
+ * #api
+ * Already-computed stats to the displayed domain, for the `local` / `localsd` /
+ * `localpercentile` autoscale modes. `localpercentile` re-walks the spans to
+ * build its histogram; the other modes read the stats alone.
+ */
+export function autoscaleDomainFromSpans({
+  stats,
+  autoscaleType,
+  numStdDev,
+  numQuantile = 0.99,
+  spans,
+}: {
+  stats: ScoreStats
+  autoscaleType: string | undefined
+  numStdDev: number
+  numQuantile?: number
+  spans: ScoreSpan[]
+}): [number, number] {
+  return autoscaleType === 'localpercentile'
+    ? percentileDomainFromSpans(stats, numQuantile, spans)
+    : domainFromStats(stats, autoscaleType, numStdDev)
+}
+
+/** `autoscaleDomainFromSpans` over the wiggle packer's datasets. */
 export function autoscaleDomainFromStats({
   stats,
   autoscaleType,
@@ -352,20 +400,19 @@ export function autoscaleDomainFromStats({
   visibleEntries,
 }: {
   stats: ScoreStats
-  autoscaleType: string
+  autoscaleType: string | undefined
   summaryScoreMode: string
   numStdDev: number
   numQuantile?: number
   visibleEntries: Dataset[]
 }): [number, number] {
-  return autoscaleType === 'localpercentile'
-    ? percentileDomainFromHistogram(
-        stats,
-        summaryScoreMode,
-        numQuantile,
-        visibleEntries,
-      )
-    : domainFromStats(stats, autoscaleType, numStdDev)
+  return autoscaleDomainFromSpans({
+    stats,
+    autoscaleType,
+    numStdDev,
+    numQuantile,
+    spans: visibleEntries.map(d => datasetSpan(d, summaryScoreMode)),
+  })
 }
 
 /**
@@ -374,7 +421,7 @@ export function autoscaleDomainFromStats({
  * `localsd` / `localpercentile` autoscale types.
  */
 export function computeAutoscaleDomain(
-  autoscaleType: string,
+  autoscaleType: string | undefined,
   summaryScoreMode: string,
   numStdDev: number,
   visibleEntries: {
@@ -384,15 +431,15 @@ export function computeAutoscaleDomain(
   }[],
   numQuantile = 0.99,
 ): [number, number] | undefined {
-  const stats = computeScoreStats(summaryScoreMode, visibleEntries)
+  const spans = visibleEntries.map(d => datasetSpan(d, summaryScoreMode))
+  const stats = computeSpanStats(spans)
   return stats
-    ? autoscaleDomainFromStats({
+    ? autoscaleDomainFromSpans({
         stats,
         autoscaleType,
-        summaryScoreMode,
         numStdDev,
         numQuantile,
-        visibleEntries,
+        spans,
       })
     : undefined
 }

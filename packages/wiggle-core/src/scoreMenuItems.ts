@@ -11,7 +11,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 
-// Canonical "thing that has a score axis" — every display with one (wiggle,
+// Canonical "thing that has a value scale" — every display with one (wiggle,
 // multi-wiggle, manhattan, alignments coverage, the mark display) exposes this
 // exact shape so the shared Score menu, scale submenu, and SetMinMaxDialog
 // consume it without per-display adapters. Two pairs, and which one a consumer
@@ -19,12 +19,13 @@ const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 // the config really pins (undefined = nothing pinned), which is what the dialog
 // round-trips and what the menu captions itself with;
 // minScoreBound/maxScoreBound is where each end of the axis resolved to
-// (undefined = autoscale this end), which is what a domain computes from. The
-// raw sentinels are nobody's business out here. hasManualScoreBounds is the
-// third question, and the only one of the three that survives a
-// `defaultScoreDomain` override. All of them come from `ScoreAxisMixin`.
+// (undefined = autoscale this end), which is what a domain computes from.
+// hasManualScoreBounds is the third question, and the only one of the three that
+// survives a `defaultScoreDomain` override. All of them come from
+// `ScoreAxisMixin`.
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
+  scaleTypeChoices: string[]
   manualMinScore: number | undefined
   manualMaxScore: number | undefined
   minScoreBound: number | undefined
@@ -35,32 +36,37 @@ export interface ScoreScaleModel extends IStateTreeNode {
   setMaxScore: (n?: number) => void
 }
 
-// The autoscale half, apart because a display can have a score axis and no
-// autoscale mode behind it: the mark display's domain is the extremes of what
-// is drawn and consults no mode, so it composes the axis without the slot that
-// would feed radios that change nothing.
+// The autoscale half, apart because a display can have a value scale and no
+// autoscale mode behind it: Manhattan's domain is plain min/max over the loaded
+// regions and consults none, so its `scales.y` carries no `autoscale` member and
+// this half answers `undefined`.
 export interface AutoscaleModel {
-  autoscaleType: string
+  autoscaleType: string | undefined
   setAutoscale: (v?: string) => void
 }
 
-// All three scales, so a display offering this menu at all must hold all three
-// in its own `scaleType` enum. `scoreAxisConfigSchemaFields` deliberately does
-// not — symlog is widened in by whoever implements it — so a display that spreads
-// the shared axis fields unchanged has to opt out with `scaleType: false` the way
-// manhattan does, or the radio writes a value its enumeration rejects.
+const SCALE_TYPE_LABELS: Record<string, string> = {
+  linear: 'Linear scale',
+  log: 'Log scale',
+  symlog: 'Symlog scale (allows zero)',
+}
+
+// The radio offers exactly what the display's own `scales.y.type` enum admits,
+// read back through `scaleTypeChoices`. Offering a fixed three wrote values an
+// enumeration rejected, which is why Manhattan and the mark display each used to
+// drop the radio by hand.
 export function makeScaleTypeSubMenu(self: {
   scaleType: string
+  scaleTypeChoices: string[]
   setScaleType: (v: string) => void
 }): MenuItem {
   return {
     label: 'Scale type',
     subMenu: radioItems(
-      [
-        { value: 'linear', label: 'Linear scale' },
-        { value: 'log', label: 'Log scale' },
-        { value: 'symlog', label: 'Symlog scale (allows zero)' },
-      ],
+      self.scaleTypeChoices.map(value => ({
+        value,
+        label: SCALE_TYPE_LABELS[value] ?? value,
+      })),
       self.scaleType,
       v => {
         self.setScaleType(v)
@@ -70,7 +76,7 @@ export function makeScaleTypeSubMenu(self: {
 }
 
 export function makeAutoscaleTypeSubMenu(
-  self: AutoscaleModel,
+  self: { autoscaleType: string; setAutoscale: (v?: string) => void },
   options: [string, string][] = DEFAULT_AUTOSCALE_OPTIONS,
 ): MenuItem {
   return {
@@ -127,8 +133,8 @@ export function makePinCurrentRangeItem(
   }
 }
 
-// Only offered when a manual bound is set; resets both to the sentinel (same
-// path the dialog takes when its fields are cleared) so autoscale resumes.
+// Only offered when a manual bound is set; clears both (same path the dialog
+// takes when its fields are cleared) so autoscale resumes.
 function makeClearMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
   return {
     label: 'Clear manual min/max',
@@ -148,24 +154,19 @@ export function makeCrossHatchItem(self: {
   })
 }
 
-// The single Score submenu used by every wiggle-family display. Composition is
+// The single Score submenu every quantitative display builds. Composition is
 // capability-driven: `leadingItems` lets wiggle prepend its Resolution/Summary
 // submenus, `trailingItems` appends what belongs after the range controls rather
-// than before them (the alignments band's allele-fraction floor); `scaleType` is
-// dropped by manhattan (linear-only); `autoscaleOptions` is overridden by
-// coverage's reduced + dynamic-σ list.
+// than before them (the alignments band's allele-fraction floor);
+// `autoscaleOptions` is overridden by coverage's reduced + dynamic-σ list.
 //
-// `autoscale` is the same kind of opt-out as `scaleType`, and exists for the
-// same reason: a display whose domain doesn't consult `autoscaleType` must not
-// offer radios for it. Manhattan takes plain min/max over the loaded regions and
-// applies only the manual bounds, so its Autoscale-type radios wrote the config
-// slot and changed nothing on screen — a control that lies is worse than a
-// missing one. Opt-out rather than opt-in so a display that grows a domain
-// without wiring autoscale keeps the menu it already had.
+// Neither radio is opted out of any more. Both derive from the display's own
+// `scales.y`: the scale-type radio appears where the declared enum holds more
+// than one type, the autoscale radios where the object has an `autoscale`
+// member. A display whose domain consults no mode declares none, so there is no
+// longer a way to draw radios that change nothing.
 export interface ScoreSubMenuOptions {
   label?: string
-  scaleType?: boolean
-  autoscale?: boolean
   autoscaleOptions?: [string, string][]
   // The domain drawn right now, which "Pin current min/max" copies into the
   // slots; undefined before it resolves, and the row waits with it.
@@ -181,21 +182,11 @@ export interface ScoreSubMenuOptions {
 }
 
 export function makeScoreSubMenu(
-  self: ScoreScaleModel & AutoscaleModel,
-  opts?: ScoreSubMenuOptions & { autoscale?: true },
-): MenuItem
-export function makeScoreSubMenu(
-  self: ScoreScaleModel,
-  opts: ScoreSubMenuOptions & { autoscale: false },
-): MenuItem
-export function makeScoreSubMenu(
   self: ScoreScaleModel & Partial<AutoscaleModel>,
   opts: ScoreSubMenuOptions = {},
 ): MenuItem {
   const {
     label = 'Score',
-    scaleType = true,
-    autoscale = true,
     autoscaleOptions,
     domain,
     leadingItems = [],
@@ -210,8 +201,8 @@ export function makeScoreSubMenu(
     disabledHelpText,
     subMenu: [
       ...leadingItems,
-      ...(scaleType ? [makeScaleTypeSubMenu(self)] : []),
-      ...(autoscale && self.autoscaleType !== undefined && self.setAutoscale
+      ...(self.scaleTypeChoices.length > 1 ? [makeScaleTypeSubMenu(self)] : []),
+      ...(self.autoscaleType !== undefined && self.setAutoscale
         ? [
             makeAutoscaleTypeSubMenu(
               {

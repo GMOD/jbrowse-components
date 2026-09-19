@@ -13,10 +13,10 @@ import type { ValueScale, YAxis } from '@jbrowse/display-ui'
  * `manualMinScore` and `manualMaxScore` are declared here with neutral answers
  * and a composing display overrides them, so the bounds, the "is anything
  * pinned" question, the ticks and the cross-hatches derive the same way
- * wherever the declaration lives. {@link ScoreScaleMixin} is the composer that
- * backs them with `scoreAxisConfigSchemaFields`, which is what wiggle, the
- * multi-wiggle, Manhattan and the alignments coverage band each take; the mark
- * display backs the same three from its own `scales.y` sub-schema instead.
+ * wherever the declaration lives. {@link ScoreScaleMixin} is the one composer
+ * in the tree, backing them with the `scales.y` object every quantitative
+ * display declares; the split stays because the derived half is what a display
+ * writing its scale down somewhere else would answer.
  *
  * The setters are not here. A display cannot set what it has not said where to
  * put, so `setScaleType`/`setMinScore`/`setMaxScore` belong to whichever

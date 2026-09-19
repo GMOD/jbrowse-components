@@ -1,51 +1,73 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import {
+  getConf,
+  getSlotDefinition,
+  setConf,
+  slotChoices,
+} from '@jbrowse/core/configuration'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 
-import type { ScoreAxisConfigModel } from './scoreAxisConfigSchemaFields.ts'
+import type {
+  ValueScaleConfigSchema,
+  scalesSchema,
+} from './valueScaleConfigSchema.ts'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
- * The whole of what `ScoreScaleMixin` needs a composing display to be. Exported
+ * The whole of what `ScoreScaleMixin` needs a composing display to be: a
+ * `scales` object holding the `y` the value-scale factory built. Exported
  * because it is the mixin's contract and `ScoreScaleMixin.test.ts` pins it:
  * widen it and the `@ts-expect-error`s there go unused.
  */
 export interface ScoreScaleHost {
-  configuration: ScoreAxisConfigModel
+  configuration: ConfigModelForFields<{
+    scales: ReturnType<typeof scalesSchema>
+  }>
 }
 
 // The mixin composes onto a display that declares this, not the other way
 // round, so its own `self` isn't typed with it. Cast once, narrowed to the
-// field table beside it rather than `AnyConfigurationModel`, which is what keeps
-// the slot names below checked.
+// factory's schema rather than `AnyConfigurationModel`, which is what keeps the
+// member names below checked.
 const confNode = (self: object) => self as ScoreScaleHost
+
+/**
+ * `setConf` writes a slot, not a path, so the setters hand it the `scales.y`
+ * node itself. Named rather than inlined because a sub-schema member reads as
+ * `any` off the instance type, and the annotation is what keeps the member
+ * names below checked — `ScoreScaleMixin.test.ts` pins it.
+ */
+export interface ValueScaleHost {
+  configuration: Instance<ValueScaleConfigSchema>
+}
+
+const scaleNode = (self: object): ValueScaleHost => ({
+  configuration: confNode(self).configuration.scales.y,
+})
 
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Score axis, written in the config slots. `scoreAxisConfigSchemaFields`. Brings `ScoreAxisMixin` plus `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `manual*` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+ * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `autoscaleType` / `numStdDev` / `numQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
- * The score axis of a display whose axis IS `minScore`, `maxScore` and
- * `scaleType`: wiggle, the multi-wiggle, Manhattan and the alignments coverage
- * band. It backs {@link ScoreAxisMixin}'s three overridable members off those
- * slots and adds the setters that write them, so composing this is how a
- * display satisfies {@link ScoreScaleModel} in `scoreMenuItems.ts` — the
- * interface the shared Score menu, the autoscale/scale submenus and
- * `SetMinMaxDialog` consume. A display that writes its scale down somewhere
- * else composes `ScoreAxisMixin` and answers the three itself, which is what
- * the mark display does with `scales.y`.
+ * The value scale of every quantitative display: wiggle, the multi-wiggle,
+ * Manhattan, the alignments coverage band and the mark display each declare
+ * `scales.y` through {@link valueScaleSchema} and compose this. It backs
+ * {@link ScoreAxisMixin}'s three overridable members off that object and adds
+ * the setters that write it, so composing this is how a display satisfies
+ * {@link ScoreScaleModel} in `scoreMenuItems.ts` — the interface the shared
+ * Score menu, the scale and autoscale submenus and `SetMinMaxDialog` consume.
  *
- * Deliberately just the axis. Colors, `resolution`, cross-hatches and the
+ * What a display's scale offers follows what it draws, so the members below
+ * answer `undefined` where its factory call left them out: `autoscaleType` on
+ * Manhattan, whose domain is plain min/max, and `symlogConstant` wherever
+ * `symlog` is not among the scale types. `scaleTypeChoices` reads the declared
+ * enum back, which is what the scale-type radio offers.
+ *
+ * Deliberately just the scale. Colors, `resolution`, cross-hatches and the
  * autoscale *computation* stay in `WiggleScoreConfigMixin` / `WiggleCommonMixin`
- * — the alignments coverage band shares this axis but none of the rest.
- *
- * `minScore`/`maxScore` are the **raw** slot values with their
- * `Number.MIN_VALUE`/`Number.MAX_VALUE` "unset" sentinels intact, and nothing
- * outside this file should want them: `manualMinScore`/`manualMaxScore` are the
- * same values with the sentinel resolved to `undefined`, and the dialog
- * round-trips them and the menu captions itself with them;
- * `minScoreBound`/`maxScoreBound` are the resolved bounds, where `undefined`
- * means "autoscale this end". Every consumer that computes a domain reads the
- * `*Bound` pair.
+ * — the alignments coverage band shares this scale but none of the rest.
  */
 export function ScoreScaleMixin() {
   return ScoreAxisMixin()
@@ -54,47 +76,60 @@ export function ScoreScaleMixin() {
        * #getter
        */
       get scaleType(): string {
-        return getConf(confNode(self), 'scaleType')
+        return getConf(confNode(self), ['scales', 'y', 'type'])
       },
       /**
        * #getter
+       * The scale types this display's own enum admits, which is what the
+       * scale-type radio offers; a display with one draws no radio.
        */
-      get autoscaleType(): string {
-        return getConf(confNode(self), 'autoscale')
+      get scaleTypeChoices(): string[] {
+        return (
+          slotChoices(
+            getSlotDefinition(confNode(self).configuration.scales.y, 'type'),
+          ) ?? []
+        )
+      },
+      /**
+       * #getter
+       * `undefined` on a display whose domain consults no autoscale mode.
+       */
+      get autoscaleType(): string | undefined {
+        return getConf(confNode(self), ['scales', 'y', 'autoscale'])
       },
       /**
        * #getter
        */
       get numStdDev(): number {
-        return getConf(confNode(self), 'numStdDev')
+        return getConf(confNode(self), ['scales', 'y', 'numStdDev'])
       },
       /**
        * #getter
-       * Raw slot value, sentinel intact — see the class comment.
        */
-      get minScore(): number {
-        return getConf(confNode(self), 'minScore')
+      get numQuantile(): number {
+        return getConf(confNode(self), ['scales', 'y', 'numQuantile'])
       },
       /**
        * #getter
-       * Raw slot value, sentinel intact — see the class comment.
+       * Raw slot; `0` means "derive from the domain". Resolve it with
+       * `resolveSymlogConstant` once the domain is known.
        */
-      get maxScore(): number {
-        return getConf(confNode(self), 'maxScore')
+      get symlogConstant(): number {
+        return getConf(confNode(self), ['scales', 'y', 'symlogConstant'])
       },
       /**
        * #getter
-       * The lower bound the config really sets, `undefined` at the sentinel.
+       * The lower bound the config pins, `undefined` where it pins none.
        */
       get manualMinScore(): number | undefined {
-        return this.minScore === Number.MIN_VALUE ? undefined : this.minScore
+        return getConf(confNode(self), ['scales', 'y', 'domainMin'])
       },
       /**
        * #getter
-       * The upper bound the config really sets, `undefined` at the sentinel.
+       * The upper bound the config pins, `undefined` where it pins none.
        */
       get manualMaxScore(): number | undefined {
-        return this.maxScore === Number.MAX_VALUE ? undefined : this.maxScore
+        return getConf(confNode(self), ['scales', 'y', 'domainMax'])
       },
     }))
     .actions(self => ({
@@ -102,25 +137,25 @@ export function ScoreScaleMixin() {
        * #action
        */
       setScaleType(scaleType: string) {
-        setConf(confNode(self), 'scaleType', scaleType)
+        setConf(scaleNode(self), 'type', scaleType)
       },
       /**
        * #action
        */
       setAutoscale(val?: string) {
-        setConf(confNode(self), 'autoscale', val)
+        setConf(scaleNode(self), 'autoscale', val)
       },
       /**
        * #action
        */
       setMinScore(val?: number) {
-        setConf(confNode(self), 'minScore', val)
+        setConf(scaleNode(self), 'domainMin', val)
       },
       /**
        * #action
        */
       setMaxScore(val?: number) {
-        setConf(confNode(self), 'maxScore', val)
+        setConf(scaleNode(self), 'domainMax', val)
       },
     }))
 }

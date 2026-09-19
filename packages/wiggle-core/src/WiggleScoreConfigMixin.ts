@@ -3,19 +3,22 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 
-import type { scoreAxisConfigSchemaFields } from './scoreAxisConfigSchemaFields.ts'
+import type { scalesSchema } from './valueScaleConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
-/** The one slot its composers each declare, with their own default. */
+/** The slots its composers each declare, with their own defaults. */
 export const wiggleScoreConfigExtraSlots = {
   scatterPointSize: { type: 'number', defaultValue: 2 },
+  displayCrossHatches: { type: 'boolean', defaultValue: false },
 } as const
 
 // Exactly the slots read here: `getConf` answers a slot a composer never
 // declared with a silent `undefined`, which a wider host type would hide.
 export interface WiggleScoreConfigHost {
   configuration: ConfigModelForFields<
-    typeof scoreAxisConfigSchemaFields & typeof wiggleScoreConfigExtraSlots
+    {
+      scales: ReturnType<typeof scalesSchema>
+    } & typeof wiggleScoreConfigExtraSlots
   >
 }
 

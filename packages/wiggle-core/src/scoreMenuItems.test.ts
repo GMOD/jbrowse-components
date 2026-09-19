@@ -3,8 +3,8 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
-import { scoreAxisConfigSchemaFields } from './scoreAxisConfigSchemaFields.ts'
 import { makePinCurrentRangeItem, makeScoreSubMenu } from './scoreMenuItems.ts'
+import { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
 
 import type { AutoscaleModel, ScoreScaleModel } from './scoreMenuItems.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -17,7 +17,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function makeSelf(over: Partial<ScoreScaleModel & AutoscaleModel> = {}) {
   const self = {
     scaleType: 'linear',
-    autoscaleType: 'local',
+    scaleTypeChoices: ['linear', 'log', 'symlog'],
+    autoscaleType: 'local' as string | undefined,
     manualMinScore: undefined,
     manualMaxScore: undefined,
     minScoreBound: undefined,
@@ -40,11 +41,10 @@ function labels(item: MenuItem) {
   return sub.map(i => ('label' in i ? i.label : ''))
 }
 
-describe('makeScoreSubMenu capability opt-outs', () => {
-  it('offers scale type and autoscale by default', () => {
-    // the wiggle-family default: a display that wires both gets both, so the
-    // opt-outs below can never silently strip a menu from a display that wants
-    // it
+// The radios are no longer opted out of by the caller: each one derives from
+// what the display's own `scales.y` declares.
+describe('makeScoreSubMenu derives its radios from the scale', () => {
+  it('offers scale type and autoscale where the scale declares both', () => {
     expect(labels(makeScoreSubMenu(makeSelf()))).toEqual([
       'Scale type',
       'Autoscale type',
@@ -52,24 +52,38 @@ describe('makeScoreSubMenu capability opt-outs', () => {
     ])
   })
 
-  it('drops the autoscale radios when the display does not consult them', () => {
-    // manhattan's case: its domain is plain min/max plus the manual bounds, so
-    // an Autoscale-type radio wrote the config slot and changed nothing drawn
+  it('names exactly the scale types the display admits', () => {
+    const item = makeScoreSubMenu(makeSelf({ scaleTypeChoices: ['linear'] }))
+    expect(labels(item)).toEqual(['Autoscale type', 'Set min/max score...'])
     expect(
       labels(
-        makeScoreSubMenu(makeSelf(), { scaleType: false, autoscale: false }),
+        makeScoreSubMenu(makeSelf({ scaleTypeChoices: ['linear', 'log'] })),
+      ),
+    ).toEqual(['Scale type', 'Autoscale type', 'Set min/max score...'])
+  })
+
+  it('drops the autoscale radios where the scale declares no mode', () => {
+    // manhattan's case: its domain is plain min/max plus the manual bounds, so
+    // an Autoscale-type radio wrote a slot and changed nothing drawn
+    expect(
+      labels(
+        makeScoreSubMenu(
+          makeSelf({ scaleTypeChoices: ['linear'], autoscaleType: undefined }),
+        ),
       ),
     ).toEqual(['Set min/max score...'])
   })
 
   it('offers the pin row while the drawn domain is known, and not before', () => {
-    const opts = { scaleType: false, autoscale: false } as const
-    expect(labels(makeScoreSubMenu(makeSelf(), opts))).toEqual([
+    const self = makeSelf({
+      scaleTypeChoices: ['linear'],
+      autoscaleType: undefined,
+    })
+    expect(labels(makeScoreSubMenu(self))).toEqual(['Set min/max score...'])
+    expect(labels(makeScoreSubMenu(self, { domain: [-3, 47] }))).toEqual([
       'Set min/max score...',
+      'Pin current min/max',
     ])
-    expect(
-      labels(makeScoreSubMenu(makeSelf(), { ...opts, domain: [-3, 47] })),
-    ).toEqual(['Set min/max score...', 'Pin current min/max'])
   })
 
   it('the pin writes the drawn domain, not the resolved bounds', () => {
@@ -85,10 +99,14 @@ describe('makeScoreSubMenu capability opt-outs', () => {
   it('still offers the clear item when a manual bound is in force', () => {
     expect(
       labels(
-        makeScoreSubMenu(makeSelf({ manualMinScore: 2, minScoreBound: 2 }), {
-          scaleType: false,
-          autoscale: false,
-        }),
+        makeScoreSubMenu(
+          makeSelf({
+            manualMinScore: 2,
+            minScoreBound: 2,
+            scaleTypeChoices: ['linear'],
+            autoscaleType: undefined,
+          }),
+        ),
       ),
     ).toEqual(['Set min/max score (2 – auto)...', 'Clear manual min/max'])
   })
@@ -97,14 +115,21 @@ describe('makeScoreSubMenu capability opt-outs', () => {
 // The above drives a plain object; this drives the real mixin, because the bug
 // this pins was invisible to a hand-written double. A display whose
 // `defaultScoreDomain` pins an end (GC content's [0,1]) resolves
-// `minScoreBound`/`maxScoreBound` to real numbers with both config slots still
-// at their sentinels, so a menu asking the resolved bounds "is a manual bound in
-// force?" answers yes on a freshly opened track — and the Clear row it offers
-// writes the sentinels that were already there.
-const testConfigSchema = ConfigurationSchema(
-  'TestScoreDisplay',
-  scoreAxisConfigSchemaFields,
-)
+// `minScoreBound`/`maxScoreBound` to real numbers with both bounds still unset,
+// so a menu asking the resolved bounds "is a manual bound in force?" answers yes
+// on a freshly opened track — and the Clear row it offers writes the nothing
+// that was already there.
+const testConfigSchema = ConfigurationSchema('TestScoreDisplay', {
+  scales: scalesSchema(
+    valueScaleSchema({
+      types: ['linear', 'log', 'symlog'],
+      autoscale: {
+        modes: ['local', 'localsd', 'localpercentile'],
+        default: 'localpercentile',
+      },
+    }),
+  ),
+})
 
 function makePinnedDomainDisplay() {
   return types
@@ -122,7 +147,7 @@ function makePinnedDomainDisplay() {
 }
 
 describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
-  it('offers no clear row while both slots sit at their sentinel', () => {
+  it('offers no clear row while neither bound is set', () => {
     const display = makePinnedDomainDisplay()
     expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
     expect(labels(makeScoreSubMenu(display))).toEqual([
@@ -132,7 +157,7 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
     ])
   })
 
-  it('offers it once a slot is really set, and clearing takes it away', () => {
+  it('offers it once a bound is really set, and clearing takes it away', () => {
     const display = makePinnedDomainDisplay()
     display.setMaxScore(0.75)
     expect(labels(makeScoreSubMenu(display))).toEqual([
