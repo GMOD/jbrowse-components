@@ -19,10 +19,7 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { NO_PREV_START, RENDERING_TYPE_LINE_CENTER } from '@jbrowse/wiggle-core'
 
-import {
-  centerLinksToPrevious,
-  isOverlayMode,
-} from '../src/shared/wiggleComponentUtils.ts'
+import { centerLinksToPrevious } from '../src/shared/wiggleComponentUtils.ts'
 
 import type { WiggleGpuProps } from '../src/shared/buildSourceRenderData.ts'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
@@ -40,10 +37,11 @@ function countOf(sources: SourceRenderData[], band: boolean) {
 // What a colour change would upload instead of re-encoding every region: two
 // ABGR words per row, 8 bytes a row, straight off gpuProps — the same rule
 // buildSourceRenderData applies per layer (a source's own colour above the
-// pivot, the shared negColor below it, the pos colour on both sides in overlay).
+// pivot, the shared negColor below it, the pos colour on both sides where
+// several sources share one plot).
 export function buildRowColorTable(gpuProps: WiggleGpuProps) {
-  const { sources, renderingType } = gpuProps
-  const overlay = isOverlayMode(renderingType)
+  const { sources, faceted } = gpuProps
+  const sharedPlot = !faceted && sources.length > 1
   const defaultPos = cssColorToNormalizedRgb(gpuProps.posColor)
   const defaultNeg = normalizedRgbToABGR(
     ...cssColorToNormalizedRgb(gpuProps.negColor),
@@ -55,7 +53,7 @@ export function buildRowColorTable(gpuProps: WiggleGpuProps) {
       ...(color ? cssColorToNormalizedRgb(color) : defaultPos),
     )
     table[i * 2] = pos
-    table[i * 2 + 1] = overlay ? pos : defaultNeg
+    table[i * 2 + 1] = sharedPlot ? pos : defaultNeg
   }
   return table
 }

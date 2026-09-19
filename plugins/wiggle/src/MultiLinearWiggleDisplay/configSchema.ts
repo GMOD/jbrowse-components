@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -6,40 +7,13 @@ import {
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
+import { checkFacetField } from '../shared/checkFacetField.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 import {
   wiggleConfigSchemaFields,
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
-import { MULTI_WIGGLE_RENDERING_TYPES } from '../util.ts'
-
-// Configs are sometimes hand-authored (or copy-pasted from a single-source
-// wiggle track) with a single-source rendering name even though this display
-// only draws multi-source renderings. Map each to its closest multi-source
-// equivalent rather than throwing an opaque MST union error. Every value in
-// WIGGLE_RENDERING_TYPES needs an entry — a missing one is an MST validation
-// error at config load, not a silent fallback (see configSchema.test.ts).
-const SINGLE_TO_MULTI_RENDERING: Record<string, string> = {
-  xyplot: 'multixyplot',
-  density: 'multirowdensity',
-  line: 'multiline',
-  linecenter: 'multilinecenter',
-  scatter: 'multiscatter',
-}
-
-// Rewrites a single-source `defaultRendering` to its multi-source equivalent on
-// a MultiLinearWiggleDisplay snapshot. Shared by this schema's
-// preProcessSnapshot and the Core-preProcessTrackConfig handler — the latter is
-// needed because preProcessSnapshot does NOT run while a types.union validates
-// the display snapshot (union dispatch checks the raw snapshot).
-export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
-  const { defaultRendering } = snap
-  const remapped =
-    typeof defaultRendering === 'string'
-      ? SINGLE_TO_MULTI_RENDERING[defaultRendering]
-      : undefined
-  return remapped ? { ...snap, defaultRendering: remapped } : snap
-}
+import { WIGGLE_RENDERING_TYPES } from '../util.ts'
 
 /**
  * #config MultiLinearWiggleDisplay
@@ -80,8 +54,8 @@ export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
  * ```
  *
  * #example
- * Taller track overlaying two samples in one shared plot (`multixyplot`)
- * instead of the default stacked-per-subtrack layout:
+ * Taller track overlaying two samples in one shared plot instead of the
+ * default row per subtrack:
  * ```js
  * {
  *   type: 'MultiQuantitativeTrack',
@@ -95,7 +69,7 @@ export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
  *       'https://example.com/sample2.bw',
  *     ],
  *   },
- *   displayDefaults: { height: 300, defaultRendering: 'multixyplot' },
+ *   displayDefaults: { height: 300, facet: '' },
  * }
  * ```
  */
@@ -114,25 +88,33 @@ const configSchema = ConfigurationSchema(
     ...summaryScoreModeConfigSchemaFields({ defaultMode: 'avg' }),
     /**
      * #slot
-     * Default rendering type. Multi-row modes (`multirowxy`, `multirowdensity`,
-     * `multirowline`, `multirowlinecenter`, `multirowscatter`) draw one stacked
-     * plot per subtrack; overlapping modes (`multixyplot`, `multiline`,
-     * `multilinecenter`, `multiscatter`) draw all subtracks together in one
-     * shared plot.
+     * Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or
+     * `scatter`. Whether the subtracks share one plot or take a row each is
+     * `facet`.
      * #example
      * ```json
      * {
      *   "type": "MultiLinearWiggleDisplay",
-     *   "defaultRendering": "multixyplot"
+     *   "defaultRendering": "density"
      * }
      * ```
      */
     defaultRendering: {
       type: 'stringEnum',
-      model: types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
-      defaultValue: 'multirowxy',
+      model: types.enumeration('Rendering', [...WIGGLE_RENDERING_TYPES]),
+      defaultValue: 'xyplot',
       description: 'Default rendering type',
     },
+    /**
+     * #slot facet
+     * One row per value of a field, stacked down the track with a label, a
+     * separator and the clustering sidebar. `source` — one row per subtrack —
+     * is the only field this display reads; leave it unset and every subtrack
+     * is drawn in one shared plot. `domain` is the row order: the subtracks it
+     * names lead, the rest keep the adapter's order, and a clustering run
+     * rotates its dendrogram towards it rather than discarding it.
+     */
+    facet: facetConfigSchema,
     /**
      * #slot
      */
@@ -145,7 +127,6 @@ const configSchema = ConfigurationSchema(
     ...treeSidebarConfigSchemaFields({
       tree: 'Show the subtrack clustering tree in the sidebar',
       rowLabels: 'Name each subtrack row down the left edge',
-      rows: "Row order: the subtracks listed come first, in this order, and the rest keep the adapter's order. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed subtracks come as early as the tree allows",
     }),
     ...rowSeparatorsConfigSchemaFields(),
     /**
@@ -160,13 +141,7 @@ const configSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
-    // NOTE: this only fires on a direct schema create. The display config is
-    // normally reached through a types.union (a track's `displays` array), and
-    // union dispatch validates the RAW snapshot without running
-    // preProcessSnapshot — so the same remap is also registered as a
-    // Core-preProcessTrackConfig handler (see ./preProcessTrackConfig.ts).
-    preProcessSnapshot: (snap: Record<string, unknown>) =>
-      remapMultiWiggleRendering(snap),
+    preProcessSnapshot: checkFacetField,
   },
 )
 

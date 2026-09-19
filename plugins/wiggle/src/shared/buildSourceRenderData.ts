@@ -5,7 +5,7 @@ import {
   gapBreakLimit,
 } from '@jbrowse/wiggle-core'
 
-import { isOverlayMode, renderingTypeToInt } from './wiggleComponentUtils.ts'
+import { renderingTypeToInt } from './wiggleComponentUtils.ts'
 import { lineLayers, makeSummaryLayers } from './wiggleLayers.ts'
 
 import type { WiggleLayer } from './wiggleLayers.ts'
@@ -67,6 +67,9 @@ function sourceLayers({
 // roundtrip.
 export interface WiggleGpuProps {
   sources: { name: string; color?: string }[]
+  // Whether the display sections its sources, one row each (`facet: 'source'`).
+  // Unfaceted, every source is drawn on row 0 in one shared plot.
+  faceted: boolean
   posColor: string
   negColor: string
   // The mode actually drawn, never the raw config slot, since density has no
@@ -127,6 +130,7 @@ export function buildSourceRenderData(
 ): SourceRenderData[] {
   const {
     sources,
+    faceted,
     posColor: defaultPosColorStr,
     negColor: defaultNegColorStr,
     effectiveSummaryScoreMode: summaryScoreMode,
@@ -134,7 +138,11 @@ export function buildSourceRenderData(
     bicolorPivot,
     maxGapMultiple,
   } = gpuProps
-  const overlay = isOverlayMode(renderingType)
+  // Several plots sharing one box have to read as one colour each, so the
+  // sub-pivot side takes the source's own colour there. One plot in the box has
+  // nothing to be told apart from, and is the pos/neg bicolor plot a
+  // single-source quantitative track has always drawn.
+  const sharedPlot = !faceted && sources.length > 1
   const renderingTypeInt = renderingTypeToInt(renderingType)
   const lineCenter = renderingTypeInt === RENDERING_TYPE_LINE_CENTER
   const defaultPosColor = cssColorToNormalizedRgb(defaultPosColorStr)
@@ -152,8 +160,7 @@ export function buildSourceRenderData(
   // payload. An empty list therefore draws nothing, which is what a subtree
   // filter matching no present source means; falling back to the payload there
   // painted its first source full-height underneath the "no subtracks match"
-  // message. Overlay collapses every source onto row 0 and colors neg features
-  // with the source's pos color so overlapping sources stay visually one color.
+  // message. Unfaceted, every source collapses onto row 0.
   for (let i = 0; i < sources.length; i++) {
     const orderedSource = sources[i]!
     const source = sourcesByName.get(orderedSource.name)
@@ -161,8 +168,8 @@ export function buildSourceRenderData(
       const posColor = orderedSource.color
         ? cssColorToNormalizedRgb(orderedSource.color)
         : defaultPosColor
-      const row = overlay ? 0 : i
-      // Intentional and settled (see ADR-016): in row mode the neg side keeps
+      const row = faceted ? i : 0
+      // Intentional and settled (see ADR-016): with a row each the neg side keeps
       // the shared defaultNegColor even when the source has a per-row color, so
       // signed data still reads as a pos/neg bicolor plot. Do NOT "fix" this to
       // paint the whole row in the per-source color.
@@ -171,7 +178,7 @@ export function buildSourceRenderData(
         summaryScoreMode,
         renderingType: renderingTypeInt,
         posColor,
-        negColor: overlay ? posColor : defaultNegColor,
+        negColor: sharedPlot ? posColor : defaultNegColor,
         pivot: bicolorPivot,
       })
       for (const layer of layers) {

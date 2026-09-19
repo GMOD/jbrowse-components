@@ -14,7 +14,7 @@ import type {
 } from '@jbrowse/wiggle-core'
 
 export interface MultiWiggleDisplayModel
-  extends WiggleGpuDisplayModel, WiggleGpuProps {
+  extends WiggleGpuDisplayModel, Omit<WiggleGpuProps, 'faceted'> {
   id: string
   // read by DisplayChrome, which publishes it as `data-display-id` — the stable
   // hook the browser tests use to target one track's display
@@ -31,6 +31,7 @@ export interface MultiWiggleDisplayModel
   // wants it verbatim); the hit/tooltip path reads the resolved one, which is
   // what density actually draws
   effectiveSummaryScoreMode: string
+  isFaceted: boolean
   isOverlay: boolean
   isDensityMode: boolean
   numSources: number

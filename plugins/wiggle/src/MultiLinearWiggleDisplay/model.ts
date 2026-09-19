@@ -16,6 +16,7 @@ import LegendMixin, {
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
@@ -47,20 +48,16 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
-import {
-  getRowHeight,
-  getRowTop,
-  isOverlayMode,
-} from '../shared/wiggleComponentUtils.ts'
+import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
-  makeGroupedRenderingTypeSubMenu,
   makeLineWidthMenuItems,
   makePointSizeMenuItems,
+  makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
-import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
+import { WIGGLE_RENDERINGS } from '../util.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import {
@@ -76,6 +73,7 @@ import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTyp
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -155,11 +153,51 @@ export default function stateModelFactory(
       // overrides WiggleScoreConfigMixin's `false` base, which is what its
       // showCrossHatches / effectiveSummaryScoreMode getters key on
       get isDensityMode() {
-        return self.renderingType === 'multirowdensity'
+        return self.renderingType === 'density'
       },
 
+      /**
+       * #getter
+       * The `facet` object as written, or undefined while every source shares
+       * one plot. `source` is the only field the config admits here.
+       */
+      get facet(): FacetSetting | undefined {
+        return facetSettingOf({
+          field: getConf(self, ['facet', 'field']),
+          domain: getConf(self, ['facet', 'domain']),
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether each source takes a row of its own, which is the whole of what
+       * the facet decides here: the tree sidebar, the row labels, the
+       * separators, the clustering menu and the row-order sort all hang off it.
+       */
+      get isFaceted() {
+        return !!self.facet
+      },
+
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook, overridden: this display declares no
+       * `domain` slot of its own, because the row order is the facet's — one
+       * word for one idea, and `domain` on a wiggle display is already the
+       * score axis.
+       */
+      get rowDomain(): string[] {
+        return [...(self.facet?.domain ?? [])]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Every source in one plot box. The complement of the facet, named for
+       * what is drawn rather than for the setting that is off.
+       */
       get isOverlay() {
-        return isOverlayMode(self.renderingType)
+        return !self.isFaceted
       },
     }))
     .views(self => {
@@ -379,6 +417,7 @@ export default function stateModelFactory(
         return {
           ...self.sharedGpuProps(),
           sources: self.sources,
+          faceted: self.isFaceted,
         }
       },
     }))
@@ -508,6 +547,19 @@ export default function stateModelFactory(
 
       /**
        * #action
+       * The Plot type menu's "One row per source" checkbox. Writes the field
+       * alone: an order declared in `facet.domain` survives a trip through the
+       * shared plot and comes back with the rows.
+       */
+      setFaceted(on: boolean) {
+        self.configuration.setSubschema('facet', {
+          field: on ? 'source' : '',
+          domain: [...self.rowDomain],
+        })
+      },
+
+      /**
+       * #action
        * `LegendMixin`'s hook: narrow the rows to the subtracks one key row
        * stands for — what clicking that swatch does. A key row is a group
        * where the subtrack has one and the subtrack itself otherwise
@@ -632,16 +684,16 @@ export default function stateModelFactory(
           ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
         ]
         return [
-          makeGroupedRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERING_GROUPS),
+          makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
           clusteringMenuItem(
             self,
             {
               label: 'Cluster rows by score...',
               // the row-count half of the gate is `clusteringMenuItem`'s, off
-              // the count below; what is this display's own is that an overlay
-              // has no row axis to reorder at all
-              disabled: self.isOverlay,
-              disabledHelpText: 'Only available for multi-row rendering types',
+              // the count below; what is this display's own is that sources
+              // sharing one plot have no row axis to reorder at all
+              disabled: !self.isFaceted,
+              disabledHelpText: 'Only available with one row per source',
               onClick: () => {
                 getDialogHost(self).queueDialog(handleClose => [
                   WiggleClusterDialog,

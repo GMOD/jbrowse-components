@@ -1,6 +1,10 @@
 import { getSlotDefinition } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
+import {
+  makeRadioSubMenu,
+  radioItems,
+  toggleItem,
+} from '@jbrowse/core/ui/menuItems'
 import { makeScoreSubMenu } from '@jbrowse/wiggle-core'
 import {
   makePointSizeSubMenu,
@@ -20,8 +24,17 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AutoscaleModel, ScoreScaleModel } from '@jbrowse/wiggle-core'
 
+// The plot and the layout in one submenu: five radios for what a source is
+// drawn as, then the checkbox for whether each source gets a row of its own.
+// They were a nine-entry cross-product nested one level by layout, which made
+// "switch to density" and "stack the rows" the same click.
 export function makeRenderingTypeSubMenu(
-  self: { renderingType: string; setRenderingType: (t: string) => void },
+  self: {
+    renderingType: string
+    setRenderingType: (t: string) => void
+    isFaceted: boolean
+    setFaceted: (on: boolean) => void
+  },
   renderings: readonly (readonly [string, string])[],
 ): MenuItem {
   return makeRadioSubMenu({
@@ -32,34 +45,12 @@ export function makeRenderingTypeSubMenu(
       self.setRenderingType(t)
     },
     options: renderings,
-  })
-}
-
-// Multi-wiggle variant: the plot-type cross-product is large, so nest it one
-// level by layout (Multi-row / Overlapping) instead of listing every
-// combination flat. Each layout group is its own radio submenu sharing the one
-// renderingType value.
-export function makeGroupedRenderingTypeSubMenu(
-  self: { renderingType: string; setRenderingType: (t: string) => void },
-  groups: readonly (readonly [
-    string,
-    readonly (readonly [string, string])[],
-  ])[],
-): MenuItem {
-  return {
-    label: 'Plot type',
-    icon: ShowChartIcon,
-    subMenu: groups.map(([groupLabel, options]) =>
-      makeRadioSubMenu({
-        label: groupLabel,
-        value: self.renderingType,
-        onChange: t => {
-          self.setRenderingType(t)
-        },
-        options,
+    extraItems: [
+      toggleItem('One row per source', self.isFaceted, on => {
+        self.setFaceted(on)
       }),
-    ),
-  }
+    ],
+  })
 }
 
 export function makePointSizeMenuItems(

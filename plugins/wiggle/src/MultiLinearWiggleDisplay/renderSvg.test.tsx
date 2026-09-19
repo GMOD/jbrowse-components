@@ -142,10 +142,11 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     },
     gpuProps: () => ({
       sources: [{ name: 'a' }, { name: 'b' }],
+      faceted: true,
       posColor: '#0068d1',
       negColor: '#e01e26',
       effectiveSummaryScoreMode: 'avg',
-      renderingType: 'multirowxy',
+      renderingType: 'xyplot',
       isDensityMode: false,
       bicolorPivot: 0,
       maxGapMultiple: 0,

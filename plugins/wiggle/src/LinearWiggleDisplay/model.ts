@@ -14,6 +14,7 @@ import LegendMixin, {
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -135,6 +136,18 @@ export default function stateModelFactory(
 
       /**
        * #getter
+       * The `facet` object as written, or undefined while every source shares
+       * one plot.
+       */
+      get facet() {
+        return facetSettingOf({
+          field: getConf(self, ['facet', 'field']),
+          domain: getConf(self, ['facet', 'domain']),
+        })
+      },
+
+      /**
+       * #getter
        * The configured rules, parsed. Config is user-authored JSON, so this is
        * where the unusable entries are dropped rather than at each reader.
        */
@@ -155,6 +168,15 @@ export default function stateModelFactory(
        * washes the plot out for a mark nobody can see. Same trap
        * `effectiveSummaryScoreMode` exists for.
        */
+      /**
+       * #getter
+       * Whether each source takes a row of its own. One source either way here,
+       * so this only rides into `gpuProps` for the encoder's row placement.
+       */
+      get isFaceted() {
+        return !!self.facet
+      },
+
       get scoreRuleValues() {
         return self.isDensityMode ? [] : self.scoreRules.map(r => r.value)
       },
@@ -298,6 +320,7 @@ export default function stateModelFactory(
         const solidColor = self.isDensityMode ? self.posColor : self.color
         return {
           ...self.sharedGpuProps(),
+          faceted: self.isFaceted,
           sources: [
             {
               name: SINGLE_WIGGLE_SOURCE_NAME,
@@ -326,6 +349,16 @@ export default function stateModelFactory(
        */
       setColor(color?: string) {
         setConf(self, 'color', color)
+      },
+
+      /**
+       * #action
+       */
+      setFaceted(on: boolean) {
+        self.configuration.setSubschema('facet', {
+          field: on ? 'source' : '',
+          domain: [...(self.facet?.domain ?? [])],
+        })
       },
     }))
     .actions(self => ({

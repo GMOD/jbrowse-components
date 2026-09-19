@@ -25,11 +25,11 @@ function scored(name: string, score: number) {
 }
 
 // Driven off a real display, like trackMenuItems.test.ts: the menu's gates read
-// getters (`isOverlay`, `numSources`, `layout`) a stub would have to restate.
+// getters (`isFaceted`, `numSources`, `layout`) a stub would have to restate.
 //
 // The region is registered alongside its data, as a real fetch does: the sort
 // names a coordinate, so it resolves which loaded region covers it.
-function makeDisplay(scores: Record<string, number>, renderingType?: string) {
+function makeDisplay(scores: Record<string, number>, faceted = true) {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(
@@ -37,9 +37,7 @@ function makeDisplay(scores: Record<string, number>, renderingType?: string) {
     { sources: Object.entries(scores).map(([name, s]) => scored(name, s)) },
     { refName: 'ctgA', start: 0, end: 10_000, assemblyName: 'volvox' },
   )
-  if (renderingType) {
-    display.setRenderingType(renderingType)
-  }
+  display.setFaceted(faceted)
   return display
 }
 
@@ -134,8 +132,8 @@ test('offers the reset only once an order has been written', () => {
   expect(display.sources.map(s => s.name)).toEqual(['a', 'b'])
 })
 
-test('drops the sort in an overlay mode, which has no row axis to rank down', () => {
-  const display = makeDisplay({ a: 1, b: 5 }, 'multixyplot')
+test('drops the sort where the sources share one plot and there is no row axis', () => {
+  const display = makeDisplay({ a: 1, b: 5 }, false)
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
@@ -208,10 +206,10 @@ describe('the rows about the clicked bin', () => {
     ])
   })
 
-  // The sort has no row axis to rank down in an overlay, but the bin under the
-  // pointer is still a record.
-  it('offers them in an overlay mode, where the sort is dropped', () => {
-    const display = makeDisplay({ a: 1, b: 5 }, 'multixyplot')
+  // The sort has no row axis to rank down in one shared plot, but the bin under
+  // the pointer is still a record.
+  it('offers them unfaceted, where the sort is dropped', () => {
+    const display = makeDisplay({ a: 1, b: 5 }, false)
     display.openContextMenu({
       clientX: 0,
       clientY: 0,

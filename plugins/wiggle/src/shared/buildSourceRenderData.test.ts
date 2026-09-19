@@ -36,6 +36,7 @@ function makePositiveData(): WiggleDataResult {
 
 const baseGpuProps: WiggleGpuProps = {
   sources: [{ name: 'default' }],
+  faceted: true,
   posColor: '#0068d1',
   negColor: '#e01e26',
   effectiveSummaryScoreMode: 'avg',
@@ -79,7 +80,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
 
   // A line plot draws its range as one band spanning both signs, split at the
   // pivot by the painter rather than here, with the mean stroke on top.
-  test.each(['line', 'linecenter', 'multirowlinecenter'])(
+  test.each(['line', 'linecenter'])(
     'whiskers mode is a band and a mean stroke for %s',
     renderingType => {
       const out = buildSourceRenderData(makeData(), {
@@ -109,21 +110,36 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
       {
         ...baseGpuProps,
         sources: [{ name: 'default' }, { name: 'b' }],
+        faceted: false,
         effectiveSummaryScoreMode: 'whiskers',
-        renderingType: 'multilinecenter',
+        renderingType: 'linecenter',
       },
     )
     expect(out.map(l => !!l.band)).toEqual([true, true, false, false])
   })
 
-  // Overlay paints a source in one colour, so its band has one colour too.
-  test('an overlaid band takes the source colour on both sides of the pivot', () => {
-    const [band] = buildSourceRenderData(makeData(), {
-      ...baseGpuProps,
-      sources: [{ name: 'default', color: '#00ff00' }],
-      effectiveSummaryScoreMode: 'whiskers',
-      renderingType: 'multilinecenter',
-    })
+  // Sources sharing one plot are painted one colour each, so a band has one
+  // colour too. Two of them, because a lone plot in the box is the pos/neg
+  // bicolor plot a single-source quantitative track has always drawn.
+  test('a band over a shared plot takes the source colour on both sides of the pivot', () => {
+    const [band] = buildSourceRenderData(
+      {
+        sources: [
+          ...makeData().sources,
+          { ...makeData().sources[0]!, name: 'b' },
+        ],
+      },
+      {
+        ...baseGpuProps,
+        sources: [
+          { name: 'default', color: '#00ff00' },
+          { name: 'b', color: '#ff00ff' },
+        ],
+        faceted: false,
+        effectiveSummaryScoreMode: 'whiskers',
+        renderingType: 'linecenter',
+      },
+    )
     expect(band!.negColor).toEqual(band!.color)
   })
 
@@ -211,7 +227,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
 })
 
 describe('buildSourceRenderData pos/neg coloring', () => {
-  test('non-overlay: the two sides of the pivot pack distinct colors', () => {
+  test('faceted: the two sides of the pivot pack distinct colors', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'avg',
@@ -220,18 +236,40 @@ describe('buildSourceRenderData pos/neg coloring', () => {
     expect(above).not.toBe(below)
   })
 
-  // overlay collapses every source onto row 0 and colors neg features with the
-  // source's pos color so overlapping sources stay visually one color.
-  test('overlay: one color on both sides of the pivot, on row 0', () => {
-    const [layer, second] = buildSourceRenderData(makeData(), {
+  // Unfaceted, every source collapses onto row 0, and several of them take the
+  // source's pos colour on the neg side so an overlaid plot stays one colour.
+  test('a shared plot: one color on both sides of the pivot, on row 0', () => {
+    const layers = buildSourceRenderData(
+      {
+        sources: [
+          ...makeData().sources,
+          { ...makeData().sources[0]!, name: 'b' },
+        ],
+      },
+      {
+        ...baseGpuProps,
+        effectiveSummaryScoreMode: 'avg',
+        sources: [
+          { name: 'default', color: '#00ff00' },
+          { name: 'b', color: '#ff00ff' },
+        ],
+        faceted: false,
+      },
+    )
+    expect(layers.map(l => l.rowIndex)).toEqual([0, 0])
+    expect(layers.every(l => !l.colorsAbgr)).toBe(true)
+  })
+
+  // A lone plot in the box is the classic pos/neg picture, whatever the facet
+  // says: there is nothing for its colour to tell it apart from.
+  test('a lone source keeps both pivot colours unfaceted', () => {
+    const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'avg',
-      sources: [{ name: 'default', color: '#00ff00' }],
-      renderingType: 'multixyplot',
+      faceted: false,
     })
-    expect(second).toBeUndefined()
-    expect(layer!.colorsAbgr).toBeUndefined()
-    expect(layer!.rowIndex).toBe(0)
+    const [above, below] = layer!.colorsAbgr!
+    expect(above).not.toBe(below)
   })
 })
 

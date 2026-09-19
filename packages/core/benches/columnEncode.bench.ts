@@ -426,10 +426,11 @@ function runEncodeScenario(fixture: SourceColumns[]) {
   const total = fixture.reduce((sum, s) => sum + s.table.length, 0)
   const gpuProps: WiggleGpuProps = {
     sources: fixture.map(s => ({ name: s.name })),
+    faceted: true,
     posColor: WIGGLE_POS_COLOR_DEFAULT,
     negColor: WIGGLE_NEG_COLOR_DEFAULT,
     effectiveSummaryScoreMode: 'avg',
-    renderingType: 'multirowxy',
+    renderingType: 'xyplot',
     bicolorPivot: PIVOT,
     maxGapMultiple: 0,
   }

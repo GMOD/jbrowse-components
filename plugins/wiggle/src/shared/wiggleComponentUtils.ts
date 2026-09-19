@@ -13,8 +13,6 @@ import {
   resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
 
-import { MULTI_WIGGLE_OVERLAY_TYPES } from '../renderingTypes.ts'
-
 import type {
   WiggleGPURenderState,
   WiggleRenderingType,
@@ -47,12 +45,6 @@ export function centerLinksToPrevious(
   )
 }
 
-const overlayTypes: ReadonlySet<string> = new Set(MULTI_WIGGLE_OVERLAY_TYPES)
-
-export function isOverlayMode(renderingType: string) {
-  return overlayTypes.has(renderingType)
-}
-
 export function isScatterMode(renderingType: string) {
   return renderingTypeToInt(renderingType) === RENDERING_TYPE_SCATTER
 }
@@ -70,15 +62,6 @@ const renderingTypeMap: Record<string, WiggleRenderingType> = {
   line: RENDERING_TYPE_LINE,
   linecenter: RENDERING_TYPE_LINE_CENTER,
   scatter: RENDERING_TYPE_SCATTER,
-  multirowxy: RENDERING_TYPE_XYPLOT,
-  multixyplot: RENDERING_TYPE_XYPLOT,
-  multirowdensity: RENDERING_TYPE_DENSITY,
-  multirowline: RENDERING_TYPE_LINE,
-  multirowlinecenter: RENDERING_TYPE_LINE_CENTER,
-  multiline: RENDERING_TYPE_LINE,
-  multilinecenter: RENDERING_TYPE_LINE_CENTER,
-  multirowscatter: RENDERING_TYPE_SCATTER,
-  multiscatter: RENDERING_TYPE_SCATTER,
 }
 
 export function renderingTypeToInt(type: string): WiggleRenderingType {

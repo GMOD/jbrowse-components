@@ -4,15 +4,10 @@ import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core/renderingBackendTypes'
 import type { Feature } from '@jbrowse/core/util'
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
-// Rendering-type tables live in renderingTypes.ts (import-free) so non-UI
+// The rendering-type table lives in renderingTypes.ts (import-free) so non-UI
 // consumers can pull the menu labels without loading the wiggle-core barrel;
 // re-exported here so existing `../util.ts` importers are unaffected.
-export {
-  MULTI_WIGGLE_RENDERING_GROUPS,
-  MULTI_WIGGLE_RENDERING_TYPES,
-  WIGGLE_RENDERINGS,
-  WIGGLE_RENDERING_TYPES,
-} from './renderingTypes.ts'
+export { WIGGLE_RENDERINGS, WIGGLE_RENDERING_TYPES } from './renderingTypes.ts'
 
 // Default colors used by wiggle config schema. The negative color is a clean,
 // saturated red rather than a muted coral so that at high density (many thin

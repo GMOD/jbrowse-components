@@ -11,7 +11,9 @@ afterEach(() => {
 })
 
 async function loadedDisplay(domain: string[]) {
-  const env = createTestEnvironment({ displayConfig: { domain } })
+  const env = createTestEnvironment({
+    displayConfig: { facet: { field: 'source', domain } },
+  })
   env.mockRpcCall.mockImplementation(() =>
     Promise.resolve(makeMultiWiggleData('a', 'b', 'c')),
   )
@@ -26,7 +28,7 @@ async function loadedDisplay(domain: string[]) {
 const rowNames = (display: { sources: { name: string }[] }) =>
   display.sources.map(s => s.name)
 
-describe('the config `domain` seeds the subtrack order', () => {
+describe('`facet.domain` seeds the subtrack order', () => {
   it('leads with the subtracks it names and leaves the rest in adapter order', async () => {
     expect(rowNames(await loadedDisplay(['c']))).toEqual(['c', 'a', 'b'])
   })

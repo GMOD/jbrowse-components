@@ -159,6 +159,7 @@ const dataAvg = payload(false)
 function props(renderingType: string, mode: string): WiggleGpuProps {
   return {
     sources: sourceList,
+    faceted: true,
     posColor: WIGGLE_POS_COLOR_DEFAULT,
     negColor: WIGGLE_NEG_COLOR_DEFAULT,
     effectiveSummaryScoreMode: mode,
@@ -167,10 +168,10 @@ function props(renderingType: string, mode: string): WiggleGpuProps {
     maxGapMultiple: 0,
   }
 }
-const xyProps = props('multirowxy', 'avg')
-const lineProps = props('multirowline', 'avg')
-const centerProps = props('multirowlinecenter', 'avg')
-const bandProps = props('multirowline', 'whiskers')
+const xyProps = props('xyplot', 'avg')
+const lineProps = props('line', 'avg')
+const centerProps = props('linecenter', 'avg')
+const bandProps = props('line', 'whiskers')
 
 const xyLayers = buildSourceRenderData(dataAvg, xyProps)
 const lineLayers = buildSourceRenderData(dataAvg, lineProps)

@@ -35,10 +35,7 @@ import {
   SUBFEATURE_LABEL_OPTIONS,
 } from '../../../../plugins/canvas/src/RenderFeatureDataRPC/displayModes.ts'
 import { getHeightModeOptions } from '../../../../packages/display-kit/src/heightMode.ts'
-import {
-  MULTI_WIGGLE_RENDERING_GROUPS,
-  WIGGLE_RENDERINGS,
-} from '../../../../plugins/wiggle/src/renderingTypes.ts'
+import { WIGGLE_RENDERINGS } from '../../../../plugins/wiggle/src/renderingTypes.ts'
 
 // Maps a session-spec field to the thing a reader would actually click. Every
 // menu label here is either imported from the plugin's own option registry
@@ -867,20 +864,13 @@ const SUMMARY_SCORE_MODES: Record<string, string> = {
   whiskers: 'Whiskers',
 }
 
-// The 'Plot type' menu radios come straight from the two exported wiggle tables,
-// so single vs multi-row wording can't drift from the menu.
+// The 'Plot type' menu radios come straight from the exported wiggle table, so
+// the wording can't drift from the menu.
 function renderingTypeStep(value: unknown): FieldStep | undefined {
-  const single = WIGGLE_RENDERINGS.find(([v]) => v === value)
-  if (single) {
-    return { path: `${TRACK_MENU} → Plot type → ${single[1]}` }
-  }
-  for (const [group, options] of MULTI_WIGGLE_RENDERING_GROUPS) {
-    const opt = options.find(([v]) => v === value)
-    if (opt) {
-      return { path: `${TRACK_MENU} → Plot type → ${group} → ${opt[1]}` }
-    }
-  }
-  return undefined
+  const rendering = WIGGLE_RENDERINGS.find(([v]) => v === value)
+  return rendering
+    ? { path: `${TRACK_MENU} → Plot type → ${rendering[1]}` }
+    : undefined
 }
 
 function resolutionLabel(n: number) {

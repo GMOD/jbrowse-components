@@ -1,62 +1,28 @@
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
 } from '@jbrowse/wiggle-core'
 
 import {
-  MULTI_WIGGLE_RENDERING_GROUPS,
-  MULTI_WIGGLE_RENDERING_TYPES,
-} from '../renderingTypes.ts'
-import {
   getRowHeight,
   getRowTop,
   isLineMode,
-  isOverlayMode,
   isScatterMode,
   renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
 
-describe('isOverlayMode', () => {
-  test('overlay types return true', () => {
-    expect(isOverlayMode('multixyplot')).toBe(true)
-    expect(isOverlayMode('multiline')).toBe(true)
-    expect(isOverlayMode('multiscatter')).toBe(true)
-  })
-
-  test('multirow types return false', () => {
-    expect(isOverlayMode('multirowxy')).toBe(false)
-    expect(isOverlayMode('multirowdensity')).toBe(false)
-    expect(isOverlayMode('multirowline')).toBe(false)
-    expect(isOverlayMode('multirowscatter')).toBe(false)
-  })
-
-  test('density is not an overlay type', () => {
-    expect(isOverlayMode('density')).toBe(false)
-  })
-
-  // The set is derived from the menu table, so this is what catches an
-  // overlapping plot type added there and silently laid out as multi-row.
-  test('covers exactly the Overlapping menu group', () => {
-    const [, overlapping] = MULTI_WIGGLE_RENDERING_GROUPS[1]
-    expect(overlapping.map(([value]) => value).every(isOverlayMode)).toBe(true)
-    expect(MULTI_WIGGLE_RENDERING_TYPES.filter(isOverlayMode)).toHaveLength(
-      overlapping.length,
-    )
-  })
-})
-
 describe('isScatterMode', () => {
-  test('scatter types return true', () => {
-    expect(isScatterMode('multirowscatter')).toBe(true)
-    expect(isScatterMode('multiscatter')).toBe(true)
+  test('scatter returns true', () => {
+    expect(isScatterMode('scatter')).toBe(true)
   })
 
   test('non-scatter types return false', () => {
-    expect(isScatterMode('multixyplot')).toBe(false)
-    expect(isScatterMode('multiline')).toBe(false)
-    expect(isScatterMode('multirowxy')).toBe(false)
+    expect(isScatterMode('xyplot')).toBe(false)
+    expect(isScatterMode('line')).toBe(false)
+    expect(isScatterMode('density')).toBe(false)
   })
 })
 
@@ -64,33 +30,22 @@ describe('isLineMode', () => {
   test('both line renderings return true', () => {
     expect(isLineMode('line')).toBe(true)
     expect(isLineMode('linecenter')).toBe(true)
-    expect(isLineMode('multirowline')).toBe(true)
-    expect(isLineMode('multilinecenter')).toBe(true)
   })
 
   test('non-line types return false', () => {
-    expect(isLineMode('multirowxy')).toBe(false)
-    expect(isLineMode('multirowdensity')).toBe(false)
-    expect(isLineMode('multiscatter')).toBe(false)
+    expect(isLineMode('xyplot')).toBe(false)
+    expect(isLineMode('density')).toBe(false)
+    expect(isLineMode('scatter')).toBe(false)
   })
 })
 
 describe('renderingTypeToInt', () => {
-  test('single-wiggle variants map correctly', () => {
+  test('every rendering maps to its shader mode', () => {
     expect(renderingTypeToInt('xyplot')).toBe(RENDERING_TYPE_XYPLOT)
     expect(renderingTypeToInt('density')).toBe(RENDERING_TYPE_DENSITY)
     expect(renderingTypeToInt('line')).toBe(RENDERING_TYPE_LINE)
+    expect(renderingTypeToInt('linecenter')).toBe(RENDERING_TYPE_LINE_CENTER)
     expect(renderingTypeToInt('scatter')).toBe(RENDERING_TYPE_SCATTER)
-  })
-
-  test('multi-wiggle variants map to same int', () => {
-    expect(renderingTypeToInt('multirowxy')).toBe(RENDERING_TYPE_XYPLOT)
-    expect(renderingTypeToInt('multixyplot')).toBe(RENDERING_TYPE_XYPLOT)
-    expect(renderingTypeToInt('multirowline')).toBe(RENDERING_TYPE_LINE)
-    expect(renderingTypeToInt('multiline')).toBe(RENDERING_TYPE_LINE)
-    expect(renderingTypeToInt('multirowscatter')).toBe(RENDERING_TYPE_SCATTER)
-    expect(renderingTypeToInt('multiscatter')).toBe(RENDERING_TYPE_SCATTER)
-    expect(renderingTypeToInt('multirowdensity')).toBe(RENDERING_TYPE_DENSITY)
   })
 
   test('unknown types throw', () => {

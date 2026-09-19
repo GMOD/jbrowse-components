@@ -41,7 +41,7 @@ it('scales a density domain to the averages it actually paints', () => {
   // average scores), so a domain over the whisker extremes would leave the
   // color ramp — and the score legend printing it — describing a range nothing
   // on screen reaches
-  display.setRenderingType('multirowdensity')
+  display.setRenderingType('density')
   expect(display.effectiveSummaryScoreMode).toBe('avg')
   expect(display.domain).toEqual([0, 1])
 
@@ -58,7 +58,7 @@ it('stops drawing cross hatches in density mode', () => {
   // the hatches rule a score axis density doesn't have, and the track menu
   // drops the toggle there — so leaving them drawn strands them on with no way
   // back off
-  display.setRenderingType('multirowdensity')
+  display.setRenderingType('density')
   expect(display.displayCrossHatches).toBe(true)
   expect(display.showCrossHatches).toBe(false)
 })

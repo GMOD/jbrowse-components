@@ -6,11 +6,12 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // Driven off a real display instance rather than a structural stand-in: the menu
 // is built inline in the model's `trackMenuItems`, and its gates read getters
-// (`isOverlay`, `sourcesWithoutLayout`, `clusterTree`) that a stub would have to
+// (`isFaceted`, `sourcesWithoutLayout`, `clusterTree`) that a stub would have to
 // restate — and then wouldn't notice drifting from.
 function makeDisplay({
   sources = ['a', 'b'],
   renderingType,
+  faceted = true,
   clusterTree,
   // the tree's leaves, in tree order — hclust's `order` is exactly its newick
   // leaf order, which is what puts leaf i on row i
@@ -18,6 +19,7 @@ function makeDisplay({
 }: {
   sources?: string[]
   renderingType?: string
+  faceted?: boolean
   clusterTree?: string
   leafOrder?: string[]
 } = {}) {
@@ -31,6 +33,7 @@ function makeDisplay({
   if (renderingType) {
     display.setRenderingType(renderingType)
   }
+  display.setFaceted(faceted)
   if (clusterTree) {
     // A real clustered state, not just a tree string: clustering writes the row
     // order and the tree together, and `computeClusterHierarchy` declines to
@@ -68,7 +71,7 @@ function itemIn(items: MenuItem[], label: string) {
 
 describe('multi-wiggle Clustering submenu', () => {
   it('offers the run item, and the tree toggles sit under Show... in a row mode', () => {
-    const { display } = makeDisplay({ renderingType: 'multirowxy' })
+    const { display } = makeDisplay()
     const items = display.trackMenuItems()
 
     expect(labels(subMenuOf(items, 'Clustering'))).toEqual([
@@ -85,7 +88,7 @@ describe('multi-wiggle Clustering submenu', () => {
 
   it('drops both tree controls in an overlay mode, where no dendrogram draws', () => {
     const { display } = makeDisplay({
-      renderingType: 'multixyplot',
+      faceted: false,
       clusterTree: '(b,a);',
     })
 
@@ -102,10 +105,10 @@ describe('multi-wiggle Clustering submenu', () => {
 
   it('keeps the tree controls once a clustered row mode comes back', () => {
     const { display } = makeDisplay({
-      renderingType: 'multixyplot',
+      faceted: false,
       clusterTree: '(b,a);',
     })
-    display.setRenderingType('multirowxy')
+    display.setFaceted(true)
 
     expect(display.hierarchy).toBeDefined()
     expect(labels(subMenuOf(display.trackMenuItems(), 'Show...'))).toContain(
@@ -114,10 +117,7 @@ describe('multi-wiggle Clustering submenu', () => {
   })
 
   it('refuses to cluster a single subtrack instead of opening a dialog that would', () => {
-    const { display } = makeDisplay({
-      sources: ['a'],
-      renderingType: 'multirowxy',
-    })
+    const { display } = makeDisplay({ sources: ['a'] })
     const item = itemIn(
       subMenuOf(display.trackMenuItems(), 'Clustering'),
       'Cluster rows by score...',
@@ -130,7 +130,7 @@ describe('multi-wiggle Clustering submenu', () => {
   })
 
   it('refuses to cluster in an overlay mode, which has no rows to reorder', () => {
-    const { display } = makeDisplay({ renderingType: 'multixyplot' })
+    const { display } = makeDisplay({ faceted: false })
     const item = itemIn(
       subMenuOf(display.trackMenuItems(), 'Clustering'),
       'Cluster rows by score...',
@@ -138,12 +138,12 @@ describe('multi-wiggle Clustering submenu', () => {
 
     expect(item).toMatchObject({
       disabled: true,
-      disabledHelpText: 'Only available for multi-row rendering types',
+      disabledHelpText: 'Only available with one row per source',
     })
   })
 
   it('offers a way out of a written row order only once there is one', () => {
-    const { display } = makeDisplay({ renderingType: 'multirowxy' })
+    const { display } = makeDisplay()
     expect(labels(display.trackMenuItems())).not.toContain('Reset row order')
 
     // gated on `layout`, not on the tree: the score sort and the arrangement
@@ -173,14 +173,14 @@ describe('multi-wiggle track menu', () => {
   })
 
   it('keeps the menu open on every toggle, like the rest of the app', () => {
-    const { display } = makeDisplay({ renderingType: 'multirowxy' })
+    const { display } = makeDisplay()
     const items = subMenuOf(display.trackMenuItems(), 'Show...')
 
     expect(items.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
   })
 
   it('offers only the summary modes density draws, checking the effective one', () => {
-    const { display } = makeDisplay({ renderingType: 'multirowdensity' })
+    const { display } = makeDisplay({ renderingType: 'density' })
     display.configuration.setSlot('summaryScoreMode', 'whiskers')
     const modes = subMenuOf(
       subMenuOf(display.trackMenuItems(), 'Score'),
@@ -198,21 +198,21 @@ describe('multi-wiggle track menu', () => {
   })
 
   it('offers the overlay legend toggle only where a color key means anything', () => {
-    const overlay = makeDisplay({ renderingType: 'multixyplot' }).display
+    const overlay = makeDisplay({ faceted: false }).display
     expect(labels(subMenuOf(overlay.trackMenuItems(), 'Show...'))).toContain(
       'Show legend',
     )
 
-    // one source needs no key, and multirow identifies sources by row label
+    // one source needs no key, and a faceted track names sources by row label
     const oneSource = makeDisplay({
       sources: ['a'],
-      renderingType: 'multixyplot',
+      faceted: false,
     }).display
     expect(
       labels(subMenuOf(oneSource.trackMenuItems(), 'Show...')),
     ).not.toContain('Show legend')
 
-    const row = makeDisplay({ renderingType: 'multirowxy' }).display
+    const row = makeDisplay().display
     expect(labels(subMenuOf(row.trackMenuItems(), 'Show...'))).not.toContain(
       'Show legend',
     )

@@ -38,7 +38,7 @@ export function makeMultiWiggleData(...names: string[]): WiggleDataResult[] {
 // `createDisplay(snapshot)` takes display-instance keys, which is how the
 // clustering and sort autorun tests seed `runClustering`.
 export function createTestEnvironment({
-  // Display config slots, for the ones with no setter (`domain`).
+  // Display config slots, for the ones with no setter (`facet.domain`).
   displayConfig,
 }: { displayConfig?: Record<string, unknown> } = {}) {
   const env = createDisplayTestEnvironment<MultiLinearWiggleDisplayModel>({

@@ -16,6 +16,7 @@ function makeDisplay(sources: WiggleSourceData[], height: number) {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
   display.setHeight(height)
+  display.setFaceted(true)
   display.setRpcData(0, { sources }, view.displayedRegions[0])
   return display
 }
@@ -29,7 +30,7 @@ it('does not apply to a multi-row track whose rows can carry their labels', () =
 })
 
 // Hiding the dendrogram does not hide the row labels — those are
-// MultiWiggleRowLabels' own and draw for every multi-row track — so the key
+// MultiWiggleRowLabels' own and draw for every faceted track — so the key
 // would restate names still on screen. Row height is the whole test.
 it('does not apply to a labellable multi-row track with the tree hidden', () => {
   const display = makeDisplay(cells(9, 9), 600)
@@ -62,7 +63,7 @@ it('does not apply when the sources cannot collapse into a short key', () => {
 // identification there has ever been, whatever the row height would have been.
 it('applies in overlay mode regardless of row height', () => {
   const display = makeDisplay(cells(9, 9), 600)
-  display.setRenderingType('multixyplot')
+  display.setFaceted(false)
   expect(display.overlayLegendApplies).toBe(true)
 })
 
@@ -75,7 +76,7 @@ it('does not apply in overlay mode when the key is longer than it is readable', 
     Array.from({ length: 40 }, (_, i) => makeSource(`cell${i}`)),
     600,
   )
-  display.setRenderingType('multixyplot')
+  display.setFaceted(false)
   expect(display.legendItems).toHaveLength(40)
   expect(display.overlayLegendApplies).toBe(false)
 })
@@ -84,7 +85,7 @@ it('does not apply in overlay mode when the key is longer than it is readable', 
 // the length bar is asking about — the row count was never the question.
 it('applies in overlay mode when the same sources collapse into a short key', () => {
   const display = makeDisplay(cells(40, 4), 600)
-  display.setRenderingType('multixyplot')
+  display.setFaceted(false)
   expect(display.legendItems).toHaveLength(4)
   expect(display.overlayLegendApplies).toBe(true)
 })
@@ -109,7 +110,7 @@ describe('density mode keys off the row identity colour', () => {
 
   it('draws the swatches the rows are tinted with, not the pos colour', () => {
     const display = makeDisplay(groupedUncoloured(4390, 4), 620)
-    display.setRenderingType('multirowdensity')
+    display.setRenderingType('density')
     // the ramp still owns `color`; identity moved to labelColor
     expect(display.sources.every(s => !s.color)).toBe(true)
     const colors = display.legendItems.map(i => i.color)
@@ -129,7 +130,7 @@ describe('density mode keys off the row identity colour', () => {
       Array.from({ length: 20 }, (_, i) => makeSource(`cell${i}`)),
       100,
     )
-    display.setRenderingType('multirowdensity')
+    display.setRenderingType('density')
     expect(display.effectiveRowHeight).toBeLessThan(6)
     expect(display.legendItems).toHaveLength(0)
     expect(display.overlayLegendApplies).toBe(false)
@@ -147,7 +148,7 @@ describe('density mode keys off the row identity colour', () => {
       ] as WiggleSourceData[],
       40,
     )
-    display.setRenderingType('multirowdensity')
+    display.setRenderingType('density')
     expect(display.sources.filter(s => !s.labelColor)).toHaveLength(2)
     expect(display.legendItems.map(i => i.label)).toEqual(['g0', 'g1', 'g2'])
     expect(display.legendItems.every(i => i.color !== display.posColor)).toBe(

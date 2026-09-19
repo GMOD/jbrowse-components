@@ -1,11 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import linearConfigSchema from '../LinearWiggleDisplay/configSchema.ts'
-import {
-  MULTI_WIGGLE_RENDERING_TYPES,
-  WIGGLE_RENDERING_TYPES,
-} from '../util.ts'
-import multiConfigSchema, { remapMultiWiggleRendering } from './configSchema.ts'
+import multiConfigSchema from './configSchema.ts'
 
 test('MultiLinearWiggleDisplay scales.y has the autoscale defaults', () => {
   const config = multiConfigSchema.create({
@@ -31,34 +27,24 @@ test('LinearWiggleDisplay scales.y has the autoscale defaults', () => {
   expect(readConfObject(config, ['scales', 'y', 'numQuantile'])).toBe(0.99)
 })
 
-test('MultiLinearWiggleDisplay remaps single-source defaultRendering names', () => {
+test('the facet shorthand reads as one row per subtrack', () => {
   const config = multiConfigSchema.create({
     type: 'MultiLinearWiggleDisplay',
     displayId: 'test',
-    defaultRendering: 'xyplot',
+    facet: 'source',
   })
-  expect(readConfObject(config, 'defaultRendering')).toBe('multixyplot')
+  expect(readConfObject(config, ['facet', 'field'])).toBe('source')
 })
 
-// An unmapped single-source name reaches the multi enum verbatim and MST
-// rejects the whole track config, so the remap table has to cover every
-// single-source rendering, not just the ones that predate it.
-test.each([...WIGGLE_RENDERING_TYPES])(
-  'single-source rendering %s remaps onto a valid multi rendering',
-  rendering => {
-    const { defaultRendering } = remapMultiWiggleRendering({
-      defaultRendering: rendering,
-    })
-    expect(MULTI_WIGGLE_RENDERING_TYPES).toContain(defaultRendering)
-    expect(
-      readConfObject(
-        multiConfigSchema.create({
-          type: 'MultiLinearWiggleDisplay',
-          displayId: 'test',
-          defaultRendering: rendering,
-        }),
-        'defaultRendering',
-      ),
-    ).toBe(defaultRendering)
+test.each([multiConfigSchema, linearConfigSchema])(
+  'a facet on any other field is refused where the config is read',
+  schema => {
+    expect(() =>
+      schema.create({
+        type: 'MultiLinearWiggleDisplay',
+        displayId: 'test',
+        facet: 'group',
+      }),
+    ).toThrow(/sections on "source" alone/)
   },
 )
