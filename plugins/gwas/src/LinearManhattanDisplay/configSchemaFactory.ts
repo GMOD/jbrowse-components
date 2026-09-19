@@ -107,8 +107,7 @@ export function configSchemaFactory() {
        * #slot color
        * `"goldenrod"` or a `jexl:` callback paints every point;
        * `{ field: "population" }` gives each value a palette colour with a
-       * key; `{ field: "ld" }` colours by r² to the index SNP. See
-       * [ManhattanColor](ManhattanColor).
+       * key; `{ field: "ld" }` colours by r² to the index SNP.
        */
       color: manhattanColorConfigSchema,
       ...scoreFieldConfigSchemaFields,

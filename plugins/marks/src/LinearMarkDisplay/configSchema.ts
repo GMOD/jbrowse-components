@@ -210,7 +210,7 @@ const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
    * #slot marks.encoding.color
    * The mark's colour: a CSS colour, a jexl callback returning one, or an
    * object binding a field to a categorical or continuous scale. A scale is
-   * what the legend describes. See [MarkColor](MarkColor).
+   * what the legend describes.
    */
   color: markColorSchema,
   /**
