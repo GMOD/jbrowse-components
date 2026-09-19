@@ -1,12 +1,14 @@
 import PluggableElementBase from './PluggableElementBase.ts'
 
 import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
-import type { AnyAdapter } from '../data_adapters/BaseAdapter/index.ts'
+import type { AdapterClassFor } from '../data_adapters/BaseAdapter/index.ts'
 
-export default class TextSearchAdapterType extends PluggableElementBase {
-  getAdapterClass: () => Promise<AnyAdapter>
+export default class TextSearchAdapterType<
+  SCHEMA extends AnyConfigurationSchemaType = any,
+> extends PluggableElementBase {
+  getAdapterClass: () => Promise<AdapterClassFor<SCHEMA>>
 
-  configSchema: AnyConfigurationSchemaType
+  configSchema: SCHEMA
 
   description?: string
 
@@ -15,12 +17,12 @@ export default class TextSearchAdapterType extends PluggableElementBase {
   constructor(
     stuff: {
       name: string
-      configSchema: AnyConfigurationSchemaType
+      configSchema: SCHEMA
       displayName?: string
       description?: string
     } & (
-      | { getAdapterClass: () => Promise<AnyAdapter> }
-      | { AdapterClass: AnyAdapter }
+      | { getAdapterClass: () => Promise<AdapterClassFor<SCHEMA>> }
+      | { AdapterClass: AdapterClassFor<SCHEMA> }
     ),
   ) {
     super(stuff)
