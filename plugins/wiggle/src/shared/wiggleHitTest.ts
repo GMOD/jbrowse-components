@@ -1,7 +1,7 @@
 // Resolving what the cursor is over: a bp from a screen x, a feature from a
-// bp, and the tooltip/feature-widget payloads built from the hit. Shared by
-// single-wiggle and multi-wiggle so hover, the cursor guides and
-// click-to-select can't disagree about what is under the pointer.
+// bp, and the tooltip/feature-widget payloads built from the hit. One answer,
+// so hover, the cursor guides and click-to-select can't disagree about what is
+// under the pointer.
 import { bpAtPx, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
 import type { WiggleHoveredFeature, WiggleTooltipRow } from '../util.ts'
@@ -37,7 +37,7 @@ export function findFeatureAtBp(
 // Spread-friendly helper: returns `{ summary, minScore, maxScore }` when the
 // feature is a real summary (min/max diverge from score) and the user isn't
 // asking for plain 'avg'. Otherwise returns `{}` so the tooltip omits those
-// fields. Used by both single- and multi-wiggle hit handlers.
+// fields.
 function summaryFields(
   score: number,
   minScore: number | undefined,
@@ -53,7 +53,7 @@ function summaryFields(
 }
 
 // Build a tooltip row from a source's typed arrays at index `i`. `name`/`color`
-// are set for multi-wiggle and omitted for single-wiggle.
+// name a source where one is named, and are omitted where none is.
 export function makeTooltipRow(
   source: WiggleSourceData,
   i: number,
@@ -75,9 +75,8 @@ export function makeTooltipRow(
   }
 }
 
-// Feature-widget payload for a clicked wiggle hit, shared by single- and
-// multi-wiggle. Single-wiggle has one unnamed row keyed as `score`; multi has
-// one entry per source name.
+// Feature-widget payload for a clicked wiggle hit. An unnamed row is keyed as
+// `score`; named sources take one entry each.
 export function wiggleFeatureWidgetData(
   feat: WiggleHoveredFeature,
 ): SimpleFeatureSerialized {
@@ -93,8 +92,8 @@ export function wiggleFeatureWidgetData(
 }
 
 // Single-row hit: the feature interval at `bp` in one source plus its one row.
-// Used by single-wiggle and multi-wiggle row mode (overlay mode collects many
-// rows and uses the cursor bp instead, so it builds its result directly).
+// Used wherever cursor y picks one row; sources sharing one plot collect many
+// rows and use the cursor bp instead, so that path builds its result directly.
 export function findSourceHit(
   source: WiggleSourceData,
   bp: number,

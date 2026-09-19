@@ -12,7 +12,7 @@ summary mode, resolution and the line/gap settings. Extended on this chain
 with `.props()`/`.views()` rather than a mixin composed in, so no
 `types.compose` layer is added (ADR-041).
 
-Used by LinearWiggleDisplay and MultiLinearWiggleDisplay.
+Used by LinearWiggleDisplay and gccontent's two GC displays.
 
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
@@ -34,8 +34,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-minimalticks">**minimalTicks**</span><br><code>boolean</code> |  | WiggleCommonMixin |
 | <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> | Asked of the display's OWN adapter, which for the GC display is the synthesized GCContentAdapter rather than the track's raw sequence adapter — the two diverged when the adapter config moved onto the shared model. It answers the same today, since only BigWigAdapter and MultiWiggleAdapter declare the capability, and the display's adapter is the honest subject: the resolution slot it gates is passed to whatever this display fetches from. | WiggleCommonMixin |
 | <span id="getter-effectivesummaryscoremode">**effectiveSummaryScoreMode**</span><br><code>string</code> | The summary mode actually drawn. Density has no whiskers presentation — `sourceLayers` falls back to the average scores — so the autoscale domain reads this rather than the raw slot; otherwise the color ramp spans the whisker extremes while the plot paints averages, and the score legend reports a range nothing on screen reaches. Single-wiggle defaults to whiskers, so plain "plot type → Density" hit this. | WiggleCommonMixin |
-| <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | Source names to include when computing the autoscale domain; `undefined` means every fetched source. Multi-wiggle always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. | WiggleCommonMixin |
-| <span id="getter-scorerulevalues">**scoreRuleValues**</span><br><code>number[]</code> | Scores the axis must reach whatever the data does, so a rule drawn at one stays on it. `[]` here and overridden by the displays that draw score rules — MultiLinearWiggleDisplay stacks a plot box per row and draws none, so it keeps the base. | WiggleCommonMixin |
+| <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | Source names to include when computing the autoscale domain; `undefined` means every fetched source. The wiggle display always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. | WiggleCommonMixin |
+| <span id="getter-scorerulevalues">**scoreRuleValues**</span><br><code>number[]</code> | Scores the axis must reach whatever the data does, so a rule drawn at one stays on it. `[]` here and overridden by the displays that draw score rules — a faceted track stacks a plot box per row and draws none, so it keeps the base. | WiggleCommonMixin |
 | <span id="getter-domain">**domain**</span><br><code>[number, number] &#124; undefined</code> | The autoscaled domain over the sources visible in the settled blocks. `undefined` until the view and the data are ready, which is not the `[0, 1]` a caller falls back to — see `visibleStatsDomain`. | WiggleCommonMixin |
 | <span id="getter-scorefield">**scoreField**</span><br><code>string</code> | <span data-pagefind-ignore>The feature field the worker plots on the score axis, `score` by default. A fetch input: every composing display carries it in its `rpcProps()`, since the field is read where the features are.</span> | [ScoreFieldConfigMixin](../scorefieldconfigmixin#getter-scorefield) |
 | <span id="getter-scatterpointsize">**scatterPointSize**</span><br><code>number</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-scatterpointsize) |
@@ -66,7 +66,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feat: WiggleHoveredFeature) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setbicolorpivot">**setBicolorPivot**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
-| <span id="action-setposcolor">**setPosColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> | Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot` so both the single- and multi-wiggle color editors write the score-sign palette the same way. | WiggleCommonMixin |
+| <span id="action-setposcolor">**setPosColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> | Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot`, which the colour editor and the score menu both write through. | WiggleCommonMixin |
 | <span id="action-setnegcolor">**setNegColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setrenderingtype">**setRenderingType**</span><br><code>(type: string) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setsummaryscoremode">**setSummaryScoreMode**</span><br><code>(val: string) =&gt; void</code> |  | WiggleCommonMixin |

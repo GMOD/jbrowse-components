@@ -3,7 +3,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 export const SUMMARY_SCORE_MODES = ['max', 'min', 'avg', 'whiskers'] as const
 
 // Three schemas declare this slot and each wants a different default —
-// single-wiggle whiskers, multi-wiggle avg, gccontent avg because its adapter
+// the wiggle display whiskers, a MultiQuantitativeTrack avg through its
+// display defaults, gccontent avg because its adapter
 // emits no per-bin min/max. Only the default and the prose vary, so the
 // enumeration is supplied once here rather than copied into each; a fifth mode
 // added to one copy and not the others read as the slot silently rejecting it.

@@ -16,7 +16,7 @@ export { WIGGLE_RENDERINGS, WIGGLE_RENDERING_TYPES } from './renderingTypes.ts'
 export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
 export const WIGGLE_NEG_COLOR_DEFAULT = '#e01e26'
 
-// A row of a multi-wiggle display, which is exactly the metadata its adapter
+// A row of the wiggle display, which is exactly the metadata its adapter
 // reported — so this is `SourceInfo`, not a widened copy of it.
 //
 // It used to carry a second required field, `source`, always set equal to
@@ -34,7 +34,7 @@ export const WIGGLE_NEG_COLOR_DEFAULT = '#e01e26'
 export type Source = SourceInfo
 
 // One score entry shown in a wiggle tooltip. `source`/`color` are populated
-// only for multi-wiggle (single-wiggle has no per-source identity). The summary
+// only where a source is named. The summary
 // variant carries min/max together so consumers narrow on `summary` alone.
 export type WiggleTooltipRow = {
   source?: string
@@ -45,12 +45,11 @@ export type WiggleTooltipRow = {
   | { summary: true; minScore: number; maxScore: number }
 )
 
-// Feature(s) hovered under the mouse, shared by single- and multi-wiggle.
-// `start`/`end` is a 0-based half-open interval: the feature's own for
-// single-wiggle and multi-wiggle row mode, and just the cursor base
-// (`[bp, bp + 1)`) in overlay mode, since sources with differing bin widths share
-// no single feature interval. `rows` holds one entry for single/row mode and
-// one-per-source in overlay mode.
+// Feature(s) hovered under the mouse. `start`/`end` is a 0-based half-open
+// interval: the feature's own where cursor y picks one row, and just the cursor
+// base (`[bp, bp + 1)`) where several sources share one plot, since sources with
+// differing bin widths share no single feature interval. `rows` holds one entry
+// per row read.
 export interface WiggleHoveredFeature {
   refName: string
   start: number

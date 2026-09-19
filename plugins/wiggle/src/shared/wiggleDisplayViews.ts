@@ -6,10 +6,9 @@ import type { WiggleRenderStateModel } from './wiggleComponentUtils.ts'
 import type { RampScale } from '@jbrowse/core/ui/colorScale'
 
 /**
- * Where a wiggle-family display puts its plot inside its own height. The two
- * displays differ in this and (almost) nothing else: single-wiggle insets by
- * the scalebar label gutter so its end labels aren't clipped and draws one row,
- * multi-wiggle stacks `numRows` rows edge-to-edge over the full height.
+ * Where a wiggle-family display puts its plot inside its own height: one plot
+ * box insets by the scalebar label gutter so its end labels aren't clipped, a
+ * faceted stack puts `numRows` rows edge-to-edge over the full height.
  *
  * One value because the halves have to move together — the render height, the
  * on-screen canvas box, the SVG clip group and `computeYTicks`' offset — or the
@@ -52,11 +51,11 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
 }
 
 /**
- * The views both wiggle displays state identically once `plotGeometry` names
- * what they disagree about. Installed as a `.views()` layer of its own, under
- * the layer where each display spreads `sharedRpcProps`/`sharedGpuProps` into
- * the parts that are genuinely its own: single-wiggle's solid-color override,
- * multi-wiggle's row list and its `summaryScoreMode` fetch key.
+ * The views a wiggle-family display states once `plotGeometry` names where its
+ * plot sits. Installed as a `.views()` layer of its own, under the layer where
+ * the display spreads `sharedRpcProps`/`sharedGpuProps` into its own
+ * `rpcProps()`/`gpuProps()` — the solid-colour override, the row list and the
+ * `summaryScoreMode` fetch key.
  *
  * A plain function rather than another mixin: `types.compose` depth is a real
  * ceiling in these chains (ADR-041), and a mixin composed beside
@@ -99,7 +98,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
 
     /**
      * #method
-     * The fetch cache keys both displays share, spread into each display's own
+     * The fetch cache keys, spread into the display's own
      * `rpcProps()`. The colour settings are not among them: every mode
      * partitions by sign on the main thread, so moving the pivot re-encodes
      * and refetches nothing.
@@ -118,9 +117,9 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
 
     /**
      * #method
-     * The encoder inputs both displays share — everything but the row list,
-     * which each display builds differently. Spread into each display's
-     * `gpuProps()`; see `sharedRpcProps` for why it isn't an override.
+     * The encoder inputs — everything but the row list and the facet. Spread
+     * into the display's `gpuProps()`; see `sharedRpcProps` for why it isn't an
+     * override.
      */
     sharedGpuProps() {
       return {

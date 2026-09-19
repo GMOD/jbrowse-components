@@ -67,7 +67,7 @@ export const RESOLUTION_STEP = 2
  * with `.props()`/`.views()` rather than a mixin composed in, so no
  * `types.compose` layer is added (ADR-041).
  *
- * Used by LinearWiggleDisplay and MultiLinearWiggleDisplay.
+ * Used by LinearWiggleDisplay and gccontent's two GC displays.
  */
 export function WiggleCommonMixin() {
   return ScoreFieldConfigMixin()
@@ -191,10 +191,10 @@ export function WiggleCommonMixin() {
       /**
        * #getter
        * Source names to include when computing the autoscale domain;
-       * `undefined` means every fetched source. Multi-wiggle always fetches all
-       * sources and filters client-side, so it overrides this to the visible
-       * subset — otherwise a subtree filter that hides sources would leave the
-       * Y-axis scaled to the hidden ones.
+       * `undefined` means every fetched source. The wiggle display always
+       * fetches all sources and filters client-side, so it overrides this to
+       * the visible subset — otherwise a subtree filter that hides sources
+       * would leave the Y-axis scaled to the hidden ones.
        */
       get autoscaleSourceNames(): Set<string> | undefined {
         return undefined
@@ -205,8 +205,8 @@ export function WiggleCommonMixin() {
        * #getter
        * Scores the axis must reach whatever the data does, so a rule drawn at
        * one stays on it. `[]` here and overridden by the displays that draw
-       * score rules — MultiLinearWiggleDisplay stacks a plot box per row and
-       * draws none, so it keeps the base.
+       * score rules — a faceted track stacks a plot box per row and draws none,
+       * so it keeps the base.
        */
       get scoreRuleValues(): number[] {
         return []
@@ -287,8 +287,8 @@ export function WiggleCommonMixin() {
       /**
        * #action
        * Lives here beside the `posColor`/`negColor` getters and
-       * `setBicolorPivot` so both the single- and multi-wiggle color editors
-       * write the score-sign palette the same way.
+       * `setBicolorPivot`, which the colour editor and the score menu both
+       * write through.
        */
       setPosColor(color?: string) {
         setConf(confNode(self), 'posColor', color)
