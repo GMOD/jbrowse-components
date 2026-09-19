@@ -12,10 +12,35 @@ import {
 } from '../../configuration/index.ts'
 import { BaseDisplay } from './BaseDisplayModel.tsx'
 
+const valueScaleSchema = ConfigurationSchema(
+  'TestValueScale',
+  {
+    type: { type: 'string', defaultValue: 'linear' },
+    domainMin: { type: 'maybeNumber' },
+    domainMax: { type: 'maybeNumber' },
+  },
+  { closed: true },
+)
+
+const facetSchema = ConfigurationSchema(
+  'TestFacet',
+  {
+    field: { type: 'string', defaultValue: '' },
+    domain: { type: 'stringArray', defaultValue: [] },
+  },
+  { shorthand: 'field', closed: true },
+)
+
 const configSchema = ConfigurationSchema(
   'TestDisplay',
   {
     height: { type: 'number', defaultValue: 100 },
+    scales: ConfigurationSchema(
+      'TestScales',
+      { y: valueScaleSchema },
+      { closed: true },
+    ),
+    facet: facetSchema,
     // a slot whose preProcess rejects a bad value, to exercise the throwing
     // SLOT path — the one showTrackGeneric notifies on
     label: {
@@ -139,4 +164,29 @@ test('a throwing SLOT lands in failed, separately from unapplied', () => {
   expect(report.unapplied).toEqual([{ key: 'nonsense', reason: 'no-slot' }])
   expect(report.failed).toHaveLength(1)
   expect(report.failed[0]!.key).toBe('label')
+})
+
+// A settings bag, a session spec and a share link all route here, and each one
+// names the member it means. Replacing the node — which is what `setSubschema`
+// does for the config editor, whose object is whole — reset every member the
+// bag did not name, so `{ scales: { y: { domainMin: 5 } } }` cleared a log axis.
+test('a partial sub-schema write merges rather than replacing the node', () => {
+  const display = makeDisplay()
+  display.applyDisplaySettings({ scales: { y: { type: 'log' } } })
+  display.applyDisplaySettings({ scales: { y: { domainMin: 5 } } })
+  expect(readConfObject(display.configuration, ['scales', 'y'])).toMatchObject({
+    type: 'log',
+    domainMin: 5,
+  })
+})
+
+// A string is a different form, not a partial one, so it still replaces whole.
+test('a string shorthand replaces the sub-schema', () => {
+  const display = makeDisplay()
+  display.applyDisplaySettings({ facet: { field: 'HP', domain: ['1', '2'] } })
+  display.applyDisplaySettings({ facet: 'strand' })
+  expect(readConfObject(display.configuration, ['facet', 'field'])).toBe(
+    'strand',
+  )
+  expect(readConfObject(display.configuration, ['facet', 'domain'])).toEqual([])
 })

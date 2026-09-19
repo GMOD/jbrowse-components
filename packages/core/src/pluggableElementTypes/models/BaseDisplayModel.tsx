@@ -4,6 +4,7 @@ import {
   getConf,
   isConfigurationSlot,
   isConfigurationSubschema,
+  mergedSubschemaValue,
   preProcessSlotValues,
 } from '../../configuration/index.ts'
 import {
@@ -305,7 +306,10 @@ function stateModelFactory() {
               continue
             }
             if (isConfigurationSubschema(configuration, key)) {
-              configuration.setSubschema(key, value ?? {})
+              configuration.setSubschema(
+                key,
+                mergedSubschemaValue(configuration, key, value),
+              )
               applied.push(key)
               continue
             }

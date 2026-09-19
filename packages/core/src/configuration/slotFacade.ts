@@ -3,6 +3,7 @@ import {
   getType,
   isArrayType,
   isMapType,
+  isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 
 import { getEnumerationValues } from '../util/mst-reflection.ts'
@@ -59,6 +60,47 @@ export function isConfigurationSubschema(
 ): boolean {
   const def = getConfigurationSchemaDefinition(node)?.[slotName]
   return isConfigurationSchemaType(def) && !isArrayType(def) && !isMapType(def)
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
+
+function deepMerge(
+  base: Record<string, unknown>,
+  over: Record<string, unknown>,
+) {
+  const out = { ...base }
+  for (const [k, v] of Object.entries(over)) {
+    const prev = out[k]
+    out[k] = isPlainObject(prev) && isPlainObject(v) ? deepMerge(prev, v) : v
+  }
+  return out
+}
+
+/**
+ * What to hand `setSubschema` for a partial write of `slotName`: the sub-schema
+ * as it stands, with `value`'s members over it, recursing where both sides are
+ * plain objects.
+ *
+ * `setSubschema` replaces the node, which is right for the config editor — it
+ * hands over a whole object — and wrong for a settings bag, a session spec or a
+ * share link, where `{ scales: { y: { domainMin: 5 } } }` means "pin the bottom"
+ * and used to reset `type` and `autoscale` with it. A string shorthand
+ * (`facet: 'strand'`) still replaces whole: it is a different form, not a
+ * partial one.
+ */
+export function mergedSubschemaValue(
+  node: AnyConfigurationModel,
+  slotName: string,
+  value: unknown,
+) {
+  const existing = (node as unknown as Record<string, unknown>)[slotName]
+  if (!isPlainObject(value) || !isStateTreeNode(existing)) {
+    return value ?? {}
+  }
+  const snap = getSnapshot(existing)
+  return isPlainObject(snap) ? deepMerge(snap, value) : value
 }
 
 /**

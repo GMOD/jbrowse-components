@@ -59,6 +59,7 @@ export {
   isConfigurationSlot,
   isConfigurationSubschema,
   makeSlotFacade,
+  mergedSubschemaValue,
   preProcessSlotValues,
   slotChoices,
   slotValueRefusal,
