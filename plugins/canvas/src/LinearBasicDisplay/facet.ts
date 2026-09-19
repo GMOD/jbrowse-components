@@ -78,8 +78,8 @@ export function featureGroupSections(
   map: ReadonlyMap<number, FeatureDataResult>,
   facet: FeatureFacet,
   chipPx: number,
+  sectionOf = sectionIdsOf(map, facet),
 ): FeatureGroupSection[] {
-  const sectionOf = sectionIdsOf(map, facet)
   const bounds = new Map<
     string,
     { label: string; top: number; bottom: number }

@@ -15,6 +15,7 @@ import {
   addTrimmedIsoformPicks,
   mergeIsoformPicks,
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
+import { configuredLegendEntries } from '../shared/configuredLegend.ts'
 import baseStateModelFactory from './baseModel.ts'
 import { collapseIntronsMenuItem } from './collapseIntronsMenu.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
@@ -249,10 +250,7 @@ export default function stateModelFactory(
        * scale, or, with no slot, the key the color channel's scale derives.
        */
       get colorScales(): ColorScale[] {
-        const legend = getConf(self, 'legend') as {
-          label: string
-          color: string
-        }[]
+        const legend = configuredLegendEntries(getConf(self, 'legend'))
         return legend.length
           ? [
               {

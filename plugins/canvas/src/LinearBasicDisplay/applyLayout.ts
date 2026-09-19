@@ -89,10 +89,13 @@ function chipShiftOf(
   scale: number,
   { facet, chipPx }: FixedChips,
 ) {
-  const ordinal = new Map(
-    featureGroupSections(map, facet, chipPx).map((s, i) => [s.key, i]),
-  )
   const sectionOf = sectionIdsOf(map, facet)
+  const ordinal = new Map(
+    featureGroupSections(map, facet, chipPx, sectionOf).map((s, i) => [
+      s.key,
+      i,
+    ]),
+  )
   const lost = chipPx * (1 - scale)
   return (item: FlatbushItem) => {
     const i = isPlacedRow(item.topPx)

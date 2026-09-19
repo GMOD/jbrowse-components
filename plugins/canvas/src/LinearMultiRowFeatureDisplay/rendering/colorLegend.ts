@@ -1,6 +1,7 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { unionLegendCandidates } from '@jbrowse/core/util/legendCandidates'
 
+import { configuredLegendEntries } from '../../shared/configuredLegend.ts'
 import { resolveLocalRowIndices } from './featurePainting.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
@@ -12,23 +13,6 @@ export interface LegendEntry {
   color: number
 }
 
-interface ConfiguredLegendEntry {
-  label: string
-  color: string
-}
-
-function isConfiguredLegendEntry(e: unknown): e is ConfiguredLegendEntry {
-  return (
-    typeof e === 'object' &&
-    e !== null &&
-    'label' in e &&
-    typeof e.label === 'string' &&
-    'color' in e &&
-    typeof e.color === 'string'
-  )
-}
-
-// Reads the raw (untyped) `legend` config slot, so it validates each entry.
 // Deduped on both halves: a repeated label collides as the React key, and a
 // repeated color as the toggle key, so two labels sharing one color would give
 // a row whose checkbox blanks its neighbour's features.
@@ -36,14 +20,12 @@ export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
   const seenLabels = new Set<string>()
   const seenColors = new Set<number>()
   const result: LegendEntry[] = []
-  for (const e of Array.isArray(entries) ? entries : []) {
-    if (isConfiguredLegendEntry(e)) {
-      const color = cssColorToABGR(e.color)
-      if (!seenLabels.has(e.label) && !seenColors.has(color)) {
-        seenLabels.add(e.label)
-        seenColors.add(color)
-        result.push({ label: e.label, color })
-      }
+  for (const e of configuredLegendEntries(entries)) {
+    const color = cssColorToABGR(e.color)
+    if (!seenLabels.has(e.label) && !seenColors.has(color)) {
+      seenLabels.add(e.label)
+      seenColors.add(color)
+      result.push({ label: e.label, color })
     }
   }
   return result
