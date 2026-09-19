@@ -355,9 +355,6 @@ describe('wiggle / score modifiers', () => {
       resolution: 100,
       color: 'purple',
     })
-    // a bare `color` is left for the wiggle display config's own
-    // colorImpliesSolid preProcessSnapshot to turn bicolor off
-    expect(snap.useBicolor).toBeUndefined()
   })
 
   // The coverage band carries the same `scales.y`, so these three apply to

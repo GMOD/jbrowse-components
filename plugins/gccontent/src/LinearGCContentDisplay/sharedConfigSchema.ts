@@ -54,7 +54,7 @@ export default function sharedGCContentConfigSchema() {
       ...summaryScoreModeConfigSchemaFields({
         defaultMode: 'avg',
         description:
-          "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces posColor-only rendering (buildSourceRenderData skips the bicolor pos/neg split for whiskers) and hides negative GC-skew as if it were positive",
+          "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces the above-origin colour on every bin (buildSourceRenderData skips the two-sided split for whiskers) and hides negative GC-skew as if it were positive",
       }),
     },
     {

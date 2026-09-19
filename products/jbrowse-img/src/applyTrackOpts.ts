@@ -216,7 +216,6 @@ interface DisplaySnapshot {
   filterBy?: FilterBySnapshot
   // wiggle / score
   color?: string | { field: string }
-  useBicolor?: boolean
   scales?: {
     y: {
       type?: string
@@ -242,14 +241,10 @@ interface DisplaySnapshot {
 // getters) plus the wiggle config slots whose snapshot name diverges from any
 // instance member: `autoscale`/`defaultRendering` resolve through
 // divergently-named getters (`autoscaleType`/`renderingType`), and
-// `color`/`useBicolor`/`scales` are config-slot-only with no getter —
+// `color`/`scales` are config-slot-only with no getter —
 // `showTrackGeneric` routes all four onto the config, so `keyof` the instance
 // misses them. `height` resolves fine — it's the getter.
-type WiggleConfigSlotKey =
-  | 'defaultRendering'
-  | 'color'
-  | 'scales'
-  | 'useBicolor'
+type WiggleConfigSlotKey = 'defaultRendering' | 'color' | 'scales'
 // `forceLoad` is a base-linear-display config slot read through the
 // divergently-named `configForceLoad` getter, so `keyof` the instance misses it
 // the same way it misses the wiggle slots above.
@@ -726,11 +721,8 @@ const modifiers: Record<string, Modifier> = {
           'Warning: track option "color" has no effect on a hic track',
         )
       } else if (category === 'wiggle') {
-        // Render in one solid color. The bicolor default routes through
-        // pos/negColor and ignores `color`; the display config's own
-        // `colorImpliesSolid` preProcessSnapshot turns bicolor off for a bare
-        // `color`, so don't restate it here — that would also override an
-        // explicit `useBicolor` from the JSON escape hatch.
+        // A string on the quantitative display's colour object is the
+        // constant, so this is the whole of "render in one solid color".
         r.snap.color = value
       } else {
         // Feature/variant: LinearCanvasBaseDisplay's `color`. A
