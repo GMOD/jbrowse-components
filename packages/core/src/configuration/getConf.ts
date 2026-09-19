@@ -1,4 +1,10 @@
+import { isArrayType, isStateTreeNode, getType } from '@jbrowse/mobx-state-tree'
+
 import { readConfObject } from './readConfObject.ts'
+import {
+  isConfigurationModel,
+  isConfigurationSchemaType,
+} from './schemaTypes.ts'
 
 import type {
   AnyConfigurationModel,
@@ -61,8 +67,16 @@ export function getConf(
 
 /**
  * #api core/configuration
- * Write counterpart to `getConf`: sets a slot on a state model that has a
- * `.configuration` member (a track or display state model).
+ * Write counterpart to `getConf`, and it takes the same path: a slot name, or
+ * an array naming a sub-schema's member at any depth —
+ * `setConf(self, ['scales', 'y', 'domainMin'], 5)`. Takes the display or track
+ * model, or a config node directly.
+ *
+ * **The path length says what the write replaces.** A path ending on a slot
+ * writes that slot and leaves the object around it alone; a path ending on a
+ * sub-schema replaces the whole object, which is how a channel whose members
+ * move together — a facet's field and the domain that field's values order —
+ * gets written without a stale member surviving underneath.
  *
  * **Prefer this over a bare `self.configuration.setSlot('x', v)`.** The
  * constraint here mirrors `getConf`'s, so on a model with a concrete schema an
@@ -86,15 +100,64 @@ export function getConf(
  * `undefined` is a legitimate write — it resets a slot to its schema default —
  * and the declared slot value type doesn't include it.
  *
- * @param model - object containing a 'configuration' member
- * @param slotName - the slot to write
+ * @param target - a model with a `configuration` member, or a config node
+ * @param slotPath - the slot to write, or the path to one
  * @param value - the new value
  */
 export function setConf<
   CONFMODEL extends AnyConfigurationModel,
-  SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> =
+  const SLOT extends
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> =
     ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
->(model: { configuration: CONFMODEL }, slotName: SLOT, value: unknown) {
-  // eslint-disable-next-line no-restricted-syntax -- this is setConf
-  model.configuration.setSlot(slotName, value)
+>(
+  target: CONFMODEL | { configuration: CONFMODEL },
+  slotPath: SLOT,
+  value: unknown,
+): void {
+  writeConfPath(
+    isConfigurationModel(target) ? target : target.configuration,
+    typeof slotPath === 'string' ? [slotPath] : (slotPath as string[]),
+    value,
+  )
+}
+
+/**
+ * Walk to the node the last segment names a member of, then write that member
+ * through whichever of the node's three write actions the member is: a
+ * sub-schema is replaced, an array of sub-schemas is replaced, and a slot goes
+ * through `setSlot` so ADR-052's name guard and the value-type guard both run.
+ */
+function writeConfPath(
+  conf: AnyConfigurationModel,
+  path: readonly string[],
+  value: unknown,
+) {
+  if (!path.length) {
+    throw new Error('setConf needs a slot name or a path to one')
+  }
+  let node = conf
+  for (const segment of path.slice(0, -1)) {
+    const child = (node as unknown as Record<string, unknown>)[segment]
+    if (!isConfigurationModel(child)) {
+      throw new Error(
+        `${getType(node).name} has no sub-schema "${segment}", so ${path.join('.')} names nothing to write`,
+      )
+    }
+    node = child
+  }
+  const leaf = path.at(-1)!
+  const current = (node as unknown as Record<string, unknown>)[leaf]
+  // Classify off the member's own MST type, never off "is it an array": a
+  // `stringArray` slot holds an array node too, and dispatching on that sent
+  // the multi-way display's `domain` to setSubschemaArray.
+  const type = isStateTreeNode(current) ? getType(current) : undefined
+  if (!type || !isConfigurationSchemaType(type)) {
+    // eslint-disable-next-line no-restricted-syntax -- this is setConf
+    node.setSlot(leaf, value)
+  } else if (isArrayType(type)) {
+    node.setSubschemaArray(leaf, value as unknown[])
+  } else {
+    node.setSubschema(leaf, value)
+  }
 }

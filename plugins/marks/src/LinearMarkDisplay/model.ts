@@ -1069,15 +1069,16 @@ export function stateModelFactory(
        */
       setFacetDomain(domain: string[]) {
         if (self.facet) {
-          self.conf.setSubschema('facet', { field: self.facet.field, domain })
+          setConf(self.conf, ['facet', 'domain'], domain)
         }
       },
       /**
        * #action
-       * A field's own bands, in their sorted order.
+       * A field's own bands, in their sorted order. The whole object, so the
+       * outgoing field's domain goes with it.
        */
       setFacetField(field: string) {
-        self.conf.setSubschema('facet', field ? { field } : {})
+        setConf(self.conf, 'facet', field ? { field } : {})
       },
       /**
        * #action

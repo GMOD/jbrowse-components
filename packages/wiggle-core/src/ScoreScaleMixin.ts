@@ -7,12 +7,8 @@ import {
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 
-import type {
-  ValueScaleConfigSchema,
-  scalesSchema,
-} from './valueScaleConfigSchema.ts'
+import type { scalesSchema } from './valueScaleConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * The whole of what `ScoreScaleMixin` needs a composing display to be: a
@@ -31,20 +27,6 @@ export interface ScoreScaleHost {
 // factory's schema rather than `AnyConfigurationModel`, which is what keeps the
 // member names below checked.
 const confNode = (self: object) => self as ScoreScaleHost
-
-/**
- * `setConf` writes a slot, not a path, so the setters hand it the `scales.y`
- * node itself. Named rather than inlined because a sub-schema member reads as
- * `any` off the instance type, and the annotation is what keeps the member
- * names below checked — `ScoreScaleMixin.test.ts` pins it.
- */
-export interface ValueScaleHost {
-  configuration: Instance<ValueScaleConfigSchema>
-}
-
-const scaleNode = (self: object): ValueScaleHost => ({
-  configuration: confNode(self).configuration.scales.y,
-})
 
 /**
  * #stateModel ScoreScaleMixin
@@ -137,25 +119,25 @@ export function ScoreScaleMixin() {
        * #action
        */
       setScaleType(scaleType: string) {
-        setConf(scaleNode(self), 'type', scaleType)
+        setConf(confNode(self), ['scales', 'y', 'type'], scaleType)
       },
       /**
        * #action
        */
       setAutoscale(val?: string) {
-        setConf(scaleNode(self), 'autoscale', val)
+        setConf(confNode(self), ['scales', 'y', 'autoscale'], val)
       },
       /**
        * #action
        */
       setMinScore(val?: number) {
-        setConf(scaleNode(self), 'domainMin', val)
+        setConf(confNode(self), ['scales', 'y', 'domainMin'], val)
       },
       /**
        * #action
        */
       setMaxScore(val?: number) {
-        setConf(scaleNode(self), 'domainMax', val)
+        setConf(confNode(self), ['scales', 'y', 'domainMax'], val)
       },
     }))
 }

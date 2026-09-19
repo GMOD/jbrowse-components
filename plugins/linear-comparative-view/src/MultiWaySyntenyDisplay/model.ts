@@ -553,10 +553,7 @@ export function stateModelFactory(
          * #action
          */
         setRibbonColorDomain(domain: string[]) {
-          self.configuration.setSubschema('ribbonColor', {
-            ...ribbonColorSetting(),
-            domain,
-          })
+          setConf(self, ['ribbonColor', 'domain'], domain)
         },
         /**
          * #action

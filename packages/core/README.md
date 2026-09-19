@@ -868,8 +868,16 @@ colors of its own mounts `PaletteProvider` directly instead.
 
 ### setConf
 
-Write counterpart to `getConf`: sets a slot on a state model that has a
-`.configuration` member (a track or display state model).
+Write counterpart to `getConf`, and it takes the same path: a slot name, or an
+array naming a sub-schema's member at any depth —
+`setConf(self, ['scales', 'y', 'domainMin'], 5)`. Takes the display or track
+model, or a config node directly.
+
+**The path length says what the write replaces.** A path ending on a slot writes
+that slot and leaves the object around it alone; a path ending on a sub-schema
+replaces the whole object, which is how a channel whose members move together —
+a facet's field and the domain that field's values order — gets written without
+a stale member surviving underneath.
 
 **Prefer this over a bare `self.configuration.setSlot('x', v)`.** The constraint
 here mirrors `getConf`'s, so on a model with a concrete schema an unknown slot
@@ -894,7 +902,7 @@ the declared slot value type doesn't include it.
 
 ```js
 // type signature
-<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…> = ConfigurationSlotName<…>>(model: { ...; }, slotName: SLOT, value: unknown) => void
+<…>(target: CONFMODEL | { ...; }, slotPath: SLOT, value: unknown) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)

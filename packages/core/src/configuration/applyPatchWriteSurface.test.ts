@@ -103,7 +103,7 @@ describe('claim 3: a whole-object write runs the schema preprocessor', () => {
       applyPatch(conf, {
         op: 'replace',
         path: '/facet',
-        value: { field: 'source', palete: ['red'] },
+        value: { field: 'source', notASlot: ['red'] },
       })
     }).toThrow()
   })
@@ -180,7 +180,9 @@ describe('what applyPatch does NOT carry: the two setSlot guards', () => {
     } catch {
       threw = true
     }
-    console.log('MISSPELLED SLOT NAME THREW:', threw)
+    // it does not: nothing throws and nothing lands, which is the failure
+    // mode ADR-052's guard on setSlot exists to replace
+    expect(threw).toBe(false)
     expect(readConfObject(conf, 'height')).toBe(100)
   })
 
@@ -195,11 +197,9 @@ describe('what applyPatch does NOT carry: the two setSlot guards', () => {
     } finally {
       setTypeChecking(undefined)
     }
-    console.log(
-      'BAD VALUE TYPE THREW:',
-      threw,
-      'height now:',
-      readConfObject(conf, 'height'),
-    )
+    // likewise silent: setSlot's `.is(value)` check is the only thing that
+    // catches a value a production build would drop
+    expect(threw).toBe(false)
+    expect(readConfObject(conf, 'height')).toBe(100)
   })
 })

@@ -821,11 +821,7 @@ export default function stateModelFactory(
        * undefined while the sources share a plot.
        */
       setFaceted(on: boolean) {
-        setConf(
-          { configuration: self.configuration.facet },
-          'field',
-          on ? 'source' : '',
-        )
+        setConf(self, ['facet', 'field'], on ? 'source' : '')
       },
 
       /**
