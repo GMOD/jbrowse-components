@@ -339,12 +339,10 @@ export default function stateModelFactory(
     types
       .compose(
         'LinearAlignmentsDisplay',
-        types.compose(
-          BaseDisplay,
-          TrackHeightMixin(),
-          HeightModeMixin(),
-          MultiRegionDisplayMixin(),
-        ),
+        BaseDisplay,
+        TrackHeightMixin(),
+        HeightModeMixin(),
+        MultiRegionDisplayMixin(),
         // Where the byte gate refuses the reads, the coverage band draws the
         // adapter's density sidecar instead of the banner — see
         // `densityCoverageRegions`.

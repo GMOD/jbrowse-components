@@ -219,12 +219,10 @@ export default function baseStateModelFactory(
   return types
     .compose(
       'LinearCanvasBaseDisplay',
-      types.compose(
-        BaseDisplay,
-        TrackHeightMixin(),
-        HeightModeMixin(),
-        MultiRegionDisplayMixin(),
-      ),
+      BaseDisplay,
+      TrackHeightMixin(),
+      HeightModeMixin(),
+      MultiRegionDisplayMixin(),
       LegendMixin(),
       CanvasFeatureGateMixin(),
       // After both gate mixins, since it keys off their verdict.

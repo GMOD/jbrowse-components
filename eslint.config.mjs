@@ -299,17 +299,17 @@ const noHeightModeComposedFirst = {
     'HeightModeMixin() must be composed AFTER TrackHeightMixin(), and this types.compose has them the other way round. HeightModeMixin overrides that mixin’s `height` getter and `resizeHeight` action, and types.compose resolves a member collision to the LATER argument, so composing it first hands both straight back to the base: the track height stops following the laid-out content in grow mode, a drag-resize no longer leaves grow before writing the slot, and nothing errors anywhere. No value gives it away either — the two `height` getters agree in fixed mode, which is the state most fixtures start in. Move HeightModeMixin() below TrackHeightMixin() in the same call. See agent-docs/ARCHITECTURE.md §"What not to do".',
 }
 
-// The MST fork types `types.compose` for nine model parts after the optional
-// name. A tenth compiles against no overload, and what a reader sees is not a
-// ceiling but the composed model losing every prop: ~150 "property X does not
-// exist" errors across every consumer of the display. The selector counts
-// arguments including the name string, so ten arguments is nine parts plus a
-// name, and eleven is the first that fails.
+// The MST fork types `types.compose` for eleven model parts after the optional
+// name. A twelfth compiles against no overload, and what a reader sees is not
+// a ceiling but the composed model losing every prop: ~150 "property X does
+// not exist" errors across every consumer of the display. The selector counts
+// arguments including the name string, so twelve arguments is eleven parts
+// plus a name, and thirteen is the first that fails.
 const noTenthComposePart = {
   selector:
-    "CallExpression[callee.object.name='types'][callee.property.name='compose'][arguments.length>10], CallExpression[callee.object.name='types'][callee.property.name='compose'][arguments.length=10]:not(:has(> Literal.arguments:first-child))",
+    "CallExpression[callee.object.name='types'][callee.property.name='compose'][arguments.length>12], CallExpression[callee.object.name='types'][callee.property.name='compose'][arguments.length=12]:not(:has(> Literal.arguments:first-child))",
   message:
-    'types.compose takes at most nine parts, and a tenth erases every prop of the result instead of failing at this call. Nest the parts every LGV display shares — `types.compose(BaseDisplay, TrackHeightMixin(), MultiRegionDisplayMixin())` — as one part, the way LinearMarkDisplay and LinearCanvasBaseDisplay do.',
+    'types.compose takes at most eleven parts, and a twelfth erases every prop of the result instead of failing at this call. Nest the parts every LGV display shares — `types.compose(BaseDisplay, TrackHeightMixin(), MultiRegionDisplayMixin())` — as one part, the way LinearMarkDisplay does.',
 }
 
 // An `untracked` read is a claim about an autorun's dependency set, and only

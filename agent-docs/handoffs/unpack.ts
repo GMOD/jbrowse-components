@@ -1,3 +1,0 @@
-Done. types.compose now supports up to 11 model parts (was 9), landed on main as 70cb97fc. Verified: tsc, lint, test:dev, test:prod, test:types all green, plus a scratch check confirming 11 parts type-checks correctly and 12 still errors at the call site rather than silently dropping props.
-
-Next step on the jbrowse side: un-nest the three types.compose(BaseDisplay, TrackHeightMixin(), HeightModeMixin(), MultiRegionDisplayMixin()) sites (e.g. plugins/canvas/src/LinearBasicDisplay/baseModel.ts:219) and bump noTenthComposePart's threshold in eslint.config.mjs — but that's a separate repo/PR, not touched here.

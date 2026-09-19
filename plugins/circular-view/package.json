@@ -32,7 +32,7 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.5.1",
+    "@jbrowse/mobx-state-tree": "^6.5.2",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
     "@jbrowse/synteny-core": "workspace:^",

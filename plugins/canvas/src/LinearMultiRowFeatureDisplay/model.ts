@@ -122,14 +122,12 @@ export default function stateModelFactory(
   return types
     .compose(
       'LinearMultiRowFeatureDisplay',
-      types.compose(
-        BaseDisplay,
-        TrackHeightMixin(),
-        MultiRegionDisplayMixin(),
-        // After the foundation, whose region-too-large verdict it keys off.
-        DensityBandMixin(),
-        LegendMixin(),
-      ),
+      BaseDisplay,
+      TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
+      // After the foundation, whose region-too-large verdict it keys off.
+      DensityBandMixin(),
+      LegendMixin(),
       RowHeightMixin(),
       TreeSidebarMixin<MultiRowSource>(),
       ContextMenuMixin<MultiRowContextMenuInfo>(),

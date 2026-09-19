@@ -44,7 +44,7 @@
     "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/embedded-core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.5.1",
+    "@jbrowse/mobx-state-tree": "^6.5.2",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",

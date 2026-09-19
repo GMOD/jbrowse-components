@@ -46,8 +46,8 @@ importers:
         specifier: ^11.2.3
         version: 11.2.3
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/web':
         specifier: workspace:^
         version: link:products/jbrowse-web
@@ -58,8 +58,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@r2wc/react-to-web-component':
         specifier: ^2.1.1
         version: 2.1.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -139,8 +139,8 @@ importers:
         specifier: ^7.1.5
         version: 7.1.5(webpack@5.111.0)
       electron:
-        specifier: ^44.4.2
-        version: 44.4.2(supports-color@8.1.1)
+        specifier: ^44.4.3
+        version: 44.4.3(supports-color@8.1.1)
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
@@ -151,8 +151,8 @@ importers:
         specifier: ^4.4.5
         version: 4.4.5(eslint-plugin-import-x@4.17.1(@typescript-eslint/utils@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-astro:
-        specifier: 3.2.0
-        version: 3.2.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@typescript-eslint/parser@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))
+        specifier: 3.2.1
+        version: 3.2.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@typescript-eslint/parser@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))
       eslint-plugin-import-x:
         specifier: ^4.17.1
         version: 4.17.1(@typescript-eslint/utils@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -200,16 +200,16 @@ importers:
         version: 0.68.0
       oxlint:
         specifier: ^1.83.0
-        version: 1.83.0(oxlint-tsgolint@7.0.2001)
+        version: 1.83.0(oxlint-tsgolint@7.0.2002)
       oxlint-tsgolint:
-        specifier: ^7.0.2001
-        version: 7.0.2001
+        specifier: ^7.0.2002
+        version: 7.0.2002
       prettier:
-        specifier: ^3.9.7
-        version: 3.9.7
+        specifier: ^3.9.8
+        version: 3.9.8
       prettier-plugin-astro:
-        specifier: 1.0.0
-        version: 1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7)
+        specifier: 1.0.1
+        version: 1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8)
       puppeteer:
         specifier: ^25.11.0
         version: 25.11.0(yauzl@2.10.0)
@@ -274,8 +274,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -318,8 +318,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -408,8 +408,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/quick-lru':
         specifier: ^7.3.5
         version: 7.3.5
@@ -429,8 +429,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       canvas-sequencer-ts:
         specifier: ^3.1.3
         version: 3.1.3
@@ -477,8 +477,8 @@ importers:
         specifier: workspace:^
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -507,8 +507,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -519,8 +519,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       mobx-react:
         specifier: ^10.0.2
         version: 10.0.2(mobx@7.0.3)(react@19.3.0)
@@ -537,8 +537,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -578,8 +578,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -605,8 +605,8 @@ importers:
   packages/render-core:
     dependencies:
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -625,8 +625,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -661,8 +661,8 @@ importers:
         specifier: workspace:^
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -720,8 +720,8 @@ importers:
         specifier: workspace:^
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -735,8 +735,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -759,8 +759,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -786,8 +786,8 @@ importers:
         specifier: workspace:^
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -828,8 +828,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/modifications-utils':
         specifier: workspace:^
         version: link:../../packages/modifications-utils
@@ -880,8 +880,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -923,8 +923,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@mui/material':
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -956,8 +956,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -971,8 +971,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@mui/icons-material':
         specifier: ^9.4.0
         version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
@@ -1008,8 +1008,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/modifications-utils':
         specifier: workspace:^
         version: link:../../packages/modifications-utils
@@ -1053,8 +1053,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1096,8 +1096,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
@@ -1138,8 +1138,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core
@@ -1171,8 +1171,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@mui/icons-material':
         specifier: ^9.4.0
         version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
@@ -1204,8 +1204,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-config':
         specifier: workspace:^
         version: link:../config
@@ -1216,8 +1216,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1259,8 +1259,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
@@ -1295,8 +1295,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1322,8 +1322,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       gff-nostream:
         specifier: ^5.4.0
         version: 5.4.0
@@ -1340,8 +1340,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-dotplot-view':
         specifier: workspace:^
         version: link:../dotplot-view
@@ -1355,8 +1355,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1376,8 +1376,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       react:
         specifier: '>=19.0.0'
         version: 19.3.0
@@ -1400,8 +1400,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-bed':
         specifier: workspace:^
         version: link:../bed
@@ -1452,8 +1452,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1489,8 +1489,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@mui/icons-material':
         specifier: ^9.4.0
         version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
@@ -1519,8 +1519,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       generic-filehandle2:
         specifier: ^2.4.0
         version: 2.4.0
@@ -1549,8 +1549,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
@@ -1604,8 +1604,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
@@ -1647,8 +1647,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1699,8 +1699,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1739,8 +1739,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
@@ -1751,8 +1751,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1772,8 +1772,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1799,8 +1799,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1836,8 +1836,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1854,8 +1854,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -1875,8 +1875,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../circular-view
@@ -1956,8 +1956,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-canvas':
         specifier: workspace:^
         version: link:../canvas
@@ -1980,8 +1980,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -2014,8 +2014,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -2035,8 +2035,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -2066,8 +2066,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-alignments':
         specifier: workspace:*
         version: link:../../../plugins/alignments
@@ -2107,7 +2107,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7))(prettier@3.9.7)(typescript@6.0.3)
+        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
@@ -2179,8 +2179,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2299,8 +2299,8 @@ importers:
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/x-data-grid':
-        specifier: ^9.13.0
-        version: 9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        specifier: ^9.14.0
+        version: 9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       electron-debug:
         specifier: ^4.1.0
         version: 4.1.0(supports-color@8.1.1)
@@ -2333,8 +2333,8 @@ importers:
         specifier: ^4.35.7
         version: 4.35.7
       electron:
-        specifier: ^44.4.2
-        version: 44.4.2(supports-color@8.1.1)
+        specifier: ^44.4.3
+        version: 44.4.3(supports-color@8.1.1)
       electron-chromedriver:
         specifier: ^44.4.2
         version: 44.4.2(supports-color@8.1.1)
@@ -2363,8 +2363,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-breakpoint-split-view':
         specifier: workspace:^
         version: link:../../plugins/breakpoint-split-view
@@ -2451,8 +2451,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2587,8 +2587,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/react-app2':
         specifier: workspace:*
         version: link:..
@@ -2610,7 +2610,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7))(prettier@3.9.7)(typescript@6.0.3)
+        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
@@ -2642,8 +2642,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/embedded-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
@@ -2706,8 +2706,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/react-circular-genome-view2':
         specifier: workspace:*
         version: link:..
@@ -2729,7 +2729,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7))(prettier@3.9.7)(typescript@6.0.3)
+        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
@@ -2761,8 +2761,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/embedded-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2861,8 +2861,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:*
         version: link:../../../plugins/linear-genome-view
@@ -2893,7 +2893,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7))(prettier@3.9.7)(typescript@6.0.3)
+        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
@@ -2922,8 +2922,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.5.1
-        version: 6.5.1(mobx@7.0.3)
+        specifier: ^6.5.2
+        version: 6.5.2(mobx@7.0.3)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -3111,7 +3111,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7))(prettier@3.9.7)(typescript@6.0.3)
+        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
@@ -3134,8 +3134,8 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2
       prettier-plugin-astro:
-        specifier: 1.0.0
-        version: 1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7)
+        specifier: 1.0.1
+        version: 1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8)
       react:
         specifier: ^19.3.0
         version: 19.3.0
@@ -4851,8 +4851,8 @@ packages:
   '@jbrowse/jexl@4.0.1':
     resolution: {integrity: sha512-UfAX0QuIASikBCT9bbP3EKwRkNHCoqe7VsN0JKV85WYfsSygOnI9M09PG9tJ7oV1Olq71q5XQoxN8mgryI51/A==}
 
-  '@jbrowse/mobx-state-tree@6.5.1':
-    resolution: {integrity: sha512-qhDUf7gCtduTz69oOWxkaOeY407mpjvBIENL/VuQGthkbwjBrnAbalhuBeq3/SbkCxD++KN8KXRm5/9yimqnTA==}
+  '@jbrowse/mobx-state-tree@6.5.2':
+    resolution: {integrity: sha512-WXaTCYzRkieqyKJMEc4EwfSIEhXbXk6qJGl9LDzaDDY44qi0PKESycuiYmgsfKtIybegWpeFJRpxQzWjtQRDVw==}
     engines: {node: '>=22', pnpm: '>=10'}
     peerDependencies:
       mobx: ^7.0.0
@@ -5206,8 +5206,8 @@ packages:
       '@types/react':
         optional: true
 
-  '@mui/x-data-grid@9.13.0':
-    resolution: {integrity: sha512-7eXNgwSMGIwv+KiCuunzr1Rt3bZE1ubuCDukWUcie4XHV54Adn+M0dJBowU4+VVpY2WMF7BEnL8pVdq96csA4g==}
+  '@mui/x-data-grid@9.14.0':
+    resolution: {integrity: sha512-DvQpyg3rkNs4GePo3x8NARoeco/EU7IaFLj4hNoAkuD5sWXMKNWLKERWLZvihVani2ypYYJ56FV4SmbNkFuv/g==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       '@emotion/react': ^11.9.0
@@ -5222,15 +5222,15 @@ packages:
       '@emotion/styled':
         optional: true
 
-  '@mui/x-internals@9.13.0':
-    resolution: {integrity: sha512-TAxYhWSQR351zhUO709ShsGlvbI9RSsh6zIn99tLmkxKav+QFoxAlullzd79dQOxjUsau6spw/hmYcB+zLGipQ==}
+  '@mui/x-internals@9.14.0':
+    resolution: {integrity: sha512-m4XkKIihP+uWvz18BgSOHtwxCBWtE3Qi2X9hZUdEGW5mk50umziYaCLn9B/3cT9qBU7LirEC8agqpWxDSYjaNw==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@mui/x-virtualizer@0.7.1':
-    resolution: {integrity: sha512-WNkwOr1g2PrtaEtQzDYVaFEHlPj983UA3JuazBw+pANTlUifaD2IQIfD/5QCVr3dOal5eOByfWecp+IPH2A9zA==}
+  '@mui/x-virtualizer@0.7.2':
+    resolution: {integrity: sha512-8JYK1KZe7rVMzBRxvEZYt0BYS5zXRDV0HPXqTSwe4TPPuldCjTII7IvlzkSC8yS24+2iDlYo5kBKdTJ8uzfMjg==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -5375,33 +5375,33 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@oxlint-tsgolint/darwin-arm64@7.0.2001':
-    resolution: {integrity: sha512-CUJEdbSZ54+Xy9OXqOhWLTKZKV0BBiV7C2i/ygyVmXtkUNXx5YCzN8DpSSshTAKktoL7S+tnQ/ftFG/i7X896w==}
+  '@oxlint-tsgolint/darwin-arm64@7.0.2002':
+    resolution: {integrity: sha512-E3yYb/tI+5M3SqGgKwrwUD0nmjA2FMGD1xFbma46qi8Y7+nPTlGY6bZk/hqxijc9Vda/tdtUxQ2d5zGIEX9qlg==}
     cpu: [arm64]
     os: [darwin]
 
-  '@oxlint-tsgolint/darwin-x64@7.0.2001':
-    resolution: {integrity: sha512-pXfBb5BqONCcgrXQNUZWXgiYmRSWJzd97S8i41VVOh6ut0tyo+cJ5FKFpczDHxiVNfj/3e7c9B4MtztNdpIVCw==}
+  '@oxlint-tsgolint/darwin-x64@7.0.2002':
+    resolution: {integrity: sha512-qEaMySdvzs8faaJwMO4dFtPFCa+degFCz+HbkFQ0REcIJqJ16KmC0smt30FAI9TeEHCoAtz6sU/6acJvi4uaxg==}
     cpu: [x64]
     os: [darwin]
 
-  '@oxlint-tsgolint/linux-arm64@7.0.2001':
-    resolution: {integrity: sha512-roP7zujb/QDPzDwEKsFFpzNHHy91/Y7oX9vQXk78ekyZtcQj1QXDIMH33gjDdHBfRl4K9pZ36xhRgrP4Zr+R8A==}
+  '@oxlint-tsgolint/linux-arm64@7.0.2002':
+    resolution: {integrity: sha512-bqPObCNIR6tDQSc0Xn9Nu7EfWRXFB+qFzADRl/q6YA8zT9YUg3pGUbmicV2hV91uLpiot74so9ocGjx35SaX6w==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxlint-tsgolint/linux-x64@7.0.2001':
-    resolution: {integrity: sha512-UDezNqdECVmngu2TPnjaS1YoAmcTaBoI5lV9vk3VahBxoi+I5r9k3iJTT7qZoYWOXTD/7T7bNcwRgrocR6BscQ==}
+  '@oxlint-tsgolint/linux-x64@7.0.2002':
+    resolution: {integrity: sha512-E5CcRALAYdiQMbdYjEqlLOiYuEdt21RtXiyxIoD8bfypdfkpWppacijKOR4i0DtLXFRVwCGQggZBWk5bOIpU1A==}
     cpu: [x64]
     os: [linux]
 
-  '@oxlint-tsgolint/win32-arm64@7.0.2001':
-    resolution: {integrity: sha512-uJZhqB6pdXLuN+AD1F5082byyQti/NPmJA77GtcFlmT2HzRelqbNls3SaIqxpjdFgvSBF9g0yOKGBkGFg7kX8Q==}
+  '@oxlint-tsgolint/win32-arm64@7.0.2002':
+    resolution: {integrity: sha512-L+ul0ZFDiz/ZmTwCQ1J/qS7S6s45ktiaFqb+ZIzx+1sSdtdRxm8/H0+p4VDQYrCKBFzKNb6VjUlm48bNEe3BUg==}
     cpu: [arm64]
     os: [win32]
 
-  '@oxlint-tsgolint/win32-x64@7.0.2001':
-    resolution: {integrity: sha512-FkDRm8hx9OwzGQqyWG1tO5QrTLRApff9DzSgpz9QZau37BR8d1VYKOxMLGf6shPZntJFoTwIIJYT68VndYDCog==}
+  '@oxlint-tsgolint/win32-x64@7.0.2002':
+    resolution: {integrity: sha512-zkZeJfo4UmYiCzj77u85eCDpdxOiQiSAsV6j9Pvj5e7Vu5+MvwLtK1xmVutE77tJmUJ3eBOSXHR6WgY4AwHHGQ==}
     cpu: [x64]
     os: [win32]
 
@@ -7326,8 +7326,8 @@ packages:
   electron-updater@6.8.9:
     resolution: {integrity: sha512-ZhVxM9iGONUpZGI1FxdMRgJjUFXi7AYGVa5PwKlO1tV1/4zDxQmfKpXOHVztKrd6L9rLcFjERvi1Mf2vxyTkig==}
 
-  electron@44.4.2:
-    resolution: {integrity: sha512-872t/+8M8TyribWm2cYpRwHY2aDlyDHOn+CHnhN9kHQStVW8pAijIhFolYA/qQyDdri28Xp8Mi3HEj5kFvajCw==}
+  electron@44.4.3:
+    resolution: {integrity: sha512-LTpSFTB40qVCXIX5xMo+cgHI/Jjkbjw7VpB26PccEbroqOn72LBukeaDwPVo1fBYzSzs0c9iPuAucFCO7Tw81Q==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -7469,8 +7469,8 @@ packages:
       eslint-plugin-import-x:
         optional: true
 
-  eslint-plugin-astro@3.2.0:
-    resolution: {integrity: sha512-Vs2mtVv1gpIq88ZnEPfctnR6ejEDvJEhbPHFVxYz/fkDZNi+B1sK4+acqBSMawhcE8K5VocaVrBy3RQ60S9oXA==}
+  eslint-plugin-astro@3.2.1:
+    resolution: {integrity: sha512-IgU7LIkpEg0r6bQGwc3Ck5jHgkUk3rOrEfRhUxDtMx/M0GD3SG/turMtvwj989KRR12Wt1l89faZ5ynjvVL7hg==}
     engines: {node: ^22.22.3 || ^24.16.0 || >=26.3.0}
     peerDependencies:
       '@typescript-eslint/parser': '>=8.61.0'
@@ -9176,8 +9176,8 @@ packages:
       vite-plus:
         optional: true
 
-  oxlint-tsgolint@7.0.2001:
-    resolution: {integrity: sha512-KjK/XLcXr1DSyonKhsuFqJRiuKqcyG9j3LJ8nkOsrLzGvodBPqzHOKauy10asLMDI0sUpvb+1sxlzff3udZvfg==}
+  oxlint-tsgolint@7.0.2002:
+    resolution: {integrity: sha512-rQAj2RAQM57nCwTd3PhtnAkREGW2StqI47tzudNlJF8WwGommM7rVpeP4O1O8/ZiuDZ9f2GnTESzLHGTluwkvQ==}
     hasBin: true
 
   oxlint@1.83.0:
@@ -9436,14 +9436,19 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier-plugin-astro@1.0.0:
-    resolution: {integrity: sha512-xOlwKNSaPkPPiJeOhiFk8/MA2eH5A+in99dID+weTJhPcq+FBdIaB/3UNFdy9ckmc8/bT7QNyxSb78cnopgElQ==}
+  prettier-plugin-astro@1.0.1:
+    resolution: {integrity: sha512-FKLtmNgyAoUbUixxmgkyO9ZMjEWCpHgMLtci8IakhCIzr8b+ML9YssBqsMfNoDdd/iE27BixwBZSq2amWDwpFQ==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       prettier: ^3.5.3
 
   prettier@3.9.7:
     resolution: {integrity: sha512-T3mF5P7HFzZVLDQuCUNtJj6WK1pcpLMweMNUVwGb01bLNkH9AkKxtZvmInw8K6bnn2O3d6/5RHl6zSHiBAD0Og==}
+    engines: {node: '>=14'}
+    hasBin: true
+
+  prettier@3.9.8:
+    resolution: {integrity: sha512-WRFq3Wn3WId7LLROfMLdH7xaFr2jR62wU8nLO6rQUOLOxNZUviyJQs1M0iIhLexSFy+L+w0ch66wtoO2jRjG0A==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -10910,9 +10915,9 @@ snapshots:
     transitivePeerDependencies:
       - '@emnapi/runtime'
 
-  '@astrojs/check@0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7))(prettier@3.9.7)(typescript@6.0.3)':
+  '@astrojs/check@0.9.10(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)':
     dependencies:
-      '@astrojs/language-server': 2.17.0(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7))(prettier@3.9.7)(typescript@6.0.3)
+      '@astrojs/language-server': 2.17.0(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)
       chokidar: 4.0.3
       kleur: 4.1.5
       typescript: 6.0.3
@@ -10991,7 +10996,7 @@ snapshots:
       smol-toml: 1.8.0
       unified: 11.0.5
 
-  '@astrojs/language-server@2.17.0(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7))(prettier@3.9.7)(typescript@6.0.3)':
+  '@astrojs/language-server@2.17.0(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)':
     dependencies:
       '@astrojs/astro2tsx': 0.1.0(@emnapi/runtime@1.11.3)
       '@astrojs/yaml2ts': 0.2.4
@@ -11004,15 +11009,15 @@ snapshots:
       volar-service-css: 0.0.71(@volar/language-service@2.4.28)
       volar-service-emmet: 0.0.71(@volar/language-service@2.4.28)
       volar-service-html: 0.0.71(@volar/language-service@2.4.28)
-      volar-service-prettier: 0.0.71(@volar/language-service@2.4.28)(prettier@3.9.7)
+      volar-service-prettier: 0.0.71(@volar/language-service@2.4.28)(prettier@3.9.8)
       volar-service-typescript: 0.0.71(@volar/language-service@2.4.28)
       volar-service-typescript-twoslash-queries: 0.0.71(@volar/language-service@2.4.28)
       volar-service-yaml: 0.0.71(@volar/language-service@2.4.28)
       vscode-html-languageservice: 5.6.2
       vscode-uri: 3.2.0
     optionalDependencies:
-      prettier: 3.9.7
-      prettier-plugin-astro: 1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7)
+      prettier: 3.9.8
+      prettier-plugin-astro: 1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8)
     transitivePeerDependencies:
       - '@emnapi/runtime'
       - typescript
@@ -12763,7 +12768,7 @@ snapshots:
 
   '@jbrowse/jexl@4.0.1': {}
 
-  '@jbrowse/mobx-state-tree@6.5.1(mobx@7.0.3)':
+  '@jbrowse/mobx-state-tree@6.5.2(mobx@7.0.3)':
     dependencies:
       mobx: 7.0.3
 
@@ -13240,15 +13245,15 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.3.0
 
-  '@mui/x-data-grid@9.13.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@mui/x-data-grid@9.14.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@mui/system@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@babel/runtime': 7.29.7
       '@base-ui/utils': 0.3.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/material': 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/system': 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)
       '@mui/utils': 9.4.0(@types/react@19.3.0)(react@19.3.0)
-      '@mui/x-internals': 9.13.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@mui/x-virtualizer': 0.7.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@mui/x-internals': 9.14.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@mui/x-virtualizer': 0.7.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       clsx: 2.1.1
       prop-types: 15.8.1
       react: 19.3.0
@@ -13260,7 +13265,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@mui/x-internals@9.13.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@mui/x-internals@9.14.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@babel/runtime': 7.29.7
       '@base-ui/utils': 0.3.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -13272,12 +13277,12 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@mui/x-virtualizer@0.7.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@mui/x-virtualizer@0.7.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@babel/runtime': 7.29.7
       '@base-ui/utils': 0.3.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@mui/utils': 9.4.0(@types/react@19.3.0)(react@19.3.0)
-      '@mui/x-internals': 9.13.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@mui/x-internals': 9.14.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
     transitivePeerDependencies:
@@ -13366,22 +13371,22 @@ snapshots:
   '@oxfmt/binding-win32-x64-msvc@0.68.0':
     optional: true
 
-  '@oxlint-tsgolint/darwin-arm64@7.0.2001':
+  '@oxlint-tsgolint/darwin-arm64@7.0.2002':
     optional: true
 
-  '@oxlint-tsgolint/darwin-x64@7.0.2001':
+  '@oxlint-tsgolint/darwin-x64@7.0.2002':
     optional: true
 
-  '@oxlint-tsgolint/linux-arm64@7.0.2001':
+  '@oxlint-tsgolint/linux-arm64@7.0.2002':
     optional: true
 
-  '@oxlint-tsgolint/linux-x64@7.0.2001':
+  '@oxlint-tsgolint/linux-x64@7.0.2002':
     optional: true
 
-  '@oxlint-tsgolint/win32-arm64@7.0.2001':
+  '@oxlint-tsgolint/win32-arm64@7.0.2002':
     optional: true
 
-  '@oxlint-tsgolint/win32-x64@7.0.2001':
+  '@oxlint-tsgolint/win32-x64@7.0.2002':
     optional: true
 
   '@oxlint/binding-android-arm-eabi@1.83.0':
@@ -15281,7 +15286,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron@44.4.2(supports-color@8.1.1):
+  electron@44.4.3(supports-color@8.1.1):
     dependencies:
       '@electron-internal/extract-zip': 1.0.5
       '@electron/get': 5.1.0(supports-color@8.1.1)
@@ -15425,7 +15430,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-astro@3.2.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@typescript-eslint/parser@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)):
+  eslint-plugin-astro@3.2.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@typescript-eslint/parser@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.10.0(supports-color@8.1.1))
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -15436,6 +15441,7 @@ snapshots:
       globals: 17.12.0
       postcss: 8.5.28
       postcss-selector-parser: 7.1.6
+      synckit: 0.11.13
     optionalDependencies:
       '@typescript-eslint/parser': 8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       typescript-eslint: 8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
@@ -17754,16 +17760,16 @@ snapshots:
       '@oxfmt/binding-win32-ia32-msvc': 0.68.0
       '@oxfmt/binding-win32-x64-msvc': 0.68.0
 
-  oxlint-tsgolint@7.0.2001:
+  oxlint-tsgolint@7.0.2002:
     optionalDependencies:
-      '@oxlint-tsgolint/darwin-arm64': 7.0.2001
-      '@oxlint-tsgolint/darwin-x64': 7.0.2001
-      '@oxlint-tsgolint/linux-arm64': 7.0.2001
-      '@oxlint-tsgolint/linux-x64': 7.0.2001
-      '@oxlint-tsgolint/win32-arm64': 7.0.2001
-      '@oxlint-tsgolint/win32-x64': 7.0.2001
+      '@oxlint-tsgolint/darwin-arm64': 7.0.2002
+      '@oxlint-tsgolint/darwin-x64': 7.0.2002
+      '@oxlint-tsgolint/linux-arm64': 7.0.2002
+      '@oxlint-tsgolint/linux-x64': 7.0.2002
+      '@oxlint-tsgolint/win32-arm64': 7.0.2002
+      '@oxlint-tsgolint/win32-x64': 7.0.2002
 
-  oxlint@1.83.0(oxlint-tsgolint@7.0.2001):
+  oxlint@1.83.0(oxlint-tsgolint@7.0.2002):
     optionalDependencies:
       '@oxlint/binding-android-arm-eabi': 1.83.0
       '@oxlint/binding-android-arm64': 1.83.0
@@ -17784,7 +17790,7 @@ snapshots:
       '@oxlint/binding-win32-arm64-msvc': 1.83.0
       '@oxlint/binding-win32-ia32-msvc': 1.83.0
       '@oxlint/binding-win32-x64-msvc': 1.83.0
-      oxlint-tsgolint: 7.0.2001
+      oxlint-tsgolint: 7.0.2002
 
   p-cancelable@2.1.1: {}
 
@@ -18025,17 +18031,19 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.7):
+  prettier-plugin-astro@1.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8):
     dependencies:
       '@astrojs/compiler-rs': 0.4.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       '@prettier/parse-srcset': 3.1.0
-      prettier: 3.9.7
+      prettier: 3.9.8
       sass-formatter: 0.8.0
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
   prettier@3.9.7: {}
+
+  prettier@3.9.8: {}
 
   pretty-error@4.0.0:
     dependencies:
@@ -19263,12 +19271,12 @@ snapshots:
     optionalDependencies:
       '@volar/language-service': 2.4.28
 
-  volar-service-prettier@0.0.71(@volar/language-service@2.4.28)(prettier@3.9.7):
+  volar-service-prettier@0.0.71(@volar/language-service@2.4.28)(prettier@3.9.8):
     dependencies:
       vscode-uri: 3.2.0
     optionalDependencies:
       '@volar/language-service': 2.4.28
-      prettier: 3.9.7
+      prettier: 3.9.8
 
   volar-service-typescript-twoslash-queries@0.0.71(@volar/language-service@2.4.28):
     dependencies:

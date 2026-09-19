@@ -40,7 +40,7 @@
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.5.1",
+    "@jbrowse/mobx-state-tree": "^6.5.2",
     "@jbrowse/plugin-breakpoint-split-view": "workspace:^",
     "@jbrowse/plugin-circular-view": "workspace:^",
     "@jbrowse/plugin-dotplot-view": "workspace:^",
