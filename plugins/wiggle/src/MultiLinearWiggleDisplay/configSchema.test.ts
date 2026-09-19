@@ -7,24 +7,28 @@ import {
 } from '../util.ts'
 import multiConfigSchema, { remapMultiWiggleRendering } from './configSchema.ts'
 
-test('MultiLinearWiggleDisplay config schema has autoscale and numQuantile defaults', () => {
+test('MultiLinearWiggleDisplay scales.y has the autoscale defaults', () => {
   const config = multiConfigSchema.create({
     type: 'MultiLinearWiggleDisplay',
     displayId: 'test',
   })
-  expect(readConfObject(config, 'autoscale')).toBe('localpercentile')
-  expect(readConfObject(config, 'numStdDev')).toBe(3)
-  expect(readConfObject(config, 'numQuantile')).toBe(0.99)
+  expect(readConfObject(config, ['scales', 'y', 'autoscale'])).toBe(
+    'localpercentile',
+  )
+  expect(readConfObject(config, ['scales', 'y', 'numStdDev'])).toBe(3)
+  expect(readConfObject(config, ['scales', 'y', 'numQuantile'])).toBe(0.99)
 })
 
-test('LinearWiggleDisplay config schema has autoscale and numQuantile defaults', () => {
+test('LinearWiggleDisplay scales.y has the autoscale defaults', () => {
   const config = linearConfigSchema.create({
     type: 'LinearWiggleDisplay',
     displayId: 'test',
   })
-  expect(readConfObject(config, 'autoscale')).toBe('localpercentile')
-  expect(readConfObject(config, 'numStdDev')).toBe(3)
-  expect(readConfObject(config, 'numQuantile')).toBe(0.99)
+  expect(readConfObject(config, ['scales', 'y', 'autoscale'])).toBe(
+    'localpercentile',
+  )
+  expect(readConfObject(config, ['scales', 'y', 'numStdDev'])).toBe(3)
+  expect(readConfObject(config, ['scales', 'y', 'numQuantile'])).toBe(0.99)
 })
 
 test('MultiLinearWiggleDisplay remaps single-source defaultRendering names', () => {

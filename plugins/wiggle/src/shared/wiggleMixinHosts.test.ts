@@ -23,16 +23,13 @@ test('the common host checks the slot names its mixin reads', () => {
 
 // `HostChecksSlotNames` asks whether names are checked, not whether every
 // composer declares them. `WiggleScoreConfigMixin`'s composers include displays
-// declaring none of wiggle's slots, so reaching one through its host is a
-// compile error rather than a silent `undefined` — which is how
-// `symlogConstant` once shipped one mixin too high.
+// declaring none of wiggle's palette, so reaching one through its host is a
+// compile error rather than a silent `undefined`.
 test('the score-config host cannot reach a slot only wiggle declares', () => {
   const common = {} as WiggleCommonHost
   const score = {} as WiggleScoreConfigHost
   const reads = () => [
-    getConf(common, 'symlogConstant'),
-    // @ts-expect-error
-    getConf(score, 'symlogConstant'),
+    getConf(common, 'posColor'),
     // @ts-expect-error
     getConf(score, 'posColor'),
   ]

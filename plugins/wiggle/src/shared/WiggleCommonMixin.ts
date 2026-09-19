@@ -99,18 +99,6 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
-       * Raw `symlogConstant` slot; `0` means "derive from the domain". Resolve
-       * it with `resolveSymlogConstant` once the domain is known.
-       *
-       * Here rather than on the score config because only the wiggle schemas
-       * declare the slot, and `getConf` returns `undefined` for a composer that
-       * does not.
-       */
-      get symlogConstant(): number {
-        return getConf(confNode(self), 'symlogConstant')
-      },
-      /**
-       * #getter
        */
       get posColor(): string {
         return getConf(confNode(self), 'posColor')
@@ -136,12 +124,6 @@ export function WiggleCommonMixin() {
        */
       get densityColorRamp(): string {
         return getConf(confNode(self), 'densityColorRamp')
-      },
-      /**
-       * #getter
-       */
-      get numQuantile(): number {
-        return getConf(confNode(self), 'numQuantile')
       },
       /**
        * #getter

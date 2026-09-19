@@ -83,7 +83,7 @@ it('lifts the axis to a rule the visible data never reaches', () => {
 it('leaves an explicitly bounded axis alone', () => {
   const display = makeDisplay()
   display.configuration.setSlot('scoreRules', [{ value: 90 }])
-  display.configuration.setSlot('maxScore', 40)
+  display.setMaxScore(40)
   expect(display.domain?.[1]).toBe(40)
   expect(display.scoreRuleMarks).toEqual([])
 })

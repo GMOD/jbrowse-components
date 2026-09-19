@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
-import { remapRetiredAutoscale } from '@jbrowse/wiggle-core'
 
 import { colorImpliesSolid } from '../shared/colorImpliesSolid.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
@@ -126,11 +125,8 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
-    // Map retired global/globalsd autoscale onto local/localsd so old configs
-    // don't trip the narrowed enum, and read a bare `color` as solid-color
-    // shorthand.
-    preProcessSnapshot: (snap: Record<string, unknown>) =>
-      colorImpliesSolid(remapRetiredAutoscale(snap)),
+    // Read a bare `color` as solid-color shorthand.
+    preProcessSnapshot: colorImpliesSolid,
   },
 )
 

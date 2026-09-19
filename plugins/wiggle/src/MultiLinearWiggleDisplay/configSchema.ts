@@ -5,7 +5,6 @@ import {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
-import { remapRetiredAutoscale } from '@jbrowse/wiggle-core'
 
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
@@ -37,13 +36,6 @@ export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
       ? SINGLE_TO_MULTI_RENDERING[defaultRendering]
       : undefined
   return remapped ? { ...snap, defaultRendering: remapped } : snap
-}
-
-// Both legacy remaps a MultiLinearWiggleDisplay snapshot needs before the
-// types.union validates it: single-source rendering names and retired autoscale
-// values.
-function remapMultiWiggleConfig(snap: Record<string, unknown>) {
-  return remapRetiredAutoscale(remapMultiWiggleRendering(snap))
 }
 
 /**
@@ -164,7 +156,7 @@ const configSchema = ConfigurationSchema(
     // preProcessSnapshot — so the same remap is also registered as a
     // Core-preProcessTrackConfig handler (see ./preProcessTrackConfig.ts).
     preProcessSnapshot: (snap: Record<string, unknown>) =>
-      remapMultiWiggleConfig(snap),
+      remapMultiWiggleRendering(snap),
   },
 )
 
