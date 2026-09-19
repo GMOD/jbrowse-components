@@ -71,8 +71,7 @@ color settings are declared once:
   "displayDefaults": {
     "defaultRendering": "multirowdensity",
     "bicolorPivot": 2,
-    "minScore": 0,
-    "maxScore": 4,
+    "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "posColor": "#b2182b",
     "negColor": "#2166ac"
   }
@@ -193,8 +192,7 @@ hosted (see [configuring plugins](/docs/config_guides/plugins)):
       "displayDefaults": {
         "defaultRendering": "multirowdensity",
         "bicolorPivot": 2,
-        "minScore": 0,
-        "maxScore": 4,
+        "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
         "posColor": "#b2182b",
         "negColor": "#2166ac"
       }

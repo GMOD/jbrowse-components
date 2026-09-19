@@ -210,8 +210,7 @@
           "defaultRendering": "scatter",
           "summaryScoreMode": "avg",
           "scatterPointSize": 1,
-          "minScore": -2,
-          "maxScore": 2,
+          "scales": { "y": { "domainMin": -2, "domainMax": 2 } },
           "height": 120
         }
       ]
@@ -236,8 +235,7 @@
           "defaultRendering": "line",
           "useBicolor": false,
           "displayCrossHatches": true,
-          "minScore": -2,
-          "maxScore": 1.5,
+          "scales": { "y": { "domainMin": -2, "domainMax": 1.5 } },
           "height": 90
         }
       ]
@@ -262,8 +260,7 @@
           "displayId": "HG008-T_baf-LinearWiggleDisplay",
           "defaultRendering": "scatter",
           "scatterPointSize": 1,
-          "minScore": 0,
-          "maxScore": 1,
+          "scales": { "y": { "domainMin": 0, "domainMax": 1 } },
           "height": 120
         }
       ]
@@ -285,8 +282,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "HG008-T_coverage_perbase-LinearWiggleDisplay",
-          "minScore": 0,
-          "maxScore": 100,
+          "scales": { "y": { "domainMin": 0, "domainMax": 100 } },
           "height": 120
         }
       ]

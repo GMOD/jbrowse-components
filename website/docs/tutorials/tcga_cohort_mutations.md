@@ -255,8 +255,7 @@ one row per group.
   },
   "displayDefaults": {
     "height": 260,
-    "minScore": 0,
-    "maxScore": 100,
+    "scales": { "y": { "domainMin": 0, "domainMax": 100 } },
     "showRowSeparators": true
   }
 }

@@ -47,7 +47,7 @@ import { docRelative, docsDir } from './paths.ts'
 // Slot rows come in four spellings, because only the kinds with a glossary
 // entry are linked, and a sub-schema slot has no kind to name — it links its
 // schema's page where one documents it, and shows its source otherwise:
-//   | <span id="slot-autoscale">**autoscale**</span><br>[`stringEnum`](...) (local, localsd) = <code>'local'</code> | ...
+//   | <span id="slot-linkedreads">**linkedReads**</span><br>[`stringEnum`](...) (off, normal) = <code>'off'</code> | ...
 //   | <span id="slot-displaymode">**displayMode**</span><br>`maybeStringEnum` (normal, compact) = <code>'normal'</code> | ...
 //   | <span id="slot-facet">**facet**</span><br>[Facet](../facet) | ...
 //   | <span id="slot-marks">**marks**</span><br><code>types.array(markSchema)</code> | ...
@@ -245,7 +245,7 @@ function assertInventoryParsed(
 ) {
   const problems: string[] = []
   const canaries: [string, string][] = [
-    ['autoscale', 'stringEnum'], // linked spelling
+    ['scales.y.autoscale', 'stringEnum'], // linked spelling, dotted name
     ['displayMode', 'stringEnum'], // bare spelling
     ['jexlFilters', 'stringArray'], // bare, non-enum
     ['height', 'number'], // linked, non-enum

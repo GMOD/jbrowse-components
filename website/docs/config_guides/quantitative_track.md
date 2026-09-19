@@ -26,10 +26,10 @@ options (`scales`, `defaultRendering`, `color`, etc.) go in `displayDefaults`.
 
 ## Display options
 
-The value scale — `type`, `domainMin`, `domainMax`, `autoscale` — is one object,
-[`scales.y`](/docs/config/valuescale); `color` and `bicolorPivot` are
-[`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots. Both go through
-`displayDefaults`.
+The axis is one object, [`scales.y`](/docs/config/valuescale), and the colours
+are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots; both go
+through `displayDefaults`.
+
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 picks `xyplot`, `density`, `line` or `scatter`. The
 [cookbook](/docs/cookbook#quantitative-wiggle-tracks) has the single-color and

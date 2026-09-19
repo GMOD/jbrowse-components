@@ -240,8 +240,7 @@ build step:
       },
       "displayDefaults": {
         "defaultRendering": "multirowdensity",
-        "minScore": 0,
-        "maxScore": 2,
+        "scales": { "y": { "domainMin": 0, "domainMax": 2 } },
         "height": 420
       }
     }

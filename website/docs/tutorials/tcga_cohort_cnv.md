@@ -175,8 +175,7 @@ and losses down in `negColor`.
     "height": 120,
     "posColor": "#b2182b",
     "negColor": "#2166ac",
-    "minScore": -100,
-    "maxScore": 100
+    "scales": { "y": { "domainMin": -100, "domainMax": 100 } }
   }
 }
 ```
@@ -227,8 +226,7 @@ one row each:
     "height": 620,
     "posColor": "#b2182b",
     "negColor": "#2166ac",
-    "minScore": -70,
-    "maxScore": 70,
+    "scales": { "y": { "domainMin": -70, "domainMax": 70 } },
     "showRowSeparators": true
   }
 }
