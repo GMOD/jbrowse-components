@@ -32,6 +32,12 @@ const NOT_A_GROUPING = new Set([
  * facet on it would section by. Counting a field stops once it passes the
  * cap, so a near-unique field (name, ID) costs one set per feature only until
  * it overflows.
+ *
+ * The names come from `feature.toJSON()`, the only field list `Feature`
+ * offers, and on a gene that serializes the transcript tree as well — nine
+ * tenths of the ~16µs an NCBI-shaped gene costs here. The dialog scans once
+ * per open, so a thousand genes is ~20ms; anything reading this per fetch
+ * needs a cheaper enumeration than the interface has today.
  */
 export function summarizeGroupByCandidates(
   features: Iterable<Feature>,

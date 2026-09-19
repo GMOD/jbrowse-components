@@ -42,6 +42,18 @@ test('an attribute nothing in view carries, and one past the cap, both warn with
   )
 })
 
+test('a long value list is capped, with the count in front of it', () => {
+  const values = Array.from({ length: 12 }, (_, i) => `v${i}`)
+  expect(
+    attributeGroupingVerdict('note', [
+      { field: 'note', values, missing: true, overflow: false },
+    ])?.text,
+  ).toBe(
+    'Found 12 values: v0, v1, v2, v3, v4, v5, v6, v7, and 4 more, plus ' +
+      'features with no note',
+  )
+})
+
 test('a refused region is said, not counted', () => {
   expect(
     attributeGroupingVerdict('biotype', { regionTooLarge: true })?.text,

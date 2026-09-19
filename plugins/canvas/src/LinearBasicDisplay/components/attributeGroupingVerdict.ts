@@ -7,6 +7,10 @@ import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 export type GroupByScan = GroupByCandidate[] | RegionTooLargeResult
 
+// The cap is on the caption, not on the grouping: a GFF3 `Note` runs to
+// sentences, and 40 of them under the box resize the dialog around the user.
+const CAPTION_VALUES = 8
+
 export interface AttributeGroupingVerdict {
   color: 'warning.main' | 'text.secondary'
   text: string
@@ -53,9 +57,13 @@ export function attributeGroupingVerdict(
         'group by an attribute with fewer values.',
     }
   }
+  const shown = candidate.values.slice(0, CAPTION_VALUES)
+  const rest = candidate.values.length - shown.length
   return {
     color: 'text.secondary',
-    text: `Found values: ${candidate.values.join(', ')}${
+    text: `Found ${
+      rest > 0 ? `${candidate.values.length} values` : 'values'
+    }: ${shown.join(', ')}${rest > 0 ? `, and ${rest} more` : ''}${
       candidate.missing ? `, plus features with no ${field}` : ''
     }`,
   }
