@@ -394,6 +394,17 @@ export default function stateModelFactory(
 
       /**
        * #getter
+       * The one colour the circular view's key names this track by
+       * (`CircularLegendSource`), which a ring of this display answers where
+       * it draws no ramp. The positive side, which is the whole plot wherever
+       * nothing parts.
+       */
+      get legendColor(): string {
+        return this.wiggleColor.posColor
+      },
+
+      /**
+       * #getter
        * `ChannelSpecHost`'s hook: the two settings the Edit as JSON box
        * writes, as written rather than as resolved, so a round trip through
        * the box changes nothing on its own.

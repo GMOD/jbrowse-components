@@ -37,6 +37,16 @@ test('a written colour wins over the layout, whatever it is', () => {
   expect(display.wiggleColor.posColor).toBe('green')
 })
 
+// The circular view's key reads this member off whatever display a ring is
+// (`CircularLegendSource`), so a rename here empties the key rather than
+// failing a build there.
+test('the circular key reads the colour the plot paints', () => {
+  const display = makeDisplay(['a'], true)
+  expect(display.legendColor).toBe(WIGGLE_POS_COLOR_DEFAULT)
+  display.setColor('green')
+  expect(display.legendColor).toBe('green')
+})
+
 test('the origin moves the cut a threshold with no domain reads', () => {
   const display = makeDisplay(['a'], true)
   display.setOrigin(4)

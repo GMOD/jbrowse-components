@@ -24,7 +24,7 @@ function viewWith(tracks: { name: string; display: CircularLegendSource }[]) {
 test('a row per track, named by the track, in the color it paints', () => {
   const spec = circularLegendSpec(
     viewWith([
-      { name: 'coverage', display: { posColor: '#1565c0' } },
+      { name: 'coverage', display: { legendColor: '#1565c0' } },
       { name: 'translocations', display: { legendColor: '#ff8500' } },
     ]),
   )
@@ -46,7 +46,7 @@ test('a density ring shows its ramp under the track name', () => {
       {
         name: 'gene density',
         display: {
-          posColor: '#1565c0',
+          legendColor: '#1565c0',
           legendSpec: {
             sections: [{ id: 'score', items: [{ label: '', gradient }] }],
           },

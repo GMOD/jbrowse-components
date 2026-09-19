@@ -13,7 +13,6 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export interface CircularLegendSource {
   legendSpec?: LegendSpec
   legendColor?: string
-  posColor?: string
 }
 
 interface LegendTrack {
@@ -32,8 +31,8 @@ function itemsFor(display: CircularLegendSource, name: string): LegendItem[] {
   if (ramp) {
     return [{ ...ramp, label: name }]
   }
-  const color = display.legendColor ?? display.posColor
-  return color ? [{ label: name, color }] : []
+  const { legendColor } = display
+  return legendColor ? [{ label: name, color: legendColor }] : []
 }
 
 /**
