@@ -1,6 +1,6 @@
 ---
 name: grammar-vocabulary-for-wiggle
-description: The wiggle displays adopt the grammar's config vocabulary without adopting its renderer, in three packages after ADR-141 — package A's shared value-scale factory landed as ADR-142 on 2026-09-19 with its docs sweep behind it; B is the colour object with a threshold scale, C the single/multi display merge through `facet: 'source'` — with the column encoder and the wiggle port parked on the bench verdict.
+description: The wiggle displays adopt the grammar's config vocabulary without adopting its renderer, in three packages after ADR-141 — A landed as ADR-142, B's two prerequisites (the `threshold` scale, the worker-side sign split deleted) and C's display merge as ADR-143, all on 2026-09-19; B2, the colour object itself, is the last package in flight — with the column encoder and the wiggle port parked on the bench verdict.
 ---
 
 # Grammar vocabulary for the wiggle displays
@@ -14,11 +14,16 @@ reshot; the push CI for ADR-141 ran green, jbrowse-web project included.
 
 ## Still to do by hand
 
-- Reshoot every figure whose spec moved `minScore`/`maxScore` onto
-  `scales.y` in package A's docs sweep (the sweep's report lists them), and
-  push the CI for ADR-142: `ConfigSlotDefaults.test.ts.snap` was hand-edited
-  and the jbrowse-web project did not run locally.
-- Package C needs a design review before an agent starts (below).
+- After B2 lands: a docs sweep for C and B2 together (C's report lists 24
+  website files naming `MultiLinearWiggleDisplay` and the guides that describe
+  two displays; `user_guides/multiquantitative_track.md` folds into
+  `quantitative_track.md`), then reshoot the figures those specs drive.
+- `bigwig/whole_genome_coverage` and `cnv` fail to capture on main for reasons
+  older than this thread: the first waits for a menu label that moved into a
+  "Show..." submenu, the second never holds ready within 60 s.
+- GC content now inherits four dead tree-sidebar slots through the merged
+  wiggle model (ADR-143 Consequences); narrowing it means a base schema of its
+  own.
 
 ## Decided, do not reopen without new evidence
 
@@ -61,7 +66,7 @@ Sweep: 30-45 source files, 4-7 test_data configs, jbrowse-img and two react
 example sites, `ConfigSlotDefaults`/`RestatedMixinSlots` tests, ~14 guides and
 3 tutorials.
 
-**B. The wiggle colour object.** `posColor`/`negColor`/`bicolorPivot`/
+**B. The wiggle colour object — prerequisites landed, the object in flight as B2.** `posColor`/`negColor`/`bicolorPivot`/
 `useBicolor`/`colorImpliesSolid`/`densityColorRamp` and both `SetColorDialog`s
 become the shared colour object: xyplot
 `{ field: 'score', scale: 'threshold', domain: [0], palette: [neg, pos] }`,
@@ -75,7 +80,7 @@ colours by sign off a uniform), else `color.domain` becomes a fetch key.
 Multi-wiggle's per-source colour stays on the adapter as
 `{ field: 'source', scale: 'categorical' }`. Own ADR.
 
-**C. The single and multi wiggle displays merge.** `facet: { field: 'source',
+**C. The single and multi wiggle displays merge — landed, ADR-143.** `facet: { field: 'source',
 domain }` replaces the tree-sidebar `domain` row-order slot (which collides
 with the score axis's word) and collapses the nine multi renderings to five:
 overlay is facet off, multirow facet on, `SINGLE_TO_MULTI_RENDERING` goes.
