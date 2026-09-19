@@ -57,7 +57,7 @@ constant depth.
 {
   "type": "AlignmentsTrack",
   "trackId": "na12878_read_depth",
-  "name": "NA12878 reads (1000 Genomes, 30x)",
+  "name": "NA12878 depth (1000 Genomes, 30x)",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "CramAdapter",
@@ -92,43 +92,61 @@ The CRAM decodes against the assembly the track is added to.
 
 ## Insert size as a point per pair
 
-A `point` mark plots `template_length` per pair on y, coloured by mapping
-quality on a ramp pinned to 0 to 60. A `filter` keeps the leftmost mate, where
-the template length is positive, so each pair counts once. Depth moves to a
-separate axis with `"resolve": "independent"`.
+Depth runs in the tens and an insert size in the thousands, and one display
+draws one axis, so the insert goes on a track of its own over the same file:
 
-```json
-"marks": [
-  {
-    "shape": "bar",
-    "transform": [{ "type": "coverage" }],
-    "encoding": {
-      "y": { "field": "coverage", "resolve": "independent" },
-      "color": "#c8d8ee"
+- a `point` mark plots `template_length` per pair, on the track's own axis
+- a `filter` keeps the leftmost mate, where the template length is positive, so
+  each pair counts once, and drops the few over 8 kb
+- the colour is mapping quality on a ramp pinned to 0 to 60
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "na12878_read_marks",
+  "name": "NA12878 insert size (1000 Genomes, 30x)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "CramAdapter",
+    "cramLocation": {
+      "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
+    },
+    "craiLocation": {
+      "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
     }
   },
-  {
-    "shape": "point",
-    "transform": [
-      {
-        "type": "filter",
-        "expr": "jexl:feature.template_length > 0 && feature.template_length < 8000"
-      }
-    ],
-    "encoding": {
-      "y": "template_length",
-      "color": {
-        "field": "score",
-        "scale": "linear",
-        "domain": [0, 60],
-        "ramp": ["#bdbdbd", "#1f4e9a"]
-      }
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "na12878_read_marks-LinearMarkDisplay",
+      "marks": [
+        {
+          "shape": "point",
+          "transform": [
+            {
+              "type": "filter",
+              "expr": "jexl:feature.template_length > 0 && feature.template_length < 8000"
+            }
+          ],
+          "encoding": {
+            "y": "template_length",
+            "color": {
+              "field": "score",
+              "scale": "linear",
+              "domain": [0, 60],
+              "ramp": ["#bdbdbd", "#1f4e9a"]
+            }
+          }
+        }
+      ]
     }
-  }
-]
+  ]
+}
 ```
 
-<Figure src="/img/read_marks/insert_size.png" caption="The same window with each pair's insert size as a point on the left axis and the depth on a separate axis on the right. The pairs sit in a band under 1,000 bases, and over the left edge of the dip a second group appears between 4,300 and 4,700 bases, in the full blue of a mapping quality of 60." />
+Open it under the depth track, on the same window.
+
+<Figure src="/img/read_marks/insert_size.png" caption="The same window, the depth as bars above and each pair's insert size as a point below, each track on its own axis. The pairs sit in a band under 1,000 bases, and over the left edge of the dip a second group appears between 4,300 and 4,700 bases, in the full blue of a mapping quality of 60." />
 
 Each pair in the upper group straddles the missing 3.9 kb. `score` is the
 mapping quality on every track type. Hover a point for its values; click it to
@@ -189,14 +207,15 @@ samtools view -q 20 -F 0x904 --input-fmt-option required_fields=0x1DF NA12878.fi
 tabix -p bed NA12878.chr20.discordant_pairs.bed.gz
 ```
 
-The BED holds 11,327 rows, small enough to fetch whole at any zoom. A
-`FeatureTrack` carries two marks:
+The BED holds 11,327 rows, small enough to fetch whole at any zoom. An insert
+size and a count per bin are two quantities, so they are two tracks over the one
+file:
 
 - **a `point` per pair**, `tlen` on y, coloured by `score`. `x2: start` draws
   the pair at its leftmost read; a `filter` under 20 kb keeps the centromere's
   megabase inserts off the axis.
-- **a `bar` per bin** counting pairs of 2 to 10 kb, on a right-hand axis pinned
-  at 60 so the centromere saturates and a deletion's ten to fifty stand up.
+- **a `bar` per bin** counting pairs of 2 to 10 kb, on an axis pinned at 60 so
+  the centromere saturates and a deletion's ten to fifty stand up.
 
 ```json addtrack
 {
@@ -235,7 +254,36 @@ The BED holds 11,327 rows, small enough to fetch whole at any zoom. A
               "ramp": ["#bdbdbd", "#1f4e9a"]
             }
           }
-        },
+        }
+      ]
+    }
+  ]
+}
+```
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "na12878_chr20_pair_counts",
+  "name": "NA12878 chr20, pairs of 2 to 10 kb per bin",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "bedGzLocation": {
+      "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz"
+    },
+    "index": {
+      "location": {
+        "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz.tbi"
+      }
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "na12878_chr20_pair_counts-LinearMarkDisplay",
+      "scales": { "y": { "domainMin": 0, "domainMax": 60 } },
+      "marks": [
         {
           "shape": "bar",
           "transform": [
@@ -246,18 +294,10 @@ The BED holds 11,327 rows, small enough to fetch whole at any zoom. A
             { "type": "bin", "step": "auto" },
             {
               "type": "aggregate",
-              "groupby": ["start", "end"],
               "ops": [{ "op": "count" }]
             }
           ],
-          "encoding": {
-            "y": {
-              "field": "count",
-              "resolve": "independent",
-              "domain": [0, 60]
-            },
-            "color": "#d62728"
-          }
+          "encoding": { "y": "count", "color": "#d62728" }
         }
       ]
     }
@@ -265,7 +305,10 @@ The BED holds 11,327 rows, small enough to fetch whole at any zoom. A
 }
 ```
 
-<Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the right axis count the pairs between 2 and 10 kb per bin. The centromere, from 26 to 32 Mb, saturates both; outside it the bars rise in a handful of places, each under a short stack of dark points." />
+The `aggregate` names no `groupby`, so it groups by the edges the `bin` above it
+wrote.
+
+<Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the track under it count the pairs between 2 and 10 kb per bin. The centromere, from 26 to 32 Mb, saturates both; outside it the bars rise in a handful of places, each under a short stack of dark points." />
 
 The bar at 34.2 Mb is a homozygous deletion; the one at 32.9 Mb is the intron
 above.
@@ -328,7 +371,7 @@ bash build_read_marks.sh                     # builds ./read_marks_build/jbrowse
 npx --yes serve read_marks_build/jbrowse2    # then open the printed URL
 ```
 
-With no arguments it builds the two tracks above over NA12878. Given your own
+With no arguments it builds the four tracks above over NA12878. Given your own
 reads, `bash build_read_marks.sh reads.cram genome.fa` builds them over your
 file, and `CHROM` picks the chromosome to scan.
 

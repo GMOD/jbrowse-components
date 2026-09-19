@@ -274,7 +274,8 @@ tabix -f -p bed Alu.young_share.bed.gz
 ```
 
 Each column is one mark track. A jexl colour paints the two directions apart,
-and both tracks pin the same `domain`.
+and both tracks pin the same `scales.y`, so the strand lane's flatness reads
+against the young share's swing.
 
 ```json addtrack
 {
@@ -290,11 +291,12 @@ and both tracks pin the same `domain`.
     {
       "type": "LinearMarkDisplay",
       "displayId": "alu_young_share-LinearMarkDisplay",
+      "scales": { "y": { "domainMin": -1.5, "domainMax": 1.5 } },
       "marks": [
         {
           "shape": "bar",
           "encoding": {
-            "y": { "field": "youngLog2", "domain": ["-1.5", "1.5"] },
+            "y": "youngLog2",
             "color": "jexl:feature.youngLog2 > 0 ? '#d73027' : '#4575b4'"
           }
         }
