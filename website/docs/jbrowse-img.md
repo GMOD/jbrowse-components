@@ -1341,7 +1341,7 @@ Options:
   --loc2                Location on the second assembly
   --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons by: default, strand, query, target, reference, identity, mappingQuality, dnds, or track. "query" gives each query chromosome its own color; "reference" needs a stack of three or more genomes and "track" more than one alignment file
+  --colorBy             Color synteny ribbons by: strand, query, target, reference, track, identity, mappingQual, or dnds. "query" gives each query chromosome its own color; "reference" needs a stack of three or more genomes and "track" more than one alignment file
 
 Examples:
   jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg
@@ -1385,7 +1385,7 @@ Options:
   --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
   --drawCurves          Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
-  --colorBy             Color synteny ribbons by: default, strand, query, target, reference, identity, mappingQuality, dnds, or track. "query" gives each query chromosome its own color; "reference" needs a stack of three or more genomes and "track" more than one alignment file
+  --colorBy             Color synteny ribbons by: strand, query, target, reference, track, identity, mappingQual, or dnds. "query" gives each query chromosome its own color; "reference" needs a stack of three or more genomes and "track" more than one alignment file
   --alpha               Ribbon opacity 0-1 (lower reveals density)
   --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
   --cigarMode           CIGAR indels in synteny ribbons: 'full' (colored), 'matches' (see-through), or 'off' (one solid block per alignment, so overlapping blocks run together) [default: full]
