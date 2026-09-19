@@ -485,10 +485,9 @@ function mutationFigure({
   return kgUrl({
     sessionTracks: [
       mutationTrack({
-        ...(facetField
-          ? { facet: { field: facetField, domain: facetDomain } }
-          : {}),
-        rowColor: colorBy,
+        facetField,
+        facetDomain,
+        colorBy,
         height,
         lineZoneHeight,
       }),

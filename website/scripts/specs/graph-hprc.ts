@@ -1065,48 +1065,53 @@ const ABCA7_VNTR_TRACK = {
   },
 }
 
-function abca7Views() {
-  return [
-    {
-      type: 'LinearGenomeView',
-      assembly: 'hg38',
-      loc: 'chr19:1,049,000-1,050,500',
-      tracks: [
-        {
-          trackId: 'hg38_ncbiRefSeq_ucsc',
-          type: 'LinearBasicDisplay',
-          showOnlyGenes: true,
-          displayMode: 'compact',
-          height: 40,
-        },
-        {
-          trackId: ABCA7_VNTR_TRACK.trackId,
-          type: 'LinearBasicDisplay',
-          height: 40,
-        },
-        {
-          trackId: 'hprc_abca7_trgt',
-          type: 'LinearVariantDisplay',
-          height: 40,
-        },
-      ],
-    },
-    {
-      type: 'GraphGenomeView',
-      loadedTrackId: 'hprc_v2_1_gbz_lanes',
-      loadedRegion: {
-        refName: 'chr19',
-        assemblyName: 'hg38',
-        start: 1049407,
-        end: 1050096,
+function abca7LinearView() {
+  return {
+    type: 'LinearGenomeView',
+    assembly: 'hg38',
+    loc: 'chr19:1,049,000-1,050,500',
+    tracks: [
+      {
+        trackId: 'hg38_ncbiRefSeq_ucsc',
+        type: 'LinearBasicDisplay',
+        showOnlyGenes: true,
+        displayMode: 'compact',
+        height: 40,
       },
-      layoutMode: 'walkrows',
-      colorScheme: 'uniform',
-      repeatTrackId: 'hprc_abca7_trgt',
-      repeatKey: ABCA7_REPEAT_KEY,
-      paneHeight: 600,
+      {
+        trackId: ABCA7_VNTR_TRACK.trackId,
+        type: 'LinearBasicDisplay',
+        height: 40,
+      },
+      {
+        trackId: 'hprc_abca7_trgt',
+        type: 'LinearVariantDisplay',
+        height: 40,
+      },
+    ],
+  }
+}
+
+function abca7GraphView() {
+  return {
+    type: 'GraphGenomeView',
+    loadedTrackId: 'hprc_v2_1_gbz_lanes',
+    loadedRegion: {
+      refName: 'chr19',
+      assemblyName: 'hg38',
+      start: 1049407,
+      end: 1050096,
     },
-  ]
+    layoutMode: 'walkrows',
+    colorScheme: 'uniform',
+    repeatTrackId: 'hprc_abca7_trgt',
+    repeatKey: ABCA7_REPEAT_KEY,
+    paneHeight: 600,
+  }
+}
+
+function abca7Views() {
+  return [abca7LinearView(), abca7GraphView()]
 }
 
 export const hprcGraphSpecs: ScreenshotSpec[] = [
@@ -2503,11 +2508,11 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       sessionTracks: [ABCA7_VNTR_TRACK],
       views: [
         {
-          ...abca7Views()[0],
-          tracks: abca7Views()[0].tracks.slice(1),
+          ...abca7LinearView(),
+          tracks: abca7LinearView().tracks.slice(1),
         },
         {
-          ...abca7Views()[1],
+          ...abca7GraphView(),
           // three samples whose calls land on both walks, two where reads and
           // assemblies part, and two carrying a walk the view leaves unscored:
           // HG02559's second allele has no spanning read, HG04199's second walk
