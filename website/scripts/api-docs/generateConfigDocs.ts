@@ -57,10 +57,13 @@ interface Item {
   examples: Example[]
   category?: string
   code: string
-  // a sub-schema slot's schema: its declId as extracted, and the `#config`
-  // page it resolves to once every config is read
-  schemaDeclId?: string
+  // a sub-schema slot's schema: the declIds its value expression names, and the
+  // `#config` page the nearest of them resolves to once every config is read
+  schemaDeclIds?: string[]
   schemaPage?: { name: string; id: string }
+  // the slot's default is a parameter of the factory declaring it, so the
+  // column names the arrangement rather than one caller's value
+  parameterisedDefault?: boolean
 }
 interface ConfigHeader {
   name: string
@@ -267,7 +270,11 @@ export function accumulateConfig(
   } else if (obj.type === 'preProcessSnapshot') {
     file.preProcess = item
   } else if (obj.type === 'slot') {
-    file.slots.push({ ...item, schemaDeclId: obj.valueDeclId })
+    file.slots.push({
+      ...item,
+      schemaDeclIds: obj.valueDeclIds,
+      parameterisedDefault: obj.parameterisedDefault,
+    })
   }
 }
 
@@ -1281,10 +1288,17 @@ function slotTypeCell(meta: SlotMeta, schemaPage: Item['schemaPage']) {
         )
 }
 
-function slotDefaultCell(meta: SlotMeta) {
-  return codeCell(
-    meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
-  )
+// A default the factory takes as a parameter has no one value to print, and its
+// parameter name is not a name the reader has. The page prose carries what each
+// display passes.
+const PARAMETERISED_DEFAULT = 'per display'
+
+function slotDefaultCell(item: Item, meta: SlotMeta) {
+  return item.parameterisedDefault
+    ? PARAMETERISED_DEFAULT
+    : codeCell(
+        meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
+      )
 }
 
 // The Description cell: the slot's prose in full (paragraph breaks kept), then
@@ -1329,7 +1343,7 @@ function slotGroupRow(from: string, count: number) {
 function slotRow(item: Item) {
   const { meta } = slotMetaFor(item)
   const type = slotTypeCell(meta, item.schemaPage)
-  const dflt = slotDefaultCell(meta)
+  const dflt = slotDefaultCell(item, meta)
   const cells = [
     [
       `<span id="${slotAnchor(item.name)}">**${item.name}**</span>`,
@@ -1733,9 +1747,11 @@ function agentSlotLine(item: Item) {
       flatCode(
         meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode)),
       ))
-  const dflt = flatCode(
-    meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
-  )
+  const dflt = item.parameterisedDefault
+    ? PARAMETERISED_DEFAULT
+    : flatCode(
+        meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
+      )
   const notes = [
     meta.contextVariable?.length &&
       `callback args: ${meta.contextVariable.join(', ')}`,
@@ -1813,7 +1829,7 @@ export function writeConfigDocs(
   const index: ConfigIndex = { byDeclId, byName }
   resolveInheritedSlotMeta(withHeader, index)
   for (const slot of withHeader.flatMap(c => c.slots)) {
-    const schema = slot.schemaDeclId && byDeclId.get(slot.schemaDeclId)
+    const schema = slot.schemaDeclIds?.map(id => byDeclId.get(id)).find(Boolean)
     if (schema) {
       slot.schemaPage = { name: schema.header.name, id: schema.header.id }
     }

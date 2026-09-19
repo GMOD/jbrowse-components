@@ -51,9 +51,14 @@ export interface ExtractedNode {
   // `pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` links to
   // the config named "LinearWiggleDisplay".
   baseConfigName?: string
-  // For `#slot` nodes only: the declId of the sub-schema a slot's value names
-  // (`facet: facetConfigSchema`), so its row can link the schema's own page.
-  valueDeclId?: string
+  // For `#slot` nodes only: the declIds a slot's value expression names, nearest
+  // first (`facet: facetConfigSchema`; `scales: wiggleValueScale()`), so its row
+  // can link the page of the first one that is a `#config`.
+  valueDeclIds?: string[]
+  // For `#slot` nodes only: whether the slot's `defaultValue` names a parameter
+  // of the factory declaring it, so the value is whatever each caller passed and
+  // the source text names nothing a reader can look up.
+  parameterisedDefault?: boolean
   // For `#stateModel` nodes only: the models passed to this model's
   // `types.compose(...)` call, alias-followed. Lets the state-model generator
   // derive the composition graph from code instead of a hand-authored
@@ -267,8 +272,11 @@ export function extractWithComment(
         baseDeclId: tags.includes('baseConfiguration')
           ? referencedDeclId(checker, node)
           : undefined,
-        valueDeclId: tags.includes('slot')
-          ? referencedDeclId(checker, node)
+        valueDeclIds: tags.includes('slot')
+          ? referencedSchemaDeclIds(checker, node)
+          : undefined,
+        parameterisedDefault: tags.includes('slot')
+          ? hasParameterisedDefault(checker, node)
           : undefined,
         baseConfigName:
           tags.includes('baseConfiguration') && ts.isPropertyAssignment(node)
@@ -1092,6 +1100,96 @@ function referencedDeclId(checker: ts.TypeChecker, node: ts.Node) {
   return ts.isIdentifier(expr)
     ? symbolDeclId(checker, checker.getSymbolAtLocation(expr))
     : undefined
+}
+
+// Whether a slot's `defaultValue` names a parameter of the factory that
+// declares the slot — `symlogConstant: { defaultValue: symlogConstant }`, where
+// the schema is built per display. Undefined rather than false so the flag only
+// ever appears on the slots it describes.
+function hasParameterisedDefault(checker: ts.TypeChecker, node: ts.Node) {
+  if (
+    !ts.isPropertyAssignment(node) ||
+    !ts.isObjectLiteralExpression(node.initializer)
+  ) {
+    return undefined
+  }
+  const dflt = node.initializer.properties.find(
+    p =>
+      ts.isPropertyAssignment(p) &&
+      ts.isIdentifier(p.name) &&
+      p.name.text === 'defaultValue',
+  )
+  if (!dflt || !ts.isPropertyAssignment(dflt)) {
+    return undefined
+  }
+  let expr: ts.Expression = dflt.initializer
+  while (ts.isPropertyAccessExpression(expr)) {
+    expr = expr.expression
+  }
+  const decl = ts.isIdentifier(expr)
+    ? checker.getSymbolAtLocation(expr)?.declarations?.[0]
+    : undefined
+  return decl && bindsAParameter(decl) ? true : undefined
+}
+
+// A declaration that is a parameter, or a name destructured out of one.
+function bindsAParameter(decl: ts.Declaration) {
+  let n: ts.Node | undefined = decl
+  while (
+    n &&
+    (ts.isBindingElement(n) ||
+      ts.isObjectBindingPattern(n) ||
+      ts.isArrayBindingPattern(n))
+  ) {
+    n = n.parent
+  }
+  return !!n && ts.isParameter(n)
+}
+
+// Every declaration a sub-schema slot's value expression names, nearest first.
+// `facet: facetConfigSchema` names one; `scales: wiggleValueScale()` and
+// `scales: scalesSchema(valueScaleSchema({ types: ['linear'] }))` name a factory
+// whose schema is built by a call further in, so the walk goes through a
+// callee's returned expression and through a call's arguments as well as its
+// head. The caller keeps the first that is a `#config`, which is what decides
+// the page a row links to — a wrapper with no page of its own (`scalesSchema`)
+// falls through to the one that has it.
+function referencedSchemaDeclIds(checker: ts.TypeChecker, node: ts.Node) {
+  if (!ts.isPropertyAssignment(node)) {
+    return undefined
+  }
+  const ids: string[] = []
+  const seen = new Set<string>()
+  const queue = [{ expr: node.initializer, depth: 0 }]
+  while (queue.length) {
+    const { expr, depth } = queue.shift()!
+    if (depth > 4) {
+      continue
+    }
+    if (ts.isNonNullExpression(expr) || ts.isParenthesizedExpression(expr)) {
+      queue.push({ expr: expr.expression, depth })
+    } else if (ts.isCallExpression(expr)) {
+      queue.push({ expr: expr.expression, depth })
+      for (const arg of expr.arguments) {
+        queue.push({ expr: arg, depth: depth + 1 })
+      }
+    } else if (ts.isIdentifier(expr)) {
+      const symbol = checker.getSymbolAtLocation(expr)
+      const id = symbolDeclId(checker, symbol)
+      if (!id || seen.has(id)) {
+        continue
+      }
+      seen.add(id)
+      ids.push(id)
+      const decl = symbol && followAlias(checker, symbol).declarations?.[0]
+      const fn = decl && factoryFunction(decl)
+      const returned = fn && returnedExpression(fn)
+      if (returned) {
+        queue.push({ expr: returned, depth: depth + 1 })
+      }
+    }
+  }
+  return ids.length ? ids : undefined
 }
 
 // Whether a `#stateModel` tag landed on something that can plausibly BUILD a
