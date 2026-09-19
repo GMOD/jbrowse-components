@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { MultiWiggleDisplayModel } from '@jbrowse/plugin-wiggle'
+import type { WiggleDisplayModel } from '@jbrowse/plugin-wiggle'
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 interface CellType {
@@ -238,7 +238,7 @@ function tracks(cells: Cells) {
           uri: `${BASE}/${type.name.replaceAll(' ', '_')}.bw`,
         })),
       },
-      displayDefaults: { defaultRendering: 'multirowxy', height: 330 },
+      displayDefaults: { defaultRendering: 'xyplot', height: 330 },
     },
     {
       type: 'MultiQuantitativeTrack',
@@ -250,7 +250,7 @@ function tracks(cells: Cells) {
         uri: `${BASE}/percell.zarr`,
       },
       displayDefaults: {
-        defaultRendering: 'multirowdensity',
+        defaultRendering: 'density',
         height: 420,
         scales: { y: { domainMin: 0, domainMax: 4 } },
       },
@@ -303,7 +303,7 @@ const UmapAndGenomeView = observer(function UmapAndGenomeView({
       : [...selected, name]
     setSelected(next)
     const display = view.getTrack(TRACK_ID)?.activeDisplay as
-      | MultiWiggleDisplayModel
+      | WiggleDisplayModel
       | undefined
     display?.setSubtreeFilter(next.length ? next : undefined)
   }

@@ -1183,8 +1183,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "multirowxy",
-          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "xyplot",
+          "type": "LinearWiggleDisplay",
         },
       ],
       "name": "MultiWig (multirowxy)",
@@ -1219,8 +1219,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "multirowdensity",
-          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "density",
+          "type": "LinearWiggleDisplay",
         },
       ],
       "name": "MultiWig (multirowdensity)",
@@ -1255,8 +1255,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "multirowline",
-          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "line",
+          "type": "LinearWiggleDisplay",
         },
       ],
       "name": "MultiWig (multirowline)",
@@ -1295,8 +1295,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "multiline",
-          "type": "MultiLinearWiggleDisplay",
+          "defaultRendering": "line",
+          "facet": "",
+          "type": "LinearWiggleDisplay",
         },
       ],
       "name": "MultiWig (w/ colors and default line rendering)",

@@ -190,9 +190,9 @@ track = {
         "subadapters": json.load(open(sources_path)),
     },
     "displays": [{
-        "type": "MultiLinearWiggleDisplay",
-        "displayId": "pbmc5k_scatac_pseudobulk-MultiLinearWiggleDisplay",
-        "defaultRendering": "multirowxy",
+        "type": "LinearWiggleDisplay",
+        "displayId": "pbmc5k_scatac_pseudobulk-LinearWiggleDisplay",
+        "defaultRendering": "xyplot",
         "height": 400,
     }],
 }

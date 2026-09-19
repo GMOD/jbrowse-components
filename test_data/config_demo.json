@@ -196,7 +196,7 @@
         ]
       },
       "displayDefaults": {
-        "defaultRendering": "multirowdensity",
+        "defaultRendering": "density",
         "bicolorPivot": 2,
         "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
         "posColor": "#b2182b",
@@ -4136,9 +4136,9 @@
       },
       "displays": [
         {
-          "type": "MultiLinearWiggleDisplay",
-          "displayId": "catlas_scatac_celltypes_hg38-MultiLinearWiggleDisplay",
-          "defaultRendering": "multirowxy",
+          "type": "LinearWiggleDisplay",
+          "displayId": "catlas_scatac_celltypes_hg38-LinearWiggleDisplay",
+          "defaultRendering": "xyplot",
           "height": 500
         }
       ]
@@ -4264,9 +4264,9 @@
       },
       "displays": [
         {
-          "type": "MultiLinearWiggleDisplay",
-          "displayId": "pbmc5k_scatac_pseudobulk_hg38-MultiLinearWiggleDisplay",
-          "defaultRendering": "multirowxy",
+          "type": "LinearWiggleDisplay",
+          "displayId": "pbmc5k_scatac_pseudobulk_hg38-LinearWiggleDisplay",
+          "defaultRendering": "xyplot",
           "height": 400
         }
       ]

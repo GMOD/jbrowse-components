@@ -43,7 +43,7 @@
         "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr"
       },
       "displayDefaults": {
-        "defaultRendering": "multirowdensity",
+        "defaultRendering": "density",
         "bicolorPivot": 0,
         "scales": { "y": { "domainMin": -2, "domainMax": 2 } },
         "posColor": "#b2182b",

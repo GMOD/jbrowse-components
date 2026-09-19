@@ -362,7 +362,7 @@ LOCI = [
 ]
 
 # Row order, group and color, the same palette the UMAP and the pooled rows use.
-# In multirowdensity a row's `color` is its own ramp, so giving each cell its
+# In the density rendering a row's `color` is its own ramp, so giving each cell its
 # cell type's hue makes the blocks read in the colors of the pictures above it.
 LINEAGE = [
     ("CD4 T", "T cell", "#1f77b4"),
@@ -671,9 +671,9 @@ track = {
     "category": ["Single cell"],
     "adapter": {"type": "MultiWiggleAdapter", "subadapters": sources},
     "displays": [{
-        "type": "MultiLinearWiggleDisplay",
-        "displayId": "pbmc5k_scrna_pseudobulk-MultiLinearWiggleDisplay",
-        "defaultRendering": "multirowxy",
+        "type": "LinearWiggleDisplay",
+        "displayId": "pbmc5k_scrna_pseudobulk-LinearWiggleDisplay",
+        "defaultRendering": "xyplot",
         "height": 330,
     }],
 }

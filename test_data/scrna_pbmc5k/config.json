@@ -119,7 +119,7 @@
         ]
       },
       "displayDefaults": {
-        "defaultRendering": "multirowxy",
+        "defaultRendering": "xyplot",
         "height": 330
       }
     },
@@ -134,7 +134,7 @@
         "uri": "https://jbrowse.org/demos/scrna_pbmc5k/percell.zarr"
       },
       "displayDefaults": {
-        "defaultRendering": "multirowdensity",
+        "defaultRendering": "density",
         "scales": { "y": { "domainMin": 0, "domainMax": 2 } },
         "height": 420
       }
@@ -260,9 +260,9 @@
       },
       "displays": [
         {
-          "type": "MultiLinearWiggleDisplay",
-          "displayId": "pbmc5k_scatac_pseudobulk_hg38-MultiLinearWiggleDisplay",
-          "defaultRendering": "multirowxy",
+          "type": "LinearWiggleDisplay",
+          "displayId": "pbmc5k_scatac_pseudobulk_hg38-LinearWiggleDisplay",
+          "defaultRendering": "xyplot",
           "height": 400
         }
       ]

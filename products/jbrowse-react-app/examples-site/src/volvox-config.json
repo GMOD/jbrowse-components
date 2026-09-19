@@ -775,8 +775,8 @@
       },
       "displays": [
         {
-          "type": "MultiLinearWiggleDisplay",
-          "defaultRendering": "multirowxy"
+          "type": "LinearWiggleDisplay",
+          "defaultRendering": "xyplot"
         }
       ]
     },
@@ -806,8 +806,8 @@
       },
       "displays": [
         {
-          "type": "MultiLinearWiggleDisplay",
-          "defaultRendering": "multirowdensity"
+          "type": "LinearWiggleDisplay",
+          "defaultRendering": "density"
         }
       ]
     },
@@ -837,8 +837,8 @@
       },
       "displays": [
         {
-          "type": "MultiLinearWiggleDisplay",
-          "defaultRendering": "multirowline"
+          "type": "LinearWiggleDisplay",
+          "defaultRendering": "line"
         }
       ]
     },
@@ -872,8 +872,9 @@
       },
       "displays": [
         {
-          "type": "MultiLinearWiggleDisplay",
-          "defaultRendering": "multiline"
+          "type": "LinearWiggleDisplay",
+          "defaultRendering": "line",
+          "facet": ""
         }
       ]
     },

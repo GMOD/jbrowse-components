@@ -147,9 +147,10 @@
       },
       "displays": [
         {
-          "type": "MultiLinearWiggleDisplay",
-          "displayId": "synthetic_tiers_multiline_whiskers-MultiLinearWiggleDisplay",
-          "defaultRendering": "multiline",
+          "type": "LinearWiggleDisplay",
+          "displayId": "synthetic_tiers_multiline_whiskers-LinearWiggleDisplay",
+          "defaultRendering": "line",
+          "facet": "",
           "summaryScoreMode": "whiskers"
         }
       ]
