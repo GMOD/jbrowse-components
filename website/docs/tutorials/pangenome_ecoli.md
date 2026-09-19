@@ -604,7 +604,7 @@ strain count. The Minigraph-Cactus tutorial draws
 splits depth per strain: over the same windows it reports the fraction of each
 window that strain's path traverses. Slice each strain's rows into its own
 bigWig and load the set as one
-[`MultiQuantitativeTrack`](/docs/user_guides/quantitative_track):
+[`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track#many-signals-in-one-track):
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
