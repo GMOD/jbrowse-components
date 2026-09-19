@@ -3374,13 +3374,6 @@
     "reviewedAt": "2026-09-14T03:46:00.853Z",
     "hash": "b022f0d31fffd2de6eb5318c3d031943acf5860f"
   },
-  "mark_display/two_axes": {
-    "name": "mark_display/two_axes",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T03:46:02.871Z",
-    "hash": "7169a09d47b8eb85cefc7771ba934be564b157ce"
-  },
   "multiway_synteny/drosophila_lanes": {
     "name": "multiway_synteny/drosophila_lanes",
     "status": "good",

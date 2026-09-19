@@ -2,7 +2,6 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import {
   DEMO_CONFIG,
-  VOLVOX,
   sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
@@ -80,45 +79,6 @@ const ALU_SIDECAR_TRACK = {
   ],
 }
 
-// The volvox BAM as a mark display: every read's mapping quality on the
-// shared axis, and the coverage over them on an axis of its own.
-const READS_TWO_AXES_TRACK = {
-  type: 'AlignmentsTrack',
-  trackId: 'reads_two_axes',
-  name: 'Reads',
-  assemblyNames: ['volvox'],
-  adapter: {
-    type: 'BamAdapter',
-    bamLocation: {
-      uri: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-sorted.bam',
-      locationType: 'UriLocation',
-    },
-    index: {
-      location: {
-        uri: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-sorted.bam.bai',
-        locationType: 'UriLocation',
-      },
-    },
-  },
-  displays: [
-    {
-      type: 'LinearMarkDisplay',
-      displayId: 'reads_two_axes-LinearMarkDisplay',
-      marks: [
-        {
-          shape: 'bar',
-          transform: [{ type: 'coverage' }],
-          encoding: {
-            y: { field: 'coverage', resolve: 'independent' },
-            color: '#c8d8ee',
-          },
-        },
-        { shape: 'point', encoding: { y: 'score' } },
-      ],
-    },
-  ],
-}
-
 // The Alu track with ONE declared mark, which is what the Plot field dialog
 // reopens prefilled from: the value field and the shape it finds are the
 // milliDiv bar below rather than an empty form.
@@ -187,33 +147,6 @@ function aluMarksUrl(loc: string) {
 }
 
 export const marksSpecs: ScreenshotSpec[] = [
-  // Reads over a 5 kb window: coverage in the hundreds as bars on the right
-  // axis, and each read's mapping quality as a point on the left.
-  {
-    mode: 'url',
-    name: 'mark_display/two_axes',
-    url: sessionSpec(VOLVOX, {
-      sessionTracks: [READS_TWO_AXES_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-5,000',
-          tracks: [
-            {
-              trackId: 'reads_two_axes',
-              type: 'LinearMarkDisplay',
-              height: 200,
-            },
-          ],
-        },
-      ],
-    }),
-    readySelector: displayPainted('mark-display'),
-    readyTimeout: 90000,
-    viewportHeight: 400,
-  },
-
   // Chromosome 1 end to end, past the byte budget: the sidecar's bins draw in
   // the banner's place, with the chip naming them.
   {

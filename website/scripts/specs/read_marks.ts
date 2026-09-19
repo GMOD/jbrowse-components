@@ -11,9 +11,11 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // tutorial is docs/tutorials/read_marks.md; the deletion is a heterozygous
 // 3.9 kb call in an intron of EFCAB8.
 //
-// The demo config (demos/read_marks/config.json) carries the two finished
+// The demo config (demos/read_marks/config.json) carries the four finished
 // tracks and an hg38 whose sequence jbrowse.org serves: the CRAM decodes
-// against it, and the UCSC hub's 2bit stalled three captures in a row.
+// against it, and the UCSC hub's 2bit stalled three captures in a row. Depth
+// and insert size are a track each, and so are the chromosome scan's points
+// and its per-bin counts — a mark display draws one y axis.
 const CONFIG = 'https://jbrowse.org/demos/read_marks/config.json'
 const CRAM =
   'https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram'
@@ -21,12 +23,11 @@ const CRAM =
 const DELETION = 'chr20:32,925,000-32,955,000'
 const LEFT_BREAKPOINT = 'chr20:32,936,200-32,939,200'
 
-// The two intermediate forms of the reads track the page builds up through,
-// as session tracks under their own ids; the finished two-axes form is the
-// config's `na12878_read_marks`.
-const readsTrack = (trackId: string, marks: unknown[]) => ({
+// The pileup is the one form the page builds up through that the demo config
+// does not carry, so the spec adds it as a session track.
+const PILEUP_TRACK = {
   type: 'AlignmentsTrack',
-  trackId,
+  trackId: 'na12878_read_pileup',
   name: 'NA12878 reads (1000 Genomes, 30x)',
   assemblyNames: ['hg38'],
   adapter: {
@@ -37,42 +38,32 @@ const readsTrack = (trackId: string, marks: unknown[]) => ({
   displays: [
     {
       type: 'LinearMarkDisplay',
-      displayId: `${trackId}-LinearMarkDisplay`,
-      marks,
+      displayId: 'na12878_read_pileup-LinearMarkDisplay',
+      marks: [
+        {
+          shape: 'span',
+          transform: [
+            {
+              type: 'formula',
+              expr: 'jexl:abs(feature.template_length)',
+              as: 'insert',
+            },
+            { type: 'stack' },
+          ],
+          encoding: {
+            row: 'row',
+            color: {
+              field: 'insert',
+              scale: 'linear',
+              domain: [0, 5000],
+              ramp: ['#c8d8ee', '#d62728'],
+            },
+          },
+        },
+      ],
     },
   ],
-})
-
-const DEPTH_TRACK = readsTrack('na12878_read_depth', [
-  {
-    shape: 'bar',
-    transform: [{ type: 'coverage' }],
-    encoding: { y: 'coverage', color: '#c8d8ee' },
-  },
-])
-
-const PILEUP_TRACK = readsTrack('na12878_read_pileup', [
-  {
-    shape: 'span',
-    transform: [
-      {
-        type: 'formula',
-        expr: 'jexl:abs(feature.template_length)',
-        as: 'insert',
-      },
-      { type: 'stack' },
-    ],
-    encoding: {
-      row: 'row',
-      color: {
-        field: 'insert',
-        scale: 'linear',
-        domain: [0, 5000],
-        ramp: ['#c8d8ee', '#d62728'],
-      },
-    },
-  },
-])
+}
 
 const geneTrack = {
   trackId: 'ncbi_refseq_hg38',
@@ -85,10 +76,14 @@ const geneTrack = {
 function readsSpec(
   name: string,
   loc: string,
-  trackId: string,
-  height: number,
+  marks: [string, number][],
   sessionTracks: object[] = [],
 ): ScreenshotSpec {
+  const tracks = marks.map(([trackId, height]) => ({
+    trackId,
+    type: 'LinearMarkDisplay',
+    height,
+  }))
   return {
     mode: 'url',
     name,
@@ -99,37 +94,41 @@ function readsSpec(
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc,
-          tracks: [geneTrack, { trackId, type: 'LinearMarkDisplay', height }],
+          tracks: [geneTrack, ...tracks],
         },
       ],
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
     hideSelectors: ['.MuiChip-root'],
-    viewportHeight: height + 300,
+    viewportHeight: marks.reduce((a, [, h]) => a + h, 0) + 300,
   }
 }
 
 export const readMarksSpecs: ScreenshotSpec[] = [
   // 30 kb of an EFCAB8 intron: the read depth as bars, halving over the 3.9 kb
   // the callset says one chromosome lacks.
-  readsSpec('read_marks/depth', DELETION, 'na12878_read_depth', 160, [
-    DEPTH_TRACK,
+  readsSpec('read_marks/depth', DELETION, [['na12878_read_depth', 160]]),
+  // The same window with the depth above and each pair's insert size below on
+  // a track of its own: a band of pairs near 4.3 kb sits over the dip, in the
+  // colour of a full mapping quality.
+  readsSpec('read_marks/insert_size', DELETION, [
+    ['na12878_read_depth', 120],
+    ['na12878_read_marks', 200],
   ]),
-  // The same window with each pair's insert size as a point on the left axis
-  // and the depth moved to an axis of its own on the right: a band of pairs
-  // near 4.3 kb sits over the dip, in the colour of a full mapping quality.
-  readsSpec('read_marks/insert_size', DELETION, 'na12878_read_marks', 260),
   // The left breakpoint at base resolution, the reads stacked and coloured
   // by their pair's insert: the spanning pairs' reads in red end at the
   // breakpoint, the rest in blue run through it.
-  readsSpec('read_marks/pileup', LEFT_BREAKPOINT, 'na12878_read_pileup', 300, [
-    PILEUP_TRACK,
-  ]),
+  readsSpec(
+    'read_marks/pileup',
+    LEFT_BREAKPOINT,
+    [['na12878_read_pileup', 300]],
+    [PILEUP_TRACK],
+  ),
   // Chromosome 20 end to end over the derived BED: every pair under 20 kb as a
-  // point, and the count per zoom-following bin of the deletion-sized ones on
-  // a right axis pinned at 60, so the centromere's thousands saturate and the
-  // deletions stand up as red bars.
+  // point, and under it the count per zoom-following bin of the deletion-sized
+  // ones on an axis pinned at 60, so the centromere's thousands saturate and
+  // the deletions stand up as red bars.
   {
     mode: 'url',
     name: 'read_marks/chromosome',
@@ -143,7 +142,12 @@ export const readMarksSpecs: ScreenshotSpec[] = [
             {
               trackId: 'na12878_chr20_pairs',
               type: 'LinearMarkDisplay',
-              height: 260,
+              height: 160,
+            },
+            {
+              trackId: 'na12878_chr20_pair_counts',
+              type: 'LinearMarkDisplay',
+              height: 100,
             },
           ],
         },
@@ -162,7 +166,7 @@ export const readMarksSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'na12878_chr20_pairs',
+          track: 'na12878_chr20_pair_counts',
           locus: 'chr20:34,250,000',
           fracY: 0.3,
         },
