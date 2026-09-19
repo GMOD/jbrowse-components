@@ -1,24 +1,44 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 
 import GroupByDialog from './GroupByDialog.tsx'
 
+import type { GroupByScan } from './attributeGroupingVerdict.ts'
+
 const SPEC = { facet: null }
 
-function setup(field: string | undefined, color?: string, colorField = '') {
+const SCAN: GroupByScan = [
+  {
+    field: 'biotype',
+    values: ['lncRNA', 'protein_coding'],
+    missing: false,
+    overflow: false,
+  },
+  { field: 'name', values: [], missing: false, overflow: true },
+]
+
+function setup(
+  field: string | undefined,
+  color?: string,
+  colorField = '',
+  scan: GroupByScan = [],
+) {
   const applyGroupBy = jest.fn()
   const groupByChannelSpec = jest.fn(() => SPEC)
   const openChannelSpecDialog = jest.fn()
+  const scanGroupByCandidates = jest.fn(async () => scan)
   const handleClose = jest.fn()
   const view = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <GroupByDialog
         model={{
+          id: 'display1',
           facet: field === undefined ? undefined : { field },
           applyGroupBy,
           groupByChannelSpec,
           openChannelSpecDialog,
+          scanGroupByCandidates,
         }}
         handleClose={handleClose}
         color={color}
@@ -33,6 +53,7 @@ function setup(field: string | undefined, color?: string, colorField = '') {
     applyGroupBy,
     groupByChannelSpec,
     openChannelSpecDialog,
+    scanGroupByCandidates,
     handleClose,
     checkbox,
     ticked,
@@ -99,4 +120,41 @@ test('reopening over an attribute facet shows its field', () => {
   expect((getByTestId('group-by-attribute') as HTMLInputElement).value).toBe(
     'gene_biotype',
   )
+})
+
+test('the scan runs only once Attribute is chosen, and the box lists what it found with section counts', async () => {
+  const { getByLabelText, getByTestId, scanGroupByCandidates } = setup(
+    undefined,
+    undefined,
+    '',
+    SCAN,
+  )
+  expect(scanGroupByCandidates).not.toHaveBeenCalled()
+  fireEvent.click(getByLabelText('Attribute'))
+  fireEvent.mouseDown(getByTestId('group-by-attribute'))
+  const biotype = await screen.findByRole('option', { name: /biotype/ })
+  expect(scanGroupByCandidates).toHaveBeenCalledTimes(1)
+  expect(biotype.textContent).toBe('biotype2 sections')
+  expect(screen.getByRole('option', { name: /^name/ }).textContent).toMatch(
+    /\d+\+ sections$/,
+  )
+})
+
+test('the caption says what the typed attribute sections into, before anything is applied', async () => {
+  const { getByLabelText, getByTestId, applyGroupBy } = setup(
+    undefined,
+    undefined,
+    '',
+    SCAN,
+  )
+  fireEvent.click(getByLabelText('Attribute'))
+  fireEvent.change(getByTestId('group-by-attribute'), {
+    target: { value: 'biotype' },
+  })
+  await screen.findByText('Found values: lncRNA, protein_coding')
+  fireEvent.change(getByTestId('group-by-attribute'), {
+    target: { value: 'name' },
+  })
+  await screen.findByText(/distinct values here/)
+  expect(applyGroupBy).not.toHaveBeenCalled()
 })

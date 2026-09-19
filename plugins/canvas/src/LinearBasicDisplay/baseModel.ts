@@ -99,6 +99,7 @@ import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
 import { featureIdsTouchingBlocks } from './layoutQueries.ts'
+import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
   canvasTrackMenuItems,
@@ -133,6 +134,7 @@ import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { RegionInstanceIndex } from './featureHighlightInk.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
+import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -1531,6 +1533,15 @@ export default function baseStateModelFactory(
               ? { color: null }
               : {}),
         }
+      },
+      /**
+       * #method
+       * The attributes the features in view carry and the sections each
+       * would make, for the Group by dialog: the render fetch's download
+       * over the visible blocks, under the same admission and byte budget.
+       */
+      scanGroupByCandidates(opts: GroupByScanOptions) {
+        return scanGroupByCandidates(self, opts)
       },
       /**
        * #getter

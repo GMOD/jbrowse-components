@@ -1,9 +1,11 @@
+import type { GroupByCandidate } from './groupByCandidates.ts'
 import type { IsoformPicks } from './isoformPicks.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type {
   GatedFetchArgs,
   RegionTooLargeResult,
 } from '@jbrowse/core/rpc/byteBudget'
+import type { Region } from '@jbrowse/core/util'
 import type { LegendCandidate } from '@jbrowse/core/util/legendCandidates'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
@@ -53,6 +55,20 @@ export interface RenderFeatureDataArgs extends GatedFetchArgs {
   maxFeatureDensity?: number
 }
 
+export interface GetGroupByCandidatesArgs
+  extends
+    GatedFetchArgs,
+    Pick<
+      RenderFeatureDataArgs,
+      | 'adapterConfig'
+      | 'displayConfig'
+      | 'showOnlyGenes'
+      | 'soloFeatureIds'
+      | 'hiddenFeatureIds'
+    > {
+  regions: Region[]
+}
+
 export interface GetFeatureDetailsArgs {
   adapterConfig: Record<string, unknown>
   featureId: string
@@ -75,6 +91,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     GetCanvasFeatureDetails: {
       args: GetFeatureDetailsArgs
       return: { feature?: SimpleFeatureSerialized }
+    }
+    GetCanvasGroupByCandidates: {
+      args: GetGroupByCandidatesArgs
+      return: GroupByCandidate[] | RegionTooLargeResult
     }
   }
 }

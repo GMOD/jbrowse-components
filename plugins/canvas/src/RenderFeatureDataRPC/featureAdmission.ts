@@ -8,6 +8,11 @@ import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
+export type AdmissionConfig = Pick<
+  DisplayConfig,
+  'jexlFilters' | 'transcriptTypes' | 'containerTypes' | 'hideSourceFeatures'
+>
+
 // The single place that decides which fetched features get laid out and drawn.
 // The `jexlFilters` slot stores expressions without the `jexl:` prefix, so this
 // adds it before compiling, and binds the worker's plugin jexl instance so a
@@ -19,7 +24,7 @@ export function buildFeatureAdmission({
   soloFeatureIds,
   hiddenFeatureIds,
 }: {
-  config: DisplayConfig
+  config: AdmissionConfig
   jexl: JexlInstance
   showOnlyGenes?: boolean
   soloFeatureIds?: string[]
