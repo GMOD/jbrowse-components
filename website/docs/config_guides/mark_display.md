@@ -65,14 +65,14 @@ from an `origin` of 0, and the y-axis autoscales to the values on screen.
 
 Each mark's `encoding` maps feature fields to the channels its shape reads:
 
-| Channel | Read by        | Value                                                                                                                                                                 |
-| ------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                                                                                               |
-| `x2`    | every shape    | the right edge; `end` by default                                                                                                                                      |
-| `y`     | `bar`, `point` | the field plotted on the score axis, or an object naming the field with the scale it is read through (below); a feature whose value is not a finite number is skipped |
-| `row`   | `span`         | an integer field naming the band a span stacks on, from 0; missing is 0                                                                                               |
-| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                       |
-| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                        |
+| Channel | Read by        | Value                                                                                                                                       |
+| ------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                                                                     |
+| `x2`    | every shape    | the right edge; `end` by default                                                                                                            |
+| `y`     | `bar`, `point` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped |
+| `row`   | `span`         | an integer field naming the band a span stacks on, from 0; missing is 0, and left empty it follows this mark's own `stack` step             |
+| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                                                             |
+| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                              |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -87,53 +87,58 @@ field read, so reach for it where no field holds the value you want to plot.
 
 ## The value scale
 
-`y` as a string plots that field on an autoscaled linear axis. As an object it
-says how the axis reads it, in the same shape a colour scale takes:
+A mark's `y` names a field; the scale it is read through belongs to the display,
+which declares it once as `scales.y`:
 
 ```json
-{ "y": { "field": "score", "scale": "log", "domain": [1, 1000] } }
-```
-
-`scale` is `linear` (the default) or `log`, and `domain` pins the `[min, max]`
-the axis spans instead of autoscaling to the loaded regions — an empty entry
-leaves that end autoscaling, so `["0", ""]` pins the floor alone. The axis, its
-ticks, its cross-hatches and the bars themselves all read this one declaration,
-and so does the track menu: "Set min/max" writes back into it, so what the user
-pins and what the config author wrote are the same slot.
-
-Marks share one y-axis by default, so the first mark that names a `y` field is
-the one whose scale the display uses. With a multiscale pair (below) that is the
-mark drawing at the current zoom.
-
-## Two axes
-
-A coverage run in the hundreds and a per-read mapping quality in the tens cannot
-be read off one axis. `resolve` on a mark's `y` says which axis it reads:
-
-```json
-"marks": [
-  { "shape": "bar", "encoding": { "y": "score" } },
+"displays": [
   {
-    "shape": "bar",
-    "transform": [{ "type": "coverage" }],
-    "encoding": {
-      "y": { "field": "coverage", "resolve": "independent" },
-      "color": "blue"
-    }
+    "type": "LinearMarkDisplay",
+    "scales": { "y": { "type": "log", "domainMin": 1, "domainMax": 1000 } },
+    "marks": [{ "shape": "bar", "encoding": { "y": "score" } }]
   }
 ]
 ```
 
-`independent` folds that mark's domain from its own layers, keeps its own
-`scale` and `domain`, and puts its axis on the right of the plot — on screen and
-in an SVG export alike. Both axes then carry the field they measure as a
-caption, so the reader can tell them apart. `shared` is the default and is every
-other mark.
+`type` is `linear` (the default) or `log`, and it is config-only: the shared
+scale-type radio offers `symlog`, which this display does not place. `domainMin`
+and `domainMax` pin the ends the axis spans; an end left unset autoscales to the
+loaded regions, so `{ "domainMin": 0 }` pins the floor alone. The axis, its
+ticks, its cross-hatches and the bars themselves read this one declaration, and
+so does the track menu: **Set min/max score...** writes back into it, so what
+the user pins and what the config author wrote are the same slot.
 
-One mark per display may ask for it: the chrome has one place to put a second
-axis, and a config declaring two is refused when it is read.
+Every mark drawing at the current zoom folds into that one domain, the way a
+grammar of graphics gives one scale per aesthetic. With a multiscale pair
+(below) only one mark draws, so the axis is that mark's values.
 
-<Figure src="/img/mark_display/two_axes.png" caption="Reads as a mark display: each read's mapping quality on the left axis, and the coverage over them as bars on a separate axis on the right."/>
+## Two quantities
+
+A coverage run in the hundreds and a per-read mapping quality in the tens cannot
+be read off one axis, and the display draws only one. Write them as two tracks,
+each with its own display and its own `scales.y`, so each axis carries the field
+it measures and the reader can stack them in whatever order the comparison
+wants.
+
+Where the two quantities answer the same question at different zooms, one track
+still does it: give each mark a zoom range and they never draw together.
+
+```json
+"marks": [
+  {
+    "shape": "bar",
+    "transform": [{ "type": "coverage" }],
+    "encoding": { "y": "coverage", "color": "#c8d8ee" },
+    "minBpPerPx": 20
+  },
+  { "shape": "point", "encoding": { "y": "score" }, "maxBpPerPx": 20 }
+]
+```
+
+The coverage draws zoomed out and the per-read value zoomed in, and the axis at
+each zoom is the drawing mark's. A right-hand second axis was withdrawn in
+v5.0.0: the reader of that picture cannot tell which bars belong to which
+numbers.
 
 ## Colour scales
 
@@ -285,18 +290,20 @@ A mark's `transform` is a list of steps over the region's features, run in the
 worker before the encoding, in order, each reading what the last answered. The
 display's own `transform` takes the same steps and runs before every mark's:
 
-| Step        | What it does                                                                                                                                                                       |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                            |
-| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                   |
-| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges over `start` and `end`                                                             |
-| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field                        |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                   |
-| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`                                  |
-| `stack`     | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row |
+| Step        | What it does                                                                                                                                                                                                            |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                 |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                        |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges over `start` and `end`                                                                                                  |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges a preceding `bin` wrote |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                        |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`; `keepEmpty` holds on to a feature whose array is empty               |
+| `stack`     | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                      |
 
-A `bin` followed by an `aggregate` grouped by `start` and `end` is a density:
-one bar per bin, its height the count of features whose start fell in it.
+A `bin` followed by an `aggregate` is a density: one bar per bin, its height the
+count of features whose start fell in it. The `aggregate` groups by the edges
+the `bin` wrote unless it names `groupby` fields of its own, so the grouping is
+written once.
 
 ```json
 {
@@ -342,9 +349,10 @@ draws the packing:
 ```
 
 Over an `AlignmentsTrack` that is a declared pileup, coloured by any field a
-read answers; `groupby: ["sampleName"]` packs each group on rows of its own. The
-plot divides into as many bands as the highest row needs, so the track grows
-with the depth on screen.
+read answers; the display's `facet` packs each section on rows of its own. A
+mark whose `encoding.row` is empty reads the field its own `stack` wrote, so
+`"encoding": {}` draws the packing. The plot divides into as many bands as the
+highest row needs, so the track grows with the depth on screen.
 
 The display's `jexlFilters` run before every mark's own steps.
 
@@ -452,14 +460,17 @@ numeric one, and opens this dialog where they do not.
 
 <Figure src="/img/mark_display/plot_field.png" caption="The Plot field dialog over an Alu track, reopened on the mark that track declares: the numeric fields the loaded features carry, the shape, the colour field and the count-per-bin box."/>
 
-The score submenu (min/max score), point size, cross hatches, the legend toggle,
-and **Filter by...** for the same `jexlFilters` the basic feature and variant
-displays take. A filter runs in the worker before the encoding, so a filtered
-feature is neither drawn nor counted in the y-axis. Hovering a mark shows its
-location, value and colour class; clicking opens the feature's details. A click
-on a binned or coverage bar opens the bin or the run itself — its span, its
-count or depth and the other aggregates the mark's steps wrote — remade over the
-features under it.
+The score submenu writes `scales.y` and nothing else: **Set min/max score...**
+pins `domainMin` and `domainMax`, **Pin current min/max** writes the domain on
+screen into them, and **Clear manual min/max** clears both back to autoscaling.
+Beside it are **Point size**, **Show cross hatches** (`displayCrossHatches`),
+the legend toggle, and **Filter by...** for the same `jexlFilters` the basic
+feature and variant displays take. A filter runs in the worker before the
+encoding, so a filtered feature is neither drawn nor counted in the y-axis.
+Hovering a mark shows its location, value and colour class; clicking opens the
+feature's details. A click on a binned or coverage bar opens the bin or the run
+itself — its span, its count or depth and the other aggregates the mark's steps
+wrote — remade over the features under it.
 
 The full slot list is the
 [LinearMarkDisplay config reference](/docs/config/linearmarkdisplay); how the
@@ -482,8 +493,8 @@ unless the session names the mark display for it.
   column, counts the rows per zoom-following bin and reads a density sidecar
   past the fetch budget.
 - [](/docs/tutorials/read_marks) plots a BAM's own fields: depth as a coverage
-  step, insert size as a point per pair on a second axis, the reads stacked and
-  coloured by a ramp, and a derived BED scanning a chromosome.
+  step, insert size as a point per pair on a track of its own, the reads stacked
+  and coloured by a ramp, and a derived BED scanning a chromosome.
 
 ## When a plugin is the next step
 
