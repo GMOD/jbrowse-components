@@ -188,7 +188,7 @@ With a dm6 assembly and gene track loaded (see
 ```
 
 Fst and π sit on very different scales, so load them as separate tracks with
-their own y-axes. A [multi-wiggle](/docs/config_guides/multiquantitative_track)
+their own y-axes. A [multi-wiggle](/docs/config_guides/quantitative_track)
 shares one axis across rows, which suits the same statistic across groups, so
 the per-group π bigWigs load as one track:
 
@@ -315,7 +315,6 @@ JBrowse Desktop.
 ## See also
 
 - [](/docs/user_guides/quantitative_track)
-- [](/docs/user_guides/multiquantitative_track)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/gwas_track)
 - [](/docs/config_guides/assemblies)

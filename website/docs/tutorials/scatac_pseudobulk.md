@@ -189,7 +189,7 @@ with no data.
 lists every drawing mode, and the track menu switches between them live.
 `multirowxy` (the default, and the figures here) compares peak shape;
 `multirowdensity` maps score to color and fits more rows.
-[](/docs/user_guides/multiquantitative_track) covers the rest of the menu.
+[](/docs/user_guides/quantitative_track) covers the rest of the menu.
 
 <Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
 
@@ -246,7 +246,7 @@ since an unnormalized group's height tracks its cell count.
 ## See also
 
 - [](/docs/tutorials/scrna_pseudobulk)
-- [](/docs/config_guides/multiquantitative_track)
+- [](/docs/config_guides/quantitative_track)
 - [](/docs/config/multiwiggleadapter)
 - [](/docs/models/linearwiggledisplay)
 - [](/docs/user_guides/clustering)

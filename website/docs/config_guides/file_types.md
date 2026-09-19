@@ -155,9 +155,9 @@ attribute that labels the gene, and `jbrowse sort-gff` sorts a GTF for tabix too
 
 ## Quantitative / signal
 
-Coverage and other numeric signals are a `QuantitativeTrack`
-([quantitative](/docs/config_guides/quantitative_track) and
-[multi-quantitative](/docs/config_guides/multiquantitative_track) track config).
+Coverage and other numeric signals are a `QuantitativeTrack`, or a
+`MultiQuantitativeTrack` for several of them at once
+([track config](/docs/config_guides/quantitative_track)).
 
 <!-- FILE_TYPES quantitative START -->
 

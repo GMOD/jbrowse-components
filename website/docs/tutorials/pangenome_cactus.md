@@ -341,7 +341,7 @@ splits that per strain. Both run as in the pggb tutorial's
 and [per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)
 sections, over `mc/ecoli.full.og`, and load as the same
 [`QuantitativeTrack`](/docs/config_guides/quantitative_track) and
-[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track). Two names
+[`MultiQuantitativeTrack`](/docs/user_guides/quantitative_track). Two names
 change: the reference path is `K12#0#chr`, and each other strain carries a
 trailing subpath tag (`Sakai#0#chr#0`), so the per-strain filter matches a
 prefix. The [build script](#reproduce-it-end-to-end) runs both.

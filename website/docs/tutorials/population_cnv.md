@@ -312,7 +312,7 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb base and f
 
 ## See also
 
-- [](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/quantitative_track)
 - [](/docs/tutorials/tcga_cohort_cnv)
 - [](/docs/tutorials/scrna_pseudobulk)
 - [](/docs/tutorials/sv_multisamples)

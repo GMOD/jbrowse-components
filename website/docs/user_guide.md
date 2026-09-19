@@ -29,7 +29,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/user_guides/gwas_track)
 - [](/docs/user_guides/hic_track)
 - [](/docs/user_guides/maf_track)
-- [](/docs/user_guides/multiquantitative_track)
 - [](/docs/user_guides/multirow_feature_track)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/quantitative_track)

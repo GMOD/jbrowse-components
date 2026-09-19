@@ -239,8 +239,8 @@ chr17   7670683    7676564    19.44      39.64  80.42            32.28
 ```
 
 `BedGraphTabixAdapter` takes every column past `end` as a separate signal, and a
-[`MultiQuantitativeTrack`](/docs/config_guides/multiquantitative_track) draws
-one row per group.
+[`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track) draws one row
+per group.
 
 ```json addtrack
 {

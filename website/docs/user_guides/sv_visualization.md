@@ -398,9 +398,9 @@ enough to load the reads, and a very large SV cannot be spanned in one pileup.
 For large or inter-chromosomal SVs:
 
 - Survey the region with a BigWig coverage track, or a
-  [multi-quantitative track](/docs/user_guides/multiquantitative_track) for
-  tumor vs normal. It loads at any scale and makes copy-number changes visible
-  at chromosome scale.
+  [multi-quantitative track](/docs/user_guides/quantitative_track) for tumor vs
+  normal. It loads at any scale and makes copy-number changes visible at
+  chromosome scale.
 - Load the call set as a variant track for a compact overview, where clicking a
   feature navigates to it.
 - Open the breakpoint split view for the breakpoint loci themselves. Each panel

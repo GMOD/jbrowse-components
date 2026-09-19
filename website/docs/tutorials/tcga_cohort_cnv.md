@@ -211,8 +211,8 @@ python3 cnv_recurrence.py tcga_brca_cnv.bed.gz by_subtype.bedGraph \
 The `--groups` file is the same
 [clinical TSV](/docs/tutorials/tcga_cohort_mutations#what-the-two-files-hold)
 the mutation cohort uses. The eight columns arrive as eight signals, and a
-[`MultiQuantitativeTrack`](/docs/config_guides/multiquantitative_track) draws
-one row each:
+[`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track) draws one row
+each:
 
 ```json addtrack
 {

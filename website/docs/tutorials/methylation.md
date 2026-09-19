@@ -100,7 +100,7 @@ haplotype, and this dataset uses it.
 
 Because bedMethyl is a BED file with a numeric score column, it loads through a
 `BedTabixAdapter` in a `MultiQuantitativeTrack` (see the
-[multi-quantitative track config guide](/docs/config_guides/multiquantitative_track)).
+[multi-quantitative track config guide](/docs/config_guides/quantitative_track)).
 JBrowse reads the modification type from the `name` column and gives each type
 its own subtrack:
 
@@ -169,5 +169,5 @@ differentially-methylated regions line up with the positions driving them.
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/rnaseq)
-- [](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/quantitative_track)
 - [modkit documentation](https://nanoporetech.github.io/modkit/)

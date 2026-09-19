@@ -276,5 +276,5 @@ so allow time and disk.
 ## See also
 
 - [](/docs/tutorials/methylation)
-- [](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/alignments_track)

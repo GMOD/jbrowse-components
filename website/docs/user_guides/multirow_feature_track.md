@@ -221,9 +221,8 @@ Each of these builds the input file and the track config end to end:
 
 ## See also
 
-- [](/docs/user_guides/quantitative_track)
-- [](/docs/user_guides/multiquantitative_track) - the same one-row-per-sample
-  idea for signal data
+- [](/docs/user_guides/quantitative_track) - the same one-row-per-sample idea
+  for signal data
 - [](/docs/user_guides/multivariant_track)
 - [LinearMultiRowFeatureDisplay config schema](/docs/config/linearmultirowfeaturedisplay)
 - [](/docs/config_guides/customizing_feature_colors)

@@ -11,11 +11,11 @@ similarity, drawing a dendrogram beside them. The **Clustering** submenu in the
 track menu is the same on all of them; only the item that runs it differs,
 naming what is being clustered.
 
-| Track type                                                      | Runs it with                  | Clusters on                    |
-| --------------------------------------------------------------- | ----------------------------- | ------------------------------ |
-| [Multi-sample variant](/docs/user_guides/multivariant_track)    | Cluster rows by genotype...   | per-sample genotypes           |
-| [Multi-quantitative](/docs/user_guides/multiquantitative_track) | Cluster rows by score...      | each subtrack's signal profile |
-| [Multi-row feature](/docs/user_guides/multirow_feature_track)   | Cluster rows by similarity... | a feature attribute per bin    |
+| Track type                                                    | Runs it with                  | Clusters on                    |
+| ------------------------------------------------------------- | ----------------------------- | ------------------------------ |
+| [Multi-sample variant](/docs/user_guides/multivariant_track)  | Cluster rows by genotype...   | per-sample genotypes           |
+| [Multi-quantitative](/docs/user_guides/quantitative_track)    | Cluster rows by score...      | each subtrack's signal profile |
+| [Multi-row feature](/docs/user_guides/multirow_feature_track) | Cluster rows by similarity... | a feature attribute per bin    |
 
 <Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="Cluster rows by genotype on a multi-sample variant track: the rows start in callset order, and clustering reorders them and draws the dendrogram beside them." />
 
@@ -102,6 +102,6 @@ The per-display field references are
 ## See also
 
 - [](/docs/user_guides/multivariant_track)
-- [](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/multirow_feature_track)
 - [](/docs/user_guides/maf_track)

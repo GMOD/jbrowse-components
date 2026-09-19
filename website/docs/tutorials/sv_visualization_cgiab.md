@@ -857,8 +857,8 @@ event removes the one copy the arm-level loss had left
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
 
 Load the tumor and matched normal per-base coverage as one
-[multi-quantitative track](/docs/user_guides/multiquantitative_track), one row
-per sample, and set an explicit score range from the track menu so both rows are
+[multi-quantitative track](/docs/user_guides/quantitative_track), one row per
+sample, and set an explicit score range from the track menu so both rows are
 drawn on the same scale. HiFiCNV's depth is binned where these two are per base,
 and the PacBio HiFi read pileup below them is where the exact breakpoints are:
 the thin lines crossing the gap in that pileup are single reads carrying the
@@ -1049,7 +1049,7 @@ take hours.
 - [](/docs/tutorials/cancer_sv)
 - [](/docs/user_guides/sv_visualization)
 - [](/docs/user_guides/sv_inspector_view)
-- [](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/quantitative_track)
 
 ## References
 

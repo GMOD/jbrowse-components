@@ -293,7 +293,7 @@ unassigned.
 
 - [](/docs/tutorials/scatac_pseudobulk)
 - [](/docs/tutorials/rnaseq)
-- [](/docs/config_guides/multiquantitative_track)
+- [](/docs/config_guides/quantitative_track)
 - [](/docs/config/multiwiggleadapter)
 - [](/docs/user_guides/clustering)
 
