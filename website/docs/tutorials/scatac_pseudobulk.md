@@ -185,7 +185,7 @@ per cell type. Percent-encode the `+` in a cell-type name
 (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and the row loads
 with no data.
 
-[`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
+[`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 lists every drawing mode, and the track menu switches between them live.
 `multirowxy` (the default, and the figures here) compares peak shape;
 `multirowdensity` maps score to color and fits more rows.
@@ -248,7 +248,7 @@ since an unnormalized group's height tracks its cell count.
 - [](/docs/tutorials/scrna_pseudobulk)
 - [](/docs/config_guides/multiquantitative_track)
 - [](/docs/config/multiwiggleadapter)
-- [](/docs/models/multilinearwiggledisplay)
+- [](/docs/models/linearwiggledisplay)
 - [](/docs/user_guides/clustering)
 - [](/docs/tutorials/chromhmm)
 

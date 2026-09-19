@@ -78,13 +78,13 @@ by a single column.
 appears in the same right-click menu and in the track menu, and it undoes a
 sort, a clustering run, and a hand-arranged order alike. Where a track should
 open on a particular order, the
-[`domain`](/docs/config/multilinearwiggledisplay/#slot-domain) slot lists the
-subtracks that lead — the rest keep the adapter's order, and the reset returns
-to that order rather than past it.
+[`facet`](/docs/config/linearwiggledisplay/#slot-facet) slot's `domain` lists
+the subtracks that lead — the rest keep the adapter's order, and the reset
+returns to that order rather than past it.
 
 A session can persist the sort with `sortRowsBy`, the way `runClustering`
-persists a clustering run — see [](/docs/models/multilinearwiggledisplay) for
-both fields.
+persists a clustering run — see [](/docs/models/linearwiggledisplay) for both
+fields.
 
 ## See also
 

@@ -82,13 +82,12 @@ The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
 plain list of absolute URLs and names each subtrack from its filename. Four
 display settings turn that into a copy-number heatmap:
 
-- [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
+- [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
   `multirowdensity` gives each sample one strip of color.
-- [`bicolorPivot`](/docs/config/multilinearwiggledisplay/#slot-bicolorpivot) `2`
-  puts white at the diploid baseline, so
-  [`posColor`](/docs/config/multilinearwiggledisplay/#slot-poscolor) paints
-  gains and [`negColor`](/docs/config/multilinearwiggledisplay/#slot-negcolor)
-  losses.
+- [`bicolorPivot`](/docs/config/linearwiggledisplay/#slot-bicolorpivot) `2` puts
+  white at the diploid baseline, so
+  [`posColor`](/docs/config/linearwiggledisplay/#slot-poscolor) paints gains and
+  [`negColor`](/docs/config/linearwiggledisplay/#slot-negcolor) losses.
 - [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
   [`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) pin the
   scale, so two copies are the same color in every window. Keep the bounds
@@ -254,7 +253,7 @@ leaves a view fetching 10x the bins it can draw.
 
 Every level above the finest stores the minimum and maximum of the bins it
 averages alongside the mean.
-[`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
+[`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)
 picks which a view draws, so an amplification narrower than a bin is visible
 under `max` and averaged away under `avg`.
 

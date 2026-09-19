@@ -97,7 +97,7 @@ display's `displaySnapshot`, described under
 
 The per-display field references are
 [](/docs/models/multisamplevariantbasemodel) and
-[](/docs/config/multilinearwiggledisplay).
+[](/docs/config/linearwiggledisplay).
 
 ## See also
 
