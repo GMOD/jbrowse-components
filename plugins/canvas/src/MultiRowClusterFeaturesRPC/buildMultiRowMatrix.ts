@@ -13,7 +13,7 @@ interface Bin {
   mid: number
 }
 
-type Encoding = 'presence' | 'scalar' | 'categorical'
+export type MatrixEncoding = 'presence' | 'scalar' | 'categorical'
 
 // Past this many distinct values a field is an identifier, not a category:
 // one-hot over it is a row of channels no two rows share, so the distance
@@ -21,7 +21,10 @@ type Encoding = 'presence' | 'scalar' | 'categorical'
 // directly. `name` under the auto pick is the field that gets here.
 export const MAX_CATEGORICAL_VALUES = 64
 
-function chooseEncoding(clusterField: string, values: Set<string>): Encoding {
+function chooseEncoding(
+  clusterField: string,
+  values: Set<string>,
+): MatrixEncoding {
   if (clusterField === '') {
     return 'presence'
   }
@@ -46,7 +49,8 @@ function chooseEncoding(clusterField: string, values: Set<string>): Encoding {
  * One row per source, one to several channels per bin, keyed in `sources`
  * order. Presence marks the bins a row covers, a numeric attribute becomes the
  * mean over each bin, and anything else is one-hot over its distinct values so
- * Euclidean distance counts mismatched bins.
+ * Euclidean distance counts mismatched bins. `encoding` says which of the three
+ * the data got, since a wide vocabulary degrades to presence.
  */
 export function buildMultiRowMatrix({
   sources,
@@ -62,7 +66,7 @@ export function buildMultiRowMatrix({
   clusterField: string
   maxBins?: number
   maxCells?: number
-}): Map<string, Float32Array<ArrayBuffer>> {
+}): { rows: Map<string, Float32Array<ArrayBuffer>>; encoding: MatrixEncoding } {
   const distinctValues = new Set<string>()
   for (const f of features) {
     distinctValues.add(f.value)
@@ -128,7 +132,7 @@ export function buildMultiRowMatrix({
     arr.push(f)
   }
 
-  const matrix = new Map<string, Float32Array<ArrayBuffer>>()
+  const rows = new Map<string, Float32Array<ArrayBuffer>>()
   // Refilled per row, and assigned in feature order so a later feature
   // overwrites the bins it shares with an earlier one: last covering wins.
   const coveringPerBin = new Array<MatrixFeature | undefined>(bins.length)
@@ -176,7 +180,7 @@ export function buildMultiRowMatrix({
         ] = 1
       }
     }
-    matrix.set(name, row)
+    rows.set(name, row)
   }
-  return matrix
+  return { rows, encoding }
 }

@@ -3,6 +3,7 @@ import {
   clusterProvenanceFromRegions,
 } from '@jbrowse/tree-sidebar'
 
+import type { MatrixEncoding } from '../MultiRowClusterFeaturesRPC/buildMultiRowMatrix.ts'
 import type { MultiRowSource } from './rowSources.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -71,6 +72,15 @@ export async function runMultiRowClustering({
     effectivePartitionField,
     effectiveClusterField,
   } = model
+  const result = await rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
+    regions,
+    sources: clusterableSources.map(s => s.name),
+    adapterConfig,
+    partitionField: effectivePartitionField,
+    clusterField: effectiveClusterField,
+    signal,
+    statusCallback,
+  })
   await applyClusterRun({
     model,
     rows: clusterableSources,
@@ -78,17 +88,19 @@ export async function runMultiRowClustering({
     // to say which pair produced a given tree.
     provenance: clusterProvenanceFromRegions(regions, [
       { name: 'rows', value: effectivePartitionField },
-      { name: 'field', value: effectiveClusterField || 'presence' },
+      {
+        name: 'field',
+        value: clusterFieldLabel(effectiveClusterField, result.encoding),
+      },
     ]),
-    matrix: () =>
-      rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
-        regions,
-        sources: clusterableSources.map(s => s.name),
-        adapterConfig,
-        partitionField: effectivePartitionField,
-        clusterField: effectiveClusterField,
-        signal,
-        statusCallback,
-      }),
+    matrix: async () => result,
   })
+}
+
+function clusterFieldLabel(clusterField: string, encoding: MatrixEncoding) {
+  return clusterField === ''
+    ? 'presence'
+    : encoding === 'presence'
+      ? `${clusterField} (too many values; clustered on presence)`
+      : clusterField
 }

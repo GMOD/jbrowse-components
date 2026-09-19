@@ -8,7 +8,7 @@ import type { MatrixFeature } from './buildMultiRowMatrix.ts'
 // Reads the matrix positionally, which asserts its `sources` key order as a
 // side effect.
 function buildRows(args: Parameters<typeof buildMultiRowMatrix>[0]) {
-  return [...buildMultiRowMatrix(args).values()].map(row => [...row])
+  return [...buildMultiRowMatrix(args).rows.values()].map(row => [...row])
 }
 
 const dist = (a: number[], b: number[]) =>

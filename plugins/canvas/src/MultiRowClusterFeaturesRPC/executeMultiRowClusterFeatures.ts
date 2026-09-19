@@ -12,9 +12,16 @@ export async function executeMultiRowClusterFeatures({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'MultiRowClusterFeatures'>
 }) {
-  return clusterMatrix({
-    data: await collectMultiRowMatrix({ pluginManager, args }),
-    statusCallback: args.statusCallback,
-    signal: args.signal,
+  const { rows, encoding } = await collectMultiRowMatrix({
+    pluginManager,
+    args,
   })
+  return {
+    ...(await clusterMatrix({
+      data: rows,
+      statusCallback: args.statusCallback,
+      signal: args.signal,
+    })),
+    encoding,
+  }
 }

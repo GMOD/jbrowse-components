@@ -19,10 +19,10 @@ export default class MultiRowGetFeatureMatrix extends RpcMethodTypeWithRenameReg
 
   async execute(args: RpcExecuteArgs<'MultiRowGetFeatureMatrix'>) {
     const { collectMultiRowMatrix } = await import('./collectMultiRowMatrix.ts')
-    const matrix = await collectMultiRowMatrix({
+    const { rows } = await collectMultiRowMatrix({
       pluginManager: this.pluginManager,
       args,
     })
-    return rpcResultWithArrayBuffers(matrix)
+    return rpcResultWithArrayBuffers(rows)
   }
 }
