@@ -1,6 +1,6 @@
 {
   "id": "session-spec-corpus",
-  "measured": "2026-09-17",
+  "measured": "2026-09-19",
   "published": false,
   "source": {
     "kind": "bench",
@@ -23,61 +23,61 @@
     {
       "values": {
         "metric": "session specs",
-        "value": 380
+        "value": 362
       }
     },
     {
       "values": {
         "metric": "views, nested ones included",
-        "value": 605
+        "value": 576
       }
     },
     {
       "values": {
         "metric": "session tracks carried inline",
-        "value": 185
+        "value": 176
       }
     },
     {
       "values": {
         "metric": "track entries: bare id",
-        "value": 103
+        "value": 105
       }
     },
     {
       "values": {
         "metric": "track entries: tuple",
-        "value": 92
+        "value": 89
       }
     },
     {
       "values": {
         "metric": "track entries: object",
-        "value": 600
+        "value": 572
       }
     },
     {
       "values": {
         "metric": "explicit display types named",
-        "value": 19
+        "value": 18
       }
     },
     {
       "values": {
         "metric": "distinct keys on object entries",
-        "value": 95
+        "value": 89
       }
     },
     {
       "values": {
         "metric": "keys on two or more display types",
-        "value": 29
+        "value": 27
       }
     },
     {
       "values": {
         "metric": "keys used exactly once",
-        "value": 23
+        "value": 19
       }
     },
     {

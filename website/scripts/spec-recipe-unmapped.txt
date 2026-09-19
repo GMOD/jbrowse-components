@@ -5,7 +5,6 @@
 #
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
-autoscale
 color
 colorDomain
 colorScheme
@@ -33,6 +32,7 @@ repeatKey
 repeatTrackId
 rowGroups
 sampleColorMap
+scales
 showAlignment
 showBranchLength
 showBubbles

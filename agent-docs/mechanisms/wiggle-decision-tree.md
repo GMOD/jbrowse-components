@@ -33,9 +33,10 @@ plugins draw a wiggle-shaped axis against it.
   its low end pinned to 0 for all-positive data, `localpercentile` clips each
   sign to its own percentile from 0 outward.
 - The domain is then widened to reach any score a rule is drawn at, and clamped
-  by the config bounds. **A set bound wins; an unset one autoscales that end.**
-- `scaleType` builds the axis, and symlog's constant is resolved from the domain
-  by both the axis and the renderer.
+  by `scales.y`'s `domainMin` and `domainMax`. **A set bound wins; an unset one
+  autoscales that end.**
+- The scale type (`scales.y.type`) builds the axis, and symlog's constant is
+  resolved from the domain by both the axis and the renderer.
 
 A display whose scores are bounded by construction overrides the default
 domain — GC content is a fraction, so 0 and 1 are its limits at every locus.
