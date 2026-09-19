@@ -566,6 +566,82 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
   expect(layers[1]).not.toHaveProperty('transform')
 })
 
+// Each of these is a restatement a config author had to write out, and each
+// has one answer the step or the channel beside it already knows.
+test('a bin hands its edges to the aggregate behind it, and a stack its rows to the encoding', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'bar',
+      transform: [
+        { type: 'bin', step: 5000 },
+        { type: 'aggregate', ops: [{ op: 'count' }] },
+      ],
+      encoding: { y: 'count' },
+    },
+    {
+      shape: 'bar',
+      transform: [
+        { type: 'bin', step: 5000, as: ['lo', 'hi'] },
+        { type: 'aggregate', ops: [{ op: 'count' }] },
+      ],
+      encoding: { y: 'count' },
+    },
+    {
+      shape: 'bar',
+      transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
+      encoding: { y: 'count' },
+    },
+    { shape: 'span', transform: [{ type: 'stack' }], encoding: {} },
+    {
+      shape: 'span',
+      transform: [{ type: 'stack', as: 'lane' }],
+      encoding: {},
+    },
+    { shape: 'span', encoding: {} },
+  ])
+  const { display } = createDisplay()
+  const { layers } = display.rpcProps()
+  const groupbyOf = (i: number) =>
+    (layers[i]!.transform![1] as { groupby: string[] }).groupby
+  expect(groupbyOf(0)).toEqual(['start', 'end'])
+  expect(groupbyOf(1)).toEqual(['lo', 'hi'])
+  // with no bin in front, an empty groupby still folds the whole region
+  expect((layers[2]!.transform![0] as { groupby: string[] }).groupby).toEqual(
+    [],
+  )
+  expect(layers[3]!.encoding.row).toBe('row')
+  expect(layers[4]!.encoding.row).toBe('lane')
+  expect(layers[5]!.encoding.row).toBeUndefined()
+})
+
+test('a flatten keeping its empty features says so on the wire', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'span',
+      transform: [
+        { type: 'flatten', keepEmpty: true },
+        { type: 'flatten', field: 'exons' },
+      ],
+      encoding: {},
+    },
+  ])
+  const { display } = createDisplay()
+  expect(display.rpcProps().layers[0]!.transform).toEqual([
+    {
+      type: 'flatten',
+      field: undefined,
+      index: undefined,
+      keepEmpty: true,
+    },
+    {
+      type: 'flatten',
+      field: 'exons',
+      index: undefined,
+      keepEmpty: undefined,
+    },
+  ])
+})
+
 test('a mark outside its zoom range leaves the shared domain and the legend', () => {
   const { createDisplay } = createTestEnvironment([
     { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 4 },
