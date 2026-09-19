@@ -389,6 +389,12 @@ function colorStep(
   if (scale && displayType === 'LinearManhattanDisplay') {
     return manhattanColorStep(scale)
   }
+  if (displayType === 'LinearWiggleDisplay') {
+    return {
+      path: `${TRACK_MENU} → Edit color... → the JSON box`,
+      note: 'The quantitative display writes its whole colour object there — a constant, a threshold cut, a ramp, or one colour per source.',
+    }
+  }
   if (scale) {
     const field = scale.scale === 'none' ? undefined : asString(scale.field)
     if (!field || !hasChannelMenus(displayType)) {
@@ -537,37 +543,6 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
 const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
-
-// The two wiggle displays each open their own color editor from their own menu
-// item, and the two dialogs are not the same component: the single-wiggle one
-// leads with a Single color / Positive-negative toggle and carries the Pivot
-// field, while the multi-wiggle one puts the two swatches under a 'Score sign
-// colors' heading and has no pivot control at all.
-const WIGGLE_COLOR_EDITORS: Record<string, string> = {
-  LinearWiggleDisplay: 'Edit colors/arrangement...',
-}
-
-// Where the positive/negative swatches sit inside that dialog.
-function scoreSignPath(_displayType: string, side: 'Positive' | 'Negative') {
-  return `${TRACK_MENU} → Edit colors/arrangement... → Score sign colors → ${side}`
-}
-
-function scoreSignColorStep(
-  side: 'Positive' | 'Negative',
-): FieldRecipe {
-  return (value, { displayType }) => {
-    const color = asString(value)
-    return color && displayType && displayType in WIGGLE_COLOR_EDITORS
-      ? {
-          path: `${scoreSignPath(displayType, side)} → ${color}`,
-          note:
-            displayType === 'MultiLinearWiggleDisplay'
-              ? 'The two swatches are offered only in a multi-row plot type — an overlay paints each source\'s negative features in its own color, so there are no two sides to color.'
-              : undefined,
-        }
-      : undefined
-  }
-}
 
 // The MAF display stores what its rows are colored by across three slots that
 // each predate the others (showTranslation, colorByChromosome, rowIdentityMode)
@@ -1261,24 +1236,11 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: `The same dialog renames a row and recolors it, so a figure's ${value.length} rows carry their order, any labels it shows, and any color it picked.`,
         }
   },
-  posColor: scoreSignColorStep('Positive'),
-  negColor: scoreSignColorStep('Negative'),
-  // The colour editor writes the two swatches and the per-source table, and
-  // nothing else, so both of these are the config-editor case the `color`
-  // recipe above describes: a value the menu provably cannot express, not one
-  // nobody has written a path for.
-  useBicolor: (value, { displayType }) =>
-    typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
-      ? {
-          path: `${TRACK_MENU} → Settings → useBicolor`,
-          note: 'Whether the two score-sign swatches both apply. The colour editor offers the swatches themselves and no switch between them, so this is set on the config.',
-        }
-      : undefined,
-  bicolorPivot: (value, { displayType }) =>
+  origin: (value, { displayType }) =>
     typeof value === 'number' && displayType === 'LinearWiggleDisplay'
       ? {
-          path: `${TRACK_MENU} → Settings → bicolorPivot`,
-          note: 'The score both sides are measured from. Its editor has no field for it, so it is set on the config.',
+          path: `${TRACK_MENU} → Settings → origin`,
+          note: 'The value the bars grow from, which a threshold colour with no domain of its own also cuts at. No menu row writes it.',
         }
       : undefined,
   scatterPointSize: (value, { displayType }) => {

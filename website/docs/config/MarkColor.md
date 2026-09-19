@@ -30,6 +30,22 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 ```js
 {
+  shape: 'bar',
+  encoding: {
+    y: 'score',
+    color: {
+      field: 'score',
+      scale: 'linear',
+      domain: [-2, 6],
+      ramp: ['blue', 'white', 'red'],
+      domainMid: 0,
+    },
+  },
+}
+```
+
+```js
+{
   shape: 'point',
   encoding: {
     y: 'score',
@@ -47,7 +63,8 @@ _See the **Config slots** section below for all available configuration fields._
 
 A mark's `encoding.color`: one CSS colour or `jexl:` callback for every
 instance, or a field through a categorical scale (a palette colour per
-value), a `linear` or `log` scale (a ramp over `domain`) or a `threshold`
+value), a `linear` or `log` scale (a ramp over `domain`, `domainMid`
+placing its middle stop where a diverging ramp turns) or a `threshold`
 scale (a palette colour per interval between the cut points `domain`
 lists). A string is the constant; the object binds the field, and a scale
 is what the legend describes.
@@ -65,3 +82,4 @@ These slots go on a display entry: `"displays": [{ "type": "MarkColor", ... }]`,
 | <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes; for a threshold scale, the cut points in ascending order, a value taking the palette entry for the number of them it is at or past, so palette has one entry more than this |
 | <span id="slot-palette">**palette**</span><br>`stringArray` = <code>[]</code> | CSS colors the domain takes, in order, continuing into the default palette past its end |
 | <span id="slot-ramp">**ramp**</span><br>`stringArray` = <code>[]</code> | viridis, or two or more CSS colour stops; empty is viridis |
+| <span id="slot-domainmid">**domainMid**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it |

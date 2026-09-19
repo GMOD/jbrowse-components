@@ -90,6 +90,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-colorbymode">**colorByMode**</span><br><code>"attribute" &#124; "default" &#124; "solid" &#124; "strand"</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-colorbyattribute">**colorByAttribute**</span><br><code>string</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-colorencoding">**colorEncoding**</span><br><code>CategoricalField &#124; undefined</code> | The color channel's field, or undefined while `color.value` paints. | LinearCanvasBaseDisplay |
+| <span id="getter-colorscalechoices">**colorScaleChoices**</span><br><code>string[]</code> | The scales this display's colour paints, for the Edit as JSON box. | LinearCanvasBaseDisplay |
 | <span id="getter-colorsettings">**colorSettings**</span><br><code>ColorSetting</code> | The `color` object as written, its `value` raw. | LinearCanvasBaseDisplay |
 | <span id="getter-geneglyphnotice">**geneGlyphNotice**</span><br><code>GeneGlyphNotice &#124; undefined</code> | Overridable hook (default absent): the isoform-collapse control the shared canvas body draws in its bottom-right chip stack, or nothing when the display has no gene glyphs. | LinearCanvasBaseDisplay |
 | <span id="getter-layoutready">**layoutReady**</span><br><code>boolean</code> | Whether features can be laid out: data is fetched, in-bounds, and the view is measured. | LinearCanvasBaseDisplay |

@@ -4539,12 +4539,38 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "useBicolor",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "color",
-          "type": "(JexlString | CssColor)"
+          "type": "WiggleColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (CssColor | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | (WiggleColorScale | undefined))"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "palette",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "ramp",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "domainMid",
+              "type": "(JexlString | (number | undefined))"
+            }
+          ]
         },
         {
           "name": "scoreField",
@@ -4559,20 +4585,8 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "posColor",
-          "type": "(JexlString | CssColor)"
-        },
-        {
-          "name": "negColor",
-          "type": "(JexlString | CssColor)"
-        },
-        {
-          "name": "bicolorPivot",
+          "name": "origin",
           "type": "(JexlString | number)"
-        },
-        {
-          "name": "densityColorRamp",
-          "type": "(JexlString | Density color ramp)"
         },
         {
           "name": "scatterPointSize",
@@ -4709,12 +4723,38 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "useBicolor",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "color",
-          "type": "(JexlString | CssColor)"
+          "type": "WiggleColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (CssColor | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | (WiggleColorScale | undefined))"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "palette",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "ramp",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "domainMid",
+              "type": "(JexlString | (number | undefined))"
+            }
+          ]
         },
         {
           "name": "scoreField",
@@ -4729,20 +4769,8 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "posColor",
-          "type": "(JexlString | CssColor)"
-        },
-        {
-          "name": "negColor",
-          "type": "(JexlString | CssColor)"
-        },
-        {
-          "name": "bicolorPivot",
+          "name": "origin",
           "type": "(JexlString | number)"
-        },
-        {
-          "name": "densityColorRamp",
-          "type": "(JexlString | Density color ramp)"
         },
         {
           "name": "scatterPointSize",
@@ -4891,12 +4919,38 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "useBicolor",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "color",
-          "type": "(JexlString | CssColor)"
+          "type": "WiggleColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (CssColor | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | (WiggleColorScale | undefined))"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "palette",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "ramp",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "domainMid",
+              "type": "(JexlString | (number | undefined))"
+            }
+          ]
         },
         {
           "name": "scoreField",
@@ -4911,20 +4965,8 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "posColor",
-          "type": "(JexlString | CssColor)"
-        },
-        {
-          "name": "negColor",
-          "type": "(JexlString | CssColor)"
-        },
-        {
-          "name": "bicolorPivot",
+          "name": "origin",
           "type": "(JexlString | number)"
-        },
-        {
-          "name": "densityColorRamp",
-          "type": "(JexlString | Density color ramp)"
         },
         {
           "name": "scatterPointSize",
@@ -5512,6 +5554,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "ramp",
                       "type": "(JexlString | string[])"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(JexlString | (number | undefined))"
                     }
                   ]
                 },

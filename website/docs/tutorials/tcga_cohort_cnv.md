@@ -157,8 +157,8 @@ chr16   89200000   89300000   3.26   -46.38
 ```
 
 `BedGraphTabixAdapter` reads every column past `end` as its own signal. Loss is
-written negative so a wiggle's `bicolorPivot` at 0 draws gains up in `posColor`
-and losses down in `negColor`.
+written negative so a wiggle cutting its colour at the default `origin` of 0
+draws gains up in one colour and losses down in the other.
 
 ```json addtrack
 {
@@ -173,8 +173,11 @@ and losses down in `negColor`.
   },
   "displayDefaults": {
     "height": 120,
-    "posColor": "#b2182b",
-    "negColor": "#2166ac",
+    "color": {
+      "field": "score",
+      "scale": "threshold",
+      "palette": ["#2166ac", "#b2182b"]
+    },
     "scales": { "y": { "domainMin": -100, "domainMax": 100 } }
   }
 }
@@ -182,9 +185,9 @@ and losses down in `negColor`.
 
 `scales.y`'s `domainMin` and `domainMax`
 ([display options](/docs/config_guides/quantitative_track#display-options)) pin
-the axis, so a bar means the same fraction wherever you navigate.
-`posColor`/`negColor` reuse the stack's colors. Placed above the stack, each
-peak sits over a stripe:
+the axis, so a bar means the same fraction wherever you navigate. The colour
+reuses the stack's palette. Placed above the stack, each peak sits over a
+stripe:
 
 <Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
 
@@ -224,8 +227,11 @@ one row each:
   },
   "displayDefaults": {
     "height": 620,
-    "posColor": "#b2182b",
-    "negColor": "#2166ac",
+    "color": {
+      "field": "score",
+      "scale": "threshold",
+      "palette": ["#2166ac", "#b2182b"]
+    },
     "scales": { "y": { "domainMin": -70, "domainMax": 70 } },
     "showRowSeparators": true
   }

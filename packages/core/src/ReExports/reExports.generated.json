@@ -3649,6 +3649,7 @@
       "names": [
         "CHANNELS",
         "channelSpecChanges",
+        "colorSpecProblems",
         "parseChannelSpec"
       ],
       "worker": "real"
@@ -3717,6 +3718,7 @@
         "colorConfigSchema",
         "colorPaletteSlot",
         "colorRampSlot",
+        "colorScaleChoicesOf",
         "normalizeChannel",
         "paintedScale"
       ],

@@ -70,10 +70,13 @@ color settings are declared once:
   },
   "displayDefaults": {
     "defaultRendering": "density",
-    "bicolorPivot": 2,
+    "origin": 2,
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
-    "posColor": "#b2182b",
-    "negColor": "#2166ac"
+    "color": {
+      "field": "score",
+      "scale": "threshold",
+      "palette": ["#2166ac", "#b2182b"]
+    }
   }
 }
 ```
@@ -84,10 +87,9 @@ display settings turn that into a copy-number heatmap:
 
 - [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
   `multirowdensity` gives each sample one strip of color.
-- [`bicolorPivot`](/docs/config/linearwiggledisplay/#slot-bicolorpivot) `2` puts
-  white at the diploid baseline, so
-  [`posColor`](/docs/config/linearwiggledisplay/#slot-poscolor) paints gains and
-  [`negColor`](/docs/config/linearwiggledisplay/#slot-negcolor) losses.
+- [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
+  the diploid baseline, and [`color`](/docs/config/wigglecolor/) cuts there,
+  painting gains in the palette's second entry and losses in its first.
 - [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
   [`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) pin the
   scale, so two copies are the same color in every window. Keep the bounds
@@ -190,10 +192,13 @@ hosted (see [configuring plugins](/docs/config_guides/plugins)):
       },
       "displayDefaults": {
         "defaultRendering": "density",
-        "bicolorPivot": 2,
+        "origin": 2,
         "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
-        "posColor": "#b2182b",
-        "negColor": "#2166ac"
+        "color": {
+          "field": "score",
+          "scale": "threshold",
+          "palette": ["#2166ac", "#b2182b"]
+        }
       }
     }
   ]

@@ -78,11 +78,14 @@ box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
 `ScorePlotSvgFrame` take it as a prop defaulting to the single-plot box, which
 is what the Manhattan and mark displays (no such getter) draw in.
 
-**A lone plot in the box is never the shared-plot colour mode.** `rowColorMode`
-asks whether several sources share one plot, not whether the facet is off:
-overlaid sources take a palette entry each and paint both sides of the pivot in
-it, while one source is the pos/neg bicolor plot a quantitative track has always
-drawn. `sourcesLogic.ts` has the table.
+**The layout's colour default lives in `effectiveColor`, not in a slot
+default.** A slot default cannot move with the layout, and this one does:
+several sources sharing one plot box default to `{ field: 'source' }`, because
+overlaid plots need a colour each to be told apart, while a row per source and a
+lone plot in the box default to the threshold pair a quantitative track has
+always drawn. `resolveWiggleColor` then hands the encoder
+`{ posColor, negColor, pivot, rampLut, perSource }`, which is the whole of what
+the layers and both backends read. ADR-144.
 
 **Everything shared over the geometry is `wiggleDisplayViews`**: `ticks`,
 `scoreColorScale`, `renderState` and the shared halves of the two props methods,
@@ -192,11 +195,10 @@ autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
 carries the raw slot** — the effective one moves with the rendering type, so
 switching to density would re-download every region.
 
-**No colour setting is a fetch key.** `origin`, `useBicolor`, `posColor` and
-`negColor` are `gpuProps` alone: the worker ships one set of score arrays and
-the main thread colours each instance by its side of the pivot, so moving the
-pivot re-encodes and refetches nothing. ADR-016, which put the split in the
-worker, is superseded;
+**No colour setting is a fetch key.** `color` and `origin` are `gpuProps` alone:
+the worker ships one set of score arrays and the main thread colours each
+instance by its side of the cut, so moving the cut re-encodes and refetches
+nothing. ADR-016, which put the split in the worker, is superseded;
 `ideas/wiggle-instance-records-carry-per-row-constants.md` §4 has what the split
 cost.
 
@@ -220,15 +222,19 @@ than pixel, so capsules overlapping at a joint agree under max blend unless the
 joint lies within half a line width of the pivot; per-bin colours blended every
 colour-changing joint to magenta. Whiskers adds a `band` layer under the line.
 
-## The colour key takes the mode, not `isDensityMode`
+## The colour key follows the scale
 
-`sourcesLogic.ts` owns the three-mode colour table and `buildLegendItems` takes
-its `RowColorMode`, because **the fallback belongs to the mode as much as the
-channel does**. Outside density an unset `color` really is painted in
-`posColor`, so the key resolves to it; in density `posColor` is the score ramp
-and identity comes from `SvgRowLabels`, which paints a row with no `labelColor`
-as no swatch — so an uncoloured density row gets no key entry either. Reachable
-whenever a density track mixes grouped subtracks with ungrouped ones.
+The ramp for `linear`/`log`, a row per source for `categorical`, a row per
+interval for a `threshold` whose cut the config declared, and none for a string.
+A threshold cutting at the `origin` draws none either: the axis already shows
+where the origin is.
+
+**Density is where the fallback differs.** Outside it an unset row `color` is
+painted in the resolved `posColor`, so the key resolves to it; in density that
+colour is the score ramp and identity comes from `SvgRowLabels`, which paints a
+row with no `labelColor` as no swatch — so an uncoloured density row gets no key
+entry either. Reachable whenever a density track mixes grouped subtracks with
+ungrouped ones.
 
 ## The shipped arrays are aliased — read, never write
 

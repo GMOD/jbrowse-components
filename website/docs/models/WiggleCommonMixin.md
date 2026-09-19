@@ -7,7 +7,7 @@ sidebar_label: Mixin -> WiggleCommonMixin
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleCommonMixin.ts).
 
 Extends `ScoreFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
-domain and the wiggle-specific config: the pos/neg palette, rendering type,
+domain and the wiggle-specific config: the origin, rendering type,
 summary mode, resolution and the line/gap settings. Extended on this chain
 with `.props()`/`.views()` rather than a mixin composed in, so no
 `types.compose` layer is added (ADR-041).
@@ -23,10 +23,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="getter-resolution">**resolution**</span><br><code>number</code> | Points per pixel the fetch asks for, clamped to what the Resolution menu offers: the slot is reachable from a track config, which runs no setter, and `0` there divides by zero inside the adapter. | WiggleCommonMixin |
 | <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, WiggleDataResult&gt;</code> | The fetched scores, keyed by displayedRegionIndex — the foundation's per-region store, narrowed. | WiggleCommonMixin |
-| <span id="getter-poscolor">**posColor**</span><br><code>string</code> |  | WiggleCommonMixin |
-| <span id="getter-negcolor">**negColor**</span><br><code>string</code> |  | WiggleCommonMixin |
-| <span id="getter-bicolorpivot">**bicolorPivot**</span><br><code>number</code> |  | WiggleCommonMixin |
-| <span id="getter-densitycolorramp">**densityColorRamp**</span><br><code>string</code> | Density's colour ramp: 'default' for the white→track-colour fade, or a named 256-entry LUT (see densityColorRamp.ts). Rides the render state, so a change is a uniform flag plus one LUT texture upload — never a refetch or a buffer re-encode. | WiggleCommonMixin |
+| <span id="getter-origin">**origin**</span><br><code>number</code> | The value bars grow from, which a colour scale also reads where its own domain says nothing. | WiggleCommonMixin |
 | <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> |  | WiggleCommonMixin |
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line. | WiggleCommonMixin |
 | <span id="getter-summaryscoremode">**summaryScoreMode**</span><br><code>string</code> |  | WiggleCommonMixin |
@@ -65,9 +62,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setrpcdata">**setRpcData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(displayedRegionIndex: number, data: WiggleDataResult, region:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(displayedRegionIndex: number, data: WiggleDataResult, region: Region) =&gt; void</code></pre></dialog></span> | Stage a region as fetched, with this mixin's payload shape — so a test stands up a loaded display in one call. Production goes through `ctx.commitRegion`. | WiggleCommonMixin |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feat: WiggleHoveredFeature) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  | WiggleCommonMixin |
-| <span id="action-setbicolorpivot">**setBicolorPivot**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
-| <span id="action-setposcolor">**setPosColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> | Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot`, which the colour editor and the score menu both write through. | WiggleCommonMixin |
-| <span id="action-setnegcolor">**setNegColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-setorigin">**setOrigin**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setrenderingtype">**setRenderingType**</span><br><code>(type: string) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setsummaryscoremode">**setSummaryScoreMode**</span><br><code>(val: string) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setlinewidth">**setLineWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |

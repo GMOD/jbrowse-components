@@ -13,7 +13,6 @@ import { copyText } from '@jbrowse/core/util/copyText'
 import {
   numericDomain,
   thresholdLabels,
-  thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
 import LegendMixin, {
   legendCheckboxItem,
@@ -690,7 +689,10 @@ export default function stateModelFactory(
        */
       get thresholdColorScale(): ColorScale | undefined {
         const color = self.colorSetting
-        const cuts = numericDomain(color.domain)
+        // The first cut alone, because that is the one the encoder paints:
+        // the layers partition into two sides and a second cut point reaches
+        // no instance, so a key listing it would describe nothing.
+        const cuts = numericDomain(color.domain).slice(0, 1)
         if (
           self.isDensityMode ||
           cuts.length === 0 ||
@@ -699,10 +701,7 @@ export default function stateModelFactory(
           return undefined
         }
         const { posColor, negColor } = self.wiggleColor
-        const colors =
-          cuts.length > 1
-            ? thresholdPalette(cuts.length + 1, color.palette)
-            : [negColor, posColor]
+        const colors = [negColor, posColor]
         return {
           kind: 'categorical',
           id: 'threshold',

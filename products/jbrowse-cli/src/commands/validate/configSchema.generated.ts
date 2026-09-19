@@ -5912,6 +5912,83 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "WiggleColor": {
+      "title": "WiggleColor",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "CSS colour painting every bar.",
+              "$ref": "#/$defs/CssColorOrJexl"
+            },
+            "field": {
+              "description": "score, the value each bar carries, or source, the subtrack it came from.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            },
+            "scale": {
+              "description": "how field becomes a colour: threshold cuts score at the domain and paints each side; linear and log fade from the colour at the cut out to the ends of the y domain, which is the density picture; categorical hands each source a palette entry; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp, categorical over source and threshold over score.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "none",
+                    "categorical",
+                    "linear",
+                    "log",
+                    "threshold"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "domain": {
+              "description": "for a threshold scale, the one cut point the two sides part at, empty meaning the origin; for a categorical scale over source, the sources that take the palette first, in order.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "palette": {
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            },
+            "ramp": {
+              "description": "viridis, or two or more CSS colour stops; empty is viridis.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "$ref": "#/$defs/NumberOrJexl"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "ValueScale2": {
       "title": "ValueScale2",
       "type": "object",
@@ -6019,15 +6096,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
-        "useBicolor": {
-          "description": "When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. Setting color alone, with no posColor/negColor/useBicolor, turns this off for you.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": true
-        },
         "color": {
-          "description": "Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#0068d1"
+          "$ref": "#/$defs/WiggleColor"
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
@@ -6044,35 +6114,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
-        "posColor": {
-          "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#0068d1"
-        },
-        "negColor": {
-          "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#e01e26"
-        },
-        "bicolorPivot": {
-          "description": "Pivot value for bicolor mode.",
+        "origin": {
+          "description": "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
-        },
-        "densityColorRamp": {
-          "description": "Color ramp for density (\\"density\\"/\\"multirowdensity\\") rendering. \\"default\\" fades from white at the pivot to the track color; a named ramp (e.g. \\"viridis\\") colors scores through that fixed 256-entry lookup table instead, the same table the Hi-C viridis scheme uses.",
-          "anyOf": [
-            {
-              "enum": [
-                "default",
-                "viridis"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "default"
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
@@ -6202,15 +6247,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
-        "useBicolor": {
-          "description": "When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. Setting color alone, with no posColor/negColor/useBicolor, turns this off for you.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": true
-        },
         "color": {
-          "description": "Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#0068d1"
+          "$ref": "#/$defs/WiggleColor"
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
@@ -6227,35 +6265,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
-        "posColor": {
-          "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#0068d1"
-        },
-        "negColor": {
-          "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#e01e26"
-        },
-        "bicolorPivot": {
-          "description": "Pivot value for bicolor mode.",
+        "origin": {
+          "description": "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
-        },
-        "densityColorRamp": {
-          "description": "Color ramp for density (\\"density\\"/\\"multirowdensity\\") rendering. \\"default\\" fades from white at the pivot to the track color; a named ramp (e.g. \\"viridis\\") colors scores through that fixed 256-entry lookup table instead, the same table the Hi-C viridis scheme uses.",
-          "anyOf": [
-            {
-              "enum": [
-                "default",
-                "viridis"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "default"
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
@@ -6289,7 +6302,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "summaryScoreMode": {
-          "description": "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces posColor-only rendering (buildSourceRenderData skips the bicolor pos/neg split for whiskers) and hides negative GC-skew as if it were positive.",
+          "description": "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces the above-origin colour on every bin (buildSourceRenderData skips the two-sided split for whiskers) and hides negative GC-skew as if it were positive.",
           "anyOf": [
             {
               "enum": [
@@ -6407,15 +6420,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
-        "useBicolor": {
-          "description": "When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. Setting color alone, with no posColor/negColor/useBicolor, turns this off for you.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": true
-        },
         "color": {
-          "description": "Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#0068d1"
+          "$ref": "#/$defs/WiggleColor"
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
@@ -6432,35 +6438,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
-        "posColor": {
-          "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#0068d1"
-        },
-        "negColor": {
-          "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#e01e26"
-        },
-        "bicolorPivot": {
-          "description": "Pivot value for bicolor mode.",
+        "origin": {
+          "description": "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
-        },
-        "densityColorRamp": {
-          "description": "Color ramp for density (\\"density\\"/\\"multirowdensity\\") rendering. \\"default\\" fades from white at the pivot to the track color; a named ramp (e.g. \\"viridis\\") colors scores through that fixed 256-entry lookup table instead, the same table the Hi-C viridis scheme uses.",
-          "anyOf": [
-            {
-              "enum": [
-                "default",
-                "viridis"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "default"
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
@@ -6494,7 +6475,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "summaryScoreMode": {
-          "description": "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces posColor-only rendering (buildSourceRenderData skips the bicolor pos/neg split for whiskers) and hides negative GC-skew as if it were positive.",
+          "description": "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces the above-origin colour on every bin (buildSourceRenderData skips the two-sided split for whiskers) and hides negative GC-skew as if it were positive.",
           "anyOf": [
             {
               "enum": [
@@ -7253,6 +7234,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "ramp": {
               "description": "viridis, or two or more CSS colour stops; empty is viridis.",
               "$ref": "#/$defs/StringArrayOrJexl"
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "$ref": "#/$defs/NumberOrJexl"
             }
           },
           "patternProperties": {
@@ -9182,9 +9167,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "facet": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/facet"
             },
-            "useBicolor": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/useBicolor"
-            },
             "color": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/color"
             },
@@ -9197,17 +9179,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "resolution": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/resolution"
             },
-            "posColor": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/posColor"
-            },
-            "negColor": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/negColor"
-            },
-            "bicolorPivot": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/bicolorPivot"
-            },
-            "densityColorRamp": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/densityColorRamp"
+            "origin": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/origin"
             },
             "scatterPointSize": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
@@ -10087,9 +10060,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "useBicolor": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/useBicolor"
-            },
             "color": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
@@ -10109,17 +10079,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
-            "posColor": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/posColor"
-            },
-            "negColor": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/negColor"
-            },
-            "bicolorPivot": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/bicolorPivot"
-            },
-            "densityColorRamp": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/densityColorRamp"
+            "origin": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/origin"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+                }
+              ]
             },
             "scatterPointSize": {
               "anyOf": [
@@ -10205,9 +10173,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
-            },
-            "origin": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
@@ -10340,9 +10305,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "useBicolor": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/useBicolor"
-            },
             "color": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
@@ -10362,17 +10324,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
-            "posColor": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/posColor"
-            },
-            "negColor": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/negColor"
-            },
-            "bicolorPivot": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/bicolorPivot"
-            },
-            "densityColorRamp": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/densityColorRamp"
+            "origin": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/origin"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+                }
+              ]
             },
             "scatterPointSize": {
               "anyOf": [
@@ -10458,9 +10418,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
-            },
-            "origin": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
@@ -10579,9 +10536,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "height": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/height"
             },
-            "useBicolor": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/useBicolor"
-            },
             "color": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/color"
             },
@@ -10594,17 +10548,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "resolution": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/resolution"
             },
-            "posColor": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/posColor"
-            },
-            "negColor": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/negColor"
-            },
-            "bicolorPivot": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/bicolorPivot"
-            },
-            "densityColorRamp": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/densityColorRamp"
+            "origin": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/origin"
             },
             "scatterPointSize": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scatterPointSize"

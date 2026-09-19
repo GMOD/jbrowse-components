@@ -287,8 +287,8 @@ pass every expression, on variant tracks too:
 
 ## Quantitative (wiggle) tracks
 
-Setting `color` puts the track in single-color mode; left alone, a wiggle draws
-`posColor` above `bicolorPivot` and `negColor` below it.
+A string in `color` paints every bar; left alone, a wiggle cuts at its `origin`
+and paints the two sides apart.
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 picks `xyplot`, `line`, `scatter`, or `density`.
 

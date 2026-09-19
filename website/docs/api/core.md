@@ -39,9 +39,15 @@ texture both GPU backends upload and the Canvas2D twins index — entry `i` is
 the color at `t = i / (N - 1)`. N comes off the shader that samples it, so
 the table and `rampColor`'s texel mapping cannot disagree.
 
+`mid` is where the stop list's own midpoint lands in the table, so a
+diverging ramp whose middle colour belongs at a value off the centre of the
+domain is baked into the bytes. Every reader — the shader, the Canvas2D
+fillStyle table, the legend bar — then samples one evenly spaced table and
+cannot disagree about the warp.
+
 ```js
 // type signature
-(stops: readonly ColorRampStop[]) => Uint8Array<ArrayBuffer>
+(stops: readonly ColorRampStop[], mid?: number) => Uint8Array<ArrayBuffer>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)

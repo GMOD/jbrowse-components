@@ -50,5 +50,6 @@ sideBySide
 structures
 transcriptId
 uniprotId
+useBicolor
 walkRowSamples
 zoomToBaseLevel
