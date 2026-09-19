@@ -134,6 +134,13 @@ third is exactly the set a grammar would call encoding and scale: `height`,
 `domain`. The names are flat and per-display, but the concepts are shared and
 the census shows authors using them as shared.
 
+The mark display is the one that spells that y-scale as an object:
+`scales: { y: { type, domainMin, domainMax } }` on the display, which every
+mark's `encoding.y` field is read through
+([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)).
+The census predates it and counts the four flat keys, which the wiggle,
+Manhattan, alignments-coverage and MAF-coverage displays still spell.
+
 `facet` now names one mechanism, spelled `"strand" | { field, domain }`
 everywhere (GRAMMAR_OF_GRAPHICS.md, "The facet stage"): every value takes its
 own stacked section with its own chips, its own collapse and its own `domain`.
@@ -292,11 +299,15 @@ that none defines — plus the migration warnings.
   ([ADR-131](../architecture-decision-records/adr-131-a-categorical-channel-is-one-config-object.md));
   **Edit as JSON...** is an editor over them and the filter override, and
   stores no block of its own (GRAMMAR_OF_GRAPHICS.md, "The facet stage").
-- *First-class `Scale` objects.* One consumer set (`scaleType` / `minScore` /
-  `maxScore` / `autoscale`) is already shared by the wiggle, Manhattan,
-  alignments-coverage and MAF-coverage displays through `@jbrowse/wiggle-core`,
-  and a session spec sets it in three keys. An object form would be the same three
-  keys one level down.
+- *First-class `Scale` objects, across the displays.* One consumer set
+  (`scaleType` / `minScore` / `maxScore` / `autoscale`) is already shared by the
+  wiggle, Manhattan, alignments-coverage and MAF-coverage displays through
+  `@jbrowse/wiggle-core`, and a session spec sets it in three keys. An object
+  form would be the same three keys one level down. **The mark display took the
+  object form anyway**, for a reason those four do not have: it has a `marks`
+  list, so the alternative was a scale per mark, and `scales.y` is what makes
+  the axis the plot's rather than the first drawing mark's
+  ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)).
 - *View combinators (`layer`, `concat`).* A JBrowse view composes tracks, a
   session composes views, and `views` / `levels` nesting is the combinator every
   synteny and breakpoint figure in the corpus uses. Layering inside a track is a display's own business —
