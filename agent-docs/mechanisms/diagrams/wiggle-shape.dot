@@ -20,14 +20,12 @@ digraph wiggle_shape {
   summary [label="effectiveSummaryScoreMode"]
   plot -> summary
   summary -> range [label=" any mode, line plots"]
-  summary -> bands [label=" whiskers, min, max"]
-  summary -> avg   [label=" avg (density resolves here)"]
+  summary -> bands [label=" whiskers, min, max, avg\l (density resolves to avg)"]
   range [label="one line through every bin,\ncoloured by the pivot side it is on;\nwhiskers adds a translucent\nmin-max band under it"]
-  bands [label="summary bands, each value\ncoloured by its own sign\nagainst the pivot"]
-  avg   [label="the worker's positive/negative\nsplit, one layer each"]
+  bands [label="one band under avg, min and max,\nthree under whiskers; each value\ncoloured by its own sign\nagainst the pivot"]
 
   nests [label="density, or filled bars\nthat nest"]
-  bands -> nests  avg -> nests
+  bands -> nests
   nests -> split [label=" yes"]
   nests -> whole [label=" no"]
   split [label="solid layers, back to front,\nlargest magnitude first"]

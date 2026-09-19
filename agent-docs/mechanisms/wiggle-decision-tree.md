@@ -49,8 +49,7 @@ Config bounds are still checked first.
 - One source draws a single plot; many sources are laid out multi-row (a row,
   scalebar and dendrogram slot each) or overlapping (everything on row 0).
 - The plot type and the resolved summary mode together decide the **layers**:
-  summary bands where the mode is whiskers/min/max, the worker's
-  positive/negative split where it is avg.
+  three summary bands under whiskers, one under min/max or avg.
 - Nested filled bars and density split into solid layers drawn back to front,
   largest magnitude first. Everything else keeps one band with per-instance
   colours.

@@ -228,12 +228,18 @@ The seams, named honestly:
 - **The colour objects are one shape, and a preset is a field.** FeatureColor,
   ManhattanColor, RibbonColor and MarkColor are each
   `{ value, field, scale, domain, palette, ramp }` from one display-kit factory
-  (`colorChannelSlots`), `scale` drawn from `none | categorical | linear | log`
+  (`colorChannelSlots`), `scale` drawn from
+  `none | categorical | linear | log | threshold`
   with each display declaring the members it paints; `none` is ggplot2's
   set-versus-map distinction (a parameter beside `aes()` creates no scale),
   and a field left without a scale takes the kind the declaration implies
   rather than one read off the data: `markColorScale` answers `linear` where a
-  `ramp` is written and `categorical` where none is. The ribbon's `strand`, `identity`,
+  `ramp` is written and `categorical` where none is, and Manhattan answers
+  `threshold` over `field: 'ld'` and `categorical` over anything else.
+  `threshold` is ggplot2's `scale_colour_steps`: ascending cut points in
+  `domain` and one palette entry more, so a value takes the bin it falls in
+  (`thresholdIndex`, `@jbrowse/core/util/thresholdScale`).
+  The ribbon's `strand`, `identity`,
   `mappingQual` and `dnds` are fields with a vocabulary or ramp of their own,
   as synteny-core's `continuousRampConfig` keys them
   ([ADR-135](../architecture-decision-records/adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)).

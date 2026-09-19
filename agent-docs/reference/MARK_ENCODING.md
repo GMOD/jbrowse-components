@@ -62,6 +62,17 @@ numeric field with no ramp takes a colour per distinct value; the table carries
 `numericKeys` for that case and the key prints a line naming `scale` and `ramp`
 once the rows pass a handful.
 
+A **threshold** scale is the third kind, and it is only ever declared: `domain`
+is the ascending cut points, `palette` holds one colour more, and a value takes
+`palette[thresholdIndex(value, domain)]` — the count of cut points it is at or
+past, `-1` and the fallback grey for a value that is not a number
+(`@jbrowse/core/util/thresholdScale`). It resolves per region in the worker the
+way a categorical scale does, so it needs no lane, no ramp and no shader
+change, and the table it ships lists one row per interval labelled `< a`,
+`a – b`, `≥ b`. Every region of one declaration ships the same table, so the
+legend's union is a no-op. Manhattan's LocusZoom r² bins are this scale over
+`field: 'ld'`, which is what makes them a config an author can move.
+
 A **quantitative** ramp resolves on the main thread instead, the way y does:
 a caller whose shape reads the ramp itself names the `colorValue` lane and the
 worker ships the raw values plus the region's own `extent`; the display unions
