@@ -4,7 +4,7 @@ import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { colorByScale } from './colorLegend.ts'
-import { continuousRampConfig, isAttributeLabels } from './colorRamps.ts'
+import { isAttributeLabels, presetRamp } from './colorRamps.ts'
 import { paintedField, syntenyColorFor } from './syntenyColorBy.ts'
 import {
   SYNTENY_VIEW_FIELDS,
@@ -25,7 +25,7 @@ function isColumnField(field: string) {
   return (
     field !== '' &&
     !STRUCTURAL_FIELDS.has(field) &&
-    !(field in continuousRampConfig)
+    presetRamp(field) === undefined
   )
 }
 
@@ -338,7 +338,7 @@ export function TrackColorsMixin() {
         const field = this.colorByField
         return (
           field === 'track' ||
-          field in continuousRampConfig ||
+          presetRamp(field) !== undefined ||
           isColumnField(field)
         )
       },

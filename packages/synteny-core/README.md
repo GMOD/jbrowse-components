@@ -10,7 +10,7 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 ### assignTrackColors
 
-Map each overlaid track to the color it draws in under `colorBy: 'track'`.
+Map each overlaid track to the color it draws in under the `track` field.
 
 Two passes so an automatic slot never duplicates a color the user pinned by
 hand: pass one reserves every explicit color, pass two hands each remaining
@@ -237,6 +237,18 @@ constant: `scale: 'none'`, or no field named.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
+
+### presetRamp
+
+The preset ramp a field names, if it names one. An own-property lookup: a field
+spelled `toString` is a column nobody declared, not `Object`'s method.
+
+```js
+// type signature
+(field: string) => ContinuousMode | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
 
 ### syntenyColorFor
 

@@ -286,7 +286,7 @@ cat > session.json <<'JSON'
         { "assembly": "grape" }
       ],
       "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
-      "colorBy": "reference",
+      "colorBy": { "field": "reference" },
       "autoDiagonalize": true
     }
   ]

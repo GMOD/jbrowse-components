@@ -372,7 +372,7 @@ cat > session.json <<'JSON'
         }
       ],
       "tracks": [["primate_orthologs"]],
-      "colorBy": "dnds",
+      "colorBy": { "field": "dnds" },
       "alpha": 0.95,
       "drawCurves": true
     }

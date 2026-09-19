@@ -709,7 +709,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The "anchor" assembly for colorBy:'reference': the assembly bordering
+       * The "anchor" assembly for the 'reference' field: the assembly bordering
        * the most synteny levels. In a stacked ref-vs-A / ref-vs-B layout each
        * interior assembly touches two levels and the ends touch one, so the
        * max-adjacency assembly is the shared reference. Ties resolve to the

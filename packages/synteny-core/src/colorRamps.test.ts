@@ -116,3 +116,14 @@ test('a flat or absent domain answers 0 rather than NaN', () => {
 test('the constant is not a continuous field', () => {
   expect(resolveContinuousMode('')).toBeUndefined()
 })
+
+// The field is a plain string off a config, so an inherited member of the
+// preset table would hand back Object.prototype's method as a ramp and throw
+// inside the LUT.
+test('a prototype member is a column, not a preset', () => {
+  const mode = resolveContinuousMode('toString', {
+    toString: { min: 0, max: 8 },
+  })
+  expect(mode?.attribute).toBe('toString')
+  expect(mode?.maxValue).toBe(8)
+})

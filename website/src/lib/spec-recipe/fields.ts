@@ -272,16 +272,18 @@ const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
 
 // A synteny colour object (the views' `colorBy`, the multi-way display's
 // `ribbonColor`) as the field the Color by radios carry, `''` for Default. A
-// colour string paints through no radio, so it maps to nothing.
+// colour paints through no radio, whether it is spelled as the string
+// shorthand or as `value` on the object, so both map to nothing.
 function syntenyColorField(value: unknown) {
   const color = asRecord(value)
-  const scale = asString(color?.scale)
-  return color
-    ? paintedField({
-        field: asString(color.field),
-        scale: scale === 'none' ? scale : undefined,
-      })
-    : undefined
+  if (!color || (color.field === undefined && color.value !== undefined)) {
+    return undefined
+  }
+  const scale = asString(color.scale)
+  return paintedField({
+    field: asString(color.field),
+    scale: scale === 'none' ? scale : undefined,
+  })
 }
 
 // A declared column has no fixed label but its own name, under Color by value.

@@ -36,8 +36,8 @@ below uses the second:
   numbers an alignment carries, identity and mapping quality among them, sit
   under **Color by value**. Each option carries a description of what it colors.
   A text column there paints one color per label, in the order the fetches met
-  them, and the view's `colorDomain` declares that order instead — the labels it
-  lists first, the rest sorted. With more than one alignment file plotted
+  them, and the view's `colorBy.domain` declares that order instead — the labels
+  it lists first, the rest sorted. With more than one alignment file plotted
   together, **Distinct color per track** gives each its own color, and **Track
   colors** below it pins the color for one track at a time. On a plot whose
   blocks are all a single pixel wide, reach for **Min length** first.

@@ -211,10 +211,10 @@ A mode whose number a track does not carry leaves every ribbon the default
 color.
 
 A text column's labels are colored by their position in the list, which starts
-in the order the fetches met them. The view's `colorDomain` declares that order
-instead — the labels it lists first, the rest sorted — so a session can put an
-ancestral linkage group's names in the order a reader expects, and the ribbons
-and the legend rows move together.
+in the order the fetches met them. The view's `colorBy.domain` declares that
+order instead — the labels it lists first, the rest sorted — so a session can
+put an ancestral linkage group's names in the order a reader expects, and the
+ribbons and the legend rows move together.
 
 **Track colors**, offered once a view has more than one track, lists each track
 with the swatch it draws in under Distinct color per track. Pick a color there

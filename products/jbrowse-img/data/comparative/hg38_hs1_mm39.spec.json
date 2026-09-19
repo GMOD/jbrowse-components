@@ -6,7 +6,7 @@
       "minAlignmentLength": 500000,
       "drawCurves": true,
       "autoDiagonalize": true,
-      "colorBy": "query",
+      "colorBy": { "field": "query" },
       "alpha": 0.4,
       "levelHeights": [300, 300],
       "views": [

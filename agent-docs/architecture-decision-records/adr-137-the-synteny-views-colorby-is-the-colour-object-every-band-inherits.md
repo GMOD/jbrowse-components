@@ -66,7 +66,11 @@ is keyed by the attribute each preset reads (`identity`, `mappingQual`,
 `dnds`), which is the field itself. `syntenyColorFor(field, current)` writes
 the object a menu pick means: `''` keeps the field and its order under
 `scale: 'none'`, and a field keeps its `domain` only when it is the one
-already named, as ADR-133 and the multi-way menu already did. The multi-way
+already named, as ADR-133 and the multi-way menu already did. One field is one
+radio: a column an aligner named `identity` or `strand` writes what the preset
+or structural radio writes, so the menu offers the declared columns a radio
+does not already cover. The preset table is read by own property, since the
+field is a plain config string and `toString` names no ramp. The multi-way
 display's `ribbonColorBy.ts`, the per-surface `reads` lists, the
 `attribute:` prefix, the `SyntenyColorBy` union, `coerceColorBy` and the
 retired spellings it mapped are all deleted. Which structural fields a
@@ -101,10 +105,13 @@ declared column goes through `--spec`.
   `'attribute:gene_group'`; `{ field: 'mappingQual' }` (the attribute's name)
   where it wrote `'mappingQuality'`; and the order in `colorBy.domain` where
   it had `colorDomain`. The default has no spelling: omit the key or write
-  `null`. Ten demo configs, `test_data/hs1_vs_mm39`, the tutorials, the
-  URL-parameters example, the website's spec scripts and the web sample data
-  changed spelling; `jbrowse validate` reports the old string as a colour-slot
-  error and a misspelt key inside the object.
+  `null`. Eleven demo configs and the seven shell scripts that generate them,
+  `test_data/hs1_vs_mm39`, three jbrowse-img spec files, six jbrowse-web
+  browser-test session specs, the tutorials, the URL-parameters example, the
+  website's spec scripts and the web sample data changed spelling. `jbrowse
+  validate` reports a misspelt key inside the object but not the old string,
+  which is legal as the colour shorthand and fails at load instead, naming the
+  value.
 - `TrackColorsMixin.test.ts` and the two `launchInput` suites pin the four
   structural fields, a preset, a column, the string shorthand, `null`, a
   misspelt key, a mode string in the colour slot, and a session-spec round

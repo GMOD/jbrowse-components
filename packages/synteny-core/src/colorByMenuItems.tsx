@@ -42,9 +42,15 @@ function structuralRadios({
 function valueModes({
   attributes,
   attributeRanges,
+  structuralFields,
 }: ColorByMenuTarget): ModeEntry[] {
+  const presets = COLOR_MODES.filter(m => m.kind === 'value')
+  // one radio per field: a column an aligner happened to name `identity` or
+  // `strand` is the preset or the structural radio already listed, since both
+  // write the same field
+  const named = new Set([...presets.map(m => m.field), ...structuralFields])
   return [
-    ...COLOR_MODES.filter(m => m.kind === 'value').map(m => ({
+    ...presets.map(m => ({
       value: m.field,
       label: m.label,
       helpText: m.helpText,
@@ -53,11 +59,13 @@ function valueModes({
           ? undefined
           : `The loaded alignments carry no ${m.label[0]!.toLowerCase()}${m.label.slice(1)}`,
     })),
-    ...attributes.map(attribute => ({
-      label: attribute,
-      value: attribute,
-      helpText: `The ${attribute} column: a ramp over the values seen for numbers, a color per label for text.`,
-    })),
+    ...attributes
+      .filter(attribute => !named.has(attribute))
+      .map(attribute => ({
+        label: attribute,
+        value: attribute,
+        helpText: `The ${attribute} column: a ramp over the values seen for numbers, a color per label for text.`,
+      })),
   ]
 }
 

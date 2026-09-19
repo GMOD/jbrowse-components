@@ -266,6 +266,22 @@ test('a declared numeric column is offered as its own mode', () => {
   expect(picked).toEqual(['goc_score'])
 })
 
+// A column an aligner named after a preset or a structural field writes the
+// same field those radios do, so a second radio for it would check alongside
+// the first and lead somewhere it does not go.
+test('a column a radio already covers is not offered twice', () => {
+  const items = colorByMenuItems(
+    target({
+      attributes: ['identity', 'strand', 'goc_score'],
+      structuralFields: ['', 'strand'],
+    }),
+  )
+  expect(labels(valueModes(items))).not.toContain('identity')
+  expect(labels(valueModes(items))).not.toContain('strand')
+  expect(labels(items).filter(l => l === 'Strand')).toHaveLength(1)
+  expect(labels(valueModes(items))).toContain('goc_score')
+})
+
 // An attribute mode has to show as checked the same as a preset — the mode is
 // one string either way, which is the point of encoding it in the string.
 test('an attribute mode checks like a preset', () => {

@@ -174,6 +174,17 @@ export const continuousRampConfig: Record<
   },
 }
 
+/**
+ * #api
+ * The preset ramp a field names, if it names one. An own-property lookup: a
+ * field spelled `toString` is a column nobody declared, not `Object`'s method.
+ */
+export function presetRamp(field: string): ContinuousMode | undefined {
+  return Object.hasOwn(continuousRampConfig, field)
+    ? (continuousRampConfig as Record<string, ContinuousMode>)[field]
+    : undefined
+}
+
 /** The observed span of one numeric attribute across the features in hand. */
 export interface AttributeSpan {
   min: number
@@ -242,7 +253,7 @@ export function resolveContinuousMode(
   if (!field) {
     return undefined
   }
-  const preset = (continuousRampConfig as Record<string, ContinuousMode>)[field]
+  const preset = presetRamp(field)
   if (preset) {
     return preset
   }

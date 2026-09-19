@@ -256,7 +256,7 @@ cat > session.json <<'JSON'
         { "assembly": "wheat" }
       ],
       "tracks": [["sorghum_tauschii"], ["sorghum_wheat"]],
-      "colorBy": "attribute:copies",
+      "colorBy": { "field": "copies" },
       "autoDiagonalize": true
     }
   ]

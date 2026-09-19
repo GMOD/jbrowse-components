@@ -96,7 +96,7 @@ test('per-name categorical modes have no fixed legend', () => {
 
 // 'track' has no fixed legend of its own — the track list only the view knows
 // supplies it, so an absent list means the mode falls back to its note.
-test("colorBy:'track' renders the chips the view supplies, or nothing", () => {
+test("the 'track' field renders the chips the view supplies, or nothing", () => {
   expect(getColorBySwatch('track')).toBeUndefined()
   expect(getColorBySwatch('track', { trackChips: [] })).toBeUndefined()
 

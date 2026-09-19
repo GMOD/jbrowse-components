@@ -56,7 +56,7 @@ function abgrOfHex(hex: string) {
   return ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0
 }
 
-describe("computeSyntenyColors colorBy:'track'", () => {
+describe("computeSyntenyColors under the 'track' field", () => {
   const colors = computeSyntenyColors({
     groundColor: '#fff',
     instanceData,

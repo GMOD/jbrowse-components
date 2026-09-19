@@ -164,7 +164,7 @@ export function getColorBySwatch(
   }: {
     pointBased?: boolean
     cigarOps?: CigarOpMask
-    // one chip per overlaid track, supplied by the view for colorBy:'track'
+    // one chip per overlaid track, supplied by the view for the 'track' field
     // (this file can't know the track list). Absent or empty falls back to the
     // "distinct color per track" note.
     trackChips?: ColorChip[]

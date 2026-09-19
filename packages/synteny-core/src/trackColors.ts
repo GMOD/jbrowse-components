@@ -45,7 +45,7 @@ export interface ColorableTrack extends PalettableTrack {
 
 /**
  * #api
- * Map each overlaid track to the color it draws in under `colorBy: 'track'`.
+ * Map each overlaid track to the color it draws in under the `track` field.
  *
  * Two passes so an automatic slot never duplicates a color the user pinned by
  * hand: pass one reserves every explicit color, pass two hands each remaining
