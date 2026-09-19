@@ -13,10 +13,6 @@ const NAMED_RAMP_STOPS = {
 
 export type DensityRampName = keyof typeof NAMED_RAMP_STOPS
 
-export const DENSITY_COLOR_RAMPS: DensityRampName[] = Object.keys(
-  NAMED_RAMP_STOPS,
-) as DensityRampName[]
-
 const luts = new Map<string, Uint8Array>()
 
 // The LUT a name asks for, or null where it names none (a CSS colour, or a
