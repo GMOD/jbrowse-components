@@ -41,6 +41,16 @@ describe('`facet.domain` seeds the subtrack order', () => {
     expect(rowNames(await loadedDisplay([]))).toEqual(['a', 'b', 'c'])
   })
 
+  // `rowDomain` reads the order back through `facet`, which is undefined while
+  // the sources share a plot, so a `setFaceted` writing the object whole wrote
+  // the empty order it had just read.
+  it('survives a trip through the shared plot', async () => {
+    const display = await loadedDisplay(['c'])
+    display.setFaceted(false)
+    display.setFaceted(true)
+    expect(rowNames(display)).toEqual(['c', 'a', 'b'])
+  })
+
   // `layout` is the runtime channel over the seed, and "Reset row order"
   // returns to the domain rather than to the adapter's order.
   it('gives way to a layout and comes back when it is cleared', async () => {
