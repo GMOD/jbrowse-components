@@ -101,10 +101,6 @@ const ALLOWED = new Map([
     'jbrowse make-density runs it internally; the page shows the make-density invocation',
   ],
   [
-    'cancer_sv.md#minimap2',
-    'sv_multihop.py runs it internally; the page shows the python invocation',
-  ],
-  [
     'homoeolog_synteny.md#biopython',
     'a python library jcvi imports, not a command',
   ],

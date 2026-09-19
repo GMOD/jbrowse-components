@@ -8,6 +8,7 @@ import {
   DialogActions,
   DialogContent,
   FormGroup,
+  FormHelperText,
   List,
   ListItemButton,
   ListItemIcon,
@@ -194,13 +195,22 @@ const BreakpointSplitViewChoiceDialog = observer(
             ) : null}
 
             {canFollowChain ? (
-              <LabeledCheckbox
-                checked={followChain}
-                label="Follow further breakends at each end"
-                onChange={val => {
-                  setFollowChain(val)
-                }}
-              />
+              <>
+                <LabeledCheckbox
+                  checked={followChain}
+                  label="Follow further breakends at each end"
+                  onChange={val => {
+                    setFollowChain(val)
+                  }}
+                />
+                {/* The reader is choosing between two panels and four, and the
+                    difference is a claim about a molecule that the records
+                    alone cannot settle. ADR-140. */}
+                <FormHelperText>
+                  Infers the route from how close breakends sit in the callset,
+                  and stops where two continuations are open.
+                </FormHelperText>
+              </>
             ) : null}
 
             {isSplitLevel ? (

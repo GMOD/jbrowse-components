@@ -70,9 +70,8 @@ wrote 100/100 images to tumor
 
 Insertions name one locus, so there is no second panel and the warning counts
 them out. Each breakend pair is written twice and collapses to one. The result
-is the same 100 junctions, in the same order, that `sv_multihop.py bedpe` writes
-for the same file, because neither parses the ALT bracket by hand, which goes
-wrong four ways, none of them raising an error:
+The ALT bracket is parsed with `@gmod/vcf` rather than by hand, which matters
+because hand-parsing it goes wrong four ways, none of them raising an error:
 
 - the replacement string may carry inserted sequence either side of the bracket
   (`GTGATGGATTCA[CHR12:72273112[`)
@@ -159,8 +158,8 @@ junctions across three chromosomes, and the
 Anything that writes breakends or symbolic SVs to a VCF goes through the same
 two commands:
 
-- **cuteSV, Sniffles, pbsv, Delly, Manta, GRIDSS** all write a VCF that
-  `sv_multihop.py bedpe` reads directly
+- **cuteSV, Sniffles, pbsv, Delly, Manta, GRIDSS** all write a VCF that `--vcf`
+  reads directly
 - **LINX** publishes clusters and chained links as TSVs. Convert the junction
   columns to the six BEDPE columns with `awk`; one `--outDir` per cluster gives
   a chromothripsis event as a contact sheet

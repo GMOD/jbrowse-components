@@ -4,9 +4,9 @@
 # rearrangements and gene fusions), everything pinned:
 #
 #   COLO829 / COLO829BL  ONT R10 somatic SV calls and coverage from the ONT
-#                        open-data release, plus the RARB/BICC1/TRHDE derivative
-#                        allele that scripts/sv_multihop.py reconstructs from the
-#                        tumour reads
+#                        open-data release, plus the published RARB/BICC1/TRHDE
+#                        derivative contig, which this script fetches rather than
+#                        rebuilds -- see ADR-140
 #   K562                 ENCODE PacBio Iso-Seq alignments, DepMap 24Q4
 #                        STAR-Fusion calls and copy-number segments, and the
 #                        10X linked-read DNA breakpoints lifted from hg19
@@ -14,7 +14,7 @@
 # The tumour CRAM and the normal BAM are streamed from the ONT bucket rather than
 # downloaded; only the reconstruction outputs are written locally.
 #
-# Requires: samtools, minimap2, bedGraphToBigWig, bgzip, tabix, curl, python3, node>=18
+# Requires: samtools, bedGraphToBigWig, bgzip, tabix, curl, python3, node>=18
 #           The UCSC liftOver binary is downloaded into the output directory;
 #           nothing is installed.
 # Usage:    bash scripts/build_cancer_sv_demo.sh [outdir]
@@ -30,7 +30,7 @@ fetch() {
 }
 
 # fetched on demand so a bare `curl -O` of this one script still works
-HELPERS=(sv_multihop.py depmap_to_jbrowse.py lift_bnd_vcf.py)
+HELPERS=(depmap_to_jbrowse.py lift_bnd_vcf.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$HERE/$h" ] || fetch \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h" \
@@ -90,27 +90,28 @@ for s in tumor normal; do
   bg_to_bigwig "cov_$s.bed.gz" "$DEMO/COLO829_$s.coverage.bw"
 done
 
-# ------------------------------------------------ the multi-hop reconstruction
-# `chains` prints a --loci suggestion per chain; chain 1's is pinned below.
-python3 "$HERE/sv_multihop.py" chains "$DEMO/COLO829.somatic-sv.vcf.gz" --min-hops 3
-
-if [ ! -f "$DEMO/der3_RARB.vs_reference.pif.gz" ]; then
-  python3 "$HERE/sv_multihop.py" derive \
-    --aln "$TUMOUR_CRAM" --ref GRCh38.fa \
-    --loci chr10:58717464,chr12:72273112,chr3:25359111 \
-    --out der3_RARB --name der3_RARB_BICC1_TRHDE --threads 4
-  bgzip -f -c der3_RARB.derivative.fa > "$DEMO/der3_RARB.derivative.fa.gz"
-  samtools faidx "$DEMO/der3_RARB.derivative.fa.gz"
-  cp der3_RARB.reads_vs_derivative.bam der3_RARB.reads_vs_derivative.bam.bai "$DEMO/"
-  cp der3_RARB.vs_reference.paf "$DEMO/"
-  # which reference interval each stretch of the contig came from; a gene track
-  # cannot say this, since derivative windows usually sit inside one big intron
-  sort -k1,1 -k2,2n der3_RARB.derivative_segments.bed |
-    bgzip -f > "$DEMO/der3_RARB.derivative_segments.bed.gz"
-  tabix -f -p bed "$DEMO/der3_RARB.derivative_segments.bed.gz"
-  # make-pif writes <stem>.pif.gz next to its input, so run it where it lands
-  (cd "$DEMO" && jb make-pif der3_RARB.vs_reference.paf)
-fi
+# ------------------------------------------------ the der(3) derivative contig
+# Fetched, not rebuilt. The published contig is a consensus of the 29 tumour
+# reads that span all three loci, built by a script this repository no longer
+# ships: assembling an allele is an assembler's job, and shipping our own
+# half of one is what ADR-140 ends. To rebuild from the reads rather than
+# download, assemble them locally -- Flye, Shasta and hifiasm all do this -- and
+# put the contig through the same `jb make-pif` step below.
+DER3=(
+  der3_RARB.derivative.fa.gz
+  der3_RARB.derivative.fa.gz.fai
+  der3_RARB.derivative.fa.gz.gzi
+  der3_RARB.reads_vs_derivative.bam
+  der3_RARB.reads_vs_derivative.bam.bai
+  der3_RARB.derivative_segments.bed.gz
+  der3_RARB.derivative_segments.bed.gz.tbi
+  der3_RARB.vs_reference.pif.gz
+  der3_RARB.vs_reference.pif.gz.tbi
+  der3_RARB.vs_reference.pif.gz.gzi
+)
+for f in "${DER3[@]}"; do
+  [ -f "$DEMO/$f" ] || fetch "https://jbrowse.org/demos/cancer_sv/$f" "$DEMO/$f" -fL
+done
 
 # --------------------------------------------------------- K562 Iso-Seq (ENCODE)
 # Four PacBio runs across two ENCODE experiments; the released alignments are

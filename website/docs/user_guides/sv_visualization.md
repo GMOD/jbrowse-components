@@ -299,9 +299,11 @@ rearrangement. See
 ### Rebuilding a derivative allele
 
 Where long reads cross every junction of a rearrangement, the allele they carry
-can be rebuilt as a sequence and loaded as an assembly of its own, with the
-reads realigned to it. [](/docs/tutorials/cancer_sv) rebuilds COLO829's der(3)
-that way with `sv_multihop.py derive`.
+can be assembled as a sequence and loaded as an assembly of its own, with the
+reads realigned to it. Assembling it is an assembler's job — Flye, Shasta and
+hifiasm all do local assemblies of this kind — and JBrowse shows the contig
+against the reference as a synteny view. [](/docs/tutorials/cancer_sv) does that
+with COLO829's der(3).
 
 ## Signatures by SV type
 

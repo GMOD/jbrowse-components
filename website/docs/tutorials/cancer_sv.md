@@ -2,16 +2,17 @@
 title: Complex rearrangements and derivative alleles
 sidebar_label: SVs (complex rearrangements)
 description:
-  Search a somatic SV callset for rearrangements that take several junctions to
-  make, reconstruct the derivative allele, and check it against the reads
+  Follow a rearrangement that takes several junctions to make across a
+  breakpoint split view, and show the derivative allele an assembly built
+  against the reference
 guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
 A rearrangement can take several junctions to make, and which genes it joins
-does not reveal how many. Search a somatic SV callset for chains of junctions a
-single long read could cross, rebuild the derivative allele from the reads that
-span it, and show that reconstruction against the reference as a synteny view.
+does not reveal how many. Follow one across every locus it visits in a
+breakpoint split view, then show the derivative allele assembled from the reads
+that span it against the reference, as a synteny view.
 
 ## Prerequisites
 
@@ -23,16 +24,12 @@ span it, and show that reconstruction against the reference as a synteny view.
 - [minimap2](https://github.com/lh3/minimap2)
 - `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/)
-- `python3`, for `sv_multihop.py`
+- `python3`
 - a GRCh38 FASTA, and roughly 40 GB of free disk
 
 On Debian/Ubuntu, `apt install samtools minimap2 python3` covers three of those;
 `bedGraphToBigWig` is a single static binary from UCSC and `node`, for the CLI,
-comes from [nodejs.org](https://nodejs.org/). `sv_multihop.py` is one file:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/sv_multihop.py
-```
+comes from [nodejs.org](https://nodejs.org/).
 
 ## Where the data comes from
 
@@ -44,14 +41,13 @@ Every file but the last comes out of one ONT open-data release and its own
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram
 - COLO829BL matched normal reads:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam
-- the somatic SV calls `sv_multihop.py` searches:
+- the somatic SV calls this page works from:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829.wf-somatic-sv.vcf.gz
 - mosdepth coverage regions, tumor:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_tumor.regions.bed.gz
 - mosdepth coverage regions, normal:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_normal.regions.bed.gz
-- the GRCh38 build the CRAM decodes against, which `derive` also realigns the
-  consensus to:
+- the GRCh38 build the CRAM decodes against, and the der(3) contig aligns to:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta
 - the COLO829 somatic SV truth set, lifted to GRCh38:
   https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content
@@ -83,47 +79,49 @@ segments between them are short, the result is indistinguishable at the
 transcript level from a simple fusion. SplitThreader made this concrete in
 SK-BR-3 ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)),
 finding a KLHDC2-SNTB1 fusion that required three variants across three
-chromosomes.
-[`sv_multihop.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/sv_multihop.py)
-runs the same search on any somatic SV callset.
+chromosomes. Finding such a chain is a job for an SV interpretation tool; this
+page is about looking at one once you have it.
 
-## Finding the chains
+## Getting a chain to look at
 
-The search needs only the VCF. Two junctions belong to the same chain when an
-endpoint of one lands close enough to an endpoint of the other that a single
-read could carry both:
+A chain is a claim that one molecule carries several junctions, and deciding
+which junctions those are takes more than the junction list: copy number, the
+caller's own clustering, or reads that cross the whole thing. Tools built for
+that decision are the place to get one.
 
-<!-- from: scripts/build_cancer_sv_demo.sh -->
+- [LINX](https://github.com/hartwigmedical/hmftools/tree/master/linx) clusters
+  breakends into rearrangement events under eleven rules and chains them under
+  allele-specific copy-number constraints, writing `chainId` and `chainIndex`
+  per link ([Shale et al. 2022](https://doi.org/10.1016/j.xgen.2022.100112)).
+- [Severus](https://github.com/KolmogorovLab/Severus) builds breakpoint graphs
+  from phased tumor and normal long reads and writes a `CLUSTER_ID` per complex
+  subgraph into its VCF, which suits the ONT data this page uses.
+- [gGnome and JaBbA](https://github.com/mskilab-org/JaBbA) infer a
+  junction-balanced genome graph whose walks are allelic paths
+  ([Hadi et al. 2020](https://doi.org/10.1016/j.cell.2020.08.006)).
+- [SplitThreader](http://splitthreader.com) searches a junction graph for the
+  shortest path between two genes, which is the multi-hop fusion question stated
+  directly.
 
-```bash
-python3 sv_multihop.py chains COLO829.somatic-sv.vcf.gz --min-hops 3
+JBrowse itself will follow a chain outward from a record you click — the
+**Follow further breakends at each end** option in the breakpoint split view
+dialog. That walk has only the junction list to go on, so it infers the route
+from how close breakends sit and stops as soon as two continuations are open. It
+is a convenience for a callset you have nothing else for, not a substitute for
+the tools above.
+
+COLO829's der(3) is the chain the rest of this page follows. Three junctions
+close a triangle across three chromosomes:
+
+```
+chr3:25,359,111  <-> chr12:72,273,112
+chr3:25,359,568  <-> chr10:58,717,464
+chr10:58,717,662 <-> chr12:72,273,294
 ```
 
-```
-63 distinct junctions in COLO829.somatic-sv.vcf.gz, 68 record(s) skipped on FILTER
-2 chain(s) of >=3 junctions linked by reference segments <=20000 bp
-
-chain 0: 3 junctions across 3 chromosome(s)
-    chr3:25,359,111 <-> chr12:72,273,112
-    chr3:25,359,568 <-> chr10:58,717,464
-    chr10:58,717,662 <-> chr12:72,273,294
-    --loci chr10:58717464,chr12:72273112,chr3:25359111
-```
-
-A chain is a claim that one molecule carries all of its junctions, so a call the
-caller itself rejected is no link in one and `chains` skips it. Those 68 records
-matter here: keep them, and a chr5/chr13 route comes back as the callset's
-largest chain, ahead of the real event — four junctions every one of which the
-caller marked `Too_low_VAF`, among them deletions of 25 Mb and 58 Mb and a 76 Mb
-duplication. `--keep-filtered` is there if you want to look at it anyway, and
-`bedpe` keeps them by default, since reviewing the rejected calls is the point
-of a review queue.
-
-Those three junctions form a closed cycle, and the whole derivative path is
-under a kilobase spread across three chromosomes. The genes involved are _RARB_
-on chr3, a tumor suppressor, _BICC1_ on chr10, and _TRHDE_ on chr12.
-`--max-segment` is the longest reference segment one read is assumed to bridge,
-so set it from your own read-length distribution.
+The whole derivative path is under a kilobase spread across three chromosomes.
+The genes involved are _RARB_ on chr3, a tumor suppressor, _BICC1_ on chr10, and
+_TRHDE_ on chr12.
 
 ## Reads at the breakpoints
 
@@ -167,31 +165,32 @@ Stacked panels describe the event in reference coordinates. Laid out along the
 derivative, it shows the order and orientation of its pieces. The next section
 rebuilds the allele's sequence and lays the event out along it.
 
-## Reconstructing the allele's sequence
+## The derivative allele's sequence
 
-`sv_multihop.py derive` rebuilds the allele: it pulls the reads spanning every
-locus, takes the longest as a backbone, polishes it into a consensus with the
-rest, aligns that consensus back to the reference, and realigns the reads to it.
+The demo carries a der(3) contig: 39,549 bp built from the 29 tumour reads that
+span all three loci. Every base in it is one those reads carried, which is the
+property that lets the rest of this section treat it as evidence.
 
-<!-- from: scripts/build_cancer_sv_demo.sh -->
+Assembling an allele is an assembler's job.
+[Flye](https://github.com/mikolmogorov/Flye),
+[Shasta](https://github.com/paoloshasta/shasta) and
+[hifiasm](https://github.com/chhylp123/hifiasm) all do local assemblies of this
+kind; pull the reads crossing your loci with `samtools view`, assemble them, and
+put the contig through the two commands the tracks below read:
 
 ```bash
-python3 sv_multihop.py derive \
-  --aln COLO829_tumor.ht.cram --ref GRCh38.fa \
-  --loci chr10:58717464,chr12:72273112,chr3:25359111 \
-  --out der3_RARB --name der3_RARB_BICC1_TRHDE
+# contigs.fa is the assembler's output for the reads crossing the loci
+minimap2 -cx asm5 GRCh38.fa contigs.fa > der3.vs_reference.paf
+jbrowse make-pif der3.vs_reference.paf
 ```
 
+The published contig aligns to the reference in four blocks:
+
 ```
-29 spanning reads
-backbone read 8315652b-cd0f-4290-ad6b-51112f93a44a (57,134 bp)
-wrote der3_RARB.derivative.fa (39,549 bp supported by >=3 reads)
-wrote der3_RARB.vs_reference.paf
     derivative       0-32732   + -> chr3:25,326,821-25,359,568
     derivative   32732-32931   + -> chr10:58,717,463-58,717,662
     derivative   32932-33115   - -> chr12:72,273,111-72,273,294
     derivative   33126-39549   - -> chr3:25,352,683-25,359,111
-wrote der3_RARB.derivative_segments.bed
 ```
 
 The derivative has four contiguous segments: two chr3 arms in opposite
@@ -199,27 +198,18 @@ orientations, a foldback, with short pieces of chr10 and chr12 spliced in at the
 turn. Those two fragments are templated insertions, stretches of other
 chromosomes captured at a repair junction.
 
-The PAF is a synteny track and the consensus is an assembly, so the
-reconstruction loads against the reference directly. The BED is the same
-segments as a feature track on the derivative. Adding
-`--jbrowse-out config.json` writes the config that wires those together and
-prints the URL that opens them as a synteny view.
+The PAF is a synteny track and the contig is an assembly, so the derivative
+loads against the reference directly. The BED names which reference interval
+each stretch of the contig came from, as a feature track on the derivative — a
+gene track cannot say this, since derivative segments usually sit inside one big
+intron.
 
-`--genes` takes a tabix-indexed GFF3 and projects the reference's gene
-annotation through those segments into derivative coordinates, clipped where a
-junction cut it and flipped where a segment is inverted:
-
-```bash
-python3 sv_multihop.py derive ... --genes ncbiRefSeq.gff.gz
-```
-
-```
-wrote der3_RARB.derivative_genes.gff3 (44 features from 41 reference rows)
-```
-
-This allele carries _RARB_'s first coding exon and its start codon, then the 183
-bp of chr12 that the second junction splices in, which is _TRHDE_ coding
-sequence in reverse, then _RARB_ again inverted.
+The demo also carries the reference's gene annotation projected through those
+segments into derivative coordinates, clipped where a junction cut a feature and
+flipped where a segment is inverted. This allele carries _RARB_'s first coding
+exon and its start codon, then the 183 bp of chr12 that the second junction
+splices in, which is _TRHDE_ coding sequence in reverse, then _RARB_ again
+inverted.
 
 Ribbons below are colored by the reference chromosome they come from. The last
 segment names the event: an interval the allele has already carried, read back
@@ -272,14 +262,14 @@ bash build_cancer_sv_demo.sh    # builds ./cancer_sv_build/jbrowse2
 npx --yes serve cancer_sv_build/jbrowse2
 ```
 
-The script fetches the ONT COLO829 somatic SV calls and coverage and runs both
-`sv_multihop.py` steps against the tumor CRAM over HTTP. The same script builds
-the K562 half of the demo, which [](/docs/tutorials/k562_fusions) walks through.
+The script fetches the ONT COLO829 somatic SV calls and coverage, and the
+published der(3) contig and its alignment. It builds the K562 half of the demo
+too, which [](/docs/tutorials/k562_fusions) walks through.
 
 ## Related tools
 
-`sv_multihop.py` is a companion to this page, and each of its steps has a
-dedicated tool built for the general case.
+Every analysis step behind this page belongs to a tool built for it. JBrowse
+converts what they emit and shows it.
 
 - **Calling somatic SVs and their complex clusters from long reads**:
   [Severus](https://github.com/KolmogorovLab/Severus) (Keskus et al. 2025)
@@ -290,12 +280,11 @@ dedicated tool built for the general case.
   and [JaBbA](https://github.com/mskilab-org/JaBbA) with gGnome (Hadi et
   al. 2020) infers junction-balanced genome graphs whose walks are allelic
   paths. RCK (Aganezov and Raphael 2020) reconstructs haplotype-specific
-  karyotypes under evolutionary constraints. All three take copy number, which
-  `chains` does not.
+  karyotypes under evolutionary constraints. All three take copy number.
 - **Assembling the allele's sequence**: a local de novo assembly of the reads
-  pulled at the loci, with [hifiasm](https://github.com/chhylp123/hifiasm) or
-  [Shasta](https://github.com/paoloshasta/shasta), is the stronger version of
-  `derive`'s single-backbone consensus, and
+  pulled at the loci, with [hifiasm](https://github.com/chhylp123/hifiasm),
+  [Flye](https://github.com/mikolmogorov/Flye) or
+  [Shasta](https://github.com/paoloshasta/shasta), and
   [sawfish](https://github.com/PacificBiosciences/sawfish) (Saunders et
   al. 2025) assembles SV haplotypes as part of calling on HiFi reads.
 - **Drawing the figure**:

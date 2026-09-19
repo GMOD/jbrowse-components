@@ -17,7 +17,7 @@ HERE=$(cd "$(dirname "$0")/.." && pwd)   # website/ (holds rclone.conf)
 
 # Files the specs reference by exact name. The derivative assembly, its
 # reference-alignment PIF, the labelled segment BED and the realigned reads all
-# come out of scripts/sv_multihop.py; the STAR-Fusion TSV and the copy-number
+# are the published der(3) contig and its alignment; the STAR-Fusion TSV and the copy-number
 # bigWig out of scripts/depmap_to_jbrowse.py. The COLO829 tumour CRAM and the
 # matched-normal BAM are NOT here: the config streams those from the ONT
 # open-data bucket rather than rehosting ~100 GB.
