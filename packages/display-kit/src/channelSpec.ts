@@ -1,7 +1,7 @@
 import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
 import { compareStructural } from 'mobx'
 
-import { colorConfigSchema, paintedScale } from './colorConfigSchema.ts'
+import { normalizeChannel, paintedScale } from './colorConfigSchema.ts'
 import { facetConfigSchema } from './facetConfigSchema.ts'
 
 /**
@@ -17,16 +17,20 @@ export interface ChannelSpec {
 }
 
 /**
- * A string is a constant: a CSS color, or a `jexl:` callback. An object
- * binds a field to the categorical scale, whose `domain` hands out the
- * `palette` in order.
+ * A string is a constant: a CSS color, or a `jexl:` callback. An object binds
+ * a field to a scale — the display's own list, `categorical` where it declares
+ * nothing else — with `domain` spending the `palette` or naming the cut
+ * points, and `ramp` and `domainMid` the continuous scales' colours.
  */
 export type ColorChannel =
   | string
   | {
       field: string
+      scale?: string
       domain?: string[]
       palette?: string[]
+      ramp?: string[]
+      domainMid?: number
     }
 
 export const CHANNELS = ['facet', 'color', 'filter'] as const
@@ -51,20 +55,53 @@ function parseFacet(value: unknown): ChannelSpec['facet'] {
   return { field: field.trim(), ...(order?.length ? { domain: order } : {}) }
 }
 
+// Every member any display's colour object declares, so one spec language
+// reaches all of them; which of these a display paints is `colorSpecProblems`.
+const COLOR_MEMBERS = [
+  'value',
+  'field',
+  'scale',
+  'domain',
+  'palette',
+  'ramp',
+  'domainMid',
+]
+
 function parseColor(value: unknown): ChannelSpec['color'] {
   if (value === null) {
     return null
   }
-  const lifted = preProcessConfigSnapshot(colorConfigSchema, value)
+  const given = typeof value === 'string' ? { value } : value
+  if (!isRecord(given)) {
+    throw new Error(
+      'color is a CSS color, a jexl: expression or { "field": … }',
+    )
+  }
+  const unknown = Object.keys(given).filter(k => !COLOR_MEMBERS.includes(k))
+  if (unknown.length) {
+    throw new Error(
+      `color takes ${COLOR_MEMBERS.join(', ')}, not ${unknown.join(', ')}`,
+    )
+  }
+  const lifted = normalizeChannel(given, 'color')
   const field = typeof lifted.field === 'string' ? lifted.field.trim() : ''
   const scale = typeof lifted.scale === 'string' ? lifted.scale : undefined
   if (paintedScale({ scale, field }, 'categorical') !== 'none') {
     const domain = strings(lifted.domain)
     const palette = strings(lifted.palette)
+    const ramp = strings(lifted.ramp)
+    const domainMid =
+      lifted.domainMid === undefined ? undefined : Number(lifted.domainMid)
+    if (domainMid !== undefined && !Number.isFinite(domainMid)) {
+      throw new Error('color.domainMid is a number')
+    }
     return {
       field,
+      ...(scale ? { scale } : {}),
       ...(domain?.length ? { domain } : {}),
       ...(palette?.length ? { palette } : {}),
+      ...(ramp?.length ? { ramp } : {}),
+      ...(domainMid === undefined ? {} : { domainMid }),
     }
   }
   if (typeof lifted.value !== 'string' || !lifted.value.trim()) {
@@ -73,6 +110,36 @@ function parseColor(value: unknown): ChannelSpec['color'] {
     )
   }
   return lifted.value.trim()
+}
+
+/**
+ * What a spec's colour asks for that this display cannot paint. `scales` is
+ * the display's own `scale` enum, read off the slot, so a spec is held to the
+ * set a config file is held to — and a ramp is only ever read through a
+ * continuous scale, so a display with none declines one.
+ */
+export function colorSpecProblems(
+  spec: ChannelSpec,
+  scales: readonly string[],
+): string[] {
+  const { color } = spec
+  if (typeof color !== 'object' || !color) {
+    return []
+  }
+  const problems: string[] = []
+  const { scale, ramp, domainMid } = color
+  if (scale !== undefined && !scales.includes(scale)) {
+    problems.push(
+      `color: this display paints ${scales.join(', ')}, not ${scale}`,
+    )
+  }
+  const continuous = scales.includes('linear') || scales.includes('log')
+  if (!continuous && (ramp !== undefined || domainMid !== undefined)) {
+    problems.push(
+      'color: this display has no ramp scale to read a ramp through',
+    )
+  }
+  return problems
 }
 
 function parseFilter(value: unknown): ChannelSpec['filter'] {

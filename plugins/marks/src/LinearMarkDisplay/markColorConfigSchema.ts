@@ -30,7 +30,8 @@ export function markColorScale(color: {
  * #category display
  * A mark's `encoding.color`: one CSS colour or `jexl:` callback for every
  * instance, or a field through a categorical scale (a palette colour per
- * value), a `linear` or `log` scale (a ramp over `domain`) or a `threshold`
+ * value), a `linear` or `log` scale (a ramp over `domain`, `domainMid`
+ * placing its middle stop where a diverging ramp turns) or a `threshold`
  * scale (a palette colour per interval between the cut points `domain`
  * lists). A string is the constant; the object binds the field, and a scale
  * is what the legend describes.
@@ -50,6 +51,21 @@ export function markColorScale(color: {
  *   shape: 'span',
  *   encoding: {
  *     color: { field: 'score', scale: 'log', domain: [1, 1000], ramp: ['white', 'red'] },
+ *   },
+ * }
+ * ```
+ * ```js
+ * {
+ *   shape: 'bar',
+ *   encoding: {
+ *     y: 'score',
+ *     color: {
+ *       field: 'score',
+ *       scale: 'linear',
+ *       domain: [-2, 6],
+ *       ramp: ['blue', 'white', 'red'],
+ *       domainMid: 0,
+ *     },
  *   },
  * }
  * ```

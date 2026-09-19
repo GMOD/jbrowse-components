@@ -251,6 +251,29 @@ test('a ramp scale reads the field through its domain into the LUT', () => {
   expect(r.color[3]).not.toBe(cssColorToABGR(NO_CATEGORY_COLOR))
 })
 
+test('domainMid puts the ramp middle stop at that value', () => {
+  const r = encodeFeatures(
+    features,
+    {
+      color: {
+        field: 'score',
+        scale: 'linear',
+        domain: [0, 40],
+        ramp: ['black', 'white', 'black'],
+        domainMid: 10,
+      },
+    },
+    ALL,
+    { jexl },
+  )
+  // score 10 is the middle stop, 40 the far end
+  expect(r.color[0]).toBe(cssColorToABGR('white'))
+  expect(r.color[1]).toBe(cssColorToABGR('black'))
+  if (r.scale?.kind === 'ramp') {
+    expect(r.scale.domainMid).toBe(10)
+  }
+})
+
 test('a pinned ramp domain wins over the region extremes', () => {
   const r = encodeFeatures(
     features,

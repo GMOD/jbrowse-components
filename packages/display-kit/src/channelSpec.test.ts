@@ -1,4 +1,8 @@
-import { channelSpecChanges, parseChannelSpec } from './channelSpec.ts'
+import {
+  channelSpecChanges,
+  colorSpecProblems,
+  parseChannelSpec,
+} from './channelSpec.ts'
 
 const parse = (spec: unknown) => parseChannelSpec(JSON.stringify(spec))
 
@@ -30,6 +34,28 @@ test('a color object is the field with its order and palette, and a lifted const
     color: { field: 'strand', domain: ['-1', '1'], palette: ['blue', 'red'] },
   })
   expect(parse({ color: { value: 'red' } })).toEqual({ color: 'red' })
+})
+
+test('a color object carries its scale, ramp and domainMid through', () => {
+  expect(
+    parse({
+      color: {
+        field: 'score',
+        scale: 'linear',
+        domain: [0, 10],
+        ramp: ['blue', 'white', 'red'],
+        domainMid: 2,
+      },
+    }),
+  ).toEqual({
+    color: {
+      field: 'score',
+      scale: 'linear',
+      domain: ['0', '10'],
+      ramp: ['blue', 'white', 'red'],
+      domainMid: 2,
+    },
+  })
 })
 
 test('a channel left out stays out, and null is kept to clear one', () => {
@@ -66,8 +92,12 @@ test.each([
   [{ color: '' }, 'color is a CSS color'],
   [{ color: { field: 'x', scale: 'none' } }, 'color is a CSS color'],
   [
-    { color: { field: 'x', ramp: ['red'] } },
-    'FeatureColor takes value, field, scale, domain and palette, not ramp',
+    { color: { field: 'x', stops: ['red'] } },
+    'color takes value, field, scale, domain, palette, ramp, domainMid, not stops',
+  ],
+  [
+    { color: { field: 'x', scale: 'linear', domainMid: 'mid' } },
+    'domainMid is a number',
   ],
   [{ color: { field: 'x', palette: 'red' } }, 'color.palette is a list'],
   [{ color: { palette: ['red'] } }, 'color is a CSS color'],
@@ -96,4 +126,17 @@ test('changes are what differs from the current channels', () => {
       current,
     ),
   ).toEqual({ sets: ['color'], clears: ['filter'] })
+})
+
+test('a scale the display does not paint is a problem, and a ramp needs one', () => {
+  const threshold = parse({ color: { field: 'score', scale: 'threshold' } })
+  expect(colorSpecProblems(threshold, ['categorical', 'threshold'])).toEqual([])
+  expect(colorSpecProblems(threshold, ['categorical'])).toEqual([
+    'color: this display paints categorical, not threshold',
+  ])
+  const ramped = parse({ color: { field: 'score', ramp: ['viridis'] } })
+  expect(colorSpecProblems(ramped, ['categorical'])).toEqual([
+    'color: this display has no ramp scale to read a ramp through',
+  ])
+  expect(colorSpecProblems(ramped, ['categorical', 'linear'])).toEqual([])
 })

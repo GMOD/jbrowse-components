@@ -1,7 +1,10 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorScaleChoicesOf,
+  paintedScale,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 import {
   FEATURE_DEFAULT_COLOR,
@@ -84,6 +87,14 @@ export function colorViews(self: ColorHost) {
      */
     get colorEncoding() {
       return featureColorScale(this.colorSettings)
+    },
+
+    /**
+     * #getter
+     * The scales this display's colour paints, for the Edit as JSON box.
+     */
+    get colorScaleChoices(): string[] {
+      return colorScaleChoicesOf(self.conf.color)
     },
 
     /**

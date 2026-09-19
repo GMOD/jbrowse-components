@@ -413,14 +413,18 @@ export function encodeFeatures<L extends LaneName>(
   } else if (rampEncoding && rampValues) {
     const extent = finiteExtremes(rampValues, count)
     const domain = rampEncoding.domain ?? extent
-    const lut = buildColorRampLut(rampStops(rampEncoding.ramp))
+    const norm = makeScoreNormalizer(
+      domain[0],
+      domain[1],
+      scaleTypeCode(rampEncoding.scale),
+      1,
+    )
+    const { domainMid } = rampEncoding
+    const lut = buildColorRampLut(
+      rampStops(rampEncoding.ramp),
+      domainMid === undefined ? 0.5 : norm(domainMid),
+    )
     if (color) {
-      const norm = makeScoreNormalizer(
-        domain[0],
-        domain[1],
-        scaleTypeCode(rampEncoding.scale),
-        1,
-      )
       for (let i = 0; i < count; i++) {
         const v = rampValues[i]!
         color[i] = Number.isFinite(v)
@@ -434,6 +438,7 @@ export function encodeFeatures<L extends LaneName>(
       scale: rampEncoding.scale,
       domain,
       pinned: rampEncoding.domain !== undefined,
+      ...(domainMid === undefined ? {} : { domainMid }),
       extent,
       lut,
     }

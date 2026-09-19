@@ -83,3 +83,21 @@ test('stopsFromRampLut reads the entries sampleColorRamp defines, exactly', () =
   expect(legend[0]!.offset).toBe(0)
   expect(legend.at(-1)!.offset).toBe(1)
 })
+
+test('domainMid moves the stop list midpoint to that fraction of the table', () => {
+  const stops: ColorRampStop[] = [
+    [0, 0, 255, 255],
+    [255, 255, 255, 255],
+    [255, 0, 0, 255],
+  ]
+  const lut = buildColorRampLut(stops, 0.25)
+  const at = (t: number) => {
+    const o = Math.round(t * (lut.length / 4 - 1)) * 4
+    return [lut[o], lut[o + 1], lut[o + 2]]
+  }
+  expect(at(0.25)).toEqual([255, 255, 255])
+  expect(at(0)).toEqual([0, 0, 255])
+  expect(at(1)).toEqual([255, 0, 0])
+  expect(at(0.125)).toEqual(sampleColorRamp(stops, 0.25).slice(0, 3))
+  expect(at(0.625)).toEqual(sampleColorRamp(stops, 0.75).slice(0, 3))
+})

@@ -66,18 +66,36 @@ export function sampleColorRamp(stops: readonly ColorRampStop[], t: number) {
  * texture both GPU backends upload and the Canvas2D twins index — entry `i` is
  * the color at `t = i / (N - 1)`. N comes off the shader that samples it, so
  * the table and `rampColor`'s texel mapping cannot disagree.
+ *
+ * `mid` is where the stop list's own midpoint lands in the table, so a
+ * diverging ramp whose middle colour belongs at a value off the centre of the
+ * domain is baked into the bytes. Every reader — the shader, the Canvas2D
+ * fillStyle table, the legend bar — then samples one evenly spaced table and
+ * cannot disagree about the warp.
  */
-export function buildColorRampLut(stops: readonly ColorRampStop[]) {
+export function buildColorRampLut(stops: readonly ColorRampStop[], mid = 0.5) {
   const last = COLOR_RAMP_LUT_ENTRIES - 1
   const data = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)
+  const m = Math.min(1, Math.max(0, mid))
   for (let i = 0; i < COLOR_RAMP_LUT_ENTRIES; i++) {
-    const [r, g, b, a] = sampleColorRamp(stops, i / last)
+    const t = i / last
+    const [r, g, b, a] = sampleColorRamp(stops, unwarp(t, m))
     data[i * 4] = r
     data[i * 4 + 1] = g
     data[i * 4 + 2] = b
     data[i * 4 + 3] = a
   }
   return data
+}
+
+function unwarp(t: number, mid: number) {
+  if (mid <= 0) {
+    return t >= 1 ? 1 : 0.5 + 0.5 * t
+  }
+  if (mid >= 1) {
+    return t <= 0 ? 0 : 0.5 * t
+  }
+  return t <= mid ? (0.5 * t) / mid : 0.5 + (0.5 * (t - mid)) / (1 - mid)
 }
 
 /**

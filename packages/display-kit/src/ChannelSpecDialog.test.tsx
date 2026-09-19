@@ -21,6 +21,7 @@ function setup({
       { spec: '{ "facet": "strand" }', description: 'one section per strand' },
     ],
     channelSpecProblems: jest.fn(() => problems),
+    colorScaleChoices: ['categorical'],
     applyDisplaySettings: jest.fn(),
     setJexlFilters: jest.fn(),
   }

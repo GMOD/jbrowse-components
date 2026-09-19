@@ -1,5 +1,11 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  getSlotDefinition,
+  slotChoices,
+} from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /** How a colour object maps its `field`; `none` paints `value`. */
 export const COLOR_SCALES = [
@@ -21,6 +27,13 @@ export interface ColorSetting {
   scale: 'none' | 'categorical' | undefined
   domain: readonly string[]
   palette: readonly string[]
+}
+
+/** A colour object carrying every member any display declares. */
+export interface FullColorSetting extends Omit<ColorSetting, 'scale'> {
+  scale: ColorScaleName | undefined
+  ramp: readonly string[]
+  domainMid: number | undefined
 }
 
 /**
@@ -109,7 +122,23 @@ export const colorRampSlot = {
     defaultValue: [],
     description: 'viridis, or two or more CSS colour stops; empty is viridis',
   },
+  domainMid: {
+    type: 'maybeNumber',
+    description:
+      "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it",
+  },
 } as const
+
+/**
+ * The scales a display's colour object paints, read off its own slot, less
+ * `none`, which the string form already is. What the Edit as JSON box offers
+ * and holds a spec to.
+ */
+export function colorScaleChoicesOf(color: AnyConfigurationModel): string[] {
+  return (slotChoices(getSlotDefinition(color, 'scale')) ?? []).filter(
+    scale => scale !== 'none',
+  )
+}
 
 /** A colour object's options: a bare string is its `value`, and an undeclared key is refused. */
 export function colorChannelOptions(name: string) {

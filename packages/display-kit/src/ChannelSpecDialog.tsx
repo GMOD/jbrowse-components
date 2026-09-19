@@ -5,7 +5,11 @@ import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { channelSpecChanges, parseChannelSpec } from './channelSpec.ts'
+import {
+  channelSpecChanges,
+  colorSpecProblems,
+  parseChannelSpec,
+} from './channelSpec.ts'
 
 import type { ChannelSpec } from './channelSpec.ts'
 
@@ -13,6 +17,8 @@ export interface ChannelSpecHost {
   channelSpec: ChannelSpec
   channelSpecExamples: { spec: string; description: string }[]
   channelSpecProblems: (spec: ChannelSpec) => string[]
+  /** The display's own `color.scale` enum, minus `none`, which the string form is. */
+  colorScaleChoices: string[]
   applyDisplaySettings: (settings: Record<string, unknown>) => unknown
   setJexlFilters: (filters?: string[]) => void
 }
@@ -20,7 +26,10 @@ export interface ChannelSpecHost {
 function readSpec(host: ChannelSpecHost, text: string) {
   try {
     const spec = parseChannelSpec(text)
-    const problems = host.channelSpecProblems(spec)
+    const problems = [
+      ...colorSpecProblems(spec, host.colorScaleChoices),
+      ...host.channelSpecProblems(spec),
+    ]
     return problems.length
       ? { error: problems.join('; ') }
       : { spec, summary: summarize(spec, host.channelSpec) }
@@ -89,9 +98,10 @@ const ChannelSpecDialog = observer(function ChannelSpecDialog({
       <DialogContentText>
         <code>facet</code> stacks one section per value of a field, in the order
         its <code>domain</code> lists; <code>color</code> is a constant, or{' '}
-        <code>{'{ "field": … }'}</code> for one color per value;{' '}
-        <code>filter</code> is the jexl list from Filter by.... A channel left
-        out stays as it is, and <code>null</code> clears one.
+        <code>{'{ "field": … }'}</code> read through one of the scales{' '}
+        <code>{model.colorScaleChoices.join(', ')}</code>; <code>filter</code>{' '}
+        is the jexl list from Filter by.... A channel left out stays as it is,
+        and <code>null</code> clears one.
       </DialogContentText>
       <ul>
         {model.channelSpecExamples.map(({ spec, description }) => (

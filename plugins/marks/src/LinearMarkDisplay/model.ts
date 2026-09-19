@@ -198,6 +198,7 @@ function colorEncodingOf(
             : color.ramp.length === 1 && color.ramp[0] === 'viridis'
               ? 'viridis'
               : [...color.ramp],
+        domainMid: color.domainMid,
       }
   }
 }

@@ -71,6 +71,8 @@ export type ColorEncoding =
       scale: 'linear' | 'log'
       domain?: [number, number]
       ramp?: RampRef
+      /** The value the ramp's middle stop sits at; the domain's centre unset. */
+      domainMid?: number
     }
   | ThresholdRef
 
@@ -154,6 +156,8 @@ export type ColorScaleTable =
       domain: [number, number]
       /** Whether `domain` was declared, and so already agrees across regions. */
       pinned: boolean
+      /** The declared {@link ColorEncoding} `domainMid`, already baked into `lut`. */
+      domainMid?: number
       /** This region's own extremes of the field, what a display unions. */
       extent: [number, number]
       lut: Uint8Array
