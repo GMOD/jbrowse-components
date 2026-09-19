@@ -26,7 +26,9 @@ import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
+  ConfigNodeType,
   GetInheritedIdentifier,
+  MergeConfigDef,
 } from './types.ts'
 import type {
   IAnyType,
@@ -437,6 +439,8 @@ export interface ConfigurationSchemaType<
   OPTIONS extends ConfigurationSchemaOptions<any, any>,
 > extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
   type: string
+  readonly Type: ConfigNodeType<ConfigurationSchemaType<DEFINITION, OPTIONS>> &
+    ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>>['Type']
 }
 
 export function ConfigurationSchema<
@@ -453,7 +457,7 @@ export function ConfigurationSchema<
   inputSchemaDefinition: DEFINITION,
   inputOptions?: ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
 ): ConfigurationSchemaType<
-  DEFINITION,
+  MergeConfigDef<DEFINITION, BASE_SCHEMA> & ConfigurationSchemaDefinition,
   ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>
 > {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(

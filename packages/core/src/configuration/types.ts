@@ -60,6 +60,32 @@ export type ConfigurationSchemaForModel<MODEL> =
     ? SCHEMA
     : never
 
+/**
+ * SPIKE: the typed instance a config node presents, mapped over the schema's
+ * own definition instead of the `Record<string, any>` the factory assembles.
+ */
+export type MergeConfigDef<D, BASE> =
+  BASE extends ConfigurationSchemaType<infer BD, any>
+    ? Omit<BD, keyof D> & {
+        [K in keyof D]: K extends keyof BD
+          ? BD[K] extends { type: string }
+            ? D[K] extends { type: string }
+              ? Omit<BD[K], keyof D[K]> & D[K]
+              : D[K]
+            : D[K]
+          : D[K]
+      }
+    : D
+
+type ConfigNodeValue<DEF> = DEF extends AnyConfigurationSchemaType
+  ? DEF['Type']
+  : SlotValueRawFromDef<DEF>
+
+export type ConfigNodeType<SCHEMA> =
+  SCHEMA extends ConfigurationSchemaType<infer D, any>
+    ? { [K in keyof D]: ConfigNodeValue<D[K]> }
+    : never
+
 export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
   ? never
   : SCHEMA extends ConfigurationSchemaType<infer D, any>
