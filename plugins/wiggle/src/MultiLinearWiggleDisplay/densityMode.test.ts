@@ -16,9 +16,6 @@ function makeBinnedSource(name: string): WiggleSourceData {
     featureMaxScores: new Float32Array([50]),
     numFeatures: 1,
     hasSummaryScores: true,
-    posFeaturePositions: featurePositions,
-    posFeatureScores: featureScores,
-    posNumFeatures: 1,
   }
 }
 

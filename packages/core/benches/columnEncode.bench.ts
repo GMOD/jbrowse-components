@@ -441,7 +441,7 @@ function runEncodeScenario(fixture: SourceColumns[]) {
     {
       name: 'wiggle',
       run: () => {
-        const wiggle = fixture.map(s => processFeaturesFromArrays(s.raw, PIVOT))
+        const wiggle = fixture.map(s => processFeaturesFromArrays(s.raw))
         const layers = buildSourceRenderData(
           { sources: wiggle.map((w, i) => ({ name: fixture[i]!.name, ...w })) },
           gpuProps,
@@ -452,7 +452,7 @@ function runEncodeScenario(fixture: SourceColumns[]) {
     {
       name: 'control',
       run: () => {
-        const wiggle = fixture.map(s => processFeaturesFromArrays(s.raw, PIVOT))
+        const wiggle = fixture.map(s => processFeaturesFromArrays(s.raw))
         const layers = buildSourceRenderData(
           { sources: wiggle.map((w, i) => ({ name: fixture[i]!.name, ...w })) },
           gpuProps,
@@ -655,10 +655,6 @@ function runEncodeScenario(fixture: SourceColumns[]) {
       w.featureScores,
       w.featureMinScores,
       w.featureMaxScores,
-      w.posFeaturePositions,
-      w.posFeatureScores,
-      w.negFeaturePositions,
-      w.negFeatureScores,
     ]),
   )
   const encodedBytes = uniqueBytes(encodedViews(columnsOut.encoded))

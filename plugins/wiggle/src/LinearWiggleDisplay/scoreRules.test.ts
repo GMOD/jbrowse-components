@@ -18,12 +18,6 @@ function makeData(): WiggleDataResult {
         featureMaxScores: new Float32Array([30]),
         numFeatures: 1,
         hasSummaryScores: false,
-        posFeaturePositions: featurePositions,
-        posFeatureScores: featureScores,
-        posNumFeatures: 1,
-        negFeaturePositions: new Uint32Array(0),
-        negFeatureScores: new Float32Array(0),
-        negNumFeatures: 0,
       },
     ],
   }

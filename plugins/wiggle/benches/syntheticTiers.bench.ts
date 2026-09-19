@@ -145,46 +145,40 @@ const arms: Record<string, () => Promise<void>> = {
     const r = await bigwig.getFeaturesAsArraysMulti([region], {
       basesPerSpan: rawSpan,
     })
-    sink += processFeaturesFromArrays(
-      {
-        starts: r.starts,
-        ends: r.ends,
-        scores: r.scores,
-        minScores: undefined,
-        maxScores: undefined,
-        count: r.starts.length,
-      },
-      0,
-    ).numFeatures
+    sink += processFeaturesFromArrays({
+      starts: r.starts,
+      ends: r.ends,
+      scores: r.scores,
+      minScores: undefined,
+      maxScores: undefined,
+      count: r.starts.length,
+    }).numFeatures
   },
   'read-raw-ctl': async () => {
     const r = await bigwig.getFeaturesAsArraysMulti([region], {
       basesPerSpan: rawSpan,
     })
-    sink += processFeaturesFromArrays(
-      {
-        starts: r.starts,
-        ends: r.ends,
-        scores: r.scores,
-        minScores: undefined,
-        maxScores: undefined,
-        count: r.starts.length,
-      },
-      0,
-    ).numFeatures
+    sink += processFeaturesFromArrays({
+      starts: r.starts,
+      ends: r.ends,
+      scores: r.scores,
+      minScores: undefined,
+      maxScores: undefined,
+      count: r.starts.length,
+    }).numFeatures
   },
   'read-tier': async () => {
     const [r] = await adapter.getFeatureArraysMulti([region], { bpPerPx })
-    sink += processFeaturesFromArrays(r!, 0).numFeatures
+    sink += processFeaturesFromArrays(r!).numFeatures
   },
   bin: async () => {
     sink += binBp === undefined ? 0 : binAligned().count
   },
   'process-raw': async () => {
-    sink += processFeaturesFromArrays(raw, 0).numFeatures
+    sink += processFeaturesFromArrays(raw).numFeatures
   },
   'process-tier': async () => {
-    sink += processFeaturesFromArrays(tier!, 0).numFeatures
+    sink += processFeaturesFromArrays(tier!).numFeatures
   },
 }
 
@@ -212,17 +206,13 @@ for (let round = 0; round < rounds; round++) {
 const MiB = 1024 * 1024
 const px = (end - start) / bpPerPx
 function rows(r: RawFeatureArrays) {
-  const out = processFeaturesFromArrays(r, 0)
+  const out = processFeaturesFromArrays(r)
   const buffers = new Set(
     [
       out.featurePositions,
       out.featureScores,
       out.featureMinScores,
       out.featureMaxScores,
-      out.posFeaturePositions,
-      out.posFeatureScores,
-      out.negFeaturePositions,
-      out.negFeatureScores,
     ].map(a => a.buffer),
   )
   let wire = 0

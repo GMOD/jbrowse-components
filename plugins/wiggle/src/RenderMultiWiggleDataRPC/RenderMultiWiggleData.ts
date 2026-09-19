@@ -11,7 +11,6 @@ interface RenderMultiWiggleDataArgs {
   // input order.
   regions: Region[]
   sources?: SourceInfo[]
-  bicolorPivot?: number
   bpPerPx?: number
   resolution?: number
   // The display's raw summary slot, forwarded to the adapter so one that stores

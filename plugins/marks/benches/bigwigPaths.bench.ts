@@ -121,13 +121,13 @@ const MEAN_FIELD = aggregateFieldName({ op: 'mean', field: 'score' })
 function armWiggle(region: Region, bpPerPx: number) {
   return async () => {
     const raws = await adapter.getFeatureArraysMulti([region], { bpPerPx })
-    return processFeaturesFromArrays(raws[0]!, 0, true)
+    return processFeaturesFromArrays(raws[0]!)
   }
 }
 function armControl(region: Region, bpPerPx: number) {
   return async () => {
     const raws = await adapter.getFeatureArraysMulti([region], { bpPerPx })
-    return processFeaturesFromArrays(raws[0]!, 0, true)
+    return processFeaturesFromArrays(raws[0]!)
   }
 }
 function armMarks(region: Region, bpPerPx: number) {

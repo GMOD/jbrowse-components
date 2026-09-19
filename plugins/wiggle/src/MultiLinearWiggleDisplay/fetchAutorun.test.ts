@@ -19,17 +19,14 @@ function makeEmptyMultiWiggleData(): WiggleDataResult[] {
 // A RenderMultiWiggleData RPC result naming the given sources (feature arrays
 // are irrelevant to source-list accumulation, so they stay empty).
 function makeMultiWiggleData(names: string[]): WiggleDataResult {
-  const empty = processFeaturesFromArrays(
-    {
-      starts: new Int32Array(0),
-      ends: new Int32Array(0),
-      scores: new Float32Array(0),
-      minScores: undefined,
-      maxScores: undefined,
-      count: 0,
-    },
-    0,
-  )
+  const empty = processFeaturesFromArrays({
+    starts: new Int32Array(0),
+    ends: new Int32Array(0),
+    scores: new Float32Array(0),
+    minScores: undefined,
+    maxScores: undefined,
+    count: 0,
+  })
   return { sources: names.map(name => ({ name, ...empty })) }
 }
 

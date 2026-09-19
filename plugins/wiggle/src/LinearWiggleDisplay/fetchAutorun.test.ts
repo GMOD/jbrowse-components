@@ -20,12 +20,6 @@ function makeEmptyWiggleData(zoomRange?: ZoomRange): WiggleDataResult {
         featureMinScores: new Float32Array(0),
         featureMaxScores: new Float32Array(0),
         numFeatures: 0,
-        posFeaturePositions: new Uint32Array(0),
-        posFeatureScores: new Float32Array(0),
-        posNumFeatures: 0,
-        negFeaturePositions: new Uint32Array(0),
-        negFeatureScores: new Float32Array(0),
-        negNumFeatures: 0,
         hasSummaryScores: false,
       },
     ],
@@ -55,7 +49,10 @@ test('the reactive method hooks are views, not actions', () => {
 })
 
 describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
-  it('refetches when bicolorPivot changes (rpcProps field)', async () => {
+  // The pivot is an encoder input alone: the payload is the same score arrays
+  // whichever side of it a bin falls on, so moving it re-encodes and refetches
+  // nothing.
+  it('does not refetch when bicolorPivot changes', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
@@ -70,9 +67,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
-    await waitFor(() => {
-      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
-    })
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
   it('refetches when resolution changes (rpcProps field)', async () => {
@@ -288,32 +283,27 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
 })
 
 // Signed data with real summary bands, so whiskers produces its full layer set.
-function makeSignedWiggleData(useBicolor: boolean): WiggleDataResult {
+function makeSignedWiggleData(): WiggleDataResult {
   return {
     sources: [
       {
         name: 'default',
-        ...processFeaturesFromArrays(
-          {
-            starts: new Int32Array([0, 10]),
-            ends: new Int32Array([10, 20]),
-            scores: new Float32Array([5, -5]),
-            minScores: new Float32Array([2, -8]),
-            maxScores: new Float32Array([9, -1]),
-            count: 2,
-          },
-          0,
-          useBicolor,
-        ),
+        ...processFeaturesFromArrays({
+          starts: new Int32Array([0, 10]),
+          ends: new Int32Array([10, 20]),
+          scores: new Float32Array([5, -5]),
+          minScores: new Float32Array([2, -8]),
+          maxScores: new Float32Array([9, -1]),
+          count: 2,
+        }),
       },
     ],
   }
 }
 
-// Regression: `useBicolor: false` only reached the 'avg' path, where the worker
-// pre-splits into the pos arrays. whiskers — the default summaryScoreMode —
-// re-derives the split on the main thread, so a solid green track came back
-// green above the pivot and the negColor slot's red below it.
+// Regression: a solid green track came back green above the pivot and the
+// negColor slot's red below it, because `useBicolor: false` only reached the
+// path that drew one colour.
 describe('LinearWiggleDisplay solid color', () => {
   // Bands are still tinted by magnitude (lighten/darken), so the assertion is
   // on hue: a green-family color has equal red and blue channels, red does not.
@@ -330,7 +320,7 @@ describe('LinearWiggleDisplay solid color', () => {
       display.setSummaryScoreMode(mode)
 
       const layers = buildSourceRenderData(
-        makeSignedWiggleData(false),
+        makeSignedWiggleData(),
         display.gpuProps(),
       )
 
@@ -349,8 +339,8 @@ describe('LinearWiggleDisplay solid color', () => {
   // `color` slot entirely and always draws from posColor (the `color` config
   // doc says so, and `scoreRamp` returns undefined with bicolor off, so the
   // legend describes no negative side). The claim here is therefore only that
-  // one color comes out, not which. min/max re-derive the pos/neg split on the
-  // main thread from bicolorPivot, which is where a second color got in.
+  // one color comes out, not which; the split around bicolorPivot is where a
+  // second color got in.
   test.each(['avg', 'min', 'max'])(
     'density with bicolor off stays one color in %s mode',
     mode => {
@@ -362,7 +352,7 @@ describe('LinearWiggleDisplay solid color', () => {
       display.setSummaryScoreMode(mode)
 
       const layers = buildSourceRenderData(
-        makeSignedWiggleData(false),
+        makeSignedWiggleData(),
         display.gpuProps(),
       )
 
@@ -378,7 +368,7 @@ describe('LinearWiggleDisplay solid color', () => {
     display.setSummaryScoreMode('whiskers')
 
     const layers = buildSourceRenderData(
-      makeSignedWiggleData(true),
+      makeSignedWiggleData(),
       display.gpuProps(),
     )
     const colors = new Set(layers.map(l => JSON.stringify(l.color)))

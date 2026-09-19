@@ -106,9 +106,7 @@ export function groupFeaturesBySource<
   return groups
 }
 
-// Raw per-feature typed arrays returned by adapters' fast path. Display-side
-// concerns (bicolor pos/neg split) happen in processFeaturesFromArrays at the
-// executor, not here — keeps adapters out of UI policy decisions.
+// Raw per-feature typed arrays returned by adapters' fast path.
 export interface RawFeatureArrays {
   starts: Int32Array | Uint32Array
   ends: Int32Array | Uint32Array
@@ -118,52 +116,13 @@ export interface RawFeatureArrays {
   count: number
 }
 
-// Fresh per call, never a shared constant: these buffers are handed to
-// postMessage as transferables, and transferring detaches them.
-function emptySide() {
-  return { positions: new Uint32Array(0), scores: new Float32Array(0) }
-}
-
-// The features on one side of the pivot, copied out in order. Only called when
-// both sides are non-empty — a one-sided split aliases the full arrays instead.
-function splitSide(
-  featurePositions: Uint32Array,
-  featureScores: Float32Array,
-  count: number,
-  sideCount: number,
-  bicolorPivot: number,
-  keepPos: boolean,
-) {
-  const positions = new Uint32Array(sideCount * 2)
-  const sideScores = new Float32Array(sideCount)
-  let j = 0
-  for (let i = 0; i < count; i++) {
-    const score = featureScores[i]!
-    if (score >= bicolorPivot === keepPos) {
-      positions[j * 2] = featurePositions[i * 2]!
-      positions[j * 2 + 1] = featurePositions[i * 2 + 1]!
-      sideScores[j] = score
-      j++
-    }
-  }
-  return { positions, scores: sideScores }
-}
-
-// Adapter arrays -> the render-side layout: absolute positions, scores, the
-// min/max summary bands, and the pivot-split pos/neg arrays the 'avg' render
-// path draws from.
-//
-// Arrays are aliased, not copied, wherever a copy would be identical: no
-// summary data means min/max === score, and an all-positive (or all-negative)
-// window means one side's arrays === the full arrays. Aliasing is safe because
-// every consumer only reads, and structured clone preserves the sharing across
-// the worker boundary (collectWiggleTransferables dedupes the buffers). This
-// matters at scale: a typical all-positive coverage source used to allocate,
-// fill, and transfer three full copies of its positions.
+// Adapter arrays -> the render-side layout: absolute positions, scores and the
+// min/max summary bands. Min/max are aliased onto the scores where no feature
+// is a summary, which is safe because every consumer only reads and structured
+// clone preserves the sharing across the worker boundary
+// (collectWiggleTransferables dedupes the buffers).
 export function processFeaturesFromArrays(
   raw: RawFeatureArrays,
-  bicolorPivot: number,
-  useBicolor = true,
 ): WiggleFeatureArrays {
   const { starts, ends, scores, minScores, maxScores, count } = raw
   const featurePositions = new Uint32Array(count * 2)
@@ -194,51 +153,12 @@ export function processFeaturesFromArrays(
     // arrays that never do (every bin one base wide, or a fallback adapter that
     // fills them unconditionally), and holding onto the copies then spends two
     // extra buffers on the postMessage transfer for values already sitting in
-    // `featureScores` — the same aliasing the pos/neg split below applies.
+    // `featureScores`.
     if (hasSummaryScores) {
       featureMinScores = mins
       featureMaxScores = maxs
     }
   }
-
-  // Counted with the same `>= pivot` predicate splitSide partitions on, so a
-  // NaN score (never >=, never <) lands on the same side in both.
-  let posCount = count
-  if (useBicolor) {
-    posCount = 0
-    for (let i = 0; i < count; i++) {
-      if (featureScores[i]! >= bicolorPivot) {
-        posCount++
-      }
-    }
-  }
-  const negCount = count - posCount
-  const pos =
-    negCount === 0
-      ? { positions: featurePositions, scores: featureScores }
-      : posCount === 0
-        ? emptySide()
-        : splitSide(
-            featurePositions,
-            featureScores,
-            count,
-            posCount,
-            bicolorPivot,
-            true,
-          )
-  const neg =
-    posCount === 0
-      ? { positions: featurePositions, scores: featureScores }
-      : negCount === 0
-        ? emptySide()
-        : splitSide(
-            featurePositions,
-            featureScores,
-            count,
-            negCount,
-            bicolorPivot,
-            false,
-          )
 
   return {
     featurePositions,
@@ -247,12 +167,6 @@ export function processFeaturesFromArrays(
     featureMaxScores,
     numFeatures: count,
     hasSummaryScores,
-    posFeaturePositions: pos.positions,
-    posFeatureScores: pos.scores,
-    posNumFeatures: posCount,
-    negFeaturePositions: neg.positions,
-    negFeatureScores: neg.scores,
-    negNumFeatures: negCount,
   }
 }
 

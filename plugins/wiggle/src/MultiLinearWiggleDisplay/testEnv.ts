@@ -19,12 +19,6 @@ export function makeSource(name: string): WiggleSourceData {
     featureMaxScores: new Float32Array(0),
     numFeatures: 0,
     hasSummaryScores: false,
-    posFeaturePositions: new Uint32Array(0),
-    posFeatureScores: new Float32Array(0),
-    posNumFeatures: 0,
-    negFeaturePositions: new Uint32Array(0),
-    negFeatureScores: new Float32Array(0),
-    negNumFeatures: 0,
   }
 }
 

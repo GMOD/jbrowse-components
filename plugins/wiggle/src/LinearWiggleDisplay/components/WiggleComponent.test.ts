@@ -15,20 +15,6 @@ function makeData(numFeatures = 2, withNeg = false): WiggleDataResult {
         featureMinScores: new Float32Array([5, withNeg ? -3 : 8]),
         featureMaxScores: new Float32Array([5, withNeg ? -3 : 8]),
         numFeatures,
-        posFeaturePositions: withNeg
-          ? new Uint32Array([0, 10])
-          : new Uint32Array([0, 10, 10, 20]),
-        posFeatureScores: withNeg
-          ? new Float32Array([5])
-          : new Float32Array([5, 8]),
-        posNumFeatures: withNeg ? 1 : numFeatures,
-        negFeaturePositions: withNeg
-          ? new Uint32Array([10, 20])
-          : new Uint32Array(0),
-        negFeatureScores: withNeg
-          ? new Float32Array([-3])
-          : new Float32Array(0),
-        negNumFeatures: withNeg ? 1 : 0,
         hasSummaryScores: false,
       },
     ],
@@ -121,23 +107,16 @@ describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
     expect(sources1[0]!.color).not.toEqual(sources2[0]!.color)
   })
 
+  // The sub-pivot instances are the second half of `colorsAbgr`, the layer
+  // colour staying the positive one.
   it('produces different colors when negColor changes in bicolor mode', () => {
     const data = makeData(2, true)
 
-    const sources1 = buildSourceRenderData(
-      data,
-      singleGpuProps({ negColor: '#e10000' }),
-    )
-    const sources2 = buildSourceRenderData(
-      data,
-      singleGpuProps({ negColor: '#00ff00' }),
-    )
+    const below = (negColor: string) =>
+      buildSourceRenderData(data, singleGpuProps({ negColor }))[0]!
+        .colorsAbgr![1]
 
-    const negSource1 = sources1.find(s => s.color[0] > 0.5 && s.color[1] < 0.5)
-    const negSource2 = sources2.find(s => s.color[1] > 0.5 && s.color[0] < 0.5)
-    expect(negSource1).toBeDefined()
-    expect(negSource2).toBeDefined()
-    expect(negSource1!.color).not.toEqual(negSource2!.color)
+    expect(below('#e10000')).not.toBe(below('#00ff00'))
   })
 
   it('density mode + bicolor renders single source row', () => {

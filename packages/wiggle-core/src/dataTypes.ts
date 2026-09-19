@@ -18,12 +18,6 @@ export interface WiggleFeatureArrays {
   featureMaxScores: Float32Array
   numFeatures: number
   hasSummaryScores: boolean
-  posFeaturePositions: Uint32Array
-  posFeatureScores: Float32Array
-  posNumFeatures: number
-  negFeaturePositions: Uint32Array
-  negFeatureScores: Float32Array
-  negNumFeatures: number
 }
 
 export type WiggleSourceData = SourceInfo & WiggleFeatureArrays

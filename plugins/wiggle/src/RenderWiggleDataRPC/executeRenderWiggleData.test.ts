@@ -66,11 +66,11 @@ test('every buffer in the payload is in the transfer list', async () => {
   const [source] = result!.sources
 
   expect(transferables).toContain(source!.featurePositions.buffer)
-  expect(transferables).toContain(source!.negFeatureScores.buffer)
+  expect(transferables).toContain(source!.featureScores.buffer)
 })
 
-// several regions, and an empty one: an empty side aliases nothing and gets its
-// own zero-length allocation, which is still a buffer the list has to carry
+// several regions, and an empty one, whose zero-length allocations are still
+// buffers the list has to carry
 test('every region carries the range the adapter declared', async () => {
   const { value } = await run([2, 0])
   expect(value.map(r => r.zoomRange)).toEqual([

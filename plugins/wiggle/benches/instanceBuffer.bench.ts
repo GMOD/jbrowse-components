@@ -149,7 +149,6 @@ function payload(summary: boolean): WiggleDataResult {
       name: `s${i}`,
       ...processFeaturesFromArrays(
         summary ? raw : { ...raw, minScores: undefined, maxScores: undefined },
-        pivot,
       ),
     })),
   }
@@ -345,10 +344,6 @@ function uniqueBytes(sources: WiggleDataResult['sources']) {
       s.featureScores,
       s.featureMinScores,
       s.featureMaxScores,
-      s.posFeaturePositions,
-      s.posFeatureScores,
-      s.negFeaturePositions,
-      s.negFeatureScores,
     ]) {
       if (!seen.has(a.buffer)) {
         seen.add(a.buffer)
@@ -358,18 +353,17 @@ function uniqueBytes(sources: WiggleDataResult['sources']) {
   }
   return bytes
 }
-const noBicolor = raws.map(r => processFeaturesFromArrays(r, pivot, false))
 const features = raws.reduce((t, r) => t + r.count, 0)
-const negFeatures = data.sources.reduce((t, s) => t + s.negNumFeatures, 0)
+const negFeatures = raws.reduce(
+  (t, r) => t + r.scores.reduce((n, v) => n + (v >= pivot ? 0 : 1), 0),
+  0,
+)
 const MB = 1024 * 1024
 const memory = {
   featuresPerSource: Math.round(features / numSources),
   featuresPerPx: +(features / numSources / (viewBp / bpPerPx)).toFixed(2),
   negShare: +(negFeatures / features).toFixed(3),
   wireMB: +(uniqueBytes(data.sources) / MB).toFixed(1),
-  wireNoBicolorMB: +(
-    uniqueBytes(noBicolor.map((a, i) => ({ name: `s${i}`, ...a }))) / MB
-  ).toFixed(1),
   fillMB: +(packFillInstances(xyLayers).byteLength / MB).toFixed(1),
   fill16MB: +(packFill16(xyLayers, pivot).byteLength / MB).toFixed(1),
   stepMB: +(packLineInstances(lineLayers).byteLength / MB).toFixed(1),
@@ -439,19 +433,9 @@ function rowArgs(c: never, layer: SourceRenderData) {
 
 let sink = 0
 const arms: Record<string, () => void> = {
-  'worker-bicolor': () => {
+  worker: () => {
     for (const r of raws) {
-      sink += processFeaturesFromArrays(r, pivot, true).numFeatures
-    }
-  },
-  'worker-control': () => {
-    for (const r of raws) {
-      sink += processFeaturesFromArrays(r, pivot, true).numFeatures
-    }
-  },
-  'worker-nobicolor': () => {
-    for (const r of raws) {
-      sink += processFeaturesFromArrays(r, pivot, false).numFeatures
+      sink += processFeaturesFromArrays(r).numFeatures
     }
   },
   'build-xy': () => {

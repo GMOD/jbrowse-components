@@ -9,34 +9,28 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 // One feature with positive avg, one with negative avg; each carries diverging
 // min/max so it counts as a real summary feature.
 function makeData(): WiggleDataResult {
-  const arrays = processFeaturesFromArrays(
-    {
-      starts: new Int32Array([0, 10]),
-      ends: new Int32Array([10, 20]),
-      scores: new Float32Array([5, -5]),
-      minScores: new Float32Array([2, -8]),
-      maxScores: new Float32Array([9, -1]),
-      count: 2,
-    },
-    0,
-  )
+  const arrays = processFeaturesFromArrays({
+    starts: new Int32Array([0, 10]),
+    ends: new Int32Array([10, 20]),
+    scores: new Float32Array([5, -5]),
+    minScores: new Float32Array([2, -8]),
+    maxScores: new Float32Array([9, -1]),
+    count: 2,
+  })
   return { sources: [{ name: 'default', ...arrays }] }
 }
 
 // Two all-positive features, the ordinary coverage shape: nothing crosses the
 // pivot, so a sign split has only one side to emit.
 function makePositiveData(): WiggleDataResult {
-  const arrays = processFeaturesFromArrays(
-    {
-      starts: new Int32Array([0, 10]),
-      ends: new Int32Array([10, 20]),
-      scores: new Float32Array([5, 7]),
-      minScores: new Float32Array([2, 4]),
-      maxScores: new Float32Array([9, 11]),
-      count: 2,
-    },
-    0,
-  )
+  const arrays = processFeaturesFromArrays({
+    starts: new Int32Array([0, 10]),
+    ends: new Int32Array([10, 20]),
+    scores: new Float32Array([5, 7]),
+    minScores: new Float32Array([2, 4]),
+    maxScores: new Float32Array([9, 11]),
+    count: 2,
+  })
   return { sources: [{ name: 'default', ...arrays }] }
 }
 
@@ -51,14 +45,15 @@ const baseGpuProps: WiggleGpuProps = {
 }
 
 describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () => {
-  test('avg mode splits into pos/neg layers', () => {
+  test('avg mode is one layer coloured by sign per instance', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'avg',
     })
-    expect(out).toHaveLength(2)
-    expect(out[0]!.featureScores).toEqual(new Float32Array([5]))
-    expect(out[1]!.featureScores).toEqual(new Float32Array([-5]))
+    expect(out).toHaveLength(1)
+    expect(out[0]!.featureScores).toEqual(new Float32Array([5, -5]))
+    const [above, below] = out[0]!.colorsAbgr!
+    expect(above).not.toBe(below)
   })
 
   // Regression: whiskers used to be silently dropped under the default bicolor
@@ -201,8 +196,9 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
 
   // density has no whiskers variant. The model resolves that before this ever
   // sees it (`effectiveSummaryScoreMode`, covered in densityMode.test.ts), so
-  // what arrives here is 'avg' and takes the worker's pos/neg split.
-  test('density + avg takes the worker split', () => {
+  // what arrives here is 'avg' — and density is the one mode that still needs
+  // solid-colour layers, `drawDensity` building one gradient per layer.
+  test('density + avg splits into solid pos/neg layers', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'avg',
@@ -215,22 +211,27 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
 })
 
 describe('buildSourceRenderData pos/neg coloring', () => {
-  test('non-overlay: pos and neg layers use distinct colors', () => {
-    const [pos, neg] = buildSourceRenderData(makeData(), baseGpuProps)
-    expect(pos!.color).not.toEqual(neg!.color)
+  test('non-overlay: the two sides of the pivot pack distinct colors', () => {
+    const [layer] = buildSourceRenderData(makeData(), {
+      ...baseGpuProps,
+      effectiveSummaryScoreMode: 'avg',
+    })
+    const [above, below] = layer!.colorsAbgr!
+    expect(above).not.toBe(below)
   })
 
   // overlay collapses every source onto row 0 and colors neg features with the
   // source's pos color so overlapping sources stay visually one color.
-  test('overlay: neg layer reuses the pos color and shares row 0', () => {
-    const [pos, neg] = buildSourceRenderData(makeData(), {
+  test('overlay: one color on both sides of the pivot, on row 0', () => {
+    const [layer, second] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
+      effectiveSummaryScoreMode: 'avg',
       sources: [{ name: 'default', color: '#00ff00' }],
       renderingType: 'multixyplot',
     })
-    expect(pos!.color).toEqual(neg!.color)
-    expect(pos!.rowIndex).toBe(0)
-    expect(neg!.rowIndex).toBe(0)
+    expect(second).toBeUndefined()
+    expect(layer!.colorsAbgr).toBeUndefined()
+    expect(layer!.rowIndex).toBe(0)
   })
 })
 
@@ -253,9 +254,10 @@ describe('buildSourceRenderData source list', () => {
   test('a source missing from the payload keeps its row index', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
+      effectiveSummaryScoreMode: 'avg',
       sources: [{ name: 'absent' }, { name: 'default' }],
     })
-    expect(out.map(s => s.rowIndex)).toEqual([1, 1])
+    expect(out.map(s => s.rowIndex)).toEqual([1])
   })
 })
 
@@ -267,17 +269,14 @@ describe('buildSourceRenderData gapLimitBp', () => {
   // 3 features 10bp wide starting every 100bp: centers 5, 105, 205, so the mean
   // center spacing is 100 and the default multiple puts the limit at 500.
   function spacedData(): WiggleDataResult {
-    const arrays = processFeaturesFromArrays(
-      {
-        starts: new Int32Array([0, 100, 200]),
-        ends: new Int32Array([10, 110, 210]),
-        scores: new Float32Array([1, 2, 3]),
-        minScores: undefined,
-        maxScores: undefined,
-        count: 3,
-      },
-      0,
-    )
+    const arrays = processFeaturesFromArrays({
+      starts: new Int32Array([0, 100, 200]),
+      ends: new Int32Array([10, 110, 210]),
+      scores: new Float32Array([1, 2, 3]),
+      minScores: undefined,
+      maxScores: undefined,
+      count: 3,
+    })
     return { sources: [{ name: 'default', ...arrays }] }
   }
 

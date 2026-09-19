@@ -106,7 +106,7 @@ describe('multi-source adapter (batched)', () => {
     expect(scoresOf(results[1]!, 'a')).toEqual([2])
   })
 
-  it('splits pos/neg around bicolorPivot', async () => {
+  it('ships every score of a signed source, unpartitioned', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => undefined,
       getMultiSourceFeatureArraysMulti: jest
@@ -116,9 +116,7 @@ describe('multi-source adapter (batched)', () => {
     } as never)
 
     const results = await run({})
-    const first = results[0]!.sources[0]!
-    expect(first.posNumFeatures).toBe(1)
-    expect(first.negNumFeatures).toBe(1)
+    expect(scoresOf(results[0]!, 'a')).toEqual([3, -2])
   })
 })
 

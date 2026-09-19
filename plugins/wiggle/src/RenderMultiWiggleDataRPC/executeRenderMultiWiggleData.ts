@@ -82,7 +82,6 @@ interface ExecuteParams {
     adapterConfig: Record<string, unknown>
     regions: Region[]
     sources?: SourceInfo[]
-    bicolorPivot?: number
     signal?: AbortSignal
     bpPerPx?: number
     resolution?: number
@@ -100,8 +99,8 @@ interface ExecuteParams {
 // nothing here reaches collectWiggleTransferables. That is the property the
 // aliasing refactor `transferables.ts` describes would remove, and these
 // buffers would then be transferred (and so detached) on the first region that
-// lacks a source and be dead on the second. `emptySide` is fresh-per-call for
-// exactly that reason; make this a function at the same time.
+// lacks a source and be dead on the second; make this a function at the same
+// time.
 const EMPTY_RAW: RawFeatureArrays = {
   starts: new Int32Array(0),
   ends: new Int32Array(0),
@@ -120,7 +119,6 @@ export async function executeRenderMultiWiggleData({
     adapterConfig,
     regions,
     sources: sourcesArg,
-    bicolorPivot = 0,
     signal,
     bpPerPx = 0,
     resolution = 1,
@@ -186,7 +184,6 @@ export async function executeRenderMultiWiggleData({
       ...source,
       ...processFeaturesFromArrays(
         rawsBySource.get(source.name)?.[regionIndex] ?? EMPTY_RAW,
-        bicolorPivot,
       ),
     })),
     zoomRange,

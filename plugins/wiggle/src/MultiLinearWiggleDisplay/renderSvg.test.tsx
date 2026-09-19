@@ -78,17 +78,14 @@ function axes({ left = 0, density = false } = {}) {
 // Two sources, each one bar spanning the left half of the region, so the paint
 // layer has something to serialize.
 function makeRegionData() {
-  const arrays = processFeaturesFromArrays(
-    {
-      starts: new Int32Array([0]),
-      ends: new Int32Array([500]),
-      scores: new Float32Array([5]),
-      minScores: undefined,
-      maxScores: undefined,
-      count: 1,
-    },
-    0,
-  )
+  const arrays = processFeaturesFromArrays({
+    starts: new Int32Array([0]),
+    ends: new Int32Array([500]),
+    scores: new Float32Array([5]),
+    minScores: undefined,
+    maxScores: undefined,
+    count: 1,
+  })
   return {
     sources: [
       { name: 'a', ...arrays },

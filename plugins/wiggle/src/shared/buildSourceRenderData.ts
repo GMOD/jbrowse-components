@@ -40,52 +40,23 @@ function sourceLayers({
   ) {
     return lineLayers(source, summaryScoreMode, posColor, negColor)
   }
-  // whiskers draws min, mean and max, min/max the one band the user picked;
-  // both are colored by each value's own sign against the pivot, so signed data keeps
-  // reading as pos/neg. The worker only splits `featureScores` (ADR-016), so
-  // that partition is re-derived per band on the main thread — without it,
-  // switching a signed track to Minimum turned its negative bars blue and cost
-  // a diverging density heatmap the loss/gain split it is read by.
+  // whiskers draws min, mean and max, min/max the one band the user picked,
+  // avg the mean alone; every one of them is coloured by each value's own sign
+  // against the pivot, so signed data reads as pos/neg on the main thread.
   //
-  // Every other mode is 'avg'. Density is the one that gets there without the
-  // user picking it, and the model resolves that (see
-  // `effectiveSummaryScoreMode`, which is what gpuProps carries) rather than
-  // this re-deciding it. The autoscale domain, the track menu's radio and the
-  // tooltip all read that same resolved mode, so a copy of the rule here could
-  // only drift from them.
-  if (summaryScoreMode !== 'avg') {
-    return makeSummaryLayers({
-      data: source,
-      summaryScoreMode,
-      posColor,
-      negColor,
-      pivot,
-      renderingType,
-    })
-  }
-
-  // avg: the worker's pos/neg split, each side colored by sign — no main-thread
-  // partition needed. A solid color is encoded upstream by the worker placing
-  // every feature in the pos arrays, so this same branch renders it as one
-  // color.
-  const layers: WiggleLayer[] = []
-  if (source.posNumFeatures > 0) {
-    layers.push({
-      featurePositions: source.posFeaturePositions,
-      featureScores: source.posFeatureScores,
-      numFeatures: source.posNumFeatures,
-      color: posColor,
-    })
-  }
-  if (source.negNumFeatures > 0) {
-    layers.push({
-      featurePositions: source.negFeaturePositions,
-      featureScores: source.negFeatureScores,
-      numFeatures: source.negNumFeatures,
-      color: negColor,
-    })
-  }
-  return layers
+  // Density is the one mode that gets to 'avg' without the user picking it, and
+  // the model resolves that (see `effectiveSummaryScoreMode`, which is what
+  // gpuProps carries) rather than this re-deciding it. The autoscale domain,
+  // the track menu's radio and the tooltip all read that same resolved mode, so
+  // a copy of the rule here could only drift from them.
+  return makeSummaryLayers({
+    data: source,
+    summaryScoreMode,
+    posColor,
+    negColor,
+    pivot,
+    renderingType,
+  })
 }
 
 // The shape of `model.gpuProps` — single source of truth for "settings that
@@ -101,14 +72,11 @@ export interface WiggleGpuProps {
   // The mode actually drawn, never the raw config slot, since density has no
   // whiskers presentation and resolves to 'avg'. Named for the model getter
   // that produces it so a new caller cannot skip the resolution.
-  // `sourceLayers` treats anything but 'avg' as a mode that draws bands.
   effectiveSummaryScoreMode: string
   renderingType: string
-  // Threshold the whiskers bands are colored around, and the baseline bars
-  // pivot on (= bicolorPivot). Present here *as well as* in rpcProps: the
-  // worker owns the avg-path pos/neg split (ADR-016, so it stays in rpcProps
-  // and a change refetches), but the whiskers bands are colored on the main
-  // thread and need the same threshold.
+  // Threshold every mode colors around, and the baseline bars pivot on
+  // (= bicolorPivot). An encoder input alone: moving it re-encodes and
+  // refetches nothing.
   bicolorPivot: number
   // How many mean point spacings apart two interpolated-line points may be
   // before the span counts as a hole (see gapBreakLimit). Lives in gpuProps,
@@ -197,8 +165,7 @@ export function buildSourceRenderData(
       // Intentional and settled (see ADR-016): in row mode the neg side keeps
       // the shared defaultNegColor even when the source has a per-row color, so
       // signed data still reads as a pos/neg bicolor plot. Do NOT "fix" this to
-      // paint the whole row in the per-source color — that split is by design
-      // and the pos/neg partition stays worker-side.
+      // paint the whole row in the per-source color.
       const layers = sourceLayers({
         source,
         summaryScoreMode,

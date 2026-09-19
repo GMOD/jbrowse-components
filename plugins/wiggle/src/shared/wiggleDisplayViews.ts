@@ -100,8 +100,9 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
     /**
      * #method
      * The fetch cache keys both displays share, spread into each display's own
-     * `rpcProps()`. `bicolorPivot` is one because the worker owns the avg-path
-     * pos/neg split (ADR-016), so moving the pivot changes what comes back.
+     * `rpcProps()`. The colour settings are not among them: every mode
+     * partitions by sign on the main thread, so moving the pivot re-encodes
+     * and refetches nothing.
      *
      * Named apart from `rpcProps` rather than overridden through it: MST
      * *intersects* what each `.views()` layer returns, so two same-named
@@ -110,7 +111,6 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
      */
     sharedRpcProps() {
       return {
-        bicolorPivot: self.bicolorPivot,
         resolution: self.resolution,
         scoreField: self.scoreField,
       }

@@ -49,7 +49,9 @@ export type WiggleLayer = Omit<SourceRenderData, 'rowIndex' | 'renderingType'>
 // flips (posTint vs negTint), so the most-negative min band lightens and the
 // least-negative max band darkens (most negative = lightest red, not a dark
 // brown). Only two packed colors are possible per band, so they're computed once
-// and indexed by sign.
+// and indexed by sign — and where they come out the same (a solid-color track,
+// `posColor === negColor`), the band carries no per-instance lane at all and
+// both backends read the layer color.
 function bandColorsAbgr(
   bandScores: Float32Array,
   numFeatures: number,
@@ -58,9 +60,12 @@ function bandColorsAbgr(
   negColor: [number, number, number],
   posTint: (c: [number, number, number]) => [number, number, number],
   negTint: (c: [number, number, number]) => [number, number, number],
-): Uint32Array {
+): Uint32Array | undefined {
   const posAbgr = normalizedRgbToABGR(...posTint(posColor))
   const negAbgr = normalizedRgbToABGR(...negTint(negColor))
+  if (posAbgr === negAbgr) {
+    return undefined
+  }
   const out = new Uint32Array(numFeatures)
   for (let i = 0; i < numFeatures; i++) {
     out[i] = bandScores[i]! >= pivot ? posAbgr : negAbgr
@@ -90,8 +95,8 @@ interface ScoreBand {
 // most-negative min band lightens and the least-negative max band darkens (most
 // negative = lightest red, not a dark brown).
 //
-// min/max draw the one band the user picked, untinted: with no sibling band
-// beside it there is no magnitude relationship for a tint to carry. Whiskers
+// avg and min/max draw one band, untinted: with no sibling band beside it
+// there is no magnitude relationship for a tint to carry. Whiskers
 // collapses to the avg band alone when the data has no summary variation, since
 // processFeaturesFromArrays aliases min/max onto featureScores there and the
 // other two bands would paint the same values twice more.
@@ -192,11 +197,10 @@ function whiskerBandSides(
 }
 
 // The render layers one source contributes under a summary presentation
-// (whiskers, or a single min/max band), colored by each value's sign vs the
-// pivot so signed data (e.g. phyloP) reads as pos/neg. Line plots take
+// (avg, whiskers, or a single min/max band), colored by each value's sign vs
+// the pivot so signed data (e.g. phyloP) reads as pos/neg. Line plots take
 // `lineLayers` instead. `summaryBands` decides which bands there are and this
-// decides how each becomes layers. Density arrives with min/max only, since the
-// model resolves its whiskers to avg.
+// decides how each becomes layers.
 export function makeSummaryLayers({
   data,
   summaryScoreMode,
@@ -249,12 +253,8 @@ export function makeSummaryLayers({
     ].filter(l => l !== undefined)
   }
 
-  const layers = bands.map(b => ({
-    featurePositions,
-    featureScores: b.scores,
-    numFeatures,
-    color: b.posTint(posColor),
-    colorsAbgr: bandColorsAbgr(
+  const layers = bands.map(b => {
+    const colorsAbgr = bandColorsAbgr(
       b.scores,
       numFeatures,
       pivot,
@@ -262,8 +262,15 @@ export function makeSummaryLayers({
       negColor,
       b.posTint,
       b.negTint,
-    ),
-  }))
+    )
+    return {
+      featurePositions,
+      featureScores: b.scores,
+      numFeatures,
+      color: b.posTint(posColor),
+      ...(colorsAbgr ? { colorsAbgr } : {}),
+    }
+  })
   // scatter draws back-to-front, so its layer order is reversed
   return renderingType === RENDERING_TYPE_SCATTER ? layers.reverse() : layers
 }

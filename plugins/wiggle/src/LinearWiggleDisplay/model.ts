@@ -268,34 +268,27 @@ export default function stateModelFactory(
 
       /**
        * #method
-       * `useBicolor` is a fetch key because the worker is what splits the
-       * features into the pos and neg arrays (ADR-016).
+       * Nothing beyond the shared keys. Every colour setting is an encoder
+       * input now that the pos/neg partition happens on the main thread, so
+       * what the worker is asked for is the score arrays and nothing else.
        */
       rpcProps() {
-        return {
-          ...self.sharedRpcProps(),
-          useBicolor: self.useBicolor,
-        }
+        return self.sharedRpcProps()
       },
 
       /**
        * #method
-       * single-source gpuProps mapped onto the multi-source build path:
-       * - bicolor: no source color override; build emits pos+neg with their
-       *   respective colors
-       * - solid: worker put all features in pos arrays (useBicolor=false);
-       *   non-density modes use the user's color; density uses posColor
-       *   (multi default, so leave source.color undefined)
+       * single-source gpuProps mapped onto the multi-source build path.
+       * `useBicolor` is an encoder input, not a fetch key: with it off the
+       * plot draws one colour, which is `posColor === negColor` at encode.
        *
-       * Solid mode overrides `negColor` too, not just the source color, and it
-       * does so in density as well, where the source color is deliberately left
-       * alone. The worker's pos/neg split only covers the 'avg' path. Every
-       * mode that draws a summary band (whiskers, min, max) re-derives the
-       * split on the main thread from bicolorPivot, and a negColor slot that
-       * does not match paints the sub-pivot half in an unrelated color:
-       * `color: 'green'` on signed data came back green/red, and a solid-color
-       * density track set to Minimum came back posColor above the pivot and
-       * negColor below it, against a legend describing a single ramp.
+       * Solid mode overrides `negColor` as well as the source colour, and in
+       * density too, where the source colour is deliberately left alone — a
+       * negColor that does not match paints the sub-pivot half in an
+       * unrelated colour: `color: 'green'` on signed data came back
+       * green/red, and a solid-colour density track set to Minimum came back
+       * posColor above the pivot and negColor below it, against a legend
+       * describing a single ramp.
        */
       gpuProps() {
         // The one color the plot draws in when bicolor is off. Density

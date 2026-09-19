@@ -20,8 +20,6 @@ interface ExecuteParams {
     sessionId: string
     adapterConfig: Record<string, unknown>
     regions: Region[]
-    useBicolor?: boolean
-    bicolorPivot?: number
     signal?: AbortSignal
     bpPerPx?: number
     resolution?: number
@@ -38,8 +36,6 @@ export async function executeRenderWiggleData({
     sessionId,
     adapterConfig,
     regions,
-    useBicolor = true,
-    bicolorPivot = 0,
     signal,
     bpPerPx = 0,
     resolution = 1,
@@ -78,7 +74,7 @@ export async function executeRenderWiggleData({
     sources: [
       {
         name: SINGLE_WIGGLE_SOURCE_NAME,
-        ...processFeaturesFromArrays(raw, bicolorPivot, useBicolor),
+        ...processFeaturesFromArrays(raw),
       },
     ],
     zoomRange,

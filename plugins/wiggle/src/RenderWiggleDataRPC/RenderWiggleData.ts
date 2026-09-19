@@ -9,8 +9,6 @@ interface RenderWiggleDataArgs {
   // All visible regions in one call so the adapter can coalesce reads across
   // them (BigWig). Returns one WiggleDataResult per region, in input order.
   regions: Region[]
-  useBicolor?: boolean
-  bicolorPivot?: number
   bpPerPx?: number
   resolution?: number
   scoreField?: string
