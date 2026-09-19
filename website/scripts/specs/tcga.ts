@@ -89,8 +89,11 @@ const TCGA_BRCA_RECURRENCE_TRACK = {
     {
       type: 'LinearWiggleDisplay',
       height: 160,
-      posColor: '#b2182b',
-      negColor: '#2166ac',
+      color: {
+        field: 'score',
+        scale: 'threshold',
+        palette: ['#2166ac', '#b2182b'],
+      },
       scales: { y: { domainMin: -100, domainMax: 100 } },
     },
   ],
@@ -152,7 +155,7 @@ function subtypeCallout({
 // The same tally as TCGA_BRCA_RECURRENCE_TRACK, run once per receptor subtype:
 // cnv_recurrence.py --groups gives each group its own gain and loss column,
 // BedGraphTabixAdapter reads every column past `end` as its own signal, and
-// MultiQuantitativeTrack's default multirowxy draws one row per signal. So the
+// a MultiQuantitativeTrack's xyplot default draws one row per signal. So the
 // eight rows come out of one 246KB file with no subadapter list.
 //
 // The columns are direction-major (four gains, then four losses), which is what
@@ -189,10 +192,13 @@ const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = {
   },
   displays: [
     {
-      type: 'MultiLinearWiggleDisplay',
+      type: 'LinearWiggleDisplay',
       height: SUBTYPE_ROWS_HEIGHT,
-      posColor: '#b2182b',
-      negColor: '#2166ac',
+      color: {
+        field: 'score',
+        scale: 'threshold',
+        palette: ['#2166ac', '#b2182b'],
+      },
       scales: { y: { domainMin: -70, domainMax: 70 } },
       // eight rows of one signed direction each, so the boundary between a
       // group's row and the next one is not otherwise drawn
@@ -754,7 +760,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'tcga_brca_cnv_recurrence_by_subtype',
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               height: SUBTYPE_ROWS_HEIGHT,
             },
           ],

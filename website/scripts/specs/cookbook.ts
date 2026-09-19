@@ -255,9 +255,9 @@ export const cookbookSpecs: ScreenshotSpec[] = [
 
   // "Multiple signals on one track, each its own color" recipe: the eight-sample
   // colored MultiQuantitativeTrack above, over the AMY1 amylase copy-number
-  // locus, with the NCBI RefSeq genes for context. Rendered multirowline (one
-  // stacked row per signal) so each individual's copy-number trace reads in its
-  // own color. Line and not the multirowxy this used to be: the values are flat
+  // locus, with the NCBI RefSeq genes for context. A step line on one row per
+  // signal, so each individual's copy-number trace reads in its
+  // own color. Line and not the xyplot this used to be: the values are flat
   // integer plateaus, so a filled area paints each row as a solid bar whose only
   // readable feature is its top edge, and eight bars read as a bar chart. As
   // step traces the levels and the places they step at are the picture.
@@ -289,7 +289,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
             {
               trackId: 'cookbook_multiwig',
               height: 480,
-              defaultRendering: 'multirowline',
+              defaultRendering: 'line',
               // Pinned, and identical for every row: copy number is an absolute
               // quantity, and per-row autoscale is what made the old figure
               // unreadable. Each row's own maximum became the top of its plot,

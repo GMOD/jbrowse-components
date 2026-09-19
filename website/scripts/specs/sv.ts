@@ -355,10 +355,10 @@ const HG19_MAIN_CHROMS = [
 // and the line was the worst of it: a log2 ratio is a signed quantity read
 // against zero, and a 1px polyline at whole-chromosome scale gives the eye
 // nothing to read it against, so a whole arm at -1 looked like a flat trace
-// slightly lower down. `useBicolor` (the schema default, which these used to
-// switch OFF) pivots at 0, so a loss is a red block hanging below the midline
-// and a gain a blue one above it: the zero line is drawn by the fill rather
-// than needing to be found.
+// slightly lower down. An unset `color` (the schema default, which these used
+// to override with a flat one) cuts at the origin of 0, so a loss is a red
+// block hanging below the midline and a gain a blue one above it: the zero line
+// is drawn by the fill rather than needing to be found.
 //
 // The range is symmetric so zero is the middle of the lane and a step down is
 // the same distance as a step up; -2..1.5 put zero at 57% of the height for no
@@ -376,7 +376,6 @@ const HG008_BICSEQ2_LANE = {
   trackId: 'hg008_bicseq2',
   type: 'LinearWiggleDisplay',
   defaultRendering: 'xyplot',
-  useBicolor: true,
   displayCrossHatches: true,
   scales: { y: { domainMin: -2, domainMax: 2 } },
   height: 130,
@@ -400,13 +399,14 @@ export const svVideoFixtures = {
 // What videos/sv.ts films on HG008: the matched pair's coverage as a reader
 // first gets it, which is the state neither cgiab figure holds. Both of them
 // mount HG008_INDEXCOV_TRACK with the walkthrough's settings already applied
-// (`multiscatter` over a fixed 0..3), so the two menu routes that page lists as
-// bullets — Score → Set min/max score..., then Plot type → Overlapping →
-// Scatter — happen before every picture on it.
+// (an overlaid scatter over a fixed 0..3), so the two menu routes that page
+// lists as bullets — Score → Set min/max score..., then Plot type → Scatter
+// with One row per source unchecked — happen before every picture on it.
 //
 // So the lane here carries NO display settings beyond its height: it arrives at
-// the schema's `multirowxy` default, one filled row per sample on an autoscaled
-// axis, where indexcov's centromere and repeat spikes run to 497 and press
+// the track type's own row-per-source `xyplot` default, one filled row per
+// sample on an autoscaled axis, where indexcov's centromere and repeat spikes
+// run to 497 and press
 // every plateau into the bottom of both rows.
 //
 // chr5 for the same reason the chr5 figure takes it: the benchmark calls three
@@ -424,7 +424,7 @@ export const cgiabVideoFixtures = {
         tracks: [
           {
             trackId: 'hg008_cnv_indexcov',
-            type: 'MultiLinearWiggleDisplay',
+            type: 'LinearWiggleDisplay',
             height: 200,
           },
         ],
@@ -612,9 +612,10 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'colo829_cnv_coverage',
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               scales: { y: { autoscale: 'localsd', numStdDev: 3 } },
-              defaultRendering: 'multiscatter',
+              defaultRendering: 'scatter',
+              facet: '',
               // even finer binning (basesPerSpan = bpPerPx/resolution) so the
               // scatter resolves copy-number structure (even finer,
               // then bumped again for slightly higher resolution — the BigWig
@@ -633,7 +634,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // the two-row track is short; crop off the empty viewport below it
     crop: { x: 0, y: 0, width: 1500, height: 390 },
-    // the dense genome-wide multiscatter cloud (thousands of 1px points whose
+    // the dense genome-wide overlaid scatter cloud (thousands of 1px points whose
     // exact sub-pixel positions shift with the discrete BigWig zoom-level the
     // resolution lands on) drifts a fraction of a percent between runs even
     // when nothing changed, so raise the diff gate above that noise floor to
@@ -1501,7 +1502,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
               defaultRendering: 'xyplot',
-              useBicolor: false,
+              color: '#0068d1',
               summaryScoreMode: 'avg',
               scales: { y: { domainMin: 0, domainMax: 140 } },
               displayCrossHatches: true,
@@ -2034,8 +2035,9 @@ export const svSpecs: ScreenshotSpec[] = [
             HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_cnv_indexcov',
-              type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multiscatter',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              facet: '',
               // Fixed 0..3, which is the manual min/max cap the walkthrough
               // tells the reader to apply, and which localsd autoscale was
               // quietly not doing: indexcov's few centromere and repeat spikes
@@ -2254,7 +2256,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
               defaultRendering: 'xyplot',
-              useBicolor: false,
+              color: '#0068d1',
               summaryScoreMode: 'avg',
               scales: { y: { domainMin: 0, domainMax: 140 } },
               height: 110,
@@ -2358,7 +2360,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // scatter of the per-bin average depth; autoscale (no fixed
               // min/max) since HiFiCNV depth is raw coverage, not a ±ratio
               defaultRendering: 'scatter',
-              useBicolor: false,
+              color: '#0068d1',
               summaryScoreMode: 'avg',
               scatterPointSize: 1,
               resolution: 10,
@@ -2440,7 +2442,8 @@ export const svSpecs: ScreenshotSpec[] = [
   // a second near-identical figure (sv_cgiab/cdkn2a_tumor_normal_coverage: same
   // window, same gene lane, same CNV lane, tumor-vs-normal coverage as two
   // separate wiggle tracks). One row per sample in one track is what gives the
-  // two a shared axis by construction: multirowxy with an explicit 0..80
+  // two a shared axis by construction: one xyplot row per sample with an
+  // explicit 0..80
   // domain, since independent autoscaling rescales each row to its
   // own data and the rows stop being comparable. Over chr9:21,953,000-21,971,000
   // the tumor mean is 0.0 (56.8x and 69.2x in the flanks) against the normal's
@@ -2534,11 +2537,11 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             HG008_BICSEQ2_LANE,
             {
-              // multirowxy: one filled profile per sample, stacked on the fixed
-              // 0..80 range set above rather than each row's own autoscale.
+              // one filled profile per sample, stacked on the fixed 0..80
+              // range set above rather than each row's own autoscale.
               trackId: 'hg008_tn_perbase',
-              type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multirowxy',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'xyplot',
               summaryScoreMode: 'avg',
               scales: { y: { domainMin: 0, domainMax: 80 } },
               resolution: 10,
@@ -2631,7 +2634,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
               defaultRendering: 'scatter',
-              useBicolor: false,
+              color: '#0068d1',
               summaryScoreMode: 'avg',
               scatterPointSize: 3,
               height: 140,
@@ -2710,7 +2713,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
               defaultRendering: 'scatter',
-              useBicolor: false,
+              color: '#0068d1',
               summaryScoreMode: 'avg',
               scatterPointSize: 1,
               height: 140,
@@ -2811,8 +2814,9 @@ export const svSpecs: ScreenshotSpec[] = [
               // this one, so keeping both would have drawn the same signal
               // twice and left the figure a lane taller.
               trackId: 'hg008_cnv_indexcov',
-              type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multiscatter',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              facet: '',
               // fixed 0..3 as on chr5: indexcov's centromere and repeat spikes
               // run into the hundreds, and an autoscaled axis puts every
               // plateau in the bottom fifth of the lane

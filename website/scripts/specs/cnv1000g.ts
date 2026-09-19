@@ -87,18 +87,21 @@ const LADDER_TRACK = {
 // window.
 //
 // 0..4 and not 0..6, which looks like it would show more: the density ramp
-// divides both sides by the LONGER one, so with the pivot at 2 a 0..6 domain
+// divides both sides by the LONGER one, so with the origin at 2 a 0..6 domain
 // caps a homozygous deletion at half saturation, exactly the intensity of a
-// single extra copy pair. Symmetric around the pivot is the only way a
+// single extra copy pair. Symmetric around the origin is the only way a
 // diverging scale reads as diverging. The cost is that gains past 4 clamp,
 // which the legend's own bar shows.
 export const CN_HEATMAP_SETTINGS = {
-  type: 'MultiLinearWiggleDisplay',
-  defaultRendering: 'multirowdensity',
-  bicolorPivot: 2,
+  type: 'LinearWiggleDisplay',
+  defaultRendering: 'density',
+  origin: 2,
   scales: { y: { domainMin: 0, domainMax: 4 } },
-  posColor: '#b2182b',
-  negColor: '#2166ac',
+  color: {
+    field: 'score',
+    scale: 'threshold',
+    palette: ['#2166ac', '#b2182b'],
+  },
 }
 
 const CN_HEATMAP = {
@@ -159,8 +162,9 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
             { trackId: GENE_TRACK, displayMode: 'compact', height: 80 },
             {
               trackId: 'pur_cnv_ladder',
-              type: 'MultiLinearWiggleDisplay',
-              // multirowLINE, not multirowxy (reviewer: "not interesting
+              type: 'LinearWiggleDisplay',
+              // LINE, not the xyplot this track type opens with (reviewer:
+              // "not interesting
               // screenshot really, consider delete"). The claim is that the
               // plateaus are flat, quantized and countable off the axis, and a
               // filled area over a flat integer plateau paints each row as a
@@ -169,7 +173,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
               // result look like nothing. As step traces you read the level
               // and where it steps. Same finding as cookbook_multiwig, which
               // was rebuilt for it.
-              defaultRendering: 'multirowline',
+              defaultRendering: 'line',
               height: 500,
               scales: { y: { domainMin: 0, domainMax: 10 } },
             },

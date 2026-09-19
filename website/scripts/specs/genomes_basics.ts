@@ -120,8 +120,8 @@ const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 // HSMM, HUVEC, K562, NHEK, NHLF), one row per cell line.
 //
 // NOT the ENCODE4 organ averages the hub also carries, which are the tracks
-// UCSC calls "Layered": at 55 and 64 sources their `multixyplot` default is one
-// muddy silhouette where no source is separable, and `multirowdensity` is no
+// UCSC calls "Layered": at 55 and 64 sources one shared plot box is a muddy
+// silhouette where no source is separable, and a density row each is no
 // better, because each source carries its own colour and 60 hues at two pixels
 // a row is a pastel blur. Seven rows is the count at which a per-row plot is
 // legible and the legend can name every row.
@@ -130,23 +130,27 @@ const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 // marks the active ones, so a promoter with both is doing something in that
 // cell type and one with only H3K4me3 is poised.
 //
-// `defaultRendering` is a config slot, so an inline key on the spec's tracks
-// entry reaches it; it is also the track menu's "Plot type" radio.
-const H3K4ME3_ROWS = {
+// `facet` is a config slot, so an inline key on the spec's tracks entry
+// reaches it; the empty string is every source in one plot box, which is what
+// the hub's own `aggregate: transparentOverlay` asks for and what the
+// MultiQuantitativeTrack's `facet: 'source'` seed otherwise overrides.
+const H3K4ME3_OVERLAY = {
   trackId: 'hg38-wgEncodeRegMarkH3k4me3',
-  defaultRendering: 'multirowxy',
+  type: 'LinearWiggleDisplay',
+  facet: '',
 }
-const H3K27AC_ROWS = {
+const H3K27AC_OVERLAY = {
   trackId: 'hg38-wgEncodeRegMarkH3k27ac',
-  defaultRendering: 'multirowxy',
+  type: 'LinearWiggleDisplay',
+  facet: '',
 }
 
-// The menu path `multirowxy` is behind, spelled once so the hovers, the callout
-// boxes and the prose cannot name it three ways. Written out rather than
-// imported from renderingTypes.ts: check-menu-labels resolves each segment
-// against the app's own literals, which is the check that would catch a rename,
-// and an import would make it vacuous.
-const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
+// The checkbox the two frames differ by, spelled once so the hovers, the
+// callout boxes and the prose cannot name it three ways. Written out rather
+// than imported: check-menu-labels resolves each segment against the app's own
+// literals, which is the check that would catch a rename, and an import would
+// make it vacuous.
+const PLOT_TYPE_PATH = ['Plot type', 'One row per source']
 
 // gnomAD's own consequence class for the variant: pLoF, missense, synonymous
 // or other. pLoF is the high-impact end, 93 of the 4,695 records over TP53.
@@ -514,17 +518,12 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // Side by side (`stageColumns`), because the frames are a before and an after
   // of one radio button and a reader compares them across rather than down.
   //
-  // Frame 1 is how the hub ships both marks: MultiQuantitativeTracks defaulting
-  // to `multixyplot`, all seven cell lines drawn over one another, under the
-  // menu that separates them. Frame 2 is the same six tracks with
-  // `multirowxy` on both marks.
+  // Frame 1 is UCSC's layered arrangement, `facet: ''` on both marks, all
+  // seven cell lines drawn over one another under the menu that separates
+  // them. Frame 2 is the same six tracks at the track type's own default, one
+  // row per cell line.
   //
-  // "XY plot" is the label under BOTH layout groups (renderingTypes.ts), which
-  // is only safe to click by text because one submenu is open at a time -- the
-  // Overlapping group is not in the DOM until it is hovered. `menuCascade`
-  // hovers each level in turn, so the path cannot skip one.
-  //
-  // Frame 2 loads a session rather than clicking "XY plot": the click would
+  // Frame 2 loads a session rather than clicking the checkbox: the click would
   // change ONE track, and a frame with one mark separated and one still
   // overlapping reads as a bug rather than a result.
   //
@@ -546,8 +545,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
             { ...GENE_TRACK_COLLAPSED, height: 60 },
             { trackId: 'hg38-cpgIslandExt', height: 50 },
             { trackId: 'hg38-cCREregistry', height: 60 },
-            { trackId: H3K4ME3_ROWS.trackId, height: 150 },
-            { trackId: H3K27AC_ROWS.trackId, height: 150 },
+            { ...H3K4ME3_OVERLAY, height: 150 },
+            { ...H3K27AC_OVERLAY, height: 150 },
             { trackId: 'hg38-epdNewPromoter', height: 60 },
           ],
         },
@@ -587,7 +586,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          trackMenuIcon(H3K4ME3_ROWS.trackId),
+          trackMenuIcon(H3K4ME3_OVERLAY.trackId),
           ...menuCascade(PLOT_TYPE_PATH),
         ],
         // The cascade's boxes say which items were picked and nothing says
@@ -599,7 +598,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           {
             type: 'circle',
             anchor: {
-              selector: `[data-testid="track_menu_icon"][data-trackid="${H3K4ME3_ROWS.trackId}"]`,
+              selector: `[data-testid="track_menu_icon"][data-trackid="${H3K4ME3_OVERLAY.trackId}"]`,
             },
           },
         ],
@@ -615,8 +614,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
                 { ...GENE_TRACK_COLLAPSED, height: 60 },
                 { trackId: 'hg38-cpgIslandExt', height: 50 },
                 { trackId: 'hg38-cCREregistry', height: 60 },
-                { ...H3K4ME3_ROWS, height: 150 },
-                { ...H3K27AC_ROWS, height: 150 },
+                { trackId: H3K4ME3_OVERLAY.trackId, height: 150 },
+                { trackId: H3K27AC_OVERLAY.trackId, height: 150 },
                 { trackId: 'hg38-epdNewPromoter', height: 60 },
               ],
             },

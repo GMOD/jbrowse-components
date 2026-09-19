@@ -25,7 +25,11 @@ const DENSITY_RING = {
   type: 'LinearWiggleDisplay',
   defaultRendering: 'density',
   summaryScoreMode: 'avg',
-  posColor: '#d95f02',
+  color: {
+    field: 'score',
+    scale: 'threshold',
+    palette: ['#e01e26', '#d95f02'],
+  },
   height: 40,
 }
 

@@ -457,7 +457,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'ecoli_pggb_pav',
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               // Density rather than the default stacked XY, matched by the
               // Minigraph-Cactus sibling so the two builders stay comparable.
               // pav is a presence fraction per window, so at 4.6 Mb in 1000 px
@@ -465,7 +465,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // almost everywhere and drew each absence as a hairline slit;
               // density spends colour on it instead, so an accessory stretch is
               // a white column and a partial one is pale blue.
-              defaultRendering: 'multirowdensity',
+              defaultRendering: 'density',
               // 4 strains at 60px a row, enough for the accessory dips to read
               // without the stack dominating the frame
               height: 240,

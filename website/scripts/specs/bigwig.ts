@@ -561,12 +561,12 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'pur_copynumber_1000g',
-          type: 'MultiLinearWiggleDisplay',
+          type: 'LinearWiggleDisplay',
           height: 420,
-          // multi-row density renderer: one colored density
-          // strip per individual; `defaultRendering` is a config slot, so
+          // one colored density strip per individual, off the track type's own
+          // `facet: 'source'` seed; `defaultRendering` is a config slot, so
           // this flat key routes into the display's configOverrides
-          defaultRendering: 'multirowdensity',
+          defaultRendering: 'density',
           // copy number: most cells sit at the diploid baseline (~2), so the
           // default localpercentile autoscale clamps the amplifications near
           // the 99th percentile (~2.2). `local` uses the true region max so

@@ -114,6 +114,9 @@ export const PATH_PROSE = new Set([
   'drag the rows into order',
   "set each row's color",
   'untick the rows you do not want',
+  // ChannelSpecDialog's text area, which the quantitative display's colour
+  // object is written into whole
+  'the JSON box',
 ])
 
 /**

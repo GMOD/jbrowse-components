@@ -1201,7 +1201,7 @@ function referencedSchemaDeclIds(checker: ts.TypeChecker, node: ts.Node) {
 // renders — name and prose come from the comment — but the composition walk now
 // searches that `const` instead of the factory and finds no compose call, so
 // every inherited member row vanishes with no warning. That is what happened to
-// MultiLinearWiggleDisplay (17 rows, silently, for who knows how long).
+// the multi-wiggle display (17 rows, silently, for who knows how long).
 //
 // Three shapes all count as correctly attached, and the middle one is why this
 // can't just look for a `types.*` call: a factory may build its model by chaining

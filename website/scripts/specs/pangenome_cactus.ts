@@ -306,7 +306,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           },
           displays: [
             {
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               displayId: 'ecoli_depth_by_builder-display',
               // 0 to twice the strain count, fixed, so the two rows are directly
               // comparable and the doubling is half the row rather than a full
@@ -342,7 +342,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
               trackId: 'ecoli_depth_by_builder',
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               // two rows at 150px: the doubling is 2x the plateau, so a row has
               // to be tall enough for that ratio to read.
               height: 300,
@@ -531,12 +531,12 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ecoli_cactus_pav_odgi_colors',
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               // density, not xy: odgi viz paints presence as a filled band, and
               // a 0/1 signal drawn as a bar chart is the same band with ragged
               // edges. Pinning the domain to 0-1 keeps every present base fully
               // saturated instead of shaded by an autoscaled maximum.
-              defaultRendering: 'multirowdensity',
+              defaultRendering: 'density',
               scales: { y: { domainMin: 0, domainMax: 1 } },
               // four rows at the raster's own 40px-per-row scale
               height: 160,

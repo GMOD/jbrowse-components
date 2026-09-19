@@ -449,16 +449,19 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
         // two the CNV tutorial visits.
         {
           trackId: 'cnv_1000g_zarr',
-          type: 'MultiLinearWiggleDisplay',
-          defaultRendering: 'multirowdensity',
+          type: 'LinearWiggleDisplay',
+          defaultRendering: 'density',
           // pinned rather than autoscaled, and symmetric about the diploid
-          // pivot, for the reasons cnv1000g's CN_HEATMAP_SETTINGS gives:
+          // origin, for the reasons cnv1000g's CN_HEATMAP_SETTINGS gives:
           // copy number is an absolute quantity and a diverging ramp only
           // reads as diverging if both sides are the same width.
-          bicolorPivot: 2,
+          origin: 2,
           scales: { y: { domainMin: 0, domainMax: 4 } },
-          posColor: '#b2182b',
-          negColor: '#2166ac',
+          color: {
+            field: 'score',
+            scale: 'threshold',
+            palette: ['#2166ac', '#b2182b'],
+          },
           // 480 -> 330, and directly under the matrix rather than with the
           // record lane between them (reviewer: "reduce height of both ...
           // put them stacked"). The two lanes are the same 3202 individuals

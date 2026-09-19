@@ -140,12 +140,12 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 - **Layered H3K27Ac (hg19)**
 - **EPDnew Promoters - EPDnew v6**
 
-The two histone tracks each hold seven cell lines, drawn over one another as
-they open. **Track menu → Plot type → One row per source** gives each a row.
-Their names carry hg19 because ENCODE3 released them on it; the files this
-config points at are the hg38 ones.
+The two histone tracks each hold seven cell lines, one row each. Unchecking
+**Track menu → Plot type → One row per source** draws all seven in one plot box,
+which is UCSC's own layered arrangement. Their names carry hg19 because ENCODE3
+released them on it; the files this config points at are the hg38 ones.
 
-<Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs coloured by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the marks as they open, seven cell lines over one another, with the Plot type menu that separates them. Right: the same six tracks after it." />
+<Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs coloured by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the two marks with their seven cell lines in one plot box, and the Plot type menu that separates them. Right: the same six tracks with a row per cell line." />
 
 The promoter is at the high-coordinate end because the gene is on the minus
 strand, and everything lands there together: the CpG island, a promoter-class

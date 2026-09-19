@@ -45,7 +45,7 @@ export const scatacSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'pbmc5k_scatac_pseudobulk_hg38',
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               // 25px a row. The peaks are narrow and the rows are mostly empty
               // between them, so the height above this was spending itself on
               // the flat parts of a lane rather than on the marker peak that

@@ -130,7 +130,8 @@ const SITES_TRACK = {
 // of it worth publishing: across the inverted region pi_INV/pi_STD sits at
 // 0.7-0.9 and only reaches 0.38 in one 200 kb bin near the distal breakpoint
 // (measured off the pipeline bedGraphs). Every framing tried — whole arm,
-// multirowxy, a 0-0.012 heatmap zoomed to the strongest trough — produced two
+// one xyplot row per group, a 0-0.012 heatmap zoomed to the strongest trough
+// — produced two
 // rows a reader cannot tell apart. Fst is the signal that reads; leave the
 // contrast to the prose rather than shipping a figure that shows nothing.
 

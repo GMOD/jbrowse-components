@@ -164,7 +164,7 @@ function dependentsOf(
 
 // A plugin lays each pluggable element out in its own directory named for the
 // registered type (plugins/alignments/src/BamAdapter, plugins/wiggle/src/
-// MultiLinearWiggleDisplay, ...), so the filesystem IS the registry. Reading it
+// LinearWiggleDisplay, ...), so the filesystem IS the registry. Reading it
 // beats grepping for `name: '<T>'` (which hits test files first) and beats
 // booting a PluginManager in node (the plugins are .tsx, which node's type
 // stripping won't parse). Types this misses are the ones no directory is named

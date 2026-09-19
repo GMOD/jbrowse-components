@@ -575,7 +575,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'kgp_lct_fst',
               type: 'LinearWiggleDisplay',
               defaultRendering: 'scatter',
-              useBicolor: false,
+              color: '#0068d1',
               scatterPointSize: 2,
               summaryScoreMode: 'max',
               scales: { y: { domainMin: 0.1, domainMax: 0.5 } },
@@ -765,7 +765,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'kgp_lct_fst_scan',
               type: 'LinearWiggleDisplay',
               defaultRendering: 'scatter',
-              useBicolor: false,
+              color: '#0068d1',
               scatterPointSize: 2,
               summaryScoreMode: 'max',
               // The lane below's floor and ceiling, so the two are one axis

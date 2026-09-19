@@ -173,11 +173,11 @@ const ARABIDOPSIS_CONTEXT_LANES = [
     jexlFiltersSetting: ['jexl:feature.end-feature.start>200'],
     height: 50,
   },
-  // aggregate CpG/CHG/CHH fraction, one labeled row each (multirowxy)
+  // aggregate CpG/CHG/CHH fraction, one labeled row each
   {
     trackId: 'arabidopsis_methyldackel',
-    type: 'MultiLinearWiggleDisplay',
-    defaultRendering: 'multirowxy',
+    type: 'LinearWiggleDisplay',
+    defaultRendering: 'xyplot',
     scales: { y: { domainMin: 0, domainMax: 100 } },
     height: 170,
   },
@@ -609,8 +609,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
             HG38_GENE_LANE,
             {
               trackId: 'HG002_snrpn_modkit_multi',
-              type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multirowxy',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'xyplot',
               // one scale for both haplotypes, which is the point of merging
               // them: a per-track autoscale would put each haplotype's own
               // maximum at the top of its own lane

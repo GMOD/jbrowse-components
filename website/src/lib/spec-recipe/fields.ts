@@ -486,6 +486,16 @@ function facetStep(
   }
   const field = facetField(value)
   const ordered = !!asList(asRecord(value)?.domain)
+  // The quantitative display's facet is its layout, and the only field it takes
+  // is `source`, so the whole setting is one checkbox under the plot radios.
+  if (displayType === 'LinearWiggleDisplay') {
+    return {
+      path: `${TRACK_MENU} → Plot type → One row per source (${field ? 'checked' : 'unchecked'})`,
+      note: ordered
+        ? 'The row order has no menu row of its own; the figure declares it in the track config, and "Reset row order" returns to it.'
+        : undefined,
+    }
+  }
   if (!field) {
     return undefined
   }
@@ -521,7 +531,6 @@ function facetStep(
 // looks for, so it is what varies here.
 const POINT_SIZE_MENUS: Record<string, string> = {
   LinearWiggleDisplay: 'Scatter point size',
-  MultiLinearWiggleDisplay: 'Scatter point size',
   LinearManhattanDisplay: 'Point size',
 }
 
@@ -534,7 +543,7 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMultiRowFeatureDisplay',
   'LinearMultiSampleVariantDisplay',
   'LinearMultiSampleVariantMatrixDisplay',
-  'MultiLinearWiggleDisplay',
+  'LinearWiggleDisplay',
 ])
 
 // The synteny view's CIGAR modes, imported. Its row is in the header's settings
@@ -580,13 +589,12 @@ const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
   LinearMultiRowFeatureDisplay: 'Edit colors/arrangement...',
   LinearMultiSampleVariantDisplay: 'Edit colors/arrangement...',
   LinearMultiSampleVariantMatrixDisplay: 'Edit colors/arrangement...',
-  // The multi-wiggle reaches the same dialog from the same item, so it belongs
-  // here as much as the four above — it was simply never added, and `layout` /
-  // `subtreeFilter` on a multi-wiggle went unmapped as a result. It appears in
-  // WIGGLE_COLOR_EDITORS as well, and the two are not one table: that one asks
-  // which of the two wiggle displays' color editors a score-sign swatch is in,
-  // this one asks which displays arrange rows at all.
-  MultiLinearWiggleDisplay: 'Edit colors/arrangement...',
+  // The quantitative display reaches the same dialog from the same item, so it
+  // belongs here as much as the four above — it was simply never added, and
+  // `layout` / `subtreeFilter` on a wiggle went unmapped as a result. Its own
+  // `Edit color...` row is a different dialog: that one edits the channel, this
+  // one the adapter row metadata under the facet.
+  LinearWiggleDisplay: 'Edit colors/arrangement...',
 }
 
 // wiggle-core's makeScoreSubMenu, which the alignments coverage band reuses
@@ -595,7 +603,6 @@ const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
 // in scoreMenuItems.ts, 'Coverage' the one alignments passes in coverage.ts.
 const SCORE_MENUS: Record<string, string> = {
   LinearWiggleDisplay: 'Score',
-  MultiLinearWiggleDisplay: 'Score',
   LinearAlignmentsDisplay: 'Coverage',
 }
 
@@ -638,8 +645,7 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
       : undefined,
     autoscale &&
     AUTOSCALE_TYPES[autoscale] &&
-    (displayType === 'LinearWiggleDisplay' ||
-      displayType === 'MultiLinearWiggleDisplay')
+    displayType === 'LinearWiggleDisplay'
       ? {
           path: `${TRACK_MENU} → Score → Autoscale type → ${AUTOSCALE_TYPES[autoscale]}`,
         }
@@ -1024,7 +1030,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   showRowLabels: (value, { displayType }) =>
-    typeof value === 'boolean' && displayType === 'MultiLinearWiggleDisplay'
+    typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {
           path: `${TRACK_MENU} → Show... → Show row labels (${value ? 'checked' : 'unchecked'})`,
           note: value
@@ -1150,9 +1156,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined,
   scales: scalesStep,
   displayCrossHatches: (value, { displayType }) =>
-    typeof value === 'boolean' &&
-    (displayType === 'LinearWiggleDisplay' ||
-      displayType === 'MultiLinearWiggleDisplay')
+    typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {
           path: `${TRACK_MENU} → Show... → Show cross hatches (${value ? 'checked' : 'unchecked'})`,
           note: 'Absent in the density plot types, where score maps to color rather than height and a hatch would mark nothing.',
@@ -1265,8 +1269,8 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? {
           path: `${TRACK_MENU} → Show... → ${TREE_SIDEBAR_TOGGLE} (${state})`,
           note:
-            displayType === 'MultiLinearWiggleDisplay'
-              ? 'On by default. The item is disabled until there is a tree to show, and drops out entirely in the overlay plot types, which collapse every source onto one row for a dendrogram to align to.'
+            displayType === 'LinearWiggleDisplay'
+              ? 'On by default. The item is disabled until there is a tree to show, and drops out entirely once "One row per source" is off, which collapses every source onto one row for a dendrogram to align to.'
               : 'On by default. The item is disabled until there is a tree to show — a clustering run, or a MAF track’s guide tree; the row labels have their own toggle beneath it.',
         }
       : undefined
@@ -1486,7 +1490,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       return undefined
     }
     const where = `${refName}:${pos.toLocaleString('en-US')}`
-    return displayType === 'MultiLinearWiggleDisplay'
+    return displayType === 'LinearWiggleDisplay'
       ? {
           path: 'Right-click the track at the column to sort on → Sort rows by score here',
           note: `Ranks the subtracks by the score each one carries at a single base (${where} in this figure), highest at the top, which is how a cohort is read at a candidate locus. "Reset row order" in the same menu undoes it.`,

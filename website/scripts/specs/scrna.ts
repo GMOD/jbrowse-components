@@ -96,7 +96,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
             oneTranscriptPerGene,
             {
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               scales: { y: { type: 'log' } },
               // 9 rows, so 45px each: enough for a peak to have a shape rather
               // than being a spike two pixels tall
@@ -139,12 +139,12 @@ export const scrnaSpecs: ScreenshotSpec[] = [
               // 150, not 240: nine curves of which two carry the signal, so the
               // extra height was empty axis. The per-cell rows take it instead.
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               height: 150,
             },
             {
               trackId: 'pbmc5k_scrna_percell_hg38',
-              type: 'MultiLinearWiggleDisplay',
+              type: 'LinearWiggleDisplay',
               scales: { y: { domainMin: 0, domainMax: 2 } },
               height: 620,
             },
