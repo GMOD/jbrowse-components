@@ -261,7 +261,7 @@ one row per group.
 }
 ```
 
-[`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
+[`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)/[`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax)
 pin every row to one axis. Open it above the matrix and each band has its own
 rate over it. _TP53_ climbs toward the triple-negative group where _PIK3CA_
 falls.

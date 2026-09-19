@@ -180,7 +180,7 @@ and losses down in `negColor`.
 }
 ```
 
-`minScore` and `maxScore`
+`scales.y`'s `domainMin` and `domainMax`
 ([display options](/docs/config_guides/quantitative_track#display-options)) pin
 the axis, so a bar means the same fraction wherever you navigate.
 `posColor`/`negColor` reuse the stack's colors. Placed above the stack, each
@@ -238,7 +238,7 @@ resolve a subtype.
 
 <Figure caption="Gain and loss frequency per 100 kb across the 22 autosomes and chrX, tallied separately for each receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
-[`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
+[`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)/[`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax)
 pin the rows to one axis, narrower than the pooled track since each row fills
 only half its axis. Gain and loss stay separate columns, since at the edge of
 the 17q amplicon the HER2+ group is gained and lost at nearly the same rate.

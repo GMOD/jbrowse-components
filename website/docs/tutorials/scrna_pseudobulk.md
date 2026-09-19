@@ -209,9 +209,10 @@ Two settings decide whether the speckle is visible:
 - **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
   under a pixel each, so a block only reads if its cells are adjacent. The
   `group` on each row seeds that and drives the sidebar tree
-- **Pin the score axis.** `minScore: 0` and a low `maxScore` put one UMI a
-  visible fraction up the color ramp, as in [](/docs/tutorials/population_cnv).
-  Autoscale takes its maximum from the tallest single cell in view
+- **Pin the score axis.** `scales.y` with a `domainMin` of 0 and a low
+  `domainMax` puts one UMI a visible fraction up the color ramp, as in
+  [](/docs/tutorials/population_cnv). Autoscale takes its maximum from the
+  tallest single cell in view
 
 The store is read by the `MultiWiggleZarrAdapter` from
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr), the

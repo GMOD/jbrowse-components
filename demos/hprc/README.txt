@@ -184,7 +184,7 @@ repeat_density/ - per-class RepeatMasker density
 
   Twelve bigWigs: fraction of each 5 kb bin covered by one RepeatMasker class,
   genome-wide (chr1-22,X,Y), for GRCh38 and T2T-CHM13v2.0. Values are 0-1, so a
-  MultiQuantitativeTrack over them should pin minScore/maxScore to 0 and 1 - the
+  MultiQuantitativeTrack over them should pin scales.y to a 0-1 domain - the
   point of the track is comparing rows and assemblies, which autoscale destroys.
 
   Sources, both UCSC:

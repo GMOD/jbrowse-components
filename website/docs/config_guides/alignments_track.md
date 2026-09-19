@@ -25,8 +25,8 @@ index resolves automatically. Coloring, height, and filtering are slots on the
 - **CRAM decodes against the reference**, and both adapters take their
   `sequenceAdapter` from the enclosing assembly, so the track names none
   ([](/docs/config/bamadapter), [](/docs/config/cramadapter))
-- **`colorBy`, `height`, `featureHeight`, `filterBy` and the coverage
-  `autoscale`/`minScore`/`maxScore`** are
+- **`colorBy`, `height`, `featureHeight`, `filterBy` and the coverage band's
+  `scales.y`** are
   [`LinearAlignmentsDisplay`](/docs/config/linearalignmentsdisplay) slots. Reads
   draw gray with mismatches marked until
   [`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) colors them by

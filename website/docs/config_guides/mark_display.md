@@ -100,13 +100,14 @@ which declares it once as `scales.y`:
 ]
 ```
 
-`type` is `linear` (the default) or `log`, and it is config-only: the shared
-scale-type radio offers `symlog`, which this display does not place. `domainMin`
-and `domainMax` pin the ends the axis spans; an end left unset autoscales to the
-loaded regions, so `{ "domainMin": 0 }` pins the floor alone. The axis, its
-ticks, its cross-hatches and the bars themselves read this one declaration, and
-so does the track menu: **Set min/max score...** writes back into it, so what
-the user pins and what the config author wrote are the same slot.
+`type` is `linear` (the default) or `log`, the two the display places, and the
+track menu's scale-type radio offers exactly those two. `domainMin` and
+`domainMax` pin the ends the axis spans; an end left unset autoscales to the
+loaded regions, so `{ "domainMin": 0 }` pins the floor alone, and `autoscale`
+chooses how an unpinned end is taken. The axis, its ticks, its cross-hatches and
+the bars themselves read this one declaration, and so does the track menu: **Set
+min/max score...** writes back into it, so what the user pins and what the
+config author wrote are the same slot.
 
 Every mark drawing at the current zoom folds into that one domain, the way a
 grammar of graphics gives one scale per aesthetic. With a multiscale pair

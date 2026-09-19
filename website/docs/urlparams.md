@@ -408,7 +408,9 @@ state:
         },
         {
           "trackId": "my_wiggle_track",
-          "displaySnapshot": { "minScore": 0, "maxScore": 100 }
+          "displaySnapshot": {
+            "scales": { "y": { "domainMin": 0, "domainMax": 100 } }
+          }
         }
       ]
     }
@@ -417,9 +419,10 @@ state:
 ```
 
 - `displaySnapshot` takes anything the display's own menu offers: `type` to pick
-  a display, `height`, `color` (a CSS color or a `jexl:` expression), `minScore`
-  and `maxScore` on a quantitative track, `forceLoad` to render past the "too
-  much data" gate ([](/docs/config/baselineardisplay/#slot-forceload)).
+  a display, `height`, `color` (a CSS color or a `jexl:` expression), `scales.y`
+  on a quantitative track ([](/docs/config/valuescale)), `forceLoad` to render
+  past the "too much data" gate
+  ([](/docs/config/baselineardisplay/#slot-forceload)).
 - `trackSnapshot` sets track state such as `pinned: true`.
 - Any other key on the object is a display setting, so
   `{ "trackId": "my_bam_track", "type": "LinearAlignmentsDisplay", "height": 300 }`

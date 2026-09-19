@@ -4,10 +4,11 @@ description: What changed for plugin authors and embedders in JBrowse 2 v5.0.0
 guide_category: Plugins
 ---
 
-Sessions and configs from v4 migrate automatically. Plugins do not: the renderer
-registry is gone, names left the `@jbrowse/core/*` re-export ABI, config models
-were flattened, display types collapsed, and the extension point APIs changed
-shape. Run your bundle against a v5 build before your users do.
+Sessions and configs from v4 migrate automatically, apart from the value scale
+below. Plugins do not: the renderer registry is gone, names left the
+`@jbrowse/core/*` re-export ABI, config models were flattened, display types
+collapsed, and the extension point APIs changed shape. Run your bundle against a
+v5 build before your users do.
 
 ## For everyone
 
@@ -365,6 +366,22 @@ lint rule names it.
 Config slots were also renamed. End-user JSON migrates automatically, but plugin
 code that reads a renamed slot directly — `getConf(self, 'color1')` — needs
 updating.
+
+## The value scale is one `scales.y` object
+
+Every quantitative display — wiggle, multi-wiggle, Manhattan, the alignments
+coverage band and the mark display — writes its value axis as one sub-schema.
+`scaleType` is `scales.y.type`, `minScore` and `maxScore` are
+`scales.y.domainMin` and `scales.y.domainMax`, and `autoscale`, `numStdDev`,
+`numQuantile` and `symlogConstant` keep their names inside `scales.y`.
+
+**None of them migrates.** A config or session still spelling one at the display
+level loses it in silence, since MST drops a snapshot key the model no longer
+declares, so a track that pinned its axis reopens autoscaled. The
+`Number.MIN_VALUE`/`MAX_VALUE` sentinels went with them: an end left unset is
+what autoscales.
+
+[](/docs/config/valuescale) lists the members each display carries.
 
 ## An embedded view's track catalog is plain configs
 

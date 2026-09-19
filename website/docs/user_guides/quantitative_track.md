@@ -31,8 +31,8 @@ settings below are grouped under **Score**.
 ### Autoscale type
 
 The Y-axis range (the display's
-[`autoscale`](/docs/config/linearwiggledisplay/#slot-autoscale) slot). All three
-rescale to the region in view and differ in how they treat outliers:
+[`scales.y.autoscale`](/docs/config/valuescale/#slot-scalesyautoscale) slot).
+All three rescale to the region in view and differ in how they treat outliers:
 
 - Local - the plain min and max, so one anomalous position flattens the rest
 - Local (99th percentile) - clips the outermost 1% of each sign

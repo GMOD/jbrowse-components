@@ -271,9 +271,9 @@ informative mark in that view. The reader has no menu to check either:
 `scoreRules` is set by whoever wrote the config, so a rule that vanishes leaves
 nothing behind to notice.
 
-Applied to the raw range, before `getNiceDomain` takes the `minScore` /
-`maxScore` bounds. Those still win: a rule outside an explicitly bounded axis is
-one the config asked not to be shown, and it drops as before.
+Applied to the raw range, before `getNiceDomain` takes the `scales.y` domain
+bounds. Those still win: a rule outside an explicitly bounded axis is one the
+config asked not to be shown, and it drops as before.
 
 ```js
 // type signature
