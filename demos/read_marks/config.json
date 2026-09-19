@@ -47,8 +47,43 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "na12878_read_depth",
+      "name": "NA12878 depth (1000 Genomes, 30x)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "na12878_read_depth-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "bar",
+              "transform": [
+                {
+                  "type": "coverage"
+                }
+              ],
+              "encoding": {
+                "y": "coverage",
+                "color": "#c8d8ee"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "na12878_read_marks",
-      "name": "NA12878 reads (1000 Genomes, 30x)",
+      "name": "NA12878 insert size (1000 Genomes, 30x)",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "CramAdapter",
@@ -64,21 +99,6 @@
           "type": "LinearMarkDisplay",
           "displayId": "na12878_read_marks-LinearMarkDisplay",
           "marks": [
-            {
-              "shape": "bar",
-              "transform": [
-                {
-                  "type": "coverage"
-                }
-              ],
-              "encoding": {
-                "y": {
-                  "field": "coverage",
-                  "resolve": "independent"
-                },
-                "color": "#c8d8ee"
-              }
-            },
             {
               "shape": "point",
               "transform": [
@@ -140,7 +160,38 @@
                   "ramp": ["#bdbdbd", "#1f4e9a"]
                 }
               }
-            },
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "na12878_chr20_pair_counts",
+      "name": "NA12878 chr20, pairs of 2 to 10 kb per bin",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "na12878_chr20_pair_counts-LinearMarkDisplay",
+          "scales": {
+            "y": {
+              "domainMin": 0,
+              "domainMax": 60
+            }
+          },
+          "marks": [
             {
               "shape": "bar",
               "transform": [
@@ -154,7 +205,6 @@
                 },
                 {
                   "type": "aggregate",
-                  "groupby": ["start", "end"],
                   "ops": [
                     {
                       "op": "count"
@@ -163,11 +213,7 @@
                 }
               ],
               "encoding": {
-                "y": {
-                  "field": "count",
-                  "resolve": "independent",
-                  "domain": [0, 60]
-                },
+                "y": "count",
                 "color": "#d62728"
               }
             }
@@ -183,7 +229,11 @@
         "type": "LinearGenomeView",
         "assembly": "hg38",
         "loc": "chr20:32,925,000-32,955,000",
-        "tracks": ["ncbi_refseq_hg38", "na12878_read_marks"]
+        "tracks": [
+          "ncbi_refseq_hg38",
+          "na12878_read_depth",
+          "na12878_read_marks"
+        ]
       }
     ]
   }

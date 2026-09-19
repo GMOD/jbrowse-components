@@ -237,11 +237,12 @@ for lane in young:youngLog2 strand:strandLog2; do
     {
       "type": "LinearMarkDisplay",
       "displayId": "@FAMILY@_@KIND@_share-LinearMarkDisplay",
+      "scales": { "y": { "domainMin": -1.5, "domainMax": 1.5 } },
       "marks": [
         {
           "shape": "bar",
           "encoding": {
-            "y": { "field": "@FIELD@", "domain": ["-1.5", "1.5"] },
+            "y": "@FIELD@",
             "color": "jexl:feature.@FIELD@ > 0 ? '#d73027' : '#4575b4'"
           }
         }

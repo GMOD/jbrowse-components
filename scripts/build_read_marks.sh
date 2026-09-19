@@ -104,17 +104,40 @@ case "$READS_URI" in
   *) ADAPTER="{ \"type\": \"BamAdapter\", \"bamLocation\": { \"uri\": \"$READS_URI\" }, \"index\": { \"location\": { \"uri\": \"$READS_URI.bai\" } } }" ;;
 esac
 
-# The CLI cannot write a marks list, so both tracks are JSON. @PLACEHOLDERS@
+# The CLI cannot write a marks list, so every track is JSON. @PLACEHOLDERS@
 # are real JSON strings, so the heredocs parse on their own.
 #
-# The reads track plots the file's own fields: the depth as a coverage step on
-# an axis of its own, each pair's insert size as a point on the shared axis,
-# coloured by mapping quality.
+# The depth and the insert size are two quantities and a mark display draws one
+# axis, so each takes a track of its own over the same file.
+sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|\"@ADAPTER@\"|$ADAPTER|g" >depth.json <<'JSON'
+{
+  "type": "AlignmentsTrack",
+  "trackId": "@SAMPLE@_read_depth",
+  "name": "@SAMPLE@ depth",
+  "assemblyNames": ["@ASSEMBLY@"],
+  "adapter": "@ADAPTER@",
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "@SAMPLE@_read_depth-LinearMarkDisplay",
+      "marks": [
+        {
+          "shape": "bar",
+          "transform": [{ "type": "coverage" }],
+          "encoding": { "y": "coverage", "color": "#c8d8ee" }
+        }
+      ]
+    }
+  ]
+}
+JSON
+jb add-track-json depth.json --out "$APP" --update
+
 sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|\"@ADAPTER@\"|$ADAPTER|g" >reads.json <<'JSON'
 {
   "type": "AlignmentsTrack",
   "trackId": "@SAMPLE@_read_marks",
-  "name": "@SAMPLE@ reads",
+  "name": "@SAMPLE@ insert size",
   "assemblyNames": ["@ASSEMBLY@"],
   "adapter": "@ADAPTER@",
   "displays": [
@@ -122,14 +145,6 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|\"@ADAPTER@\"|$ADAP
       "type": "LinearMarkDisplay",
       "displayId": "@SAMPLE@_read_marks-LinearMarkDisplay",
       "marks": [
-        {
-          "shape": "bar",
-          "transform": [{ "type": "coverage" }],
-          "encoding": {
-            "y": { "field": "coverage", "resolve": "independent" },
-            "color": "#c8d8ee"
-          }
-        },
         {
           "shape": "point",
           "transform": [
@@ -155,9 +170,9 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|\"@ADAPTER@\"|$ADAP
 JSON
 jb add-track-json reads.json --out "$APP" --update
 
-# The pairs track scans the chromosome: every pair under 20 kb as a point at
-# its insert, and the count per zoom-following bin of the deletion-sized pairs
-# on a right axis pinned at 60, so a deletion is a bar and the centromere,
+# Two tracks scan the chromosome: every pair under 20 kb as a point at its
+# insert, and under it the count per zoom-following bin of the deletion-sized
+# pairs, on an axis pinned at 60 so a deletion is a bar and the centromere,
 # whose pairs run into the thousands, saturates.
 sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -e "s|@PAIRS@|$PAIRS|g" >pairs.json <<'JSON'
 {
@@ -188,22 +203,6 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
               "ramp": ["#bdbdbd", "#1f4e9a"]
             }
           }
-        },
-        {
-          "shape": "bar",
-          "transform": [
-            { "type": "filter", "expr": "jexl:feature.tlen > 2000 && feature.tlen < 10000" },
-            { "type": "bin", "step": "auto" },
-            {
-              "type": "aggregate",
-              "groupby": ["start", "end"],
-              "ops": [{ "op": "count" }]
-            }
-          ],
-          "encoding": {
-            "y": { "field": "count", "resolve": "independent", "domain": [0, 60] },
-            "color": "#d62728"
-          }
         }
       ]
     }
@@ -211,6 +210,39 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
 }
 JSON
 jb add-track-json pairs.json --out "$APP" --update
+
+sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -e "s|@PAIRS@|$PAIRS|g" >counts.json <<'JSON'
+{
+  "type": "FeatureTrack",
+  "trackId": "@SAMPLE@_@CHROM@_pair_counts",
+  "name": "@SAMPLE@ @CHROM@, pairs of 2 to 10 kb per bin",
+  "assemblyNames": ["@ASSEMBLY@"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "bedGzLocation": { "uri": "@PAIRS@" },
+    "index": { "location": { "uri": "@PAIRS@.tbi" } }
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "@SAMPLE@_@CHROM@_pair_counts-LinearMarkDisplay",
+      "scales": { "y": { "domainMin": 0, "domainMax": 60 } },
+      "marks": [
+        {
+          "shape": "bar",
+          "transform": [
+            { "type": "filter", "expr": "jexl:feature.tlen > 2000 && feature.tlen < 10000" },
+            { "type": "bin", "step": "auto" },
+            { "type": "aggregate", "ops": [{ "op": "count" }] }
+          ],
+          "encoding": { "y": "count", "color": "#d62728" }
+        }
+      ]
+    }
+  ]
+}
+JSON
+jb add-track-json counts.json --out "$APP" --update
 
 # ── The callset's answer ────────────────────────────────────────────────────
 # What the 1000 Genomes SV callset says NA12878 carries on the same chromosome,
