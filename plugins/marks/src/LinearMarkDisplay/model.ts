@@ -296,6 +296,24 @@ function stepsOf(
   })
 }
 
+function widestBinStep(steps: readonly TransformStep[]) {
+  let widest = 0
+  for (const step of steps) {
+    if (step.type === 'bin' && step.step > widest) {
+      widest = step.step
+    }
+  }
+  return widest
+}
+
+function toBinEdges(region: Region, step: number, bounds: Region) {
+  return {
+    ...region,
+    start: Math.max(bounds.start, Math.floor(region.start / step) * step),
+    end: Math.min(bounds.end, Math.ceil(region.end / step) * step),
+  }
+}
+
 // A mark's colour where it declares a constant one, packed as the worker
 // would have packed it. A scale has no meaning over a bin the sidecar wrote,
 // and a jexl callback has no feature to read.
@@ -1306,8 +1324,23 @@ export function stateModelFactory(
        * #action
        */
       fetchNeeded(needed: IndexedRegion[]) {
-        const { bpPerPx } = self.host
-        return fetchEachRegion(self, needed, {
+        const { bpPerPx, displayedRegions } = self.host
+        const step = widestBinStep([
+          ...self.rpcProps().transform,
+          ...self.layerRequests.flatMap(l => l.transform ?? []),
+        ])
+        const regions =
+          step > 0
+            ? needed.map(n => ({
+                ...n,
+                region: toBinEdges(
+                  n.region,
+                  step,
+                  displayedRegions[n.displayedRegionIndex]!,
+                ),
+              }))
+            : needed
+        return fetchEachRegion(self, regions, {
           call: (region, ctx) =>
             ctx.callRpc('CoreEncodeFeatures', {
               ...rpcArgs(self),
