@@ -18,7 +18,7 @@ const DEFAULTS: Record<string, unknown> = {
 // display type has one set of slot defaults, and `expandTrackConfigShorthand`
 // runs after this extension point, so a key the config already spells — in
 // `displayDefaults` or in an explicit `displays` entry — wins.
-function seed(snap: Record<string, unknown>) {
+export function seedDisplayDefaults(snap: Record<string, unknown>) {
   const written = snap.displayDefaults as Record<string, unknown> | undefined
   const displays = Array.isArray(snap.displays)
     ? (snap.displays as Record<string, unknown>[])
@@ -42,6 +42,6 @@ export default function MultiQuantitativeTrackDefaultsF(
   pluginManager: PluginManager,
 ) {
   pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap =>
-    snap.type === 'MultiQuantitativeTrack' ? seed(snap) : snap,
+    snap.type === 'MultiQuantitativeTrack' ? seedDisplayDefaults(snap) : snap,
   )
 }
