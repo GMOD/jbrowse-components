@@ -182,86 +182,28 @@ within a row of one, with an overlapping name already placed. Between stretches
 at the same x it takes one from each lane before a second from either, or the
 lane drawn first took every row a short band has.
 
-*2026-09-18:* **aligned bp decides every contest in the strip**, since nothing
-else in a zoomed-out lane tells a 12Mb block from a 200bp scrap — both draw at
-the 1.5px floor. The label rows used to go left to right, so at whole-genome
-zoom the three rows went to whatever sat furthest left and the chromosome most
-of the window aligns to could go unnamed. Candidates now go strongest first, a
-stretch weighing every alignment in it rather than its widest one, and the lane
-interleave above survives as the tie-break. The hover and the click take the
-same measure one alignment at a time — the longest under the pointer, where
-both used to take the last one the scan reached: the adapter's arrival order
-for class A, and for class C the SMALLEST, since the feature table arrives in
-`compareDrawOrder` and its pickable tier runs large to small. Colored marks
-paint weakest first so the composite ends on the contig the pointer would name.
+**What the strip draws, and what it names, is decided by aligned bp** —
+[ADR-138](../architecture-decision-records/adr-138-aligned-bp-ranks-and-gates-the-off-screen-mate-marks.md),
+which carries the reasoning and the alternatives it rejected. The rules the rest
+of this file assumes:
 
-That is the opposite of the rule `compareDrawOrder` gives ribbons, where small
-on top is what keeps an inversion inside a match reachable, and the reason is
-that a ribbon is a shape a reader can see inside. A mark is 1.5px of grey in a
-column of hundreds: "what is under the pointer" has no visible answer to be
-faithful to, so the useful one is the block. A short alignment nested inside a
-long one is what that costs, and the long one is what the reader pointed at.
+- A contig draws marks only where the sequence it holds is worth
+  `MIN_CONTIG_MARK_PX` of the band, so the floor lifts with the window and the
+  scattered contigs appear on the way in.
+- A label row goes to the stretch holding the most sequence, the lane interleave
+  above breaking a tie.
+- A name may overhang its stretch by up to half its own width
+  (`MIN_LABEL_COVERAGE`), clamped into the window, and the box it holds against
+  the rule above is the TEXT box.
+- A pointer answers with the longest alignment under it, hover and click alike,
+  and colour groups paint weakest-first so the composite ends on the same
+  contig.
+- The hover leads with that sequence — `NC_081816.1 · 920Kbp in 176 alignments`
+  — off the per-contig `alignedBp` tally each lane carries beside `counts`, so
+  it stays O(contigs) per pointer move.
 
-*2026-09-18, the same day:* **the fit test was settling the contest above before it ran.**
-A name went on only where the stretch could contain it, and that test ran before
-the strongest-first sort, so the sort could only rank the survivors. Measured on
-the peach-chr1-over-grape-chr1 figure's own view: ten contigs carry marks, four
-are named, and the six that are not lose on WIDTH rather than on rows — two of
-the three rows were free. One of them is the fourth-strongest contig in the
-window, 920kb of peach going to `NC_081816.1`, unnamed while the fifth-strongest
-is named, because an 11-character accession wants a few more pixels than its
-stretch has.
-
-A name may now overhang its stretch, up to half its own width
-(`MIN_LABEL_COVERAGE`), and is then clamped into the window. What keeps that
-readable is what the strip already relies on: a name is read by the marks under
-its CENTRE. Two names a row apart may overlap in x — `placeLabels` rejects a box
-only within `LABEL_ROW_PX` of a placed one — and a third-row name sits 26px off
-the marks, so a name whose middle half is over its own marks says exactly what
-it did before. The overhang at stake is ~17px a side against a same-contig merge
-gap of two whole names, so no reader has to tell an overhang from a break
-between stretches. **The collision box stays the text box**, which is what makes
-the overhang safe: two stretches that do not touch can now want the same pixels,
-and the second takes the next row.
-
-Not truncation, and not an alias: `NC_0818…` is ambiguous among grape's own
-contigs, and `refNameAliases` is a config property the strip cannot count on.
-
-*2026-09-18, and the decision the two above were serving:* **a contig draws
-marks only where its sequence is worth about 4px of the band**
-(`MIN_CONTIG_MARK_PX`), which is what "zoomed out" had been missing. Colin: a
-reader zoomed out does not want an overwhelming amount of information from
-small, maybe spurious mates — show those on the way in.
-
-The obvious rule, a pixel floor per ALIGNMENT, is wrong here and the demo says
-so. Peach chr1 over grape chr1 at 34kb/px draws 2,767 marks whose median
-alignment is 3.2kb — 0.09px — and whose largest is 60kb. A 1px floor per
-alignment drops 100% of the marks and 98% of the 11Mb they carry. MCScan anchors
-are gene-sized by construction, so a small alignment is not a spurious one, and
-what a reader sees as noise at that window is a CONTIG with a handful of
-scattered anchors: 3.85Mb to `NC_081809.1` against 22kb to `NC_081806.1`.
-
-So the floor reads the per-contig tally, in pixels, which makes it a
-level-of-detail rule rather than a setting. On that view it drops exactly the
-three scattered contigs (55kb, 25kb, 22kb — 22 marks of 2,767, 0.9% of the
-sequence) and keeps all six real ones; zoom the row to 3Mb and `NC_081813.1`
-comes back at 25.5px of sequence. At whole-genome zoom the floor rises with
-bpPerPx, so only the relationships worth crossing the view for survive.
-`website/scripts/probe-mate-density.ts` re-measures all of it.
-
-It reads the contig rather than the STRETCH because the tally is per contig and
-free (it is the hover's own number), where a stretch is a per-frame merge the
-draw and both hit tests would each have to repeat. What that costs: a contig
-with a strong block here and one stray anchor 20Mb away draws the stray too.
-
-The hover leads with the sequence for the same reason the strip ranks by it —
-`NC_081816.1 · 920Kbp in 176 alignments`. The count stays beside it because
-920Kbp in 4 alignments and 920Kbp in 176 are different things to click into.
-Both come off the per-contig tally the lane already carries (`alignedBp` beside
-`counts`, in the worker's lane and the culled one), so the hover stays O(contigs)
-and independent of the mark count. No share and no rank: the class C denominator
-moves with every pan.
-
+`website/scripts/probe-mate-density.ts` measures what a window keeps and what it
+drops, against the live demo.
 
 *2026-08-20:* the marks are the BACKGROUND and the label is the finding, so they
 are not the same grey. At full `text.secondary` the strip read as the loudest
