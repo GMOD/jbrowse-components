@@ -120,8 +120,19 @@ Four were stated in the bench header before the run. One fired.
 
 ## What the three refusals' premises look like now
 
+**The `features` arm is a `SimpleFeature` per row, and no display runs that
+path.** A BAM, CRAM or VCF adapter hands the encoder its own feature objects
+and the encoder reads `feature.get(field)` off them; the BigWig adapter hands
+it a two-field `BigWigFeature` cursor over the array view it already holds
+(`plugins/wiggle/src/BigWigAdapter/BigWigAdapter.ts`), which is the row cursor
+the spike reinvents. So the
+5.09-9.99x<!--m:column-encode.featuresVsWiggle.range--> below prices building
+a `SimpleFeature` per row, and the shipping mark display over a BigWig is
+unmeasured; a `BigWigFeature` arm comes before this figure is quoted anywhere
+else.
+
 **ADR-114's number was the `Feature[]` and the lane mismatch, and its decision
-was neither.** The Feature-typed encode runs
+was neither.** The `SimpleFeature` encode runs
 5.09-9.99x<!--m:column-encode.featuresVsWiggle.range--> the hand packer here,
 which is ADR-114's 3.11x met again on a path with five lanes rather than
 twenty-nine; the column encode runs at parity. What that does not touch is the
@@ -131,7 +142,10 @@ outputs the walk emits as it goes. Canvas's packer stays hand-written for those,
 and a column table changes none of them.
 
 **ADR-118's own explanation is confirmed, and its audit still stands.** The step
-costs 4.35x<!--m:column-kernels.stack-stack.vsBase--> the layout and the column
+costs 4.35x<!--m:column-kernels.stack-stack.vsBase--> the layout with the
+`SimpleFeature` construction inside the timing, and
+2.18x<!--m:column-kernels.stack-step.vsBase--> over a prebuilt list, which is
+the row a BAM's own feature objects put a declared pileup on; the column
 kernel costs
 1.22x<!--m:column-kernels.stack-stack-columns.vsBase-->, so the representation
 was indeed the whole of the gap: the packing rule is the same rule either way.

@@ -32,8 +32,10 @@
 //                          -> packFillInstances, the shipping path
 //     control              the same code through a second driver literal
 //     features             a SimpleFeature per row -> encodeFeatures (bar
-//                          lanes, no index) -> barMark.pass.pack, today's
-//                          mark-display path
+//                          lanes, no index) -> barMark.pass.pack. Not the
+//                          shipping mark path: over a BigWig the display
+//                          reads BigWigAdapter's two-field BigWigFeature
+//                          cursor, which no arm here builds
 //     columns              encodeColumns over the same columns -> the same pack
 //     features-jexl        `features` with a jexl: colour
 //     columns-cursor-jexl  `columns` with the same colour through one reused

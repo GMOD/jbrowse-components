@@ -42,8 +42,8 @@ number.
 ## 2026-09-19: the same substitution, benched one subsystem over
 
 [column-encoder-verdict](column-encoder-verdict.md) puts typed columns through
-the mark encoder against wiggle's hand packer and against today's
-`SimpleFeature` path, and the columnar arm wins on time at every size — the
+the mark encoder against wiggle's hand packer and against a `SimpleFeature`
+per row, and the columnar arm wins on time at every size — the
 opposite sign to the `modExtract.bench.ts` result this entry is parked behind.
 That arm has all three of the reasons this entry lists for why the mod bench's
 LOSS may not transfer: no interning, three numeric fields, and rows that
