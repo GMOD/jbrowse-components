@@ -415,7 +415,7 @@ test('an encoding channel refuses a key it does not declare', () => {
       { shape: 'span', encoding: { color: { colour: 'strand' } } },
     ]).createDisplay(),
   ).toThrow(
-    'MarkColor takes value, field, scale, domain, palette and ramp, not colour',
+    'MarkColor takes value, field, scale, domain, palette, ramp and domainMid, not colour',
   )
   expect(() =>
     createTestEnvironment([
