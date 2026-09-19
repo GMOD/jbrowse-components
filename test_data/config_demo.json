@@ -199,8 +199,11 @@
         "defaultRendering": "density",
         "origin": 2,
         "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
-        "posColor": "#b2182b",
-        "negColor": "#2166ac"
+        "color": {
+          "field": "score",
+          "scale": "threshold",
+          "palette": ["#2166ac", "#b2182b"]
+        }
       }
     },
     {

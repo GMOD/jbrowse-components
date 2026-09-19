@@ -137,10 +137,10 @@ describe('the schema', () => {
   it('reports a field name written where a color goes', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearWiggleDisplay', posColor: 'biotype' },
+      { type: 'LinearWiggleDisplay', color: { value: 'biotype' } },
     ]
     const [error] = schemaProblems(config)
-    expect(error?.where).toBe('tracks[0].displays[0].posColor')
+    expect(error?.where).toBe('tracks[0].displays[0].color.value')
     expect(error?.message).toBe(
       'expected a CSS color (a name like "red", "#rrggbb", "rgb()" or "hsl()") or a "jexl:" expression, got "biotype"',
     )
@@ -151,7 +151,7 @@ describe('the schema', () => {
     color => {
       const config = baseConfig()
       config.tracks[0]!.displays = [
-        { type: 'LinearWiggleDisplay', posColor: color },
+        { type: 'LinearWiggleDisplay', color: { value: color } },
       ]
       expect(schemaProblems(config)).toEqual([])
     },

@@ -46,8 +46,11 @@
         "defaultRendering": "density",
         "origin": 0,
         "scales": { "y": { "domainMin": -2, "domainMax": 2 } },
-        "posColor": "#b2182b",
-        "negColor": "#2166ac",
+        "color": {
+          "field": "score",
+          "scale": "threshold",
+          "palette": ["#2166ac", "#b2182b"]
+        },
         "height": 760
       }
     },
@@ -63,8 +66,11 @@
       },
       "displayDefaults": {
         "height": 120,
-        "posColor": "#b2182b",
-        "negColor": "#2166ac",
+        "color": {
+          "field": "score",
+          "scale": "threshold",
+          "palette": ["#2166ac", "#b2182b"]
+        },
         "scales": { "y": { "domainMin": -100, "domainMax": 100 } }
       }
     },

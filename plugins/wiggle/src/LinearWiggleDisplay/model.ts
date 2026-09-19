@@ -682,18 +682,22 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The key a declared threshold draws: one row per interval, labelled by
-       * the span it covers. Only a declared one — the pos/neg pair every
-       * quantitative track has always drawn is the layout's default, and a
+       * The key a threshold with a declared cut draws: one row per interval,
+       * labelled by the span it covers. A threshold cutting at the `origin`
+       * draws none, because the axis already shows where the origin is and a
        * `< 0` / `≥ 0` key on every bigWig says nothing a reader did not ask
-       * for.
+       * for. Density draws none either: there the ramp is the key.
        */
       get thresholdColorScale(): ColorScale | undefined {
         const color = self.colorSetting
-        if (!color.field || wiggleColorScale(color) !== 'threshold') {
+        const cuts = numericDomain(color.domain)
+        if (
+          self.isDensityMode ||
+          cuts.length === 0 ||
+          wiggleColorScale(color) !== 'threshold'
+        ) {
           return undefined
         }
-        const cuts = numericDomain(color.domain)
         const { posColor, negColor } = self.wiggleColor
         const colors =
           cuts.length > 1
