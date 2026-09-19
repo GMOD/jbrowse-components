@@ -100,15 +100,24 @@ python3 sv_multihop.py chains COLO829.somatic-sv.vcf.gz --min-hops 3
 ```
 
 ```
-100 distinct junctions in COLO829.somatic-sv.vcf.gz
-4 chain(s) of >=3 junctions linked by reference segments <=20000 bp
+63 distinct junctions in COLO829.somatic-sv.vcf.gz, 68 record(s) skipped on FILTER
+2 chain(s) of >=3 junctions linked by reference segments <=20000 bp
 
-chain 1: 3 junctions across 3 chromosome(s)
+chain 0: 3 junctions across 3 chromosome(s)
     chr3:25,359,111 <-> chr12:72,273,112
     chr3:25,359,568 <-> chr10:58,717,464
     chr10:58,717,662 <-> chr12:72,273,294
     --loci chr10:58717464,chr12:72273112,chr3:25359111
 ```
+
+A chain is a claim that one molecule carries all of its junctions, so a call the
+caller itself rejected is no link in one and `chains` skips it. Those 68 records
+matter here: keep them, and a chr5/chr13 route comes back as the callset's
+largest chain, ahead of the real event — four junctions every one of which the
+caller marked `Too_low_VAF`, among them deletions of 25 Mb and 58 Mb and a 76 Mb
+duplication. `--keep-filtered` is there if you want to look at it anyway, and
+`bedpe` keeps them by default, since reviewing the rejected calls is the point
+of a review queue.
 
 Those three junctions form a closed cycle, and the whole derivative path is
 under a kilobase spread across three chromosomes. The genes involved are _RARB_

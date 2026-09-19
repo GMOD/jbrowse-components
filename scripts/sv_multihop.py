@@ -38,7 +38,7 @@ import sys
 import tempfile
 import urllib.parse
 
-BND_MATE = re.compile(r'[\[\]]([^\[\]:]+):(\d+)[\[\]]')
+BND_MATE = re.compile(r'[\[\]]([^\[\]]+)[\[\]]')
 CONTIG_ID = re.compile(r'##contig=<[^>]*ID=([^,>]+)')
 
 # How far apart the two records of one reciprocal breakend pair may place the
@@ -101,15 +101,55 @@ def dedupe_junctions(junctions, tolerance):
     return kept
 
 
-def parse_junctions(vcf, dedup_tolerance=DEDUP_TOLERANCE):
+# Symbolic ALTs that assert an adjacency, and so have a second locus to read off
+# INFO CHR2/END. <CNV> and <INS> are not here: a copy-number call states a level
+# rather than a join, and an insertion's second locus is not in the reference.
+SYMBOLIC_ADJACENCIES = ('DEL', 'DUP', 'INV', 'TRA')
+
+
+def bnd_mate(alt):
+    """The (chrom, pos) a breakend ALT names, or None.
+
+    Split at the LAST colon rather than matching a colon-free contig name:
+    GRCh38's full analysis set spells its HLA contigs `HLA-A*01:01:01:01`, so a
+    mate on one arrives as `N[HLA-A*01:01:01:01:500[` and a colon-free pattern
+    matches nothing at all -- the junction went missing with no complaint. Same
+    rule `parseSvAlt` applies on the app side.
+
+    A symbolic-mate form (`G<DEL>`) carries no bracket and lands here as None,
+    which is right: the symbolic branch reads its END instead.
+    """
+    m = BND_MATE.search(alt)
+    if not m:
+        return None
+    chrom, _, pos = m.group(1).rpartition(':')
+    # `<DEL>:1` is the placeholder a symbolic mate parses to, not a contig
+    if not chrom or chrom.startswith('<') or not pos.isdigit():
+        return None
+    return (chrom, int(pos))
+
+
+def parse_junctions(vcf, dedup_tolerance=DEDUP_TOLERANCE, pass_only=True):
     """Every VCF record that joins two reference loci, as ((chrom, pos), ...).
 
-    Breakend records name their partner in the ALT; symbolic DEL/DUP/INV records
-    carry it in INFO END. Reciprocal breakend pairs describe one junction twice,
-    so they are collapsed.
+    Breakend records name their partner in the ALT; symbolic DEL/DUP/INV/TRA
+    records carry it in INFO CHR2/END. Reciprocal breakend pairs describe one
+    junction twice, so they are collapsed.
+
+    `pass_only` follows the JOB, so each subcommand sets it rather than
+    inheriting one default. A chain is a claim about one molecule and a rejected
+    call is no link in it -- on COLO829, keeping them chained through a 25 Mb
+    Too_low_VAF deletion and offered that 4-junction route as the callset's
+    largest, ahead of the real der(3). A review queue is the opposite: the
+    rejected calls are part of what a reviewer is there to look at, which is why
+    `jb2export batch` renders them and takes `--passOnly` to stop.
+
+    The number dropped comes back with the junctions, so a caller reports it
+    rather than quietly returning fewer junctions than the file holds.
     """
     junctions = []
     contigs = {}
+    filtered = 0
     for line in open_maybe_gzip(vcf):
         if line.startswith('#'):
             m = CONTIG_ID.match(line)
@@ -121,15 +161,26 @@ def parse_junctions(vcf, dedup_tolerance=DEDUP_TOLERANCE):
             continue
         chrom, pos, alt, info = f[0], int(f[1]), f[4], f[7]
         contigs.setdefault(chrom.lower(), chrom)
+        # FILTER lists the filters a record FAILED, so PASS and `.` are the two
+        # spellings of a record that passed
+        if pass_only and f[6] not in ('PASS', '.', ''):
+            filtered += 1
+            continue
         svtype = info_field(info, 'SVTYPE')
         if svtype == 'BND':
-            m = BND_MATE.search(alt)
-            if m:
-                junctions.append(((chrom, pos), (m.group(1), int(m.group(2)))))
-        elif svtype in ('DEL', 'DUP', 'INV'):
+            # every allele, not the first: a caller writing two adjacencies on
+            # one row had the second silently dropped
+            for allele in alt.split(','):
+                mate = bnd_mate(allele)
+                if mate:
+                    junctions.append(((chrom, pos), mate))
+        elif svtype in SYMBOLIC_ADJACENCIES:
             end = info_field(info, 'END')
             if end and end.isdigit():
-                junctions.append(((chrom, pos), (chrom, int(end))))
+                # CHR2 is what makes a <TRA> more than an interval; a DEL/DUP/INV
+                # that omits it ends on its own contig
+                mate_chrom = info_field(info, 'CHR2') or chrom
+                junctions.append(((chrom, pos), (mate_chrom, int(end))))
 
     # Callers vary on refName case in the ALT bracket (CHR12 against a chr12
     # CHROM). Resolving the mate to the spelling the file itself uses does two
@@ -144,7 +195,7 @@ def parse_junctions(vcf, dedup_tolerance=DEDUP_TOLERANCE):
 
     return dedupe_junctions(
         [(canonical(a), canonical(b)) for a, b in junctions], dedup_tolerance
-    )
+    ), filtered
 
 
 def cmd_bedpe(args):
@@ -161,7 +212,9 @@ def cmd_bedpe(args):
     caller upper-cased, `END=` matched inside `CIEND=`, and the reciprocal pairs
     that otherwise put every translocation in the queue twice.
     """
-    junctions = parse_junctions(args.vcf, args.dedup_tolerance)
+    junctions, filtered = parse_junctions(
+        args.vcf, args.dedup_tolerance, pass_only=args.pass_only
+    )
     out = open(args.out, 'w') if args.out else sys.stdout
     try:
         n = 0
@@ -176,7 +229,9 @@ def cmd_bedpe(args):
         if args.out:
             out.close()
     where = args.out if args.out else 'stdout'
-    print(f'{n} of {len(junctions)} junctions written to {where}', file=sys.stderr)
+    print(f'{n} of {len(junctions)} junctions written to {where}'
+          + (f' ({filtered} skipped on FILTER)' if filtered else ''),
+          file=sys.stderr)
 
 
 def find_chains(junctions, max_segment, min_hops):
@@ -245,8 +300,11 @@ def chain_loci(chain, max_segment):
 
 
 def cmd_chains(args):
-    junctions = parse_junctions(args.vcf, args.dedup_tolerance)
-    print(f'{len(junctions)} distinct junctions in {args.vcf}')
+    junctions, filtered = parse_junctions(
+        args.vcf, args.dedup_tolerance, pass_only=not args.keep_filtered
+    )
+    print(f'{len(junctions)} distinct junctions in {args.vcf}'
+          + (f', {filtered} record(s) skipped on FILTER' if filtered else ''))
     chains = find_chains(junctions, args.max_segment, args.min_hops)
     print(
         f'{len(chains)} chain(s) of >={args.min_hops} junctions linked by '
@@ -964,6 +1022,8 @@ def main():
     c.add_argument('--max-segment', type=int, default=20000,
                    help='longest reference segment a read may bridge between junctions')
     c.add_argument('--min-hops', type=int, default=2)
+    c.add_argument('--keep-filtered', action='store_true',
+                   help='chain through records the caller rejected too')
     c.add_argument('--dedup-tolerance', type=int, default=DEDUP_TOLERANCE,
                    help='how far apart the two records of one reciprocal breakend '
                         'pair may place it and still count as one junction; keep '
@@ -974,6 +1034,9 @@ def main():
                        help='every junction as a BEDPE row, for `jb2export batch`')
     b.add_argument('vcf')
     b.add_argument('--out', help='output path (default stdout)')
+    b.add_argument('--pass-only', action='store_true',
+                   help='drop records the caller filtered out, as '
+                        '`jb2export batch --passOnly` does')
     b.add_argument('--interchromosomal-only', action='store_true',
                    help='keep only junctions joining two different chromosomes')
     b.add_argument('--dedup-tolerance', type=int, default=DEDUP_TOLERANCE,

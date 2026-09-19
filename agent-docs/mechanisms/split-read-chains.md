@@ -186,9 +186,10 @@ Two mechanics that make a re-answer possible at all, both worth copying:
 Where the join is a mutual pointer rather than a list — a VCF breakend naming
 its mate position, a bedpe or STAR-Fusion record arriving as two halves each
 carrying `mate` — the key has to come out identical computed from either side.
-It is one line, the unordered pair sorted and joined, and
-`getMatchedBreakendFeatures` and `getMatchedPairedFeatures`
-(`featureMatching.ts`) both use it.
+It is one line, the unordered pair sorted and joined, and it is what
+`getVariantJunctions` (`featureMatching.ts`) buckets on. Both forms go through
+the one key because both ends come from `junctionEnds`, so what is compared is
+the junction rather than the record's own spelling of it.
 
 **What it replaces is the adapter's own uniqueId**, and that is the failure
 worth carrying: the halves are minted `<prefix>-<refName>-<index>-r1|r2`, where
@@ -210,11 +211,13 @@ thing rather than four coincidences:
 | --- | --- | --- |
 | a split read | `SA`, the read's other alignments | `unpairedReadChain`, `readChainSegments` |
 | a read pair | the mate's placement in the read's own flags | `resolveReadGroup`'s mate partition |
-| a VCF adjacency | the mate position inside the breakend `ALT` | `getMatchedBreakendFeatures` |
-| a bedpe / fusion record | a `mate` on each half | `getMatchedPairedFeatures` |
+| a VCF adjacency | the mate position inside the breakend `ALT` | `getVariantJunctions` |
+| a bedpe / fusion record | a `mate` on each half | `getVariantJunctions` |
 
-The first two are the list form, the last two the mutual-pointer form. Rules 1
-and 4 through 6 apply to both.
+The first two are the list form, the last two the mutual-pointer form — and the
+last two are one entry, because `junctionEnds` answers for both and a record's
+type string stopped deciding which rejoin it got. Rules 1 and 4 through 6 apply
+to both forms.
 
 ## Before reaching for any of this
 

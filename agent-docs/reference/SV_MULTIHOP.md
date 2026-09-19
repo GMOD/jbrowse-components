@@ -292,11 +292,12 @@ normalize — the same bug this file had, one layer up.
 
 The breakpoint split view was one of those consumers, and this was not
 hypothetical: every one of the 66 BND records in COLO829's VCF writes CHROM
-`chr3` and spells the same contig `CHR3` in the ALT bracket, so
-`getMatchedBreakendFeatures` gave a reciprocal pair two bucket keys and
-`findMatchingAlt` matched no alt. The reader got two panels and no curve between
-them — a wrong picture, not an error. Both now key through sv-core's
-`breakendLocKey`. sv-core's own producers were never affected:
+`chr3` and spells the same contig `CHR3` in the ALT bracket, so the overlay's
+breakend bucketing gave a reciprocal pair two keys and its alt matching found
+none. The reader got two panels and no curve between them — a wrong picture, not
+an error. `getVariantJunctions` now keys both ends through sv-core's
+`breakendLocKey`, and the alt matching is gone: the overlay reads each end's
+kept side off `junctionEnds` instead. sv-core's own producers were never affected:
 `junctionFromFeature` and `getBreakendCoveringRegions` resolve both ends through
 `toCanonicalRefName`, whose `getCanonicalRefName2` already falls back to
 `lowerCaseRefNameAliases`.

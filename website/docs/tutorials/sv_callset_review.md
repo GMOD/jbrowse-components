@@ -70,11 +70,9 @@ wrote 100/100 images to tumor
 
 Insertions name one locus, so there is no second panel and the warning counts
 them out. Each breakend pair is written twice and collapses to one. The result
-is the same 100 junctions, in the same order, that `sv_multihop.py chains`
-reports in the
-[multi-hop tutorial](/docs/tutorials/cancer_sv#finding-the-chains), because
-neither parses the ALT bracket by hand, which goes wrong four ways, none of them
-raising an error:
+is the same 100 junctions, in the same order, that `sv_multihop.py bedpe` writes
+for the same file, because neither parses the ALT bracket by hand, which goes
+wrong four ways, none of them raising an error:
 
 - the replacement string may carry inserted sequence either side of the bracket
   (`GTGATGGATTCA[CHR12:72273112[`)

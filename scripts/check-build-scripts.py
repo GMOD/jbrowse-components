@@ -1205,12 +1205,53 @@ with open(vcf, "w") as fh:
         "chr10\t58717662\tc0\tG\tGC]CHR12:72273294]\t.\tPASS\tSVTYPE=BND\n"
         "chr5\t1000\td\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=2000\n"
     )
-junctions = sv_multihop.parse_junctions(vcf)
+junctions, _ = sv_multihop.parse_junctions(vcf)
 # the reciprocal pair describes one junction twice; matching it needs the mate
 # refName lower-cased, or the chain silently comes out one junction too long
 check("parse_junctions collapses a reciprocal breakend pair", len(junctions), 4)
 check("parse_junctions reads a symbolic DEL's END",
       ("chr5", 2000) in [e for j in junctions for e in j], True)
+
+# Four records a whole-genome callset routinely holds, each of which the parser
+# used to answer wrongly WITHOUT an error: a mate on a contig whose own name
+# holds colons, a <TRA> whose second locus is in CHR2, a call the caller itself
+# rejected, and two adjacencies written on one row.
+vcf_wild = os.path.join(tempfile.mkdtemp(), "wild.vcf")
+with open(vcf_wild, "w") as fh:
+    fh.write(
+        "##fileformat=VCFv4.2\n"
+        "##contig=<ID=chr1,length=1000000>\n"
+        "##contig=<ID=HLA-A*01:01:01:01,length=3000>\n"
+        "##contig=<ID=chr7,length=1000000>\n"
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+        "chr1\t1000\tb1\tN\tN[HLA-A*01:01:01:01:500[\t.\tPASS\tSVTYPE=BND\n"
+        "chr1\t2000\tb2\tN\t<TRA>\t.\tPASS\tSVTYPE=TRA;CHR2=chr7;END=9000\n"
+        "chr1\t3000\tb3\tN\tN[chr7:7000[\t.\tToo_low_VAF\tSVTYPE=BND\n"
+        "chr1\t4000\tb4\tN\tN[chr7:8000[,N]chr7:8500]\t.\tPASS\tSVTYPE=BND\n"
+    )
+wild, wild_filtered = sv_multihop.parse_junctions(vcf_wild)
+# GRCh38's full analysis set spells its HLA contigs HLA-A*01:01:01:01, so a
+# colon-free mate pattern matched nothing and the junction went missing
+check("parse_junctions splits a mate at the LAST colon",
+      (("chr1", 1000), ("HLA-A*01:01:01:01", 500)) in wild, True)
+check("parse_junctions reads a <TRA>'s CHR2, not just its END",
+      (("chr1", 2000), ("chr7", 9000)) in wild, True)
+# a chain is a claim about one molecule, and a rejected call is not a link in it
+check("parse_junctions drops a record the caller's FILTER rejected",
+      [j for j in wild if 7000 in (j[0][1], j[1][1])], [])
+check("parse_junctions counts what it dropped rather than quietly shrinking",
+      wild_filtered, 1)
+check("parse_junctions reads every ALT allele, not the first",
+      sorted(mate for (_, pos), (_, mate) in wild if pos == 4000),
+      [8000, 8500])
+check("parse_junctions keeps a filtered record for a review queue",
+      len(sv_multihop.parse_junctions(vcf_wild, pass_only=False)[0]), 5)
+
+# A single breakend (`.A`/`G.`) and a symbolic-mate form (`G<DEL>`) name no
+# navigable mate; bnd_mate answers None for both rather than inventing one.
+check("bnd_mate refuses a form naming no mate contig",
+      [sv_multihop.bnd_mate(a) for a in (".A", "G.", "G<DEL>", "N[<DEL>:1[")],
+      [None, None, None, None])
 
 # INFO keys have to be matched from the start of their own field. `END=(\d+)`
 # unanchored also matches inside CIEND=5,10, and re.search takes the FIRST hit,
@@ -1235,9 +1276,9 @@ with open(vcf_off, "w") as fh:
         "chr4\t901\td\tG\t]CHR3:300]G\t.\tPASS\tSVTYPE=BND\n"
     )
 check("parse_junctions collapses a reciprocal pair written one base apart",
-      sv_multihop.parse_junctions(vcf_off), [(("chr3", 300), ("chr4", 900))])
+      sv_multihop.parse_junctions(vcf_off)[0], [(("chr3", 300), ("chr4", 900))])
 check("an exact dedup is still available, and is what tolerance 0 means",
-      len(sv_multihop.parse_junctions(vcf_off, 0)), 2)
+      len(sv_multihop.parse_junctions(vcf_off, 0)[0]), 2)
 # ...but the tolerance is a few bases, NOT --max-segment: two junctions joining
 # one pair of chromosomes 20 kb apart are two junctions, and linking those rather
 # than merging them is the entire job of `chains`
@@ -1258,7 +1299,7 @@ check("dedupe_junctions does not merge transitively",
       [300, 316])
 
 check("parse_junctions reads END, not the END inside CIEND",
-      sv_multihop.parse_junctions(vcf2), [(("chr6", 1000), ("chr6", 9000))])
+      sv_multihop.parse_junctions(vcf2)[0], [(("chr6", 1000), ("chr6", 9000))])
 
 # `bedpe` is `chains`' parser with the chain search taken off, which is the whole
 # reason it exists: an awk one-liner in the tutorial would have to re-solve the
@@ -1303,7 +1344,7 @@ with open(vcf3, "w") as fh:
         "Chr1\t100\ta\tG\tG[CHR2:500[\t.\tPASS\tSVTYPE=BND\n"
         "Chr2\t520\tb\tG\tG]chr1:900]\t.\tPASS\tSVTYPE=BND\n"
     )
-cased = sv_multihop.parse_junctions(vcf3)
+cased, _ = sv_multihop.parse_junctions(vcf3)
 check("parse_junctions spells the mate the way the VCF's own contigs do",
       sorted({c for j in cased for c, _ in j}), ["Chr1", "Chr2"])
 check("chain_loci hands derive loci in that spelling",
