@@ -216,12 +216,12 @@ const suite: TestSuite = {
       },
     },
 
-    // colorBy:'population' + samplesTsvLocation end to end: the sample-metadata
+    // rowColor:'population' + samplesTsvLocation end to end: the sample-metadata
     // TSV must parse, reach the display's sources, and drive the palette so
     // same-population rows share a tint and different populations differ. The
     // tint is `labelColor`, the channel tree-sidebar draws a row label with.
     {
-      name: 'colorBy population colors sample rows from samplesTsv metadata',
+      name: 'rowColor population colors sample rows from samplesTsv metadata',
       fn: async page => {
         await navigateWithSessionSpec(page, populationDemoSpec)
         await findDisplayPainted(page, 'variant-display', 30000)
@@ -236,14 +236,16 @@ const suite: TestSuite = {
             window as unknown as {
               JBrowseSession: {
                 views: {
-                  tracks: { displays: { colorBy: string; sources?: Src[] }[] }[]
+                  tracks: {
+                    displays: { rowColor: string; sources?: Src[] }[]
+                  }[]
                 }[]
               }
             }
           ).JBrowseSession
           const display = session.views[0]!.tracks[0]!.displays[0]!
           return {
-            colorBy: display.colorBy,
+            rowColor: display.rowColor,
             sources: (display.sources ?? []).map(s => ({
               name: s.name,
               population: s.population,
@@ -251,9 +253,9 @@ const suite: TestSuite = {
             })),
           }
         })
-        if (info.colorBy !== 'population') {
+        if (info.rowColor !== 'population') {
           throw new Error(
-            `expected colorBy 'population', got '${info.colorBy}'`,
+            `expected rowColor 'population', got '${info.rowColor}'`,
           )
         }
         if (info.sources.length === 0) {
