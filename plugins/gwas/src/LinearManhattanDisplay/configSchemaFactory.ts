@@ -1,9 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import {
-  remapRetiredAutoscale,
-  scoreAxisConfigSchemaFields,
+  scalesSchema,
   scoreFieldConfigSchemaFields,
+  valueScaleSchema,
 } from '@jbrowse/wiggle-core'
 
 import { manhattanColorConfigSchema } from './colorConfigSchema.ts'
@@ -17,9 +17,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // the pos/neg palette, `bicolorPivot`, `lineWidth`, `maxGapMultiple` — all read
 // only by wiggle code a Manhattan plot never runs. A config doc that advertises
 // a slot is a promise it works; these were promises nothing kept. What Manhattan
-// genuinely shares is the score *axis*, so it takes `scoreAxisConfigSchemaFields`
-// and nothing else. `baseLinearDisplayConfigSchema` went the same way and for
-// the same reason: of its five slots only `height` is read here, so this schema
+// genuinely shares is the value scale, so it takes `scales.y` and nothing else.
+// `baseLinearDisplayConfigSchema` went the same way and for the same reason: of its five slots only `height` is read here, so this schema
 // declares that one and drops `mouseover`, `jexlFilters`,
 // `maxFeatureScreenDensity` and the byte-gate pair a display that never enables
 // the gate cannot honour.
@@ -111,12 +110,24 @@ export function configSchemaFactory() {
        */
       color: manhattanColorConfigSchema,
       ...scoreFieldConfigSchemaFields,
-      // The score axis. `scaleType`, `autoscale` and `numStdDev` come with it
-      // because `ScoreScaleMixin` reads all five, but only the min/max bounds
-      // reach this plot: -log10 p values are pre-transformed so the axis is
-      // linear-only, and `domain` takes plain min/max over the loaded regions.
-      // The track menu says so — it drops both radio submenus.
-      ...scoreAxisConfigSchemaFields,
+      /**
+       * #slot scales
+       * The y scale: `domainMin` and `domainMax` alone. -log10 p values are
+       * pre-transformed, so `type` admits `linear` only and the plot's domain
+       * is plain min/max over the loaded regions with no autoscale mode to
+       * consult — the track menu draws neither radio, because the scale
+       * declares neither.
+       */
+      scales: scalesSchema(valueScaleSchema({ types: ['linear'] })),
+      /**
+       * #slot
+       */
+      displayCrossHatches: {
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          'Rule the score axis with horizontal cross hatches at the tick positions',
+      },
       /**
        * #slot
        * Draw a horizontal line across the plot at this score, for the threshold
@@ -127,8 +138,9 @@ export function configSchemaFactory() {
        * On the plot's own scale, so it is a `-log10(p)` where the points are
        * and an Fst where `scoreColumn` names an Fst column. The autoscaled
        * y-axis widens to reach it, so a window where nothing clears the
-       * threshold still shows the threshold; an explicit `minScore`/`maxScore`
-       * that excludes it still wins, and there the line is not drawn.
+       * threshold still shows the threshold; an explicit
+       * `scales.y.domainMin`/`domainMax` that excludes it still wins, and there
+       * the line is not drawn.
        */
       significanceLine: {
         type: 'maybeNumber',
@@ -174,13 +186,6 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
-      // Carried over from the wiggle schema this used to extend: retired
-      // `global`/`globalsd` autoscale values appear in old configs and would
-      // otherwise sit outside the narrowed enum. `colorImpliesSolid` is NOT
-      // carried over — it keys on `useBicolor`, which a Manhattan plot has no
-      // notion of.
-      preProcessSnapshot: (snap: Record<string, unknown>) =>
-        remapRetiredAutoscale(snap),
     },
   )
 }

@@ -17,13 +17,11 @@ import { createTestEnvironment } from './testEnv.ts'
 describe('LinearManhattanDisplay config surface', () => {
   it('declares every slot its composed mixins read', () => {
     const { display } = createTestEnvironment().createDisplay()
-    // ScoreScaleMixin
+    // ScoreScaleMixin. `scales.y` here is `linear` with no autoscale mode, so
+    // the menu draws neither radio and both ends autoscale until pinned.
     expect(display.scaleType).toBe('linear')
-    expect(display.autoscaleType).toBeDefined()
-    expect(display.numStdDev).toBe(3)
-    expect(display.minScore).toBe(Number.MIN_VALUE)
-    expect(display.maxScore).toBe(Number.MAX_VALUE)
-    // the sentinel resolves to "autoscale this end"
+    expect(display.scaleTypeChoices).toEqual(['linear'])
+    expect(display.autoscaleType).toBeUndefined()
     expect(display.minScoreBound).toBeUndefined()
     expect(display.maxScoreBound).toBeUndefined()
     // ScoreFieldConfigMixin's remaining members

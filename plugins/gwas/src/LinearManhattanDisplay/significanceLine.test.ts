@@ -66,11 +66,11 @@ describe('significanceLine config slot', () => {
 
   // The widening is on the raw range, before the configured bounds, so an axis
   // the user pinned still excludes a line outside it.
-  it('an explicit maxScore below the threshold still wins', () => {
+  it('an explicit domainMax below the threshold still wins', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, makeResult(3), ctgA)
     setConf(display, 'significanceLine', 7.3)
-    setConf(display, 'maxScore', 4)
+    display.setMaxScore(4)
 
     expect(display.domain?.[1]).toBe(4)
     expect(display.scoreRuleMarks).toEqual([])

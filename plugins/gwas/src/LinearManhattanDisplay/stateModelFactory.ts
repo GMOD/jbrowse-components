@@ -304,7 +304,7 @@ export function stateModelFactory(
          * the answer is no — every score well under the line — is the one where
          * an unwidened axis drops the line and leaves the reader nothing to
          * read the plot against. `widenRangeToRules` applies to the raw range,
-         * so an explicit `minScore`/`maxScore` still wins.
+         * so an explicit `scales.y` bound still wins.
          */
         get domain() {
           const line = this.significanceLine
@@ -320,7 +320,7 @@ export function stateModelFactory(
                 line === undefined ? [] : [line],
               ),
             bounds: [self.minScoreBound, self.maxScoreBound],
-            scaleType: 'linear',
+            scaleType: self.scaleType,
           })
         },
       }))
@@ -328,15 +328,14 @@ export function stateModelFactory(
         /**
          * #getter
          * The y scale the chrome draws the axis from. Manhattan plots are
-         * linear-only (pre-transformed -log10 p values); the inherited
-         * scaleType config is intentionally ignored so the axis stays
-         * consistent with the linear `domain`.
+         * linear-only — `scales.y.type` admits nothing else, since the points
+         * are pre-transformed -log10 p values.
          */
         get valueScales(): ValueScale[] {
           return [
             {
               domain: self.domain,
-              scaleType: 'linear',
+              scaleType: self.scaleType,
               height: self.height,
               minimalTicks: getConf(self, 'minimalTicks'),
             },
@@ -355,8 +354,8 @@ export function stateModelFactory(
          * axis linear (see `domain`), so the normalizer is the linear one.
          *
          * The helper still drops a rule outside the domain, which here only
-         * happens where `domain` could not widen to it: an explicit
-         * `minScore`/`maxScore` bound that excludes the line.
+         * happens where `domain` could not widen to it: an explicit `scales.y`
+         * bound that excludes the line.
          */
         get scoreRuleMarks() {
           const line = self.significanceLine
@@ -696,16 +695,11 @@ export function stateModelFactory(
          */
         trackMenuItems() {
           return [
-            // scaleType and autoscale are both off because `domain` above
-            // consults neither: -log10 p values are pre-transformed so the axis
-            // is linear-only, and the domain is plain min/max over the loaded
-            // regions with the manual bounds applied on top. Set min/max score
-            // is the one score control that does anything here.
-            makeScoreSubMenu(self, {
-              scaleType: false,
-              autoscale: false,
-              domain: self.domain,
-            }),
+            // Neither radio is drawn, because `scales.y` declares one scale
+            // type and no autoscale mode: the domain is plain min/max over the
+            // loaded regions with the manual bounds applied on top. Set min/max
+            // score is the one score control that does anything here.
+            makeScoreSubMenu(self, { domain: self.domain }),
             ...makePointSizeSubMenu(self, {
               label: 'Point size',
               applies: true,
