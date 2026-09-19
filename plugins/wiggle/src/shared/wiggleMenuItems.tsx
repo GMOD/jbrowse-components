@@ -18,7 +18,7 @@ import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
+import type { AutoscaleModel, ScoreScaleModel } from '@jbrowse/wiggle-core'
 
 export function makeRenderingTypeSubMenu(
   self: { renderingType: string; setRenderingType: (t: string) => void },
@@ -190,7 +190,8 @@ function makeSummaryScoreModeSubMenu(self: WithResolution): MenuItem[] {
 // it, then the shared scale-type / autoscale / min-max rows.
 export function makeWiggleScoreSubMenu(
   self: WithResolution &
-    ScoreScaleModel & { domain: [number, number] | undefined },
+    ScoreScaleModel &
+    AutoscaleModel & { domain: [number, number] | undefined },
 ): MenuItem {
   return makeScoreSubMenu(self, {
     domain: self.domain,

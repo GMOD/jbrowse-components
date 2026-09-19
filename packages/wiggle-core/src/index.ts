@@ -70,7 +70,12 @@ export {
   makeScoreSubMenu,
   makeSetMinMaxScoreItem,
 } from './scoreMenuItems.ts'
-export type { ScoreScaleModel } from './scoreMenuItems.ts'
+export type {
+  AutoscaleModel,
+  ScoreScaleModel,
+  ScoreSubMenuOptions,
+} from './scoreMenuItems.ts'
+export { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export {
   WiggleScoreConfigMixin,

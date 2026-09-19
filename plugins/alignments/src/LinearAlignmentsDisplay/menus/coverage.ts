@@ -1,9 +1,9 @@
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { makeScoreSubMenu } from '@jbrowse/wiggle-core'
 
-import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
+import type { AutoscaleModel, ScoreScaleModel } from '@jbrowse/wiggle-core'
 
-interface CoverageModel extends ScoreScaleModel {
+interface CoverageModel extends ScoreScaleModel, AutoscaleModel {
   numStdDev: number
   showCoverage: boolean
   coverageDomain: [number, number] | undefined

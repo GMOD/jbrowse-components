@@ -6,7 +6,7 @@ import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 import { scoreAxisConfigSchemaFields } from './scoreAxisConfigSchemaFields.ts'
 import { makePinCurrentRangeItem, makeScoreSubMenu } from './scoreMenuItems.ts'
 
-import type { ScoreScaleModel } from './scoreMenuItems.ts'
+import type { AutoscaleModel, ScoreScaleModel } from './scoreMenuItems.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // A minimal ScoreScaleModel. `getSession` is only reached from an onClick, and
@@ -14,7 +14,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // `hasManualScoreBounds` is derived rather than overridable so the double cannot
 // claim a manual bound the pinned pair does not hold — which is the state the
 // real mixin never produces and the state this file used to test against.
-function makeSelf(over: Partial<ScoreScaleModel> = {}) {
+function makeSelf(over: Partial<ScoreScaleModel & AutoscaleModel> = {}) {
   const self = {
     scaleType: 'linear',
     autoscaleType: 'local',
@@ -32,7 +32,7 @@ function makeSelf(over: Partial<ScoreScaleModel> = {}) {
     ...self,
     hasManualScoreBounds:
       self.manualMinScore !== undefined || self.manualMaxScore !== undefined,
-  } as unknown as ScoreScaleModel
+  } as unknown as ScoreScaleModel & AutoscaleModel
 }
 
 function labels(item: MenuItem) {
@@ -63,7 +63,7 @@ describe('makeScoreSubMenu capability opt-outs', () => {
   })
 
   it('offers the pin row while the drawn domain is known, and not before', () => {
-    const opts = { scaleType: false, autoscale: false }
+    const opts = { scaleType: false, autoscale: false } as const
     expect(labels(makeScoreSubMenu(makeSelf(), opts))).toEqual([
       'Set min/max score...',
     ])

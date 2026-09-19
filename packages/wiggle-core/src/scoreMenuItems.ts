@@ -11,9 +11,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 
-// Canonical "thing that has a score axis" — every wiggle-family display
-// (wiggle, multi-wiggle, manhattan, alignments coverage) exposes this exact
-// shape so the shared Score menu, autoscale/scale submenus, and SetMinMaxDialog
+// Canonical "thing that has a score axis" — every display with one (wiggle,
+// multi-wiggle, manhattan, alignments coverage, the mark display) exposes this
+// exact shape so the shared Score menu, scale submenu, and SetMinMaxDialog
 // consume it without per-display adapters. Two pairs, and which one a consumer
 // wants is which question it is asking: manualMinScore/manualMaxScore is what
 // the config really pins (undefined = nothing pinned), which is what the dialog
@@ -22,19 +22,26 @@ const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 // (undefined = autoscale this end), which is what a domain computes from. The
 // raw sentinels are nobody's business out here. hasManualScoreBounds is the
 // third question, and the only one of the three that survives a
-// `defaultScoreDomain` override. All of them come from `ScoreScaleMixin`.
+// `defaultScoreDomain` override. All of them come from `ScoreAxisMixin`.
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
-  autoscaleType: string
   manualMinScore: number | undefined
   manualMaxScore: number | undefined
   minScoreBound: number | undefined
   maxScoreBound: number | undefined
   hasManualScoreBounds: boolean
   setScaleType: (v: string) => void
-  setAutoscale: (v?: string) => void
   setMinScore: (n?: number) => void
   setMaxScore: (n?: number) => void
+}
+
+// The autoscale half, apart because a display can have a score axis and no
+// autoscale mode behind it: the mark display's domain is the extremes of what
+// is drawn and consults no mode, so it composes the axis without the slot that
+// would feed radios that change nothing.
+export interface AutoscaleModel {
+  autoscaleType: string
+  setAutoscale: (v?: string) => void
 }
 
 // All three scales, so a display offering this menu at all must hold all three
@@ -63,7 +70,7 @@ export function makeScaleTypeSubMenu(self: {
 }
 
 export function makeAutoscaleTypeSubMenu(
-  self: { autoscaleType: string; setAutoscale: (v?: string) => void },
+  self: AutoscaleModel,
   options: [string, string][] = DEFAULT_AUTOSCALE_OPTIONS,
 ): MenuItem {
   return {
@@ -155,25 +162,35 @@ export function makeCrossHatchItem(self: {
 // slot and changed nothing on screen — a control that lies is worse than a
 // missing one. Opt-out rather than opt-in so a display that grows a domain
 // without wiring autoscale keeps the menu it already had.
+export interface ScoreSubMenuOptions {
+  label?: string
+  scaleType?: boolean
+  autoscale?: boolean
+  autoscaleOptions?: [string, string][]
+  // The domain drawn right now, which "Pin current min/max" copies into the
+  // slots; undefined before it resolves, and the row waits with it.
+  domain?: [number, number]
+  leadingItems?: MenuItem[]
+  trailingItems?: MenuItem[]
+  // Greys the whole submenu out — for a display whose band can be hidden, where
+  // every setting in here scales something that isn't drawn (the alignments
+  // coverage band). Taken as a pair so a caller cannot grey the menu out
+  // without saying which switch brings it back.
+  disabled?: boolean
+  disabledHelpText?: string
+}
+
+export function makeScoreSubMenu(
+  self: ScoreScaleModel & AutoscaleModel,
+  opts?: ScoreSubMenuOptions & { autoscale?: true },
+): MenuItem
 export function makeScoreSubMenu(
   self: ScoreScaleModel,
-  opts: {
-    label?: string
-    scaleType?: boolean
-    autoscale?: boolean
-    autoscaleOptions?: [string, string][]
-    // The domain drawn right now, which "Pin current min/max" copies into the
-    // slots; undefined before it resolves, and the row waits with it.
-    domain?: [number, number]
-    leadingItems?: MenuItem[]
-    trailingItems?: MenuItem[]
-    // Greys the whole submenu out — for a display whose band can be hidden, where
-    // every setting in here scales something that isn't drawn (the alignments
-    // coverage band). Taken as a pair so a caller cannot grey the menu out
-    // without saying which switch brings it back.
-    disabled?: boolean
-    disabledHelpText?: string
-  } = {},
+  opts: ScoreSubMenuOptions & { autoscale: false },
+): MenuItem
+export function makeScoreSubMenu(
+  self: ScoreScaleModel & Partial<AutoscaleModel>,
+  opts: ScoreSubMenuOptions = {},
 ): MenuItem {
   const {
     label = 'Score',
@@ -194,7 +211,17 @@ export function makeScoreSubMenu(
     subMenu: [
       ...leadingItems,
       ...(scaleType ? [makeScaleTypeSubMenu(self)] : []),
-      ...(autoscale ? [makeAutoscaleTypeSubMenu(self, autoscaleOptions)] : []),
+      ...(autoscale && self.autoscaleType !== undefined && self.setAutoscale
+        ? [
+            makeAutoscaleTypeSubMenu(
+              {
+                autoscaleType: self.autoscaleType,
+                setAutoscale: self.setAutoscale,
+              },
+              autoscaleOptions,
+            ),
+          ]
+        : []),
       makeSetMinMaxScoreItem(self),
       ...(domain ? [makePinCurrentRangeItem(self, domain)] : []),
       ...(self.hasManualScoreBounds ? [makeClearMinMaxScoreItem(self)] : []),

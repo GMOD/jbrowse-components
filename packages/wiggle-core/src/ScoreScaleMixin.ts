@@ -1,10 +1,8 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
-import { computeYTicks } from './computeYTicks.ts'
+import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 
 import type { ScoreAxisConfigModel } from './scoreAxisConfigSchemaFields.ts'
-import type { ValueScale, YAxis } from '@jbrowse/display-ui'
 
 /**
  * The whole of what `ScoreScaleMixin` needs a composing display to be. Exported
@@ -24,16 +22,17 @@ const confNode = (self: object) => self as ScoreScaleHost
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `manual*` / `*Bound` / `hasManualScoreBounds` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+ * #crossCuttingMixin Score axis, written in the config slots. `scoreAxisConfigSchemaFields`. Brings {@link ScoreAxisMixin} plus `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `manual*` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
- * The score axis every quantitative display shares: which scale, how to
- * autoscale it, and the manual min/max bounds. This is the runtime half of
- * {@link ScoreScaleModel} in `scoreMenuItems.ts` — that interface is what the
- * shared Score menu, the autoscale/scale submenus and `SetMinMaxDialog` consume,
- * and it was already the canonical contract while two displays hand-wrote
- * identical implementations of it (`WiggleScoreConfigMixin`, and the alignments
- * coverage band). Composing this is now how a display satisfies it, so a new
- * score display cannot satisfy it *partially*.
+ * The score axis of a display whose axis IS `minScore`, `maxScore` and
+ * `scaleType`: wiggle, the multi-wiggle, Manhattan and the alignments coverage
+ * band. It backs {@link ScoreAxisMixin}'s three overridable members off those
+ * slots and adds the setters that write them, so composing this is how a
+ * display satisfies {@link ScoreScaleModel} in `scoreMenuItems.ts` — the
+ * interface the shared Score menu, the autoscale/scale submenus and
+ * `SetMinMaxDialog` consume. A display that writes its scale down somewhere
+ * else composes `ScoreAxisMixin` and answers the three itself, which is what
+ * the mark display does with `scales.y`.
  *
  * Deliberately just the axis. Colors, `resolution`, cross-hatches and the
  * autoscale *computation* stay in `WiggleScoreConfigMixin` / `WiggleCommonMixin`
@@ -47,45 +46,15 @@ const confNode = (self: object) => self as ScoreScaleHost
  * `minScoreBound`/`maxScoreBound` are the resolved bounds, where `undefined`
  * means "autoscale this end". Every consumer that computes a domain reads the
  * `*Bound` pair.
- *
- * A display that declares its value scale elsewhere answers
- * `declaredValueScale`, and then the scale type and the pinned bounds come
- * from the declaration rather than from `scaleType`/`minScore`/`maxScore`.
- * Its setters are the display's to override so the edit lands on the same
- * declaration — one owner, whichever it is.
- *
- * Whether a bound is *configured* is a third question, and `hasManualScoreBounds`
- * is the only getter that answers it — the resolved pair cannot, since
- * `defaultScoreDomain` is exactly the hook that turns an unset end into a number.
  */
 export function ScoreScaleMixin() {
-  return types
-    .model('ScoreScaleMixin', {})
+  return ScoreAxisMixin()
     .views(self => ({
-      /**
-       * #getter
-       * Overridable hook: a value scale the display declares somewhere other
-       * than these slots — the mark display's `encoding.y`. Where it answers,
-       * it is the owner and the slots below stand in only for the ends it
-       * leaves open, so a scale is read from one place whichever place that
-       * is. Default none, which is every display whose axis IS these slots.
-       */
-      get declaredValueScale():
-        | {
-            scaleType?: string
-            domain?: [number | undefined, number | undefined]
-          }
-        | undefined {
-        return undefined
-      },
       /**
        * #getter
        */
       get scaleType(): string {
-        return (
-          this.declaredValueScale?.scaleType ??
-          getConf(confNode(self), 'scaleType')
-        )
+        return getConf(confNode(self), 'scaleType')
       },
       /**
        * #getter
@@ -115,36 +84,9 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
-       * Overridable hook: what each end of the domain falls back to where the
-       * config leaves its bound unset. `[undefined, undefined]` — the default —
-       * means autoscale both ends, which is right for a track whose scores have
-       * no absolute meaning (a bigwig's units are its own).
-       *
-       * A display whose scores are bounded *by construction* overrides it, so
-       * the axis stops being a function of what happens to be on screen: GC
-       * content is a fraction, so 0 and 1 are its real limits and mean the same
-       * thing at every locus. Autoscaled, the same GC value drew at different
-       * heights depending on where the user had panned, and the track could not
-       * be read across loci.
-       *
-       * A hook rather than a config default because the answer can depend on
-       * display state — GC's does, on `gcMode` — and rather than each display
-       * re-resolving the sentinels below, which is the one thing that must not
-       * be duplicated: config bounds still win, precisely because they are
-       * checked before this is consulted.
-       */
-      get defaultScoreDomain(): [number | undefined, number | undefined] {
-        return [undefined, undefined]
-      },
-      /**
-       * #getter
        * The lower bound the config really sets, `undefined` at the sentinel.
        */
       get manualMinScore(): number | undefined {
-        const declared = this.declaredValueScale?.domain?.[0]
-        if (declared !== undefined) {
-          return declared
-        }
         return this.minScore === Number.MIN_VALUE ? undefined : this.minScore
       },
       /**
@@ -152,73 +94,7 @@ export function ScoreScaleMixin() {
        * The upper bound the config really sets, `undefined` at the sentinel.
        */
       get manualMaxScore(): number | undefined {
-        const declared = this.declaredValueScale?.domain?.[1]
-        if (declared !== undefined) {
-          return declared
-        }
         return this.maxScore === Number.MAX_VALUE ? undefined : this.maxScore
-      },
-      /**
-       * #getter
-       * Resolved lower bound; `undefined` means autoscale this end.
-       */
-      get minScoreBound(): number | undefined {
-        return this.manualMinScore ?? this.defaultScoreDomain[0]
-      },
-      /**
-       * #getter
-       * Resolved upper bound; `undefined` means autoscale this end.
-       */
-      get maxScoreBound(): number | undefined {
-        return this.manualMaxScore ?? this.defaultScoreDomain[1]
-      },
-      /**
-       * #getter
-       * Whether the user has pinned either end, which is a different question
-       * from whether either end resolved to a number: `defaultScoreDomain` fills
-       * the sentinels in, so a GC content track answers yes to the second with
-       * nothing configured. The score menu asks this one — it gates the "Clear
-       * manual min/max" row, and a Clear that writes the sentinels already
-       * there is a row that does nothing and never goes away.
-       */
-      get hasManualScoreBounds(): boolean {
-        return (
-          this.manualMinScore !== undefined || this.manualMaxScore !== undefined
-        )
-      },
-      /**
-       * #getter
-       * Overridable hook (default none): the scales this display draws its y
-       * through. A display that answers it gets an axis per band of each,
-       * with its cross-hatches, placed by `DisplayChrome` and
-       * `renderDisplaySvg`, and the ticks derived below.
-       */
-      get valueScales(): ValueScale[] {
-        return []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The axes, one per declared scale whose domain resolved: where each
-       * tick lands in the band's own pixel space, through `computeYTicks`
-       * unless the scale brought its own ladder.
-       */
-      get axes(): YAxis[] {
-        return self.valueScales.flatMap(scale => {
-          const { domain } = scale
-          const ticks =
-            scale.ticks ??
-            computeYTicks({
-              height: scale.height,
-              offset: scale.offset,
-              domain,
-              scaleType: scale.scaleType,
-              minimalTicks: scale.minimalTicks ?? false,
-              symlogConstant: scale.symlogConstant,
-            })
-          return domain && ticks ? [{ ...scale, domain, ticks }] : []
-        })
       },
     }))
     .actions(self => ({
