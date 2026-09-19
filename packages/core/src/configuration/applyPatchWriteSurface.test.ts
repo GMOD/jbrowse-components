@@ -119,6 +119,17 @@ describe('claim 3: a whole-object write runs the schema preprocessor', () => {
     expect(readConfObject(conf, ['scales', 'y', 'domainMin'])).toBe(1)
   })
 
+  test('the node is reconciled in place, not swapped for a new one', () => {
+    const conf = node()
+    const before = conf.facet
+    applyPatch(conf, {
+      op: 'replace',
+      path: '/facet',
+      value: { field: 'source' },
+    })
+    expect(conf.facet).toBe(before)
+  })
+
   test('a whole-object write REPLACES rather than merges', () => {
     const conf = node()
     applyPatch(conf, {
