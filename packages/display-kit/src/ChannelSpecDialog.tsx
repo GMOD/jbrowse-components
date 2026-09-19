@@ -20,7 +20,8 @@ export interface ChannelSpecHost {
   /** The display's own `color.scale` enum, minus `none`, which the string form is. */
   colorScaleChoices: string[]
   applyDisplaySettings: (settings: Record<string, unknown>) => unknown
-  setJexlFilters: (filters?: string[]) => void
+  /** Absent on a display with no runtime filter list, which then refuses one. */
+  setJexlFilters?: (filters?: string[]) => void
 }
 
 function readSpec(host: ChannelSpecHost, text: string) {
@@ -61,7 +62,7 @@ function apply(host: ChannelSpecHost, spec: ChannelSpec) {
     host.applyDisplaySettings(settings)
   }
   if (filter !== undefined) {
-    host.setJexlFilters(filter?.map(ensureJexlPrefix) ?? [])
+    host.setJexlFilters?.(filter?.map(ensureJexlPrefix) ?? [])
   }
 }
 

@@ -42,3 +42,33 @@ test('the origin moves the cut a threshold with no domain reads', () => {
   display.setOrigin(4)
   expect(display.wiggleColor.pivot).toBe(4)
 })
+
+test('a declared threshold draws a key, the layout default draws none', () => {
+  const display = makeDisplay(['a'], true)
+  expect(display.colorScales.map(s => s.id)).not.toContain('threshold')
+
+  display.setColor({
+    field: 'score',
+    scale: 'threshold',
+    domain: ['2'],
+    palette: ['#2166ac', '#b2182b'],
+  })
+  const key = display.colorScales.find(s => s.id === 'threshold')
+  expect(key?.kind).toBe('categorical')
+  expect(key?.kind === 'categorical' && key.entries).toEqual([
+    { value: '< 2', label: '< 2', color: '#2166ac' },
+    { value: '\u2265 2', label: '\u2265 2', color: '#b2182b' },
+  ])
+})
+
+test('the spec reads back what was written', () => {
+  const display = makeDisplay(['a'], true)
+  display.setColor({ field: 'score', scale: 'linear', ramp: ['viridis'] })
+  expect(display.channelSpec.color).toEqual({
+    field: 'score',
+    scale: 'linear',
+    ramp: ['viridis'],
+  })
+  display.setColor('green')
+  expect(display.channelSpec.color).toBe('green')
+})

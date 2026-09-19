@@ -10,6 +10,11 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
+import {
+  numericDomain,
+  thresholdLabels,
+  thresholdPalette,
+} from '@jbrowse/core/util/thresholdScale'
 import LegendMixin, {
   legendCheckboxItem,
 } from '@jbrowse/display-kit/LegendMixin'
@@ -57,7 +62,11 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
-import { resolveWiggleColor } from '../shared/wiggleColor.ts'
+import {
+  resolveWiggleColor,
+  wiggleColorScale,
+  wiggleColorSpec,
+} from '../shared/wiggleColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
@@ -68,6 +77,7 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { WIGGLE_RENDERINGS } from '../util.ts'
+import { CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import { buildSources, sourcesFromRegionData } from './sourcesLogic.ts'
@@ -81,6 +91,7 @@ import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 import type { FullColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
@@ -89,6 +100,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
+const ChannelSpecDialog = lazy(
+  () => import('@jbrowse/display-kit/ChannelSpecDialog'),
+)
 const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog.tsx'),
 )
@@ -218,6 +232,24 @@ export default function stateModelFactory(
        */
       get colorScaleChoices(): string[] {
         return colorScaleChoicesOf(self.configuration.color)
+      },
+
+      /**
+       * #getter
+       */
+      get channelSpecExamples() {
+        return CHANNEL_SPEC_EXAMPLES
+      },
+
+      /**
+       * #method
+       * A wiggle colours per signal and keeps no runtime filter list, so a
+       * spec naming `filter` is refused rather than silently dropped.
+       */
+      channelSpecProblems(spec: ChannelSpec) {
+        return spec.filter === undefined
+          ? []
+          : ['filter: a quantitative display filters nothing']
       },
 
       /**
@@ -359,6 +391,25 @@ export default function stateModelFactory(
        */
       get wiggleColor(): ResolvedWiggleColor {
         return resolveWiggleColor(self.effectiveColor, self.origin)
+      },
+
+      /**
+       * #getter
+       * `ChannelSpecHost`'s hook: the two settings the Edit as JSON box
+       * writes, as written rather than as resolved, so a round trip through
+       * the box changes nothing on its own.
+       */
+      get channelSpec(): ChannelSpec {
+        const { facet } = self
+        return {
+          facet: facet
+            ? {
+                field: facet.field,
+                ...(facet.domain.length ? { domain: [...facet.domain] } : {}),
+              }
+            : null,
+          color: wiggleColorSpec(self.colorSetting),
+        }
       },
     }))
     .views(self => ({
@@ -631,6 +682,37 @@ export default function stateModelFactory(
 
       /**
        * #getter
+       * The key a declared threshold draws: one row per interval, labelled by
+       * the span it covers. Only a declared one — the pos/neg pair every
+       * quantitative track has always drawn is the layout's default, and a
+       * `< 0` / `≥ 0` key on every bigWig says nothing a reader did not ask
+       * for.
+       */
+      get thresholdColorScale(): ColorScale | undefined {
+        const color = self.colorSetting
+        if (!color.field || wiggleColorScale(color) !== 'threshold') {
+          return undefined
+        }
+        const cuts = numericDomain(color.domain)
+        const { posColor, negColor } = self.wiggleColor
+        const colors =
+          cuts.length > 1
+            ? thresholdPalette(cuts.length + 1, color.palette)
+            : [negColor, posColor]
+        return {
+          kind: 'categorical',
+          id: 'threshold',
+          title: color.field,
+          entries: thresholdLabels(cuts).map((label, i) => ({
+            value: label,
+            label,
+            color: colors[i]!,
+          })),
+        }
+      },
+
+      /**
+       * #getter
        * Offset the track label above the plot so the left y-axis stays pinned
        * to the content edge instead of dodging right of the label, and so a
        * stack of rows is not hidden behind it. One density plot draws no left
@@ -651,6 +733,9 @@ export default function stateModelFactory(
         const scales: ColorScale[] = []
         if (self.scoreColorScale) {
           scales.push(self.scoreColorScale)
+        }
+        if (self.thresholdColorScale) {
+          scales.push(self.thresholdColorScale)
         }
         if (self.overlayLegendApplies) {
           scales.push({
@@ -742,6 +827,18 @@ export default function stateModelFactory(
           self.editableSources,
           s => (s.group ?? s.label ?? s.name) === label,
         )
+      },
+
+      /**
+       * #action
+       * The Edit color... row: the colour object, and the facet beside it,
+       * as JSON.
+       */
+      openChannelSpecDialog(seed?: ChannelSpec) {
+        getDialogHost(self).queueDialog(handleClose => [
+          ChannelSpecDialog,
+          { model: self, seed, handleClose },
+        ])
       },
 
       /**
@@ -895,6 +992,12 @@ export default function stateModelFactory(
           // its respective scatter / line rendering
           ...makePointSizeMenuItems(self),
           ...makeLineWidthMenuItems(self),
+          {
+            label: 'Edit color...',
+            onClick: () => {
+              self.openChannelSpecDialog()
+            },
+          },
           rowArrangementMenuItem({
             ready: !!self.sourcesWithoutLayout.length,
             onOpen: () => {

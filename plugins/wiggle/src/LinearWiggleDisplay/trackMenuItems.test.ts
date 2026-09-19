@@ -213,3 +213,14 @@ describe('the wiggle display track menu', () => {
     expect(enabled(makeDisplay().display)).toBe(false)
   })
 })
+
+// The colour route: one row opening the channel-spec box, which replaced the
+// bicolor/single radio and the pivot field the display used to carry.
+it('offers Edit color... whatever the layout', () => {
+  expect(labels(makeDisplay().display.trackMenuItems())).toContain(
+    'Edit color...',
+  )
+  expect(
+    labels(makeDisplay({ faceted: false }).display.trackMenuItems()),
+  ).toContain('Edit color...')
+})

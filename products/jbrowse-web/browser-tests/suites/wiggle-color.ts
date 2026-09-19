@@ -36,29 +36,18 @@ const suite: TestSuite = {
         await menuIcon.click()
         await delay(300)
 
-        // renamed from "Color" in 569af0a120; findByText is case-sensitive
         const colorItem = await findByText(page, 'Edit color...', 10000)
         await colorItem.click()
         await delay(500)
 
-        // the dialog shows compact swatches; the hex field lives in the
-        // popover each swatch opens (default mode is bicolor, so this is the
-        // positive color)
-        const swatch = await findByTestId(page, 'wiggle-pos-color', 10000)
-        await swatch.click()
-        await delay(300)
-
-        const colorInput = await page.waitForSelector(
-          '.MuiPopover-root input[aria-describedby]',
-          { timeout: 10000 },
-        )
-        await colorInput?.click({ count: 3 })
-        await colorInput?.type('red')
-        await delay(1500)
-
-        // dismiss the popover so its backdrop doesn't swallow the submit click
-        await page.keyboard.press('Escape')
-        await delay(300)
+        // the colour is one object written as JSON; a string is the constant
+        const specField = await findByTestId(page, 'channel-spec-json', 10000)
+        await specField.click({ count: 3 })
+        await page.keyboard.down('Control')
+        await page.keyboard.press('KeyA')
+        await page.keyboard.up('Control')
+        await specField.type('{"color": "red"}')
+        await delay(500)
 
         const submitBtn = await page.waitForSelector('button[type="submit"]', {
           timeout: 10000,

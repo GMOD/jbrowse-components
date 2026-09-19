@@ -4,6 +4,7 @@ import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { densityRampLut, stopRampLut } from './densityColorRamp.ts'
 
+import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 import type { FullColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
@@ -39,6 +40,22 @@ export function wiggleColorScale(color: FullColorSetting) {
         ? 'categorical'
         : 'threshold',
   )
+}
+
+/** The colour as "Edit as JSON..." shows it: the string form for a constant. */
+export function wiggleColorSpec(color: FullColorSetting): ChannelSpec['color'] {
+  if (wiggleColorScale(color) === 'none') {
+    return color.value ?? null
+  }
+  const { field, scale, domain, palette, ramp, domainMid } = color
+  return {
+    field,
+    ...(scale ? { scale } : {}),
+    ...(domain.length ? { domain: [...domain] } : {}),
+    ...(palette.length ? { palette: [...palette] } : {}),
+    ...(ramp.length ? { ramp: [...ramp] } : {}),
+    ...(domainMid === undefined ? {} : { domainMid }),
+  }
 }
 
 export function resolveWiggleColor(
