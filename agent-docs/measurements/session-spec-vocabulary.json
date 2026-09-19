@@ -30,7 +30,7 @@
       "values": {
         "key": "height",
         "uses": 454,
-        "displays": 18
+        "displays": 17
       }
     },
     {
@@ -49,9 +49,16 @@
     },
     {
       "values": {
+        "key": "color",
+        "uses": 60,
+        "displays": 4
+      }
+    },
+    {
+      "values": {
         "key": "scales",
         "uses": 55,
-        "displays": 4
+        "displays": 3
       }
     },
     {
@@ -77,30 +84,9 @@
     },
     {
       "values": {
-        "key": "color",
-        "uses": 46,
-        "displays": 3
-      }
-    },
-    {
-      "values": {
-        "key": "defaultRendering",
-        "uses": 42,
-        "displays": 2
-      }
-    },
-    {
-      "values": {
         "key": "facet",
-        "uses": 18,
-        "displays": 3
-      }
-    },
-    {
-      "values": {
-        "key": "summaryScoreMode",
-        "uses": 17,
-        "displays": 2
+        "uses": 23,
+        "displays": 4
       }
     },
     {
@@ -114,7 +100,7 @@
       "values": {
         "key": "scatterPointSize",
         "uses": 15,
-        "displays": 3
+        "displays": 2
       }
     },
     {
@@ -140,13 +126,6 @@
     },
     {
       "values": {
-        "key": "displayCrossHatches",
-        "uses": 11,
-        "displays": 2
-      }
-    },
-    {
-      "values": {
         "key": "showTree",
         "uses": 10,
         "displays": 3
@@ -168,23 +147,9 @@
     },
     {
       "values": {
-        "key": "resolution",
-        "uses": 8,
-        "displays": 2
-      }
-    },
-    {
-      "values": {
         "key": "jexlFilters",
         "uses": 8,
         "displays": 3
-      }
-    },
-    {
-      "values": {
-        "key": "posColor",
-        "uses": 7,
-        "displays": 2
       }
     },
     {

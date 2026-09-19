@@ -12,21 +12,21 @@
 <!-- many -->
 <g id="node1" class="node">
 <title>many</title>
-<polygon fill="none" stroke="black" points="352,-1043 301.81,-1025 352,-1007 402.19,-1025 352,-1043"/>
-<text xml:space="preserve" text-anchor="middle" x="352" y="-1021.88" font-family="monospace" font-size="10.00">sources</text>
+<polygon fill="none" stroke="black" points="375,-1043 324.81,-1025 375,-1007 425.19,-1025 375,-1043"/>
+<text xml:space="preserve" text-anchor="middle" x="375" y="-1021.88" font-family="monospace" font-size="10.00">sources</text>
 </g>
 <!-- layout -->
 <g id="node2" class="node">
 <title>layout</title>
-<polygon fill="none" stroke="black" points="249,-953.75 172.85,-935.75 249,-917.75 325.15,-935.75 249,-953.75"/>
-<text xml:space="preserve" text-anchor="middle" x="249" y="-932.62" font-family="monospace" font-size="10.00">layout group</text>
+<polygon fill="none" stroke="black" points="294,-953.75 254.2,-935.75 294,-917.75 333.8,-935.75 294,-953.75"/>
+<text xml:space="preserve" text-anchor="middle" x="294" y="-932.62" font-family="monospace" font-size="10.00">facet</text>
 </g>
 <!-- many&#45;&gt;layout -->
 <g id="edge2" class="edge">
 <title>many&#45;&gt;layout</title>
-<path fill="none" stroke="black" d="M337.68,-1011.87C321.09,-997.82 293.49,-974.44 273.48,-957.49"/>
-<polygon fill="black" stroke="black" points="275.94,-954.98 266.04,-951.19 271.41,-960.32 275.94,-954.98"/>
-<text xml:space="preserve" text-anchor="middle" x="331.48" y="-975.7" font-family="Times,serif" font-size="14.00"> many</text>
+<path fill="none" stroke="black" d="M363.05,-1011.13C349.78,-996.84 328.2,-973.59 312.7,-956.89"/>
+<polygon fill="black" stroke="black" points="315.62,-954.89 306.25,-949.94 310.49,-959.65 315.62,-954.89"/>
+<text xml:space="preserve" text-anchor="middle" x="363.51" y="-975.7" font-family="Times,serif" font-size="14.00"> many</text>
 </g>
 <!-- single -->
 <g id="node5" class="node">
@@ -38,9 +38,9 @@
 <!-- many&#45;&gt;single -->
 <g id="edge1" class="edge">
 <title>many&#45;&gt;single</title>
-<path fill="none" stroke="black" d="M362.16,-1010.2C379.41,-986.77 414.69,-938.86 436.74,-908.91"/>
-<polygon fill="black" stroke="black" points="439.38,-911.22 442.49,-901.1 433.74,-907.07 439.38,-911.22"/>
-<text xml:space="preserve" text-anchor="middle" x="403.61" y="-975.7" font-family="Times,serif" font-size="14.00"> one</text>
+<path fill="none" stroke="black" d="M383.21,-1009.68C396.6,-986.34 423.33,-939.72 440.41,-909.94"/>
+<polygon fill="black" stroke="black" points="443.31,-911.91 445.25,-901.49 437.24,-908.43 443.31,-911.91"/>
+<text xml:space="preserve" text-anchor="middle" x="418.51" y="-975.7" font-family="Times,serif" font-size="14.00"> one</text>
 </g>
 <!-- multirow -->
 <g id="node6" class="node">
@@ -53,23 +53,23 @@
 <!-- layout&#45;&gt;multirow -->
 <g id="edge3" class="edge">
 <title>layout&#45;&gt;multirow</title>
-<path fill="none" stroke="black" d="M215.24,-925.22C198.21,-919.46 177.78,-911.02 161.5,-899.75 143.79,-887.49 127.37,-869.92 114.94,-854.76"/>
-<polygon fill="black" stroke="black" points="118.01,-853 109.05,-847.35 112.53,-857.35 118.01,-853"/>
-<text xml:space="preserve" text-anchor="middle" x="198.25" y="-877.08" font-family="Times,serif" font-size="14.00"> multi&#45;row</text>
+<path fill="none" stroke="black" d="M276.78,-925.28C247.48,-909.16 186.86,-875.81 143.02,-851.69"/>
+<polygon fill="black" stroke="black" points="144.88,-848.72 134.44,-846.97 141.51,-854.86 144.88,-848.72"/>
+<text xml:space="preserve" text-anchor="middle" x="254.54" y="-877.08" font-family="Times,serif" font-size="14.00"> source</text>
 </g>
 <!-- overlay -->
 <g id="node7" class="node">
 <title>overlay</title>
 <polygon fill="none" stroke="black" points="428,-840.62 202,-840.62 202,-804.62 428,-804.62 428,-840.62"/>
-<text xml:space="preserve" text-anchor="middle" x="315" y="-825.88" font-family="monospace" font-size="10.00">every source on row 0</text>
-<text xml:space="preserve" text-anchor="middle" x="315" y="-813.12" font-family="monospace" font-size="10.00">(no density: unreadable overlapped)</text>
+<text xml:space="preserve" text-anchor="middle" x="315" y="-825.88" font-family="monospace" font-size="10.00">every source on row 0,</text>
+<text xml:space="preserve" text-anchor="middle" x="315" y="-813.12" font-family="monospace" font-size="10.00">inset so end labels are not clipped</text>
 </g>
 <!-- layout&#45;&gt;overlay -->
 <g id="edge4" class="edge">
 <title>layout&#45;&gt;overlay</title>
-<path fill="none" stroke="black" d="M243.22,-918.63C238.82,-903.42 235.02,-880.52 244.75,-863.75 248.36,-857.53 253.33,-852.2 258.98,-847.64"/>
-<polygon fill="black" stroke="black" points="260.89,-850.57 267.08,-841.97 256.88,-844.84 260.89,-850.57"/>
-<text xml:space="preserve" text-anchor="middle" x="289.38" y="-877.08" font-family="Times,serif" font-size="14.00"> overlapping</text>
+<path fill="none" stroke="black" d="M290.12,-919.19C287.16,-904.58 284.41,-882.26 289.75,-863.75 291.02,-859.34 292.94,-854.94 295.16,-850.77"/>
+<polygon fill="black" stroke="black" points="298.13,-852.62 300.32,-842.25 292.15,-848.99 298.13,-852.62"/>
+<text xml:space="preserve" text-anchor="middle" x="311.88" y="-877.08" font-family="Times,serif" font-size="14.00"> unset</text>
 </g>
 <!-- summary -->
 <g id="node3" class="node">
@@ -80,9 +80,9 @@
 <!-- range -->
 <g id="node9" class="node">
 <title>range</title>
-<polygon fill="none" stroke="black" points="340,-495.75 108,-495.75 108,-436.75 340,-436.75 340,-495.75"/>
+<polygon fill="none" stroke="black" points="343,-495.75 105,-495.75 105,-436.75 343,-436.75 343,-495.75"/>
 <text xml:space="preserve" text-anchor="middle" x="224" y="-482.25" font-family="monospace" font-size="10.00">one line through every bin,</text>
-<text xml:space="preserve" text-anchor="middle" x="224" y="-469.5" font-family="monospace" font-size="10.00">coloured by the pivot side it is on;</text>
+<text xml:space="preserve" text-anchor="middle" x="224" y="-469.5" font-family="monospace" font-size="10.00">coloured by the origin side it is on;</text>
 <text xml:space="preserve" text-anchor="middle" x="224" y="-456.75" font-family="monospace" font-size="10.00">whiskers adds a translucent</text>
 <text xml:space="preserve" text-anchor="middle" x="224" y="-444" font-family="monospace" font-size="10.00">min&#45;max band under it</text>
 </g>
@@ -100,7 +100,7 @@
 <text xml:space="preserve" text-anchor="middle" x="402" y="-559.25" font-family="monospace" font-size="10.00">one band under avg, min and max,</text>
 <text xml:space="preserve" text-anchor="middle" x="402" y="-546.5" font-family="monospace" font-size="10.00">three under whiskers; each value</text>
 <text xml:space="preserve" text-anchor="middle" x="402" y="-533.75" font-family="monospace" font-size="10.00">coloured by its own sign</text>
-<text xml:space="preserve" text-anchor="middle" x="402" y="-521" font-family="monospace" font-size="10.00">against the pivot</text>
+<text xml:space="preserve" text-anchor="middle" x="402" y="-521" font-family="monospace" font-size="10.00">against the origin</text>
 </g>
 <!-- summary&#45;&gt;bands -->
 <g id="edge10" class="edge">
@@ -238,5 +238,5 @@
 <polygon fill="black" stroke="black" points="345.5,-58.1 342,-48.1 338.5,-58.1 345.5,-58.1"/>
 </g>
 </g>
-<!-- diagram-source-sha256 b7e7f8218ac24852ac5106a727a457eabc47e7635d4a10aa748b9cdad93f49b3 -->
+<!-- diagram-source-sha256 7970ebd97dbd53fd840104e87b62af03d5aaabf2331871d6d5a2e1ae232976b0 -->
 </svg>

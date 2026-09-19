@@ -344,9 +344,11 @@ sorted, and a listed value the data lacks takes no section. The multi-row and
 multiway synteny displays' `domain` slots, every display's `facet.domain`
 and the colour and glyph channels' legend order are that one word and rule
 (`groupKeyComparator`); a key over the facet's own field lists its rows in the
-sections' order. The four tree-sidebar displays (MAF, multi-wiggle and the two
+sections' order. Three of the four tree-sidebar displays (MAF and the two
 multi-sample variant ones) share the word as a `domain` row-order slot, read as
-`rowDomain` and applied under `layout`: their unlisted rows keep the order they
+`rowDomain` and applied under `layout`; the quantitative display takes its row
+order off `facet.domain` instead, because its own `domain` is the score axis
+(ADR-143). Their unlisted rows keep the order they
 arrived in (`orderRowsByDomain`), since a phylogeny's leaf order and a file's
 sample order mean something, and where a tree describes the rows the domain
 rotates it as far as the topology allows (`rotateNewickByDomain`, ggtree's

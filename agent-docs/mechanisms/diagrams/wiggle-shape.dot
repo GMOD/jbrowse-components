@@ -8,11 +8,11 @@ digraph wiggle_shape {
   many -> layout [label=" many"]
   single [label="LinearWiggleDisplay\ninset so end labels are not clipped"]
 
-  layout [label="layout group"]
-  layout -> multirow [label=" multi-row"]
-  layout -> overlay  [label=" overlapping"]
+  layout [label="facet"]
+  layout -> multirow [label=" source"]
+  layout -> overlay  [label=" unset"]
   multirow [label="one row per source:\nrow height, a scalebar each,\na dendrogram beside it"]
-  overlay  [label="every source on row 0\n(no density: unreadable overlapped)"]
+  overlay  [label="every source on row 0,\ninset so end labels are not clipped"]
 
   plot [label="plot type\nxyplot, density, line (step),\nline (interpolated), scatter"]
   single -> plot  multirow -> plot  overlay -> plot
@@ -21,8 +21,8 @@ digraph wiggle_shape {
   plot -> summary
   summary -> range [label=" any mode, line plots"]
   summary -> bands [label=" whiskers, min, max, avg\l (density resolves to avg)"]
-  range [label="one line through every bin,\ncoloured by the pivot side it is on;\nwhiskers adds a translucent\nmin-max band under it"]
-  bands [label="one band under avg, min and max,\nthree under whiskers; each value\ncoloured by its own sign\nagainst the pivot"]
+  range [label="one line through every bin,\ncoloured by the origin side it is on;\nwhiskers adds a translucent\nmin-max band under it"]
+  bands [label="one band under avg, min and max,\nthree under whiskers; each value\ncoloured by its own sign\nagainst the origin"]
 
   nests [label="density, or filled bars\nthat nest"]
   bands -> nests

@@ -168,13 +168,13 @@ RPC message handler so it lands mid-frame. A zoom across a BigWig tier
 already refetches (ADR-125), so a worker-side pack rides along free there;
 `MafUploadPayload` is the payload shape to copy.
 
-**"Move `pack`" understates the move, and `bicolorPivot` is how you see it.**
+**"Move `pack`" understates the move, and `origin` is how you see it.**
 `pack` takes `SourceRenderData[]`, which is what `buildSourceRenderData` returns
 — so the worker would have to run that too, or receive the expanded form over
 the wire, which is the thing being avoided. And `buildSourceRenderData` is where
 the pivot lives: `sourceLayers` colours every band around it, which is why
-`bicolorPivot` sits in **`gpuProps`** and, since the worker-side split was
-deleted (ADR-016, superseded), nowhere else. The ENCODER is what needs the
+the resolved colour and its `origin` sit in **`gpuProps`** and, since the
+worker-side split was deleted (ADR-016, superseded), nowhere else. The ENCODER is what needs the
 value — the SVG export calls `buildSourceRenderData(data, gpuProps)` directly
 (`LinearWiggleDisplay/renderSvg.tsx:38`) and would otherwise colour its bands
 around nothing. A worker-side pack would have to be handed the pivot as a pack

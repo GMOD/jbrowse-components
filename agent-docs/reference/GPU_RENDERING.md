@@ -732,7 +732,7 @@ tier the fetch reads from. That's a fetch/adapter concern, not a backend one —
 
 ### Wiggle-family contract
 
-Displays with a score axis (wiggle, multi-wiggle, Manhattan, marks) share types,
+Displays with a score axis (wiggle, Manhattan, marks) share types,
 scale utilities and score-plot pieces across two packages:
 
 `@jbrowse/wiggle-core` — the cross-plugin contract. A plugin imports from here
@@ -786,7 +786,7 @@ display is **what its map is keyed by**:
 
 | Key | Contract | Render | Use when | Examples |
 |---|---|---|---|---|
-| `displayedRegionIndex` | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | each region's data is independent, or a whole-map computed hands back per-region payloads | canvas, wiggle, multi-wiggle, MAF, manhattan, sequence, multi-variant |
+| `displayedRegionIndex` | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | each region's data is independent, or a whole-map computed hands back per-region payloads | canvas, wiggle, MAF, manhattan, sequence, multi-variant |
 | a slot name, via `oneCell` | `PerRegionRenderingBackend` over one canvas-wide block | `renderBlocks(blocks, regions, state)` | the display holds one payload for the whole view | HiC, LD, the variant matrix; alignments' whole-map `sources` |
 | a sibling display's `sharedBackendKey`, over one canvas-wide block each | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | one canvas paints several displays and each has a block of its own | dotplot (a block per display), the synteny level (a block per track's ribbons and per clicked outline), multi-way synteny (a block per gutter, outline and lane) |
 

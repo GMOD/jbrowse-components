@@ -1,6 +1,6 @@
 ---
 name: wiggle-decision-tree
-description: What a quantitative track decides — the score domain, the shape that draws it, and the colour that shape takes — as three rendered decision graphs, each resolved in one place and read by the axis, the painter, the legend and the tooltip alike. Read before touching autoscale, a plot type or the multi-wiggle colour model.
+description: What a quantitative track decides — the score domain, the shape that draws it, and the colour that shape takes — as three rendered decision graphs, each resolved in one place and read by the axis, the painter, the legend and the tooltip alike. Read before touching autoscale, a plot type or the quantitative colour model.
 audience: internal
 ---
 
@@ -46,15 +46,16 @@ Config bounds are still checked first.
 
 ![How a wiggle plot's shape and layers are chosen](diagrams/wiggle-shape.svg)
 
-- One source draws a single plot; many sources are laid out multi-row (a row,
-  scalebar and dendrogram slot each) or overlapping (everything on row 0).
+- `facet` decides the layout, not the plot type: `'source'` gives each source a
+  row (a row height, a scalebar and a dendrogram slot each), unset puts every
+  source on row 0 of one box.
 - The plot type and the resolved summary mode together decide the **layers**:
   three summary bands under whiskers, one under min/max or avg.
 - Nested filled bars and density split into solid layers drawn back to front,
   largest magnitude first. Everything else keeps one band with per-instance
   colours.
 - A line plot is one continuous line through every bin in every summary
-  mode, coloured by which side of the pivot the line is on, so it changes
+  mode, coloured by which side of the origin the line is on, so it changes
   colour where it crosses rather than per bin. Whiskers adds a translucent
   min-to-max band under it, stepped or interpolated like the line.
 - The pass, the buffer, the rendering-type uniform and the Canvas2D painter are
@@ -63,21 +64,29 @@ Config bounds are still checked first.
 
 ## The colour
 
-![The three multi-wiggle colour modes](diagrams/wiggle-colour.svg)
+![What a quantitative track's colour resolves to](diagrams/wiggle-colour.svg)
 
-| mode | `color` paints | identity lives in | palette fills |
+`color` is one object — a CSS string, or `{ field, scale, domain, palette |
+ramp }` — and where the config leaves it unset the layout answers for it:
+
+| the layout | an unset `color` means | identity lives in | palette fills |
 | --- | --- | --- | --- |
-| `overlay` | the source's whole plot | `color` | group, then row |
-| `multirow` | the row's positive bars | `color` | group only |
-| `density` | the **score ramp** | `labelColor` | group only |
+| shared: several sources in one box | `{ field: 'source' }`, a palette entry each | `color` | group, then row |
+| row: a row per source, or a lone plot | the threshold pair about the `origin` | `color` | group only |
+| density, either of the above | the **score ramp** | `labelColor` | group only |
 
-- Three modes come from two booleans, collapsed once, so the impossible fourth
-  combination has nowhere to hide.
+- **The default moves with the layout, so it is a resolved getter
+  (`effectiveColor`) rather than a slot default** — a `defaultValue` cannot ask
+  how many plots share the box.
+- `resolveWiggleColor` answers `{ posColor, negColor, pivot, rampLut, perSource }`,
+  which is the whole of what the encoder and both backends read: the pair every
+  mode partitions by, the value they part at, the density LUT, and whether a
+  source paints its own colour on both sides.
 - **In density, `color` is a scale, not an identity**, so identity moves one
   channel over to `labelColor` — which the row-label sidebar paints and the ramp
   ignores.
-- The colour key takes the mode rather than the raw booleans, so which channel
-  it reads and what an unset one falls back to come from the same table.
+- The colour key follows the scale, so which channel it reads and what an unset
+  one falls back to come from the same table.
 - One cursor hands out every palette entry: groups first, then ungrouped rows.
 
 ## Why the odd-looking branches are there
@@ -93,16 +102,17 @@ Config bounds are still checked first.
   has not. Drawing the previous plot for one frame is the correct stale; reading
   live state instead read past the end of a buffer on the GPU and drew chords
   across every hole on Canvas2D.
-- **A colour put on a density row replaced the scale it is read by.** A
+- **A colour put on a density row replaces the scale it is read by.** A
   copy-number heatmap grouped by population came out one hue per population with
   a shared blue for losses, encoding nothing.
 - **The palette used to be two independent sequences**, so a track mixing
   grouped and ungrouped subadapters gave the same entry to the first group and
   the first ungrouped row — one colour for two things, in the plot and in the
   legend naming it.
-- **Overlapping omits density** because overlapping filled densities are
-  unreadable, and the overlay set is read off the same menu table rather than
-  listed again beside the predicate.
+- **Density is offered in a shared box rather than refused.** Overlapping
+  filled densities are unreadable, and the nine plot-crossed-with-layout names
+  existed to say so; five plot names plus one layout checkbox cannot, so the
+  docs say to facet it instead (ADR-143).
 - **The shipped arrays are aliased**, so a pass that normalizes a band in place
   rewrites the average scores under every other reader.
 

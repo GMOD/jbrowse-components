@@ -959,7 +959,7 @@ now "Removing Material UI") only ever swapped in JBrowse's *other* set.
 
 **The overlay node is published too, and is the host's half of the portal.**
 Floating chrome a display draws — `FloatingLegend` (canvas, alignments,
-variants, multi-wiggle), `HicOverlayPanel`, maf's row labels — escapes its
+variants, wiggle), `HicOverlayPanel`, maf's row labels — escapes its
 `contain: strict` sandbox through `TrackOverlayPortal`, into a node the *host*
 supplies via `TrackOverlayContext`. An embedder mounting `RenderingComponent`
 directly supplied none, so the context was null, the portal fell back to
@@ -1011,7 +1011,7 @@ provider. Reach for the palette before reaching for a fourth context.
 only see a tooltip a headless hover happened to raise.
 
 **`FloatingLegend` was the same shape, found the same way.** Canvas, alignments,
-variants and multi-wiggle all render it directly, behind neither provider, and it
+variants and wiggle all render it directly, behind neither provider, and it
 drew two MUI `IconButton`s and a `Link component="button"`. Its `makeStyles` was
 already the theme-free one, so the *styling* half had been fixed and the
 components had not — and the census scored it zero for a third reason: it counts

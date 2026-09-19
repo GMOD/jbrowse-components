@@ -33,7 +33,7 @@ paint:
   - `drawXxxToCtx(ctx, sources, blocks, state)` is a one-shot wrapper used by
     `renderSvg.tsx`: it builds the regions map from observable sources, then
     calls `drawXxxBlocks`.
-  Plugins: alignments (merge pileup + arcs), wiggle / multi-wiggle (per-region
+  Plugins: alignments (merge pileup + arcs), wiggle (per-region
   encode), multi-variant (Record→Map + filter), multi-LGV-synteny (merge into
   layout map). Alignments exports a named `buildAlignmentsRegionMap` because the
   on-screen `sync(sources)` reuses it.
@@ -202,7 +202,7 @@ deleted:
   pre-`view.initialized`, unreachable at either real reader. Rule of thumb: if a
   `renderState` getter's sole `undefined` trigger is `!view.initialized`, drop
   it and return a value.
-- **wiggle / multi-wiggle / manhattan** — `renderState` now always builds: a
+- **wiggle / manhattan** — `renderState` now always builds: a
   real domain, else an inert `EMPTY_PLOT_DOMAIN` (`[0,1]`) stub so a
   loaded-but-scoreless region still runs `renderBlocks` to clear the canvas +
   flip `canvasDrawn`. Nothing is plotted against the stub and the axis/legend is
@@ -246,7 +246,7 @@ lives in `foundationSvgReady(self)`
 their terminals differently and keep their own call.
 
 - **`MultiRegionDisplayMixin`** (per-region streamed — canvas, alignments, MAF,
-  manhattan, wiggle / multi-wiggle, multi-variant, multi-variant-matrix):
+  manhattan, wiggle, multi-variant, multi-variant-matrix):
   `dataCurrent` = `viewportWithinLoadedData && loadedRegions.size > 0`. The
   spatial-coverage check waits for *every* visible region (not the first to
   stream in) and goes false the instant a pan/zoom moves the viewport past

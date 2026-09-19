@@ -59,19 +59,19 @@
     {
       "values": {
         "metric": "explicit display types named",
-        "value": 18
+        "value": 17
       }
     },
     {
       "values": {
         "metric": "distinct keys on object entries",
-        "value": 89
+        "value": 86
       }
     },
     {
       "values": {
         "metric": "keys on two or more display types",
-        "value": 27
+        "value": 22
       }
     },
     {
@@ -89,7 +89,7 @@
     {
       "values": {
         "metric": "keys per object entry, 90th percentile",
-        "value": 5
+        "value": 4
       }
     },
     {

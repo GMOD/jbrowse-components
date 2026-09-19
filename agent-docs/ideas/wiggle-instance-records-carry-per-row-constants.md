@@ -159,8 +159,8 @@ counted on top of #2. Fill cannot reach 12, because `rowIndex` stays per
 instance: 1000 sources in one draw call have no other way to name their row.
 The prototype packs `row << 1 | side` into one word.
 
-**Gain in interaction:** colour is in `gpuProps` (`sources[].color`,
-`posColor`, `negColor`), so a colour change today re-encodes every loaded
+**Gain in interaction:** colour is in `gpuProps` (`sources[].color` and the
+resolved `wiggleColor` pair), so a colour change today re-encodes every loaded
 region. That costs 45-250ms of fill or 60-500ms of line per region at 1000
 sources, per the tables above. A table makes it one 8,000-byte texture upload.
 A sort or subtrack toggle still re-encodes unless the instance carries the
@@ -207,8 +207,10 @@ would read the same table. Whiskers scatter's per-instance tints
 ### 4. ADR-016, re-measured: don't move the split, delete it — landed
 
 **Landed 2026-09-19.** The worker no longer partitions, the six `pos*`/`neg*`
-fields are off `WiggleFeatureArrays`, and `bicolorPivot` and `useBicolor` left
-`rpcProps` for `gpuProps` alone. The main thread colours by sign per instance
+fields are off `WiggleFeatureArrays`, and the colour settings left `rpcProps`
+for `gpuProps` alone. ADR-144 then folded the six spellings this section
+measured into one `color` object and renamed the pivot `origin`; the arms below
+kept the names they were run under. The main thread colours by sign per instance
 through `bandColorsAbgr`, which the whiskers bands already used, so every mode
 now partitions the same way and density keeps the solid layers `drawDensity`
 needs. The measurements below are what the deletion was taken on; they stand.
@@ -225,8 +227,8 @@ Moving it into `buildSourceRenderData` as the parked idea proposes puts those
 split also re-runs on every `gpuProps` change (colour, sort, plot type) unless
 it gets its own memo. ADR-016's rule already names the better exit: work
 "expressible as a uniform". `origin` is already a uniform, so with #3 the GPU
-colours by sign and the split disappears instead of moving. `bicolorPivot`
-then leaves `rpcProps`, and a pivot change costs no refetch and no re-encode.
+colours by sign and the split disappears instead of moving, and a change to the
+cut costs no refetch and no re-encode.
 **Unmeasured risk:** Canvas2D xyplot would then switch `fillStyle` by sign
 inside one layer. On phyloP-like data (47% negative) that means roughly one
 switch per two bins, and density's per-layer gradient needs both sides. A

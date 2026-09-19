@@ -7,7 +7,7 @@ kind: spec
 
 # In-App Clustering Workflow
 
-Applies to `plugins/wiggle` (multi-wiggle displays) and `plugins/variants`
+Applies to `plugins/wiggle` (the quantitative display) and `plugins/variants`
 (multi-sample variant displays). Both plugins share the same structural pattern:
 a dialog triggers an RPC call that builds a feature matrix, runs hierarchical
 clustering via `@gmod/hclust`, and writes the result into `TreeSidebarMixin`

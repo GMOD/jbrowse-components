@@ -1,20 +1,28 @@
 digraph wiggle_colour {
   rankdir=LR
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] mode }
+  { node [shape=diamond] declared; layout }
 
-  mode [label="rowColorMode\ntwo booleans, three modes"]
-  mode -> overlay  [label=" overlay"]
-  mode -> multirow [label=" multirow"]
-  mode -> density  [label=" density"]
+  declared [label="color\na string, or a field\nthrough a scale"]
+  declared -> resolved [label=" the config wrote one"]
+  declared -> layout   [label=" unset"]
 
-  overlay  [label="colour is identity:\nthe source's whole plot.\nUnset fills from the group\npalette, then the row palette"]
-  multirow [label="colour is identity:\nthe row's positive bars.\nThe negative side keeps negColor"]
-  density  [label="colour is the score ramp:\nwhite at the pivot, saturating\ntoward the source's colour.\nIdentity moves to labelColor"]
+  layout [label="how many plots\nshare the box"]
+  layout -> shared [label=" shared"]
+  layout -> row    [label=" row"]
 
-  legend [label="the colour key takes the MODE,\nso the channel and its fallback\ncome from one table"]
-  overlay -> legend  multirow -> legend  density -> legend
+  shared [label="several sources in one box:\nfield: source, so each takes a\npalette entry and paints both\nsides of the origin in it"]
+  row    [label="a row per source, or one plot:\nfield: score through threshold,\nthe pos/neg pair about the origin"]
 
-  ramp [label="a score ramp is drawable only\nwhile no source sets a colour"]
-  density -> ramp
+  resolved [label="resolveWiggleColor:\nposColor, negColor, pivot,\nrampLut, perSource", style=bold]
+  shared -> resolved  row -> resolved
+
+  density [label="under density the pair is the ramp's\ntwo fade ends, so a hue set on a row\nwould replace the scale it is read by:\nidentity moves to labelColor"]
+  resolved -> density
+
+  legend [label="the colour key follows the SCALE,\nso the channel and its fallback\ncome from one table"]
+  resolved -> legend  density -> legend
+
+  palette [label="one cursor hands out every entry:\ngroups first, then ungrouped rows"]
+  shared -> palette
 }

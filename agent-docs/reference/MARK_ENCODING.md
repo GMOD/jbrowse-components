@@ -31,9 +31,8 @@ value scale, and every mark's `encoding.y` names a field read through it, so
 the axis, its ticks and every mark's shapes read one declaration and the score
 menu's "Set min/max" writes there
 ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)).
-`ScoreAxisMixin` is the contract it satisfies, and wiggle, the multi-wiggle,
-Manhattan and the coverage band declare the same object with the members each
-of them draws, `ScoreScaleMixin` reading and writing it
+`ScoreAxisMixin` is the contract it satisfies, and wiggle, Manhattan and the
+coverage band declare the same object with the members each of them draws, `ScoreScaleMixin` reading and writing it
 ([ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)). The scale does not cross
 the wire — the worker reads a value and nothing there reads the scale, and
 shipping it would key the fetch on the axis.

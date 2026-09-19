@@ -44,11 +44,11 @@ blames the encoder rather than the key that let it in.
 
 Two other facts the census turned up, neither a bug:
 
-- **`bicolorPivot` fans out to two tiers**, which no single comment says.
+- **`origin` fans out to two tiers**, which no single comment says.
   `gpuProps()` (every mode colours by sign main-thread, and the SVG export
-  calls `buildSourceRenderData(data, gpuProps)` directly) and `renderState` as
-  `origin` (the shader's bar pivot and density fade). It left `rpcProps()` when
-  the worker-side split went (ADR-016, superseded), so a pivot change no longer
+  calls `buildSourceRenderData(data, gpuProps)` directly) and `renderState`
+  (the shader's bar pivot and density fade). It left `rpcProps()` when the
+  worker-side split went (ADR-016, superseded), so moving the cut no longer
   refetches. Each hop is commented where it happens; the fan-out is only
   visible from here.
 - **Six of fourteen `installUpload` callers pass neither `inputs` nor
@@ -212,15 +212,15 @@ redundant refetch of regions already loaded and in budget.
 
 ## `gpuProps()` and derived region maps — re-upload without refetch
 
-`gpuProps()` exists wherever the main thread encodes the GPU buffer — wiggle,
-multi-wiggle and MAF (and GC-content, which inherits wiggle's wholesale). HiC and
+`gpuProps()` exists wherever the main thread encodes the GPU buffer — wiggle
+and MAF (and GC-content, which inherits wiggle's wholesale). HiC and
 multi-LGV synteny fill the same role without the method: HiC's upload callback
 reads `self.colorScheme` straight into `generateColorRamp`, and synteny's
 `computedColors` getter is its re-upload-without-refetch half. Canvas's worker
 emits a color *class* per themed lane and
 the main-thread encode resolves classes against `session.palette`, so the
 worker holds no palette and a theme change re-encodes. This splits refetch from
-re-upload: a wiggle colour change, `bicolorPivot` included, re-encodes and
+re-upload: a wiggle colour change, `color` and `origin` alike, re-encodes and
 refetches nothing, while `resolution` and `scoreField` change what the worker
 returns and so refetch.
 
@@ -351,7 +351,7 @@ the RPC, and each pays for it in a different currency:
 
 | display | what crosses | who assigns the row |
 | --- | --- | --- |
-| multi-wiggle | the full canonical `sources` list, as a **structural** arg (absent from `rpcProps()`) | the main-thread encoder, from `gpuProps().sources` |
+| wiggle | the full canonical `sources` list, as a **structural** arg (absent from `rpcProps()`) | the main-thread encoder, from `gpuProps().sources` |
 | MAF | `subtreeFilter` only | `placeMafRegionData`, keyed on species name, re-run by the `rpcDataMap` memo over the store and the row order |
 | multi-sample variant | `sampleFilter` (sorted sample names) | `placeVariantRows`, keyed on `rowNames`, re-run by the derived region map |
 
