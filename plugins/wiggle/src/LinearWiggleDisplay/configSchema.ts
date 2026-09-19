@@ -2,6 +2,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
+import {
+  rowSeparatorsConfigSchemaFields,
+  treeSidebarConfigSchemaFields,
+} from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import { checkFacetField } from '../shared/checkFacetField.ts'
 import { colorImpliesSolid } from '../shared/colorImpliesSolid.ts'
@@ -15,7 +19,14 @@ import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
 /**
  * #config LinearWiggleDisplay
  * #category display
- * configuration for the wiggle (quantitative/numeric) display showing XY plot, density, line, or scatter renderings
+ * configuration for the quantitative display: an XY plot, density, line or
+ * scatter rendering of one source or of many, with `facet: 'source'` giving
+ * each source a row of its own
+ *
+ * Per-source metadata (a `name`, `color` and `group` for each) is preloaded on
+ * the *adapter* rather than here — see `MultiWiggleAdapter`'s `subadapters`
+ * slot, where `group` drives the sidebar clustering tree and `color` sets each
+ * source's line or fill.
  *
  * These are display-level slots: set them inside a track's `displays` to
  * change its defaults (setting them at the track top level has no effect).
@@ -35,6 +46,26 @@ import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
  *   name: 'Coverage',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
+ * }
+ * ```
+ *
+ * #example
+ * Several bigWigs stacked one per row, which is what a `MultiQuantitativeTrack`
+ * does by default:
+ * ```js
+ * {
+ *   type: 'MultiQuantitativeTrack',
+ *   trackId: 'coverage_by_sample',
+ *   name: 'Coverage by sample',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'MultiWiggleAdapter',
+ *     bigWigs: [
+ *       'https://example.com/sample1.bw',
+ *       'https://example.com/sample2.bw',
+ *     ],
+ *   },
+ *   displayDefaults: { facet: 'source' },
  * }
  * ```
  *
@@ -125,20 +156,18 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      */
     showLegend: {
       type: 'boolean',
-      description: 'Draw the score color ramp in density mode. Defaults to on',
+      description:
+        "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on",
       defaultValue: true,
     },
     /**
      * #slot
-     * Not in the shared wiggle fields: `MultiLinearWiggleDisplay` spreads those
-     * and stacks a plot box per row, so one rule list has no single axis to sit
-     * on there.
      */
     scoreRules: {
       type: 'frozen',
       defaultValue: [],
       description:
-        'Horizontal reference lines across the plot, as [{"value": 30, "label": "2 copies"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule',
+        'Horizontal reference lines across the plot, as [{"value": 30, "label": "2 copies"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering, which spends color rather than height on the score and so has no axis to rule, and by a faceted track, which stacks a plot box per row',
     },
     /**
      * #slot
@@ -150,6 +179,11 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       advanced: true,
     },
     ...summaryScoreModeConfigSchemaFields({ defaultMode: 'whiskers' }),
+    ...treeSidebarConfigSchemaFields({
+      tree: 'Show the subtrack clustering tree in the sidebar',
+      rowLabels: 'Name each subtrack row down the left edge',
+    }),
+    ...rowSeparatorsConfigSchemaFields(),
   },
   {
     explicitlyTyped: true,

@@ -49,11 +49,11 @@ export function sourcesFromRegionData(
  *
  * A row carries **two color channels**, and there are **three modes**:
  *
- * | mode       | `color` paints          | identity lives in | palette fills   |
- * | ---------- | ----------------------- | ----------------- | --------------- |
- * | `overlay`  | the source's whole plot | `color`           | group, then row |
- * | `multirow` | the row's pos-side bars | `color`           | group only      |
- * | `density`  | the **score ramp**      | `labelColor`      | group only      |
+ * | mode      | `color` paints          | identity lives in | palette fills   |
+ * | --------- | ----------------------- | ----------------- | --------------- |
+ * | `shared`  | the source's whole plot | `color`           | group, then row |
+ * | `row`     | the row's pos-side bars | `color`           | group only      |
+ * | `density` | the **score ramp**      | `labelColor`      | group only      |
  *
  * **In density, `color` is a scale rather than an identity**, and every special
  * case below follows from that. Density paints a row white at the bicolor
@@ -74,29 +74,34 @@ export function sourcesFromRegionData(
  * - a score ramp is drawable only while NO source sets `color`, since one that
  *   does is painted on its own scale (`scoreRampApplies` on the model).
  *
- * `multirow` keeps the shared `negColor` on the negative side even when the row
- * has a color, so signed data still reads as bicolor; that split is the
- * renderer's and is settled (ADR-016, `buildSourceRenderData`).
+ * `row` keeps the shared `negColor` on the negative side even when the row has
+ * a color, so signed data still reads as bicolor; that split is the renderer's
+ * and is settled (ADR-016, `buildSourceRenderData`).
+ *
+ * **`shared` needs more than one source.** A lone plot in the box has nothing
+ * to be told apart from, so it takes no palette entry and is drawn in the
+ * display's own colours — the pos/neg picture a single-source quantitative
+ * track has always shown.
  */
-export type RowColorMode = 'overlay' | 'multirow' | 'density'
+export type RowColorMode = 'shared' | 'row' | 'density'
 
-// Three modes but two booleans, because `multirowdensity` IS a multi-row
-// rendering — so overlay and density are never both true. Collapsed once, here,
-// so everything downstream branches on the mode itself and the impossible
-// fourth combination has nowhere left to hide.
+// Three modes but two questions, because density is density whether or not the
+// sources share a plot. Collapsed once, here, so everything downstream branches
+// on the mode itself and the impossible fourth combination has nowhere left to
+// hide.
 //
 // Exported because the color key is downstream of this table too: `legendItems`
 // takes the mode rather than the raw booleans, so which channel it reads and
 // what an unset one falls back to are both read off the table above instead of
 // restated against `isDensityMode`.
 export function rowColorMode(
-  isOverlay: boolean,
+  sharesOnePlot: boolean,
   isDensityMode: boolean,
 ): RowColorMode {
   if (isDensityMode) {
     return 'density'
   }
-  return isOverlay ? 'overlay' : 'multirow'
+  return sharesOnePlot ? 'shared' : 'row'
 }
 
 // Palette color by position, wrapping modulo palette length.
@@ -173,13 +178,13 @@ function synthesizeColors(
         labelColor: s.labelColor ?? s.color ?? groupColor,
       }
     }
-    case 'overlay': {
+    case 'shared': {
       return {
         color: s.color ?? groupColor ?? rowColors.get(s.name),
         labelColor: s.labelColor,
       }
     }
-    case 'multirow': {
+    case 'row': {
       return {
         color: s.color ?? groupColor,
         labelColor: s.labelColor,
@@ -199,10 +204,8 @@ function synthesizeColors(
 export function buildSources(
   editableSources: Source[],
   subtreeFilter: readonly string[] | undefined,
-  isOverlay: boolean,
-  isDensityMode: boolean,
+  mode: RowColorMode,
 ): Source[] {
-  const mode = rowColorMode(isOverlay, isDensityMode)
   const palette = buildPaletteColors(editableSources)
   return filterRowsBySubtree(
     editableSources.map(s => ({ ...s, ...synthesizeColors(s, mode, palette) })),

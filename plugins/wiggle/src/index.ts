@@ -3,7 +3,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
 import LinearWiggleDisplayF from './LinearWiggleDisplay/index.ts'
-import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay/index.ts'
+import MultiQuantitativeTrackDefaultsF from './MultiQuantitativeTrack/displayDefaults.ts'
 import MultiQuantitativeTrackF from './MultiQuantitativeTrack/index.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow/index.ts'
@@ -25,8 +25,8 @@ export default class WigglePlugin extends Plugin {
     BigWigAdapterF(pm)
     QuantitativeTrackF(pm)
     MultiQuantitativeTrackF(pm)
+    MultiQuantitativeTrackDefaultsF(pm)
     LinearWiggleDisplayF(pm)
-    MultiLinearWiggleDisplayF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
     RenderWiggleDataRPCF(pm)
@@ -63,4 +63,4 @@ export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
 // names this plugin published them as.
 export { WiggleScoreConfigMixin } from '@jbrowse/wiggle-core'
 export type { ScorePlotSvgModel as WiggleFamilySvgModel } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
-export type { MultiWiggleDisplayModel } from './MultiLinearWiggleDisplay/components/multiWiggleDisplayTypes.ts'
+export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'

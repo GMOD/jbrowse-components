@@ -69,7 +69,7 @@ function itemIn(items: MenuItem[], label: string) {
   }
 }
 
-describe('multi-wiggle Clustering submenu', () => {
+describe('the wiggle display Clustering submenu', () => {
   it('offers the run item, and the tree toggles sit under Show... in a row mode', () => {
     const { display } = makeDisplay()
     const items = display.trackMenuItems()
@@ -82,25 +82,23 @@ describe('multi-wiggle Clustering submenu', () => {
       'Tree branch lengths',
       'Show row separators',
       'Show row labels',
+      'Show legend',
       'Show cross hatches',
     ])
   })
 
-  it('drops both tree controls in an overlay mode, where no dendrogram draws', () => {
+  it('drops the tree controls where the sources share one plot', () => {
     const { display } = makeDisplay({
       faceted: false,
       clusterTree: '(b,a);',
     })
 
-    // the tree is hidden because overlay collapses every source onto one row —
-    // `hierarchy` is the gate, and these controls follow it
+    // the tree is hidden because one plot box is one row — `hierarchy` is the
+    // gate, and these controls follow it
     expect(display.hierarchy).toBeUndefined()
     expect(
       labels(subMenuOf(display.trackMenuItems(), 'Show...')),
     ).not.toContain('Show tree')
-    // the reset stays reachable: it resets the row order, which still matters
-    // for the row mode the user will switch back to
-    expect(labels(display.trackMenuItems())).toContain('Reset row order')
   })
 
   it('keeps the tree controls once a clustered row mode comes back', () => {
@@ -129,17 +127,15 @@ describe('multi-wiggle Clustering submenu', () => {
     })
   })
 
-  it('refuses to cluster in an overlay mode, which has no rows to reorder', () => {
+  // Nothing to order until the sources are on rows, so the whole row-order half
+  // of the menu — the Clustering submenu and the reset beside it — is absent
+  // rather than greyed out. A plain quantitative track never grows either.
+  it('offers no row order at all where the sources share one plot', () => {
     const { display } = makeDisplay({ faceted: false })
-    const item = itemIn(
-      subMenuOf(display.trackMenuItems(), 'Clustering'),
-      'Cluster rows by score...',
-    )
+    const items = labels(display.trackMenuItems())
 
-    expect(item).toMatchObject({
-      disabled: true,
-      disabledHelpText: 'Only available with one row per source',
-    })
+    expect(items).not.toContain('Clustering')
+    expect(items).not.toContain('Reset row order')
   })
 
   it('offers a way out of a written row order only once there is one', () => {
@@ -160,7 +156,7 @@ describe('multi-wiggle Clustering submenu', () => {
   })
 })
 
-describe('multi-wiggle track menu', () => {
+describe('the wiggle display track menu', () => {
   it('opens the color editor on the display itself', () => {
     const { display, session } = makeDisplay()
     const item = itemIn(display.trackMenuItems(), 'Edit colors/arrangement...')
@@ -197,24 +193,23 @@ describe('multi-wiggle track menu', () => {
     ).toEqual(['Average'])
   })
 
-  it('offers the overlay legend toggle only where a color key means anything', () => {
-    const overlay = makeDisplay({ faceted: false }).display
-    expect(labels(subMenuOf(overlay.trackMenuItems(), 'Show...'))).toContain(
-      'Show legend',
-    )
+  // The row stays in the menu whatever the rendering — that is what keeps its
+  // display-type pin reachable — and greys out where nothing is keyed by
+  // colour: one source needs no key, and a faceted track names its sources
+  // beside their rows.
+  it('enables the legend toggle only where a color key means anything', () => {
+    const enabled = (display: { trackMenuItems: () => MenuItem[] }) =>
+      !(
+        itemIn(
+          subMenuOf(display.trackMenuItems(), 'Show...'),
+          'Show legend',
+        ) as { disabled?: boolean }
+      ).disabled
 
-    // one source needs no key, and a faceted track names sources by row label
-    const oneSource = makeDisplay({
-      sources: ['a'],
-      faceted: false,
-    }).display
+    expect(enabled(makeDisplay({ faceted: false }).display)).toBe(true)
     expect(
-      labels(subMenuOf(oneSource.trackMenuItems(), 'Show...')),
-    ).not.toContain('Show legend')
-
-    const row = makeDisplay().display
-    expect(labels(subMenuOf(row.trackMenuItems(), 'Show...'))).not.toContain(
-      'Show legend',
-    )
+      enabled(makeDisplay({ sources: ['a'], faceted: false }).display),
+    ).toBe(false)
+    expect(enabled(makeDisplay().display)).toBe(false)
   })
 })

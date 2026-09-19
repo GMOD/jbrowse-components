@@ -208,7 +208,7 @@ test('a zoom inside a loaded region keeps the cache valid', async () => {
   display.loadedRegions.set(0, {
     ...region,
     fetchInputs: display.fetchInputs,
-    payload: {},
+    payload: { sources: [] },
   })
   expect(display.isCacheValid(0)).toBe(true)
 

@@ -22,7 +22,7 @@ interface LabelModel {
   axes: YAxis[]
 }
 
-// Row labels (non-overlay mode), shared by the live MultiWiggleComponent and
+// Row labels (non-overlay mode), shared by the live WiggleComponent and
 // the SVG export so the two can't drift. The per-row axes are the chrome's, off
 // `valueScales`, and they take the fixed-width strip at the left of each row:
 // a sample name can be arbitrarily long, so the labels start after that strip

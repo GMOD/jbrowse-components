@@ -9,7 +9,7 @@ interface SeparatorModel {
   effectiveRowHeight: number
 }
 
-// Inter-row separator lines, shared by the live MultiWiggleComponent and the
+// Inter-row separator lines, shared by the live WiggleComponent and the
 // SVG export so the two can't drift. Both callers render this inside an <svg>,
 // so it emits bare <line> fragments and takes the content width explicitly
 // (CSS-pixel track width on screen vs view width on export). The per-row

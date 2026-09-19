@@ -1,7 +1,7 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react'
 
 import { createTestEnvironment, makeMultiWiggleData } from '../testEnv.ts'
-import MultiWiggleComponent from './MultiWiggleComponent.tsx'
+import WiggleComponent from './WiggleComponent.tsx'
 
 // A mounted display whose fetch has landed on two sources with no bins in them,
 // so any pointer over the plot has no feature under it.
@@ -10,7 +10,7 @@ async function loadedDisplay() {
   env.mockRpcCall.mockResolvedValue(makeMultiWiggleData('a', 'b'))
   const { display } = env.createDisplay()
 
-  render(<MultiWiggleComponent model={display} />)
+  render(<WiggleComponent model={display} />)
   await waitFor(() => {
     expect(display.numSources).toBe(2)
   })

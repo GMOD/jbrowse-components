@@ -6,8 +6,10 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { legendIsReadable } from '@jbrowse/core/ui'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getDialogHost } from '@jbrowse/core/util'
+import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import LegendMixin, {
   legendCheckboxItem,
 } from '@jbrowse/display-kit/LegendMixin'
@@ -17,8 +19,30 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
+import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import {
+  ContextMenuMixin,
+  TreeSidebarMixin,
+  buildSpatialIndex,
+  clusteringMenuItem,
+  computeClusterHierarchy,
+  filterRowsBySubtree,
+  focusRowGroup,
+  orderRowsByDomain,
+  reconcileLayout,
+  resetRowOrderMenuItems,
+  rowArrangementMenuItem,
+  rowLabelsCarryText,
+  setupTreeSidebarAutoruns,
+  showRowLabelsMenuItem,
+  showRowSeparatorsMenuItem,
+  sortRowsAtColumn,
+  sortRowsHereMenuItem,
+  treeSidebarOffset,
+  treeSidebarShowMenuItems,
+} from '@jbrowse/tree-sidebar'
 import {
   axisPlotBox,
   makeCrossHatchItem,
@@ -27,11 +51,12 @@ import {
   resolveSymlogConstant,
   scoreRuleMarks,
 } from '@jbrowse/wiggle-core'
-import PaletteIcon from '@mui/icons-material/Palette'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
-import { wiggleColorAdornment } from '../shared/wiggleColorAdornment.tsx'
+import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
   makeLineWidthMenuItems,
@@ -40,34 +65,47 @@ import {
   makeResolutionSubMenu,
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
-import { SINGLE_WIGGLE_SOURCE_NAME, WIGGLE_RENDERINGS } from '../util.ts'
+import { WIGGLE_RENDERINGS } from '../util.ts'
+import { buildLegendItems } from './legendItems.ts'
+import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
+import {
+  buildSources,
+  rowColorMode,
+  sourcesFromRegionData,
+} from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
-import type { WiggleHoveredFeature } from '../util.ts'
+import type { WiggleHoveredFeature, Source } from '../util.ts'
+import type { MultiWiggleContextInfo } from './components/findHit.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
+import type { RowColorMode } from './sourcesLogic.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
-export type { Region } from '@jbrowse/core/util'
-
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
+const WiggleClusterDialog = lazy(
+  () => import('./components/WiggleClusterDialog.tsx'),
+)
 
 /**
  * #stateModel LinearWiggleDisplay
  * #displayFoundation MultiRegionDisplayMixin
  * #category display
  *
- * State model factory for the single-source wiggle display.
+ * The quantitative display: one plot per rendering, drawn over one source or
+ * over many. `facet: 'source'` gives each source a row of its own, with the
+ * clustering sidebar, row labels and separators beside them; unfaceted, every
+ * source shares one plot box.
  *
  * #example
- * A complete `QuantitativeTrack` config to paste into `tracks`. `height` and the
- * score-range and rendering options (autoscale, min/max score, renderer) are all
- * config slots on the track itself — see the `QuantitativeTrack` config:
+ * A complete `QuantitativeTrack` config to paste into `tracks`:
  * ```js
  * {
  *   type: 'QuantitativeTrack',
@@ -84,6 +122,41 @@ const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
  *   ],
  * }
  * ```
+ *
+ * #example
+ * The two row-ordering triggers are display *properties*, not config slots, so
+ * they go on the display node in a session — `defaultSession` here, and the
+ * same shape a `session=spec-` link carries. Written on the track config's own
+ * `displays` entry they would be dropped as unknown slots.
+ *
+ * `runClustering` is a transient declarative launch spec, the same idea as
+ * `LinearGenomeView`'s `init`: it runs the real "Cluster columns" RPC once
+ * automatically (no dialog) as soon as subtrack data is available, then clears
+ * itself so a saved session never re-triggers it. `sortRowsBy` is the other
+ * one, and the declarative form of the right-click "Sort rows by score here" —
+ * where clustering orders rows by the whole region in view, this ranks them by
+ * the score each carries at one base, so a cohort can open already ranked at a
+ * candidate locus with the surrounding context still on screen. Use one or the
+ * other; whichever applies last owns the row order.
+ * ```js
+ * defaultSession: {
+ *   name: 'Copy number at CCL3L1',
+ *   views: [
+ *     {
+ *       type: 'LinearGenomeView',
+ *       assembly: 'hg38',
+ *       loc: 'chr17:36,080,000-36,270,000',
+ *       tracks: [
+ *         {
+ *           trackId: 'pur_copynumber_1000g',
+ *           type: 'LinearWiggleDisplay',
+ *           sortRowsBy: { refName: 'chr17', pos: 36180000 },
+ *         },
+ *       ],
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export default function stateModelFactory(
   _pluginManager: PluginManager,
@@ -96,8 +169,10 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       WiggleCommonMixin(),
-      LegendMixin(),
       StoredHoverMixin<WiggleHoveredFeature>(),
+      LegendMixin(),
+      TreeSidebarMixin<Source>(),
+      ContextMenuMixin<ContextMenuAnchor & MultiWiggleContextInfo>(),
       types.model({
         /**
          * #property
@@ -107,11 +182,23 @@ export default function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        // `runClustering` / `clusterRegion` / `sortRowsBy` are
+        // TreeSidebarMixin's. The one thing specific to this display: naming a
+        // `clusterRegion` also moves where the sampling density comes from,
+        // since the matrix columns are pixel bins over the span rather than
+        // over the view's zoom (clusterScoreMatrixArgs).
       }),
     )
     .views(self => ({
+      // overrides WiggleScoreConfigMixin's `false` base, which is what its
+      // showCrossHatches / effectiveSummaryScoreMode getters key on
+      get isDensityMode() {
+        return self.renderingType === 'density'
+      },
+
       /**
        * #getter
+       * The colour every source that names none is drawn in with bicolor off.
        */
       get color(): string {
         return getConf(self, 'color')
@@ -127,110 +214,235 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Overrides WiggleScoreConfigMixin's `false` base. That mixin's
-       * `showCrossHatches` / `effectiveSummaryScoreMode` getters key on this.
-       */
-      get isDensityMode() {
-        return self.renderingType === 'density'
-      },
-
-      /**
-       * #getter
-       * The `facet` object as written, or undefined while every source shares
-       * one plot.
-       */
-      get facet() {
-        return facetSettingOf({
-          field: getConf(self, ['facet', 'field']),
-          domain: getConf(self, ['facet', 'domain']),
-        })
-      },
-
-      /**
-       * #getter
        * The configured rules, parsed. Config is user-authored JSON, so this is
        * where the unusable entries are dropped rather than at each reader.
        */
       get scoreRules() {
         return parseScoreRules(getConf(self, 'scoreRules'))
       },
+
+      /**
+       * #getter
+       * The `facet` object as written, or undefined while every source shares
+       * one plot. `source` is the only field the config admits here.
+       */
+      get facet(): FacetSetting | undefined {
+        return facetSettingOf({
+          field: getConf(self, ['facet', 'field']),
+          domain: getConf(self, ['facet', 'domain']),
+        })
+      },
     }))
     .views(self => ({
       /**
        * #getter
-       * Overrides WiggleCommonMixin's empty base, so the axis reaches a
-       * configured rule even where the visible data does not — see
-       * `widenRangeToRules`.
-       *
-       * Empty in density mode, and it has to be: density draws no rules
-       * (`scoreRuleMarks`) but spends the domain on its color ramp, so widening
-       * it there stretches the ramp over a range nothing on screen reaches and
-       * washes the plot out for a mark nobody can see. Same trap
-       * `effectiveSummaryScoreMode` exists for.
-       */
-      /**
-       * #getter
-       * Whether each source takes a row of its own. One source either way here,
-       * so this only rides into `gpuProps` for the encoder's row placement.
+       * Whether each source takes a row of its own, which is the whole of what
+       * the facet decides here: the tree sidebar, the row labels, the
+       * separators, the clustering menu and the row-order sort all hang off it.
        */
       get isFaceted() {
         return !!self.facet
       },
 
-      get scoreRuleValues() {
-        return self.isDensityMode ? [] : self.scoreRules.map(r => r.value)
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook, overridden: this display declares no
+       * `domain` slot of its own, because the row order is the facet's — one
+       * word for one idea, and `domain` on a wiggle display is already the
+       * score axis.
+       */
+      get rowDomain(): string[] {
+        return [...(self.facet?.domain ?? [])]
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * The single plot, inset by the scalebar label gutter at top and bottom
-       * so it never overlaps the axis labels drawn in those bands. `ticks`, the
-       * render height, the on-screen canvas and the SVG clip all read it, so a
-       * tick stays on the data it labels.
+       * Every source in one plot box. The complement of the facet, named for
+       * what is drawn rather than for the setting that is off.
+       */
+      get isOverlay() {
+        return !self.isFaceted
+      },
+    }))
+    .views(self => {
+      // This list reaches `gpuProps()`, whose identity re-encodes every loaded
+      // region, and a plain getter would hand out a fresh array on every region
+      // arrival — `stableIdentityComputed` keeps the previous one while the row
+      // metadata is unchanged, which is what a refetch of the same track
+      // produces.
+      const sources = stableIdentityComputed(() =>
+        sourcesFromRegionData(self.rpcDataMap),
+      )
+      return {
+        // Raw adapter sources, discovered from the loaded regions in adapter
+        // order. Used as input to clustering: cluster RPC reads `name` and
+        // `buildClusteredLayout` maps order indices into this list.
+        get sourcesWithoutLayout(): Source[] {
+          return sources.get()
+        },
+
+        // Adapter rows merged with the user's saved arrangement, in layout order —
+        // no subtree filter and no palette synthesis, so the edit dialog only
+        // persists colors the user actually chose. `reconcileLayout` owns the
+        // membership rules (drop layout entries the adapter no longer reports,
+        // append subtracks the layout never saw) and is shared with every other
+        // multi-row display, so this display has nothing of its own to keep in
+        // step. It used to, and that was the whole job of the wrapper this
+        // replaced: aliasing `source` onto `name` before handing the rows over.
+        //
+        // The config `domain` seeds the order underneath: the subtracks it
+        // names lead, the rest keep adapter order. Both helpers hand back the
+        // array they were given when they change nothing, which is what keeps
+        // `gpuProps`'s identity steady on the ordinary track.
+        get editableSources(): Source[] {
+          return reconcileLayout(
+            orderRowsByDomain(this.sourcesWithoutLayout, self.rowDomain),
+            self.layout,
+          )
+        },
+      }
+    })
+    .views(self => ({
+      /**
+       * #getter
+       * The rows a clustering run acts on: `editableSources` narrowed to the
+       * focused clade, and deliberately NOT the decorated `sources` below —
+       * `clusteredCladeLayout` writes what it is handed into `layout`, where a
+       * synthesized palette color has no business. Under no subtree filter this
+       * is `editableSources` itself.
+       */
+      get clusterableSources(): Source[] {
+        return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
+      },
+      /**
+       * #getter
+       * Which channel a source's colour paints, off `sourcesLogic`'s table. A
+       * lone plot is never `shared`: there is nothing for a palette to tell it
+       * apart from, and the display's own pos/neg colours are the picture.
+       */
+      get sourceColorMode(): RowColorMode {
+        return rowColorMode(
+          self.isOverlay && self.editableSources.length > 1,
+          self.isDensityMode,
+        )
+      },
+    }))
+    .views(self => ({
+      get sources(): Source[] {
+        return buildSources(
+          self.editableSources,
+          self.subtreeFilter,
+          self.sourceColorMode,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Overrides WiggleCommonMixin's empty base, so the axis reaches a
+       * configured rule even where the visible data does not.
+       *
+       * Empty where no rule is drawn: density spends the domain on its colour
+       * ramp, so widening it there stretches the ramp over a range nothing on
+       * screen reaches, and a faceted track stacks a plot box per row with no
+       * single axis for one rule list to sit on.
+       */
+      get scoreRuleValues() {
+        return self.isDensityMode || self.isFaceted
+          ? []
+          : self.scoreRules.map(r => r.value)
+      },
+    }))
+    .views(self => ({
+      get numSources() {
+        return self.sources.length
+      },
+
+      // Restrict the shared autoscale domain to the currently-visible sources
+      // (a subtree filter hides some), so hidden sources don't stretch the axis.
+      get autoscaleSourceNames() {
+        return new Set(self.sources.map(s => s.name))
+      },
+
+      /**
+       * #getter
+       * The source key's rows — one per (group, color) pair, colors resolved.
+       * `colorScales` and `overlayLegendApplies` both read this one list, so
+       * what is drawn and what was counted before deciding to draw cannot
+       * disagree. See `buildLegendItems`.
+       */
+      get legendItems(): LegendItem[] {
+        return buildLegendItems(
+          self.sources,
+          self.sourceColorMode,
+          self.posColor,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Resolved per-row height. This display is always fit-to-display-height —
+       * there is no pinned-height setting and so no `rowHeight` sentinel to
+       * resolve — but it carries the same name every row display exposes its
+       * resolved height under (see agent-docs/reference/ROW_HEIGHT_AND_FIT),
+       * which is also what tree-sidebar's `TreeDrawingModel` reads.
+       */
+      get effectiveRowHeight() {
+        return self.isOverlay
+          ? self.height
+          : getRowHeight(self.height, self.numSources)
+      },
+
+      /**
+       * #getter
+       * Rows actually drawn: overlay collapses every source onto one shared
+       * plot. Read by the render state and by everything that repeats itself
+       * per row (scalebars, cross hatches), so they can't disagree about how
+       * many rows exist.
+       */
+      get numRows() {
+        return self.isOverlay ? 1 : self.numSources
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * One row takes the scalebar-label gutter at top and bottom, so its end
+       * labels are never clipped; a stack of rows gives that up, because the
+       * axis is drawn per row and maximum density is the point. `ticks`, the
+       * render height, the on-screen canvas and the SVG clip all read this, so
+       * a tick stays on the data it labels.
        */
       get plotGeometry() {
-        const { yTop, plotHeight } = axisPlotBox(self.height)
-        return { yTop, plotHeight, numRows: 1, tickHeight: self.height }
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The y scale the chrome draws the axis and cross-hatches from, in the
-       * plot box above. None under density, which spends colour on the score
-       * and has the chrome's ramp as its key instead.
-       */
-      get valueScales(): ValueScale[] {
-        if (self.isDensityMode) {
-          return []
+        if (self.numRows === 1) {
+          const { yTop, plotHeight } = axisPlotBox(self.height)
+          return { yTop, plotHeight, numRows: 1, tickHeight: self.height }
         }
-        const { tickHeight, yTop } = self.plotGeometry
-        return [
-          {
-            domain: self.domain,
-            scaleType: self.scaleType,
-            height: tickHeight,
-            offset: yTop,
-            minimalTicks: self.minimalTicks,
-            symlogConstant: self.symlogConstant,
-          },
-        ]
+        return {
+          yTop: 0,
+          plotHeight: self.height,
+          numRows: self.numRows,
+          tickHeight: self.effectiveRowHeight,
+        }
       },
 
       /**
        * #getter
-       * Density spends color on the score, so its key is always the ramp.
+       * Only density spends color on the score, and only when every row shares
+       * the one ramp: a source with its own color is drawn on its own pos side
+       * (see buildSourceRenderData), so a single bar would describe none of
+       * them.
        */
       get scoreRampApplies() {
-        return self.isDensityMode
+        return self.isDensityMode && self.sources.every(s => !s.color)
       },
 
       /**
        * #getter
-       * Single-wiggle density always draws from posColor (the config doc for
-       * `color` says so), so with bicolor off both sides of the pivot fade
-       * white → posColor and the ramp says exactly that.
+       * With bicolor off both sides of the pivot fade white → posColor, which
+       * is what density paints, so the ramp says exactly that.
        */
       get densityNegColor(): string {
         return self.useBicolor ? self.negColor : self.posColor
@@ -241,16 +453,11 @@ export default function stateModelFactory(
        * Screen positions for the configured reference rules, or `[]`. Built
        * from the display's own normalizer rather than a linear read of the
        * domain, so a rule stays on the data it is meant to be read against when
-       * the axis is log or symlog.
-       *
-       * Empty in density mode for the reason `showCrossHatches` is false there:
-       * density spends color rather than height on the score, so there is no
-       * axis for a rule to sit on and a line across it would read as a
-       * threshold in a picture that has none.
+       * the axis is log or symlog. Empty wherever `scoreRuleValues` is.
        */
       get scoreRuleMarks() {
         const domain = self.domain
-        if (!domain || self.isDensityMode) {
+        if (!domain || self.scoreRuleValues.length === 0) {
           return []
         }
         const [min, max] = domain
@@ -266,77 +473,229 @@ export default function stateModelFactory(
           ),
         })
       },
-
-      /**
-       * #getter
-       * Offset the track label above the plot so the left y-axis stays pinned
-       * to the content edge instead of dodging right of the label. Density mode
-       * draws no left axis (just a top score legend), so let the label overlap.
-       */
-      get prefersOffset() {
-        return !self.isDensityMode
-      },
     }))
     .views(self => wiggleDisplayViews(self))
     .views(self => ({
       /**
        * #getter
-       * `LegendMixin`'s hook: the density ramp, and nothing outside density,
-       * where score is height and the axis is the key.
+       * The one scale every row shares, ruling a band per row stacked down the
+       * track, past the dendrogram where one is shown. Density rows each in
+       * their own colour map the scale to colour rather than to y, so they
+       * rule no band and the chrome captions the domain instead; under the
+       * one ramp the ramp is the key and carries the domain itself.
        */
-      get colorScales(): ColorScale[] {
-        return self.scoreColorScale ? [self.scoreColorScale] : []
+      get valueScales(): ValueScale[] {
+        if (self.scoreRampApplies) {
+          return []
+        }
+        const { tickHeight, yTop, numRows } = self.plotGeometry
+        return [
+          {
+            domain: self.domain,
+            scaleType: self.scaleType,
+            height: tickHeight,
+            offset: yTop,
+            minimalTicks: self.minimalTicks,
+            symlogConstant: self.symlogConstant,
+            bandTops: self.isDensityMode
+              ? []
+              : Array.from({ length: numRows }, (_, row) =>
+                  getRowTop(row, self.effectiveRowHeight),
+                ),
+            left: treeSidebarOffset(self),
+          },
+        ]
       },
-
       /**
        * #method
-       * Nothing beyond the shared keys. Every colour setting is an encoder
-       * input now that the pos/neg partition happens on the main thread, so
-       * what the worker is asked for is the score arrays and nothing else.
+       * summaryScoreMode rides along so an adapter can skip work it cannot be
+       * asked to show. A store that keeps min/max beside each mean holds three
+       * arrays per level, and `avg` — the default — draws none of them, so
+       * sending the mode turns the common case back into one read per level
+       * instead of three, and drops the two `processFeaturesFromArrays`
+       * allocates per source per region for values it then discards.
+       *
+       * The raw slot, deliberately, and NOT effectiveSummaryScoreMode. The
+       * effective one would be tighter -- density resolves whiskers to avg, so
+       * it could skip the read there too -- but it changes when the rendering
+       * type changes, and anything in rpcProps invalidates the fetch. That
+       * would make switching to density discard the data and re-download it,
+       * on every multi-wiggle track, including the ones whose adapter gets its
+       * summary for free and gains nothing here. Over-fetching in
+       * density-with-whiskers is the cheaper mistake.
+       *
+       * In rpcProps rather than gpuProps because it changes what is fetched:
+       * switching the slot to max has to refetch, since a max nobody read
+       * cannot be drawn.
        */
       rpcProps() {
-        return self.sharedRpcProps()
+        return {
+          ...self.sharedRpcProps(),
+          summaryScoreMode: self.summaryScoreMode,
+        }
       },
 
       /**
        * #method
-       * single-source gpuProps mapped onto the multi-source build path.
-       * `useBicolor` is an encoder input, not a fetch key: with it off the
-       * plot draws one colour, which is `posColor === negColor` at encode.
+       * The row list is this display's own: the encoder places each payload
+       * source by its position here, so a filter or a reorder re-uploads
+       * bytes already in hand.
        *
-       * Solid mode overrides `negColor` as well as the source colour, and in
-       * density too, where the source colour is deliberately left alone — a
-       * negColor that does not match paints the sub-pivot half in an
-       * unrelated colour: `color: 'green'` on signed data came back
-       * green/red, and a solid-colour density track set to Minimum came back
-       * posColor above the pivot and negColor below it, against a legend
-       * describing a single ramp.
+       * With bicolor off the plot draws one colour, which is `posColor ===
+       * negColor` at encode. Density ignores the `color` slot and always draws
+       * from posColor (see that slot's config doc, and `densityNegColor`, which
+       * says the same for the key) — a negColor that does not match paints the
+       * sub-pivot half in an unrelated colour: `color: 'green'` on signed data
+       * came back green/red, and a solid-colour density track set to Minimum
+       * came back posColor above the pivot and negColor below it, against a
+       * legend describing a single ramp.
+       *
+       * None of it is a fetch key: the worker ships one set of score arrays and
+       * the main thread colours each instance by its side of the pivot.
        */
       gpuProps() {
-        // The one color the plot draws in when bicolor is off. Density
-        // ignores the `color` slot and always draws from posColor (see that
-        // slot's config doc, and `densityNegColor`, which says the same
-        // for the key).
         const solidColor = self.isDensityMode ? self.posColor : self.color
         return {
           ...self.sharedGpuProps(),
+          sources: self.sources,
           faceted: self.isFaceted,
-          sources: [
-            {
-              name: SINGLE_WIGGLE_SOURCE_NAME,
-              // no override in density: solidColor is already the posColor
-              // the build falls back to
-              color:
-                !self.useBicolor && !self.isDensityMode
-                  ? self.color
-                  : undefined,
-            },
-          ],
+          posColor: self.useBicolor ? self.posColor : solidColor,
           negColor: self.useBicolor ? self.negColor : solidColor,
         }
       },
     }))
+    .views(self => ({
+      get showRowSeparators(): boolean {
+        return getConf(self, 'showRowSeparators')
+      },
+
+      /**
+       * #getter
+       * Whether the source color key applies at all. Gates the menu checkbox,
+       * which has to stay visible while the legend is toggled off.
+       *
+       * Four questions in order, each with its own guard below:
+       *
+       * 1. **Is there anything to key?** One source names itself by the track
+       *    name.
+       * 2. **Does anything ELSE on the frame name the colors?** Overlay
+       *    collapses every source onto one plot, so nothing does and the key is
+       *    the only identification there has ever been — but it still has to
+       *    pass (3): overlay's row palette is `set1`, which wraps every nine
+       *    sources (`sourcesLogic.ts`), so 40 ungrouped overlay rows would draw
+       *    a 40-row key in nine repeating colors. A multi-row track names
+       *    its rows beside them — but only while they carry text
+       *    (`rowLabelsCarryText`, asked of the drawing side rather than
+       *    restated) AND is drawing them at all — `showRowLabels` off means
+       *    nothing beside the rows names anything, so the key is once again the
+       *    only identification there is. Below that `SvgRowLabels` drops to an
+       *    unlabelled swatch,
+       *    and a per-cell density track at 0.14 px a row is then a stripe of
+       *    nine colors with nothing saying what any of them is; that is the case
+       *    this was widened for ("we need to make it so density can show legend
+       *    also ideally because the left side labels are too small to see").
+       *    `showTree` is deliberately no part of this: the labels are
+       *    `MultiWiggleRowLabels`' own and draw whether or not a dendrogram
+       *    does, so reading it here drew a key restating labels still on screen.
+       * 3. **Is the key worth its rows?** Short enough to read, and made of
+       *    more than one color — both `legendIsReadable`, shared with the other
+       *    display that has to decide. Asked of `legendItems`, the very list
+       *    that gets drawn, so a key can't be counted in one form and rendered
+       *    in another. Every mode answers it, overlay included.
+       */
+      get overlayLegendApplies() {
+        const namedBesideTheRows =
+          !self.isOverlay &&
+          self.showRowLabels &&
+          rowLabelsCarryText(self.effectiveRowHeight)
+        return (
+          self.numSources >= 2 &&
+          !namedBesideTheRows &&
+          legendIsReadable(self.legendItems)
+        )
+      },
+
+      /**
+       * #getter
+       * Offset the track label above the plot so the left y-axis stays pinned
+       * to the content edge instead of dodging right of the label, and so a
+       * stack of rows is not hidden behind it. One density plot draws no left
+       * axis (just a top score legend), so there let the label overlap.
+       */
+      get prefersOffset() {
+        return !self.isDensityMode || self.isFaceted
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `LegendMixin`'s hook: the density ramp where one describes every row,
+       * then the source key where it is worth its rows. A row's `value` is the
+       * group or subtrack `focusLegendEntry` narrows to.
+       */
+      get colorScales(): ColorScale[] {
+        const scales: ColorScale[] = []
+        if (self.scoreColorScale) {
+          scales.push(self.scoreColorScale)
+        }
+        if (self.overlayLegendApplies) {
+          scales.push({
+            kind: 'categorical',
+            id: 'sources',
+            focusesRows: true,
+            entries: self.legendItems.map(({ label, color }) => ({
+              value: label,
+              label,
+              color,
+            })),
+          })
+        }
+        return scales
+      },
+
+      /**
+       * #getter
+       * The positioned dendrogram, or undefined in an overlay mode: overlay
+       * collapses every source onto one row, so a tree spreading its leaves over
+       * the full height would align to nothing. This is the single gate — the
+       * on-screen sidebar, the SVG export, `spatialIndex` (subtree hover), and
+       * `treeSidebarRightEdge` (the tooltip/crosshair dead zone the sidebar
+       * reserves) all read it, so none of them can keep drawing or reserving
+       * space on their own. A subtree filter set in a row mode still applies and
+       * is still clearable from the track menu and MultiWiggleHint.
+       */
+      get hierarchy() {
+        return self.isOverlay
+          ? undefined
+          : computeClusterHierarchy(
+              self.root,
+              self.sources,
+              self.height,
+              self.treeAreaWidth,
+              self.showBranchLength,
+            )
+      },
+    }))
+    .views(self => ({
+      get spatialIndex() {
+        return buildSpatialIndex(self.hierarchy)
+      },
+    }))
     .actions(self => ({
+      startRenderingBackend(backend: WiggleRenderingBackend) {
+        installWiggleRenderingBackend(self, backend)
+      },
+
+      setShowRowSeparators(arg: boolean) {
+        setConf(self, 'showRowSeparators', arg)
+      },
+
+      /**
+       * #action
+       * The Plot type menu's "One row per source" checkbox. Writes the field
+       * alone: an order declared in `facet.domain` survives a trip through the
+       * shared plot and comes back with the rows.
+       */
       /**
        * #action
        */
@@ -357,60 +716,179 @@ export default function stateModelFactory(
       setFaceted(on: boolean) {
         self.configuration.setSubschema('facet', {
           field: on ? 'source' : '',
-          domain: [...(self.facet?.domain ?? [])],
+          domain: [...self.rowDomain],
         })
+      },
+
+      /**
+       * #action
+       * `LegendMixin`'s hook: narrow the rows to the subtracks one key row
+       * stands for — what clicking that swatch does. A key row is a group
+       * where the subtrack has one and the subtrack itself otherwise
+       * (`buildLegendItems`), so this matches the same way.
+       */
+      focusLegendEntry(_scaleId: string, label: string) {
+        focusRowGroup(
+          self,
+          self.editableSources,
+          s => (s.group ?? s.label ?? s.name) === label,
+        )
+      },
+
+      /**
+       * #action
+       * Rank the rows by each source's score at one genomic base. Reads the
+       * region data already in hand — no refetch, no RPC — and writes the
+       * order through `layout`, the same channel clustering and the
+       * arrangement dialog write, so "Reset row order" undoes all three.
+       *
+       * Named by coordinate rather than by loaded-region index because both
+       * entry points are: the right-click hit resolves to one, and a session's
+       * `sortRowsBy` carries one across a reload. Resolving that region and
+       * refusing the two cases where a sort would only cost a `layout` write
+       * are `sortRowsAtColumn`'s, shared with the multi-row feature display's
+       * twin, and so is the returned "did it sort" the declarative entry point
+       * reads to decide whether to keep its trigger for a later fetch.
+       */
+      sortRowsByScoreAt(refName: string, pos: number) {
+        return sortRowsAtColumn(
+          self,
+          refName,
+          pos,
+          index => self.rpcDataMap.get(index),
+          (sources, data) =>
+            sortSourcesByScoreAt(
+              sources,
+              data,
+              pos,
+              self.effectiveSummaryScoreMode,
+            ),
+        )
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
       fetchNeeded(needed: IndexedRegion[]) {
-        const { bpPerPx } = self.host
+        const view = self.host
+        // Always fetch the full (unfiltered, un-reordered) source list. A
+        // subtree filter or reorder only affects client-side rendering
+        // (gpuProps re-upload) and the autoscale domain — never what's
+        // fetched — so every region's payload stays complete and consistent.
+        // Filtering here instead would leave regions fetched under a stale
+        // filter missing sources when the filter is later widened.
+        const { sourcesWithoutLayout } = self
+        const { bpPerPx } = view
+        // Batched, not per-region: every subtrack adapter gets all the
+        // visible regions in one call, so a whole-genome or
+        // collapsed-intron view coalesces each file's on-disk blocks into
+        // one pass instead of one pass per region per subtrack. The
+        // regions land together rather than painting progressively.
         return fetchAllRegions(self, needed, {
           call: (regions, ctx) =>
-            ctx.callRpc('RenderWiggleData', {
+            ctx.callRpc('RenderMultiWiggleData', {
               ...rpcArgs(self),
-              bpPerPx,
               regions,
+              sources: sourcesWithoutLayout,
+              bpPerPx,
             }),
           onResult: (_idx, result) => result,
         })
       },
+
+      afterAttach() {
+        setupTreeSidebarAutoruns(self, {
+          name: 'MultiWiggle',
+          // Forwarded, not swallowed: `false` is "no loaded region covers that
+          // column", and it holds `sortRowsBy` for the fetch that will.
+          sortRows: (refName, pos) => self.sortRowsByScoreAt(refName, pos),
+          // "Cluster rows by score": the score-matrix RPC over the
+          // `clusterRegion` locus if the session named one and the visible
+          // blocks if not. Refuses a single row, matching the track menu's gate
+          clustering: {
+            ready: () => self.clusterableSources.length > 1,
+            run: async args => {
+              const [{ runWiggleClustering }, { DEFAULT_SAMPLES_PER_PIXEL }] =
+                await Promise.all([
+                  import('./runWiggleClustering.ts'),
+                  import('./components/clusterOptions.ts'),
+                ])
+              await runWiggleClustering({
+                model: self,
+                // the default density, not the dialog's persisted preference —
+                // see DEFAULT_SAMPLES_PER_PIXEL for why this path ignores it
+                samplesPerPixel: DEFAULT_SAMPLES_PER_PIXEL,
+                ...args,
+              })
+            },
+          },
+        })
+      },
     }))
     .views(self => ({
-      /**
-       * #method
-       */
       trackMenuItems() {
+        const showItems: MenuItem[] = [
+          // the tree, row separators and row labels only render in multi-row
+          // modes, not overlays — an overlay is one row and names itself by
+          // the track name, and draws no dendrogram (see `hierarchy`). A
+          // persisted `showTree` is left untouched, so it comes back on
+          // return to a row mode
+          ...(self.isOverlay
+            ? []
+            : [
+                ...treeSidebarShowMenuItems(self),
+                showRowSeparatorsMenuItem(self),
+                showRowLabelsMenuItem(self),
+              ]),
+          // The key stays in the menu whatever the rendering, so its
+          // display-type pin is reachable; it greys out where nothing on the
+          // frame is identified by colour.
+          legendCheckboxItem(self, {
+            disabled: !self.hasLegendKey,
+            disabledHelpText:
+              'Nothing here is keyed by colour: height carries the score, and a source on its own row is named beside it',
+          }),
+          // density maps score to color, so score-axis cross hatches are
+          // meaningless there (`showCrossHatches` enforces the same on the
+          // drawing side)
+          ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
+        ]
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
+          // A row order is something to have only once the sources are on rows;
+          // the row-count half of the gate is `clusteringMenuItem`'s, off the
+          // count below. "Reset row order" is top-level rather than inside the
+          // Clustering submenu, where it used to sit as "Clear clustering" —
+          // see resetRowOrderMenuItems.
+          ...(self.isFaceted
+            ? [
+                clusteringMenuItem(
+                  self,
+                  {
+                    label: 'Cluster rows by score...',
+                    onClick: () => {
+                      getDialogHost(self).queueDialog(handleClose => [
+                        WiggleClusterDialog,
+                        {
+                          model: self,
+                          handleClose,
+                        },
+                      ])
+                    },
+                  },
+                  self.clusterableSources.length,
+                ),
+                ...resetRowOrderMenuItems(self),
+              ]
+            : []),
           ...makeResolutionSubMenu(self),
           makeWiggleScoreSubMenu(self),
-          // cross hatches are meaningless in density mode (score maps to color,
-          // not height), which `showCrossHatches` also enforces on the drawing
-          // side so a hatch enabled elsewhere doesn't strand itself here
-          // The key is density's ramp, so the row greys out elsewhere — and
-          // stays, so its display-type pin is reachable whatever the rendering
-          ...makeShowSubMenu([
-            ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
-            legendCheckboxItem(self, {
-              disabled: !self.isDensityMode,
-              disabledHelpText:
-                'Density paints the score as color; every other rendering keys it on the axis',
-            }),
-          ]),
+          ...makeShowSubMenu(showItems),
           // point size / line width are top-level submenus, each present only in
           // its respective scatter / line rendering
           ...makePointSizeMenuItems(self),
           ...makeLineWidthMenuItems(self),
-          {
-            label: 'Edit color...',
-            icon: PaletteIcon,
-            // current color shown inline so the menu reads out the state
-            // without opening the dialog
-            endAdornment: wiggleColorAdornment(self),
-            onClick: () => {
+          rowArrangementMenuItem({
+            ready: !!self.sourcesWithoutLayout.length,
+            onOpen: () => {
               getDialogHost(self).queueDialog(handleClose => [
                 SetColorDialog,
                 {
@@ -419,23 +897,77 @@ export default function stateModelFactory(
                 },
               ])
             },
-          },
+          }),
+        ]
+      },
+
+      /**
+       * #method
+       * Right-click menu, built from the column the click landed on. The
+       * position is captured here rather than read inside the onClick, because
+       * `closeContextMenu` runs first when an item is clicked.
+       */
+      contextMenuItems(): MenuItem[] {
+        const info = self.contextMenuInfo
+        if (!info) {
+          return []
+        }
+        const { feature } = info
+        return [
+          // overlay collapses every source onto one plot, so there is no row
+          // axis for a ranking to be read down
+          ...(self.isOverlay
+            ? []
+            : [
+                sortRowsHereMenuItem({
+                  label: 'Sort rows by score here',
+                  rowCount: self.editableSources.length,
+                  onClick: () => {
+                    self.sortRowsByScoreAt(info.refName, info.bp)
+                  },
+                }),
+              ]),
+          // The two rows the multi-row painting and the variant displays offer
+          // on a right-click, under the labels they use, so one action is not
+          // three names across three displays. They are about the bin the
+          // pointer is on where the sort is about the rows, and they need the
+          // hit rather than the column — a gap has no record to open or paste.
+          ...(feature
+            ? [
+                {
+                  label: 'Open feature details',
+                  icon: MenuOpenIcon,
+                  onClick: () => {
+                    self.selectFeature(feature)
+                  },
+                },
+                {
+                  label: 'Copy location',
+                  icon: ContentCopyIcon,
+                  onClick: () => {
+                    void copyText(
+                      self,
+                      assembleLocString({
+                        refName: feature.refName,
+                        start: feature.start,
+                        end: feature.end,
+                      }),
+                      'location',
+                    )
+                  },
+                },
+              ]
+            : []),
+          // stays in an overlay mode, where the sort doesn't: an order set in a
+          // row mode is still what that display comes back to
+          ...resetRowOrderMenuItems(self),
         ]
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self as LinearWiggleDisplayModel, opts)
-      },
-      /**
-       * #action
-       */
-      startRenderingBackend(backend: WiggleRenderingBackend) {
-        installWiggleRenderingBackend(self, backend)
+        return renderSvg(self, opts)
       },
     }))
 }

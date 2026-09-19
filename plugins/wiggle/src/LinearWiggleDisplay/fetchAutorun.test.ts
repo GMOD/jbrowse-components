@@ -152,10 +152,10 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
-  // gpuProps fields (color, summaryScoreMode, renderingType, ...) re-fire the
-  // per-region encode autoruns → re-upload only. The worker output doesn't
-  // change, so no refetch should happen.
-  it('does NOT refetch when summaryScoreMode changes (gpuProps re-uploads)', async () => {
+  // The raw summary slot is a fetch key: an adapter that stores min/max beside
+  // each mean can skip reading them for a mode that cannot show them, and only
+  // the fetch can carry that. See the model's `rpcProps`.
+  it('refetches when summaryScoreMode changes', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
@@ -170,7 +170,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
-    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
   })
 
   // posColor is a pure gpuProps field (only used in the per-instance buffer).
@@ -301,6 +301,16 @@ function makeSignedWiggleData(): WiggleDataResult {
   }
 }
 
+// The row list `gpuProps` encodes through is the display's own, discovered
+// from the loaded regions, so the payload has to be staged before the colours
+// can be read off it.
+function loadedWithSignedData() {
+  const { createDisplay } = createTestEnvironment()
+  const { display, view } = createDisplay()
+  display.setRpcData(0, makeSignedWiggleData(), view.displayedRegions[0])
+  return display
+}
+
 // Regression: a solid green track came back green above the pivot and the
 // negColor slot's red below it, because `useBicolor: false` only reached the
 // path that drew one colour.
@@ -313,8 +323,7 @@ describe('LinearWiggleDisplay solid color', () => {
   test.each(['whiskers', 'avg', 'min', 'max'])(
     'every layer keeps the single hue in %s mode',
     mode => {
-      const { createDisplay } = createTestEnvironment()
-      const { display } = createDisplay()
+      const display = loadedWithSignedData()
       display.setUseBicolor(false)
       display.setColor('green')
       display.setSummaryScoreMode(mode)
@@ -344,8 +353,7 @@ describe('LinearWiggleDisplay solid color', () => {
   test.each(['avg', 'min', 'max'])(
     'density with bicolor off stays one color in %s mode',
     mode => {
-      const { createDisplay } = createTestEnvironment()
-      const { display } = createDisplay()
+      const display = loadedWithSignedData()
       display.setUseBicolor(false)
       display.setColor('green')
       display.setRenderingType('density')
@@ -363,8 +371,7 @@ describe('LinearWiggleDisplay solid color', () => {
   )
 
   test('bicolor still splits the whisker bands by sign', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
+    const display = loadedWithSignedData()
     display.setSummaryScoreMode('whiskers')
 
     const layers = buildSourceRenderData(

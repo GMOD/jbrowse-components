@@ -1,146 +1,66 @@
-import { SubmitDialog } from '@jbrowse/core/ui'
-import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Alert,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@mui/material'
+import { SetColorDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles()({
-  fields: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 24,
-    marginTop: 12,
-  },
-  field: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-  },
-  pivot: {
-    width: 200,
-  },
-})
+import ScoreSignColors from './ScoreSignColors.tsx'
 
-const SetColorDialog = observer(function SetColorDialog({
+import type { Source } from '../../util.ts'
+import type { ColorColumn, TreeLayoutModel } from '@jbrowse/tree-sidebar'
+
+const TRACK_COLOR: ColorColumn<Source> = {
+  field: 'color',
+  headerName: 'Track color',
+  bulkLabel: 'Change track color of selected',
+}
+
+// Row-label sidebar tint, and in density the channel a row's identity color
+// lives in — which is why it is the default column there. See the color-model
+// table in sourcesLogic.ts; this dialog does not re-decide any of it.
+const LABEL_COLOR: ColorColumn<Source> = {
+  field: 'labelColor',
+  headerName: 'Label color',
+  bulkLabel: 'Change label color of selected',
+}
+
+// Overlay mode has no row-label sidebar, so it offers no Label color column —
+// but rows still carry `labelColor` (a leftover from multirow, or a
+// still-applying value if the user switches back). Reserve it so the grid
+// doesn't fall back to rendering it as a raw hex text column.
+const OVERLAY_RESERVED: ReadonlySet<string> = new Set(['labelColor'])
+
+// Seed from `editableSources` (not `sources`) so overlay-palette synthesis
+// doesn't bake unset colors into the persisted layout on Submit. setLayout
+// already clears the cluster tree on reorder (via willClearTree), but the
+// warning dialog surfaces that destruction to the user first.
+export default observer(function MultiWiggleSetColorDialog({
   model,
   handleClose,
 }: {
-  model: {
-    color: string
+  model: TreeLayoutModel<Source> & {
+    isOverlay: boolean
+    isDensityMode: boolean
     posColor: string
     negColor: string
-    useBicolor: boolean
-    bicolorPivot: number
-    isDensityMode: boolean
-    setColor: (arg?: string) => void
     setPosColor: (arg?: string) => void
     setNegColor: (arg?: string) => void
-    setUseBicolor: (arg?: boolean) => void
-    setBicolorPivot: (arg?: number) => void
   }
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
+  const multirow = !model.isOverlay
   return (
-    <SubmitDialog
-      open
-      title="Set color"
-      submitText="Close"
-      onCancel={() => {
-        handleClose()
-      }}
-      onSubmit={() => {
-        handleClose()
-      }}
-      onReset={() => {
-        model.setPosColor(undefined)
-        model.setNegColor(undefined)
-        model.setColor(undefined)
-        model.setUseBicolor(undefined)
-        model.setBicolorPivot(undefined)
-      }}
-    >
-      <ToggleButtonGroup
-        exclusive
-        size="small"
-        value={model.useBicolor ? 'bicolor' : 'single'}
-        onChange={(_event, value) => {
-          if (value) {
-            model.setUseBicolor(value === 'bicolor')
-          }
-        }}
-      >
-        <ToggleButton value="single">Single color</ToggleButton>
-        <ToggleButton value="bicolor">Positive/negative</ToggleButton>
-      </ToggleButtonGroup>
-
-      {model.isDensityMode && !model.useBicolor ? (
-        <Alert severity="info">
-          Density rendering maps scores onto the positive/negative colors, so a
-          single color has no effect
-        </Alert>
-      ) : null}
-
-      {model.useBicolor ? (
-        <div className={classes.fields}>
-          <div className={classes.field}>
-            <div data-testid="wiggle-pos-color">
-              <PopoverPicker
-                color={model.posColor}
-                onChange={color => {
-                  model.setPosColor(color)
-                }}
-              />
-            </div>
-            <Typography>Positive</Typography>
-          </div>
-          <div className={classes.field}>
-            <div data-testid="wiggle-neg-color">
-              <PopoverPicker
-                color={model.negColor}
-                onChange={color => {
-                  model.setNegColor(color)
-                }}
-              />
-            </div>
-            <Typography>Negative</Typography>
-          </div>
-          <TextField
-            className={classes.pivot}
-            label="Pivot"
-            type="number"
-            size="small"
-            helperText="Scores above the pivot grow upward, below grow downward"
-            value={model.bicolorPivot}
-            onChange={event => {
-              const val = event.target.value
-              model.setBicolorPivot(val === '' ? undefined : Number(val))
-            }}
-          />
-        </div>
-      ) : (
-        <div className={classes.fields}>
-          <div className={classes.field}>
-            <div data-testid="wiggle-overall-color">
-              <PopoverPicker
-                color={model.color}
-                onChange={color => {
-                  model.setColor(color)
-                }}
-              />
-            </div>
-            <Typography>Overall color</Typography>
-          </div>
-        </div>
-      )}
-    </SubmitDialog>
+    <SetColorDialog
+      model={model}
+      handleClose={handleClose}
+      title="Multi-wiggle color/arrangement editor"
+      colorColumns={multirow ? [TRACK_COLOR, LABEL_COLOR] : [TRACK_COLOR]}
+      defaultColorField={
+        multirow && model.isDensityMode ? 'labelColor' : 'color'
+      }
+      reservedFields={multirow ? undefined : OVERLAY_RESERVED}
+      // overlay paints a source's negative features in its own (positive)
+      // color, so only a multirow mode has two sides to color
+      displayControls={multirow ? <ScoreSignColors model={model} /> : null}
+      enableBulkEdit
+      enableRowPalettizer
+    />
   )
 })
-
-export default SetColorDialog

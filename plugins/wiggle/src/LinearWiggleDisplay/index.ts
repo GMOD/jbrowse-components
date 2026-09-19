@@ -37,7 +37,9 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
           import('./model.ts').then(f =>
             f.default(pluginManager, configSchema),
           ),
-        trackType: 'QuantitativeTrack',
+        // Both quantitative track types draw the same picture; they differ in
+        // adapter shorthand and add-track workflow.
+        trackType: ['QuantitativeTrack', 'MultiQuantitativeTrack'],
         viewType: 'LinearGenomeView',
         ReactComponent,
       }),
