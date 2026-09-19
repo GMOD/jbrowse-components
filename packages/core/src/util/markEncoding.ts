@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/render-core/scoreScale'
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { categoricalScale } from '../ui/colors.ts'
+import { categoricalPalette, categoricalScale } from '../ui/colors.ts'
 import { categoricalField } from './categoricalField.ts'
 import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
 import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
@@ -13,6 +13,11 @@ import Flatbush from './flatbush/index.ts'
 import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { buildJexlContext } from './simpleFeature.ts'
+import {
+  numericDomain,
+  thresholdIndex,
+  thresholdLabels,
+} from './thresholdScale.ts'
 
 import type { CategoricalField } from './categoricalField.ts'
 import type { ColorRampStop } from './colorRamp.ts'
@@ -150,6 +155,16 @@ function rampStops(ramp: RampRef | undefined): readonly ColorRampStop[] {
   return ramp.map(c => cssColorToRgba(c))
 }
 
+// One packed colour per interval of a threshold scale: the palette in order,
+// and the default categorical palette where it runs out.
+function thresholdBinColors(bins: number, palette: readonly string[] = []) {
+  return Uint32Array.from({ length: bins }, (_, i) =>
+    cssColorToABGR(
+      palette[i] ?? categoricalPalette[i % categoricalPalette.length]!,
+    ),
+  )
+}
+
 function lutColorAt(lut: Uint8Array, t: number) {
   const entries = lut.length / 4
   const i = Math.min(entries - 1, Math.max(0, Math.round(t * (entries - 1))))
@@ -258,7 +273,8 @@ export function encodeFeatures<L extends LaneName>(
   const declaredScale =
     typeof colorEncoding === 'object' ? colorEncoding : undefined
   const rampEncoding =
-    declaredScale && declaredScale.scale !== 'categorical'
+    declaredScale &&
+    (declaredScale.scale === 'linear' || declaredScale.scale === 'log')
       ? declaredScale
       : undefined
   // Which side of the wire a ramp resolves on is the caller's lane choice: a
@@ -291,8 +307,14 @@ export function encodeFeatures<L extends LaneName>(
       ? categoricalChannel(readColor, colorField, n)
       : undefined
   const rampValues =
-    scaled && scaled.scale !== 'categorical'
-      ? (colorValue ?? new Float32Array(n))
+    scaled && rampEncoding ? (colorValue ?? new Float32Array(n)) : undefined
+  const thresholdEncoding = scaled?.scale === 'threshold' ? scaled : undefined
+  const cuts = thresholdEncoding
+    ? numericDomain(thresholdEncoding.domain ?? [])
+    : undefined
+  const binColors =
+    thresholdEncoding && cuts
+      ? thresholdBinColors(cuts.length + 1, thresholdEncoding.palette)
       : undefined
   const { glyph: glyphEncoding } = encoding
   const glyphScaled =
@@ -353,6 +375,9 @@ export function encodeFeatures<L extends LaneName>(
       colorCategories.collect(f, count)
     } else if (rampValues && readColor) {
       rampValues[count] = Number(readColor(f))
+    } else if (binColors && cuts && color && readColor) {
+      const bin = thresholdIndex(readColor(f), cuts)
+      color[count] = bin < 0 ? FALLBACK_COLOR : binColors[bin]!
     } else if (color && readColor) {
       color[count] = readColor(f) as number
     }
@@ -381,15 +406,25 @@ export function encodeFeatures<L extends LaneName>(
       ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
       entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
-  } else if (scaled && scaled.scale !== 'categorical' && rampValues) {
+  } else if (thresholdEncoding && cuts && binColors) {
+    scale = {
+      kind: 'threshold',
+      field: thresholdEncoding.field,
+      domain: cuts,
+      entries: thresholdLabels(cuts).map((value, i) => ({
+        value,
+        color: binColors[i]!,
+      })),
+    }
+  } else if (rampEncoding && rampValues) {
     const extent = finiteExtremes(rampValues, count)
-    const domain = scaled.domain ?? extent
-    const lut = buildColorRampLut(rampStops(scaled.ramp))
+    const domain = rampEncoding.domain ?? extent
+    const lut = buildColorRampLut(rampStops(rampEncoding.ramp))
     if (color) {
       const norm = makeScoreNormalizer(
         domain[0],
         domain[1],
-        scaleTypeCode(scaled.scale),
+        scaleTypeCode(rampEncoding.scale),
         1,
       )
       for (let i = 0; i < count; i++) {
@@ -401,10 +436,10 @@ export function encodeFeatures<L extends LaneName>(
     }
     scale = {
       kind: 'ramp',
-      field: scaled.field,
-      scale: scaled.scale,
+      field: rampEncoding.field,
+      scale: rampEncoding.scale,
       domain,
-      pinned: scaled.domain !== undefined,
+      pinned: rampEncoding.domain !== undefined,
       extent,
       lut,
     }

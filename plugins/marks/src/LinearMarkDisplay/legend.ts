@@ -52,6 +52,8 @@ function copyOf(scale: ScaleTable): ScaleTable {
       }
     case 'categorical':
       return { ...scale, entries: [...scale.entries] }
+    case 'threshold':
+      return { ...scale, entries: [...scale.entries] }
     case 'glyph':
       return { ...scale, entries: [...scale.entries] }
   }
@@ -83,6 +85,10 @@ function union(current: ScaleTable, next: ScaleTable) {
         unionEntries(current.entries, next.entries)
       }
       break
+    case 'threshold':
+      // Identical in every region: the section key already holds the field
+      // and the cut points, and the palette follows from them.
+      break
     case 'ramp':
       // An unpinned ramp's domain is the union of the regions' extremes,
       // which is the same number the shapes read as a uniform, so the key
@@ -113,6 +119,8 @@ function sectionKey(markIndex: number, scale: ScaleTable) {
         scale.domain,
         scale.palette ?? [],
       ])
+    case 'threshold':
+      return JSON.stringify(['threshold', scale.field, scale.domain])
     case 'glyph':
       return JSON.stringify([
         'glyph',
@@ -270,6 +278,19 @@ export function markColorScales(
             facet,
           ),
         ]
+      case 'threshold':
+        return [
+          {
+            kind: 'categorical',
+            id,
+            title: scale.field,
+            entries: scale.entries.map(e => ({
+              value: e.value,
+              label: e.value,
+              color: abgrToCssRgba(e.color),
+            })),
+          },
+        ]
       case 'ramp':
         return [
           {
@@ -314,8 +335,11 @@ export function glyphLabel(scale: ScaleTable | undefined, glyph: GlyphName) {
   return values.length > 0 ? values.join(', ') : undefined
 }
 
-/** The category a packed colour names in a categorical table, if any. */
+/** The interval or category a packed colour names, if its table has one. */
 export function categoryLabel(scale: ScaleTable | undefined, color: number) {
+  if (scale?.kind === 'threshold') {
+    return scale.entries.find(e => e.color === color)?.value
+  }
   if (scale?.kind !== 'categorical') {
     return undefined
   }

@@ -316,6 +316,57 @@ test('a pinned domain says so, so the display leaves it alone', () => {
   expect(r.scale?.kind === 'ramp' && r.scale.domain).toEqual([1, 100])
 })
 
+test('a threshold colour packs one palette entry per interval', () => {
+  const palette = ['#357ebd', '#5cb85c', '#d43f3a']
+  const r = encodeFeatures(
+    features,
+    {
+      color: {
+        field: 'score',
+        scale: 'threshold',
+        domain: [20, 30],
+        palette,
+      },
+    },
+    [...ALL, 'colorValue'],
+    { jexl },
+  )
+  expect(r.colorValue).toBeUndefined()
+  // scores 10, 40, 25; the two scoreless features read no interval
+  expect([...r.color].slice(0, 3)).toEqual([
+    cssColorToABGR(palette[0]!),
+    cssColorToABGR(palette[2]!),
+    cssColorToABGR(palette[1]!),
+  ])
+  expect(r.scale?.kind).toBe('threshold')
+  if (r.scale?.kind === 'threshold') {
+    expect(r.scale.domain).toEqual([20, 30])
+    expect(r.scale.entries.map(e => e.value)).toEqual([
+      '< 20',
+      '20 – 30',
+      '≥ 30',
+    ])
+    expect(r.scale.entries.map(e => e.color)).toEqual(
+      palette.map(c => cssColorToABGR(c)),
+    )
+  }
+})
+
+test('a threshold domain written as strings cuts at the numbers it names', () => {
+  const r = encodeFeatures(
+    features,
+    { color: { field: 'score', scale: 'threshold', domain: ['20'] } },
+    ALL,
+    { jexl },
+  )
+  expect(r.color[0]).toBe(
+    r.scale?.kind === 'threshold' && r.scale.entries[0]!.color,
+  )
+  expect(r.color[1]).toBe(
+    r.scale?.kind === 'threshold' && r.scale.entries[1]!.color,
+  )
+})
+
 test('a categorical colour resolves in the worker whatever lanes are named', () => {
   const r = encodeFeatures(
     features,

@@ -159,35 +159,54 @@ function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
   return highest
 }
 
+function listed(values: readonly string[]) {
+  return values.length > 0 ? [...values] : undefined
+}
+
+function colorEncodingOf(
+  color: MarkConfig['encoding']['color'],
+): ColorEncoding {
+  const scale = markColorScale(color)
+  switch (scale) {
+    case 'none':
+      return color.value
+    case 'categorical':
+      return {
+        field: color.field,
+        scale,
+        palette: listed(color.palette),
+        domain: listed(color.domain),
+      }
+    case 'threshold':
+      return {
+        field: color.field,
+        scale,
+        palette: listed(color.palette),
+        domain: [...color.domain],
+      }
+    default:
+      return {
+        field: color.field,
+        scale,
+        domain:
+          color.domain.length === 2
+            ? [Number(color.domain[0]), Number(color.domain[1])]
+            : undefined,
+        ramp:
+          color.ramp.length === 0
+            ? undefined
+            : color.ramp.length === 1 && color.ramp[0] === 'viridis'
+              ? 'viridis'
+              : [...color.ramp],
+      }
+  }
+}
+
 // The config's raw slot values as the worker's encoding: a `jexl:` string
 // crosses untouched, which is why nothing here reads through `getConf`.
 function encodingOf(mark: MarkConfig): MarkEncoding {
   const { x, x2, y, row, glyph, color } = mark.encoding
-  const colorScale = markColorScale(color)
-  const scaled: ColorEncoding =
-    colorScale === 'none'
-      ? color.value
-      : colorScale === 'categorical'
-        ? {
-            field: color.field,
-            scale: 'categorical',
-            palette: color.palette.length > 0 ? [...color.palette] : undefined,
-            domain: color.domain.length > 0 ? [...color.domain] : undefined,
-          }
-        : {
-            field: color.field,
-            scale: colorScale,
-            domain:
-              color.domain.length === 2
-                ? [Number(color.domain[0]), Number(color.domain[1])]
-                : undefined,
-            ramp:
-              color.ramp.length === 0
-                ? undefined
-                : color.ramp.length === 1 && color.ramp[0] === 'viridis'
-                  ? 'viridis'
-                  : [...color.ramp],
-          }
+  const scaled = colorEncodingOf(color)
   const glyphEncoding: GlyphEncoding =
     markGlyphScale(glyph) === 'none'
       ? (glyph.value as GlyphEncoding)

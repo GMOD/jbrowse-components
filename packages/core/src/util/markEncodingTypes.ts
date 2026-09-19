@@ -43,6 +43,20 @@ export interface CategoricalRef {
 
 /**
  * #api
+ * A numeric field cut into intervals: `domain` is the ascending cut points
+ * and `palette` holds one colour more, so a value paints the entry for the
+ * number of cut points it is at or past. A value that is not a number
+ * belongs to no interval.
+ */
+export interface ThresholdRef {
+  field: FieldRef
+  scale: 'threshold'
+  domain?: (string | number)[]
+  palette?: string[]
+}
+
+/**
+ * #api
  * How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
  * returning one paints per feature with no scale; the two object forms bind a
  * field to a scale, which a legend can describe. A continuous scale maps the
@@ -58,6 +72,7 @@ export type ColorEncoding =
       domain?: [number, number]
       ramp?: RampRef
     }
+  | ThresholdRef
 
 export type GlyphName = 'disc' | 'triangle' | 'diamond'
 
@@ -121,6 +136,14 @@ export type ColorScaleTable =
        */
       numericKeys?: boolean
       /** Each key met, in the field's order, `''` for no value. */
+      entries: { value: string; color: number }[]
+    }
+  | {
+      kind: 'threshold'
+      field: string
+      /** The cut points, ascending, as numbers. */
+      domain: number[]
+      /** One row per interval, in order, labelled by the interval it spans. */
       entries: { value: string; color: number }[]
     }
   | {

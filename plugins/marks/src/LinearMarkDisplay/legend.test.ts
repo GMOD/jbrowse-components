@@ -56,3 +56,35 @@ test('the hint needs every region to have met numbers, the union ANDing them', (
   const [key] = markColorScales(sections)
   expect(key?.kind === 'categorical' && key.note).toBeFalsy()
 })
+
+function thresholdTable(): ColorScaleTable {
+  return {
+    kind: 'threshold',
+    field: 'pip',
+    domain: [0.1, 0.5],
+    entries: [
+      { value: '< 0.1', color: 0xff111111 },
+      { value: '0.1 \u2013 0.5', color: 0xff222222 },
+      { value: '\u2265 0.5', color: 0xff333333 },
+    ],
+  }
+}
+
+test('a threshold key lists one swatch per interval, in bin order', () => {
+  const [key] = markColorScales(buildMarkLegend([region(thresholdTable())]))
+  expect(key?.kind).toBe('categorical')
+  expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
+    '< 0.1',
+    '0.1 \u2013 0.5',
+    '\u2265 0.5',
+  ])
+})
+
+test('two regions of one threshold declaration share a key', () => {
+  const sections = buildMarkLegend([
+    region(thresholdTable()),
+    region(thresholdTable()),
+  ])
+  expect(sections).toHaveLength(1)
+  expect(markColorScales(sections)).toHaveLength(1)
+})
