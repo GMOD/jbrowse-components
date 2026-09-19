@@ -57,7 +57,7 @@ Reasoning:
   to the worker and never crosses the model/UI boundary — there is no consumer
   who would benefit from reading it as a capability.
 
-### 2. `bicolorPivot` lives at the executor, not in adapter opts
+### 2. `bicolorPivot` lived at the executor, not in adapter opts
 
 Earlier `BigWigAdapter.getFeatureArrays` took `bicolorPivot` in its opts and
 ran the pos/neg split inline as part of the fetch — the inline split saved one
@@ -65,10 +65,10 @@ pass over the data. This was a layering violation: `bicolorPivot` is a display
 choice (which pos/neg color split the user picked) and adapters had no business
 knowing about it.
 
-The split is now run by the executor via `processFeaturesFromArrays(raw, pivot)`
-immediately after the fetch — same single pass, same perf, but `bicolorPivot`
-no longer leaks into adapter API opts. Adapters return `RawFeatureArrays`;
-display-side transformations stay on the executor side.
+The split moved to the executor's `processFeaturesFromArrays`, and then off the
+worker entirely (ADR-016, superseded), so `bicolorPivot` reaches no adapter and
+no RPC. Adapters return `RawFeatureArrays`; display-side transformations stay on
+the display side of the wire.
 
 ### 3. `MultiWiggleAdapter.getMultiSourceFeatureArrays` returns raw, not pre-split
 
@@ -95,8 +95,7 @@ Plus `MultiWiggleAdapter` exposes:
 
 - `getMultiSourceFeatureArrays(region, opts) → { source, raw }[]` (fans out to inner adapters)
 
-The executor handles `bicolorPivot` and the pos/neg split via
-`processFeaturesFromArrays(raw, pivot)`. Adapters never see display options.
+Adapters never see display options; `bicolorPivot` reaches neither.
 
 ## When to revisit
 

@@ -24,7 +24,8 @@ features) of main-thread work with nothing on the network to make it visible.
 [ADR-016](../architecture-decision-records/adr-016-bicolorpivot-stays-in-worker.md)
 is the measurement of exactly that cost, taken when the proposal was to move
 wiggle's pos/neg split main-thread-ward; the same accounting applies to anything
-that lands in `gpuProps()`.
+that lands in `gpuProps()`. (That ADR is superseded — the split was deleted
+rather than moved — but the cost it measured is the one this row describes.)
 
 **Only one `gpuProps()` in the tree is zoom-sensitive at all**, and it is
 deliberate: `LinearMafDisplay`'s `binBp` reads `encodeBinBp`
@@ -43,12 +44,13 @@ blames the encoder rather than the key that let it in.
 
 Two other facts the census turned up, neither a bug:
 
-- **`bicolorPivot` fans out to all three tiers**, which no single comment says.
-  `rpcProps()` (the worker owns the avg-path split, ADR-016), `gpuProps()` (the
-  whiskers bands are coloured main-thread, and the SVG export calls
-  `buildSourceRenderData(data, gpuProps)` directly), and `renderState` as
-  `origin` (the shader's bar pivot and density fade). Each hop is commented
-  where it happens; the fan-out is only visible from here.
+- **`bicolorPivot` fans out to two tiers**, which no single comment says.
+  `gpuProps()` (every mode colours by sign main-thread, and the SVG export
+  calls `buildSourceRenderData(data, gpuProps)` directly) and `renderState` as
+  `origin` (the shader's bar pivot and density fade). It left `rpcProps()` when
+  the worker-side split went (ADR-016, superseded), so a pivot change no longer
+  refetches. Each hop is commented where it happens; the fan-out is only
+  visible from here.
 - **Six of fourteen `installUpload` callers pass neither `inputs` nor
   `encode`** — gwas, sequence, `LinearSyntenyViewHelper`, `MultiWaySyntenyDisplay`,
   alignments, the two multi-sample variant displays and dotplot. That is the
@@ -218,8 +220,9 @@ reads `self.colorScheme` straight into `generateColorRamp`, and synteny's
 emits a color *class* per themed lane and
 the main-thread encode resolves classes against `session.palette`, so the
 worker holds no palette and a theme change re-encodes. This splits refetch from
-re-upload: wiggle color change → re-encode only; `bicolorPivot` change → worker
-output differs → `rpcProps()` → refetch.
+re-upload: a wiggle colour change, `bicolorPivot` included, re-encodes and
+refetches nothing, while `resolution` and `scoreField` change what the worker
+returns and so refetch.
 
 **Opacity is a render parameter, never a packed color.** Both comparative
 displays own a `computedColors` getter — the gpuProps half — and both keep the

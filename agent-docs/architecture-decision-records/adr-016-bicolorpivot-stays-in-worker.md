@@ -1,13 +1,22 @@
 ---
-status: Accepted
-summary: "`bicolorPivot` split stays in the worker, not `gpuProps`"
+status: Superseded
+summary: "`bicolorPivot` split stayed in the worker until 2026-09-19, when the split was deleted rather than moved"
 ---
 
 # ADR-016: bicolorPivot split stays in the worker, not gpuProps
 
 ## Status
 
-Accepted
+Superseded 2026-09-19. The split is gone: the main thread colours each instance
+by its side of the pivot, `bicolorPivot` and `useBicolor` are `gpuProps` alone,
+and `WiggleFeatureArrays` carries no `pos*`/`neg*` arrays. The General rule
+below is unchanged, and this decision's own rule is what named the exit —
+`origin` is a uniform, and both line shaders already coloured by side off it.
+The measurements are in
+`ideas/wiggle-instance-records-carry-per-row-constants.md` §4: the split cost
+the worker 57-85ms per region at 1000 signed sources and doubled what a region
+shipped (+51 MiB) and retained (+33 MiB), for a partition every other summary
+mode already re-derived main-thread.
 
 ## Context
 
@@ -75,6 +84,7 @@ main-thread work per region arrival unacceptable at realistic data volumes.
 
 ## Corollary: the cost this measured is now a standing property of `gpuProps`
 
+
 **Added 2026-08-30.** "O(N cached regions x K) main-thread work per region
 arrival" is not only what the rejected branch would have cost — it is what
 `installUpload` does today whenever `gpuProps()` identity moves
@@ -85,11 +95,11 @@ path has no network cost to make it visible.
 
 Two consequences for anyone applying this ADR's rule:
 
-- **`bicolorPivot` is in `gpuProps()` as well as `rpcProps()`**, and the second
-  copy is not a violation of this decision. The worker still owns the avg-path
-  split; the encoder needs the same threshold because the whiskers bands are
-  coloured main-thread, and the SVG export calls `buildSourceRenderData(data,
-  gpuProps)` directly. `buildSourceRenderData.ts:112-116` carries the reason.
+- **`bicolorPivot` was in `gpuProps()` as well as `rpcProps()`**, and the second
+  copy was not a violation of this decision — the encoder needed the same
+  threshold because the whiskers bands were coloured main-thread, and the SVG
+  export calls `buildSourceRenderData(data, gpuProps)` directly. Since the
+  supersession it is the only copy.
 - **The mirror-image proposal meets the same accounting from the other side.**
   Moving wiggle's instance packing *to* the worker (`ideas/zoom-perf-followups.md`)
   is this ADR's preferred direction — O(K) per region at fetch time — but the
@@ -101,9 +111,9 @@ The "General rule" above is unchanged, and is still the one to apply.
 
 ## Corollary: per-source color does not collapse the pos/neg split
 
-Because the split is worker-side and unconditional, a multi-wiggle source's
-per-row color (`buildSourceRenderData`) only recolors the **positive** side in
-row mode; the negative side keeps the shared `negColor`. This is deliberate —
+**This corollary outlives the supersession.** A multi-wiggle source's per-row
+color (`buildSourceRenderData`) only recolors the **positive** side in row
+mode; the negative side keeps the shared `negColor`. This is deliberate —
 signed data stays a readable pos/neg bicolor plot. Overlay mode is the one
 exception: it reuses the pos color for neg so overlapping sources read as one
 color. This has been proposed as a "bug" and rejected repeatedly; do not change

@@ -172,15 +172,14 @@ already refetches (ADR-125), so a worker-side pack rides along free there;
 `pack` takes `SourceRenderData[]`, which is what `buildSourceRenderData` returns
 — so the worker would have to run that too, or receive the expanded form over
 the wire, which is the thing being avoided. And `buildSourceRenderData` is where
-the pivot lives: `sourceLayers` colours the whiskers bands around it
-(`buildSourceRenderData.ts:204`), which is why `bicolorPivot` sits in
-**`gpuProps` as well as `rpcProps`**. The second copy is there because the
-ENCODER needs the value — the SVG export calls `buildSourceRenderData(data,
-gpuProps)` directly (`LinearWiggleDisplay/renderSvg.tsx:38`) and would otherwise
-colour its bands around nothing. It rides along as an invalidation key; it is
-not there for invalidation, since a pivot change already refetches through
-`rpcProps` and a refetch re-encodes every region anyway. The worker has the
-value too. Availability is not the obstacle.
+the pivot lives: `sourceLayers` colours every band around it, which is why
+`bicolorPivot` sits in **`gpuProps`** and, since the worker-side split was
+deleted (ADR-016, superseded), nowhere else. The ENCODER is what needs the
+value — the SVG export calls `buildSourceRenderData(data, gpuProps)` directly
+(`LinearWiggleDisplay/renderSvg.tsx:38`) and would otherwise colour its bands
+around nothing. A worker-side pack would have to be handed the pivot as a pack
+argument rather than reading it off the fetch. Availability is not the
+obstacle.
 
 **The obstacle is that the encoder cannot leave, only be duplicated.**
 `installUpload` re-encodes **every cached region** whenever `gpuProps` identity
@@ -192,9 +191,9 @@ forever.
 
 That O(N cached regions x K) main-thread re-encode is exactly the cost
 [ADR-016](../architecture-decision-records/adr-016-bicolorpivot-stays-in-worker.md)
-measured and refused when the proposal was to move the pos/neg split the OTHER
-way, main-thread-ward. The ADR does not forbid this move — its argument runs in
-its favour, since a worker-side encode is the O(K)-per-region side it preferred
+measured when the proposal was to move the pos/neg split the OTHER way,
+main-thread-ward. That ADR is superseded — the split was deleted rather than
+moved — but it does not forbid this move, and its argument runs in its favour, since a worker-side encode is the O(K)-per-region side it preferred
 — but it is the same accounting, and its rule ("only move worker computation to
 `gpuProps` when the setting changes frequently AND the per-feature work is cheap
 or expressible as a uniform") is what a reader should apply here.

@@ -204,15 +204,20 @@ HAL layout, and every Canvas2D painter, which today reads `source.color` and
 would read the same table. Whiskers scatter's per-instance tints
 (`colorsAbgr`) need a band index in the row word, or they keep a colour lane.
 
-### 4. ADR-016, re-measured: don't move the split, delete it
+### 4. ADR-016, re-measured: don't move the split, delete it — landed
 
-The parked
-[re-measure-the-bicolor-split-on-the-main-thread](re-measure-the-bicolor-split-on-the-main-thread.md)
-asked for this number. On signed data the split costs the worker 57ms (scRNA:
+**Landed 2026-09-19.** The worker no longer partitions, the six `pos*`/`neg*`
+fields are off `WiggleFeatureArrays`, and `bicolorPivot` and `useBicolor` left
+`rpcProps` for `gpuProps` alone. The main thread colours by sign per instance
+through `bandColorsAbgr`, which the whiskers bands already used, so every mode
+now partitions the same way and density keeps the solid layers `drawDensity`
+needs. The measurements below are what the deletion was taken on; they stand.
+
+On signed data the split cost the worker 57ms (scRNA: the worker 57ms (scRNA:
 89 vs 32) to 85ms (phyloP: 117 vs 32) at 1000 sources. That is about the same
-as packing the region's fill buffer. It also doubles what the region ships and
+as packing the region's fill buffer. It also doubled what the region ships and
 what `rpcDataMap` retains on the main thread: +51 MiB and +33 MiB. On
-one-sided data it costs nothing measurable, and aliasing keeps the wire bytes
+one-sided data it cost nothing measurable, and aliasing kept the wire bytes
 identical.
 
 Moving it into `buildSourceRenderData` as the parked idea proposes puts those
@@ -267,8 +272,11 @@ which works but is the same HAL work as #3.
 
 ## Order if taken
 
-#2 is done. #1 has landed (ADR-129). #3 and #4 together, as one project,
-since each makes the other pay. Settle density's texture first.
+#1, #2 and #4 have landed (#1 as ADR-129, #4 as the split's deletion). #3 is
+what is left, and it now stands alone rather than pairing with #4: the deletion
+leans on the per-instance colour lane a per-row colour table would take away,
+so the table has to arrive with shader-side sign colouring for the xyplot and
+scatter families, not only for the lines. Settle density's texture first.
 
 ## 2026-09-19: #3 is also what the mark grammar needs
 

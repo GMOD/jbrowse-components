@@ -79,8 +79,8 @@ two same-named methods resolve to the **first** at the type level however the
 runtime member behaves; the super-capture override reads as working only where
 every key it adds is optional. Each display spreads the shared half into its own
 `rpcProps()` / `gpuProps()`, and what it adds there is what is genuinely its
-own: single-wiggle's `useBicolor` key and solid-color `negColor` override,
-multi-wiggle's `summaryScoreMode` key and row list.
+own: single-wiggle's solid-color `negColor` override, multi-wiggle's
+`summaryScoreMode` key and row list.
 
 `fetchNeeded` is the one statement still made twice. What differs is the RPC
 method name — which `ARCHITECTURE.md` wants at the call site so the registry's
@@ -175,21 +175,28 @@ autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
 carries the raw slot** — the effective one moves with the rendering type, so
 switching to density would re-download every region.
 
-`bicolorPivot` crosses both ways: the worker owns the `avg`-path pos/neg split
-(ADR-016), the summary bands are colored main-thread, and line plots ignore the
-split entirely (below).
+**No colour setting is a fetch key.** `bicolorPivot`, `useBicolor`, `posColor`
+and `negColor` are `gpuProps` alone: the worker ships one set of score arrays
+and the main thread colours each instance by its side of the pivot, so moving
+the pivot re-encodes and refetches nothing. ADR-016, which put the split in the
+worker, is superseded;
+`ideas/wiggle-instance-records-carry-per-row-constants.md` §4 has what the split
+cost.
 
-## Whiskers splits into solid layers only when the bars nest
+## A band splits into solid layers only when the bars nest
 
 `isDensityMode || (isFilled && bands.length > 1)`. Back-to-front, largest
 magnitude first — the opposite order on each side of the pivot, which a single
 band order can't express. Density needs it because `drawDensity` builds one
-gradient per layer. Scatter keeps each band whole with per-instance colors.
+gradient per layer, and it is the only mode that reaches the split with a single
+band (`avg`). Everything else keeps each band whole and carries `colorsAbgr`,
+one packed colour per instance — or none at all where both sides of the pivot
+come out the same colour, which is what a solid-colour track is.
 
 ## A line plot is one line, coloured by the side of the pivot it is on
 
 Every summary mode on `line`/`linecenter` draws one layer through all the bins
-(`lineLayers`), never the worker's avg split. **Colour comes from the line's
+(`lineLayers`), with no per-instance colour lane. **Colour comes from the line's
 side of the pivot, not the bin**: the shader tests each fragment's centre-line
 y, Canvas2D strokes once per side through `PivotSidePen`. Centre line rather
 than pixel, so capsules overlapping at a joint agree under max blend unless the
@@ -209,11 +216,11 @@ whenever a density track mixes grouped subtracks with ungrouped ones.
 ## The shipped arrays are aliased — read, never write
 
 `processFeaturesFromArrays` aliases min/max onto `featureScores` when there's no
-summary variation, and an all-positive window's `pos*` arrays onto the full
-arrays. Structured clone preserves the sharing; `collectWiggleTransferables`
-dedupes and takes **every region's result at once** so the dedupe spans regions.
-A pass normalizing a band in place rewrites the average scores under every other
-reader, and the throw lands at the `postMessage`, nowhere near the cause.
+summary variation. Structured clone preserves the sharing;
+`collectWiggleTransferables` dedupes and takes **every region's result at once**
+so the dedupe spans regions. A pass normalizing a band in place rewrites the
+average scores under every other reader, and the throw lands at the
+`postMessage`, nowhere near the cause.
 
 Nothing shares a buffer across regions, because `processFeaturesFromArrays`
 copies its inputs. Keep it that way: aliasing the adapter's arrays instead looks
