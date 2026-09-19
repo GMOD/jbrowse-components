@@ -1,23 +1,24 @@
 ---
 name: grammar-vocabulary-for-wiggle
-description: The wiggle displays adopt the grammar's config vocabulary without adopting its renderer, in three packages after ADR-141 — a shared value-scale factory, the colour object with a threshold scale, and the single/multi display merge through `facet: 'source'` — with the column encoder and the wiggle port parked on the bench verdict. Waiting on package A's brief and a maintainer's demo deploy and figure reshoot.
+description: The wiggle displays adopt the grammar's config vocabulary without adopting its renderer, in three packages after ADR-141 — package A's shared value-scale factory landed as ADR-142 on 2026-09-19 with its docs sweep behind it; B is the colour object with a threshold scale, C the single/multi display merge through `facet: 'source'` — with the column encoder and the wiggle port parked on the bench verdict.
 ---
 
 # Grammar vocabulary for the wiggle displays
 
-State on 2026-09-19, after four packages landed on main from the grammar
-review (ADR-141 and the six commits behind it, the column-encoder bench and
-verdict, the docs sweep, the tooltip and legend hint). Two independent Fable
-reviews checked the plan; the second's verdicts are folded in below.
+State on 2026-09-19, after the grammar review's four packages (ADR-141 and
+the six commits behind it, the column-encoder bench and verdict, the docs
+sweep, the tooltip and legend hint) and package A below landed on main. Two
+independent Fable reviews checked the plan; the second's verdicts are folded
+in below. The read_marks demo config is deployed and its three figures
+reshot; the push CI for ADR-141 ran green, jbrowse-web project included.
 
 ## Still to do by hand
 
-- `scripts/deploy-demo.sh` for `demos/read_marks/config.json`, then reshoot
-  `read_marks/depth`, `read_marks/insert_size`, `read_marks/chromosome` (the
-  specs load the hosted config, so deploy first), then
-  `pnpm figures:push --filter mark_display/two_axes --allow-deletions`.
-- Push, and watch the jbrowse-web project: `MarkDisplay.test.tsx` and the
-  `ConfigSlotDefaults` snapshot were edited and not run locally.
+- Reshoot every figure whose spec moved `minScore`/`maxScore` onto
+  `scales.y` in package A's docs sweep (the sweep's report lists them), and
+  push the CI for ADR-142: `ConfigSlotDefaults.test.ts.snap` was hand-edited
+  and the jbrowse-web project did not run locally.
+- Package C needs a design review before an agent starts (below).
 
 ## Decided, do not reopen without new evidence
 
@@ -38,8 +39,8 @@ reviews checked the plan; the second's verdicts are folded in below.
 
 ## The three packages, in order
 
-**A. A shared value-scale factory.** `valueScaleSchema({ types, autoscale })`
-in wiggle-core, spread as `scales.y` on the mark display (already there with
+**A. A shared value-scale factory — landed, ADR-142.** `valueScaleSchema({
+types, autoscale, symlogConstant })` in wiggle-core, spread as `scales.y` on the mark display (already there with
 `type`, `domainMin`, `domainMax`), wiggle, multi-wiggle, Manhattan and the
 alignments coverage band, replacing `scaleType`/`minScore`/`maxScore`/
 `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` slots. Flat members,
