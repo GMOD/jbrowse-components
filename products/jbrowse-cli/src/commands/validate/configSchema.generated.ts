@@ -6120,17 +6120,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         "scatterPointSize": {
-          "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
+          "description": "Point height in px for scatterplot rendering. Defaults to 2.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "lineWidth": {
-          "description": "Line thickness in px for line (\\"line\\"/\\"multiline\\") rendering. Defaults to 1.",
+          "description": "Line thickness in px for line rendering. Defaults to 1.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "maxGapMultiple": {
-          "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
+          "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
@@ -6271,17 +6271,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         "scatterPointSize": {
-          "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
+          "description": "Point height in px for scatterplot rendering. Defaults to 2.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "lineWidth": {
-          "description": "Line thickness in px for line (\\"line\\"/\\"multiline\\") rendering. Defaults to 1.",
+          "description": "Line thickness in px for line rendering. Defaults to 1.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "maxGapMultiple": {
-          "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
+          "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
@@ -6444,17 +6444,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         "scatterPointSize": {
-          "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
+          "description": "Point height in px for scatterplot rendering. Defaults to 2.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "lineWidth": {
-          "description": "Line thickness in px for line (\\"line\\"/\\"multiline\\") rendering. Defaults to 1.",
+          "description": "Line thickness in px for line rendering. Defaults to 1.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "maxGapMultiple": {
-          "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
+          "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },

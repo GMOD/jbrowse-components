@@ -29,7 +29,7 @@ const confNode = (self: object) => self as TreeSidebarHost
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the five `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
+ * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
  * Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
  * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
  * used while drawing the tree.
@@ -151,10 +151,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * The row axis's declared order off the `domain` slot — the config seed
        * `orderRowsByDomain` places rows through, under whatever `layout` says.
        *
-       * Named for the axis rather than `domain` alone because
-       * `MultiLinearWiggleDisplay` composes `WiggleCommonMixin`, whose `domain`
-       * is the score axis's autoscaled `[min, max]`. Two getters of that name
-       * on one model is the later one silently answering for both.
+       * Named for the axis rather than `domain` alone because the wiggle
+       * display composes `WiggleCommonMixin`, whose `domain` is the score
+       * axis's autoscaled `[min, max]`. Two getters of that name on one model
+       * is the later one silently answering for both.
        */
       get rowDomain(): string[] {
         const host = confNode(self)

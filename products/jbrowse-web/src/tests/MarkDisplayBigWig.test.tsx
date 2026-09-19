@@ -126,7 +126,7 @@ test('a mark display over a BigWig holds the rows the wiggle display holds, and 
   await new Promise(resolve => setTimeout(resolve, 1500))
   expect(
     call.mock.calls.filter(([, method]) =>
-      ['RenderWiggleData', 'CoreEncodeFeatures'].includes(method),
+      ['RenderMultiWiggleData', 'CoreEncodeFeatures'].includes(method),
     ),
   ).toHaveLength(0)
 }, 40000)

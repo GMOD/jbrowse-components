@@ -47,7 +47,7 @@ export interface ValueScaleOptions {
  * displays start on:
  * ```js
  * {
- *   type: 'MultiLinearWiggleDisplay',
+ *   type: 'LinearWiggleDisplay',
  *   scales: { y: { autoscale: 'local' } },
  * }
  * ```
