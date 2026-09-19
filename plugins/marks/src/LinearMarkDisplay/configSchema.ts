@@ -12,8 +12,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
-import { markColorSchema } from './markColorConfigSchema.ts'
+import { markColorScale, markColorSchema } from './markColorConfigSchema.ts'
+import { SHAPE_LANES } from './markList.ts'
 
+import type { MarkColorScale } from './markColorConfigSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export { markColorScale } from './markColorConfigSchema.ts'
@@ -380,15 +382,64 @@ const transformStepSchema = ConfigurationSchema(
   { preProcessSnapshot: liftAs },
 )
 
-type MarkYSnapshot = string | { field?: string; resolve?: string } | undefined
+type MarkYSnapshot =
+  | string
+  | { field?: string; resolve?: string; scale?: string; domain?: unknown }
+  | undefined
 
 interface MarkSnapshot {
   shape?: string
-  encoding?: { y?: MarkYSnapshot }
+  source?: string
+  encoding?: Record<string, unknown> & { y?: MarkYSnapshot }
 }
 
 function valueField(y: MarkYSnapshot) {
   return typeof y === 'string' ? y : y?.field
+}
+
+// Every shape places its x edges; the rest of its channels are the lanes the
+// worker fills for it, `colorValue` being the ramp's spelling of `color`.
+const SHAPE_CHANNELS = Object.fromEntries(
+  Object.entries(SHAPE_LANES).map(([shape, lanes]) => [
+    shape,
+    ['x', 'x2', ...lanes.filter(l => l !== 'index' && l !== 'colorValue')],
+  ]),
+) as Record<string, string[]>
+
+/** A mark's colour ramp as written, `undefined` where its colour is not one. */
+function rampDomain(mark: MarkSnapshot) {
+  const color = mark.encoding?.color
+  if (typeof color !== 'object' || color === null) {
+    return undefined
+  }
+  const {
+    field = '',
+    scale,
+    ramp = [],
+    domain = [],
+  } = color as {
+    field?: string
+    scale?: MarkColorScale
+    ramp?: string[]
+    domain?: unknown[]
+  }
+  const painted = markColorScale({ scale, field, ramp })
+  return painted === 'linear' || painted === 'log' ? domain : undefined
+}
+
+function pinned(entry: unknown) {
+  return entry !== '' && Number.isFinite(Number(entry))
+}
+
+function declaredYScale(y: MarkYSnapshot) {
+  return typeof y === 'object' &&
+    y.resolve !== 'independent' &&
+    (y.scale !== undefined || y.domain !== undefined)
+    ? JSON.stringify([
+        y.scale,
+        (y.domain as unknown[] | undefined)?.map(String),
+      ])
+    : undefined
 }
 
 // What a `marks` config cannot mean, refused where the config is read rather
@@ -421,6 +472,57 @@ function checkMarks(snap: Record<string, unknown>) {
   if (asked.length > 1) {
     throw new Error(
       `LinearMarkDisplay: one mark at most may declare encoding.y.resolve "independent", and marks ${asked.join(', ')} all do — the second axis has one place to go`,
+    )
+  }
+  const unread = entries.flatMap((mark, i) => {
+    const shape = mark.shape ?? 'bar'
+    const channels = SHAPE_CHANNELS[shape] ?? []
+    const dead = Object.keys(mark.encoding ?? {})
+      .filter(c => !channels.includes(c))
+      .map(c => `encoding.${c}`)
+    if (shape === 'span' && mark.source === 'density') {
+      dead.push('source "density"')
+    }
+    return dead.map(c => `mark ${i} (${shape}) declares ${c}`)
+  })
+  if (unread.length > 0) {
+    throw new Error(
+      `LinearMarkDisplay: ${unread.join(', ')}, which its shape does not read`,
+    )
+  }
+  const unpinnedSpan = entries.flatMap((mark, i) => {
+    const domain = rampDomain(mark)
+    return mark.shape === 'span' && domain && domain.length !== 2
+      ? [`mark ${i}`]
+      : []
+  })
+  if (unpinnedSpan.length > 0) {
+    throw new Error(
+      `LinearMarkDisplay: a span's colour ramp resolves in the worker against each region's own extremes, so ${unpinnedSpan.join(', ')} needs a pinned two-entry encoding.color.domain — one the legend and every region agree on`,
+    )
+  }
+  const openEnded = entries.flatMap((mark, i) => {
+    const domain = rampDomain(mark)
+    return domain && domain.length > 0 && !domain.every(pinned)
+      ? [`mark ${i}`]
+      : []
+  })
+  if (openEnded.length > 0) {
+    throw new Error(
+      `LinearMarkDisplay: a colour ramp spans two finite numbers, so ${openEnded.join(', ')} leaves an end of encoding.color.domain open, which reads as 0 rather than autoscaling the way encoding.y.domain does`,
+    )
+  }
+  const declared = entries.flatMap((mark, i) => {
+    const y = declaredYScale(mark.encoding?.y)
+    return y === undefined ? [] : [[i, y] as const]
+  })
+  const owner = declared[0]
+  const disagree = owner
+    ? declared.filter(([, y]) => y !== owner[1]).map(([i]) => i)
+    : []
+  if (disagree.length > 0) {
+    throw new Error(
+      `LinearMarkDisplay: the shared axis is mark ${owner![0]}'s encoding.y scale and domain, so ${disagree.map(i => `mark ${i}`).join(', ')} declares a different one that nothing reads`,
     )
   }
   return snap

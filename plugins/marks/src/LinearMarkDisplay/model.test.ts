@@ -445,6 +445,109 @@ test('two independent marks are refused where the config is read', () => {
   ).toThrow(/one mark at most may declare encoding.y.resolve "independent"/)
 })
 
+// A span's ramp resolves in the worker (ADR-113), one table per region, under
+// a legend that unions their extents.
+test('a span painting an unpinned colour ramp is refused, and a pinned one is not', () => {
+  expect(() =>
+    createTestEnvironment([
+      {
+        shape: 'span',
+        encoding: { color: { field: 'score', scale: 'linear' } },
+      },
+    ]).createDisplay(),
+  ).toThrow(/mark 0 needs a pinned two-entry encoding.color.domain/)
+  expect(() =>
+    createTestEnvironment([
+      {
+        shape: 'span',
+        encoding: { color: { field: 'score', ramp: ['white', 'red'] } },
+      },
+    ]).createDisplay(),
+  ).toThrow(/mark 0 needs a pinned two-entry encoding.color.domain/)
+  expect(() =>
+    createTestEnvironment([
+      {
+        shape: 'span',
+        encoding: {
+          color: {
+            field: 'score',
+            scale: 'log',
+            domain: [1, 1000],
+            ramp: ['white', 'red'],
+          },
+        },
+      },
+    ]).createDisplay(),
+  ).not.toThrow()
+})
+
+test('a channel the shape does not read is refused where the config is read', () => {
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'span', encoding: { y: 'score' } },
+    ]).createDisplay(),
+  ).toThrow(
+    /mark 0 \(span\) declares encoding.y, which its shape does not read/,
+  )
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'bar', encoding: { y: 'score', glyph: 'triangle' } },
+    ]).createDisplay(),
+  ).toThrow(
+    /mark 0 \(bar\) declares encoding.glyph, which its shape does not read/,
+  )
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'span', source: 'density', encoding: {} },
+    ]).createDisplay(),
+  ).toThrow(/mark 0 \(span\) declares source "density"/)
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'point', encoding: { y: 'score', glyph: 'triangle' } },
+    ]).createDisplay(),
+  ).not.toThrow()
+})
+
+// Only the first shared mark's y declaration reaches the axis, so a second one
+// saying something else is a picture nobody asked for.
+test('two shared marks declaring different y scales are refused where the config is read', () => {
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'bar', encoding: { y: { field: 'a', scale: 'log' } } },
+      { shape: 'bar', encoding: { y: { field: 'b', domain: [0, 10] } } },
+    ]).createDisplay(),
+  ).toThrow(/mark 1 declares a different one that nothing reads/)
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'bar', encoding: { y: { field: 'a', scale: 'log' } } },
+      { shape: 'bar', encoding: { y: 'b' } },
+      { shape: 'bar', encoding: { y: { field: 'c', scale: 'log' } } },
+      {
+        shape: 'bar',
+        encoding: {
+          y: { field: 'd', scale: 'linear', resolve: 'independent' },
+        },
+      },
+    ]).createDisplay(),
+  ).not.toThrow()
+})
+
+// `encodingOf` maps the ramp's domain through `Number`, so an empty entry pins
+// that end to 0 rather than autoscaling it the way `y.domain` does.
+test('a colour ramp domain with an open end is refused where the config is read', () => {
+  expect(() =>
+    createTestEnvironment([
+      {
+        shape: 'bar',
+        encoding: {
+          y: 'score',
+          color: { field: 'score', scale: 'linear', domain: ['0', ''] },
+        },
+      },
+    ]).createDisplay(),
+  ).toThrow(/mark 0 leaves an end of encoding.color.domain open/)
+})
+
 test('a span-only display has no score domain', () => {
   const { createDisplay } = createTestEnvironment([
     { shape: 'span', encoding: {} },
