@@ -192,10 +192,10 @@ autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
 carries the raw slot** — the effective one moves with the rendering type, so
 switching to density would re-download every region.
 
-**No colour setting is a fetch key.** `bicolorPivot`, `useBicolor`, `posColor`
-and `negColor` are `gpuProps` alone: the worker ships one set of score arrays
-and the main thread colours each instance by its side of the pivot, so moving
-the pivot re-encodes and refetches nothing. ADR-016, which put the split in the
+**No colour setting is a fetch key.** `origin`, `useBicolor`, `posColor` and
+`negColor` are `gpuProps` alone: the worker ships one set of score arrays and
+the main thread colours each instance by its side of the pivot, so moving the
+pivot re-encodes and refetches nothing. ADR-016, which put the split in the
 worker, is superseded;
 `ideas/wiggle-instance-records-carry-per-row-constants.md` §4 has what the split
 cost.

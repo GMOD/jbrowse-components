@@ -83,7 +83,7 @@ export interface WiggleRenderStateModel {
   renderingType: string
   scatterPointSize: number
   lineWidth: number
-  bicolorPivot: number
+  origin: number
   densityColorRamp: string
 }
 
@@ -119,7 +119,7 @@ export function makeWiggleRenderState(
     scatterPointSize: self.scatterPointSize,
     lineWidth: self.lineWidth,
     // bars pivot around, and density fades from, the bicolor threshold
-    origin: self.bicolorPivot,
+    origin: self.origin,
     densityColorRamp: self.densityColorRamp,
   }))
 }

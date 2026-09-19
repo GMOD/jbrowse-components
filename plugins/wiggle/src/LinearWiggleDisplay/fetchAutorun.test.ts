@@ -52,7 +52,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // The pivot is an encoder input alone: the payload is the same score arrays
   // whichever side of it a bin falls on, so moving it re-encodes and refetches
   // nothing.
-  it('does not refetch when bicolorPivot changes', async () => {
+  it('does not refetch when origin changes', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
@@ -63,7 +63,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.configuration.setSlot('bicolorPivot', 5)
+    display.configuration.setSlot('origin', 5)
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
@@ -348,7 +348,7 @@ describe('LinearWiggleDisplay solid color', () => {
   // `color` slot entirely and always draws from posColor (the `color` config
   // doc says so, and `scoreRamp` returns undefined with bicolor off, so the
   // legend describes no negative side). The claim here is therefore only that
-  // one color comes out, not which; the split around bicolorPivot is where a
+  // one color comes out, not which; the split around origin is where a
   // second color got in.
   test.each(['avg', 'min', 'max'])(
     'density with bicolor off stays one color in %s mode',

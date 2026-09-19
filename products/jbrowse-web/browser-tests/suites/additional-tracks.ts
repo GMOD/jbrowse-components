@@ -17,7 +17,7 @@ interface LiveModel {
       tracks: {
         displays: {
           setRenderingType: (type: string) => void
-          setBicolorPivot: (pivot: number) => void
+          setOrigin: (pivot: number) => void
         }[]
       }[]
     }[]
@@ -46,7 +46,7 @@ function whiskersBandTest(rendering: 'line' | 'linecenter') {
         const { JBrowseSession } = window as unknown as LiveModel
         const display = JBrowseSession.views[0]!.tracks[0]!.displays[0]!
         display.setRenderingType(renderingType)
-        display.setBicolorPivot(20)
+        display.setOrigin(20)
       }, rendering)
       await waitForDataLoaded(page)
       await dualSnapshot(

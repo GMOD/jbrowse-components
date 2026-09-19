@@ -78,7 +78,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
         ? scoreRampScale(self.domain, self.scaleType, self.symlogConstant, {
             posColor: self.posColor,
             negColor: self.densityNegColor,
-            pivot: self.bicolorPivot,
+            pivot: self.origin,
             rampLut: densityRampLut(self.densityColorRamp),
           })
         : undefined
@@ -127,7 +127,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
         negColor: self.negColor,
         effectiveSummaryScoreMode: self.effectiveSummaryScoreMode,
         renderingType: self.renderingType,
-        bicolorPivot: self.bicolorPivot,
+        origin: self.origin,
         maxGapMultiple: self.maxGapMultiple,
       }
     },

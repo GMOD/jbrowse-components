@@ -431,7 +431,7 @@ function runEncodeScenario(fixture: SourceColumns[]) {
     negColor: WIGGLE_NEG_COLOR_DEFAULT,
     effectiveSummaryScoreMode: 'avg',
     renderingType: 'xyplot',
-    bicolorPivot: PIVOT,
+    origin: PIVOT,
     maxGapMultiple: 0,
   }
 

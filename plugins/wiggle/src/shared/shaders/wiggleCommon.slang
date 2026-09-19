@@ -80,7 +80,7 @@ public struct Uniforms {
   public float  scatterPointSize;
   public float  lineWidth;
   // Score the xyplot bars pivot around and the density gradient centers on
-  // (= bicolorPivot). Default 0 keeps the fixed-at-zero baseline.
+  // (= origin). Default 0 keeps the fixed-at-zero baseline.
   public float  origin;
   // symlog's linear-region width, already resolved on the JS side (a 0 in the
   // config means "derive from the domain", and that rule lives there so both

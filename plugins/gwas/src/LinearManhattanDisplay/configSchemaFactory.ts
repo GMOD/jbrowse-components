@@ -14,7 +14,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // Declares its own slots rather than extending LinearWiggleDisplay's schema.
 // It used to, which put sixteen inherited slots on a GWAS track of which twelve
 // did nothing — `defaultRendering: 'density'`, `useBicolor`, `summaryScoreMode`,
-// the pos/neg palette, `bicolorPivot`, `lineWidth`, `maxGapMultiple` — all read
+// the pos/neg palette, `origin`, `lineWidth`, `maxGapMultiple` — all read
 // only by wiggle code a Manhattan plot never runs. A config doc that advertises
 // a slot is a promise it works; these were promises nothing kept. What Manhattan
 // genuinely shares is the value scale, so it takes `scales.y` and nothing else.

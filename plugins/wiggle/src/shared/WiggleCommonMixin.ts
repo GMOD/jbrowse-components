@@ -111,9 +111,11 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
+       * The value bars grow from, which a colour scale also reads where its
+       * own domain says nothing.
        */
-      get bicolorPivot(): number {
-        return getConf(confNode(self), 'bicolorPivot')
+      get origin(): number {
+        return getConf(confNode(self), 'origin')
       },
       /**
        * #getter
@@ -281,13 +283,13 @@ export function WiggleCommonMixin() {
       /**
        * #action
        */
-      setBicolorPivot(val?: number) {
-        setConf(confNode(self), 'bicolorPivot', val)
+      setOrigin(val?: number) {
+        setConf(confNode(self), 'origin', val)
       },
       /**
        * #action
        * Lives here beside the `posColor`/`negColor` getters and
-       * `setBicolorPivot`, which the colour editor and the score menu both
+       * `setOrigin`, which the colour editor and the score menu both
        * write through.
        */
       setPosColor(color?: string) {

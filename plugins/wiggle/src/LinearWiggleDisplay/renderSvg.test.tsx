@@ -148,7 +148,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
       effectiveSummaryScoreMode: 'avg',
       renderingType: 'xyplot',
       isDensityMode: false,
-      bicolorPivot: 0,
+      origin: 0,
       maxGapMultiple: 0,
     }),
     showTree: false,

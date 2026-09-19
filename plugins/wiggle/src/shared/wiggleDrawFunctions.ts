@@ -41,7 +41,7 @@ export interface RowDraw {
   // the other scales, but carried on every row draw so the Canvas2D fallback
   // and the SVG export normalize with the number the shader was handed.
   symlogConstant: number
-  // Score the bars pivot around / density gradient centers on (bicolorPivot).
+  // Score the bars pivot around / density gradient centers on (origin).
   origin: number
 }
 

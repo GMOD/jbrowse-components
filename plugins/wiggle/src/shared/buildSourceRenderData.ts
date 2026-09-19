@@ -78,9 +78,9 @@ export interface WiggleGpuProps {
   effectiveSummaryScoreMode: string
   renderingType: string
   // Threshold every mode colors around, and the baseline bars pivot on
-  // (= bicolorPivot). An encoder input alone: moving it re-encodes and
+  // (= origin). An encoder input alone: moving it re-encodes and
   // refetches nothing.
-  bicolorPivot: number
+  origin: number
   // How many mean point spacings apart two interpolated-line points may be
   // before the span counts as a hole (see gapBreakLimit). Lives in gpuProps,
   // not the render state, because the break is baked into the instance buffer
@@ -135,7 +135,7 @@ export function buildSourceRenderData(
     negColor: defaultNegColorStr,
     effectiveSummaryScoreMode: summaryScoreMode,
     renderingType,
-    bicolorPivot,
+    origin,
     maxGapMultiple,
   } = gpuProps
   // Several plots sharing one box have to read as one colour each, so the
@@ -179,7 +179,7 @@ export function buildSourceRenderData(
         renderingType: renderingTypeInt,
         posColor,
         negColor: sharedPlot ? posColor : defaultNegColor,
-        pivot: bicolorPivot,
+        pivot: origin,
       })
       for (const layer of layers) {
         const into = layer.band ? bands : result

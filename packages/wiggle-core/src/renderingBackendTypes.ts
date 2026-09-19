@@ -72,7 +72,7 @@ export interface WiggleGPURenderState {
   // default line width.
   lineWidth: number
   // Score value the xyplot bars pivot around and the density gradient centers
-  // on (= the bicolorPivot config slot). Bars grow up for scores above it and
+  // on (= the origin config slot). Bars grow up for scores above it and
   // down for scores below; default 0 reproduces the fixed-at-zero baseline.
   origin: number
   // Density's colour ramp by name (= the densityColorRamp config slot).

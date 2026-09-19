@@ -12,7 +12,7 @@ import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 // risk stated outright, and what the generated twin removes.
 //
 // The sweep is over the pivot, because that is what varies: `origin` is the
-// bicolorPivot setting, and normalizing it against the y domain puts zeroNorm
+// origin setting, and normalizing it against the y domain puts zeroNorm
 // anywhere in [0,1] — including the ends, where one side of the ramp has zero
 // span and the other has all of it.
 

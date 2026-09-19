@@ -131,7 +131,7 @@ function maxAdjacentStep(lut: Uint8Array) {
 }
 
 // Domain, scale, origin triples covering what the plan's gate names: the three
-// scale types, an origin off zero (bicolorPivot), a domain crossing zero with
+// scale types, an origin off zero (origin), a domain crossing zero with
 // negative scores, and a degenerate domain.
 const CASES: {
   name: string

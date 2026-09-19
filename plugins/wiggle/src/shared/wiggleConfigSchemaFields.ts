@@ -59,11 +59,11 @@ export const wiggleConfigSchemaFields = {
     description:
       'Fill color for negative scores, used when useBicolor is true (the default)',
   },
-  bicolorPivot: {
+  origin: {
     type: 'number',
     defaultValue: 0,
-    description: 'Pivot value for bicolor mode',
-    advanced: true,
+    description:
+      "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin",
   },
   densityColorRamp: {
     type: 'stringEnum',

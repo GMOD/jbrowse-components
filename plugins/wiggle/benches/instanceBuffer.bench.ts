@@ -164,7 +164,7 @@ function props(renderingType: string, mode: string): WiggleGpuProps {
     negColor: WIGGLE_NEG_COLOR_DEFAULT,
     effectiveSummaryScoreMode: mode,
     renderingType,
-    bicolorPivot: pivot,
+    origin: pivot,
     maxGapMultiple: 0,
   }
 }

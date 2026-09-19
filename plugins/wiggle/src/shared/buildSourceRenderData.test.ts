@@ -41,7 +41,7 @@ const baseGpuProps: WiggleGpuProps = {
   negColor: '#e01e26',
   effectiveSummaryScoreMode: 'avg',
   renderingType: 'xyplot',
-  bicolorPivot: 0,
+  origin: 0,
   maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
 }
 

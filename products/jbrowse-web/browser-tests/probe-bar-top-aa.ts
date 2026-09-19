@@ -335,7 +335,7 @@ async function captureScene(
     })
     await page.evaluate(pivot => {
       const w = window as any
-      w.JBrowseSession.views[0].tracks[0].displays[0].setBicolorPivot(pivot)
+      w.JBrowseSession.views[0].tracks[0].displays[0].setOrigin(pivot)
     }, scene.pivot)
     await waitForDataLoaded(page)
   }

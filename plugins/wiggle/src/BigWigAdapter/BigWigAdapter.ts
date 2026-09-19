@@ -289,7 +289,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     })
   }
 
-  // bicolorPivot is a display concern (pos/neg color split) and stays out of
+  // origin is a display concern (pos/neg color split) and stays out of
   // the adapter API. Callers run processFeaturesFromArrays themselves with the
   // pivot — split happens inline with the data scan, no second pass.
   public async getFeatureArrays(

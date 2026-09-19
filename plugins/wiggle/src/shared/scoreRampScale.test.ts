@@ -31,7 +31,7 @@ function makeModel(symlogConstant: number, densityColorRamp = 'default') {
     renderingType: 'density',
     scatterPointSize: 2,
     lineWidth: 1,
-    bicolorPivot: RAMP.pivot,
+    origin: RAMP.pivot,
     densityColorRamp,
   }
 }

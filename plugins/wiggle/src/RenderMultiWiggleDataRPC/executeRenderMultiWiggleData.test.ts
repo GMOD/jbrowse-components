@@ -35,7 +35,7 @@ function scoresOf(result: WiggleDataResult, name: string) {
 
 async function run(args: {
   sources?: { name: string }[]
-  bicolorPivot?: number
+  origin?: number
   statusCallback?: StatusCallback
 }) {
   // no cast: rpcResult carries its value type, so `value` arrives as the
