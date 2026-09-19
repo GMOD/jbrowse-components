@@ -217,10 +217,14 @@ interface DisplaySnapshot {
   // wiggle / score
   color?: string | { field: string }
   useBicolor?: boolean
-  autoscale?: string
-  minScore?: number
-  maxScore?: number
-  scaleType?: string
+  scales?: {
+    y: {
+      type?: string
+      domainMin?: number
+      domainMax?: number
+      autoscale?: string
+    }
+  }
   displayCrossHatches?: boolean
   defaultRendering?: string
   resolution?: number
@@ -238,13 +242,13 @@ interface DisplaySnapshot {
 // getters) plus the wiggle config slots whose snapshot name diverges from any
 // instance member: `autoscale`/`defaultRendering` resolve through
 // divergently-named getters (`autoscaleType`/`renderingType`), and
-// `color`/`useBicolor` are config-slot-only with no getter — `showTrackGeneric`
-// routes all four onto the config, so `keyof` the instance misses them. `height`
-// resolves fine — it's the getter.
+// `color`/`useBicolor`/`scales` are config-slot-only with no getter —
+// `showTrackGeneric` routes all four onto the config, so `keyof` the instance
+// misses them. `height` resolves fine — it's the getter.
 type WiggleConfigSlotKey =
-  | 'autoscale'
   | 'defaultRendering'
   | 'color'
+  | 'scales'
   | 'useBicolor'
 // `forceLoad` is a base-linear-display config slot read through the
 // divergently-named `configForceLoad` getter, so `keyof` the instance misses it
@@ -271,6 +275,12 @@ interface BuildResult {
   // An explicit display type picks a non-default display for the track (e.g. the
   // multi-sample variant matrix), passed to showTrack as the snapshot `type`.
   displayType?: string
+}
+
+// The `scales.y` the three score modifiers share, created on first write.
+function valueScaleOf(r: BuildResult) {
+  r.snap.scales ??= { y: {} }
+  return r.snap.scales.y
 }
 
 // Friendly aliases for the displays a track type has beyond its default, so the
@@ -733,38 +743,41 @@ const modifiers: Record<string, Modifier> = {
 
   // ——— wiggle / score ———
   //
-  // These three are `alignments` as well as `wiggle`, and it is the same slot in
-  // both cases rather than a translation: LinearAlignmentsDisplay's coverage
-  // band carries its own `autoscale` / `minScore` / `maxScore` / `scaleType`,
-  // spelled identically and with the same enums. Restricting them to wiggle left
-  // an RNA-seq coverage band no way to ask for a log axis from the CLI, which is
-  // exactly where one is wanted: junction depth spans two orders of magnitude, so
-  // a linear axis puts the whole picture in the first exon.
+  // These three are `alignments` as well as `wiggle`, and it is the same object
+  // in both cases rather than a translation: LinearAlignmentsDisplay's coverage
+  // band carries the same `scales.y`. Restricting them to wiggle left an RNA-seq
+  // coverage band no way to ask for a log axis from the CLI, which is exactly
+  // where one is wanted: junction depth spans two orders of magnitude, so a
+  // linear axis puts the whole picture in the first exon.
+  //
+  // Three modifiers write one sub-schema, so each merges into what the others
+  // put there; `applyDisplaySettings` merges the object onto the display's own
+  // defaults in turn, so a bag naming one member leaves the rest alone.
   autoscale: {
     on: ['wiggle', 'alignments'],
     apply: (r, v) => {
-      r.snap.autoscale = parseStr('autoscale', v, 'autoscale type')
+      valueScaleOf(r).autoscale = parseStr('autoscale', v, 'autoscale type')
     },
   },
   minmax: {
     on: ['wiggle', 'alignments'],
     apply: (r, min, max) => {
       if (min) {
-        r.snap.minScore = parseNum('minmax', min)
+        valueScaleOf(r).domainMin = parseNum('minmax', min)
       }
       if (max) {
-        r.snap.maxScore = parseNum('minmax', max)
+        valueScaleOf(r).domainMax = parseNum('minmax', max)
       }
     },
   },
-  // scaletype/autoscale name a wiggle config slot's enum value directly. They
-  // are NOT re-listed here: the slot's own stringEnum rejects a bad value, which
+  // scaletype/autoscale name a member's enum value directly. They are NOT
+  // re-listed here: the member's own stringEnum rejects a bad value, which
   // reaches jb2export as a fatal render error, so a local copy of the list would
   // only add a way for the CLI to drift out of step with the display.
   scaletype: {
     on: ['wiggle', 'alignments'],
     apply: (r, v) => {
-      r.snap.scaleType = parseStr('scaletype', v, 'linear or log')
+      valueScaleOf(r).type = parseStr('scaletype', v, 'linear or log')
     },
   },
   crosshatch: {

@@ -349,10 +349,8 @@ describe('wiggle / score modifiers', () => {
       'color:purple',
     ])
     expect(snap).toMatchObject({
-      scaleType: 'log',
+      scales: { y: { type: 'log', domainMin: 1, domainMax: 1024 } },
       defaultRendering: 'scatter',
-      minScore: 1,
-      maxScore: 1024,
       displayCrossHatches: true,
       resolution: 100,
       color: 'purple',
@@ -362,9 +360,9 @@ describe('wiggle / score modifiers', () => {
     expect(snap.useBicolor).toBeUndefined()
   })
 
-  // The coverage-band axis is the same four slots under the same names, so these
-  // three apply to alignments too. The rest of the score group is genuinely
-  // wiggle-only and still warns.
+  // The coverage band carries the same `scales.y`, so these three apply to
+  // alignments too. The rest of the score group is genuinely wiggle-only and
+  // still warns.
   test('the axis trio reaches an alignments coverage band', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
       'scaletype:log',
@@ -372,10 +370,9 @@ describe('wiggle / score modifiers', () => {
       'minmax:1:4000',
     ])
     expect(snap).toMatchObject({
-      scaleType: 'log',
-      autoscale: 'localsd',
-      minScore: 1,
-      maxScore: 4000,
+      scales: {
+        y: { type: 'log', autoscale: 'localsd', domainMin: 1, domainMax: 4000 },
+      },
     })
   })
 
