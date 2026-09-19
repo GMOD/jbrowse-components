@@ -6,14 +6,14 @@ import {
   getGreen,
   getRed,
   newColor,
-  parse,
 } from './color-bits/index.ts'
-import { namedColorToHex } from './color/cssColorsLevel4.ts'
+import { bedTriple, parseCssColorOr } from './cssColorParse.ts'
 
-import type { Color } from './color-bits/index.ts'
 import type { Feature } from './simpleFeature.ts'
 
 export { abgrToCssRgba }
+
+export { isCssColor, parseCssColorOr } from './cssColorParse.ts'
 
 export {
   alpha,
@@ -42,11 +42,6 @@ export type { Color } from './color-bits/index.ts'
 // rest of the render.
 const INVALID_COLOR = newColor(255, 0, 255, 255)
 
-// A bare BED color triple ("255,0,0"), which is not a CSS color but is what
-// BED-family adapters put on the feature verbatim. The spec has no spaces, but
-// tolerate them rather than silently ignoring an otherwise-usable color.
-const BED_TRIPLE = /^(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})$/
-
 // UCSC's convention is that a color of "0" means "no color specified", and plain
 // BED12 files fill the column with that placeholder (often spelled as the
 // all-zero triple) rather than omitting it — every itemRgb in our own
@@ -54,18 +49,6 @@ const BED_TRIPLE = /^(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})$/
 // ordinary BED12 track solid black, so read them as absent. A file that really
 // wants black can say so with an explicit `color` slot.
 const BED_TRIPLE_UNSET = /^0(,0,0)?$/
-
-/**
- * Normalize a bare BED color triple to canonical "r,g,b", or undefined if the
- * string isn't one. Each component must be in range: the underlying parser
- * masks to 8 bits, so a bogus "999,0,0" would otherwise *wrap* to 231 and paint
- * a plausible-looking but wrong color rather than being caught.
- */
-function bedTriple(str: string): string | undefined {
-  const m = BED_TRIPLE.exec(str.trim())
-  const rgb = m?.slice(1, 4).map(Number)
-  return rgb?.every(n => n <= 255) ? rgb.join(',') : undefined
-}
 
 /**
  * One raw attribute value as a usable BED color, or undefined when it isn't
@@ -112,40 +95,6 @@ export function featureBedColor(feature: Feature): string | undefined {
     found ??= featureItemRgb(feature.get(field))
   }
   return found
-}
-
-// Resolve a CSS color string to a Color: honors named colors, `transparent`,
-// and bare BED color triples, and returns `fallback` on malformed-but-nonempty
-// input. `parse` throws on e.g. an empty "rgb()"; callers pass a fallback so one
-// bad per-feature color can't crash a whole render/RPC. An out-of-range triple
-// is left to throw into `fallback` (magenta) rather than wrapping to a wrong
-// color — the same rule featureItemRgb applies, so a jexl callback reading an
-// itemRgb column and the automatic path agree on what counts as a color.
-export function parseCssColorOr(color: string, fallback: Color): Color {
-  return tryParseCssColor(color) ?? fallback
-}
-
-function tryParseCssColor(color: string): Color | undefined {
-  const str = color.trim().toLowerCase()
-  if (str === 'transparent') {
-    return newColor(0, 0, 0, 0)
-  }
-  try {
-    const hex = namedColorToHex(str)
-    const triple = bedTriple(str)
-    return parse(hex ? hex : triple ? `rgb(${triple})` : str)
-  } catch {
-    return undefined
-  }
-}
-
-/**
- * Whether the painters read `color` as a color — a CSS name, hex, functional
- * form, `transparent` or a BED triple — rather than as the invalid sentinel.
- * What a `color` config slot admits.
- */
-export function isCssColor(color: string) {
-  return tryParseCssColor(color) !== undefined
 }
 
 export function parseCssColor(color: string | undefined | null) {

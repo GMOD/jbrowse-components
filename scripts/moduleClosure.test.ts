@@ -47,7 +47,7 @@ const CEILINGS = [
     runtime: 30,
     types: 70,
   },
-  // 44 runtime, of which the track-config read is most. No type ceiling: it
+  // 57 runtime, of which the track-config read is most. No type ceiling: it
   // reads a track's assembly names off a config, which is the configuration
   // schemas and therefore the whole graph.
   {

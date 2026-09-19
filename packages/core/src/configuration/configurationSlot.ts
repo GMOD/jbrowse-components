@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { isCssColor } from '../util/colorBits.ts'
+import { isCssColor } from '../util/cssColorParse.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
