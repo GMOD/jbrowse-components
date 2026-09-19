@@ -55,9 +55,9 @@ export function attributeGroupingVerdict(
   }
   return {
     color: 'text.secondary',
-    text:
-      `Found values: ${candidate.values.join(', ')}` +
-      (candidate.missing ? `, plus features with no ${field}` : ''),
+    text: `Found values: ${candidate.values.join(', ')}${
+      candidate.missing ? `, plus features with no ${field}` : ''
+    }`,
   }
 }
 
