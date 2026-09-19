@@ -2,6 +2,7 @@ import { bpAtPxExact } from '../canvas2dUtils.ts'
 import { denormalizeScore, scaleTypeCode } from '../scoreScale.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
+import type { RowParams } from './rowLane.ts'
 import type { Mark, MarkFrame, MarkHit, MarkValueScaleType } from './types.ts'
 
 /**
@@ -137,16 +138,18 @@ class ReverseRange implements Iterable<number>, Iterator<number> {
 }
 
 /**
- * A value-scaled shape's `valueWindow`, read back through `denormalizeScore`.
- * An end within reach of a plot edge opens to infinity, where an out-of-domain
- * value clamps. A point passes its `insetPx`; a bar passes its `origin`, and
- * its window opens away from the origin on the cursor's side.
+ * A value-scaled shape's `valueWindow`, read back through `denormalizeScore`
+ * inside each `rowHeight` band the radius touches — the whole canvas for a
+ * shape with no rows. An end within reach of a band edge opens to infinity,
+ * where an out-of-domain value clamps, so a cursor near the seam reaches the
+ * neighbouring band too. A point passes its `insetPx`; a bar passes its
+ * `origin`, and its window opens away from the origin on the cursor's side.
  */
 export function valueWindow(
   yPx: number,
   radiusPx: number,
   { canvasHeight }: MarkFrame,
-  scale: {
+  scale: RowParams & {
     domain: [number, number]
     scaleType?: MarkValueScaleType
     insetPx?: number
@@ -155,20 +158,38 @@ export function valueWindow(
 ): [number, number] {
   const { domain, insetPx = 0, origin } = scale
   const code = scaleTypeCode(scale.scaleType)
-  const inset = Math.min(insetPx, canvasHeight / 2)
-  const valueAt = (y: number) =>
-    denormalizeScore(
-      1 - (y - inset) / (canvasHeight - 2 * inset),
-      domain[0],
-      domain[1],
-      code,
-      1,
-    )
-  const lo =
-    yPx + radiusPx >= canvasHeight - inset ? -Infinity : valueAt(yPx + radiusPx)
-  const hi = yPx - radiusPx <= inset ? Infinity : valueAt(yPx - radiusPx)
-  if (origin === undefined) {
-    return [lo, hi]
+  const height = scale.rowHeight ?? canvasHeight
+  const inset = Math.min(insetPx, height / 2)
+  const bands = height > 0 ? Math.ceil(canvasHeight / height) : 1
+  const bandAt = (y: number) =>
+    bands > 1 ? Math.max(0, Math.min(bands - 1, Math.floor(y / height))) : 0
+  const lastBand = bandAt(yPx + radiusPx)
+  let valueMin = Infinity
+  let valueMax = -Infinity
+  for (let b = bandAt(yPx - radiusPx); b <= lastBand; b++) {
+    const top = b * height
+    const valueAt = (y: number) =>
+      denormalizeScore(
+        1 - (y - top - inset) / (height - 2 * inset),
+        domain[0],
+        domain[1],
+        code,
+        1,
+      )
+    const lo =
+      yPx + radiusPx >= top + height - inset
+        ? -Infinity
+        : valueAt(yPx + radiusPx)
+    const hi =
+      yPx - radiusPx <= top + inset ? Infinity : valueAt(yPx - radiusPx)
+    const [bandMin, bandMax] =
+      origin === undefined
+        ? [lo, hi]
+        : valueAt(yPx) >= origin
+          ? [lo, Infinity]
+          : [-Infinity, hi]
+    valueMin = Math.min(valueMin, bandMin)
+    valueMax = Math.max(valueMax, bandMax)
   }
-  return valueAt(yPx) >= origin ? [lo, Infinity] : [-Infinity, hi]
+  return [valueMin, valueMax]
 }

@@ -364,6 +364,30 @@ describe('findMarkHit', () => {
     expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 8, color: BLUE })
   })
 
+  test('a row lane bands the plot, and each band is hovered on its own scale', () => {
+    // two 200 px bands: the bar on row 0 grows from its origin at y=200 up to
+    // y=100, and the point on row 1 sits at y=242
+    const stacked = { ...state, rowCount: 2 }
+    const banded = new Map<number, MarkRegionData>([
+      [
+        0,
+        {
+          layers: [
+            layer([500], [5], [RED], { row: new Uint32Array([0]) }),
+            layer([800], [8], [BLUE], { row: new Uint32Array([1]) }),
+          ],
+        },
+      ],
+    ])
+    const hitAt = (x: number, y: number) =>
+      findMarkHit(x, y, [block], banded, marks, stacked, REGIONS)
+    expect(hitAt(402, 150)).toMatchObject({ markIndex: 0, start: 500, y: 5 })
+    expect(hitAt(641, 242)).toMatchObject({ markIndex: 1, start: 800, y: 8 })
+    // where one band over the whole plot would have drawn them
+    expect(hitAt(402, 300)).toBeUndefined()
+    expect(hitAt(641, 81)).toBeUndefined()
+  })
+
   test('a point on a log scale is asked about through the log window', () => {
     // 32 on a log [1, 1024] is half way, y=200; a linear window there reads
     // about 500 and would leave it out of the index query

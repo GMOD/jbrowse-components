@@ -183,6 +183,26 @@ describe('valueWindow', () => {
     expect(hi).toBeGreaterThanOrEqual(10)
   })
 
+  // 150 px in three 50 px bands, the [0, 100] domain ruling each one
+  const banded = { canvasWidth: 200, canvasHeight: 150 }
+  const rows = { domain: [0, 100] as [number, number], rowHeight: 50 }
+  const rounded = (w: [number, number]) => w.map(v => Number(v.toFixed(9)))
+
+  test('each row band is read through its own band, not the whole plot', () => {
+    // the centre of every band is the middle of the domain, not 88 then 22
+    expect(rounded(valueWindow(25, 8, banded, rows))).toEqual([34, 66])
+    expect(rounded(valueWindow(75, 8, banded, rows))).toEqual([34, 66])
+    expect(rounded(valueWindow(125, 8, banded, rows))).toEqual([34, 66])
+    expect(rounded(valueWindow(25, 8, banded, { ...rows, origin: 0 }))).toEqual(
+      [34, Infinity],
+    )
+  })
+
+  test('a radius that crosses a band seam reaches both bands, and one that does not stays in its own', () => {
+    expect(valueWindow(55, 8, banded, rows)).toEqual([-Infinity, Infinity])
+    expect(rounded(valueWindow(55, 3, banded, rows))).toEqual([84, 96])
+  })
+
   test('a bar opens away from its origin on the cursor side', () => {
     expect(valueWindow(20, 5, frame, { domain: [0, 10], origin: 0 })).toEqual([
       7.5,
