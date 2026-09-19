@@ -75,12 +75,13 @@
 // tax compresses every ratio. Without it this harness reproduces both
 // neighbouring benches' recorded rows.
 //
-// One fixture size does not resolve and is reported as such: at 1,000,000 rows
-// in one source the control reads 1.09-1.13x over three runs and `columns`
-// swings 0.69-1.11x, which is the arms' own garbage deciding the row
-// (BENCHMARKING.md, "a window LARGE enough"). At 500,000 the control is
-// 0.98-1.03x and `columns` repeats to within 0.01x, so that is the size the kill
-// criteria are read on.
+// One fixture size resolves less well than the others, and is reported as such:
+// at 1,000,000 rows in ONE source the control spreads 0.95-1.13x over six runs
+// and `columns` 0.67-1.11x, which is the arms' own garbage deciding the row
+// (BENCHMARKING.md, "a window LARGE enough"). At 500,000 the control holds
+// 0.98-1.03x and `columns` repeats to within 0.16x; the multi-source scenario
+// resolves at 14,000,000 rows because no single call allocates more than one
+// source's worth. So the kill criteria are read on the 500,000-row rows.
 import { readFileSync, readdirSync } from 'node:fs'
 import { loadavg } from 'node:os'
 import { resolve } from 'node:path'

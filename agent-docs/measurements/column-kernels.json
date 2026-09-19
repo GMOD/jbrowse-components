@@ -1,0 +1,156 @@
+{
+  "id": "column-kernels",
+  "measured": "2026-09-19",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node packages/core/benches/columnEncode.bench.ts --scenario=stack --rounds=15; node packages/core/benches/columnEncode.bench.ts --scenario=transforms --rounds=15",
+    "notes": "Three transform steps as index-array kernels over typed columns, each beside the Feature-typed step it has to reproduce, in one node 24 process per scenario, arms interleaved in a fresh random order each round, min of 15 rounds, on AC power with a 1-minute load average of 5.3 to 5.7 on a 16-core box. The 'reference' column is what the row's ratio divides by: 'layout' for the stack scenario and 'none' for the transform scenario, which is the arm each neighbouring bench reports against. The stack scenario is pileupLayoutVsStack.bench.ts's own fixture and its five arms rerun here rather than quoted — 200,000 reads of 150bp over 600,000bp, packing 51 rows deep — and this run reproduces that bench's recorded rows (its 'layout' 10.3ms and 'stack' 4.23x against 13.3ms and 4.35x here). The transform scenario is featureTransforms.bench.ts's fixture, 1,000,000 features of 2 to 6bp with an integer score, and its 'none', 'bin-count' and 'coverage' arms likewise rerun (its recorded 3.41x and 5.76x against 3.73x and 6.55x here); every arm ends in the same encode of whatever the step answered, so a row is the step plus that encode. 'stack-columns' is an argsort plus a rowEnds first fit over the typed positions, and 'stack-columns-cmp' is the same placement behind a comparator argsort, which is the whole difference between the two rows: %TypedArray%.sort with a comparator leaves V8's fast path, and packing the start and the index into one double and sorting that without a comparator is exact while max(start) * n + n stays under 2^53. 'bin-count-columns' bins at 10kb and counts per bin over the start column; 'coverage-columns' is the same sweep over sorted copies of the start and end columns. Each column arm's encoded output is compared lane for lane against the Feature arm's before any time is believed, and the row assignments against computeLayout's: bin-count emits 300 rows and coverage 1,599,999, the counts the recorded table carries."
+  },
+  "columns": [
+    { "key": "scenario", "label": "scenario" },
+    { "key": "arm", "label": "arm" },
+    { "key": "rows", "label": "rows in", "format": "int", "align": "right" },
+    { "key": "ms", "label": "wall", "format": "ms", "precision": 1, "align": "right" },
+    {
+      "key": "nsPerRow",
+      "label": "per row (ns)",
+      "format": "int",
+      "align": "right",
+      "derived": "ms * 1000000 / rows"
+    },
+    { "key": "baseMs", "label": "reference", "format": "ms", "precision": 1, "align": "right" },
+    {
+      "key": "vsBase",
+      "label": "vs reference",
+      "format": "x",
+      "align": "right",
+      "derived": "ms / baseMs"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "stack",
+        "arm": "layout",
+        "rows": 200000,
+        "ms": 13.3,
+        "baseMs": 13.3
+      }
+    },
+    {
+      "values": {
+        "scenario": "stack",
+        "arm": "control",
+        "rows": 200000,
+        "ms": 13.3,
+        "baseMs": 13.3
+      }
+    },
+    {
+      "values": {
+        "scenario": "stack",
+        "arm": "stack",
+        "rows": 200000,
+        "ms": 57.9,
+        "baseMs": 13.3
+      },
+      "emphasize": ["vsBase"]
+    },
+    {
+      "values": {
+        "scenario": "stack",
+        "arm": "step",
+        "rows": 200000,
+        "ms": 29.0,
+        "baseMs": 13.3
+      }
+    },
+    {
+      "values": {
+        "scenario": "stack",
+        "arm": "features",
+        "rows": 200000,
+        "ms": 15.3,
+        "baseMs": 13.3
+      }
+    },
+    {
+      "values": {
+        "scenario": "stack",
+        "arm": "stack-columns",
+        "rows": 200000,
+        "ms": 16.2,
+        "baseMs": 13.3
+      },
+      "emphasize": ["vsBase"]
+    },
+    {
+      "values": {
+        "scenario": "stack",
+        "arm": "stack-columns-cmp",
+        "rows": 200000,
+        "ms": 30.7,
+        "baseMs": 13.3
+      }
+    },
+    {
+      "values": {
+        "scenario": "transforms",
+        "arm": "none",
+        "rows": 1000000,
+        "ms": 90.8,
+        "baseMs": 90.8
+      }
+    },
+    {
+      "values": {
+        "scenario": "transforms",
+        "arm": "control",
+        "rows": 1000000,
+        "ms": 90.8,
+        "baseMs": 90.8
+      }
+    },
+    {
+      "values": {
+        "scenario": "transforms",
+        "arm": "bin-count",
+        "rows": 1000000,
+        "ms": 338.6,
+        "baseMs": 90.8
+      },
+      "emphasize": ["vsBase"]
+    },
+    {
+      "values": {
+        "scenario": "transforms",
+        "arm": "bin-count-columns",
+        "rows": 1000000,
+        "ms": 18.2,
+        "baseMs": 90.8
+      },
+      "emphasize": ["vsBase"]
+    },
+    {
+      "values": {
+        "scenario": "transforms",
+        "arm": "coverage",
+        "rows": 1000000,
+        "ms": 594.7,
+        "baseMs": 90.8
+      },
+      "emphasize": ["vsBase"]
+    },
+    {
+      "values": {
+        "scenario": "transforms",
+        "arm": "coverage-columns",
+        "rows": 1000000,
+        "ms": 156.6,
+        "baseMs": 90.8
+      },
+      "emphasize": ["vsBase"]
+    }
+  ]
+}

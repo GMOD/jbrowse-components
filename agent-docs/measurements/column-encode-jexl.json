@@ -1,0 +1,73 @@
+{
+  "id": "column-encode-jexl",
+  "measured": "2026-09-19",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node packages/core/benches/columnEncode.bench.ts --scenario=bigwig --rounds=15; node packages/core/benches/columnEncode.bench.ts --scenario=synthetic --features=500000 --rounds=15; node packages/core/benches/columnEncode.bench.ts --scenario=synthetic --rounds=15; node packages/core/benches/columnEncode.bench.ts --scenario=multi --rounds=15",
+    "notes": "The same four fixtures and the same run as column-encode, with the colour channel declared as `jexl:feature.score > 5 ? \"red\" : \"blue\"` instead of a constant. 'features-jexl' evaluates it per feature over a fresh jexlFeatureProxy around each SimpleFeature, which is what encodeFeatures does; 'columns-cursor-jexl' evaluates the same expression over one RowCursor whose index moves, so the proxy and the context object are built once per region rather than once per row. Both cache the CSS answer per distinct string, and the two colour lanes are compared value for value before any time is believed. On the volvox fixture every score exceeds 5, so the expression takes one branch there and the row prices the evaluation rather than the branch; the other three fixtures answer both colours. The ratio is the one the kill criterion reads: a column cursor above 1.2x the Feature path would say the escape hatch costs more in the column form."
+  },
+  "columns": [
+    { "key": "scenario", "label": "scenario" },
+    { "key": "rows", "label": "rows", "format": "int", "align": "right" },
+    {
+      "key": "featuresJexlMs",
+      "label": "features-jexl",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "columnsJexlMs",
+      "label": "columns-cursor-jexl",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "cursorVsFeatures",
+      "label": "cursor vs features",
+      "format": "x",
+      "align": "right",
+      "derived": "columnsJexlMs / featuresJexlMs"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "volvox raw",
+        "rows": 500000,
+        "featuresJexlMs": 192.1,
+        "columnsJexlMs": 55.6
+      },
+      "emphasize": ["cursorVsFeatures"]
+    },
+    {
+      "values": {
+        "scenario": "synthetic",
+        "rows": 500000,
+        "featuresJexlMs": 202.2,
+        "columnsJexlMs": 55.1
+      },
+      "emphasize": ["cursorVsFeatures"]
+    },
+    {
+      "values": {
+        "scenario": "synthetic",
+        "rows": 1000000,
+        "featuresJexlMs": 444.4,
+        "columnsJexlMs": 113.8
+      },
+      "emphasize": ["cursorVsFeatures"]
+    },
+    {
+      "values": {
+        "scenario": "multi-wiggle",
+        "rows": 14000000,
+        "featuresJexlMs": 3895.3,
+        "columnsJexlMs": 1547.6
+      },
+      "emphasize": ["cursorVsFeatures"]
+    }
+  ]
+}

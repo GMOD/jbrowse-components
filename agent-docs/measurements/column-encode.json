@@ -1,0 +1,101 @@
+{
+  "id": "column-encode",
+  "measured": "2026-09-19",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node packages/core/benches/columnEncode.bench.ts --scenario=bigwig --rounds=15; node packages/core/benches/columnEncode.bench.ts --scenario=synthetic --features=500000 --rounds=15; node packages/core/benches/columnEncode.bench.ts --scenario=synthetic --rounds=15; node packages/core/benches/columnEncode.bench.ts --scenario=multi --rounds=15",
+    "notes": "One region's rows from typed columns to a packed instance buffer, four arms interleaved in a fresh random order each round in one node 24 process per fixture, min of 15 rounds, on AC power with a 1-minute load average of 4.2 to 5.7 on a 16-core box. 'wiggle' is the shipping path — processFeaturesFromArrays, buildSourceRenderData and packFillInstances; 'control' is that same code through a second driver literal, so its ratio is what the harness could resolve; 'features' is today's mark-display path, a SimpleFeature per row into encodeFeatures with the bar lanes and no index, then barMark.pass.pack; 'columns' is encodeColumns over the same arrays into the same pack. Every emitted field is compared before any time is believed and the run exits non-zero on a difference: the two encodes agree lane for lane, they agree with wiggle's positions and scores row for row, and wiggle's 20-byte fill record and bar's 20-byte instance record are byte-identical over the first source. 'volvox raw' is volvox_microarray.bw's 500-row raw section through BigWigAdapter tiled 1,000 times end to end, since 500 rows resolve nothing; 'synthetic' is one source of 2bp rows with an integer score, the fixture encodeFeatures.bench.ts uses; 'multi-wiggle' is 1,000 sources of 14,000 rows, the shape a BigWig raw section gives a thousand-source multi-wiggle (ideas/wiggle-instance-records-carry-per-row-constants), encoded one layer per source with the row as a per-layer constant, which is the framing most favourable to the mark path. The bytes are the unique byte lengths of every array the arm's output holds alive after packing, excluding the instance buffer, which is 20 bytes a feature on every arm: wiggle's 12 are interleaved positions and scores, and the encoder's 20 are x, x2, y, featureIndex and color at four bytes each. At 1,000,000 rows in one source the control spreads 0.95-1.13x over six runs and 'columns' 0.67-1.11x, so read that row as parity and the 500,000-row rows as the resolving ones; at 14,000,000 rows across 1,000 sources the control is back at 0.99x because no single call allocates more than one source's worth."
+  },
+  "columns": [
+    { "key": "scenario", "label": "scenario" },
+    { "key": "rows", "label": "rows", "format": "int", "align": "right" },
+    { "key": "wiggleMs", "label": "wiggle", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "controlMs", "label": "control", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "featuresMs", "label": "features", "format": "ms", "precision": 1, "align": "right" },
+    { "key": "columnsMs", "label": "columns", "format": "ms", "precision": 1, "align": "right" },
+    {
+      "key": "controlVsWiggle",
+      "label": "control vs wiggle",
+      "format": "x",
+      "align": "right",
+      "derived": "controlMs / wiggleMs"
+    },
+    {
+      "key": "featuresVsWiggle",
+      "label": "features vs wiggle",
+      "format": "x",
+      "align": "right",
+      "derived": "featuresMs / wiggleMs"
+    },
+    {
+      "key": "columnsVsWiggle",
+      "label": "columns vs wiggle",
+      "format": "x",
+      "align": "right",
+      "derived": "columnsMs / wiggleMs"
+    },
+    { "key": "wiggleBytes", "label": "wiggle B/feature", "format": "int", "align": "right" },
+    { "key": "encodedBytes", "label": "encoded B/feature", "format": "int", "align": "right" },
+    {
+      "key": "bytesVsWiggle",
+      "label": "bytes vs wiggle",
+      "format": "x",
+      "align": "right",
+      "derived": "encodedBytes / wiggleBytes"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "volvox raw",
+        "rows": 500000,
+        "wiggleMs": 9.5,
+        "controlMs": 9.7,
+        "featuresMs": 82.6,
+        "columnsMs": 9.4,
+        "wiggleBytes": 12,
+        "encodedBytes": 20
+      },
+      "emphasize": ["columnsVsWiggle", "bytesVsWiggle"]
+    },
+    {
+      "values": {
+        "scenario": "synthetic",
+        "rows": 500000,
+        "wiggleMs": 10.1,
+        "controlMs": 9.9,
+        "featuresMs": 80.5,
+        "columnsMs": 8.3,
+        "wiggleBytes": 12,
+        "encodedBytes": 20
+      },
+      "emphasize": ["columnsVsWiggle", "bytesVsWiggle"]
+    },
+    {
+      "values": {
+        "scenario": "synthetic",
+        "rows": 1000000,
+        "wiggleMs": 24.8,
+        "controlMs": 23.7,
+        "featuresMs": 247.7,
+        "columnsMs": 16.7,
+        "wiggleBytes": 12,
+        "encodedBytes": 20
+      }
+    },
+    {
+      "values": {
+        "scenario": "multi-wiggle",
+        "rows": 14000000,
+        "wiggleMs": 325.6,
+        "controlMs": 323.7,
+        "featuresMs": 1658.7,
+        "columnsMs": 190.7,
+        "wiggleBytes": 12,
+        "encodedBytes": 20
+      },
+      "emphasize": ["columnsVsWiggle", "bytesVsWiggle"]
+    }
+  ]
+}

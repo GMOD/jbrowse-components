@@ -269,3 +269,14 @@ which works but is the same HAL work as #3.
 
 #2 is done. #1 has landed (ADR-129). #3 and #4 together, as one project,
 since each makes the other pay. Settle density's texture first.
+
+## 2026-09-19: #3 is also what the mark grammar needs
+
+[column-encoder-verdict](column-encoder-verdict.md) benched a column encoder
+against this file's own path and found the time free and the bytes not: an
+`EncodedChannels` retains 20 bytes a feature where `processFeaturesFromArrays`
+retains 12, four of them a `featureIndex` that is the identity permutation and
+four a per-instance colour lane. #3's per-row colour table is the second of
+those met from the GPU side, so the two proposals now share a condition rather
+than sitting in different subsystems, and the FST-raw scenario this file
+measured is the one the verdict's `multi-wiggle` row is shaped after.

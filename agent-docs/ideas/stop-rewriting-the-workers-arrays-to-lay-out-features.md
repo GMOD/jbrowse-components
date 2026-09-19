@@ -141,3 +141,14 @@ So the map stays and what is open is what it costs: replace it with an on-demand
 region scan or a lazily-populated per-id cache, and fold in `baseModel.ts`'s
 `featureIdIndex` / `subfeatureIdIndex`, which build two neighbouring id indexes
 the same way.
+
+## 2026-09-19: this entry's headline, measured on the encoder
+
+[column-encoder-verdict](column-encoder-verdict.md) takes "the lanes are not the
+cost — the objects are, on both sides of the hop" to the mark encoder and the
+transform steps, where the same shape holds: a `SimpleFeature` per row costs
+5-10x wiggle's hand packer and the identical encode over typed columns costs
+less than the packer. The wire-format half this entry recommends — pack
+struct-of-arrays, rehydrate on the main thread — is the same move at the other
+end of the same hop, and the verdict's numbers are the nearest thing to a
+pre-measurement of it.

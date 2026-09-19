@@ -38,3 +38,16 @@ measurement rather than a closed question:
 against a shared driver — a shared one has scored a byte-identical control at
 1.14x in this repo. A bench arm first, then decide; not a rewrite followed by a
 number.
+
+## 2026-09-19: the same substitution, benched one subsystem over
+
+[column-encoder-verdict](column-encoder-verdict.md) puts typed columns through
+the mark encoder against wiggle's hand packer and against today's
+`SimpleFeature` path, and the columnar arm wins on time at every size — the
+opposite sign to the `modExtract.bench.ts` result this entry is parked behind.
+That arm has all three of the reasons this entry lists for why the mod bench's
+LOSS may not transfer: no interning, three numeric fields, and rows that
+accumulate rather than dying in the nursery. It is not the per-base extract, and
+it does not settle the extract's arm; it says which way to expect that arm to
+fall, and it supplies a harness with the identity check and the control already
+in it.
