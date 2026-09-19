@@ -1,23 +1,26 @@
 ---
 name: grammar-vocabulary-for-wiggle
-description: The wiggle displays adopt the grammar's config vocabulary without adopting its renderer, in three packages after ADR-141 — A landed as ADR-142, B's two prerequisites (the `threshold` scale, the worker-side sign split deleted) and C's display merge as ADR-143, all on 2026-09-19; B2, the colour object itself, is the last package in flight — with the column encoder and the wiggle port parked on the bench verdict.
+description: The wiggle displays adopted the grammar's config vocabulary without adopting its renderer, in four landings on 2026-09-19 — ADR-142 (one `scales.y` value scale on every quantitative display), the `threshold` colour scale with the worker-side sign split deleted, ADR-143 (one `LinearWiggleDisplay`, `facet: 'source'` for rows) and ADR-144 (one `color` object) — with the column encoder and the wiggle port parked on the bench verdict. Left: the docs sweep for 143/144 and its figure reshoot, two figures that fail to capture for older reasons, and two follow-ups.
 ---
 
 # Grammar vocabulary for the wiggle displays
 
-State on 2026-09-19, after the grammar review's four packages (ADR-141 and
-the six commits behind it, the column-encoder bench and verdict, the docs
-sweep, the tooltip and legend hint) and package A below landed on main. Two
-independent Fable reviews checked the plan; the second's verdicts are folded
-in below. The read_marks demo config is deployed and its three figures
-reshot; the push CI for ADR-141 ran green, jbrowse-web project included.
+State on the evening of 2026-09-19: every package below is on main — A as
+ADR-142 with its docs sweep and a 44-figure reshoot, B's prerequisites (the
+`threshold` colour scale, ADR-016 superseded by deleting the worker-side sign
+split), C as ADR-143, B2 as ADR-144. Each push ran CI; the reds were fixed
+forward the same day. The read_marks and cgiab demo configs are deployed.
 
 ## Still to do by hand
 
-- After B2 lands: a docs sweep for C and B2 together (C's report lists 24
-  website files naming `MultiLinearWiggleDisplay` and the guides that describe
-  two displays; `user_guides/multiquantitative_track.md` folds into
-  `quantitative_track.md`), then reshoot the figures those specs drive.
+- The docs sweep for ADR-143 and ADR-144 (the multiquantitative guides fold
+  into the quantitative ones; the specs still spelling `multi*` renderings or
+  `posColor`/`bicolorPivot` render wrong today), then rebuild `@jbrowse/web` and
+  reshoot the figures those specs drive.
+- `demos/ecoli_pangenome/config.json` differs from the hosted copy for reasons
+  older than this thread; diff before deploying it.
+- Merging `QuantitativeTrack` and `MultiQuantitativeTrack` (ADR-143's report
+  sizes it: resolve the row layout from the adapter, keep `QuantitativeTrack`).
 - `bigwig/whole_genome_coverage` and `cnv` fail to capture on main for reasons
   older than this thread: the first waits for a menu label that moved into a
   "Show..." submenu, the second never holds ready within 60 s.
@@ -66,7 +69,7 @@ Sweep: 30-45 source files, 4-7 test_data configs, jbrowse-img and two react
 example sites, `ConfigSlotDefaults`/`RestatedMixinSlots` tests, ~14 guides and
 3 tutorials.
 
-**B. The wiggle colour object — prerequisites landed, the object in flight as B2.** `posColor`/`negColor`/`bicolorPivot`/
+**B. The wiggle colour object — landed, ADR-144 (prerequisites: `threshold` in display-kit's scales, ADR-016 superseded).** `posColor`/`negColor`/`bicolorPivot`/
 `useBicolor`/`colorImpliesSolid`/`densityColorRamp` and both `SetColorDialog`s
 become the shared colour object: xyplot
 `{ field: 'score', scale: 'threshold', domain: [0], palette: [neg, pos] }`,
