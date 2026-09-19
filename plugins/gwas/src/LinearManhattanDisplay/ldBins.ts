@@ -3,6 +3,7 @@ import {
   numericDomain,
   thresholdIndex,
   thresholdLabels,
+  thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
 
 import { LD_FIELD } from './colorConfigSchema.ts'
@@ -60,17 +61,27 @@ export function ldColorDefaults(color: Pick<LdColor, 'domain' | 'palette'>) {
   }
 }
 
+// The cuts, and one colour per interval between them. A config moving the cuts
+// without restating the palette gets the default categorical palette past its
+// end rather than the no-data grey, which would read as "absent from the LD
+// data" on points that are in it. Four cuts and the five LocusZoom colours —
+// the default — spend the palette exactly and reach neither.
+function ldBins(color: Pick<LdColor, 'domain' | 'palette'>) {
+  const { domain, palette } = ldColorDefaults(color)
+  const cuts = numericDomain(domain)
+  return { cuts, colors: thresholdPalette(cuts.length + 1, palette) }
+}
+
 /**
  * Packed ABGR per r² to the index SNP: the palette entry for the bin the value
  * falls in, and the no-data grey for a SNP absent from the LD data.
  */
 export function ldBinColor(color: Pick<LdColor, 'domain' | 'palette'>) {
-  const { domain, palette } = ldColorDefaults(color)
-  const cuts = numericDomain(domain)
-  const colors = palette.map(c => cssColorToABGR(c))
+  const { cuts, colors } = ldBins(color)
+  const abgr = colors.map(c => cssColorToABGR(c))
   return (r2: number | undefined) => {
     const bin = r2 === undefined ? -1 : thresholdIndex(r2, cuts)
-    return bin < 0 ? ldMissingColor : (colors[bin] ?? ldMissingColor)
+    return bin < 0 ? ldMissingColor : abgr[bin]!
   }
 }
 
@@ -78,14 +89,11 @@ export function ldBinColor(color: Pick<LdColor, 'domain' | 'palette'>) {
 export function ldLegend(
   color: Pick<LdColor, 'domain' | 'palette'>,
 ): LdSwatch[] {
-  const { domain, palette } = ldColorDefaults(color)
+  const { cuts, colors } = ldBins(color)
   return [
     LD_INDEX_SWATCH,
-    ...thresholdLabels(numericDomain(domain))
-      .map((label, i) => ({
-        label,
-        color: palette[i] ?? LD_MISSING_SWATCH.color,
-      }))
+    ...thresholdLabels(cuts)
+      .map((label, i) => ({ label, color: colors[i]! }))
       .reverse(),
     LD_MISSING_SWATCH,
   ]

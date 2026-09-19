@@ -56,6 +56,18 @@ test('legend swatches and the color lookup share one palette', () => {
   }
 })
 
+// The grey means "absent from the LD data", so a bin past the palette's end
+// cannot borrow it — the points in that bin are in the data.
+test('a cut past the palette takes a colour, not the no-data grey', () => {
+  const custom = { domain: ['0.2', '0.4', '0.6', '0.8', '0.9'], palette: [] }
+  const paint = ldBinColor(custom)
+  expect(paint(0.95)).not.toBe(cssColorToABGR(LD_MISSING_SWATCH.color))
+  expect(paint(0.95)).not.toBe(paint(0.85))
+  const bins = ldLegend(custom).slice(1, -1)
+  expect(bins).toHaveLength(6)
+  expect(bins.map(s => s.color)).not.toContain(LD_MISSING_SWATCH.color)
+})
+
 test('a config moves the cuts and recolours the bins', () => {
   const custom = { domain: ['0.5'], palette: ['#000080', '#800000'] }
   const paint = ldBinColor(custom)
