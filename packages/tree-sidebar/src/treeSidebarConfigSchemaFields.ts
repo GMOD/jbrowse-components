@@ -1,6 +1,27 @@
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 /**
+ * The sidebar's slot table as the mixin's host cast reads it. `domain` is in it
+ * whether or not the call declares one, so `getConf` still checks the name; the
+ * opt-out is guarded where the mixin reads the slot.
+ */
+type TreeSidebarFields = {
+  showTree: { type: 'boolean'; defaultValue: boolean; description: string }
+  showBranchLength: {
+    type: 'boolean'
+    defaultValue: boolean
+    description: string
+  }
+  showRowLabels: { type: 'boolean'; defaultValue: boolean; description: string }
+  domain: {
+    type: 'stringArray'
+    defaultValue: readonly string[]
+    description: string
+  }
+  treeAreaWidth: { type: 'number'; defaultValue: number; description: string }
+}
+
+/**
  * The config slots a display owes `TreeSidebarMixin` — one object, so a display
  * composing the mixin cannot ship three of the four.
  *
@@ -18,6 +39,12 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * clustering run and column sort writes. The multi-row feature display had the
  * only one; the other three had no declared order at all, so a config or a
  * session spec pinning rows had to write the whole `layout` row table.
+ *
+ * **`rows` is the opt-out.** A display whose row order is declared somewhere
+ * else — the wiggle display's is `facet.domain`, one word for one idea — passes
+ * no `rows` sentence, gets no `domain` slot, and states its own `rowDomain`
+ * getter after the mixin. Omitting the slot without that getter throws where
+ * the mixin reads it, naming the override.
  *
  * The **descriptions** are the parameter because they are the part that is
  * genuinely per display — a MAF row is a species, a multi-wiggle row a subtrack,
@@ -38,12 +65,13 @@ export function treeSidebarConfigSchemaFields({
    * The `domain` sentence, which has to name what a row is and what the rows
    * it does not list fall back on — a tree's leaf order, an adapter's, a
    * file's. e.g. "row order: the species listed come first, in this order, and
-   * the rest keep the tree's order"
+   * the rest keep the tree's order". Left out by a display that declares the
+   * order elsewhere and overrides `rowDomain`.
    */
-  rows: string
+  rows?: string
   /** Overridable, but the default sentence is display-independent. */
   branchLength?: string
-}) {
+}): TreeSidebarFields {
   return {
     /**
      * #slot
@@ -72,26 +100,31 @@ export function treeSidebarConfigSchemaFields({
       defaultValue: true,
       description: rowLabels,
     },
-    /**
-     * #slot
-     * The row axis's declared order, read through the mixin's `rowDomain`
-     * getter and applied under `layout`: a row the list names is placed, a row
-     * it does not keeps the order it arrived in. Empty — the default — is
-     * today's order untouched.
-     *
-     * **Where the rows are a tree's leaves it is a preference, not a
-     * placement.** A phylogeny fixes its leaf order only up to a rotation at
-     * each node, so the tree turns towards the list as far as its topology
-     * allows and keeps drawing (`rotateNewickByDomain`): `['B','C','D']` on
-     * `((A,B),(C,D))` gives `B,A,C,D`, because A rides with B. A supplied tree
-     * rotates where it is parsed and a clustering run rotates its own, so the
-     * tree and the row order always move together.
-     */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: rows,
-    },
+    ...(rows
+      ? {
+          /**
+           * #slot
+           * The row axis's declared order, read through the mixin's `rowDomain`
+           * getter and applied under `layout`: a row the list names is placed,
+           * a row it does not keeps the order it arrived in. Empty — the
+           * default — is today's order untouched.
+           *
+           * **Where the rows are a tree's leaves it is a preference, not a
+           * placement.** A phylogeny fixes its leaf order only up to a rotation
+           * at each node, so the tree turns towards the list as far as its
+           * topology allows and keeps drawing (`rotateNewickByDomain`):
+           * `['B','C','D']` on `((A,B),(C,D))` gives `B,A,C,D`, because A rides
+           * with B. A supplied tree rotates where it is parsed and a clustering
+           * run rotates its own, so the tree and the row order always move
+           * together.
+           */
+          domain: {
+            type: 'stringArray',
+            defaultValue: [],
+            description: rows,
+          },
+        }
+      : undefined),
     /**
      * #slot
      * Width in px of the sidebar the dendrogram draws in, left of the row
@@ -104,7 +137,7 @@ export function treeSidebarConfigSchemaFields({
       description:
         'width in px of the tree sidebar, which a drag on its edge also writes',
     },
-  } as const
+  } as TreeSidebarFields
 }
 
 /**

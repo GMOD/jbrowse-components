@@ -262,6 +262,60 @@ describe('the row domain', () => {
   })
 })
 
+// The opt-out: a display whose row order is declared elsewhere (the wiggle
+// display's is `facet.domain`) passes no `rows` sentence and owes a `rowDomain`
+// getter of its own. Reading the mixin's one is the failure this refuses to let
+// pass as an empty order, which would silently drop the declared order and take
+// adapter order instead.
+describe('a display declaring no `domain` slot', () => {
+  const configSchema = ConfigurationSchema('TestOptOutDisplay', {
+    ...treeSidebarConfigSchemaFields({
+      tree: 'show the tree',
+      rowLabels: 'draw each row name',
+    }),
+  })
+
+  function makeOptedOut() {
+    return types
+      .compose(
+        'TestRowDomainOptOut',
+        TreeSidebarMixin<Src>(),
+        types.model({
+          type: types.literal('TestOptOutDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .create({ type: 'TestOptOutDisplay', configuration: {} })
+  }
+
+  it('declares no `domain` slot', () => {
+    expect('domain' in makeOptedOut().configuration).toBe(false)
+  })
+
+  it('throws from `rowDomain` rather than reading an empty order', () => {
+    expect(() => makeOptedOut().rowDomain).toThrow(/rowDomain/)
+  })
+
+  it('takes an override of its own', () => {
+    const m = types
+      .compose(
+        'TestRowDomainOverride',
+        TreeSidebarMixin<Src>(),
+        types.model({
+          type: types.literal('TestOptOutDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .views(() => ({
+        get rowDomain() {
+          return ['b', 'a']
+        },
+      }))
+      .create({ type: 'TestOptOutDisplay', configuration: {} })
+    expect(m.rowDomain).toEqual(['b', 'a'])
+  })
+})
+
 // Typecheck-only, the way `extensionPoints.test.ts` asserts its guarantee: an
 // unused @ts-expect-error fails `pnpm typecheck`. It asks `TreeSidebarHost`
 // rather than a composed model on purpose — a test model's own schema is

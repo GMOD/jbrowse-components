@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -53,6 +54,24 @@ import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
  * }
  * ```
  */
+// What `facet` cannot mean here, refused where the config is read rather than
+// where the rows are laid out. `source` is the one field a quantitative row can
+// be: a wiggle carries a score per base and a subtrack name, and nothing else
+// to section on. `group` — one section per adapter group, its subtracks
+// overlaid inside — is the next value, which is why this is a facet and not a
+// boolean.
+function checkFacetField(snap: Record<string, unknown>) {
+  const facet = snap.facet as string | { field?: unknown } | undefined
+  const declared = typeof facet === 'string' ? facet : facet?.field
+  const field = typeof declared === 'string' ? declared : ''
+  if (field && field !== 'source') {
+    throw new Error(
+      `LinearWiggleDisplay: facet.field is "${field}", and this display sections on "source" alone — one row per subtrack`,
+    )
+  }
+  return snap
+}
+
 const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   'LinearWiggleDisplay',
   {
@@ -74,6 +93,23 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       defaultValue: 'xyplot',
       description: 'Default rendering type',
     },
+    /**
+     * #slot facet
+     * One row per value of a field, stacked down the track with a label, a
+     * separator and the clustering sidebar. `source` — one row per subtrack —
+     * is the only field this display reads; leave it unset and every source is
+     * drawn in one shared plot. `domain` is the row order: the subtracks it
+     * names lead, the rest keep the adapter's order, and a clustering run
+     * rotates its dendrogram towards it rather than discarding it.
+     * #example
+     * ```json
+     * {
+     *   "type": "LinearWiggleDisplay",
+     *   "facet": "source"
+     * }
+     * ```
+     */
+    facet: facetConfigSchema,
     ...trackHeightConfigSchemaFields(),
     /**
      * #slot
@@ -135,8 +171,8 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
-    // Read a bare `color` as solid-color shorthand.
-    preProcessSnapshot: colorImpliesSolid,
+    preProcessSnapshot: (snap: Record<string, unknown>) =>
+      colorImpliesSolid(checkFacetField(snap)),
   },
 )
 

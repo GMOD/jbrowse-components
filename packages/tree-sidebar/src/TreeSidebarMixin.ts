@@ -157,7 +157,13 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * on one model is the later one silently answering for both.
        */
       get rowDomain(): string[] {
-        return getConf(confNode(self), 'domain')
+        const host = confNode(self)
+        if (!('domain' in host.configuration)) {
+          throw new Error(
+            'TreeSidebarMixin: this display declares no `domain` slot (treeSidebarConfigSchemaFields was called without a `rows` sentence), so it owes a `rowDomain` getter of its own in a `.views` layer after the mixin',
+          )
+        }
+        return getConf(host, 'domain')
       },
       /**
        * #getter
