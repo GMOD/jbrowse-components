@@ -26,7 +26,9 @@ import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
+  ConfigNodeType,
   GetInheritedIdentifier,
+  MergeConfigDef,
 } from './types.ts'
 import type {
   IAnyType,
@@ -432,11 +434,27 @@ function makeConfigurationSchemaModel<
   return wrappedModel
 }
 
+/**
+ * DEFINITION is unconstrained on purpose. It carries the *merged* definition —
+ * `MergeConfigDef` — and intersecting that with `ConfigurationSchemaDefinition`
+ * to satisfy a constraint would put an index signature on it, which erases
+ * every named base slot on the next merge. The authoring check lives on
+ * `ConfigurationSchema`'s own parameter, where it belongs.
+ */
 export interface ConfigurationSchemaType<
-  DEFINITION extends ConfigurationSchemaDefinition,
+  DEFINITION,
   OPTIONS extends ConfigurationSchemaOptions<any, any>,
-> extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
+> extends ReturnType<
+  typeof makeConfigurationSchemaModel<ConfigurationSchemaDefinition, OPTIONS>
+> {
   type: string
+  readonly Type: ConfigNodeType<DEFINITION> &
+    ReturnType<
+      typeof makeConfigurationSchemaModel<
+        ConfigurationSchemaDefinition,
+        OPTIONS
+      >
+    >['Type']
 }
 
 export function ConfigurationSchema<
@@ -453,7 +471,7 @@ export function ConfigurationSchema<
   inputSchemaDefinition: DEFINITION,
   inputOptions?: ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
 ): ConfigurationSchemaType<
-  DEFINITION,
+  MergeConfigDef<DEFINITION, BASE_SCHEMA>,
   ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>
 > {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(

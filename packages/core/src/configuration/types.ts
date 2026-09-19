@@ -60,6 +60,50 @@ export type ConfigurationSchemaForModel<MODEL> =
     ? SCHEMA
     : never
 
+/**
+ * A schema's definition as **stored**: the author's own entries over the ones
+ * its `baseConfiguration` contributed, which is the same field-by-field merge
+ * `mergeSchemaDefinition` does at runtime. The base arrives already merged with
+ * its own base, so one level here covers a chain of any depth.
+ *
+ * It must not introduce an index signature: `Omit<BD, keyof D>` over a type
+ * with one collapses to the index signature alone and every named base slot is
+ * lost, which is why `ConfigurationSchemaType`'s DEFINITION is unconstrained.
+ */
+export type MergeConfigDef<D, BASE> =
+  BASE extends ConfigurationSchemaType<infer BD, any>
+    ? Omit<BD, keyof D> & {
+        [K in keyof D]: K extends keyof BD
+          ? BD[K] extends { type: string }
+            ? D[K] extends { type: string }
+              ? Omit<BD[K], keyof D[K]> & D[K]
+              : D[K]
+            : D[K]
+          : D[K]
+      }
+    : D
+
+type ConfigNodeValue<DEF> = DEF extends AnyConfigurationSchemaType
+  ? DEF['Type']
+  : DEF extends string
+    ? string
+    : DEF extends number
+      ? number
+      : SlotValueRawFromDef<DEF>
+
+/**
+ * The props a config node presents, read off the schema's DEFINITION rather
+ * than the `Record<string, any>` `makeConfigurationSchemaModel` hands MST. A
+ * slot reads as its declared value type, a sub-schema as that sub-config's own
+ * node, and a bare string/number entry as the volatile constant it becomes.
+ *
+ * `unknown` for a widened definition, so `AnyConfigurationModel` stays the
+ * untyped bag it was — a named member here would make it unassignable to every
+ * concrete node.
+ */
+export type ConfigNodeType<D> =
+  IsAny<D> extends true ? unknown : { [K in keyof D]: ConfigNodeValue<D[K]> }
+
 export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
   ? never
   : SCHEMA extends ConfigurationSchemaType<infer D, any>
