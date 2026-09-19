@@ -5,9 +5,10 @@ import { collectMismatches } from '../shared/collectMismatches.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
-import type BamAdapter from './BamAdapter.ts'
+import type { BamAdapterBase } from './BamAdapter.ts'
 import type { PackedReference } from '@gmod/bam'
 import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 /**
@@ -51,7 +52,7 @@ export default class BamSlightlyLazyFeature
   extends BamRecord
   implements MismatchFeature
 {
-  public adapter!: BamAdapter
+  public adapter!: BamAdapterBase<AnyConfigurationModel>
 
   /**
    * A per-fetch view of this record bound to one region's reference slice.

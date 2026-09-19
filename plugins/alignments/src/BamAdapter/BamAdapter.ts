@@ -18,12 +18,24 @@ import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { BamAdapterConfig } from './configSchema.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
+/**
+ * Everything a BAM-backed adapter does once it has an open `BamFile` — the
+ * whole class bar `configure()`, which is where the file comes from and the
+ * only part that reads slots. HtsgetBamAdapter opens a ticket endpoint instead
+ * and its schema declares none of BamAdapter's slots, so the two share this
+ * rather than one inheriting the other's config type.
+ */
+export abstract class BamAdapterBase<
+  CONF extends AnyConfigurationModel,
+> extends BaseSamAdapter<CONF> {
   protected configureResult?: { bam: BamFile<BamSlightlyLazyFeature> }
+
+  protected abstract configure(): { bam: BamFile<BamSlightlyLazyFeature> }
 
   /**
    * Whether a query on this file has ever turned up a read with no MD tag, and
@@ -64,44 +76,6 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
       // no phase at all for it.
       { signal: opts?.signal, statusCallback: opts?.statusCallback },
     )
-  }
-
-  protected configure() {
-    if (!this.configureResult) {
-      // #region nestedRead
-      // a path array reaches into the nested `index` sub-schema; reading
-      // `getConf('index').indexType` instead would bypass default resolution
-      const csi = this.getConf(['index', 'indexType']) === 'CSI'
-      const location = this.getConf(['index', 'location'])
-      // #endregion
-      this.configureResult = {
-        bam: new BamFile({
-          bamFilehandle: openLocation(
-            this.getConf('bamLocation'),
-            this.pluginManager,
-          ),
-          csiFilehandle: csi
-            ? openLocation(location, this.pluginManager)
-            : undefined,
-          baiFilehandle: csi
-            ? undefined
-            : openLocation(location, this.pluginManager),
-          recordClass: BamSlightlyLazyFeature,
-          // maxCacheBytes is per file, and one BamFile is held per open track,
-          // so its 1GB ceiling was multiplied by the track count with nothing
-          // bounding the sum; see cacheBudgets
-          cacheBudget: decompressedBytesBudget,
-          // Inflate this file's BGZF blocks across a worker pool instead of on
-          // this thread; measured 1.95x end to end on a 22-view pan/zoom over
-          // 1000x long-read data, same records returned. Shared with the nine
-          // tabix adapters — see bgzfWorkerPool for why it is one pool per JS
-          // context, why the import inside it has to be dynamic, and why it
-          // degrades to inflating in process rather than throwing.
-          bgzfWorkerPool: sharedBgzfWorkerPool(),
-        }),
-      }
-    }
-    return this.configureResult
   }
 
   protected async readSamHeader(onProgress?: (n: number, t?: number) => void) {
@@ -272,5 +246,45 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
   async getRegionByteSize(regions: Region[]) {
     const { bam } = this.configure()
     return bam.index ? bam.estimatedBytesForRegions(regions) : undefined
+  }
+}
+
+export default class BamAdapter extends BamAdapterBase<BamAdapterConfig> {
+  protected configure() {
+    if (!this.configureResult) {
+      // #region nestedRead
+      // a path array reaches into the nested `index` sub-schema; reading
+      // `getConf('index').indexType` instead would bypass default resolution
+      const csi = this.getConf(['index', 'indexType']) === 'CSI'
+      const location = this.getConf(['index', 'location'])
+      // #endregion
+      this.configureResult = {
+        bam: new BamFile({
+          bamFilehandle: openLocation(
+            this.getConf('bamLocation'),
+            this.pluginManager,
+          ),
+          csiFilehandle: csi
+            ? openLocation(location, this.pluginManager)
+            : undefined,
+          baiFilehandle: csi
+            ? undefined
+            : openLocation(location, this.pluginManager),
+          recordClass: BamSlightlyLazyFeature,
+          // maxCacheBytes is per file, and one BamFile is held per open track,
+          // so its 1GB ceiling was multiplied by the track count with nothing
+          // bounding the sum; see cacheBudgets
+          cacheBudget: decompressedBytesBudget,
+          // Inflate this file's BGZF blocks across a worker pool instead of on
+          // this thread; measured 1.95x end to end on a 22-view pan/zoom over
+          // 1000x long-read data, same records returned. Shared with the nine
+          // tabix adapters — see bgzfWorkerPool for why it is one pool per JS
+          // context, why the import inside it has to be dynamic, and why it
+          // degrades to inflating in process rather than throwing.
+          bgzfWorkerPool: sharedBgzfWorkerPool(),
+        }),
+      }
+    }
+    return this.configureResult
   }
 }
