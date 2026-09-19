@@ -945,6 +945,8 @@ test('the hovered instance lights the box its shape painted, inset by the plot t
     y: undefined,
     color: undefined,
     colorValue: undefined,
+    glyph: undefined,
+    row: undefined,
     screenX: 0,
     screenY: 0,
   })
@@ -979,6 +981,8 @@ function hitAt(markIndex: number, start: number, end: number) {
     y: undefined,
     color: undefined,
     colorValue: undefined,
+    glyph: undefined,
+    row: undefined,
     screenX: 0,
     screenY: 0,
   }

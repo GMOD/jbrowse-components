@@ -6,7 +6,7 @@ import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSwatch } from '@jbrowse/core/ui/legendSpec'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
-import type { ScaleTable } from '@jbrowse/core/util/markEncoding'
+import type { GlyphName, ScaleTable } from '@jbrowse/core/util/markEncoding'
 
 const RAMP_STOPS = 8
 
@@ -277,6 +277,29 @@ export function colorSection(sections: MarkLegendSection[], markIndex: number) {
   return sections.find(
     s => s.channel === 'color' && s.markIndexes.includes(markIndex),
   )?.scale
+}
+
+/** The glyph key of one mark, if its glyph is a scale. */
+export function glyphSection(sections: MarkLegendSection[], markIndex: number) {
+  return sections.find(
+    s => s.channel === 'glyph' && s.markIndexes.includes(markIndex),
+  )?.scale
+}
+
+/**
+ * The categories a glyph names in a glyph table: three glyphs over any number
+ * of values, so a glyph the range handed out twice names both, the way a key
+ * derived from the painting lists every value drawn in one colour.
+ */
+export function glyphLabel(scale: ScaleTable | undefined, glyph: GlyphName) {
+  if (scale?.kind !== 'glyph') {
+    return undefined
+  }
+  const field = categoricalField(scale.field)
+  const values = scale.entries
+    .filter(e => e.glyph === glyph)
+    .map(e => field.label(e.value))
+  return values.length > 0 ? values.join(', ') : undefined
 }
 
 /** The category a packed colour names in a categorical table, if any. */

@@ -20,6 +20,10 @@ export interface MarkHitInfo {
   color: number | undefined
   /** The raw value of a ramp colour channel, where the display resolves it. */
   colorValue: number | undefined
+  /** The glyph code the worker resolved, if its shape reads one. */
+  glyph: number | undefined
+  /** The band this instance stands in, if its shape reads a row. */
+  row: number | undefined
   screenX: number
   screenY: number
 }
@@ -69,6 +73,8 @@ export function findMarkHit(
     y: layer.y?.[hit.index],
     color: layer.color?.[hit.index],
     colorValue: layer.colorValue?.[hit.index],
+    glyph: layer.glyph?.[hit.index],
+    row: layer.row?.[hit.index],
     screenX: hit.x,
     screenY: hit.y,
   }

@@ -159,6 +159,8 @@ test('past the budget a bin opens nothing, and the notice says what is drawn', (
     y: 17,
     color: undefined,
     colorValue: undefined,
+    glyph: undefined,
+    row: undefined,
     screenX: 0,
     screenY: 0,
   })
