@@ -31,7 +31,6 @@ tutorials/pangenome_cactus.md 2
 tutorials/pangenome_ecoli.md 1
 tutorials/population_cnv.md 3
 tutorials/primate_orthologs_synteny.md 1
-tutorials/read_marks.md 1
 tutorials/rnaseq.md 2
 tutorials/scrna_pseudobulk.md 1
 tutorials/selection_pressure.md 1
