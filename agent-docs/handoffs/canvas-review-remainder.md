@@ -1,14 +1,14 @@
 ---
 name: canvas-review-remainder
-description: What the 2026-09-14 review of plugins/canvas (cross-read against alignments' group-by) left unbuilt after seven fixes landed — an attribute group-by dialog that scans nothing, the nine-part compose ceiling both big displays now nest under, and three span-proportional bin builders. Read before re-reviewing the canvas plugin or proposing a group-by feature.
+description: What the 2026-09-14 review of plugins/canvas left after the 2026-09-18 pass landed the attribute group-by scan, a compose-arity lint and three small fixes — the scan RPC is untested end to end and undriven in the app, the compose ceiling is still nested under rather than lifted, and the bin-builder merge was declined a second time. Read before re-reviewing the canvas plugin or proposing a group-by feature.
 ---
 
 # Canvas review: what is left
 
-Seven findings landed on 2026-09-14 (`git log --grep 'canvas:' --since
-2026-09-14`, plus the `HiddenGroupsMixin` commit in display-kit); this file is
-the remainder, ranked by what a reader notices. **Delete it when the last item
-lands or is filed elsewhere.**
+Two passes landed: seven findings on 2026-09-14 (`git log --grep 'canvas:'
+--since 2026-09-14`) and five more on 2026-09-18 (the four `canvas:` commits
+and one `lint:` commit of that day). **Delete this file when the last item
+below lands or is filed elsewhere.**
 
 Permanent homes this file points at rather than repeats:
 
@@ -18,60 +18,54 @@ Permanent homes this file points at rather than repeats:
 - Why canvas keeps its own packer and the mark display its encoder —
   [ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md).
 
-## 1. The attribute group-by dialog scans nothing
+## 1. The attribute scan is untested end to end and undriven in the app
 
-Canvas's `LinearBasicDisplay/components/GroupByDialog.tsx` takes the attribute
-as a text field. The alignments tag dialog (its own `GroupByDialog.tsx`) scans the loaded reads, shows
-the distinct-value count and refuses a grouping past `MAX_GROUPS`; canvas
-relies on the cap firing after the fact and labels the tail "N merged values".
-The multi-row display already ships `partitionCandidates` (the attribute names
-the loaded features carry) from its worker
-(`MultiRowGetFeaturesRPC/packMultiRowFeatures.ts`); the same list off
-`RenderFeatureData`, plus a distinct-value count for the typed attribute,
-gives the canvas dialog the alignments shape. Around 80 lines, half of it
-worker payload.
+The 2026-09-18 pass gave the canvas `GroupByDialog.tsx` the alignments shape:
+`GetCanvasGroupByCandidates` (`RenderFeatureDataRPC/executeGetGroupByCandidates.ts`)
+downloads the visible blocks under the render fetch's admission and byte
+budget and answers the attribute names with each one's distinct values,
+capped at `MAX_GROUPS`; the dialog lists them with section counts and captions
+the typed one (`attributeGroupingVerdict.ts`). What is pinned: the summarizer,
+the verdict text and the dialog against a stubbed scan. What is not:
+
+- `executeGetGroupByCandidates` has no test. `executeMultiRowGetFeatures.test.ts`
+  shows the fixture (a mocked `getFeatureAdapterOrThrow`); the cases worth
+  pinning are the byte refusal returning the `RegionTooLargeResult` and a
+  `jexlFilters` entry keeping a filtered-out value from becoming a section.
+- Nobody has opened the dialog in the running app. The Autocomplete's option
+  rows, the caption under the box and the progress line during a real scan
+  are unseen; `pnpm start` in `products/jbrowse-web`, the volvox GFF track,
+  Group by → Attribute.
+- The scan enumerates attribute names through `feature.toJSON()`, which on a
+  gene serializes its subfeatures too. Fine for the dialog's one scan per
+  open, but worth measuring on a dense gene track before anything else reads
+  it per fetch.
 
 ## 2. The nine-part compose ceiling
 
-`types.compose` in the MST fork is typed for nine model parts.
-`LinearCanvasBaseDisplay`, `LinearAlignmentsDisplay` and `LinearMarkDisplay`
-now nest
-`BaseDisplay`, `TrackHeightMixin()`, `HeightModeMixin()` and
-`MultiRegionDisplayMixin()` in an inner compose to stay under it, as
-`LinearMultiRowFeatureDisplay` already did with a similar set. Two ways out:
-lift the fork's overloads to eleven parts
-(`~/src/mobx-state-tree/src/types/complex-types/model.ts`, needs a fork
-release), or give display-kit one `lgvDisplayFoundation()` compose that every
-LGV display composes as its first part, which is also what ARCHITECTURE.md
-already calls the foundation. The tenth part fails as ~150 "property X does
-not exist" errors across every consumer, not as a ceiling; the memory
-`compose-tenth-part-erases-every-prop` says so.
+`types.compose` in the MST fork is typed for nine model parts. Three displays
+nest `BaseDisplay`, `TrackHeightMixin()`, `HeightModeMixin()` and
+`MultiRegionDisplayMixin()` as one part to stay under it. The 2026-09-18 pass
+made the tenth part fail at the call (`noTenthComposePart` in
+`eslint.config.mjs`) instead of as ~150 "property X does not exist" errors
+downstream, and declined both ways of lifting the ceiling: absorbing the trio
+into `MultiRegionDisplayMixin()` breaks symmetry with `GlobalFetchMixin()`,
+which `ArcFetchModel` composes without `BaseDisplay`, and a wrapper compose
+adds a fourth name to the generated foundation table. What remains is the
+fork itself: lift its overloads past nine
+(`~/src/mobx-state-tree/src/types/complex-types/model.ts`), release, and
+un-nest the three sites. Colin's step.
 
-## 3. Three span-proportional bin builders
+## Declined
 
-`MultiRowClusterFeaturesRPC/buildMultiRowMatrix.ts` (bins by midpoint, cell
-budget), `plugins/maf/src/LinearMafClusterIdentityRpc/buildIdentityMatrix.ts`
-§ `buildSegments` (column budget, per-region base cap) and
-`plugins/wiggle/src/WiggleRPC/getScoreMatrix.ts` § `buildSegments` (pixel
-budget) share the loop and differ in the budget. Declined on 2026-09-14
-because merging the budgets moves numbers in at least one; a shared
-`spanProportionalBins(regions, budget)` with each caller computing its own
-budget still removes two copies. About 50 lines moved, into
-`packages/tree-sidebar/src/clusterMatrix.ts`, and the clustering goldens
-checked.
-
-## Smaller
-
-- `sectionIdsOf` (`LinearBasicDisplay/facet.ts`) runs three or four times
-  per layout pass — `sectionAssignment`, `featureGroupSections`,
-  `chipShiftOf` twice — where one pass could return the section list and the
-  assignment together.
-- The cluster dialog says it clustered by `name` when
-  `buildMultiRowMatrix` degraded that field to coverage under
-  `MAX_CATEGORICAL_VALUES`; the RPC could report the encoding it chose.
-- `LinearBasicDisplay/model.ts` § `colorScales` reads the frozen `legend`
-  slot with a bare cast; the multi-row display's `resolveConfiguredLegend`
-  checks each entry, and the predicate could be shared.
+Three span-proportional bin builders
+(`MultiRowClusterFeaturesRPC/buildMultiRowMatrix.ts`,
+`plugins/maf/.../buildIdentityMatrix.ts` § `buildSegments`,
+`plugins/wiggle/.../getScoreMatrix.ts` § `buildSegments`) were declined for
+merging twice, 2026-09-14 and 2026-09-18. The wiggle one apportions by pixel
+width, not by share of the total span, and the other two emit different
+shapes (bin midpoints the binary search reads vs segments with a column
+offset), so a shared loop would be shorter than the adapters around it.
 
 ## Checked and fine
 
