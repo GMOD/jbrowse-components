@@ -71,14 +71,9 @@ export interface MarkRegionData {
 }
 
 export interface MarkRenderState extends MarkFrame {
+  /** The display's one y scale, which every valued mark is placed through. */
   domainY: [number, number]
   scaleTypeY: MarkValueScaleType
-  /** The mark that declared `resolve: 'independent'`, on its own domain. */
-  independentY?: {
-    markIndex: number
-    domain: [number, number]
-    scaleType: MarkValueScaleType
-  }
   /** Mark `i`'s colour ramp, undefined where its colour is not one. */
   colorRamps: (MarkRamp | undefined)[]
   bpPerPx: number
@@ -96,17 +91,6 @@ export interface MarkEntry {
   shape: MarkShapeName
   minBpPerPx: number
   maxBpPerPx: number
-}
-
-/**
- * The y scale mark `i` places its value through: its own where it declared an
- * independent axis, else the display's.
- */
-export function markValueScale(state: MarkRenderState, i: number) {
-  const { independentY } = state
-  return independentY?.markIndex === i
-    ? { domain: independentY.domain, scaleType: independentY.scaleType }
-    : { domain: state.domainY, scaleType: state.scaleTypeY }
 }
 
 /** The px each row band gets: the plot split by the row count. */
@@ -143,7 +127,8 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
           channels: (d: MarkRegionData) =>
             withLanes(d.layers[i], SHAPE_VALUE_LANES.bar),
           params: (s: MarkRenderState) => ({
-            ...markValueScale(s, i),
+            domain: s.domainY,
+            scaleType: s.scaleTypeY,
             ramp: s.colorRamps[i],
             origin: s.origin,
             minWidthPx: s.minWidthPx,
@@ -160,7 +145,8 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
           channels: (d: MarkRegionData) =>
             withLanes(d.layers[i], SHAPE_VALUE_LANES.point),
           params: (s: MarkRenderState) => ({
-            ...markValueScale(s, i),
+            domain: s.domainY,
+            scaleType: s.scaleTypeY,
             ramp: s.colorRamps[i],
             diameterPx: s.pointDiameterPx,
             insetPx: pointInsetPx(s.pointDiameterPx),

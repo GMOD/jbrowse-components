@@ -83,12 +83,26 @@ export function scanPlotFields(features: Feature[]): PlotFields {
 export const MARK_SHAPE_CHOICES = ['bar', 'point'] as const
 export type PlotShape = (typeof MARK_SHAPE_CHOICES)[number]
 
+/**
+ * What the declared colour carries beside its field. Kept on the spec and
+ * keyed by the field it came from, so reopening the dialog and saving writes
+ * the same colour back, and picking another field starts from neither.
+ */
+export interface PlotColorScale {
+  field: string
+  scale: MarkColorScale | undefined
+  domain: string[]
+  palette: string[]
+  ramp: string[]
+}
+
 /** What the Plot field dialog asks for, and what the marks are built from. */
 export interface PlotSpec {
   field: string
   shape: PlotShape
   colorField: string
   binned: boolean
+  colorScale?: PlotColorScale
 }
 
 export const EMPTY_PLOT_SPEC: PlotSpec = {
@@ -106,18 +120,26 @@ interface MarkSnapshot {
   maxBpPerPx?: number
 }
 
-function colorEncoding(colorField: string, fields: PlotFields) {
-  return colorField === ''
-    ? undefined
-    : {
-        field: colorField,
-        scale: fields.numeric.includes(colorField) ? 'linear' : 'categorical',
-      }
+function colorEncoding(spec: PlotSpec, fields: PlotFields) {
+  const { colorField, colorScale } = spec
+  if (colorField === '') {
+    return undefined
+  }
+  const kept = colorScale?.field === colorField ? colorScale : undefined
+  return {
+    field: colorField,
+    scale:
+      kept?.scale ??
+      (fields.numeric.includes(colorField) ? 'linear' : 'categorical'),
+    ...(kept?.domain.length ? { domain: kept.domain } : {}),
+    ...(kept?.palette.length ? { palette: kept.palette } : {}),
+    ...(kept?.ramp.length ? { ramp: kept.ramp } : {}),
+  }
 }
 
 /** The `marks` a spec writes: the plot itself, and a binned count beside it. */
 export function plotMarks(spec: PlotSpec, fields: PlotFields): MarkSnapshot[] {
-  const color = colorEncoding(spec.colorField, fields)
+  const color = colorEncoding(spec, fields)
   const plot: MarkSnapshot = {
     shape: spec.shape,
     encoding: { y: spec.field, ...(color ? { color } : {}) },
@@ -160,10 +182,12 @@ export function defaultPlotMarks(fields: PlotFields) {
 interface MarkLike {
   shape: string
   encoding: {
-    y: { field: string }
+    y: string
     color: {
       field: string
       scale: MarkColorScale | undefined
+      domain: readonly string[]
+      palette: readonly string[]
       ramp: readonly string[]
     }
   }
@@ -186,13 +210,23 @@ export function specOfMarks(marks: readonly MarkLike[]): PlotSpec | undefined {
   ) {
     return undefined
   }
+  const { color } = plot.encoding
+  const colorField = markColorScale(color) === 'none' ? '' : color.field
   return {
-    field: plot.encoding.y.field,
+    field: plot.encoding.y,
     shape: plot.shape as PlotShape,
-    colorField:
-      markColorScale(plot.encoding.color) === 'none'
-        ? ''
-        : plot.encoding.color.field,
+    colorField,
     binned: second !== undefined,
+    ...(colorField
+      ? {
+          colorScale: {
+            field: colorField,
+            scale: color.scale,
+            domain: [...color.domain],
+            palette: [...color.palette],
+            ramp: [...color.ramp],
+          },
+        }
+      : {}),
   }
 }

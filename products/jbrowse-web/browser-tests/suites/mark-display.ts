@@ -41,10 +41,13 @@ const suite: TestSuite = {
       config,
       displayTestId,
     }),
+    // Two quantities over one BAM are two pictures, not two axes: the
+    // coverage run draws zoomed out and the per-read MAPQ zoomed in, on the
+    // display's one scale.
     lgvSnapshotTest({
-      name: 'a coverage run on its own right-hand axis under the reads',
-      snapshot: 'mark-two-axes',
-      loc: 'ctgA:1-5000',
+      name: 'a coverage run stands in for the reads zoomed out',
+      snapshot: 'mark-coverage-zoomed-out',
+      loc: 'ctgA:1-50000',
       tracks: ['marks_two_axes'],
       config,
       snapshotSelector: withChrome,

@@ -26,7 +26,7 @@ import {
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
-import { DEFAULT_MARK_COLOR, valueField } from '@jbrowse/core/util/markEncoding'
+import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
@@ -49,7 +49,7 @@ import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, pointInsetPx } from '@jbrowse/render-core/marks'
 import {
-  WiggleScoreConfigMixin,
+  ScoreAxisMixin,
   axisPlotBox,
   makeCrossHatchItem,
   makeScoreSubMenu,
@@ -143,13 +143,6 @@ function storedRegionData(result: EncodedFeaturesResult): MarkRegionData {
   }
 }
 
-// The y field a skipped-feature notice names, whichever form the encoding
-// declared it in.
-function encodingY(encoding: MarkEncoding | undefined) {
-  const y = encoding?.y
-  return y === undefined ? undefined : valueField(y)
-}
-
 function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
   let highest = 0
   for (const [mark, { row }] of layers.entries()) {
@@ -162,21 +155,6 @@ function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
     }
   }
   return highest
-}
-
-// A pinned end of a declared domain, or undefined where the author left it
-// to autoscale.
-function pinnedBound(raw: string | undefined) {
-  const v = Number(raw)
-  return raw === undefined || raw === '' || !Number.isFinite(v) ? undefined : v
-}
-
-/** The `[min, max]` a mark's `y` declaration pins, either end open. */
-export function declaredDomain(
-  mark: MarkConfig,
-): [number | undefined, number | undefined] {
-  const d = mark.encoding.y.domain
-  return [pinnedBound(d[0]), pinnedBound(d[1])]
 }
 
 // The config's raw slot values as the worker's encoding: a `jexl:` string
@@ -220,15 +198,20 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
               : undefined,
           domain: glyph.domain.length > 0 ? [...glyph.domain] : undefined,
         }
+  // A `stack` writes the row this mark then stands in, so its output field
+  // is the row channel's default and a pileup restates nothing.
+  const stacked = mark.transform.find(
+    (s: MarkTransformStepConfig) => s.type === 'stack',
+  )
   return {
     x,
     x2,
     // The field alone: the worker reads a value, and the scale it is read
-    // through is the display's. Shipping the declared scale would put the
+    // through is the display's `scales.y`. Shipping that scale would put the
     // axis type and its bounds in the fetch's inputs, so a menu toggle
     // between linear and log would refetch every region to no effect.
-    y: y.field === '' ? undefined : y.field,
-    row: row === '' ? undefined : row,
+    y: y === '' ? undefined : y,
+    row: row || (stacked ? (stacked.as[0] ?? 'row') : undefined),
     color: scaled,
     glyph: glyphEncoding,
   }
@@ -240,6 +223,9 @@ function stepsOf(
   steps: readonly MarkTransformStepConfig[],
   bpPerPx: number,
 ): TransformStep[] {
+  // The edges the last `bin` wrote, which an `aggregate` behind it groups by
+  // when it names no fields of its own.
+  let binEdges: [string, string] | undefined
   return steps.map((step): TransformStep => {
     const as: string[] = [...step.as]
     switch (step.type) {
@@ -250,17 +236,21 @@ function stepsOf(
         return { type: 'formula', expr: step.expr, as: as[0] ?? 'value' }
       }
       case 'bin': {
+        const edges: [string, string] | undefined =
+          as.length === 2 ? [as[0]!, as[1]!] : undefined
+        binEdges = edges ?? ['start', 'end']
         return {
           type: 'bin',
           step: binStepWidth(step.step, bpPerPx),
           field: step.field || undefined,
-          as: as.length === 2 ? [as[0]!, as[1]!] : undefined,
+          as: edges,
         }
       }
       case 'aggregate': {
         return {
           type: 'aggregate',
-          groupby: [...step.groupby],
+          groupby:
+            step.groupby.length > 0 ? [...step.groupby] : (binEdges ?? []),
           ops: step.ops.map(
             (o: Instance<typeof step.ops>[number]): AggregateOp => ({
               op: o.op,
@@ -274,7 +264,12 @@ function stepsOf(
         return { type: 'coverage', as: as[0] }
       }
       case 'flatten': {
-        return { type: 'flatten', field: step.field || undefined, index: as[0] }
+        return {
+          type: 'flatten',
+          field: step.field || undefined,
+          index: as[0],
+          keepEmpty: step.keepEmpty || undefined,
+        }
       }
       case 'stack': {
         const fields = [...step.fields]
@@ -330,18 +325,10 @@ function markEntryOf(mark: MarkConfig): MarkEntry {
   }
 }
 
-/** The marks at the view's zoom: which draw, and which own each role. */
+/** The marks at the view's zoom: which draw, and which the sidecar stands in for. */
 export interface MarkView {
   visible: boolean[]
-  valueMark: number
-  independentMark: number
   densityMark: number
-}
-
-// Which axis a mark's value reads, or none for a mark with no `y` field.
-function yRoleOf(mark: MarkConfig): 'shared' | 'independent' | 'none' {
-  const { field, resolve } = mark.encoding.y
-  return field === '' ? 'none' : resolve
 }
 
 function layerExtremes(entries: VisibleEntry<StoredLayer>[]) {
@@ -375,7 +362,7 @@ export function stateModelFactory(
       // `source: 'density'` draws the adapter's sidecar in the banner's place
       // — see `densityPayloads`.
       DensityTierMixin(),
-      WiggleScoreConfigMixin(),
+      ScoreAxisMixin(),
       LegendMixin(),
       ContextMenuMixin<MarkDisplayContextMenuInfo>(),
       StoredHoverMixin<MarkHitInfo>(sameMarkHit),
@@ -432,6 +419,16 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * How many declared marks the dialog cannot read back — a span, a third
+       * mark, a transform on the plot itself — and would therefore replace
+       * rather than edit. 0 where a save is the round trip it looks like.
+       */
+      get plotSpecReplaces(): number {
+        const { marks } = self.conf
+        return specOfMarks(marks) === undefined ? marks.length : 0
+      },
+      /**
+       * #getter
        * The declared marks' shapes, in draw order.
        */
       get markShapes(): MarkShapeName[] {
@@ -466,10 +463,7 @@ export function stateModelFactory(
        * #getter
        * The marks at the view's zoom: whether each draws, inside its
        * `minBpPerPx`..`maxBpPerPx` range where 0 is no bound, and the first
-       * drawing mark owning each role, -1 where none does. The shared value
-       * scale is one declaration and the menu edits it; the config schema
-       * refuses a second independent axis; the density sidecar stands in for
-       * one mark.
+       * drawing mark the density sidecar stands in for, -1 where none does.
        */
       get markView(): MarkView {
         const { bpPerPx } = self.host
@@ -477,28 +471,12 @@ export function stateModelFactory(
         const visible: boolean[] = marks.map((m: MarkConfig) =>
           markDrawsAt(markEntryOf(m), bpPerPx),
         )
-        const firstDrawing = (owns: (m: MarkConfig) => boolean) =>
-          marks.findIndex((m: MarkConfig, i: number) => visible[i] && owns(m))
         return {
           visible,
-          valueMark: firstDrawing(m => yRoleOf(m) === 'shared'),
-          independentMark: firstDrawing(m => yRoleOf(m) === 'independent'),
-          densityMark: firstDrawing(m => m.source === 'density'),
+          densityMark: marks.findIndex(
+            (m: MarkConfig, i: number) => visible[i] && m.source === 'density',
+          ),
         }
-      },
-      /**
-       * #getter
-       * The mark reading its own axis, or -1.
-       */
-      get independentMarkIndex(): number {
-        return this.markView.independentMark
-      },
-      /**
-       * #getter
-       * The mark owning the display's shared value scale, or -1.
-       */
-      get valueMarkIndex(): number {
-        return this.markView.valueMark
       },
       /**
        * #getter
@@ -509,15 +487,44 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * `ScoreScaleMixin`'s hook: the scale type and the pinned bounds come
-       * off the owning mark's `encoding.y`, so the axis, the ticks and the
-       * shapes read one declaration.
+       * `ScoreAxisMixin`'s hook: the display owns its one y scale, so the
+       * axis, the ticks and every mark's shapes read `scales.y`.
        */
-      get declaredValueScale() {
-        const mark = self.conf.marks[this.valueMarkIndex]
-        return mark
-          ? { scaleType: mark.encoding.y.scale, domain: declaredDomain(mark) }
-          : undefined
+      get scaleType(): string {
+        return getConf(self, ['scales', 'y', 'type'])
+      },
+      /**
+       * #getter
+       */
+      get manualMinScore(): number | undefined {
+        return getConf(self, ['scales', 'y', 'domainMin'])
+      },
+      /**
+       * #getter
+       */
+      get manualMaxScore(): number | undefined {
+        return getConf(self, ['scales', 'y', 'domainMax'])
+      },
+      /**
+       * #getter
+       * The configured cross-hatch setting the menu toggles; `showCrossHatches`
+       * is what draws, and on this display the two are one — nothing here
+       * spends colour on the score instead of height.
+       */
+      get displayCrossHatches(): boolean {
+        return getConf(self, 'displayCrossHatches')
+      },
+      /**
+       * #getter
+       */
+      get showCrossHatches(): boolean {
+        return this.displayCrossHatches
+      },
+      /**
+       * #getter
+       */
+      get scatterPointSize(): number {
+        return getConf(self, 'scatterPointSize')
       },
       /**
        * #getter
@@ -694,31 +701,26 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The marks folded into the shared y domain: those drawing at this
-       * zoom, less the one reading its own axis.
+       * The marks folded into the y domain: every one drawing at this zoom.
        */
-      get sharedMarkIndices(): number[] {
+      get valuedMarkIndices(): number[] {
         const { visible } = self.markView
-        const { independentMarkIndex } = self
-        return self.markShapes.flatMap((_, i) =>
-          visible[i] && i !== independentMarkIndex ? [i] : [],
-        )
+        return self.markShapes.flatMap((_, i) => (visible[i] ? [i] : []))
       },
+    }))
+    .views(self => ({
       /**
-       * #method
-       * The nice-rounded [min, max] the marks in `indices` fold to over the
-       * visible regions' shipped extremes, widened to the origin where one
-       * of them is a bar, or undefined before any of them loads a value.
+       * #getter
+       * nice-rounded [min, max] over the visible regions' shipped extremes,
+       * widened to the origin whenever a bar mark draws, or undefined before
+       * any valued mark loads
        */
-      markDomain(
-        indices: readonly number[],
-        bounds: readonly [number | undefined, number | undefined],
-        scaleType: string,
-      ) {
-        const origin = self.origin
+      get domain() {
+        const indices = self.valuedMarkIndices
         const folded = new Set(indices)
         const shapes = indices.map(i => self.markShapes[i]!)
         const hasBar = shapes.includes('bar')
+        const { origin } = self
         return visibleStatsDomain({
           active: shapes.some(s => s !== 'span'),
           view: self.host,
@@ -730,62 +732,25 @@ export function stateModelFactory(
           accumulate: layerExtremes,
           range: ({ min, max }) =>
             hasBar ? widenRangeToRules([min, max], [origin]) : [min, max],
-          bounds,
-          scaleType,
+          bounds: [self.minScoreBound, self.maxScoreBound],
+          scaleType: self.scaleType,
         })
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * nice-rounded [min, max] over the visible regions' shipped extremes,
-       * widened to the origin whenever a bar mark draws, or undefined before
-       * any shared valued mark loads
-       */
-      get domain() {
-        return self.markDomain(
-          self.sharedMarkIndices,
-          [self.minScoreBound, self.maxScoreBound],
-          self.scaleType,
-        )
-      },
-      /**
-       * #getter
-       * The independent mark's own scale, folded from its layers alone and
-       * pinned by its own `encoding.y.domain`: what the right-hand axis and
-       * that mark's shapes read.
-       */
-      get independentValueScale():
-        | { domain: [number, number]; scaleType: string; field: string }
-        | undefined {
-        const i = self.independentMarkIndex
-        const mark = self.conf.marks[i]
-        if (!mark) {
-          return undefined
-        }
-        const scaleType = mark.encoding.y.scale
-        const domain = self.markDomain([i], declaredDomain(mark), scaleType)
-        return domain
-          ? { domain, scaleType, field: mark.encoding.y.field }
-          : undefined
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The y scale the chrome draws the axis from — the declared
-       * `encoding.y`, resolved: its type, and its domain autoscaled where it
-       * pins nothing. The shapes read the same pair.
+       * The one y scale the chrome draws the axis from — `scales.y` resolved:
+       * its type, and its domain autoscaled where it pins nothing. Every
+       * mark's shapes read the same pair.
        */
       get valueScales(): ValueScale[] {
         const minimalTicks: boolean = getConf(self, 'minimalTicks')
         const height = self.height
-        const second = self.independentValueScale
-        const sharedField =
-          self.conf.marks[self.valueMarkIndex]?.encoding.y.field
+        const indices = self.valuedMarkIndices
         // A point stands at its centre and needs glyph room at both ends; a
         // bar's top edge is its datum and wants the plot box itself.
-        const glyphInset = (indices: readonly number[]) =>
+        const glyphInset =
           indices.length > 0 &&
           indices.every(i => self.markShapes[i] === 'point')
             ? pointInsetPx(self.scatterPointSize)
@@ -796,11 +761,11 @@ export function stateModelFactory(
         const rowCount = this.rowCount
         const { yTop, plotHeight } = axisPlotBox(height)
         const rowHeight = markRowHeightPx(plotHeight, rowCount)
-        const band = (indices: readonly number[]) =>
+        const band =
           rowCount > 1
             ? {
                 height: rowHeight,
-                offset: glyphInset(indices),
+                offset: glyphInset,
                 bandTops: Array.from(
                   { length: rowCount },
                   (_, row) => yTop + row * rowHeight,
@@ -808,30 +773,15 @@ export function stateModelFactory(
               }
             : {
                 height,
-                offset: YSCALEBAR_LABEL_OFFSET + glyphInset(indices),
+                offset: YSCALEBAR_LABEL_OFFSET + glyphInset,
               }
         return [
           {
             domain: self.domain,
             scaleType: self.scaleType,
-            ...band(self.sharedMarkIndices),
+            ...band,
             minimalTicks,
-            // Captioned only where a second axis is drawn: with one axis
-            // there is nothing to tell it apart from.
-            caption: second ? sharedField : undefined,
           },
-          ...(second
-            ? [
-                {
-                  domain: second.domain,
-                  scaleType: second.scaleType,
-                  ...band([self.independentMarkIndex]),
-                  minimalTicks,
-                  side: 'right' as const,
-                  caption: second.field,
-                },
-              ]
-            : []),
         ]
       },
       /**
@@ -899,23 +849,9 @@ export function stateModelFactory(
         const canvasHeight = axisPlotBox(self.height).plotHeight
         const scaleTypeY = self.scaleType === 'log' ? 'log' : 'linear'
         const { colorRamps } = this
-        const markIndex = self.independentMarkIndex
-        const second = self.independentValueScale
-        const independentY =
-          markIndex === -1
-            ? undefined
-            : resolveRenderState(second?.domain, domain => ({
-                markIndex,
-                domain,
-                scaleType:
-                  second?.scaleType === 'log'
-                    ? ('log' as const)
-                    : ('linear' as const),
-              }))
         return resolveRenderState(self.domain, domainY => ({
           domainY,
           scaleTypeY,
-          independentY,
           colorRamps,
           canvasWidth,
           canvasHeight,
@@ -982,7 +918,7 @@ export function stateModelFactory(
               .map((layer, i) => ({
                 count: layer.count,
                 skipped: layer.skipped,
-                field: encodingY(encodings[i]),
+                field: encodings[i]?.y,
               }))
               .filter((_, i) => visible[i]),
           ),
@@ -1119,28 +1055,6 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * The score menu's pin lands on the declaration: `encoding.y` owns the
-       * value scale, so an edited bound writes there and not on a second
-       * pair of display slots. `end` is 0 for the minimum, 1 for the
-       * maximum; `undefined` reopens that end to autoscale.
-       */
-      setDeclaredBound(end: 0 | 1, val?: number) {
-        const mark = self.conf.marks[self.valueMarkIndex]
-        if (!mark) {
-          setConf(self, end === 0 ? 'minScore' : 'maxScore', val)
-          return
-        }
-        const y = mark.encoding.y
-        const next = [y.domain[0] ?? '', y.domain[1] ?? '']
-        next[end] = val === undefined ? '' : String(val)
-        setConf(
-          { configuration: y },
-          'domain',
-          next[0] === '' && next[1] === '' ? [] : next,
-        )
-      },
-      /**
-       * #action
        */
       setJexlFilters(filters?: string[]) {
         self.jexlFiltersSetting = cast(filters)
@@ -1165,15 +1079,18 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
+       * The score menu's Set min/max, its pin and its Clear all land on
+       * `scales.y`, the display's one value scale, so a bound the user sets
+       * and a bound the config author wrote are the same slot.
        */
       setMinScore(val?: number) {
-        self.setDeclaredBound(0, val)
+        setConf({ configuration: self.conf.scales.y }, 'domainMin', val)
       },
       /**
        * #action
        */
       setMaxScore(val?: number) {
-        self.setDeclaredBound(1, val)
+        setConf({ configuration: self.conf.scales.y }, 'domainMax', val)
       },
       /**
        * #action
@@ -1219,16 +1136,21 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * Writes the owning mark's declared scale type, the same declaration
-       * the axis and the shapes read.
        */
       setScaleType(scaleType: string) {
-        const mark = self.conf.marks[self.valueMarkIndex]
-        if (mark) {
-          setConf({ configuration: mark.encoding.y }, 'scale', scaleType)
-        } else {
-          setConf(self, 'scaleType', scaleType)
-        }
+        setConf({ configuration: self.conf.scales.y }, 'type', scaleType)
+      },
+      /**
+       * #action
+       */
+      toggleCrossHatches() {
+        setConf(self, 'displayCrossHatches', !self.displayCrossHatches)
+      },
+      /**
+       * #action
+       */
+      setScatterPointSize(val?: number) {
+        setConf(self, 'scatterPointSize', val)
       },
     }))
     .actions(self => ({

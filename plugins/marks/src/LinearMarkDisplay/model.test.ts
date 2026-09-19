@@ -214,13 +214,13 @@ test('the domain spans every valued layer and widens to the origin for a bar', (
   expect(display.renderState.domainY).toEqual([0, 20])
 })
 
-test('the declared y scale is the axis: its type and its pinned bounds', () => {
-  const { createDisplay } = createTestEnvironment([
-    {
-      shape: 'bar',
-      encoding: { y: { field: 'score', scale: 'log', domain: [1, 1000] } },
-    },
-  ])
+test("the display's y scale is the axis: its type and its pinned ends", () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ shape: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { scales: { y: { type: 'log', domainMin: 1, domainMax: 1000 } } },
+  )
   const { display } = createDisplay()
   expect(display.scaleType).toBe('log')
   expect(display.minScoreBound).toBe(1)
@@ -231,7 +231,7 @@ test('the declared y scale is the axis: its type and its pinned bounds', () => {
   expect(display.renderState.scaleTypeY).toBe('log')
 })
 
-test('a bare y field is the linear autoscaled form it always was', () => {
+test('nothing declared is the linear autoscaled form it always was', () => {
   const { createDisplay } = createTestEnvironment([
     { shape: 'bar', encoding: { y: 'score' } },
   ])
@@ -242,16 +242,19 @@ test('a bare y field is the linear autoscaled form it always was', () => {
   expect(display.domain).toEqual([0, 8])
 })
 
-test('one end of a declared domain pins and the other autoscales', () => {
-  const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: { field: 'score', domain: ['', '50'] } } },
-  ])
+test('one end of the declared domain pins and the other autoscales', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ shape: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { scales: { y: { domainMax: 50 } } },
+  )
   const { display } = createDisplay()
   expect(display.minScoreBound).toBeUndefined()
   expect(display.maxScoreBound).toBe(50)
 })
 
-test('pinning the current range lands on the declaration', () => {
+test("pinning the current range lands on the display's scale", () => {
   const { createDisplay } = createTestEnvironment([
     { shape: 'bar', encoding: { y: 'score' } },
   ])
@@ -260,27 +263,27 @@ test('pinning the current range lands on the declaration', () => {
   const drawn = display.domain!
   expect(drawn[1]).toBeGreaterThanOrEqual(40)
   makePinCurrentRangeItem(display, drawn).onClick()
-  expect([...display.conf.marks[0]!.encoding.y.domain]).toEqual(
-    drawn.map(String),
-  )
-  expect(display.maxScore).toBe(Number.MAX_VALUE)
+  expect([
+    display.conf.scales.y.domainMin,
+    display.conf.scales.y.domainMax,
+  ]).toEqual(drawn)
   expect(display.hasManualScoreBounds).toBe(true)
 })
 
-test('the score menu edits the declaration, not a second pair of slots', () => {
+test('the score menu edits scales.y, the one place the axis is written', () => {
   const { createDisplay } = createTestEnvironment([
     { shape: 'bar', encoding: { y: 'score' } },
+    { shape: 'point', encoding: { y: 'other' } },
   ])
   const { display } = createDisplay()
   display.setMaxScore(200)
-  expect([...display.conf.marks[0]!.encoding.y.domain]).toEqual(['', '200'])
-  expect(display.maxScore).toBe(Number.MAX_VALUE)
+  expect(display.conf.scales.y.domainMax).toBe(200)
   expect(display.maxScoreBound).toBe(200)
   display.setScaleType('log')
-  expect(display.conf.marks[0]!.encoding.y.scale).toBe('log')
+  expect(display.conf.scales.y.type).toBe('log')
   expect(display.scaleType).toBe('log')
   display.setMaxScore(undefined)
-  expect([...display.conf.marks[0]!.encoding.y.domain]).toEqual([])
+  expect(display.conf.scales.y.domainMax).toBeUndefined()
   expect(display.hasManualScoreBounds).toBe(false)
 })
 
@@ -326,76 +329,23 @@ test('a pinned ramp domain is every region s, whatever they hold', () => {
   expect(display.colorRamps[0]!.domain).toEqual([0, 100])
 })
 
-test('an independent mark folds its own domain and takes the right-hand axis', () => {
+// Two marks measuring two quantities is two plots, not two axes: the display
+// declares one scale and every drawing mark folds into it.
+test('two valued marks share the one axis, whatever they measure', () => {
   const { createDisplay } = createTestEnvironment([
     { shape: 'bar', encoding: { y: 'score' } },
-    {
-      shape: 'point',
-      encoding: { y: { field: 'coverage', resolve: 'independent' } },
-    },
+    { shape: 'point', encoding: { y: 'coverage' } },
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [3, 8] }, { y: [200, 900] }]), REGION)
-  expect(display.domain).toEqual([0, 8])
-  expect(display.independentValueScale).toEqual({
-    domain: [0, 900],
-    scaleType: 'linear',
-    field: 'coverage',
-  })
-  expect(display.renderState.independentY).toEqual({
-    markIndex: 1,
-    domain: [0, 900],
-    scaleType: 'linear',
-  })
-  const [left, right] = display.valueScales
-  expect(left).toMatchObject({ domain: [0, 8], caption: 'score' })
-  expect(left!.side).toBeUndefined()
-  expect(right).toMatchObject({
-    domain: [0, 900],
-    side: 'right',
-    caption: 'coverage',
-  })
-  expect(display.axes.map(a => a.side)).toEqual([undefined, 'right'])
-})
-
-test('an independent mark keeps its own scale type and pins, and leaves the shared menu alone', () => {
-  const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
-    {
-      shape: 'bar',
-      encoding: {
-        y: {
-          field: 'coverage',
-          scale: 'log',
-          domain: [1, 1000],
-          resolve: 'independent',
-        },
-      },
-    },
-  ])
-  const { display } = createDisplay()
-  display.setRpcData(0, result([{ y: [3, 8] }, { y: [200, 900] }]), REGION)
-  expect(display.valueMarkIndex).toBe(0)
-  expect(display.independentMarkIndex).toBe(1)
-  expect(display.scaleType).toBe('linear')
-  expect(display.independentValueScale).toMatchObject({
-    domain: [1, 1000],
-    scaleType: 'log',
-  })
-  display.setMaxScore(50)
-  expect([...display.conf.marks[0]!.encoding.y.domain]).toEqual(['', '50'])
-  expect([...display.conf.marks[1]!.encoding.y.domain]).toEqual(['1', '1000'])
-})
-
-test('a display with no independent mark declares one axis and no captions', () => {
-  const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
-  ])
-  const { display } = createDisplay()
-  display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
+  expect(display.domain).toEqual([0, 900])
+  expect(display.renderState.domainY).toEqual([0, 900])
   expect(display.valueScales).toHaveLength(1)
-  expect(display.valueScales[0]!.caption).toBeUndefined()
-  expect(display.renderState.independentY).toBeUndefined()
+  const [only] = display.valueScales
+  expect(only).toMatchObject({ domain: [0, 900] })
+  expect(only!.side).toBeUndefined()
+  expect(only!.caption).toBeUndefined()
+  expect(display.axes.map(a => a.side)).toEqual([undefined])
 })
 
 // The encoder reads a missing y as 0 for every feature, so before this a
@@ -408,7 +358,7 @@ test('a bar or point naming no y is refused where the config is read', () => {
   ).toThrow(/a bar or point stands at a value and needs encoding.y/)
   expect(() =>
     createTestEnvironment([
-      { shape: 'point', encoding: { y: { scale: 'log' } } },
+      { shape: 'point', encoding: { y: '' } },
     ]).createDisplay(),
   ).toThrow(/mark 0 \(point\) names none/)
   expect(() =>
@@ -430,19 +380,13 @@ test('an encoding channel refuses a key it does not declare', () => {
     ]).createDisplay(),
   ).toThrow('MarkGlyph takes value, field, scale, range and domain, not shape')
   expect(() =>
-    createTestEnvironment([
-      { shape: 'bar', encoding: { y: { field: 'score', min: 0 } } },
-    ]).createDisplay(),
-  ).toThrow('MarkValue takes field, scale, domain and resolve, not min')
-})
-
-test('two independent marks are refused where the config is read', () => {
-  expect(() =>
-    createTestEnvironment([
-      { shape: 'bar', encoding: { y: { field: 'a', resolve: 'independent' } } },
-      { shape: 'bar', encoding: { y: { field: 'b', resolve: 'independent' } } },
-    ]).createDisplay(),
-  ).toThrow(/one mark at most may declare encoding.y.resolve "independent"/)
+    createTestEnvironment(
+      [{ shape: 'bar', encoding: { y: 'score' } }],
+      REGION,
+      'BedAdapter',
+      { scales: { y: { min: 0 } } },
+    ).createDisplay(),
+  ).toThrow('MarkValueScale takes type, domainMin and domainMax, not min')
 })
 
 // A span's ramp resolves in the worker (ADR-113), one table per region, under
@@ -455,7 +399,7 @@ test('a span painting an unpinned colour ramp is refused, and a pinned one is no
         encoding: { color: { field: 'score', scale: 'linear' } },
       },
     ]).createDisplay(),
-  ).toThrow(/mark 0 needs a pinned two-entry encoding.color.domain/)
+  ).toThrow(/mark 0 leaves encoding.color.domain short or open/)
   expect(() =>
     createTestEnvironment([
       {
@@ -463,7 +407,7 @@ test('a span painting an unpinned colour ramp is refused, and a pinned one is no
         encoding: { color: { field: 'score', ramp: ['white', 'red'] } },
       },
     ]).createDisplay(),
-  ).toThrow(/mark 0 needs a pinned two-entry encoding.color.domain/)
+  ).toThrow(/mark 0 leaves encoding.color.domain short or open/)
   expect(() =>
     createTestEnvironment([
       {
@@ -508,30 +452,6 @@ test('a channel the shape does not read is refused where the config is read', ()
   ).not.toThrow()
 })
 
-// Only the first shared mark's y declaration reaches the axis, so a second one
-// saying something else is a picture nobody asked for.
-test('two shared marks declaring different y scales are refused where the config is read', () => {
-  expect(() =>
-    createTestEnvironment([
-      { shape: 'bar', encoding: { y: { field: 'a', scale: 'log' } } },
-      { shape: 'bar', encoding: { y: { field: 'b', domain: [0, 10] } } },
-    ]).createDisplay(),
-  ).toThrow(/mark 1 declares a different one that nothing reads/)
-  expect(() =>
-    createTestEnvironment([
-      { shape: 'bar', encoding: { y: { field: 'a', scale: 'log' } } },
-      { shape: 'bar', encoding: { y: 'b' } },
-      { shape: 'bar', encoding: { y: { field: 'c', scale: 'log' } } },
-      {
-        shape: 'bar',
-        encoding: {
-          y: { field: 'd', scale: 'linear', resolve: 'independent' },
-        },
-      },
-    ]).createDisplay(),
-  ).not.toThrow()
-})
-
 // `encodingOf` maps the ramp's domain through `Number`, so an empty entry pins
 // that end to 0 rather than autoscaling it the way `y.domain` does.
 test('a colour ramp domain with an open end is refused where the config is read', () => {
@@ -545,7 +465,7 @@ test('a colour ramp domain with an open end is refused where the config is read'
         },
       },
     ]).createDisplay(),
-  ).toThrow(/mark 0 leaves an end of encoding.color.domain open/)
+  ).toThrow(/mark 0 leaves encoding.color.domain short or open/)
 })
 
 test('a span-only display has no score domain', () => {
@@ -1571,12 +1491,49 @@ test('the dialog submit writes the plot and its binned count into config', () =>
   expect(
     display.conf.marks[1]!.transform.map((s: { type: string }) => s.type),
   ).toEqual(['bin', 'aggregate'])
-  expect(display.plotSpec).toEqual({
+  expect(display.plotSpec).toMatchObject({
     field: 'score',
     shape: 'point',
     colorField: 'repClass',
     binned: true,
   })
+  expect(display.plotSpecReplaces).toBe(0)
+})
+
+// A config the dialog cannot read back is one a save would replace, and the
+// dialog says so before it does.
+test('a declared list the dialog cannot read counts as what a save replaces', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'span', transform: [{ type: 'stack' }], encoding: {} },
+    { shape: 'bar', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  expect(display.plotSpecReplaces).toBe(2)
+})
+
+// The dialog writes a colour object it did not author every member of, so a
+// reopen and save has to hand the declared palette and order back.
+test('a reopened plot keeps the colour domain, palette and ramp it was declared with', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'bar',
+      encoding: {
+        y: 'score',
+        color: {
+          field: 'repClass',
+          scale: 'categorical',
+          domain: ['Alu', 'L1'],
+          palette: ['red', 'blue'],
+        },
+      },
+    },
+  ])
+  const { display } = createDisplay()
+  display.setPlotFields({ numeric: ['score'], categorical: ['repClass'] })
+  display.setPlotMarks(display.plotSpec)
+  const { color } = display.conf.marks[0]!.encoding
+  expect([...color.domain]).toEqual(['Alu', 'L1'])
+  expect([...color.palette]).toEqual(['red', 'blue'])
 })
 
 test('a color or glyph naming a field and no scale reads it categorically, or through a ramp as linear', () => {

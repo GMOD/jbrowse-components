@@ -325,16 +325,13 @@ test('a categorical colour resolves in the worker whatever lanes are named', () 
   expect(r.color).toBeDefined()
 })
 
-test('y declares its scale beside its field, and the encoder reads the field', () => {
-  const bare = encodeFeatures(features, { y: 'score' }, ['y'], { jexl })
-  const declared = encodeFeatures(
-    features,
-    { y: { field: 'score', scale: 'log', domain: [1, 100] } },
-    ['y'],
-    { jexl },
-  )
-  expect([...declared.y]).toEqual([...bare.y])
-  expect(declared.yMin).toBe(bare.yMin)
+test('y is a field name, read the same way a reader in its place is', () => {
+  const named = encodeFeatures(features, { y: 'score' }, ['y'], { jexl })
+  const read = encodeFeatures(features, { y: f => f.get('score') }, ['y'], {
+    jexl,
+  })
+  expect([...read.y]).toEqual([...named.y])
+  expect(read.yMin).toBe(named.yMin)
 })
 
 test('glyph is a name or a jexl expression returning one', () => {

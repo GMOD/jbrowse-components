@@ -118,12 +118,19 @@ function markLike(
   color = '',
   transform: { type: string }[] = [],
   colorScale?: MarkColorScale,
+  extras: { domain?: string[]; palette?: string[]; ramp?: string[] } = {},
 ) {
   return {
     shape,
     encoding: {
-      y: { field: y },
-      color: { field: color, scale: colorScale, ramp: [] },
+      y,
+      color: {
+        field: color,
+        scale: colorScale,
+        domain: extras.domain ?? [],
+        palette: extras.palette ?? [],
+        ramp: extras.ramp ?? [],
+      },
     },
     transform,
   }
@@ -135,6 +142,13 @@ test('a single-mark config reopens the dialog on what it declared', () => {
     shape: 'point',
     colorField: 'repClass',
     binned: false,
+    colorScale: {
+      field: 'repClass',
+      scale: undefined,
+      domain: [],
+      palette: [],
+      ramp: [],
+    },
   })
   expect(
     specOfMarks([
@@ -145,10 +159,35 @@ test('a single-mark config reopens the dialog on what it declared', () => {
 })
 
 test('a colour field kept under the none scale reopens as no colour', () => {
+  const spec = specOfMarks([markLike('point', 'score', 'repClass', [], 'none')])
+  expect(spec?.colorField).toBe('')
+  expect(spec?.colorScale).toBeUndefined()
+})
+
+// The dialog offers a field and a shape; the domain, palette and ramp beside
+// them are the config author's, and a save used to drop all three.
+test('a reopened colour carries the members the dialog does not ask about', () => {
+  const declared = markLike('bar', 'score', 'depth', [], 'log', {
+    domain: ['1', '1000'],
+    ramp: ['white', 'red'],
+  })
+  const spec = specOfMarks([declared])!
   expect(
-    specOfMarks([markLike('point', 'score', 'repClass', [], 'none')])
-      ?.colorField,
-  ).toBe('')
+    plotMarks(spec, { numeric: ['score', 'depth'], categorical: [] })[0]!
+      .encoding.color,
+  ).toEqual({
+    field: 'depth',
+    scale: 'log',
+    domain: ['1', '1000'],
+    ramp: ['white', 'red'],
+  })
+  // another field starts from neither
+  expect(
+    plotMarks(
+      { ...spec, colorField: 'score' },
+      { numeric: ['score', 'depth'], categorical: [] },
+    )[0]!.encoding.color,
+  ).toEqual({ field: 'score', scale: 'linear' })
 })
 
 test('a config the dialog could not have written reopens empty', () => {

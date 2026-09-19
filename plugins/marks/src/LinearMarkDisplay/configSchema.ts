@@ -9,7 +9,6 @@ import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterCon
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
-import { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
 import { markColorScale, markColorSchema } from './markColorConfigSchema.ts'
@@ -105,66 +104,54 @@ const markGlyphSchema = ConfigurationSchema(
   },
 )
 
-const markValueSchema = ConfigurationSchema(
-  'MarkValue',
+const markValueScaleSchema = ConfigurationSchema(
+  'MarkValueScale',
   {
     /**
-     * #slot marks.encoding.y.field
-     * The feature field, or jexl callback over `feature`, plotted on the
-     * score axis. A feature whose value is not a finite number is skipped.
-     * Empty for a mark with no value, such as a span; a bar or
-     * point must name one, and the config is refused where it does not.
-     * Writing `y: 'score'` directly on the encoding lands here.
+     * #slot scales.y.type
+     * How the axis reads its domain. The ticks, the cross-hatches and the
+     * shader's placement all come from it.
      */
-    field: {
-      type: 'string',
-      defaultValue: '',
-      description: 'value field, or jexl callback',
-    },
-    /**
-     * #slot marks.encoding.y.scale
-     * How the axis reads the domain. This is the display's value scale: the
-     * ticks, the cross-hatches and the shader's placement all come from it,
-     * and the first mark that names a `field` is the one that owns it.
-     */
-    scale: {
+    type: {
       type: 'stringEnum',
-      model: types.enumeration('MarkValueScale', ['linear', 'log']),
+      model: types.enumeration('MarkScaleType', ['linear', 'log']),
       defaultValue: 'linear',
       description: 'linear or log',
     },
     /**
-     * #slot marks.encoding.y.domain
-     * The `[min, max]` the axis spans, pinning what would otherwise
-     * autoscale to the loaded regions. An empty entry autoscales that end,
-     * so `["0", ""]` pins the floor alone. The score menu's "Set min/max"
-     * writes here.
+     * #slot scales.y.domainMin
+     * The bottom of the axis, pinning what would otherwise autoscale to the
+     * loaded regions. Unset autoscales that end. The score menu's "Set
+     * min/max" writes here.
      */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'pinned [min, max]',
+    domainMin: {
+      type: 'maybeNumber',
+      description: 'pinned bottom of the axis; unset autoscales',
     },
     /**
-     * #slot marks.encoding.y.resolve
-     * Which axis this mark reads. `shared` folds it into the display's one y
-     * domain with every other mark. `independent` gives it a domain folded
-     * from its own layers and a second axis on the right, so a coverage run
-     * and the raw features can share a plot. One mark per display may ask
-     * for it.
+     * #slot scales.y.domainMax
+     * The top of the axis. Unset autoscales that end.
      */
-    resolve: {
-      type: 'stringEnum',
-      model: types.enumeration('MarkValueResolve', ['shared', 'independent']),
-      defaultValue: 'shared',
-      description: 'shared or independent y axis',
+    domainMax: {
+      type: 'maybeNumber',
+      description: 'pinned top of the axis; unset autoscales',
     },
   },
+  { closed: true },
+)
+
+const markScalesSchema = ConfigurationSchema(
+  'MarkScales',
   {
-    shorthand: 'field',
-    closed: true,
-    preProcessSnapshot: snap => normalizeChannel(snap, 'y'),
+    /**
+     * #slot scales.y
+     * The one value scale every mark's `encoding.y` is read through — the
+     * plot's, not a mark's, the way a grammar of graphics gives one scale per
+     * aesthetic.
+     */
+    y: markValueScaleSchema,
   },
+  { closed: true },
 )
 
 const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
@@ -189,22 +176,29 @@ const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
   },
   /**
    * #slot marks.encoding.y
-   * The value plotted on the score axis: a feature field, a jexl callback,
-   * or an object naming the field with the scale it is read through. The
-   * scale is the display's — its axis and its shader read the same
-   * declaration.
+   * The feature field, or jexl callback over `feature`, plotted on the score
+   * axis. A feature whose value is not a finite number is skipped. Empty for
+   * a mark with no value, such as a span; a bar or point must name one, and
+   * the config is refused where it does not. The scale it is read through is
+   * the display's `scales.y`.
    */
-  y: markValueSchema,
+  y: {
+    type: 'string',
+    defaultValue: '',
+    description: 'value field, or jexl callback',
+    contextVariable: ['feature'],
+  },
   /**
    * #slot marks.encoding.row
-   * For a span mark: the feature field, or jexl callback, naming the band
-   * the span stacks on, an integer from 0; a feature with nothing there sits
-   * on band 0. Empty puts every span on one band across the whole plot.
+   * The feature field, or jexl callback, naming the band the mark stands in,
+   * an integer from 0; a feature with nothing there sits on band 0. Empty
+   * puts every mark on one band across the whole plot, unless this mark's
+   * own `transform` holds a `stack`, whose output field it then reads.
    */
   row: {
     type: 'string',
     defaultValue: '',
-    description: 'band field for spans',
+    description: 'band field; empty follows a stack step',
   },
   /**
    * #slot marks.encoding.color
@@ -364,15 +358,27 @@ const transformStepSchema = ConfigurationSchema(
       description: 'bp between two features on one row',
     },
     /**
+     * #slot marks.transform.keepEmpty
+     * For a `flatten` step: keep a feature whose array field holds nothing,
+     * which is otherwise dropped.
+     */
+    keepEmpty: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'keep a feature whose array field is empty',
+    },
+    /**
      * #slot marks.transform.groupby
      * For an `aggregate` step: the fields whose distinct value sets make
-     * the groups — `["start", "end"]` after a `bin`. Empty folds the whole
-     * region into one feature.
+     * the groups. Empty takes the edges a preceding `bin` in the same list
+     * wrote — its `as`, or `["start", "end"]` — so binning and counting needs
+     * no restatement; with no `bin` in front it folds the whole region into
+     * one feature.
      */
     groupby: {
       type: 'stringArray',
       defaultValue: [],
-      description: 'grouping fields',
+      description: 'grouping fields; empty follows a preceding bin',
     },
     /**
      * #slot marks.transform.ops
@@ -383,19 +389,10 @@ const transformStepSchema = ConfigurationSchema(
   { preProcessSnapshot: liftAs },
 )
 
-type MarkYSnapshot =
-  | string
-  | { field?: string; resolve?: string; scale?: string; domain?: unknown }
-  | undefined
-
 interface MarkSnapshot {
   shape?: string
   source?: string
-  encoding?: Record<string, unknown> & { y?: MarkYSnapshot }
-}
-
-function valueField(y: MarkYSnapshot) {
-  return typeof y === 'string' ? y : y?.field
+  encoding?: Record<string, unknown> & { y?: string }
 }
 
 // Every shape places its x edges; the rest of its channels are the lanes the
@@ -432,22 +429,10 @@ function pinned(entry: unknown) {
   return entry !== '' && Number.isFinite(Number(entry))
 }
 
-function declaredYScale(y: MarkYSnapshot) {
-  return typeof y === 'object' &&
-    y.resolve !== 'independent' &&
-    (y.scale !== undefined || y.domain !== undefined)
-    ? JSON.stringify([
-        y.scale,
-        (y.domain as unknown[] | undefined)?.map(String),
-      ])
-    : undefined
-}
-
 // What a `marks` config cannot mean, refused where the config is read rather
 // than where it is drawn, so the message names the marks. A bar or point
 // stands at a value: with no `y` the encoder reads 0 for every feature and the
-// display draws nothing, silently. And the chrome places one second axis, on
-// the right, so two independent marks have no reading.
+// display draws nothing, silently.
 function checkMarks(snap: Record<string, unknown>) {
   const { marks } = snap
   if (!Array.isArray(marks)) {
@@ -456,23 +441,13 @@ function checkMarks(snap: Record<string, unknown>) {
   const entries = marks as MarkSnapshot[]
   const valueless = entries.flatMap((mark, i) => {
     const shape = mark.shape ?? 'bar'
-    return (shape === 'bar' || shape === 'point') &&
-      !valueField(mark.encoding?.y)
+    return (shape === 'bar' || shape === 'point') && !mark.encoding?.y
       ? [`${i} (${shape})`]
       : []
   })
   if (valueless.length > 0) {
     throw new Error(
       `LinearMarkDisplay: a bar or point stands at a value and needs encoding.y to name the field it plots; mark${valueless.length > 1 ? 's' : ''} ${valueless.join(', ')} name${valueless.length > 1 ? '' : 's'} none`,
-    )
-  }
-  const asked = entries.flatMap((mark, i) => {
-    const y = mark.encoding?.y
-    return typeof y === 'object' && y.resolve === 'independent' ? [i] : []
-  })
-  if (asked.length > 1) {
-    throw new Error(
-      `LinearMarkDisplay: one mark at most may declare encoding.y.resolve "independent", and marks ${asked.join(', ')} all do — the second axis has one place to go`,
     )
   }
   const unread = entries.flatMap((mark, i) => {
@@ -491,39 +466,24 @@ function checkMarks(snap: Record<string, unknown>) {
       `LinearMarkDisplay: ${unread.join(', ')}, which its shape does not read`,
     )
   }
-  const unpinnedSpan = entries.flatMap((mark, i) => {
+  // A ramp spans two finite numbers: `encodingOf` maps each entry through
+  // `Number`, so an open end reads as 0 rather than autoscaling the way
+  // `scales.y` does. A span must declare the pair as well as spell it, its
+  // ramp resolving in the worker against each region's own extremes.
+  const openRamp = entries.flatMap((mark, i) => {
     const domain = rampDomain(mark)
-    return mark.shape === 'span' && domain && domain.length !== 2
+    if (!domain) {
+      return []
+    }
+    const pinnedPair = domain.length === 2 && domain.every(pinned)
+    const declared = domain.length > 0
+    return (mark.shape === 'span' ? !pinnedPair : declared && !pinnedPair)
       ? [`mark ${i}`]
       : []
   })
-  if (unpinnedSpan.length > 0) {
+  if (openRamp.length > 0) {
     throw new Error(
-      `LinearMarkDisplay: a span's colour ramp resolves in the worker against each region's own extremes, so ${unpinnedSpan.join(', ')} needs a pinned two-entry encoding.color.domain — one the legend and every region agree on`,
-    )
-  }
-  const openEnded = entries.flatMap((mark, i) => {
-    const domain = rampDomain(mark)
-    return domain && domain.length > 0 && !domain.every(pinned)
-      ? [`mark ${i}`]
-      : []
-  })
-  if (openEnded.length > 0) {
-    throw new Error(
-      `LinearMarkDisplay: a colour ramp spans two finite numbers, so ${openEnded.join(', ')} leaves an end of encoding.color.domain open, which reads as 0 rather than autoscaling the way encoding.y.domain does`,
-    )
-  }
-  const declared = entries.flatMap((mark, i) => {
-    const y = declaredYScale(mark.encoding?.y)
-    return y === undefined ? [] : [[i, y] as const]
-  })
-  const owner = declared[0]
-  const disagree = owner
-    ? declared.filter(([, y]) => y !== owner[1]).map(([i]) => i)
-    : []
-  if (disagree.length > 0) {
-    throw new Error(
-      `LinearMarkDisplay: the shared axis is mark ${owner![0]}'s encoding.y scale and domain, so ${disagree.map(i => `mark ${i}`).join(', ')} declares a different one that nothing reads`,
+      `LinearMarkDisplay: a colour ramp spans a pinned [min, max] of two finite numbers, and ${openRamp.join(', ')} leaves encoding.color.domain short or open — a span needs the pair declared because its ramp resolves in the worker against each region's own extremes, and every other shape reads an open end as 0`,
     )
   }
   return snap
@@ -670,7 +630,12 @@ export function configSchemaFactory() {
        * order the bands stack in.
        */
       facet: facetConfigSchema,
-      ...scoreAxisConfigSchemaFields,
+      /**
+       * #slot scales
+       * The scales the marks are read through, owned by the display rather
+       * than by a mark: `y` alone, and every mark's `encoding.y` shares it.
+       */
+      scales: markScalesSchema,
       /**
        * #slot origin
        * The value bars grow from. The axis widens to include it whenever a
@@ -709,6 +674,16 @@ export function configSchemaFactory() {
         defaultValue: false,
         description: 'Draw only the min/max Y-axis ticks',
         advanced: true,
+      },
+      /**
+       * #slot displayCrossHatches
+       * Rule the plot with horizontal cross hatches at the tick positions —
+       * the config form of the score menu's "Show cross hatches".
+       */
+      displayCrossHatches: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'rule the plot at the tick positions',
       },
       /**
        * #slot showLegend

@@ -28,7 +28,6 @@ import type {
   GlyphScaleTable,
   LaneName,
   RampRef,
-  ValueEncoding,
 } from './markEncodingTypes.ts'
 import type { ProgressReporter } from './progress.ts'
 import type { Feature } from './simpleFeature.ts'
@@ -59,7 +58,6 @@ export type {
   RampRef,
   ScaleTable,
   TransformStep,
-  ValueEncoding,
 } from './markEncodingTypes.ts'
 
 export { NO_VALUE_LABEL } from './categoricalField.ts'
@@ -89,7 +87,7 @@ export type ChannelReader<T = unknown> = (feature: Feature) => T
 export interface MarkEncodingInput {
   x?: FieldRef | ChannelReader
   x2?: FieldRef | ChannelReader
-  y?: ValueEncoding | ChannelReader
+  y?: FieldRef | ChannelReader
   row?: FieldRef | ChannelReader
   color?: ColorEncoding | ChannelReader<number>
   glyph?: GlyphEncoding | ChannelReader<number>
@@ -118,15 +116,6 @@ function channelReader(
   jexl: JexlInstance | undefined,
 ): ChannelReader {
   return typeof ref === 'function' ? ref : fieldReader(ref, jexl)
-}
-
-/**
- * #api
- * The field a `y` declaration reads, whichever of its two forms it is
- * written in.
- */
-export function valueField(y: ValueEncoding): FieldRef {
-  return typeof y === 'string' ? y : y.field
 }
 
 function isGlyphName(glyph: string): glyph is GlyphName {
@@ -248,10 +237,7 @@ export function encodeFeatures<L extends LaneName>(
   const { y: yEncoding } = encoding
   const readY =
     has('y') && yEncoding !== undefined
-      ? channelReader(
-          typeof yEncoding === 'object' ? valueField(yEncoding) : yEncoding,
-          jexl,
-        )
+      ? channelReader(yEncoding, jexl)
       : undefined
   const readRow =
     has('row') && encoding.row !== undefined

@@ -1,7 +1,6 @@
 import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { assembleLocString } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import { valueField } from '@jbrowse/core/util/markEncoding'
 import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -43,7 +42,7 @@ const MarkTooltip = observer(function MarkTooltip({
           {hit.y === undefined || !encoding?.y ? null : (
             <>
               <br />
-              {valueField(encoding.y)}: {toP(hit.y, 4)}
+              {encoding.y}: {toP(hit.y, 4)}
             </>
           )}
           {scale && (swatch !== undefined || hit.colorValue !== undefined) ? (
