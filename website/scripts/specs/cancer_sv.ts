@@ -1869,8 +1869,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         {
           trackId: 'K562_cn',
           height: 130,
-          minScore: 0,
-          maxScore: 8,
+          scales: { y: { domainMin: 0, domainMax: 8 } },
         },
       ],
     }),

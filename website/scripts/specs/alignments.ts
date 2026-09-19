@@ -182,7 +182,7 @@ function strandSpecificSpec(): ScreenshotSpec {
           // running ~100x the surfeit genes beside it, so on a linear axis its
           // exons are the only thing with height and SURF1/SURF2 read as having
           // no expression at all, which is not what the file says.
-          scaleType: 'log',
+          scales: { y: { type: 'log' } },
           height: 330,
           maxHeight: 2000,
           minSashimiScore: 3,
@@ -950,7 +950,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           type: 'LinearAlignmentsDisplay',
           showSashimiLabels: true,
           sashimiArcsMode: 'auto',
-          scaleType: 'log',
+          scales: { y: { type: 'log' } },
           featureHeight: 1,
         },
       ],

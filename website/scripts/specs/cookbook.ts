@@ -296,8 +296,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
               // so a plateau at 2 and a plateau at 4 both filled their row and
               // the difference between two individuals vanished. 5 rather than 4
               // so the highest level still has headroom above it.
-              minScore: 0,
-              maxScore: 5,
+              scales: { y: { domainMin: 0, domainMax: 5 } },
             },
           ],
         },

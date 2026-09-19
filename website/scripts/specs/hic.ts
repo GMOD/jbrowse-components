@@ -250,14 +250,12 @@ export const hicSpecs: ScreenshotSpec[] = [
         {
           trackId: 'hic_gm12878_compartments',
           height: 84,
-          minScore: -0.012,
-          maxScore: 0.012,
+          scales: { y: { domainMin: -0.012, domainMax: 0.012 } },
         },
         {
           trackId: 'hic_k562_compartments',
           height: 84,
-          minScore: -0.012,
-          maxScore: 0.012,
+          scales: { y: { domainMin: -0.012, domainMax: 0.012 } },
         },
       ],
     }),

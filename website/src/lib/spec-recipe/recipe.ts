@@ -141,14 +141,16 @@ function fieldSteps(
     if (IGNORED_FIELDS.has(field)) {
       continue
     }
-    const step = table[field]?.(value, context)
-    if (step) {
+    const produced = table[field]?.(value, context)
+    const found = produced ? [produced].flat() : []
+    for (const step of found) {
       steps.push({
         title: step.path,
         note: step.note,
         opensView: step.opensView,
       })
-    } else {
+    }
+    if (!found.length) {
       unmapped.push(field)
     }
   }

@@ -456,8 +456,7 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
           // copy number is an absolute quantity and a diverging ramp only
           // reads as diverging if both sides are the same width.
           bicolorPivot: 2,
-          minScore: 0,
-          maxScore: 4,
+          scales: { y: { domainMin: 0, domainMax: 4 } },
           posColor: '#b2182b',
           negColor: '#2166ac',
           // 480 -> 330, and directly under the matrix rather than with the
@@ -1008,7 +1007,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   //
   // Two settings carry the figure. `showPileup: false` drops the stacked-read
   // band, because at 100kb a 30x pileup is a solid mass and the coverage curve
-  // is the whole subject here. And minScore/maxScore PIN all three rows to one
+  // is the whole subject here. And a pinned domain PINS all three rows to one
   // 0-70 axis: left to autoscale each row fits its own maximum, which drew the
   // three genotypes at almost the same height and destroyed the comparison the
   // figure exists to make. A few spikes clip at 70; the ~35x baseline sitting at
@@ -1132,8 +1131,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               // being compared rather than off the bottom of the frame.
               height: 200,
               coverageHeight: 190,
-              minScore: 0,
-              maxScore: 70,
+              scales: { y: { domainMin: 0, domainMax: 70 } },
             })),
           ],
         },

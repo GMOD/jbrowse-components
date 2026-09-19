@@ -378,8 +378,7 @@ const HG008_BICSEQ2_LANE = {
   defaultRendering: 'xyplot',
   useBicolor: true,
   displayCrossHatches: true,
-  minScore: -2,
-  maxScore: 2,
+  scales: { y: { domainMin: -2, domainMax: 2 } },
   height: 130,
 }
 
@@ -614,8 +613,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'colo829_cnv_coverage',
               type: 'MultiLinearWiggleDisplay',
-              autoscale: 'localsd',
-              numStdDev: 3,
+              scales: { y: { autoscale: 'localsd', numStdDev: 3 } },
               defaultRendering: 'multiscatter',
               // even finer binning (basesPerSpan = bpPerPx/resolution) so the
               // scatter resolves copy-number structure (even finer,
@@ -1505,8 +1503,7 @@ export const svSpecs: ScreenshotSpec[] = [
               defaultRendering: 'xyplot',
               useBicolor: false,
               summaryScoreMode: 'avg',
-              minScore: 0,
-              maxScore: 140,
+              scales: { y: { domainMin: 0, domainMax: 140 } },
               displayCrossHatches: true,
               height: 180,
             },
@@ -2045,8 +2042,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // run to 497, so an autoscaled axis put every plateau in the
               // bottom fifth of the lane and the three tumor levels (0.6 / 1.1
               // / 1.9 by median, against the normal's flat 1.0) were one cloud.
-              minScore: 0,
-              maxScore: 3,
+              scales: { y: { domainMin: 0, domainMax: 3 } },
               displayCrossHatches: true,
               // finer binning (basesPerSpan = bpPerPx/resolution) so the
               // whole-chromosome scatter resolves more CNV detail
@@ -2064,8 +2060,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // resolutionMultiplier, not a display setting.
               defaultRendering: 'scatter',
               scatterPointSize: 1,
-              minScore: 0,
-              maxScore: 1,
+              scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
             'GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls',
@@ -2261,8 +2256,7 @@ export const svSpecs: ScreenshotSpec[] = [
               defaultRendering: 'xyplot',
               useBicolor: false,
               summaryScoreMode: 'avg',
-              minScore: 0,
-              maxScore: 140,
+              scales: { y: { domainMin: 0, domainMax: 140 } },
               height: 110,
             },
             { trackId: 'hg008_cnv_calls', height: 70 },
@@ -2384,8 +2378,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // a display setting; see the note on that const.
               defaultRendering: 'scatter',
               scatterPointSize: 1,
-              minScore: 0,
-              maxScore: 1,
+              scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
             'hg008_cnv_calls',
@@ -2448,7 +2441,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // window, same gene lane, same CNV lane, tumor-vs-normal coverage as two
   // separate wiggle tracks). One row per sample in one track is what gives the
   // two a shared axis by construction: multirowxy with an explicit 0..80
-  // minScore/maxScore, since independent autoscaling rescales each row to its
+  // domain, since independent autoscaling rescales each row to its
   // own data and the rows stop being comparable. Over chr9:21,953,000-21,971,000
   // the tumor mean is 0.0 (56.8x and 69.2x in the flanks) against the normal's
   // 41.9x. Per-base (mosdepth on a targeted BAM slice), not the 500bp-binned
@@ -2547,8 +2540,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'MultiLinearWiggleDisplay',
               defaultRendering: 'multirowxy',
               summaryScoreMode: 'avg',
-              minScore: 0,
-              maxScore: 80,
+              scales: { y: { domainMin: 0, domainMax: 80 } },
               resolution: 10,
               // no cross hatches: the read is one filled profile against the
               // other, and the gridlines only add texture across both
@@ -2656,8 +2648,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // the fetch off the bigWig zoom levels; see the note on that const.
               defaultRendering: 'scatter',
               scatterPointSize: 2,
-              minScore: 0,
-              maxScore: 1,
+              scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
             'hg008_cnv_calls',
@@ -2738,8 +2729,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // bigWig zoom levels, whose per-bin min/avg/max paints one wash.
               defaultRendering: 'scatter',
               scatterPointSize: 1,
-              minScore: 0,
-              maxScore: 1,
+              scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
             'hg008_cnv_calls',
@@ -2826,8 +2816,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // fixed 0..3 as on chr5: indexcov's centromere and repeat spikes
               // run into the hundreds, and an autoscaled axis puts every
               // plateau in the bottom fifth of the lane
-              minScore: 0,
-              maxScore: 3,
+              scales: { y: { domainMin: 0, domainMax: 3 } },
               displayCrossHatches: true,
               resolution: 8,
               height: 200,
@@ -2842,8 +2831,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // bigWig zoom levels.
               defaultRendering: 'scatter',
               scatterPointSize: 1,
-              minScore: 0,
-              maxScore: 1,
+              scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
             'hg008_cnv_calls',

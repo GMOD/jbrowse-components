@@ -578,8 +578,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               useBicolor: false,
               scatterPointSize: 2,
               summaryScoreMode: 'max',
-              minScore: 0.1,
-              maxScore: 0.5,
+              scales: { y: { domainMin: 0.1, domainMax: 0.5 } },
               height: 140,
             },
             // A MEASURED genetic map, which is the only honest way to say
@@ -617,7 +616,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             // than zero. Don't tighten the caption to claim the two edges
             // coincide; the right one does and the left one decays.
             //
-            // maxScore 100 CLIPS those two hotspots, deliberately: autoscaled
+            // A ceiling of 100 CLIPS those two hotspots, deliberately: autoscaled
             // to 460 the whole rest of the lane is under a tenth of the height
             // and the desert cannot be told from the merely-quiet flanks. Same
             // argument as the Fst lane's floor one entry up -- it is a display
@@ -632,8 +631,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'decode_recomb',
               type: 'LinearWiggleDisplay',
-              minScore: 0,
-              maxScore: 100,
+              scales: { y: { domainMin: 0, domainMax: 100 } },
               height: 80,
             },
             // 200 cuts the panel block's apex and keeps both of its edges, which
@@ -772,8 +770,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               summaryScoreMode: 'max',
               // The lane below's floor and ceiling, so the two are one axis
               // read at two scales and the peak is the same height in both.
-              minScore: 0.1,
-              maxScore: 0.5,
+              scales: { y: { domainMin: 0.1, domainMax: 0.5 } },
               height: 230,
             },
           ],

@@ -248,8 +248,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // pangenome pages assert in prose ("the same five strains and the same
   // projections onto K12") and neither showed.
   //
-  // ONE MultiQuantitativeTrack rather than two QuantitativeTracks, with
-  // minScore/maxScore pinned. Two separate wiggle lanes each autoscale to their
+  // ONE MultiQuantitativeTrack rather than two QuantitativeTracks, with both
+  // ends of the domain pinned. Two separate wiggle lanes each autoscale to their
   // own max, so pggb's plateau would draw at half height against its 0-10 axis
   // and Cactus's at full height against its 0-5, and the figure would say the
   // opposite of the truth. One track on one fixed axis is the only honest shape.
@@ -312,8 +312,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               // comparable and the doubling is half the row rather than a full
               // one. Autoscale would rescale each row to its own max and erase
               // the only thing the figure is about.
-              minScore: 0,
-              maxScore: 10,
+              scales: { y: { domainMin: 0, domainMax: 10 } },
             },
           ],
         },
@@ -538,8 +537,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               // edges. Pinning the domain to 0-1 keeps every present base fully
               // saturated instead of shaded by an autoscaled maximum.
               defaultRendering: 'multirowdensity',
-              minScore: 0,
-              maxScore: 1,
+              scales: { y: { domainMin: 0, domainMax: 1 } },
               // four rows at the raster's own 40px-per-row scale
               height: 160,
             },

@@ -106,10 +106,12 @@ export interface FieldContext {
   viewType?: string
 }
 
+// A recipe answers with several steps where one spec key stands over several
+// independent controls, the way `scales` holds the whole value axis.
 export type FieldRecipe = (
   value: unknown,
   context: FieldContext,
-) => FieldStep | undefined
+) => FieldStep | FieldStep[] | undefined
 
 const TRACK_MENU = 'Track menu'
 
@@ -640,6 +642,50 @@ const AUTOSCALE_TYPES: Record<string, string> = Object.fromEntries(
   DEFAULT_AUTOSCALE_OPTIONS,
 )
 
+// `scales.y` is one spec key over four controls that live in different places,
+// so it answers with a step per member the figure names.
+const scalesStep: FieldRecipe = (value, { displayType }) => {
+  const y = asRecord(asRecord(value)?.y)
+  if (!y) {
+    return undefined
+  }
+  const menu = (displayType && SCORE_MENUS[displayType]) ?? 'Score'
+  const scaleType = asString(y.type)
+  const autoscale = asString(y.autoscale)
+  const ends = [
+    typeof y.domainMin === 'number' && `minimum ${y.domainMin}`,
+    typeof y.domainMax === 'number' && `maximum ${y.domainMax}`,
+  ].filter(Boolean)
+  const steps = [
+    scaleType && SCALE_TYPES[scaleType]
+      ? {
+          path: `${TRACK_MENU} → ${menu} → Scale type → ${SCALE_TYPES[scaleType]}`,
+        }
+      : undefined,
+    ends.length
+      ? {
+          path: `${TRACK_MENU} → ${menu} → Set min/max score...`,
+          note: `Pins the score axis: ${ends.join(' and ')}. An end left blank autoscales.`,
+        }
+      : undefined,
+    autoscale &&
+    AUTOSCALE_TYPES[autoscale] &&
+    (displayType === 'LinearWiggleDisplay' ||
+      displayType === 'MultiLinearWiggleDisplay')
+      ? {
+          path: `${TRACK_MENU} → Score → Autoscale type → ${AUTOSCALE_TYPES[autoscale]}`,
+        }
+      : undefined,
+    typeof y.numStdDev === 'number' && displayType && displayType in SCORE_MENUS
+      ? {
+          path: `${TRACK_MENU} → Settings → numStdDev`,
+          note: `How many standard deviations the "Local ± σ" autoscale spans. Nothing sets it from a menu — it only reads back out, as the σ in that option's own label — so it is set on the config.`,
+        }
+      : undefined,
+  ].filter(step => step !== undefined)
+  return steps.length ? steps : undefined
+}
+
 // Every display that filters names the item 'Filter by...' — the canvas base
 // (trackMenus.ts), the alignments/LGVSynteny one (menus/filters.ts, which adds
 // a count when filters are active), and the multi-sample variant one. So unlike
@@ -1141,28 +1187,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Below a divider at the foot of that submenu, and only meaningful on an all-vs-all track, which is what has a self lane.',
         }
       : undefined,
-  scaleType: (value, { displayType }) => {
-    const menu = displayType ? SCORE_MENUS[displayType] : undefined
-    const label = typeof value === 'string' ? SCALE_TYPES[value] : undefined
-    return menu && label
-      ? { path: `${TRACK_MENU} → ${menu} → Scale type → ${label}` }
-      : undefined
-  },
-  autoscale: (value, { displayType }) => {
-    const label = typeof value === 'string' ? AUTOSCALE_TYPES[value] : undefined
-    return label &&
-      (displayType === 'LinearWiggleDisplay' ||
-        displayType === 'MultiLinearWiggleDisplay')
-      ? { path: `${TRACK_MENU} → Score → Autoscale type → ${label}` }
-      : undefined
-  },
-  numStdDev: (value, { displayType }) =>
-    typeof value === 'number' && displayType && displayType in SCORE_MENUS
-      ? {
-          path: `${TRACK_MENU} → Settings → numStdDev`,
-          note: `How many standard deviations the "Local ± σ" autoscale spans. Nothing sets it from a menu — it only reads back out, as the σ in that option's own label — so it is set on the config.`,
-        }
-      : undefined,
+  scales: scalesStep,
   displayCrossHatches: (value, { displayType }) =>
     typeof value === 'boolean' &&
     (displayType === 'LinearWiggleDisplay' ||
@@ -1468,14 +1493,6 @@ export const trackFields: Record<string, FieldRecipe> = {
   resolution: numberField(n => ({
     path: `${TRACK_MENU} → Resolution`,
     note: `Step with Coarser and Finer, 2× per click; the caption between them reads the current bin size. Higher fetches finer bins, and this figure uses ${resolutionLabel(n)}.`,
-  })),
-  minScore: numberField(n => ({
-    path: `${TRACK_MENU} → Score → Set min/max score...`,
-    note: `Sets the score-axis minimum (${n} here).`,
-  })),
-  maxScore: numberField(n => ({
-    path: `${TRACK_MENU} → Score → Set min/max score...`,
-    note: `Sets the score-axis maximum (${n} here).`,
   })),
   significanceLine: numberField(n => ({
     path: `${TRACK_MENU} → Set significance line...`,

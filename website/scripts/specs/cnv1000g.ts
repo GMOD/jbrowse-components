@@ -96,8 +96,7 @@ export const CN_HEATMAP_SETTINGS = {
   type: 'MultiLinearWiggleDisplay',
   defaultRendering: 'multirowdensity',
   bicolorPivot: 2,
-  minScore: 0,
-  maxScore: 4,
+  scales: { y: { domainMin: 0, domainMax: 4 } },
   posColor: '#b2182b',
   negColor: '#2166ac',
 }
@@ -172,8 +171,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
               // was rebuilt for it.
               defaultRendering: 'multirowline',
               height: 500,
-              minScore: 0,
-              maxScore: 10,
+              scales: { y: { domainMin: 0, domainMax: 10 } },
             },
           ],
         },

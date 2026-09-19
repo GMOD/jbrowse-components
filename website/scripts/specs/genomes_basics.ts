@@ -77,9 +77,9 @@ const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 //   where the wiggle default (whiskers, autoscaled) is a solid block: the file
 //   is 5-base bins, so every summary bin in a several-hundred-kb window spans a
 //   min near 0 and a max near 100. Both values ride in the hub config's
-//   `metadata.ucsc` and nothing translates them into `summaryScoreMode` /
-//   `minScore` / `maxScore`, so a reader gets there through two track-menu trips
-//   or not at all.
+//   `metadata.ucsc` and nothing translates them into `summaryScoreMode` or the
+//   display's `scales.y` domain, so a reader gets there through two track-menu
+//   trips or not at all.
 // - RepeatMasker wants one lane per repeat class.
 //   `LinearMultiRowFeatureDisplay` defaults `partitionField` to `name`, which on
 //   a GenArk bigRmskBed is one row per repeat -- thousands of hairlines,

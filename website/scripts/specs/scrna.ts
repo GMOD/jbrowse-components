@@ -97,7 +97,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
             {
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
               type: 'MultiLinearWiggleDisplay',
-              scaleType: 'log',
+              scales: { y: { type: 'log' } },
               // 9 rows, so 45px each: enough for a peak to have a shape rather
               // than being a spike two pixels tall
               height: 405,
@@ -122,7 +122,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
   // in a frame of empty white (review: "a better single cell under pseudobulk
   // figure could be made"). Here the monocyte block spans the frame.
   //
-  // maxScore 2, not 4: the non-monocyte blocks are not empty but one ambient UMI
+  // domainMax 2, not 4: the non-monocyte blocks are not empty but one ambient UMI
   // per cell, and at 4 those cells are a tint indistinguishable from white.
   {
     mode: 'url',
@@ -145,8 +145,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
             {
               trackId: 'pbmc5k_scrna_percell_hg38',
               type: 'MultiLinearWiggleDisplay',
-              minScore: 0,
-              maxScore: 2,
+              scales: { y: { domainMin: 0, domainMax: 2 } },
               height: 620,
             },
           ],

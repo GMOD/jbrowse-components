@@ -316,8 +316,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         {
           trackId: 'colo_tumor',
           type: 'LinearWiggleDisplay',
-          autoscale: 'localsd',
-          numStdDev: 3,
+          scales: { y: { autoscale: 'localsd', numStdDev: 3 } },
           // scatter rendering reads copy-number gains/losses better than
           // the filled XY plot across the whole genome
           defaultRendering: 'scatter',
@@ -572,7 +571,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // default localpercentile autoscale clamps the amplifications near
           // the 99th percentile (~2.2). `local` uses the true region max so
           // the gains render at full contrast and nothing is clipped.
-          autoscale: 'local',
+          scales: { y: { autoscale: 'local' } },
           // hide the post-clustering dendrogram — the reordered rows are
           // the point; a tree implies a phylogeny we don't mean
           showTree: false,

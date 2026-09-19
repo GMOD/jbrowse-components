@@ -99,8 +99,7 @@ const SMN_HIGHLIGHT = [
 const mappabilityTrack = {
   trackId: 'hg38-umap100Quantitative',
   type: 'LinearWiggleDisplay',
-  minScore: 0,
-  maxScore: 1,
+  scales: { y: { domainMin: 0, domainMax: 1 } },
   summaryScoreMode: 'min' as const,
   height: 70,
 }
@@ -136,8 +135,7 @@ const mappabilityTrack = {
 const gnomadCoverageTrack = (height = 70, summaryScoreMode?: string) => ({
   trackId: 'hg38-gnomad3MeanCoverage',
   type: 'LinearWiggleDisplay',
-  minScore: 0,
-  maxScore: 40,
+  scales: { y: { domainMin: 0, domainMax: 40 } },
   height,
   ...(summaryScoreMode ? { summaryScoreMode } : {}),
 })
@@ -229,7 +227,7 @@ const panel = (loc: string) => ({
       // axis ran to 1,600, drawing a 30x library as a flat line on the floor.
       // `localsd` is mean +/- numStdDev over what is in view, so the ceiling
       // comes from the window rather than from a number somebody picked.
-      autoscale: 'localsd',
+      scales: { y: { autoscale: 'localsd' } },
     },
   ],
 })
@@ -346,10 +344,10 @@ export const qcSpecs: ScreenshotSpec[] = [
               // ceiling, so a 30x library drew as a 2%-height line and the
               // band carried nothing. `localsd` is the display's own answer to
               // peaky data — mean +/- numStdDev over what is in view — and it
-              // is preferred here over a hand-picked maxScore because the
+              // is preferred here over a hand-picked ceiling because the
               // ceiling then comes from the window rather than from a number
               // somebody chose, and it survives the window being moved.
-              autoscale: 'localsd',
+              scales: { y: { autoscale: 'localsd' } },
               // 260, from 380 (review: "make it render even more compressed").
               // The lane is read as a colour FIELD -- red where nothing can be
               // placed uniquely, multi-coloured where the reads recover -- and
@@ -563,7 +561,7 @@ export const qcSpecs: ScreenshotSpec[] = [
                   colorBy: { type: 'mappingQuality' },
                   showLegend: true,
                   forceLoad: true,
-                  autoscale: 'localsd',
+                  scales: { y: { autoscale: 'localsd' } },
                   height: 260,
                 },
               ],

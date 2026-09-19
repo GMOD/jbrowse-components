@@ -260,7 +260,8 @@ const CEA_LAYOUT = CEA_GROUPS.flatMap(({ label, color, ids }) =>
 // whole-genome half gets from autoscale anyway (build_dog10k_size_fst.sh prints
 // the top windows; the highest is chr10's), and writing it down is what keeps
 // the two axes from parting company when only one of them is autoscaled.
-const FST_AXIS = { minScore: 0, maxScore: 0.8 }
+const FST_DOMAIN_MAX = 0.8
+const FST_AXIS = { scales: { y: { domainMin: 0, domainMax: FST_DOMAIN_MAX } } }
 
 // Both halves of dog10k-size-fst-scan are 240px where they were 380 (review:
 // "make both figures shorter in y-axis real estate space"). What each lane is
@@ -280,7 +281,7 @@ const FST_LANE_H = 240
 // capture's own numbers, where all three peaks land within 6px of where its
 // hand-fitted offsets put them.
 const fstY = (fst: number, h = FST_LANE_H) =>
-  Math.round(6 + (h - 5) - (fst / FST_AXIS.maxScore) * (h - 10))
+  Math.round(6 + (h - 5) - (fst / FST_DOMAIN_MAX) * (h - 10))
 
 // A peak is named from the SIDE, at its own height, rather than from above it.
 // `side` is which way the pill hangs: the two loci near the middle of the row

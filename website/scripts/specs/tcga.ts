@@ -63,7 +63,7 @@ const TCGA_BRCA_CNV_TRACK = {
 // scripts/cnv_recurrence.py: two value columns, gain positive and loss negative.
 // BedGraphTabixAdapter emits one feature per value column, and the wiggle's
 // bicolor pivot at 0 splits them, so the single track draws gains up in red and
-// losses down in blue. minScore/maxScore pin the axis to the whole cohort
+// losses down in blue. The pinned domain holds the axis to the whole cohort
 // (+-100%) rather than autoscaling per view, so a bar's height means the same
 // fraction in every figure.
 const TCGA_BRCA_RECURRENCE_TRACK = {
@@ -91,8 +91,7 @@ const TCGA_BRCA_RECURRENCE_TRACK = {
       height: 160,
       posColor: '#b2182b',
       negColor: '#2166ac',
-      minScore: -100,
-      maxScore: 100,
+      scales: { y: { domainMin: -100, domainMax: 100 } },
     },
   ],
 }
@@ -194,8 +193,7 @@ const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = {
       height: SUBTYPE_ROWS_HEIGHT,
       posColor: '#b2182b',
       negColor: '#2166ac',
-      minScore: -70,
-      maxScore: 70,
+      scales: { y: { domainMin: -70, domainMax: 70 } },
       // eight rows of one signed direction each, so the boundary between a
       // group's row and the next one is not otherwise drawn
       showRowSeparators: true,

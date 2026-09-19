@@ -78,7 +78,7 @@ export const circularSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ngmlr_cov',
               type: 'LinearWiggleDisplay',
-              scaleType: 'log',
+              scales: { y: { type: 'log' } },
               height: 80,
             },
             'breast_cancer_sniffles_hg19_traonly_tabix',

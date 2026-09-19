@@ -37,8 +37,7 @@ const coverage = (trackId: string) => ({
   trackId,
   type: 'LinearWiggleDisplay',
   height: 90,
-  minScore: 0,
-  maxScore: 16,
+  scales: { y: { domainMin: 0, domainMax: 16 } },
 })
 
 // `grow`, not the demo config's pinned 285. The lane packs ten transcripts and
