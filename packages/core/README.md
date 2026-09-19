@@ -682,6 +682,19 @@ why a mark is grey rather than listing a blank value.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
+### numericDomain
+
+A domain written as strings — the shared `domain` slot is a `stringArray` — read
+back as the numbers it names. A member that is not a number reads NaN, which
+every comparison against it declines.
+
+```js
+// type signature
+(domain: readonly (string | number)[]) => number[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
 ### preProcessConfigSnapshot
 
 A snapshot as `type` admits it: the same lift and checks `type.create` applies,
@@ -933,6 +946,53 @@ never baked into the color string.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
+
+### thresholdIndex
+
+The bin a value falls in: how many of the ascending cut points it is at or past,
+so a palette with one more entry than the domain paints it as
+`palette[thresholdIndex(value, domain)]`. A value that is not a finite number is
+in no bin and answers -1.
+
+```js
+// type signature
+(value: unknown, domain: readonly number[]) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
+### thresholdLabels
+
+What a threshold scale's bins are called in a key, one label per palette entry:
+`< a` below the first cut, `a – b` between two, `≥ b` past the last.
+
+```js
+// type signature
+(domain: readonly number[]) => string[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
+### thresholdPalette
+
+The colour of each interval, in order: the declared palette, and the default
+categorical palette where it runs out.
+
+```js
+// type signature
+(bins: number, palette?: readonly string[]) => string[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
+### ThresholdRef
+
+A numeric field cut into intervals: `domain` is the ascending cut points and
+`palette` holds one colour more, so a value paints the entry for the number of
+cut points it is at or past. A value that is not a number belongs to no
+interval.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### TransformStep
 

@@ -3318,6 +3318,16 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/thresholdScale": {
+      "package": "@jbrowse/core",
+      "names": [
+        "numericDomain",
+        "thresholdIndex",
+        "thresholdLabels",
+        "thresholdPalette"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/tickLabels": {
       "package": "@jbrowse/core",
       "names": [

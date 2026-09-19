@@ -3442,7 +3442,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "palette": {
-              "description": "CSS colors the domain values take, in order, continuing into the default palette past its end.",
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
               "$ref": "#/$defs/StringArrayOrJexl"
             }
           },
@@ -7120,12 +7120,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value of field; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value of field; threshold a palette colour per interval between the cut points domain lists; unset follows field, and is threshold over ld and categorical over anything else.",
               "anyOf": [
                 {
                   "enum": [
                     "none",
-                    "categorical"
+                    "categorical",
+                    "threshold"
                   ]
                 },
                 {
@@ -7134,7 +7135,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "the field's values that take the palette first, in order, in the key as on the points; the rest follow sorted, each on a colour no listed value paints.",
+              "description": "under a categorical scale, the field's values that take the palette first, in order, in the key as on the points, the rest following sorted, each on a colour no listed value paints; under a threshold scale, the cut points in ascending order, palette taking one entry more than this, one per interval; r² to the index SNP cuts at 0.2, 0.4, 0.6 and 0.8 into the LocusZoom blue-through-red bins unless these say otherwise.",
               "anyOf": [
                 {
                   "type": "array",
@@ -7155,7 +7156,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "palette": {
-              "description": "CSS colors the domain values take, in order, continuing into the default palette past its end.",
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
               "$ref": "#/$defs/StringArrayOrJexl"
             }
           },
@@ -7299,14 +7300,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without.",
+              "description": "how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; threshold cuts the value at the domain and hands each interval a palette entry; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without.",
               "anyOf": [
                 {
                   "enum": [
                     "none",
                     "categorical",
                     "linear",
-                    "log"
+                    "log",
+                    "threshold"
                   ]
                 },
                 {
@@ -7315,7 +7317,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes.",
+              "description": "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes; for a threshold scale, the cut points in ascending order, a value taking the palette entry for the number of them it is at or past, so palette has one entry more than this.",
               "anyOf": [
                 {
                   "type": "array",
@@ -7336,7 +7338,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "palette": {
-              "description": "CSS colors the domain values take, in order, continuing into the default palette past its end.",
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
               "$ref": "#/$defs/StringArrayOrJexl"
             },
             "ramp": {

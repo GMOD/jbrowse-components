@@ -344,6 +344,7 @@ export default [
   '@jbrowse/core/util/SvgCanvas',
   '@jbrowse/core/util/svgColorProps',
   '@jbrowse/core/util/tabix',
+  '@jbrowse/core/util/thresholdScale',
   '@jbrowse/core/util/tickLabels',
   '@jbrowse/core/util/TimeTraveller',
   '@jbrowse/core/util/tracks',

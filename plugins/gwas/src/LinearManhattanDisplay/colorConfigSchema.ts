@@ -1,16 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import {
-  CATEGORICAL_COLOR_SCALES,
   colorChannelOptions,
   colorChannelSlots,
   colorPaletteSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-const MANHATTAN_COLOR_SCALES = [
-  ...CATEGORICAL_COLOR_SCALES,
-  'threshold',
-] as const
+const MANHATTAN_COLOR_SCALES = ['none', 'categorical', 'threshold'] as const
 
 /**
  * The field that is each point's r² to the index SNP, joined from the
@@ -76,11 +72,9 @@ export const manhattanColorConfigSchema = ConfigurationSchema(
       scale:
         'none paints value and keeps the field for a switch back; categorical a palette colour per value of field; threshold a palette colour per interval between the cut points domain lists; unset follows field, and is threshold over ld and categorical over anything else',
       domain:
-        "under a categorical scale, the field's values that take the palette first, in order, in the key as on the points, the rest following sorted, each on a colour no listed value paints; under a threshold scale, the cut points in ascending order, r² to the index SNP cutting at 0.2, 0.4, 0.6 and 0.8 unless this says otherwise",
+        "under a categorical scale, the field's values that take the palette first, in order, in the key as on the points, the rest following sorted, each on a colour no listed value paints; under a threshold scale, the cut points in ascending order, palette taking one entry more than this, one per interval; r² to the index SNP cuts at 0.2, 0.4, 0.6 and 0.8 into the LocusZoom blue-through-red bins unless these say otherwise",
     }),
-    ...colorPaletteSlot(
-      'CSS colors the domain values take, in order, continuing into the default palette past its end; under a threshold scale one colour per interval, so one more entry than domain, the r² bins being LocusZoom blue through red',
-    ),
+    ...colorPaletteSlot,
   },
   colorChannelOptions('color'),
 )

@@ -28,13 +28,29 @@ Auto-generated config schema for the current JBrowse release — see the [config
 }
 ```
 
+```js
+{
+  shape: 'point',
+  encoding: {
+    y: 'score',
+    color: {
+      field: 'pip',
+      scale: 'threshold',
+      domain: [0.1, 0.5],
+      palette: ['#357ebd', '#eea236', '#d43f3a'],
+    },
+  },
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
 A mark's `encoding.color`: one CSS colour or `jexl:` callback for every
 instance, or a field through a categorical scale (a palette colour per
-value) or a `linear` or `log` scale (a ramp over `domain`). A string is the
-constant; the object binds the field, and a scale is what the legend
-describes.
+value), a `linear` or `log` scale (a ramp over `domain`) or a `threshold`
+scale (a palette colour per interval between the cut points `domain`
+lists). A string is the constant; the object binds the field, and a scale
+is what the legend describes.
 
 ## Config slots
 
@@ -45,7 +61,7 @@ These slots go on a display entry: `"displays": [{ "type": "MarkColor", ... }]`,
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | A CSS colour, or a jexl callback over `feature` returning one, for a mark whose colour is not a scale. Writing `color: 'red'` or `color: 'jexl:…'` directly on the encoding lands here.<br>_callback args:_ `feature` |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the feature field a scale reads, or a jexl callback over feature, which is slower per feature and so the opt-in |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, log) | how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes |
-| <span id="slot-palette">**palette**</span><br>`stringArray` = <code>[]</code> | CSS colors the domain values take, in order, continuing into the default palette past its end |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, log, threshold) | how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; threshold cuts the value at the domain and hands each interval a palette entry; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without |
+| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes; for a threshold scale, the cut points in ascending order, a value taking the palette entry for the number of them it is at or past, so palette has one entry more than this |
+| <span id="slot-palette">**palette**</span><br>`stringArray` = <code>[]</code> | CSS colors the domain takes, in order, continuing into the default palette past its end |
 | <span id="slot-ramp">**ramp**</span><br>`stringArray` = <code>[]</code> | viridis, or two or more CSS colour stops; empty is viridis |

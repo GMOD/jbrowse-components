@@ -23,13 +23,27 @@ Auto-generated config schema for the current JBrowse release — see the [config
 { type: 'LinearManhattanDisplay', color: { field: 'ld' } }
 ```
 
+```js
+{
+  type: 'LinearManhattanDisplay',
+  color: {
+    field: 'ld',
+    scale: 'threshold',
+    domain: [0.5],
+    palette: ['#357ebd', '#d43f3a'],
+  },
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
 The Manhattan display's `color` setting: one CSS colour or `jexl:` callback
 for every point, a field whose values each take a palette colour with a key,
-or LocusZoom colouring by r² to the index SNP. A string is the constant; a
-`field` binds the palette; `field: "ld"` reads the `GWASAdapter`'s
-`ldAdapter`.
+a numeric field cut into intervals by a `threshold` scale, or LocusZoom
+colouring by r² to the index SNP — which is that threshold scale over
+`field: "ld"`, whose cuts and colours a config may move. A string is the
+constant; a `field` binds the palette; `field: "ld"` reads the
+`GWASAdapter`'s `ldAdapter`.
 
 ## Config slots
 
@@ -40,6 +54,6 @@ These slots go on a display entry: `"displays": [{ "type": "ManhattanColor", ...
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | A CSS colour, or a jexl callback over `feature` returning one, for every point under the `none` scale. Writing `color: "red"` lands here.<br>_callback args:_ `feature` |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the feature field whose values each take a palette colour, with a key listing the values met: name, refName, a BED extra column, a GFF attribute; ld is each point's r² to the index SNP, read from the GWASAdapter's ldAdapter |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical) | none paints value and keeps the field for a switch back; categorical a palette colour per value of field; unset follows field |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | the field's values that take the palette first, in order, in the key as on the points; the rest follow sorted, each on a colour no listed value paints |
-| <span id="slot-palette">**palette**</span><br>`stringArray` = <code>[]</code> | CSS colors the domain values take, in order, continuing into the default palette past its end |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, threshold) | none paints value and keeps the field for a switch back; categorical a palette colour per value of field; threshold a palette colour per interval between the cut points domain lists; unset follows field, and is threshold over ld and categorical over anything else |
+| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | under a categorical scale, the field's values that take the palette first, in order, in the key as on the points, the rest following sorted, each on a colour no listed value paints; under a threshold scale, the cut points in ascending order, palette taking one entry more than this, one per interval; r² to the index SNP cuts at 0.2, 0.4, 0.6 and 0.8 into the LocusZoom blue-through-red bins unless these say otherwise |
+| <span id="slot-palette">**palette**</span><br>`stringArray` = <code>[]</code> | CSS colors the domain takes, in order, continuing into the default palette past its end |

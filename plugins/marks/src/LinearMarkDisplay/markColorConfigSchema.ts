@@ -91,11 +91,9 @@ export const markColorSchema = ConfigurationSchema(
       scale:
         'how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; threshold cuts the value at the domain and hands each interval a palette entry; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without',
       domain:
-        "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes; for a threshold scale, the cut points in ascending order, a value taking the palette entry for the number of them it is at or past",
+        "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes; for a threshold scale, the cut points in ascending order, a value taking the palette entry for the number of them it is at or past, so palette has one entry more than this",
     }),
-    ...colorPaletteSlot(
-      'CSS colors the domain values take, in order, continuing into the default palette past its end; under a threshold scale one colour per interval, so one more entry than domain',
-    ),
+    ...colorPaletteSlot,
     ...colorRampSlot,
   },
   colorChannelOptions('color'),
