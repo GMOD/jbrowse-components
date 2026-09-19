@@ -4,6 +4,7 @@ import {
   ConfigurationReference,
   getConf,
   setConf,
+  writeConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
@@ -821,11 +822,7 @@ export default function stateModelFactory(
        * undefined while the sources share a plot.
        */
       setFaceted(on: boolean) {
-        setConf(
-          { configuration: self.configuration.facet },
-          'field',
-          on ? 'source' : '',
-        )
+        writeConf(self.configuration.facet, 'field', on ? 'source' : '')
       },
 
       /**

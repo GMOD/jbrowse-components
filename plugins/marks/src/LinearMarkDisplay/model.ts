@@ -4,6 +4,7 @@ import {
   ConfigurationReference,
   getConf,
   setConf,
+  writeConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
@@ -1069,15 +1070,16 @@ export function stateModelFactory(
        */
       setFacetDomain(domain: string[]) {
         if (self.facet) {
-          self.conf.setSubschema('facet', { field: self.facet.field, domain })
+          writeConf(self.conf.facet, 'domain', domain)
         }
       },
       /**
        * #action
-       * A field's own bands, in their sorted order.
+       * A field's own bands, in their sorted order. The whole object, so the
+       * outgoing field's domain goes with it.
        */
       setFacetField(field: string) {
-        self.conf.setSubschema('facet', field ? { field } : {})
+        writeConf(self.conf, 'facet', field ? { field } : {})
       },
       /**
        * #action

@@ -3,6 +3,7 @@ import {
   getConf,
   readConfObject,
   setConf,
+  writeConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
@@ -553,10 +554,7 @@ export function stateModelFactory(
          * #action
          */
         setRibbonColorDomain(domain: string[]) {
-          self.configuration.setSubschema('ribbonColor', {
-            ...ribbonColorSetting(),
-            domain,
-          })
+          writeConf(self.configuration.ribbonColor, 'domain', domain)
         },
         /**
          * #action

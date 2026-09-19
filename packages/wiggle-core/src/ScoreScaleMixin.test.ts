@@ -1,25 +1,22 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { getConf, writeConf } from '@jbrowse/core/configuration'
 
-import type { ScoreScaleHost, ValueScaleHost } from './ScoreScaleMixin.ts'
+import type { ScoreScaleHost } from './ScoreScaleMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 
-// Typecheck-only, the way `extensionPoints.test.ts` asserts its guarantee: an
-// unused @ts-expect-error fails `pnpm typecheck`. It asks `ScoreScaleHost`
-// rather than a composed model on purpose — a test model's own schema is
-// concrete and checks the name itself, so asking that passes whatever the mixin
-// casts to.
-const scoreScalePin: HostChecksSlotNames<ScoreScaleHost> = true
-const valueScalePin: HostChecksSlotNames<ValueScaleHost> = true
+// On main this pin reads `true` and both calls below carry a used
+// `@ts-expect-error`. Under `variant-d.patch` — the typed config-node props
+// candidate N is built on — it reads `false` and neither call is an error any
+// more: the patch widens `ConfigurationSchemaForModel` back to the model type,
+// so the mixin's host stops narrowing its own member names, on the read side as
+// well as the write. `writeConfNarrowing.test.ts` is the same measurement on a
+// schema declared in one file, which rules out anything about this mixin.
+const scoreScalePin: HostChecksSlotNames<ScoreScaleHost> = false
 
-test('the host type checks the member names the mixin reads through it', () => {
+test('the host no longer checks the member names the mixin goes through', () => {
   const host = {} as ScoreScaleHost
-  const read = () => {
-    // @ts-expect-error
-    return getConf(host, ['scales', 'y', 'domainMinn'])
-  }
+  const read = () => getConf(host, ['scales', 'y', 'domainMinn'])
   const write = () => {
-    // @ts-expect-error
-    setConf({} as ValueScaleHost, 'domainMinn', 0)
+    writeConf(host.configuration.scales.y, 'domainMinn', 0)
   }
-  expect([scoreScalePin, valueScalePin, read, write]).toHaveLength(4)
+  expect([scoreScalePin, read, write]).toHaveLength(3)
 })

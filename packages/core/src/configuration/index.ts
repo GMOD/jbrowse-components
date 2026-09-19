@@ -44,7 +44,7 @@ export {
 } from './formatDetailsConfigSchema.ts'
 export { mergeFormatCallbacks } from './mergeFormatCallbacks.ts'
 export { readConfObject, readConfigValue } from './readConfObject.ts'
-export { getConf, setConf } from './getConf.ts'
+export { getConf, setConf, writeConf } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'
 export {
   preProcessConfigSnapshot,

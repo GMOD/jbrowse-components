@@ -1,4 +1,7 @@
+import { isArrayType, isStateTreeNode, getType } from '@jbrowse/mobx-state-tree'
+
 import { readConfObject } from './readConfObject.ts'
+import { isConfigurationSchemaType } from './schemaTypes.ts'
 
 import type {
   AnyConfigurationModel,
@@ -95,6 +98,40 @@ export function setConf<
   SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> =
     ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(model: { configuration: CONFMODEL }, slotName: SLOT, value: unknown) {
-  // eslint-disable-next-line no-restricted-syntax -- this is setConf
-  model.configuration.setSlot(slotName, value)
+  writeConf(model.configuration, slotName, value)
+}
+
+/**
+ * #api core/configuration
+ * Write one member of a configuration node. Drill to the node by property
+ * access — `writeConf(self.configuration.scales.y, 'domainMin', 5)` — and the
+ * member name is checked against that node's own schema.
+ *
+ * Which of the node's three write actions runs follows what the member is: a
+ * slot goes through `setSlot`, so ADR-052's name guard and the value-type guard
+ * both run; a sub-schema is replaced whole through `setSubschema`; an array of
+ * sub-schemas through `setSubschemaArray`.
+ *
+ * @param node - the configuration node holding the member
+ * @param slotName - the member to write
+ * @param value - the new value
+ */
+export function writeConf<
+  CONF extends AnyConfigurationModel,
+  SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONF>> =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>,
+>(node: CONF, slotName: SLOT, value: unknown): void {
+  const current = (node as unknown as Record<string, unknown>)[slotName]
+  // Classify off the member's own MST type, never off "is it an array": a
+  // `stringArray` slot holds an array node too, and dispatching on that sends
+  // the multi-way display's `domain` to setSubschemaArray.
+  const type = isStateTreeNode(current) ? getType(current) : undefined
+  if (!type || !isConfigurationSchemaType(type)) {
+    // eslint-disable-next-line no-restricted-syntax -- this is writeConf
+    node.setSlot(slotName, value)
+  } else if (isArrayType(type)) {
+    node.setSubschemaArray(slotName, value as unknown[])
+  } else {
+    node.setSubschema(slotName, value)
+  }
 }
