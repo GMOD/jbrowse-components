@@ -88,11 +88,11 @@ This draws only the high-scoring calls, in dark red, as thin arcs:
 
 The compartment eigenvector is a BigWig, drawn as a
 [quantitative track](/docs/config_guides/quantitative_track) in two colors
-around zero. Pin [`minScore`](/docs/config/linearwiggledisplay/#slot-minscore)
-and [`maxScore`](/docs/config/linearwiggledisplay/#slot-maxscore) when two of
-these tracks are read against each other, so neither autoscales to its own
-extremes; the
-[user guide](/docs/user_guides/hic_track#compartments-and-subcompartments)
+around zero. Pin
+[`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
+[`domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) when two of these
+tracks are read against each other, so neither autoscales to its own extremes;
+the [user guide](/docs/user_guides/hic_track#compartments-and-subcompartments)
 covers the sign check that goes with it:
 
 ```json addtrack
@@ -106,8 +106,7 @@ covers the sign check that goes with it:
     "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig"
   },
   "displayDefaults": {
-    "minScore": -0.03,
-    "maxScore": 0.03
+    "scales": { "y": { "domainMin": -0.03, "domainMax": 0.03 } }
   }
 }
 ```

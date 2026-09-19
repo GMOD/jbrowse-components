@@ -5,8 +5,7 @@ guide_category: Track types
 ---
 
 A `QuantitativeTrack` shows a single BigWig or bedGraph signal. Scale and color
-options (`scaleType`, `autoscale`, `defaultRendering`, `color`, etc.) go in
-`displayDefaults`.
+options (`scales`, `defaultRendering`, `color`, etc.) go in `displayDefaults`.
 
 ```json addtrack
 {
@@ -18,15 +17,18 @@ options (`scaleType`, `autoscale`, `defaultRendering`, `color`, etc.) go in
     "type": "BigWigAdapter",
     "uri": "https://yourhost/file.bw"
   },
-  "displayDefaults": { "defaultRendering": "line", "scaleType": "log" }
+  "displayDefaults": {
+    "defaultRendering": "line",
+    "scales": { "y": { "type": "log" } }
+  }
 }
 ```
 
 ## Display options
 
-Scale and color settings (`scaleType`, `autoscale`, `minScore`, `maxScore`,
-`color`, `bicolorPivot`) are
-[`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots, set through
+The value scale — `type`, `domainMin`, `domainMax`, `autoscale` — is one object,
+[`scales.y`](/docs/config/valuescale); `color` and `bicolorPivot` are
+[`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots. Both go through
 `displayDefaults`.
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 picks `xyplot`, `density`, `line` or `scatter`. The

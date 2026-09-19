@@ -87,8 +87,7 @@ and a theme. Every recipe below changes one piece of it.
       "adapter": { "type": "BigWigAdapter", "uri": "volvox_microarray.bw" },
       "displayDefaults": {
         "color": "#C8B414",
-        "scaleType": "log",
-        "minScore": 0
+        "scales": { "y": { "type": "log", "domainMin": 0 } }
       }
     },
     {
@@ -300,7 +299,10 @@ picks `xyplot`, `line`, `scatter`, or `density`.
   "name": "Coverage",
   "assemblyNames": ["volvox"],
   "adapter": { "type": "BigWigAdapter", "uri": "volvox_microarray.bw" },
-  "displayDefaults": { "color": "#C8B414", "scaleType": "log", "minScore": 0 }
+  "displayDefaults": {
+    "color": "#C8B414",
+    "scales": { "y": { "type": "log", "domainMin": 0 } }
+  }
 }
 ```
 
@@ -334,9 +336,9 @@ picks `xyplot`, `line`, `scatter`, or `density`.
 ```
 
 A `multirow*` rendering stacks one row per signal; a `multi*` one overlays them.
-Pin `minScore`/`maxScore` when the quantity has an absolute meaning, or per-row
-autoscale draws a flat sample at the same height as an amplified one. Past a
-handful of samples, generate `subadapters` from your samplesheet
+Pin `scales.y.domainMin`/`domainMax` when the quantity has an absolute meaning,
+or per-row autoscale draws a flat sample at the same height as an amplified one.
+Past a handful of samples, generate `subadapters` from your samplesheet
 ([multi-quantitative tracks](/docs/config_guides/multiquantitative_track)).
 
 <Figure caption="An eight-sample MultiQuantitativeTrack across 1.5 Mb of chr1 (multirowline), one color per 1000 Genomes individual on a shared 0 to 5 copy-number scale. Every row sits at two copies through the flanks; only the amylase cluster in the middle separates them, from one copy to four." src="/img/cookbook_multiwig.png"/>
