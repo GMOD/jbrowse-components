@@ -177,23 +177,26 @@ function stripHit<T>(
   return undefined
 }
 
-// How many alignments on this band go to one contig: a property of the band's
-// data rather than the current transform, so it counts the ones drawn right
-// now and the ones under the length floor too. Which of them are drawable is
-// what the mark's presence already says.
-export function offscreenMateCount(
+// What this band sends to one contig, in sequence and in alignments: a property
+// of the band's data rather than the current transform, so it holds the ones
+// drawn right now and the ones under the length floor too. Which of them are
+// drawable is what the mark's presence already says. Both numbers are per
+// contig in the lane, so the hover reads them rather than walking the marks.
+export function offscreenMateTotals(
   model: OffscreenMateSource,
   refName: string,
   side: OffscreenMateSide,
 ) {
-  let total = 0
+  let alignments = 0
+  let alignedBp = 0
   for (const display of model.linearSyntenyDisplays) {
     for (const data of laneData(display, side)) {
       const id = data.mateRefNameDict.indexOf(refName)
       if (id >= 0) {
-        total += data.counts[id] ?? 0
+        alignments += data.counts[id] ?? 0
+        alignedBp += data.alignedBp[id] ?? 0
       }
     }
   }
-  return total
+  return { alignments, alignedBp }
 }

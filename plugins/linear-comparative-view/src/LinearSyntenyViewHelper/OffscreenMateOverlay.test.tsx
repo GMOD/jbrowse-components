@@ -22,6 +22,7 @@ function level({ width = 800, height = 100, show = true } = {}) {
           offscreenMates: {
             mateRefNameDict: ['ctgB'],
             counts: Uint32Array.from([1]),
+            alignedBp: Float64Array.from([1000]),
             starts: Float64Array.from([0]),
             ends: Float64Array.from([1000]),
             mateRefNameIds: Uint32Array.from([0]),

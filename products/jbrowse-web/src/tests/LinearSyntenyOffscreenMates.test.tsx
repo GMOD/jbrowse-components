@@ -1,8 +1,8 @@
 import { waitFor } from '@testing-library/react'
 
 import {
-  offscreenMateCount,
   offscreenMateStrips,
+  offscreenMateTotals,
 } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyViewHelper/offscreenMateStrip.ts'
 import { doBeforeEach, getTestSession, setup } from './util.tsx'
 
@@ -40,8 +40,8 @@ function strips(view: SyntenyView) {
   return offscreenMateStrips(level(view))
 }
 
-function count(view: SyntenyView, refName: string) {
-  return offscreenMateCount(level(view), refName, 'top')
+function totals(view: SyntenyView, refName: string) {
+  return offscreenMateTotals(level(view), refName, 'top')
 }
 
 async function openSyntenyView() {
@@ -83,7 +83,9 @@ test('a row narrowed to one contig reports what it can no longer pair', async ()
     expect(strips(view).length).toBe(1)
   }, timeout)
   expect(strips(view)[0]!.side).toBe('top')
-  expect(count(view, 'ctgB')).toBeGreaterThan(0)
+  const { alignments, alignedBp } = totals(view, 'ctgB')
+  expect(alignments).toBeGreaterThan(0)
+  expect(alignedBp).toBeGreaterThan(0)
 })
 
 // ON BY DEFAULT, which is the whole decision: a locus syntenic to a contig the

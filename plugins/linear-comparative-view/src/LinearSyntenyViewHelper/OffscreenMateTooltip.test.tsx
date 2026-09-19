@@ -6,7 +6,10 @@ import OffscreenMateTooltip from './OffscreenMateTooltip.tsx'
 
 import type { OffscreenMateSource } from './offscreenMateStrip.ts'
 
-function source(counts: Record<string, number>) {
+function source(
+  counts: Record<string, number>,
+  bp: Record<string, number> = {},
+) {
   const dict = Object.keys(counts)
   return {
     level: 0,
@@ -17,6 +20,7 @@ function source(counts: Record<string, number>) {
           offscreenMates: {
             mateRefNameDict: dict,
             counts: Uint32Array.from(dict, name => counts[name]!),
+            alignedBp: Float64Array.from(dict, name => bp[name] ?? 0),
             starts: Float64Array.from([0]),
             ends: Float64Array.from([1000]),
             mateRefNameIds: Uint32Array.from([0]),
@@ -57,16 +61,27 @@ function draw(
   return getByRole('tooltip', { hidden: true }).textContent
 }
 
-// The marks a reader most wants explained are the unlabelled ones: a label goes
-// on a stretch only when the stretch is wide enough to hold it.
+// The marks a reader most wants explained are the unlabelled ones: a stretch
+// under half its own name's width carries no name.
 test('the hover names the contig the mark points at', () => {
   expect(draw(source({ ctgB: 2767 }), 'ctgB')).toContain('ctgB')
 })
 
-// Grouped, and the tally's own number — the same one the hamburger item reports
-// for this contig, so two readouts of one fact cannot drift.
-test('and how many alignments go to it', () => {
-  expect(draw(source({ ctgB: 2767 }), 'ctgB')).toContain('2,767')
+// How much SEQUENCE goes there, which is what says whether the mark is worth a
+// click and what the strip ranks its own names by
+test('and how much of the genome goes to it', () => {
+  expect(draw(source({ ctgB: 2767 }, { ctgB: 3_845_773 }), 'ctgB')).toContain(
+    '3.85Mbp',
+  )
+})
+
+// ...and in how many alignments, since one block and a thousand fragments of
+// one are different things to click into. The tally's own numbers, the same
+// ones the strip ranks by, so two readouts of one fact cannot drift.
+test('and how many alignments carry it', () => {
+  expect(draw(source({ ctgB: 2767 }, { ctgB: 3_845_773 }), 'ctgB')).toContain(
+    '2,767 alignments',
+  )
 })
 
 // The mark is often unlabelled and the click is the only other way to find out
@@ -108,6 +123,7 @@ function bothLanes() {
           offscreenMates: {
             mateRefNameDict: ['chr1'],
             counts: Uint32Array.from([7]),
+            alignedBp: Float64Array.from([7000]),
             starts: Float64Array.from([0]),
             ends: Float64Array.from([10]),
             mateRefNameIds: new Uint32Array(1),
@@ -115,6 +131,7 @@ function bothLanes() {
           targetOffscreenMates: {
             mateRefNameDict: ['chr1'],
             counts: Uint32Array.from([3]),
+            alignedBp: Float64Array.from([3000]),
             starts: Float64Array.from([0]),
             ends: Float64Array.from([10]),
             mateRefNameIds: new Uint32Array(1),

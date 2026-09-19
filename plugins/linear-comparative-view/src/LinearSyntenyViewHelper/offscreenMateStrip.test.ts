@@ -1,5 +1,5 @@
 import {
-  offscreenMateCount,
+  offscreenMateTotals,
   offscreenMateHit,
   offscreenMateNavHit,
   offscreenMateStrips,
@@ -12,6 +12,7 @@ function mates(n: number): OffscreenMateData {
   return {
     mateRefNameDict: ['other'],
     counts: Uint32Array.from([n]),
+    alignedBp: Float64Array.from([n * 50]),
     starts: Float64Array.from({ length: n }, (_, i) => i * 100),
     ends: Float64Array.from({ length: n }, (_, i) => i * 100 + 50),
     mateRefNameIds: new Uint32Array(n),
@@ -226,9 +227,9 @@ test('the band between the two strips is neither', () => {
   expect(hit(bothSides(), 1, 50)).toBeUndefined()
 })
 
-// The number the hover reads, and the one the hamburger item reports for the
-// same contig — one tally behind both, so they cannot drift.
-test('the count sums every display on the level', () => {
+// The numbers the hover reads — sequence and alignments, one tally behind both,
+// so they cannot drift from each other or from the ranking they decide.
+test('the totals sum every display on the level', () => {
   const both = source({
     linearSyntenyDisplays: [
       {
@@ -243,23 +244,34 @@ test('the count sums every display on the level', () => {
       },
     ],
   })
-  expect(offscreenMateCount(both, 'other', 'top')).toBe(5)
+  expect(offscreenMateTotals(both, 'other', 'top')).toEqual({
+    alignments: 5,
+    alignedBp: 250,
+  })
 })
 
 // ...one lane at a time, named by the caller: the two hold contigs of different
 // assemblies, so a refName alone does not say which tally it belongs to.
-test('the count reads the lane it is asked for', () => {
-  expect(offscreenMateCount(bothSides(), 'fromTarget', 'bottom')).toBe(1)
-  expect(offscreenMateCount(bothSides(), 'fromTarget', 'top')).toBe(0)
-})
-
-test('a contig this band has nothing to say about counts zero', () => {
-  expect(offscreenMateCount(source(), 'ctgQ', 'top')).toBe(0)
-})
-
-test('a display that has not fetched counts nothing rather than throwing', () => {
+test('the totals read the lane they are asked for', () => {
   expect(
-    offscreenMateCount(source({ linearSyntenyDisplays: [{}] }), 'other', 'top'),
+    offscreenMateTotals(bothSides(), 'fromTarget', 'bottom').alignments,
+  ).toBe(1)
+  expect(offscreenMateTotals(bothSides(), 'fromTarget', 'top').alignments).toBe(
+    0,
+  )
+})
+
+test('a contig this band has nothing to say about totals zero', () => {
+  expect(offscreenMateTotals(source(), 'ctgQ', 'top')).toEqual({
+    alignments: 0,
+    alignedBp: 0,
+  })
+})
+
+test('a display that has not fetched totals nothing rather than throwing', () => {
+  expect(
+    offscreenMateTotals(source({ linearSyntenyDisplays: [{}] }), 'other', 'top')
+      .alignments,
   ).toBe(0)
 })
 
@@ -436,12 +448,14 @@ test('a payload that did not query the lower row draws no lower strip', () => {
   expect(hit(model, 1, 99)).toBeUndefined()
 })
 
-// The count is the half of it that would be a wrong NUMBER rather than a
+// The tally is the half of it that would be a wrong NUMBER rather than a
 // missing mark, so it goes silent by the same gate and not by a second one.
 test('an ungated lower lane is not counted either', () => {
-  expect(offscreenMateCount(bothSides(), 'fromTarget', 'bottom')).toBe(1)
   expect(
-    offscreenMateCount(
+    offscreenMateTotals(bothSides(), 'fromTarget', 'bottom').alignments,
+  ).toBe(1)
+  expect(
+    offscreenMateTotals(
       bothSides({
         linearSyntenyDisplays: [
           {
@@ -455,6 +469,6 @@ test('an ungated lower lane is not counted either', () => {
       }),
       'fromTarget',
       'bottom',
-    ),
+    ).alignments,
   ).toBe(0)
 })

@@ -75,6 +75,8 @@ export function culledRibbonMateData(
   }
   const queryCounts = new Uint32Array(refNameDict.length)
   const targetCounts = new Uint32Array(mateRefNameDict.length)
+  const queryAlignedBp = new Float64Array(refNameDict.length)
+  const targetAlignedBp = new Float64Array(mateRefNameDict.length)
   let queryLo = Infinity
   let queryHi = -Infinity
   let targetLo = Infinity
@@ -82,6 +84,8 @@ export function culledRibbonMateData(
   for (let f = 0; f < n; f++) {
     queryCounts[refNameIds[f]!]! += 1
     targetCounts[mateRefNameIds[f]!]! += 1
+    queryAlignedBp[refNameIds[f]!]! += lengths[f]!
+    targetAlignedBp[mateRefNameIds[f]!]! += lengths[f]!
     const qLo = queryStarts[f]!
     const qHi = queryEnds[f]!
     if (qLo <= qHi) {
@@ -116,6 +120,7 @@ export function culledRibbonMateData(
       mateRefNameDict,
       mateRefNameIds,
       counts: targetCounts,
+      alignedBp: targetAlignedBp,
       starts: queryStarts,
       ends: queryEnds,
       lengths,
@@ -127,6 +132,7 @@ export function culledRibbonMateData(
       mateRefNameDict: refNameDict,
       mateRefNameIds: refNameIds,
       counts: queryCounts,
+      alignedBp: queryAlignedBp,
       starts: targetStarts,
       ends: targetEnds,
       lengths,

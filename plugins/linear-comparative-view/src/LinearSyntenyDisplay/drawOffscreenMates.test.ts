@@ -86,6 +86,12 @@ function data(
   return {
     mateRefNameDict: dict,
     counts: Uint32Array.from(dict, () => spans.length),
+    alignedBp: Float64Array.from(dict, name =>
+      spans.reduce(
+        (sum, s, i) => (names[i] === name ? sum + (s[1] - s[0]) : sum),
+        0,
+      ),
+    ),
     starts: Float64Array.from(spans.map(s => s[0])),
     ends: Float64Array.from(spans.map(s => s[1])),
     mateRefNameIds: Uint32Array.from(names, n => dict.indexOf(n)),
@@ -267,13 +273,60 @@ test('a mark wide enough carries the contig it points at', () => {
   expect(texts).toEqual([{ text: 'ctgB', x: 38, y: 16 }])
 })
 
-// The reason it is a fit test and not a count threshold: the mark that cannot
-// hold its name is the one whose neighbours would have overprinted it.
-test('a mark too narrow for the name goes unlabelled, and still drawn', () => {
+// A NAME MAY OVERHANG THE MARKS IT NAMES. Containing it inside the stretch
+// dropped a chromosome's worth of alignments for a name a few pixels too long,
+// and it ran before the strongest-first sort, so the contest never saw them.
+// What a reader reads is the marks under a name's centre, which is already true
+// of two names a row apart.
+test('a stretch narrower than its name carries it anyway', () => {
   const { ctx, rects, texts } = fakeCtx()
   draw(ctx, [{ datasets: [data([[100, 300]], ['ctgB'])] }])
   expect(rects).toHaveLength(1)
+  // 20px of marks under a 24px name, centred on them
+  expect(texts).toEqual([{ text: 'ctgB', x: 8, y: 16 }])
+})
+
+// ...to a point: past half the name the middle of it is over marks that are not
+// its own, and the name stops meaning the thing under it.
+test('a mark under half the name goes unlabelled, and still drawn', () => {
+  const { ctx, rects, texts } = fakeCtx()
+  draw(ctx, [{ datasets: [data([[100, 200]], ['ctgB'])] }])
+  expect(rects).toHaveLength(1)
   expect(texts).toEqual([])
+})
+
+// The overhang is the only thing that can leave the window, and a name drawn
+// past the edge is a name nobody reads.
+test('an overhanging name stays inside the window', () => {
+  const left = fakeCtx()
+  draw(left.ctx, [{ datasets: [data([[0, 200]], ['ctgB'])] }])
+  expect(left.texts).toEqual([{ text: 'ctgB', x: 0, y: 16 }])
+
+  const right = fakeCtx()
+  draw(right.ctx, [{ datasets: [data([[800, 1000]], ['ctgB'])] }])
+  expect(right.texts).toEqual([{ text: 'ctgB', x: 76, y: 16 }])
+})
+
+// Overhanging names are what collide now, so the box a placed name holds is the
+// TEXT, not the stretch it names: two stretches that do not touch can still
+// want the same pixels.
+test('two overhangs that meet take a row each', () => {
+  const { ctx, texts } = fakeCtx()
+  draw(ctx, [
+    {
+      datasets: [
+        data(
+          [
+            [100, 300],
+            [350, 550],
+          ],
+          ['ctgB', 'ctgC'],
+        ),
+      ],
+    },
+  ])
+  expect(texts.map(t => t.text)).toEqual(['ctgB', 'ctgC'])
+  expect(texts.map(t => t.y)).toEqual([16, 28])
 })
 
 test('a run of marks to one contig says its name once, not per mark', () => {
@@ -868,7 +921,7 @@ test('the merge tolerance scales with the name it is tolerating a gap for', () =
   draw(short.ctx, [{ datasets: [data(spans, ['ctgB', 'ctgB'])] }], {
     width: 1000,
   })
-  expect(short.texts).toEqual([])
+  expect(short.texts.map(t => t.text)).toEqual(['ctgB', 'ctgB'])
 
   const long = fakeCtx()
   draw(

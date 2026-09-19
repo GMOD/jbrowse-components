@@ -21,6 +21,9 @@ test('counts per off-screen contig and places each on the query axis', () => {
   const out = c.finish()
   expect(out.mateRefNameDict).toEqual(['grapeA', 'grapeB'])
   expect([...out.counts]).toEqual([2, 1])
+  // and what those alignments cover, which is what the hover leads with and
+  // what a stretch is ranked by
+  expect([...out.alignedBp]).toEqual([200, 100])
   expect([...out.starts]).toEqual([100, 300, 500])
   expect([...out.ends]).toEqual([200, 400, 600])
   expect([...out.mateRefNameIds]).toEqual([0, 0, 1])
@@ -84,6 +87,7 @@ test('an unplaceable block is still counted', () => {
   c.add('chr3', 100, 200, 'elsewhere', 0, 100)
   const out = c.finish()
   expect([...out.counts]).toEqual([1])
+  expect([...out.alignedBp]).toEqual([100])
   expect(out.starts).toHaveLength(0)
 })
 
@@ -115,18 +119,19 @@ test('the mate contigs are renamed into the assembly namespace', () => {
 })
 
 // A file spelling one contig two ways leaves as one contig, so the strip labels
-// one stretch rather than two and a mark's tooltip counts one number — the same
-// re-interning `renameDictLane` does for the per-feature lanes, plus the thing
-// only this lane has: a per-contig `counts` that has to be SUMMED, not
+// one stretch rather than two and a mark's tooltip reports one pair of numbers
+// — the same re-interning `renameDictLane` does for the per-feature lanes, plus
+// the thing only this lane has: per-contig tallies that have to be SUMMED, not
 // reindexed.
-test('two spellings of one contig collapse, and their counts add', () => {
+test('two spellings of one contig collapse, and their tallies add', () => {
   const c = createOffscreenMateCollector(index)
   c.add('chr1', 100, 200, 'grape1', 0, 100)
-  c.add('chr1', 300, 400, '1', 0, 100)
+  c.add('chr1', 300, 450, '1', 0, 100)
   c.add('chr1', 500, 600, 'grape2', 0, 100)
   const out = renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
   expect(out.mateRefNameDict).toEqual(['grape1', 'grape2'])
   expect([...out.counts]).toEqual([2, 1])
+  expect([...out.alignedBp]).toEqual([250, 100])
   expect([...out.mateRefNameIds]).toEqual([0, 0, 1])
 })
 

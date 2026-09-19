@@ -36,6 +36,16 @@ const LABEL_ASCENT_PX = 8
 // three names the paleohexaploid case; past that the band is a wall of text
 const MAX_LABEL_ROWS = 3
 
+// How much of a name has to sit over the marks it names. A stretch is allowed
+// to be narrower than its own name and carry it anyway, overhanging a quarter
+// of it each side: the reader already reads a name by what is under its centre
+// — two names a row apart may overlap in x, and a row-3 name sits 26px from the
+// marks — so a name whose middle half is over its own marks says the same
+// thing. Containment instead decided the contest before it ran — the test comes
+// before the strongest-first sort — and dropped the fourth-strongest contig in
+// the demo window, 920kb of it, for a name a few pixels too long.
+const MIN_LABEL_COVERAGE = 0.5
+
 export const MARK_ALPHA = 0.35
 
 const LABEL_ALPHA = 0.6
@@ -522,8 +532,13 @@ function placeLabels(
     const from = Math.max(run.x, 0)
     const to = Math.min(run.end, width)
     const { textWidth } = run
-    if (textWidth + MIN_LABEL_PADDING_PX <= to - from) {
-      const x = from + (to - from - textWidth) / 2
+    if (to - from >= textWidth * MIN_LABEL_COVERAGE) {
+      // centred on the stretch, then kept inside the window, which only the
+      // overhang can leave
+      const x = Math.min(
+        Math.max(from + (to - from - textWidth) / 2, 0),
+        Math.max(width - textWidth, 0),
+      )
       const box = {
         from: x - MIN_LABEL_PADDING_PX / 2,
         to: x + textWidth + MIN_LABEL_PADDING_PX / 2,

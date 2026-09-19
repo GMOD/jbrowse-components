@@ -16,6 +16,9 @@ export interface OffscreenMateData {
   mateRefNameDict: string[]
   // per dict id
   counts: Uint32Array
+  // per dict id: the sequence those alignments cover, which is what the hover
+  // leads with and what the strip ranks a stretch by
+  alignedBp: Float64Array
   // per placed alignment: its span on this axis in cumBp, clamped to the
   // displayed region
   starts: Float64Array
@@ -35,6 +38,7 @@ export function emptyOffscreenMates(): OffscreenMateData {
   return {
     mateRefNameDict: [],
     counts: new Uint32Array(0),
+    alignedBp: new Float64Array(0),
     starts: new Float64Array(0),
     ends: new Float64Array(0),
     mateRefNameIds: new Uint32Array(0),
@@ -49,6 +53,7 @@ export function emptyOffscreenMates(): OffscreenMateData {
 export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
   const mateRefNameDict = makeStringDict()
   const counts: number[] = []
+  const alignedBp: number[] = []
   const starts: number[] = []
   const ends: number[] = []
   const mateRefNameIds: number[] = []
@@ -69,6 +74,7 @@ export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
       counts[id] = (counts[id] ?? 0) + 1
       const lo = Math.min(start, end)
       const hi = Math.max(start, end)
+      alignedBp[id] = (alignedBp[id] ?? 0) + (hi - lo)
       const entry = findRegionEntry(queryIndex, refName, lo, hi)
       if (entry) {
         const a = cumBpInEntry(entry, lo)
@@ -85,6 +91,7 @@ export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
       return {
         mateRefNameDict: mateRefNameDict.dict,
         counts: Uint32Array.from(counts),
+        alignedBp: Float64Array.from(alignedBp),
         starts: Float64Array.from(starts),
         ends: Float64Array.from(ends),
         mateRefNameIds: Uint32Array.from(mateRefNameIds),
@@ -116,9 +123,17 @@ export function renameOffscreenMates(
     return { ...data, mateRefNameDict: dict }
   }
   const counts = new Uint32Array(dict.length)
+  const alignedBp = new Float64Array(dict.length)
   for (let i = 0; i < remap.length; i++) {
     const to = remap[i]!
     counts[to] = counts[to]! + (data.counts[i] ?? 0)
+    alignedBp[to] = alignedBp[to]! + (data.alignedBp[i] ?? 0)
   }
-  return { ...data, mateRefNameDict: dict, mateRefNameIds: ids, counts }
+  return {
+    ...data,
+    mateRefNameDict: dict,
+    mateRefNameIds: ids,
+    counts,
+    alignedBp,
+  }
 }

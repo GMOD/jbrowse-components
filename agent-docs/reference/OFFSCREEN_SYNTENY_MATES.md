@@ -202,6 +202,40 @@ column of hundreds: "what is under the pointer" has no visible answer to be
 faithful to, so the useful one is the block. A short alignment nested inside a
 long one is what that costs, and the long one is what the reader pointed at.
 
+*2026-09-18, the same day:* **the fit test was settling the contest above before it ran.**
+A name went on only where the stretch could contain it, and that test ran before
+the strongest-first sort, so the sort could only rank the survivors. Measured on
+the peach-chr1-over-grape-chr1 figure's own view: ten contigs carry marks, four
+are named, and the six that are not lose on WIDTH rather than on rows — two of
+the three rows were free. One of them is the fourth-strongest contig in the
+window, 920kb of peach going to `NC_081816.1`, unnamed while the fifth-strongest
+is named, because an 11-character accession wants a few more pixels than its
+stretch has.
+
+A name may now overhang its stretch, up to half its own width
+(`MIN_LABEL_COVERAGE`), and is then clamped into the window. What keeps that
+readable is what the strip already relies on: a name is read by the marks under
+its CENTRE. Two names a row apart may overlap in x — `placeLabels` rejects a box
+only within `LABEL_ROW_PX` of a placed one — and a third-row name sits 26px off
+the marks, so a name whose middle half is over its own marks says exactly what
+it did before. The overhang at stake is ~17px a side against a same-contig merge
+gap of two whole names, so no reader has to tell an overhang from a break
+between stretches. **The collision box stays the text box**, which is what makes
+the overhang safe: two stretches that do not touch can now want the same pixels,
+and the second takes the next row.
+
+Not truncation, and not an alias: `NC_0818…` is ambiguous among grape's own
+contigs, and `refNameAliases` is a config property the strip cannot count on.
+
+The hover leads with the sequence for the same reason the strip ranks by it —
+`NC_081816.1 · 920Kbp in 176 alignments`. The count stays beside it because
+920Kbp in 4 alignments and 920Kbp in 176 are different things to click into.
+Both come off the per-contig tally the lane already carries (`alignedBp` beside
+`counts`, in the worker's lane and the culled one), so the hover stays O(contigs)
+and independent of the mark count. No share and no rank: the class C denominator
+moves with every pan.
+
+
 *2026-08-20:* the marks are the BACKGROUND and the label is the finding, so they
 are not the same grey. At full `text.secondary` the strip read as the loudest
 thing in a band of 0.2-alpha ribbons, which inverts what a reader should look at

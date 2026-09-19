@@ -1,7 +1,8 @@
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { ComparativeTooltip } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
-import { offscreenMateCount } from './offscreenMateStrip.ts'
+import { offscreenMateTotals } from './offscreenMateStrip.ts'
 
 import type {
   OffscreenMateHit,
@@ -20,10 +21,12 @@ export function offscreenMateClickHint(hit: OffscreenMateHit) {
     : `Not on the ${panel}. Click to add it`
 }
 
-// A label goes on a stretch only when it is wide enough to hold it, so the
-// marks a reader most wants explained are the unlabelled ones. The locus is
-// not named: resolving it is a full scan of the lane, and this runs per
-// pointer move.
+// A stretch too narrow to carry a name is unlabelled, so the marks a reader
+// most wants explained are those. Sequence leads, because that is what decides
+// whether a mark is worth a click and what the strip ranks its names by, and
+// the alignment count follows it: 920Kbp in 4 alignments and 920Kbp in 176 are
+// different things to click into. The locus is not named — resolving it is a
+// full scan of the lane, and this runs per pointer move.
 const OffscreenMateTooltip = observer(function OffscreenMateTooltip({
   model,
   hover,
@@ -31,13 +34,17 @@ const OffscreenMateTooltip = observer(function OffscreenMateTooltip({
   model: OffscreenMateSource
   hover: OffscreenMateHover
 }) {
-  const count = offscreenMateCount(model, hover.refName, hover.side)
+  const { alignments, alignedBp } = offscreenMateTotals(
+    model,
+    hover.refName,
+    hover.side,
+  )
   return (
     <ComparativeTooltip
       clientPoint={{ x: hover.clientX, y: hover.clientY }}
       lines={[
-        count > 0
-          ? `${hover.refName} · ${count.toLocaleString()} alignments`
+        alignments > 0
+          ? `${hover.refName} · ${getBpDisplayStr(alignedBp)} in ${alignments.toLocaleString()} alignments`
           : hover.refName,
         offscreenMateClickHint(hover),
       ]}

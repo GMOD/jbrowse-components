@@ -92,6 +92,7 @@ function fixture(n: number, contigs: number): OffscreenMateData {
   return {
     mateRefNameDict: dict,
     counts: Uint32Array.from(dict, () => perContig),
+    alignedBp: Float64Array.from(dict, () => (perContig * GENOME_BP) / n),
     starts,
     ends,
     mateRefNameIds: ids,

@@ -307,10 +307,11 @@ against.
 **Off-screen mates** in the settings menu turns the marks on, and it is on by
 default. Each mark sits where the alignment is on the panel it does have,
 stopping short of the ribbons so it cannot be read as an alignment to whatever
-is directly below. A run of marks to one contig carries that contig's name;
-where several contigs cover the same stretch, their names stack. Zoom out far
-enough and more stretches want a name than the band has rows to give, and the
-rows go to the ones with the most sequence aligned.
+is directly below. A run of marks to one contig carries that contig's name,
+which may be wider than the run itself and overhang it; where several contigs
+cover the same stretch, their names stack. Zoom out far enough and more
+stretches want a name than the band has rows to give, and the rows go to the
+ones with the most sequence aligned.
 
 **Which panel a mark lands on is decided by which one still has the alignment.**
 An alignment is undrawable as soon as _either_ of its ends leaves its own panel,
@@ -327,11 +328,11 @@ showing, so both edges account for everything on their own side. That second
 query, from the lower panel, is the setting's cost on an indexed whole-genome
 file; turning it off drops both the query and the marks.
 
-A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
-zoom is most of them. Hover any mark and it names the contig it points at, and
-how many alignments on this band go there. Marks stack into a column at
-whole-genome zoom, and a pointer over one answers with the longest alignment in
-it, which is the alignment a click then follows.
+A run less than half as wide as its own name goes unlabelled, which at
+whole-chromosome zoom is most of them. Hover any mark and it names the contig it
+points at, how much sequence on this band goes there and in how many alignments.
+Marks stack into a column at whole-genome zoom, and a pointer over one answers
+with the longest alignment in it, which is the alignment a click then follows.
 
 Clicking a mark shows that mate on the facing panel. A contig the panel is
 already displaying is scrolled to, so the rest of what it was showing stays.

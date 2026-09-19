@@ -102,19 +102,42 @@ test('the extent is the whole fetch, so a covering band can skip it', () => {
   expect(out.mateAxis.hi).toBe(90_100)
 })
 
-// The tooltip's number, and the same question the worker's tally answers for
-// the other class: how many alignments on this band go to that contig.
-test('counts are per contig over the whole fetch', () => {
+// The tooltip's numbers, and the same question the worker's tally answers for
+// the other class: how much of this band goes to that contig, in how many
+// alignments.
+test('tallies are per contig over the whole fetch', () => {
   const { onQueryAxis: out } = culledRibbonMateData(
-    geometry([
-      [0, 100, 200, 7000, 7100],
-      [1, 300, 400, 8000, 8100],
-      [2, 500, 600, 9000, 9100],
-    ]),
+    geometry(
+      [
+        [0, 100, 200, 7000, 7100],
+        [1, 300, 400, 8000, 8100],
+        [2, 500, 600, 9000, 9100],
+      ],
+      { lengths: [100, 250, 400] },
+    ),
     features(['ctgB', 'ctgC', 'ctgB']),
   )
   expect(out.mateRefNameDict).toEqual(['ctgB', 'ctgC'])
   expect([...out.counts]).toEqual([2, 1])
+  expect([...out.alignedBp]).toEqual([500, 250])
+})
+
+// The other axis tallies the row's OWN contigs, which is the lane a mark on the
+// lower edge is named from.
+test('...and on the facing axis, over the contigs this row is anchored on', () => {
+  const { onTargetAxis: out } = culledRibbonMateData(
+    geometry(
+      [
+        [0, 100, 200, 7000, 7100],
+        [1, 300, 400, 8000, 8100],
+      ],
+      { lengths: [100, 250] },
+    ),
+    features(['ctgB', 'ctgC'], ['ctgA', 'ctgD']),
+  )
+  expect(out.mateRefNameDict).toEqual(['ctgA', 'ctgD'])
+  expect([...out.counts]).toEqual([1, 1])
+  expect([...out.alignedBp]).toEqual([100, 250])
 })
 
 // A feature whose instances were all emitted off-screen keeps a span that reads
