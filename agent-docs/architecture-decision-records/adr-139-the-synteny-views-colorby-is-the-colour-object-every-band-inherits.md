@@ -3,7 +3,7 @@ status: Accepted
 summary: "The linear synteny and dotplot views' `colorBy` is a `SyntenyColor` object — `\"grey\" | { value, field, scale: 'none', domain }` from the display-kit colour factory, held as the MST property itself so one lift and one set of refusals run on every path — replacing the mode string and the `colorDomain` property. The structural modes are fields the views read (`strand`, `query`, `target`, `reference`, `track`) beside the measurement presets; any other field is a declared column. The field is the runtime form: the colour functions, legends, menus and the worker dispatch on it, and the mode vocabulary — `default`, `mappingQuality`, `attribute:<name>` — is gone with the string. Supersedes ADR-131's \"the synteny view's `colorBy` stays a mode string\""
 ---
 
-# ADR-137: The synteny views' `colorBy` is the colour object every band inherits
+# ADR-139: The synteny views' `colorBy` is the colour object every band inherits
 
 ## Status
 

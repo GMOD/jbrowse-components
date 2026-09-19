@@ -244,7 +244,7 @@ The seams, named honestly:
   object the multi-way display holds per layer as `ribbonColor`, with the
   structural variables as fields — `strand`, `query`, `target`, `reference`,
   `track` — beside the presets and the declared columns
-  ([ADR-137](../architecture-decision-records/adr-137-the-synteny-views-colorby-is-the-colour-object-every-band-inherits.md)).
+  ([ADR-139](../architecture-decision-records/adr-139-the-synteny-views-colorby-is-the-colour-object-every-band-inherits.md)).
   ggplot2 has `inherit.aes`; here every band reads the view's object through
   `TrackColorsMixin`. Which fields a surface offers is its menu's list; a
   field with no reader behind it falls through to the surface's own colour.

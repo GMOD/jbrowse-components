@@ -126,7 +126,7 @@ its own slots and the declared shorthand.
 - ~~**The synteny view's `colorBy` stays a mode string**: a view property with
   launch keys and v4 `init` compatibility, not a track config slot.~~
   Superseded by
-  [ADR-137](adr-137-the-synteny-views-colorby-is-the-colour-object-every-band-inherits.md):
+  [ADR-139](adr-139-the-synteny-views-colorby-is-the-colour-object-every-band-inherits.md):
   the synteny and dotplot views' `colorBy` is the `SyntenyColor` object, held
   as the MST property. `ChordSyntenyDisplay`'s `colorBy`
   (`default | chromosome | strand`) has no field mode, so like alignments'
