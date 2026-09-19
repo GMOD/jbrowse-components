@@ -162,7 +162,14 @@ describes that binding:
   or more CSS colour stops spaced evenly; `domain` left off spans the values of
   every region loaded, so a bar and its key mean the same thing in every block
   on screen and the ramp widens as you pan into bigger values. Pin `domain` when
-  a figure needs the colours to stay put.
+  a figure needs the colours to stay put. `domainMid` names the value the ramp's
+  middle stop sits at, so a diverging ramp centres on zero inside an asymmetric
+  domain.
+- **threshold** —
+  `{ "field": "signal", "scale": "threshold", "domain": [10, 50], "palette": ["#eee", "#f90", "#c00"] }`
+  cuts the value at each `domain` point and hands each interval a `palette`
+  entry, so `palette` carries one more than `domain` does. The legend lists one
+  row per interval.
 
 Whichever way a scale resolves, the legend reads the same table the colours came
 from.

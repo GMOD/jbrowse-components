@@ -335,13 +335,14 @@ picks `xyplot`, `line`, `scatter`, or `density`.
 }
 ```
 
-A `multirow*` rendering stacks one row per signal; a `multi*` one overlays them.
-Pin `scales.y.domainMin`/`domainMax` when the quantity has an absolute meaning,
-or per-row autoscale draws a flat sample at the same height as an amplified one.
+`facet` decides the layout: `"source"` stacks one row per signal, and `""`,
+above, draws every signal in one shared plot box. Pin
+`scales.y.domainMin`/`domainMax` when the quantity has an absolute meaning, or
+per-row autoscale draws a flat sample at the same height as an amplified one.
 Past a handful of samples, generate `subadapters` from your samplesheet
 ([multi-quantitative tracks](/docs/config_guides/quantitative_track)).
 
-<Figure caption="An eight-sample MultiQuantitativeTrack across 1.5 Mb of chr1 (multirowline), one color per 1000 Genomes individual on a shared 0 to 5 copy-number scale. Every row sits at two copies through the flanks; only the amylase cluster in the middle separates them, from one copy to four." src="/img/cookbook_multiwig.png"/>
+<Figure caption="An eight-sample MultiQuantitativeTrack across 1.5 Mb of chr1, one interpolated line and one color per 1000 Genomes individual on a shared 0 to 5 copy-number scale. Every row sits at two copies through the flanks; only the amylase cluster in the middle separates them, from one copy to four." src="/img/cookbook_multiwig.png"/>
 
 ## Variant tracks
 

@@ -53,8 +53,8 @@ writeFileSync('config.json', JSON.stringify({ ...config, tracks }, null, 2))
 `config.base.json` holds everything that is not per-sample (`assemblies` and
 global settings). Signals that belong together, such as a timecourse in
 triplicate, become one
-[MultiQuantitativeTrack](/docs/config_guides/quantitative_track) whose
-`subadapters` come from the same rows.
+[MultiQuantitativeTrack](/docs/config_guides/quantitative_track#many-signals-in-one-track)
+whose `subadapters` come from the same rows.
 
 ## Keep trackIds stable for reproducible links
 

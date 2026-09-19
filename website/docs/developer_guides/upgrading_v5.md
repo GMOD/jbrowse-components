@@ -62,15 +62,18 @@ ones, `jbrowse-plugin-gwas-hoot` and `NucContent`.
 ## Removed RPC methods
 
 An RPC method is addressed by string — `rpcManager.call(sessionId, name, args)`
-— so a plugin naming one of these has nothing that resolves. Six went in v5,
+— so a plugin naming one of these has nothing that resolves. Seven went in v5,
 alongside `CoreRender` above:
 
 - `WiggleGetGlobalQuantitativeStats` and
   `WiggleGetMultiRegionQuantitativeStats`. There is no separate stats round trip
-  any more: `RenderWiggleData` returns the per-region score arrays and the
+  any more: `RenderMultiWiggleData` returns the per-region score arrays and the
   display derives its own domain from them, which is also what makes the new
   local-percentile autoscale possible.
-- `MultiWiggleGetSources`. A multi-wiggle track's sources arrive on each
+- `RenderWiggleData`. `RenderMultiWiggleData` serves every quantitative adapter
+  now that there is one quantitative display; an adapter handing back typed
+  arrays reports one unnamed source through it.
+- `MultiWiggleGetSources`. A quantitative track's sources arrive on each
   region's `RenderMultiWiggleData` payload, so a source that only appears in the
   second region is picked up as that region lands.
 - `MultiVariantGetSources` and `MultiVariantGetGenotypeMatrix` are
@@ -318,6 +321,48 @@ migrates their settings across, so a saved config's `type:` still resolves. A
 plugin that extended or referenced the old display classes directly needs
 updating.
 
+## The quantitative displays are one display
+
+`MultiLinearWiggleDisplay` is gone. `LinearWiggleDisplay` draws one source or
+many and registers against both `QuantitativeTrack` and
+`MultiQuantitativeTrack`, which differ in adapter shorthand and add-track
+workflow rather than in what they draw. `facet: 'source'` puts each source on a
+row of its own, with the tree sidebar, clustering, the row-order sort and the
+row labels, and `facet.domain` is that row order. A `MultiQuantitativeTrack`
+seeds `facet: 'source'`, `summaryScoreMode: 'avg'` and `height: 200` into its
+display defaults, so a multi track that names no display setting still opens as
+a stack of rows.
+
+`renderingType` is the five plot names — `xyplot`, `density`, `line`,
+`linecenter` and `scatter`. The nine `multi*` and `multirow*` spellings stop
+loading, and so do `SINGLE_TO_MULTI_RENDERING` and `remapMultiWiggleRendering`,
+which used to remap them. A config that named one spells the plot name instead,
+plus `facet: ""` where it was an overlapping mode. Nothing migrates.
+
+## The wiggle color is one `color` object
+
+`color` on `LinearWiggleDisplay` is a CSS color string, or
+`{ field, scale, domain, palette | ramp }` — the object every other display's
+color already was. `posColor`, `negColor`, `useBicolor` and `densityColorRamp`
+stop loading, and `bicolorPivot` is `origin`, the mark display's slot, which is
+also the value the bars grow from.
+
+<!-- prettier-ignore -->
+| v4 | v5 |
+| --- | --- |
+| `posColor`, `negColor`, `bicolorPivot: p` | `color: { field: 'score', scale: 'threshold', domain: [p], palette: [neg, pos] }` |
+| `color` beside `useBicolor: false` | `color: '#…'` |
+| `densityColorRamp: 'viridis'` | `color: { field: 'score', scale: 'linear', ramp: ['viridis'] }` |
+
+`setPosColor`, `setNegColor`, `setUseBicolor` and `setBicolorPivot` are
+`setColor` and `setOrigin`. **None of it migrates**, in a config, a session or
+an `applyDisplaySettings` bag: MST drops a snapshot key the model no longer
+declares, so a track that named one of them reopens in the default colors.
+`domainMid` is new on the ramp, and the track menu's **Edit color...** opens the
+shared channel-spec dialog on the same object a config file holds.
+
+[](/docs/config/wigglecolor) lists the members.
+
 ## Adapter types renamed
 
 `AllVsAllPAFAdapter` is now `MultiGenomePAFAdapter` and
@@ -369,11 +414,11 @@ updating.
 
 ## The value scale is one `scales.y` object
 
-Every quantitative display — wiggle, multi-wiggle, Manhattan, the alignments
-coverage band and the mark display — writes its value axis as one sub-schema.
-`scaleType` is `scales.y.type`, `minScore` and `maxScore` are
-`scales.y.domainMin` and `scales.y.domainMax`, and `autoscale`, `numStdDev`,
-`numQuantile` and `symlogConstant` keep their names inside `scales.y`.
+Every quantitative display — wiggle, Manhattan, the alignments coverage band and
+the mark display — writes its value axis as one sub-schema. `scaleType` is
+`scales.y.type`, `minScore` and `maxScore` are `scales.y.domainMin` and
+`scales.y.domainMax`, and `autoscale`, `numStdDev`, `numQuantile` and
+`symlogConstant` keep their names inside `scales.y`.
 
 **None of them migrates.** A config or session still spelling one at the display
 level loses it in silence, since MST drops a snapshot key the model no longer
