@@ -60,7 +60,7 @@ export const manhattanColorConfigSchema = ConfigurationSchema(
       domain:
         "the field's values that take the palette first, in order, in the key as on the points; the rest follow sorted, each on a colour no listed value paints",
     }),
-    ...colorPaletteSlot,
+    ...colorPaletteSlot(),
   },
   colorChannelOptions('color'),
 )

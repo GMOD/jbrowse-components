@@ -2,7 +2,13 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 /** How a colour object maps its `field`; `none` paints `value`. */
-export const COLOR_SCALES = ['none', 'categorical', 'linear', 'log'] as const
+export const COLOR_SCALES = [
+  'none',
+  'categorical',
+  'linear',
+  'log',
+  'threshold',
+] as const
 export type ColorScaleName = (typeof COLOR_SCALES)[number]
 
 /** The scales of a colour object whose field takes a palette colour per value. */
@@ -86,15 +92,18 @@ export function colorChannelSlots<S extends ColorScaleName>({
   } as const
 }
 
-/** The colours a categorical scale hands `domain`, in order; empty is the default palette. */
-export const colorPaletteSlot = {
-  palette: {
-    type: 'stringArray',
-    defaultValue: [],
-    description:
-      'CSS colors the domain values take, in order, continuing into the default palette past its end',
-  },
-} as const
+/** The colours a scale hands `domain`, in order; empty is the default palette. */
+export function colorPaletteSlot(
+  description = 'CSS colors the domain values take, in order, continuing into the default palette past its end',
+) {
+  return {
+    palette: {
+      type: 'stringArray',
+      defaultValue: [],
+      description,
+    },
+  } as const
+}
 
 /** A linear or log scale's ramp: `["viridis"]`, or CSS colour stops spaced evenly. */
 export const colorRampSlot = {
@@ -159,7 +168,7 @@ export const colorConfigSchema = ConfigurationSchema(
       domain:
         'the values that take the palette first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it',
     }),
-    ...colorPaletteSlot,
+    ...colorPaletteSlot(),
   },
   colorChannelOptions('color'),
 )
