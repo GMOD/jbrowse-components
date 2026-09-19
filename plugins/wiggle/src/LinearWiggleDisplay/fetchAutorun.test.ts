@@ -187,7 +187,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setPosColor('#abcdef')
+    display.setColor('#abcdef')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -324,7 +324,6 @@ describe('LinearWiggleDisplay solid color', () => {
     'every layer keeps the single hue in %s mode',
     mode => {
       const display = loadedWithSignedData()
-      display.setUseBicolor(false)
       display.setColor('green')
       display.setSummaryScoreMode(mode)
 
@@ -344,17 +343,14 @@ describe('LinearWiggleDisplay solid color', () => {
     },
   )
 
-  // Density is the case the hue assertion above cannot make. It ignores the
-  // `color` slot entirely and always draws from posColor (the `color` config
-  // doc says so, and `scoreRamp` returns undefined with bicolor off, so the
-  // legend describes no negative side). The claim here is therefore only that
-  // one color comes out, not which; the split around origin is where a
-  // second color got in.
+  // Density is the case the hue assertion above cannot make: both sides fade
+  // from white towards the one colour, so the claim here is only that one
+  // colour comes out, not which. The split around the origin is where a second
+  // colour got in.
   test.each(['avg', 'min', 'max'])(
-    'density with bicolor off stays one color in %s mode',
+    'density under a constant colour stays one color in %s mode',
     mode => {
       const display = loadedWithSignedData()
-      display.setUseBicolor(false)
       display.setColor('green')
       display.setRenderingType('density')
       display.setSummaryScoreMode(mode)

@@ -1,7 +1,7 @@
-import { densityRampLut } from './densityColorRamp.ts'
 import { scoreRampScale } from './scoreRampScale.ts'
 import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
 
+import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type { WiggleRenderStateModel } from './wiggleComponentUtils.ts'
 import type { RampScale } from '@jbrowse/core/ui/colorScale'
 
@@ -30,8 +30,8 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   canvasWidthPx: number
   plotGeometry: WigglePlotGeometry
   minimalTicks: boolean
-  posColor: string
-  negColor: string
+  /** The `color` object resolved against the origin and the layout. */
+  wiggleColor: ResolvedWiggleColor
   effectiveSummaryScoreMode: string
   maxGapMultiple: number
   resolution: number
@@ -42,12 +42,6 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
    * reason a ramp can still be the wrong legend there.
    */
   scoreRampApplies: boolean
-  /**
-   * The color the sub-pivot side paints in under density: `negColor` with
-   * bicolor on, `posColor` without it, where the painter draws both sides in
-   * the one color and the key has to say so.
-   */
-  densityNegColor: string
 }
 
 /**
@@ -68,19 +62,18 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
      * #getter
      * The density ramp as a color scale, or undefined when there is no single
      * ramp to describe or no domain yet. `LegendMixin`'s `colorScales` lists
-     * it, so the on-screen key and the export draw one bar. The LUT is the
-     * resolved `densityColorRamp` — the same cached bytes both renderers color
-     * through — so a named ramp's key is drawn from what the track paints, not
-     * the default fade.
+     * it, so the on-screen key and the export draw one bar. The bar is drawn
+     * from the resolved colour — the same cached LUT bytes both renderers
+     * colour through — so a declared ramp's key is what the track paints.
      */
     get scoreColorScale(): RampScale | undefined {
       return self.scoreRampApplies && self.domain
-        ? scoreRampScale(self.domain, self.scaleType, self.symlogConstant, {
-            posColor: self.posColor,
-            negColor: self.densityNegColor,
-            pivot: self.origin,
-            rampLut: densityRampLut(self.densityColorRamp),
-          })
+        ? scoreRampScale(
+            self.domain,
+            self.scaleType,
+            self.symlogConstant,
+            self.wiggleColor,
+          )
         : undefined
     },
 
@@ -123,11 +116,9 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
      */
     sharedGpuProps() {
       return {
-        posColor: self.posColor,
-        negColor: self.negColor,
+        wiggleColor: self.wiggleColor,
         effectiveSummaryScoreMode: self.effectiveSummaryScoreMode,
         renderingType: self.renderingType,
-        origin: self.origin,
         maxGapMultiple: self.maxGapMultiple,
       }
     },

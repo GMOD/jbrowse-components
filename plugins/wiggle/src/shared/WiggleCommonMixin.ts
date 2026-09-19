@@ -62,7 +62,7 @@ export const RESOLUTION_STEP = 2
  * #category display
  *
  * Extends `ScoreFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
- * domain and the wiggle-specific config: the pos/neg palette, rendering type,
+ * domain and the wiggle-specific config: the origin, rendering type,
  * summary mode, resolution and the line/gap settings. Extended on this chain
  * with `.props()`/`.views()` rather than a mixin composed in, so no
  * `types.compose` layer is added (ADR-041).
@@ -99,33 +99,11 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
-       */
-      get posColor(): string {
-        return getConf(confNode(self), 'posColor')
-      },
-      /**
-       * #getter
-       */
-      get negColor(): string {
-        return getConf(confNode(self), 'negColor')
-      },
-      /**
-       * #getter
        * The value bars grow from, which a colour scale also reads where its
        * own domain says nothing.
        */
       get origin(): number {
         return getConf(confNode(self), 'origin')
-      },
-      /**
-       * #getter
-       * Density's colour ramp: 'default' for the white→track-colour fade, or a
-       * named 256-entry LUT (see densityColorRamp.ts). Rides the render state,
-       * so a change is a uniform flag plus one LUT texture upload — never a
-       * refetch or a buffer re-encode.
-       */
-      get densityColorRamp(): string {
-        return getConf(confNode(self), 'densityColorRamp')
       },
       /**
        * #getter
@@ -285,21 +263,6 @@ export function WiggleCommonMixin() {
        */
       setOrigin(val?: number) {
         setConf(confNode(self), 'origin', val)
-      },
-      /**
-       * #action
-       * Lives here beside the `posColor`/`negColor` getters and
-       * `setOrigin`, which the colour editor and the score menu both
-       * write through.
-       */
-      setPosColor(color?: string) {
-        setConf(confNode(self), 'posColor', color)
-      },
-      /**
-       * #action
-       */
-      setNegColor(color?: string) {
-        setConf(confNode(self), 'negColor', color)
       },
       /**
        * #action

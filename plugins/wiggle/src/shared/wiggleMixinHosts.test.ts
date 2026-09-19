@@ -23,15 +23,15 @@ test('the common host checks the slot names its mixin reads', () => {
 
 // `HostChecksSlotNames` asks whether names are checked, not whether every
 // composer declares them. `WiggleScoreConfigMixin`'s composers include displays
-// declaring none of wiggle's palette, so reaching one through its host is a
+// declaring none of wiggle's own slots, so reaching one through its host is a
 // compile error rather than a silent `undefined`.
 test('the score-config host cannot reach a slot only wiggle declares', () => {
   const common = {} as WiggleCommonHost
   const score = {} as WiggleScoreConfigHost
   const reads = () => [
-    getConf(common, 'posColor'),
+    getConf(common, 'origin'),
     // @ts-expect-error
-    getConf(score, 'posColor'),
+    getConf(score, 'origin'),
   ]
   expect([reads]).toHaveLength(1)
 })

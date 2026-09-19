@@ -40,11 +40,11 @@ function countOf(sources: SourceRenderData[], band: boolean) {
 // pivot, the shared negColor below it, the pos colour on both sides where
 // several sources share one plot).
 export function buildRowColorTable(gpuProps: WiggleGpuProps) {
-  const { sources, faceted } = gpuProps
-  const sharedPlot = !faceted && sources.length > 1
-  const defaultPos = cssColorToNormalizedRgb(gpuProps.posColor)
+  const { sources, wiggleColor } = gpuProps
+  const sharedPlot = wiggleColor.perSource
+  const defaultPos = cssColorToNormalizedRgb(wiggleColor.posColor)
   const defaultNeg = normalizedRgbToABGR(
-    ...cssColorToNormalizedRgb(gpuProps.negColor),
+    ...cssColorToNormalizedRgb(wiggleColor.negColor),
   )
   const table = new Uint32Array(sources.length * 2)
   for (let i = 0; i < sources.length; i++) {

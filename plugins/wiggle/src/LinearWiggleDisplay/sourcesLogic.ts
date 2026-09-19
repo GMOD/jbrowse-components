@@ -40,69 +40,26 @@ export function sourcesFromRegionData(
 }
 
 /**
- * # The multi-wiggle color model
+ * # What a row's two colour channels are for
  *
- * This is the whole picture. Everything else about multi-wiggle color — the
- * legend's swatches, the Set Color dialog's columns, whether a score ramp is
- * drawable, what the sidebar stripe means — is downstream of this table, so
- * read it here rather than reassembling it from the call sites.
+ * A row carries `color`, which the plot paints it in, and `labelColor`, which
+ * the row-label sidebar paints beside it. Which of them carries the row's
+ * identity is the whole of what varies, and it varies with one thing: density.
  *
- * A row carries **two color channels**, and there are **three modes**:
+ * **In density, `color` is a scale rather than an identity.** Density paints a
+ * row white at the cut and saturates towards `color`, so a hue set there to
+ * mark "this row is population PUR" replaces the pos/neg scale the track is
+ * read by — a diverging copy-number heatmap grouped by population came out one
+ * hue per population with a shared blue for losses, encoding nothing. Identity
+ * is displaced one channel over, to `labelColor`, which the ramp ignores. The
+ * colour dialog edits `labelColor` there, the key reads it, and a score ramp is
+ * drawable only while no source sets `color`.
  *
- * | mode      | `color` paints          | identity lives in | palette fills   |
- * | --------- | ----------------------- | ----------------- | --------------- |
- * | `shared`  | the source's whole plot | `color`           | group, then row |
- * | `row`     | the row's pos-side bars | `color`           | group only      |
- * | `density` | the **score ramp**      | `labelColor`      | group only      |
- *
- * **In density, `color` is a scale rather than an identity**, and every special
- * case below follows from that. Density paints a row white at the bicolor
- * pivot and saturates toward `color`, so a hue set there to mark "this row is
- * population PUR" replaces the pos/neg scale the track is read by — a diverging copy-number heatmap grouped by
- * population came out one hue per population with a shared blue for losses,
- * encoding nothing. So identity is displaced one channel over, to
- * `labelColor`, which the row-label sidebar paints and the ramp ignores.
- *
- * Three consequences, each of which used to be re-derived somewhere and get it
- * wrong:
- *
- * - the Set Color dialog edits `labelColor` in density (`SetColorDialog`);
- * - the color key reads `labelColor` in density (`buildLegendItems`)
- *   — reading `color` gave a grouped-but-uncolored cohort a key of identical
- *   `posColor` swatches naming groups that were on screen in four colors;
- *   and
- * - a score ramp is drawable only while NO source sets `color`, since one that
- *   does is painted on its own scale (`scoreRampApplies` on the model).
- *
- * `row` keeps the shared `negColor` on the negative side even when the row has
- * a color, so signed data still reads as bicolor; that split is the renderer's
- * and is settled (ADR-016, `buildSourceRenderData`).
- *
- * **`shared` needs more than one source.** A lone plot in the box has nothing
- * to be told apart from, so it takes no palette entry and is drawn in the
- * display's own colours — the pos/neg picture a single-source quantitative
- * track has always shown.
+ * Whether a source with no colour of its own takes a palette entry is the
+ * colour object's question, not this file's: `color: { field: 'source' }`
+ * hands one out (`perSource`), and anything else leaves the row on the
+ * display's own colours.
  */
-export type RowColorMode = 'shared' | 'row' | 'density'
-
-// Three modes but two questions, because density is density whether or not the
-// sources share a plot. Collapsed once, here, so everything downstream branches
-// on the mode itself and the impossible fourth combination has nowhere left to
-// hide.
-//
-// Exported because the color key is downstream of this table too: `legendItems`
-// takes the mode rather than the raw booleans, so which channel it reads and
-// what an unset one falls back to are both read off the table above instead of
-// restated against `isDensityMode`.
-export function rowColorMode(
-  sharesOnePlot: boolean,
-  isDensityMode: boolean,
-): RowColorMode {
-  if (isDensityMode) {
-    return 'density'
-  }
-  return sharesOnePlot ? 'shared' : 'row'
-}
 
 // Palette color by position, wrapping modulo palette length.
 function paletteColor(index: number) {
@@ -150,14 +107,14 @@ function buildPaletteColors(sources: readonly Source[]): PaletteColors {
   return { groupColors, rowColors }
 }
 
-// One case per row of the table above. A source's own colors always win — these
-// only fill what it left unset — and an unfilled channel stays undefined so the
-// renderer falls back to its own default.
+// A source's own colors always win — these only fill what it left unset — and
+// an unfilled channel stays undefined so the renderer falls back to its own
+// default.
 //
-// The density case falls back to the source's OWN `color` before the group
-// palette because that color is what the ramp paints the row with: a per-cell
-// store shipping `color: #8c564b` for its monocytes and grouping them as
-// "Monocyte" drew a brown block beside a purple label, two palettes for one
+// Density's `labelColor` falls back to the source's OWN `color` before the
+// group palette because that color is what the ramp paints the row with: a
+// per-cell store shipping `color: #8c564b` for its monocytes and grouping them
+// as "Monocyte" drew a brown block beside a purple label, two palettes for one
 // grouping. The label is the key to the rows, so it names the color the rows
 // actually are; the group palette is for stores supplying no color at all.
 //
@@ -166,30 +123,22 @@ function buildPaletteColors(sources: readonly Source[]): PaletteColors {
 // a grouping and is not one.
 function synthesizeColors(
   s: Source,
-  mode: RowColorMode,
+  perSource: boolean,
+  isDensity: boolean,
   { groupColors, rowColors }: PaletteColors,
 ) {
   const groupColor =
     s.group === undefined ? undefined : groupColors.get(s.group)
-  switch (mode) {
-    case 'density': {
-      return {
-        color: s.color,
-        labelColor: s.labelColor ?? s.color ?? groupColor,
-      }
+  if (isDensity) {
+    return {
+      color: s.color,
+      labelColor: s.labelColor ?? s.color ?? groupColor,
     }
-    case 'shared': {
-      return {
-        color: s.color ?? groupColor ?? rowColors.get(s.name),
-        labelColor: s.labelColor,
-      }
-    }
-    case 'row': {
-      return {
-        color: s.color ?? groupColor,
-        labelColor: s.labelColor,
-      }
-    }
+  }
+  return {
+    color:
+      s.color ?? groupColor ?? (perSource ? rowColors.get(s.name) : undefined),
+    labelColor: s.labelColor,
   }
 }
 
@@ -204,11 +153,15 @@ function synthesizeColors(
 export function buildSources(
   editableSources: Source[],
   subtreeFilter: readonly string[] | undefined,
-  mode: RowColorMode,
+  perSource: boolean,
+  isDensity: boolean,
 ): Source[] {
   const palette = buildPaletteColors(editableSources)
   return filterRowsBySubtree(
-    editableSources.map(s => ({ ...s, ...synthesizeColors(s, mode, palette) })),
+    editableSources.map(s => ({
+      ...s,
+      ...synthesizeColors(s, perSource, isDensity, palette),
+    })),
     subtreeFilter,
   )
 }

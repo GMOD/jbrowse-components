@@ -13,6 +13,7 @@ import {
   resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
 
+import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type {
   WiggleGPURenderState,
   WiggleRenderingType,
@@ -83,8 +84,7 @@ export interface WiggleRenderStateModel {
   renderingType: string
   scatterPointSize: number
   lineWidth: number
-  origin: number
-  densityColorRamp: string
+  wiggleColor: ResolvedWiggleColor
 }
 
 // Always defined: until autoscale resolves a domain, resolveRenderState
@@ -118,8 +118,8 @@ export function makeWiggleRenderState(
     numRows: Math.max(1, numRows),
     scatterPointSize: self.scatterPointSize,
     lineWidth: self.lineWidth,
-    // bars pivot around, and density fades from, the bicolor threshold
-    origin: self.origin,
-    densityColorRamp: self.densityColorRamp,
+    // bars pivot around, and density fades from, the colour's cut point
+    origin: self.wiggleColor.pivot,
+    rampLut: self.wiggleColor.rampLut ?? undefined,
   }))
 }

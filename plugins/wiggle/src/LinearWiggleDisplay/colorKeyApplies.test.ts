@@ -151,9 +151,9 @@ describe('density mode keys off the row identity colour', () => {
     display.setRenderingType('density')
     expect(display.sources.filter(s => !s.labelColor)).toHaveLength(2)
     expect(display.legendItems.map(i => i.label)).toEqual(['g0', 'g1', 'g2'])
-    expect(display.legendItems.every(i => i.color !== display.posColor)).toBe(
-      true,
-    )
+    expect(
+      display.legendItems.every(i => i.color !== display.wiggleColor.posColor),
+    ).toBe(true)
   })
 })
 
@@ -167,9 +167,9 @@ it('keys uncoloured multi-row rows in the colour they are painted', () => {
     100,
   )
   expect(display.legendItems).toHaveLength(20)
-  expect(display.legendItems.every(i => i.color === display.posColor)).toBe(
-    true,
-  )
+  expect(
+    display.legendItems.every(i => i.color === display.wiggleColor.posColor),
+  ).toBe(true)
   expect(display.overlayLegendApplies).toBe(false)
 })
 

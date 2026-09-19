@@ -8,6 +8,7 @@ import {
 import { renderingTypeToInt } from './wiggleComponentUtils.ts'
 import { lineLayers, makeSummaryLayers } from './wiggleLayers.ts'
 
+import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type { WiggleLayer } from './wiggleLayers.ts'
 import type {
   SourceRenderData,
@@ -70,17 +71,14 @@ export interface WiggleGpuProps {
   // Whether the display sections its sources, one row each (`facet: 'source'`).
   // Unfaceted, every source is drawn on row 0 in one shared plot.
   faceted: boolean
-  posColor: string
-  negColor: string
+  // The `color` object resolved: the pair each mode partitions by, the value
+  // they part at, and whether each source paints its own colour on both sides.
+  wiggleColor: ResolvedWiggleColor
   // The mode actually drawn, never the raw config slot, since density has no
   // whiskers presentation and resolves to 'avg'. Named for the model getter
   // that produces it so a new caller cannot skip the resolution.
   effectiveSummaryScoreMode: string
   renderingType: string
-  // Threshold every mode colors around, and the baseline bars pivot on
-  // (= origin). An encoder input alone: moving it re-encodes and
-  // refetches nothing.
-  origin: number
   // How many mean point spacings apart two interpolated-line points may be
   // before the span counts as a hole (see gapBreakLimit). Lives in gpuProps,
   // not the render state, because the break is baked into the instance buffer
@@ -131,22 +129,18 @@ export function buildSourceRenderData(
   const {
     sources,
     faceted,
-    posColor: defaultPosColorStr,
-    negColor: defaultNegColorStr,
+    wiggleColor,
     effectiveSummaryScoreMode: summaryScoreMode,
     renderingType,
-    origin,
     maxGapMultiple,
   } = gpuProps
-  // Several plots sharing one box have to read as one colour each, so the
-  // sub-pivot side takes the source's own colour there. One plot in the box has
-  // nothing to be told apart from, and is the pos/neg bicolor plot a
-  // single-source quantitative track has always drawn.
-  const sharedPlot = !faceted && sources.length > 1
+  // A colour per source paints both sides of the cut in it, so the plot reads
+  // as one colour each; every other scale keeps the pair.
+  const { perSource, pivot } = wiggleColor
   const renderingTypeInt = renderingTypeToInt(renderingType)
   const lineCenter = renderingTypeInt === RENDERING_TYPE_LINE_CENTER
-  const defaultPosColor = cssColorToNormalizedRgb(defaultPosColorStr)
-  const defaultNegColor = cssColorToNormalizedRgb(defaultNegColorStr)
+  const defaultPosColor = cssColorToNormalizedRgb(wiggleColor.posColor)
+  const defaultNegColor = cssColorToNormalizedRgb(wiggleColor.negColor)
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
   const result: SourceRenderData[] = []
   // Every band ahead of every line, so Canvas2D paints them all underneath, as
@@ -169,17 +163,16 @@ export function buildSourceRenderData(
         ? cssColorToNormalizedRgb(orderedSource.color)
         : defaultPosColor
       const row = faceted ? i : 0
-      // Intentional and settled (see ADR-016): with a row each the neg side keeps
-      // the shared defaultNegColor even when the source has a per-row color, so
-      // signed data still reads as a pos/neg bicolor plot. Do NOT "fix" this to
-      // paint the whole row in the per-source color.
+      // With a row each the neg side keeps the shared negColor even when the
+      // source has a colour of its own, so signed data still reads as a pos/neg
+      // plot. Do NOT "fix" this to paint the whole row in the source's colour.
       const layers = sourceLayers({
         source,
         summaryScoreMode,
         renderingType: renderingTypeInt,
         posColor,
-        negColor: sharedPlot ? posColor : defaultNegColor,
-        pivot: origin,
+        negColor: perSource ? posColor : defaultNegColor,
+        pivot,
       })
       for (const layer of layers) {
         const into = layer.band ? bands : result

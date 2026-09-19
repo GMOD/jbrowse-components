@@ -23,7 +23,7 @@ const RAMP = {
 
 // A configured constant well away from the auto value this domain derives
 // (max/1000 = 1), so a key resolving "auto" paints a visibly different bar.
-function makeModel(symlogConstant: number, densityColorRamp = 'default') {
+function makeModel(symlogConstant: number, ramp?: string) {
   return {
     domain: DOMAIN,
     scaleType: 'symlog',
@@ -31,8 +31,7 @@ function makeModel(symlogConstant: number, densityColorRamp = 'default') {
     renderingType: 'density',
     scatterPointSize: 2,
     lineWidth: 1,
-    origin: RAMP.pivot,
-    densityColorRamp,
+    wiggleColor: { ...RAMP, rampLut: densityRampLut(ramp), perSource: false },
   }
 }
 
@@ -41,10 +40,12 @@ function renderState(model: ReturnType<typeof makeModel>) {
 }
 
 function stops(model: ReturnType<typeof makeModel>) {
-  return scoreRampScale(DOMAIN, model.scaleType, model.symlogConstant, {
-    ...RAMP,
-    rampLut: densityRampLut(model.densityColorRamp),
-  }).stops
+  return scoreRampScale(
+    DOMAIN,
+    model.scaleType,
+    model.symlogConstant,
+    model.wiggleColor,
+  ).stops
 }
 
 function plotColorAt(model: ReturnType<typeof makeModel>, offset: number) {

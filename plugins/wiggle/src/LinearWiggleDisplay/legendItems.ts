@@ -1,4 +1,3 @@
-import type { RowColorMode } from './sourcesLogic.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 
 // A source, as the color key sees it — spelled out rather than taking `Source`
@@ -25,13 +24,12 @@ interface LegendSource {
  * group do not. An ungrouped source keeps a row of its own, since
  * nothing else identifies it.
  *
- * **The mode decides which channel the color comes from**, so this function
- * takes the `RowColorMode` sourcesLogic.ts derives rather than deciding against
- * a boolean of its own. `color` is a row's identity
- * everywhere except density, where it is the score ramp and identity sits in
- * `labelColor` — see the color-model table there. Reading `color` in density
- * gave a grouped-but-uncolored cohort N rows that were all `fallbackColor`,
- * naming groups that were on screen in as many different colors.
+ * **Density decides which channel the color comes from.** `color` is a row's
+ * identity everywhere except density, where it is the score ramp and identity
+ * sits in `labelColor` — see the channel note in sourcesLogic.ts. Reading
+ * `color` in density gave a grouped-but-uncolored cohort N rows that were all
+ * `fallbackColor`, naming groups that were on screen in as many different
+ * colors.
  *
  * **The fallback belongs to the mode as much as the channel does, and only
  * overlay/multirow have one.** There, an unset `color` really is painted in
@@ -52,13 +50,13 @@ interface LegendSource {
  */
 export function buildLegendItems(
   sources: LegendSource[],
-  mode: RowColorMode,
+  isDensity: boolean,
   fallbackColor: string,
 ): LegendItem[] {
   const seen = new Set<string>()
   const items: LegendItem[] = []
   for (const s of sources) {
-    const color = mode === 'density' ? s.labelColor : (s.color ?? fallbackColor)
+    const color = isDensity ? s.labelColor : (s.color ?? fallbackColor)
     if (color === undefined) {
       continue
     }

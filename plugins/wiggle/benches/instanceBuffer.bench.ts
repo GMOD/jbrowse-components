@@ -160,11 +160,15 @@ function props(renderingType: string, mode: string): WiggleGpuProps {
   return {
     sources: sourceList,
     faceted: true,
-    posColor: WIGGLE_POS_COLOR_DEFAULT,
-    negColor: WIGGLE_NEG_COLOR_DEFAULT,
+    wiggleColor: {
+      posColor: WIGGLE_POS_COLOR_DEFAULT,
+      negColor: WIGGLE_NEG_COLOR_DEFAULT,
+      pivot,
+      rampLut: null,
+      perSource: false,
+    },
     effectiveSummaryScoreMode: mode,
     renderingType,
-    origin: pivot,
     maxGapMultiple: 0,
   }
 }

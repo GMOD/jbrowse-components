@@ -8,13 +8,13 @@ import {
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import { checkFacetField } from '../shared/checkFacetField.ts'
-import { colorImpliesSolid } from '../shared/colorImpliesSolid.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
+import { wiggleColorSchema } from '../shared/wiggleColorConfigSchema.ts'
 import {
   wiggleConfigSchemaFields,
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
-import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
+import { WIGGLE_RENDERING_TYPES } from '../util.ts'
 
 /**
  * #config LinearWiggleDisplay
@@ -126,23 +126,22 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     facet: facetConfigSchema,
     ...trackHeightConfigSchemaFields(),
     /**
-     * #slot
+     * #slot color
+     * One CSS colour, or a field through a scale — `score` through
+     * `threshold` for the bicolor plot, through `linear` or `log` for the
+     * density ramp, `source` through `categorical` for a palette entry per
+     * subtrack. Unset, the layout decides: several sources in one plot box
+     * take a palette entry each, and anything else is the pos/neg pair about
+     * the `origin`.
+     * #example
+     * ```json
+     * {
+     *   "type": "LinearWiggleDisplay",
+     *   "color": { "field": "score", "scale": "threshold", "domain": [2] }
+     * }
+     * ```
      */
-    useBicolor: {
-      type: 'boolean',
-      defaultValue: true,
-      description:
-        'When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. Setting color alone, with no posColor/negColor/useBicolor, turns this off for you.',
-    },
-    /**
-     * #slot
-     */
-    color: {
-      type: 'color',
-      defaultValue: WIGGLE_POS_COLOR_DEFAULT,
-      description:
-        'Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.',
-    },
+    color: wiggleColorSchema,
     ...wiggleConfigSchemaFields,
     /**
      * #slot scales
@@ -188,8 +187,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
-    preProcessSnapshot: (snap: Record<string, unknown>) =>
-      colorImpliesSolid(checkFacetField('LinearWiggleDisplay')(snap)),
+    preProcessSnapshot: checkFacetField('LinearWiggleDisplay'),
   },
 )
 

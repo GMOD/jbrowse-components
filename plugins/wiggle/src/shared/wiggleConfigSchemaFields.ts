@@ -1,4 +1,3 @@
-import { types } from '@jbrowse/mobx-state-tree'
 import {
   DEFAULT_GAP_BREAK_MULTIPLE,
   scalesSchema,
@@ -6,12 +5,9 @@ import {
   valueScaleSchema,
 } from '@jbrowse/wiggle-core'
 
-import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
-import { DENSITY_COLOR_RAMPS } from './densityColorRamp.ts'
-
 /**
- * The wiggle family's value scale. Spelled beside the palette rather than in
- * the table below it because the doc generator recovers a spread slot table by
+ * The wiggle family's value scale. A function rather than a member of the
+ * table below because the doc generator recovers a spread slot table by
  * reading its object literal, and a member built by a call is not one — every
  * wiggle slot left the config pages the once it was in there.
  */
@@ -47,31 +43,11 @@ export const wiggleConfigSchemaFields = {
     description:
       'how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end',
   },
-  posColor: {
-    type: 'color',
-    defaultValue: WIGGLE_POS_COLOR_DEFAULT,
-    description:
-      'Fill color for positive scores, used when useBicolor is true (the default)',
-  },
-  negColor: {
-    type: 'color',
-    defaultValue: WIGGLE_NEG_COLOR_DEFAULT,
-    description:
-      'Fill color for negative scores, used when useBicolor is true (the default)',
-  },
   origin: {
     type: 'number',
     defaultValue: 0,
     description:
       "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin",
-  },
-  densityColorRamp: {
-    type: 'stringEnum',
-    model: types.enumeration('Density color ramp', [...DENSITY_COLOR_RAMPS]),
-    defaultValue: 'default',
-    description:
-      'Color ramp for density ("density"/"multirowdensity") rendering. "default" fades from white at the pivot to the track color; a named ramp (e.g. "viridis") colors scores through that fixed 256-entry lookup table instead, the same table the Hi-C viridis scheme uses',
-    advanced: true,
   },
   scatterPointSize: {
     type: 'number',

@@ -16,6 +16,7 @@ import LegendMixin, {
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { colorScaleChoicesOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -56,6 +57,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
+import { resolveWiggleColor } from '../shared/wiggleColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
@@ -68,21 +70,18 @@ import {
 import { WIGGLE_RENDERINGS } from '../util.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import {
-  buildSources,
-  rowColorMode,
-  sourcesFromRegionData,
-} from './sourcesLogic.ts'
+import { buildSources, sourcesFromRegionData } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
+import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
 import type { WiggleHoveredFeature, Source } from '../util.ts'
 import type { WiggleContextInfo } from './components/findHit.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
-import type { RowColorMode } from './sourcesLogic.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { FullColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -198,18 +197,27 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The colour every source that names none is drawn in with bicolor off.
+       * The `color` object as written, `value` undefined while nothing names
+       * a colour and the layout decides (`effectiveColor`).
        */
-      get color(): string {
-        return getConf(self, 'color')
+      get colorSetting(): FullColorSetting {
+        return {
+          value: getConf(self, ['color', 'value']),
+          field: getConf(self, ['color', 'field']),
+          scale: getConf(self, ['color', 'scale']),
+          domain: getConf(self, ['color', 'domain']),
+          palette: getConf(self, ['color', 'palette']),
+          ramp: getConf(self, ['color', 'ramp']),
+          domainMid: getConf(self, ['color', 'domainMid']),
+        }
       },
 
       /**
        * #getter
+       * The scales this display's colour paints, for the Edit as JSON box.
        */
-      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
-      get useBicolor(): boolean {
-        return getConf(self, 'useBicolor')
+      get colorScaleChoices(): string[] {
+        return colorScaleChoicesOf(self.configuration.color)
       },
 
       /**
@@ -317,15 +325,40 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Which channel a source's colour paints, off `sourcesLogic`'s table. A
-       * lone plot is never `shared`: there is nothing for a palette to tell it
-       * apart from, and the display's own pos/neg colours are the picture.
+       * Whether several plots share one box, which is the one thing the layout
+       * decides about colour: overlaid sources need a palette entry each to be
+       * told apart, where a lone plot has nothing to be told apart from and is
+       * the pos/neg picture a quantitative track has always drawn.
        */
-      get sourceColorMode(): RowColorMode {
-        return rowColorMode(
-          self.isOverlay && self.editableSources.length > 1,
-          self.isDensityMode,
-        )
+      get sharesOnePlot(): boolean {
+        return self.isOverlay && self.editableSources.length > 1
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The colour actually painted: what the config says, or the picture the
+       * layout asks for where it says nothing. A resolved getter rather than a
+       * `defaultValue`, because the default moves with the layout and a slot
+       * default cannot.
+       */
+      get effectiveColor(): FullColorSetting {
+        const color = self.colorSetting
+        if (color.value !== undefined || color.field) {
+          return color
+        }
+        return self.sharesOnePlot
+          ? { ...color, field: 'source', scale: 'categorical' }
+          : { ...color, field: 'score', scale: 'threshold' }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `effectiveColor` as the encoder and both backends take it.
+       */
+      get wiggleColor(): ResolvedWiggleColor {
+        return resolveWiggleColor(self.effectiveColor, self.origin)
       },
     }))
     .views(self => ({
@@ -333,7 +366,8 @@ export default function stateModelFactory(
         return buildSources(
           self.editableSources,
           self.subtreeFilter,
-          self.sourceColorMode,
+          self.wiggleColor.perSource,
+          self.isDensityMode,
         )
       },
     }))
@@ -375,8 +409,8 @@ export default function stateModelFactory(
       get legendItems(): LegendItem[] {
         return buildLegendItems(
           self.sources,
-          self.sourceColorMode,
-          self.posColor,
+          self.isDensityMode,
+          self.wiggleColor.posColor,
         )
       },
     }))
@@ -437,15 +471,6 @@ export default function stateModelFactory(
        */
       get scoreRampApplies() {
         return self.isDensityMode && self.sources.every(s => !s.color)
-      },
-
-      /**
-       * #getter
-       * With bicolor off both sides of the pivot fade white → posColor, which
-       * is what density paints, so the ramp says exactly that.
-       */
-      get densityNegColor(): string {
-        return self.useBicolor ? self.negColor : self.posColor
       },
 
       /**
@@ -541,26 +566,15 @@ export default function stateModelFactory(
        * source by its position here, so a filter or a reorder re-uploads
        * bytes already in hand.
        *
-       * With bicolor off the plot draws one colour, which is `posColor ===
-       * negColor` at encode. Density ignores the `color` slot and always draws
-       * from posColor (see that slot's config doc, and `densityNegColor`, which
-       * says the same for the key) — a negColor that does not match paints the
-       * sub-pivot half in an unrelated colour: `color: 'green'` on signed data
-       * came back green/red, and a solid-colour density track set to Minimum
-       * came back posColor above the pivot and negColor below it, against a
-       * legend describing a single ramp.
-       *
-       * None of it is a fetch key: the worker ships one set of score arrays and
-       * the main thread colours each instance by its side of the pivot.
+       * The colour rides here and not in `rpcProps`: the worker ships one set
+       * of score arrays and the main thread colours each instance by its side
+       * of the cut, so a new colour re-encodes and refetches nothing.
        */
       gpuProps() {
-        const solidColor = self.isDensityMode ? self.posColor : self.color
         return {
           ...self.sharedGpuProps(),
           sources: self.sources,
           faceted: self.isFaceted,
-          posColor: self.useBicolor ? self.posColor : solidColor,
-          negColor: self.useBicolor ? self.negColor : solidColor,
         }
       },
     }))
@@ -698,16 +712,11 @@ export default function stateModelFactory(
        */
       /**
        * #action
+       * The whole colour object at once, since a scale and the slots it reads
+       * are one setting; `undefined` returns to the layout's own picture.
        */
-      setUseBicolor(val?: boolean) {
-        setConf(self, 'useBicolor', val)
-      },
-
-      /**
-       * #action
-       */
-      setColor(color?: string) {
-        setConf(self, 'color', color)
+      setColor(color?: Partial<FullColorSetting> | string) {
+        self.configuration.setSubschema('color', color ?? {})
       },
 
       /**
@@ -977,7 +986,7 @@ export default function stateModelFactory(
 // name every type the inferred model mentions. Without these the ESM build
 // reports TS2883 against the source paths, which no package can import.
 export type { WiggleContextInfo } from './components/findHit.ts'
-export type { RowColorMode } from './sourcesLogic.ts'
+export type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
 
 export type LinearWiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearWiggleDisplayModel = Instance<LinearWiggleDisplayStateModel>

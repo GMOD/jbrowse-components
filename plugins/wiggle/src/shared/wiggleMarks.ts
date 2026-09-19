@@ -9,7 +9,6 @@ import {
   RENDERING_TYPE_SCATTER,
 } from '@jbrowse/wiggle-core'
 
-import { densityRampLut } from './densityColorRamp.ts'
 import * as wiggleShader from './shaders/wiggle.generated.ts'
 import * as wiggleBandShader from './shaders/wiggleBand.generated.ts'
 import * as wiggleDensityShader from './shaders/wiggleDensity.generated.ts'
@@ -85,9 +84,7 @@ function wiggleParams(
     lineWidth: state.lineWidth,
     origin: state.origin,
     rampLut:
-      renderingType === RENDERING_TYPE_DENSITY
-        ? densityRampLut(state.densityColorRamp)
-        : null,
+      renderingType === RENDERING_TYPE_DENSITY ? (state.rampLut ?? null) : null,
   }
 }
 
@@ -313,11 +310,9 @@ export const WIGGLE_MARKS = [
     channels,
     params: wiggleParams,
     bufferOf: fill,
-    // Resolved off the render state, per pass: the named ramp is one 256×1
-    // texture and a uniform flag, and 'default' names none, which binds the
-    // inert table the backend keeps.
-    texture: (state: WiggleGPURenderState) =>
-      densityRampLut(state.densityColorRamp) ?? undefined,
+    // Off the render state, per pass: a declared ramp is one 256×1 texture
+    // and a uniform flag, and no ramp binds the inert table the backend keeps.
+    texture: (state: WiggleGPURenderState) => state.rampLut,
   }),
   defineMark({
     shape: lineShape,

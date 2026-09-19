@@ -1,8 +1,6 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import ScoreSignColors from './ScoreSignColors.tsx'
-
 import type { Source } from '../../util.ts'
 import type { ColorColumn, TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
@@ -38,20 +36,10 @@ export default observer(function WiggleSetColorDialog({
   model: TreeLayoutModel<Source> & {
     isFaceted: boolean
     isDensityMode: boolean
-    sourceColorMode: string
-    posColor: string
-    negColor: string
-    setPosColor: (arg?: string) => void
-    setNegColor: (arg?: string) => void
   }
   handleClose: () => void
 }) {
   const { isFaceted } = model
-  // Several sources sharing one plot are each painted in one colour, so there
-  // are no two sides to colour there — and exactly there. A lone plot is the
-  // pos/neg picture whether or not it is faceted, which is why this asks the
-  // colour mode rather than the facet.
-  const bySign = model.sourceColorMode !== 'shared'
   return (
     <SetColorDialog
       model={model}
@@ -62,7 +50,6 @@ export default observer(function WiggleSetColorDialog({
         isFaceted && model.isDensityMode ? 'labelColor' : 'color'
       }
       reservedFields={isFaceted ? undefined : OVERLAY_RESERVED}
-      displayControls={bySign ? <ScoreSignColors model={model} /> : null}
       enableBulkEdit
       enableRowPalettizer
     />

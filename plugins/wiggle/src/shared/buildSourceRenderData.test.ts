@@ -4,6 +4,7 @@ import { processFeaturesFromArrays } from '../util.ts'
 import { buildSourceRenderData } from './buildSourceRenderData.ts'
 
 import type { WiggleGpuProps } from './buildSourceRenderData.ts'
+import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // One feature with positive avg, one with negative avg; each carries diverging
@@ -34,14 +35,22 @@ function makePositiveData(): WiggleDataResult {
   return { sources: [{ name: 'default', ...arrays }] }
 }
 
+const baseColor: ResolvedWiggleColor = {
+  posColor: '#0068d1',
+  negColor: '#e01e26',
+  pivot: 0,
+  rampLut: null,
+  perSource: false,
+}
+
+const perSourceColor: ResolvedWiggleColor = { ...baseColor, perSource: true }
+
 const baseGpuProps: WiggleGpuProps = {
   sources: [{ name: 'default' }],
   faceted: true,
-  posColor: '#0068d1',
-  negColor: '#e01e26',
+  wiggleColor: baseColor,
   effectiveSummaryScoreMode: 'avg',
   renderingType: 'xyplot',
-  origin: 0,
   maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
 }
 
@@ -136,6 +145,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
           { name: 'b', color: '#ff00ff' },
         ],
         faceted: false,
+        wiggleColor: perSourceColor,
         effectiveSummaryScoreMode: 'whiskers',
         renderingType: 'linecenter',
       },
@@ -254,6 +264,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
           { name: 'b', color: '#ff00ff' },
         ],
         faceted: false,
+        wiggleColor: perSourceColor,
       },
     )
     expect(layers.map(l => l.rowIndex)).toEqual([0, 0])

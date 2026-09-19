@@ -379,7 +379,7 @@ describe('the wiggle mark list', () => {
     const state = {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_DENSITY,
-      densityColorRamp: 'viridis',
+      rampLut: densityRampLut('viridis') ?? undefined,
     }
 
     backend.upload(0, [source])
@@ -434,7 +434,7 @@ describe('the wiggle mark list', () => {
     // flipping to a named ramp re-uploads exactly once and flips the flag
     backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...state,
-      densityColorRamp: 'viridis',
+      rampLut: densityRampLut('viridis') ?? undefined,
     })
     expect(hal.callsOf('uploadTexture').length).toBe(2)
     expect(hal.getLastUniformsI32()![UI.densityRampLut]).toBe(1)
