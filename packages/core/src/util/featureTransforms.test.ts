@@ -367,3 +367,13 @@ test('a facet reads its field through a jexl expression', () => {
   )
   expect(sections.map(s => s.key)).toEqual(['1', '2'])
 })
+
+test('a facet stacks a section of 200,000 features', () => {
+  const features = Array.from({ length: 200_000 }, (_, i) => {
+    const start = Math.floor(i / 4) * 100
+    return feature(start, start + 50, { sample: 'a' })
+  })
+  const { layers, sections } = facetLayers(features, 'sample', STACK)
+  expect(sections).toEqual([{ key: 'a', firstRow: 0, rowCount: 4 }])
+  expect(layers[0]).toHaveLength(200_000)
+})

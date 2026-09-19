@@ -421,7 +421,14 @@ export function facetLayers(
         : members
       ).map(f => ({ f, row: rowOf(readRows[l]!(f)) })),
     )
-    const rowCount = Math.max(1, ...placed.flat().map(p => p.row + 1))
+    let rowCount = 1
+    for (const layer of placed) {
+      for (const { row } of layer) {
+        if (row + 1 > rowCount) {
+          rowCount = row + 1
+        }
+      }
+    }
     placed.forEach((layer, l) => {
       for (const { f, row } of layer) {
         out[l]!.push(new DerivedFeature(f, { [FACET_ROW]: next + row }))
