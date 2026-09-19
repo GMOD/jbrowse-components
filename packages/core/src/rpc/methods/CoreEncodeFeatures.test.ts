@@ -58,14 +58,6 @@ test('a filter step keeps the features its expression admits, in order', async (
   expect([...layer.y!]).toEqual([10, 25])
 })
 
-test('filters is sugar for leading filter steps', async () => {
-  const layer = await run({
-    filters: ["jexl:get(feature,'score') > 5"],
-    transform: [{ type: 'filter', expr: "jexl:get(feature,'score') < 30" }],
-  })
-  expect([...layer.y!]).toEqual([10, 25])
-})
-
 test('no transform encodes every feature', async () => {
   expect((await run({})).count).toBe(4)
 })

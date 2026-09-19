@@ -290,8 +290,7 @@ knowing at this seam:
 - **A transform names its `type`.** GenomeSpy departed from Vega-Lite's
   inferred transform shape on purpose, for extensibility. `CoreEncodeFeatures`
   takes that spelling — `transform: [{ type: 'filter', expr }]`, run in order
-  before the layers encode — and `filters: jexl[]` stays as sugar for leading
-  filter steps.
+  before the layers encode.
 - **Semantic zoom is a layer property.** Its `multiscale` composition orders
   layers from zoomed-out to zoomed-in with `stops` and cross-fades by the zoom
   metric. A `marks` entry's `minBpPerPx`/`maxBpPerPx` is the declared form

@@ -370,8 +370,6 @@ export type CoreEncodeFeaturesArgs = {
   transform?: TransformStep[]
   /** Split the features after the shared steps, before each layer's own. */
   facet?: FacetSpec
-  /** Sugar for leading `filter` steps: `jexl:`-prefixed expressions. */
-  filters?: string[]
   /**
    * The zoom the adapter reads at, for one with zoom levels (BigWig); absent
    * is full resolution.

@@ -37,7 +37,6 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
       region,
       layers: requested,
       transform = [],
-      filters = [],
       facet,
       bpPerPx,
       byteLimit,
@@ -76,14 +75,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
     checkAbortSignal(signal)
 
     const { jexl } = pluginManager
-    const shared = runTransforms(
-      fetched,
-      [
-        ...filters.map(expr => ({ type: 'filter' as const, expr })),
-        ...transform,
-      ],
-      jexl,
-    )
+    const shared = runTransforms(fetched, transform, jexl)
 
     const faceted = facet
       ? facetLayers(
