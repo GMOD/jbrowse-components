@@ -22,12 +22,16 @@ export interface ValueScaleOptions {
  * The value scale of a quantitative display, written as `scales.y`: the
  * wiggle and multi-wiggle plots, the Manhattan plot, the alignments coverage
  * band and the mark display each carry one. Which members it has follows what
- * the display draws — Manhattan places a linear axis and consults no autoscale
- * mode, so it has neither `type` alternatives nor `autoscale` — and the table
- * below marks each one.
+ * the display draws: Manhattan places a linear axis and consults no autoscale
+ * mode, so it has neither `type` alternatives nor `autoscale`.
  *
  * Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, and an end
  * left unset autoscales over the loaded regions.
+ *
+ * Two defaults come from the display rather than from the scale. `autoscale`
+ * starts at `localpercentile` on the wiggle and multi-wiggle plots and at
+ * `local` on the coverage band and the mark display. `symlogConstant` starts
+ * at `0` on the wiggle family and at `1` on the coverage band.
  *
  * #example
  * A log axis floored at 1:
