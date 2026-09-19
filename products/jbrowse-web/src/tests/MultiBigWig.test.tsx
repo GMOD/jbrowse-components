@@ -39,7 +39,7 @@ test('open a multibigwig xyplot track', async () => {
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray_multi'), ...opts))
   expectCanvasMatch(
-    findCanvasIn(await findDisplayPainted('multi-wiggle-display', delay)),
+    findCanvasIn(await findDisplayPainted('wiggle-display', delay)),
   )
 }, 60000)
 
@@ -50,7 +50,7 @@ test('open a multibigwig multirowxy track', async () => {
     await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),
   )
   expectCanvasMatch(
-    findCanvasIn(await findDisplayPainted('multi-wiggle-display', delay)),
+    findCanvasIn(await findDisplayPainted('wiggle-display', delay)),
   )
 }, 60000)
 
@@ -61,7 +61,7 @@ test('open a multibigwig multirowdensity track', async () => {
     await findByTestId(hts('volvox_microarray_multi_multirowdensity'), ...opts),
   )
   expectCanvasMatch(
-    findCanvasIn(await findDisplayPainted('multi-wiggle-display', delay)),
+    findCanvasIn(await findDisplayPainted('wiggle-display', delay)),
   )
 }, 60000)
 
@@ -70,7 +70,7 @@ test('open a multibigwig multiline track', async () => {
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('mytrack'), ...opts))
   expectCanvasMatch(
-    findCanvasIn(await findDisplayPainted('multi-wiggle-display', delay)),
+    findCanvasIn(await findDisplayPainted('wiggle-display', delay)),
   )
 }, 60000)
 
@@ -81,7 +81,7 @@ test('open a multibigwig multirowline track', async () => {
     await findByTestId(hts('volvox_microarray_multi_multirowline'), ...opts),
   )
   expectCanvasMatch(
-    findCanvasIn(await findDisplayPainted('multi-wiggle-display', delay)),
+    findCanvasIn(await findDisplayPainted('wiggle-display', delay)),
   )
 }, 60000)
 
@@ -95,7 +95,7 @@ test('right-click offers the row-order sort, and the reset once it has run', asy
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),
   )
-  const container = await findDisplayPainted('multi-wiggle-display', delay)
+  const container = await findDisplayPainted('wiggle-display', delay)
   const display: WiggleDisplayModel = view.tracks[0].displays[0]
   const before = display.sources.map(s => s.name)
 

@@ -15,7 +15,7 @@ interface SeparatorModel {
 // (CSS-pixel track width on screen vs view width on export). The per-row
 // cross-hatches that used to ride beside these are the chrome's now, off
 // `valueScales`.
-export default observer(function MultiWiggleRowSeparators({
+export default observer(function WiggleRowSeparators({
   model,
   width,
 }: {

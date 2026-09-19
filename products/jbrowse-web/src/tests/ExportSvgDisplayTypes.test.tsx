@@ -220,7 +220,7 @@ test('multi-wiggle SVG export includes row separators and cross-hatches when ena
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),
   )
-  await findDisplayPainted('multi-wiggle-display', delay)
+  await findDisplayPainted('wiggle-display', delay)
 
   const display = view.tracks[0]!.displays[0] as {
     toggleCrossHatches: () => void

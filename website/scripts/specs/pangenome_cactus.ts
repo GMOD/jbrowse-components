@@ -351,7 +351,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: displayReady('multi-wiggle-display'),
+    readySelector: displayReady('wiggle-display'),
     readyTimeout: 90000,
     // 1200 rather than 1000: the two callouts below sit in the right flank, and
     // at 1000 a pill wide enough to hold a sentence starts on top of the plateau

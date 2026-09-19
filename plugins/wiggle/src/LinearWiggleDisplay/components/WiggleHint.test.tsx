@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import MultiWiggleHint from './MultiWiggleHint.tsx'
+import WiggleHint from './WiggleHint.tsx'
 
-import type { HintModel } from './MultiWiggleHint.tsx'
+import type { HintModel } from './WiggleHint.tsx'
 
 // The two states where the plot draws nothing but the data is fine, so the
 // blank is recoverable and worth naming. Everything else must stay silent —
@@ -29,7 +29,7 @@ describe('subtree filter matching nothing', () => {
   it('names the filter and offers to clear it', async () => {
     const setSubtreeFilter = jest.fn()
     const { getByText } = render(
-      <MultiWiggleHint
+      <WiggleHint
         model={makeModel({
           numSources: 0,
           subtreeFilter: ['nothing_here'],
@@ -46,7 +46,7 @@ describe('subtree filter matching nothing', () => {
   // rather than a filter that matched nothing.
   it('stays quiet before any source has loaded', () => {
     const { container } = render(
-      <MultiWiggleHint
+      <WiggleHint
         model={makeModel({ numSources: 0, sourcesWithoutLayout: [] })}
       />,
     )
@@ -57,7 +57,7 @@ describe('subtree filter matching nothing', () => {
 describe('rows packed below a pixel', () => {
   it('says how many rows are in how much height', () => {
     const { getByText } = render(
-      <MultiWiggleHint
+      <WiggleHint
         model={makeModel({
           numSources: 400,
           effectiveRowHeight: 0.25,
@@ -72,7 +72,7 @@ describe('rows packed below a pixel', () => {
   // strictly worse, so it carries no button.
   it('offers no clear-filter escape', () => {
     const { queryByText } = render(
-      <MultiWiggleHint
+      <WiggleHint
         model={makeModel({
           numSources: 400,
           effectiveRowHeight: 0.25,
@@ -88,7 +88,7 @@ describe('rows packed below a pixel', () => {
   // read as a stack, not row by row.
   it('stays quiet in density mode', () => {
     const { container } = render(
-      <MultiWiggleHint
+      <WiggleHint
         model={makeModel({
           numSources: 400,
           effectiveRowHeight: 0.25,
@@ -103,7 +103,7 @@ describe('rows packed below a pixel', () => {
   // thin rows to warn about.
   it('stays quiet in an overlay rendering', () => {
     const { container } = render(
-      <MultiWiggleHint
+      <WiggleHint
         model={makeModel({
           numSources: 400,
           effectiveRowHeight: 100,
@@ -116,6 +116,6 @@ describe('rows packed below a pixel', () => {
 })
 
 it('stays quiet over a plot that is drawing normally', () => {
-  const { container } = render(<MultiWiggleHint model={makeModel()} />)
+  const { container } = render(<WiggleHint model={makeModel()} />)
   expect(container.firstChild).toBeNull()
 })

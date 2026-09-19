@@ -5,8 +5,8 @@ import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import { encodeWiggleRegions } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
-import MultiWiggleRowLabels from './MultiWiggleRowLabels.tsx'
-import MultiWiggleRowSeparators from './MultiWiggleRowSeparators.tsx'
+import WiggleRowLabels from './WiggleRowLabels.tsx'
+import WiggleRowSeparators from './WiggleRowSeparators.tsx'
 
 import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
 import type { WigglePlotGeometry } from '../shared/wiggleDisplayViews.ts'
@@ -46,7 +46,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   hierarchy?: ClusterHierarchyNode
   clusterProvenance?: ClusterProvenance
 
-  // read by MultiWiggleRowLabels
+  // read by WiggleRowLabels
   sources: {
     name: string
     label?: string
@@ -65,7 +65,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   canvasWidthPx: number
   showCrossHatches: boolean
 
-  // read by MultiWiggleRowSeparators
+  // read by WiggleRowSeparators
   showRowSeparators: boolean
   showRowLabels: boolean
 }
@@ -74,15 +74,15 @@ export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  return renderDisplaySvg(model, opts, MultiWiggleSvgBody)
+  return renderDisplaySvg(model, opts, WiggleSvgBody)
 }
 
-function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
+function WiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
   const { model, view, canvasWidth, overlays } = props
   // No data-size gate: renderState is always defined (a [0,1] stub until
   // autoscale resolves), so an empty region paints an empty plot; the per-row
   // axes are the shell's, off `valueScales`, and draw only where a real domain
-  // exists. The row labels are `MultiWiggleRowLabels`, shared with the screen,
+  // exists. The row labels are `WiggleRowLabels`, shared with the screen,
   // so the sidebar draws only the tree.
   return (
     <ScorePlotSvgFrame
@@ -94,8 +94,8 @@ function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
     >
       {overlays ? (
         <>
-          <MultiWiggleRowSeparators model={model} width={canvasWidth} />
-          <MultiWiggleRowLabels
+          <WiggleRowSeparators model={model} width={canvasWidth} />
+          <WiggleRowLabels
             model={model}
             labelOffset={treeSidebarOffset(model)}
             exportContentLeft={Math.max(-view.offsetPx, 0)}

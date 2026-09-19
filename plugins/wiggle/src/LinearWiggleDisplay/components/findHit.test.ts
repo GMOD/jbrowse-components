@@ -1,8 +1,8 @@
 import { assembleLocString } from '@jbrowse/core/util'
 
-import { findMultiWiggleHit, findOverlayHit, findRowHit } from './findHit.ts'
+import { findWiggleHit, findOverlayHit, findRowHit } from './findHit.ts'
 
-import type { MultiWiggleHitModel } from './findHit.ts'
+import type { WiggleHitModel } from './findHit.ts'
 import type {
   WiggleFeatureArrays,
   WiggleSourceData,
@@ -260,7 +260,7 @@ describe('findRowHit', () => {
   })
 })
 
-describe('findMultiWiggleHit', () => {
+describe('findWiggleHit', () => {
   const regions = [
     {
       refName: 'chr1',
@@ -272,7 +272,7 @@ describe('findMultiWiggleHit', () => {
     },
   ]
 
-  function makeModel(over: Partial<MultiWiggleHitModel> = {}) {
+  function makeModel(over: Partial<WiggleHitModel> = {}) {
     return {
       effectiveRowHeight: 20,
       sources: [{ name: 's1' }],
@@ -291,13 +291,13 @@ describe('findMultiWiggleHit', () => {
   }
 
   test('finds the feature under the cursor', () => {
-    const hit = findMultiWiggleHit(makeModel(), regions, 50, 5)
+    const hit = findWiggleHit(makeModel(), regions, 50, 5)
     expect(hit?.rows[0]?.score).toBe(5)
   })
 
   test('returns undefined with no sources', () => {
     const model = makeModel({ sources: [] })
-    expect(findMultiWiggleHit(model, regions, 50, 5)).toBeUndefined()
+    expect(findWiggleHit(model, regions, 50, 5)).toBeUndefined()
   })
 
   // The tree sidebar overlays the left of the same container the mouse handlers
@@ -310,19 +310,19 @@ describe('findMultiWiggleHit', () => {
       treeAreaWidth: 40,
     })
     // 40 wide + a resize handle, so 40 is still sidebar and 50 is plot
-    expect(findMultiWiggleHit(model, regions, 10, 5)).toBeUndefined()
-    expect(findMultiWiggleHit(model, regions, 40, 5)).toBeUndefined()
-    expect(findMultiWiggleHit(model, regions, 50, 5)?.rows[0]?.score).toBe(5)
+    expect(findWiggleHit(model, regions, 10, 5)).toBeUndefined()
+    expect(findWiggleHit(model, regions, 40, 5)).toBeUndefined()
+    expect(findWiggleHit(model, regions, 50, 5)?.rows[0]?.score).toBe(5)
   })
 
   test('hit-tests the full width when the tree is hidden', () => {
     const model = makeModel({ showTree: false, treeAreaWidth: 40 })
-    expect(findMultiWiggleHit(model, regions, 10, 5)?.rows[0]?.score).toBe(5)
+    expect(findWiggleHit(model, regions, 10, 5)?.rows[0]?.score).toBe(5)
   })
 
   test('a hierarchy-less model has no sidebar to exclude', () => {
     const model = makeModel({ showTree: true, treeAreaWidth: 40 })
-    expect(findMultiWiggleHit(model, regions, 10, 5)?.rows[0]?.score).toBe(5)
+    expect(findWiggleHit(model, regions, 10, 5)?.rows[0]?.score).toBe(5)
   })
 
   test('overlay mode collects a row per source at the cursor bp', () => {
@@ -341,17 +341,17 @@ describe('findMultiWiggleHit', () => {
         ],
       ]),
     })
-    const hit = findMultiWiggleHit(model, regions, 50, 5)
+    const hit = findWiggleHit(model, regions, 50, 5)
     expect(hit?.rows.map(r => r.score)).toEqual([5, 9])
   })
 
   test('row mode past the last row is a miss, not the last source', () => {
     const model = makeModel({ effectiveRowHeight: 20 })
-    expect(findMultiWiggleHit(model, regions, 50, 25)).toBeUndefined()
+    expect(findWiggleHit(model, regions, 50, 25)).toBeUndefined()
   })
 
   test('a zero-height display is a miss rather than NaN row math', () => {
     const model = makeModel({ effectiveRowHeight: 0 })
-    expect(findMultiWiggleHit(model, regions, 50, 0)).toBeUndefined()
+    expect(findWiggleHit(model, regions, 50, 0)).toBeUndefined()
   })
 })

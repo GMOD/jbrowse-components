@@ -76,7 +76,7 @@ import {
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { WiggleHoveredFeature, Source } from '../util.ts'
-import type { MultiWiggleContextInfo } from './components/findHit.ts'
+import type { WiggleContextInfo } from './components/findHit.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type { RowColorMode } from './sourcesLogic.ts'
@@ -172,7 +172,7 @@ export default function stateModelFactory(
       StoredHoverMixin<WiggleHoveredFeature>(),
       LegendMixin(),
       TreeSidebarMixin<Source>(),
-      ContextMenuMixin<ContextMenuAnchor & MultiWiggleContextInfo>(),
+      ContextMenuMixin<ContextMenuAnchor & WiggleContextInfo>(),
       types.model({
         /**
          * #property
@@ -595,7 +595,7 @@ export default function stateModelFactory(
        *    this was widened for ("we need to make it so density can show legend
        *    also ideally because the left side labels are too small to see").
        *    `showTree` is deliberately no part of this: the labels are
-       *    `MultiWiggleRowLabels`' own and draw whether or not a dendrogram
+       *    `WiggleRowLabels`' own and draw whether or not a dendrogram
        *    does, so reading it here drew a key restating labels still on screen.
        * 3. **Is the key worth its rows?** Short enough to read, and made of
        *    more than one color — both `legendIsReadable`, shared with the other
@@ -662,7 +662,7 @@ export default function stateModelFactory(
        * `treeSidebarRightEdge` (the tooltip/crosshair dead zone the sidebar
        * reserves) all read it, so none of them can keep drawing or reserving
        * space on their own. A subtree filter set in a row mode still applies and
-       * is still clearable from the track menu and MultiWiggleHint.
+       * is still clearable from the track menu and WiggleHint.
        */
       get hierarchy() {
         return self.isOverlay
@@ -796,7 +796,7 @@ export default function stateModelFactory(
 
       afterAttach() {
         setupTreeSidebarAutoruns(self, {
-          name: 'MultiWiggle',
+          name: 'Wiggle',
           // Forwarded, not swallowed: `false` is "no loaded region covers that
           // column", and it holds `sortRowsBy` for the fetch that will.
           sortRows: (refName, pos) => self.sortRowsByScoreAt(refName, pos),

@@ -761,7 +761,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: displayPainted('multi-wiggle-display'),
+    readySelector: displayPainted('wiggle-display'),
     // 246KB across the whole genome, so unlike the 5.7MB stack this needs no
     // raised navigation or ready budget
     readyTimeout: 180000,

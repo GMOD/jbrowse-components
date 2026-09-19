@@ -529,7 +529,7 @@ export const multisvVideoFixtures = {
   // paints a "Clustering samples 62%" overlay across the lane until it lands.
   // `data-clustered` is the only DOM evidence it ran, since this lane draws no
   // tree of its own.
-  cnvClustered: `${displayPainted('multi-wiggle-display')}[data-clustered="true"]`,
+  cnvClustered: `${displayPainted('wiggle-display')}[data-clustered="true"]`,
 }
 
 export const uiSpecs: ScreenshotSpec[] = [

@@ -1,7 +1,7 @@
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WigglePlotGeometry } from '../../shared/wiggleDisplayViews.ts'
 import type { WiggleHoveredFeature } from '../../util.ts'
-import type { MultiWiggleContextHit } from './findHit.ts'
+import type { WiggleContextHit } from './findHit.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type {
   ClusterHierarchyNode,
@@ -58,8 +58,8 @@ export interface WiggleDisplayModel
   setHoveredFeature: (feat?: WiggleHoveredFeature) => void
   clearHoveredFeature: () => void
   selectFeature: (feat: WiggleHoveredFeature) => void
-  contextMenuInfo?: ContextMenuAnchor & MultiWiggleContextHit
-  openContextMenu: (info: ContextMenuAnchor & MultiWiggleContextHit) => void
+  contextMenuInfo?: ContextMenuAnchor & WiggleContextHit
+  openContextMenu: (info: ContextMenuAnchor & WiggleContextHit) => void
   closeContextMenu: () => void
   contextMenuItems: () => MenuItem[]
 }

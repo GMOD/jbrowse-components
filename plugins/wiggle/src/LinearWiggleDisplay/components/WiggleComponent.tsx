@@ -15,10 +15,10 @@ import { observer } from 'mobx-react'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
-import MultiWiggleRowLabels from '../MultiWiggleRowLabels.tsx'
-import MultiWiggleRowSeparators from '../MultiWiggleRowSeparators.tsx'
-import MultiWiggleHint from './MultiWiggleHint.tsx'
-import { findMultiWiggleContextHit, findMultiWiggleHit } from './findHit.ts'
+import WiggleRowLabels from '../WiggleRowLabels.tsx'
+import WiggleRowSeparators from '../WiggleRowSeparators.tsx'
+import WiggleHint from './WiggleHint.tsx'
+import { findWiggleContextHit, findWiggleHit } from './findHit.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
@@ -41,7 +41,7 @@ const WiggleComponent = observer(function WiggleComponent({
 
   const computeHit = useCallback(
     (offsetX: number, offsetY: number) =>
-      findMultiWiggleHit(model, model.host.visibleRegions, offsetX, offsetY),
+      findWiggleHit(model, model.host.visibleRegions, offsetX, offsetY),
     [model],
   )
 
@@ -55,7 +55,7 @@ const WiggleComponent = observer(function WiggleComponent({
   function onContextMenu(event: React.MouseEvent) {
     const regions = model.host.visibleRegions
     const { x, y } = eventPoint(event)
-    const hit = findMultiWiggleContextHit(model, regions, x)
+    const hit = findWiggleContextHit(model, regions, x)
     openContextMenuFromEvent(
       model,
       event,
@@ -67,7 +67,7 @@ const WiggleComponent = observer(function WiggleComponent({
             // the column the sort ranks at and the record under the pointer are
             // two different answers to one click: the sort needs every row's
             // score at `bp`, the feature items need the one row `y` picked
-            feature: findMultiWiggleHit(model, regions, x, y),
+            feature: findWiggleHit(model, regions, x, y),
           }
         : undefined,
     )
@@ -77,7 +77,7 @@ const WiggleComponent = observer(function WiggleComponent({
     <DisplayChrome
       model={model}
       factory={WiggleRenderer}
-      testid="multi-wiggle-display"
+      testid="wiggle-display"
       style={{
         width: totalWidth,
         height,
@@ -91,7 +91,7 @@ const WiggleComponent = observer(function WiggleComponent({
       onContextMenu={onContextMenu}
     >
       {({ canvasRef, mouseTracker }) => (
-        <MultiWiggleBody
+        <WiggleBody
           model={model}
           canvasRef={canvasRef}
           totalWidth={totalWidth}
@@ -103,7 +103,7 @@ const WiggleComponent = observer(function WiggleComponent({
   )
 })
 
-const MultiWiggleBody = observer(function MultiWiggleBody({
+const WiggleBody = observer(function WiggleBody({
   model,
   canvasRef,
   totalWidth,
@@ -146,14 +146,14 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           width: totalWidth,
         }}
       >
-        <MultiWiggleRowLabels model={model} labelOffset={labelOffset} />
-        <MultiWiggleRowSeparators model={model} width={totalWidth} />
+        <WiggleRowLabels model={model} labelOffset={labelOffset} />
+        <WiggleRowSeparators model={model} width={totalWidth} />
       </svg>
 
       <TreeSidebar model={model} />
 
       {/* inline hint when the plot would otherwise be a silent blank */}
-      <MultiWiggleHint model={model} />
+      <WiggleHint model={model} />
 
       {/* the full crosshair, not just a genomic guide: cursor y picks the row
           being read in multi-row mode and a score level in overlay mode, and

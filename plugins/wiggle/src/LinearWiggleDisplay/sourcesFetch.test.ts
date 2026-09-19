@@ -12,7 +12,7 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 // empty sources list. This is exactly what a bedMethyl file returns for a
 // chromosome it doesn't cover. The RPC is batched (one call, all regions), so
 // the result is an array — one entry per requested region.
-function makeEmptyMultiWiggleData(): WiggleDataResult[] {
+function makeEmptyWiggleData(): WiggleDataResult[] {
   return [{ sources: [] }]
 }
 
@@ -59,7 +59,7 @@ describe('MultiLinearWiggleDisplay zero-feature loading', () => {
   // entry has loaded, so the size gate passes and the stub paints.
   it('renderState stays a stub through a zero-feature fetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyMultiWiggleData())
+    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
     const { display } = createDisplay()
 
     // before the fetch: nothing loaded (the first-paint gate holds), stub state

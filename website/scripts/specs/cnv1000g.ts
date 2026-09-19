@@ -110,7 +110,7 @@ const CN_HEATMAP = {
 // element as its first-paint testid, so this waits on the post-clustering frame
 // even though `showTree: false` removes the dendrogram (which is the only other
 // DOM evidence clustering ran).
-export const CLUSTERED_READY = `${displayPainted('multi-wiggle-display')}[data-clustered="true"]`
+export const CLUSTERED_READY = `${displayPainted('wiggle-display')}[data-clustered="true"]`
 
 // The tutorial's own config: hg38, the 2504-sample Zarr store in test_data,
 // RefSeq genes and the SV map. It loads jbrowse-plugin-zarr from its published
@@ -177,7 +177,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: displayPainted('multi-wiggle-display'),
+    readySelector: displayPainted('wiggle-display'),
     readyTimeout: 120000,
     viewportHeight: 830,
   },

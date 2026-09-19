@@ -261,7 +261,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findDisplayPainted(page, 'multi-wiggle-display', 60000)
+        await findDisplayPainted(page, 'wiggle-display', 60000)
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(

@@ -22,7 +22,7 @@ async function loadedDisplay() {
 async function hoverAt(x: number, y: number) {
   await act(async () => {
     fireEvent.mouseMove(
-      document.querySelector('[data-testid="multi-wiggle-display"]')!,
+      document.querySelector('[data-testid="wiggle-display"]')!,
       { clientX: x, clientY: y },
     )
     await new Promise(resolve => setTimeout(resolve, 60))

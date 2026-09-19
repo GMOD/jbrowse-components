@@ -110,7 +110,7 @@ function syntheticTierTest({
     tracks: [track],
     config: 'test_data/volvox/config_synthetic_tiers.json',
     displayTestId: track.includes('multi')
-      ? 'multi-wiggle-display'
+      ? 'wiggle-display'
       : 'wiggle-display',
   })
   return {
@@ -147,28 +147,28 @@ const suite: TestSuite = {
       snapshot: 'bigwig-multibigwig-xyplot',
       loc: 'ctgA:1-4000',
       tracks: ['volvox_microarray_multi'],
-      displayTestId: 'multi-wiggle-display',
+      displayTestId: 'wiggle-display',
     }),
     lgvSnapshotTest({
       name: 'MultiBigWig multirowxy',
       snapshot: 'bigwig-multibigwig-multirowxy',
       loc: 'ctgA:1-4000',
       tracks: ['volvox_microarray_multi_multirowxy'],
-      displayTestId: 'multi-wiggle-display',
+      displayTestId: 'wiggle-display',
     }),
     lgvSnapshotTest({
       name: 'MultiBigWig multirowdensity',
       snapshot: 'bigwig-multibigwig-multirowdensity',
       loc: 'ctgA:1-4000',
       tracks: ['volvox_microarray_multi_multirowdensity'],
-      displayTestId: 'multi-wiggle-display',
+      displayTestId: 'wiggle-display',
     }),
     lgvSnapshotTest({
       name: 'MultiBigWig multirowline',
       snapshot: 'bigwig-multibigwig-multirowline',
       loc: 'ctgA:1-4000',
       tracks: ['volvox_microarray_multi_multirowline'],
-      displayTestId: 'multi-wiggle-display',
+      displayTestId: 'wiggle-display',
     }),
     syntheticTierTest({ track: 'synthetic_tiers_line_avg', bin: 16 }),
     syntheticTierTest({ track: 'synthetic_tiers_line_whiskers', bin: 16 }),

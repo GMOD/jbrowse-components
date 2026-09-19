@@ -31,7 +31,7 @@ const OVERLAY_RESERVED: ReadonlySet<string> = new Set(['labelColor'])
 // doesn't bake unset colors into the persisted layout on Submit. setLayout
 // already clears the cluster tree on reorder (via willClearTree), but the
 // warning dialog surfaces that destruction to the user first.
-export default observer(function MultiWiggleSetColorDialog({
+export default observer(function WiggleSetColorDialog({
   model,
   handleClose,
 }: {

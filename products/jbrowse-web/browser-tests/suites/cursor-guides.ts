@@ -206,18 +206,13 @@ export const suite: TestSuite = {
         await bootTrack(
           page,
           'volvox_microarray_multi_multirowxy',
-          'multi-wiggle-display',
+          'wiggle-display',
         )
         assert(
           (await countGuideLines(page)) === 0,
           'guides drawn before the pointer arrived',
         )
-        await hoverFraction(
-          page,
-          displayPainted('multi-wiggle-display'),
-          0.5,
-          0.5,
-        )
+        await hoverFraction(page, displayPainted('wiggle-display'), 0.5, 0.5)
         assert(
           (await countGuideLines(page)) === 2,
           'expected the full crosshair over a multi-row wiggle',

@@ -30,7 +30,7 @@ interface LabelModel {
 // start with no axis — past the dendrogram. `exportContentLeft` is the export
 // shell's, which moves an axis nothing pushes right into the margin, so the
 // labels follow it there.
-export default observer(function MultiWiggleRowLabels({
+export default observer(function WiggleRowLabels({
   model,
   labelOffset,
   exportContentLeft,

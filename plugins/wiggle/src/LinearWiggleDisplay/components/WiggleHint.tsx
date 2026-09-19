@@ -3,7 +3,7 @@ import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // What the hint reads, spelled out like its sibling overlays (see
-// MultiWiggleRowSeparators, MultiWiggleRowLabels) rather than taking the whole
+// WiggleRowSeparators, WiggleRowLabels) rather than taking the whole
 // display — which is also what keeps the two blank-plot cases checkable without
 // standing one up.
 export interface HintModel {
@@ -45,7 +45,7 @@ function hint(model: HintModel) {
       : undefined
 }
 
-const MultiWiggleHint = observer(function MultiWiggleHint({
+const WiggleHint = observer(function WiggleHint({
   model,
 }: {
   model: HintModel
@@ -80,4 +80,4 @@ const MultiWiggleHint = observer(function MultiWiggleHint({
   ) : null
 })
 
-export default MultiWiggleHint
+export default WiggleHint

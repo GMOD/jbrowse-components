@@ -79,7 +79,7 @@ export function findRowHit(
 
 // What the hit functions below read off the display model — spelled out rather
 // than taking the full model so the hit logic stays unit-testable without MST.
-export interface MultiWiggleHitModel {
+export interface WiggleHitModel {
   effectiveRowHeight: number
   sources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
@@ -103,8 +103,8 @@ export interface MultiWiggleHitModel {
 // positions over them are excluded here. Doing it at the hit (rather than hiding
 // the tooltip downstream) is what keeps a click on a tree node from also opening
 // a feature widget behind the node menu.
-export function findMultiWiggleHit(
-  model: MultiWiggleHitModel,
+export function findWiggleHit(
+  model: WiggleHitModel,
   regions: MouseRegion[],
   offsetX: number,
   offsetY: number,
@@ -151,7 +151,7 @@ export function findMultiWiggleHit(
 // Deliberately not the hovered feature — in row mode that names the one source
 // the cursor is over, and the row-order sort ranks every source at the same
 // column, which it reads back out of the region's data.
-export interface MultiWiggleContextHit {
+export interface WiggleContextHit {
   refName: string
   bp: number
 }
@@ -160,23 +160,23 @@ export interface MultiWiggleContextHit {
 // plus the hit under the same pointer for the two items that are about one
 // record rather than about the row order. Undefined in the gaps — an overlay
 // column no source has a bin in, a row whose file doesn't cover this contig.
-export interface MultiWiggleContextInfo extends MultiWiggleContextHit {
+export interface WiggleContextInfo extends WiggleContextHit {
   feature?: WiggleHoveredFeature
 }
 
 // The genomic column a right-click names, or undefined when the click wasn't
 // over loaded data. Excludes the tree sidebar for the same reason
-// findMultiWiggleHit does. It resolves a column rather than a feature, so it
+// findWiggleHit does. It resolves a column rather than a feature, so it
 // takes only the data map and the sidebar geometry — the row and score fields
 // of the hit model have no part in it.
-export function findMultiWiggleContextHit(
+export function findWiggleContextHit(
   model: Pick<
-    MultiWiggleHitModel,
+    WiggleHitModel,
     'rpcDataMap' | 'showTree' | 'hierarchy' | 'treeAreaWidth'
   >,
   regions: MouseRegion[],
   offsetX: number,
-): MultiWiggleContextHit | undefined {
+): WiggleContextHit | undefined {
   if (offsetX < treeSidebarRightEdge(model)) {
     return undefined
   }

@@ -1,6 +1,6 @@
 import { renderToString } from 'react-dom/server'
 
-import MultiWiggleRowSeparators from './MultiWiggleRowSeparators.tsx'
+import WiggleRowSeparators from './WiggleRowSeparators.tsx'
 
 function makeModel(overrides: Partial<Parameters<typeof render>[0]> = {}) {
   return {
@@ -22,7 +22,7 @@ function render(model: {
 }) {
   return renderToString(
     <svg>
-      <MultiWiggleRowSeparators model={model} width={800} />
+      <WiggleRowSeparators model={model} width={800} />
     </svg>,
   )
 }

@@ -302,7 +302,7 @@ export const svVideos: VideoSpec[] = [
     // The rows have to be carrying the whole chromosome before the camera
     // starts. A tour of an autoscaled axis being capped is a tour of nothing
     // while the lane is empty.
-    readySelector: displaySettled('multi-wiggle-display'),
+    readySelector: displaySettled('wiggle-display'),
     readyTimeout: 180000,
     steps: [
       { type: 'hover', selector: WORDMARK, hold: 0 },

@@ -579,7 +579,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'PUR',
-    readySelector: displayPainted('multi-wiggle-display'),
+    readySelector: displayPainted('wiggle-display'),
     readyTimeout: 90000,
     viewportHeight: 620,
     stages: [
