@@ -33,9 +33,9 @@ tree knows exists. It survives because two spreads happen to line up:
 From there it travels the **data** channel: into each region's RPC payload as
 `SourceInfo` (`packages/wiggle-core/src/dataTypes.ts:1`), back out through
 `sourcesFromRegionData`'s union
-(`plugins/wiggle/src/MultiLinearWiggleDisplay/sourcesLogic.ts:21`), then merged
+(`plugins/wiggle/src/LinearWiggleDisplay/sourcesLogic.ts:21`), then merged
 with the user's edits by `reconcileLayout(sourcesWithoutLayout, self.layout)`
-(`plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts:180`).
+(`plugins/wiggle/src/LinearWiggleDisplay/model.ts:180`).
 
 Two consequences, and they are the same fact seen from each side. It is cheap to
 author *because* it is unmodeled — no display type to name, no slot to look up,

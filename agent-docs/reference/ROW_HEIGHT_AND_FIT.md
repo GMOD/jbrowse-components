@@ -68,7 +68,7 @@ rather than one they compose.
 
 Displays implementing this: `variants/MultiSampleVariantBaseModel` (both the
 regular and matrix multi-sample variant displays), `maf/LinearMafDisplay`,
-`canvas/LinearMultiRowFeatureDisplay`. `wiggle/MultiLinearWiggleDisplay` is
+`canvas/LinearMultiRowFeatureDisplay`. `wiggle/LinearWiggleDisplay` is
 always-fit — it has no fixed-height setting and therefore no `rowHeight`
 sentinel — but exposes `effectiveRowHeight` under the same name.
 `alignments/LinearAlignmentsDisplay`'s `rowHeight` is a per-read pitch, an
