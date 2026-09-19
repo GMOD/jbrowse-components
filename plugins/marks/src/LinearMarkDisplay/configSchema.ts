@@ -13,7 +13,7 @@ import { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
 import { markColorScale, markColorSchema } from './markColorConfigSchema.ts'
-import { SHAPE_LANES } from './markList.ts'
+import { SHAPE_LANES } from './shapeLanes.ts'
 
 import type { MarkColorScale } from './markColorConfigSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'

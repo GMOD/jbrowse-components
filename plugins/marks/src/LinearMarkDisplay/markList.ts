@@ -29,16 +29,6 @@ export interface StoredLayer extends EncodedChannels {
   flatbush?: Flatbush
 }
 
-/**
- * The lanes the worker fills for each shape. The encoder fills whichever of
- * `color` and `colorValue` the colour declaration calls for.
- */
-export const SHAPE_LANES = {
-  bar: ['y', 'row', 'color', 'colorValue', 'index'],
-  point: ['y', 'row', 'color', 'colorValue', 'glyph', 'index'],
-  span: ['row', 'color', 'index'],
-} as const satisfies Record<MarkShapeName, readonly LaneName[]>
-
 type ChannelLane = Exclude<LaneName, 'index'>
 
 // Colour is checked apart from these, since either of two lanes carries it.

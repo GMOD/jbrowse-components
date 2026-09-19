@@ -69,18 +69,14 @@ import { facetLayout, remapFacetRows } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
-import {
-  SHAPE_LANES,
-  buildMarkList,
-  markDrawsAt,
-  markRowHeightPx,
-} from './markList.ts'
+import { buildMarkList, markDrawsAt, markRowHeightPx } from './markList.ts'
 import {
   EMPTY_PLOT_SPEC,
   defaultPlotMarks,
   plotMarks,
   specOfMarks,
 } from './plotFields.ts'
+import { SHAPE_LANES } from './shapeLanes.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
