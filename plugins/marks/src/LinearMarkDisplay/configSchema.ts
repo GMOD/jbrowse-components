@@ -9,6 +9,7 @@ import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterCon
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
+import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
 import { markColorScale, markColorSchema } from './markColorConfigSchema.ts'
@@ -102,56 +103,6 @@ const markGlyphSchema = ConfigurationSchema(
     closed: true,
     preProcessSnapshot: snap => normalizeChannel(snap, 'glyph'),
   },
-)
-
-const markValueScaleSchema = ConfigurationSchema(
-  'MarkValueScale',
-  {
-    /**
-     * #slot scales.y.type
-     * How the axis reads its domain. The ticks, the cross-hatches and the
-     * shader's placement all come from it.
-     */
-    type: {
-      type: 'stringEnum',
-      model: types.enumeration('MarkScaleType', ['linear', 'log']),
-      defaultValue: 'linear',
-      description: 'linear or log',
-    },
-    /**
-     * #slot scales.y.domainMin
-     * The bottom of the axis, pinning what would otherwise autoscale to the
-     * loaded regions. Unset autoscales that end. The score menu's "Set
-     * min/max" writes here.
-     */
-    domainMin: {
-      type: 'maybeNumber',
-      description: 'pinned bottom of the axis; unset autoscales',
-    },
-    /**
-     * #slot scales.y.domainMax
-     * The top of the axis. Unset autoscales that end.
-     */
-    domainMax: {
-      type: 'maybeNumber',
-      description: 'pinned top of the axis; unset autoscales',
-    },
-  },
-  { closed: true },
-)
-
-const markScalesSchema = ConfigurationSchema(
-  'MarkScales',
-  {
-    /**
-     * #slot scales.y
-     * The one value scale every mark's `encoding.y` is read through — the
-     * plot's, not a mark's, the way a grammar of graphics gives one scale per
-     * aesthetic.
-     */
-    y: markValueScaleSchema,
-  },
-  { closed: true },
 )
 
 const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
@@ -634,8 +585,18 @@ export function configSchemaFactory() {
        * #slot scales
        * The scales the marks are read through, owned by the display rather
        * than by a mark: `y` alone, and every mark's `encoding.y` shares it.
+       * The same object the wiggle family declares, with this display's own
+       * scale types — no symlog, which `valueToYPxScaled` does not place.
        */
-      scales: markScalesSchema,
+      scales: scalesSchema(
+        valueScaleSchema({
+          types: ['linear', 'log'],
+          autoscale: {
+            modes: ['local', 'localsd', 'localpercentile'],
+            default: 'local',
+          },
+        }),
+      ),
       /**
        * #slot origin
        * The value bars grow from. The axis widens to include it whenever a

@@ -49,8 +49,10 @@ import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, pointInsetPx } from '@jbrowse/render-core/marks'
 import {
-  ScoreAxisMixin,
+  ScoreScaleMixin,
+  autoscaleDomainFromSpans,
   axisPlotBox,
+  computeSpanStats,
   makeCrossHatchItem,
   makeScoreSubMenu,
   resolveRenderState,
@@ -118,7 +120,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { MarkRamp } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import type { ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
+import type { ScoreSpan, ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
 
 export type MarkRenderingBackend = PerRegionRenderingBackend<
   MarkRegionData,
@@ -331,14 +333,29 @@ export interface MarkView {
   densityMark: number
 }
 
-function layerExtremes(entries: VisibleEntry<StoredLayer>[]) {
-  let min = Infinity
-  let max = -Infinity
-  for (const { data } of entries) {
-    min = Math.min(min, data.yMin)
-    max = Math.max(max, data.yMax)
-  }
-  return Number.isFinite(min) ? { min, max } : undefined
+// Each folded layer as a `ScoreSpan`, so the shared autoscale walks the `y`
+// lane the same way it walks a wiggle source's scores: one value per instance,
+// clipped to the block the entry carries.
+function layerSpans(entries: VisibleEntry<StoredLayer>[]): ScoreSpan[] {
+  return entries.flatMap(({ data, visStart, visEnd }) => {
+    const { y } = data
+    return y
+      ? [
+          {
+            count: data.count,
+            starts: data.x,
+            ends: data.x2,
+            stride: 1,
+            endOffset: 0,
+            low: y,
+            high: y,
+            avg: y,
+            visStart,
+            visEnd,
+          },
+        ]
+      : []
+  })
 }
 
 /**
@@ -362,7 +379,7 @@ export function stateModelFactory(
       // `source: 'density'` draws the adapter's sidecar in the banner's place
       // — see `densityPayloads`.
       DensityTierMixin(),
-      ScoreAxisMixin(),
+      ScoreScaleMixin(),
       LegendMixin(),
       ContextMenuMixin<MarkDisplayContextMenuInfo>(),
       StoredHoverMixin<MarkHitInfo>(sameMarkHit),
@@ -484,26 +501,6 @@ export function stateModelFactory(
        */
       get densityMarkIndex(): number {
         return this.markView.densityMark
-      },
-      /**
-       * #getter
-       * `ScoreAxisMixin`'s hook: the display owns its one y scale, so the
-       * axis, the ticks and every mark's shapes read `scales.y`.
-       */
-      get scaleType(): string {
-        return getConf(self, ['scales', 'y', 'type'])
-      },
-      /**
-       * #getter
-       */
-      get manualMinScore(): number | undefined {
-        return getConf(self, ['scales', 'y', 'domainMin'])
-      },
-      /**
-       * #getter
-       */
-      get manualMaxScore(): number | undefined {
-        return getConf(self, ['scales', 'y', 'domainMax'])
       },
       /**
        * #getter
@@ -711,16 +708,17 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * nice-rounded [min, max] over the visible regions' shipped extremes,
-       * widened to the origin whenever a bar mark draws, or undefined before
-       * any valued mark loads
+       * nice-rounded [min, max] over the `y` of every mark drawing at this
+       * zoom, through the autoscale mode `scales.y` names, widened to the
+       * origin whenever a bar mark draws, or undefined before any valued mark
+       * loads
        */
       get domain() {
         const indices = self.valuedMarkIndices
         const folded = new Set(indices)
         const shapes = indices.map(i => self.markShapes[i]!)
         const hasBar = shapes.includes('bar')
-        const { origin } = self
+        const { origin, autoscaleType, numStdDev, numQuantile } = self
         return visibleStatsDomain({
           active: shapes.some(s => s !== 'span'),
           view: self.host,
@@ -729,9 +727,17 @@ export function stateModelFactory(
             data.layers.filter(
               (l, i) => folded.has(i) && l.count > 0 && Number.isFinite(l.yMin),
             ),
-          accumulate: layerExtremes,
-          range: ({ min, max }) =>
-            hasBar ? widenRangeToRules([min, max], [origin]) : [min, max],
+          accumulate: entries => computeSpanStats(layerSpans(entries)),
+          range: (stats, entries) => {
+            const range = autoscaleDomainFromSpans({
+              stats,
+              autoscaleType,
+              numStdDev,
+              numQuantile,
+              spans: layerSpans(entries),
+            })
+            return hasBar ? widenRangeToRules(range, [origin]) : range
+          },
           bounds: [self.minScoreBound, self.maxScoreBound],
           scaleType: self.scaleType,
         })
@@ -1079,21 +1085,6 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * The score menu's Set min/max, its pin and its Clear all land on
-       * `scales.y`, the display's one value scale, so a bound the user sets
-       * and a bound the config author wrote are the same slot.
-       */
-      setMinScore(val?: number) {
-        setConf({ configuration: self.conf.scales.y }, 'domainMin', val)
-      },
-      /**
-       * #action
-       */
-      setMaxScore(val?: number) {
-        setConf({ configuration: self.conf.scales.y }, 'domainMax', val)
-      },
-      /**
-       * #action
        * Scan the features for the fields a plot can read, once per display.
        */
       ensurePlotFields() {
@@ -1137,12 +1128,6 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setScaleType(scaleType: string) {
-        setConf({ configuration: self.conf.scales.y }, 'type', scaleType)
-      },
-      /**
-       * #action
-       */
       toggleCrossHatches() {
         setConf(self, 'displayCrossHatches', !self.displayCrossHatches)
       },
@@ -1180,13 +1165,7 @@ export function stateModelFactory(
               self.openPlotFieldDialog()
             },
           },
-          // The shared radio offers symlog, which the declared enum does not
-          // admit; the scale type is config-only until it does.
-          makeScoreSubMenu(self, {
-            scaleType: false,
-            autoscale: false,
-            domain: self.domain,
-          }),
+          makeScoreSubMenu(self, { domain: self.domain }),
           ...makePointSizeSubMenu(self, {
             label: 'Point size',
             applies: self.hasPointMark,

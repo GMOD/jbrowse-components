@@ -386,7 +386,9 @@ test('an encoding channel refuses a key it does not declare', () => {
       'BedAdapter',
       { scales: { y: { min: 0 } } },
     ).createDisplay(),
-  ).toThrow('MarkValueScale takes type, domainMin and domainMax, not min')
+  ).toThrow(
+    'ValueScale takes type, domainMin, domainMax, autoscale, numStdDev and numQuantile, not min',
+  )
 })
 
 // A span's ramp resolves in the worker (ADR-113), one table per region, under
