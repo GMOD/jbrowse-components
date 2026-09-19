@@ -378,6 +378,7 @@ export function encodeFeatures<L extends LaneName>(
       field: scaled.field,
       domain: [...colorField.domain],
       ...(scaled.palette ? { palette: [...scaled.palette] } : {}),
+      ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
       entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
   } else if (scaled && scaled.scale !== 'categorical' && rampValues) {
@@ -469,6 +470,11 @@ export function encodeFeatures<L extends LaneName>(
     encoded.glyphScale = glyphScale
   }
   return encoded as Encoded<L>
+}
+
+function keysAreNumeric(entries: readonly { value: string }[]) {
+  const named = entries.filter(e => e.value !== '')
+  return named.length > 0 && named.every(e => Number.isFinite(Number(e.value)))
 }
 
 function finiteExtremes(values: Float32Array, count: number): [number, number] {

@@ -102,6 +102,13 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  // Wraps where every other line ellipsizes: a note is a sentence, and half of
+  // one says nothing.
+  sectionNote: {
+    color: theme.palette.text.secondary,
+    whiteSpace: 'normal',
+    marginBottom: 2,
+  },
   sectionClose: {
     font: 'inherit',
     lineHeight: 1,
@@ -442,6 +449,9 @@ const FloatingLegend = observer(function FloatingLegend({
                   </Tooltip>
                 ) : null}
               </div>
+            ) : null}
+            {section.note ? (
+              <div className={classes.sectionNote}>{section.note}</div>
             ) : null}
             <LegendItemList
               items={section.items}

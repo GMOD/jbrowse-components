@@ -26,6 +26,23 @@ describe('FloatingLegend', () => {
     expect(queryByText(/Show .* more/)).toBeNull()
   })
 
+  it("draws a section's note above its rows, where a collapse cannot hide it", () => {
+    const { getByText } = render(
+      <FloatingLegend
+        sections={[
+          {
+            id: 'score',
+            title: 'score',
+            note: 'numeric values drawn as categories',
+            items: items(32),
+          },
+        ]}
+        maxItems={12}
+      />,
+    )
+    expect(getByText('numeric values drawn as categories')).toBeTruthy()
+  })
+
   it('collapses past the limit and toggles on click', () => {
     const { getByText, queryByText } = render(
       <FloatingLegend items={items(32)} maxItems={12} />,

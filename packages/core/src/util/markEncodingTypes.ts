@@ -113,6 +113,13 @@ export type ColorScaleTable =
       domain: string[]
       /** The declared palette, the other half of what assigns a key its colour. */
       palette?: string[]
+      /**
+       * Whether every non-empty key met here parsed as a finite number: a
+       * numeric field the declaration landed on a categorical scale, which
+       * the key can then say rather than the encoder typing the field from
+       * the data.
+       */
+      numericKeys?: boolean
       /** Each key met, in the field's order, `''` for no value. */
       entries: { value: string; color: number }[]
     }

@@ -55,6 +55,12 @@ colour, and the reviewer's case against a view-level resolution instead was
 that it either refetches on every union growth or rewrites colour per instance
 on the main thread, which breaks the one-place rule above.
 
+Which kind a colour scale is comes from the `ramp` slot and never from the
+data — a `field` with a ramp is `linear`, one without is `categorical` — so a
+numeric field with no ramp takes a colour per distinct value; the table carries
+`numericKeys` for that case and the key prints a line naming `scale` and `ramp`
+once the rows pass a handful.
+
 A **quantitative** ramp resolves on the main thread instead, the way y does:
 a caller whose shape reads the ramp itself names the `colorValue` lane and the
 worker ships the raw values plus the region's own `extent`; the display unions

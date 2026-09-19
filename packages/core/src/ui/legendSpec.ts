@@ -71,6 +71,10 @@ export function legendSwatches(item: LegendItem): LegendSwatch[] {
 export interface LegendSection {
   id: string
   title?: string
+  // A line under the title in the section's own words, drawn whether or not
+  // the title is: a rule the swatches cannot state, and the reader still needs
+  // it when the rows below collapse.
+  note?: string
   items: LegendItem[]
   // Its items name sets of rows, so `FloatingLegend` renders them as buttons
   // when it has an `onItemClick`; without this the section stays inert text
@@ -114,6 +118,9 @@ export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
       ...(titled && section.title !== undefined
         ? [{ key: `${section.id}-title`, label: section.title }]
         : []),
+      ...(section.note === undefined
+        ? []
+        : [{ key: `${section.id}-note`, label: section.note }]),
       ...section.items.map((item, idx) => ({
         key: `${section.id}-${idx}`,
         label: item.label,

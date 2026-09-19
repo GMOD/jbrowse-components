@@ -148,6 +148,7 @@ test('a categorical domain pins the order and a palette the colours', () => {
     field: 'strand',
     domain: ['-1', '1'],
     palette: ['red', 'blue'],
+    numericKeys: true,
     entries: [
       { value: '-1', color: cssColorToABGR('red') },
       { value: '1', color: cssColorToABGR('blue') },
@@ -166,6 +167,7 @@ test('strand brings its own order and colours where the encoding names none', ()
     kind: 'categorical',
     field: 'strand',
     domain: ['1', '-1', '0'],
+    numericKeys: true,
     entries: [
       { value: '1', color: cssColorToABGR('tomato') },
       { value: '-1', color: cssColorToABGR('cornflowerblue') },
@@ -517,4 +519,18 @@ test('a caller whose channels are readers or field names needs no jexl instance'
   expect(() =>
     encodeFeatures(features, { y: 'jexl:feature.score' }, ['y']),
   ).toThrow(/jexl/)
+})
+
+test('a categorical table says whether every key it met was a number', () => {
+  const of = (field: string, list = features) =>
+    encodeFeatures(list, { color: { field, scale: 'categorical' } }, ALL, {
+      jexl,
+    }).scale
+
+  expect(of('strand')).toMatchObject({ numericKeys: true })
+  expect(of('type')).not.toHaveProperty('numericKeys')
+  // One key that is not a number is enough: `score` reads `n/a` on one
+  // feature and nothing on another.
+  expect(of('score')).not.toHaveProperty('numericKeys')
+  expect(of('absent', [feature(9, {})])).not.toHaveProperty('numericKeys')
 })

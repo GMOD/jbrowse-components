@@ -163,3 +163,12 @@ test('an empty categorical scale is no key; a ramp always is', () => {
   expect(colorScaleIsEmpty(svType)).toBe(false)
   expect(colorScaleIsEmpty(contacts)).toBe(false)
 })
+
+test("a note carries into the section and the export's rows", () => {
+  const { sections } = legendSpecOf([{ ...svType, note: 'read this' }])
+  expect(sections![0]!.note).toBe('read this')
+  expect(legendEntries({ sections })[0]).toEqual({
+    key: 'svType-note',
+    label: 'read this',
+  })
+})

@@ -50,6 +50,11 @@ export interface CategoricalScale {
   // can focus them (`LegendHost.focusLegendEntry`). A scale coloring features
   // or cells leaves this unset and its rows stay inert.
   focusesRows?: boolean
+  // A line under the title, for what the swatches themselves cannot say: that
+  // a numeric field landed on a categorical scale, and which slot changes it.
+  // Above the rows rather than among them, because the rows are what it is
+  // about and a long list collapses them.
+  note?: string
 }
 
 /** One stop of a continuous ramp, `offset` in `[0, 1]`. */
@@ -116,6 +121,7 @@ function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
   return {
     id: scale.id,
     title: scale.title,
+    note: scale.note,
     items,
     focusesRows: scale.focusesRows,
   }

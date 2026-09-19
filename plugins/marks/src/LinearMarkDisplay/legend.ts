@@ -3,12 +3,22 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
-import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSwatch } from '@jbrowse/core/ui/legendSpec'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 import type { GlyphName, ScaleTable } from '@jbrowse/core/util/markEncoding'
 
 const RAMP_STOPS = 8
+
+// Rows past which a key over a numeric field has stopped being a vocabulary.
+// A numeric field genuinely used as one — a rank, a copy number, a tier — has
+// a handful of values; past eight the key is a rainbow and the author meant a
+// colour scale. The neighbouring `legendIsReadable` answers a different
+// question, whether a key is worth its rows at all, and its bar is 20.
+const NUMERIC_KEY_HINT_ROWS = 8
+
+const NUMERIC_KEY_HINT =
+  "numeric values drawn as categories; set scale: 'linear' or a ramp for a color scale"
 
 export type ScaledChannel = 'color' | 'glyph'
 
@@ -65,6 +75,7 @@ function union(current: ScaleTable, next: ScaleTable) {
     case 'categorical':
       if (next.kind === 'categorical') {
         unionEntries(current.entries, next.entries)
+        current.numericKeys = current.numericKeys && next.numericKeys
       }
       break
     case 'glyph':
@@ -186,7 +197,7 @@ function categoricalKey<E extends { value: string }>(
   scale: { field: string; domain: string[]; entries: E[] },
   swatchOf: (entry: E) => { color: string } | { swatches: LegendSwatch[] },
   facet: CategoricalField | undefined,
-): ColorScale {
+): CategoricalScale {
   const field =
     facet?.field === scale.field
       ? facet
@@ -234,19 +245,20 @@ export function markColorScales(
           glyph?.scale.kind === 'glyph'
             ? glyph.scale.entries.find(e => e.value === value)?.glyph
             : undefined
+        const key = categoricalKey(
+          id,
+          scale,
+          ({ value, color }) => {
+            const css = abgrToCssRgba(color)
+            const g = glyphOf(value)
+            return g ? { swatches: [{ color: css, glyph: g }] } : { color: css }
+          },
+          facet,
+        )
         return [
-          categoricalKey(
-            id,
-            scale,
-            ({ value, color }) => {
-              const css = abgrToCssRgba(color)
-              const g = glyphOf(value)
-              return g
-                ? { swatches: [{ color: css, glyph: g }] }
-                : { color: css }
-            },
-            facet,
-          ),
+          scale.numericKeys && key.entries.length > NUMERIC_KEY_HINT_ROWS
+            ? { ...key, note: NUMERIC_KEY_HINT }
+            : key,
         ]
       }
       case 'glyph':
