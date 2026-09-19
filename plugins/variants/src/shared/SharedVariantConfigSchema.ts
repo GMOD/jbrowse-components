@@ -6,6 +6,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
   rowSeparatorsConfigSchemaFields,
+  rowDomainConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
@@ -33,6 +34,8 @@ export default function sharedVariantConfigFactory() {
       ...treeSidebarConfigSchemaFields({
         tree: 'Show the sample clustering tree in the sidebar',
         rowLabels: 'Show the per-sample row labels in the sidebar',
+      }),
+      ...rowDomainConfigSchemaFields({
         rows: "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows",
       }),
       ...rowSeparatorsConfigSchemaFields(),

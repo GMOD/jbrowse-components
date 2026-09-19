@@ -141,7 +141,7 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 - **EPDnew Promoters - EPDnew v6**
 
 The two histone tracks each hold seven cell lines, drawn over one another as
-they open. **Track menu → Plot type → Multi-row → XY plot** gives each a row.
+they open. **Track menu → Plot type → One row per source** gives each a row.
 Their names carry hg19 because ENCODE3 released them on it; the files this
 config points at are the hg38 ones.
 

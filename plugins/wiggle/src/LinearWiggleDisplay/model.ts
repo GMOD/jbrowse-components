@@ -972,6 +972,13 @@ export default function stateModelFactory(
     }))
 }
 
+// Re-exported off the module the `LinearWiggleDisplay/stateModel` subpath
+// names, because gccontent composes this factory and its emitted `.d.ts` has to
+// name every type the inferred model mentions. Without these the ESM build
+// reports TS2883 against the source paths, which no package can import.
+export type { WiggleContextInfo } from './components/findHit.ts'
+export type { RowColorMode } from './sourcesLogic.ts'
+
 export type LinearWiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearWiggleDisplayModel = Instance<LinearWiggleDisplayStateModel>
 

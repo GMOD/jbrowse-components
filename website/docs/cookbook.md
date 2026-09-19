@@ -331,7 +331,7 @@ picks `xyplot`, `line`, `scatter`, or `density`.
       }
     ]
   },
-  "displayDefaults": { "defaultRendering": "multiline" }
+  "displayDefaults": { "defaultRendering": "line", "facet": "" }
 }
 ```
 

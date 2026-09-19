@@ -189,7 +189,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
     preProcessSnapshot: (snap: Record<string, unknown>) =>
-      colorImpliesSolid(checkFacetField(snap)),
+      colorImpliesSolid(checkFacetField('LinearWiggleDisplay')(snap)),
   },
 )
 

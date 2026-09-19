@@ -69,7 +69,7 @@ color settings are declared once:
     ]
   },
   "displayDefaults": {
-    "defaultRendering": "multirowdensity",
+    "defaultRendering": "density",
     "bicolorPivot": 2,
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "posColor": "#b2182b",
@@ -190,7 +190,7 @@ hosted (see [configuring plugins](/docs/config_guides/plugins)):
         "uri": "qm2_cn_1kb.zarr"
       },
       "displayDefaults": {
-        "defaultRendering": "multirowdensity",
+        "defaultRendering": "density",
         "bicolorPivot": 2,
         "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
         "posColor": "#b2182b",

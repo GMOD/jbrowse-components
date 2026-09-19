@@ -7,7 +7,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { getLeafNames } from './clusterUtils.ts'
-import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
+import {
+  rowDomainConfigSchemaFields,
+  treeSidebarConfigSchemaFields,
+} from './treeSidebarConfigSchemaFields.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
@@ -163,6 +166,8 @@ describe('the tree toggles', () => {
     ...treeSidebarConfigSchemaFields({
       tree: 'show the tree',
       rowLabels: 'draw each row name',
+    }),
+    ...rowDomainConfigSchemaFields({
       rows: 'row order; the rows listed come first, in this order',
     }),
   })
@@ -214,6 +219,8 @@ describe('the row domain', () => {
     ...treeSidebarConfigSchemaFields({
       tree: 'show the tree',
       rowLabels: 'draw each row name',
+    }),
+    ...rowDomainConfigSchemaFields({
       rows: 'row order; the rows listed come first, in this order',
     }),
   })

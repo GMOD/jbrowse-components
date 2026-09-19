@@ -176,7 +176,7 @@ rows in the figure below:
     ]
   },
   "displayDefaults": {
-    "defaultRendering": "multirowxy",
+    "defaultRendering": "xyplot",
     "height": 330
   }
 }
@@ -240,7 +240,7 @@ build step:
         "uri": "percell.zarr"
       },
       "displayDefaults": {
-        "defaultRendering": "multirowdensity",
+        "defaultRendering": "density",
         "scales": { "y": { "domainMin": 0, "domainMax": 2 } },
         "height": 420
       }

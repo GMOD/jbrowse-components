@@ -68,7 +68,7 @@ combines multiple BigWig files into a single multi-row quantitative track
 
 - **Track:** [MultiQuantitativeTrack](../multiquantitativetrack)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
-- **Display:** [MultiLinearWiggleDisplay](../multilinearwiggledisplay)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Config slots
 

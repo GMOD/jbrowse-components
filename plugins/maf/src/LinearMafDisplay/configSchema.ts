@@ -2,7 +2,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
-import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+import {
+  rowDomainConfigSchemaFields,
+  treeSidebarConfigSchemaFields,
+} from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import { CONSERVATION_MODE_VALUES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
@@ -137,6 +140,8 @@ export default function configSchemaF() {
       ...treeSidebarConfigSchemaFields({
         tree: 'show the species tree sidebar',
         rowLabels: 'draw the species name over the left of each row',
+      }),
+      ...rowDomainConfigSchemaFields({
         rows: "row order: the guide tree rotates so the species listed come as early as its topology allows, the way ggtree's rotate turns a clade — a species brings its clade with it, so this is a preference the tree honours rather than a placement. The dendrogram keeps drawing. With no guide tree the species listed simply lead, and the rest keep the order the adapter reported them in",
       }),
       /**

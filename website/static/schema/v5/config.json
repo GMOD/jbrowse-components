@@ -3768,14 +3768,14 @@
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
-        "domain": {
-          "description": "optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 80
+        },
+        "domain": {
+          "description": "optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         }
       }
     },
@@ -5211,14 +5211,14 @@
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
-        "domain": {
-          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 80
+        },
+        "domain": {
+          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
@@ -5396,14 +5396,14 @@
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
-        "domain": {
-          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 80
+        },
+        "domain": {
+          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
@@ -5677,6 +5677,9 @@
           ],
           "default": "xyplot"
         },
+        "facet": {
+          "$ref": "#/$defs/Facet"
+        },
         "height": {
           "description": "default height for the track.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -5753,12 +5756,12 @@
           "$ref": "#/$defs/Scales2"
         },
         "showLegend": {
-          "description": "Draw the score color ramp in density mode. Defaults to on.",
+          "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "scoreRules": {
-          "description": "Horizontal reference lines across the plot, as [{\"value\": 30, \"label\": \"2 copies\"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule. Any JSON value: the slot is `frozen`, so its shape is not checked here."
+          "description": "Horizontal reference lines across the plot, as [{\"value\": 30, \"label\": \"2 copies\"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering, which spends color rather than height on the score and so has no axis to rule, and by a faceted track, which stacks a plot box per row. Any JSON value: the slot is `frozen`, so its shape is not checked here."
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
@@ -5776,137 +5779,6 @@
             }
           ],
           "default": "whiskers"
-        }
-      }
-    },
-    "LinearWiggleDisplay": {
-      "title": "LinearWiggleDisplay",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearWiggleDisplaySlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearWiggleDisplay"
-        },
-        "displayId": {
-          "type": "string"
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "MultiLinearWiggleDisplaySlots": {
-      "type": "object",
-      "properties": {
-        "scoreField": {
-          "description": "Feature field plotted on the score axis, read natively off each feature. The default `score` is the field every adapter serves — including the value a BED adapter's `scoreColumn` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "score"
-        },
-        "displayCrossHatches": {
-          "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \"Show cross hatches\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": false
-        },
-        "resolution": {
-          "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1
-        },
-        "posColor": {
-          "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#0068d1"
-        },
-        "negColor": {
-          "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#e01e26"
-        },
-        "bicolorPivot": {
-          "description": "Pivot value for bicolor mode.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0
-        },
-        "densityColorRamp": {
-          "description": "Color ramp for density (\"density\"/\"multirowdensity\") rendering. \"default\" fades from white at the pivot to the track color; a named ramp (e.g. \"viridis\") colors scores through that fixed 256-entry lookup table instead, the same table the Hi-C viridis scheme uses.",
-          "anyOf": [
-            {
-              "enum": ["default", "viridis"]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "default"
-        },
-        "scatterPointSize": {
-          "description": "Point height in px for scatterplot (\"scatter\"/\"multiscatter\") rendering. Defaults to 2.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 2
-        },
-        "lineWidth": {
-          "description": "Line thickness in px for line (\"line\"/\"multiline\") rendering. Defaults to 1.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 1
-        },
-        "maxGapMultiple": {
-          "description": "Interpolated line (\"linecenter\"/\"multilinecenter\"/\"multirowlinecenter\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0
-        },
-        "scales": {
-          "$ref": "#/$defs/Scales2"
-        },
-        "height": {
-          "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 200
-        },
-        "summaryScoreMode": {
-          "description": "choose whether to use max/min/average or whiskers which combines all three into the same rendering.",
-          "anyOf": [
-            {
-              "enum": ["max", "min", "avg", "whiskers"]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "avg"
-        },
-        "defaultRendering": {
-          "description": "Default rendering type.",
-          "anyOf": [
-            {
-              "enum": [
-                "multirowxy",
-                "multirowdensity",
-                "multirowline",
-                "multirowlinecenter",
-                "multirowscatter",
-                "multixyplot",
-                "multiline",
-                "multilinecenter",
-                "multiscatter"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "multirowxy"
-        },
-        "minimalTicks": {
-          "description": "Draw only the min/max Y-axis ticks.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": false
         },
         "showTree": {
           "description": "Show the subtrack clustering tree in the sidebar.",
@@ -5923,10 +5795,6 @@
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
-        "domain": {
-          "description": "Row order: the subtracks listed come first, in this order, and the rest keep the adapter's order. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed subtracks come as early as the tree allows.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -5936,25 +5804,20 @@
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
-        },
-        "showLegend": {
-          "description": "Draw the source color key in overlay mode. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": true
         }
       }
     },
-    "MultiLinearWiggleDisplay": {
-      "title": "MultiLinearWiggleDisplay",
+    "LinearWiggleDisplay": {
+      "title": "LinearWiggleDisplay",
       "type": "object",
       "allOf": [
         {
-          "$ref": "#/$defs/MultiLinearWiggleDisplaySlots"
+          "$ref": "#/$defs/LinearWiggleDisplaySlots"
         }
       ],
       "properties": {
         "type": {
-          "const": "MultiLinearWiggleDisplay"
+          "const": "LinearWiggleDisplay"
         },
         "displayId": {
           "type": "string"
@@ -5981,6 +5844,9 @@
           ],
           "default": "xyplot"
         },
+        "facet": {
+          "$ref": "#/$defs/Facet"
+        },
         "height": {
           "description": "default height for the track.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -6057,12 +5923,12 @@
           "$ref": "#/$defs/Scales2"
         },
         "showLegend": {
-          "description": "Draw the score color ramp in density mode. Defaults to on.",
+          "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "scoreRules": {
-          "description": "Horizontal reference lines across the plot, as [{\"value\": 30, \"label\": \"2 copies\"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule. Any JSON value: the slot is `frozen`, so its shape is not checked here."
+          "description": "Horizontal reference lines across the plot, as [{\"value\": 30, \"label\": \"2 copies\"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering, which spends color rather than height on the score and so has no axis to rule, and by a faceted track, which stacks a plot box per row. Any JSON value: the slot is `frozen`, so its shape is not checked here."
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
@@ -6080,6 +5946,31 @@
             }
           ],
           "default": "avg"
+        },
+        "showTree": {
+          "description": "Show the subtrack clustering tree in the sidebar.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": true
+        },
+        "showBranchLength": {
+          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": true
+        },
+        "showRowLabels": {
+          "description": "Name each subtrack row down the left edge.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": true
+        },
+        "treeAreaWidth": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 80
+        },
+        "showRowSeparators": {
+          "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": false
         },
         "windowSize": {
           "$ref": "#/$defs/NumberOrJexl",
@@ -6139,6 +6030,9 @@
           ],
           "default": "xyplot"
         },
+        "facet": {
+          "$ref": "#/$defs/Facet"
+        },
         "height": {
           "description": "default height for the track.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -6215,12 +6109,12 @@
           "$ref": "#/$defs/Scales2"
         },
         "showLegend": {
-          "description": "Draw the score color ramp in density mode. Defaults to on.",
+          "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "scoreRules": {
-          "description": "Horizontal reference lines across the plot, as [{\"value\": 30, \"label\": \"2 copies\"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule. Any JSON value: the slot is `frozen`, so its shape is not checked here."
+          "description": "Horizontal reference lines across the plot, as [{\"value\": 30, \"label\": \"2 copies\"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering, which spends color rather than height on the score and so has no axis to rule, and by a faceted track, which stacks a plot box per row. Any JSON value: the slot is `frozen`, so its shape is not checked here."
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
@@ -6238,6 +6132,31 @@
             }
           ],
           "default": "avg"
+        },
+        "showTree": {
+          "description": "Show the subtrack clustering tree in the sidebar.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": true
+        },
+        "showBranchLength": {
+          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": true
+        },
+        "showRowLabels": {
+          "description": "Name each subtrack row down the left edge.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": true
+        },
+        "treeAreaWidth": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 80
+        },
+        "showRowSeparators": {
+          "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": false
         },
         "windowSize": {
           "$ref": "#/$defs/NumberOrJexl",
@@ -6344,14 +6263,14 @@
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
-        "domain": {
-          "description": "row order: the guide tree rotates so the species listed come as early as its topology allows, the way ggtree's rotate turns a clade — a species brings its clade with it, so this is a preference the tree honours rather than a placement. The dendrogram keeps drawing. With no guide tree the species listed simply lead, and the rest keep the order the adapter reported them in.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 80
+        },
+        "domain": {
+          "description": "row order: the guide tree rotates so the species listed come as early as its topology allows, the way ggtree's rotate turns a clade — a species brings its clade with it, so this is a preference the tree honours rather than a placement. The dendrogram keeps drawing. With no guide tree the species listed simply lead, and the rest keep the order the adapter reported them in.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "showLegend": {
           "description": "show the color key for the active row rendering. Defaults to on.",
@@ -7931,11 +7850,11 @@
             "showRowLabels": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowLabels"
             },
-            "domain": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/domain"
-            },
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/treeAreaWidth"
+            },
+            "domain": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/domain"
             },
             "thickness": {
               "$ref": "#/$defs/LinearArcDisplaySlots/properties/thickness"
@@ -8773,6 +8692,9 @@
             "defaultRendering": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
             },
+            "facet": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/facet"
+            },
             "useBicolor": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/useBicolor"
             },
@@ -8823,6 +8745,21 @@
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/summaryScoreMode"
+            },
+            "showTree": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showRowLabels"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/treeAreaWidth"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showRowSeparators"
             },
             "windowSize": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/windowSize"
@@ -9234,16 +9171,6 @@
                 }
               ]
             },
-            "domain": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/domain"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/domain"
-                }
-              ]
-            },
             "treeAreaWidth": {
               "anyOf": [
                 {
@@ -9251,6 +9178,16 @@
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
+            },
+            "domain": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/domain"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/domain"
                 }
               ]
             },
@@ -9619,6 +9556,16 @@
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
+            "facet": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+                }
+              ]
+            },
             "height": {
               "anyOf": [
                 {
@@ -9715,6 +9662,21 @@
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
+            "showTree": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+            },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
             },
@@ -9732,9 +9694,6 @@
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
-            },
-            "facet": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -9839,13 +9798,42 @@
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
           "type": "object",
           "properties": {
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            },
+            "facet": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+                }
+              ]
+            },
+            "height": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
+                }
+              ]
+            },
+            "useBicolor": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/useBicolor"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
+            },
             "scoreField": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scoreField"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
             },
             "displayCrossHatches": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/displayCrossHatches"
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
@@ -9853,24 +9841,24 @@
               ]
             },
             "resolution": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/resolution"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
             "posColor": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/posColor"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/posColor"
             },
             "negColor": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/negColor"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/negColor"
             },
             "bicolorPivot": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/bicolorPivot"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/bicolorPivot"
             },
             "densityColorRamp": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/densityColorRamp"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/densityColorRamp"
             },
             "scatterPointSize": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scatterPointSize"
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
@@ -9878,74 +9866,61 @@
               ]
             },
             "lineWidth": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/lineWidth"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "maxGapMultiple": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/maxGapMultiple"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
             },
             "scales": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/scales"
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
                 }
               ]
             },
-            "height": {
+            "showLegend": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/height"
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showLegend"
                 },
                 {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
                 }
               ]
             },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/summaryScoreMode"
-            },
-            "defaultRendering": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/defaultRendering"
+            "scoreRules": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreRules"
             },
             "minimalTicks": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/minimalTicks"
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
                 }
               ]
             },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
             "showTree": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showTree"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
             },
             "showBranchLength": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showBranchLength"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
             },
             "showRowLabels": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showRowLabels"
-            },
-            "domain": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/domain"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
             },
             "treeAreaWidth": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/treeAreaWidth"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
             },
             "showRowSeparators": {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showRowSeparators"
-            },
-            "showLegend": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/MultiLinearWiggleDisplaySlots/properties/showLegend"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
@@ -9964,9 +9939,6 @@
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
-            },
-            "facet": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -10074,6 +10046,9 @@
             "defaultRendering": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/defaultRendering"
             },
+            "facet": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/facet"
+            },
             "height": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/height"
             },
@@ -10127,6 +10102,21 @@
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/summaryScoreMode"
+            },
+            "showTree": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showRowLabels"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/treeAreaWidth"
+            },
+            "showRowSeparators": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showRowSeparators"
             },
             "windowSize": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/windowSize"
@@ -10267,11 +10257,11 @@
             "showRowLabels": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showRowLabels"
             },
-            "domain": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/domain"
-            },
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/treeAreaWidth"
+            },
+            "domain": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/domain"
             },
             "showLegend": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showLegend"
@@ -12029,7 +12019,6 @@
                 "LinearMultiSampleVariantMatrixDisplay",
                 "LDTrackDisplay",
                 "LinearWiggleDisplay",
-                "MultiLinearWiggleDisplay",
                 "LinearGCContentDisplay",
                 "LinearGCContentTrackDisplay",
                 "LinearMafDisplay",
@@ -12268,20 +12257,6 @@
           },
           "then": {
             "$ref": "#/$defs/LinearWiggleDisplay"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "MultiLinearWiggleDisplay"
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/MultiLinearWiggleDisplay"
           }
         },
         {
@@ -13894,6 +13869,24 @@
     "LinearWiggleDisplayState": {
       "type": "object",
       "properties": {
+        "layout": {},
+        "clusterTree": {
+          "type": "string"
+        },
+        "clusterProvenance": {},
+        "subtreeFilter": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "runClustering": {
+          "type": "boolean"
+        },
+        "clusterRegion": {
+          "type": "string"
+        },
+        "sortRowsBy": {},
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
@@ -13933,7 +13926,7 @@
       },
       "unevaluatedProperties": false
     },
-    "MultiLinearWiggleDisplayState": {
+    "LinearGCContentDisplayState": {
       "type": "object",
       "properties": {
         "layout": {},
@@ -13954,48 +13947,6 @@
           "type": "string"
         },
         "sortRowsBy": {},
-        "heightPreConfig": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
-        }
-      }
-    },
-    "MultiLinearWiggleDisplaySnapshot": {
-      "title": "MultiLinearWiggleDisplaySnapshot",
-      "description": "A MultiLinearWiggleDisplay node inside a saved session: the state model's own properties. A config slot does not belong here; it goes on the track's `displays` entry.",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/MultiLinearWiggleDisplayState"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "MultiLinearWiggleDisplay"
-        },
-        "id": {
-          "type": "string"
-        },
-        "configuration": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/MultiLinearWiggleDisplay"
-            }
-          ]
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "LinearGCContentDisplayState": {
-      "type": "object",
-      "properties": {
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
@@ -14038,6 +13989,24 @@
     "LinearGCContentTrackDisplayState": {
       "type": "object",
       "properties": {
+        "layout": {},
+        "clusterTree": {
+          "type": "string"
+        },
+        "clusterProvenance": {},
+        "subtreeFilter": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "runClustering": {
+          "type": "boolean"
+        },
+        "clusterRegion": {
+          "type": "string"
+        },
+        "sortRowsBy": {},
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
@@ -14864,7 +14833,6 @@
                 "LinearMultiSampleVariantMatrixDisplay",
                 "LDTrackDisplay",
                 "LinearWiggleDisplay",
-                "MultiLinearWiggleDisplay",
                 "LinearGCContentDisplay",
                 "LinearGCContentTrackDisplay",
                 "LinearMafDisplay",
@@ -15103,20 +15071,6 @@
           },
           "then": {
             "$ref": "#/$defs/LinearWiggleDisplaySnapshot"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "MultiLinearWiggleDisplay"
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/MultiLinearWiggleDisplaySnapshot"
           }
         },
         {
@@ -15809,40 +15763,6 @@
             },
             "type": {
               "const": "LinearWiggleDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "MultiLinearWiggleDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/MultiLinearWiggleDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "MultiLinearWiggleDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {
@@ -16760,40 +16680,6 @@
             },
             "type": {
               "const": "LinearWiggleDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "MultiLinearWiggleDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/MultiLinearWiggleDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "MultiLinearWiggleDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {

@@ -4,6 +4,7 @@ import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierC
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
   rowSeparatorsConfigSchemaFields,
+  rowDomainConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
@@ -238,6 +239,8 @@ export default function configSchemaF() {
       ...treeSidebarConfigSchemaFields({
         tree: 'show the cluster tree sidebar',
         rowLabels: 'draw the row name over the left of each row',
+      }),
+      ...rowDomainConfigSchemaFields({
         // The one display whose unlisted rows ARE sorted: its rows are the
         // partition's values, which arrive in no order of their own.
         rows: 'optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted',

@@ -21,10 +21,10 @@ const LABEL_COLOR: ColorColumn<Source> = {
   bulkLabel: 'Change label color of selected',
 }
 
-// Overlay mode has no row-label sidebar, so it offers no Label color column —
-// but rows still carry `labelColor` (a leftover from multirow, or a
-// still-applying value if the user switches back). Reserve it so the grid
-// doesn't fall back to rendering it as a raw hex text column.
+// Sources sharing one plot have no row-label sidebar, so they get no Label
+// color column — but the rows still carry `labelColor` (a leftover from a
+// faceted sitting, or a still-applying value if the user facets again). Reserve
+// it so the grid doesn't fall back to rendering it as a raw hex text column.
 const OVERLAY_RESERVED: ReadonlySet<string> = new Set(['labelColor'])
 
 // Seed from `editableSources` (not `sources`) so overlay-palette synthesis
@@ -36,8 +36,9 @@ export default observer(function WiggleSetColorDialog({
   handleClose,
 }: {
   model: TreeLayoutModel<Source> & {
-    isOverlay: boolean
+    isFaceted: boolean
     isDensityMode: boolean
+    sourceColorMode: string
     posColor: string
     negColor: string
     setPosColor: (arg?: string) => void
@@ -45,20 +46,23 @@ export default observer(function WiggleSetColorDialog({
   }
   handleClose: () => void
 }) {
-  const multirow = !model.isOverlay
+  const { isFaceted } = model
+  // Several sources sharing one plot are each painted in one colour, so there
+  // are no two sides to colour there — and exactly there. A lone plot is the
+  // pos/neg picture whether or not it is faceted, which is why this asks the
+  // colour mode rather than the facet.
+  const bySign = model.sourceColorMode !== 'shared'
   return (
     <SetColorDialog
       model={model}
       handleClose={handleClose}
-      title="Multi-wiggle color/arrangement editor"
-      colorColumns={multirow ? [TRACK_COLOR, LABEL_COLOR] : [TRACK_COLOR]}
+      title="Wiggle color/arrangement editor"
+      colorColumns={isFaceted ? [TRACK_COLOR, LABEL_COLOR] : [TRACK_COLOR]}
       defaultColorField={
-        multirow && model.isDensityMode ? 'labelColor' : 'color'
+        isFaceted && model.isDensityMode ? 'labelColor' : 'color'
       }
-      reservedFields={multirow ? undefined : OVERLAY_RESERVED}
-      // overlay paints a source's negative features in its own (positive)
-      // color, so only a multirow mode has two sides to color
-      displayControls={multirow ? <ScoreSignColors model={model} /> : null}
+      reservedFields={isFaceted ? undefined : OVERLAY_RESERVED}
+      displayControls={bySign ? <ScoreSignColors model={model} /> : null}
       enableBulkEdit
       enableRowPalettizer
     />

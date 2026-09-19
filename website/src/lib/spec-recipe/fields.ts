@@ -544,16 +544,12 @@ const CIGAR_MODES: Record<string, string> = Object.fromEntries(
 // field, while the multi-wiggle one puts the two swatches under a 'Score sign
 // colors' heading and has no pivot control at all.
 const WIGGLE_COLOR_EDITORS: Record<string, string> = {
-  LinearWiggleDisplay: 'Edit color...',
-  MultiLinearWiggleDisplay: 'Edit colors/arrangement...',
+  LinearWiggleDisplay: 'Edit colors/arrangement...',
 }
 
-// Where the positive/negative swatches sit inside each of those dialogs.
-function scoreSignPath(displayType: string, side: 'Positive' | 'Negative') {
-  const editor = `${TRACK_MENU} → ${WIGGLE_COLOR_EDITORS[displayType]}`
-  return displayType === 'LinearWiggleDisplay'
-    ? `${editor} → Positive/negative → ${side}`
-    : `${editor} → Score sign colors → ${side}`
+// Where the positive/negative swatches sit inside that dialog.
+function scoreSignPath(_displayType: string, side: 'Positive' | 'Negative') {
+  return `${TRACK_MENU} → Edit colors/arrangement... → Score sign colors → ${side}`
 }
 
 function scoreSignColorStep(
@@ -1267,31 +1263,24 @@ export const trackFields: Record<string, FieldRecipe> = {
   },
   posColor: scoreSignColorStep('Positive'),
   negColor: scoreSignColorStep('Negative'),
+  // The colour editor writes the two swatches and the per-source table, and
+  // nothing else, so both of these are the config-editor case the `color`
+  // recipe above describes: a value the menu provably cannot express, not one
+  // nobody has written a path for.
   useBicolor: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {
-          path: `${TRACK_MENU} → Edit color... → ${value ? 'Positive/negative' : 'Single color'}`,
+          path: `${TRACK_MENU} → Settings → useBicolor`,
+          note: 'Whether the two score-sign swatches both apply. The colour editor offers the swatches themselves and no switch between them, so this is set on the config.',
         }
       : undefined,
-  bicolorPivot: (value, { displayType }) => {
-    if (typeof value !== 'number' || !displayType) {
-      return undefined
-    }
-    if (displayType === 'LinearWiggleDisplay') {
-      return {
-        path: `${TRACK_MENU} → Edit color... → Positive/negative → Pivot → ${value}`,
-      }
-    }
-    // The multi-wiggle editor writes the two swatches and nothing else, so this
-    // is the config-editor case the `color` recipe above describes: a value the
-    // menu provably cannot express, not one nobody has written a path for.
-    return displayType === 'MultiLinearWiggleDisplay'
+  bicolorPivot: (value, { displayType }) =>
+    typeof value === 'number' && displayType === 'LinearWiggleDisplay'
       ? {
           path: `${TRACK_MENU} → Settings → bicolorPivot`,
-          note: `The score both sides are measured from. Its editor has no field for it — only the single-wiggle display's does — so on a multi-wiggle track it is set on the config.`,
+          note: 'The score both sides are measured from. Its editor has no field for it, so it is set on the config.',
         }
-      : undefined
-  },
+      : undefined,
   scatterPointSize: (value, { displayType }) => {
     const menu = displayType ? POINT_SIZE_MENUS[displayType] : undefined
     return typeof value === 'number' && menu

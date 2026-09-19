@@ -5,12 +5,14 @@
 #
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
+bicolorPivot
 color
 colorDomain
 colorScheme
 connectedView
 connectedViewId
 contigThickness
+defaultRendering
 detailConnectorHeight
 detailLevels
 diagonalizeAnchorRow
@@ -25,8 +27,10 @@ jexlFiltersSetting
 layoutMode
 legend
 lineWidth
+negColor
 nodeWidth
 paneHeight
+posColor
 readConnections
 repeatKey
 repeatTrackId

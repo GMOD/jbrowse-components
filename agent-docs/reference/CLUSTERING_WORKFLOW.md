@@ -205,7 +205,7 @@ user-supplied order/tree instead of RPC output.
 
 ## Rendering
 
-**Wiggle:** `plugins/wiggle/src/MultiLinearWiggleDisplay/renderSvg.tsx`  
+**Wiggle:** `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx`  
 **Variants:** `plugins/variants/src/shared/renderSvgUtils.ts`
 
 Both call `model.hierarchy` (a computed view) and pass it to `<SvgTreePath>`.
@@ -310,8 +310,8 @@ the message, drops the staging copy and checks every malloc.
 |---|---|
 | `plugins/wiggle/src/WiggleRPC/executeClusterScoreMatrix.ts` | Worker clustering for wiggle |
 | `plugins/wiggle/src/WiggleRPC/getScoreMatrix.ts` | Score matrix construction |
-| `plugins/wiggle/src/MultiLinearWiggleDisplay/components/WiggleClusterDialog.tsx` | Dialog (Auto + Manual) |
-| `plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts` | Composes TreeSidebarMixin, `hierarchy` view |
+| `plugins/wiggle/src/LinearWiggleDisplay/components/WiggleClusterDialog.tsx` | Dialog (Auto + Manual) |
+| `plugins/wiggle/src/LinearWiggleDisplay/model.ts` | Composes TreeSidebarMixin, `hierarchy` view |
 | `plugins/variants/src/VariantRPC/executeClusterGenotypeMatrix.ts` | Worker clustering for variants |
 | `plugins/variants/src/VariantRPC/getGenotypeMatrix.ts` | Dosage matrix construction |
 | `plugins/variants/src/VariantRPC/getPhasedGenotypeMatrix.ts` | Phased haplotype matrix |

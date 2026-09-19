@@ -1,8 +1,14 @@
 # plugins/wiggle
 
-Two displays over five shaders, one Canvas2D twin and one hit test, all in
+One display over five shaders, one Canvas2D twin and one hit test, all in
 `src/shared`. Scale/axis/score machinery is `packages/wiggle-core`, because six
 other plugins draw a wiggle-shaped axis against it.
+
+`LinearWiggleDisplay` registers against both `QuantitativeTrack` and
+`MultiQuantitativeTrack`; the track types differ in adapter shorthand and
+add-track workflow, and `MultiQuantitativeTrack/displayDefaults.ts` is the whole
+of what they differ in on screen — one row per source, average scores, 200px,
+seeded into `displayDefaults` through `Core-preProcessTrackConfig`. ADR-143.
 
 ## Four records, because a module reflects one instance struct
 
@@ -55,36 +61,39 @@ every hole for that frame.
 Each pass packs its own buffer and returns **empty** for renderings that are not
 its own — an empty pack is how a pass releases its buffer.
 
-## The two displays differ in one thing, and `plotGeometry` is it
+## `facet` is the layout, and `plotGeometry` is where it lands
 
-Single-wiggle insets by `YSCALEBAR_LABEL_OFFSET` so end labels aren't clipped
-and draws one row; multi-wiggle stacks `numRows` rows edge-to-edge over the full
-height. `{ yTop, plotHeight, numRows, tickHeight }` states that once, and every
-half that has to move with it reads it: `computeYTicks`' height and offset, the
-render state, the on-screen `<canvas>` box and the export's clip translate.
-Wiggle-core's `ScorePlotChrome` (single-wiggle's canvas) and `ScorePlotSvgFrame`
-take it as a prop defaulting to the single-plot box, which is what the Manhattan
-and mark displays (no such getter) draw in.
+`facet: 'source'` is one row per source — the tree sidebar, row labels,
+separators, clustering and the row-order sort all hang off `isFaceted`. Unset,
+every source shares one plot box. The five `renderingType` names say what a
+source is drawn as and nothing about the layout, which is why there is one table
+and not nine names.
 
-**Everything written over it is `wiggleDisplayViews`**: `ticks`,
+**One plot box takes the `YSCALEBAR_LABEL_OFFSET` inset** so its end labels
+aren't clipped; a stack of rows gives it up, because the axis is drawn per row
+and maximum density is the point. `{ yTop, plotHeight, numRows, tickHeight }`
+states that once, and every half that has to move with it reads it:
+`computeYTicks`' height and offset, the render state, the on-screen `<canvas>`
+box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
+`ScorePlotSvgFrame` take it as a prop defaulting to the single-plot box, which
+is what the Manhattan and mark displays (no such getter) draw in.
+
+**A lone plot in the box is never the shared-plot colour mode.** `rowColorMode`
+asks whether several sources share one plot, not whether the facet is off:
+overlaid sources take a palette entry each and paint both sides of the pivot in
+it, while one source is the pos/neg bicolor plot a quantitative track has always
+drawn. `sourcesLogic.ts` has the table.
+
+**Everything shared over the geometry is `wiggleDisplayViews`**: `ticks`,
 `scoreColorScale`, `renderState` and the shared halves of the two props methods,
-as a plain function each display installs as one `.views()` layer. Not a mixin —
+as a plain function the display installs as one `.views()` layer. Not a mixin —
 composed beside `TrackHeightMixin` it could not see `height` or `canvasWidthPx`
 without casting to reach them, and `types.compose` depth is a real ceiling
-(ADR-041).
-
-**`sharedRpcProps` / `sharedGpuProps` are named apart from the methods they
-feed, deliberately.** MST _intersects_ what each `.views()` layer returns, so
+(ADR-041). `sharedRpcProps` / `sharedGpuProps` are named apart from the methods
+they feed, deliberately: MST _intersects_ what each `.views()` layer returns, so
 two same-named methods resolve to the **first** at the type level however the
-runtime member behaves; the super-capture override reads as working only where
-every key it adds is optional. Each display spreads the shared half into its own
-`rpcProps()` / `gpuProps()`, and what it adds there is what is genuinely its
-own: single-wiggle's solid-color `negColor` override, multi-wiggle's
-`summaryScoreMode` key and row list.
-
-`fetchNeeded` is the one statement still made twice. What differs is the RPC
-method name — which `ARCHITECTURE.md` wants at the call site so the registry's
-typed args survive — plus multi-wiggle's structural `sources` argument.
+runtime member behaves. gccontent composes this model, so the names still have
+two hosts.
 
 ## A BigWig answers in bins below its first zoom level
 
@@ -99,7 +108,7 @@ pan flip one locus between bins and raw at one zoom. Only overlapping or
 out-of-order records, which the format forbids, still answer raw at a synthetic
 zoom.
 
-## Multi-wiggle's rows are a getter over `rpcDataMap`
+## The rows are a getter over `rpcDataMap`
 
 Each region's payload carries the full source list, entries leave that map only
 via `clearAllRpcData`, so the row set IS the first-seen union over its values —
@@ -146,10 +155,18 @@ score above the min draws at the top, anything else on the baseline.
 `wiggleCommon` keeps `scoreToY`, the plot-box wrapper, and `js-skip`s it — the
 Canvas2D side composes the normalizer with its own box.
 
-## `rowIndex` is the position in the display's own `sources`
+## One fetch, and `rowIndex` is the position in the display's own `sources`
 
-Never the payload's — a source missing from the payload leaves its row empty
-instead of shifting everything below it. Overlay collapses onto row 0.
+`RenderMultiWiggleData` serves every quantitative adapter. An adapter handing
+back typed arrays (BigWig, GCContent) carries one signal and no source column,
+so the executor takes `fetchRegionRaws` and reports one unnamed source rather
+than walking its features to build the one bucket they already are; only an
+adapter carrying several sources in one file (bedMethyl, a bedGraph with a
+source column) falls back to grouping.
+
+`rowIndex` is never the payload's — a source missing from the payload leaves its
+row empty instead of shifting everything below it. Unfaceted, every source
+collapses onto row 0.
 
 `findRowHit` picks `visibleSources[floor(offsetY / rowHeight)]`, so
 `effectiveRowHeight` must equal the renderer's `getRowHeight(...)`. `numRows` is

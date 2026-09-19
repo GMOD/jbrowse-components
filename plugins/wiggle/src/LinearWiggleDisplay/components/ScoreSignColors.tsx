@@ -19,7 +19,7 @@ const useStyles = makeStyles()(theme => ({
 
 // Display-level (not per-source) score-sign colors: which color a bar gets on
 // each side of the pivot. Deliberately low-key and deliberately just the two
-// swatches — most multi-wiggle data is unsigned, where only `posColor` is even
+// swatches — most quantitative data is unsigned, where only `posColor` is even
 // consulted, and then only as the fallback for a source with no color of its
 // own. Writes the model directly, so unlike the grid there is nothing to Submit.
 const ScoreSignColors = observer(function ScoreSignColors({

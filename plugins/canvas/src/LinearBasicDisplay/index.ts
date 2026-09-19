@@ -13,6 +13,7 @@ const LinearBasicDisplayComponent = lazy(
 )
 
 export default function register(pluginManager: PluginManager) {
+  // #region migration
   // Legacy values on existing enum slots, normalized before the display union
   // validates the snapshot, where a schema preProcessSnapshot does not run.
   addDisplayConfigMigration(
@@ -20,6 +21,7 @@ export default function register(pluginManager: PluginManager) {
     ['LinearBasicDisplay', 'LinearFeatureDisplay'],
     migrateBasicConfigSnapshot,
   )
+  // #endregion
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({

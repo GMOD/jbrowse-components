@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
+import { checkFacetField } from '../shared/checkFacetField.ts'
 import configSchema from './configSchema.ts'
 
 const base = { type: 'LinearWiggleDisplay', displayId: 'test' }
@@ -26,6 +27,15 @@ test('a facet on any other field is refused where the config is read', () => {
   expect(() => configSchema.create({ ...base, facet: 'group' })).toThrow(
     /sections on "source" alone/,
   )
+})
+
+// A track's `displays` union runs every candidate schema's preprocessor over
+// every entry while it works out which display a snapshot is, so a refusal that
+// did not ask whose snapshot it had would reject the mark display's
+// `facet: 'sample'` from the schema it was never meant for.
+test("leaves another display type's facet alone", () => {
+  const foreign = { type: 'LinearMarkDisplay', facet: 'sample' }
+  expect(checkFacetField('LinearWiggleDisplay')(foreign)).toBe(foreign)
 })
 
 test('the row order rides on the facet, and there is no `domain` slot', () => {
