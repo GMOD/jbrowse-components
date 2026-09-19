@@ -13,6 +13,12 @@ import type { HostChecksSlotNames } from './types.ts'
 // does not exist compiles. Flip the two `false`s below and the three
 // `@ts-expect-error`s back on when the patch's own errors are fixed; that is
 // the run that would say candidate N delivers its check.
+//
+// The other end was measured too, by reverting the patch under this branch: a
+// bare drill is then `any` and unchecked, while `writeConf` on a node annotated
+// `Instance<typeof valueScale>` catches the misspelt member. So without the
+// patch candidate N needs the per-node annotation — `ValueScaleHost` and
+// `scaleNode`, the pair it set out to delete.
 
 const valueScale = ConfigurationSchema('ValueScale', {
   type: {
