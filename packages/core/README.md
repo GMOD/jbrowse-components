@@ -361,7 +361,8 @@ compile throws here, once, rather than on every feature.
 
 Where a channel's value comes from: a feature field name, read natively
 (`feature.get(name)`), or a `jexl:` expression over `feature` — the opt-in
-escape, three orders of magnitude slower per feature.
+escape, measured at 1.5x to 2.0x native per feature (MARK_ENCODING.md "The jexl
+channel, measured").
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

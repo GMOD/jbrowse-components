@@ -12,7 +12,8 @@ import type { ZoomRange } from '../data_adapters/BaseAdapter/zoomRange.ts'
  * #api
  * Where a channel's value comes from: a feature field name, read natively
  * (`feature.get(name)`), or a `jexl:` expression over `feature` — the opt-in
- * escape, three orders of magnitude slower per feature.
+ * escape, measured at 1.5x to 2.0x native per feature (MARK_ENCODING.md
+ * "The jexl channel, measured").
  */
 export type FieldRef = string
 
