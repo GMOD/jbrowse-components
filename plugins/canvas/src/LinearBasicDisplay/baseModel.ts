@@ -191,6 +191,8 @@ export type { Region } from '@jbrowse/core/util'
 export type { LabelReservation } from './fitLadder.ts'
 export type { RegionInstanceIndex } from './featureHighlightInk.ts'
 export type { FeatureFacet, FeatureGroupSection } from './facet.ts'
+export type { GroupByCandidate } from '../RenderFeatureDataRPC/groupByCandidates.ts'
+export type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 // Off this subpath rather than the barrel, so a subclass composing its own
 // "Color by..." presets holds no value edge into the eager entry.
 export { defaultColorItem } from './trackMenus.ts'

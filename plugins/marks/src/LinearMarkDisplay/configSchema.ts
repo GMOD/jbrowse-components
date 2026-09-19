@@ -335,7 +335,8 @@ const transformStepSchema = ConfigurationSchema(
      * The field a `formula`, `coverage` or `stack` step writes, the two
      * fields a `bin` step writes its edges to, or the field a `flatten`
      * step writes each element's index to. A single name may be written as
-     * a string. A `stack` leaving it empty writes `row`.
+     * a string. A `stack` leaving it empty writes `row`, and a `formula`
+     * leaving it empty writes `value`.
      */
     as: {
       type: 'stringArray',

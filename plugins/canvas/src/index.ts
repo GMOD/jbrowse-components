@@ -92,6 +92,8 @@ export type {
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'
+export type { GroupByCandidate } from './RenderFeatureDataRPC/groupByCandidates.ts'
+export type { GroupByScanOptions } from './LinearBasicDisplay/scanGroupByCandidates.ts'
 
 // The feature glyph set as marks, for a display outside this plugin drawing
 // gene glyphs under its own axis.
