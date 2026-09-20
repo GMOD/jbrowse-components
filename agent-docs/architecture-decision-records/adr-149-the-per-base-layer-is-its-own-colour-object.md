@@ -79,8 +79,11 @@ when one is set.
 - The default tag palette leads with a blue and a pink, and the two-colour
   modification view paints blue and red. A figure combining them reads better
   with a declared `color.palette` of two quiet tones.
-- `jb2export`'s `color:` modifier routes a per-base name to `baseColor`, so
-  `color:tag:HP color:methylation` combine.
+- `jb2export` gains a `baseColor:` modifier beside `color:`, and `domain:` and
+  `palette:` for the colour object's two lists, so
+  `color:tag:HP domain:1,2 palette:#d9c9a3,#b7c4b1 baseColor:methylation` is one
+  command. A per-base name on `color:` is refused with the modifier that draws
+  it.
 
 ## Rejected alternatives
 

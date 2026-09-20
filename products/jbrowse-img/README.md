@@ -259,13 +259,14 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 ![Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype](https://jbrowse.org/jb2-figures/jbrowse-img/alignments_haplotype.070a6f6821a3.png)
 
-`color:methylation` paints per-base CpG methylation calls from a modified-base
-(`MM`/`ML`) BAM/CRAM: methylated cytosines red, unmethylated blue. This COLO829
-nanopore CRAM (hg38, streamed from the ONT open-data S3) with the UCSC
-CpG-island BED on top shows the methylated flanks giving way to the unmethylated
-island cores, read against the annotated island boundaries. `legend` draws the
-color key, worth adding to any export whose coloring is not the default one: the
-app leaves it off, where a reader can open the track menu instead.
+`baseColor:methylation` paints per-base CpG methylation calls from a
+modified-base (`MM`/`ML`) BAM/CRAM: methylated cytosines red, unmethylated blue.
+This COLO829 nanopore CRAM (hg38, streamed from the ONT open-data S3) with the
+UCSC CpG-island BED on top shows the methylated flanks giving way to the
+unmethylated island cores, read against the annotated island boundaries.
+`legend` draws the color key, worth adding to any export whose coloring is not
+the default one: the app leaves it off, where a reader can open the track menu
+instead.
 
 <!-- jb2export: methylation -->
 
@@ -273,7 +274,7 @@ app leaves it off, where a reader can open the track menu instead.
 jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
   --bedgz https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi \
-  --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam color:methylation legend height:350 \
+  --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam baseColor:methylation legend height:350 \
   --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
 
@@ -413,8 +414,12 @@ options):
 jb2export --fasta ref.fa --bam reads.bam color:tag:XS sort:tag:HP --loc chr1:1-10000
 
 ## color by base modifications (MM/ML tags) in super-compact layout
-jb2export --fasta ref.fa --bam reads.bam color:modifications featureHeight:super-compact \
+jb2export --fasta ref.fa --bam reads.bam baseColor:modifications featureHeight:super-compact \
   --loc chr1:1-10000
+
+## methylation over reads tinted by haplotype, in two quiet colors
+jb2export --fasta ref.fa --bam reads.bam color:tag:HP domain:1,2 palette:#d9c9a3,#b7c4b1 \
+  baseColor:methylation legend --loc chr1:1-10000
 
 ## color by insert size + orientation to highlight structural variants
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
@@ -649,6 +654,8 @@ Reads & coloring:
 | Modifier                         | Example                        | Description                                                                                                                        |
 | -------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `color:field` or `color:tag:TAG` | `color:strand`, `color:tag:XS` | Color reads by a field (see fields below), or paint them all one CSS color                                                         |
+| `baseColor:field`                | `baseColor:methylation`        | Draw a per-base layer over the reads, whatever `color:` fills them with (see fields below)                                         |
+| `domain:a,b` and `palette:a,b`   | `domain:1,2 palette:tan,teal`  | The values of `color:`'s field that take the palette first, and the CSS colors they take                                           |
 | `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                                                                      |
 | `group:type` or `group:type:tag` | `group:strand`, `group:tag:HP` | Group reads into in-track stacked sections (`strand`, `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq`, or `tag:<TAG>`) |
 | `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                                                                                            |
@@ -698,25 +705,28 @@ Layout & sizing:
 | `maxHeight:N`                | `maxHeight:4000`                                 | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                           |
 
 Available `color:` fields. Anything else is a CSS color, painting every read
-with it. The four per-base fields (`baseQuality`, `base`, `modifications` with
-its `methylation` shorthand, `bisulfite`) draw over the reads, so one combines
-with a read field: `color:tag:HP color:methylation`.
+with it:
 
 | Field                      | Description                                               |
 | -------------------------- | --------------------------------------------------------- |
 | `strand`                   | Forward/reverse strand                                    |
 | `firstOfPairStrand`        | Strand of the first read in the pair                      |
 | `mapq`                     | MAPQ                                                      |
-| `baseQuality`              | Per-base quality overlay                                  |
-| `base`                     | Per-base letter overlay                                   |
 | `insertSize`               | Paired-end insert size                                    |
 | `pairOrientation`          | Paired-end orientation                                    |
 | `insertSizeAndOrientation` | Combined insert size + orientation                        |
 | `mateRefName`              | Reference the mate landed on                              |
-| `modifications`            | Base modifications via MM/ML tags                         |
-| `methylation`              | CpG methylation via MM/ML tags                            |
-| `bisulfite`                | Methylation from C→T conversion, no MM/ML tags needed     |
 | `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
+
+Available `baseColor:` fields:
+
+| Field           | Description                                           |
+| --------------- | ----------------------------------------------------- |
+| `modifications` | Base modifications via MM/ML tags                     |
+| `methylation`   | CpG methylation via MM/ML tags                        |
+| `bisulfite`     | Methylation from C→T conversion, no MM/ML tags needed |
+| `baseQuality`   | Per-base quality                                      |
+| `base`          | Per-base letters                                      |
 
 **Feature tracks (GFF3/BED/BigBed) and VCF tracks**
 
@@ -726,6 +736,7 @@ These share one display base, so every modifier below applies to both.
 | ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `color:value`                       | `color:magenta`         | Glyph fill: any CSS color, or `strand` to color by feature strand (tomato forward, cornflowerblue reverse)                                                                                                        |
 | `color:attribute:name`              | `color:attribute:type`  | One stable color per distinct value of that feature attribute — the canvas analogue of an alignments `color:tag:XX`                                                                                               |
+| `domain:a,b` and `palette:a,b`      | `palette:tomato,teal`   | The attribute values that take the palette first, and the CSS colors they take                                                                                                                                    |
 | `featureHeight:preset`              | `featureHeight:compact` | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                               |
 | `heightMode:<fixed\|grow\|fit>[:N]` | `heightMode:fit:200`    | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too |
 

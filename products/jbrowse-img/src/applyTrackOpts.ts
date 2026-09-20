@@ -30,8 +30,8 @@ type WiggleDisplayModel = Instance<
   ReturnType<typeof linearWiggleDisplayModelFactory>
 >
 
-// What `color:` names on an alignments track: a read field fills the reads, a
-// per-base field draws over them, and anything else is a CSS colour.
+// What `color:` names on an alignments track: a read field fills the reads and
+// anything else is a CSS colour. A per-base field is `baseColor:`'s.
 const ALIGNMENTS_COLOR_FIELDS = new Set([
   'strand',
   'firstOfPairStrand',
@@ -41,12 +41,31 @@ const ALIGNMENTS_COLOR_FIELDS = new Set([
   'insertSizeAndOrientation',
   'mateRefName',
 ])
-const ALIGNMENTS_BASE_COLOR_FIELDS = new Set([
+// `methylation` is the fill-unmarked view of the modifications field: one word
+// for the everyday CpG picture, which otherwise needs the JSON escape hatch to
+// reach the sibling `modifications` slot.
+const BASE_COLORS = [
   'modifications',
+  'methylation',
   'bisulfite',
   'baseQuality',
   'base',
-])
+] as const
+const BASE_COLOR_NAMES: ReadonlySet<string> = new Set(BASE_COLORS)
+
+// `domain:` and `palette:` write into the colour object `color:` names a field
+// on, in whichever order the three arrive.
+function mergeColor(r: BuildResult, patch: Partial<ColorObject>) {
+  r.snap.color = {
+    ...(typeof r.snap.color === 'object' ? r.snap.color : {}),
+    ...patch,
+  }
+}
+
+function parseList(prefix: string, val: string, expected: string) {
+  const items = val.split(',').filter(Boolean)
+  return items.length > 0 ? items : invalid(prefix, val, expected)
+}
 
 // Display category: which display a track opens with, and so which snapshot keys
 // are meaningful for it. Lets us build the right snapshot before the display
@@ -189,6 +208,13 @@ export type AssertHeightModesCoverUpstream = AssertTrue<
 // `showTrackGeneric` onto the display's config; any remaining plain MST props
 // stay on the display instance. SnapshotIn can't be derived from these
 // deeply-composed models, so the accepted keys are enumerated here.
+// A display's `color` object as the modifiers write it.
+interface ColorObject {
+  field?: string
+  domain?: string[]
+  palette?: string[]
+}
+
 interface DisplaySnapshot {
   // common
   height?: number
@@ -234,7 +260,7 @@ interface DisplaySnapshot {
   // see there for why this one slot cannot ride in on the snapshot.
   filterBy?: FilterBySnapshot
   // every display but hic
-  color?: string | { field: string }
+  color?: string | ColorObject
   // wiggle / score
   scales?: {
     y: {
@@ -726,8 +752,39 @@ const modifiers: Record<string, Modifier> = {
   },
 
   // ——— coloring ———
-  // A per-base field draws over the reads through `baseColor`, so it combines
-  // with a read colour: `color:tag:HP,color:methylation`.
+  // The per-base layer over the reads, which combines with whatever `color:`
+  // fills them with: `color:tag:HP baseColor:methylation`.
+  baseColor: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      const value = parseEnum('baseColor', v, BASE_COLORS)
+      r.snap.baseColor = {
+        field: value === 'methylation' ? 'modifications' : value,
+      }
+      if (value === 'methylation') {
+        r.snap.modifications = { fillUnmarked: true }
+      }
+    },
+  },
+  // The values of `color:`'s field that take `palette:` first, in order, and the
+  // CSS colours they take. Comma-separated, as `flags:` lists are, so a colour
+  // written with commas of its own (`rgb(…)`) goes through the JSON form.
+  domain: {
+    on: ['alignments', 'feature', 'variant'],
+    apply: (r, v) => {
+      mergeColor(r, {
+        domain: parseList('domain', v, 'values, comma-separated'),
+      })
+    },
+  },
+  palette: {
+    on: ['alignments', 'feature', 'variant'],
+    apply: (r, v) => {
+      mergeColor(r, {
+        palette: parseList('palette', v, 'CSS colors, comma-separated'),
+      })
+    },
+  },
   // `color:` asks the same question of every track type, but each display
   // answers it through a different slot, so this routes rather than writing one
   // key. Alignments and the canvas-based displays name a field; wiggle takes a
@@ -739,22 +796,16 @@ const modifiers: Record<string, Modifier> = {
     apply: (r, v, arg, category) => {
       const value = parseStr('color', v, 'color scheme or CSS color')
       if (category === 'alignments') {
-        // `methylation` is the fill-unmarked view of the modifications field:
-        // one word for the everyday CpG picture, which otherwise needs the
-        // JSON escape hatch to reach the sibling `modifications` slot.
-        if (value === 'methylation') {
-          r.snap.baseColor = { field: 'modifications' }
-          r.snap.modifications = { fillUnmarked: true }
-        } else if (ALIGNMENTS_BASE_COLOR_FIELDS.has(value)) {
-          r.snap.baseColor = { field: value }
+        if (BASE_COLOR_NAMES.has(value)) {
+          invalid('color', value, `a read field; baseColor:${value} draws it`)
         } else if (value === 'tag') {
-          r.snap.color = {
+          mergeColor(r, {
             field: `tags.${parseStr('color:tag', arg ?? '', 'tag')}`,
-          }
+          })
+        } else if (ALIGNMENTS_COLOR_FIELDS.has(value)) {
+          mergeColor(r, { field: value })
         } else {
-          r.snap.color = ALIGNMENTS_COLOR_FIELDS.has(value)
-            ? { field: value }
-            : value
+          r.snap.color = value
         }
       } else if (category === 'hic') {
         // the hic display has no color slot of either kind
@@ -769,7 +820,12 @@ const modifiers: Record<string, Modifier> = {
         // Feature/variant: LinearCanvasBaseDisplay's `color`. A
         // jexl with more than one colon can't survive this modifier's
         // `split(':')`, so it goes through the JSON escape hatch.
-        Object.assign(r.snap, canvasColor(value, arg))
+        const { color } = canvasColor(value, arg)
+        if (typeof color === 'object') {
+          mergeColor(r, color)
+        } else {
+          r.snap.color = color
+        }
       }
     },
   },

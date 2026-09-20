@@ -409,18 +409,59 @@ describe('color routing', () => {
     })
   })
 
-  test('a per-base field draws over the reads, so it combines with a read colour', () => {
+  test('baseColor draws over the reads, so it combines with a read colour', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['color:tag:HP', 'color:methylation'])
-        .snap,
+      buildDisplaySnapshot('alignments', [
+        'color:tag:HP',
+        'baseColor:methylation',
+      ]).snap,
     ).toEqual({
       color: { field: 'tags.HP' },
       baseColor: { field: 'modifications' },
       modifications: { fillUnmarked: true },
     })
     expect(
-      buildDisplaySnapshot('alignments', ['color:baseQuality']).snap,
+      buildDisplaySnapshot('alignments', ['baseColor:baseQuality']).snap,
     ).toEqual({ baseColor: { field: 'baseQuality' } })
+  })
+
+  test('a per-base name on color: says which modifier draws it', () => {
+    expect(() =>
+      buildDisplaySnapshot('alignments', ['color:methylation']),
+    ).toThrow(/baseColor:methylation/)
+    expect(() =>
+      buildDisplaySnapshot('alignments', ['baseColor:strand']),
+    ).toThrow(/baseQuality/)
+  })
+
+  test('domain and palette fill the colour object in any order', () => {
+    const expected = {
+      color: {
+        field: 'tags.HP',
+        domain: ['1', '2'],
+        palette: ['#d9c9a3', '#b7c4b1'],
+      },
+    }
+    expect(
+      buildDisplaySnapshot('alignments', [
+        'color:tag:HP',
+        'domain:1,2',
+        'palette:#d9c9a3,#b7c4b1',
+      ]).snap,
+    ).toEqual(expected)
+    expect(
+      buildDisplaySnapshot('alignments', [
+        'palette:#d9c9a3,#b7c4b1',
+        'domain:1,2',
+        'color:tag:HP',
+      ]).snap,
+    ).toEqual(expected)
+    expect(
+      buildDisplaySnapshot('feature', [
+        'color:attribute:biotype',
+        'palette:red,blue',
+      ]).snap,
+    ).toEqual({ color: { field: 'biotype', palette: ['red', 'blue'] } })
   })
 
   test('anything else on alignments is a CSS colour for every read', () => {

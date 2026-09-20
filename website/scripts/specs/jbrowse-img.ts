@@ -350,7 +350,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // color:methylation paints per-base CpG calls from a modified-base CRAM.
+  // baseColor:methylation paints per-base CpG calls from a modified-base CRAM.
   // COLO829 nanopore (hg38) over the chr20:18.50-18.51Mb CpG islands (the same
   // islands the modifications figures use — a region with real
   // methylation signal, not the prior featureless window). The UCSC CpG-island
@@ -377,7 +377,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // deterministically" at a 120s timeout -- 3.4 MB does not.
     '--bam',
     'https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam',
-    'color:methylation',
+    'baseColor:methylation',
     // The key for that coloring. It is off by default in the app because the
     // reader can open the track menu, which is the one thing nobody looking at
     // a PNG can do -- so red and blue were two unexplained colors and the
