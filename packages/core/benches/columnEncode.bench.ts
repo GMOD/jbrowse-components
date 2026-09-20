@@ -72,7 +72,7 @@
 //
 // NO FORCED GC between arms. Calling `gc()` ahead of each timed arm — the
 // mitigation `instanceBuffer.bench.ts` carries — put `layout` at 17.7ms here
-// against `pileupLayoutVsStack.bench.ts`'s own 10.1ms in the same sitting: an
+// against `layoutVsPileupStep.bench.ts`'s own 10.1ms in the same sitting: an
 // arm allocating into a freshly swept heap pays for the pages, and that fixed
 // tax compresses every ratio. Without it this harness reproduces both
 // neighbouring benches' recorded rows.

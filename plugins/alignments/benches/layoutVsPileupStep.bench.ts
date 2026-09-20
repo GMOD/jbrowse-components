@@ -1,8 +1,8 @@
 // What would alignments' own row layout cost as the shared `pileup`
 // transform step?
 //
-//   node plugins/alignments/benches/pileupLayoutVsStack.bench.ts
-//   node plugins/alignments/benches/pileupLayoutVsStack.bench.ts \
+//   node plugins/alignments/benches/layoutVsPileupStep.bench.ts
+//   node plugins/alignments/benches/layoutVsPileupStep.bench.ts \
 //     --rounds=11 --reads=200000 --span=600000 --readlen=150
 //
 // THE QUESTION. `pileup` (packages/core/src/util/featureTransforms.ts) is
