@@ -103,6 +103,58 @@ test('a ramp value that holds no number paints the misconfiguration grey, not th
   expect(r.color[1]).not.toBe(r.color[0])
 })
 
+// Walking cuts written high to low stopped at the first one a value was
+// under, so the middle interval was never painted and its key row was empty.
+test('threshold cuts written high to low paint the intervals they name', () => {
+  const r = encodeFeatures(
+    [0.05, 0.3, 0.7].map((pip, i) => feature(i, { pip })),
+    {
+      color: {
+        field: 'pip',
+        scale: 'threshold',
+        domain: [0.5, 0.1],
+        palette: ['#111111', '#222222', '#333333'],
+      },
+    },
+    ['color'],
+  )
+  expect([...r.color]).toEqual(
+    ['#111111', '#222222', '#333333'].map(c => cssColorToABGR(c)),
+  )
+  expect(r.scale).toMatchObject({ kind: 'threshold', domain: [0.1, 0.5] })
+})
+
+// Every value painted white: the normalizer clamped all of them to one end.
+test('a ramp domain written high to low reverses the ramp', () => {
+  const ramp = (domain: [number, number]) =>
+    encodeFeatures(
+      [0, 25, 50].map((score, i) => feature(i, { score })),
+      {
+        color: {
+          field: 'score',
+          scale: 'linear',
+          domain,
+          ramp: ['black', 'white'],
+        },
+      },
+      ['color'],
+    )
+  const forward = ramp([0, 50])
+  const reversed = ramp([50, 0])
+  expect([forward.color[0], forward.color[2]]).toEqual(
+    ['black', 'white'].map(c => cssColorToABGR(c)),
+  )
+  expect([reversed.color[0], reversed.color[2]]).toEqual(
+    ['white', 'black'].map(c => cssColorToABGR(c)),
+  )
+  // the middle of a 256-entry table rounds either way by one level
+  const grey = (packed: number) => packed & 0xff
+  expect(
+    Math.abs(grey(reversed.color[1]!) - grey(forward.color[1]!)),
+  ).toBeLessThanOrEqual(1)
+  expect(reversed.scale).toMatchObject({ domain: [0, 50], pinned: true })
+})
+
 test('a jexl: field ref is the escape for a derived channel', () => {
   const r = encodeFeatures(
     features,

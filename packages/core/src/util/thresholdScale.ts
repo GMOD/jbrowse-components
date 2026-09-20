@@ -13,6 +13,19 @@ export function numericDomain(domain: readonly (string | number)[]): number[] {
 
 /**
  * #api
+ * A threshold scale's cut points as {@link thresholdIndex} walks them: the
+ * numbers the domain names, ascending. Cuts written high to low, as p-value
+ * thresholds often are, left the middle interval unreachable, the walk stopping
+ * at the first cut a value is under.
+ */
+export function thresholdCuts(domain: readonly (string | number)[]): number[] {
+  return numericDomain(domain)
+    .filter(cut => Number.isFinite(cut))
+    .sort((a, b) => a - b)
+}
+
+/**
+ * #api
  * The bin a value falls in: how many of the ascending cut points it is at or
  * past, so a palette with one more entry than the domain paints it as
  * `palette[thresholdIndex(value, domain)]`. A value that is not a finite

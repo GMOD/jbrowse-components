@@ -15,7 +15,7 @@ import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 import {
-  numericDomain,
+  thresholdCuts,
   thresholdIndex,
   thresholdLabels,
   thresholdPalette,
@@ -302,7 +302,7 @@ export function encodeFeatures<L extends LaneName>(
     scaled && rampEncoding ? (colorValue ?? new Float32Array(n)) : undefined
   const thresholdEncoding = scaled?.scale === 'threshold' ? scaled : undefined
   const cuts = thresholdEncoding
-    ? numericDomain(thresholdEncoding.domain ?? [])
+    ? thresholdCuts(thresholdEncoding.domain ?? [])
     : undefined
   const binColors =
     thresholdEncoding && cuts
@@ -413,7 +413,13 @@ export function encodeFeatures<L extends LaneName>(
     }
   } else if (rampEncoding && rampValues) {
     const extent = finiteExtremes(rampValues, count)
-    const domain = rampEncoding.domain ?? extent
+    const declared = rampEncoding.domain ?? extent
+    // A domain written high to low reverses the ramp, as it does in d3 and
+    // Vega-Lite; the shapes read an ascending domain, so the stops turn round.
+    const reversed = declared[0] > declared[1]
+    const domain: [number, number] = reversed
+      ? [declared[1], declared[0]]
+      : declared
     const norm = makeScoreNormalizer(
       domain[0],
       domain[1],
@@ -421,7 +427,8 @@ export function encodeFeatures<L extends LaneName>(
       1,
     )
     const { domainMid } = rampEncoding
-    const stops = rampStops(rampEncoding.ramp)
+    const forward = rampStops(rampEncoding.ramp)
+    const stops = reversed ? forward.toReversed() : forward
     const lut = rampLut(stops, rampEncoding.scale, domain, domainMid)
     if (color) {
       for (let i = 0; i < count; i++) {

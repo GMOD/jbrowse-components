@@ -993,6 +993,20 @@ never baked into the color string.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
+### thresholdCuts
+
+A threshold scale's cut points as thresholdIndex walks them: the numbers the
+domain names, ascending. Cuts written high to low, as p-value thresholds often
+are, left the middle interval unreachable, the walk stopping at the first cut a
+value is under.
+
+```js
+// type signature
+(domain: readonly (string | number)[]) => number[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
 ### thresholdIndex
 
 The bin a value falls in: how many of the ascending cut points it is at or past,

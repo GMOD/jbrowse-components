@@ -79,6 +79,19 @@ function rampDomain(mark: MarkSnapshot) {
   return painted === 'linear' || painted === 'log' ? domain : undefined
 }
 
+function thresholdDomain(mark: MarkSnapshot) {
+  const color = mark.encoding?.color
+  if (typeof color !== 'object' || color === null) {
+    return undefined
+  }
+  const {
+    field = '',
+    scale,
+    domain = [],
+  } = color as { field?: string; scale?: MarkColorScale; domain?: unknown[] }
+  return field && scale === 'threshold' ? domain : undefined
+}
+
 function pinned(entry: unknown) {
   return entry !== '' && Number.isFinite(Number(entry))
 }
@@ -171,6 +184,16 @@ function ownProblems(mark: MarkSnapshot): Omit<MarkProblem, 'mark'>[] {
     problems.push({
       slot: 'source',
       message: 'a span does not draw the density sidecar',
+    })
+  }
+  const cuts = thresholdDomain(mark)
+  if (
+    cuts?.some((cut, i) => !pinned(cut) || Number(cut) < Number(cuts[i - 1]))
+  ) {
+    problems.push({
+      slot: 'encoding.color.domain',
+      message:
+        'threshold cuts are numbers, read in ascending order, with the palette running from the lowest interval',
     })
   }
   const domain = rampDomain(mark)

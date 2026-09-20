@@ -154,6 +154,23 @@ test('a jexl: field on a step is pointed at formula, where a dotted path is read
   ])
 })
 
+test('threshold cuts written high to low are told which way they are read', () => {
+  const cuts = (domain: unknown[]) => [
+    {
+      shape: 'point',
+      encoding: {
+        y: 'score',
+        color: { field: 'pip', scale: 'threshold', domain },
+      },
+    },
+  ]
+  expect(texts(cuts(['0.1', '0.5']))).toEqual([])
+  expect(texts(cuts(['0.5', '0.1']))).toEqual([
+    expect.stringMatching(/^mark 0 encoding.color.domain: threshold cuts are/),
+  ])
+  expect(texts(cuts(['low', 'high']))).toHaveLength(1)
+})
+
 test('a zoom range that admits no zoom never draws', () => {
   expect(
     texts([

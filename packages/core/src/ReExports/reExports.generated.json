@@ -3314,6 +3314,7 @@
       "package": "@jbrowse/core",
       "names": [
         "numericDomain",
+        "thresholdCuts",
         "thresholdIndex",
         "thresholdLabels",
         "thresholdPalette"
