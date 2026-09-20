@@ -81,6 +81,10 @@ PAF_MAPQ = 255
 WALK_CHUNK = 1 << 24
 WALK_SEP = re.compile(rb'[<>]')
 NODE_EXTRA = 2
+OP_MATCH, OP_MISMATCH, OP_INSERTION, OP_DELETION = 61, 88, 73, 68
+COMPLEMENT = bytes.maketrans(b'ACGTacgt', b'TGCAtgca')
+ALIGN_CELLS = 1_000_000
+UNRELATED_MIN_BP = 20
 
 
 def pansn_of_prefix(prefix):
@@ -139,6 +143,7 @@ class Nodes:
                 self.lengths.append(length)
             else:
                 self.lengths[node] = length
+        return node
 
     def walk_steps(self, walk):
         if self.index is None:
@@ -226,6 +231,98 @@ class Reference:
         return self.contigs[lo]
 
 
+def run_lengths(ops):
+    runs = []
+    for op in ops:
+        if runs and runs[-1][1] == op:
+            runs[-1][0] += 1
+        else:
+            runs.append([1, op])
+    return runs
+
+
+def edit_alignment(a, b):
+    """Unit-cost global alignment of query a on reference b, as op codes."""
+    la, lb = len(a), len(b)
+    prev = list(range(lb + 1))
+    trace = []
+    for i in range(1, la + 1):
+        ai = a[i - 1]
+        cur = [i] + [0] * lb
+        row = bytearray(lb + 1)
+        for j in range(1, lb + 1):
+            diag = prev[j - 1] + (ai != b[j - 1])
+            up = prev[j] + 1
+            left = cur[j - 1] + 1
+            if diag <= up and diag <= left:
+                cur[j] = diag
+            elif up <= left:
+                cur[j] = up
+                row[j] = 1
+            else:
+                cur[j] = left
+                row[j] = 2
+        trace.append(row)
+        prev = cur
+    ops = []
+    i, j = la, lb
+    while i or j:
+        move = trace[i - 1][j] if i and j else (1 if i else 2)
+        if move == 0:
+            ops.append(OP_MATCH if a[i - 1] == b[j - 1] else OP_MISMATCH)
+            i -= 1
+            j -= 1
+        elif move == 1:
+            ops.append(OP_INSERTION)
+            i -= 1
+        else:
+            ops.append(OP_DELETION)
+            j -= 1
+    ops.reverse()
+    return ops
+
+
+def align_private(a, b):
+    """The private bp between two anchors, compared base by base. Two
+    stretches that share under half of the shorter one are an insertion and a
+    deletion, not a run of mismatches."""
+    a, b = a.upper(), b.upper()
+    la, lb = len(a), len(b)
+    if la * lb <= ALIGN_CELLS:
+        ops = edit_alignment(a, b)
+    elif la == lb:
+        ops = [OP_MATCH if x == y else OP_MISMATCH for x, y in zip(a, b)]
+    else:
+        ops = []
+    shorter = min(la, lb)
+    unrelated = not ops or (shorter >= UNRELATED_MIN_BP and 2 * ops.count(OP_MATCH) < shorter)
+    return [[la, OP_INSERTION], [lb, OP_DELETION]] if unrelated else run_lengths(ops)
+
+
+class Bases:
+    """Node and walk sequences, kept only under --compare-bases."""
+
+    def __init__(self):
+        self.nodes = {}
+        self.pieces = {}
+
+    def add_walk(self, key, start, steps):
+        nodes = self.nodes
+        parts = [nodes.get(abs(step)) for step in steps]
+        if None not in parts:
+            sequence = b''.join(
+                part if step > 0 else part.translate(COMPLEMENT)[::-1] for part, step in zip(parts, steps)
+            )
+            self.pieces.setdefault(key, []).append((start, sequence))
+
+    def fetch(self, key, start, end):
+        found = None
+        for piece_start, sequence in self.pieces.get(key, ()):
+            if piece_start <= start and end <= piece_start + len(sequence):
+                found = sequence[start - piece_start : end - piece_start]
+        return found
+
+
 class Chain:
     __slots__ = ('lo', 'hi', 'contig', 'flipped', 'qstart', 'tfixed', 'runs')
 
@@ -262,8 +359,9 @@ def add_run(runs, length, op):
 
 
 class Converter:
-    def __init__(self, nodes, reference, reference_name, max_gap, min_block, pair_x):
+    def __init__(self, nodes, reference, reference_name, max_gap, min_block, pair_x, bases=None):
         self.nodes = nodes
+        self.bases = bases
         self.reference = reference
         self.reference_name = reference_name
         self.max_gap = max_gap
@@ -353,7 +451,7 @@ class Converter:
                                 chosen = None
                     if chosen is None:
                         if chain is not None:
-                            self.emit(query, rows, chain, qend, tmoving)
+                            self.emit(query, contig, rows, chain, qend, tmoving)
                         c = candidates[0]
                         last = (c >> 2) - 1
                         flipped = (c & 1) ^ reversed_step
@@ -370,15 +468,49 @@ class Converter:
                 visited[node] = 1
             q += length
         if chain is not None:
-            self.emit(query, rows, chain, qend, tmoving)
+            self.emit(query, contig, rows, chain, qend, tmoving)
         query.walks += 1
         query.anchors += anchors
         return q
 
-    def emit(self, query, rows, chain, qend, tmoving):
+    def compared(self, query_key, chain):
+        """The chain's runs with each private stretch realigned off the two
+        walks' bases. Runs are in the query's direction, so a flipped chain
+        reads the reference downwards and reverse-complemented."""
+        bases = self.bases
+        ref_key = (self.reference_name, chain.contig)
+        flipped = chain.flipped
+        runs = chain.runs
+        out = [list(runs[0])]
+        q = chain.qstart + runs[0][0]
+        t = chain.tfixed - runs[0][0] if flipped else chain.tfixed + runs[0][0]
+        i, n = 1, len(runs)
+        while i < n:
+            j = i
+            qgap = rgap = 0
+            while runs[j][1] != OP_MATCH:
+                length, op = runs[j]
+                qgap += length if op != OP_DELETION else 0
+                rgap += length if op != OP_INSERTION else 0
+                j += 1
+            a = bases.fetch(query_key, q, q + qgap)
+            b = bases.fetch(ref_key, t - rgap, t) if flipped else bases.fetch(ref_key, t, t + rgap)
+            if qgap and rgap and a is not None and b is not None:
+                private = align_private(a, b.translate(COMPLEMENT)[::-1] if flipped else b)
+            else:
+                private = runs[i:j]
+            for length, op in [*private, runs[j]]:
+                add_run(out, length, op)
+            q += qgap + runs[j][0]
+            t += -(rgap + runs[j][0]) if flipped else rgap + runs[j][0]
+            i = j + 1
+        return out
+
+    def emit(self, query, contig, rows, chain, qend, tmoving):
         tstart, tend = (tmoving, chain.tfixed) if chain.flipped else (chain.tfixed, tmoving)
         if tend - tstart >= max(self.min_block, 1):
-            runs = chain.runs[::-1] if chain.flipped else chain.runs
+            runs = chain.runs if self.bases is None else self.compared((query.name, contig), chain)
+            runs = runs[::-1] if chain.flipped else runs
             matches = sum(n for n, op in runs if op == 61)
             columns = sum(n for n, op in runs)
             rows.append((
@@ -451,12 +583,25 @@ def path_name_parts(name):
     )
 
 
-def run(stream, out, reference, queries, max_gap, min_block, pair_x, hold_queries, chrom_sizes_dir, contig_lengths_path):
+def run(
+    stream,
+    out,
+    reference,
+    queries,
+    max_gap,
+    min_block,
+    pair_x,
+    hold_queries,
+    chrom_sizes_dir,
+    contig_lengths_path,
+    compare_bases=False,
+):
     started = time.monotonic()
     consumed = 0
     nodes = Nodes()
     ref = Reference(nodes)
-    converter = Converter(nodes, ref, reference, max_gap, min_block, pair_x)
+    bases = Bases() if compare_bases else None
+    converter = Converter(nodes, ref, reference, max_gap, min_block, pair_x, bases)
     wanted = None if queries is None else set(queries)
     held = []
 
@@ -466,6 +611,9 @@ def run(stream, out, reference, queries, max_gap, min_block, pair_x, hold_querie
         query.contig_lengths[contig] = max(query.contig_lengths.get(contig, 0), walked, end)
 
     def walk_of(name, contig, start, end, steps):
+        if bases is not None:
+            steps = array('i', steps)
+            bases.add_walk((name, contig), start, steps)
         if name == reference:
             late = ref.index_walk(contig, start, steps)
             sys.stderr.write(f'{reference}#{contig}: {ref.contigs[-1][1] - ref.contigs[-1][0]} steps, {ref.lengths[contig]} bp; {time.monotonic() - started:.0f}s\n')
@@ -486,10 +634,13 @@ def run(stream, out, reference, queries, max_gap, min_block, pair_x, hold_querie
             tab1 = line.index(b'\t', 2)
             tab2 = line.find(b'\t', tab1 + 1)
             seqlen = (len(line) - 1 if tab2 < 0 else tab2) - tab1 - 1
-            if seqlen == 1 and line[tab1 + 1] == 42:
+            star = seqlen == 1 and line[tab1 + 1] == 42
+            if star:
                 m = re.search(rb'\tLN:i:(\d+)', line)
                 seqlen = int(m.group(1)) if m else 0
-            nodes.add(line[2:tab1], seqlen)
+            node = nodes.add(line[2:tab1], seqlen)
+            if bases is not None and not star:
+                bases.nodes[node] = line[tab1 + 1 : tab1 + 1 + seqlen]
         elif lead == 87:
             tab1 = line.index(b'\t', 2)
             tab2 = line.index(b'\t', tab1 + 1)
@@ -539,6 +690,7 @@ def main():
     parser.add_argument('--min-block', type=int, default=0, help='drop records spanning fewer reference bp than this')
     parser.add_argument('--chrom-sizes-dir', help='write <sample>.<hap>.chrom.sizes per query here')
     parser.add_argument('--no-x', action='store_true', help='write private runs as I then D instead of pairing them as X')
+    parser.add_argument('--compare-bases', action='store_true', help='keep the node sequences and align the private bp between two anchors base by base; for a window of a graph, not a whole genome')
     parser.add_argument('--hold-queries', action='store_true', help='align every query walk after the whole file is read, for a file whose reference walks come after query walks that share their nodes')
     parser.add_argument('--contig-lengths', help='chrom.sizes or .fai giving exact query contig lengths, keyed by contig or sample#hap#contig')
     args = parser.parse_args()
@@ -553,6 +705,7 @@ def main():
         args.hold_queries,
         args.chrom_sizes_dir,
         args.contig_lengths,
+        args.compare_bases,
     )
 
 
