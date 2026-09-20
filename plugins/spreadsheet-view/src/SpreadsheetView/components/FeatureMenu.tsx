@@ -24,15 +24,15 @@ export default function FeatureMenu({
   session,
   spreadsheetViewId,
   feature,
-  trackId,
+  trackIds,
   findJunctionsNear,
 }: {
   spreadsheetViewId: string
   assemblyName: string
   session: BreakpointSplitViewHost
   feature: SimpleFeatureSerialized
-  /** the session track for the loaded file; both launches open it */
-  trackId?: string
+  /** the sheet's `drilldownTrackIds`; both launches open them */
+  trackIds: string[]
   /** the sheet's read of the callset; chain walking is offered only with it */
   findJunctionsNear?: FindJunctionsNear
 }) {
@@ -52,7 +52,7 @@ export default function FeatureMenu({
                     new SimpleFeature(feature),
                     PAIRED_END_WINDOW_BP,
                   ) ?? assembleLocStringRaw(feature),
-                trackId,
+                trackIds,
               })
             } catch (e) {
               console.error(e)
@@ -76,7 +76,7 @@ export default function FeatureMenu({
                       spreadsheetViewId,
                       assemblyName,
                     ),
-                    ...(trackId ? { defaultTrackIds: [trackId] } : {}),
+                    defaultTrackIds: trackIds,
                     // the row menu used to be the one launch site that could
                     // not offer "follow further breakends at each end", for
                     // want of a way to query the callset — while the chord

@@ -6,18 +6,14 @@ export async function locationLinkClick({
   session,
   locString,
   spreadsheetViewId,
-  trackId,
+  trackIds = [],
 }: {
   assemblyName: string
   session: AbstractViewContainer
   locString: string
   spreadsheetViewId: string
-  /**
-   * the session track for the file the sheet was loaded from, opened alongside
-   * the locus. Without it the view arrives at the right place showing none of
-   * the records that sent it there
-   */
-  trackId?: string
+  /** the sheet's `drilldownTrackIds`, opened alongside the locus */
+  trackIds?: string[]
 }) {
   const newViewId = `${spreadsheetViewId}_${assemblyName}`
   const view = session.views.find(v => v.id === newViewId) as
@@ -28,8 +24,10 @@ export async function locationLinkClick({
     // idempotent, so a second row does not stack a second copy — but it does
     // put the track back if the reader closed it, and that is the wrong way
     // round, so only ask when the view has no tracks at all
-    if (trackId && !view.tracks.length) {
-      await view.launchTrack(trackId)
+    if (!view.tracks.length) {
+      for (const trackId of trackIds) {
+        await view.launchTrack(trackId)
+      }
     }
     await view.navToLocString(locString, assemblyName)
   } else {
@@ -40,7 +38,7 @@ export async function locationLinkClick({
       id: newViewId,
       assembly: assemblyName,
       loc: locString,
-      ...(trackId ? { tracks: [trackId] } : {}),
+      tracks: trackIds,
     })
   }
 }

@@ -23,7 +23,7 @@ export default observer(function LocationCell({
   feature: SimpleFeatureSerialized
 }) {
   const session = getSession(model)
-  const view = getParent<{ id: string; importedTrackId?: string }>(model)
+  const view = getParent<{ id: string; drilldownTrackIds: string[] }>(model)
   const { assemblyName } = model
   const locString = assembleLocString(feature)
   return assemblyName ? (
@@ -33,7 +33,7 @@ export default observer(function LocationCell({
         spreadsheetViewId={view.id}
         assemblyName={assemblyName}
         feature={feature}
-        trackId={view.importedTrackId}
+        trackIds={view.drilldownTrackIds}
         findJunctionsNear={model.findJunctionsNear()}
       />
       <LocationLink model={model} locString={assembleLocStringRaw(feature)}>

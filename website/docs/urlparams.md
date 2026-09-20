@@ -948,6 +948,7 @@ restores natively:
 | Property | What it does |
 | --- | --- |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [`drilldownTracks`](/docs/models/spreadsheetview#property-drilldowntracks) | trackIds the views a row opens start with, beside the loaded file's own track: the tumor and normal alignments, a coverage track, an assembly's synteny track |
 | [`height`](/docs/models/spreadsheetview#property-height) | the height of the sheet in pixels |
 | [`hideVerticalResizeHandle`](/docs/models/spreadsheetview#property-hideverticalresizehandle) | chrome switch, for an embed that sizes the view itself |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
@@ -984,6 +985,7 @@ holds:
 | --- | --- |
 | `assembly` | the assembly both halves are read against. With only this and no `uri`, the view opens on its import form with that assembly already selected rather than the first one in the config |
 | `baseUri` | what a relative `uri` resolves against. A config loaded from a URL stamps this beside every `uri` it carries, a `defaultSession` view's included, so the sheet's file resolves against the config the way a track's does |
+| `drilldownTracks` | trackIds every view a row or chord opens starts with, beside the callset's own track: the tumor and normal alignments, a coverage track, an assembly's synteny track |
 | `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
 | `filterText` | search-box text for the spreadsheet half, applied once the file is loaded. The circular half draws the rows it leaves, so this is what makes a chord subset reachable from a link |
 | `uri` | the file to load into the sheet. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |

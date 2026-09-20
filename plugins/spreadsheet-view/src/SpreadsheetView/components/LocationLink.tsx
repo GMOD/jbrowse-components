@@ -25,7 +25,7 @@ const LocationLink = observer(function LocationLink({
   children: React.ReactNode
 }) {
   const session = getSession(model)
-  const view = getParent<{ id: string; importedTrackId?: string }>(model)
+  const view = getParent<{ id: string; drilldownTrackIds: string[] }>(model)
   const { assemblyName } = model
   return (
     <ActionLink
@@ -36,7 +36,7 @@ const LocationLink = observer(function LocationLink({
             session,
             locString,
             assemblyName: assemblyName!,
-            trackId: view.importedTrackId,
+            trackIds: view.drilldownTrackIds,
           })
         } catch (e) {
           console.error(e)

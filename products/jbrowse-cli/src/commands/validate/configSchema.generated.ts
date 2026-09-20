@@ -18666,6 +18666,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "hideVerticalResizeHandle": {
           "type": "boolean"
         },
+        "drilldownTracks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "importWizard": {
           "type": "object",
           "properties": {
@@ -18827,6 +18833,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Launch key, resolved by the SvInspectorView launcher on open."
         },
         "filterText": {
+          "description": "Launch key, resolved by the SvInspectorView launcher on open."
+        },
+        "drilldownTracks": {
           "description": "Launch key, resolved by the SvInspectorView launcher on open."
         }
       }

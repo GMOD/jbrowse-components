@@ -34,6 +34,39 @@ test('a launch key written on the view object reaches the child sheet', async ()
   expect(warnings()).toEqual([])
 })
 
+test('drilldownTracks lands on the sheet and persists', async () => {
+  const view = await open({
+    assembly: 'volvox',
+    drilldownTracks: ['tumor', 'normal'],
+  })
+  expect(view.spreadsheetView.drilldownTrackIds).toEqual(['tumor', 'normal'])
+  expect(warnings()).toEqual([])
+  const snap = getSnapshot(view) as {
+    spreadsheetView: { drilldownTracks?: string[] }
+  }
+  expect(snap.spreadsheetView.drilldownTracks).toEqual(['tumor', 'normal'])
+})
+
+test('the callset track opens ahead of the drilldownTracks', async () => {
+  const session = createTestSession()
+  const uri = 'https://example.com/calls.vcf'
+  session.addSessionTrackConf({
+    type: 'VariantTrack',
+    trackId: 'calls',
+    name: 'calls',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'VcfAdapter', vcfLocation: { uri } },
+  })
+  const view = (await session.launchView('SvInspectorView', {
+    drilldownTracks: ['tumor'],
+  })) as SvInspectorViewModel
+  view.spreadsheetView.importWizard.setFileSource({
+    uri,
+    locationType: 'UriLocation',
+  })
+  expect(view.spreadsheetView.drilldownTrackIds).toEqual(['calls', 'tumor'])
+})
+
 // Nothing in this view's launch path mentions either name: v4's `init` was
 // forwarded whole to the sheet, so a declared property written beside it
 // reached nothing.

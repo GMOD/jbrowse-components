@@ -37,7 +37,7 @@ function defaultOnChordClick(
       type?: string
       spreadsheetView?: {
         id: string
-        importedTrackId?: string
+        drilldownTrackIds: string[]
         spreadsheet?: { findJunctionsNear: () => FindJunctionsNear }
       }
     }>(view)
@@ -68,11 +68,7 @@ function defaultOnChordClick(
               ),
             }
           : {}),
-      // the callset the chord was drawn from, so the split view opens holding
-      // the record that was clicked rather than two empty panels
-      ...(inspector?.importedTrackId
-        ? { defaultTrackIds: [inspector.importedTrackId] }
-        : {}),
+      defaultTrackIds: inspector?.drilldownTrackIds,
       // in the SV inspector, reuse the same view the sheet's own row menu opens
       // so a chord click and a row click don't stack two of them. Other
       // circular views get a fresh view per click

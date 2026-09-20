@@ -73,9 +73,15 @@ Click a feature in the circular view, or the triangle dropdown on any table row,
 to open the
 [breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view)
 for that variant: two stacked linear genome views, each centered on one
-breakpoint. It opens empty; add alignment tracks to both via their track
-selectors, and the arcs and splines connecting supporting reads appear
-automatically.
+breakpoint, both showing the callset. Add alignment tracks from the split view's
+track selector, and the arcs and splines connecting supporting reads appear
+automatically. The next row or chord opens in the same split view and keeps
+those tracks, including when its chain has more panels.
+
+To skip that step, name the evidence in the session or link: the
+[`drilldownTracks`](/docs/urlparams#sv-inspector) launch key lists the trackIds
+every view a row or chord opens starts with, such as the tumor and normal
+alignments, a coverage track, or an assembly's synteny track.
 
 ## See also
 

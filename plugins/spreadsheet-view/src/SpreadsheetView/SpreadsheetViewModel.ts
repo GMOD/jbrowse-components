@@ -62,6 +62,13 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
            * chrome switch, for an embed that sizes the view itself
            */
           hideVerticalResizeHandle: types.stripDefault(types.boolean, false),
+          /**
+           * #property
+           * trackIds the views a row opens start with, beside the loaded file's
+           * own track: the tumor and normal alignments, a coverage track, an
+           * assembly's synteny track
+           */
+          drilldownTracks: types.stripDefault(types.array(types.string), []),
 
           /**
            * #property
@@ -157,6 +164,13 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
            */
           setLaunch(launch?: LaunchInput<SpreadsheetViewCommands>) {
             self.launch = launch
+          },
+
+          /**
+           * #action
+           */
+          setDrilldownTracks(trackIds: string[]) {
+            self.drilldownTracks = cast(trackIds)
           },
 
           /**
@@ -340,14 +354,17 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
           },
           /**
            * #getter
-           * the track showing the loaded file, which the views a row drills
-           * down into open. One derivation, not a recorded id: after
-           * `registerImportedTrack` the session holds a track pointing at the
-           * file, so the same location match that decides whether to build one
-           * is also what finds it afterwards
+           * every track a row's drill-down opens with, the loaded file's first.
+           * That one is derived, not recorded: after `registerImportedTrack`
+           * the session holds a track pointing at the file, so the location
+           * match that decides whether to build one also finds it afterwards
            */
-          get importedTrackId() {
-            return self.importWizard.existingTrackId
+          get drilldownTrackIds(): string[] {
+            const { existingTrackId } = self.importWizard
+            return [
+              ...(existingTrackId ? [existingTrackId] : []),
+              ...self.drilldownTracks,
+            ]
           },
           /**
            * #method

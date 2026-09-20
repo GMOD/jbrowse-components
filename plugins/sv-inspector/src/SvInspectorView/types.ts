@@ -5,8 +5,10 @@ import type { SpreadsheetViewCommands } from '@jbrowse/plugin-spreadsheet-view'
  * spreadsheet half takes, forwarded verbatim, so this extends that view's
  * commands rather than restating them — a field added there arrives here too,
  * where a lookalike interface would still typecheck without it.
- * The two below are redeclared only because they mean more here than they do
- * over there, and the spec table shows the description beside the name.
+ * `assembly` and `filterText` are redeclared only because they mean more here
+ * than they do over there, and the spec table shows the description beside the
+ * name. `drilldownTracks` is a declared property of the spreadsheet half, which
+ * this view sets from the key.
  *
  * The two child views are declared properties, so a saved session's
  * `spreadsheetView`/`circularView` stay state and never reach the blob.
@@ -23,4 +25,8 @@ export interface SvInspectorViewCommands extends SpreadsheetViewCommands {
   // The circular half draws the rows it leaves, so this is what makes a chord
   // subset reachable from a link
   filterText?: string
+  // trackIds every view a row or chord opens starts with, beside the callset's
+  // own track: the tumor and normal alignments, a coverage track, an assembly's
+  // synteny track
+  drilldownTracks?: string[]
 }

@@ -17587,6 +17587,12 @@
         "hideVerticalResizeHandle": {
           "type": "boolean"
         },
+        "drilldownTracks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "importWizard": {
           "type": "object",
           "properties": {
@@ -17741,6 +17747,9 @@
           "description": "Launch key, resolved by the SvInspectorView launcher on open."
         },
         "filterText": {
+          "description": "Launch key, resolved by the SvInspectorView launcher on open."
+        },
+        "drilldownTracks": {
           "description": "Launch key, resolved by the SvInspectorView launcher on open."
         }
       }

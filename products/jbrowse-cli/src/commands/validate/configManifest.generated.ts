@@ -6354,6 +6354,7 @@ export const configManifest: ConfigManifest = {
         "type",
         "height",
         "hideVerticalResizeHandle",
+        "drilldownTracks",
         "importWizard",
         "spreadsheet",
         "launch"
@@ -6382,6 +6383,7 @@ export const configManifest: ConfigManifest = {
       "launchKeys": [
         "assembly",
         "baseUri",
+        "drilldownTracks",
         "fileType",
         "filterText",
         "uri"

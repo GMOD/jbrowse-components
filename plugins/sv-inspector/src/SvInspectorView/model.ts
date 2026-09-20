@@ -421,7 +421,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             () => {
               const { pendingLaunch } = self
               if (pendingLaunch) {
-                self.spreadsheetView.setLaunch(pendingLaunch)
+                const { drilldownTracks, ...sheetLaunch } = pendingLaunch
+                if (drilldownTracks) {
+                  self.spreadsheetView.setDrilldownTracks(drilldownTracks)
+                }
+                self.spreadsheetView.setLaunch(sheetLaunch)
                 self.setLaunch(undefined)
               }
             },
