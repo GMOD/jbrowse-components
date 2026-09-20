@@ -1,11 +1,11 @@
-// What would alignments' pileup row layout cost as the shared `stack`
+// What would alignments' own row layout cost as the shared `pileup`
 // transform step?
 //
 //   node plugins/alignments/benches/pileupLayoutVsStack.bench.ts
 //   node plugins/alignments/benches/pileupLayoutVsStack.bench.ts \
 //     --rounds=11 --reads=200000 --span=600000 --readlen=150
 //
-// THE QUESTION. `stack` (packages/core/src/util/featureTransforms.ts) is
+// THE QUESTION. `pileup` (packages/core/src/util/featureTransforms.ts) is
 // greedy first fit in start order with `padding` bp of clearance, and a plain
 // uncapped single-region pileup is that exact rule: `computeLayout` takes the
 // canonical order the worker already emits and calls `placeRectCapped`, whose
@@ -21,10 +21,10 @@
 //   layout      today: `computeLayout` over the worker's typed arrays
 //   control     the same call through a second driver literal, so
 //               `control / layout` is what this harness could resolve at all
-//   stack       the port: a `SimpleFeature` per read, `runTransforms` with one
-//               `stack` step, then the rows read back into the `Uint16Array`
+//   pileup      the port: a `SimpleFeature` per read, `runTransforms` with one
+//               `pileup` step, then the rows read back into the `Uint16Array`
 //               every pass downstream of the layout indexes by read
-//   step        `stack` with the feature list already built, so the gap
+//   step        `pileup` with the feature list already built, so the gap
 //               between the two rows is what materialising costs
 //   features    materialising alone, the other half of that gap
 import { performance } from 'node:perf_hooks'
@@ -50,7 +50,7 @@ const readLen = arg('readlen', 150)
 
 // Start-sorted, which is what the worker emits and what both arms rely on:
 // `computeLayout`'s canonical order is then the identity permutation and
-// `stack`'s sort is a stable no-op.
+// `pileup`'s sort is a stable no-op.
 //
 // `readKeys.length` and `readPositions` are the whole of what the plain path
 // reads — no sort, no soft clips, no cap — and this fixture is those two.
@@ -70,7 +70,7 @@ const data = {
 
 // `padding: 2` is `placeRect`'s hardcoded clearance, so the two arms answer
 // the same rows rather than differing wherever two reads abut.
-const STEPS: TransformStep[] = [{ type: 'stack', padding: 2 }]
+const STEPS: TransformStep[] = [{ type: 'pileup', padding: 2 }]
 
 function makeFeatures() {
   const out: Feature[] = []
@@ -89,7 +89,7 @@ function makeFeatures() {
 
 const prebuilt = makeFeatures()
 
-function stackToRows(features: readonly Feature[]) {
+function pileupToRows(features: readonly Feature[]) {
   const out = runTransforms(features, STEPS)
   const rows = new Uint16Array(out.length)
   for (let i = 0; i < out.length; i++) {
@@ -103,16 +103,16 @@ function stackToRows(features: readonly Feature[]) {
 const drivers = [
   { name: 'layout', run: () => computeLayout(data).readYs.length },
   { name: 'control', run: () => computeLayout(data).readYs.length },
-  { name: 'stack', run: () => stackToRows(makeFeatures()).length },
-  { name: 'step', run: () => stackToRows(prebuilt).length },
+  { name: 'pileup', run: () => pileupToRows(makeFeatures()).length },
+  { name: 'step', run: () => pileupToRows(prebuilt).length },
   { name: 'features', run: () => makeFeatures().length },
 ]
 
 const { readYs, maxY } = computeLayout(data)
-const stacked = stackToRows(prebuilt)
+const packed = pileupToRows(prebuilt)
 let firstDiff = -1
 for (let i = 0; i < numReads; i++) {
-  if (readYs[i] !== stacked[i]) {
+  if (readYs[i] !== packed[i]) {
     firstDiff = i
     break
   }
@@ -120,13 +120,13 @@ for (let i = 0; i < numReads; i++) {
 if (firstDiff >= 0) {
   console.error(
     `rows disagree at read ${firstDiff}: layout ${readYs[firstDiff]}, ` +
-      `stack ${stacked[firstDiff]}`,
+      `pileup ${packed[firstDiff]}`,
   )
   process.exit(1)
 }
 console.log(
   `${numReads.toLocaleString()} reads of ${readLen}bp over ${span.toLocaleString()}bp, ` +
-    `${maxY} rows deep; layout and stack agree on every row`,
+    `${maxY} rows deep; layout and pileup agree on every row`,
 )
 
 for (const { name, run } of drivers) {

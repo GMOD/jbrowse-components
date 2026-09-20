@@ -5,7 +5,7 @@
 //   node packages/core/benches/columnEncode.bench.ts --scenario=bigwig
 //   node packages/core/benches/columnEncode.bench.ts --scenario=synthetic
 //   node packages/core/benches/columnEncode.bench.ts --scenario=multi
-//   node packages/core/benches/columnEncode.bench.ts --scenario=stack
+//   node packages/core/benches/columnEncode.bench.ts --scenario=pileup
 //   node packages/core/benches/columnEncode.bench.ts --scenario=transforms
 //
 // Flags: --scenario, --rounds (11), --features (1000000, the synthetic table),
@@ -40,10 +40,10 @@
 //     features-jexl        `features` with a jexl: colour
 //     columns-cursor-jexl  `columns` with the same colour through one reused
 //                          RowCursor
-//   stack — 200,000 reads, ADR-118's fixture and its five arms rerun here
+//   pileup — 200,000 reads, ADR-118's fixture and its five arms rerun here
 //     rather than quoted, plus:
-//     stack-columns        argsort plus rowEnds over the typed positions
-//     stack-columns-cmp    the same with the comparator argsort, so the sort
+//     pileup-columns       argsort plus rowEnds over the typed positions
+//     pileup-columns-cmp   the same with the comparator argsort, so the sort
 //                          and the placement are separable
 //   transforms — 1,000,000 features, featureTransforms.bench.ts's fixture and
 //     its `none`, `bin-count` and `coverage` arms rerun here, plus:
@@ -51,7 +51,7 @@
 //
 // KILL CRITERIA, evaluated by agent-docs/ideas/closed/column-encoder-verdict.md:
 //   `columns` above 1.10x `wiggle` in time, or retaining more than wiggle's
-//   12 bytes per feature plus 4; `stack-columns` above 1.5x `layout`;
+//   12 bytes per feature plus 4; `pileup-columns` above 1.5x `layout`;
 //   `columns-cursor-jexl` above 1.2x `features-jexl`. A control row far from
 //   1.00 means the run resolved nothing and the row is not reportable.
 //
@@ -110,7 +110,7 @@ import {
   binCountColumns,
   coverageColumns,
   encodeColumns,
-  stackRows,
+  pileupRows,
 } from './columnTable.ts'
 
 import type { WorkerPileupData } from '../../../plugins/alignments/src/RenderAlignmentDataRPC/types.ts'
@@ -676,7 +676,7 @@ function runEncodeScenario(fixture: SourceColumns[]) {
   finish()
 }
 
-function runStackScenario() {
+function runPileupScenario() {
   const reads = num('reads', 200_000)
   const span = num('span', 600_000)
   const readLen = num('readlen', 150)
@@ -696,7 +696,7 @@ function runStackScenario() {
     starts[i] = readPositions[i * 2]!
     ends[i] = readPositions[i * 2 + 1]!
   }
-  const STEPS: TransformStep[] = [{ type: 'stack', padding: 2 }]
+  const STEPS: TransformStep[] = [{ type: 'pileup', padding: 2 }]
   const makeFeatures = () => {
     const out: Feature[] = []
     for (let i = 0; i < reads; i++) {
@@ -712,7 +712,7 @@ function runStackScenario() {
     return out
   }
   const prebuilt = makeFeatures()
-  const stackToRows = (features: readonly Feature[]) => {
+  const pileupToRows = (features: readonly Feature[]) => {
     const out = runTransforms(features, STEPS)
     const rows = new Uint16Array(out.length)
     for (let i = 0; i < out.length; i++) {
@@ -729,18 +729,18 @@ function runStackScenario() {
   const drivers: { name: string; run: () => number }[] = [
     { name: 'layout', run: () => computeLayout(data).readYs.length },
     { name: 'control', run: () => computeLayout(data).readYs.length },
-    { name: 'stack', run: () => stackToRows(makeFeatures()).length },
-    { name: 'step', run: () => stackToRows(prebuilt).length },
+    { name: 'pileup', run: () => pileupToRows(makeFeatures()).length },
+    { name: 'step', run: () => pileupToRows(prebuilt).length },
     { name: 'features', run: () => makeFeatures().length },
     {
-      name: 'stack-columns',
+      name: 'pileup-columns',
       run: () =>
-        stackRows(argsortByStart(starts, reads), starts, ends, 2).length,
+        pileupRows(argsortByStart(starts, reads), starts, ends, 2).length,
     },
     {
-      name: 'stack-columns-cmp',
+      name: 'pileup-columns-cmp',
       run: () =>
-        stackRows(argsortByStartComparator(starts, reads), starts, ends, 2)
+        pileupRows(argsortByStartComparator(starts, reads), starts, ends, 2)
           .length,
     },
   ]
@@ -749,20 +749,20 @@ function runStackScenario() {
     driver.run()
   }
   const layoutRows = computeLayout(data).readYs
-  const stepRows = stackToRows(prebuilt)
+  const stepRows = pileupToRows(prebuilt)
   const order = argsortByStart(starts, reads)
-  const columnRows = stackRows(order, starts, ends, 2)
+  const columnRows = pileupRows(order, starts, ends, 2)
   for (let k = 0; k < reads; k++) {
     if (layoutRows[order[k]!] !== columnRows[k]) {
       note(
-        `stack-columns row ${k} (read ${order[k]}) is ${columnRows[k]}, layout says ${layoutRows[order[k]!]}`,
+        `pileup-columns row ${k} (read ${order[k]}) is ${columnRows[k]}, layout says ${layoutRows[order[k]!]}`,
       )
       break
     }
   }
   for (let i = 0; i < reads; i++) {
     if (layoutRows[i] !== stepRows[i]) {
-      note(`stack row ${i} is ${stepRows[i]}, layout says ${layoutRows[i]}`)
+      note(`pileup row ${i} is ${stepRows[i]}, layout says ${layoutRows[i]}`)
       break
     }
   }
@@ -886,8 +886,8 @@ switch (scenario) {
     runEncodeScenario(multiFixture())
     break
   }
-  case 'stack': {
-    runStackScenario()
+  case 'pileup': {
+    runPileupScenario()
     break
   }
   case 'transforms': {
@@ -896,7 +896,7 @@ switch (scenario) {
   }
   default: {
     console.error(
-      `--scenario=${scenario} is none of bigwig, synthetic, multi, stack, transforms`,
+      `--scenario=${scenario} is none of bigwig, synthetic, multi, pileup, transforms`,
     )
     process.exit(1)
   }

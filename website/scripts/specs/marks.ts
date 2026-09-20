@@ -119,7 +119,7 @@ const SNRPN_FACET_TRACK = {
       marks: [
         {
           shape: 'span',
-          transform: [{ type: 'stack' }],
+          transform: [{ type: 'pileup' }],
           encoding: {
             row: 'row',
             color: { field: 'HP', scale: 'categorical' },

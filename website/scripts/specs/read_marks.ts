@@ -48,7 +48,7 @@ const PILEUP_TRACK = {
               expr: 'jexl:abs(feature.template_length)',
               as: 'insert',
             },
-            { type: 'stack' },
+            { type: 'pileup' },
           ],
           encoding: {
             row: 'row',

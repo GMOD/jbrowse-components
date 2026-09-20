@@ -339,7 +339,7 @@ export function argsortByStartComparator(starts: NumericColumn, n: number) {
   return order
 }
 
-export function stackRows(
+export function pileupRows(
   order: Uint32Array,
   starts: NumericColumn,
   ends: NumericColumn,

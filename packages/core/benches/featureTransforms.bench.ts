@@ -18,7 +18,7 @@
 //   bin-count    bin at 10 kb, aggregate count per bin
 //   bin-mean     bin at 10 kb, aggregate count and mean score per bin
 //   coverage     runs of constant depth over the spans
-//   stack        greedy first-fit rows over the spans — a declared pileup
+//   pileup       greedy first-fit rows over the spans
 //   bin-then-raw the bin-count layer and the raw layer both, one fetch —
 //                what a multiscale config costs the worker per region
 import { performance } from 'node:perf_hooks'
@@ -123,7 +123,7 @@ const ARMS: {
     ],
   },
   { name: 'coverage', y: 'coverage', layers: [[{ type: 'coverage' }]] },
-  { name: 'stack', y: 'score', layers: [[{ type: 'stack' }]] },
+  { name: 'pileup', y: 'score', layers: [[{ type: 'pileup' }]] },
   { name: 'bin-then-raw', y: 'count', layers: [BIN, []] },
 ]
 

@@ -160,7 +160,7 @@
               "shape": "span",
               "transform": [
                 {
-                  "type": "stack"
+                  "type": "pileup"
                 }
               ],
               "encoding": {
@@ -349,7 +349,7 @@
               "shape": "span",
               "transform": [
                 {
-                  "type": "stack",
+                  "type": "pileup",
                   "padding": 2000
                 }
               ],
@@ -400,7 +400,7 @@
               "shape": "span",
               "transform": [
                 {
-                  "type": "stack"
+                  "type": "pileup"
                 }
               ],
               "encoding": {
