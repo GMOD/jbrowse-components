@@ -319,7 +319,8 @@ export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
  *     {
  *       type: 'LinearAlignmentsDisplay',
  *       displayId: 'methylation-LinearAlignmentsDisplay',
- *       colorBy: { type: 'modifications', modifications: { fillUnmarked: true } },
+ *       color: { field: 'modifications' },
+ *       modifications: { fillUnmarked: true },
  *     },
  *   ],
  * }

@@ -1,13 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
-import { colorChannelOptions } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  alignmentsColorConfigSchema,
-  linearAlignmentsDisplayConfigSchemaFactory,
-} from '@jbrowse/plugin-alignments'
+import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
 
 import { getMate } from '../syntenyMate.ts'
+import { lgvSyntenyColorConfigSchema } from './lgvSyntenyColorConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -95,14 +92,7 @@ function configSchemaF(pluginManager: PluginManager) {
        * The alignments displays' `color` object with `field` defaulting to
        * `strand`, where the base display paints the plain fill.
        */
-      color: ConfigurationSchema(
-        'LGVSyntenyColor',
-        { field: { type: 'string', defaultValue: 'strand' } },
-        {
-          baseConfiguration: alignmentsColorConfigSchema,
-          ...colorChannelOptions('color'),
-        },
-      ),
+      color: lgvSyntenyColorConfigSchema,
       /**
        * #slot
        * Synteny reads hide the coverage histogram by default; overrides the

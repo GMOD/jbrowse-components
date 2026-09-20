@@ -38,7 +38,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *     type: 'BamAdapter',
  *     uri: 'https://example.com/sample.bam',
  *   },
- *   displayDefaults: { colorBy: { type: 'pairOrientation' }, height: 250 },
+ *   displayDefaults: { color: { field: 'pairOrientation' }, height: 250 },
  * }
  * ```
  */

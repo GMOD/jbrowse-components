@@ -3245,7 +3245,41 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "colorBy",
+          "name": "color",
+          "type": "AlignmentsColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (CssColor | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | (AlignmentsColorScale | undefined))"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "palette",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "ramp",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "domainMid",
+              "type": "(JexlString | (number | undefined))"
+            }
+          ]
+        },
+        {
+          "name": "modifications",
           "type": "(JexlString | frozen)"
         },
         {
@@ -3613,7 +3647,41 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "colorBy",
+          "name": "color",
+          "type": "LGVSyntenyColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (CssColor | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | (AlignmentsColorScale | undefined))"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "palette",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "ramp",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "domainMid",
+              "type": "(JexlString | (number | undefined))"
+            }
+          ]
+        },
+        {
+          "name": "modifications",
           "type": "(JexlString | frozen)"
         },
         {

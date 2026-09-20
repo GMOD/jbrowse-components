@@ -49,7 +49,7 @@ the `LinearAlignmentsDisplay`), so you don't have to know display names:
     type: 'BamAdapter',
     uri: 'https://example.com/sample.bam',
   },
-  displayDefaults: { colorBy: { type: 'pairOrientation' }, height: 250 },
+  displayDefaults: { color: { field: 'pairOrientation' }, height: 250 },
 }
 ```
 

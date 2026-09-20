@@ -3778,6 +3778,77 @@
       },
       "unevaluatedProperties": false
     },
+    "AlignmentsColor": {
+      "title": "AlignmentsColor",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for `{ \"value\": ... }`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "CSS colour of a read no field paints.",
+              "$ref": "#/$defs/CssColorOrJexl"
+            },
+            "field": {
+              "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; baseQuality, base, modifications and bisulfite paint a cell per base; tags.XX reads a SAM tag and any other name a feature attribute.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            },
+            "scale": {
+              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field.",
+              "anyOf": [
+                {
+                  "enum": ["none", "categorical", "linear", "threshold"]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "domain": {
+              "description": "the values that take the palette first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under linear the ramp's two ends, where the loaded reads otherwise set them.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "palette": {
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            },
+            "ramp": {
+              "description": "viridis, or two or more CSS colour stops; empty is viridis.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "$ref": "#/$defs/NumberOrJexl"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "ValueScale": {
       "title": "ValueScale",
       "type": "object",
@@ -3925,11 +3996,11 @@
           "$ref": "#/$defs/NumberOrJexl",
           "default": 6000
         },
-        "colorBy": {
-          "description": "Color scheme for reads. Any JSON value: the slot is `frozen`, so its shape is not checked here.",
-          "default": {
-            "type": "normal"
-          }
+        "color": {
+          "$ref": "#/$defs/AlignmentsColor"
+        },
+        "modifications": {
+          "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is `frozen`, so its shape is not checked here."
         },
         "filterBy": {
           "description": "Filter settings for reads. Any JSON value: the slot is `frozen`, so its shape is not checked here.",
@@ -4320,6 +4391,77 @@
       },
       "unevaluatedProperties": false
     },
+    "LGVSyntenyColor": {
+      "title": "LGVSyntenyColor",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for `{ \"value\": ... }`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "CSS colour of a read no field paints.",
+              "$ref": "#/$defs/CssColorOrJexl"
+            },
+            "field": {
+              "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; baseQuality, base, modifications and bisulfite paint a cell per base; tags.XX reads a SAM tag and any other name a feature attribute.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": "strand"
+            },
+            "scale": {
+              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field.",
+              "anyOf": [
+                {
+                  "enum": ["none", "categorical", "linear", "threshold"]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "domain": {
+              "description": "the values that take the palette first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under linear the ramp's two ends, where the loaded reads otherwise set them.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "palette": {
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            },
+            "ramp": {
+              "description": "viridis, or two or more CSS colour stops; empty is viridis.",
+              "$ref": "#/$defs/StringArrayOrJexl"
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "$ref": "#/$defs/NumberOrJexl"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LGVSyntenyDisplaySlots": {
       "type": "object",
       "properties": {
@@ -4402,11 +4544,11 @@
           "$ref": "#/$defs/NumberOrJexl",
           "default": 6000
         },
-        "colorBy": {
-          "description": "Color scheme for synteny reads. Any JSON value: the slot is `frozen`, so its shape is not checked here.",
-          "default": {
-            "type": "strand"
-          }
+        "color": {
+          "$ref": "#/$defs/LGVSyntenyColor"
+        },
+        "modifications": {
+          "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is `frozen`, so its shape is not checked here."
         },
         "filterBy": {
           "description": "Filter settings for reads. Any JSON value: the slot is `frozen`, so its shape is not checked here.",
@@ -8058,8 +8200,11 @@
             "maxHeight": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxHeight"
             },
-            "colorBy": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorBy"
+            "color": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/color"
+            },
+            "modifications": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/modifications"
             },
             "filterBy": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/filterBy"
@@ -10112,19 +10257,15 @@
               "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/bezierRadiusRatio"
             },
             "colorBy": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorBy"
-                },
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
-                }
-              ]
+              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorBy"
             },
             "color": {
               "anyOf": [
                 {
                   "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/color"
                 },
                 {
                   "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/color"
@@ -10203,6 +10344,9 @@
             },
             "maxHeight": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
+            },
+            "modifications": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/modifications"
             },
             "filterBy": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
