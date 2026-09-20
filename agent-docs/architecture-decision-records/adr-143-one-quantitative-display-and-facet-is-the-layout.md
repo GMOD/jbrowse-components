@@ -111,10 +111,16 @@ multi-region pass. Only an adapter carrying several sources in one file
   raw slot is the multi display's fetch key, for an adapter that stores min/max
   beside each mean and can skip reading them; the merged display keeps it.
 - gccontent composes this model and extends this schema, so its two displays
-  inherit the four tree-sidebar slots and can never show a sidebar — one source
-  means the facet has nothing to split. Four dead slots on two config pages is
-  the price of the shared model; narrowing them means giving gccontent a base
-  schema of its own, which is a package in itself.
+  inherit `facet`, `showRowSeparators` and the four tree-sidebar slots, and can
+  never show a sidebar — one source means the facet has nothing to split. Six
+  dead slots on three config pages (the two concrete types and
+  `SharedGCContentDisplay`) is the price of the shared model. Narrowing them
+  means giving gccontent a base schema of its own, which is a package in
+  itself: `baseConfiguration` only adds (`mergeSchemaDefinition` spreads the
+  child over the base), and the model underneath composes `TreeSidebarMixin`,
+  which reads all four sidebar slots through `getConf` — so a narrower schema
+  needs a second model, the split this ADR rejected. The slots are dead for any
+  single-source quantitative track, not for gccontent in particular.
 - One display page, one state-model page, one user guide and one colour dialog
   fewer, and `plugins/wiggle/package.json` loses the
   `MultiLinearWiggleDisplay/*` subpaths (ADR-128).
@@ -143,3 +149,20 @@ multi-region pass. Only an adapter carrying several sources in one file
   type, the two add-track workflows, and the `MultiWiggleAdapter` shorthand that
   only one of them documents — and it is not what makes a config author meet two
   things for one idea. The display was.
+
+  Reviewed again on 2026-09-20 and declined for good. The merge needs something
+  other than the type to say a track's sources sit on rows, and the adapter
+  cannot: only `MultiWiggleAdapter` has countable sources in its config. A
+  bedmethyl track is a `BedTabixAdapter` indistinguishable from a plain
+  `.bed.gz` — the modkit format is sniffed per row in the worker
+  (`plugins/bed/src/util.ts` `isBedMethylFeature`), which a
+  `Core-preProcessTrackConfig` handler cannot see, and the filename does not
+  settle it either, since the modkit tracks in `test_data/config_demo.json` are
+  all named `.bed.gz`. Rastair reads its header the same way, a `BedGraphAdapter`
+  can carry a source column, and `MultiWiggleZarrAdapter` keeps its sources in a
+  remote store behind a hosted plugin. Resolving rows at runtime instead is shut
+  by `summaryScoreMode` being a fetch key: seeding `avg` after the data lands
+  refetches every region. So the track type stays as the one place the config
+  author states it — a named bundle of the three `displayDefaults` in
+  `MultiQuantitativeTrack/displayDefaults.ts`, which the guessers already return
+  and the Add-track dropdown already offers.

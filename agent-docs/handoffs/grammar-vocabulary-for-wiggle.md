@@ -1,6 +1,6 @@
 ---
 name: grammar-vocabulary-for-wiggle
-description: The wiggle displays adopted the grammar's config vocabulary without adopting its renderer, in four landings on 2026-09-19 — ADR-142 (one `scales.y` value scale on every quantitative display), the `threshold` colour scale with the worker-side sign split deleted, ADR-143 (one `LinearWiggleDisplay`, `facet: 'source'` for rows) and ADR-144 (one `color` object) — with the column encoder and the wiggle port parked on the bench verdict. Left: two figures that fail to capture for older reasons, and two follow-ups.
+description: The wiggle displays adopted the grammar's config vocabulary without adopting its renderer, in four landings on 2026-09-19 — ADR-142 (one `scales.y` value scale on every quantitative display), the `threshold` colour scale with the worker-side sign split deleted, ADR-143 (one `LinearWiggleDisplay`, `facet: 'source'` for rows) and ADR-144 (one `color` object) — with the column encoder and the wiggle port parked on the bench verdict. Left: two figures that fail to capture for older reasons.
 ---
 
 # Grammar vocabulary for the wiggle displays
@@ -9,20 +9,19 @@ State on the evening of 2026-09-19: every package below is on main — A as
 ADR-142 with its docs sweep and a 44-figure reshoot, B's prerequisites (the
 `threshold` colour scale, ADR-016 superseded by deleting the worker-side sign
 split), C as ADR-143, B2 as ADR-144. Each push ran CI; the reds were fixed
-forward the same day. The read_marks and cgiab demo configs are deployed.
+forward the same day. The read_marks and cgiab demo configs are deployed, and
+`ecoli_pangenome` followed on 2026-09-20 — its only drift from the hosted copy
+was the `rowOrder` → `domain` rename an earlier thread made, same 28 tracks
+either side.
 
 ## Still to do by hand
 
-- `demos/ecoli_pangenome/config.json` differs from the hosted copy for reasons
-  older than this thread; diff before deploying it.
-- Merging `QuantitativeTrack` and `MultiQuantitativeTrack` (ADR-143's report
-  sizes it: resolve the row layout from the adapter, keep `QuantitativeTrack`).
 - `bigwig/whole_genome_coverage` and `cnv` fail to capture on main for reasons
   older than this thread: the first waits for a menu label that moved into a
-  "Show..." submenu, the second never holds ready within 60 s.
-- GC content now inherits four dead tree-sidebar slots through the merged
-  wiggle model (ADR-143 Consequences); narrowing it means a base schema of its
-  own.
+  "Show..." submenu, the second never holds ready within 60 s. The first one's
+  reason has since been fixed elsewhere — `showAllRegionsMenuItem` is back under
+  "Zoom" in `menuItems.ts`, which is what the spec's cascade spells — so try the
+  capture before editing the spec.
 
 ## Decided, do not reopen without new evidence
 
@@ -40,6 +39,14 @@ forward the same day. The read_marks and cgiab demo configs are deployed.
   stands.
 - **No `lookup` transform.** Manhattan's LD needs a runtime parameter, a
   two-key join, a warning flag, an index glyph and a threshold scale.
+- **`QuantitativeTrack` and `MultiQuantitativeTrack` stay two types**, and
+  **gccontent keeps the six inherited row slots.** Both re-reviewed on
+  2026-09-20 and written into ADR-143 — the Rejected row now says why no
+  adapter rule can carry the row layout (bedmethyl and rastair are sniffed in
+  the worker, `BedGraphAdapter` and the external Zarr adapter declare nothing),
+  and the Consequences bullet says why a narrower gccontent schema needs a
+  second model. An earlier draft of this file said ADR-143's report told you to
+  resolve the layout from the adapter; it never did, and that sentence is gone.
 
 ## The three packages, in order
 
