@@ -9,7 +9,11 @@ import { arcFetchPhases } from './fetchArcFeatures.ts'
 import { featureScoreRange, makeScoreFilterMenuItem } from './scoreFilter.ts'
 
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
-import type { ScoreRange } from './scoreFilter.ts'
+import type {
+  ScoreRange,
+  scoreFilterConfigSchemaFields,
+} from './scoreFilter.ts'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -31,6 +35,13 @@ export interface ArcExportEdge {
 // `configuration` and `adapterConfig` the concrete display supplies — the same
 // idiom as `LegendMixin`'s `confNode`.
 const host = (self: object) => self as ArcDisplayModel
+
+/** The whole of what this mixin needs a composing display's config to be. */
+export type ArcScoreFilterHost = {
+  configuration: ConfigModelForFields<typeof scoreFilterConfigSchemaFields>
+}
+
+const confNode = (self: object) => self as ArcScoreFilterHost
 
 /**
  * Everything the two arc displays share above `GlobalFetchMixin` — the one
@@ -99,7 +110,7 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
          * #action
          */
         setMinScore(score: number) {
-          setConf(host(self), 'minScore', score)
+          setConf(confNode(self), 'minScore', score)
         },
       }))
       // Opt into RegionTooLargeMixin's shared derived byte gate (self-releases
@@ -129,7 +140,7 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
          * draws every arc, as does any feature carrying no score
          */
         get minScore(): number {
-          return getConf(host(self), 'minScore')
+          return getConf(confNode(self), 'minScore')
         },
         /**
          * #getter

@@ -3,6 +3,7 @@ import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionToo
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { scoreFilterConfigSchemaFields } from '../shared/scoreFilter.ts'
 import { ARC_DISPLAY_MODES } from './displayModes.ts'
 import { migrateLegacyArcRendererConfig } from './migrate.ts'
 
@@ -103,15 +104,7 @@ export function configSchemaFactory() {
         model: types.enumeration('DisplayMode', [...ARC_DISPLAY_MODES]),
         description: 'render semi-circles instead of arcs',
       },
-      /**
-       * #slot
-       */
-      minScore: {
-        type: 'number',
-        defaultValue: 0,
-        description:
-          'hide arcs whose feature score is below this; features with no score are always drawn',
-      },
+      ...scoreFilterConfigSchemaFields,
       ...regionTooLargeConfigSchemaFields,
     },
     {

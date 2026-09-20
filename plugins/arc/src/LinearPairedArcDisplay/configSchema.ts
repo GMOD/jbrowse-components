@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
+import { scoreFilterConfigSchemaFields } from '../shared/scoreFilter.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const defaultArcLineWidth = 3
@@ -57,15 +59,7 @@ export function configSchemaFactory() {
         description: 'the stroke width of the arcs, in pixels',
         defaultValue: defaultArcLineWidth,
       },
-      /**
-       * #slot
-       */
-      minScore: {
-        type: 'number',
-        defaultValue: 0,
-        description:
-          'hide arcs whose feature score is below this; features with no score are always drawn',
-      },
+      ...scoreFilterConfigSchemaFields,
       ...regionTooLargeConfigSchemaFields,
     },
     {

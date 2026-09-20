@@ -8,6 +8,24 @@ export interface ScoreRange {
   max: number
 }
 
+/**
+ * The slot `ArcFetchModel`'s `minScore`/`setMinScore` read and write. Both arc
+ * displays spread it, which is what lets the mixin name a concrete schema for
+ * the host it cannot otherwise see; declared twice, each display's own schema
+ * was the only thing that had it and the mixin reached them through a union.
+ */
+export const scoreFilterConfigSchemaFields = {
+  /**
+   * #slot
+   */
+  minScore: {
+    type: 'number',
+    defaultValue: 0,
+    description:
+      'hide arcs whose feature score is below this; features with no score are always drawn',
+  },
+} as const
+
 // The span of `score` across the loaded features, which is what the slider is
 // laid out over: arc scores are whatever the file says — read counts, VCF QUAL,
 // a bedpe column — so unlike the sashimi filter (read support, always a small

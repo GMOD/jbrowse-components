@@ -2,7 +2,16 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { featureScoreRange, filterByScore } from './scoreFilter.ts'
 
+import type { ArcScoreFilterHost } from './ArcFetchModel.ts'
+import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+
+// The type-level half: cast to a widened config, `ArcFetchModel`'s minScore
+// read and write name a slot nothing checks, and this annotation fails.
+const scoreFilterPin: HostChecksSlotNames<ArcScoreFilterHost> = true
+test('the mixin checks the slot name it reads', () => {
+  expect(scoreFilterPin).toBe(true)
+})
 
 function feat(uniqueId: string, score?: number): Feature {
   return new SimpleFeature({
