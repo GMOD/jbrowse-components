@@ -19,6 +19,7 @@ import {
 import { onDisplayedRegionsChange } from './displayAutoruns.ts'
 import { containingHost } from './foundationView.ts'
 
+import type { ByteGateAdapterPath } from './RegionTooLargeMixin.ts'
 import type {
   CoarseTierEntry,
   CoarseTierMode,
@@ -228,7 +229,7 @@ export default function CoarseTierMixin<P extends object>() {
        * `RegionTooLargeMixin`'s hook: measure the adapter of the fetch that is
        * about to run, so the estimate and the budget describe one file.
        */
-      get byteGateAdapterPath(): string[] {
+      get byteGateAdapterPath(): ByteGateAdapterPath {
         return self.gateMeasuresCoarse
           ? ['adapter', self.coarseAdapterSlot!]
           : ['adapter']

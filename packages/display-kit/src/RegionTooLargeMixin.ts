@@ -29,6 +29,13 @@ function applyGateEvent(self: GateState, event: GateEvent) {
   self.forceLoadTrack = next.forceLoadTrack
 }
 
+/**
+ * Where on a track config the byte gate measures. The head is the `adapter`
+ * slot every track config has; the tail names a sub-adapter slot on whatever
+ * adapter schema sits there, which no type reaches from here.
+ */
+export type ByteGateAdapterPath = readonly ['adapter', ...string[]]
+
 /** The whole of what `RegionTooLargeMixin` needs a composing display to be. */
 export interface RegionTooLargeHost {
   configuration: RegionTooLargeConfigModel
@@ -130,7 +137,7 @@ export default function RegionTooLargeMixin() {
        * overrides this one hook (MAF: `['adapter', 'summaryAdapter']` while
        * `showSummary`), and both the measurement and the budget follow it.
        */
-      get byteGateAdapterPath(): string[] {
+      get byteGateAdapterPath(): ByteGateAdapterPath {
         return ['adapter']
       },
       /**

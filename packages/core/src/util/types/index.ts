@@ -5,7 +5,10 @@ import { isSessionServices } from './services.ts'
 import type { ViewSnapshotInput } from '../../PluginManager.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
-import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
+import type {
+  BaseInternetAccountModel,
+  BaseTrackConfig,
+} from '../../pluggableElementTypes/models/index.ts'
 import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
 import type { MenuItem } from '../../ui/index.ts'
@@ -774,7 +777,7 @@ type Display = { displayId: string } & AnyConfigurationModel
 export interface AbstractTrackModel {
   id: string
   displays: AbstractDisplayModel[]
-  configuration: AnyConfigurationModel & { displays: Display[] }
+  configuration: BaseTrackConfig & { displays: Display[] }
   minimized: boolean
   resizing: boolean
   setResizing: (flag: boolean) => void

@@ -9,6 +9,7 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Deliberately a subset of createBaseTrackConfig's slots — it omits fields that
 // don't make sense for the ReferenceSequenceTrack (assemblyNames, category,
@@ -105,3 +106,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
     },
   )
 }
+
+export type ReferenceSeqTrackConfigModel = Instance<
+  ReturnType<typeof createReferenceSeqTrackConfig>
+>

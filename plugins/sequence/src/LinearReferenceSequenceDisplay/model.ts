@@ -34,6 +34,7 @@ import {
 } from './components/sequenceGeometry.ts'
 import { hoverDetailForRow } from './components/sequenceHover.ts'
 
+import type { ReferenceSeqTrackConfigModel } from '../ReferenceSequenceTrack/configSchema.ts'
 import type { Canvas2DSequenceRenderer } from './components/Canvas2DSequenceRenderer.ts'
 import type { DrawSequenceState } from './components/drawSequence.ts'
 import type {
@@ -46,6 +47,17 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+/**
+ * `sequenceType` is the ReferenceSequenceTrack's own slot, not a base track
+ * one, and `getContainingTrack` answers `AbstractTrackModel` — a base config.
+ * This display only ever sits on that track, so name its schema and the read
+ * stays checked.
+ */
+const referenceSeqTrack = (self: object) =>
+  getContainingTrack(self) as unknown as {
+    configuration: ReferenceSeqTrackConfigModel
+  }
 
 const ZOOMED_OUT_BP_PER_PX = 10
 const ROW_HEIGHT_PX = 15
@@ -152,7 +164,7 @@ export function modelFactory(
        * #getter
        */
       get sequenceType() {
-        return getConf(getContainingTrack(self), 'sequenceType')
+        return getConf(referenceSeqTrack(self), 'sequenceType')
       },
       /**
        * #getter
