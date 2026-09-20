@@ -97,6 +97,13 @@ export function BaseChordDisplay() {
        * the fetch's pure "go again" signal
        */
       reloadCounter: 0,
+      /**
+       * #volatile
+       * ids of the features to keep at full strength while the rest dim;
+       * undefined dims nothing. The SV inspector writes the selected record's
+       * event here
+       */
+      highlightedFeatureIds: undefined as string[] | undefined,
     }))
     .views(self => ({
       /**
@@ -225,6 +232,14 @@ export function BaseChordDisplay() {
       /**
        * #getter
        */
+      get highlightedFeatureIdSet() {
+        return self.highlightedFeatureIds
+          ? new Set(self.highlightedFeatureIds)
+          : undefined
+      },
+      /**
+       * #getter
+       */
       get selectedFeatureId() {
         if (!isAlive(self)) {
           return undefined
@@ -270,6 +285,12 @@ export function BaseChordDisplay() {
        */
       setAdapterNames(names: Record<string, AdapterNames> | undefined) {
         self.adapterNames = names
+      },
+      /**
+       * #action
+       */
+      setHighlightedFeatureIds(ids: string[] | undefined) {
+        self.highlightedFeatureIds = ids
       },
       /**
        * #action

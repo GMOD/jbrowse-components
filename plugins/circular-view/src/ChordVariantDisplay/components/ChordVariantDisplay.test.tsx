@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
 import configSchemaF from '../models/configSchema.ts'
@@ -88,4 +89,46 @@ test('the error terminal is finished rather than pending', () => {
     drawn: 'true',
     phase: 'error',
   })
+})
+
+const slice = {
+  startRadians: 0,
+  endRadians: Math.PI,
+  bpPerRadian: 1000,
+  region: { elided: false as const, start: 0 },
+} as unknown as ReturnType<ChordDisplayModel['sliceFor']>
+
+function bnd(uniqueId: string, start: number, mate: number) {
+  return new SimpleFeature({
+    uniqueId,
+    refName: 'chr1',
+    start,
+    end: start + 1,
+    ALT: [`C]chr1:${mate}]`],
+  })
+}
+
+test('chords outside the highlighted set dim, and with no set none do', () => {
+  const features = [bnd('a', 100, 900), bnd('b', 200, 800)]
+  const opacities = (overrides: Partial<ChordDisplayModel>) => {
+    const { container } = render(
+      <svg>
+        <ChordVariantDisplay
+          display={chordModel('ready', {
+            features,
+            sliceFor: () => slice,
+            ...overrides,
+          })}
+        />
+      </svg>,
+    )
+    return [...container.querySelectorAll('path')].map(p =>
+      p.getAttribute('opacity'),
+    )
+  }
+  expect(opacities({})).toEqual([null, null])
+  expect(opacities({ highlightedFeatureIdSet: new Set(['b']) })).toEqual([
+    '0.15',
+    null,
+  ])
 })

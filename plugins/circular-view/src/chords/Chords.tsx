@@ -16,6 +16,7 @@ const Chords = observer(function Chords({
     radiusPx,
     bezierRadius,
     selectedFeatureId,
+    highlightedFeatureIdSet,
     onChordClick,
   } = display
   return (
@@ -33,6 +34,7 @@ const Chords = observer(function Chords({
           bezierRadius={bezierRadius}
           sliceFor={sliceFor}
           selected={selectedFeatureId === feature.id()}
+          dimmed={highlightedFeatureIdSet?.has(feature.id()) === false}
           onClick={onChordClick}
         />
       ))}

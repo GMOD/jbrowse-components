@@ -1,5 +1,5 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { clamp, getSession } from '@jbrowse/core/util'
+import { clamp, getSession, isFeature } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   pendingLaunch,
@@ -306,6 +306,20 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the records of the event the selected record belongs to, which the
+       * circle keeps at full strength while it dims the rest; undefined when
+       * the selection is in no event
+       */
+      get highlightedChordIds() {
+        const { selection } = getSession(self)
+        return isFeature(selection)
+          ? self.spreadsheetView.spreadsheet?.svEventFor({
+              uniqueId: selection.id(),
+            })?.featureIds
+          : undefined
+      },
+      /**
+       * #getter
        */
       get variantTrackId() {
         return `sv-inspector-variant-track-${self.id}`
@@ -526,6 +540,23 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               }
             },
             { name: 'SvInspectorView track configuration binding' },
+          ),
+        )
+
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              const { highlightedChordIds, variantTrackId } = self
+              for (const track of self.circularView.tracks) {
+                if (trackConfId(track.configuration) === variantTrackId) {
+                  for (const display of track.displays) {
+                    display.setHighlightedFeatureIds?.(highlightedChordIds)
+                  }
+                }
+              }
+            },
+            { name: 'SvInspectorView event highlight binding' },
           ),
         )
       },

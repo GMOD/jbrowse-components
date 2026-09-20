@@ -77,6 +77,9 @@ chromosomes it touches. Choosing one narrows the table and the circle to that
 event's records, and with **show only regions with data** on, the circle redraws
 over those chromosomes alone.
 
+With no event chosen, selecting a row or chord of an event dims every chord
+outside that event, so its other junctions stand out against the whole callset.
+
 The dropdown lists a value only when its records describe more than one
 junction. A breakend callset writes each junction twice, once from either end,
 and GRIDSS gives that pair an `EVENT` of its own, so a list of every value would

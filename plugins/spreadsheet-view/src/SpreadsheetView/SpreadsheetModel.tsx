@@ -261,17 +261,24 @@ export default function stateModelFactory() {
       get svEvents() {
         const field = this.svEventColumnField
         const { rowJunctions } = this
-        const events = new Map<string, SvEvent & { count: number }>()
+        const events = new Map<
+          string,
+          SvEvent & { count: number; featureIds: string[] }
+        >()
         for (const row of field ? (this.rows ?? []) : []) {
           const label = eventLabel(row, field)
           if (label !== undefined) {
             const event = events.get(label) ?? {
               label,
               junctions: [],
+              featureIds: [],
               count: 0,
             }
             events.set(label, event)
             event.count++
+            if (row.feature) {
+              event.featureIds.push(row.feature.uniqueId)
+            }
             const junction = rowJunctions[row.id]
             if (junction) {
               event.junctions.push(junction)
@@ -293,12 +300,8 @@ export default function stateModelFactory() {
        * the event a record belongs to, for a drill-down that opens every locus
        * of it
        */
-      svEventFor(feature: SimpleFeatureSerialized): SvEvent | undefined {
-        const row = this.rows?.find(
-          r => r.feature?.uniqueId === feature.uniqueId,
-        )
-        const label = row ? eventLabel(row, this.svEventColumnField) : undefined
-        return this.svEvents.find(e => e.label === label)
+      svEventFor(feature: { uniqueId: string }) {
+        return this.svEvents.find(e => e.featureIds.includes(feature.uniqueId))
       },
       /**
        * #method

@@ -27,6 +27,7 @@ export interface ChordDisplayFrameModel {
 export interface ChordDisplayModel extends ChordDisplayFrameModel {
   features: Feature[] | undefined
   selectedFeatureId: string | undefined
+  highlightedFeatureIdSet?: Set<string>
   bezierRadius: number
   sliceFor: (
     assemblyName: string | undefined,

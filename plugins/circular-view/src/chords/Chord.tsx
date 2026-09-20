@@ -12,6 +12,8 @@ import type { ChordDisplayModel } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
+const DIMMED_OPACITY = 0.15
+
 const Chord = observer(function Chord({
   feature,
   sliceFor,
@@ -19,6 +21,7 @@ const Chord = observer(function Chord({
   config,
   bezierRadius,
   selected,
+  dimmed,
   onClick,
 }: {
   feature: Feature
@@ -27,6 +30,7 @@ const Chord = observer(function Chord({
   config: AnyConfigurationModel
   bezierRadius: number
   selected: boolean
+  dimmed: boolean
   onClick: (feat: Feature) => void
 }) {
   const [hovered, setHovered] = useState(false)
@@ -68,6 +72,7 @@ const Chord = observer(function Chord({
       d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
       {...getStrokeProps(stroke)}
       strokeWidth={hovered ? 3 : 1}
+      opacity={dimmed && !hovered ? DIMMED_OPACITY : undefined}
       onClick={() => {
         onClick(feature)
       }}
