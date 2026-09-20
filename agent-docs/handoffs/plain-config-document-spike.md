@@ -1,6 +1,6 @@
 ---
 name: plain-config-document-spike
-description: A spike on 2026-09-20 had every data adapter read its config as a plain document resolved against the schema's slot table rather than as an MST node, with no adapter and no test edited; the whole non-web suite passed but for one line in the MAF plugin, since fixed on main. The read half of the config system does not depend on MST. Unshown are honest types, validation, the web suites and the whole write half, and the open decision is whether to make adapter configs plain for real.
+description: A spike on 2026-09-20 had every data adapter read its config as a plain document resolved against the schema's slot table rather than as an MST node, with no adapter and no test edited; the whole non-web suite passed but for one line in the MAF plugin, since fixed on main. The read half of the config system does not depend on MST. A Fable review the same day found the larger duplication on the write half — a track's config held as a plain document and as a throwaway MST node, reconciled by a debounced diff — and recommends one plain substrate reached through a write-half spike first. Nothing past the spike is agreed.
 ---
 
 # A config as a plain document: the adapter spike
@@ -72,26 +72,70 @@ No adapter and no test was edited.
   fold exist because of MST's own types; `MergeConfigDef` staying a flat mapped
   type and `NormalizeSlotDef` are properties of a merged definition and survive
   any substrate.
-- **Validation.** `create` refuses a value outside an enum or of the wrong
-  type, and the resolver checks nothing past `closed` and `preProcessSnapshot`.
-  No suite depends on a worker refusing an adapter config, and a config that
-  reached the worker through a hydrated track was validated on the main thread.
-  The routes that hand a snapshot straight to a worker — `jb.getFeatures`,
-  jbrowse-img, the CLI — were not checked.
+- **Validation.** The resolver checks nothing past `closed` and
+  `preProcessSnapshot`. An earlier draft of this file said `create` refuses a
+  bad value where the resolver does not, and for most builds that is wrong: the
+  MST fork type-checks only when `NODE_ENV` is not production or
+  `setTypeChecking(true)` has run, and the one call in the tree is
+  `products/jbrowse-web/src/components/Loader.tsx`, on jbrowse-web's main
+  thread. So a production worker, jbrowse-desktop, the embedded components and
+  jbrowse-img `create` a config unchecked today, which is why `setSlot` carries
+  an `is()` guard of its own. Read off the code; no production bundle was run. A
+  validator off the slot table would be a gain in every product rather than
+  parity with one.
 - **The `jbrowse-web` jest project**, which only remote CI runs.
 - **The adapter id.** `getAdapterId` hashes the stripDefault snapshot, and
   adapters prefix feature `uniqueId`s with it. The spike keeps that hash for a
   node it was handed and hashes the resolved document on the cache path, and no
   suite noticed the difference.
 - **The write half.** An adapter config is never edited, observed or referenced
-  by id. A display's and a track's are all three, so the next experiment is a
-  display config as the table plus a document held in a `types.frozen` prop,
-  with per-slot observability through computeds. Unread on that side: the config
-  editor's internals, ADR-032's working copies, and the root, connection and
-  internet-account configs.
+  by id. A display's and a track's are all three.
+
+## The second duplication, found by the review that followed
+
+A Fable review the same day checked this file's claims and read the write half.
+Its finding beyond the schema: **a track's config is held twice at runtime as
+well.** `jbrowse.tracks` is `types.frozen`, a non-admin's edits are a frozen
+`trackConfigDeltas` record, and every read or write of one goes through a
+throwaway MST node hydrated from that document (ADR-031, ADR-032), which a
+debounced whole-snapshot diff then writes back. Checked against the code:
+
+- two savers, each on a 400 ms timer — the reaction in
+  `packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts` and the
+  autorun in `plugins/config/src/ConfigurationEditorWidget/model.ts` — deduped
+  in `updateTrackConfiguration`;
+- `packages/product-core/src/Session/SessionTracks.ts` and
+  `packages/core/src/util/trackConfigDelta.ts` hold the reconciliation;
+- a delta records adds and changes and no deletion, so a non-admin's reset of a
+  slot the admin config sets shows on screen and does not survive a reload.
+  `trackConfigDelta.ts` records that as deliberate, to keep a deletion sentinel
+  out of the shared JSON. ADR-146 has since made `null` that sentinel everywhere
+  else.
+
+The review's counts correct two above: the accessor calls are 583 in source by
+the TypeScript audit, the 1,048 figure being source plus tests, and the external
+checkouts hold 37 schemas in 19 plugins.
 
 ## The decision this leaves
 
-Whether to make adapter configs plain for real — an honest `config` type, a
-validation pass off the slot table, the web suites on CI — as the first step of
-taking the config system off MST nodes, or to stop at the spike.
+The review recommends a plain document plus the slot table for every config,
+with MST holding documents only, **on the condition that the end state is one
+substrate** — assemblies, connections and internet accounts included — and
+withdraws the recommendation if it is not. It calls the adapter-only hybrid the
+worst place to stop, since two substrates is the defect this thread keeps
+finding, and it puts the honest `BaseAdapter.config` type third rather than
+first: that step measures the half already shown to work and retires none of
+the risks that can end the direction.
+
+Its first step is a throwaway spike of the write half, the mirror of this one:
+`TrackConfigurationReference` and `DisplayConfigurationReference` answer a
+handle over an observable resolved document, no display is edited, and the
+non-web suite runs. It passes on a handful of distinct failures that are each an
+MST node API applied to a config, and ends the direction on any semantic one —
+an observer that did not fire, a refetch loop, identity churn between two views
+of one track, a drag that wakes every reader.
+
+None of that is agreed. Colin's to answer first: whether the non-admin reset is
+a defect to fix, whether a prebuilt store bundle must load unmodified in v5,
+whether the non-track configs become documents too, and whether production
+builds should validate at all.
