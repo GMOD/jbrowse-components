@@ -31,6 +31,7 @@ import { featuresSpecs } from './specs/features.ts'
 import { geneDensitySpecs } from './specs/gene_density.ts'
 import { genomesBasicsSpecs } from './specs/genomes_basics.ts'
 import { genomesPangenomeSpecs } from './specs/genomes_pangenome.ts'
+import { graphChrmSpecs } from './specs/graph-chrm.ts'
 // the pangenome graph figures, split by organism — see specs/graph-fixtures.ts
 import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
 import { hprcGraphSpecs } from './specs/graph-hprc.ts'
@@ -117,6 +118,7 @@ export const specs: ScreenshotSpec[] = [
   ...hprcGraphSpecs,
   ...mouseCattleGraphSpecs,
   ...graphReadingSpecs,
+  ...graphChrmSpecs,
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,

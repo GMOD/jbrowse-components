@@ -405,6 +405,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'syri/col_ler_chr4.png',
     band: [0.4, 0.86],
   },
+  pangenome_chrm: {
+    // The clustered matrix under the chrome and the track label: the dendrogram
+    // and the branch-colored sidebar down the left are the card's subject, so
+    // the crop keeps the left edge.
+    src: 'pangenome/chrm_lineage_clusters.png',
+    band: [0.24, 0.96],
+    position: 'left',
+  },
   amylase_haplotypes: {
     // The two matching insertion wedges with the straight three-copy band
     // between them, which is the page's claim at card size; the five-to-seven

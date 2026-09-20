@@ -1,0 +1,45 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+      "refNameAliases": {
+        "uri": "https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (hg38)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hprc_chrM_graph_variants",
+      "name": "HPRC chrM graph, top-level sites (vg deconstruct)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "chrM.vcf.gz",
+        "samplesTsvLocation": {
+          "uri": "chrM_samples.tsv"
+        }
+      }
+    }
+  ]
+}

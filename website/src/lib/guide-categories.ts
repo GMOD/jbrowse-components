@@ -140,6 +140,7 @@ export const TUTORIAL_ORDER = [
   'pangenome_hprc_part2',
   'pangenome_hprc_part3',
   'pangenome_graph_reading',
+  'pangenome_chrm',
   'pangenome_mouse',
   'pangenome_cattle',
   'pangenome_prepare_graph',
