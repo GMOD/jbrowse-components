@@ -41,8 +41,8 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | <span id="getter-favoritesset">**favoritesSet**</span><br><code>Set&lt;string&gt;</code> |  |
 | <span id="getter-recentlyusedset">**recentlyUsedSet**</span><br><code>Set&lt;string&gt;</code> |  |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
-| <span id="getter-activesorttracknames">**activeSortTrackNames**</span><br><code>boolean</code> |  |
-| <span id="getter-activesortcategories">**activeSortCategories**</span><br><code>boolean</code> |  |
+| <span id="getter-activesorttracknames">**activeSortTrackNames**</span><br><code>any</code> |  |
+| <span id="getter-activesortcategories">**activeSortCategories**</span><br><code>any</code> |  |
 | <span id="getter-configandsessiontrackconfigurations">**configAndSessionTrackConfigurations**</span><br><code>AnyConfigurationModel[]</code> | the tracks this view can be offered — its assemblies' sequence tracks, then the session's list filtered to what it can draw |
 | <span id="getter-alltracks">**allTracks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ group: string; id: string; tracks: TrackNodeSource[]; default…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ group: string; id: string; tracks: TrackNodeSource[]; defaultCollapsed: boolean; loading: boolean; }[]</code></pre></dialog></span> | one group per connection *config* (not just live instances), so a connection shows in the tree before it's loaded; expanding it hydrates the connection (see toggleCategory). Tracks are empty until then.<br><br>Each track is resolved to a TrackNodeSource and sorted here rather than in generateHierarchy, so a filterText keystroke reads no configs and re-sorts nothing (filtering preserves order) |
 | <span id="getter-filterquery">**filterQuery**</span><br><code>string</code> | the normalized filter box contents; empty when nothing is being searched for |

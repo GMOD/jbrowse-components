@@ -366,14 +366,21 @@ type SlotValueRawFromDef<DEF> = DEF extends AnyConfigurationSchemaType
               : any
         : any
 
+// A widened schema reaches the second segment as bare `any` — the first one
+// answered `D[K]` off an `any` definition — and `any` matches the pattern below
+// through its false arm. So without the `IsAny` arm the walk answers `never`
+// from two segments on, where one segment answers `any`, and a `never` read
+// satisfies whatever the caller annotates while refusing every member read.
 type SubSchemaOf<SCHEMA, K> =
-  SCHEMA extends ConfigurationSchemaType<infer D, any>
-    ? K extends keyof D
-      ? D[K]
-      : GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-        ? SubSchemaOf<GetBase<SCHEMA>, K>
-        : never
-    : never
+  IsAny<SCHEMA> extends true
+    ? any
+    : SCHEMA extends ConfigurationSchemaType<infer D, any>
+      ? K extends keyof D
+        ? D[K]
+        : GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
+          ? SubSchemaOf<GetBase<SCHEMA>, K>
+          : never
+      : never
 
 type SubSchemaSlotPath<SCHEMA> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>

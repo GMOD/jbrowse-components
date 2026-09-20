@@ -315,6 +315,11 @@ describe('getConf slot-value type narrowing', () => {
         getConf(host, ['facet', 'fields'])
         // the widened host checks nothing, as it does for a slot name
         getConf(widened, ['facet', 'fields'])
+        // and it degrades to `any` at every depth: a `never` here satisfies
+        // whatever type the caller annotates while refusing every member read
+        // of the value
+        const deep = getConf(widened, ['facet', 'inner', 'size'])
+        assertType<Equal<typeof deep, any>>()
       }
       void check
       expect(true).toBe(true)
