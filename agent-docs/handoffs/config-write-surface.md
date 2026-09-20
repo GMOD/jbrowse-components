@@ -86,6 +86,38 @@ which is the shape of the bug `86fde0cc4c` fixed.
    that patch, not of typed props. Both are gone on the branch above, where all
    twelve `HostChecksSlotNames` pins hold. Do not start from the patch.
 
+   **Two branches reach zero independently and need reconciling.**
+   `worktree-agent-a9c5e4188f5908d2d` (tip `49ce13e764`, `verify --full` green,
+   421 suites) keeps the index signature and fixes the spike properly;
+   `worktree-agent-ad46ed385972fe570` drops it and gains typo detection and a
+   smaller `.d.ts`. The second is strictly more ambitious; take it as the base
+   and lift the first's diagnoses into it.
+
+   Three diagnoses from the first that the second does not state, each of which
+   fails **silently**:
+
+   - **MST declares `Type: STNValue<T, this>`.** A config node carries its own
+     schema in the `IStateTreeNode` brand by polymorphic `this`, so redeclaring
+     `Type` drops it, `ConfigurationSchemaForModel` degrades to
+     `AnyConfigurationSchemaType`, and every read-side slot-name check switches
+     off with no error anywhere. `scripts/audit-config-read-types.ts` is what
+     sees it: 137 unchecked reads on main, **333** under `variant-d.patch`, 131
+     after the fix. Restate `IStateTreeNode<this>` in the override. **Run that
+     audit on any branch that touches the node type** — nothing else reports
+     this.
+   - **`& ConfigurationSchemaDefinition` on the merged definition** gives it an
+     index signature, and `Omit<BD, keyof D>` over one collapses to just that,
+     dropping every named base slot on every merge. 48 of the 67, plus the
+     `AnyConfigurationSnapshot` circularity.
+   - **Wrapping `ConfigNodeType` in an `IsAny` conditional** makes TypeScript
+     measure `DEFINITION` covariant, and a failed covariant type-argument check
+     is refused where an invariant one falls back to structural.
+
+   Five latent bugs the `any` was hiding, headed by `HtsgetBamAdapter`
+   registered with one schema while reading another's through a cast. Detail in
+   `handoffs/typed-config-props.md` and `handoffs/config-index-signature.md` on
+   the two branches.
+
 2. **`null` as the reset token for JSON-borne routes.** No session spec, share
    link or agent call can reset a slot to its default today. Twelve
    `defaultValue: null` slots in the tree, every one already meaning "unset",
