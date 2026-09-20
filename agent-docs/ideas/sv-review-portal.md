@@ -154,11 +154,12 @@ with `file, locs, name, line, event, status`. `line` is the record's line in the
 VCF, so the page reads `SVTYPE`, `SVLEN`, `FILTER` and the rest from the callset
 itself and `jb2export` holds no list of blessed INFO keys.
 
-The page is built: `variant-review-portal`, a repo of its own beside
-gene-review-portal and carrying that page's keyboard, verdicts and TSV
-round trip. It takes the VCF and one `--images` directory per sample, joins them
-on `line`, and needs no JBrowse dependency. COLO829's der(3) is its first
-portal, tumor over normal. It is a local repository until Colin publishes it.
+The page is built:
+[variant-review-portal](https://github.com/cmdcolin/variant-review-portal), a
+repo of its own beside gene-review-portal and carrying that page's keyboard,
+verdicts and TSV round trip. It takes the VCF and one `--images` directory per
+sample, joins them on `line`, and needs no JBrowse dependency. COLO829's der(3)
+is its first portal, tumor over normal.
 
 1. **Sort keys**, under
    [Sorting the queue](#sorting-the-queue-is-what-makes-it-finishable). The page
@@ -189,6 +190,5 @@ portal, tumor over normal. It is a local repository until Colin publishes it.
 
 ## Decisions for Colin
 
-- Whether `variant-review-portal` is the name it publishes under.
 - HG008 first (has `EVENT`, needs NCBI range requests) or COLO829 first (all
   hosted, no events). Proposed: HG008.
