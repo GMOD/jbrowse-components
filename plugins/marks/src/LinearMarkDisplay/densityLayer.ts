@@ -1,4 +1,5 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -14,9 +15,9 @@ const EMPTY: StoredLayer = {
 }
 
 /**
- * One region's density read as the layer a `bar` mark draws: the sidecar's own
- * intervals as `x`/`x2` and its levels as `y`, one packed colour per bar, and
- * the Flatbush the hover reads. The sidecar's rows are what a wiggle track
+ * One region's density read as the layer a `bar` or `point` mark draws: the
+ * sidecar's own intervals as `x`/`x2` and its levels as `y`, one packed colour
+ * per bin, a disc for the point's glyph, and the Flatbush the hover reads. The sidecar's rows are what a wiggle track
  * would draw of the same bigWig at the same bp/px — the zoom level the adapter
  * picked — so nothing is resampled on the way through.
  */
@@ -47,6 +48,7 @@ export function densityLayer(
     x2: ends,
     y: scores,
     color: colors,
+    glyph: new Uint8Array(count).fill(GLYPH_DISC),
     featureIndex,
     yMin,
     yMax,

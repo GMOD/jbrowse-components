@@ -96,7 +96,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, MarkRegionData&gt;</code> | The layers the display draws: faceted, every region's rows offset onto the one layout, so a chip and the band under it agree whichever region a span came from. | LinearMarkDisplay |
 | <span id="getter-marklist">**markList**</span><br><code>DisplayMark[]</code> | The mark list the shapes declare — one `defineMark` per config entry, reading `layers[i]`, off outside its zoom range. Recomputed only when the entries move, so the component can key its backend factory on it. | LinearMarkDisplay |
 | <span id="getter-visibleshapes">**visibleShapes**</span><br><code>("bar" &#124; "point" &#124; "span")[]</code> | The shapes drawing at the view's zoom. | LinearMarkDisplay |
-| <span id="getter-hasbarmark">**hasBarMark**</span><br><code>boolean</code> |  | LinearMarkDisplay |
 | <span id="getter-haspointmark">**hasPointMark**</span><br><code>boolean</code> |  | LinearMarkDisplay |
 | <span id="getter-activefilters">**activeFilters**</span><br><code>string[]</code> | the filters actually applied, `jexl:`-prefixed | LinearMarkDisplay |
 | <span id="getter-valuedmarkindices">**valuedMarkIndices**</span><br><code>number[]</code> | The marks folded into the y domain: every one drawing at this zoom. | LinearMarkDisplay |

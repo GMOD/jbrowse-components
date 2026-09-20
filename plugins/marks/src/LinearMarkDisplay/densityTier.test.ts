@@ -100,6 +100,28 @@ test('a density mark draws the sidecar in the refused fetch place', () => {
   ])
 })
 
+test('a point density mark draws the sidecar too, its layer carrying the lanes a point reads', () => {
+  const { createDisplay } = createTestEnvironment(
+    [
+      { shape: 'bar', encoding: { y: 'score' } },
+      { shape: 'point', source: 'density', encoding: { y: 'count' } },
+    ],
+    SIDECAR,
+  )
+  const { display, view } = createDisplay()
+  refuse(display, view)
+  display.setCoarseTier([{ displayedRegionIndex: 0, payload: bins() }], {
+    regions: [],
+    key: '',
+  })
+  expect(display.coarseTierStandsIn).toBe(true)
+  const block = display.renderBlocks[0]!
+  const region = display.rpcDataMap.get(block.displayedRegionIndex)!
+  expect(
+    display.markList[1]!.ink!(region, block, display.renderState, 1),
+  ).toBeDefined()
+})
+
 test('a zoom that keeps the density mark rebuilds no payload', () => {
   const { createDisplay } = createTestEnvironment(DENSITY_MARKS, SIDECAR)
   const { display, view } = createDisplay()

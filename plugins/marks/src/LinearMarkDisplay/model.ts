@@ -715,12 +715,6 @@ export function stateModelFactory(
       /**
        * #getter
        */
-      get hasBarMark(): boolean {
-        return this.visibleShapes.includes('bar')
-      },
-      /**
-       * #getter
-       */
       get hasPointMark(): boolean {
         return this.visibleShapes.includes('point')
       },
