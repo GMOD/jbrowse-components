@@ -14,6 +14,7 @@ import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { fanOutStatus, makeFetchContext } from '@jbrowse/core/util/fetchContext'
 import { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 import { installFetch } from '@jbrowse/core/util/installFetch'
+import { viewLoading } from '@jbrowse/core/util/viewStatus'
 import {
   pendingLaunch,
   withLaunchInput,
@@ -272,33 +273,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * What the spinner says: which of the assembly's files is downloading,
-       * rather than a bare "Loading" for the slow part of startup. See
-       * agent-docs/reference/PROGRESS_REPORTING.md.
+       * What the loading screen says while `showLoading`, read off the
+       * assembly whose load is the wait; undefined otherwise.
        */
-      get loadingMessage() {
-        return this.showLoading
-          ? this.loadingAssembly?.statusMessage || 'Loading'
-          : undefined
-      },
-
-      /**
-       * #getter
-       * Determinate fraction for the spinner's bar, when the assembly load
-       * reports one
-       */
-      get loadingProgress() {
-        return this.showLoading
-          ? this.loadingAssembly?.statusProgress
-          : undefined
-      },
-      /**
-       * #getter
-       * The URL the assembly load is currently fetching, when the phase named
-       * one. Only the stalled-load notice reads it — see `ViewLoadingScreen`.
-       */
-      get loadingSource() {
-        return this.showLoading ? this.loadingAssembly?.statusSource : undefined
+      get loading() {
+        return viewLoading(this.showLoading, () => this.loadingAssembly)
       },
 
       /**

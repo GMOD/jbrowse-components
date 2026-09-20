@@ -85,20 +85,14 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
   model: BreakpointViewModel
 }) {
   const { classes } = useStyles()
-  const { showLoading, showImportForm, loadingMessage, loadingProgress } = model
+  const { loading, showImportForm } = model
 
   // showLoading first, and both branches outside the rubberband container, so
   // the three phases read the same way here as in LGV/dotplot/synteny. The two
   // are disjoint (showLoading needs hasSomethingToShow and no error, which is
   // exactly what showImportForm negates), so the order is legibility, not logic.
-  if (showLoading) {
-    return (
-      <ViewLoadingScreen
-        message={loadingMessage}
-        fraction={loadingProgress}
-        source={model.loadingSource}
-      />
-    )
+  if (loading) {
+    return <ViewLoadingScreen {...loading} />
   } else if (showImportForm) {
     return <BreakpointSplitViewImportForm model={model} />
   } else {

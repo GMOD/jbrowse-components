@@ -3566,7 +3566,8 @@
       "package": "@jbrowse/core",
       "names": [
         "assemblyErrorMessage",
-        "computeViewStatus"
+        "computeViewStatus",
+        "viewLoading"
       ],
       "worker": "real"
     },

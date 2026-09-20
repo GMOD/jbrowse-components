@@ -1,12 +1,42 @@
 /**
+ * What a view's loading screen says: the label, the determinate fraction when
+ * the load reports one, and the URL being fetched when the phase named one.
+ */
+export interface ViewLoading {
+  message: string
+  progress: number | undefined
+  source?: string
+}
+
+interface LoadingAssembly {
+  statusMessage?: string
+  statusProgress?: number
+  statusSource?: string
+}
+
+/**
+ * A view's `loading` getter: undefined unless `showLoading`, and otherwise read
+ * off the assembly whose load is the wait. The assembly is a thunk because its
+ * status ticks while a file is in flight, and a view that is not loading should
+ * not subscribe to it.
+ */
+export function viewLoading(
+  showLoading: boolean,
+  assembly: () => LoadingAssembly | undefined,
+): ViewLoading | undefined {
+  if (!showLoading) {
+    return undefined
+  }
+  const asm = assembly()
+  return {
+    message: asm?.statusMessage || 'Loading',
+    progress: asm?.statusProgress,
+    source: asm?.statusSource,
+  }
+}
+
+/**
  * The mutually-exclusive lifecycle state of a view, as one value.
- *
- * A view answers this question through nine getters today — `ready`, `error`,
- * `initialized`, `showLoading`, `showImportForm`, `hasSomethingToShow`,
- * `loadingMessage`, `loadingProgress`, `assemblyErrors` — and a host reading
- * them has to re-derive the precedence by subtraction, which is the mistake
- * `computeDisplayPhase` was written to stop one level down. `view.ready` **is**
- * that subtraction: `!showLoading && !this.error`.
  *
  * The payload travels with the branch, so a caller cannot read a loading
  * message out of a failed view or an error out of a healthy one.
@@ -14,7 +44,7 @@
 export type ViewStatus =
   | { type: 'ready' }
   | { type: 'error'; error: unknown }
-  | { type: 'loading'; message: string; progress: number | undefined }
+  | ({ type: 'loading' } & ViewLoading)
   | { type: 'noRegions' }
 
 export interface ViewStatusInputs {
@@ -34,7 +64,7 @@ export interface ViewStatusInputs {
    * would make every reader of a *ready* view subscribe to a churning
    * observable it never displays.
    */
-  loading: () => { message: string; progress: number | undefined } | undefined
+  loading: () => ViewLoading | undefined
 }
 
 /**

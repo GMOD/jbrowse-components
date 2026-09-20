@@ -57,13 +57,7 @@ const LinearSyntenyView = observer(function LinearSyntenyView({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const {
-    showLoading,
-    showImportForm,
-    awaitingAutoDiagonalize,
-    loadingMessage,
-    loadingProgress,
-  } = model
+  const { loading, showImportForm, awaitingAutoDiagonalize } = model
 
   if (awaitingAutoDiagonalize) {
     return (
@@ -74,14 +68,8 @@ const LinearSyntenyView = observer(function LinearSyntenyView({
         }}
       />
     )
-  } else if (showLoading) {
-    return (
-      <ViewLoadingScreen
-        message={loadingMessage}
-        fraction={loadingProgress}
-        source={model.loadingSource}
-      />
-    )
+  } else if (loading) {
+    return <ViewLoadingScreen {...loading} />
   } else if (showImportForm) {
     return <LinearSyntenyImportForm model={model} />
   } else {

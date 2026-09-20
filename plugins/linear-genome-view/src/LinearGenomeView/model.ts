@@ -46,6 +46,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   assemblyErrorMessage,
   computeViewStatus,
+  viewLoading,
 } from '@jbrowse/core/util/viewStatus'
 import {
   pendingLaunch,
@@ -909,37 +910,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * What the spinner says. The assembly reports which of its files it is
-       * downloading, so this is "Downloading chromosome aliases" rather than a bare
-       * "Loading" for the part of startup that actually takes time. Falls back
-       * once the assembly is loaded and the remaining wait is the init autorun's
-       * own navigation, which is local.
+       * What the loading screen says while `showLoading`, read off the
+       * assembly whose load is the wait; undefined otherwise.
        */
-      get loadingMessage() {
-        return this.showLoading
-          ? this.loadingAssembly?.statusMessage || 'Loading'
-          : undefined
-      },
-
-      /**
-       * #getter
-       * Determinate fraction for the spinner's bar, when the assembly load
-       * reports one (a whole-file download with a Content-Length)
-       */
-      get loadingProgress() {
-        return this.showLoading
-          ? this.loadingAssembly?.statusProgress
-          : undefined
-      },
-
-      /**
-       * #getter
-       * The URL the assembly load is currently fetching, when the phase named
-       * one. Only the stalled-load notice reads it — see
-       * {@link ViewLoadingScreen}.
-       */
-      get loadingSource() {
-        return this.showLoading ? this.loadingAssembly?.statusSource : undefined
+      get loading() {
+        return viewLoading(this.showLoading, () => this.loadingAssembly)
       },
 
       /**
@@ -1026,13 +1001,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return computeViewStatus({
           error: this.error,
           hasSomethingToShow: this.hasSomethingToShow,
-          loading: () =>
-            this.showLoading
-              ? {
-                  message: this.loadingMessage ?? 'Loading',
-                  progress: this.loadingProgress,
-                }
-              : undefined,
+          loading: () => this.loading,
         })
       },
 

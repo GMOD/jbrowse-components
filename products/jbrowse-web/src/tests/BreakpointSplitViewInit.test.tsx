@@ -70,14 +70,14 @@ async function createBreakpointView(views: object[]) {
 // Same channel LGV/dotplot/synteny/circular report on. Before the sub-views
 // exist `init` is what names the assemblies; once they do, the wait belongs to
 // the first uninitialized LGV and this delegates to the one it already computes.
-test('BreakpointSplitView loadingMessage reports what the assembly load is downloading', async () => {
+test('BreakpointSplitView loading reports what the assembly load is downloading', async () => {
   const view = await createBreakpointView([
     { loc: 'chr3:186,700,000..186,701,000', assembly: 'hg19' },
     { loc: 'chr6:56,758,000..56,759,000', assembly: 'hg19' },
   ])
 
   expect(view.showLoading).toBe(true)
-  expect(view.loadingMessage).toBe('Loading')
+  expect(view.loading?.message).toBe('Loading')
 
   // one synchronous block: the real load is in flight and its `finally` clears
   // the status, so anything after an await races it
@@ -87,8 +87,8 @@ test('BreakpointSplitView loadingMessage reports what the assembly load is downl
     current: 3,
     total: 4,
   })
-  expect(view.loadingMessage).toBe('Downloading chromosome sizes')
-  expect(view.loadingProgress).toBe(0.75)
+  expect(view.loading?.message).toBe('Downloading chromosome sizes')
+  expect(view.loading?.progress).toBe(0.75)
 
   await waitFor(
     () => {
@@ -98,8 +98,8 @@ test('BreakpointSplitView loadingMessage reports what the assembly load is downl
   )
 
   // loaded: no spinner, so nothing to label
-  expect(view.loadingMessage).toBeUndefined()
-  expect(view.loadingProgress).toBeUndefined()
+  expect(view.loading?.message).toBeUndefined()
+  expect(view.loading?.progress).toBeUndefined()
 }, 40000)
 
 test('BreakpointSplitView initializes from the views launch key', async () => {

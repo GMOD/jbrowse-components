@@ -114,7 +114,7 @@ const CircularView = observer(function CircularView({
 }: {
   model: CircularViewModel
 }) {
-  const { showLoading, showView, showImportForm, loadingMessage } = model
+  const { loading, showView, showImportForm } = model
   if (model.awaitingAutoDiagonalize) {
     // Before `showLoading`, which this flag is one term of: the reorder has its
     // own screen, and the figure stays off it so nobody watches an
@@ -127,14 +127,8 @@ const CircularView = observer(function CircularView({
         }}
       />
     )
-  } else if (showLoading) {
-    return (
-      <ViewLoadingScreen
-        message={loadingMessage}
-        fraction={model.loadingProgress}
-        source={model.loadingSource}
-      />
-    )
+  } else if (loading) {
+    return <ViewLoadingScreen {...loading} />
   } else if (showImportForm) {
     return (
       <Suspense fallback={null}>

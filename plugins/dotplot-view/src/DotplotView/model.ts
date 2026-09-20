@@ -25,6 +25,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   assemblyErrorMessage,
   computeViewStatus,
+  viewLoading,
 } from '@jbrowse/core/util/viewStatus'
 import {
   pendingLaunch,
@@ -617,36 +618,11 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * Label for the generic loading spinner, naming the assembly file being
-         * downloaded when the assembly load is what the wait is. The
-         * auto-diagonalize wait is a separate render branch
-         * (DiagonalizeLoadingScreen), so this only covers the plain "view not
-         * ready" case.
+         * What the loading screen says while `showLoading`, read off the
+         * assembly whose load is the wait; undefined otherwise.
          */
-        get loadingMessage() {
-          return this.showLoading
-            ? this.loadingAssembly?.statusMessage || 'Loading'
-            : undefined
-        },
-        /**
-         * #getter
-         * Determinate fraction for the spinner's bar, when the assembly load
-         * reports one
-         */
-        get loadingProgress() {
-          return this.showLoading
-            ? this.loadingAssembly?.statusProgress
-            : undefined
-        },
-        /**
-         * #getter
-         * The URL the assembly load is currently fetching, when the phase named
-         * one. Only the stalled-load notice reads it — see `ViewLoadingScreen`.
-         */
-        get loadingSource() {
-          return this.showLoading
-            ? this.loadingAssembly?.statusSource
-            : undefined
+        get loading() {
+          return viewLoading(this.showLoading, () => this.loadingAssembly)
         },
         /**
          * #getter
@@ -659,13 +635,7 @@ export default function stateModelFactory(pm: PluginManager) {
           return computeViewStatus({
             error: self.error,
             hasSomethingToShow: this.hasSomethingToShow,
-            loading: () =>
-              this.showLoading
-                ? {
-                    message: this.loadingMessage ?? 'Loading',
-                    progress: this.loadingProgress,
-                  }
-                : undefined,
+            loading: () => this.loading,
           })
         },
         /**

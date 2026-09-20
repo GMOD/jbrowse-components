@@ -111,7 +111,7 @@ function initialize() {
       regions: volvoxDisplayedRegions,
       initialized: true,
       // mirrors the real model's load-status fields, which the view's
-      // loadingMessage/loadingProgress/loadingSource read. A field missed here
+      // `loading` reads. A field missed here
       // does not fail — the view's getter simply reads undefined off a stub that
       // never had it — so keep this in step with `assembly.ts`
       statusMessage: undefined as string | undefined,
@@ -1435,8 +1435,7 @@ test('status carries the loading message the spinner would draw', async () => {
   expect(model.showLoading).toBe(true)
   expect(model.status).toEqual({
     type: 'loading',
-    message: model.loadingMessage,
-    progress: model.loadingProgress,
+    ...model.loading,
   })
 
   await waitFor(() => {
@@ -1907,7 +1906,7 @@ test('showLoading is true when init is set and becomes false after initializatio
   expect(console.error).not.toHaveBeenCalled()
 })
 
-test('loadingMessage reports what the assembly load is downloading', () => {
+test('loading reports what the assembly load is downloading', () => {
   const { Session, LinearGenomeModel } = initialize()
   const model = Session.create({
     configuration: {},
@@ -1920,8 +1919,8 @@ test('loadingMessage reports what the assembly load is downloading', () => {
   )
   expect(model.showLoading).toBe(true)
   // nothing reported yet, so the generic label
-  expect(model.loadingMessage).toBe('Loading')
-  expect(model.loadingProgress).toBeUndefined()
+  expect(model.loading?.message).toBe('Loading')
+  expect(model.loading?.progress).toBeUndefined()
 
   // assertions stay in this one synchronous block: the real load is in flight
   // and its `finally` clears the status, so anything after an await would race
@@ -1931,16 +1930,16 @@ test('loadingMessage reports what the assembly load is downloading', () => {
     current: 1,
     total: 4,
   })
-  expect(model.loadingMessage).toBe('Downloading chromosome aliases')
-  expect(model.loadingProgress).toBe(0.25)
+  expect(model.loading?.message).toBe('Downloading chromosome aliases')
+  expect(model.loading?.progress).toBe(0.25)
 
   // an indeterminate phase keeps the label but drops the bar
   asm.setStatus('Downloading chromosome sizes')
-  expect(model.loadingMessage).toBe('Downloading chromosome sizes')
-  expect(model.loadingProgress).toBeUndefined()
+  expect(model.loading?.message).toBe('Downloading chromosome sizes')
+  expect(model.loading?.progress).toBeUndefined()
 
   asm.setStatus(undefined)
-  expect(model.loadingMessage).toBe('Loading')
+  expect(model.loading?.message).toBe('Loading')
 
   // and the address the stalled-load notice shows, which rides the same status
   // rather than a channel of its own
@@ -1948,14 +1947,14 @@ test('loadingMessage reports what the assembly load is downloading', () => {
     message: 'Downloading chromosome aliases',
     source: 'https://hgdownload.soe.ucsc.edu/hg38.chromAlias.txt',
   })
-  expect(model.loadingMessage).toBe('Downloading chromosome aliases')
-  expect(model.loadingProgress).toBeUndefined()
-  expect(model.loadingSource).toBe(
+  expect(model.loading?.message).toBe('Downloading chromosome aliases')
+  expect(model.loading?.progress).toBeUndefined()
+  expect(model.loading?.source).toBe(
     'https://hgdownload.soe.ucsc.edu/hg38.chromAlias.txt',
   )
 
   asm.setStatus('Downloading cytobands')
-  expect(model.loadingSource).toBeUndefined()
+  expect(model.loading?.source).toBeUndefined()
 })
 
 test('showAllRegions centers correctly with multiple regions', () => {

@@ -184,19 +184,17 @@ a live "Downloading cytobands 40%". The `finally` closes the guard and then
 clears through `throttle.runNow`, for the reason every phase's `''` does.
 
 Views read it through `assemblyManager.loadingAssembly(names)` — the first name
-that isn't `initialized` — and expose `loadingMessage` / `loadingProgress`, which
-`ViewLoadingScreen` renders. All five views that spin on an assembly do this:
-LGV, dotplot, linear synteny, circular and breakpoint-split. Circular and
-breakpoint-split were the two that didn't, and showed a bare `LoadingEllipses`
-with no label and no bar for the same wait the other three narrated.
+that isn't `initialized` — and expose `loading`, the label, fraction and source
+`ViewLoadingScreen` renders and `status` carries on its loading branch. All five
+views that spin on an assembly do this: LGV, dotplot, linear synteny, circular
+and breakpoint-split.
 
-**Both getters read `loadingAssembly` behind the `showLoading` ternary, and that
-laziness is load-bearing** — same rule as `displayPhase`'s loading thunk. Resolve
-it eagerly (say, by passing it to a shared helper) and every view asks the
-assembly manager on every read, including the reads where nothing is loading.
-Folding these two into a helper was tried and backed out for it: with a thunk
-the call is no shorter than the ternary, and without one `CircularView.test.tsx`
-fails on an `assemblyManager` stub that never needed the method.
+**`viewLoading` takes the assembly as a thunk, and that laziness is
+load-bearing** — same rule as `displayPhase`'s loading thunk. Resolved eagerly,
+every view asks the assembly manager on every read, including the reads where
+nothing is loading. `viewStatus.test.ts` holds it at the helper, and
+`CircularView.test.tsx` fails without it on an `assemblyManager` stub that never
+needed the method.
 
 Which names to ask about is the only per-view part, and it is the same shape
 each time: `init` names the assemblies before the view has materialized the

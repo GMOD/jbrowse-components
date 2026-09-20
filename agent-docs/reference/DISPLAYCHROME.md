@@ -907,15 +907,15 @@ half-wired provider reads as a styling bug rather than a missing one.
 **The view's own status states are not a seam either, and a host that only
 knows about these two draws none of them.** Everything above is a *display*
 failing — a fetch, a render — over a view that is up. The view has its own three
-outcomes, and they are plain getters rather than components: `loadingMessage` /
-`loadingProgress` while the assembly loads, `error` when it could not, and
+outcomes, and they are plain getters rather than components: `loading` while
+the assembly loads, `error` when it could not, and
 `ready` (`!showLoading && !error`) for the rest. JBrowse's own
 `LinearGenomeView` branches on them and renders `ViewLoadingScreen` or the
 import form; an embedder mounting `RenderingComponent` directly writes
 `view.ready ? tracks : null`, which is the shape everyone reaches for and which
 turns a 404 on a sequence file into an empty box that never fills — no throw and
 no console error, because the failure is a state on the model. `error` has to be
-read *before* `loadingMessage`, which goes `undefined` when the load stops
+read *before* `loading`, which goes `undefined` when the load stops
 however it stopped. `products/jbrowse-build-your-own`'s "Loading and error
 states" page is the worked version, with a radio that breaks the assembly on
 purpose; every other page there carries the short form.

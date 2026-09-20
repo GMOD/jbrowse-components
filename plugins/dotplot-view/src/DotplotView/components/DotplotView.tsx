@@ -164,13 +164,7 @@ const DotplotView = observer(function DotplotView({
 }: {
   model: DotplotViewModel
 }) {
-  const {
-    showLoading,
-    awaitingAutoDiagonalize,
-    showImportForm,
-    loadingMessage,
-    loadingProgress,
-  } = model
+  const { loading, awaitingAutoDiagonalize, showImportForm } = model
   if (awaitingAutoDiagonalize) {
     return (
       <DiagonalizeLoadingScreen
@@ -180,14 +174,8 @@ const DotplotView = observer(function DotplotView({
         }}
       />
     )
-  } else if (showLoading) {
-    return (
-      <ViewLoadingScreen
-        message={loadingMessage}
-        fraction={loadingProgress}
-        source={model.loadingSource}
-      />
-    )
+  } else if (loading) {
+    return <ViewLoadingScreen {...loading} />
   } else if (showImportForm) {
     return <ImportForm model={model} />
   } else {

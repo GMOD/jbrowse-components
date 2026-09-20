@@ -12,7 +12,7 @@ import {
   scheduleDetachedDestroy,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
+import { computeViewStatus, viewLoading } from '@jbrowse/core/util/viewStatus'
 import {
   pendingLaunch,
   withLaunchInput,
@@ -733,31 +733,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Label for the loading spinner, naming the assembly file being
-       * downloaded when that is the wait.
+       * What the loading screen says while `showLoading`, read off the
+       * assembly whose load is the wait; undefined otherwise.
        */
-      get loadingMessage() {
-        return this.showLoading
-          ? this.loadingAssembly?.statusMessage || 'Loading'
-          : undefined
-      },
-      /**
-       * #getter
-       * Determinate fraction for the spinner's bar, when the assembly load
-       * reports one
-       */
-      get loadingProgress() {
-        return this.showLoading
-          ? this.loadingAssembly?.statusProgress
-          : undefined
-      },
-      /**
-       * #getter
-       * The URL the assembly load is currently fetching, when the phase named
-       * one. Only the stalled-load notice reads it — see `ViewLoadingScreen`.
-       */
-      get loadingSource() {
-        return this.showLoading ? this.loadingAssembly?.statusSource : undefined
+      get loading() {
+        return viewLoading(this.showLoading, () => this.loadingAssembly)
       },
       /**
        * #getter
@@ -778,13 +758,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return computeViewStatus({
           error: self.stackError,
           hasSomethingToShow: self.hasSomethingToShow,
-          loading: () =>
-            this.showLoading
-              ? {
-                  message: this.loadingMessage ?? 'Loading',
-                  progress: this.loadingProgress,
-                }
-              : undefined,
+          loading: () => this.loading,
         })
       },
     }))

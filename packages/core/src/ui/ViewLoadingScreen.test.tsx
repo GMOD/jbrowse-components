@@ -11,7 +11,7 @@ test('shows the phase label, with the percent when determinate', () => {
   const { container } = render(
     <ViewLoadingScreen
       message="Downloading chromosome aliases"
-      fraction={0.42}
+      progress={0.42}
     />,
   )
   expect(container.textContent).toContain('Downloading chromosome aliases 42%')
@@ -71,7 +71,7 @@ describe('the stalled-load notice', () => {
     const { container, rerender } = render(
       <ViewLoadingScreen
         message="Downloading cytobands"
-        fraction={0.1}
+        progress={0.1}
         source="https://example.com/cytoband.txt.gz"
       />,
     )
@@ -82,7 +82,7 @@ describe('the stalled-load notice', () => {
       rerender(
         <ViewLoadingScreen
           message="Downloading cytobands"
-          fraction={fraction}
+          progress={fraction}
           source="https://example.com/cytoband.txt.gz"
         />,
       )

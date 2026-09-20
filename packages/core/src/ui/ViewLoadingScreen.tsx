@@ -76,21 +76,21 @@ function useStalled(key: string) {
  */
 export default function ViewLoadingScreen({
   message,
-  fraction,
+  progress,
   source,
 }: {
   message?: string
-  fraction?: number
+  progress?: number
   source?: string
 }) {
   const { classes } = useStyles()
-  const stalled = useStalled(`${message}|${fraction}|${source}`)
+  const stalled = useStalled(`${message}|${progress}|${source}`)
   return (
     <div className={classes.root}>
       <LoadingProgress
         variant="h6"
         message={message}
-        fraction={fraction}
+        fraction={progress}
         barClassName={classes.bar}
       />
       {stalled && source ? (

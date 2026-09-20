@@ -176,13 +176,11 @@ are name-shaped and these are body-shaped:
 - **Declarative config.** Adapter `configSchema.ts` files dominate the results.
   Mostly inherent; one real find lived here (below).
 - **N implementations of one public interface.** The five view models each
-  spell `loadingMessage` / `loadingProgress` identically, and
-  `PROGRESS_REPORTING.md` even says "the same shape each time" — but those
-  getters are the *taught embedder API*: ~15 `examples-site` pages read them,
-  `LoadingAndErrors.tsx` teaches them by name, and jbrowse-web has per-view
-  tests. Five identical bodies there are five conformances, and their per-view
-  doc rows are the point. **Do not merge them**; a mixin would preserve the API
-  but move the docs off the pages that should carry them.
+  declare a one-line `loading` getter over core's `viewLoading`, and four a
+  `status` over `computeViewStatus`. Five near-identical declarations there are
+  five conformances, and their per-view doc rows are the point: a mixin would
+  preserve the API and move the docs off the pages that should carry them. What
+  the bodies shared went to core; the declarations stay.
 - **Residue of already-shared helpers.** Three RPC executors share their
   preamble — destructure args, `getFeatureAdapterOrThrow`.
   The substance is already extracted; what repeats is the call sequence.

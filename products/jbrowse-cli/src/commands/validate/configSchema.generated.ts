@@ -18643,11 +18643,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "trackSelectorType": {
           "type": "string"
         },
-        "linkViews": {
-          "type": "boolean"
-        },
-        "followSynteny": {
-          "type": "boolean"
+        "rowSync": {
+          "enum": [
+            "independent",
+            "link",
+            "follow"
+          ]
         },
         "sameScale": {
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."

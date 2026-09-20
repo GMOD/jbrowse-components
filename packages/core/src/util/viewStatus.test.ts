@@ -1,4 +1,8 @@
-import { assemblyErrorMessage, computeViewStatus } from './viewStatus.ts'
+import {
+  assemblyErrorMessage,
+  computeViewStatus,
+  viewLoading,
+} from './viewStatus.ts'
 
 const loadingAt = (message: string, progress?: number) => () => ({
   message,
@@ -60,10 +64,10 @@ test('ready is the only outcome with no payload to read', () => {
   ).toEqual({ type: 'ready' })
 })
 
-// The reason the input is a thunk rather than a value. `loadingMessage` and
-// `loadingProgress` read the assembly's download status, which ticks while a
-// file is in flight; a ready view that evaluated them would subscribe to that
-// churn and re-render on every tick for a string it never draws.
+// The reason the input is a thunk rather than a value. A view's `loading` reads
+// the assembly's download status, which ticks while a file is in flight; a ready
+// view that evaluated it would subscribe to that churn and re-render on every
+// tick for a string it never draws.
 test('the loading term is not evaluated once a terminal state is decided', () => {
   const loading = jest.fn(() => ({ message: 'Loading', progress: undefined }))
   computeViewStatus({ error: 'boom', hasSomethingToShow: true, loading })
@@ -73,6 +77,31 @@ test('the loading term is not evaluated once a terminal state is decided', () =>
     loading,
   })
   expect(loading).not.toHaveBeenCalled()
+})
+
+test('a view that is not loading never asks for its assembly', () => {
+  const assembly = jest.fn(() => ({ statusMessage: 'Downloading' }))
+  expect(viewLoading(false, assembly)).toBeUndefined()
+  expect(assembly).not.toHaveBeenCalled()
+})
+
+test('a loading view reads its label, fraction and source off the assembly', () => {
+  expect(viewLoading(true, () => undefined)).toEqual({
+    message: 'Loading',
+    progress: undefined,
+    source: undefined,
+  })
+  expect(
+    viewLoading(true, () => ({
+      statusMessage: 'Downloading chromosome sizes',
+      statusProgress: 0.25,
+      statusSource: 'https://example.com/hg38.chrom.sizes',
+    })),
+  ).toEqual({
+    message: 'Downloading chromosome sizes',
+    progress: 0.25,
+    source: 'https://example.com/hg38.chrom.sizes',
+  })
 })
 
 const managerWith = (errors: Record<string, unknown>) => ({

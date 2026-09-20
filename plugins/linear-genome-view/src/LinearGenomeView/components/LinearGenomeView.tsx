@@ -15,16 +15,10 @@ const LinearGenomeView = observer(function LinearGenomeView({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { showLoading, showImportForm, loadingMessage, loadingProgress } = model
+  const { loading, showImportForm } = model
 
-  if (showLoading) {
-    return (
-      <ViewLoadingScreen
-        message={loadingMessage}
-        fraction={loadingProgress}
-        source={model.loadingSource}
-      />
-    )
+  if (loading) {
+    return <ViewLoadingScreen {...loading} />
   } else if (showImportForm) {
     return <ImportForm model={model} />
   } else {

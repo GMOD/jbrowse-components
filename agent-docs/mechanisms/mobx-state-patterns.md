@@ -55,7 +55,8 @@ the same shape one level down and came first.
 **The failure story is what makes it land, and it is unusually clean.** A view
 here answered its own lifecycle through nine unrelated getters — `ready`,
 `error`, `initialized`, `showLoading`, `showImportForm`, `hasSomethingToShow`,
-`loadingMessage`, `loadingProgress`, `assemblyErrors`. `view.ready` was
+`assemblyErrors`, and two more for the loading label and its fraction.
+`view.ready` was
 literally the subtraction `!showLoading && !this.error`, so every host
 re-derived the precedence and they did not agree.
 
