@@ -10,7 +10,7 @@ import {
   isModificationTypeVisible,
 } from '../../shared/types.ts'
 
-import type { ColorBy, ModificationColorBy } from '../../shared/types.ts'
+import type { BaseLayer, ModificationColorBy } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -39,8 +39,8 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // `ModificationsModel` (which also carries the readiness flags gating whether
 // this submenu is built at all) extends it.
 export interface ModificationsMenuModel {
-  colorBy: ColorBy
-  setColorBy: (colorBy: ColorBy) => void
+  baseLayer: BaseLayer | undefined
+  setBaseLayer: (layer?: BaseLayer) => void
   detectedModificationTypes: string[]
   modificationThreshold: number
 }
@@ -48,8 +48,8 @@ export interface ModificationsMenuModel {
 const DIVIDER: MenuItem = { type: 'divider' }
 
 function currentMods(model: ModificationsMenuModel) {
-  return model.colorBy.type === 'modifications'
-    ? (model.colorBy.modifications ?? {})
+  return model.baseLayer?.type === 'modifications'
+    ? (model.baseLayer.modifications ?? {})
     : {}
 }
 
@@ -69,7 +69,7 @@ function patchMods(
   const m = { ...currentMods(model), ...patch }
   const keepThreshold =
     m.threshold !== undefined && m.threshold !== DEFAULT_MODIFICATION_THRESHOLD
-  model.setColorBy({
+  model.setBaseLayer({
     type: 'modifications',
     modifications: {
       ...(m.twoColor ? { twoColor: true } : {}),
@@ -125,7 +125,7 @@ function setModTypeShown(
 // bisulfite's "Show unmethylated" — see `refinements` below for why.
 export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
   const mods = currentMods(model)
-  const isActive = model.colorBy.type === 'modifications'
+  const isActive = model.baseLayer?.type === 'modifications'
   const byTwoColor = isActive && (!!mods.twoColor || !!mods.fillUnmarked)
   const twoColorView: ModificationColorBy = hasCytosineMeth(model)
     ? { fillUnmarked: true }

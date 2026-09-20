@@ -11,6 +11,7 @@ import {
   getReadDisplayLegendItems,
 } from './legendUtils.ts'
 import { modificationData } from './modificationData.ts'
+import { splitSchemeForTest } from './splitSchemeForTest.ts'
 
 import type { ColorBy, ModificationColorBy } from './types.ts'
 
@@ -81,7 +82,7 @@ function everyLabel() {
     for (const overlaps of OVERLAPS) {
       for (const detectedModifications of DETECTED_MODIFICATIONS) {
         for (const item of getReadDisplayLegendItems({
-          colorBy,
+          ...splitSchemeForTest(colorBy),
           presentCategories: ALL,
           palette: makeTestPalette(),
           detectedModifications,

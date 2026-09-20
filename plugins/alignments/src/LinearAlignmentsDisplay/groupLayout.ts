@@ -27,7 +27,7 @@ import type {
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
-import type { ColorBy, SortedBy } from '../shared/types.ts'
+import type { ColorBy, ColorSchemeType, SortedBy } from '../shared/types.ts'
 import type { BakedColorScale } from './bakedColorScale.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 import type { GroupId } from './groupedDataMaps.ts'
@@ -229,6 +229,9 @@ export interface ReadColorContext {
   // The scheme itself, not a shader index off it: that index collapses the two
   // per-base schemes onto `normal` (`framesUnpairedChainStrand`).
   colorBy: ColorBy
+  // What the body paints as: `colorBy`, or the modification layer's own tint
+  // under the plain fill (`bodyColorScheme`).
+  bodyScheme: ColorSchemeType
   readColorOpts: ReadColorOpts
   // Required-but-nullable, so dropping it from the model's context is a compile
   // error instead of a silent fall back onto the plain fill.
@@ -334,7 +337,7 @@ export function applyReadColorsByGroup(
       key,
       overlayReadColorCategories(
         overlayReadTagColors(map, ctx.colorBy, ctx.bakedScale),
-        ctx.colorBy.type,
+        ctx.bodyScheme,
         ctx.readColorOpts,
       ),
     )

@@ -9,7 +9,7 @@
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKeys } from '../shared/readIdentity.ts'
-import type { ColorBy, FilterBy, GroupBy } from '../shared/types'
+import type { BaseLayer, ColorBy, FilterBy, GroupBy } from '../shared/types'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
@@ -30,6 +30,8 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   regions: Region[]
   filterBy?: FilterBy
   colorBy?: ColorBy
+  // the per-base layer, which extracts beside whatever `colorBy` fills reads with
+  baseLayer?: BaseLayer
   // Tag name for tag-sort. Only the tag is sent to the worker (not the
   // full SortedBy), so changing sort position within a tag sort doesn't
   // invalidate the fetched data — main-thread layout re-runs instead.

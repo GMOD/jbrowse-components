@@ -8,7 +8,10 @@ import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { ARC_COLOR_TYPES } from '../shared/arcColorOptions.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
-import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
+import {
+  alignmentsBaseColorConfigSchema,
+  alignmentsColorConfigSchema,
+} from './alignmentsColorConfigSchema.ts'
 import {
   LINKED_READS_MODES,
   READ_CONNECTIONS_MODES,
@@ -51,7 +54,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
  *   displayDefaults: {
- *     color: { field: 'modifications' },
+ *     baseColor: { field: 'modifications' },
  *     modifications: { fillUnmarked: true },
  *   },
  * }
@@ -151,10 +154,17 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot color
        * The read fill: `"steelblue"` paints every read, `{ field: "strand" }`
-       * a read dimension's own vocabulary, `{ field: "tags.HP" }` a SAM tag
-       * and `{ field: "modifications" }` a cell per called base.
+       * a read dimension's own vocabulary and `{ field: "tags.HP" }` a SAM
+       * tag.
        */
       color: alignmentsColorConfigSchema,
+      /**
+       * #slot baseColor
+       * The per-base layer drawn over the reads, whatever fills them:
+       * `{ field: "modifications" }`, `"bisulfite"`, `"baseQuality"` or
+       * `"base"`.
+       */
+      baseColor: alignmentsBaseColorConfigSchema,
       /**
        * #slot modifications
        * What the `modifications` and `bisulfite` colour fields draw:

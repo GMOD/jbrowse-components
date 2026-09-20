@@ -1,16 +1,23 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 
-import { colorByOf, pinnedInsertSizeBand } from '../shared/alignmentsColor.ts'
+import {
+  baseLayerOf,
+  bodyColorScheme,
+  colorByOf,
+  pinnedInsertSizeBand,
+} from '../shared/alignmentsColor.ts'
 import { normalizeFilterBy } from '../shared/types.ts'
 
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type {
   ArcColorByType,
-  ColorBy,
+  BaseLayer,
+  ColorSchemeType,
   FilterBy,
   GroupBy,
   ModificationColorBy,
+  ReadColorBy,
 } from '../shared/types.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
 import type {
@@ -177,11 +184,32 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The scheme `color` selects, with the settings the modification fields
-     * read beside it.
+     * The read fill `color` selects.
      */
-    get colorBy(): ColorBy {
-      return colorByOf(this.colorSetting, this.modificationSettings)
+    get colorBy(): ReadColorBy {
+      return colorByOf(this.colorSetting)
+    },
+    /**
+     * #getter
+     * The per-base layer `baseColor` selects, with the settings the
+     * modification fields read beside it; undefined while none is drawn.
+     */
+    get baseLayer(): BaseLayer | undefined {
+      return baseLayerOf(
+        {
+          field: getConf(self, ['baseColor', 'field']),
+          scale: getConf(self, ['baseColor', 'scale']),
+        },
+        this.modificationSettings,
+      )
+    },
+    /**
+     * #getter
+     * What the read body paints as: `colorBy`, or the modification layer's
+     * own pale strand tint while the fill is plain.
+     */
+    get bodyColorScheme(): ColorSchemeType {
+      return bodyColorScheme(this.colorBy, this.baseLayer)
     },
     /**
      * #getter

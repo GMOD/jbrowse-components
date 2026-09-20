@@ -2,7 +2,7 @@ import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 
 import { cytosineContextOptions } from '../../shared/modificationData.ts'
 
-import type { ColorBy } from '../../shared/types.ts'
+import type { BaseLayer } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -19,15 +19,15 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // The scheme is written whole on every click — no patch/merge step like the
 // MM/ML submenu's — so this reads and writes the slot and nothing else.
 interface BisulfiteModel {
-  colorBy: ColorBy
-  setColorBy: (colorBy: ColorBy) => void
+  baseLayer: BaseLayer | undefined
+  setBaseLayer: (layer?: BaseLayer) => void
 }
 
 const DIVIDER: MenuItem = { type: 'divider' }
 
 export function bisulfiteItem(model: BisulfiteModel): MenuItem {
-  const isBis = model.colorBy.type === 'bisulfite'
-  const mods = isBis ? (model.colorBy.modifications ?? {}) : {}
+  const isBis = model.baseLayer?.type === 'bisulfite'
+  const mods = isBis ? (model.baseLayer?.modifications ?? {}) : {}
   const context = mods.cytosineContext ?? 'CG'
   const twoColor = !!mods.twoColor
 
@@ -35,7 +35,7 @@ export function bisulfiteItem(model: BisulfiteModel): MenuItem {
     nextContext: CytosineContext,
     nextTwoColor: boolean,
   ) => {
-    model.setColorBy({
+    model.setBaseLayer({
       type: 'bisulfite',
       modifications: {
         ...(nextContext === 'CG' ? {} : { cytosineContext: nextContext }),

@@ -1,6 +1,14 @@
 import { TAG_FIELD_PREFIX, facetTag } from './groupByLabels.ts'
 
-import type { ColorBy, ColorSchemeType, ModificationColorBy } from './types.ts'
+import type {
+  BaseLayer,
+  BaseLayerType,
+  ColorBy,
+  ColorSchemeType,
+  ModificationColorBy,
+  ReadColorBy,
+  ReadColorSchemeType,
+} from './types.ts'
 
 export const ALIGNMENTS_COLOR_SCALES = [
   'none',
@@ -21,12 +29,12 @@ export interface AlignmentsColorSetting {
   domainMid: number | undefined
 }
 
-type PresetScheme = Exclude<ColorSchemeType, 'normal' | 'tag'>
+type PresetScheme = Exclude<ReadColorSchemeType, 'normal' | 'tag'>
 
 /**
- * The fields with a vocabulary, ramp or layer of their own. The read
- * dimensions share the facet's names, so `facet` and `color` over one variable
- * are one word.
+ * The read fields with a vocabulary or ramp of their own. The read dimensions
+ * share the facet's names, so `facet` and `color` over one variable are one
+ * word.
  */
 export const COLOR_FIELDS: Record<PresetScheme, string> = {
   strand: 'strand',
@@ -35,9 +43,13 @@ export const COLOR_FIELDS: Record<PresetScheme, string> = {
   firstOfPairStrand: 'firstOfPairStrand',
   pairOrientation: 'pairOrientation',
   insertSizeAndOrientation: 'insertSizeAndOrientation',
+  mateRefName: 'mateRefName',
+}
+
+/** The per-base variables `baseColor` paints a cell per base from. */
+export const BASE_COLOR_FIELDS: Record<BaseLayerType, string> = {
   perBaseQuality: 'baseQuality',
   perBaseLetter: 'base',
-  mateRefName: 'mateRefName',
   modifications: 'modifications',
   bisulfite: 'bisulfite',
 }
@@ -49,42 +61,84 @@ const SCHEME_OF_FIELD = new Map(
   ]),
 )
 
-const READS_MODIFICATION_SETTINGS = new Set<ColorSchemeType>([
+const LAYER_OF_FIELD = new Map(
+  Object.entries(BASE_COLOR_FIELDS).map(([layer, field]) => [
+    field,
+    layer as BaseLayerType,
+  ]),
+)
+
+const READS_MODIFICATION_SETTINGS = new Set<BaseLayerType>([
   'modifications',
   'bisulfite',
 ])
 
-/** The field a runtime scheme paints, `''` for the plain fill. */
+/** The field a read scheme paints, `''` for the plain fill. */
 export function colorFieldOf(colorBy: ColorBy) {
-  return colorBy.type === 'normal'
-    ? ''
-    : colorBy.type === 'tag'
-      ? colorBy.tag
-        ? `${TAG_FIELD_PREFIX}${colorBy.tag}`
-        : (colorBy.attribute ?? '')
-      : COLOR_FIELDS[colorBy.type]
+  return colorBy.type === 'tag'
+    ? colorBy.tag
+      ? `${TAG_FIELD_PREFIX}${colorBy.tag}`
+      : (colorBy.attribute ?? '')
+    : (Object.entries(COLOR_FIELDS).find(([k]) => k === colorBy.type)?.[1] ??
+        '')
 }
 
 /**
- * The runtime scheme a `color` object selects: a preset field its own scheme,
+ * The read scheme a `color` object selects: a preset field its own scheme,
  * `tags.XX` the tag scheme, any other name a feature attribute through the
  * same per-read bake. A field under `none` paints the plain fill.
  */
-export function colorByOf(
-  { field, scale }: Pick<AlignmentsColorSetting, 'field' | 'scale'>,
-  modifications?: ModificationColorBy,
-): ColorBy {
+export function colorByOf({
+  field,
+  scale,
+}: Pick<AlignmentsColorSetting, 'field' | 'scale'>): ReadColorBy {
   if (!field || scale === 'none') {
     return { type: 'normal' }
   }
   const scheme = SCHEME_OF_FIELD.get(field)
   if (scheme) {
-    return READS_MODIFICATION_SETTINGS.has(scheme) && modifications
-      ? { type: scheme, modifications }
-      : { type: scheme }
+    return { type: scheme }
   }
   const tag = facetTag(field)
   return tag ? { type: 'tag', tag } : { type: 'tag', attribute: field }
+}
+
+/** The `baseColor` object as written. */
+export interface BaseColorSetting {
+  field: string
+  scale: 'none' | undefined
+}
+
+/**
+ * The per-base layer a `baseColor` object selects, with the settings the
+ * modification fields read beside it. Undefined while no per-base field is
+ * named, or one waits under `none`.
+ */
+export function baseLayerOf(
+  { field, scale }: BaseColorSetting,
+  modifications?: ModificationColorBy,
+): BaseLayer | undefined {
+  const type = scale === 'none' ? undefined : LAYER_OF_FIELD.get(field)
+  return type === undefined
+    ? undefined
+    : READS_MODIFICATION_SETTINGS.has(type) && modifications
+      ? { type, modifications }
+      : { type }
+}
+
+/**
+ * What the read body paints as: the read scheme, or under the plain fill the
+ * modification layer's own body, a pale strand tint the marks read against.
+ */
+export function bodyColorScheme(
+  colorBy: ReadColorBy,
+  baseLayer: BaseLayer | undefined,
+): ColorSchemeType {
+  return colorBy.type === 'normal' &&
+    baseLayer &&
+    READS_MODIFICATION_SETTINGS.has(baseLayer.type)
+    ? baseLayer.type
+    : colorBy.type
 }
 
 /** Whether the main thread bakes a colour per read from a value the worker ships. */

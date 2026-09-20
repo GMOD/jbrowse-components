@@ -9,21 +9,30 @@ import {
 import { getDialogHost } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
+import { BASE_COLOR_FIELDS } from '../../shared/alignmentsColor.ts'
 import { ARC_COLOR_OPTIONS } from '../../shared/arcColorOptions.ts'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import { bisulfiteItem } from './bisulfiteMenu.ts'
 import { modificationsMenu } from './modificationsMenu.ts'
 
 import type { ColorOption } from '../../shared/colorSchemes.ts'
-import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
+import type {
+  ArcColorByType,
+  BaseLayer,
+  BaseLayerType,
+  ColorSchemeType,
+  ReadColorBy,
+} from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const TagDialog = lazy(() => import('../dialogs/TagDialog.tsx'))
 
 interface ColorByModel {
-  colorBy: ColorBy
-  setColorBy: (colorBy: ColorBy) => void
+  colorBy: ReadColorBy
+  setColorBy: (colorBy: ReadColorBy) => void
+  baseLayer: BaseLayer | undefined
+  setBaseLayer: (layer?: BaseLayer) => void
 }
 
 // The MM/ML submenu's own surface plus the two readiness flags that decide
@@ -99,9 +108,33 @@ function colorRadio(
   model: AnyColorByModel,
   { label, type }: ColorOption,
 ): MenuItem {
-  return radioItem(label, model.colorBy.type === type, () => {
-    model.setColorBy({ type })
-  })
+  return isBaseLayerType(type)
+    ? radioItem(label, model.baseLayer?.type === type, () => {
+        model.setBaseLayer({ type })
+      })
+    : radioItem(label, model.colorBy.type === type, () => {
+        model.setColorBy({ type })
+      })
+}
+
+function isBaseLayerType(type: ColorSchemeType): type is BaseLayerType {
+  return Object.hasOwn(BASE_COLOR_FIELDS, type)
+}
+
+// The per-base layer draws over whatever fills the reads, so its rows are a
+// radio group of their own with a way back to none.
+function baseLayerItems(
+  model: AnyColorByModel,
+  options: ColorOption[],
+  mods: ModificationsModel | undefined,
+): MenuItem[] {
+  return [
+    radioItem('None', model.baseLayer === undefined, () => {
+      model.setBaseLayer()
+    }),
+    ...options.map(o => colorRadio(model, o)),
+    ...(mods ? modificationsItems(mods) : []),
+  ]
 }
 
 // Names the tag in the label once one is picked ("Tag (HP)...") — the radio is
@@ -162,7 +195,7 @@ function pairedEndItem(model: AnyColorByModel): MenuItem {
 // back to the modification settings without first navigating elsewhere.
 function modificationsItems(model: ModificationsModel): MenuItem[] {
   const detecting = !model.modificationsReady && !model.regionTooLarge
-  const active = model.colorBy.type === 'modifications'
+  const active = model.baseLayer?.type === 'modifications'
   const detected =
     model.modificationsReady && model.detectedModificationTypes.length > 0
   return [
@@ -238,6 +271,8 @@ export function getColorByMenuItem(
     supplementaryColoring,
   } = options
   const mods = includeModifications ? modModel(model) : undefined
+  const readOptions = colorOptions.filter(o => !isBaseLayerType(o.type))
+  const layerOptions = colorOptions.filter(o => isBaseLayerType(o.type))
   // Everything above the header picks the read fill scheme — the radios and the
   // Paired end / Modifications / Bisulfite submenus alike. Everything below
   // refines coloring without selecting a scheme: the arcs and read cloud have
@@ -257,10 +292,15 @@ export function getColorByMenuItem(
     type: 'subMenu' as const,
     icon: Palette,
     subMenu: [
-      ...colorOptions.map(o => colorRadio(model, o)),
+      ...readOptions.map(o => colorRadio(model, o)),
       ...(includeTagOption ? [tagItem(model)] : []),
       ...(includePairedEnd ? [pairedEndItem(model)] : []),
-      ...(mods ? modificationsItems(mods) : []),
+      ...withSubHeader(
+        'Per-base coloring',
+        layerOptions.length > 0 || mods
+          ? baseLayerItems(model, layerOptions, mods)
+          : [],
+      ),
       ...withSubHeader('Additional coloring', refinements),
     ] satisfies MenuItem[],
   }

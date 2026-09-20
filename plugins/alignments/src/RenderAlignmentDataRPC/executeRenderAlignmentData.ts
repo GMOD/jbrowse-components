@@ -355,6 +355,7 @@ export async function executeRenderAlignmentData({
     regions,
     filterBy,
     colorBy,
+    baseLayer,
     sortTag,
     groupBy: groupByArg,
     lodMode,
@@ -414,7 +415,7 @@ export async function executeRenderAlignmentData({
   let regionSequence: string | undefined
   let regionSequenceStart = region.start
   const inputFeatures = filterChainFeatures(featuresArray, filterBy)
-  if (!isChain && colorBy?.type === 'bisulfite' && sequenceAdapter) {
+  if (!isChain && baseLayer?.type === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,
       sessionId,
@@ -437,6 +438,7 @@ export async function executeRenderAlignmentData({
     : (f: Feature) => buildBaseFeatureData(f, readIdPrefix)
   const extractOpts = {
     colorBy,
+    baseLayer,
     showSoftClipping: effShowSoftClipping,
     region,
     sortTag: isChain ? undefined : sortTag,
@@ -490,8 +492,8 @@ export async function executeRenderAlignmentData({
   // Modification color modes (pileup only) draw mod coverage + track per-base
   // strands; chain omits them so runCoveragePipeline skips mod-coverage.
   const trackStrands =
-    !isChain && !!colorBy && isModificationScheme(colorBy.type)
-  const bisulfite = !isChain && colorBy?.type === 'bisulfite'
+    !isChain && !!baseLayer && isModificationScheme(baseLayer.type)
+  const bisulfite = !isChain && baseLayer?.type === 'bisulfite'
 
   // Splice motifs need the reference under every junction. A spliced read is
   // the one signal that this is RNA-seq, so a DNA-seq fetch never reads

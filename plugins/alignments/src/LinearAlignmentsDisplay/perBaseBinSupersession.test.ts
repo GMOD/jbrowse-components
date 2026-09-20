@@ -42,7 +42,7 @@ describe('per-base bin supersession', () => {
     const env = createRpcTestEnvironment().createDisplay()
     const { display, view } = env
 
-    display.setColorBy({ type: 'perBaseLetter' })
+    display.setBaseLayer({ type: 'perBaseLetter' })
     settleAt(env, 16)
     view.scrollTo(1000)
     simulateLoaded(env)
@@ -76,7 +76,7 @@ describe('per-base bin supersession', () => {
     const env = createRpcTestEnvironment().createDisplay()
     const { display, view } = env
 
-    display.setColorBy({ type: 'perBaseLetter' })
+    display.setBaseLayer({ type: 'perBaseLetter' })
     settleAt(env, 16)
     view.scrollTo(1000)
     simulateLoaded(env)

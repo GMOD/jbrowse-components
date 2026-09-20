@@ -1,4 +1,9 @@
-import type { ColorBy, ColorSchemeType, ShaderScheme } from './types.ts'
+import type {
+  BaseLayer,
+  ColorBy,
+  ColorSchemeType,
+  ShaderScheme,
+} from './types.ts'
 
 export type ColorGroup = 'basic' | 'pairedEnd'
 
@@ -186,6 +191,16 @@ export function isModificationScheme(type: ColorSchemeType) {
 // registry for the reason `isModificationScheme` is.
 export function isPerBaseScheme(type: ColorSchemeType) {
   return COLOR_SCHEMES[type].perBase === true
+}
+
+/** Whether the per-base layer draws modification marks. */
+export function paintsModifications(layer: BaseLayer | undefined) {
+  return layer !== undefined && isModificationScheme(layer.type)
+}
+
+/** Whether the per-base layer draws a cell for every aligned base. */
+export function paintsEveryBase(layer: BaseLayer | undefined) {
+  return layer !== undefined && isPerBaseScheme(layer.type)
 }
 
 const PER_READ_COLOUR_PATHS = new Set<ShaderScheme>([

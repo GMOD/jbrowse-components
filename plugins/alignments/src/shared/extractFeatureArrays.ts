@@ -19,7 +19,7 @@ import { getStrand } from './util.ts'
 
 import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
-import type { ColorBy } from './types.ts'
+import type { BaseLayer, ColorBy } from './types.ts'
 import type {
   FeatureData,
   GapData,
@@ -43,6 +43,7 @@ function getMateRefName(feature: Feature) {
 
 interface ExtractOpts {
   colorBy: ColorBy | undefined
+  baseLayer?: BaseLayer
   showSoftClipping: boolean
   region: Region
   sortTag?: string
@@ -63,7 +64,14 @@ export function extractFeatureArrays<T extends FeatureData>(
   opts: ExtractOpts,
   report?: ProgressReporter,
 ) {
-  const { colorBy, showSoftClipping, region, sortTag, perBaseBinBp } = opts
+  const {
+    colorBy,
+    baseLayer,
+    showSoftClipping,
+    region,
+    sortTag,
+    perBaseBinBp,
+  } = opts
   const { regionSequence, regionSequenceStart } = opts
   const detectedModifications = new Set<string>()
   // Unique (strand, type) pairs across all reads → global simplex resolution.
@@ -82,9 +90,9 @@ export function extractFeatureArrays<T extends FeatureData>(
   // denominator. Stays empty in every other color mode.
   const bisulfiteCallCounts = new Map<number, number>()
   const perBaseQualities: PerBaseQualityEntry[] = []
-  const isPerBaseQualityMode = colorBy?.type === 'perBaseQuality'
+  const isPerBaseQualityMode = baseLayer?.type === 'perBaseQuality'
   const perBaseLetters: PerBaseLetterEntry[] = []
-  const isPerBaseLetterMode = colorBy?.type === 'perBaseLetter'
+  const isPerBaseLetterMode = baseLayer?.type === 'perBaseLetter'
   const tagColorValues: string[] = []
   const nextPositions: number[] = []
   // ALWAYS walked, and shipped only when some read actually had one.
@@ -205,13 +213,13 @@ export function extractFeatureArrays<T extends FeatureData>(
       readIndex,
       featureStart,
       strand,
-      colorBy,
+      baseLayer,
       detectedModifications,
       seenModTypes,
       modifications,
     )
 
-    if (isFillUnmarkedMode(colorBy) && modData) {
+    if (isFillUnmarkedMode(baseLayer) && modData) {
       extractMethylation(
         readIndex,
         featureStart,
@@ -219,11 +227,11 @@ export function extractFeatureArrays<T extends FeatureData>(
         region,
         modData,
         modifications,
-        colorBy?.modifications,
+        baseLayer?.modifications,
       )
     }
 
-    if (colorBy?.type === 'bisulfite' && regionSequence !== undefined) {
+    if (baseLayer?.type === 'bisulfite' && regionSequence !== undefined) {
       extractBisulfite(
         feature,
         readIndex,
@@ -232,8 +240,8 @@ export function extractFeatureArrays<T extends FeatureData>(
         region,
         regionSequence,
         regionSequenceStart ?? region.start,
-        colorBy.modifications?.cytosineContext ?? 'CG',
-        colorBy.modifications?.twoColor ?? false,
+        baseLayer.modifications?.cytosineContext ?? 'CG',
+        baseLayer.modifications?.twoColor ?? false,
         modifications,
         bisulfiteCallCounts,
       )

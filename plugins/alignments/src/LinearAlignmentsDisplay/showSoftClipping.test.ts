@@ -304,19 +304,49 @@ describe('alignments colorBy', () => {
     expect(display.colorBy).toEqual({ type: 'strand' })
   })
 
-  it('reads a tag, an attribute and the modification settings off the config', () => {
+  it('reads a tag and an attribute off the config', () => {
     expect(
       createDisplay({ color: { field: 'tags.HP' } }).display.colorBy,
     ).toEqual({ type: 'tag', tag: 'HP' })
     expect(
       createDisplay({ color: { field: 'score' } }).display.colorBy,
     ).toEqual({ type: 'tag', attribute: 'score' })
-    expect(
-      createDisplay({
-        color: { field: 'modifications' },
-        modifications: { threshold: 50 },
-      }).display.colorBy,
-    ).toEqual({ type: 'modifications', modifications: { threshold: 50 } })
+  })
+
+  it('draws a per-base layer beside whatever fills the reads', () => {
+    const { display } = createDisplay({
+      color: { field: 'tags.HP' },
+      baseColor: 'modifications',
+      modifications: { threshold: 50 },
+    })
+    expect(display.colorBy).toEqual({ type: 'tag', tag: 'HP' })
+    expect(display.baseLayer).toEqual({
+      type: 'modifications',
+      modifications: { threshold: 50 },
+    })
+    expect(display.bodyColorScheme).toBe('tag')
+    expect(display.showModifications).toBe(true)
+    expect(display.rpcProps()).toMatchObject({
+      colorBy: { type: 'tag', tag: 'HP' },
+      baseLayer: { type: 'modifications' },
+    })
+  })
+
+  it('a modification layer over the plain fill tints the body by strand', () => {
+    const { display } = createDisplay({ baseColor: { field: 'bisulfite' } })
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.bodyColorScheme).toBe('bisulfite')
+  })
+
+  it('a read pick leaves the layer alone, and the layer has its own way off', () => {
+    const { display } = createDisplay({ baseColor: 'modifications' })
+    display.setColorBy({ type: 'strand' })
+    expect(display.baseLayer?.type).toBe('modifications')
+    display.setBaseLayer({ type: 'perBaseQuality' })
+    expect(display.colorBy).toEqual({ type: 'strand' })
+    expect(display.showPerBaseQuality).toBe(true)
+    display.setBaseLayer()
+    expect(display.baseLayer).toBeUndefined()
   })
 
   it('a string is the constant read fill', () => {

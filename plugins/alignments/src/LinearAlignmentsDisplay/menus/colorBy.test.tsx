@@ -5,16 +5,20 @@ import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { pickColorOptions } from '../../shared/colorSchemes.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
-import type { ColorBy } from '../../shared/types.ts'
+import type { BaseLayer, ReadColorBy } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
 // "defined" whenever modificationsReady is set, even to false).
 function makeModel() {
   return {
-    colorBy: { type: 'normal' } as ColorBy,
-    setColorBy(cb: ColorBy) {
+    colorBy: { type: 'normal' } as ReadColorBy,
+    setColorBy(cb: ReadColorBy) {
       this.colorBy = cb
+    },
+    baseLayer: undefined as BaseLayer | undefined,
+    setBaseLayer(layer?: BaseLayer) {
+      this.baseLayer = layer
     },
     modificationsReady: false,
     regionTooLarge: false,
@@ -119,11 +123,11 @@ describe('color by modifications menu', () => {
     ['by type', { type: 'modifications' }],
     ['2-color', { type: 'modifications', modifications: { twoColor: true } }],
     ['fill', { type: 'modifications', modifications: { fillUnmarked: true } }],
-  ] as [string, ColorBy][])(
+  ] as [string, BaseLayer][])(
     'shows the same controls regardless of the active view (%s)',
-    (_name, colorBy) => {
+    (_name, layer) => {
       const model = makeModModel()
-      model.colorBy = colorBy
+      model.baseLayer = layer
       for (const label of controls) {
         expect(byLabel(model, label)).toBeTruthy()
       }
@@ -132,9 +136,9 @@ describe('color by modifications menu', () => {
 
   test('the Probability view fills unmarked cytosines for methylation data', () => {
     const model = makeModModel(['m', 'h'])
-    model.colorBy = { type: 'modifications' }
+    model.baseLayer = { type: 'modifications' }
     clickRadio(model, TWO_COLOR)
-    expect(model.colorBy).toEqual({
+    expect(model.baseLayer).toEqual({
       type: 'modifications',
       modifications: { fillUnmarked: true },
     })
@@ -142,9 +146,9 @@ describe('color by modifications menu', () => {
 
   test('the Probability view is plain two-color for non-cytosine modifications', () => {
     const model = makeModModel(['a'])
-    model.colorBy = { type: 'modifications' }
+    model.baseLayer = { type: 'modifications' }
     clickRadio(model, TWO_COLOR)
-    expect(model.colorBy).toEqual({
+    expect(model.baseLayer).toEqual({
       type: 'modifications',
       modifications: { twoColor: true },
     })
@@ -152,7 +156,7 @@ describe('color by modifications menu', () => {
 
   test('the fill view reads as the "2-color" radio, not a separate row', () => {
     const model = makeModModel()
-    model.colorBy = {
+    model.baseLayer = {
       type: 'modifications',
       modifications: { fillUnmarked: true },
     }
@@ -162,12 +166,12 @@ describe('color by modifications menu', () => {
 
   test('switching views preserves refinements (cytosine context)', () => {
     const model = makeModModel()
-    model.colorBy = {
+    model.baseLayer = {
       type: 'modifications',
       modifications: { fillUnmarked: true, cytosineContext: 'CHH' },
     }
     clickRadio(model, BY_TYPE)
-    expect(model.colorBy).toEqual({
+    expect(model.baseLayer).toEqual({
       type: 'modifications',
       modifications: { cytosineContext: 'CHH' },
     })
@@ -185,7 +189,7 @@ describe('color by modifications menu', () => {
 
   test('every detected type starts ticked', () => {
     const model = makeModModel(['m', 'h'])
-    model.colorBy = { type: 'modifications' }
+    model.baseLayer = { type: 'modifications' }
     expect(
       subMenuOf(byLabel(model, 'Modification types')).map(i => [
         'label' in i ? i.label : '',
@@ -199,9 +203,9 @@ describe('color by modifications menu', () => {
 
   test('unticking one type leaves the rest drawn', () => {
     const model = makeModModel(['m', 'h', 'a'])
-    model.colorBy = { type: 'modifications' }
+    model.baseLayer = { type: 'modifications' }
     tickModType(model, '5hmC')
-    expect(model.colorBy).toEqual({
+    expect(model.baseLayer).toEqual({
       type: 'modifications',
       modifications: { shownModifications: ['m', 'a'] },
     })
@@ -209,10 +213,10 @@ describe('color by modifications menu', () => {
 
   test('types are independent — two can be unticked, unlike the old radio', () => {
     const model = makeModModel(['m', 'h', 'a'])
-    model.colorBy = { type: 'modifications' }
+    model.baseLayer = { type: 'modifications' }
     tickModType(model, '5hmC')
     tickModType(model, '6mA')
-    expect(model.colorBy).toEqual({
+    expect(model.baseLayer).toEqual({
       type: 'modifications',
       modifications: { shownModifications: ['m'] },
     })
@@ -220,22 +224,25 @@ describe('color by modifications menu', () => {
 
   test('re-ticking every type stores nothing, so types found later stay visible', () => {
     const model = makeModModel(['m', 'h'])
-    model.colorBy = {
+    model.baseLayer = {
       type: 'modifications',
       modifications: { shownModifications: ['m'] },
     }
     tickModType(model, '5hmC')
-    expect(model.colorBy).toEqual({ type: 'modifications', modifications: {} })
+    expect(model.baseLayer).toEqual({
+      type: 'modifications',
+      modifications: {},
+    })
   })
 
   test('unticking the last type draws no marks rather than silently drawing all', () => {
     const model = makeModModel(['m', 'h'])
-    model.colorBy = {
+    model.baseLayer = {
       type: 'modifications',
       modifications: { shownModifications: ['m'] },
     }
     tickModType(model, '5mC')
-    expect(model.colorBy).toEqual({
+    expect(model.baseLayer).toEqual({
       type: 'modifications',
       modifications: { shownModifications: [] },
     })
@@ -243,7 +250,7 @@ describe('color by modifications menu', () => {
 
   test('a hiddenModifications config reads back as unticked, and ticking clears it', () => {
     const model = makeModModel(['m', 'h'])
-    model.colorBy = {
+    model.baseLayer = {
       type: 'modifications',
       modifications: { hiddenModifications: ['h'] },
     }
@@ -253,12 +260,15 @@ describe('color by modifications menu', () => {
       ),
     ).toEqual([true, false])
     tickModType(model, '5hmC')
-    expect(model.colorBy).toEqual({ type: 'modifications', modifications: {} })
+    expect(model.baseLayer).toEqual({
+      type: 'modifications',
+      modifications: {},
+    })
   })
 
   test('the per-type filter is hidden when only one type is detected', () => {
     const model = makeModModel(['m'])
-    model.colorBy = { type: 'modifications' }
+    model.baseLayer = { type: 'modifications' }
     expect(byLabel(model, 'Modification types')).toBeFalsy()
   })
 
@@ -271,17 +281,17 @@ describe('color by modifications menu', () => {
     'Cytosine context',
   ])('%s is revealed only while the modifications scheme is active', label => {
     const model = makeModModel(['m', 'h'])
-    model.colorBy = { type: 'bisulfite' }
+    model.baseLayer = { type: 'bisulfite' }
     expect(byLabel(model, label)).toBeFalsy()
 
-    model.colorBy = { type: 'modifications' }
+    model.baseLayer = { type: 'modifications' }
     expect(byLabel(model, label)).toBeTruthy()
   })
 
   // The threshold is the shared makeSizeMenu row, so assert through its props.
   test('the threshold slider commits a non-default value inline, and resets', () => {
     const model = makeModModel(['m', 'h'])
-    model.colorBy = { type: 'modifications' }
+    model.baseLayer = { type: 'modifications' }
     const item = subMenuOf(byLabel(model, 'Probability threshold')).find(
       i => 'render' in i,
     )
@@ -307,23 +317,26 @@ describe('color by modifications menu', () => {
     expect(isDefault).toBe(true)
     expect(commitOnRelease).toBe(true)
     onChange(80)
-    expect(model.colorBy).toEqual({
+    expect(model.baseLayer).toEqual({
       type: 'modifications',
       modifications: { threshold: 80 },
     })
     // Resetting writes the default, which patchMods drops so a saved session
     // carries no redundant threshold.
     onReset()
-    expect(model.colorBy).toEqual({ type: 'modifications', modifications: {} })
+    expect(model.baseLayer).toEqual({
+      type: 'modifications',
+      modifications: {},
+    })
   })
 
   test('cytosine context is shown only for cytosine methylation data', () => {
     const cytosine = makeModModel(['m', 'h'])
-    cytosine.colorBy = { type: 'modifications' }
+    cytosine.baseLayer = { type: 'modifications' }
     expect(byLabel(cytosine, 'Cytosine context')).toBeTruthy()
 
     const other = makeModModel(['a'])
-    other.colorBy = { type: 'modifications' }
+    other.baseLayer = { type: 'modifications' }
     expect(byLabel(other, 'Cytosine context')).toBeFalsy()
   })
 
@@ -332,14 +345,14 @@ describe('color by modifications menu', () => {
   // then left the whole Color by... menu with nothing checked.
   test('the submenu stays while it is the active scheme, with nothing detected', () => {
     const model = makeModModel([])
-    model.colorBy = { type: 'modifications' }
+    model.baseLayer = { type: 'modifications' }
     expect(byLabel(model, BY_TYPE)).toBeTruthy()
     expect(allItems(model).some(i => 'checked' in i && i.checked)).toBe(true)
   })
 
   test('a ready display with no detected types and another scheme active omits it', () => {
     const model = makeModModel([])
-    model.colorBy = { type: 'normal' }
+    model.baseLayer = undefined
     expect(byLabel(model, BY_TYPE)).toBeFalsy()
     expect(byLabel(model, 'Bisulfite / EM-seq')).toBeTruthy()
   })

@@ -10,6 +10,7 @@ import {
   getArcLegendItems,
   getReadDisplayLegendItems,
 } from './legendUtils.ts'
+import { splitSchemeForTest } from './splitSchemeForTest.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 
 import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
@@ -32,7 +33,7 @@ function legendFor(
   },
 ) {
   return getReadDisplayLegendItems({
-    colorBy,
+    ...splitSchemeForTest(colorBy),
     presentCategories: new Set(categories),
     palette: makeTestPalette(),
     ...rest,

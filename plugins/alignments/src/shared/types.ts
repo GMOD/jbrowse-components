@@ -104,12 +104,36 @@ export type ColorSchemeType =
   | 'modifications'
   | 'bisulfite'
 
+// The schemes that paint a cell per base over the read, which the display
+// draws as a layer of its own beside whatever fills the read.
+export type BaseLayerType =
+  | 'perBaseQuality'
+  | 'perBaseLetter'
+  | 'modifications'
+  | 'bisulfite'
+
+export type ReadColorSchemeType = Exclude<ColorSchemeType, BaseLayerType>
+
+// A scheme by name with what it reads, for the code either half passes through.
 export interface ColorBy {
   type: ColorSchemeType
   tag?: string
   // a feature attribute read through `feature.get`, where `tag` names a SAM tag
   attribute?: string
   modifications?: ModificationColorBy
+}
+
+/** What fills a read: the display's `color` object as a scheme. */
+export interface ReadColorBy extends ColorBy {
+  type: ReadColorSchemeType
+  modifications?: undefined
+}
+
+/** The per-base layer: the display's `baseColor` object as a scheme. */
+export interface BaseLayer extends ColorBy {
+  type: BaseLayerType
+  tag?: undefined
+  attribute?: undefined
 }
 
 // True when modification coloring should fill in unmarked canonical bases (the

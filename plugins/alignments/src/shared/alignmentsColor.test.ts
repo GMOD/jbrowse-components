@@ -1,5 +1,8 @@
 import {
+  BASE_COLOR_FIELDS,
   COLOR_FIELDS,
+  baseLayerOf,
+  bodyColorScheme,
   colorByOf,
   colorFieldOf,
   colorSnapshotFor,
@@ -53,14 +56,47 @@ describe('colorByOf', () => {
     expect(colorByOf({ field: 'strand', scale: 'none' }).type).toBe('normal')
   })
 
-  test('only the modification fields carry the modification settings', () => {
+  test('a per-base field is no read fill', () => {
+    expect(colorByOf({ field: 'modifications', scale: undefined })).toEqual({
+      type: 'tag',
+      attribute: 'modifications',
+    })
+  })
+})
+
+describe('baseLayerOf', () => {
+  test('every per-base field selects its layer', () => {
+    for (const [layer, field] of Object.entries(BASE_COLOR_FIELDS)) {
+      expect(baseLayerOf({ field, scale: undefined })?.type).toBe(layer)
+    }
+  })
+
+  test('only the modification layers carry the modification settings', () => {
     const settings = { threshold: 50 }
     expect(
-      colorByOf({ field: 'modifications', scale: undefined }, settings),
+      baseLayerOf({ field: 'modifications', scale: undefined }, settings),
     ).toEqual({ type: 'modifications', modifications: settings })
-    expect(colorByOf({ field: 'strand', scale: undefined }, settings)).toEqual({
-      type: 'strand',
-    })
+    expect(
+      baseLayerOf({ field: 'baseQuality', scale: undefined }, settings),
+    ).toEqual({ type: 'perBaseQuality' })
+  })
+
+  test('no field, a read field, or a field under none draws no layer', () => {
+    expect(baseLayerOf({ field: '', scale: undefined })).toBeUndefined()
+    expect(baseLayerOf({ field: 'strand', scale: undefined })).toBeUndefined()
+    expect(baseLayerOf({ field: 'base', scale: 'none' })).toBeUndefined()
+  })
+})
+
+describe('bodyColorScheme', () => {
+  test('a modification layer tints the plain fill and yields to a read field', () => {
+    const mods = { type: 'modifications' } as const
+    expect(bodyColorScheme({ type: 'normal' }, mods)).toBe('modifications')
+    expect(bodyColorScheme({ type: 'tag', tag: 'HP' }, mods)).toBe('tag')
+    expect(bodyColorScheme({ type: 'normal' }, { type: 'perBaseLetter' })).toBe(
+      'normal',
+    )
+    expect(bodyColorScheme({ type: 'strand' }, undefined)).toBe('strand')
   })
 })
 

@@ -70,14 +70,15 @@ import {
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
 import {
+  BASE_COLOR_FIELDS,
   COLOR_FIELDS,
   colorSnapshotFor,
   isBakedScheme,
 } from '../shared/alignmentsColor.ts'
 import {
   COLOR_SCHEMES,
-  isModificationScheme,
-  isPerBaseScheme,
+  paintsEveryBase,
+  paintsModifications,
   workerColorBy,
 } from '../shared/colorSchemes.ts'
 import { groupByForMode, workerGroupBy } from '../shared/groupFeatures.ts'
@@ -182,10 +183,11 @@ import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type {
   ArcColorByType,
-  ColorBy,
+  BaseLayer,
   ColorSchemeType,
   FilterBy,
   GroupBy,
+  ReadColorBy,
   SortedBy,
 } from '../shared/types'
 import type { NumericExtent } from './bakedColorScale.ts'
@@ -1111,7 +1113,7 @@ export default function stateModelFactory(
            * are drawn. Gated on showLegend like the other two scans.
            */
           get presentModifications(): ReadonlySet<string> | undefined {
-            if (!self.showLegend || !isModificationScheme(self.colorBy.type)) {
+            if (!self.showLegend || !paintsModifications(self.baseLayer)) {
               return undefined
             }
             return collectAcrossGroups(
@@ -1172,7 +1174,7 @@ export default function stateModelFactory(
           get arcColorsMatchReads() {
             return arcKeyFoldsIntoReadKey({
               arcColorByType: self.arcColorByType,
-              readColorScheme: self.colorBy.type,
+              readColorScheme: self.bodyColorScheme,
               arcCategories: this.arcLegendCategories,
               readCategories: this.colorLegendCategories,
             })
@@ -1226,6 +1228,7 @@ export default function stateModelFactory(
             return getReadDisplayLegendItems({
               overlaps: this.overlapLegendKind,
               colorBy: self.colorBy,
+              baseLayer: self.baseLayer,
               presentCategories: this.arcColorsMatchReads
                 ? new Set([
                     ...this.colorLegendCategories,
@@ -1520,7 +1523,7 @@ export default function stateModelFactory(
            */
           get framesChainStrand() {
             return framesUnpairedChainStrand(
-              self.colorBy.type,
+              self.baseLayer?.type ?? self.colorBy.type,
               this.readColorOpts,
             )
           },
@@ -1594,6 +1597,7 @@ export default function stateModelFactory(
           get readColorContext() {
             return {
               colorBy: self.colorBy,
+              bodyScheme: self.bodyColorScheme,
               readColorOpts: this.readColorOpts,
               bakedScale: this.bakedColorScale,
             }
@@ -1893,7 +1897,7 @@ export default function stateModelFactory(
          */
         get modificationThreshold() {
           return (
-            self.colorBy.modifications?.threshold ??
+            self.modificationSettings.threshold ??
             DEFAULT_MODIFICATION_THRESHOLD
           )
         },
@@ -1902,14 +1906,14 @@ export default function stateModelFactory(
          * #getter
          */
         get colorSchemeIndex() {
-          return colorSchemeIndexFor(self.colorBy.type)
+          return colorSchemeIndexFor(self.bodyColorScheme)
         },
 
         /**
          * #getter
          */
         get showModifications() {
-          return isModificationScheme(self.colorBy.type)
+          return paintsModifications(self.baseLayer)
         },
 
         /**
@@ -1929,14 +1933,14 @@ export default function stateModelFactory(
          * #getter
          */
         get showPerBaseQuality() {
-          return self.colorBy.type === 'perBaseQuality'
+          return self.baseLayer?.type === 'perBaseQuality'
         },
 
         /**
          * #getter
          */
         get showPerBaseLetter() {
-          return self.colorBy.type === 'perBaseLetter'
+          return self.baseLayer?.type === 'perBaseLetter'
         },
 
         /**
@@ -2907,6 +2911,7 @@ export default function stateModelFactory(
             // orientation …) leaves these props identical and repaints from the
             // data already in memory instead of refetching the region.
             colorBy: workerColorBy(self.colorBy),
+            baseLayer: self.baseLayer,
             // All three mirror what `executeRenderAlignmentData` does with them
             // in chain mode — it forces soft clipping off, drops the sort tag
             // and degrades a per-read grouping to ungrouped (`groupByForMode`,
@@ -2981,9 +2986,7 @@ export default function stateModelFactory(
          * below for what invalidates on it instead.
          */
         get perBaseBinBp() {
-          return isPerBaseScheme(self.colorBy.type)
-            ? self.settledSubPixelBinBp
-            : 1
+          return paintsEveryBase(self.baseLayer) ? self.settledSubPixelBinBp : 1
         },
 
         /**
@@ -3010,7 +3013,7 @@ export default function stateModelFactory(
          */
         get livePerBaseBinBp() {
           const view = self.view
-          return isPerBaseScheme(self.colorBy.type) && view.initialized
+          return paintsEveryBase(self.baseLayer) && view.initialized
             ? subPixelBinBp(view.bpPerPx)
             : 1
         },
@@ -3244,7 +3247,7 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setColorBy(colorBy: ColorBy) {
+          setColorBy(colorBy: ReadColorBy) {
             // A re-pick of the scheme in use writes nothing: the write would
             // replace the slot's arrays, and every colour tier keys on them.
             if (!compareStructural(colorBy, self.colorBy)) {
@@ -3253,8 +3256,23 @@ export default function stateModelFactory(
                 'color',
                 colorSnapshotFor(colorBy, self.colorSetting),
               )
-              if (colorBy.modifications) {
-                setConf(self, 'modifications', colorBy.modifications)
+            }
+          },
+
+          /**
+           * #action
+           * Draw a per-base layer over the reads, or none. The read fill is
+           * `setColorBy`'s and stays as it is.
+           */
+          setBaseLayer(layer?: BaseLayer) {
+            if (!compareStructural(layer, self.baseLayer)) {
+              setConf(
+                self,
+                'baseColor',
+                layer ? { field: BASE_COLOR_FIELDS[layer.type] } : {},
+              )
+              if (layer?.modifications) {
+                setConf(self, 'modifications', layer.modifications)
               }
             }
           },

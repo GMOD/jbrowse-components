@@ -20,7 +20,7 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { colorFieldOf, isBakedScheme } from './alignmentsColor.ts'
-import { isModificationScheme } from './colorSchemes.ts'
+import { paintsModifications } from './colorSchemes.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
 import {
   isModificationTypeVisible,
@@ -35,7 +35,12 @@ import type {
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
-import type { ArcColorByType, ColorBy, ColorSchemeType } from './types.ts'
+import type {
+  ArcColorByType,
+  BaseLayer,
+  ColorBy,
+  ColorSchemeType,
+} from './types.ts'
 import type { LegendItem, LegendSwatch } from '@jbrowse/core/ui'
 import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
 
@@ -887,6 +892,7 @@ function isStrandTag(colorBy: ColorBy | undefined) {
 type SchemeLegendArgs = Pick<
   ReadDisplayLegendArgs,
   | 'colorBy'
+  | 'baseLayer'
   | 'detectedModifications'
   | 'presentModifications'
   | 'presentTagValues'
@@ -894,14 +900,45 @@ type SchemeLegendArgs = Pick<
   | 'bakedScale'
 > & { palette: ColorPalette }
 
+// The per-base layer's own key: the quality ramp, the base vocabulary, or the
+// modification types drawn.
+function baseLayerLegend({
+  baseLayer,
+  palette,
+  detectedModifications,
+  presentModifications,
+}: SchemeLegendArgs): LegendItem[] {
+  if (baseLayer?.type === 'perBaseQuality') {
+    return hslRamp(55, [
+      { hue: 0, label: 'BQ 0' },
+      { hue: 15, label: 'BQ 10' },
+      { hue: 30, label: 'BQ 20' },
+      { hue: 45, label: 'BQ 30' },
+      { hue: 60, label: 'BQ 40' },
+    ])
+  }
+  if (baseLayer?.type === 'perBaseLetter') {
+    return BASE_LEGEND.map(({ key, label }) => ({
+      color: rgb255(palette[key]),
+      label,
+    }))
+  }
+  return baseLayer
+    ? modificationLegend(
+        baseLayer,
+        detectedModifications ?? new Map(),
+        presentModifications,
+      )
+    : []
+}
+
 function schemeLegend({
   colorBy,
   palette,
-  detectedModifications,
   presentTagValues,
-  presentModifications,
   refNamePosition,
   bakedScale,
+  baseLayer,
 }: SchemeLegendArgs): LegendItem[] {
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
@@ -915,7 +952,16 @@ function schemeLegend({
     colorBy.type === 'normal' ||
     (colorBy.type === 'tag' && !isBakedScheme(colorBy))
   ) {
-    return [{ color: rgb255(palette.colorPairLR), label: 'Reads' }]
+    // Under a modification layer the plain fill is that layer's strand tint,
+    // which the buckets key.
+    return paintsModifications(baseLayer)
+      ? []
+      : [
+          {
+            color: rgb255(palette.colorPairLR),
+            label: baseLayer ? 'Read' : 'Reads',
+          },
+        ]
   }
   const colorType = colorBy.type
   if (isStrandTag(colorBy) && !bakedScale?.declared) {
@@ -946,38 +992,6 @@ function schemeLegend({
       { hue: 60, label: 'MAPQ 60' },
     ])
   }
-  // Both per-base schemes paint their marks over the flat 'plain' body, which is
-  // not a CATEGORY_LEGEND bucket, so the body is keyed here after the marks —
-  // the same row the modification scheme gets through modFwd/modRev.
-  const readBody = { color: rgb255(palette.colorPairLR), label: 'Read' }
-  if (colorType === 'perBaseQuality') {
-    return [
-      ...hslRamp(55, [
-        { hue: 0, label: 'BQ 0' },
-        { hue: 15, label: 'BQ 10' },
-        { hue: 30, label: 'BQ 20' },
-        { hue: 45, label: 'BQ 30' },
-        { hue: 60, label: 'BQ 40' },
-      ]),
-      readBody,
-    ]
-  }
-  if (colorType === 'perBaseLetter') {
-    return [
-      ...BASE_LEGEND.map(({ key, label }) => ({
-        color: rgb255(palette[key]),
-        label,
-      })),
-      readBody,
-    ]
-  }
-  if (isModificationScheme(colorType)) {
-    return modificationLegend(
-      colorBy,
-      detectedModifications ?? new Map(),
-      presentModifications,
-    )
-  }
   // The strand / insert-size / orientation schemes are described entirely by
   // which fixed-swatch buckets occurred.
   return []
@@ -987,6 +1001,8 @@ function schemeLegend({
 // palette and the bucket scan, which the two consumers below split differently.
 interface ReadDisplayLegendArgs {
   colorBy: ColorBy | undefined
+  // The per-base layer, keyed ahead of the read fill it paints over.
+  baseLayer?: BaseLayer
   detectedModifications?: ReadonlyMap<string, string>
   // Which overlap tint is on screen, or undefined for none — the display's
   // `overlapLegendKind`, which is the draw gate and a real overlap interval,
@@ -1031,6 +1047,7 @@ interface ReadDisplayLegendArgs {
  */
 export function getReadDisplayLegendItems({
   colorBy,
+  baseLayer,
   presentCategories,
   palette,
   detectedModifications,
@@ -1054,16 +1071,19 @@ export function getReadDisplayLegendItems({
         ),
       )
     : presentCategories
+  const scheme = {
+    colorBy,
+    baseLayer,
+    palette,
+    detectedModifications,
+    presentTagValues,
+    presentModifications,
+    refNamePosition,
+    bakedScale,
+  }
   return [
-    ...schemeLegend({
-      colorBy,
-      palette,
-      detectedModifications,
-      presentTagValues,
-      presentModifications,
-      refNamePosition,
-      bakedScale,
-    }),
+    ...baseLayerLegend(scheme),
+    ...schemeLegend(scheme),
     ...bucketItems(
       categories,
       palette,

@@ -3,6 +3,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { COLOR_SCHEMES, workerColorBy } from './colorSchemes.ts'
 import { extractFeatureArrays } from './extractFeatureArrays.ts'
+import { splitSchemeForTest } from './splitSchemeForTest.ts'
 
 import type { ColorBy, ColorSchemeType } from './types.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
@@ -52,7 +53,7 @@ const buildFeatureData = (f: Feature): FeatureData => ({
 // reference sequence is supplied so the bisulfite path can run.
 function extracted(colorBy: ColorBy | undefined) {
   const out = extractFeatureArrays([makeFeature()], buildFeatureData, {
-    colorBy,
+    ...splitSchemeForTest(colorBy),
     showSoftClipping: false,
     region,
     perBaseBinBp: 1,

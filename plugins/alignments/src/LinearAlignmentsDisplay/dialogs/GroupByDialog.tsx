@@ -19,7 +19,7 @@ import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { TAG_FIELD_PREFIX, facetTag } from '../../shared/groupByLabels.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
-import type { ColorBy, FilterBy, GroupBy } from '../../shared/types.ts'
+import type { FilterBy, GroupBy, ReadColorBy } from '../../shared/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // Exactly what this dialog reads. `getGroupByMenuItem` extends it with the
@@ -38,14 +38,14 @@ export interface GroupByDialogModel extends IStateTreeNode {
   // scan IS the render fetch's download, so it is measured against the render
   // fetch's budget rather than running unbounded beside a refused track.
   resolvedByteLimit: () => number | undefined
-  colorBy: ColorBy
+  colorBy: ReadColorBy
   facet?: GroupBy
   setFacet: (facet?: GroupBy) => void
-  setColorBy: (colorBy: ColorBy) => void
+  setColorBy: (colorBy: ReadColorBy) => void
 }
 
 // Reads are currently colored by exactly this tag.
-function isColoringByTag(colorBy: ColorBy, tag: string) {
+function isColoringByTag(colorBy: ReadColorBy, tag: string) {
   return colorBy.type === 'tag' && colorBy.tag === tag
 }
 
@@ -62,7 +62,7 @@ function isColoringByTag(colorBy: ColorBy, tag: string) {
 // the user hasn't typed yet. Typing the tag the reads are already colored by
 // then left the box unticked over colors that were on — and, since unticking
 // means "don't color by this tag", submitting turned those colors off.
-function defaultColorByTag(colorBy: ColorBy, tag: string) {
+function defaultColorByTag(colorBy: ReadColorBy, tag: string) {
   return colorBy.type === 'normal' || isColoringByTag(colorBy, tag)
 }
 
@@ -70,10 +70,10 @@ function defaultColorByTag(colorBy: ColorBy, tag: string) {
 // unchecked, undo only the coloring this dialog set (same tag), else leave the
 // existing scheme (undefined) alone.
 function nextColorScheme(
-  colorBy: ColorBy,
+  colorBy: ReadColorBy,
   tag: string,
   alsoColorByTag: boolean,
-): ColorBy | undefined {
+): ReadColorBy | undefined {
   return alsoColorByTag
     ? { type: 'tag', tag }
     : isColoringByTag(colorBy, tag)
