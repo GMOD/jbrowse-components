@@ -30,5 +30,5 @@ configuration and debounce-saves edits back to the session.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-settarget">**setTarget**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(newTarget: (ConfigNodeType&lt;…&gt; &amp; ModelInstanceTypeProps&lt;…&gt; &amp; {……</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(newTarget: (ConfigNodeType&lt;…&gt; &amp; ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;) &#124; undefined) =&gt; void</code></pre></dialog></span> |  |
+| <span id="action-settarget">**setTarget**</span><br><code>(newTarget: AnyConfigurationModel &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setexpandeddisplayid">**setExpandedDisplayId**</span><br><code>(displayId: string &#124; undefined) =&gt; void</code> |  |

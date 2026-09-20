@@ -56,6 +56,18 @@ Reads narrow only when the schema is concrete — type a state model factory's
 consumer reads its own non-shared slots through it. Guards in
 `configTypeNarrowing.test.ts` (checked by `pnpm typecheck`, not jest).
 
+**A config node's props come off the schema's definition**, so `node.colorr` is
+a compile error and a sub-schema member reads as that sub-config's own node.
+`ConfigurationSchemaType['Type']` replaces MST's `Record<string, any>` props
+rather than intersecting with them, which is what makes the name checked rather
+than merely typed; four type-level details hold it up and each fails quietly.
+ADR-145.
+
+**Run `scripts/audit-config-read-types.ts` after touching the node type.** A
+brand that loses its polymorphic `this` cuts every node back to
+`AnyConfigurationSchemaType`, switching the read-side check off tree-wide, and
+that typechecks clean — the audit is the only thing that reports it.
+
 **A widened `baseConfiguration` poisons the whole schema** —
 `ConfigurationSlotName` recurses through `GetBase`, so a schema taking its base
 from `pluginManager.getDisplayType(…).configSchema` has unchecked reads of its
