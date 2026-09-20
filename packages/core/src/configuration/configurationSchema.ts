@@ -32,6 +32,7 @@ import type {
 } from './types.ts'
 import type {
   IAnyType,
+  IStateTreeNode,
   IType,
   ReferenceIdentifier,
   SnapshotIn,
@@ -448,13 +449,24 @@ export interface ConfigurationSchemaType<
   typeof makeConfigurationSchemaModel<ConfigurationSchemaDefinition, OPTIONS>
 > {
   type: string
+  /**
+   * The node this schema creates: MST's own instance type with the slot reads
+   * `ConfigNodeType` derives from the definition laid over it.
+   *
+   * `IStateTreeNode<this>` restates by hand what MST's `Type` gets from
+   * `STNValue<T, this>`. Overriding the member drops the polymorphic `this`,
+   * and that brand is the only route from a config node back to its schema —
+   * `ConfigurationSchemaForModel`, and so the slot-name and value narrowing in
+   * every `getConf`/`readConfObject` below it.
+   */
   readonly Type: ConfigNodeType<DEFINITION> &
     ReturnType<
       typeof makeConfigurationSchemaModel<
         ConfigurationSchemaDefinition,
         OPTIONS
       >
-    >['Type']
+    >['TypeWithoutSTN'] &
+    IStateTreeNode<this>
 }
 
 export function ConfigurationSchema<
