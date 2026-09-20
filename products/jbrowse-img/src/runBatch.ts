@@ -1,5 +1,8 @@
+import { spawn } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
+import readline from 'node:readline'
 import zlib from 'node:zlib'
 
 import {
@@ -12,7 +15,6 @@ import {
 } from './batch.ts'
 import { batchRefusedOptions, DEFAULT_WIDTH } from './options.ts'
 import { createProgress } from './progress.ts'
-import { renderRegionReport } from './renderRegion.ts'
 import { resolveConfigObject } from './resolveHub.ts'
 import { writeRendered } from './util.ts'
 import { parseVcfJunctions } from './vcfJunctions.ts'
@@ -47,6 +49,54 @@ export interface BatchOpts extends Opts {
   dryRun?: boolean
   /** Injected by the tests; production builds one from stderr. */
   progress?: ProgressReporter
+  /** Processes to render in; the default is `defaultJobs` */
+  jobs?: number
+  /**
+   * The command line that started this run, which `jobs` starts again once per
+   * worker. The CLI supplies it; a library caller without one renders in
+   * process.
+   */
+  respawn?: { command: string; args: string[] }
+  /** A worker's slice of the plan: every `of`-th row from `index` */
+  shard?: { index: number; of: number }
+}
+
+interface PlannedRow {
+  rec: BatchRecord
+  file: string
+  locs: string[]
+}
+
+/** How one row ended: what a worker reports to the run that started it */
+interface RowResult {
+  file: string
+  status: RecordStatus
+  links?: string
+  error?: string
+}
+
+// A render is one core's work between its own fetches, and two of them side by
+// side ran at full pace each. Each holds about a gigabyte.
+const ROWS_WORTH_A_WORKER = 8
+const WORKER_BYTES = 2 ** 31
+
+/** `2/8`, as a --jobs run writes a worker's slice on its command line */
+export function parseShard(text?: string) {
+  const m = /^(\d+)\/(\d+)$/.exec(text ?? '')
+  const index = Number(m?.[1])
+  const of = Number(m?.[2])
+  return m && index < of ? { index, of } : undefined
+}
+
+export function defaultJobs() {
+  return Math.max(
+    1,
+    Math.min(
+      4,
+      Math.floor(os.availableParallelism() / 2),
+      Math.floor(os.totalmem() / WORKER_BYTES),
+    ),
+  )
 }
 
 // How one record ended, as the manifest reports it. `exists` is a --resume skip,
@@ -128,7 +178,7 @@ export async function runBatch(opts: BatchOpts) {
   // insertions are hundreds of rows, and burying the run's real output under
   // them is its own kind of silence. Not "name no junction to draw" any more —
   // a --passOnly skip names one perfectly well and was asked to be left out.
-  if (skipped.length > 0) {
+  if (skipped.length > 0 && !opts.shard) {
     console.warn(
       `Warning: skipped ${skipped.length} record(s), e.g. ${skipped[0]}`,
     )
@@ -174,17 +224,20 @@ export async function runBatch(opts: BatchOpts) {
 
   fs.mkdirSync(outDir, { recursive: true })
 
-  // Fetched ONCE for the whole run, where it used to be once per record: a
-  // --hub or a URL --config is a network round trip, and re-resolving it per
-  // junction is the cost this subcommand exists to avoid. Copied per record
-  // because readData mutates what it is handed.
-  const configObject = await resolveConfigObject(opts)
-  const width = opts.width ?? DEFAULT_WIDTH
-  const failures: { name: string; error: unknown }[] = []
-  const status: RecordStatus[] = []
-  // a reused image keeps the count the run that drew it reported
-  const links = opts.resume ? priorLinks(outDir) : new Map<string, string>()
-  let done = 0
+  const { shard } = opts
+  if (shard) {
+    await renderRows(
+      planned.filter((_, i) => i % shard.of === shard.index),
+      opts,
+      flank,
+      result => {
+        process.stdout.write(`${JSON.stringify(result)}\n`)
+      },
+    )
+    return { done: 0, failures: [], skipped }
+  }
+
+  const results = new Map<string, RowResult>()
   const progress =
     opts.progress ??
     createProgress({
@@ -194,11 +247,119 @@ export async function runBatch(opts: BatchOpts) {
         process.stderr.write(s)
       },
     })
-  for (const { rec, file, locs } of planned) {
+  const report = (result: RowResult) => {
+    results.set(result.file, result)
+    const { file, status, error } = result
+    progress.step(
+      status === 'exists' ? `${file} (exists)` : file,
+      status === 'failed' ? `FAILED ${file}: ${error}` : undefined,
+    )
+  }
+  const jobs = Math.min(
+    opts.jobs ?? defaultJobs(),
+    Math.ceil(planned.length / ROWS_WORTH_A_WORKER),
+  )
+  await (jobs > 1 && opts.respawn
+    ? renderInWorkers(planned, opts.respawn, jobs, report)
+    : renderRows(planned, opts, flank, report))
+
+  // a reused image keeps the count the run that drew it reported
+  const links = opts.resume ? priorLinks(outDir) : new Map<string, string>()
+  for (const { file, links: counted } of results.values()) {
+    if (counted !== undefined) {
+      links.set(file, counted)
+    }
+  }
+  const status = planned.map(
+    ({ file }) => results.get(file)?.status ?? 'failed',
+  )
+  const failures = planned
+    .map(({ file }) => results.get(file))
+    .filter(r => r?.status === 'failed')
+    .map(r => ({ name: r!.file, error: r!.error }))
+  const done = status.filter(st => st === 'ok').length
+  if (opts.manifest) {
+    writeManifest(outDir, planned, status, links)
+  }
+  // The reused count is named, or a fully-resumed run reports "wrote 0/400" and
+  // reads as a run in which nothing worked.
+  const reused = status.filter(st => st === 'exists').length
+  progress.finish(
+    `wrote ${done}/${planned.length} images to ${outDir}${
+      reused ? `, ${reused} already there` : ''
+    }${failures.length ? `, ${failures.length} failed` : ''}`,
+  )
+  return { done, failures, skipped }
+}
+
+/**
+ * One process per worker, each started as this run was and told its slice. A
+ * worker prints a line of JSON per row and nothing else on stdout. A row its
+ * worker never reported is a worker that died, and counts as failed.
+ */
+function renderInWorkers(
+  planned: PlannedRow[],
+  respawn: { command: string; args: string[] },
+  jobs: number,
+  report: (result: RowResult) => void,
+) {
+  return Promise.all(
+    Array.from(
+      { length: jobs },
+      (_, index) =>
+        new Promise<void>(resolve => {
+          const child = spawn(
+            respawn.command,
+            [...respawn.args, '--shard', `${index}/${jobs}`],
+            { stdio: ['ignore', 'pipe', 'inherit'] },
+          )
+          const reported = new Set<string>()
+          readline.createInterface({ input: child.stdout }).on('line', line => {
+            if (line.startsWith('{')) {
+              const result = JSON.parse(line) as RowResult
+              reported.add(result.file)
+              report(result)
+            }
+          })
+          child.on('close', code => {
+            for (const [i, { file }] of planned.entries()) {
+              if (i % jobs === index && !reported.has(file)) {
+                report({
+                  file,
+                  status: 'failed',
+                  error: `its worker exited with code ${code} before rendering it`,
+                })
+              }
+            }
+            resolve()
+          })
+        }),
+    ),
+  )
+}
+
+async function renderRows(
+  rows: PlannedRow[],
+  opts: BatchOpts,
+  flank: number,
+  report: (result: RowResult) => void,
+) {
+  const { outDir } = opts
+  // Fetched ONCE for the whole run, where it used to be once per record: a
+  // --hub or a URL --config is a network round trip, and re-resolving it per
+  // junction is the cost this subcommand exists to avoid. Copied per record
+  // because readData mutates what it is handed.
+  const configObject = await resolveConfigObject(opts)
+  const width = opts.width ?? DEFAULT_WIDTH
+  // Imported here, where a row is about to be drawn: a --dryRun and the process
+  // that hands its rows to workers never load the render stack.
+  const { setupEnv } = await import('./setupEnv.ts')
+  setupEnv()
+  const { renderRegionReport } = await import('./renderRegion.ts')
+  for (const { rec, file, locs } of rows) {
     const out = path.join(outDir, file)
     if (opts.resume && fs.existsSync(out)) {
-      status.push('exists')
-      progress.step(`${file} (exists)`)
+      report({ file, status: 'exists' })
       continue
     }
     try {
@@ -224,33 +385,15 @@ export async function runBatch(opts: BatchOpts) {
         configObject && structuredClone(configObject),
       )
       writeRendered(rendered.svg, out, width)
-      links.set(file, rendered.links?.join(',') ?? '')
-      done++
-      status.push('ok')
-      progress.step(file)
+      report({ file, status: 'ok', links: rendered.links?.join(',') ?? '' })
     } catch (error) {
-      failures.push({ name: file, error })
-      status.push('failed')
-      progress.step(
+      report({
         file,
-        `FAILED ${file}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      )
+        status: 'failed',
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
-  if (opts.manifest) {
-    writeManifest(outDir, planned, status, links)
-  }
-  // The reused count is named, or a fully-resumed run reports "wrote 0/400" and
-  // reads as a run in which nothing worked.
-  const reused = status.filter(s => s === 'exists').length
-  progress.finish(
-    `wrote ${done}/${planned.length} images to ${outDir}${
-      reused ? `, ${reused} already there` : ''
-    }${failures.length ? `, ${failures.length} failed` : ''}`,
-  )
-  return { done, failures, skipped }
 }
 
 // A run's own index: which file is which record, under the caller's own name,
@@ -296,7 +439,7 @@ function priorLinks(outDir: string) {
 
 function writeManifest(
   outDir: string,
-  planned: { rec: BatchRecord; file: string; locs: string[] }[],
+  planned: PlannedRow[],
   // index-aligned with `planned`: the loop pushes exactly one per record
   status: RecordStatus[],
   links: Map<string, string>,

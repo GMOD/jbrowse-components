@@ -1,13 +1,16 @@
-import { safeParseBreakend } from '@jbrowse/sv-core'
+import { parseBreakend } from '@gmod/vcf'
 
 import type { BatchRecord, Locus } from './batch.ts'
 
 // A VCF's SV records, for `batch` to render. The ALT bracket grammar is
-// `@gmod/vcf`'s `parseBreakend`, through sv-core's `safeParseBreakend`: a regex
-// over the bracket drops the 28 of 66 COLO829 breakends that carry inserted
-// sequence. What no library owns is the two file-level facts below: which
-// spelling of a contig the file itself uses, and which records are two halves
-// of one adjacency.
+// `@gmod/vcf`'s `parseBreakend`: a regex over the bracket drops the 28 of 66
+// COLO829 breakends that carry inserted sequence. What no library owns is the
+// two file-level facts below: which spelling of a contig the file itself uses,
+// and which records are two halves of one adjacency.
+//
+// From `@gmod/vcf` itself, where sv-core wraps the same call: that package's
+// entry point loads the UI toolkit behind its dialogs, and a --dryRun and the
+// process that hands a --jobs run to its workers read a VCF and draw nothing.
 
 const CONTIG_ID = /^##contig=<.*ID=([^,>]+)/
 
@@ -73,6 +76,16 @@ function dedupe(records: VcfRecord[], tolerance: number) {
     }
   }
   return kept
+}
+
+// parseBreakend throws on an ALT it cannot read, and one bad allele is a row to
+// report, not a run to end
+function safeParseBreakend(alt: string) {
+  try {
+    return parseBreakend(alt)
+  } catch {
+    return undefined
+  }
 }
 
 function breakendMate(alt: string): Endpoint | undefined {

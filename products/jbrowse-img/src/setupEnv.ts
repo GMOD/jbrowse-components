@@ -3,7 +3,14 @@ import { TextDecoder, TextEncoder } from 'node:util'
 import { JSDOM } from 'jsdom'
 import { enableStaticRendering } from 'mobx-react'
 
+let ready = false
+
+/** Once per process: `batch` calls it as well as whoever called `batch`. */
 export function setupEnv() {
+  if (ready) {
+    return
+  }
+  ready = true
   // We render to static markup (renderToStaticMarkup), never to a live DOM, so
   // observer components must not subscribe to observables — otherwise their
   // reactions linger past the render and fire on destroy(), reading dead MST

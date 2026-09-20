@@ -530,6 +530,11 @@ export const batchOptionDefs: OptionDef[] = [
       'Print the file and loci each record would render, and render nothing',
     default: false,
   },
+  {
+    name: 'jobs',
+    description:
+      'Processes to render in, each about a gigabyte. The default is half the cores, up to 4 and to what memory allows; 1 renders in this process',
+  },
 ]
 
 // Exposed so the CLI can warn when a batch-only flag is passed without the
@@ -561,6 +566,8 @@ export const knownOptions = new Set([
   ...optionDefs.map(o => o.name),
   ...comparativeOptionDefs.map(o => o.name),
   ...batchOptionDefs.map(o => o.name),
+  // how a --jobs run tells a worker its slice; nobody types it
+  'shard',
   'help',
   'version',
 ])

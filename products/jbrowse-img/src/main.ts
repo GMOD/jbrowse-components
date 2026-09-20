@@ -1,14 +1,7 @@
 import fs from 'node:fs'
 
-import {
-  parseArgv,
-  renderRegion,
-  setupEnv,
-  standardizeArgv,
-  syntenyTrackTypes,
-  trackTypes,
-} from './index.ts'
 import { runList } from './list.ts'
+import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
 import {
   DEFAULT_WIDTH,
@@ -31,8 +24,13 @@ import {
   ignoredComparativeOptions,
   knownOptions,
 } from './options.ts'
-import { runBatch } from './runBatch.ts'
+import { parseArgv, standardizeArgv } from './parseArgv.ts'
 import { writeRendered } from './util.ts'
+
+// Everything that draws is imported where it is first needed. Loading it is
+// about three seconds of a process's start, which --help, --version, `list`
+// and `batch --dryRun` have no use for, and the process that hands a --jobs run
+// to its workers draws nothing itself.
 
 const scriptName = 'jb2export'
 
@@ -72,8 +70,6 @@ async function main() {
     ) as { version: string }
     console.log(version)
   } else {
-    setupEnv()
-
     const parsed = parseArgv(args)
     const { trackList, ...rest } = standardizeArgv(parsed, [
       ...trackTypes,
@@ -171,6 +167,7 @@ async function main() {
           `Warning: batch ignores ${dropped.map(n => `--${n}`).join(', ')}; --outDir names the directory and the junction file says where to look`,
         )
       }
+      const { parseShard, runBatch } = await import('./runBatch.ts')
       const { failures } = await runBatch({
         ...renderOpts,
         bedpe: getString(rest, 'bedpe'),
@@ -183,6 +180,12 @@ async function main() {
         resume: getBoolean(rest, 'resume'),
         manifest: getBoolean(rest, 'manifest'),
         dryRun: getBoolean(rest, 'dryRun'),
+        jobs: getOptionalCount(rest, 'jobs'),
+        respawn: {
+          command: process.execPath,
+          args: [...process.execArgv, ...process.argv.slice(1)],
+        },
+        shard: parseShard(getString(rest, 'shard')),
       })
       // A partial run is reported as one: the images are still there and worth
       // keeping, but a script that treats this as success would be wrong about
@@ -191,6 +194,9 @@ async function main() {
         process.exitCode = 1
       }
     } else {
+      const { setupEnv } = await import('./setupEnv.ts')
+      setupEnv()
+      const { renderRegion } = await import('./renderRegion.ts')
       writeRendered(
         await renderRegion(renderOpts),
         getString(rest, 'out'),

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { registerHooks } from 'node:module'
+import { enableCompileCache, registerHooks } from 'node:module'
 
 import { resolve } from './resolve.ts'
 
@@ -9,6 +9,10 @@ import { resolve } from './resolve.ts'
 // rejects (ERR_UNSUPPORTED_DIR_IMPORT). The hook must be active before linking,
 // so main.ts is pulled in via dynamic import here rather than a static import —
 // a static import would link (and fail) before registerHooks() runs.
+// The render stack is some four thousand modules, and compiling them is a fifth
+// of a process's start. V8 keeps the compiled form on disk from the second run.
+enableCompileCache()
+
 registerHooks({ resolve })
 
 await import('./main.ts')

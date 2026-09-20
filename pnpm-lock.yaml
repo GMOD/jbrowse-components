@@ -2356,6 +2356,9 @@ importers:
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
+      '@gmod/vcf':
+        specifier: ^7.2.0
+        version: 7.2.0
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -2386,9 +2389,6 @@ importers:
       '@jbrowse/react-app2':
         specifier: workspace:^
         version: link:../jbrowse-react-app
-      '@jbrowse/sv-core':
-        specifier: workspace:^
-        version: link:../../packages/sv-core
       canvas:
         specifier: ^3.2.3
         version: 3.2.3

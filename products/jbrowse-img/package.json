@@ -37,6 +37,7 @@
   "dependencies": {
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
+    "@gmod/vcf": "^7.2.0",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
@@ -47,7 +48,6 @@
     "@jbrowse/plugin-linear-comparative-view": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/react-app2": "workspace:^",
-    "@jbrowse/sv-core": "workspace:^",
     "canvas": "^3.2.3",
     "jsdom": "^30.1.0",
     "mobx": "^7.0.3",

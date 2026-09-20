@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { runBatch } from './runBatch.ts'
+import { defaultJobs, parseShard, runBatch } from './runBatch.ts'
 
 import type { ProgressReporter } from './progress.ts'
 
@@ -17,6 +17,9 @@ jest.mock('./renderRegion.ts', () => ({
   renderRegionReport: (...args: unknown[]) =>
     mockRenderRegion(...args) as unknown,
 }))
+// jsdom globals and mobx's static-rendering switch, which a mocked renderer has
+// no use for and a jest worker should not have set under it
+jest.mock('./setupEnv.ts', () => ({ setupEnv: () => {} }))
 jest.mock('./resolveHub.ts', () => ({
   resolveConfigObject: (...args: unknown[]) =>
     mockResolveConfigObject(...args) as unknown,
@@ -316,6 +319,129 @@ describe('runBatch', () => {
     mockRenderRegion.mockClear()
     await runBatch({ ...base, resume: true, progress: steps().progress })
     expect(mockRenderRegion).toHaveBeenCalledTimes(8)
+  })
+
+  function tenInsertions() {
+    const vcf = path.join(dir, 'ten.vcf')
+    fs.writeFileSync(
+      vcf,
+      [
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+        ...Array.from(
+          { length: 10 },
+          (_, i) =>
+            `chr1\t${(i + 1) * 100000}\tins${i}\tN\t<INS>\t.\tPASS\tSVTYPE=INS`,
+        ),
+      ].join('\n'),
+    )
+    return vcf
+  }
+
+  it('renders only its slice as a worker, and reports each row as a line of JSON', async () => {
+    const write = jest
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true)
+    try {
+      await runBatch({
+        vcf: tenInsertions(),
+        outDir: path.join(dir, 'out'),
+        format: 'svg',
+        manifest: true,
+        shard: { index: 1, of: 4 },
+      })
+      const lines = write.mock.calls.map(
+        c => JSON.parse(String(c[0])) as { file: string; status: string },
+      )
+      expect(lines.map(l => l.file)).toEqual([
+        '02_chr1_199999_ins1.svg',
+        '06_chr1_599999_ins5.svg',
+        '10_chr1_999999_ins9.svg',
+      ])
+      expect(lines.every(l => l.status === 'ok')).toBe(true)
+      // the run that started it writes the one manifest
+      expect(fs.existsSync(path.join(dir, 'out', 'manifest.tsv'))).toBe(false)
+    } finally {
+      write.mockRestore()
+    }
+  })
+
+  // stands in for the CLI: reports its slice of ten rows, and as worker 1 of 2
+  // dies after its first
+  function fakeWorker() {
+    const script = path.join(dir, 'worker.mjs')
+    fs.writeFileSync(
+      script,
+      `const [index, of] = process.argv.at(-1).split('/').map(Number)
+const names = Array.from({ length: 10 }, (_, i) =>
+  \`\${String(i + 1).padStart(2, '0')}_chr1_\${(i + 1) * 100000 - 1}_ins\${i}.svg\`)
+let n = 0
+for (const [i, file] of names.entries()) {
+  if (i % of === index) {
+    if (index === 1 && n++ === 1) {
+      process.exit(3)
+    }
+    console.log(JSON.stringify({ file, status: 'ok', links: \`\${i}\` }))
+  }
+}
+`,
+    )
+    return { command: process.execPath, args: [script] }
+  }
+
+  it('renders in worker processes and writes their rows as one manifest, in callset order', async () => {
+    const { seen, progress } = steps()
+    const { done, failures } = await runBatch({
+      vcf: tenInsertions(),
+      outDir: path.join(dir, 'out'),
+      format: 'svg',
+      manifest: true,
+      jobs: 2,
+      respawn: fakeWorker(),
+      progress,
+    })
+    expect(mockRenderRegion).not.toHaveBeenCalled()
+    expect(seen).toHaveLength(10)
+    // worker 0 drew rows 1,3,5,7,9; worker 1 drew row 2 and died
+    expect(done).toBe(6)
+    expect(failures.map(f => f.name)).toEqual([
+      '04_chr1_399999_ins3.svg',
+      '06_chr1_599999_ins5.svg',
+      '08_chr1_799999_ins7.svg',
+      '10_chr1_999999_ins9.svg',
+    ])
+    expect(String(failures[0]!.error)).toMatch(/worker exited with code 3/)
+    const rows = manifestRows()
+    expect(rows.slice(1).map(r => r[0])).toEqual(
+      Array.from({ length: 10 }, (_, i) =>
+        expect.stringMatching(
+          new RegExp(`^${String(i + 1).padStart(2, '0')}_`),
+        ),
+      ),
+    )
+    const linksAt = rows[0]!.indexOf('links')
+    expect(rows.slice(1, 4).map(r => [r[linksAt], r.at(-1)])).toEqual([
+      ['0', 'ok'],
+      ['1', 'ok'],
+      ['2', 'ok'],
+    ])
+  })
+
+  it('renders a callset too small to be worth a second process in this one', async () => {
+    await runBatch(
+      opts({ jobs: 8, respawn: fakeWorker(), progress: steps().progress }),
+    )
+    expect(mockRenderRegion).toHaveBeenCalledTimes(2)
+  })
+
+  it('reads a worker’s slice off its command line', () => {
+    expect(parseShard('2/8')).toEqual({ index: 2, of: 8 })
+    expect([parseShard('8/8'), parseShard('x'), parseShard()]).toEqual([
+      undefined,
+      undefined,
+      undefined,
+    ])
+    expect(defaultJobs()).toBeGreaterThanOrEqual(1)
+    expect(defaultJobs()).toBeLessThanOrEqual(4)
   })
 
   it('blames the flag, not the file, when --limit selects nothing', async () => {
