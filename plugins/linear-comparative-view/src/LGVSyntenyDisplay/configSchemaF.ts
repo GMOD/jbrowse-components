@@ -1,7 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
+import { colorChannelOptions } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
+import {
+  alignmentsColorConfigSchema,
+  linearAlignmentsDisplayConfigSchemaFactory,
+} from '@jbrowse/plugin-alignments'
 
 import { getMate } from '../syntenyMate.ts'
 
@@ -87,19 +91,18 @@ function configSchemaF(pluginManager: PluginManager) {
         defaultValue: 'jexl:lgvSyntenyTooltip(feature)',
       },
       /**
-       * #slot
-       * Synteny reads are strand-colored by default (vs the base alignments
-       * display's `normal`); overrides the inherited `colorBy` slot's default.
+       * #slot color
+       * The alignments displays' `color` object with `field` defaulting to
+       * `strand`, where the base display paints the plain fill.
        */
-      colorBy: {
-        // merges over the base alignments slot, so this states only what
-        // differs — synteny defaults to `strand`, not `normal`. `validate` and
-        // `advanced` are inherited. (`type` stays because it is what marks an
-        // entry as a slot rather than a sub-schema.)
-        type: 'frozen',
-        defaultValue: { type: 'strand' },
-        description: 'Color scheme for synteny reads',
-      },
+      color: ConfigurationSchema(
+        'LGVSyntenyColor',
+        { field: { type: 'string', defaultValue: 'strand' } },
+        {
+          baseConfiguration: alignmentsColorConfigSchema,
+          ...colorChannelOptions('color'),
+        },
+      ),
       /**
        * #slot
        * Synteny reads hide the coverage histogram by default; overrides the
