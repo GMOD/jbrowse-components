@@ -98,8 +98,8 @@ const syntenySession = {
                   type: 'LGVSyntenyDisplay',
                   configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
                   showSoftClipping: false,
-                  colorBy: {
-                    type: 'strand',
+                  color: {
+                    field: 'strand',
                   },
                   filterBy: {
                     flagInclude: 0,
@@ -137,8 +137,8 @@ const syntenySession = {
                   type: 'LGVSyntenyDisplay',
                   configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
                   showSoftClipping: false,
-                  colorBy: {
-                    type: 'strand',
+                  color: {
+                    field: 'strand',
                   },
                   filterBy: {
                     flagInclude: 0,

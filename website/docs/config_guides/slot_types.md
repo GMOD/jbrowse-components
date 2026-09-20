@@ -64,8 +64,8 @@ Many color slots also accept a [`jexl:` callback](/docs/config_guides/jexl) for
 ## frozen
 
 An arbitrary JSON value (object or array) stored as-is, for structured settings
-such as a `colorBy` of `{ "type": "methylation" }`. The shape a given `frozen`
-slot expects is described in that slot's own text.
+such as a `sortedBy` of `{ "type": "basePair", "pos": 100 }`. The shape a given
+`frozen` slot expects is described in that slot's own text.
 
 ## text
 

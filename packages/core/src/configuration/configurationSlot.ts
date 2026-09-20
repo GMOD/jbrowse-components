@@ -59,7 +59,7 @@ const slotTypes = {
   // for a slot whose unset state means "decide from the data" — a feature's own
   // BED itemRgb, say
   maybeColor: { model: types.maybe(CssColorType) },
-  // object-valued, e.g. alignments `colorBy`
+  // object-valued, e.g. alignments `sortedBy`
   maybeFrozen: { model: types.maybe(types.frozen()) },
   string: { model: types.string, fallbackDefault: '' },
   text: { model: types.string, fallbackDefault: '' },

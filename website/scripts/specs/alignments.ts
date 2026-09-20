@@ -131,7 +131,7 @@ const CTX_MENU_READ = {
 // cascade open over it, teaching the click path and its result at once. The
 // cascade is three menus wide and covered most of the pileup underneath, so the
 // result had nowhere to show. The click path is not lost: it is in the recipe
-// dialog beside the figure's live links, derived from `colorBy` on the session.
+// dialog beside the figure's live links, derived from `color` on the session.
 //
 // ONE FRAME, not the two-half compose it was (reviewer: "might just skip first
 // screenshot, only use second"). The "before" half was the default grey pileup,
@@ -145,7 +145,7 @@ const CTX_MENU_READ = {
 function strandSpecificSpec(): ScreenshotSpec {
   const spec = (
     name: string,
-    colorBy: { type: string },
+    color: { field: string },
     label: string,
   ): ScreenshotSpec => ({
     mode: 'url',
@@ -173,7 +173,7 @@ function strandSpecificSpec(): ScreenshotSpec {
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
-          colorBy,
+          color,
           // 120, not the 90 this had: a log axis prints a tick per power of two
           // rather than three round numbers, and at 90px they overlapped into an
           // unreadable column down the left of the band
@@ -244,7 +244,7 @@ function strandSpecificSpec(): ScreenshotSpec {
   })
   return spec(
     'rnaseq/strand_specific',
-    { type: 'firstOfPairStrand' },
+    { field: 'firstOfPairStrand' },
     'Color by first of pair strand',
   )
 }
@@ -358,7 +358,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // palette uses a saturated short-insert pink so the thin cloud
               // lines stay visible.
               arcColorByType: 'insertSizeAndOrientation',
-              colorBy: { type: 'insertSizeAndOrientation' },
+              color: { field: 'insertSizeAndOrientation' },
               // legend on (reviewer): the cloud leaves enough empty space that
               // the floating legend keys the insert-size/orientation colors
               // without obscuring the reads
@@ -481,7 +481,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // the other -- the two maxima are ~150 bp apart across the boundary, which is
   // what makes the flip read as one event rather than as two separate genes.
   //
-  // `colorBy: strand` for the same reason the ONT figure below sets it: the
+  // `color: strand` for the same reason the ONT figure below sets it: the
   // reads are coloured by the dimension the grouping used, so which section a
   // read belongs to is readable off the read.
   {
@@ -510,7 +510,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // ~300 reads.
           forceLoad: true,
           facet: 'strand',
-          colorBy: { type: 'strand' },
+          color: { field: 'strand' },
           // ~150 reads a strand and each one 1-3 kb against a 3.4 kb window, so
           // almost every read gets a row of its own: at 2px the two pileups are
           // ~600px and the bands lose the frame, at 1px they are the strip under
@@ -599,7 +599,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // is confusing), colored by the same dimension the grouping used —
               // so the section a band belongs to is readable off the reads
               // themselves rather than only off the group label
-              colorBy: { type: 'strand' },
+              color: { field: 'strand' },
               // ~12 reads per strand here, so the pileup is short whatever it is
               // given: at the compact 3px it drew as a solid pink and a solid
               // purple stripe with no reads in it
@@ -1224,7 +1224,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             'cpgisland_ucsc_hg38',
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram_modifications',
-              colorBy: { type: 'modifications' },
+              color: { field: 'modifications' },
               // lift the fetch-size gate so the CRAM auto-loads headless
               // instead of sitting on the force-load prompt (same mechanism
               // as the smalldel/multisv specs)
@@ -1235,10 +1235,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // the methylation view is now modifications + fillUnmarked (the
               // "fill in unmarked cytosines" checkbox): every CpG painted, with
               // implicit-unmethylated ones blue
-              colorBy: {
-                type: 'modifications',
-                modifications: { fillUnmarked: true },
-              },
+              color: { field: 'modifications' },
+              modifications: { fillUnmarked: true },
               forceLoad: true,
             },
           ],
@@ -1300,7 +1298,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
 
   // Phased HG002 ONT reads grouped AND colored by the HP tag (alignments_track.md
   // "Sort, color, and filter by tag"). Replaces a 5-stage menu-walkthrough figure
-  // with the single end state: facet + colorBy HP splits the pileup into one
+  // with the single end state: facet + color by HP split the pileup into one
   // tinted section per haplotype, so the phased reads read at a glance. Same
   // built-in HP grouping the smalldel figure uses, on the same HG002 ultralong
   // ONT track; forceLoad lifts the force-load gate, readySelector waits
@@ -1324,7 +1322,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               height: 500,
               forceLoad: true,
               facet: 'tags.HP',
-              colorBy: { type: 'tag', tag: 'HP' },
+              color: { field: 'tags.HP' },
             },
           ],
         },
@@ -1703,7 +1701,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // (reviewer: the coverage-only frame was a boring image). The switch
           // at the gene boundary then shows twice — as the fill of the two
           // histograms and as which section the reads are stacked in
-          colorBy: { type: 'firstOfPairStrand' },
+          color: { field: 'firstOfPairStrand' },
           featureHeight: 3,
           showSashimiArcs: false,
           coverageHeight: 110,

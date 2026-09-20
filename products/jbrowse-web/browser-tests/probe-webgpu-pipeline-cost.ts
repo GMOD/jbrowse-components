@@ -7,7 +7,7 @@
 // three-track LGV declares 29 programs and draws with 14. `WebGPUHal.create`
 // awaits its whole declared list — alignments declares 23 — before it returns,
 // so a track's first paint waits on every pass it could ever draw, including
-// the ones behind a colorBy nobody selected.
+// the ones behind a colour field nobody selected.
 //
 // Whether that costs anything was never measured; `createRenderPipelineAsync`
 // is supposed to keep the work off the main thread. This asks.

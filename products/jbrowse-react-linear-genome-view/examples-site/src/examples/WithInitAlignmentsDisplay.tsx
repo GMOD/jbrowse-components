@@ -37,7 +37,7 @@ export default function WithInitAlignmentsDisplay() {
               type: 'LinearAlignmentsDisplay',
               height: 250,
               showSoftClipping: true,
-              colorBy: { type: 'pairOrientation' },
+              color: { field: 'pairOrientation' },
             },
           },
         ],

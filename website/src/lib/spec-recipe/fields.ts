@@ -1,4 +1,8 @@
 import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
+import {
+  COLOR_FIELDS,
+  colorByOf,
+} from '../../../../plugins/alignments/src/shared/alignmentsColor.ts'
 import { COLOR_SCHEMES } from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
 import { READ_CATEGORIES } from '../../../../plugins/alignments/src/shared/readCategoryFilters.ts'
 import { cytosineContextOptions } from '../../../../plugins/alignments/src/shared/modificationData.ts'
@@ -145,69 +149,86 @@ const MODIFICATION_BY_TYPE = 'One color per modification type'
 const MODIFICATION_TWO_COLOR =
   'One color per type, plus low-probability & unmodified in blue'
 
-function colorByStep(value: unknown): FieldStep | undefined {
-  const colorBy = asRecord(value)
-  const mods = asRecord(colorBy?.modifications)
-  const spelled = asString(colorBy?.type)
-  // Retired spellings that normalizeColorBy() upgrades before any live code —
-  // menu, legend, shader — ever sees them, so the path has to describe what the
-  // upgraded value paints rather than the name the link carries: 'methylation'
-  // is 'modifications' with fillUnmarked set, 'stranded' the firstOfPairStrand
-  // it always meant.
-  const type =
-    spelled === 'methylation'
-      ? 'modifications'
-      : spelled === 'stranded'
-        ? 'firstOfPairStrand'
-        : spelled
-  // matched by value rather than keyed, so no cast into ColorSchemeType is
-  // needed to look up a scheme named by arbitrary JSON
-  const scheme = Object.values(COLOR_SCHEMES).find(s => s.type === type)
-  if (!scheme) {
-    // The three arc-only schemes live under their own submenu
-    // (menus/colorBy.ts), and a track drawing arcs with the pileup hidden
-    // names one of them here.
-    const arc = ARC_COLOR_OPTIONS.find(o => o.value === type)
-    return arc
-      ? { path: `${TRACK_MENU} → Color by... → Arc color → ${arc.label}` }
-      : undefined
+// The alignments displays' `color` object: the field names the scheme
+// (`colorByOf`), and a scheme's place in the menu is COLOR_SCHEMES'. A declared
+// scale has no menu row, and neither has a feature attribute or a constant.
+function alignmentsColorStep(value: unknown): FieldStep | undefined {
+  const color = asRecord(value)
+  if (!color) {
+    return undefined
   }
-  const { menu } = scheme
-  const inPairedEnd = menu.kind === 'radio' && menu.group === 'pairedEnd'
-  const segments = [
+  const colorBy = colorByOf({
+    field: asString(color.field) ?? '',
+    scale: color.scale === 'none' ? 'none' : undefined,
+  })
+  if (colorBy.type === 'normal' || colorBy.attribute !== undefined) {
+    return undefined
+  }
+  const { menu } = COLOR_SCHEMES[colorBy.type]
+  const path = [
     TRACK_MENU,
     'Color by...',
-    ...(inPairedEnd ? ['Paired end'] : []),
-    SPECIAL_COLOR_MENUS[scheme.type] ?? menu.label,
-  ]
-  if (scheme.type === 'modifications') {
-    segments.push(
-      spelled === 'methylation' || mods?.twoColor || mods?.fillUnmarked
-        ? MODIFICATION_TWO_COLOR
-        : MODIFICATION_BY_TYPE,
-    )
+    ...(menu.kind === 'radio' && menu.group === 'pairedEnd'
+      ? ['Paired end']
+      : []),
+    SPECIAL_COLOR_MENUS[colorBy.type] ?? menu.label,
+  ].join(' → ')
+  const declared =
+    asList(color.domain) ?? asList(color.palette) ?? asString(color.scale)
+  return {
+    path: colorBy.tag ? `${path} → enter tag "${colorBy.tag}"` : path,
+    note:
+      colorBy.type === 'modifications'
+        ? 'Needs MM/ML modification tags in your BAM/CRAM.'
+        : declared
+          ? "This figure also declares the colour scale's domain, palette or ramp, which only the config sets."
+          : undefined,
+  }
+}
+
+// A track entry with no display type still says its colour is the alignments
+// displays' when the field is one only they paint; `strand` reads the same on
+// the feature display's menu.
+function namesAlignmentsColor(value: unknown) {
+  const field = asString(asRecord(value)?.field) ?? ''
+  return (
+    facetTag(field) !== undefined ||
+    (field !== 'strand' && Object.values(COLOR_FIELDS).includes(field))
+  )
+}
+
+// The `modifications` slot beside `color: { field: 'modifications' }` or
+// `'bisulfite'`: which radio inside that submenu the figure picked.
+const modificationsStep: FieldRecipe = value => {
+  const mods = asRecord(value)
+  if (!mods) {
+    return undefined
   }
   // The bisulfite submenu leads with its cytosine-context radios, whose labels
-  // are importable ('CpG' is not the 'CG' the spec stores). CG is the context
-  // bisulfiteItem falls back to when the value names none.
-  if (scheme.type === 'bisulfite') {
-    const context = asString(mods?.cytosineContext) ?? 'CG'
-    const option = cytosineContextOptions.find(o => o.value === context)
-    if (option) {
-      segments.push(option.label)
-    }
-  }
-  const path = segments.join(' → ')
-  const tag = asString(colorBy?.tag)
-  return {
-    path: tag ? `${path} → enter tag "${tag}"` : path,
-    note:
-      scheme.type === 'modifications'
-        ? Array.isArray(mods?.shownModifications)
-          ? 'Needs MM/ML modification tags in your BAM/CRAM. This figure also narrows the drawn types under Modifications → Modification types.'
-          : 'Needs MM/ML modification tags in your BAM/CRAM.'
+  // are importable ('CpG' is not the 'CG' the spec stores).
+  const context = cytosineContextOptions.find(
+    o => o.value === asString(mods.cytosineContext),
+  )
+  return [
+    {
+      path: `${TRACK_MENU} → Color by... → Modifications → ${
+        mods.twoColor || mods.fillUnmarked
+          ? MODIFICATION_TWO_COLOR
+          : MODIFICATION_BY_TYPE
+      }`,
+      note: Array.isArray(mods.shownModifications)
+        ? 'This figure also narrows the drawn types under Modifications → Modification types.'
         : undefined,
-  }
+    },
+    ...(context
+      ? [
+          {
+            path: `${TRACK_MENU} → Color by... → Bisulfite / EM-seq → ${context.label}`,
+            note: 'Under the bisulfite colour field only.',
+          },
+        ]
+      : []),
+  ]
 }
 
 // The alignments display and LGVSyntenyDisplay build their "Group by..." submenu
@@ -385,6 +406,13 @@ function colorStep(
   context: FieldContext,
 ): FieldStep | undefined {
   const { displayType } = context
+  if (
+    displayType
+      ? ALIGNMENTS_FACET_DISPLAYS.has(displayType)
+      : namesAlignmentsColor(value)
+  ) {
+    return alignmentsColorStep(value)
+  }
   const scale = asRecord(value)
   if (scale && displayType === 'LinearManhattanDisplay') {
     return manhattanColorStep(scale)
@@ -914,8 +942,8 @@ const numberField =
     typeof value === 'number' ? build(value) : undefined
 
 export const trackFields: Record<string, FieldRecipe> = {
-  colorBy: colorByStep,
   color: colorStep,
+  modifications: modificationsStep,
   rowColor: rowColorStep,
   facet: facetStep,
   jexlFilters: filterStep,

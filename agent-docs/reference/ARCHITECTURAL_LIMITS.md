@@ -250,7 +250,7 @@ canary in the constructor so an unusable GL stack still falls to Canvas2D; its
 comment records a three-track LGV that declared 29 programs and drew with 14.
 `WebGPUHal.create` awaits its whole declared list — alignments declares 23 — and
 does it before acquiring the canvas context, so a track's first paint waits on
-every pass it could ever draw, including the ones behind a `colorBy` nobody
+every pass it could ever draw, including the ones behind a colour field nobody
 selected.
 
 That is the shape GPU_CONTEXT_BUDGET.md measured on the other backend, where

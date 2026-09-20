@@ -75,7 +75,7 @@ and a theme. Every recipe below changes one piece of it.
       "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
       "displayDefaults": {
         "heightMode": "fit",
-        "colorBy": { "type": "mappingQuality" },
+        "color": { "field": "mapq" },
         "filterBy": { "flagExclude": 1540, "flagInclude": 0 }
       }
     },
@@ -153,7 +153,7 @@ expression runs once per exon, so a transcript's attribute is
 | Continuous gradient from a number | ``{ "color": "jexl:`hsl(${feature.score*3},50%,50%)`" }``                                     |
 | Auto color per category           | `{ "color": "jexl:randomColor(feature.type)" }`                                               |
 | BED file's own colors             | leave `color` unset                                                                           |
-| BAM/CRAM tag (`AlignmentsTrack`)  | `{ "colorBy": { "type": "tag", "tag": "HP" } }`                                               |
+| BAM/CRAM tag (`AlignmentsTrack`)  | `{ "color": { "field": "tags.HP" } }`                                                         |
 
 The lookup table can key on any field the track exposes, and the `legend` slot
 names what each color stands for:
@@ -264,7 +264,7 @@ pass every expression, on variant tracks too:
   "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
   "displayDefaults": {
     "height": 400,
-    "colorBy": { "type": "mappingQuality" },
+    "color": { "field": "mapq" },
     "showSoftClipping": true,
     "facet": "tags.HP",
     "filterBy": {
@@ -276,8 +276,8 @@ pass every expression, on variant tracks too:
 }
 ```
 
-- `colorBy` also takes `strand`, `pairOrientation`, `insertSize`, `tag`, and
-  `modifications`
+- `color`'s field also takes `strand`, `pairOrientation`, `insertSize`,
+  `tags.XX` and `modifications`; a string is one colour for every read
 - `facet` also takes `strand`, `firstOfPairStrand`, `pairOrientation`,
   `splitRead`, `mapq`, or any read field
 - `flagExclude` 1540 hides unmapped, vendor-failed, and duplicate reads; 3844

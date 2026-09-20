@@ -95,8 +95,8 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "methylation_clip-LinearAlignmentsDisplay",
-          "colorBy": {
-            "type": "modifications"
+          "color": {
+            "field": "modifications"
           }
         }
       ],

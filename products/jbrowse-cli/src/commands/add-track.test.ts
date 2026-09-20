@@ -340,16 +340,13 @@ test('--color, --height, and --displayDefaults merge into displayDefaults', asyn
   })
 })
 
-// An AlignmentsTrack's displays declare colorBy, not color, and
-// expandTrackConfigShorthand drops the unmatched key with a console warning —
-// so the run used to write the dead setting into the config and exit 0. The
-// message names the track rather than a display since LinearMarkDisplay
-// joined LinearAlignmentsDisplay there.
-test('--color on a track whose displays do not declare it is refused', async () => {
+// An alignments display's `color` takes a string as the constant read fill, so
+// --color means the same thing on a BAM as on a GFF.
+test('--color on an alignments track paints every read', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
 
-    const { error } = await runCommand([
+    await runCommand([
       'add-track',
       simpleBam,
       '--load',
@@ -358,11 +355,7 @@ test('--color on a track whose displays do not declare it is refused', async () 
       'red',
     ])
 
-    expect(error?.message).toContain(
-      '"color" is not a setting any AlignmentsTrack display declares',
-    )
-    expect(error?.message).toContain('did you mean "colorBy"')
-    expect(readConf(ctx).tracks).toEqual([])
+    expect(readConf(ctx).tracks[0].displayDefaults).toEqual({ color: 'red' })
   })
 })
 

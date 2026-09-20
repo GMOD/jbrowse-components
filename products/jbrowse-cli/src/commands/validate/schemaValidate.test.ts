@@ -170,7 +170,7 @@ describe('the schema', () => {
     config.tracks[0]!.displays = [
       {
         type: 'LinearAlignmentsDisplay',
-        colorBy: { type: 'tag', tag: 'HP', anything: [1, { deep: true }] },
+        modifications: { twoColor: true, anything: [1, { deep: true }] },
       },
     ]
     config.tracks[0]!.metadata = 'a string where an object is usual'
@@ -377,7 +377,7 @@ describe('the schema', () => {
   it('checks a legacy type name against the type that absorbed it', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
-      { type: 'LinearPileupDisplay', colorBy: { type: 'strand' } },
+      { type: 'LinearPileupDisplay', color: { field: 'strand' } },
     ]
     expect(schemaProblems(config)).toEqual([])
     config.tracks[0]!.displays = [{ type: 'LinearPileupDisplay', bogus: 1 }]
@@ -527,7 +527,7 @@ describe('the schema', () => {
     it('types an inline track entry by the display it opens', () => {
       const config = baseConfig()
       config.defaultSession.views[0]!.tracks = [
-        { trackId: 'sample_bam', colorBy: { type: 'strand' }, height: 300 },
+        { trackId: 'sample_bam', color: { field: 'strand' }, height: 300 },
       ]
       expect(schemaProblems(config)).toEqual([])
       config.defaultSession.views[0]!.tracks = [

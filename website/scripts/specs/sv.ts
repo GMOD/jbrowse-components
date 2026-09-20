@@ -677,7 +677,7 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 400,
               forceLoad: true,
               facet: 'tags.HP',
-              colorBy: { type: 'tag', tag: 'HP' },
+              color: { field: 'tags.HP' },
             },
           ],
         },
@@ -784,7 +784,7 @@ export const svSpecs: ScreenshotSpec[] = [
               heightMode: 'grow',
               coverageHeight: 120,
               featureHeight: 3,
-              colorBy: { type: 'pairOrientation' },
+              color: { field: 'pairOrientation' },
               // legend is opt-in now; show the pair-orientation key so the
               // inversion color signature is readable
               showLegend: true,
@@ -892,7 +892,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // pinning it, and the row it hangs the arcs below is still what this capture
   // wants.
   //
-  // No `colorBy`: the arrangement wrote one until 2026-08-26, and dropping it
+  // No `color`: the arrangement wrote one until 2026-08-26, and dropping it
   // left this capture byte-identical, which is the measurement behind taking it
   // off the preset. Nothing here paints from a read fill.
   {
@@ -993,7 +993,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // does, so the last ~180px of an 800px track was empty
               height: 620,
               coverageHeight: 70,
-              colorBy: { type: 'pairOrientation' },
+              color: { field: 'pairOrientation' },
               // THE KEY TO THE COLOURS (reviewer: "show legend"). The figure's
               // whole claim is a strand flip -- the reverse core painting a
               // different colour between its forward flanks -- and the legend
@@ -2970,10 +2970,8 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_t_reads_meth',
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
-              colorBy: {
-                type: 'modifications',
-                modifications: { fillUnmarked: true },
-              },
+              color: { field: 'modifications' },
+              modifications: { fillUnmarked: true },
               // `fit`, so the WHOLE pileup is in the frame at once. The pattern
               // this figure is about is a column, and a column only reads as one
               // if every read crossing it is drawn — at the default row height

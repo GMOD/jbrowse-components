@@ -185,7 +185,7 @@ interface DisplaySnapshot {
   displayMode?: 'normal' | 'compact' | 'superCompact'
   heightMode?: HeightMode
   // alignments
-  colorBy?: { type: string; tag?: string }
+  modifications?: { fillUnmarked?: boolean }
   facet?: string
   sortedBy?: {
     type: string
@@ -214,8 +214,9 @@ interface DisplaySnapshot {
   // Lifted back out by `applyDisplayOpts` rather than passed to showTrack —
   // see there for why this one slot cannot ride in on the snapshot.
   filterBy?: FilterBySnapshot
-  // wiggle / score
+  // every display but hic
   color?: string | { field: string }
+  // wiggle / score
   scales?: {
     y: {
       type?: string
@@ -249,6 +250,10 @@ type WiggleConfigSlotKey = 'defaultRendering' | 'color' | 'scales'
 // divergently-named `configForceLoad` getter, so `keyof` the instance misses it
 // the same way it misses the wiggle slots above.
 type BaseConfigSlotKey = 'forceLoad'
+// `modifications` is the alignments config slot the modification and bisulfite
+// colour fields read, reached through the divergently-named
+// `modificationSettings` getter.
+type AlignmentsConfigSlotKey = 'modifications'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
@@ -257,6 +262,7 @@ type DisplayKeys =
   | keyof WiggleDisplayModel
   | WiggleConfigSlotKey
   | BaseConfigSlotKey
+  | AlignmentsConfigSlotKey
 
 export type UnknownSnapshotKeys = Exclude<keyof DisplaySnapshot, DisplayKeys>
 export type AssertSnapshotKeysExist = AssertNever<UnknownSnapshotKeys>
@@ -704,17 +710,29 @@ const modifiers: Record<string, Modifier> = {
   // ——— coloring ———
   // `color:` asks the same question of every track type, but each display
   // answers it through a different slot, so this routes rather than writing one
-  // key. Alignments pick a color SCHEME (`colorBy`, with an optional tag);
-  // wiggle and the canvas-based displays take a `color` string. The named modes
-  // line up across track types: `color:strand` colors by strand everywhere it
-  // applies, and `color:attribute:X` is the canvas analogue of alignments'
-  // `color:tag:X` — color by a per-feature value rather than a fixed scheme.
+  // key. Alignments and the canvas-based displays name a field; wiggle takes a
+  // color string. The named modes line up across track types: `color:strand`
+  // colors by strand everywhere it applies, `color:tag:X` names a read tag the
+  // way `group:tag:X` does, and `color:attribute:X` is the canvas analogue.
   color: {
     on: ALL,
     apply: (r, v, arg, category) => {
       const value = parseStr('color', v, 'color scheme or CSS color')
       if (category === 'alignments') {
-        r.snap.colorBy = { type: value, tag: arg }
+        // `methylation` is the fill-unmarked view of the modifications field:
+        // one word for the everyday CpG picture, which otherwise needs the
+        // JSON escape hatch to reach the sibling `modifications` slot.
+        if (value === 'methylation') {
+          r.snap.color = { field: 'modifications' }
+          r.snap.modifications = { fillUnmarked: true }
+        } else {
+          r.snap.color = {
+            field:
+              value === 'tag'
+                ? `tags.${parseStr('color:tag', arg ?? '', 'tag')}`
+                : value,
+          }
+        }
       } else if (category === 'hic') {
         // the hic display has no color slot of either kind
         console.warn(

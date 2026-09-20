@@ -128,9 +128,8 @@ test('color:<css color> repaints a feature track, UTRs included', async () => {
   assert.equal(magenta[UTR_TEAL], undefined, 'no teal UTR should remain')
 })
 
-// `color:strand` names a scheme on alignments; on the canvas displays it is the
-// exact jexl `colorByMode` reads back as strand mode. Same spelling, same
-// meaning, different slot.
+// `color:strand` names the strand field on alignments and on the canvas
+// displays alike — same spelling, same meaning, same slot.
 test('color:strand splits a feature track by strand', async () => {
   const counts = fillCounts(await renderGff('color:strand'))
   assert.ok(counts[TOMATO] > 0, 'forward-strand features should be tomato')

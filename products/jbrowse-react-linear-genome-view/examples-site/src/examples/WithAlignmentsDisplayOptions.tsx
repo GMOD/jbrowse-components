@@ -36,7 +36,7 @@ export default function WithAlignmentsDisplayOptions() {
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
               height: 500,
-              colorBy: { type: 'tag', tag: 'HP' },
+              color: { field: 'tags.HP' },
               facet: 'tags.HP',
             },
           },

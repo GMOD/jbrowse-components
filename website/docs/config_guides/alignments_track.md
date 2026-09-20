@@ -15,7 +15,7 @@ index resolves automatically. Coloring, height, and filtering are slots on the
   "name": "My Alignments",
   "assemblyNames": ["hg19"],
   "adapter": { "type": "BamAdapter", "uri": "https://yourhost/file.bam" },
-  "displayDefaults": { "colorBy": { "type": "pairOrientation" }, "height": 250 }
+  "displayDefaults": { "color": { "field": "pairOrientation" }, "height": 250 }
 }
 ```
 
@@ -25,12 +25,12 @@ index resolves automatically. Coloring, height, and filtering are slots on the
 - **CRAM decodes against the reference**, and both adapters take their
   `sequenceAdapter` from the enclosing assembly, so the track names none
   ([](/docs/config/bamadapter), [](/docs/config/cramadapter))
-- **`colorBy`, `height`, `featureHeight`, `filterBy` and the coverage band's
+- **`color`, `height`, `featureHeight`, `filterBy` and the coverage band's
   `scales.y`** are
   [`LinearAlignmentsDisplay`](/docs/config/linearalignmentsdisplay) slots. Reads
   draw gray with mismatches marked until
-  [`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) colors them by
-  strand, pair orientation, insert size or a tag; the
+  [`color`](/docs/config/linearalignmentsdisplay/#slot-color) names a field —
+  `strand`, `pairOrientation`, `insertSize` or `tags.XX`; the
   [cookbook](/docs/cookbook#alignments-tracks) has the coloring, grouping and
   flag-filter recipe
 

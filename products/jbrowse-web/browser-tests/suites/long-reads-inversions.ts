@@ -119,7 +119,7 @@ const suite: TestSuite = {
           trackId: 'volvox-simple-inv-paired.bam',
           displaySnapshot: {
             readConnections: 'cloud',
-            colorBy: { type: 'pairOrientation' },
+            color: { field: 'pairOrientation' },
           },
         },
       ],

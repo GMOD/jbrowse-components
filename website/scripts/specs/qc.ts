@@ -202,7 +202,7 @@ const panel = (loc: string) => ({
       // "there are no reads here" from "there are reads and none of them can be
       // placed": both draw a pileup, and the default coloring draws the same
       // pileup. Red is MAPQ 0 and yellow MAPQ >= 60 (legendUtils.ts).
-      colorBy: { type: 'mappingQuality' },
+      color: { field: 'mapq' },
       // Opt-in per the display's own default. Without it the reader has to be
       // told what red means, which is exactly the caption-rescues-the-figure
       // failure the house rule names.
@@ -333,7 +333,7 @@ export const qcSpecs: ScreenshotSpec[] = [
             {
               trackId: 'na12878_qc_reads',
               type: 'LinearAlignmentsDisplay',
-              colorBy: { type: 'mappingQuality' },
+              color: { field: 'mapq' },
               showLegend: true,
               // 650 kb of 30x Illumina is past every byte budget in the stack,
               // and a capture has nobody to click the banner
@@ -558,7 +558,7 @@ export const qcSpecs: ScreenshotSpec[] = [
                 {
                   trackId: 'na12878_qc_reads',
                   type: 'LinearAlignmentsDisplay',
-                  colorBy: { type: 'mappingQuality' },
+                  color: { field: 'mapq' },
                   showLegend: true,
                   forceLoad: true,
                   scales: { y: { autoscale: 'localsd' } },

@@ -28,9 +28,9 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Many config values are `{ type: 'x' }` discriminated unions (colorBy,
-// sortedBy, ...). Show just the type when that is the whole object so
-// the table reads "methylation" rather than `{"type":"methylation"}`; richer
+// Many config values are `{ type: 'x' }` discriminated unions (sortedBy,
+// ...). Show just the type when that is the whole object so
+// the table reads "basePair" rather than `{"type":"basePair"}`; richer
 // objects keep full JSON so no detail is hidden.
 function isSoleTypeObject(v: object): v is { type: string } {
   return (

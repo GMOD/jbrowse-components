@@ -196,16 +196,14 @@ the track menu switches it afterwards:
     "uri": "arabidopsis_wgbs.bam"
   },
   "displayDefaults": {
-    "colorBy": {
-      "type": "bisulfite",
-      "modifications": { "cytosineContext": "CG" }
-    }
+    "color": { "field": "bisulfite" },
+    "modifications": { "cytosineContext": "CG" }
   }
 }
 ```
 
-[`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-colorby) takes
-`CG`, `CHG`, `CHH` or `all`. See the
+[`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-modifications)
+takes `CG`, `CHG`, `CHH` or `all`. See the
 [assemblies configuration guide](/docs/config_guides/assemblies) for the
 equivalent assembly JSON.
 

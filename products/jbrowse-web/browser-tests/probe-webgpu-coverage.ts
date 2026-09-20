@@ -67,7 +67,7 @@ const spec = {
         {
           trackId: 'volvox_alignments',
           displaySnapshot: {
-            colorBy: { type: 'strand' },
+            color: { field: 'strand' },
             ...(process.env.COVERAGE_HEIGHT
               ? { coverageHeight: Number(process.env.COVERAGE_HEIGHT) }
               : {}),

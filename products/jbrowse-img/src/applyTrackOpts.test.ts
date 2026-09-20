@@ -12,9 +12,9 @@ describe('alignments modifiers', () => {
     ).toBe('strand')
   })
 
-  test('color sets colorBy', () => {
+  test('color:tag:XS names the tag field, as group:tag:XS does', () => {
     const { snap } = buildDisplaySnapshot('alignments', ['color:tag:XS'])
-    expect(snap.colorBy).toEqual({ type: 'tag', tag: 'XS' })
+    expect(snap.color).toEqual({ field: 'tags.XS' })
   })
 
   test('height parses a number', () => {
@@ -394,14 +394,15 @@ describe('wiggle / score modifiers', () => {
   })
 })
 
-// The canvas feature display has no `colorBy` (its color slot is a plain CSS
-// color/jexl string), and the multi-sample variant displays' `colorBy` is a
-// sample-attribute string, not a {type, tag} object — so the object this used to
-// write was dropped as an unknown MST key or rejected as a bad slot value.
+// Every display but hic answers `color:` through its own `color` slot, so the
+// routing question is what lands there: a field object where the category names
+// fields, the string otherwise. The multi-sample variant displays' `colorBy` is
+// a sample-attribute string, so the {type, tag} object this used to write was
+// dropped as an unknown MST key or rejected as a bad slot value.
 describe('color routing', () => {
-  test('color sets colorBy on alignments and a solid color on wiggle', () => {
+  test('color names a field on alignments and a solid color on wiggle', () => {
     expect(buildDisplaySnapshot('alignments', ['color:strand']).snap).toEqual({
-      colorBy: { type: 'strand', tag: undefined },
+      color: { field: 'strand' },
     })
     expect(buildDisplaySnapshot('wiggle', ['color:purple']).snap).toEqual({
       color: 'purple',
@@ -415,7 +416,6 @@ describe('color routing', () => {
     for (const category of ['feature', 'variant'] as const) {
       const { snap } = buildDisplaySnapshot(category, ['color:red'])
       expect(snap).toEqual({ color: 'red' })
-      expect(snap.colorBy).toBeUndefined()
     }
   })
 
@@ -526,9 +526,9 @@ describe('display type selection', () => {
 
 test('a {...} token is merged as raw JSON', () => {
   const { snap } = buildDisplaySnapshot('alignments', [
-    '{"colorBy":{"type":"strand"}}',
+    '{"color":{"field":"strand"}}',
   ])
-  expect(snap.colorBy).toEqual({ type: 'strand' })
+  expect(snap.color).toEqual({ field: 'strand' })
 })
 
 test('unknown modifier warns and does nothing', () => {

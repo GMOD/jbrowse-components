@@ -55,6 +55,12 @@ const GESTURES = ALL_GESTURES.filter(
 )
 
 type Mode = (typeof ALL_MODES)[number]
+// The `color` field each mode writes; an empty field is the plain read fill.
+const COLOR_FIELD: Record<Mode, string> = {
+  normal: '',
+  perBaseQuality: 'baseQuality',
+  perBaseLetter: 'base',
+}
 type Gesture = (typeof ALL_GESTURES)[number]
 
 interface LiveDisplay {
@@ -356,7 +362,7 @@ async function runOne(
           tracks: [
             {
               trackId: fixture.trackId,
-              displaySnapshot: { colorBy: { type: mode } },
+              displaySnapshot: { color: { field: COLOR_FIELD[mode] } },
             },
           ],
         },

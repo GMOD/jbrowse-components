@@ -23,7 +23,7 @@
 //
 // TWO CONTROLS, and they are what makes a small diff readable:
 //
-//   normal-8bp     colorBy `normal` at the same zoom. Never reaches the per-base
+//   normal-8bp     the plain read fill at the same zoom. Never reaches the per-base
 //                  extract, so it must come back byte-identical. A difference
 //                  here is the capture drifting, not the bin.
 //   quality-1bp    the SAME per-base mode at ~1 bp/px, where `subPixelBinBp`
@@ -65,17 +65,17 @@ const PILEUP = displayPainted('pileup-display')
 // ctgA is ~50kb of volvox short reads. A ~1000px canvas over each span puts the
 // zoom in the third column, and `subPixelBinBp` picks the fourth.
 const SCENES = [
-  { name: 'quality-4bp', colorBy: 'perBaseQuality', loc: 'ctgA:1..4,000' },
-  { name: 'quality-8bp', colorBy: 'perBaseQuality', loc: 'ctgA:1..8,000' },
-  { name: 'quality-32bp', colorBy: 'perBaseQuality', loc: 'ctgA:1..32,000' },
+  { name: 'quality-4bp', field: 'baseQuality', loc: 'ctgA:1..4,000' },
+  { name: 'quality-8bp', field: 'baseQuality', loc: 'ctgA:1..8,000' },
+  { name: 'quality-32bp', field: 'baseQuality', loc: 'ctgA:1..32,000' },
   // the whole contig — volvox's widest, and the biggest bin it can reach
-  { name: 'quality-48bp', colorBy: 'perBaseQuality', loc: 'ctgA:1..48,000' },
-  { name: 'letter-48bp', colorBy: 'perBaseLetter', loc: 'ctgA:1..48,000' },
-  { name: 'letter-4bp', colorBy: 'perBaseLetter', loc: 'ctgA:1..4,000' },
-  { name: 'letter-8bp', colorBy: 'perBaseLetter', loc: 'ctgA:1..8,000' },
+  { name: 'quality-48bp', field: 'baseQuality', loc: 'ctgA:1..48,000' },
+  { name: 'letter-48bp', field: 'base', loc: 'ctgA:1..48,000' },
+  { name: 'letter-4bp', field: 'base', loc: 'ctgA:1..4,000' },
+  { name: 'letter-8bp', field: 'base', loc: 'ctgA:1..8,000' },
   // controls — see the header
-  { name: 'normal-8bp', colorBy: 'normal', loc: 'ctgA:1..8,000' },
-  { name: 'quality-1bp', colorBy: 'perBaseQuality', loc: 'ctgA:1..1,000' },
+  { name: 'normal-8bp', field: '', loc: 'ctgA:1..8,000' },
+  { name: 'quality-1bp', field: 'baseQuality', loc: 'ctgA:1..1,000' },
 ] as const
 
 function compare(a: Uint8Array, b: Uint8Array) {
@@ -165,7 +165,7 @@ async function captureScene(
         tracks: [
           {
             trackId: 'volvox_alignments',
-            displaySnapshot: { colorBy: { type: scene.colorBy } },
+            displaySnapshot: { color: { field: scene.field } },
           },
         ],
       },
@@ -188,7 +188,7 @@ async function captureScene(
   // @ts-expect-error pngjs accepts a Uint8Array at runtime
   const png = PNG.sync.read(shot)
   console.log(
-    `${scene.name.padEnd(14)} ${scene.colorBy.padEnd(15)} ` +
+    `${scene.name.padEnd(14)} ${scene.field.padEnd(15)} ` +
       `${readBack.bpPerPx.toFixed(2).padStart(7)} bp/px  binBp ${String(readBack.binBp).padStart(3)}  ` +
       `${png.width}x${png.height}`,
   )
@@ -218,7 +218,7 @@ async function main() {
   })
   const page = await browser.newPage()
   try {
-    console.log('scene'.padEnd(14), 'colorBy'.padEnd(15), '  bp/px  bin  size')
+    console.log('scene'.padEnd(14), 'field'.padEnd(15), '  bp/px  bin  size')
     for (const scene of SCENES) {
       await captureScene(page, scene, OUT)
     }

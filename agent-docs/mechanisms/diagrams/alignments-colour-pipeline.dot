@@ -3,8 +3,8 @@ digraph colour_pipeline {
   node [shape=box fontname=monospace fontsize=10]
   { node [shape=diamond] refetch }
 
-  slot [label="colorBy config slot\ntrack, then session,\nthen the default", shape=oval]
-  norm [label="normalizeColorBy\nretired names upgraded on read"]
+  slot [label="color config slot\ntrack, then session,\nthen the default", shape=oval]
+  norm [label="colorByOf\nfield to scheme, with the\nmodifications slot beside it"]
   reg  [label="COLOR_SCHEMES\nshader index, mate-aware,\npaired-only, worker-extracts"]
   slot -> norm -> reg -> refetch
 

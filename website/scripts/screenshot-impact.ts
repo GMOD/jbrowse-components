@@ -191,7 +191,7 @@ function typesOwnedBy(pluginDirs: string[]): Set<string> {
 
 // Every type name any in-repo plugin or package could register. Used to filter a
 // session's `type` fields down to registered types: a session is full of other
-// `type` keys (`colorBy: {type:'modifications'}`, a feature's `type:'gene'`,
+// `type` keys (`sortedBy: {type:'basePair'}`, a feature's `type:'gene'`,
 // `mateAssembly`) that name no plugin and would otherwise be noise.
 function allKnownTypes(workspace: Map<string, WorkspacePackage>): Set<string> {
   return typesOwnedBy(

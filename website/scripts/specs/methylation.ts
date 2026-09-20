@@ -50,12 +50,10 @@ function wgbsContextTrack(
     display: {
       trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
       type: 'LinearAlignmentsDisplay',
-      colorBy: {
-        type: 'bisulfite',
-        // methylated-only is the default, so the tri-context contrast reads as
-        // presence/absence of red rather than a red/blue mix per read
-        modifications: { cytosineContext: context },
-      },
+      color: { field: 'bisulfite' },
+      // methylated-only is the default, so the tri-context contrast reads as
+      // presence/absence of red rather than a red/blue mix per read
+      modifications: { cytosineContext: context },
       // compact reads, coverage hidden: three stacked pileups stay legible and
       // the row's message is the read colors, not a per-copy histogram
       showCoverage: false,
@@ -214,10 +212,8 @@ const snrpnReadsPanel = ({ grouped = false } = {}) =>
         height: 320,
         forceLoad: true,
         ...(grouped ? { facet: 'tags.HP' } : {}),
-        colorBy: {
-          type: 'modifications',
-          modifications: { fillUnmarked: true },
-        },
+        color: { field: 'modifications' },
+        modifications: { fillUnmarked: true },
       },
     ],
   })
@@ -250,10 +246,8 @@ export const bisulfiteVideoFixtures = {
       {
         trackId: 'arabidopsis_wgbs',
         type: 'LinearAlignmentsDisplay',
-        colorBy: {
-          type: 'bisulfite',
-          modifications: { cytosineContext: 'CG' },
-        },
+        color: { field: 'bisulfite' },
+        modifications: { cytosineContext: 'CG' },
         showCoverage: false,
         heightMode: 'fixed',
         featureHeight: 5,
@@ -426,10 +420,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
               // aren't what this figure is about (reviewer: 6mA only). An
               // allow-list (shownModifications: 6mA code 'a') keeps it
               // 6mA-only regardless of what else the caller emitted.
-              colorBy: {
-                type: 'modifications',
-                modifications: { shownModifications: ['a'] },
-              },
+              color: { field: 'modifications' },
+              modifications: { shownModifications: ['a'] },
               // compact pileup: displayMode isn't a real slot on this
               // display (that's the shared canvas base schema) — fixed
               // heightMode + a small featureHeight is the actual compact-row
@@ -444,10 +436,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
               trackId: 'PBA15131-nanopore',
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
-              colorBy: {
-                type: 'modifications',
-                modifications: { shownModifications: ['a'] },
-              },
+              color: { field: 'modifications' },
+              modifications: { shownModifications: ['a'] },
               heightMode: 'fixed',
               featureHeight: 3,
             },
@@ -623,10 +613,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
               height: 460,
               forceLoad: true,
               facet: 'tags.HP',
-              colorBy: {
-                type: 'modifications',
-                modifications: { fillUnmarked: true },
-              },
+              color: { field: 'modifications' },
+              modifications: { fillUnmarked: true },
             },
           ],
         },

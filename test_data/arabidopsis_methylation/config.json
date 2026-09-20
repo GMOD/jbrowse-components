@@ -53,11 +53,12 @@
             "trackId": "arabidopsis_meth",
             "displaySnapshot": {
               "type": "LinearAlignmentsDisplay",
-              "colorBy": {
-                "type": "methylation",
-                "modifications": {
-                  "cytosineContext": "CHH"
-                }
+              "color": {
+                "field": "modifications"
+              },
+              "modifications": {
+                "fillUnmarked": true,
+                "cytosineContext": "CHH"
               }
             }
           }

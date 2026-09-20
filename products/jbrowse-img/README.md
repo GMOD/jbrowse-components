@@ -648,7 +648,7 @@ Reads & coloring:
 
 | Modifier                         | Example                        | Description                                                                                                                        |
 | -------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS` | Color scheme (see types below)                                                                                                     |
+| `color:field` or `color:tag:TAG` | `color:strand`, `color:tag:XS` | Color reads by a field (see fields below), or paint them all one CSS color                                                         |
 | `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                                                                      |
 | `group:type` or `group:type:tag` | `group:strand`, `group:tag:HP` | Group reads into in-track stacked sections (`strand`, `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq`, or `tag:<TAG>`) |
 | `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                                                                                            |
@@ -697,19 +697,23 @@ Layout & sizing:
 | `sashimiHeight:N`            | `sashimiHeight:120`                              | Height of the sashimi arc band                                                                                              |
 | `maxHeight:N`                | `maxHeight:4000`                                 | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                           |
 
-Available `color:type` values:
+Available `color:` fields. Anything else is a CSS color, painting every read
+with it:
 
-| Type                       | Description                                               |
+| Field                      | Description                                               |
 | -------------------------- | --------------------------------------------------------- |
-| `normal`                   | Default (grey reads, mismatches highlighted)              |
 | `strand`                   | Forward/reverse strand                                    |
-| `mappingQuality`           | MAPQ                                                      |
-| `perBaseQuality`           | Per-base quality overlay                                  |
+| `firstOfPairStrand`        | Strand of the first read in the pair                      |
+| `mapq`                     | MAPQ                                                      |
+| `baseQuality`              | Per-base quality overlay                                  |
+| `base`                     | Per-base letter overlay                                   |
 | `insertSize`               | Paired-end insert size                                    |
 | `pairOrientation`          | Paired-end orientation                                    |
 | `insertSizeAndOrientation` | Combined insert size + orientation                        |
+| `mateRefName`              | Reference the mate landed on                              |
 | `modifications`            | Base modifications via MM/ML tags                         |
 | `methylation`              | CpG methylation via MM/ML tags                            |
+| `bisulfite`                | Methylation from C→T conversion, no MM/ML tags needed     |
 | `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
 
 **Feature tracks (GFF3/BED/BigBed) and VCF tracks**
@@ -746,7 +750,7 @@ display's settings: an escape hatch for settings without a dedicated modifier
 above. Use compact JSON (a single shell token, no spaces):
 
 ```bash
-jb2export --fasta ref.fa --bam reads.bam '{"colorBy":{"type":"strand"}}' \
+jb2export --fasta ref.fa --bam reads.bam '{"color":{"field":"strand"}}' \
   --loc chr1:1-10000 --out out.svg
 ```
 

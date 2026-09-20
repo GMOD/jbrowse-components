@@ -517,7 +517,7 @@ split-read junctions:
           "displaySnapshot": {
             "height": 250,
             "showSoftClipping": true,
-            "colorBy": { "type": "pairOrientation" }
+            "color": { "field": "pairOrientation" }
           }
         }
       ]

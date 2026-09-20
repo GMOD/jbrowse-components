@@ -73,7 +73,7 @@ configured track as only the settings that changed:
         "displayId": "volvox_sv_cram-LinearAlignmentsDisplay",
         "height": 250,
         "linkedReads": "normal",
-        "colorBy": { "type": "insertSizeAndOrientation" }
+        "color": { "field": "insertSizeAndOrientation" }
       }
     ]
   }
@@ -86,7 +86,7 @@ whole config with the session under `defaultSession`, and Desktop writes a track
 edit into that config, so the same three keys appear in the `volvox_sv_cram`
 entry of the file's `tracks` array.
 
-`height`, `linkedReads` and `colorBy` are the setting names in both apps, and
+`height`, `linkedReads` and `color` are the setting names in both apps, and
 every route below spells them the same way.
 
 Desktop autosaves the open session to `volvox.jbrowse` about a second after each
@@ -118,7 +118,7 @@ track's `displayDefaults` apply every time the track loads, and in a served
   "displayDefaults": {
     "height": 250,
     "linkedReads": "normal",
-    "colorBy": { "type": "insertSizeAndOrientation" }
+    "color": { "field": "insertSizeAndOrientation" }
   }
 }
 ```

@@ -102,7 +102,7 @@ jb add-track arabidopsis_wgbs.bam --name "Arabidopsis WGBS (bwameth)" \
   --trackId arabidopsis_wgbs --load copy --force --out jbrowse2
 
 # ── Pre-color the pileup Bisulfite/CpG and set a default session ──────────────
-# (the CLI can't set a display colorBy or a default session, so patch the JSON)
+# (the CLI can't set a display's color field or a default session, so patch the JSON)
 python3 - jbrowse2/config.json <<'PY'
 import json, sys
 path = sys.argv[1]
@@ -112,7 +112,8 @@ for t in cfg["tracks"]:
         t["displays"] = [{
             "type": "LinearAlignmentsDisplay",
             "displayId": "arabidopsis_wgbs-LinearAlignmentsDisplay",
-            "colorBy": {"type": "bisulfite", "modifications": {"cytosineContext": "CG"}},
+            "color": {"field": "bisulfite"},
+            "modifications": {"cytosineContext": "CG"},
         }]
 cfg["defaultSession"] = {
     "name": "Arabidopsis WGBS (bisulfite / EM-seq)",

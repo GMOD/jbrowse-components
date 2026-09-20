@@ -57,10 +57,8 @@ export function buildTrackConfig({
 // nothing was supplied, so the track omits displayDefaults entirely.
 //
 // Takes `trackType` so it can refuse a key none of that track's displays
-// declares. `--color` on an alignments track is the reachable case — that
-// display declares `colorBy`, expandTrackConfigShorthand drops the unmatched
-// key with a console warning, and the command otherwise wrote the dead setting
-// and exited 0.
+// declares: expandTrackConfigShorthand drops an unmatched key with a console
+// warning, and the command otherwise wrote the dead setting and exited 0.
 export function mergeDisplayDefaults({
   configObj,
   color,

@@ -8,7 +8,7 @@ kind: measurement
 
 ## The wall
 
-`colorBy.type` of `perBaseQuality` or `perBaseLetter` is the only thing the
+A `color` field of `baseQuality` or `base` is the only thing the
 alignments pipeline draws that is a **wall**: one emitted entry per *aligned
 base of every read*, where every other pass emits one per *event* — a mismatch,
 an indel, a modification call. `extractPerBaseQuality` and

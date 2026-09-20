@@ -27,7 +27,7 @@ export default function WithGroupByTag() {
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
               height: 400,
-              colorBy: { type: 'tag', tag: 'HP' },
+              color: { field: 'tags.HP' },
               facet: 'tags.HP',
             },
           },

@@ -31,7 +31,7 @@ A track entry is one of three shapes: a bare `trackId`, a one-element tuple
 settings written inline —
 
 ```json
-{ "trackId": "hg002_ont", "type": "LinearAlignmentsDisplay", "colorBy": { "type": "tag", "tag": "HP" }, "height": 400 }
+{ "trackId": "hg002_ont", "type": "LinearAlignmentsDisplay", "color": { "field": "tags.HP" }, "height": 400 }
 ```
 
 `normalizeTrackInit` folds those keys into the display snapshot, and
@@ -272,7 +272,7 @@ at `https://jbrowse.org/jb2/schema/v5/config.json`, bundled in the CLI beside
 the manifest. Each type is a `$defs` entry dispatched on `type`; a slot carries
 its `description`, `defaultValue` and enum members and admits `jexl:`; the
 location slots are the four-location union; the 67 `frozen` and `maybeFrozen`
-slots (alignments' `colorBy` among them) stay open with the reason in their
+slots (alignments' `modifications` among them) stay open with the reason in their
 description, and the validator's cross-reference checks stay in the CLI.
 Adapters carry their `shorthandKeys`, tracks `displayDefaults` and `displays[]`,
 displays their state-model properties for a `defaultSession` node, and a
@@ -326,7 +326,7 @@ one: the spec form, the authoring surface and the shader library got different
 answers on different evidence.
 
 **Still open from the parked idea:** lowering the jb2export modifiers onto the
-slot names so `color:tag:HP` and `"colorBy": {"type": "tag", "tag": "HP"}`
+slot names so `color:tag:HP` and `"color": {"field": "tags.HP"}`
 parse to one object. It removes a dialect rather than adding a layer, and it is
 the reason the corpus's one `cli` spec and its 322 `url` specs exercise two
 parsers today.

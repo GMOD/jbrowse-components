@@ -563,7 +563,7 @@ doc's own account of the mechanism.
 ### To see it again
 
 Two `lgvSnapshotTest` scenes on `volvox_alignments` at `ctgA:1..48,000` with
-`displaySnapshot.colorBy.type` of `perBaseLetter` and `perBaseQuality`, in any
+`displaySnapshot.color.field` of `base` and `baseQuality`, in any
 suite; then
 
 ```sh
