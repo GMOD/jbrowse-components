@@ -47,7 +47,7 @@ render state rather than a new mechanism.
   0.95-1.05x against itself): `bin+count` 1.04x, `bin+mean` 0.99x, a groupby
   1.01x. Both variants in one `aggregateValue` body measured 1.04-1.20x on a
   plain field, which is why the reader variant is a function of its own. A
-  config writing a path pays 1.14-1.17x on that step. `stack` reads each
+  config writing a path pays 1.14-1.17x on that step. `pileup` reads each
   interval once and sorts only input that is not already in start order:
   0.56-0.66x on sorted input and 0.37-0.42x on shuffled. A `jexl:` step
   field is refused in the worker and named in the display's notice, a

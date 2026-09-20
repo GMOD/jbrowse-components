@@ -68,7 +68,7 @@ the multi-row xyplot a user picking the display from the menu expects.
   golden is never read. What stands behind the scene is the cross-backend
   differential, which names the suite in `CI_GATE_SUITES`.
 - A `row` a config declares in `encoding` on a bar or a point bands it too,
-  with no facet: a `stack` step's output, or any integer field.
+  with no facet: a `pileup` step's output, or any integer field.
 - `rowLane.test.ts` pins the band arithmetic and the rowless identity;
   `markList.test.ts` pins the uniform and the packed row; `model.test.ts`
   pins the banded axis and the single-row axis staying as it was.

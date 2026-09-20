@@ -11,10 +11,10 @@ Vega-Lite or ggplot: a picture is declared as marks, encodings and transforms
 rather than drawn by code. It goes on a `FeatureTrack`, an `AlignmentsTrack` or
 a `VariantTrack` and draws whatever its `marks` list declares — a `bar`, `point`
 or `span` per entry, each with an `encoding` naming which feature fields feed
-it, a `transform` list that can bin, count, stack or measure coverage before it,
+it, a `transform` list that can bin, count, pack or measure coverage before it,
 and a zoom range it draws in. A BED score column becomes a bar chart with one
 display entry and no code, the same file's density at wide zoom is a second
-entry, and a `stack` over a BAM is a pileup.
+entry, and a `pileup` step over a BAM packs the reads into rows.
 
 ## When to reach for it
 
@@ -70,7 +70,7 @@ Each mark's `encoding` maps feature fields to the channels its shape reads:
 | `x`     | every shape    | a field holding the left edge in bp; `start` by default                                                                                     |
 | `x2`    | every shape    | the right edge; `end` by default                                                                                                            |
 | `y`     | `bar`, `point` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped |
-| `row`   | `span`         | an integer field naming the band a span stacks on, from 0; missing is 0, and left empty it follows this mark's own `stack` step             |
+| `row`   | `span`         | an integer field naming the band a span stacks on, from 0; missing is 0, and left empty it follows this mark's own `pileup` step            |
 | `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                                                             |
 | `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                              |
 
@@ -233,7 +233,7 @@ band its field names.
 
 The display's `facet` gives each value of a field its own band of rows, named by
 a chip a reader can hide the section from. The facet splits the features first,
-and every mark then runs its own steps over each section alone, so a `stack`
+and every mark then runs its own steps over each section alone, so a `pileup`
 packs each section on its own rows and a `coverage` counts each section's depth:
 
 ```json
@@ -244,7 +244,7 @@ packs each section on its own rows and a `coverage` counts each section's depth:
     "marks": [
       {
         "shape": "span",
-        "transform": [{ "type": "stack" }],
+        "transform": [{ "type": "pileup" }],
         "encoding": { "row": "row" }
       }
     ]
@@ -268,7 +268,7 @@ the features:
     "marks": [
       {
         "shape": "span",
-        "transform": [{ "type": "stack" }],
+        "transform": [{ "type": "pileup" }],
         "encoding": {
           "row": "row",
           "color": { "field": "HP", "scale": "categorical" }
@@ -306,7 +306,7 @@ display's own `transform` takes the same steps and runs before every mark's:
 | `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges a preceding `bin` wrote |
 | `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                        |
 | `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`; `keepEmpty` holds on to a feature whose array is empty               |
-| `stack`     | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                      |
+| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                      |
 
 A field a step reads is a name or a dotted path into a structured field, so a
 VCF's `INFO.DP` is the `field` of a `mean` and `INFO.SVTYPE` a `groupby`; a
@@ -346,14 +346,14 @@ file with no summary track beside it:
 }
 ```
 
-`stack` is the layout a pileup is, said as a step. It writes the lowest row on
-which each feature overlaps nothing already there, and a `span` reading that row
-draws the packing:
+`pileup` is the packing a read pileup is, said as a step. It writes the lowest
+row on which each feature overlaps nothing already there, and a `span` reading
+that row draws the packing:
 
 ```json
 {
   "shape": "span",
-  "transform": [{ "type": "stack", "padding": 10 }],
+  "transform": [{ "type": "pileup", "padding": 10 }],
   "encoding": {
     "row": "row",
     "color": { "field": "strand", "scale": "categorical" }
@@ -363,7 +363,7 @@ draws the packing:
 
 Over an `AlignmentsTrack` that is a declared pileup, coloured by any field a
 read answers; the display's `facet` packs each section on rows of its own. A
-mark whose `encoding.row` is empty reads the field its own `stack` wrote, so
+mark whose `encoding.row` is empty reads the field its own `pileup` wrote, so
 `"encoding": {}` draws the packing. The plot divides into as many bands as the
 highest row needs, so the rows thin as the depth on screen grows and the track
 keeps its height.
@@ -473,8 +473,8 @@ chip in its corner naming the mark and the slot:
   write, with the fields those steps leave;
 - a `bar` or `point` drawn together with a stacked `span`, which stands in the
   first of the span's rows;
-- two marks each running their own `stack`, which share row numbers, where one
-  `stack` in the display's `transform` packs them together;
+- two marks each running their own `pileup`, which share row numbers, where one
+  `pileup` in the display's `transform` packs them together;
 - a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
   draws.
 

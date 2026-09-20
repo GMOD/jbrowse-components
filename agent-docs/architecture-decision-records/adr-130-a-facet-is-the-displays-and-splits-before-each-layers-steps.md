@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's facet moves off `marks[].facet` onto the display as the setting the feature display already had (spelled as two flat slots here, one `facet` object since ADR-131), with a display-level `transform` running before it. The worker splits the features by the facet key and runs each mark's own steps over each section alone, so a faceted display is the unfaceted one drawn once per section; the main thread caps over every region's keys, orders by the domain, and derives the drawn layers, the key and the value axis from the sections left visible, and `stack.groupby` goes"
+summary: "The mark display's facet moves off `marks[].facet` onto the display as the setting the feature display already had (spelled as two flat slots here, one `facet` object since ADR-131), with a display-level `transform` running before it. The worker splits the features by the facet key and runs each mark's own steps over each section alone, so a faceted display is the unfaceted one drawn once per section; the main thread caps over every region's keys, orders by the domain, and derives the drawn layers, the key and the value axis from the sections left visible, and `pileup.groupby` goes"
 ---
 
 # ADR-130: A facet is the display's, and splits before each layer's steps
@@ -12,7 +12,7 @@ Accepted (2026-09-18).
 ## Context
 
 The mark display's facet sat on a mark (`marks[].facet: { field, domain }`)
-and ran after that mark's steps, offsetting the rows a `stack` grouped by the
+and ran after that mark's steps, offsetting the rows a `pileup` grouped by the
 same field. A facet partitions a whole display, and the per-mark spelling
 could not say that:
 
@@ -23,8 +23,8 @@ could not say that:
   section, at `1 / rowCount` of the plot.
 - A step that made new features — `coverage`, an `aggregate` not grouped by
   the field — dropped the field, so its output filed under `field: none`.
-- The partition had to be written twice. A facet without `stack.groupby` left
-  sparse sections (four features over seven rows); a `stack.groupby` without a
+- The partition had to be written twice. A facet without `pileup.groupby` left
+  sparse sections (four features over seven rows); a `pileup.groupby` without a
   facet overlapped its groups on the same rows.
 - The worker capped each region on its own, so a value could be its own
   section in one region and merged in another, and the values merged into the
@@ -64,7 +64,7 @@ drawn.
 - A faceted section is the unfaceted mark over that section's features,
   offset; `featureTransforms.test.ts` pins it, and a coverage mark counts each
   section's depth.
-- `stack.groupby` is gone. A facet on a computed field puts the formula in the
+- `pileup.groupby` is gone. A facet on a computed field puts the formula in the
   display's `transform`, or names the field as a `jexl:` expression.
 - No migration from `marks[].facet`.
 - A hide toggle filters each faceted layer and rebuilds its hit index, an

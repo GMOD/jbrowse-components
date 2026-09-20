@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Three moves at the layer stage. Layout becomes a transform — `stack` is the seventh TransformStep kind, a greedy first-fit row per feature, measured at 5.07x the bare encode, so a `span` reading the row it writes is a declared pileup. One mark's `encoding.y` may declare `resolve: 'independent'`, folding its own domain and taking a second axis on the right through the `side` member `ValueScale` already had; a second such mark is refused where the config is read. And the mark display attaches to `AlignmentsTrack` and `VariantTrack` beside `FeatureTrack`, so both of those are config over a BAM or a VCF. An independent colour scale and a layout the main thread can re-pack are declined"
+summary: "Three moves at the layer stage. Layout becomes a transform — `pileup` is the seventh TransformStep kind, a greedy first-fit row per feature, measured at 5.07x the bare encode, so a `span` reading the row it writes is a declared pileup. One mark's `encoding.y` may declare `resolve: 'independent'`, folding its own domain and taking a second axis on the right through the `side` member `ValueScale` already had; a second such mark is refused where the config is read. And the mark display attaches to `AlignmentsTrack` and `VariantTrack` beside `FeatureTrack`, so both of those are config over a BAM or a VCF. An independent colour scale and a layout the main thread can re-pack are declined"
 ---
 
 # ADR-115: One mark may read its own axis, and layout is a transform
@@ -8,7 +8,7 @@ summary: "Three moves at the layer stage. Layout becomes a transform — `stack`
 ## Status
 
 Superseded by [ADR-141](adr-141-one-y-scale-the-displays.md) for
-§"`encoding.y.resolve: 'independent'`"; the `stack` step and the three track
+§"`encoding.y.resolve: 'independent'`"; the `pileup` step and the three track
 types stand.
 
 Accepted (2026-09-10). Closes
@@ -39,16 +39,16 @@ shared one y domain, so a coverage run in the hundreds and a per-read mapping
 quality in the tens could not be read off one plot; ADR-113 refused the
 per-mark scale on the ground that it needs a second axis in the chrome, and
 left it there. And the display attached to `FeatureTrack` alone, so the
-declared pileup a `stack` would make had nowhere to draw over a BAM —
+declared pileup a `pileup` step would make had nowhere to draw over a BAM —
 `DisplayType.trackType` has taken an array since
 [ADR-107](adr-107-the-quantitative-class-is-authored-in-config.md) and the
 mark display was not using it.
 
 ## Decision
 
-### `stack` is a transform step
+### `pileup` is a transform step
 
-`{ type: 'stack' }` writes each feature the lowest row on which it overlaps
+`{ type: 'pileup' }` writes each feature the lowest row on which it overlaps
 nothing already there — greedy first fit in start order, the rule canvas's
 packer follows — into the field `as` names (`row`). `fields` names the
 interval it reads (`start`, `end`), `padding` is bp of clearance kept between
@@ -60,6 +60,12 @@ still reads the original fields.
 `row` was already a channel and `span` already stacked on it into `rowCount`
 bands, so the step needed no renderer change: the pileup is the packing plus
 the shape the display had.
+
+The step shipped in no release under its first name, `stack`, and v5.0.0
+renames it to GenomeSpy's spelling for the same packing. ggplot2's
+`position_stack` and Vega-Lite's `stack` both mean cumulative stacking of
+values, so one name for both would have read as stacked bars to anyone
+arriving from either, and the word is now free for the day we grow that.
 
 **Measured** (`packages/core/benches/featureTransforms.bench.ts`, one million
 synthetic features, min of 11, on AC power), in
@@ -115,7 +121,7 @@ asymmetry is the adapters' and not this display's to fix.
 
 ## Consequences
 
-- A pileup is config: `{ shape: 'span', transform: [{ type: 'stack' }],
+- A pileup is config: `{ shape: 'span', transform: [{ type: 'pileup' }],
   encoding: { row: 'row' } }` over a BAM, coloured by any field a read
   answers. It is not the alignments display — no mismatches, no soft clips, no
   sort — and the config guide says which question each is for.
@@ -133,7 +139,7 @@ asymmetry is the adapters' and not this display's to fix.
   toggle is off by default and a reader who turns it on with two axes is
   asking about both.
 - Three jbrowse-web tests drive the real worker over the volvox BAM and VCF —
-  a `stack` whose rows are checked not to overlap, the two-domain pair, and a
+  a `pileup` whose rows are checked not to overlap, the two-domain pair, and a
   variant strip — because the registration is the kind of thing a unit test
   cannot see: a config that names its display explicitly bypasses
   `pickDisplayForView` entirely, so the attach is pinned by reading
@@ -158,19 +164,19 @@ asymmetry is the adapters' and not this display's to fix.
   exist. GRAMMAR_OF_GRAPHICS.md keeps colour on the gap list for the opposite
   reason — nothing unions two marks' ramps into one — which is a feature no
   config has asked for.
-- **`stack` as a main-thread layout the display re-packs on pan.** The rows a
+- **`pileup` as a main-thread layout the display re-packs on pan.** The rows a
   region packs are that region's, so a feature spanning a block boundary can
   take two rows in two regions, which canvas solves by grouping regions by
   refName before packing (`layoutRefGroups`). A transform runs in the worker
   per region and cannot; the honest fix is a display-side re-pack over the
   loaded regions, which is the layout machinery this ADR is trying not to
-  rebuild. Accepted as a limit: `stack` packs a region, and a read at a block
+  rebuild. Accepted as a limit: `pileup` packs a region, and a read at a block
   seam may sit on a different row either side of it.
-- **A `pileup` step fusing `stack` with a sort.** Sort order is a display
+- **A step fusing the packing with a sort.** Sort order is a display
   question — alignments' `sortLayout.ts` re-sorts on a menu pick without
   refetching — and baking one into a worker step keys the fetch on it.
-  `stack` packs what the list gives it, and a `filter` or a `formula` in front
-  is what shapes that list.
+  `pileup` packs what the list gives it, and a `filter` or a `formula` in
+  front is what shapes that list.
 - **A second instance lane for the row.** `row` is a lane already; the step
   writes a field the existing lane reads.
 - **Registering the display for `QuantitativeTrack` too.** ADR-107's line

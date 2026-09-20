@@ -1,9 +1,9 @@
 ---
 status: Accepted
-summary: "Audited every place a format-typed display assigns rows, counts per bin or computes depth, against the seven transform steps. Exactly one runs a rule a step reproduces — a plain uncapped single-region pileup is `stack` with `padding: 2`, pinned by a test — and porting it measured 4.23x, all of which is the `Feature[]` the step reads and answers rather than the packing. Every other packer's extra inputs are the display's meaning: label widths, isoform caps, row caps, per-refName grouping across regions, a layout seeded from the previous frame. No display calls a step; the grammar's transform stage stays the mark display's, and the mark display stops widening"
+summary: "Audited every place a format-typed display assigns rows, counts per bin or computes depth, against the seven transform steps. Exactly one runs a rule a step reproduces — a plain uncapped single-region pileup is `pileup` with `padding: 2`, pinned by a test — and porting it measured 4.23x, all of which is the `Feature[]` the step reads and answers rather than the packing. Every other packer's extra inputs are the display's meaning: label widths, isoform caps, row caps, per-refName grouping across regions, a layout seeded from the previous frame. No display calls a step; the grammar's transform stage stays the mark display's, and the mark display stops widening"
 ---
 
-# ADR-118: The display packers share a rule with `stack`, not a step
+# ADR-118: The display packers share a rule with `pileup`, not a step
 
 ## Status
 
@@ -11,17 +11,17 @@ Accepted (2026-09-10). Answers for the transform stage the question
 [ADR-114](adr-114-canvas-keeps-its-hand-written-packer.md) answered for the
 encoder, and settles
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md)'s open reading of
-[ADR-115](adr-115-one-mark-may-read-its-own-axis.md) — that `stack` "is the
+[ADR-115](adr-115-one-mark-may-read-its-own-axis.md) — that `pileup` "is the
 packing canvas's `packRef` does by hand".
 
 ## Context
 
 `runTransforms` (`packages/core/src/util/featureTransforms.ts`) has seven step
 kinds — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`,
-`stack` — and one consumer, the mark display
+`pileup` — and one consumer, the mark display
 ([ADR-112](adr-112-a-layer-owns-its-transform-and-its-zoom-range.md),
 ADR-114, ADR-115). Three of those steps say something the format-typed
-displays also say: `stack` assigns rows to intervals, `bin` and `aggregate`
+displays also say: `pileup` assigns rows to intervals, `bin` and `aggregate`
 count per bin, `coverage` measures overlap depth. If a display's own code is
 one of those steps, calling the step deletes the code and the grammar is a
 mechanism for this tree rather than a second way to draw. If it is not, the
@@ -35,7 +35,7 @@ same rule with inputs the step lacks, or (c) something else.
 
 | Where | Lines | What it runs | Class |
 | --- | --- | --- | --- |
-| `plugins/alignments/src/RenderAlignmentDataRPC/sortLayout.ts` `computeLayout` | 585–656 | plain uncapped single region: canonical order, then first fit with clearance 2 — **`stack` with `padding: 2`, row for row** | **(a)** |
+| `plugins/alignments/src/RenderAlignmentDataRPC/sortLayout.ts` `computeLayout` | 585–656 | plain uncapped single region: canonical order, then first fit with clearance 2 — **`pileup` with `padding: 2`, row for row** | **(a)** |
 | the same file's other paths — `placeRectCapped`, `computeSortedLayout`, `computeMultiRegionLayout` | 340–352, 657–704, 817–962 | a `maxRows` cap with a truncation sentinel; the reads a position sort ranks placed first; each read's extent unioned across regions on a per-refName placement axis | (b) |
 | the same file's placement orders — soft-clip expansion, largest-first, spliced-first | 99–130, 457–529 | the comparator is a display setting, and soft clipping widens the interval the packer sees | (b) |
 | `plugins/alignments/src/LinearAlignmentsDisplay/computeChainLayout.ts` `buildChainRowMap` | 38–69 | first fit over chains merged by name across regions, ordered by packing distance rather than start | (b) |
@@ -64,16 +64,16 @@ One (a), and it is one path of one function.
 
 - **No display calls a transform step.** The packers stay where they are.
 - **The convergence that exists is a rule, and it is pinned as one.**
-  `stack` and `placeRect` (`packages/core/src/util/layouts/placeRect.ts`) are
+  `pileup` and `placeRect` (`packages/core/src/util/layouts/placeRect.ts`) are
   the same greedy first fit, `placeRect`'s hardcoded clearance being what the
   step spells as `padding: 2`, and
   `packages/core/src/util/featureTransforms.test.ts` holds the two to each
   other over 500 spans five rows deep rather than describing them as agreeing.
   A drift in either is a red test.
-- **`stack` gains no `maxRows`, no comparator and no cross-region grouping.**
+- **`pileup` gains no `maxRows`, no comparator and no cross-region grouping.**
   Each would be added for a consumer that cannot use it anyway, for the reason
   the measurement gives.
-- **GRAMMAR_OF_GRAPHICS.md stops reading ADR-115 as a convergence.** `stack`
+- **GRAMMAR_OF_GRAPHICS.md stops reading ADR-115 as a convergence.** `pileup`
   makes a pileup declarable over any adapter the mark display attaches to; it
   does not make the alignments pileup declarable, and the two sentences are
   not the same sentence.
@@ -115,7 +115,7 @@ side at 3.11x, met from the other direction.
 - The mark display's step list is complete for what the mark display draws.
   A new step kind now needs a `marks` config that wants it, not a display
   whose code it resembles.
-- `stack`'s limits stay honest and stay small: it packs one region, in start
+- `pileup`'s limits stay honest and stay small: it packs one region, in start
   order, uncapped. ADR-115 already booked the block-seam limit; this ADR is
   why the other three are not worth lifting.
 - The grammar's claim at the transform stage is what it was — a config can
@@ -130,23 +130,23 @@ side at 3.11x, met from the other direction.
 
 ## Rejected alternatives
 
-- **Porting `computeLayout`'s plain path to `stack`.** The only (a) in the
+- **Porting `computeLayout`'s plain path to `pileup`.** The only (a) in the
   audit, and the measurement is above: 4.23x, for a path the display reaches
   only when one region is visible with no sort, no soft clipping and no row
   cap — so the port would be a second layout implementation living beside the
   one that still has to answer every other case.
-- **A `maxRows` cap on `stack`.** One scalar, and it is the alignments cap's
+- **A `maxRows` cap on `pileup`.** One scalar, and it is the alignments cap's
   shape (`placeRectCapped`'s sentinel row). It would let no consumer call the
   step: the cap arrives with `ceilingCap`/`overrideCap` resolution over the
   viewport slice and a lane drag (`groupLayout.ts` 99–133, 610–632), which is
   main-thread display state a worker step is never told.
-- **A comparator on `stack`.** ADR-115 already refused a `pileup` step fusing
-  a sort, on the ground that sort order is a display question and baking one
-  into a worker step keys the fetch on it. The audit adds that every first-fit
-  caller in the tree installs a *total* order — `compareReadsCanonically`,
-  `compareChainsCanonically`, `byPackPriority` — because first fit is
-  arrival-order sensitive and JS sort is stable, so the member would have to
-  be a full comparator and not a field name.
+- **A comparator on `pileup`.** ADR-115 already refused a step fusing the
+  packing with a sort, on the ground that sort order is a display question and
+  baking one into a worker step keys the fetch on it. The audit adds that
+  every first-fit caller in the tree installs a *total* order —
+  `compareReadsCanonically`, `compareChainsCanonically`, `byPackPriority` —
+  because first fit is arrival-order sensitive and JS sort is stable, so the
+  member would have to be a full comparator and not a field name.
 - **A second step kind, `layout`, taking label widths.** It would be honest
   only if the widths were data. They are not: a label's width is
   `measureText` at the display mode's font size against the display's
@@ -155,7 +155,7 @@ side at 3.11x, met from the other direction.
   (`fitLadder.ts` 176–204). A step taking a per-feature width in px would be
   canvas's packer with the display's inputs passed through it — the display's
   code under a new name, in the worker, where the font size is not known.
-- **A `groupby` over refName so `stack` could pack across regions.** `stack`
+- **A `groupby` over refName so `pileup` could pack across regions.** `pileup`
   has `groupby` already and it is not the missing piece: canvas groups
   *regions* before packing (`layout.ts` 33–87) and alignments lays refNames
   end to end on a synthetic axis (`refNameAxisShift`, `sortLayout.ts`
@@ -172,9 +172,9 @@ side at 3.11x, met from the other direction.
   per-base `Float32Array` feeding a GPU buffer, and the sweep fills total,
   forward and reverse in one walk. Three of the four things that function does
   are not a transform over features.
-- **`stack` calling `placeRect`, to leave one first-fit implementation.**
+- **`pileup` calling `placeRect`, to leave one first-fit implementation.**
   `placeRect` keeps every placed interval per row so it can insert into a gap,
-  which is what an out-of-order caller needs; `stack` sorts by start first and
+  which is what an out-of-order caller needs; `pileup` sorts by start first and
   a row is then one number. Converging on `placeRect` would add a per-feature
   splice-capable row array to the step, and converging the other way would
   take the gap insertion away from alignments' row-scan path. The parity test

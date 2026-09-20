@@ -20,7 +20,7 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | Piece | Where | What it owns |
 | --- | --- | --- |
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
-| `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run in order over a feature list, each step reading what the last answered |
+| `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup` — run in order over a feature list, each step reading what the last answered |
 | `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
 | `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`) and `enabled` inside the entry's zoom range, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
@@ -142,7 +142,7 @@ walks it in order:
 | `bin` | every feature, snapped to the genome-aligned bin of `step` bp its `field` (`start`) falls in; `step: "auto"` follows the view's zoom | `start` and `end`, or the two names in `as` |
 | `aggregate` | one feature per distinct `groupby` value set, spanning its members' extent, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` over a field — in `as` or `count`/`<op>_<field>`; no `groupby` folds the region | the group's fields, the ops |
 | `coverage` | one feature per run of constant depth over the spans, where the depth is not zero | `as` (`coverage`) |
-| `stack` | every feature, on the lowest row where it overlaps nothing already there — greedy first fit in start order over `fields` (`start`, `end`), `padding` bp of clearance | `as` (`row`) |
+| `pileup` | every feature, on the lowest row where it overlaps nothing already there — greedy first fit in start order over `fields` (`start`, `end`), `padding` bp of clearance | `as` (`row`) |
 
 `bin` writes over `start` and `end` on purpose: an `aggregate` grouped by
 those two is then a density whose bars span the bins, with the encoding's
@@ -151,7 +151,7 @@ bin's. Two defaults spare the config that restatement, both resolved where
 the display translates `marks` into the request rather than in `runTransforms`:
 an `aggregate` whose `groupby` is empty takes the edges the last `bin` in the
 same list wrote, and a mark whose `encoding.row` is empty reads the field its
-own `stack` wrote. A feature is placed in one bin by one field; a feature that crosses
+own `pileup` wrote. A feature is placed in one bin by one field; a feature that crosses
 a boundary counts where its `field` falls, which is what `coverage` is for
 when the question is overlap rather than count. A `formula` and a `bin`
 answer a `DerivedFeature` reading the new fields over the old ones, so no
@@ -168,10 +168,10 @@ for the view's zoom, the one the wiggle display reads (ADR-123, ADR-125). So
 bins tier rows; the table under "The mark display over a BigWig, measured"
 says what that costs and how far it sits from the raw section.
 
-`stack` is the one step whose output is a layout rather than a measurement,
-and it is what makes a pileup declarable: a `span` reading the `row` it wrote
-is the packing canvas's `packRef` does by hand, over any adapter the mark
-display attaches to
+`pileup` is the one step whose output is a layout rather than a measurement,
+and it is what makes a read pileup declarable: a `span` reading the `row` it
+wrote is the packing canvas's `packRef` does by hand, over any adapter the
+mark display attaches to
 ([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)).
 It answers a `DerivedFeature` over the input in start order, so nothing is
 copied per feature and a later `bin` or `aggregate` still reads the original

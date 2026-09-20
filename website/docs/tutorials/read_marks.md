@@ -154,7 +154,7 @@ open the read.
 
 ## Which reads carry the long inserts
 
-A `span` over a `stack` transform is a pileup. A `formula` step writes the
+A `span` over a `pileup` transform is a read pileup. A `formula` step writes the
 unsigned insert so both mates share a colour, and a ramp pinned at 5 kb paints a
 spanning pair red.
 
@@ -164,7 +164,7 @@ spanning pair red.
     "shape": "span",
     "transform": [
       { "type": "formula", "expr": "jexl:abs(feature.template_length)", "as": "insert" },
-      { "type": "stack" }
+      { "type": "pileup" }
     ],
     "encoding": {
       "row": "row",

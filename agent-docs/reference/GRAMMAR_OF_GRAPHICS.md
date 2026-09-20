@@ -86,7 +86,7 @@ in full and of the format-typed displays only where it says so.
 | Stage | What the grammar means | Where the tree answers | How far |
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own. An adapter with zoom levels is sent the view's `bpPerPx` ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)), so a BigWig answers from the summary tier the wiggle display reads |
-| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own | whole, layout included — `stack` is a pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
+| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own | whole, layout included — `pileup` is a read pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
 | scale | domain → range, separate from the encoding | the colour and glyph channels carry their own, `{ field, scale, domain, palette \| range \| ramp }`, read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (a quantitative ramp); the value scale is the display's one `scales.y`, which every mark's `encoding.y` field is read through and `ScoreAxisMixin` derives the axis from ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md), generalised to every quantitative display by [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)) | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, hatches and rules (`packages/wiggle-core/src/ScoreAxisMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
@@ -119,10 +119,10 @@ nothing for `encodeFeatures` to read.
 
 **The layout steps went the same way, and the audit is the record.** Every
 place a format-typed display assigns a row to an interval, bins a position or
-measures depth was classified against `stack`, `bin` and `coverage`
+measures depth was classified against `pileup`, `bin` and `coverage`
 ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)
 has the table with file and line ranges). One entry runs a rule a step
-reproduces — a plain uncapped single-region pileup is `stack` with
+reproduces — a plain uncapped single-region pileup is `pileup` with
 `padding: 2`, row for row, which
 `packages/core/src/util/featureTransforms.test.ts` now pins against
 `placeRect` — and porting it measured 4.23x, all of which is the `Feature[]`
@@ -130,9 +130,9 @@ the step reads and answers rather than the packing. Every other
 packer runs the same rule over inputs a step has no way to be told: label
 overhang widths and strand-arrow padding in canvas's `packRef`, isoform caps,
 row caps resolved against the viewport, regions grouped by refName before
-packing, a layout seeded from the previous frame's rows. So `stack` is what
-makes a pileup declarable over any adapter the mark display attaches to, and
-that is a different sentence from making the alignments pileup declarable.
+packing, a layout seeded from the previous frame's rows. So `pileup` is what
+makes a read pileup declarable over any adapter the mark display attaches to,
+and that is a different sentence from making the alignments pileup declarable.
 
 ## Integrity: what holds the implementation to itself
 
@@ -347,7 +347,7 @@ the alignments displays' sections, where a read dimension (`pairOrientation`,
 The display's own `transform` runs, the facet splits what it answers, and each
 mark runs its own steps over each section alone (`facetLayers`,
 `packages/core/src/util/featureTransforms.ts`), so a faceted display is the
-unfaceted one drawn once per section — a `stack` packs each section on its
+unfaceted one drawn once per section — a `pileup` packs each section on its
 own, a `coverage` counts each section's depth, and a rowless mark sits on each
 section's first row. `featureTransforms.test.ts` pins that equivalence. The
 main thread folds the regions' section tables into one layout

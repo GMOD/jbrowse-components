@@ -18,7 +18,7 @@ shared factory and every quantitative display declares one. Supersedes
 destination, which is now `scales.y` rather than the owning mark's declaration.
 ADR-113's other half — a quantitative colour ramp resolving on the main thread
 against a domain unioned over the loaded regions — is untouched, as is
-ADR-115's `stack` step and its three track types.
+ADR-115's `pileup` step and its three track types.
 [MARK_ENCODING.md](../reference/MARK_ENCODING.md) and
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) are the
 operational docs.
