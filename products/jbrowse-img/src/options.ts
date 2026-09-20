@@ -484,12 +484,12 @@ export const batchOptionDefs: OptionDef[] = [
   {
     name: 'vcf',
     description:
-      'VCF (plain or bgzipped) of junctions to render, one image per junction',
+      'VCF (plain or bgzipped) of structural variants to render, one image per record',
   },
   {
     name: 'bedpe',
     description:
-      'BEDPE of junctions to render, one image per row; the format for anything a VCF cannot express (a LINX TSV reshaped by awk)',
+      'BEDPE to render, one image per row; the format for anything a VCF cannot express (a LINX TSV reshaped by awk)',
   },
   {
     name: 'outDir',
@@ -574,10 +574,12 @@ export function buildBatchHelp(scriptName: string) {
   return [
     `Usage: ${scriptName} batch --vcf <file> [options]`,
     '',
-    'Renders one breakpoint split view per BEDPE row: both loci stacked, with',
-    'the reads that leave one panel and arrive in the other drawn between them.',
-    'The module graph loads once for the whole callset, so this is much faster',
-    `than a shell loop over "${scriptName} breakpoint".`,
+    'Renders one image per record. A junction is a breakpoint split view: both',
+    'loci stacked, with the reads that leave one panel and arrive in the other',
+    'drawn between them. A record that fits one window is a single panel: an',
+    'insertion, a single breakend, or two ends closer together than --flank',
+    'reaches. The module graph loads once for the whole callset, so this is',
+    `much faster than a shell loop over "${scriptName} breakpoint".`,
     '',
     'Options:',
     ...formatOpts(defs, pad),

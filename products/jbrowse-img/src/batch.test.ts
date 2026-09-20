@@ -1,18 +1,10 @@
-import {
-  outputName,
-  panelLoc,
-  parseBedpe,
-  recordArgv,
-  recordLocs,
-} from './batch.ts'
+import { outputName, parseBedpe, recordArgv, recordLocs } from './batch.ts'
 
 const ROW = {
-  refName1: 'chr1',
-  start1: 1000,
-  end1: 1001,
-  refName2: 'chr5',
-  start2: 2000,
-  end2: 2001,
+  loci: [
+    { refName: 'chr1', start: 1000, end: 1001 },
+    { refName: 'chr5', start: 2000, end: 2001 },
+  ],
 }
 
 function bedpe(...lines: string[]) {
@@ -41,13 +33,22 @@ describe('parseBedpe', () => {
     expect(skipped).toEqual([])
   })
 
-  it('drops a single-breakend row rather than aborting the run', () => {
-    // BEDPE writes an unknown mate as -1. A callset always has a few, and the
-    // whole point of a batch is that row 400 failing does not cost rows 1-399.
+  it('keeps a single-breakend row as the one locus it names', () => {
+    // BEDPE writes an unknown mate as `.`, -1, -1
+    const { records, skipped } = parseBedpe(
+      bedpe('chr1\t1000\t1001\tchr5\t2000\t2001', 'chr7\t500\t501\t.\t-1\t-1'),
+    )
+    expect(records[1]).toEqual({
+      loci: [{ refName: 'chr7', start: 500, end: 501 }],
+    })
+    expect(skipped).toEqual([])
+  })
+
+  it('reports a row whose second end is unreadable rather than drawing half of it', () => {
     const { records, skipped } = parseBedpe(
       bedpe(
         'chr1\t1000\t1001\tchr5\t2000\t2001',
-        'chr7\t500\t501\t.\t-1\t-1',
+        'chr7\t500\t501\tchr9\tabc\tdef',
         'chr2\t10\t11\tchr3\t20\t21',
       ),
     )
@@ -70,21 +71,47 @@ describe('parseBedpe', () => {
   })
 })
 
-describe('panelLoc', () => {
-  it('grows the breakend interval by the flank, 1-based out', () => {
-    expect(panelLoc('chr1', 1000, 1001, 500)).toBe('chr1:501-1501')
+describe('recordLocs / recordArgv', () => {
+  it('makes one panel per side, in file order, grown by the flank and 1-based', () => {
+    expect(recordLocs(ROW, 100)).toEqual(['chr1:901-1101', 'chr5:1901-2101'])
   })
 
   it('clamps at the start of a chromosome', () => {
-    // A breakend at position 10 with a 500bp flank would otherwise ask for a
-    // negative coordinate, which no locstring parses.
-    expect(panelLoc('chr1', 10, 11, 500)).toBe('chr1:1-511')
+    expect(
+      recordLocs({ loci: [{ refName: 'chr1', start: 10, end: 11 }] }, 500),
+    ).toEqual(['chr1:1-511'])
   })
-})
 
-describe('recordLocs / recordArgv', () => {
-  it('makes one panel per side, in file order', () => {
-    expect(recordLocs(ROW, 100)).toEqual(['chr1:901-1101', 'chr5:1901-2101'])
+  it('draws two ends of one contig whose windows overlap as one panel', () => {
+    // a 172 bp deletion at a 600 bp flank: two panels would be the same reads
+    // twice, 172 bp apart
+    const del = {
+      loci: [
+        { refName: 'chr1', start: 5000, end: 5001 },
+        { refName: 'chr1', start: 5172, end: 5173 },
+      ],
+    }
+    expect(recordLocs(del, 600)).toEqual(['chr1:4401-5773'])
+  })
+
+  it('keeps two panels for ends of one contig further apart than the flank reaches', () => {
+    const del = {
+      loci: [
+        { refName: 'chr1', start: 5000, end: 5001 },
+        { refName: 'chr1', start: 9000, end: 9001 },
+      ],
+    }
+    expect(recordLocs(del, 600)).toHaveLength(2)
+  })
+
+  it('never merges across contigs, whatever the coordinates', () => {
+    const tra = {
+      loci: [
+        { refName: 'chr1', start: 5000, end: 5001 },
+        { refName: 'chr2', start: 5000, end: 5001 },
+      ],
+    }
+    expect(recordLocs(tra, 600)).toHaveLength(2)
   })
 
   it('emits them as separate --loc entries, which is what stacks panels', () => {
@@ -104,6 +131,17 @@ describe('outputName', () => {
     expect(outputName(ROW, 0, 5, 'png')).toBe('1_chr1_1000-chr5_2000.png')
   })
 
+  it('names a one-locus record by that locus', () => {
+    expect(
+      outputName(
+        { loci: [{ refName: 'chr7', start: 500, end: 501 }], name: 'ins1' },
+        0,
+        1,
+        'png',
+      ),
+    ).toBe('1_chr7_500_ins1.png')
+  })
+
   it('carries the name when there is one, sanitized for a filename', () => {
     expect(outputName({ ...ROW, name: 'BCR--ABL1 fusion' }, 0, 1, 'svg')).toBe(
       '1_chr1_1000-chr5_2000_BCR--ABL1-fusion.svg',
@@ -111,11 +149,13 @@ describe('outputName', () => {
   })
 
   it('sanitizes the refNames too, not only the name column', () => {
-    // A refName is no safer than a caller's label: a `/` in one builds a path
-    // into a directory that does not exist, and the record then fails at write
-    // time having already paid for its render.
     const name = outputName(
-      { ...ROW, refName1: 'GL000/1', refName2: 'gi|123|ref' },
+      {
+        loci: [
+          { refName: 'GL000/1', start: 1000, end: 1001 },
+          { refName: 'gi|123|ref', start: 2000, end: 2001 },
+        ],
+      },
       0,
       1,
       'png',

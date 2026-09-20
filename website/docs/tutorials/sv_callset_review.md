@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-`jb2export batch` renders every junction in a somatic callset as a breakpoint
-split view, so triage becomes a directory of images. The matched normal,
-rendered the same way, is the control.
+`jb2export batch` renders every record of a somatic callset as an image, a
+junction as a breakpoint split view, so triage becomes a directory of images.
+The matched normal, rendered the same way, is the control.
 
 ## Prerequisites
 
@@ -63,13 +63,14 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
 ```
 
 ```
-Warning: skipped 35 record(s), e.g. line 271: names no second locus (INS)
-[########################] 100% 100/100
-wrote 100/100 images to tumor
+[########################] 100% 135/135
+wrote 135/135 images to tumor
 ```
 
-Insertions name one locus, so there is no second panel and the warning counts
-them out. Each breakend pair is written twice and collapses to one. The result
+A record that fits one window is drawn as a single panel: an insertion names one
+locus, and a deletion shorter than `--flank` has both ends in one frame. Each
+breakend pair is written twice and collapses to one.
+
 The ALT bracket is parsed with `@gmod/vcf` rather than by hand, which matters
 because hand-parsing it goes wrong four ways, none of them raising an error:
 
@@ -79,7 +80,7 @@ because hand-parsing it goes wrong four ways, none of them raising an error:
 - `END=` matches inside `CIEND=`, and the first hit wins
 - the two records of one breakend pair name the same translocation twice
 
-One image per row, named `1_chr1_33053494-chr6_2919922_gridss12o.png`: the
+One image per row, named `002_chr1_33053494-chr6_2919922_r_0_0.png`: the
 filename opens with the index so the directory sorts in callset order, then the
 coordinates, then the caller's ID. A file with no ID column falls back to
 `junction_<n>`.
@@ -91,8 +92,8 @@ first few, to check the framing before the whole callset.
 For a long run:
 
 - `--resume` skips a row whose image is already in `--outDir`
-- `--manifest` writes `manifest.tsv` beside the images: one row per junction
-  with its file, both loci, its name, and whether it rendered
+- `--manifest` writes `manifest.tsv` beside the images: one row per record with
+  its file, its panels' loci, its name, and whether it rendered
 - `--passOnly` drops records the caller filtered out. `--limit` takes the first
   N in file order, so on an unfiltered callset the two go together
 

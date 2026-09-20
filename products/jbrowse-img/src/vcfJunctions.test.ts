@@ -20,14 +20,10 @@ describe('parseVcfJunctions', () => {
       ),
     )
     expect(records).toHaveLength(1)
-    expect(records[0]).toMatchObject({
-      refName1: 'chr3',
-      start1: 25359110,
-      end1: 25359111,
-      refName2: 'chr12',
-      start2: 72273111,
-      end2: 72273112,
-    })
+    expect(records[0]!.loci).toEqual([
+      { refName: 'chr3', start: 25359110, end: 25359111 },
+      { refName: 'chr12', start: 72273111, end: 72273112 },
+    ])
   })
 
   it('writes the mate contig in the file’s own spelling, not the ALT’s', () => {
@@ -36,7 +32,7 @@ describe('parseVcfJunctions', () => {
     const { records } = parseVcfJunctions(
       vcf('chr3\t25359111\ta1\tG\tG[CHR12:72273112[\t.\tPASS\tSVTYPE=BND'),
     )
-    expect(records[0]!.refName2).toBe('chr12')
+    expect(records[0]!.loci[1]!.refName).toBe('chr12')
   })
 
   it('collapses a reciprocal breakend pair into one junction', () => {
@@ -69,19 +65,17 @@ describe('parseVcfJunctions', () => {
         'chr3\t316\tz\tG\tG[chr12:1[\t.\tPASS\tSVTYPE=BND',
       ),
     )
-    expect(records.map(r => r.end1)).toEqual([300, 316])
+    expect(records.map(r => r.loci[0]!.end)).toEqual([300, 316])
   })
 
   it('reads a symbolic DEL/DUP/INV through INFO END', () => {
     const { records } = parseVcfJunctions(
       vcf('chr3\t1000\td\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=2000'),
     )
-    expect(records[0]).toMatchObject({
-      refName1: 'chr3',
-      refName2: 'chr3',
-      end1: 1000,
-      end2: 2000,
-    })
+    expect(records[0]!.loci).toEqual([
+      { refName: 'chr3', start: 999, end: 1000 },
+      { refName: 'chr3', start: 1999, end: 2000 },
+    ])
   })
 
   it('matches END at the start of its own field, not inside CIEND', () => {
@@ -91,38 +85,56 @@ describe('parseVcfJunctions', () => {
     const { records } = parseVcfJunctions(
       vcf('chr3\t1000\td\tN\t<DUP>\t.\tPASS\tSVTYPE=DUP;CIEND=5,10;END=9000'),
     )
-    expect(records[0]!.end2).toBe(9000)
+    expect(records[0]!.loci[1]!.end).toBe(9000)
   })
 
   it('honours CHR2 when a caller writes an interchromosomal symbolic record', () => {
     const { records } = parseVcfJunctions(
       vcf('chr3\t1000\tt\tN\t<TRA>\t.\tPASS\tSVTYPE=INV;CHR2=chr12;END=9000'),
     )
-    expect(records[0]!.refName2).toBe('chr12')
+    expect(records[0]!.loci[1]!.refName).toBe('chr12')
   })
 
   it('reads a Delly/LUMPY-style SVTYPE=TRA', () => {
     const { records } = parseVcfJunctions(
       vcf('chr3\t1000\tt\tN\t<TRA>\t.\tPASS\tSVTYPE=TRA;CHR2=chr12;END=9000'),
     )
-    expect(records[0]).toMatchObject({
-      refName1: 'chr3',
-      refName2: 'chr12',
-      start2: 8999,
-      end2: 9000,
-    })
+    expect(records[0]!.loci).toEqual([
+      { refName: 'chr3', start: 999, end: 1000 },
+      { refName: 'chr12', start: 8999, end: 9000 },
+    ])
   })
 
-  it('skips, and reports, a record that names no second locus', () => {
-    // An insertion names one locus, so there is no second panel to stack.
+  it('keeps a record that names no second locus as the one it does name', () => {
+    // half of a long-read germline callset is insertions
     const { records, skipped } = parseVcfJunctions(
       vcf(
         'chr3\t1000\ti\tN\t<INS>\t.\tPASS\tSVTYPE=INS',
         'chr3\t2000\ts\tN\tN.\t.\tPASS\tSVTYPE=BND',
       ),
     )
-    expect(records).toEqual([])
-    expect(skipped).toHaveLength(2)
+    expect(records.map(r => r.loci)).toEqual([
+      [{ refName: 'chr3', start: 999, end: 1000 }],
+      [{ refName: 'chr3', start: 1999, end: 2000 }],
+    ])
+    expect(skipped).toEqual([])
+  })
+
+  it('reads an insertion whose END is its own POS as one locus', () => {
+    const { records } = parseVcfJunctions(
+      vcf('chr3\t1000\ti\tN\t<INS>\t.\tPASS\tSVTYPE=INS;END=1000;SVLEN=312'),
+    )
+    expect(records[0]!.loci).toHaveLength(1)
+  })
+
+  it('keeps two insertions at one position as two calls', () => {
+    const { records } = parseVcfJunctions(
+      vcf(
+        'chr3\t1000\ti1\tN\t<INS>\t.\tPASS\tSVTYPE=INS',
+        'chr3\t1000\ti2\tN\t<INS>\t.\tPASS\tSVTYPE=INS',
+      ),
+    )
+    expect(records.map(r => r.name)).toEqual(['i1', 'i2'])
   })
 
   it('does not mistake a symbolic mate placeholder for a contig', () => {
@@ -131,7 +143,17 @@ describe('parseVcfJunctions', () => {
     const { records } = parseVcfJunctions(
       vcf('chr3\t1000\tp\tG\tG<DEL>\t.\tPASS\tSVTYPE=BND'),
     )
+    expect(records[0]!.loci).toEqual([
+      { refName: 'chr3', start: 999, end: 1000 },
+    ])
+  })
+
+  it('reports a record with no SVTYPE', () => {
+    const { records, skipped } = parseVcfJunctions(
+      vcf('chr3\t1000\tsnv\tA\tG\t.\tPASS\tDP=30'),
+    )
     expect(records).toEqual([])
+    expect(skipped[0]).toMatch(/no SVTYPE/)
   })
 
   it('files a junction under the caller’s own ID', () => {
@@ -163,7 +185,7 @@ describe('parseVcfJunctions', () => {
         'chr12\t900\tb\tG\tG[chr3:500[\t.\tPASS\tSVTYPE=BND',
       ].join('\n'),
     )
-    expect(records.map(r => r.refName2)).toEqual(['chr12', 'chr3'])
+    expect(records.map(r => r.loci[1]!.refName)).toEqual(['chr12', 'chr3'])
   })
 
   it('drops a filtered record under passOnly, and reports it', () => {

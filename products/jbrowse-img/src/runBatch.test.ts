@@ -146,6 +146,47 @@ describe('runBatch', () => {
     expect(rows[2]).toMatch(/\tok$/)
   })
 
+  it('renders a record that fits one panel as a linear view, and leaves loc2 empty', async () => {
+    const vcf = path.join(dir, 'calls.vcf')
+    fs.writeFileSync(
+      vcf,
+      [
+        '##fileformat=VCFv4.2',
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+        'chr1\t5000\tins1\tN\t<INS>\t.\tPASS\tSVTYPE=INS',
+        'chr1\t9000\tdel1\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=9172',
+        'chr1\t20000\ttra1\tN\tN[chr5:700[\t.\tPASS\tSVTYPE=BND',
+      ].join('\n'),
+    )
+    await runBatch({
+      vcf,
+      outDir: path.join(dir, 'out'),
+      format: 'svg',
+      flank: 600,
+      manifest: true,
+      argv: [['loc', ['chr9:1-100']]],
+      progress: steps().progress,
+    })
+    const calls = mockRenderRegion.mock.calls.map(
+      c => c[0] as { mode: string; loc?: string; argv: [string, string[]][] },
+    )
+    expect(calls.map(c => [c.mode, c.loc])).toEqual([
+      ['linear', 'chr1:4400-5600'],
+      ['linear', 'chr1:8400-9772'],
+      ['breakpoint', undefined],
+    ])
+    expect(calls[0]!.argv).toEqual([])
+    expect(calls[2]!.argv).toEqual([
+      ['loc', ['chr1:19400-20600']],
+      ['loc', ['chr5:100-1300']],
+    ])
+    const rows = fs
+      .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
+      .trim()
+      .split('\n')
+    expect(rows[1]).toBe('1_chr1_4999_ins1.svg\tchr1:4400-5600\t\tins1\tok')
+  })
+
   it('blames the flag, not the file, when --limit selects nothing', async () => {
     await expect(runBatch(opts({ limit: 0 }))).rejects.toThrow(
       /--limit 0 selected none of the 2 junctions/,

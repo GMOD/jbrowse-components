@@ -76,7 +76,8 @@ function readJunctions(opts: BatchOpts) {
 }
 
 /**
- * Render every junction in a BEDPE, one image per row.
+ * Render every record of a callset, one image per row: a breakpoint split view
+ * where the record's loci need two panels, a linear view where they fit one.
  *
  * Keeps going after a failed row and reports the failures at the end. A callset
  * always has a row whose refName the assembly does not have, or whose window is
@@ -157,7 +158,7 @@ export async function runBatch(opts: BatchOpts) {
         process.stderr.write(s)
       },
     })
-  for (const { rec, file } of planned) {
+  for (const { rec, file, locs } of planned) {
     const out = path.join(outDir, file)
     if (opts.resume && fs.existsSync(out)) {
       status.push('exists')
@@ -165,20 +166,20 @@ export async function runBatch(opts: BatchOpts) {
       continue
     }
     try {
+      // The record's own panels REPLACE any --loc on the command line: in a
+      // batch the file says where to look, and a stray --loc would otherwise
+      // render the same windows for every row.
+      const argv = (opts.argv ?? []).filter(([key]) => key !== 'loc')
       const svg = await renderRegion(
-        {
-          ...opts,
-          mode: 'breakpoint',
-          width,
-          // The record's own two panels REPLACE any --loc on the command line:
-          // in a batch the file says where to look, and a stray --loc would
-          // otherwise render the same pair of windows for every row.
-          argv: [
-            ...(opts.argv ?? []).filter(([key]) => key !== 'loc'),
-            ...recordArgv(rec, flank),
-          ],
-          loc: undefined,
-        },
+        locs.length > 1
+          ? {
+              ...opts,
+              mode: 'breakpoint',
+              width,
+              argv: [...argv, ...recordArgv(rec, flank)],
+              loc: undefined,
+            }
+          : { ...opts, mode: 'linear', width, argv, loc: locs[0] },
         configObject && structuredClone(configObject),
       )
       writeRendered(svg, out, width)
@@ -223,7 +224,7 @@ function writeManifest(
   status: RecordStatus[],
 ) {
   const rows = planned.map(({ rec, file, locs }, i) =>
-    [file, ...locs, rec.name ?? '', status[i]].join('\t'),
+    [file, locs[0], locs[1] ?? '', rec.name ?? '', status[i]].join('\t'),
   )
   fs.writeFileSync(
     path.join(outDir, 'manifest.tsv'),
