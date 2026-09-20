@@ -281,7 +281,7 @@ describe('migrateSessionSnapshot', () => {
     expect(delta.trackId).toBe('track1')
     const deltaDisplay = delta.displays[0]
     expect(deltaDisplay.displayId).toBe('track1-LinearAlignmentsDisplay')
-    expect(deltaDisplay.colorBy).toEqual({ type: 'modifications' })
+    expect(deltaDisplay.color).toEqual({ field: 'modifications' })
     expect(deltaDisplay.filterBy).toEqual({ flagInclude: 0, flagExclude: 1536 })
   })
 
@@ -306,7 +306,7 @@ describe('migrateSessionSnapshot', () => {
     // no delta for a user-added track — edited in place
     expect(result.trackConfigDeltas).toBeUndefined()
     const display = (result.sessionTracks as any)[0].displays[0]
-    expect(display.colorBy).toEqual({ type: 'modifications' })
+    expect(display.color).toEqual({ field: 'modifications' })
     expect(display.filterBy).toEqual({ flagInclude: 0, flagExclude: 1536 })
   })
 
@@ -350,7 +350,7 @@ describe('migrateSessionSnapshot', () => {
     expect(display.PileupDisplay).toBeUndefined()
     const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
     expect(deltaDisplay.displayId).toBe('track1-LinearAlignmentsDisplay')
-    expect(deltaDisplay.colorBy).toEqual({ type: 'modifications' })
+    expect(deltaDisplay.color).toEqual({ field: 'modifications' })
     expect(deltaDisplay.filterBy).toEqual({
       flagInclude: 0,
       flagExclude: 1540,
@@ -404,7 +404,7 @@ describe('migrateSessionSnapshot', () => {
     expect(deltaDisplay.readConnections).toBe('cloud')
     expect(deltaDisplay.showPileup).toBe(false)
     expect(deltaDisplay.showCoverage).toBe(false)
-    expect(deltaDisplay.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
+    expect(deltaDisplay.color).toEqual({ field: 'insertSizeAndOrientation' })
     expect(deltaDisplay.maxHeight).toBe(900)
     // hideMismatches inverts into the showMismatches slot that replaced it
     expect(deltaDisplay.showMismatches).toBe(false)
@@ -443,9 +443,9 @@ describe('migrateSessionSnapshot', () => {
     expect(deltaDisplay.showCoverage).toBe(false)
   })
 
-  // The config path runs the same extractor, and there `colorBy` is the live
-  // slot — lifting it off a track's display config would strip a working config.
-  test('leaves colorBy alone on a config display node', () => {
+  // The config path runs the same extractor and lifts nothing off the node: a
+  // config display's `colorBy` is rewritten where it sits.
+  test('rewrites colorBy in place on a config display node', () => {
     const result = migrateConfigSnapshot({
       tracks: [
         {
@@ -463,7 +463,7 @@ describe('migrateSessionSnapshot', () => {
     })
     const display = (result.tracks as any)[0].displays[0]
     expect(display.type).toBe('LinearAlignmentsDisplay')
-    expect(display.colorBy).toEqual({ type: 'modifications' })
+    expect(display.color).toEqual({ field: 'modifications' })
     expect(result.trackConfigDeltas).toBeUndefined()
   })
 
@@ -483,7 +483,7 @@ describe('migrateSessionSnapshot', () => {
     const result = migrateSessionSnapshot(snap)
     const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
     expect(deltaDisplay.height).toBe(321)
-    expect(deltaDisplay.colorBy).toEqual({ type: 'modifications' })
+    expect(deltaDisplay.color).toEqual({ field: 'modifications' })
   })
 
   test('routes legacy heightPreConfig onto the height slot as a trackConfigDelta', () => {
@@ -668,7 +668,8 @@ describe('migrateSessionSnapshot', () => {
       const display = (result.views as any)[0].tracks[0].displays[0]
       expect(display[key]).toBeUndefined()
       const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
-      expect(deltaDisplay.colorBy).toEqual({ type: 'methylation' })
+      expect(deltaDisplay.color).toEqual({ field: 'modifications' })
+      expect(deltaDisplay.modifications).toEqual({ fillUnmarked: true })
     },
   )
 

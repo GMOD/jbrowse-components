@@ -68,6 +68,50 @@ const displayTypeMap: Record<
 // the instance here and route them into the config.
 const NESTED_ALIGNMENTS_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
 
+// The alignments `color` field each v4 scheme name paints now. `methylation`,
+// `stranded` and `insertSizeGradient` were retired before the colour object
+// and land on the fields that replaced them.
+const V4_COLOR_FIELDS: Record<string, string> = {
+  strand: 'strand',
+  mappingQuality: 'mapq',
+  insertSize: 'insertSize',
+  insertSizeGradient: 'insertSize',
+  firstOfPairStrand: 'firstOfPairStrand',
+  stranded: 'firstOfPairStrand',
+  pairOrientation: 'pairOrientation',
+  insertSizeAndOrientation: 'insertSizeAndOrientation',
+  perBaseQuality: 'baseQuality',
+  perBaseLetter: 'base',
+  mateRefName: 'mateRefName',
+  modifications: 'modifications',
+  methylation: 'modifications',
+  bisulfite: 'bisulfite',
+}
+
+function colorSlotsOf(value: unknown): Record<string, unknown> {
+  if (!isObject(value)) {
+    return {}
+  }
+  const { type, tag, modifications } = value
+  const field =
+    type === 'tag' && typeof tag === 'string'
+      ? `tags.${tag}`
+      : typeof type === 'string'
+        ? V4_COLOR_FIELDS[type]
+        : undefined
+  const settings =
+    type === 'methylation'
+      ? {
+          ...(isObject(modifications) ? modifications : {}),
+          fillUnmarked: true,
+        }
+      : modifications
+  return {
+    ...(field ? { color: { field } } : {}),
+    ...(isObject(settings) ? { modifications: settings } : {}),
+  }
+}
+
 // Persisted key -> the slot it now lives in, and how to carry its value across.
 //
 // The `*Setting` names are the ones a real saved session carries, and getting
@@ -84,12 +128,20 @@ const NESTED_ALIGNMENTS_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
 // same reason since the slot left `baseLinearDisplayConfigSchema`: the
 // alignments display never read it, so the slot this used to carry the value to
 // no longer exists.
+//
+// `spread` carries one old key across as several slots: a v4 `colorBy` named a
+// scheme and held the modification settings, which are the `color` object's
+// field and the `modifications` slot now.
 const MIGRATED_INSTANCE_SLOTS: Record<
   string,
-  { slot: string; convert?: (value: unknown) => unknown }
+  {
+    slot: string
+    convert?: (value: unknown) => unknown
+    spread?: (value: unknown) => Record<string, unknown>
+  }
 > = {
-  colorBy: { slot: 'colorBy' },
-  colorBySetting: { slot: 'colorBy' },
+  colorBy: { slot: 'color', spread: colorSlotsOf },
+  colorBySetting: { slot: 'color', spread: colorSlotsOf },
   filterBy: { slot: 'filterBy' },
   filterBySetting: { slot: 'filterBy' },
   trackMaxHeight: { slot: 'maxHeight' },
@@ -136,11 +188,15 @@ export const MIGRATED_DISPLAY_INSTANCE_KEYS: Record<string, string[]> = {
 // the display was actually writing.
 function migratedSettingsOf(source: Record<string, unknown>) {
   const settings: Record<string, unknown> = {}
-  for (const [key, { slot, convert }] of Object.entries(
+  for (const [key, { slot, convert, spread }] of Object.entries(
     MIGRATED_INSTANCE_SLOTS,
   )) {
     if (source[key] !== undefined) {
-      settings[slot] = convert ? convert(source[key]) : source[key]
+      if (spread) {
+        Object.assign(settings, spread(source[key]))
+      } else {
+        settings[slot] = convert ? convert(source[key]) : source[key]
+      }
     }
   }
   return settings
@@ -161,12 +217,6 @@ function isObject(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v)
 }
 
-// The standalone `methylation` colorBy scheme was removed; it is now the
-// `modifications` scheme with `fillUnmarked` set. It is NOT rewritten here: the
-// alignments model normalizes it at read time (`normalizeColorBy`, applied in
-// its `colorBy` getter), which covers every persistence path — instance slot and
-// config-file display default alike — so session migration deliberately leaves a
-// `methylation` colorBy untouched.
 function migrateDisplayType(
   display: Record<string, unknown>,
   trackConfigId: string | undefined,
@@ -221,8 +271,10 @@ function migrateDisplayType(
  *
  * The display's own keys are read only when it carries a `configuration`
  * reference, i.e. only for a session instance. A *config* display node reaches
- * this same function through `migrateConfigSnapshot`, and there `colorBy` and
- * friends are the live slots — lifting them would strip a working config.
+ * this same function through `migrateConfigSnapshot`, and there `filterBy` and
+ * friends are the live slots — lifting them would strip a working config. Its
+ * `colorBy` is the one key rewritten in place, onto the `color` and
+ * `modifications` slots that replaced it.
  */
 function extractAlignmentsInstanceSettings(
   display: Record<string, unknown>,
@@ -242,6 +294,10 @@ function extractAlignmentsInstanceSettings(
   const settings = {
     ...(subNode ? migratedSettingsOf(subNode) : {}),
     ...ownSettings,
+  }
+  if (!isInstance && !subNode && display.colorBy !== undefined) {
+    const { colorBy, ...config } = display
+    return { ...config, ...colorSlotsOf(colorBy) }
   }
   if (!subNode && Object.keys(settings).length === 0) {
     return display
