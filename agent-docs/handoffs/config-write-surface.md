@@ -57,18 +57,35 @@ which is the shape of the bug `86fde0cc4c` fixed.
 
 ## Open, in priority order
 
-1. **Typed config props is not viable as spiked.** `variant-d.patch`
-   (scratchpad only, not in the tree) declares the node's `Type` as a mapped
-   type over the definition. Measured: no build-time cost, +2.7% `.d.ts` bytes,
-   zero TS4058, and the base merge must be computed **once** in
-   `ConfigurationSchema`'s return type — computing it per read costs 111
-   `TS2589 excessively deep`, one per file. But it **regresses** the read-side
-   check it was meant to improve: `HostChecksSlotNames<ScoreScaleHost>` reads
-   `false` under it, and a whole-project typecheck is 162 errors against the 67
-   `tsc --build` reports, including `AnyConfigurationSnapshot circularly
-   references itself`. Two agents were working this; see
-   `handoffs/typed-config-props.md` and `handoffs/config-index-signature.md` on
-   their branches.
+1. **Typed config props works, and dropping the index signature is what makes
+   it work.** Branch `worktree-agent-ad46ed385972fe570`: `tsc --build` and a
+   whole-project `tsc --noEmit` both **0 errors**, cold build 25 s (unchanged),
+   `.d.ts` **1.9% smaller than main**, zero TS2883 (typescript7's TS4058).
+   Typo detection is live — three `@ts-expect-error` probes in
+   `configTypeNarrowing.test.ts` on an unknown slot, an unknown nested member
+   and an unknown snapshot key; a clean build means they are used.
+
+   Its error set is a strict subset of the weaker `variant-d.patch` spike's —
+   60 against 67, **zero new**. So the index signature was never paying for
+   itself: removing it costs nothing beyond what read narrowing already costs,
+   and the ~250 contravariance failures three reviews predicted never appeared.
+
+   Two mechanisms worth keeping. **TypeScript gives an intersection an implicit
+   index signature only when every constituent is an alias or mapped type** — an
+   interface constituent blocks it, and MST's `IStateTreeNode` was the
+   constituent doing that. Restating the brand as an alias is what makes a
+   concrete config assignable to `AnyConfigurationModel`; no clever
+   redefinition of `AnyConfigurationModel` was needed. And **233 of the 342
+   starting errors were TS2883 "cannot be named"**, from four helper types
+   unreachable from `@jbrowse/core/configuration` — four export lines took 342
+   to 60.
+
+   `variant-d.patch` (saved beside this file) is the weaker spike and its two
+   symptoms — `HostChecksSlotNames<ScoreScaleHost>` reading `false`, and 162
+   whole-project errors against the 67 `tsc --build` reports — are artefacts of
+   that patch, not of typed props. Both are gone on the branch above, where all
+   twelve `HostChecksSlotNames` pins hold. Do not start from the patch.
+
 2. **`null` as the reset token for JSON-borne routes.** No session spec, share
    link or agent call can reset a slot to its default today. Twelve
    `defaultValue: null` slots in the tree, every one already meaning "unset",
