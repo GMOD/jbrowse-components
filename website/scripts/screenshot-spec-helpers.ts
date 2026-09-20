@@ -203,12 +203,32 @@ export function lgvSession(
 // a menu still moving. `waitForText` now returns only once the item's rect has
 // held still — the wait watches the thing that has to settle instead of guessing
 // how long it takes — so the delay has nothing left to pay for.
+// `CascadingMenu` stamps every row with `cascading-<kind>-<slugified label>`,
+// which is the whole label and nothing else. Matching on that instead of
+// `::-p-text(<label>)` is what stopped `bigwig/whole_genome_coverage` hovering
+// the view header's "Zoom on scroll" for the menu's "Zoom": a text selector
+// matches any element CONTAINING the string, the header row comes first, and
+// the run then waited out its timeout on a submenu nothing had opened.
+const menuSlug = (label: string) => label.toLowerCase().replaceAll(/\s+/g, '_')
+const submenuSelector = (label: string) =>
+  `[data-testid="cascading-submenu-${menuSlug(label)}"]`
+// A leaf row, or a submenu parent used as one — the terminal entry of a path is
+// only waited for, and a caller may well stop on a row that opens further.
+const menuRowSelector = (label: string) =>
+  `[data-testid="cascading-menuitem-${menuSlug(label)}"], ${submenuSelector(label)}`
+
 export function menuCascade(path: string[]): ScreenshotAction[] {
-  return path.flatMap((text, i) => {
+  return path.flatMap((label, i) => {
     const parent = path[i - 1]
+    const terminal = i === path.length - 1
     return [
-      ...(parent ? [{ type: 'hover' as const, text: parent }] : []),
-      { type: 'waitForText' as const, text },
+      ...(parent
+        ? [{ type: 'hover' as const, selector: submenuSelector(parent) }]
+        : []),
+      {
+        type: 'waitForSelector' as const,
+        selector: terminal ? menuRowSelector(label) : submenuSelector(label),
+      },
     ]
   })
 }
@@ -216,7 +236,13 @@ export function menuCascade(path: string[]): ScreenshotAction[] {
 // Box every item along a menu path — the callout counterpart to `menuCascade`,
 // so the highlighted items can't drift from the items actually hovered.
 export function cascadeBoxes(path: string[]): Annotation[] {
-  return path.map(text => ({ type: 'box' as const, anchor: { text } }))
+  return path.map((label, i) => ({
+    type: 'box' as const,
+    anchor: {
+      selector:
+        i === path.length - 1 ? menuRowSelector(label) : submenuSelector(label),
+    },
+  }))
 }
 
 export const trackMenuIcon = (trackId: string): ScreenshotAction => ({

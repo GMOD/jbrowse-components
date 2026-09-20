@@ -631,7 +631,10 @@ export const svSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'COLO829',
-    readyTimeout: 60000,
+    // 24 whole chromosomes of two BigWigs at resolution 50 is the heaviest fetch
+    // in the corpus; at 60s the scatter was fully drawn and the app marker had
+    // still not flipped, so the run threw away a finished frame.
+    readyTimeout: 180000,
     // the two-row track is short; crop off the empty viewport below it
     crop: { x: 0, y: 0, width: 1500, height: 390 },
     // the dense genome-wide overlaid scatter cloud (thousands of 1px points whose

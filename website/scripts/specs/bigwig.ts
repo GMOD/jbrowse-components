@@ -331,7 +331,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'COLO829',
-    readyTimeout: 60000,
+    // stage 2 zooms to the whole genome, which is the same heavy fetch `cnv`
+    // needs the headroom for — one source here rather than two
+    readyTimeout: 180000,
     // tall enough for the whole open view menu plus the Navigation submenu
     // beside it in stage 1, which a 560px frame cut off short. Per-frame heights
     // rather than one `crop`: the menu needs twice the height the resulting view
@@ -386,7 +388,10 @@ export const bigwigSpecs: ScreenshotSpec[] = [
   // Multi-quantitative (MultiWig) screenshots
   // ────────────────────────────────────────────────────────────────────────
 
-  // MultiWig track menu showing the plot type submenu.
+  // MultiWig track menu showing the plot type submenu: five plot names and the
+  // checkbox deciding whether the sources sit on rows. ADR-143 collapsed the
+  // nine plot-crossed-with-layout names this used to drill through, so the path
+  // is one level shorter than the figure's own history suggests.
   {
     mode: 'url',
     name: 'multiwig/multi_renderer_types',
@@ -398,7 +403,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Plot type', 'Multi-row', 'XY plot']),
+      ...menuCascade(['Plot type', 'XY plot']),
     ],
     annotations: [{ type: 'box', anchor: { text: 'Plot type' } }],
   },
