@@ -3073,7 +3073,8 @@
         "colorEvaluator",
         "encodeFeatures",
         "encodedChannelTransferables",
-        "hitIndexOf"
+        "hitIndexOf",
+        "rampOverExtent"
       ],
       "worker": "real"
     },

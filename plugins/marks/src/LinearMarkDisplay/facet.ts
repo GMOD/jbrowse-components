@@ -5,7 +5,7 @@ import {
   compareGroupKeys,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
-import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
+import { hitIndexOf, rampOverExtent } from '@jbrowse/core/util/markEncoding'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
@@ -124,11 +124,9 @@ function drawnScales(layer: StoredLayer): StoredLayer {
       scale?.kind === 'categorical' && color
         ? { ...scale, entries: scale.entries.filter(e => colors.has(e.color)) }
         : scale?.kind === 'ramp' && colorValue
-          ? {
-              ...scale,
-              extent: [vMin, vMax],
-              domain: scale.pinned ? scale.domain : [vMin, vMax],
-            }
+          ? scale.pinned
+            ? { ...scale, extent: [vMin, vMax] }
+            : rampOverExtent(scale, [vMin, vMax])
           : scale,
     glyphScale: glyphScale && {
       ...glyphScale,

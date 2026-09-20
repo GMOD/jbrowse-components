@@ -421,10 +421,8 @@ export function encodeFeatures<L extends LaneName>(
       1,
     )
     const { domainMid } = rampEncoding
-    const lut = buildColorRampLut(
-      rampStops(rampEncoding.ramp),
-      domainMid === undefined ? 0.5 : norm(domainMid),
-    )
+    const stops = rampStops(rampEncoding.ramp)
+    const lut = rampLut(stops, rampEncoding.scale, domain, domainMid)
     if (color) {
       for (let i = 0; i < count; i++) {
         const v = rampValues[i]!
@@ -439,7 +437,7 @@ export function encodeFeatures<L extends LaneName>(
       scale: rampEncoding.scale,
       domain,
       pinned: rampEncoding.domain !== undefined,
-      ...(domainMid === undefined ? {} : { domainMid }),
+      ...(domainMid === undefined ? {} : { domainMid, stops }),
       extent,
       lut,
     }
@@ -505,6 +503,47 @@ export function encodeFeatures<L extends LaneName>(
     encoded.glyphScale = glyphScale
   }
   return encoded as Encoded<L>
+}
+
+function rampLut(
+  stops: readonly ColorRampStop[],
+  scale: 'linear' | 'log',
+  domain: [number, number],
+  domainMid: number | undefined,
+) {
+  return buildColorRampLut(
+    stops,
+    domainMid === undefined
+      ? 0.5
+      : makeScoreNormalizer(
+          domain[0],
+          domain[1],
+          scaleTypeCode(scale),
+          1,
+        )(domainMid),
+  )
+}
+
+/**
+ * #api
+ * An unpinned ramp table over `extent`, the union a display took across the
+ * regions it loaded: the domain the shapes read as a uniform, and the table
+ * baked again where a `domainMid` places its middle stop by that domain. Each
+ * region baked its own, so keeping the first region's put the middle colour
+ * at a value none of them declared.
+ */
+export function rampOverExtent(
+  table: Extract<ColorScaleTable, { kind: 'ramp' }>,
+  extent: [number, number],
+): Extract<ColorScaleTable, { kind: 'ramp' }> {
+  return {
+    ...table,
+    extent,
+    domain: extent,
+    lut: table.stops
+      ? rampLut(table.stops, table.scale, extent, table.domainMid)
+      : table.lut,
+  }
 }
 
 function keysAreNumeric(entries: readonly { value: string }[]) {

@@ -1,6 +1,7 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -95,11 +96,13 @@ function union(current: ScaleTable, next: ScaleTable) {
       // and the painting cannot disagree across a pan. A pinned one already
       // agrees.
       if (next.kind === 'ramp' && !current.pinned && !next.pinned) {
-        current.extent = [
-          Math.min(current.extent[0], next.extent[0]),
-          Math.max(current.extent[1], next.extent[1]),
-        ]
-        current.domain = [current.extent[0], current.extent[1]]
+        Object.assign(
+          current,
+          rampOverExtent(current, [
+            Math.min(current.extent[0], next.extent[0]),
+            Math.max(current.extent[1], next.extent[1]),
+          ]),
+        )
       }
       break
   }

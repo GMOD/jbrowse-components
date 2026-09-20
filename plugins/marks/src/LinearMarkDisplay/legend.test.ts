@@ -1,3 +1,6 @@
+import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+
 import { buildMarkLegend, categoryLabel, markColorScales } from './legend.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
@@ -104,4 +107,56 @@ test('a colour two values hashed onto names both of them on hover', () => {
   expect(categoryLabel(shared, 0xff222222)).toBe('tRNA')
   expect(categoryLabel(shared, 0xff333333)).toBeUndefined()
   expect(categoryLabel(thresholdTable(), 0xff222222)).toBe('0.1 – 0.5')
+})
+
+function divergingRegion(values: number[]) {
+  return region(
+    encodeFeatures(
+      values.map(
+        (log2, i) =>
+          new SimpleFeature({
+            uniqueId: `f${i}`,
+            refName: 'ctgA',
+            start: i * 10,
+            end: i * 10 + 5,
+            log2,
+          }),
+      ),
+      {
+        color: {
+          field: 'log2',
+          scale: 'linear',
+          ramp: ['blue', 'white', 'red'],
+          domainMid: 0,
+        },
+      },
+      ['colorValue'],
+    ).scale,
+  )
+}
+
+// Each region bakes its table with the middle stop placed by its own domain,
+// and the union kept the first region's: white sat at 1.4 over [-0.2, 3].
+test('an unpinned diverging ramp unioned over two regions keeps its middle stop at domainMid', () => {
+  const [section] = buildMarkLegend([
+    divergingRegion([-0.2, 0.2]),
+    divergingRegion([-0.1, 3]),
+  ])
+  const table = section!.scale
+  expect(table.kind).toBe('ramp')
+  if (table.kind !== 'ramp') {
+    return
+  }
+  const [min, max] = table.domain
+  expect(min).toBeCloseTo(-0.2)
+  expect(max).toBeCloseTo(3)
+  const entries = table.lut.length / 4
+  let whitest = 0
+  for (let i = 0; i < entries; i++) {
+    if (table.lut[i * 4 + 1]! > table.lut[whitest * 4 + 1]!) {
+      whitest = i
+    }
+  }
+  const valueAtWhite = min + (whitest / (entries - 1)) * (max - min)
+  expect(Math.abs(valueAtWhite)).toBeLessThan((max - min) / entries)
 })

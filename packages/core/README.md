@@ -714,6 +714,21 @@ Throws what the schema's `preProcessSnapshot` throws.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
 
+### rampOverExtent
+
+An unpinned ramp table over `extent`, the union a display took across the
+regions it loaded: the domain the shapes read as a uniform, and the table baked
+again where a `domainMid` places its middle stop by that domain. Each region
+baked its own, so keeping the first region's put the middle colour at a value
+none of them declared.
+
+```js
+// type signature
+(table: {…}, extent: [...]) => { ...; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
 ### RampRef
 
 The ramp a continuous colour scale samples: a named ramp, or evenly spaced CSS

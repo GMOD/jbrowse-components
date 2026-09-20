@@ -161,6 +161,12 @@ export type ColorScaleTable =
       /** This region's own extremes of the field, what a display unions. */
       extent: [number, number]
       lut: Uint8Array
+      /**
+       * The ramp's RGBA stops, carried beside a `domainMid`: where the middle
+       * stop lands in `lut` depends on the domain, so a display that unions an
+       * unpinned domain past this region's bakes `lut` again from these.
+       */
+      stops?: readonly (readonly [number, number, number, number])[]
     }
 
 /**
