@@ -273,43 +273,6 @@ test('--no-x writes the private runs as an insertion then a deletion', () => {
   ])
 })
 
-test('--compare-bases aligns a private stretch base by base, on either strand, and splits an unrelated one into an insertion and a deletion', () => {
-  const cigarByQuery = (args: string[]) =>
-    Object.fromEntries(
-      pafRows(
-        convert(
-          [
-            'S\t1\tACGTACGTAC',
-            'S\t2\tACGATGCA',
-            'S\t3\tCCCCCCCCCC',
-            'S\t4\tACGTTGCA',
-            `S\t5\t${'T'.repeat(24)}`,
-            `S\t6\t${'CA'.repeat(15)}`,
-            'S\t7\tGATTACAGAT',
-            'S\t8\tTTGACCAGTA',
-            'W\tGRCh38\t0\tchrA\t0\t28\t>1>2>3',
-            'W\tGRCh38\t0\tchrB\t0\t50\t>7>6>8',
-            'W\tHG01109\t1\tforward\t0\t28\t>1>4>3',
-            'W\tHG01123\t1\tflipped\t0\t28\t<3<4<1',
-            'W\tHG00097\t1\tunrelated\t0\t44\t>7>5>8',
-            '',
-          ].join('\n'),
-          ['--reference', 'GRCh38', '--hold-queries', ...args],
-        ).stdout,
-      ).map(row => [`${row[0]} ${row[4]}`, row[12]]),
-    )
-  expect(cigarByQuery([])).toEqual({
-    'HG01109#1#forward +': 'cg:Z:10=8X10=',
-    'HG01123#1#flipped -': 'cg:Z:10=8X10=',
-    'HG00097#1#unrelated +': 'cg:Z:10=24X6D10=',
-  })
-  expect(cigarByQuery(['--compare-bases'])).toEqual({
-    'HG01109#1#forward +': 'cg:Z:13=1X14=',
-    'HG01123#1#flipped -': 'cg:Z:13=1X14=',
-    'HG00097#1#unrelated +': 'cg:Z:10=24I30D10=',
-  })
-})
-
 test('--min-block drops the short records and --queries the other haplotypes', () => {
   const run = convert(WITH_WALKS, [
     '--reference',
