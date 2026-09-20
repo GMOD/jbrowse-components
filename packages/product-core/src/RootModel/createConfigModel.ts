@@ -56,7 +56,13 @@ export function createConfigModel(
     types
       .model('Configuration', {
         configuration: rootConfigurationSchema(),
-        assembly: assemblyConfigSchemasType,
+        /**
+         * One genome in the ordinary case, several where the view draws them
+         * together — a circular view's synteny ribbons need both ends of an
+         * alignment on the circle. The order is the order a view lays them out
+         * in.
+         */
+        assemblies: types.array(assemblyConfigSchemasType),
         tracks: types.frozen([] as Record<string, unknown>[]),
         internetAccounts: types.array(
           pluginManager.pluggableConfigSchemaType('internet account'),
@@ -69,12 +75,13 @@ export function createConfigModel(
         ),
         plugins: types.frozen(),
       })
-      // The one assembly is what every loose `{ trackId, uri }` track is on, so
-      // a snapshot need not repeat its name per track.
+      // The first assembly is what every loose `{ trackId, uri }` track is on,
+      // so a snapshot need not repeat its name per track.
       .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
         const { tracks, aggregateTextSearchAdapters: indexes } = snap ?? {}
-        const assemblyName = (snap?.assembly as { name?: string } | undefined)
-          ?.name
+        const assemblyName = (
+          snap?.assemblies as { name?: string }[] | undefined
+        )?.[0]?.name
         return snap
           ? {
               ...snap,
@@ -99,11 +106,8 @@ export function createConfigModel(
           : snap
       })
       .views(self => ({
-        get assemblies() {
-          return [self.assembly]
-        },
-        get assemblyName(): string {
-          return readConfObject(self.assembly, 'name')
+        get assemblyNames(): string[] {
+          return self.assemblies.map(a => readConfObject(a, 'name'))
         },
         get rpcManager() {
           return getParent<ConfigModelParent>(self).rpcManager

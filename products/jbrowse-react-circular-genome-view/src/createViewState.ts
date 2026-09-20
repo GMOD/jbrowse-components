@@ -23,7 +23,7 @@ import type {
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
-type Assembly = ConfigSnapshot['assembly']
+type Assembly = NonNullable<ConfigSnapshot['assemblies']>[number]
 type Tracks = ConfigSnapshot['tracks']
 type InternetAccounts = ConfigSnapshot['internetAccounts']
 type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
@@ -31,6 +31,12 @@ type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 // engine-construction inputs shared by the imperative createViewState and the
 // declarative <CircularGenomeView> component
 export interface CreateViewStateBaseOptions {
+  /**
+   * The genome the circle is drawn from, or several, in the order their arcs
+   * are laid out. A synteny ribbon plot needs both ends of its alignments on
+   * the circle, so `['hg38', 'mm39']`-style pairs are the case the list is for;
+   * `assemblyNames` on a track then says which of them the track is on.
+   */
   assembly: Assembly
   tracks?: Tracks
   internetAccounts?: InternetAccounts
@@ -127,6 +133,7 @@ export default async function createViewState(
     displayedRegionNames,
     localFiles,
   } = opts
+  const assemblies = [assembly].flat()
   const { model, pluginManager } = await createModel(
     plugins,
     makeWorkerInstance,
@@ -154,7 +161,7 @@ export default async function createViewState(
     {
       config: {
         configuration,
-        // The assembly too, not only the tracks: its sequence adapter is the
+        // The assemblies too, not only the tracks: a sequence adapter is the
         // same shape, and a host whose genome is a file on disk rather than a
         // hub — a non-model organism, an in-house build — has nowhere to put it.
         //
@@ -163,7 +170,9 @@ export default async function createViewState(
         // inside the *assembly* config schema, so until that has run the only
         // `uri` here is on the assembly itself — which is not a location node
         // and must not be rewritten as one.
-        assembly: local(expandAssemblyShorthand(assembly, pluginManager)),
+        assemblies: assemblies.map(a =>
+          local(expandAssemblyShorthand(a, pluginManager)),
+        ),
         tracks: tracks?.map(local),
         internetAccounts,
         aggregateTextSearchAdapters,
@@ -202,7 +211,7 @@ export default async function createViewState(
   if (init !== undefined || displayedRegionNames !== undefined || !positioned) {
     view.setLaunch({
       ...init,
-      assembly: assembly.name,
+      assembly: assemblies.map(a => a.name),
       displayedRegionNames: displayedRegionNames ?? init?.displayedRegionNames,
     })
   }

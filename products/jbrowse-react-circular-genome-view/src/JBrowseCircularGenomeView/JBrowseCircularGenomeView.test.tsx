@@ -78,7 +78,9 @@ test('<JBrowseCircularGenomeView />', async () => {
 test('createViewState with no defaultSession auto-displays the assembly', async () => {
   const state = await createViewState({ assembly, tracks: [] })
   // with no session, createViewState seeds view.pendingLaunch to draw the whole assembly
-  expect(state.session.view.pendingLaunch).toEqual({ assembly: 'volvox' })
+  expect(state.session.view.pendingLaunch).toMatchObject({
+    assembly: ['volvox'],
+  })
   state.session.view.setWidth(800)
   const { findAllByText } = render(
     <Suspense fallback={<div>Loading...</div>}>

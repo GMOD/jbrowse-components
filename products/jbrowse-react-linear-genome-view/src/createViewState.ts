@@ -31,7 +31,7 @@ import type {
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
-type Assembly = ConfigSnapshot['assembly']
+type Assembly = NonNullable<ConfigSnapshot['assemblies']>[number]
 type Tracks = ConfigSnapshot['tracks']
 type InternetAccounts = ConfigSnapshot['internetAccounts']
 type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
@@ -250,7 +250,7 @@ function finishCreateViewState(
         // inside the *assembly* config schema, so until that has run the only
         // `uri` here is on the assembly itself — which is not a location node
         // and must not be rewritten as one.
-        assembly: local(expandAssemblyShorthand(assembly, pluginManager)),
+        assemblies: [local(expandAssemblyShorthand(assembly, pluginManager))],
         tracks: tracks?.map(local),
         internetAccounts,
         aggregateTextSearchAdapters: withPageBaseUri(

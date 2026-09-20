@@ -2653,6 +2653,9 @@ importers:
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../../plugins/circular-view
+      '@jbrowse/plugin-comparative-adapters':
+        specifier: workspace:^
+        version: link:../../plugins/comparative-adapters
       '@jbrowse/plugin-config':
         specifier: workspace:^
         version: link:../../plugins/config
@@ -2665,6 +2668,9 @@ importers:
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../../plugins/variants
+      '@jbrowse/plugin-wiggle':
+        specifier: workspace:^
+        version: link:../../plugins/wiggle
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core

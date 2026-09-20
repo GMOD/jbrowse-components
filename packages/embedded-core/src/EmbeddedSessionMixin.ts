@@ -21,7 +21,7 @@ export interface EmbeddedSessionParent {
   version: string
   assemblyManager: AssemblyManager
   config: {
-    assemblyName: string
+    assemblyNames: string[]
   }
 }
 
@@ -79,7 +79,7 @@ export function EmbeddedSessionMixin(pluginManager: PluginManager) {
       // them through `self.jbrowse` (= root.config), so re-declaring here would
       // just duplicate the base getters with looser types
       get assemblyNames() {
-        return [getParent<EmbeddedSessionParent>(self).config.assemblyName]
+        return getParent<EmbeddedSessionParent>(self).config.assemblyNames
       },
       /**
        * #getter

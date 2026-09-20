@@ -166,7 +166,7 @@ test('an assembly can come from local files through the flat shorthand', () => {
     },
   })
 
-  const { adapter } = getSnapshot(state.config.assembly.sequence) as {
+  const { adapter } = getSnapshot(state.config.assemblies[0]!.sequence) as {
     adapter: {
       fastaLocation: { locationType: string; name: string }
       faiLocation: { locationType: string }
@@ -198,7 +198,7 @@ test('an assembly can come from local files too', () => {
     },
   })
 
-  const { adapter } = getSnapshot(state.config.assembly.sequence) as {
+  const { adapter } = getSnapshot(state.config.assemblies[0]!.sequence) as {
     adapter: {
       fastaLocation: { locationType: string; name: string }
       faiLocation: { locationType: string; name: string }

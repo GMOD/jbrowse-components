@@ -16,6 +16,7 @@ import MultiGenomePAFAdapterF from './MultiGenomePAFAdapter/index.ts'
 import MultiPairwiseSyntenyAdapterF from './MultiPairwiseSyntenyAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
 import PairwiseIndexedPAFAdapterF from './PairwiseIndexedPAFAdapter/index.ts'
+import SyntenyTrackF from './SyntenyTrack/index.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -39,5 +40,8 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     MCScanAddTrackComponentF(pluginManager)
     MCScanBlocksAddTrackComponentF(pluginManager)
     MultiGenomeAddTrackComponentF(pluginManager)
+    // the track type every adapter above declares itself for; it is a bare base
+    // track, so it needs none of the synteny views
+    SyntenyTrackF(pluginManager)
   }
 }
