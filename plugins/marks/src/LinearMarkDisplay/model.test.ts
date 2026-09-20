@@ -496,6 +496,14 @@ test('a channel the shape does not read is refused where the config is read', ()
   ).not.toThrow()
 })
 
+test('a shape the display does not draw is named as the problem, not the channels it carries', () => {
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'rule', encoding: { y: 'score' } },
+    ]).createDisplay(),
+  ).toThrow(/mark 0 names shape "rule", and a shape is bar, point, span/)
+})
+
 test('a mistyped key on a mark, a step or an op is refused where the config is read', () => {
   expect(() =>
     createTestEnvironment([

@@ -398,6 +398,17 @@ function checkMarks(snap: Record<string, unknown>) {
     return snap
   }
   const entries = marks as MarkSnapshot[]
+  const shapeless = entries.flatMap((mark, i) =>
+    mark.shape === undefined ||
+    (MARK_SHAPES as readonly string[]).includes(mark.shape)
+      ? []
+      : [`mark ${i} names shape "${mark.shape}"`],
+  )
+  if (shapeless.length > 0) {
+    throw new Error(
+      `LinearMarkDisplay: ${shapeless.join(', ')}, and a shape is ${MARK_SHAPES.join(', ')}`,
+    )
+  }
   const valueless = entries.flatMap((mark, i) => {
     const shape = mark.shape ?? 'bar'
     return (shape === 'bar' || shape === 'point') && !mark.encoding?.y
