@@ -95,12 +95,8 @@ const ReorderChromosomesDialog = lazy(
 )
 const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
 
-// A genome row leaves the stack the way a view leaves the session: detached
-// inside the action and destroyed on a later task, so a display still mounted
-// over it never reads a dead node (ADR-069). The levels are destroyed in place,
-// which is the ADR's rule rather than an omission — a level is not a view, so a
-// display under a detached level would throw out of `getContainingView` where
-// one under a destroyed level only warns.
+// detached, then destroyed on a later task, so a display still mounted over the
+// row never reads a dead node (ADR-069)
 function takeOutRow(row: LinearGenomeViewModel) {
   detach(row)
   scheduleDetachedDestroy(row)
@@ -152,8 +148,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * 'off' draws blocks only.
          */
         cigarMode: types.stripDefault(
-          // `as const` so this resolves to the CigarMode union rather than
-          // widening to `string` — the menu builders consume it as the union
+          // `as const` keeps the CigarMode union from widening to `string`
           types.enumeration(['off', 'matches', 'full'] as const),
           'full',
         ),
@@ -172,9 +167,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * Mark the alignments the view cannot draw a ribbon for, along both
-         * edges of each band. The lower panel of a pair is queried as well as
-         * the upper one for it, which is a fetch input and a second query per
-         * pair.
+         * edges of each band. Costs a second query per pair of rows.
          */
         showOffscreenMates: types.stripDefault(types.boolean, true),
         /**
@@ -195,9 +188,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         alpha: types.stripDefault(types.number, DEFAULT_ALPHA),
         /**
          * #property
-         * Hide alignment blocks shorter than this many bp. Enforced per-feature
-         * by its own span in buildSyntenyGeometry, then culled in the shader
-         * (isCulled) and pick engine. Cuts whole-genome hairball noise.
+         * Hide alignment blocks shorter than this many bp, which cuts
+         * whole-genome hairball noise.
          */
         minAlignmentLength: types.stripDefault(
           types.number,
@@ -217,20 +209,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * Fade alignment blocks by per-feature identity (lower identity = more
-         * transparent). Orthogonal to colorBy — surfaces identity-dropoff zones
-         * without consuming the color channel.
+         * transparent), whatever the color mode.
          */
         opacityByIdentity: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * Whether to fade a sub-pixel-thin ribbon's opacity by its on-screen
-         * width (see WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered
-         * whole-genome view doesn't read as a hard full-opacity hairball.
-         * 'auto' enables the fade once a display is dominated by sub-pixel
-         * ribbons (see `autoFadeWidthPx`); a genuinely sparse comparison
-         * (only a handful of ribbons) keeps full alpha so the fade doesn't wash
-         * it out. 'on'/'off' pin it. Resolved view-wide by the
-         * `fadeThinAlignments` getter, so all levels fade together.
+         * Fade a sub-pixel-thin ribbon's opacity by its on-screen width, so an
+         * unfiltered whole-genome view doesn't read as a full-opacity hairball.
+         * 'auto' fades once a display is dominated by sub-pixel ribbons and
+         * leaves a sparse comparison at full alpha; 'on'/'off' pin it. Resolved
+         * view-wide by `fadeThinAlignments`.
          */
         fadeThinAlignmentsMode: types.stripDefault(
           types.enumeration('FadeThinMode', ['auto', 'on', 'off']),
@@ -238,22 +226,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * transient launch state: the settings written on the view object that
+         * Transient launch state: the settings written on the view object that
          * need resolving before they can be view state — the genome rows to
-         * open, the synteny tracks per level, the shared scale.
-         * `preProcessSnapshot` moves them here off the snapshot, the afterAttach
-         * autorun applies them and clears this, so a saved session never
-         * retains it. Not written by hand: author every setting directly on the
-         * view.
+         * open, the synteny tracks per level, the shared scale. The afterAttach
+         * autorun applies and clears it. Not written by hand: author every
+         * setting directly on the view.
          */
         launch: types.frozen<
           LaunchInput<LinearSyntenyViewCommands> | undefined
         >(),
         /**
          * #property
-         * vestigial: the hierarchical selector is the only one that exists, so
-         * this value is ignored. Retained because saved sessions and configs
-         * persist it.
+         * Ignored: the hierarchical selector is the only one. Declared because
+         * configs still carry it.
          */
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
@@ -266,56 +251,47 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * Move the non-anchor genome rows to whatever region aligns to the
          * anchor row, re-resolved through the synteny data each time the anchor
-         * settles. The synteny-aware alternative to `linkViews`, which locks the
-         * rows in PIXELS and so drifts apart as soon as an indel accumulates —
-         * the two are mutually exclusive (see setRowSyncMode).
+         * settles. Mutually exclusive with `linkViews`, which locks the rows in
+         * pixels and drifts as indels accumulate (see setRowSyncMode).
          */
         followSynteny: types.stripDefault(types.boolean, false),
         /**
          * #property
          * Hold every genome row on one bp/px — the coarsest row's fit — so the
-         * rows compare by drawn length instead of all filling their pane. A
-         * mode rather than a one-shot zoom because it is the rows' zoom-out
-         * LIMIT it moves (`sharedFit`), and a limit has to still be there on
-         * the next wheel tick.
+         * rows compare by drawn length instead of each filling its pane. Moves
+         * the rows' zoom-out limit (`sharedFit`), so it holds across later
+         * zooms.
          */
         sameScale: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * Which genome row drives the others while `followSynteny` is on. Every
-         * other row is placed by mapping this one's window outward one level at
-         * a time. Clamped to the views array by reconcileLevels.
+         * Which genome row drives the others while `followSynteny` is on.
          */
         followAnchorIndex: types.stripDefault(types.number, 0),
         /**
          * #property
-         * Which genome row "Re-order chromosomes" keeps as it is, ordering the
-         * rows below it against the row above them and the rows above it
-         * against the row below. The top row by default, which is the plain
-         * top-down cascade; a stack whose linkage groups are one row's
-         * chromosomes anchors on that row instead.
+         * Which genome row "Re-order chromosomes" keeps as it is: the rows
+         * below it are ordered against the row above them, and the rows above
+         * it against the row below.
          */
         diagonalizeAnchorRow: types.stripDefault(types.number, 0),
         /**
          * #property
          * While following, flip a row whose placing alignment runs the other
-         * way from the anchor's, so the two pan in the same direction. Off by
-         * default: the crossing ribbons are the picture of an inversion, and
-         * a row turning round under the reader is the loudest thing one can do.
+         * way from the anchor's, so the two pan in the same direction.
          */
         followMatchOrientation: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * One synteny band per adjacent pair of `views`. Each holds its own
-         * track list, which is why the track-selector and add-track widgets
-         * address them through `trackContainerFor` — a level is not a view and
-         * cannot be the target of their `view` reference.
+         * One synteny band per adjacent pair of `views`, each holding its own
+         * track list. The track-selector and add-track widgets address a band
+         * through `trackContainerFor`.
          */
         levels: types.array(LinearSyntenyLevel),
         /**
          * #property
-         * N genome rows, with N-1 synteny `levels` between adjacent pairs. The
-         * views/levels invariant is maintained by reconcileLevels().
+         * N genome rows, with N-1 synteny `levels` between adjacent pairs (see
+         * reconcileLevels).
          */
         views: types.array(
           pluginManager.getViewType('LinearGenomeView').stateModel,
@@ -329,29 +305,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       width: undefined as number | undefined,
       /**
        * #volatile
-       * View-level failure (e.g. an `init` block that couldn't be applied).
-       * Volatile on purpose: a reload re-runs the init autorun from a clean
-       * slate, so a transient failure stays recoverable.
+       * View-level failure, e.g. a launch that couldn't be applied. Volatile so
+       * a reload retries from a clean slate.
        */
       volatileError: undefined as unknown,
       /**
        * #volatile
-       * What the follow's last settled pass has to say about itself, for the
-       * header's follow button: whether the rows are holding because nothing
-       * aligns under the anchor, whether a row was placed proportionally
-       * rather than by a CIGAR walk, whether a level has no synteny track to
-       * follow by, and which multi-contig answer was refused as mostly filler
-       * (naming the region followed and the ones whose answers are off
-       * screen). Without it a holding row is the same picture as a broken
-       * follow. Volatile because it describes the current window, not the
-       * session.
+       * What the follow's last settled pass reports, for the header's follow
+       * button: rows holding because nothing aligns under the anchor, a row
+       * placed proportionally rather than by a CIGAR walk, a level with no
+       * synteny track, a multi-contig answer refused as mostly filler.
        */
       followReport: EMPTY_FOLLOW_REPORT,
       /**
        * #volatile
-       * Whether the 'auto' thin-fade is latched on. State rather than a derived
-       * value because the decision has hysteresis, and hysteresis is a memory —
-       * see `fadeThinAlignments`.
+       * Whether the 'auto' thin-fade is latched on (see `fadeThinAlignments`).
        */
       fadeThinLatch: false,
     }))
@@ -402,9 +370,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Resolved like LGV's and dotplot's: it folds in the rows, whose
-       * assemblies are what `initialized` waits on, so an export or a launcher
-       * waiting on a stack with a failed row is told why rather than hanging.
+       * The view's own failure or the first failed row's, so an export or
+       * launcher waiting on a stack with a failed row is told why.
        */
       get error(): unknown {
         return self.volatileError ?? self.views.find(v => v.error)?.error
@@ -432,15 +399,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The zoom-out limit every row shares while `sameScale` is on, and
-       * whether it can be answered at all. Each row PULLS this back through its
-       * own `maxBpPerPx` (`sharedScaleContainerOf` finds this view by the
-       * presence of this getter), so nothing here is copied onto the rows and
-       * nothing can go stale between a resize and the next layout. The
-       * dotplot's `lockAspectRatio` derives the same quantity the same way.
-       *
-       * The rule, and why the unanswered state is not a zero, are in
-       * `sharedFit.ts`.
+       * The zoom-out limit every row shares while `sameScale` is on
+       * (`sharedFit.ts`). Each row pulls it through its own `maxBpPerPx`,
+       * finding this view by the presence of this getter.
        */
       get sharedFit() {
         return sharedFit(self.views, self.sameScale)
@@ -448,9 +409,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Every synteny display across every level, flattened. One memoized
-       * getter for the view-wide aggregates that would otherwise each
-       * re-flatten the levels.
+       * Every synteny display across every level.
        */
       get allSyntenyDisplays() {
         return self.levels.flatMap(l => l.linearSyntenyDisplays)
@@ -458,25 +417,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Each synteny level resolved into the pair of rows a follow would move
-       * it between: which row stays, which row moves, which axis the anchor
+       * Each connected synteny level resolved into the pair of rows a follow
+       * moves it between: which row stays, which moves, which axis the anchor
        * window is read off, and the assembly naming the level's lane of an
-       * all-vs-all track. A level whose rows are not connected — both
-       * initialized and holding regions, the same gate the bands themselves
-       * use — is dropped, since there is nothing to place yet.
+       * all-vs-all track.
        *
-       * A getter rather than a loop in each caller because the follow reads it
-       * from TWO autoruns — the exact one and the per-frame one — which had
-       * each resolved the direction, looked the two rows up and repeated the
-       * initialized guard. Those are the same question, and the answer changes
-       * only when the rows or the anchor do.
-       *
-       * ORDERED OUTWARD FROM THE ANCHOR rather than by level index, which is
-       * what makes a stack of three or more settle in one pass: a level's
-       * staying row is either the anchor or a row some nearer level places, so
-       * visiting them nearest-first means every level reads an input the same
-       * pass has already written. In level order that only holds when the
-       * anchor is the top row.
+       * Ordered outward from the anchor, so each level's staying row is the
+       * anchor or a row a nearer level has already placed, and a stack of three
+       * or more settles in one pass.
        */
       get followPairs() {
         const { followAnchorIndex } = self
@@ -487,8 +435,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           }))
           .sort((a, b) => a.distance - b.distance)
           .flatMap(({ level, stayingIndex, movingIndex, toMate }) => {
-            // the bands' own gate: a row appendRow just added is initialized
-            // before it has regions, and a follow placing from it walks none
             const rows = level.connectedRows
             return rows
               ? [
@@ -498,8 +444,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     movingView: self.views[movingIndex]!,
                     toMate,
                     movingIndex,
-                    // the level's LOWER row is the one on the alignments' mate
-                    // axis whichever direction the level runs in
+                    // the lower row is the alignments' mate axis
                     mateAssembly: rows.v1.assemblyNames[0],
                   },
                 ]
@@ -518,11 +463,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The same warnings grouped under the track that raised each, which is
-       * what the dialog reports. A stacked view's levels raise
-       * `swappedAssembliesWarning` verbatim, and so does every overlaid track
-       * that hits it, so the flat list above was N identical rows with nothing
-       * to tell the user which file to go fix. Shared with the dotplot's table
-       * so the two reports say the same thing.
+       * what the dialog reports.
        */
       get trackWarnings() {
         return collectTrackWarnings(this.allSyntenyDisplays)
@@ -530,23 +471,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * The level that owns a given track list. This view holds one track list
-       * per synteny band rather than one of its own, so the track-selector and
-       * add-track widgets target a level through here instead of referencing
-       * this view directly. By id, not index: reconcileLevels pops levels when
-       * a genome row is removed, and an index would then name a different
-       * pair.
+       * The level that owns a given track list, by id. The track-selector and
+       * add-track widgets target a level through here, since this view holds
+       * one track list per band rather than one of its own.
        */
       trackContainerFor(id: string): TrackContainer | undefined {
         return self.levels.find(level => level.id === id)
       },
       /**
        * #getter
-       * The same track lists, for a reader with no id to ask with. This view
-       * has no `tracks` of its own, so anything walking a session for displays
-       * — `AppReadyMarker`, the capture harness's busy probe — sees an empty
-       * view and reports a still-fetching synteny stack as idle unless it asks
-       * here too.
+       * Every band's track list, for a reader walking the session for displays.
        */
       get trackContainers(): TrackContainer[] {
         return [...self.levels]
@@ -555,9 +489,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * The census entry for this view. Its tracks hang off the levels, one
-       * list per band, and its rows are views in their own right — which is
-       * the nesting the four consumers each used to walk for themselves.
+       * Every track in the view, across its bands.
        */
       get ownTracks() {
         return self.trackContainers.flatMap(c => c.tracks)
@@ -586,27 +518,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * An `init` blob that has not been applied yet — `installInitAutorun`
-       * clears it as the last thing an apply pass does. The view is assembling
-       * itself: the rows can already exist, and be initialized, while the
-       * synteny tracks are still several awaits away, which is why the levels'
-       * `settled` gate reads this.
-       *
-       * Same predicate as dotplot's, and read the same way — by `settled`, not
-       * by `showLoading`. LGV's `awaitingInitNavigation` is the narrower "init
-       * set and nothing on screen at all", which it does fold into
-       * `showLoading`; it used to share this name.
+       * A launch that has not finished applying: the rows can exist, and be
+       * initialized, while the synteny tracks are still several awaits away.
+       * The levels' `settled` gate reads it.
        */
       get initPending() {
         return !!this.pendingLaunch
       },
       /**
        * #getter
-       * Opt each sub-view's scalebar into captioning its refName labels with the
-       * assembly name ("hg38" ahead of "chr1"), so stacked genome rows of
-       * different assemblies stay distinguishable. Read duck-typed by the child
-       * LinearGenomeView (scalebarDisplayPrefix) to avoid an upward plugin
-       * dependency.
+       * Opts each row's scalebar into captioning its refName labels with the
+       * assembly name ("hg38" ahead of "chr1"). Read duck-typed by the child
+       * LinearGenomeView.
        */
       get showAssemblyNameInSubviewScalebar() {
         return true
@@ -631,30 +554,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * True if any track on any level has an adapter with tiered storage. Used
-       * to gate the "Level of detail" row — PAFAdapter, BlastTabularAdapter and
-       * friends have nothing to switch between.
+       * Whether any track has an adapter with tiered storage, which gates the
+       * "Level of detail" setting.
        */
       get hasLodCapableAdapter() {
         return this.syntenyTracks.some(track => trackHasLodTiers(track))
       },
       /**
        * #getter
-       * True if any synteny display could show CIGAR detail — used to gate the
-       * CIGAR settings row, which a CIGAR-less PAF has nothing to put in.
-       * Optimistic while no display has finished a fetch yet, so the row is
-       * there from the first render rather than popping in once data lands (the
-       * common case: most synteny files carry CIGARs). A view with no synteny
-       * tracks at all has nothing to gate, so it reports false.
+       * Whether any synteny display could show CIGAR detail, which gates the
+       * CIGAR setting. True while no display has fetched yet, and false with no
+       * synteny tracks.
        */
       get hasCigarData() {
         return self.allSyntenyDisplays.some(displayCanShowCigar)
       },
       /**
        * #getter
-       * Union across every loaded synteny display of which CIGAR indel ops are
-       * actually drawn on screen. The floating legend lists an indel chip only
-       * when a visible-width op of that kind is painted somewhere in the view.
+       * Union across loaded displays of the CIGAR indel ops drawn on screen,
+       * which the legend lists chips for.
        */
       get presentCigarKinds(): CigarOpMask {
         return self.allSyntenyDisplays.reduce(
@@ -664,26 +582,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Resolved fade-thin flag that every display's renderParams reads. In
-       * 'auto' mode the fade turns on once ANY loaded synteny display is
-       * dominated by sub-pixel ribbons (a thin hairball that benefits from
-       * decluttering); a sparse view keeps its few ribbons at full alpha.
-       * 'on'/'off' pin it.
-       *
-       * LATCHED, with a deadband (`fadesThinAt`): a fade that is off engages at
-       * 1px and one that is on holds until the ribbons come back above 1.25px.
-       * The signal underneath is a mean over the features the current fetch
-       * window holds, and that window rolls over once per `syntenyPanBufferPx` of
-       * panning, stepping the mean with the slice it swapped; on a single
-       * threshold a view sitting near it flipped every ribbon in the stack
-       * between full alpha and WIDTH_FADE_FLOOR while the reader was merely
-       * scrolling. `installAutoFadeLatch` moves the latch, and an un-moved latch
-       * reads as the plain un-hysteretic answer, so a first frame or an SVG
-       * export taken before it runs is not a different picture.
-       *
-       * Deliberately view-wide rather than per display: stacked levels are read
-       * as one picture, so levels resolving the fade independently would paint
-       * the same ribbon density differently from row to row.
+       * The resolved fade-thin flag every display renders by. 'auto' fades once
+       * any loaded display is dominated by sub-pixel ribbons, latched with a
+       * deadband (`fadesThinAt`, ADR-083) so a view near the threshold does not
+       * flip while panning. View-wide, so stacked levels fade together.
        */
       get fadeThinAlignments(): boolean {
         const { fadeThinAlignmentsMode, fadeThinLatch } = self
@@ -694,14 +596,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The width 'auto' compares against its thresholds: the narrowest capped
-       * mean block width any loaded display reports, or `Infinity` when none of
-       * them has enough blocks to judge by. Each display measures its own ribbons
-       * (`cappedMeanAlignmentPx`) and this takes the thinnest, so the densest
-       * level in a stack carries the view-wide decision.
-       *
-       * Skips a display holding fewer than `FADE_AUTO_MIN_FEATURES` blocks, and
-       * one still at 0 (no fetch landed yet), so neither can fade the view on its
-       * own.
+       * mean block width of any loaded display with at least
+       * `FADE_AUTO_MIN_FEATURES` blocks, or `Infinity` with none.
        */
       get autoFadeWidthPx(): number {
         return Math.min(
@@ -713,17 +609,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The "anchor" assembly for the 'reference' field: the assembly bordering
-       * the most synteny levels. In a stacked ref-vs-A / ref-vs-B layout each
-       * interior assembly touches two levels and the ends touch one, so the
-       * max-adjacency assembly is the shared reference. Ties resolve to the
-       * topmost. Every level then colors by this assembly's chromosome names,
-       * so a region keeps its color as it's traced across levels.
+       * The assembly the 'reference' color field keys on: the one bordering the
+       * most synteny levels, ties to the topmost. In a stacked ref-vs-A /
+       * ref-vs-B layout that is the shared reference, so a region keeps its
+       * color across levels.
        */
       get anchorAssemblyName() {
-        // Positional: a row that doesn't know its assembly yet contributes no
-        // adjacency, rather than being dropped so its neighbours close the gap
-        // and count as a pair they aren't.
+        // positional: a row that doesn't know its assembly yet contributes no
+        // adjacency
         const asms = self.views.map(v => v.assemblyNames[0])
         const counts = new Map<string, number>()
         for (const [i, a] of asms.entries()) {
@@ -736,8 +629,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         let best: string | undefined
         let bestCount = -1
         for (const a of asms) {
-          // -1 keeps an assembly-less row from ever winning, including in the
-          // single-row case where no pair exists and every count is 0
+          // -1 keeps an assembly-less row from winning
           const c = a === undefined ? -1 : (counts.get(a) ?? 0)
           if (c > bestCount) {
             bestCount = c
@@ -748,10 +640,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #method
-       * Every synteny track across every level, in order, paired with whatever
-       * color the user pinned on it. View-wide rather than per level: the
-       * floating legend is one box for the whole stack, so two levels handing
-       * out the same color would make that one legend lie.
+       * Every synteny track across every level, in order.
        */
       colorableTrackConfigs() {
         return this.syntenyTracks.map(t => {
@@ -761,10 +650,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #method
-       * The numeric columns the overlaid tracks declare, so the palette menu can
-       * offer one mode per measurement without any of them being a named mode.
-       * `attributeColumns` is the ortholog-table adapter's slot; a track whose
-       * adapter has no such slot contributes nothing.
+       * The numeric columns the overlaid tracks declare (the ortholog-table
+       * adapter's `attributeColumns`), one color mode each.
        */
       colorableAttributeNames() {
         return colorableColumns(
@@ -832,11 +719,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Label for the generic loading spinner, naming the assembly file being
-       * downloaded when the assembly load is what the wait is. The
-       * auto-diagonalize wait is a separate render branch
-       * (DiagonalizeLoadingScreen), so this only covers the plain "view not
-       * ready" case.
+       * Label for the loading spinner, naming the assembly file being
+       * downloaded when that is the wait.
        */
       get loadingMessage() {
         return this.showLoading
@@ -863,12 +747,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Whether to show the import form. A failed `init` counts: `init` is kept
-       * so a reload can retry it, but in this session there is nothing to show
-       * and no second attempt coming, so the form (with the error banner) is the
-       * only way forward — matching LGV/dotplot/circular, which also fall back
-       * to the form on error rather than spinning. One failed row does not:
-       * see `stackError`.
+       * Whether to show the import form: nothing to show, or a failure that
+       * leaves the stack nothing to show (`stackError`), which the form reports
+       * in a banner.
        */
       get showImportForm() {
         return !self.hasSomethingToShow || !!self.stackError
@@ -876,14 +757,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The view's lifecycle as one value — ready, error, loading or noRegions
-       * — for a host that draws its own chrome and has to render all four. Same
-       * shape and same precedence as the linear view's, through
-       * `computeViewStatus`.
-       *
-       * A host gating on `initialized` alone gets the trap this closes: it
-       * waits on every row, so a failure in either assembly leaves it false for
-       * good, and the empty box that follows says nothing about which of the
-       * two happened.
+       * — for a host that draws its own chrome. Same shape and precedence as
+       * the linear view's.
        */
       get status(): ViewStatus {
         return computeViewStatus({
@@ -902,31 +777,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * Written by the follow's autorun and read only by the header, which is
-       * what keeps it from being a dependency of the very pass that writes it.
-       * A partial report merges, since a settled resolve can only raise a flag
-       * the plan could not see.
-       *
-       * In THIS block, ahead of afterAttach, rather than with the other follow
-       * actions below: a later block's actions are not on the `self` an earlier
-       * one sees, so anything afterAttach calls has to be declared before it —
-       * the same reason `reconcileLevels` is here.
+       * Merge into `followReport`. Declared ahead of afterAttach, which
+       * installs the follow that calls it.
        */
       setFollowReport(report: Partial<FollowReport>) {
         self.followReport = { ...self.followReport, ...report }
       },
       /**
        * #action
-       * The one way the UI changes how the rows track each other, so the two
-       * flags can't both be on. They fight if they are: `linkViews` replays the
-       * anchor's own scroll/zoom onto every row, which is precisely the pixel
-       * lock the follow then has to undo on the next settle, and the moving row
-       * visibly jumps twice.
-       *
-       * Here rather than beside `setLinkViews` for the reason above
-       * setFollowReport: the follow's own snackbar offers this as the way out
-       * of a row it moved back, so afterAttach's `installSyntenyFollow` has to
-       * see it on `self`.
+       * How the rows track each other. One setter, so `linkViews` and
+       * `followSynteny` can't both be on.
        */
       setRowSyncMode(mode: 'independent' | 'link' | 'follow') {
         self.linkViews = mode === 'link'
@@ -934,8 +794,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Same terms as setRowSyncMode above, and offered beside it in that same
-       * snackbar: which row drives is otherwise a submenu away.
        */
       setFollowAnchorIndex(idx: number) {
         self.followAnchorIndex = idx
@@ -945,9 +803,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Run a navigation of a row as the follow's own placement rather than as
        * a gesture. While following, a gesture on any row makes that row the
        * anchor, and the follow tells a gesture from its own work by root
-       * action alone: whatever `fn` navigates is a NESTED action of this one.
-       * The follow's passes and the explicit moves that take the anchor run
-       * their navigations through here.
+       * action: whatever `fn` navigates is a nested action of this one.
        */
       holdFollowAnchor<T>(fn: () => T) {
         return fn()
@@ -962,24 +818,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Reconcile the levels array to the views array: exactly one synteny
-       * level per gap between adjacent views (N views -> N-1 levels). Grows or
-       * shrinks from the end, preserving existing levels and their tracks. The
-       * single source of truth for the views/levels invariant.
+       * Keep exactly one synteny level per gap between adjacent views, growing
+       * or shrinking from the end, and both anchors inside the stack.
        */
       reconcileLevels() {
         while (self.levels.length < self.views.length - 1) {
           self.levels.push(
             cast({
-              // A band added to a stack that already has one matches its
-              // neighbour rather than arriving at the type's 100px default.
-              // The default is only ever right for the first level: past that
-              // the stack has already been given a height — the band budget
-              // `autoScaleLevelHeights` split across it, or one the user
-              // dragged — and a level materialized at 100 among 64s reads as a
-              // mis-sized row. Growth doesn't re-split the budget (that would
-              // discard a hand-resize); "Auto-scale level heights" re-applies
-              // it on demand.
+              // matches its neighbour rather than the type's 100px default
               height: self.levels.at(-1)?.height,
             }),
           )
@@ -1002,10 +848,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      // automatically removes session assemblies associated with this view
-      // e.g. read vs ref. Both hooks, and `releaseTemporaryAssemblies` says
-      // why: `removeView` detaches before it destroys, so the reach for the
-      // session has to happen at the detach.
+      // releases session assemblies made for this view, e.g. read vs ref.
+      // Both hooks: `removeView` detaches before it destroys.
       beforeDetach() {
         releaseTemporaryAssemblies(self)
       },
@@ -1035,8 +879,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.views = cast(views)
         self.levels = cast([])
         self.reconcileLevels()
-        // rebuilding the view supersedes whatever failed last time, e.g. a
-        // re-submit from the import form after a bad init
+        // a rebuild supersedes whatever failed last time
         self.volatileError = undefined
       },
 
@@ -1119,9 +962,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * Kept for the plugin ABI; `setRowSyncMode` is what the UI calls. It
-       * still has to drop the follow, since the exclusion below is a property
-       * of the two flags rather than of the action that happens to set them.
+       * Kept for the plugin ABI; `setRowSyncMode` is what the UI calls.
        */
       setLinkViews(arg: boolean) {
         self.linkViews = arg
@@ -1171,18 +1012,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        * No-op for a level that doesn't exist, matching hideTrack/toggleTrack.
-       * reconcileLevels already materializes exactly one level per adjacent view
-       * pair, so a missing level means the caller named a gap that has no views
-       * (e.g. an `init.tracks` with more levels than `init.views` has gaps);
-       * creating one here would append a level whose views[level+1] is absent,
-       * which renders nothing and breaks the views/levels invariant.
        */
       showTrack(
         trackId: string,
         level = 0,
-        // annotated rather than inferred: a bare `{}` accepts a number, which is
-        // what let the dotplot's two-argument twin pass an
-        // `applySyntenyTrackSelections` level off as a track snapshot
+        // annotated: a bare `{}` accepts a number, and `level` sits beside it
         initialSnapshot: object = {},
         displayInitialSnapshot: DisplayInitialSnapshot = {},
         inlineConf?: Record<string, unknown>,
@@ -1222,15 +1056,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Every row onto the rows' average bp/px, each staying where it is.
-       *
-       * `zoomTo` anchors at the row's centre — the same call `applySharedScale`
-       * below makes, and the same thing this used to spell as `pxToBp` at the
-       * midpoint, `setNewView`, and `centerAt` back onto that base. That
-       * spelling scrolled to the row's OLD pixel offset in between, which
-       * `centerAt` then undid; a row whose midpoint resolved to no refName
-       * (scrolled past its regions) kept it, and was left at the new scale on
-       * the old offset.
+       * Every row onto the rows' average bp/px, each keeping its centre.
        */
       squareView() {
         const live = self.views.filter(v => v.initialized)
@@ -1238,42 +1064,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         for (const view of live) {
           view.zoomTo(average)
           // a discrete jump, so the coarse blocks flush rather than waiting out
-          // their debounce — `setNewView`/`centerAt` did this for us before
+          // their debounce
           view.settleCoarseBlocks()
         }
       },
       /**
        * #action
-       * Every row onto its whole assembly, and the one choice about it: leave
-       * them all on ONE bp/px — the coarsest row's fit, so the largest genome
-       * fills its pane and every other row is drawn shorter in proportion to
-       * its size — or hand each row its own fit, so each fills its own pane.
-       *
-       * Rows fit individually to width all end up the same length, which
-       * stretches a small genome to look like a large one and misaligns every
-       * ribbon between them by the ratio. Distinct from squareView, which
-       * averages the rows' current scales (the average fits nobody, and each
-       * row's own zoom clamp pulls the small ones back to fit-to-width anyway).
-       *
-       * ONE ACTION FOR BOTH, because the menu offers them as one radio and a
-       * reader reads them as one sentence with one word changed. Written as two
-       * bodies they drifted: the same-scale half took its scale off whatever
-       * region subset a row happened to be displaying while the other half
-       * reset the rows first, so the pair was not a pair — switching between
-       * them did not land back where it started.
-       *
-       * `sameScale` LATCHES rather than firing once, because the shared scale
-       * is coarser than a small row's own fit: without the raised ceiling the
-       * first wheel tick or `setDisplayedRegions` clamps that row straight back
-       * to fit-to-width and the comparison is gone.
+       * Every row onto its whole assembly, either all on one bp/px — the
+       * coarsest row's fit, so the largest genome fills its pane and the others
+       * draw shorter in proportion — or each fit to its own pane. `sameScale`
+       * latches, so the shared scale holds across later zooms.
        */
       showAllRegionsAcrossRows(sameScale: boolean) {
         this.setSameScale(sameScale)
         for (const view of self.views) {
           view.showAllRegionsInAssembly()
         }
-        // Second pass: a row's fit moves with its regions, so the ceiling is
-        // only settled once every row above has been reset.
+        // second pass: a row's fit moves with its regions, so the ceiling
+        // settles only once every row has been reset
         for (const view of self.views) {
           view.showAllRegions()
         }
@@ -1292,10 +1100,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Latch the mode and zoom every row onto the scale it implies, without
-       * touching any row's regions or its centre — `init` names a `loc` per
-       * row, and both a region reset and a re-centre would throw that away.
-       * `zoomTo` anchors at the centre, which is the difference.
+       * Latch `sameScale` and zoom every row onto the shared scale, keeping
+       * each row's regions and centre.
        */
       applySharedScale() {
         this.setSameScale(true)
@@ -1307,9 +1113,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Also drops `launch`, which `hasSomethingToShow` keys off while views is
-       * empty — leaving it set would bounce "return to import form" straight
-       * back to the loading spinner.
+       * Back to the import form. Drops `launch` too, which `hasSomethingToShow`
+       * keys off while there are no rows.
        */
       clearView() {
         self.takeOutRows()
@@ -1336,15 +1141,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Resize every synteny band by the same delta. The bars between the rows
-       * size the STACK: a multi-way view is read as one picture, and sizing its
-       * gaps one at a time to match is the tedium the user actually hits — the
-       * levels keep whatever differences they already have, since this moves
-       * each by the same px rather than setting them all to one height.
-       *
-       * Each level clamps its own drag (`LinearSyntenyViewHelper.resizeHeight`),
-       * which is also what one band's Alt-drag goes through — so the floor that
-       * keeps a bar grabbable is stated once, for both.
+       * Resize every synteny band by the same delta, keeping their differences.
+       * Each level clamps its own drag (`resizeHeight`).
        */
       resizeAllLevelHeights(distance: number) {
         for (const level of self.levels) {
@@ -1353,9 +1151,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Set every synteny band to one height in px. `resizeAllLevelHeights`
-       * moves each band by a delta and keeps their differences; this is the
-       * absolute form an agent or a spec reaches for.
+       * Set every synteny band to one height in px.
        */
       setAllLevelHeights(height: number) {
         for (const level of self.levels) {
@@ -1378,19 +1174,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * Append an assembly to the bottom of the stack and optionally show a
-       * synteny track on the new level connecting it to the previous bottom
-       * row. A synteny dataset is an edge between two adjacent assemblies, so
-       * rows are only ever added at the chain's end.
-       *
-       * The new row is created with a LinearGenomeView `init` — its own
-       * afterAttach autorun loads the assembly regions and navigates (whole
-       * genome, or `loc` when given), so we don't reimplement that imperatively
-       * here.
-       *
-       * Returns `launchTrack`'s promise rather than awaiting it, so this
-       * action stays synchronous and keeps action context while a caller
-       * still has something to await.
+       * Append an assembly to the bottom of the stack, optionally showing a
+       * synteny track on the new level. Returns `launchTrack`'s promise rather
+       * than awaiting it, so the action stays synchronous.
        */
       appendRow({
         assembly,
@@ -1484,11 +1270,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Every row back to its own whole assembly, fit to its own width — and
-       * so also the way off `sameScale`, whose raised ceiling would otherwise
-       * make "show all regions" mean the shared scale on every row. The
-       * fit-to-width half of `showAllRegionsAcrossRows`, under the name the
-       * rest of the app reaches it by.
+       * Every row back to its own whole assembly, fit to its own width, which
+       * also turns `sameScale` off.
        */
       showAllRegions() {
         self.showAllRegionsAcrossRows(false)
@@ -1557,11 +1340,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               label: 'Rows',
               icon: ViewStreamIcon,
               subMenu: [
-                // A row is appended to the stack the user is looking at, so
-                // there is nothing to append to while the import form is up —
-                // that form is how the stack gets built, and the dialog
-                // anchored to a view with no rows offers datasets it cannot
-                // open on a level that does not exist.
+                // nothing to append to while the import form is up
                 ...(self.showImportForm
                   ? []
                   : [
@@ -1649,29 +1428,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     })
     .actions(self => ({
       afterAttach() {
-        // A snapshot can arrive with a levels array that doesn't match its
-        // views: hand-authored multi-way sessions typically write `views` and
-        // leave `levels` out entirely, which would otherwise render N-1 rows of
-        // synteny as zero or one. The actions below keep the invariant once the
-        // view is live; this is the same repair applied to what was loaded.
+        // a hand-authored session typically writes `views` and no `levels`
         self.reconcileLevels()
-        // The same repair for the other pair of properties that cannot both
-        // hold. `setRowSyncMode` is the only writer that enforces it, so a
-        // snapshot naming both arrives with neither half of the exclusion
-        // applied and nothing downstream resolves it: the header reports
-        // `follow` (menus.ts picks it first) while the middleware below keeps
-        // replaying the anchor's pixel scroll onto every row, which is the
-        // fight `setRowSyncMode` exists to prevent. Follow wins, matching what
-        // the header already says.
+        // and one naming both couplings gets the follow, as the header reports
         if (self.followSynteny) {
           self.linkViews = false
         }
-        // doesn't link showTrack/hideTrack, doesn't make sense in synteny
-        // views most time
         installLinkedViewSync(self, ['horizontalScroll', 'zoomTo'])
-        // The synteny-aware sibling of the line above, and mutually exclusive
-        // with it (setRowSyncMode). Installed unconditionally: its autorun's
-        // first read is the flag, so it costs one observable read while off.
         installSyntenyFollow(self)
         addDisposer(
           self,
@@ -1687,18 +1450,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           ),
         )
         // Rows pull the ceiling, but `bpPerPx` is clamped only where it is
-        // written, so a ceiling that DROPS strands them above it until
-        // something writes. Skipped while unanswered — that is a row mid-layout
-        // rather than a release.
-        //
-        // `sameScale` as well, because `answered` is not the same question:
-        // mode off answers 0 without reading a row, so this ran on the first
-        // pass of every restored stack. There is no shared ceiling then, and
-        // nothing to re-clamp — each row's own limit is already applied
-        // wherever its `bpPerPx` is written — so the pass had only side
-        // effects: `width` throws before layout, and once past that it dragged
-        // a restored row that had been saved zoomed out past its own fit back
-        // in, which nobody asked it to do.
+        // written, so a ceiling that drops strands them above it. Gated on
+        // `sameScale` too: mode off answers without reading a row, and a
+        // restored row saved past its own fit should stay there.
         addDisposer(
           self,
           autorun(
@@ -1725,11 +1479,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .preProcessSnapshot<
       ({ fadeThinAlignments?: boolean } & Record<string, unknown>) | undefined
     >(snap => {
-      // Legacy: fadeThinAlignments was a boolean. stripDefault meant only an
-      // explicit `false` ever persisted, so that is the case a pre-'auto'
-      // session hits — but a hand-written document or spec reaches for `true`
-      // to turn the fade ON, and dropping it would leave the key looking
-      // accepted while it wrote nothing.
+      // the boolean spelling of fadeThinAlignmentsMode, which shares its name
+      // with the resolved getter
       const { fadeThinAlignments, ...rest } = snap || {}
       return typeof fadeThinAlignments === 'boolean'
         ? {
@@ -1743,11 +1494,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      // launch is transient: once views have materialized it's redundant, so
-      // we strip it. But while views is still empty (a snapshot taken mid-load,
-      // or a launch that errored before building views) it is the ONLY thing
-      // that can rebuild the view -> keep it so a reload/restore resumes
-      // instead of falling back to the import form.
+      // redundant once the rows exist; until then it is the only thing a
+      // reload can rebuild the view from
       if (snap.views.length) {
         const { launch, ...rest } = snap
         return rest as typeof snap

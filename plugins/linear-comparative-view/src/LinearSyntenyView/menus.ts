@@ -10,14 +10,9 @@ import type { FollowHost } from '../SyntenyFollow/followHost.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LodTier } from '@jbrowse/synteny-core'
 
-// The sections of the LinearSyntenyView header menu, each gated on the state
-// that gives it meaning and returning [] when inapplicable so they spread
-// cleanly into the group they belong to. Kept out of the model so the model's
-// `.views()` block holds the menu #methods and the two dialogs it opens.
-//
-// Each takes the narrow structural slice it reads rather than the whole view
-// model: the model chain can then pass `self` with no cast, and each section
-// documents its own dependencies.
+// The sections of the LinearSyntenyView header menu. Each returns [] when it
+// does not apply, and takes the structural slice it reads rather than the whole
+// view model, so the model chain passes `self` with no cast.
 
 interface RemoveRowModel {
   views: { assemblyNames: string[] }[]
@@ -53,10 +48,8 @@ interface NavigationModel extends FollowHost {
   setFollowMatchOrientation: (arg: boolean) => void
 }
 
-// `keepMenuOpen: false` because the click is a zoom, not a setting to sit and
-// flip: it re-frames every row, and the menu would stay open over the result.
-// The third of the same three commands, "Square view", is a plain row and
-// dismisses already.
+// `keepMenuOpen: false`: the click re-frames every row, and a radio would
+// otherwise hold the menu open over the result
 const SHOW_ALL_REGIONS_MODES = [
   {
     value: 'fit',
@@ -73,41 +66,17 @@ const SHOW_ALL_REGIONS_MODES = [
 const ROW_SYNC_MODES = [
   ['independent', 'Independent'],
   ['link', 'Locked together - rows move together pixel-by-pixel'],
-  [
-    'follow',
-    // "matching", not "syntenic", because at whole-genome zoom a CIGAR-less
-    // tier is interpolated across the block rather than walked — close enough
-    // to follow by, not a base-level correspondence
-    'Follow - other rows track the anchor through the alignment',
-  ],
+  ['follow', 'Follow - other rows track the anchor through the alignment'],
 ] as const
 
 /**
  * The three zoom commands that act on every row at once, and the coupling that
  * decides whether a pan of one row is a pan of the others.
  *
- * `squareView` AVERAGES the rows' scales where the dotplot's EQUALIZES them, so
- * both keep a dash clause — a bare "Square view" in the two places would name
- * two different operations.
- *
- * The two show-all-regions rows act on one click and ALSO carry a mark, which
- * is not the contradiction it looks like: what the mark names is which fit rule
- * the rows are under — `sameScale` raises their shared zoom-out limit, the
- * other hands each row back its own — and that stays true after someone zooms
- * back in. It is not a claim about where the rows are pointed now. Square view
- * is the one-shot beside them and carries no mark: averaging the rows' current
- * scales leaves nothing behind to be under.
- *
- * The sync modes are MUTUALLY EXCLUSIVE in substance, not just presentation: a
- * pixel lock and a synteny follow disagree about where a row belongs the moment
- * an indel separates them, and with both on the row is placed twice per pan.
- * Hence a radio group and one setter. Their dash clauses are the whole
- * distinction — *by pixels* vs *by the alignment* — which two bare names next to
- * each other do not carry.
- *
- * The anchor picker is offered even for a two-row view: which haplotype drives
- * and which follows is exactly the choice someone comparing two of them wants,
- * and nothing about the pan reveals it.
+ * The two show-all-regions rows act on a click and carry a mark: the mark names
+ * the fit rule the rows are under (`sameScale`), which holds after a zoom back
+ * in. The sync modes are mutually exclusive, hence one radio group and one
+ * setter.
  */
 export function navigationMenuItems(model: NavigationModel): MenuItem[] {
   const {
@@ -125,18 +94,10 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
         model.squareView()
       },
     },
-    // No icon on either: the same one on both would say nothing about which to
-    // pick, and the dash clause is all that separates them. One setter for one
-    // radio, the shape `setRowSyncMode` has next to it — the two rows are one
-    // choice, and a caller picking between two differently named actions is
-    // where the two bodies drifted apart.
     ...radioItems(SHOW_ALL_REGIONS_MODES, sameScale ? 'same' : 'fit', m => {
       model.showAllRegionsAcrossRows(m === 'same')
     }),
     makeRadioSubMenu({
-      // "Sync rows" over "Link views": the group holds all three couplings,
-      // and someone looking for the follow does not open a menu named after
-      // the pixel lock
       label: 'Sync rows',
       icon: LinkIcon,
       value: followSynteny ? 'follow' : linkViews ? 'link' : 'independent',
@@ -178,7 +139,7 @@ interface AutoScaleModel {
   autoScaleLevelHeights: () => void
 }
 
-// Pointless with one level — auto-scale divides a fixed budget across levels.
+// auto-scale divides a fixed budget across levels, so one level has no use for it
 export function autoScaleMenuItems(model: AutoScaleModel): MenuItem[] {
   return model.levels.length > 1
     ? [
@@ -198,9 +159,7 @@ interface RowMenusModel extends FollowHost {
   expandAllViews: () => void
 }
 
-// Collapse or expand every genome row at once, worth offering only once there
-// are more rows than the two a plain pairwise view has — with two, the per-row
-// item next to it does the same thing in the same number of clicks.
+// with two rows the per-row item does the same in as many clicks
 export function compactViewsMenuItems(model: RowMenusModel): MenuItem[] {
   return model.views.length > 2
     ? [
@@ -221,18 +180,9 @@ export function compactViewsMenuItems(model: RowMenusModel): MenuItem[] {
 }
 
 /**
- * The per-row LGV menus, reachable from the synteny view's own menu: each row's
- * hamburger is otherwise only available from that row's header, which a compact
- * row doesn't show.
- *
- * ONE ROW PER GENOME, which is why the old per-row compact checkboxes are gone:
- * a checkbox reading the row's `scalebarOnly` and that row's own "Collapse to
- * ruler" were two spellings of one toggle listed in two submenus, under labels
- * that shared nothing.
- *
- * While following, each row's menu leads with taking the anchor and the anchor
- * row wears the mark: switching which row drives is otherwise a radio in the
- * sync submenu, two levels away from the row being looked at.
+ * The per-row LGV menus: each row's own menu is otherwise only in that row's
+ * header, which a compact row doesn't show. While following, each leads with
+ * taking the anchor, and the anchor row wears the mark.
  */
 export function rowMenuItems(model: RowMenusModel): MenuItem[] {
   const { followSynteny, followAnchorIndex } = model
@@ -250,7 +200,6 @@ export function rowMenuItems(model: RowMenusModel): MenuItem[] {
                 model.setFollowAnchorIndex(idx)
               },
             },
-            { type: 'divider' },
           ] satisfies MenuItem[])
         : []),
       ...model.views[idx]!.menuItems(),
@@ -258,8 +207,7 @@ export function rowMenuItems(model: RowMenusModel): MenuItem[] {
   }))
 }
 
-// The same per-row menus for the app's view menu, where there is no surrounding
-// "Rows" group to sit in and so the name has to carry the whole idea.
+// the same per-row menus for the app's view menu, which has no "Rows" group
 export function rowViewMenuItems(model: RowMenusModel): MenuItem[] {
   return [
     {
@@ -271,12 +219,8 @@ export function rowViewMenuItems(model: RowMenusModel): MenuItem[] {
 
 /**
  * Whether one synteny display could show CIGAR detail — the per-display half of
- * the view's `hasCigarData`. Three ways to answer "maybe", and the coarse one is
- * the subtle one: a display serving a coarse LOD tier built before the fold
- * existed reports `hasCigar` false because that tier omits the CIGARs, NOT
- * because the file lacks them. Reading that as "no CIGAR data" retracted the
- * whole CIGAR control on zoom-out and put it back on zoom-in — the tier switch,
- * an implementation detail, made a setting appear and disappear under the user.
+ * the view's `hasCigarData`. A coarse LOD tier can omit CIGARs the file has, so
+ * it answers yes, or the setting would come and go with the zoom.
  */
 export function displayCanShowCigar(display: {
   lodTier: LodTier
