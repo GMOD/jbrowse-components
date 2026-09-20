@@ -31,6 +31,7 @@ export default function BreakpointAlignmentsFeatureDetailF(
     return new WidgetType({
       name: 'BreakpointAlignmentsWidget',
       heading: 'Breakpoint feature details',
+      discardOnClose: true,
       configSchema,
       stateModel,
       ReactComponent: lazy(

@@ -31,6 +31,7 @@ export default function SyntenyFeatureWidgetF(pluginManager: PluginManager) {
       new WidgetType({
         name: 'SyntenyFeatureWidget',
         heading: 'Synteny feature details',
+        discardOnClose: true,
         configSchema,
         stateModel: stateModelF(pluginManager),
         ReactComponent: lazy(() => import('./SyntenyFeatureDetail.tsx')),

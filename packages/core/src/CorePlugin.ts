@@ -27,6 +27,7 @@ export default class CorePlugin extends Plugin {
       return new WidgetType({
         name: 'BaseFeatureWidget',
         heading: 'Feature details',
+        discardOnClose: true,
         configSchema,
         stateModel: stateModelFactory(pluginManager),
         ReactComponent: lazy(

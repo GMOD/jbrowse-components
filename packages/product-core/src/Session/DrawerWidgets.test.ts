@@ -3,7 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
@@ -25,6 +25,21 @@ class TestWidgetPlugin extends Plugin {
           stateModel: types.model('TestWidget', {
             id: ElementId,
             type: types.literal('TestWidget'),
+          }),
+          ReactComponent: () => null,
+        }),
+    )
+    pm.addWidgetType(
+      () =>
+        new WidgetType({
+          name: 'TestDetailsWidget',
+          heading: 'Test details',
+          discardOnClose: true,
+          configSchema: ConfigurationSchema('TestDetailsWidget', {}),
+          stateModel: types.model('TestDetailsWidget', {
+            id: ElementId,
+            type: types.literal('TestDetailsWidget'),
+            payload: types.frozen<unknown>(),
           }),
           ReactComponent: () => null,
         }),
@@ -213,4 +228,39 @@ test('closing the last widget clears the popped-out state', () => {
   expect(session.poppedOut).toBe(true)
   session.hideWidget(widget)
   expect(session.poppedOut).toBe(false)
+})
+
+function addDetailsWidget(session: ReturnType<typeof createSession>) {
+  return session.addWidget('TestDetailsWidget', 'details', {
+    payload: { clicked: 'a gene and every transcript under it' },
+  })
+}
+
+test('closing a discardOnClose widget takes it out of the session', () => {
+  jest.useFakeTimers()
+  const session = createSession()
+  const details = addDetailsWidget(session)
+  session.showWidget(details)
+  session.hideWidget(details)
+  expect(session.widgets.has('details')).toBe(false)
+  expect(JSON.stringify(getSnapshot(session))).not.toContain('a gene')
+  jest.runAllTimers()
+  expect(isAlive(details)).toBe(false)
+  jest.useRealTimers()
+})
+
+test('a widget that does not declare discardOnClose survives its close', () => {
+  const session = createSession()
+  const widget = addTestWidget(session, 'first')
+  session.showWidget(widget)
+  session.hideWidget(widget)
+  expect(session.widgets.has('first')).toBe(true)
+})
+
+test('hideAllWidgets discards the discardOnClose widgets among them', () => {
+  const session = createSession()
+  session.showWidget(addTestWidget(session, 'first'))
+  session.showWidget(addDetailsWidget(session))
+  session.hideAllWidgets()
+  expect([...session.widgets.keys()]).toEqual(['first'])
 })

@@ -22,6 +22,13 @@ export default class WidgetType extends PluggableElementBase {
 
   helpText?: React.ReactNode
 
+  /**
+   * Closing the widget removes it from the session instead of hiding it: a
+   * details panel has nothing to reopen, and what it holds would otherwise
+   * ride along in every saved and shared session
+   */
+  discardOnClose: boolean
+
   constructor(stuff: {
     name: string
     heading?: string
@@ -30,6 +37,7 @@ export default class WidgetType extends PluggableElementBase {
     stateModel: IAnyModelType
     ReactComponent: WidgetComponentType
     helpText?: React.ReactNode
+    discardOnClose?: boolean
   }) {
     super(stuff)
     this.heading = stuff.heading
@@ -38,5 +46,6 @@ export default class WidgetType extends PluggableElementBase {
     this.stateModel = stuff.stateModel
     this.ReactComponent = stuff.ReactComponent
     this.helpText = stuff.helpText
+    this.discardOnClose = stuff.discardOnClose ?? false
   }
 }

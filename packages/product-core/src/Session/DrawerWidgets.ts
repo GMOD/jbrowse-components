@@ -1,7 +1,12 @@
 import { isConfigurationModel } from '@jbrowse/core/configuration'
-import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import {
+  localStorageGetItem,
+  localStorageSetItem,
+  scheduleDetachedDestroy,
+} from '@jbrowse/core/util'
 import {
   addDisposer,
+  detach,
   getEnv,
   isAlive,
   isStateTreeNode,
@@ -208,6 +213,13 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         if (self.activeWidgets.size === 0) {
           self.poppedOut = false
         }
+        if (
+          self.widgets.get(widget.id) === widget &&
+          pluginManager.getWidgetType(widget.type).discardOnClose
+        ) {
+          detach(widget)
+          scheduleDetachedDestroy(widget)
+        }
       },
 
       /**
@@ -239,8 +251,9 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       hideAllWidgets() {
-        self.activeWidgets.clear()
-        self.poppedOut = false
+        for (const widget of [...self.activeWidgets.values()]) {
+          this.hideWidget(widget)
+        }
       },
 
       /**

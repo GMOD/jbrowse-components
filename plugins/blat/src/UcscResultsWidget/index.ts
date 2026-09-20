@@ -13,6 +13,7 @@ export default function UcscResultsWidgetF(pluginManager: PluginManager) {
       new WidgetType({
         name: 'UcscResultsWidget',
         heading: 'Search results',
+        discardOnClose: true,
         configSchema,
         stateModel: stateModelFactory(),
         ReactComponent: lazy(() => import('./UcscResultsWidget.tsx')),
