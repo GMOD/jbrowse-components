@@ -42,8 +42,8 @@ which is the shape of the bug `86fde0cc4c` fixed.
   neither `setSlot` guard: `/hieght` throws nothing and writes nothing, and
   with type-checking off a bad value type silently no-ops. Deleting the three
   node actions for it trades one `cloneAndEnhance` per schema type for the one
-  config mistake with no diagnostic at any layer. Tests:
-  `packages/core/src/configuration/applyPatchWriteSurface.test.ts` on
+  config mistake with no diagnostic at any layer. The 14 tests that show it are
+  an `applyPatchWriteSurface` suite beside the configuration package, on
   `candidate-p`.
 - **A member write must not run the level's `preProcessSnapshot`.** Four
   agents objected independently, for four different reasons; the load-bearing
@@ -129,8 +129,8 @@ which is the shape of the bug `86fde0cc4c` fixed.
    `createBaseTrackConfig(pluginManager)` is called once per *track type*,
    rebuilding ~35 base slot types each time. If that is it, the fix is interning
    `ConfigSlot(def)` on `(type, model, defaultValue)`, not anything
-   architectural. Unmeasured — needs a quiet machine and the fork's own
-   `scripts/ab-config-schema.mjs`.
+   architectural. Unmeasured — needs a quiet machine and the A/B config-schema
+   harness under the fork checkout's own scripts directory.
 
 ## Where the working notes are
 
