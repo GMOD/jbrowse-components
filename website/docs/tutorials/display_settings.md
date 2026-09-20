@@ -189,12 +189,11 @@ encoded in it.
 
 ## In an embedded component
 
-The embedded React components take the same keys through the `init` prop:
+The embedded React components take the same keys through the `view` prop:
 
 ```js
-init: {
+view: {
   loc: 'ctgA:1105..3000',
-  assembly: 'volvox',
   tracks: [
     {
       trackId: 'volvox_microarray',

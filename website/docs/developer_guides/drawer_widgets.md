@@ -4,7 +4,7 @@ description: Launching sidebar or popup widgets in the embedded LGV
 guide_category: Plugins
 ---
 
-Set `tracklist: true` in the view `init` for the track selector, or call
+Set `tracklist: true` in the `view` option for the track selector, or call
 `session.addWidget(...)` + `session.showWidget(...)` for any widget. Drawer
 position and width are controlled via session actions.
 
@@ -16,9 +16,8 @@ widgets.
 ## Showing the track selector
 
 The most common use is a hierarchical track selector panel. Set
-`tracklist: true` in the view's `init` — here on the managed
-`<LinearGenomeView>` component, whose `init` prop is its whole declarative
-input:
+`tracklist: true` in `view`, here on the managed `<LinearGenomeView>` component,
+whose `view` prop is its whole declarative input:
 
 <!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithInitAdvanced.tsx -->
 
@@ -48,7 +47,7 @@ export default function WithInitAdvanced() {
           },
         },
       ]}
-      init={{
+      view={{
         loc: 'chr1:11,106,077-11,261,675',
         tracklist: true,
         nav: true,
@@ -81,9 +80,9 @@ Every drawer action is on the session, so they read
 - [`setDrawerPosition`](/docs/models/drawerwidgetsessionmixin#action-setdrawerposition)
   — which side it sits on.
 
-## Init state options
+## What the view prop takes
 
-The `init` prop accepts two sets of keys. `InitState` keys need resolving on
+The `view` prop accepts two sets of keys. `InitState` keys need resolving on
 load (a locstring has to become regions, a track id has to become an open
 track), so they live in a one-shot blob. `LinearGenomeViewLaunchProps` are plain
 view props forwarded straight onto the snapshot, so they round-trip on save like

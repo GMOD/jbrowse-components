@@ -61,7 +61,7 @@ export interface DotplotViewCommands extends SyntenyViewSharedCommands {
   }[]
   tracks?: string[]
   // loc-strings ("chr1:100-200") or JSON objects matching HighlightType,
-  // mirroring LinearGenomeView's init.highlight
+  // mirroring the linear genome view's `highlight`
   highlight?: string[]
 }
 
