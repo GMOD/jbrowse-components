@@ -1,6 +1,6 @@
 ---
 name: plain-config-document-spike
-description: A spike on 2026-09-20 had every data adapter read its config as a plain document resolved against the schema's slot table rather than as an MST node, with no adapter and no test edited; the whole non-web suite passed but for one line in the MAF plugin, since fixed on main. The read half of the config system does not depend on MST. A Fable review the same day found the larger duplication on the write half — a track's config held as a plain document and as a throwaway MST node, reconciled by a debounced diff. The write-half spike it asked for then ran: every track and display config as a handle over the session's own document, no display edited, 1,992 of 1,994 non-web suites and 178 of 184 web suites green, none of its stop conditions met, every remaining failure a test of the mechanism itself. Both spikes are on one unlanded branch. Open: whether to commit to it, with honest types as the next step.
+description: Three experiments on 2026-09-20 put configs on plain documents read against the schema's slot table — adapters, then tracks and displays with no display edited, then honest types — all on one unlanded branch. 1,992 of 1,994 non-web suites pass and source compiles clean with a config no longer typed as an MST node. One stop condition appeared that no suite saw, a silent no-op writing a reference sequence track, found by review and fixed on the branch. A second review found every non-track config kind can move and ranks assemblies with the sequence track as the step most likely to end the direction. Colin allows a breaking plugin change and the non-track kinds to move; that experiment is what is owed before committing.
 ---
 
 # A config as a plain document: the adapter spike
@@ -138,7 +138,17 @@ read through a handle throwing fails 23 suites and 183 tests in the wiggle and
 canvas plugins; every slot write a no-op fails 8 suites and 37 tests across
 five plugins.
 
-**None of the review's stop conditions appeared.**
+**One of the review's stop conditions did appear, and no suite saw it.** A
+setting toggled on a reference sequence track did nothing under the handle that
+owns nothing: no error, no delta, the assembly unchanged. The handle gave every
+write to `updateTrackConfiguration`, which knows the tracks in its list, and a
+sequence track is the `sequence` of an assembly. A second review found it by
+probe; nothing in the tree drove `toggleShowForward` at app level. Where the
+session answers a live node the branch now writes to that node, and
+`ReferenceSequenceSettingSaved.test.ts` on the branch pins it on both
+substrates. An earlier revision of this file said no stop condition appeared.
+
+**The others did not.**
 
 - A write wakes the reader of that slot and no other, and a write of the same
   value wakes none.
@@ -188,23 +198,99 @@ either form.
   track and adapter unions run on the plain path too, since they expand the
   loose forms.
 
-**What it does not show.** Honest types — a handle is typed as the MST instance,
-which is how all six sites compiled. A browser, a production bundle, the config
+**What it does not show.** A browser, a production bundle, the config
 editor by hand. Assembly, connection, internet-account and root configs, all
 still nodes. Retention: each slot read holds a `keepAlive` computed. Hub-scale
 cost. And a handle validates a value with the slot's MST type, so MST is out of
 the config objects and not out of the picture.
 
+## Honest types, run on the branch
+
+`ConfigNodeBrand` carries the schema under a key of its own, in the shape MST's
+brand has, so `getSnapshot(config)` stops compiling.
+
+- **329 errors, 259 of them one cascade.** `SnapshotIn` and `SnapshotOut` of a
+  config INSTANCE read the node brand, so without it a parameter typed
+  `AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>` stopped taking a
+  plain object. `AnyConfigurationSnapshot` as a plain record, at four sites,
+  clears it. The same two applied to a schema TYPE are unaffected.
+- **70 left: 28 in source from about twelve roots, 42 in tests.** Most roots are
+  the idiom `isStateTreeNode(c) ? getSnapshot(c) : c`, written out five times,
+  which `readConfObject(c)` with no path already answers. The four that are
+  not: `setDefaultSessionConf` types a session as a config; the return of
+  `ConfigurationReference` is where MST's reference meets the config type and
+  takes a cast; the editor facade's modified check; and `colorBy` in
+  `packages/synteny-core/src/TrackColorsMixin.ts`, a config held as view state
+  and assigned by `cast`.
+- **Source then compiles clean**, the non-web suite is unchanged, and 42 errors
+  stay in 18 test files.
+- **The compiler cannot see every site.** MST types `hasParent`, `getParent`
+  and `getMembers` to take anything. A script on the branch,
+  `spike-audit-config-node-apis.ts`, asks the checker whether each node-API
+  call's argument is a config: 12 in source outside the config package, 8
+  inside, 56 in tests, and 17 source calls whose argument is `any`. It listed
+  `hasParent(config)` in `packages/product-core/src/ui/AssemblyInfoPanel.tsx`,
+  which then failed at runtime in the About dialog exactly as listed.
+- A second assembly entanglement: `getTrackName` in
+  `packages/core/src/util/tracks.ts` finds a sequence track's assembly by
+  `a.sequence === conf`, an identity a handle does not share with the node.
+
+## The non-track configs, investigated and not yet moved
+
+A second Fable review read every kind; its report is not in the tree. Checked
+here: the sequence-track defect above, by probe; the admin save in
+`products/jbrowse-web/src/components/JBrowse.tsx`, which POSTs the whole config
+on every snapshot with no debounce, so write-through under an admin key POSTs
+once per height-drag event; the comment in `BaseConnectionModelFactory.ts`
+recording about 10.8 s to build the configs of an 8k-track hub at about 1 ms
+each; and that nothing calls `pluggableConfigSchemaType('widget')`, so the 18
+widget config schemas are never instantiated.
+
+Its findings, not re-checked line by line:
+
+- **Every kind can move and none has a reason to stay a node.** About 85 reads
+  and 5 slot writes in source across root, assemblies, connections, internet
+  accounts and text search adapters. Internet-account and text-search configs
+  are never written.
+- **`getTrackById` draws on five stores and four still hold nodes on the
+  branch**: session tracks, `assembly.sequence`, a temporary assembly's
+  `sequence`, and a connection's `tracks`. The inline branch of the track
+  reference (ADR-084) is a fifth.
+- **The hard part is mechanical.** MST has one hook that answers a non-node
+  from a property, a custom reference's `get(id, parent)`, and it fires only
+  for an id. So each inline config — a view-local track, an ephemeral internet
+  account, the worker's copy of one, a display snapshot naming no
+  `configuration` — needs a document home and an id.
+- **What a user would notice**: a large hub connecting without the per-track
+  node cost; a non-admin's sequence-track settings travelling with a shared
+  session, where today they mutate the in-memory root and are lost; and
+  duplicate assembly names no longer making every `safeReference` ambiguous.
+- **Its order**: the remaining track stores; then assemblies with the sequence
+  track, the step most likely to end the direction; the config editor, with the
+  admin POST debounced; connection and internet-account configs; text search;
+  the root config last, since nothing depends on it and it carries the raw
+  property reads plugins make.
+- **Plugins.** The cheapest compatibility is what the branch does:
+  `ConfigurationSchema()` still answers an MST type, so `types.array(schema)`,
+  `schema.create()` and `ConfigurationReference(schema)` in plugin source keep
+  working. Three outside sites apply a node API to a config: Apollo's
+  `getSnapshot(conf)` and one line in each graph checkout. Apollo's one write,
+  `addOntology` through a schema-level `actions` hook, becomes a `setConf` path
+  write; the hooks can then go, having no other caller. A fully plain table is
+  a separate, later step.
+
 ## The decision this leaves
 
-Whether to take the config system off MST nodes. The review's condition stands:
-one substrate at the end, assemblies, connections and internet accounts
-included. Its order changes in one place: **honest types come next rather than
-last**, since six sites compiled against a type that was not true and each
-surfaced only where a test happened to reach it, which the compiler would do for
-every path at once. Then the write-through save path with the tombstone, which
-the branch already roughs out.
+Colin has answered two: a breaking change for plugins is allowed in v5 though
+compatibility would be nice, and the non-track configs may move. So the
+direction is open to commit to, and what is owed before that is the step the
+second review ranks most likely to end it: assemblies with the sequence track,
+as an experiment with its two entanglements as the test.
 
-Colin's to answer: whether a prebuilt store bundle must load unmodified in v5,
-whether the non-track configs become documents too, and whether production
-builds should validate at all. The reset is no longer a separate question.
+Still Colin's: whether `session.tracks`, `session.assemblies` and
+`session.connections` hand out handles or raw documents, a raw document read
+through `readConfObject` being a third form in production today; whether a
+non-admin's sequence-track settings should travel with the session; whether
+`rootConfigurationSchema`, whose one user is msaview, may go; whether a small
+change to Apollo is acceptable; whether the debounce belongs at the admin POST;
+and whether production builds should validate at all.
