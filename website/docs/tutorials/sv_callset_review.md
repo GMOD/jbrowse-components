@@ -101,7 +101,9 @@ For a long run:
 
 The reads stream from the hosted CRAM, the module graph loads once for the whole
 callset, and a `--config` URL or `--hub` is fetched once. A row that cannot be
-rendered is reported and the run continues.
+rendered is reported and the run continues. Deep long reads can put even a
+`--flank` window over a track's size limit, which the app answers with a **Force
+load** button; `batch` loads every panel as if it had been pressed.
 
 A connector drawn dashed means the read has a segment at a locus the frame does
 not show. These reads also visit chr10, so this junction takes a third panel,

@@ -19,6 +19,7 @@ import { parseVcfJunctions } from './vcfJunctions.ts'
 
 import type { BatchRecord } from './batch.ts'
 import type { BatchFormat } from './options.ts'
+import type { Entry } from './parseArgv.ts'
 import type { ProgressReporter } from './progress.ts'
 import type { Opts } from './types.ts'
 
@@ -82,6 +83,18 @@ function readJunctions(opts: BatchOpts) {
   } else {
     throw new Error('batch needs --vcf <file> or --bedpe <file>')
   }
+}
+
+// A track whose index estimates too many bytes draws "Region too large to
+// render" until someone presses Force load, which nobody can on a PNG: beside a
+// drawn tumor panel, a gated normal reads as a locus with no supporting reads.
+// A batch window is --flank wide, so loading it is bounded. Ahead of the
+// track's own modifiers, so a `force:false` still wins.
+function forceLoaded(tracks: Entry[] | undefined) {
+  return tracks?.map(([key, [first, ...rest]]): Entry => [
+    key,
+    first === undefined ? [] : [first, 'force:true', ...rest],
+  ])
 }
 
 /**
@@ -191,16 +204,21 @@ export async function runBatch(opts: BatchOpts) {
       // batch the file says where to look, and a stray --loc would otherwise
       // render the same windows for every row.
       const argv = (opts.argv ?? []).filter(([key]) => key !== 'loc')
+      const shared = {
+        ...opts,
+        width,
+        showTracks: forceLoaded(opts.showTracks),
+        trackList: forceLoaded(opts.trackList),
+      }
       const svg = await renderRegion(
         locs.length > 1
           ? {
-              ...opts,
+              ...shared,
               mode: 'breakpoint',
-              width,
               argv: [...argv, ...recordArgv(rec, flank)],
               loc: undefined,
             }
-          : { ...opts, mode: 'linear', width, argv, loc: locs[0] },
+          : { ...shared, mode: 'linear', argv, loc: locs[0] },
         configObject && structuredClone(configObject),
       )
       writeRendered(svg, out, width)

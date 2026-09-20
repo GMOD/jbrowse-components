@@ -187,6 +187,29 @@ describe('runBatch', () => {
     expect(rows[1]).toBe('1_chr1_4999_ins1.svg\tchr1:4400-5600\tins1\t3\t\tok')
   })
 
+  it('loads every panel whatever its index estimates, unless the track says force:false', async () => {
+    // a gated normal beside a drawn tumor reads as a locus with no support
+    await runBatch(
+      opts({
+        showTracks: [
+          ['track', ['tumor_reads', 'height:240']],
+          ['track', ['normal_reads', 'force:false']],
+        ],
+        trackList: [['bam', ['reads.bam']]],
+        progress: steps().progress,
+      }),
+    )
+    const handed = mockRenderRegion.mock.calls[0]![0] as {
+      showTracks: [string, string[]][]
+      trackList: [string, string[]][]
+    }
+    expect(handed.showTracks).toEqual([
+      ['track', ['tumor_reads', 'force:true', 'height:240']],
+      ['track', ['normal_reads', 'force:true', 'force:false']],
+    ])
+    expect(handed.trackList).toEqual([['bam', ['reads.bam', 'force:true']]])
+  })
+
   function eventVcf() {
     const vcf = path.join(dir, 'events.vcf')
     fs.writeFileSync(
