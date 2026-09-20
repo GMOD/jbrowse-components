@@ -25,14 +25,12 @@ export interface CenterTarget {
  * those throwing used to abort the click, leaving the other row moved or not
  * moved depending on which side went first, and the error uncaught.
  *
- * TWO WAYS TO NAME THE ROWS. A ribbon click stores the `level` the band was
- * drawn on, so the rows are simply that pair. Without one there is nothing
- * saying which pair a feature belongs to, and the assemblies are the only thing
- * left to match on — reachable because `level` is optional on the widget model,
- * so a restored session from before that property, or any later opener that
- * cannot name a row, arrives here. It is NOT how a synteny track opened inside
- * a panel arrives: that widget's `view` is the panel's own LGV, which has no
- * rows to index, and it shows no centering link at all.
+ * TWO WAYS TO NAME THE ROWS. A ribbon click's widget reads its `level` off the
+ * band its track sits in, so the rows are simply that pair. A band removed
+ * since the click leaves no level, and the assemblies are the only thing left
+ * to match on. It is NOT how a synteny track opened inside a panel arrives:
+ * that widget's `view` is the panel's own LGV, which has no rows to index, and
+ * it shows no centering link at all.
  *
  * A feature with no mate contributes one side rather than a second `navTo` on
  * `undefined`.

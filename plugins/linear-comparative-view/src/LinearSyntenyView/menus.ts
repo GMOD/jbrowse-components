@@ -20,21 +20,23 @@ import type { LodTier } from '@jbrowse/synteny-core'
 // documents its own dependencies.
 
 interface RemoveRowModel {
-  views: unknown[]
-  removeLastRow: () => void
+  views: { assemblyNames: string[] }[]
+  removeRow: (idx: number) => void
 }
 
-// Only terminal removal is supported (see LinearSyntenyView.removeLastRow),
-// and a 2-row view has nothing to remove without collapsing to a single genome.
+// A two-row view has nothing to remove without collapsing to a single genome.
 export function removeRowMenuItems(model: RemoveRowModel): MenuItem[] {
   return model.views.length > 2
     ? [
         {
-          label: 'Remove bottom row',
+          label: 'Remove row',
           icon: RemoveIcon,
-          onClick: () => {
-            model.removeLastRow()
-          },
+          subMenu: rowLabels(model.views).map((label, idx) => ({
+            label,
+            onClick: () => {
+              model.removeRow(idx)
+            },
+          })),
         },
       ]
     : []

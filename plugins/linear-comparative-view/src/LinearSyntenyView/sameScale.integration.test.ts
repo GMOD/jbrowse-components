@@ -366,8 +366,8 @@ test('dropping the largest row brings the survivors down with the ceiling', asyn
 
   // twice: the appended small row first, then the large row whose fit IS the
   // shared scale
-  view.removeLastRow()
-  view.removeLastRow()
+  view.removeRow(2)
+  view.removeRow(1)
 
   expect(small.bpPerPx).toBeCloseTo(small.fitBpPerPx)
   expect(small.bpPerPx).toBeLessThanOrEqual(small.maxBpPerPx)

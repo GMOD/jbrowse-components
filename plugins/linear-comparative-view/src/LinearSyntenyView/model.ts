@@ -5,6 +5,7 @@ import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewMo
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import {
   avg,
+  clamp,
   getDialogHost,
   getSession,
   isSessionModelWithWidgets,
@@ -22,8 +23,10 @@ import {
   DiagonalizeProgressMixin,
   ImportFormSyntenyMixin,
   TrackColorsMixin,
+  allSessionTracks,
   collectTrackWarnings,
   colorableColumns,
+  getSyntenyTracks,
   releaseTemporaryAssemblies,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
@@ -983,15 +986,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         while (self.levels.length > Math.max(self.views.length - 1, 0)) {
           self.levels.pop()
         }
-        // The follow anchor addresses a row, so it is clamped here rather than
-        // in its setter: every path that changes the views array comes through
-        // this one (afterAttach, setViews, addView, removeLastRow), and a
-        // snapshot can arrive with an anchor its views cannot support. A spec
-        // attaches with no views yet, so an empty stack leaves the anchor alone.
+        // Both anchors address a row, and every path that changes the views
+        // array comes through here. A spec attaches with no views yet, so an
+        // empty stack leaves them alone.
         if (self.views.length > 0) {
-          self.followAnchorIndex = Math.min(
-            Math.max(self.followAnchorIndex, 0),
-            self.views.length - 1,
+          const lastRow = self.views.length - 1
+          self.followAnchorIndex = clamp(self.followAnchorIndex, 0, lastRow)
+          self.diagonalizeAnchorRow = clamp(
+            self.diagonalizeAnchorRow,
+            0,
+            lastRow,
           )
         }
       },
@@ -1047,16 +1051,55 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * Drop the bottom genome row and its synteny level. Only terminal removal
-       * is supported: a level's `level` index addresses views[level]/[level+1],
-       * so removing a middle row would require reindexing every level below it.
-       * Growth and shrinkage both happen at the end of the chain.
+       * Drop one genome row and the bands beside it. An interior row leaves
+       * one new band between the rows it separated, drawn by a track that
+       * connects them where the session has one — a track the removed bands
+       * were already showing first, which is what an all-vs-all file gives.
        */
-      removeLastRow() {
-        const row = self.views.at(-1)
-        if (row) {
-          takeOutRow(row)
-          self.reconcileLevels()
+      removeRow(idx: number) {
+        const row = self.views[idx]
+        if (!row) {
+          return
+        }
+        const interior = idx > 0 && idx < self.views.length - 1
+        const firstBand = Math.max(idx - 1, 0)
+        const removedBands = self.levels.slice(
+          firstBand,
+          firstBand + (interior ? 2 : 1),
+        )
+        const shown = new Set(
+          removedBands.flatMap(band =>
+            band.tracks.map(t => t.configuration.trackId as string),
+          ),
+        )
+        const height = removedBands[0]?.height
+        takeOutRow(row)
+        self.levels.splice(firstBand, removedBands.length)
+        if (interior) {
+          self.levels.splice(firstBand, 0, cast({ height }))
+        }
+        if (idx < self.followAnchorIndex) {
+          self.followAnchorIndex -= 1
+        }
+        if (idx < self.diagonalizeAnchorRow) {
+          self.diagonalizeAnchorRow -= 1
+        }
+        self.reconcileLevels()
+        if (interior) {
+          const session = getSession(self)
+          const connecting = getSyntenyTracks(
+            allSessionTracks(session),
+            [firstBand, firstBand + 1].map(
+              i => self.views[i]!.assemblyNames[0] ?? '',
+            ),
+            session.assemblyManager,
+          ).map(t => t.trackId as string)
+          const trackId = connecting.find(id => shown.has(id)) ?? connecting[0]
+          if (trackId) {
+            self.levels[firstBand]!.launchTrack(trackId).catch((e: unknown) => {
+              session.notifyError(`${e}`, e)
+            })
+          }
         }
       },
 
@@ -1487,24 +1530,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       return {
         /**
          * #method
-         * The header hamburger, which is NOT a subset of `menuItems()` — the
-         * two share only Export SVG. This one is the synteny surface; the app
-         * menubar's is the generic view one.
-         *
-         * SIX ROWS WHATEVER THE STACK HOLDS: the zoom actions, the submenus,
-         * then Export SVG. `ViewOptionsMenuButton` passes the
-         * "Show..." submenu as `extraSubMenus`, because the search box prefs
-         * it carries are React state rather than the model's. The menu
-         * answers what the view IS — where the rows point, which genomes it
-         * stacks, what leaves it — and nothing about how the ribbons are drawn:
-         * every render setting is in the header's settings menu, and
-         * `SyntenySettingsMenu` states that division from the other side.
-         *
-         * A group in THIS menu names a CHOICE ("Sync rows") or what varies
-         * with row count ("Rows"), never a topic: the "Navigation" group that
-         * used to hold the zoom commands was named after what the whole menu is
-         * about, and charged a popup for it. LGV's menu had one too, and it
-         * went the same way.
+         * The header's view-options menu: the zoom actions, the row coupling,
+         * what varies with the stack under "Rows", then Export SVG. Every
+         * render setting is in `SyntenySettingsMenu` instead.
+         * `ViewOptionsMenuButton` passes the "Show..." submenu as
+         * `extraSubMenus`, since the search box prefs are React state.
          */
         headerMenuItems(extraSubMenus: MenuItem[] = []): MenuItem[] {
           return [

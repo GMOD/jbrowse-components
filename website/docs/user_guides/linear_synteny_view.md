@@ -276,13 +276,16 @@ inside **Rows**:
 - **Sync rows** decides whether panning one row pans the others, and by what —
   pixels, or the alignment. Following also picks which row is the anchor
 - **Rows** - **Add assembly row** to compare three or more assemblies stacked
-  vertically, **Remove bottom row**, **Re-order chromosomes**, and one entry per
-  genome opening that row's own view menu (which is otherwise reachable only
-  from that row's header, and a collapsed row has none). On three rows or more
-  the re-order dialog asks which row to keep as it is: that row's order stands
-  and every other row is sorted against its neighbour nearer it, so a stack
-  whose groups are one genome's chromosomes is anchored on that genome
-  (`diagonalizeAnchorRow` on the view)
+  vertically, **Remove row**, **Re-order chromosomes**, and one entry per genome
+  opening that row's own view menu (which is otherwise reachable only from that
+  row's header, and a collapsed row has none). **Remove row** takes any row of a
+  stack of three or more, along with the bands beside it; the neighbours of a
+  row removed from the middle are joined by a synteny track that connects them,
+  where the session has one. On three rows or more the re-order dialog asks
+  which row to keep as it is: that row's order stands and every other row is
+  sorted against its neighbour nearer it, so a stack whose groups are one
+  genome's chromosomes is anchored on that genome (`diagonalizeAnchorRow` on the
+  view)
 - **Show...** for the header's own search boxes
 - **Export SVG**
 
