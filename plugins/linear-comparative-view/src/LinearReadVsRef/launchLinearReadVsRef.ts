@@ -15,7 +15,7 @@ export async function launchLinearReadVsRef({
   replacing,
 }: ReadVsRefLaunchArgs) {
   const session = getSession(track)
-  const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
+  const [trackAssembly] = getConf(track, 'assemblyNames')
   if (!trackAssembly) {
     throw new Error('track has no assembly')
   }

@@ -125,7 +125,7 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
           {
             model: view,
             display: self,
-            trackName: `${getConf(getContainingTrack(self), 'name')}`,
+            trackName: getConf(getContainingTrack(self), 'name'),
             regions,
             handleClose,
           },

@@ -2018,7 +2018,7 @@ export function stateModelFactory(
           assemblyName,
           loc,
           tracks: [
-            self.parentTrack.configuration.trackId as string,
+            self.parentTrack.configuration.trackId,
             ...annotationTrackIds(session, assemblyName),
           ],
         }).catch((e: unknown) => {

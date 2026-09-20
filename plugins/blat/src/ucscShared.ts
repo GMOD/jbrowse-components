@@ -48,12 +48,17 @@ function isNavigableView(view: AbstractViewModel): view is NavigableView {
 // jb2hubs stamps the UCSC db on the assembly's sequence.metadata. Its presence
 // is also the one positive proof that UCSC can search the assembly, so the
 // dialogs read it directly to decide whether to warn.
-export function ucscDbStamp(session: UcscHost, name: string) {
+// Annotated rather than inferred: the path runs past `metadata`, a `frozen`
+// slot, so the read is into arbitrary JSON and the path type stops deriving
+// anything at that segment.
+export function ucscDbStamp(
+  session: UcscHost,
+  name: string,
+): string | undefined {
   const assembly = session.assemblyManager.get(name)
-  const stamped: string | undefined = assembly
+  return assembly
     ? getConf(assembly, ['sequence', 'metadata', 'blatDb'])
     : undefined
-  return stamped
 }
 
 // Prefers the stamp, falling back to the static alias map for assemblies whose

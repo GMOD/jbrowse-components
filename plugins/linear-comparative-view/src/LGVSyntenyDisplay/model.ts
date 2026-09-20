@@ -158,8 +158,8 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           const { assemblyManager } = getSession(self)
           return new Set([
             assemblyName,
-            ...(getConf(self.parentTrack, 'assemblyNames') as string[]).filter(
-              name => isSameAssemblyName(name, assemblyName, assemblyManager),
+            ...getConf(self.parentTrack, 'assemblyNames').filter(name =>
+              isSameAssemblyName(name, assemblyName, assemblyManager),
             ),
           ])
         },
@@ -214,10 +214,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
            */
           fetchNeeded(needed: IndexedRegion[]) {
             const { assemblyManager } = getSession(self)
-            const assemblyNames = getConf(
-              self.parentTrack,
-              'assemblyNames',
-            ) as string[]
+            const assemblyNames = getConf(self.parentTrack, 'assemblyNames')
             fetchNeeded(
               needed.map(({ region, displayedRegionIndex }) => ({
                 displayedRegionIndex,

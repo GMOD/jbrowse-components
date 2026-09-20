@@ -127,7 +127,7 @@ export async function fetchPrimaryAlignment(
 ) {
   return resolvePrimaryAlignment(preFeature, async loci => {
     const { rpcManager, assemblyManager } = getSession(track)
-    const [asm] = getConf(track, 'assemblyNames') as string[]
+    const [asm] = getConf(track, 'assemblyNames')
     // An SA refName is the file's own spelling. The RPC renames a region from
     // the assembly's canonical name into the adapter's, so it is put into the
     // canonical namespace first rather than relying on that rename missing.
