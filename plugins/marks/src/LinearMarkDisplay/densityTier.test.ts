@@ -153,6 +153,7 @@ test('past the budget a bin opens nothing, and the notice says what is drawn', (
     markIndex: 1,
     regionIndex: 0,
     instance: 1,
+    featureIndex: 1,
     refName: 'ctgA',
     start: 1000,
     end: 2000,

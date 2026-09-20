@@ -65,6 +65,15 @@ export interface RpcRegistry {
     return: EncodedFeaturesResult | RegionTooLargeResult
     transferables: EncodedFeaturesResult
   }
+  CoreGetEncodedFeature: {
+    // the request whose answer holds the instance, less the byte gate it
+    // already cleared
+    args: Omit<CoreEncodeFeaturesArgs, 'byteLimit'> & {
+      layer: number
+      featureIndex: number
+    }
+    return: SimpleFeatureSerialized | undefined
+  }
   CoreGetRegionByteEstimate: {
     args: {
       adapterConfig: Record<string, unknown>

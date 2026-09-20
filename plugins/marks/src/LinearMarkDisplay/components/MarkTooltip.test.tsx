@@ -19,6 +19,7 @@ const HIT: MarkHitInfo = {
   markIndex: 0,
   regionIndex: 0,
   instance: 0,
+  featureIndex: 0,
   refName: 'ctgA',
   start: 100,
   end: 150,

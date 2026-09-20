@@ -1,18 +1,14 @@
 import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegion from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts'
-import { checkAbortSignal } from '../../util/aborting.ts'
-import {
-  FACET_ROW,
-  facetLayers,
-  runTransforms,
-} from '../../util/featureTransforms.ts'
+import { FACET_ROW } from '../../util/featureTransforms.ts'
 import { rpcResult } from '../../util/librpc.ts'
 import {
   encodeFeatures,
   encodedChannelTransferables,
 } from '../../util/markEncoding.ts'
-import { createProgressReporter, updateStatus } from '../../util/progress.ts'
+import { createProgressReporter } from '../../util/progress.ts'
 import { measureRegionBytes } from '../byteBudget.ts'
+import { layerFeatures } from './layerFeatures.ts'
 
 import type { EncodedFeaturesResult } from '../../util/markEncoding.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
@@ -36,9 +32,6 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
       sequenceAdapter,
       region,
       layers: requested,
-      transform = [],
-      facet,
-      bpPerPx,
       byteLimit,
       signal,
       statusCallback,
@@ -62,53 +55,31 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
       return tooLarge
     }
 
-    const fetchOpts = { bpPerPx, statusCallback, signal }
-    const [fetched, zoomRange] = await updateStatus(
-      'Downloading features',
-      statusCallback,
-      () =>
-        Promise.all([
-          dataAdapter.getFeaturesArray(region, fetchOpts),
-          dataAdapter.getZoomRange(fetchOpts),
-        ]),
-    )
-    checkAbortSignal(signal)
-
     const { jexl } = pluginManager
-    const shared = runTransforms(fetched, transform, jexl)
-
-    const faceted = facet
-      ? facetLayers(
-          shared,
-          facet.field,
-          requested.map(r => ({ transform: r.transform, row: r.encoding.row })),
-          jexl,
-        )
-      : undefined
-    const layers = requested.map(({ encoding, lanes, transform: own }, i) => {
-      const features = faceted
-        ? faceted.layers[i]!
-        : own
-          ? runTransforms(shared, own, jexl)
-          : shared
-      return encodeFeatures(
-        features,
-        faceted ? { ...encoding, row: FACET_ROW } : encoding,
+    const {
+      layers: features,
+      sections,
+      zoomRange,
+    } = await layerFeatures(dataAdapter, args, jexl)
+    const layers = requested.map(({ encoding, lanes }, i) =>
+      encodeFeatures(
+        features[i]!,
+        sections ? { ...encoding, row: FACET_ROW } : encoding,
         lanes,
         {
           jexl,
           report: createProgressReporter({
             label: 'Encoding features',
-            total: features.length,
+            total: features[i]!.length,
             statusCallback,
             signal,
           }),
         },
-      )
-    })
+      ),
+    )
     const result: EncodedFeaturesResult = {
       layers,
-      facet: faceted?.sections,
+      facet: sections,
       bytes,
       zoomRange,
     }

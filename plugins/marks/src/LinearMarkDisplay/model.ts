@@ -18,7 +18,6 @@ import {
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
-import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
@@ -27,6 +26,7 @@ import {
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
@@ -1017,59 +1017,37 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * Open the feature widget for a hit: the worker shipped channels, not
-       * records, so the features are read back over the hit's span and the
-       * mark's steps run again over them, which remakes a bin or a run. It
-       * sends the view's zoom as the fetch did, so a BigWig answers with the
-       * tier rows the hit was drawn from rather than raw records no tier row
-       * matches.
+       * Open the feature widget for a hit. The worker shipped channels, not
+       * records, so it is asked again with the request the hit's region was
+       * fetched under and answers the feature the instance's `featureIndex`
+       * names: the read, the bin or the run as drawn, inside its facet section.
+       * A bin of the density sidecar opens nothing, its region holding no
+       * request — the read-back is the download the gate refused.
        */
       selectFeature(hit: MarkHitInfo) {
-        const region: Region | undefined =
-          self.host.displayedRegions[hit.regionIndex]
-        // Past the budget the read-back is the download the gate refused, so
-        // a bin of the sidecar opens nothing.
-        if (!region || self.coarseTierStandsIn) {
+        const request = self.featurePayloads.get(hit.regionIndex)?.request
+        if (!request) {
           return
         }
-        const steps = [
-          ...self.rpcProps().transform,
-          ...(self.layerRequests[hit.markIndex]?.transform ?? []),
-        ]
         const fetch = self.detailsRotation.begin()
         void withFeatureDetails(
           self,
           async () => {
             try {
-              const features = await getSession(self).rpcManager.call(
+              const feature = await getSession(self).rpcManager.call(
                 getRpcSessionId(self),
-                'CoreGetFeatures',
+                'CoreGetEncodedFeature',
                 {
-                  adapterConfig: self.adapterConfig,
-                  regions: [
-                    {
-                      ...region,
-                      start: hit.start,
-                      end: Math.max(hit.end, hit.start + 1),
-                    },
-                  ],
-                  opts: { bpPerPx: self.host.bpPerPx },
+                  ...request,
+                  layer: hit.markIndex,
+                  featureIndex: hit.featureIndex,
                   signal: fetch.signal,
                   statusCallback: fetch.statusCallback,
                 },
               )
-              if (!fetch.isCurrent()) {
-                return undefined
-              }
-              const made = runTransforms(features, steps, pluginManager.jexl)
-              return (
-                made.find(
-                  f => f.get('start') === hit.start && f.get('end') === hit.end,
-                ) ??
-                made.find(
-                  f => f.get('start') <= hit.start && f.get('end') >= hit.end,
-                )
-              )
+              return feature && fetch.isCurrent()
+                ? new SimpleFeature(feature)
+                : undefined
             } finally {
               fetch.end()
             }
@@ -1281,14 +1259,18 @@ export function stateModelFactory(
                 ),
               }))
             : needed
+        const { byteLimit, ...request } = { ...rpcArgs(self), bpPerPx }
         return fetchEachRegion(self, regions, {
           call: (region, ctx) =>
             ctx.callRpc('CoreEncodeFeatures', {
-              ...rpcArgs(self),
-              bpPerPx,
+              ...request,
+              byteLimit,
               region,
             }),
-          onResult: (_idx, result) => storedRegionData(result),
+          onResult: (_idx, result, region) => ({
+            ...storedRegionData(result),
+            request: { ...request, region },
+          }),
         })
       },
       /**

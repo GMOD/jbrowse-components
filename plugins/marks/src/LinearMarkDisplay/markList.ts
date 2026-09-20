@@ -10,6 +10,7 @@ import type { MarkShapeName } from './configSchema.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type {
+  CoreEncodeFeaturesArgs,
   Encoded,
   EncodedChannels,
   FacetSection,
@@ -64,6 +65,12 @@ function withLanes<L extends ChannelLane>(
 /** One region's payload: `layers[i]` is mark `i`'s channels. */
 export interface MarkRegionData {
   layers: StoredLayer[]
+  /**
+   * The request the layers came back under, which `CoreGetEncodedFeature`
+   * takes again to name the feature behind an instance. Absent on a payload no
+   * worker fetch produced, the density sidecar's.
+   */
+  request?: Omit<CoreEncodeFeaturesArgs, 'byteLimit'>
   /** The sections a facet stacked the layers' rows into. */
   facet?: FacetSection[]
   zoomRange?: ZoomRange

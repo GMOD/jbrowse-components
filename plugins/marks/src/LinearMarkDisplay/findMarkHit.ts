@@ -11,6 +11,8 @@ export interface MarkHitInfo {
   markIndex: number
   regionIndex: number
   instance: number
+  /** Which feature of the layer's list the worker encoded this instance from. */
+  featureIndex: number
   refName: string
   start: number
   end: number
@@ -67,6 +69,7 @@ export function findMarkHit(
     markIndex: hit.mark,
     regionIndex,
     instance: hit.index,
+    featureIndex: layer.featureIndex[hit.index]!,
     refName: displayedRegions[regionIndex]!.refName,
     start: layer.x[hit.index]!,
     end: layer.x2[hit.index]!,

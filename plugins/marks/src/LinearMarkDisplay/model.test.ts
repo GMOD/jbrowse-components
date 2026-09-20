@@ -3,7 +3,6 @@ import { createElement } from 'react'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
 import LinearGenomeViewPlugin, {
@@ -1012,6 +1011,7 @@ test('the hovered instance lights the box its shape painted, inset by the plot t
     markIndex: 0,
     regionIndex: 0,
     instance: 1,
+    featureIndex: 1,
     refName: 'ctgA',
     start: 100,
     end: 150,
@@ -1034,23 +1034,49 @@ test('the hovered instance lights the box its shape painted, inset by the plot t
   expect(display.hoverInk).toEqual([])
 })
 
-function onlyGetFeatures(mock: jest.Mock, reply: () => unknown) {
-  mock.mockImplementation((_sessionId: string, method: string) => {
-    if (method === 'CoreGetFeatures') {
-      return reply()
-    }
-    return new Promise(() => {})
+const DENSITY_MARKS = [
+  { shape: 'bar', encoding: { y: 'score' } },
+  {
+    shape: 'bar',
+    transform: [
+      { type: 'bin', step: 1000 },
+      { type: 'aggregate', ops: [{ op: 'count' }] },
+    ],
+    encoding: { y: 'count' },
+  },
+]
+
+async function loadedThroughTheWorker(
+  display: LinearMarkDisplayModel,
+  mock: jest.Mock,
+  readBack: unknown,
+) {
+  mock.mockImplementation((_sessionId: string, method: string) =>
+    method === 'CoreEncodeFeatures'
+      ? Promise.resolve(result([{ y: [3, 8] }, { y: [2] }]))
+      : method === 'CoreGetEncodedFeature'
+        ? Promise.resolve(readBack)
+        : new Promise(() => {}),
+  )
+  display.fetchNeeded([{ region: REGION, displayedRegionIndex: 0 }])
+  await waitFor(() => {
+    expect(display.featurePayloads.get(0)?.request).toBeDefined()
   })
 }
 
-function hitAt(markIndex: number, start: number, end: number) {
+function callsOf(mock: jest.Mock, method: string) {
+  return mock.mock.calls.filter(call => call[1] === method)
+}
+
+function hitOn(markIndex: number, featureIndex: number) {
   return {
     markIndex,
     regionIndex: 0,
-    instance: 0,
+    instance: featureIndex,
+    featureIndex,
     refName: 'ctgA',
-    start,
-    end,
+    start: 0,
+    end: 50,
     y: undefined,
     color: undefined,
     colorValue: undefined,
@@ -1061,101 +1087,44 @@ function hitAt(markIndex: number, start: number, end: number) {
   }
 }
 
-function feature(id: string, start: number, end: number, score = 1) {
-  return new SimpleFeature({ uniqueId: id, refName: 'ctgA', start, end, score })
-}
-
-const DENSITY_MARKS = [
-  { shape: 'bar', encoding: { y: 'score' } },
-  {
-    shape: 'bar',
-    transform: [
-      { type: 'filter', expr: "jexl:get(feature,'score') > 0" },
-      { type: 'bin', step: 1000 },
-      {
-        type: 'aggregate',
-        groupby: ['start', 'end'],
-        ops: [{ op: 'count' }, { op: 'sum', field: 'score' }],
-      },
-    ],
-    encoding: { y: 'count' },
-  },
-  {
-    shape: 'bar',
-    transform: [{ type: 'coverage' }],
-    encoding: { y: 'coverage' },
-  },
-]
-
-test('a click on a raw mark opens the feature the hit spans', async () => {
+test('a click asks the worker which feature the instance is, under the request its region was fetched by', async () => {
   const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
   const { display, session, mockRpcCall } = createDisplay()
-  onlyGetFeatures(mockRpcCall, () => [
-    feature('a', 1000, 1400),
-    feature('b', 1200, 1700),
-  ])
-  display.selectFeature(hitAt(0, 1200, 1700))
-  await waitFor(() => {
-    expect(session.openedWidgets).toHaveLength(1)
-  })
-  expect(session.openedWidgets[0]!.featureData).toMatchObject({
-    uniqueId: 'b',
-    start: 1200,
-    end: 1700,
-  })
-})
-
-test('the read-back reads at the zoom the hit was drawn at', async () => {
-  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
-  const { display, view, session, mockRpcCall } = createDisplay()
-  onlyGetFeatures(mockRpcCall, () => [feature('a', 1200, 1700)])
-  view.zoomTo(37)
-  display.selectFeature(hitAt(0, 1200, 1700))
-  await waitFor(() => {
-    expect(session.openedWidgets).toHaveLength(1)
-  })
-  const [, , args] = mockRpcCall.mock.calls.find(
-    ([, method]) => method === 'CoreGetFeatures',
-  )!
-  expect(args).toMatchObject({ opts: { bpPerPx: view.bpPerPx } })
-})
-
-test('a click on a binned bar opens the bin the mark made, through its own steps', async () => {
-  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
-  const { display, session, mockRpcCall } = createDisplay()
-  onlyGetFeatures(mockRpcCall, () => [
-    feature('a', 1000, 1400, 3),
-    feature('b', 1200, 1700, 4),
-    feature('c', 1900, 2100, 0),
-    feature('d', 900, 1100, 5),
-  ])
-  display.selectFeature(hitAt(1, 1000, 2000))
-  await waitFor(() => {
-    expect(session.openedWidgets).toHaveLength(1)
-  })
-  expect(session.openedWidgets[0]!.featureData).toEqual({
-    uniqueId: 'ctgA:1000-2000#0',
+  const made = {
+    uniqueId: 'ctgA:1000-2000#1',
     refName: 'ctgA',
     start: 1000,
     end: 2000,
     count: 2,
-    sum_score: 7,
-  })
-})
-
-test('a click on a coverage run matches the run the narrower read-back remakes', async () => {
-  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
-  const { display, session, mockRpcCall } = createDisplay()
-  onlyGetFeatures(mockRpcCall, () => [feature('a', 0, 100)])
-  display.selectFeature(hitAt(2, 0, 50))
+  }
+  await loadedThroughTheWorker(display, mockRpcCall, made)
+  const [, , fetched] = callsOf(mockRpcCall, 'CoreEncodeFeatures').at(-1)!
+  display.selectFeature(hitOn(1, 1))
   await waitFor(() => {
     expect(session.openedWidgets).toHaveLength(1)
   })
-  expect(session.openedWidgets[0]!.featureData).toMatchObject({
-    start: 0,
-    end: 100,
-    coverage: 1,
+  expect(session.openedWidgets[0]!.featureData).toEqual(made)
+  const [, , asked] = callsOf(mockRpcCall, 'CoreGetEncodedFeature')[0]!
+  const { region, layers, transform, bpPerPx, adapterConfig } = fetched
+  expect(asked).toMatchObject({
+    region,
+    layers,
+    transform,
+    bpPerPx,
+    adapterConfig,
+    layer: 1,
+    featureIndex: 1,
   })
+  expect(asked).not.toHaveProperty('byteLimit')
+})
+
+test('a region no worker fetch produced holds no request, and a click on it asks nothing', () => {
+  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
+  const { display, mockRpcCall } = createDisplay()
+  display.setRpcData(0, result([{ y: [3, 8] }, { y: [2] }]), REGION)
+  mockRpcCall.mockClear()
+  display.selectFeature(hitOn(0, 0))
+  expect(callsOf(mockRpcCall, 'CoreGetEncodedFeature')).toHaveLength(0)
 })
 
 const AUTO_BIN_MARKS = [

@@ -68,12 +68,14 @@ render state rather than a new mechanism.
   multiscale picture. The config docs, the JSON schema and the manifest
   see the step schema because `transform` is a typed sub-schema array like
   `marks`, never `frozen`.
-- A click on a binned bar opens the bin: `selectFeature` reads the features
-  back over the hit's span, runs the shared steps and the mark's own over
-  them again on the main thread, and matches the hit's span exactly or, for a
-  coverage run the narrower read-back widens, by containment. A run's depth
-  survives that because no edge falls inside a run, so every feature the
-  read-back returns covers all of it.
+- A click on a binned bar opens the bin. `selectFeature` sends
+  `CoreGetEncodedFeature` the request the hit's region was fetched under and
+  the instance's `featureIndex`, and the worker runs that request again and
+  answers the entry of the layer's list the index names, so what opens is
+  what was drawn. The first form read the features back over the hit's span,
+  ran the steps again on the main thread and matched by span: it opened the
+  first of two reads sharing a span, counted every facet section into a run
+  drawn from one, and found nothing for a mark whose `x` is not `start`.
 - A layer's transform steps stay in the mark display's own config model;
   `CoreEncodeFeatures` takes them from any caller.
 - A bin summarized what the fetch admitted, and past the byte budget a region
