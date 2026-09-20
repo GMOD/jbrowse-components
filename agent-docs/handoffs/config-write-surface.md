@@ -1,27 +1,25 @@
 ---
 name: config-write-surface
-description: The configuration write API — `setConf` takes only a name where `getConf` takes a path, so a nested member write has no spelling and callers fabricate holders or read-modify-write. Candidate P (a path-taking `setConf`) is built, green and landable on `candidate-p`; typed config-node props reach zero errors and a smaller .d.ts on a second branch.
+description: The configuration write API — `setConf` now takes the path `getConf` takes, landed at `f972b07c30`. What remains is reconciling two typed-config-node-props branches that both reach zero errors; the read-type audit says they compose rather than compete.
 ---
 
 # The configuration write surface
 
-State on the evening of 2026-09-19. Three review fixes landed on main
-(`bf29769b5b`, `86fde0cc4c`, `cfd7c23e0d`). Everything else here is on
-unmerged worktree branches.
+State on the evening of 2026-09-19, after `candidate-p` landed.
 
-## What is ready to land
+## What landed
 
-**`candidate-p`** (head `c054e4141d`, 13 files, +457/−60): `setConf` takes the
-same path `getConf` takes. `setConf(self, ['scales','y','domainMin'], 5)`.
-`pnpm verify --full` green including the esm build; 234 suites / 3192 tests.
+**A path-taking `setConf`** (`21e079b9a9..f972b07c30`, 13 files, +457/−60):
+`setConf(self, ['scales','y','domainMin'], 5)`, the same path `getConf` takes,
+and it takes a config node as well as a model with a `.configuration` member.
+Re-measured before the fast-forward: `pnpm verify --full` green including the
+esm build, and `pnpm test-related` 1165 suites / 12566 tests green.
 
-It needs nothing else to land — in particular it does **not** depend on the
-typed-props work below. Re-run `verify --full` before landing; the green is the
-agent's measurement, not mine.
-
-What it deletes: `ValueScaleHost` and `scaleNode` (`ScoreScaleMixin.ts:35-47`),
-the `{ configuration: node }` holder at `setFaceted`, and the read-modify-write
-at `setRibbonColorDomain` and `setFacetDomain`.
+It deleted `ValueScaleHost` and `scaleNode` in `ScoreScaleMixin.ts`, the
+`{ configuration: node }` holder at `setFaceted`, and the read-modify-write at
+`setRibbonColorDomain` and `setFacetDomain`. Both typed-props branches below
+predate that, and both carry their own `ScoreScaleMixin.ts` edit against the
+deleted code — take main's side of that file when rebasing either one.
 
 ## The one design argument worth keeping
 
@@ -86,37 +84,56 @@ which is the shape of the bug `86fde0cc4c` fixed.
    that patch, not of typed props. Both are gone on the branch above, where all
    twelve `HostChecksSlotNames` pins hold. Do not start from the patch.
 
-   **Two branches reach zero independently and need reconciling.**
-   `worktree-agent-a9c5e4188f5908d2d` (tip `49ce13e764`, `verify --full` green,
-   421 suites) keeps the index signature and fixes the spike properly;
-   `worktree-agent-ad46ed385972fe570` drops it and gains typo detection and a
-   smaller `.d.ts`. The second is strictly more ambitious; take it as the base
-   and lift the first's diagnoses into it.
+   **Two branches reach zero independently, and they compose rather than
+   compete.** `worktree-agent-a9c5e4188f5908d2d` (tip `49ce13e764`,
+   `verify --full` green, 421 suites) keeps the index signature;
+   `worktree-agent-ad46ed385972fe570` (tip `f66c869f81`) drops it and gains typo
+   detection and a 1.9% smaller `.d.ts`. An earlier revision of this file said
+   the second is strictly more ambitious and named three diagnoses it lacked.
+   **Both halves of that are wrong**, and the correction is below.
 
-   Three diagnoses from the first that the second does not state, each of which
-   fails **silently**:
+   All three diagnoses are already on the second branch, in its own words:
+   `ConfigNodeBrand<this>` restates the polymorphic-`this` brand as a type
+   alias, `MergeConfigDef` is a flat mapped type over `keyof BD | keyof D` with
+   no `& ConfigurationSchemaDefinition`, and the `out DEFINITION` annotation
+   carries the covariance the `IsAny` wrapper would have cost.
 
-   - **MST declares `Type: STNValue<T, this>`.** A config node carries its own
-     schema in the `IStateTreeNode` brand by polymorphic `this`, so redeclaring
-     `Type` drops it, `ConfigurationSchemaForModel` degrades to
-     `AnyConfigurationSchemaType`, and every read-side slot-name check switches
-     off with no error anywhere. `scripts/audit-config-read-types.ts` is what
-     sees it: 137 unchecked reads on main, **333** under `variant-d.patch`, 131
-     after the fix. Restate `IStateTreeNode<this>` in the override. **Run that
-     audit on any branch that touches the node type** — nothing else reports
-     this.
-   - **`& ConfigurationSchemaDefinition` on the merged definition** gives it an
-     index signature, and `Omit<BD, keyof D>` over one collapses to just that,
-     dropping every named base slot on every merge. 48 of the 67, plus the
-     `AnyConfigurationSnapshot` circularity.
-   - **Wrapping `ConfigNodeType` in an `IsAny` conditional** makes TypeScript
-     measure `DEFINITION` covariant, and a failed covariant type-argument check
-     is refused where an invariant one falls back to structural.
+   `scripts/audit-config-read-types.ts`, run on all three trees on 2026-09-19,
+   is what settles it. **main 131, `ad46…` 131, `a9c5…` 124.** So dropping the
+   index signature costs no read checking at all — the brand survives as an
+   alias — and the 137 in the earlier revision is the stale committed baseline,
+   not a measurement of main. Re-baseline whenever this lands: `--write` also
+   rewrites two measurement JSONs that generators read, so `pnpm autogen` goes
+   in the same commit.
 
-   Five latent bugs the `any` was hiding, headed by `HtsgetBamAdapter`
-   registered with one schema while reading another's through a cast. Detail in
-   `handoffs/typed-config-props.md` and `handoffs/config-index-signature.md` on
-   the two branches.
+   What the first branch has and the second does not is **real code, not
+   diagnoses**, and it is why it should be the base:
+
+   - The **adapter registry pairs a class with its schema**.
+     `AdapterType<SCHEMA>` and `TextSearchAdapterType<SCHEMA>` are generic and
+     `getAdapterClass` must hand back an `AdapterClassFor<SCHEMA>`, which took
+     44 errors to 1 and made the 1 a real bug. The second branch widens
+     `AnyAdapter`'s construct parameter to `config: any` instead — 43 errors for
+     one line, and the pairing goes unchecked.
+   - **Five latent bugs**, headed by `HtsgetBamAdapter` registered with one
+     schema while reading another's through a cast. The second branch leaves
+     that one open and carries two `as never` casts in the htsget tests because
+     of it.
+   - `WarningSource.parentTrack.configuration` stays `BaseTrackConfig` there,
+     because `ReferenceSeqTrackConfigModel` gives
+     `LinearReferenceSequenceDisplay` a schema to name. The second branch widens
+     it back to `AnyConfigurationModel`, which is part of its 131 against 124.
+   - **Jest and lint have never run on the second branch** — every commit on it
+     is `SKIP_LINT=1`, and its worktree's jest dies on a missing `babel-jest`.
+
+   So: base on `a9c5…`, graft the second's typed-props core onto it
+   (`ConfigNodeProps` / `ConfigNodeMembers` / `ConfigNodeBrand`,
+   `NormalizeSlotDef`, the flat `MergeConfigDef`, the identifier folded into the
+   definition as `IdentifierSlotDef`, the index signature moved onto
+   `AnyConfigurationModel`, and the four `export type` lines that take TS2883 to
+   zero), keep the checked adapter registry, and re-measure all four numbers.
+   Detail in `handoffs/typed-config-props.md` and
+   `handoffs/config-index-signature.md` on the two branches.
 
 2. **`null` as the reset token for JSON-borne routes.** No session spec, share
    link or agent call can reset a slot to its default today. Twelve
