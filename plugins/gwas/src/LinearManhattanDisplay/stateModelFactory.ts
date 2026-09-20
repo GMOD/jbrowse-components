@@ -259,8 +259,8 @@ export function stateModelFactory(
             field === LD_FIELD ? 'threshold' : 'categorical',
           )
           const written = {
-            domain: getConf(self, ['color', 'domain']) as readonly string[],
-            palette: getConf(self, ['color', 'palette']) as readonly string[],
+            domain: getConf(self, ['color', 'domain']),
+            palette: getConf(self, ['color', 'palette']),
           }
           return {
             value: self.conf.color.value,

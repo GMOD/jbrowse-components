@@ -57,7 +57,7 @@ export default function DensityTierMixin() {
        * The `densityTier` slot's value.
        */
       get densityTierMode() {
-        const mode: unknown = getConf(host(self), 'densityTier')
+        const mode = getConf(host(self), 'densityTier')
         return isDensityTierMode(mode) ? mode : 'auto'
       },
       /**

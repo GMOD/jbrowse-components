@@ -165,7 +165,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        * #getter
        */
       get responseType() {
-        return readConfObject(self.conf, 'responseType') as 'token' | 'code'
+        return readConfObject(self.conf, 'responseType')
       },
       /**
        * #getter

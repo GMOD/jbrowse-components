@@ -94,7 +94,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   }
 
   private async readNames() {
-    const columnNames: string[] = readConfObject(this.config, 'columnNames')
+    const columnNames = readConfObject(this.config, 'columnNames')
     if (columnNames.length) {
       return columnNames
     }

@@ -771,7 +771,7 @@ export function stateModelFactory(
        * mark's shapes read the same pair.
        */
       get valueScales(): ValueScale[] {
-        const minimalTicks: boolean = getConf(self, 'minimalTicks')
+        const minimalTicks = getConf(self, 'minimalTicks')
         const height = self.height
         const indices = self.valuedMarkIndices
         // A point stands at its centre and needs glyph room at both ends; a
