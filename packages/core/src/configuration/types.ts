@@ -62,26 +62,69 @@ export type ConfigurationSchemaForModel<MODEL> =
 
 /**
  * A schema's definition as **stored**: the author's own entries over the ones
- * its `baseConfiguration` contributed, which is the same field-by-field merge
- * `mergeSchemaDefinition` does at runtime. The base arrives already merged with
- * its own base, so one level here covers a chain of any depth.
+ * its `baseConfiguration` contributed, the type-level twin of
+ * `mergeSchemaDefinition`. The base arrives already merged with its own base,
+ * so one level here covers a chain of any depth.
  *
- * It must not introduce an index signature: `Omit<BD, keyof D>` over a type
- * with one collapses to the index signature alone and every named base slot is
- * lost, which is why `ConfigurationSchemaType`'s DEFINITION is unconstrained.
+ * A flat mapped type over the union of both key sets, not
+ * `Omit<BASE, keyof D> & D`: an intersection's `keyof` is a union of key sets,
+ * and mapping over a union that includes `string` — which
+ * `ConfigurationSchemaDefinition`'s index signature contributes — collapses
+ * back to an index signature, which is the thing `ConfigNodeProps` exists to
+ * get rid of.
  */
 export type MergeConfigDef<D, BASE> =
   BASE extends ConfigurationSchemaType<infer BD, any>
-    ? Omit<BD, keyof D> & {
-        [K in keyof D]: K extends keyof BD
-          ? BD[K] extends { type: string }
-            ? D[K] extends { type: string }
-              ? Omit<BD[K], keyof D[K]> & D[K]
+    ? {
+        [K in keyof BD | keyof D]: NormalizeSlotDef<
+          K extends keyof D
+            ? K extends keyof BD
+              ? MergeSlotDef<BD[K], D[K]>
               : D[K]
-            : D[K]
-          : D[K]
+            : K extends keyof BD
+              ? BD[K]
+              : never
+        >
       }
-    : D
+    : { [K in keyof D]: NormalizeSlotDef<D[K]> }
+
+/**
+ * A redeclared slot merges field-by-field over the base's; a sub-schema or a
+ * constant keeps replace semantics, matching `mergeSchemaDefinition`'s
+ * `isSlotDefinitionEntry` guard.
+ */
+type MergeSlotDef<BASE_ENTRY, ENTRY> = BASE_ENTRY extends { type: string }
+  ? ENTRY extends { type: string }
+    ? Omit<BASE_ENTRY, keyof ENTRY> & ENTRY
+    : ENTRY
+  : ENTRY
+
+/**
+ * What the type level reads off a slot definition: the slot's `type`, a
+ * `stringEnum`'s `model`, and whether a `defaultValue` is there at all — widened
+ * off its literal. The description, `advanced`, `contextVariable` and the
+ * literal default are documentation and runtime, and carrying them makes two
+ * schemas that differ only in one of them mutually unassignable: a subclass
+ * raising `height` from 100 to 250 stopped satisfying a parameter pinned to its
+ * base. `SlotValueRawFromDef` re-widens a scalar default anyway, and reaches
+ * `any` for everything else, so nothing downstream loses precision.
+ */
+type NormalizeSlotDef<E> = E extends AnyConfigurationSchemaType
+  ? E
+  : E extends { type: infer T }
+    ? { type: T } & (E extends { model: infer M } ? { model: M } : unknown) &
+        (E extends { defaultValue: infer V }
+          ? { defaultValue: WidenDefaultValue<V> }
+          : unknown)
+    : E
+
+type WidenDefaultValue<V> = [V] extends [boolean]
+  ? boolean
+  : [V] extends [string]
+    ? string
+    : [V] extends [number]
+      ? number
+      : unknown
 
 type ConfigNodeValue<DEF> =
   IsAny<DEF> extends true
@@ -95,10 +138,11 @@ type ConfigNodeValue<DEF> =
           : SlotValueRawFromDef<DEF>
 
 /**
- * The props a config node presents, read off the schema's DEFINITION rather
- * than the `Record<string, any>` `makeConfigurationSchemaModel` hands MST. A
- * slot reads as its declared value type, a sub-schema as that sub-config's own
- * node, and a bare string/number entry as the volatile constant it becomes.
+ * The slots a config node presents, read off the schema's own DEFINITION rather
+ * than the `Record<string, any>` `makeConfigurationSchemaModel` assembles its
+ * MST props from. Those props carry an index signature, so every
+ * `node.anything` resolves to `any`; mapping the definition instead is what
+ * makes `node.colorr` a compile error.
  *
  * A plain mapped type, and it has to stay one. Wrapping it in a conditional —
  * to answer early for a widened definition, say — makes TypeScript measure
@@ -107,9 +151,72 @@ type ConfigNodeValue<DEF> =
  * falls back to comparing the two schemas structurally. Structural is the
  * comparison that matters: a subclass schema's node has every slot the base's
  * does, while its *definition* restates `defaultValue` and `description` and so
- * matches nothing. The widened case belongs in `ConfigNodeValue`.
+ * matches nothing. The widened case belongs on `AnyConfigurationModel`.
  */
-export type ConfigNodeType<D> = { [K in keyof D]: ConfigNodeValue<D[K]> }
+export type ConfigNodeProps<DEFINITION> = {
+  [K in keyof DEFINITION]: ConfigNodeValue<DEFINITION[K]>
+}
+
+/**
+ * What a config node carries besides its slots. The identifier prop comes from
+ * the definition (`IdentifierSlotDef`) and MST's brand is below; these are the
+ * same on every schema, and `makeConfigurationSchemaModel` annotates its
+ * `.actions` block with `ConfigNodeActions` so the two cannot drift.
+ */
+export type ConfigNodeMembers = ConfigNodeActions & {
+  /**
+   * Present only on an `explicitlyTyped` schema, and declared unconditionally
+   * because the option is not a type parameter. A read of it off a schema
+   * without one is `undefined` at runtime.
+   */
+  type: string
+}
+
+/**
+ * A type alias rather than an interface, and separate from the `type` prop
+ * above, because it annotates the `.actions` block: MST constrains that to
+ * `ModelActions`, an index signature of functions, and only a type alias of an
+ * object literal gets the implicit index signature that satisfies it.
+ */
+export type ConfigNodeActions = {
+  setSubschema: (slotName: string, data: unknown) => unknown
+  setSubschemaArray: (slotName: string, data: unknown[]) => void
+  setSlot: (slotName: string, value: unknown) => void
+}
+
+/**
+ * MST's node brand, restated. A config node carries its own schema here by
+ * polymorphic `this`, and `ConfigurationSchemaForModel` walks it back out —
+ * which is what every `getConf` / `readConfObject` / `setConf` slot-name
+ * constraint hangs off, so losing it switches the read-side check off with no
+ * error anywhere. `scripts/audit-config-read-types.ts` is the only thing that
+ * reports that; run it after touching this.
+ *
+ * Structurally identical to `IStateTreeNode<IT>`, but an alias rather than an
+ * interface: TypeScript infers an implicit index signature for an intersection
+ * only when every constituent is an alias or a mapped type, and that is what
+ * leaves a concrete config node — whose props are a mapped type with no index
+ * signature of its own — assignable to `AnyConfigurationModel`.
+ */
+export type ConfigNodeBrand<IT extends IAnyType> = {
+  readonly $treenode?: any
+  readonly $__mstStateTreeNodeType__?: [IT] | [any]
+}
+
+/**
+ * The identifier a schema's `explicitIdentifier` installs, folded into the
+ * definition as if it were a declared string slot — which is what it is at
+ * runtime, `makeConfigurationSchemaModel` just builds it from the options rather
+ * than from the table. Folding it in rather than intersecting it onto `Type`
+ * keeps it out of `ConfigurationSchemaType`'s parameter list: as a parameter it
+ * reads as invariant (it lands in a `Record<K, …>` key position), which stops a
+ * concrete schema widening to `AnyConfigurationSchemaType`. Inheritance comes
+ * free, since `MergeConfigDef` already folds the base's whole definition in.
+ */
+export interface IdentifierSlotDef {
+  type: 'string'
+  defaultValue: ''
+}
 
 export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
   ? never
@@ -342,7 +449,12 @@ export type ConfigurationSlotValue<SCHEMA, K extends string> =
  * model-or-snapshot union, not a plain instance).
  */
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
-export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
+export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType> &
+  // A schema widened to `AnyConfigurationSchemaType` has no slot table to map,
+  // so its node's props would read as nothing at all. The index signature is
+  // here rather than in `ConfigNodeProps`, where an `IsAny` branch would leave
+  // the props a deferred conditional and cost `DEFINITION` its covariance.
+  Record<string, any>
 
 /**
  * The `XConfigModel` for a **field table** — a `*ConfigSchemaFields` export —

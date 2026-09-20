@@ -1188,7 +1188,10 @@ function resolveTrackDisplayChoice(
     confSnapshot,
   ) as typeof rawConf
 
-  const trackType = pluginManager.getTrackType(conf.type)
+  // `rawConf` unions a live node with a loose `Record<string, unknown>`, so the
+  // node's `type: string` widens to `unknown` across the union
+  const { type } = conf as { type: string }
+  const trackType = pluginManager.getTrackType(type)
   // Validate only a conf that is not already in the tree. `configSchema.create`
   // here builds an entire config node and throws it away purely to surface a
   // nice error; its preProcessSnapshot also re-runs Core-preProcessTrackConfig

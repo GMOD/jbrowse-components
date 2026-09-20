@@ -407,3 +407,48 @@ describe('a mixin host type narrows the slot names, or silently does not', () =>
     expect(true).toBe(true)
   })
 })
+
+// A config node's props come off the schema's DEFINITION, so an undeclared
+// member is a compile error rather than `any`. An unused `@ts-expect-error`
+// fails `pnpm typecheck`, so each of these three is a live check.
+const nested = ConfigurationSchema('ConfigTypoNested', {
+  color: { type: 'color', defaultValue: 'red' },
+  scales: ConfigurationSchema('ConfigTypoScales', {
+    domainMin: { type: 'number', defaultValue: 0 },
+  }),
+})
+
+describe('an undeclared member of a config node does not compile', () => {
+  it('refuses an unknown top-level slot', () => {
+    const node = nested.create(undefined, { pluginManager })
+    expect(node.color).toBe('red')
+    // @ts-expect-error `colorr` is not a slot on this schema
+    expect(node.colorr).toBeUndefined()
+  })
+
+  it('refuses an unknown member of a sub-schema', () => {
+    const node = nested.create(undefined, { pluginManager })
+    expect(node.scales.domainMin).toBe(0)
+    // @ts-expect-error `domainMinn` is not a slot on the sub-schema
+    expect(node.scales.domainMinn).toBeUndefined()
+  })
+
+  // The snapshot going IN is checked by `ConfigurationSnapshot<SCHEMA>`, not by
+  // `create`. Typing the model's own `CreationType` off the definition was
+  // built and measured: zero build errors, 115 in the test tree, because a
+  // config snapshot is legitimately more than the slot table — an
+  // `explicitlyTyped` schema takes `type`, a `shorthand` schema takes a bare
+  // string, and a `preProcessSnapshot` migration takes the legacy keys it
+  // exists to rewrite. None of the three is a type parameter, and the last
+  // cannot be one. So the check stays opt-in, at the boundary where legacy keys
+  // are not expected.
+  it('refuses an unknown key in a snapshot literal', () => {
+    const snapshot: ConfigurationSnapshot<typeof nested> = {
+      color: 'blue',
+      scales: { domainMin: 1 },
+      // @ts-expect-error `colour` is not a slot on this schema
+      colour: 'blue',
+    }
+    expect(nested.create(snapshot, { pluginManager }).color).toBe('blue')
+  })
+})

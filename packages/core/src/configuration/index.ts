@@ -4,6 +4,9 @@ export {
   hydrateTrackConfig,
 } from './configurationSchema.ts'
 export type { ConfigurationSchemaDefinition } from './configurationSchema.ts'
+// Named in the shape `ConfigurationSchema()` returns, so every downstream
+// `configSchema` declaration emit has to be able to reach them by name.
+export type { ConfigSlotDefinition } from './configurationSlot.ts'
 
 export type {
   AnyConfiguration,
@@ -11,7 +14,10 @@ export type {
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
   ConfigModelForFields,
-  ConfigNodeType,
+  ConfigNodeActions,
+  ConfigNodeBrand,
+  ConfigNodeMembers,
+  ConfigNodeProps,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotPath,
@@ -19,6 +25,7 @@ export type {
   ConfigurationSlotValue,
   ConfigurationSnapshot,
   HostChecksSlotNames,
+  IdentifierSlotDef,
 } from './types.ts'
 
 export {

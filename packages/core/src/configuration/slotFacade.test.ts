@@ -4,10 +4,12 @@ import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import { makeSlotFacade, preProcessSlotValues } from './slotFacade.ts'
 
+import type { AnyConfigurationSchemaType } from './types.ts'
+
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
-const create = (schema: ReturnType<typeof ConfigurationSchema>) =>
+const create = <SCHEMA extends AnyConfigurationSchemaType>(schema: SCHEMA) =>
   schema.create(undefined, { pluginManager })
 
 test('facade exposes metadata + a live value getter driven by set()', () => {

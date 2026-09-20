@@ -26,13 +26,16 @@ import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
-  ConfigNodeType,
+  ConfigNodeActions,
+  ConfigNodeBrand,
+  ConfigNodeMembers,
+  ConfigNodeProps,
   GetInheritedIdentifier,
+  IdentifierSlotDef,
   MergeConfigDef,
 } from './types.ts'
 import type {
   IAnyType,
-  IStateTreeNode,
   IType,
   ReferenceIdentifier,
   SnapshotIn,
@@ -328,7 +331,10 @@ function makeConfigurationSchemaModel<
 
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
-    .actions(self => ({
+    // annotated so `ConfigurationSchemaType['Type']`, which has to name these
+    // three by hand (the model's own props are a `Record<string, any>`, so
+    // nothing derived off them keeps a signature), cannot drift from them
+    .actions((self): ConfigNodeActions => ({
       // `data` is whatever the sub-schema's `preProcessSnapshot` takes, a
       // string shorthand included.
       setSubschema(slotName: string, data: unknown) {
@@ -437,36 +443,35 @@ function makeConfigurationSchemaModel<
 
 /**
  * DEFINITION is unconstrained on purpose. It carries the *merged* definition —
- * `MergeConfigDef` — and intersecting that with `ConfigurationSchemaDefinition`
- * to satisfy a constraint would put an index signature on it, which erases
- * every named base slot on the next merge. The authoring check lives on
- * `ConfigurationSchema`'s own parameter, where it belongs.
+ * `MergeConfigDef`, an unresolved conditional that cannot be checked against a
+ * constraint — and intersecting it with `ConfigurationSchemaDefinition` to
+ * satisfy one would put an index signature straight back into
+ * `keyof DEFINITION`. The authoring check lives on `ConfigurationSchema`'s own
+ * parameter, where the literal arrives, and on the `extends` clause below.
  */
 export interface ConfigurationSchemaType<
-  DEFINITION,
+  // `out`: a subclass schema is a superset of its base's slots, so it reads as
+  // assignable where the base is expected. Without the annotation the parameter
+  // measures as invariant and every display factory pinned to its base schema
+  // refuses the subclass.
+  out DEFINITION,
   OPTIONS extends ConfigurationSchemaOptions<any, any>,
 > extends ReturnType<
-  typeof makeConfigurationSchemaModel<ConfigurationSchemaDefinition, OPTIONS>
+  typeof makeConfigurationSchemaModel<
+    DEFINITION & ConfigurationSchemaDefinition,
+    OPTIONS
+  >
 > {
   type: string
   /**
-   * The node this schema creates: MST's own instance type with the slot reads
-   * `ConfigNodeType` derives from the definition laid over it.
-   *
-   * `IStateTreeNode<this>` restates by hand what MST's `Type` gets from
-   * `STNValue<T, this>`. Overriding the member drops the polymorphic `this`,
-   * and that brand is the only route from a config node back to its schema —
-   * `ConfigurationSchemaForModel`, and so the slot-name and value narrowing in
-   * every `getConf`/`readConfObject` below it.
+   * Overrides the factory's, whose props come off a `Record<string, any>` and
+   * so admit every name. Slots come from the definition, the identifier rides
+   * in as one of them, and the brand names this schema — which is what
+   * `ConfigurationSchemaForModel` infers back out.
    */
-  readonly Type: ConfigNodeType<DEFINITION> &
-    ReturnType<
-      typeof makeConfigurationSchemaModel<
-        ConfigurationSchemaDefinition,
-        OPTIONS
-      >
-    >['TypeWithoutSTN'] &
-    IStateTreeNode<this>
+  readonly Type: ConfigNodeProps<DEFINITION> &
+    ConfigNodeMembers &
+    ConfigNodeBrand<this>
 }
 
 export function ConfigurationSchema<
@@ -483,7 +488,10 @@ export function ConfigurationSchema<
   inputSchemaDefinition: DEFINITION,
   inputOptions?: ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
 ): ConfigurationSchemaType<
-  MergeConfigDef<DEFINITION, BASE_SCHEMA>,
+  MergeConfigDef<
+    DEFINITION & Record<EXPLICIT_IDENTIFIER & string, IdentifierSlotDef>,
+    BASE_SCHEMA
+  >,
   ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>
 > {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
