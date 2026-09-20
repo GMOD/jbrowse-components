@@ -248,6 +248,22 @@ reference, so a mate-vs-mate alignment is a direct read. How it chains, what an
 `PANGENOME_GRAPHS.md` §"Pairwise alignments unpacked from the GFA"; this
 section is the HPRC run and how it compares with the TAF and impg routes.
 
+**The converter also reads a window of the hosted graph database, so a
+haplotype pair needs no 63 GB download.** `gbz-base-query <gbz.db>
+--haplotype-index <anchored.db> --sample GRCh38 --contig chr1 --interval
+103540000..103801000 --context 0 --format gfa --keep 'NA18608#2' --keep
+'HG00232#1' …` (`@gmod/gbz-base` 2.6.6) writes the amylase window as 14,652 S
+lines and one W line per kept haplotype, on the haplotype's own coordinates, in
+17 s over range requests. `gfa_to_pairwise_paf.py --reference 'HG00232#1'
+--queries 'NA18608#2' --hold-queries` turns that into `=`/`X`/`I`/`D` records
+between the two haplotypes in 0.1 s. HG01361#1 against GRCh38 comes out as one
+chain holding a single 94,204 bp deletion, the step minimap2 measures as
+94,138 bp. NA18608#2 against HG00232#1 comes out as 26 records on both strands,
+because the graph folds the amylase paralogs onto shared nodes. The reader's own
+`--cigar` compares no bases (the stretch between two shared nodes becomes an
+`M`), and the converter pairs private stretches as `X` without comparing them
+either, which wrote one 75,004 bp `X` run for NA18608#2 against HG00133#1.
+
 **This run is the v2.0 GFA, and the hosted files are not.** The script's default
 `GFA_URL` is release 2.1's `hprc-v2.1-mc-grch38.gfa.gz` and the published
 `hprc_multiway_gfa.pif.gz` came out of it: 4,609 rows, 541–606 per haplotype,
