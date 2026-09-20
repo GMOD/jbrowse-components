@@ -258,6 +258,7 @@ test('a binned count and the raw features share one fetch, and each draws in its
       {
         layers: {
           count: number
+          featureIndex: Uint32Array
           x?: Uint32Array
           x2?: Uint32Array
           y?: Float32Array
@@ -283,13 +284,14 @@ test('a binned count and the raw features share one fetch, and each draws in its
     expect(display.domain![1]).toBe(Math.max(...density))
   })
 
-  // a click on a density bar opens the bin, remade over the read-back
+  // a click on a density bar opens that bin, which the worker names by index
   const layer = display.rpcDataMap.get(0)!.layers[1]!
   const at = layer.y!.indexOf(Math.max(...density))
   display.selectFeature({
     markIndex: 1,
     regionIndex: 0,
     instance: at,
+    featureIndex: layer.featureIndex[at],
     refName: 'ctgA',
     start: layer.x![at]!,
     end: layer.x2![at]!,
