@@ -4,7 +4,9 @@ import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import {
   normalizeAdapterSnapshots,
   registerLocalFiles,
+  resolveAssembly,
   resolveLocalFileUris,
+  withHostOverrides,
 } from '@jbrowse/product-core'
 
 import createModel from './createModel/index.ts'
@@ -37,6 +39,13 @@ type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 // engine-construction inputs shared by the imperative createViewState and the
 // declarative <LinearGenomeView> component
 export interface CreateViewStateBaseOptions {
+  /**
+   * An assembly config, or the name of a genome hosted at genomes.jbrowse.org
+   * (`'hg38'`, `'mm39'`, a GenArk accession). A name brings the genome's
+   * sequence, refName aliases, track catalog and gene-name search; `tracks` and
+   * `aggregateTextSearchAdapters` add to those and win on a shared id. A name
+   * is fetched, so it needs `useCreateViewState` or `createViewStateAsync`.
+   */
   assembly: Assembly
   tracks?: Tracks
   internetAccounts?: InternetAccounts
@@ -142,7 +151,32 @@ export interface ViewStateOptions extends CreateViewStateBaseOptions {
   session?: RestoredSessionSnapshot
 }
 
+async function resolveNamedAssembly({
+  assembly,
+  ...rest
+}: ViewStateOptions): Promise<ViewStateOptions> {
+  if (typeof assembly !== 'string') {
+    return { ...rest, assembly }
+  }
+  const hub = await resolveAssembly(assembly)
+  return {
+    ...rest,
+    assembly: hub.assembly,
+    tracks: withHostOverrides(hub.tracks, rest.tracks ?? [], 'trackId'),
+    aggregateTextSearchAdapters: withHostOverrides(
+      hub.aggregateTextSearchAdapters,
+      rest.aggregateTextSearchAdapters,
+      'textSearchAdapterId',
+    ),
+  }
+}
+
 export default function createViewState(opts: ViewStateOptions): ViewModel {
+  if (typeof opts.assembly === 'string') {
+    throw new Error(
+      `assembly "${opts.assembly}" names a hosted genome, which has to be fetched: use useCreateViewState or createViewStateAsync`,
+    )
+  }
   const { plugins = [], makeWorkerInstance } = opts
   const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   return finishCreateViewState(opts, model, pluginManager)
@@ -153,7 +187,8 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
  * preloads their state models. The synchronous `createViewState` throws on
  * one — a session restored from a URL is the usual case.
  */
-export async function createViewStateAsync(opts: ViewStateOptions) {
+export async function createViewStateAsync(input: ViewStateOptions) {
+  const opts = await resolveNamedAssembly(input)
   const { plugins = [], makeWorkerInstance } = opts
   const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   // both: the tree is created from `defaultSession` and a restored `session`
