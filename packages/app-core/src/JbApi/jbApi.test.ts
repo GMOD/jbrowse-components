@@ -183,6 +183,46 @@ describe('waitReady', () => {
     )
   })
 
+  // A display that loaded a config it cannot draw as written stays `ready`
+  // and raises no toast; its corner notice is the only place the problem is
+  // said, and a caller with no screen cannot read it.
+  it('names a track whose display drew around a problem', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const track = (trackId: string, notices: string[]) => ({
+      type: 'FeatureTrack',
+      configuration: { trackId },
+      activeDisplay: {
+        type: 'LinearMarkDisplay',
+        displayPhase: 'ready',
+        notices,
+      },
+    })
+    const session = {
+      views: [
+        {
+          id: 'v1',
+          type: 'LinearGenomeView',
+          initialized: true,
+          ownViews: [],
+          ownTracks: [
+            track('plotted', []),
+            track('valueless', ['mark 0 encoding.y: a bar names no field']),
+          ],
+        },
+      ],
+      snackbarMessages: [],
+    } as unknown as AbstractSessionModel
+    expect(await waitReady(5000, session)).toMatchObject({
+      settled: true,
+      notReady: [
+        {
+          trackId: 'valueless',
+          notices: ['mark 0 encoding.y: a bar names no field'],
+        },
+      ],
+    })
+  })
+
   // AppReadyMarker holds the app `loading` while a view is still applying its
   // launch blob — `initialized` goes true the moment a linear view's regions
   // land, with the spec's tracks still to attach. This is the half that says so

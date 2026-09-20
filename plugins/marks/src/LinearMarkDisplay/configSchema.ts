@@ -12,10 +12,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
-import { markColorScale, markColorSchema } from './markColorConfigSchema.ts'
-import { SHAPE_LANES } from './shapeLanes.ts'
+import { markColorSchema } from './markColorConfigSchema.ts'
 
-import type { MarkColorScale } from './markColorConfigSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export { markColorScale } from './markColorConfigSchema.ts'
@@ -131,9 +129,9 @@ const markEncodingSchema = ConfigurationSchema(
      * #slot marks.encoding.y
      * The feature field, or jexl callback over `feature`, plotted on the score
      * axis. A feature whose value is not a finite number is skipped. Empty for
-     * a mark with no value, such as a span; a bar or point must name one, and
-     * the config is refused where it does not. The scale it is read through is
-     * the display's `scales.y`.
+     * a mark with no value, such as a span; a bar or point naming none draws
+     * nothing, and the track's corner notice says so. The scale it is read
+     * through is the display's `scales.y`.
      */
     y: {
       type: 'string',
@@ -348,57 +346,18 @@ const transformStepSchema = ConfigurationSchema(
   { closed: true, preProcessSnapshot: liftAs },
 )
 
-interface MarkSnapshot {
-  shape?: string
-  source?: string
-  encoding?: Record<string, unknown> & { y?: string }
-}
-
-// Every shape places its x edges; the rest of its channels are the lanes the
-// worker fills for it, `colorValue` being the ramp's spelling of `color`.
-const SHAPE_CHANNELS = Object.fromEntries(
-  Object.entries(SHAPE_LANES).map(([shape, lanes]) => [
-    shape,
-    ['x', 'x2', ...lanes.filter(l => l !== 'index' && l !== 'colorValue')],
-  ]),
-) as Record<string, string[]>
-
-/** A mark's colour ramp as written, `undefined` where its colour is not one. */
-function rampDomain(mark: MarkSnapshot) {
-  const color = mark.encoding?.color
-  if (typeof color !== 'object' || color === null) {
-    return undefined
-  }
-  const {
-    field = '',
-    scale,
-    ramp = [],
-    domain = [],
-  } = color as {
-    field?: string
-    scale?: MarkColorScale
-    ramp?: string[]
-    domain?: unknown[]
-  }
-  const painted = markColorScale({ scale, field, ramp })
-  return painted === 'linear' || painted === 'log' ? domain : undefined
-}
-
-function pinned(entry: unknown) {
-  return entry !== '' && Number.isFinite(Number(entry))
-}
-
-// What a `marks` config cannot mean, refused where the config is read rather
-// than where it is drawn, so the message names the marks. A bar or point
-// stands at a value: with no `y` the encoder reads 0 for every feature and the
-// display draws nothing, silently.
+// The one thing a load refuses of a `marks` list: a shape the display does
+// not draw, which the slot's own enumeration refuses on a write too, named
+// here because its message would otherwise be the enumeration's. Everything
+// that depends on two slots at once is `markProblems`' to report, since the
+// config editor writes one slot at a time and a load that refused the state
+// between two valid marks would drop the track (ADR-133).
 function checkMarks(snap: Record<string, unknown>) {
   const { marks } = snap
   if (!Array.isArray(marks)) {
     return snap
   }
-  const entries = marks as MarkSnapshot[]
-  const shapeless = entries.flatMap((mark, i) =>
+  const shapeless = (marks as { shape?: string }[]).flatMap((mark, i) =>
     mark.shape === undefined ||
     (MARK_SHAPES as readonly string[]).includes(mark.shape)
       ? []
@@ -407,53 +366,6 @@ function checkMarks(snap: Record<string, unknown>) {
   if (shapeless.length > 0) {
     throw new Error(
       `LinearMarkDisplay: ${shapeless.join(', ')}, and a shape is ${MARK_SHAPES.join(', ')}`,
-    )
-  }
-  const valueless = entries.flatMap((mark, i) => {
-    const shape = mark.shape ?? 'bar'
-    return (shape === 'bar' || shape === 'point') && !mark.encoding?.y
-      ? [`${i} (${shape})`]
-      : []
-  })
-  if (valueless.length > 0) {
-    throw new Error(
-      `LinearMarkDisplay: a bar or point stands at a value and needs encoding.y to name the field it plots; mark${valueless.length > 1 ? 's' : ''} ${valueless.join(', ')} name${valueless.length > 1 ? '' : 's'} none`,
-    )
-  }
-  const unread = entries.flatMap((mark, i) => {
-    const shape = mark.shape ?? 'bar'
-    const channels = SHAPE_CHANNELS[shape] ?? []
-    const dead = Object.keys(mark.encoding ?? {})
-      .filter(c => !channels.includes(c))
-      .map(c => `encoding.${c}`)
-    if (shape === 'span' && mark.source === 'density') {
-      dead.push('source "density"')
-    }
-    return dead.map(c => `mark ${i} (${shape}) declares ${c}`)
-  })
-  if (unread.length > 0) {
-    throw new Error(
-      `LinearMarkDisplay: ${unread.join(', ')}, which its shape does not read`,
-    )
-  }
-  // A ramp spans two finite numbers: `encodingOf` maps each entry through
-  // `Number`, so an open end reads as 0 rather than autoscaling the way
-  // `scales.y` does. A span must declare the pair as well as spell it, its
-  // ramp resolving in the worker against each region's own extremes.
-  const openRamp = entries.flatMap((mark, i) => {
-    const domain = rampDomain(mark)
-    if (!domain) {
-      return []
-    }
-    const pinnedPair = domain.length === 2 && domain.every(pinned)
-    const declared = domain.length > 0
-    return (mark.shape === 'span' ? !pinnedPair : declared && !pinnedPair)
-      ? [`mark ${i}`]
-      : []
-  })
-  if (openRamp.length > 0) {
-    throw new Error(
-      `LinearMarkDisplay: a colour ramp spans a pinned [min, max] of two finite numbers, and ${openRamp.join(', ')} leaves encoding.color.domain short or open — a span needs the pair declared because its ramp resolves in the worker against each region's own extremes, and every other shape reads an open end as 0`,
     )
   }
   return snap

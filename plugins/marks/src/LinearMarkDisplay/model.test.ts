@@ -390,22 +390,29 @@ test('two valued marks share the one axis, whatever they measure', () => {
   expect(display.axes.map(a => a.side)).toEqual([undefined])
 })
 
-// The encoder reads a missing y as 0 for every feature, so before this a
-// bar with only a colour was an empty track with no message.
-test('a bar or point naming no y is refused where the config is read', () => {
-  expect(() =>
-    createTestEnvironment([
-      { shape: 'bar', encoding: { color: 'red' } },
-    ]).createDisplay(),
-  ).toThrow(/a bar or point stands at a value and needs encoding.y/)
-  expect(() =>
-    createTestEnvironment([
-      { shape: 'point', encoding: { y: '' } },
-    ]).createDisplay(),
-  ).toThrow(/mark 0 \(point\) names none/)
-  expect(() =>
-    createTestEnvironment([{ shape: 'span', encoding: {} }]).createDisplay(),
-  ).not.toThrow()
+function noticesOf(marks: unknown[], display: Record<string, unknown> = {}) {
+  return createTestEnvironment(
+    marks,
+    REGION,
+    'BedAdapter',
+    display,
+  ).createDisplay().display.notices
+}
+
+// The encoder reads a missing y as 0 for every feature, so a bar with only a
+// colour was an empty track with no message, and then a track that would not
+// load. It loads, draws nothing for that mark, and says so.
+test('a bar or point naming no y loads, draws nothing and says so', () => {
+  expect(noticesOf([{ shape: 'bar', encoding: { color: 'red' } }])).toEqual([
+    'mark 0 encoding.y: a bar stands at a value and names no field to plot, so it draws nothing',
+  ])
+  expect(noticesOf([{ shape: 'point', encoding: { y: '' } }])).toHaveLength(1)
+  expect(noticesOf([{ shape: 'span', encoding: {} }])).toEqual([])
+  const { display } = createTestEnvironment([
+    { shape: 'bar', encoding: { color: 'red' } },
+    { shape: 'bar', encoding: { y: 'score' } },
+  ]).createDisplay()
+  expect(display.markView.visible).toEqual([false, true])
 })
 
 test('an encoding channel refuses a key it does not declare', () => {
@@ -435,25 +442,19 @@ test('an encoding channel refuses a key it does not declare', () => {
 
 // A span's ramp resolves in the worker (ADR-113), one table per region, under
 // a legend that unions their extents.
-test('a span painting an unpinned colour ramp is refused, and a pinned one is not', () => {
-  expect(() =>
-    createTestEnvironment([
-      {
-        shape: 'span',
-        encoding: { color: { field: 'score', scale: 'linear' } },
-      },
-    ]).createDisplay(),
-  ).toThrow(/mark 0 leaves encoding.color.domain short or open/)
-  expect(() =>
-    createTestEnvironment([
+test('a span painting an unpinned colour ramp says its colours differ by region, and a pinned one says nothing', () => {
+  expect(
+    noticesOf([
       {
         shape: 'span',
         encoding: { color: { field: 'score', ramp: ['white', 'red'] } },
       },
-    ]).createDisplay(),
-  ).toThrow(/mark 0 leaves encoding.color.domain short or open/)
-  expect(() =>
-    createTestEnvironment([
+    ]),
+  ).toEqual([
+    expect.stringMatching(/^mark 0 encoding.color.domain: a span's ramp/),
+  ])
+  expect(
+    noticesOf([
       {
         shape: 'span',
         encoding: {
@@ -465,35 +466,25 @@ test('a span painting an unpinned colour ramp is refused, and a pinned one is no
           },
         },
       },
-    ]).createDisplay(),
-  ).not.toThrow()
+    ]),
+  ).toEqual([])
 })
 
-test('a channel the shape does not read is refused where the config is read', () => {
-  expect(() =>
-    createTestEnvironment([
-      { shape: 'span', encoding: { y: 'score' } },
-    ]).createDisplay(),
-  ).toThrow(
-    /mark 0 \(span\) declares encoding.y, which its shape does not read/,
-  )
-  expect(() =>
-    createTestEnvironment([
-      { shape: 'bar', encoding: { y: 'score', glyph: 'triangle' } },
-    ]).createDisplay(),
-  ).toThrow(
-    /mark 0 \(bar\) declares encoding.glyph, which its shape does not read/,
-  )
-  expect(() =>
-    createTestEnvironment([
-      { shape: 'span', source: 'density', encoding: {} },
-    ]).createDisplay(),
-  ).toThrow(/mark 0 \(span\) declares source "density"/)
-  expect(() =>
-    createTestEnvironment([
+test('a channel the shape does not read is named, and the rest still draws', () => {
+  expect(noticesOf([{ shape: 'span', encoding: { y: 'score' } }])).toEqual([
+    'mark 0 encoding.y: a span does not read y',
+  ])
+  expect(
+    noticesOf([{ shape: 'bar', encoding: { y: 'score', glyph: 'triangle' } }]),
+  ).toEqual(['mark 0 encoding.glyph: a bar does not read glyph'])
+  expect(
+    noticesOf([{ shape: 'span', source: 'density', encoding: {} }]),
+  ).toEqual(['mark 0 source: a span does not draw the density sidecar'])
+  expect(
+    noticesOf([
       { shape: 'point', encoding: { y: 'score', glyph: 'triangle' } },
-    ]).createDisplay(),
-  ).not.toThrow()
+    ]),
+  ).toEqual([])
 })
 
 test('a shape the display does not draw is named as the problem, not the channels it carries', () => {
@@ -532,20 +523,21 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
   ).toThrow(/MarkAggregateOp takes .* not fields/)
 })
 
-// `encodingOf` maps the ramp's domain through `Number`, so an empty entry pins
-// that end to 0 rather than autoscaling it the way `y.domain` does.
-test('a colour ramp domain with an open end is refused where the config is read', () => {
-  expect(() =>
-    createTestEnvironment([
-      {
-        shape: 'bar',
-        encoding: {
-          y: 'score',
-          color: { field: 'score', scale: 'linear', domain: ['0', ''] },
-        },
+// An open end used to read as 0 through `Number`, and then refused the load.
+test('a colour ramp domain with an open end autoscales and says it is not read as written', () => {
+  const { display } = createTestEnvironment([
+    {
+      shape: 'bar',
+      encoding: {
+        y: 'score',
+        color: { field: 'score', scale: 'linear', domain: ['0', ''] },
       },
-    ]).createDisplay(),
-  ).toThrow(/mark 0 leaves encoding.color.domain short or open/)
+    },
+  ]).createDisplay()
+  expect(display.notices).toEqual([
+    expect.stringMatching(/^mark 0 encoding.color.domain: a ramp is pinned by/),
+  ])
+  expect(display.encodings[0]!.color).toMatchObject({ domain: undefined })
 })
 
 test('a span-only display has no score domain', () => {

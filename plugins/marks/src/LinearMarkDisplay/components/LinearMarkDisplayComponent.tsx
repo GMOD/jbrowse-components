@@ -1,3 +1,4 @@
+import { pluralize } from '@jbrowse/core/util'
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import TrackControl from '@jbrowse/display-kit/TrackControl'
 import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
@@ -46,6 +47,14 @@ const LinearMarkDisplayComponent = observer(
                 icon="filter"
                 label="density"
                 tooltip={model.densityStandInNotice}
+              />
+            ) : null}
+            {model.notices.length > 0 ? (
+              <TrackControl
+                icon="filter"
+                warning
+                label={`${model.notices.length} config ${pluralize(model.notices.length, 'problem')}`}
+                tooltip={model.notices.join('; ')}
               />
             ) : null}
             <SkippedFeaturesIndicator {...model.skippedFeatures} />

@@ -72,6 +72,7 @@ import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
 import { buildMarkList, markDrawsAt, markRowHeightPx } from './markList.ts'
+import { markProblems, pinnedPair, problemText } from './markProblems.ts'
 import {
   EMPTY_PLOT_SPEC,
   defaultPlotMarks,
@@ -96,6 +97,7 @@ import type {
   MarkRenderState,
   StoredLayer,
 } from './markList.ts'
+import type { MarkProblem } from './markProblems.ts'
 import type { PlotFields, PlotSpec } from './plotFields.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -188,10 +190,7 @@ function colorEncodingOf(
       return {
         field: color.field,
         scale,
-        domain:
-          color.domain.length === 2
-            ? [Number(color.domain[0]), Number(color.domain[1])]
-            : undefined,
+        domain: pinnedPair(color.domain),
         ramp:
           color.ramp.length === 0
             ? undefined
@@ -344,6 +343,7 @@ function markEntryOf(mark: MarkConfig): MarkEntry {
     shape: mark.shape,
     minBpPerPx: mark.minBpPerPx,
     maxBpPerPx: mark.maxBpPerPx,
+    placed: mark.shape === 'span' || mark.encoding.y !== '',
   }
 }
 
@@ -927,6 +927,23 @@ export function stateModelFactory(
               ? [{ mark: hit.markIndex, index: hit.instance }]
               : undefined,
         ).map(r => ({ ...r, top: r.top + top }))
+      },
+      /**
+       * #getter
+       * What the declared marks say that the display cannot draw as written,
+       * reported where a load would once have refused the track.
+       */
+      get configProblems(): MarkProblem[] {
+        return markProblems(getSnapshot(self.conf.marks), !!self.facet)
+      },
+      /**
+       * #getter
+       * The config problems as lines an agent's settle report carries: a
+       * display with one still draws, so nothing else reaches a caller that
+       * cannot see the corner notice.
+       */
+      get notices(): string[] {
+        return this.configProblems.map(problemText)
       },
       /**
        * #getter

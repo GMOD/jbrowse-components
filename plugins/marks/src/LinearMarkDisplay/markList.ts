@@ -99,6 +99,8 @@ export interface MarkEntry {
   shape: MarkShapeName
   minBpPerPx: number
   maxBpPerPx: number
+  /** Whether the mark has somewhere to stand: a bar or point naming no `y` draws nowhere. */
+  placed: boolean
 }
 
 /** The px each row band gets: the plot split by the row count. */
@@ -107,10 +109,11 @@ export function markRowHeightPx(canvasHeight: number, rowCount: number) {
 }
 
 export function markDrawsAt(
-  { minBpPerPx, maxBpPerPx }: MarkEntry,
+  { minBpPerPx, maxBpPerPx, placed }: MarkEntry,
   bpPerPx: number,
 ) {
   return (
+    placed &&
     (minBpPerPx <= 0 || bpPerPx >= minBpPerPx) &&
     (maxBpPerPx <= 0 || bpPerPx < maxBpPerPx)
   )

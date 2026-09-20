@@ -101,6 +101,9 @@ interface DisplaySelf {
   // computeDisplayPhase — so a display whose renderer threw reports
   // phase: 'renderError' and, without this, nothing to act on
   renderError?: unknown
+  // what the display drew around rather than refused: a config it loaded and
+  // cannot draw as written raises no snackbar and leaves the phase ready
+  notices?: readonly string[]
 }
 
 interface TrackSelf extends IStateTreeNode {
@@ -186,6 +189,7 @@ function displayState(track: TrackSelf) {
       ...(display.renderError
         ? { renderError: String(display.renderError) }
         : {}),
+      ...(display.notices?.length ? { notices: [...display.notices] } : {}),
     }
   } catch (e) {
     return { display: display.type, error: String(e) }
@@ -525,7 +529,7 @@ export async function waitReady(
           .filter(v => 'phase' in v || 'error' in v),
         ...allTracks(session)
           .map(t => ({ trackId: t.configuration.trackId, ...displayState(t) }))
-          .filter(t => 'phase' in t || 'error' in t),
+          .filter(t => 'phase' in t || 'error' in t || 'notices' in t),
       ]
     : []
   const offscreen = session ? offscreenViews(session, root) : undefined

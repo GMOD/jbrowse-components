@@ -59,7 +59,12 @@ function layer(
 }
 
 function entries(...shapes: MarkEntry['shape'][]): MarkEntry[] {
-  return shapes.map(shape => ({ shape, minBpPerPx: 0, maxBpPerPx: 0 }))
+  return shapes.map(shape => ({
+    shape,
+    minBpPerPx: 0,
+    maxBpPerPx: 0,
+    placed: true,
+  }))
 }
 
 const state: MarkRenderState = {
@@ -286,7 +291,7 @@ test('every mark places its value through the display s one domain', () => {
 
 test('a mark outside its zoom range neither draws nor answers a hover', () => {
   const [mark] = buildMarkList([
-    { shape: 'bar', minBpPerPx: 10, maxBpPerPx: 0 },
+    { shape: 'bar', minBpPerPx: 10, maxBpPerPx: 0, placed: true },
   ])
   const hal = new MockHal([mark!.pass])
   const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)

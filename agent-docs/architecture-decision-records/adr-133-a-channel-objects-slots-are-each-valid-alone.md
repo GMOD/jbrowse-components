@@ -58,6 +58,20 @@ starts from neither.
   display for sub-schemas declaring a `shorthand`, writes each slot through the
   editor's own `makeSlotFacade`, and requires the result to reload as written.
   A combination refusal added to any channel object fails it.
+- The rule holds one level up, for a mark. The mark display's load check
+  (`checkMarks`) refused a bar naming no `y`, a channel its shape does not
+  read, a span's unpinned ramp and an open ramp domain, and
+  `slotWritesReload.test.ts` found an editor write reaching each: changing a
+  bar to a span, emptying `y`, touching any glyph slot on a bar, typing a
+  ramp's domain one entry at a time. The track was then dropped from the
+  session it was saved in. A load now refuses a key, a type and an unknown
+  shape. `markProblems` reports every combination, and what marks do to each
+  other besides: a valued mark beside a stacked span, two marks packing rows
+  of their own, a `y` its own steps do not write. The display draws what it
+  can, says the rest in its corner notice, and hands the same lines to an
+  agent's settle report as `notices`, since a display that loads raises no
+  snackbar. The JSON schema keeps `requires`, so `jbrowse validate` still
+  reports a bar naming no `y` as an error where the app shows a notice.
 - The Edit as JSON dialog still refuses a spec naming no field or colour, with
   its own message: a whole-object writer has no intermediate states to pass
   through, and such a spec changes nothing.

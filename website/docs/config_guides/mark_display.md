@@ -456,6 +456,25 @@ the banner still appears, unchanged.
 
 <Figure src="/img/mark_display/density_sidecar.png" caption="Chromosome 1 end to end, past the budget: the Alu track's sidecar bins draw as the density mark, with the chip in the corner naming what is on screen."/>
 
+## When a config cannot draw as written
+
+A `marks` list loads whenever its keys and value types are right, and the
+display draws what it can. Where two slots disagree, the track shows a warning
+chip in its corner naming the mark and the slot:
+
+- a `bar` or `point` naming no `y`, which draws nothing;
+- a channel the shape does not read, such as `y` on a `span`;
+- a `y` naming a field the mark's own `aggregate` or `coverage` step does not
+  write, with the fields those steps leave;
+- a `bar` or `point` drawn together with a stacked `span`, which stands in the
+  first of the span's rows;
+- two marks each running their own `stack`, which share row numbers, where one
+  `stack` in the display's `transform` packs them together;
+- a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
+  draws.
+
+`jbrowse validate` reports the first of these as an error in the file.
+
 ## What the track menu offers
 
 **Plot field...** writes the `marks` above without leaving the app: pick a
