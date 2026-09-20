@@ -1,5 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { ldColoringRequested } from '../ManhattanRPC/rpcTypes.ts'
 import { LD_DOMAIN, LD_LEGEND_TITLE, LD_PALETTE, ldLegend } from './ldBins.ts'
@@ -221,6 +222,24 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(display.color).toMatchObject({
       field: 'population',
       scale: 'categorical',
+    })
+  })
+
+  it('a trip through Single color writes no default cut or colour into the config', () => {
+    const { display } = createTestEnvironment({
+      color: { field: 'ld' },
+    }).createDisplay()
+    display.setColorScale('none')
+    expect(getSnapshot(display.configuration).color).toEqual({
+      field: 'ld',
+      scale: 'none',
+    })
+    display.colorByLd()
+    expect(getSnapshot(display.configuration).color).toEqual({ field: 'ld' })
+    expect(display.color).toMatchObject({
+      scale: 'threshold',
+      domain: LD_DOMAIN,
+      palette: LD_PALETTE,
     })
   })
 

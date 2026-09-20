@@ -94,8 +94,14 @@ member", rather than inventing a house convention.
   before. What changed is which of the two a *merge* lands on.
 - **`getSnapshot` of a reset slot no longer emits `null`**, so a slot reset
   through the merge path round-trips as absent rather than as a stored value.
-- A frozen slot's *nested* nulls are untouched — the merge path reinterprets
-  only the top-level value. A caller that needs to store a bare `null` wraps it,
-  or writes it as a snapshot.
+- **A namespace's member resets the same way, at any depth.**
+  `{ scales: { y: { domainMin: null } } }` reaches `mergedSubschemaValue` rather
+  than `setSlot`, and that merge is RFC 7396's: a `null` member leaves the key
+  out of the namespace's snapshot, which `stripDefault` reads as the default. It
+  used to copy the `null` in, so `create` refused it and a session spec could
+  pin an axis and not unpin it.
+- A frozen slot's *nested* nulls are untouched — the merge path reinterprets a
+  slot's own value and a namespace's members, and recurses into nothing else. A
+  caller that needs to store a bare `null` wraps it, or writes it as a snapshot.
 - No config in the tree wrote a bare `null` slot value, and v5 carries no
   migrations, so nothing needed rewriting.

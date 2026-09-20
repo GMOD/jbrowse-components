@@ -623,14 +623,14 @@ export function stateModelFactory(
         },
       }))
       .actions(self => {
+        // `self.color` is the colour as painted, LD's default cuts and palette
+        // filled in, so neither write below reads it back into the config
         function colorBy(field: string) {
-          const { value, domain, palette } = self.color
-          self.configuration.setSubschema(
-            'color',
-            field === self.color.field
-              ? { value, field, domain, palette }
-              : { value, field },
-          )
+          if (field === self.color.field) {
+            setConf(self, ['color', 'scale'], undefined)
+          } else {
+            setConf(self, 'color', { value: self.color.value, field })
+          }
         }
         return {
           /**
@@ -659,18 +659,11 @@ export function stateModelFactory(
           /**
            * #action
            * `none` paints every point `value`; `categorical` paints the field
-           * again. The rest of the object rides along, so switching back to
-           * the field finds its order and palette.
+           * again. The scale alone, so switching back to the field finds its
+           * order and palette as written.
            */
           setColorScale(scale: Exclude<ManhattanColorScale, 'threshold'>) {
-            const { value, field, domain, palette } = self.color
-            self.configuration.setSubschema('color', {
-              value,
-              field,
-              domain,
-              palette,
-              scale,
-            })
+            setConf(self, ['color', 'scale'], scale)
           },
           /**
            * #action

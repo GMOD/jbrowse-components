@@ -20,7 +20,12 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
   `frozen` with `defaultValue: null`. Omitting the key is a different thing:
   `setSlot` is the merge path, where an absent key means "leave it alone", while
   a snapshot handed to `create` resets an omitted slot already — and still
-  stores a literal `null` if one is written there. ADR-146.
+  stores a literal `null` if one is written there. A namespace's member takes
+  the other merge, `mergedSubschemaValue`, which reads `null` the same way at
+  any depth. ADR-146.
+- **`setConf` classifies a member off the schema's definition**, not off what
+  the node holds there: an optional sub-schema nobody has written holds nothing,
+  and a `stringArray` slot holds an array.
 - **A worker payload is `fullConfSnapshot`, not `getSnapshot`.** `stripDefault`
   omits a slot sitting at its default, and a worker has no schema to fill it
   back in.

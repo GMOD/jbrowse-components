@@ -194,3 +194,22 @@ test('a channel — a sub-schema with a shorthand — replaces whole', () => {
     'strand',
   )
 })
+
+// A session spec can pin an axis, so it has to be able to unpin one: `null`
+// resets a namespace's member the way it resets a slot (ADR-146).
+test('null resets a member at any depth of a namespace', () => {
+  const display = makeDisplay()
+  display.applyDisplaySettings({ scales: { y: { type: 'log', domainMin: 5 } } })
+  const report = display.applyDisplaySettings({
+    scales: { y: { domainMin: null } },
+  })
+  expect(report).toEqual({ applied: ['scales'], unapplied: [], failed: [] })
+  const y = readConfObject(display.configuration, ['scales', 'y'])
+  expect(y.type).toBe('log')
+  expect(y.domainMin).toBeUndefined()
+
+  display.applyDisplaySettings({ scales: { y: null } })
+  expect(readConfObject(display.configuration, ['scales', 'y', 'type'])).toBe(
+    'linear',
+  )
+})

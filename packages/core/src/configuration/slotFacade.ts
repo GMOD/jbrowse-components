@@ -67,14 +67,28 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
 }
 
-function deepMerge(
-  base: Record<string, unknown>,
-  over: Record<string, unknown>,
-) {
-  const out = { ...base }
-  for (const [k, v] of Object.entries(over)) {
-    const prev = out[k]
-    out[k] = isPlainObject(prev) && isPlainObject(v) ? deepMerge(prev, v) : v
+function isNamespace(member: unknown): member is AnyConfigurationModel {
+  const options = isStateTreeNode(member)
+    ? getConfigurationSchemaOptions(member as AnyConfigurationModel)
+    : undefined
+  return !!options && options.shorthand === undefined
+}
+
+// JSON Merge Patch (RFC 7396) over a namespace's snapshot: a `null` member
+// leaves the key out, which a stripDefault snapshot reads as the default
+function mergePatch(
+  namespace: AnyConfigurationModel,
+  patch: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...getSnapshot(namespace) }
+  for (const [k, v] of Object.entries(patch)) {
+    const member = (namespace as unknown as Record<string, unknown>)[k]
+    if (v === null) {
+      delete out[k]
+    } else {
+      out[k] =
+        isPlainObject(v) && isNamespace(member) ? mergePatch(member, v) : v
+    }
   }
   return out
 }
@@ -82,8 +96,8 @@ function deepMerge(
 /**
  * What to hand `setSubschema` for a write of `slotName`: `value` itself where
  * the sub-schema is a channel, and the node's own snapshot with `value`'s
- * members over it — recursing where both sides are plain objects — where it is
- * not.
+ * members over it — recursing into the namespaces inside it — where it is not.
+ * `null` resets at any depth of a namespace, the way it resets a slot (ADR-146).
  *
  * **A `shorthand` is what tells the two apart.** A sub-schema that takes a bare
  * string takes one written value, so `{ field: 'biotype' }` after
@@ -99,14 +113,9 @@ export function mergedSubschemaValue(
   value: unknown,
 ) {
   const existing = (node as unknown as Record<string, unknown>)[slotName]
-  if (!isPlainObject(value) || !isStateTreeNode(existing)) {
-    return value ?? {}
-  }
-  const snap = getSnapshot(existing as AnyConfigurationModel)
-  return getConfigurationSchemaOptions(existing as AnyConfigurationModel)
-    ?.shorthand === undefined && isPlainObject(snap)
-    ? deepMerge(snap, value)
-    : value
+  return isPlainObject(value) && isNamespace(existing)
+    ? mergePatch(existing, value)
+    : (value ?? {})
 }
 
 /**

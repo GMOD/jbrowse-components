@@ -28,10 +28,21 @@ const facet = ConfigurationSchema(
   { shorthand: 'field', closed: true },
 )
 
+const searchIndex = ConfigurationSchema(
+  'SearchIndex',
+  { uri: { type: 'string', defaultValue: '' } },
+  { explicitlyTyped: true },
+)
+
 const display = ConfigurationSchema('Display', {
   height: { type: 'number', defaultValue: 100 },
   scales,
   facet,
+  // `textSearchAdapter`'s spelling: unset until something writes it
+  searchIndex: types.union(
+    types.optional(types.undefined, undefined),
+    searchIndex,
+  ),
 })
 
 const holder = types.model({ configuration: display })
@@ -80,6 +91,15 @@ describe('a bare name whose value is an object writes the object whole', () => {
     expect(() => {
       setConf(m, 'facet', { field: 'source', notASlot: ['red'] })
     }).toThrow()
+  })
+
+  test('an optional one nobody has written yet', () => {
+    const m = model()
+    expect(m.configuration.searchIndex).toBeUndefined()
+    setConf(m, 'searchIndex', { type: 'SearchIndex', uri: 'genes.ix' })
+    expect(readConfObject(m.configuration, ['searchIndex', 'uri'])).toBe(
+      'genes.ix',
+    )
   })
 
   test('an empty object clears it', () => {

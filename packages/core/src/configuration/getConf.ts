@@ -1,6 +1,7 @@
-import { isArrayType, isStateTreeNode, getType } from '@jbrowse/mobx-state-tree'
+import { getType, isArrayType } from '@jbrowse/mobx-state-tree'
 
 import { readConfObject } from './readConfObject.ts'
+import { getConfigurationSchemaDefinition } from './schemaRegistry.ts'
 import {
   isConfigurationModel,
   isConfigurationSchemaType,
@@ -147,15 +148,14 @@ function writeConfPath(
     node = child
   }
   const leaf = path.at(-1)!
-  const current = (node as unknown as Record<string, unknown>)[leaf]
-  // Classify off the member's own MST type, never off "is it an array": a
-  // `stringArray` slot holds an array node too, and dispatching on that sent
-  // the multi-way display's `domain` to setSubschemaArray.
-  const type = isStateTreeNode(current) ? getType(current) : undefined
-  if (!type || !isConfigurationSchemaType(type)) {
+  // Classify off the declaration, never off what the member holds: a
+  // `stringArray` slot holds an array node, and an optional sub-schema nobody
+  // has written yet holds nothing.
+  const declared = getConfigurationSchemaDefinition(node)?.[leaf]
+  if (!isConfigurationSchemaType(declared)) {
     // eslint-disable-next-line no-restricted-syntax -- this is setConf
     node.setSlot(leaf, value)
-  } else if (isArrayType(type)) {
+  } else if (isArrayType(declared)) {
     node.setSubschemaArray(leaf, value as unknown[])
   } else {
     node.setSubschema(leaf, value)
