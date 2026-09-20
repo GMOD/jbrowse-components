@@ -109,9 +109,10 @@ function colorRadio(
 // without reopening the dialog.
 function tagItem(model: AnyColorByModel): MenuItem {
   const { colorBy } = model
-  const active = colorBy.type === 'tag' && colorBy.tag !== undefined
+  const named =
+    colorBy.type === 'tag' ? (colorBy.tag ?? colorBy.attribute) : undefined
   return radioItem(
-    active ? `Tag (${colorBy.tag})...` : 'Tag...',
+    named === undefined ? 'Tag...' : `Tag (${named})...`,
     colorBy.type === 'tag',
     () => {
       getDialogHost(model).queueDialog((handleClose: () => void) => [
