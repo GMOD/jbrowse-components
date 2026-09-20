@@ -438,6 +438,39 @@ test('a plain groupby over a field holding one-element lists groups by the eleme
   ])
 })
 
+test('a plain groupby keys by the element where the first feature lacks the field', () => {
+  const out = runTransforms(
+    [
+      feature(100, 101, {}),
+      feature(200, 201, { ALT: ['<DEL>'] }),
+      feature(300, 301, { ALT: ['<DEL>'] }),
+      feature(400, 401, { ALT: ['<DUP>'] }),
+    ],
+    [{ type: 'aggregate', groupby: ['ALT'], ops: [{ op: 'count' }] }],
+  )
+  expect(rows(out, 'ALT', 'count')).toEqual([
+    [undefined, 1],
+    ['<DEL>', 2],
+    ['<DUP>', 1],
+  ])
+})
+
+test('a plain groupby keys by the element where the first feature holds a plain string', () => {
+  const out = runTransforms(
+    [
+      feature(100, 101, { ALT: '<DEL>' }),
+      feature(200, 201, { ALT: ['<DEL>'] }),
+      feature(300, 301, { ALT: ['<DUP>'] }),
+      feature(400, 401, { ALT: ['<DUP>'] }),
+    ],
+    [{ type: 'aggregate', groupby: ['ALT'], ops: [{ op: 'count' }] }],
+  )
+  expect(rows(out, 'ALT', 'count')).toEqual([
+    ['<DEL>', 2],
+    ['<DUP>', 2],
+  ])
+})
+
 test('bin and pileup read a dotted path as they read the same values under a plain name', () => {
   const edges = (field: string) =>
     rows(

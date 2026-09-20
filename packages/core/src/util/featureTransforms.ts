@@ -245,7 +245,8 @@ function groupMembers(
   for (const f of features) {
     let node = root
     for (let i = 0; i < last; i++) {
-      const v = f.get(groupby[i]!)
+      const raw = f.get(groupby[i]!)
+      const v = typeof raw === 'object' ? groupKey(raw) : raw
       let next = node.get(v) as GroupTrie | undefined
       if (!next) {
         next = new Map()
@@ -253,7 +254,8 @@ function groupMembers(
       }
       node = next
     }
-    const v = f.get(groupby[last]!)
+    const raw = f.get(groupby[last]!)
+    const v = typeof raw === 'object' ? groupKey(raw) : raw
     let members = node.get(v) as Feature[] | undefined
     if (!members) {
       members = []
@@ -267,8 +269,7 @@ function groupMembers(
 
 type Read = (feature: Feature) => unknown
 
-// `groupMembers` over readers and normalized keys: what a dotted groupby, or
-// one over a field holding lists, takes in place of the direct trie above.
+// `groupMembers` over readers, for a groupby naming a dotted path.
 function groupMembersBy(
   features: readonly Feature[],
   reads: readonly Read[],
@@ -299,23 +300,15 @@ function groupMembersBy(
   return groups
 }
 
-// Whether a groupby needs its keys read and normalized: a path names one, or
-// the field holds lists, which the first feature says once for the whole walk.
-function keyedGroupby(
-  features: readonly Feature[],
-  groupby: readonly string[],
-) {
-  const first = features[0]
-  return groupby.some(
-    field => !isPlainFieldRef(field) || typeof first?.get(field) === 'object',
-  )
+function keyedGroupby(groupby: readonly string[]) {
+  return groupby.some(field => !isPlainFieldRef(field))
 }
 
 function aggregate(features: readonly Feature[], step: AggregateStep) {
   const { groupby = [], ops } = step
   const out: Feature[] = []
   let serial = 0
-  const reads = keyedGroupby(features, groupby)
+  const reads = keyedGroupby(groupby)
     ? groupby.map(field => pathReader(field, 'an aggregate'))
     : undefined
   const opReads = ops.map(({ op, field }) =>
@@ -336,7 +329,7 @@ function aggregate(features: readonly Feature[], step: AggregateStep) {
     }
     const data: Record<string, unknown> = {}
     for (const [i, field] of groupby.entries()) {
-      data[field] = reads ? groupKey(reads[i]!(first)) : first.get(field)
+      data[field] = groupKey(reads ? reads[i]!(first) : first.get(field))
     }
     for (const [k, agg] of ops.entries()) {
       const read = opReads[k]

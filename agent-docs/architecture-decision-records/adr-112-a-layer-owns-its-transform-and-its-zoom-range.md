@@ -38,14 +38,21 @@ render state rather than a new mechanism.
   `start` and `end` by default, so an `aggregate` grouped by those two is a
   density whose bars span the bins with the encoding's `x`/`x2` defaults
   untouched. `aggregate` keys its groups by raw field values through one
-  `Map` per groupby field. A step's field is a name or a dotted path
-  (`INFO.DP`), as a channel's is, and each step picks its loop once: a plain
-  name keeps the direct `f.get` it always made, and a path, or a groupby field
-  whose first feature holds a list, takes a reader variant that keys a
-  one-element list by its element. Against main's loops on plain configs,
-  interleaved with a copy of the new code as the control (which measured
-  0.95-1.05x against itself): `bin+count` 1.04x, `bin+mean` 0.99x, a groupby
-  1.01x. Both variants in one `aggregateValue` body measured 1.04-1.20x on a
+  `Map` per groupby field, normalizing a key the field holds as a list — a VCF's
+  `ALT` arrives as `['<DEL>']`, and a `Map` keys a list by identity, which made
+  every feature a group of its own. A step's field is a name or a dotted path
+  (`INFO.DP`), as a channel's is, and **each step picks its loop from the config
+  alone**, never from the first feature's value: a plain name keeps the direct
+  `f.get` it always made and normalizes the key it reads, a path takes a reader
+  variant. The earlier rule sniffed `features[0]`, so a VCF whose first record
+  in a region lacked an INFO key the rest carried keyed the rest by identity
+  with no message. Against main's loops on plain configs over 300,000 features,
+  interleaved with a byte-identical copy of the new code as the control, min of
+  41 rounds, three runs on a loaded shared machine: `bin+count` 0.89-1.08x,
+  `bin+mean` 0.93-1.05x, a one-field groupby 0.94-1.02x, a two-field groupby
+  0.99-1.01x, all inside the control's own 0.94-1.12x band. Grouping by a field
+  holding one-element lists costs 232ns per input, what the plain string groupby
+  costs. Both variants in one `aggregateValue` body measured 1.04-1.20x on a
   plain field, which is why the reader variant is a function of its own. A
   config writing a path pays 1.14-1.17x on that step. `pileup` reads each
   interval once and sorts only input that is not already in start order:
