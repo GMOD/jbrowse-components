@@ -1,3 +1,4 @@
+import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -11,6 +12,7 @@ import {
 } from './legendUtils.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 
+import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
@@ -26,6 +28,7 @@ function legendFor(
     presentModifications?: ReadonlySet<string>
     chainFramed?: boolean
     refNamePosition?: RefNamePosition
+    bakedScale?: BakedColorScale
   },
 ) {
   return getReadDisplayLegendItems({
@@ -302,6 +305,63 @@ describe('getReadDisplayLegendItems', () => {
   // The swatch resolves through the same `bakedValueColor` the paint path runs
   // per read, so it is the color drawn rather than a second table agreeing with
   // it. There used to be that second table (`colorTagMap`).
+  test('a declared scale keys its own order, ramp and bins in the painted colours', () => {
+    const declared = {
+      value: undefined,
+      field: 'tags.HP',
+      scale: undefined,
+      domain: [] as string[],
+      palette: [] as string[],
+      ramp: [] as string[],
+      domainMid: undefined,
+    }
+    const HP: ColorBy = { type: 'tag', tag: 'HP' }
+    const ordered = bakedColorScale(
+      HP,
+      { ...declared, domain: ['2', '1'], palette: ['#ff0000', '#0000ff'] },
+      undefined,
+      undefined,
+    )
+    expect(
+      legendFor(HP, ['tag'], {
+        presentTagValues: new Set(['1', '2']),
+        bakedScale: ordered,
+      }),
+    ).toEqual([
+      { color: '#ff0000', label: '2' },
+      { color: '#0000ff', label: '1' },
+    ])
+
+    const NM: ColorBy = { type: 'tag', tag: 'NM' }
+    const ramp = bakedColorScale(
+      NM,
+      { ...declared, field: 'tags.NM', scale: 'linear', domain: ['0', '10'] },
+      undefined,
+      undefined,
+    )
+    const rampRows = legendFor(NM, ['tag'], { bakedScale: ramp })
+    expect(rampRows[0]!.label).toBe('tags.NM 0')
+    expect(rampRows.at(-1)!.label).toBe('tags.NM 10')
+    expect(rampRows[0]!.color).toBe(ramp.color('0'))
+
+    const bins = bakedColorScale(
+      NM,
+      {
+        ...declared,
+        field: 'tags.NM',
+        scale: 'threshold',
+        domain: ['5'],
+        palette: ['#00ff00', '#ff0000'],
+      },
+      undefined,
+      undefined,
+    )
+    expect(legendFor(NM, ['tag'], { bakedScale: bins })).toEqual([
+      { color: '#00ff00', label: 'tags.NM < 5' },
+      { color: '#ff0000', label: 'tags.NM ≥ 5' },
+    ])
+  })
+
   test('value tag swatches are the color the reads are painted', () => {
     const items = legendFor({ type: 'tag', tag: 'HP' }, ['tag'], {
       presentTagValues: new Set(['1', '2']),

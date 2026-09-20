@@ -1,11 +1,4 @@
-import { LEGACY_COLOR_SCHEME_TYPES } from './types.ts'
-
-import type {
-  ColorBy,
-  ColorSchemeType,
-  PersistedColorBy,
-  ShaderScheme,
-} from './types.ts'
+import type { ColorBy, ColorSchemeType, ShaderScheme } from './types.ts'
 
 export type ColorGroup = 'basic' | 'pairedEnd'
 
@@ -228,42 +221,6 @@ export function isDataFillScheme(type: ColorSchemeType) {
 // only the paint/extract passes are gated.
 export function workerColorBy(colorBy: ColorBy): ColorBy | undefined {
   return COLOR_SCHEMES[colorBy.type].workerExtracts ? colorBy : undefined
-}
-
-// Upgrade a persisted colorBy to canonical form: `methylation` becomes
-// `modifications` with `fillUnmarked` set, `stranded` becomes
-// `firstOfPairStrand` and `insertSizeGradient` becomes `insertSize`. A type the
-// registry doesn't know — a typo, a scheme renamed since a session was saved —
-// falls back to plain coloring, since every lookup keyed on ColorSchemeType
-// throws on it.
-export function normalizeColorBy(value: unknown): ColorBy {
-  if (!isRegisteredColorScheme(value)) {
-    return { type: 'normal' }
-  }
-  const colorBy = value
-  return colorBy.type === 'methylation'
-    ? {
-        type: 'modifications',
-        modifications: { ...colorBy.modifications, fillUnmarked: true },
-      }
-    : colorBy.type === 'stranded'
-      ? { type: 'firstOfPairStrand' }
-      : colorBy.type === 'insertSizeGradient'
-        ? { type: 'insertSize' }
-        : colorBy
-}
-
-const legacyTypes: readonly string[] = LEGACY_COLOR_SCHEME_TYPES
-
-function isRegisteredColorScheme(value: unknown): value is PersistedColorBy {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'type' in value &&
-    typeof value.type === 'string' &&
-    (Object.hasOwn(COLOR_SCHEMES, value.type) ||
-      legacyTypes.includes(value.type))
-  )
 }
 
 type RadioColorScheme = ColorSchemeDef & {

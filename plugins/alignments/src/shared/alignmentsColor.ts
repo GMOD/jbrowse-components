@@ -128,6 +128,12 @@ const INSERT_SIZE_FIELDS = new Set([
  * The short/long cut points an insert-size field's `domain` pins, in place of
  * the band sampled from the reads. Undefined unless it lists two ascending
  * numbers.
+ *
+ * Insert size stays a threshold scale. A gradient from the neutral toward each
+ * endpoint by severity shipped once (`insertSizeGradient`) and was retired:
+ * two half-ramped reads on opposite sides of the band both came out faintly
+ * tinted grey, closest exactly where a deletion signature has to be told from
+ * an insertion one.
  */
 export function pinnedInsertSizeBand({
   field,
