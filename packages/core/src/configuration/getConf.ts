@@ -128,6 +128,7 @@ export function setConf<
  * through whichever of the node's three write actions the member is: a
  * sub-schema is replaced, an array of sub-schemas is replaced, and a slot goes
  * through `setSlot` so ADR-052's name guard and the value-type guard both run.
+ * MST's `applyPatch` takes the same path and runs neither guard.
  */
 function writeConfPath(
   conf: AnyConfigurationModel,

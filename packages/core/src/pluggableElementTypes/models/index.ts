@@ -20,7 +20,6 @@ export type { BaseTrackModel, BaseTrackStateModel } from './BaseTrackModel.ts'
 export {
   createBaseTrackConfig,
   preprocessTrackConfigSnapshot,
-  trackConfigActions,
 } from './baseTrackConfig.ts'
 export type { BaseTrackConfig } from './baseTrackConfig.ts'
 export { addDisplayConfigMigration } from './migrateTrackConfig.ts'

@@ -30,7 +30,7 @@ import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
-import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
@@ -76,7 +76,6 @@ import type { DotplotHoverHighlight } from '../DotplotDisplay/types.ts'
 import type { Dotplot1DViewModel } from './1dview.ts'
 import type { Coord, DotplotViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
@@ -1565,30 +1564,27 @@ export default function stateModelFactory(pm: PluginManager) {
             // add the specific evidence tracks to the LGVs in the split view
             // note: scales the bpPerPx by scaling proportional of the dotplot
             // width to the eventual lgv width
-            const tracks = self.tracks
-              .map(track =>
-                track.configuration.displays.find(
-                  (display: { type: string }) =>
-                    display.type === 'LinearSyntenyDisplay',
-                ),
+            const tracks = self.tracks.flatMap(track => {
+              const trackConf = track.configuration
+              const displayConf = trackConf.displays.find(
+                (display: { type: string }) =>
+                  display.type === 'LinearSyntenyDisplay',
               )
-              .filter(f => !!f)
-              .map(displayConf => {
-                const trackConf = getParent<AnyConfigurationModel>(
-                  displayConf,
-                  2,
-                )
-                return {
-                  type: trackConf.type,
-                  configuration: trackConf.trackId,
-                  displays: [
+              return displayConf
+                ? [
                     {
-                      type: displayConf.type,
-                      configuration: displayConf.displayId,
+                      type: trackConf.type,
+                      configuration: trackConf.trackId,
+                      displays: [
+                        {
+                          type: displayConf.type,
+                          configuration: displayConf.displayId,
+                        },
+                      ],
                     },
-                  ],
-                }
-              })
+                  ]
+                : []
+            })
 
             const { id: _unused1, ...rest1 } = getSnapshot(d1)
             const { id: _unused2, ...rest2 } = getSnapshot(d2)

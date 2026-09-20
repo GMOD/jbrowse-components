@@ -984,8 +984,7 @@
         "createBaseTrackModel",
         "extendDisplayType",
         "extendViewType",
-        "preprocessTrackConfigSnapshot",
-        "trackConfigActions"
+        "preprocessTrackConfigSnapshot"
       ],
       "worker": "real"
     },
@@ -1030,8 +1029,7 @@
         "baseConnectionConfig",
         "createBaseTrackConfig",
         "createBaseTrackModel",
-        "preprocessTrackConfigSnapshot",
-        "trackConfigActions"
+        "preprocessTrackConfigSnapshot"
       ],
       "worker": "real"
     },

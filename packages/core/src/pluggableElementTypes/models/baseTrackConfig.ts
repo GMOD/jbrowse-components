@@ -122,45 +122,6 @@ export function preprocessTrackConfigSnapshot(
 }
 
 /**
- * The `addDisplayConf` action shared by every track config schema — appends a
- * display config unless one with the same displayId already exists.
- */
-interface DisplayConf {
-  type: string
-  displayId: string
-}
-
-// The config-schema action boundary types `self` as `unknown` (option signature
-// is `(self: unknown) => any`), so it can't be given a precise parameter type.
-// Narrow it once to the minimal shape the action touches, keeping the body
-// checked.
-interface TrackConfigWithDisplays {
-  displays: {
-    find(cb: (d: DisplayConf) => boolean): DisplayConf | undefined
-    push(conf: DisplayConf): number
-    [index: number]: DisplayConf
-  }
-}
-
-export function trackConfigActions(self: unknown) {
-  const { displays } = self as TrackConfigWithDisplays
-  return {
-    addDisplayConf(conf: DisplayConf) {
-      const { type } = conf
-      if (!type) {
-        throw new Error('display type not specified')
-      }
-      const display = displays.find(d => d.displayId === conf.displayId)
-      if (display) {
-        return display
-      }
-      const length = displays.push(conf)
-      return displays[length - 1]
-    },
-  }
-}
-
-/**
  * #config BaseTrack
  * Configuration shared by all track types. Concrete tracks (FeatureTrack,
  * AlignmentsTrack, VariantTrack, ...) extend this, so every track accepts these
@@ -323,8 +284,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
-
-      actions: trackConfigActions,
     },
   )
 }

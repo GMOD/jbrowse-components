@@ -2,10 +2,7 @@ import {
   ConfigurationSchema,
   FormatAboutConfigSchemaFactory,
 } from '@jbrowse/core/configuration'
-import {
-  preprocessTrackConfigSnapshot,
-  trackConfigActions,
-} from '@jbrowse/core/pluggableElementTypes'
+import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -13,8 +10,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Deliberately a subset of createBaseTrackConfig's slots — it omits fields that
 // don't make sense for the ReferenceSequenceTrack (assemblyNames, category,
-// textSearching, formatDetails, ...). The snapshot preprocessing and
-// addDisplayConf action are shared with the base track config.
+// textSearching, formatDetails, ...). The snapshot preprocessing is shared with
+// the base track config.
 
 /**
  * #config ReferenceSequenceTrack
@@ -102,7 +99,6 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
        */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
-      actions: trackConfigActions,
     },
   )
 }

@@ -32,7 +32,6 @@ export {
   createBaseTrackModel,
   preprocessTrackConfigSnapshot,
   type TrackConfigSnapshot,
-  trackConfigActions,
 } from './models/index.ts'
 
 export type PluggableElementType =
