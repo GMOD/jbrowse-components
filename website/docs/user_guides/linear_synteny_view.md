@@ -279,9 +279,9 @@ inside **Rows**:
   vertically, **Remove row**, **Re-order chromosomes**, and one entry per genome
   opening that row's own view menu (which is otherwise reachable only from that
   row's header, and a collapsed row has none). **Remove row** takes any row of a
-  stack of three or more, along with the bands beside it; the neighbours of a
-  row removed from the middle are joined by a synteny track that connects them,
-  where the session has one. **Reverse row order** flips the stack top to
+  stack of three or more, along with the bands beside it. Where the session has
+  a synteny track connecting the neighbours of a row taken from the middle, the
+  view opens it between them. **Reverse row order** flips the stack top to
   bottom, each band keeping its tracks. On three rows or more the re-order
   dialog asks which row to keep as it is: that row's order stands and every
   other row is sorted against its neighbour nearer it, so a stack whose groups
