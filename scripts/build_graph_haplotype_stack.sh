@@ -6,8 +6,8 @@
 # whose second module lacks the HERV-K insertion, and a haplotype with one.
 #
 # One range-requested window of the graph database holds every row's walk and
-# the node sequences. Two walks through one node are the same bases, so each
-# adjacent pair's alignment is read off the walks with no aligner, and a band
+# the node sequences. Two walks through one node are the same bases, so
+# gbz-base-query reads each adjacent pair's alignment off the walks, and a band
 # between two haplotypes covers what they share and GRCh38 lacks.
 #
 # Requires: curl, python3, and Node.js for `npx`
@@ -30,26 +30,11 @@ GBZ_DB="${GBZ_DB:-https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenome
 GBZ_INDEX="${GBZ_INDEX:-https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db}"
 HOSTED=https://jbrowse.org/pangenome/hprc-grch38
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HELPERS=(gfa_to_pairwise_paf.py)
-for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
-done
-
 mkdir -p "$OUT"
 cd "$OUT"
 
-echo "== the window of the graph, with each row's walk"
 contig="${REGION%%:*}"
 range="${REGION##*:}"
-keep=()
-for row in $ROWS; do
-  [ "$row" = "GRCh38#0" ] || keep+=(--keep "$row")
-done
-[ -s window.gfa ] || npx --yes -p @gmod/gbz-base gbz-base-query "$GBZ_DB" \
-  --haplotype-index "$GBZ_INDEX" --sample GRCh38 --contig "$contig" \
-  --interval "${range%-*}..${range#*-}" --context 0 --format gfa "${keep[@]}" >window.gfa
 
 echo "== whole-contig lengths"
 : >contig_lengths.tsv
@@ -61,19 +46,15 @@ for row in $ROWS; do
   fi | awk -F'\t' -v OFS='\t' -v p="$row" '{print p "#" $1, $2}' >>contig_lengths.tsv
 done
 
-echo "== each row against the row under it"
-: >adjacent.paf
-upper=""
-for row in $ROWS; do
-  if [ -n "$upper" ]; then
-    # --compare-bases aligns what lies between two shared nodes base by base
-    # --max-gap keeps a module-sized indel inside one record, where the view
-    #   draws it from the CIGAR
-    python3 "$SCRIPT_DIR/gfa_to_pairwise_paf.py" window.gfa --reference "$row" --queries "$upper" \
-      --hold-queries --compare-bases --max-gap "$MAX_GAP" --contig-lengths contig_lengths.tsv >>adjacent.paf
-  fi
-  upper="$row"
-done
+echo "== each row against the row under it, from one window of the graph"
+# --stack aligns each row to the next off the two walks, comparing the bases
+#   between two shared nodes
+# --max-gap keeps a module-sized indel inside one record, where the view draws
+#   it from the CIGAR
+npx --yes -p @gmod/gbz-base gbz-base-query "$GBZ_DB" \
+  --haplotype-index "$GBZ_INDEX" --sample GRCh38 --contig "$contig" \
+  --interval "${range%-*}..${range#*-}" --context 0 --stack "${ROWS// /,}" \
+  --max-gap "$MAX_GAP" --contig-lengths contig_lengths.tsv >adjacent.paf
 
 echo "== config.json and session.json"
 ROWS="$ROWS" HOSTED="$HOSTED" python3 - <<'PY'
@@ -85,13 +66,18 @@ rows = os.environ['ROWS'].split()
 assembly = {row: 'hg38' if row == 'GRCh38#0' else row.replace('#', '.') for row in rows}
 names = [assembly[row] for row in rows]
 
+contig_spans = {}
+for line in open('adjacent.paf'):
+    f = line.split('\t')
+    for name, start, end in ((f[0], f[2], f[3]), (f[5], f[7], f[8])):
+        lo, hi = contig_spans.get(name, (int(start), int(end)))
+        contig_spans[name] = (min(lo, int(start)), max(hi, int(end)))
 spans = {}
-for line in open('window.gfa'):
-    if line.startswith('W\t'):
-        _, sample, hap, contig, start, end, _ = line.split('\t', 6)
-        row = f'{sample}#{hap}'
-        if row not in spans or int(end) - int(start) > spans[row][2] - spans[row][1]:
-            spans[row] = (contig, int(start), int(end))
+for name, (lo, hi) in contig_spans.items():
+    sample, hap, contig = name.split('#', 2)
+    row = f'{sample}#{hap}'
+    if row not in spans or hi - lo > spans[row][2] - spans[row][1]:
+        spans[row] = (contig, lo, hi)
 
 
 def gene_track_id(name):
@@ -181,4 +167,4 @@ for path, value in (('config.json', config), ('session.json', session)):
         fh.write('\n')
 PY
 
-echo "Wrote $(pwd)/window.gfa, adjacent.paf, config.json and session.json"
+echo "Wrote $(pwd)/adjacent.paf, config.json and session.json"

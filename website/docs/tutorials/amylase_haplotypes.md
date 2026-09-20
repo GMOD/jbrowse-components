@@ -333,34 +333,23 @@ FASTA and no aligner. The complement _C4_ locus is one. A haplotype carries one
 to four copies of a 32.7 kb module, and the _C4_ gene in each copy is long or
 short by a 6.4 kb HERV-K insertion (Sekar et al. 2016).
 
-One request reads the window out of the graph database as GFA, with a walk for
-each row on that haplotype's own coordinates:
+`gbz-base-query` reads the window out of the graph database once and writes each
+row against the row under it, on each haplotype's own coordinates:
 
 ```bash
 GBZ_DB=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
 GBZ_INDEX=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
-# --format gfa writes the window's nodes with their sequences, and the walks
-# --keep names a haplotype whose walk the GFA carries, beside GRCh38's
-npx --yes -p @gmod/gbz-base gbz-base-query $GBZ_DB --haplotype-index $GBZ_INDEX \
-  --sample GRCh38 --contig chr6 --interval 31940000..32090000 --context 0 \
-  --format gfa --keep 'HG01978#2' --keep 'HG02004#2' --keep 'HG02818#1' \
-  --keep 'HG00146#1' > window.gfa
-```
-
-[`gfa_to_pairwise_paf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_to_pairwise_paf.py)
-then writes each row against the row under it, and any walk can be the
-`--reference`:
-
-```bash
-# a node both walks visit becomes a run of =
-# --compare-bases aligns what lies between two shared nodes base by base
+# --stack lists the rows from the top, and each is aligned to the next: a node
+#   both walks visit becomes a run of =, and the bases between two shared nodes
+#   are aligned into =, X, I and D
 # --max-gap keeps a module-sized insertion inside one record, where the view
 #   draws it from the CIGAR
-# --hold-queries reads the whole file before aligning, since the reference
-#   walk can come after the query's
-python3 gfa_to_pairwise_paf.py window.gfa --reference 'HG02004#2' \
-  --queries 'HG01978#2' --hold-queries --compare-bases --max-gap 200000 \
-  --contig-lengths contig_lengths.tsv >> adjacent.paf
+# --contig-lengths fills the PAF's two length columns, which a window of the
+#   graph does not hold
+npx --yes -p @gmod/gbz-base gbz-base-query $GBZ_DB --haplotype-index $GBZ_INDEX \
+  --sample GRCh38 --contig chr6 --interval 31940000..32090000 --context 0 \
+  --stack 'HG01978#2,HG02004#2,GRCh38#0,HG02818#1,HG00146#1' \
+  --max-gap 200000 --contig-lengths contig_lengths.tsv > adjacent.paf
 ```
 
 The rows are two haplotypes with three modules, GRCh38 with two, HG02818.1 with
