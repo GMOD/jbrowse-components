@@ -388,10 +388,10 @@ export const bigwigSpecs: ScreenshotSpec[] = [
   // Multi-quantitative (MultiWig) screenshots
   // ────────────────────────────────────────────────────────────────────────
 
-  // MultiWig track menu showing the plot type submenu: five plot names and the
-  // checkbox deciding whether the sources sit on rows. ADR-143 collapsed the
-  // nine plot-crossed-with-layout names this used to drill through, so the path
-  // is one level shorter than the figure's own history suggests.
+  // MultiWig track menu showing the plot type submenu: a group per layout with
+  // the five plot names inside each, so the frame carries both axes a leaf
+  // writes. A single-source track would meet the plots flat and have no group
+  // to drill through, which is why this figure is shot on a MultiWig.
   {
     mode: 'url',
     name: 'multiwig/multi_renderer_types',
@@ -403,7 +403,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Plot type', 'XY plot']),
+      ...menuCascade(['Plot type', 'Multi-row', 'XY plot']),
     ],
     annotations: [{ type: 'box', anchor: { text: 'Plot type' } }],
   },
