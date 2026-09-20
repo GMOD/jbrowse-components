@@ -139,14 +139,18 @@ adapter checks that the class reads the schema it was registered with.
   `fieldName`. **Refusing an unknown key means refusing keys that work.** None
   of the 47 was a real typo.
 
-  The residual is not a type-system limit, though. `shorthand` threads exactly
-  as `explicitlyTyped` did, and the shorthand vocabulary the rest of it needs is
-  **already derived** — `generateConfigManifest` probes each `normalizeSnapshot`
-  and records `shorthandKeys` for 59 schemas — just not anywhere a type
-  parameter can reach. What it would take is in
-  [ideas/typed-create-needs-the-shorthand-vocabulary.md](../ideas/typed-create-needs-the-shorthand-vocabulary.md).
-  Until then `ConfigurationSnapshot<SCHEMA>` stays the opt-in check at the
-  embedder boundary.
+  **It is declined on the surface it would cover, not on the count.**
+  TypeScript's excess-property rule fires only against an object literal, and a
+  config.json is not one — it arrives parsed. So the population the check
+  reaches is 21 non-test `.create({…})` sites tree-wide, several of them
+  benches, against 280 in test fixtures: our own tests. `jbrowse validate`
+  already refuses an unknown slot in a config.json and names the near miss —
+  `unknown slot "bamLocatoin" — did you mean "bamLocation"?` — reading the same
+  derived `shorthandKeys`, which is why that vocabulary was derived in the first
+  place. The check exists, on the surface that matters, with a better message
+  than a type error. `ConfigurationSnapshot<SCHEMA>` stays the opt-in check at
+  the embedder boundary, which is the one place a config IS written as a
+  literal.
 - **Walking the base chain for the identifier**, keyed on OPTIONS: 111 `TS2589`
   excessively-deep errors, one per consuming file. A one-level version keyed on
   the schema's own `EXPLICIT_IDENTIFIER` costs 56, because it puts
