@@ -1,0 +1,73 @@
+diff --git a/packages/core/src/configuration/configurationSchema.ts b/packages/core/src/configuration/configurationSchema.ts
+index cf57a8e466..e95c255bba 100644
+--- a/packages/core/src/configuration/configurationSchema.ts
++++ b/packages/core/src/configuration/configurationSchema.ts
+@@ -26,7 +26,9 @@ import type { ConfigSlotDefinition } from './configurationSlot.ts'
+ import type {
+   AnyConfigurationModel,
+   AnyConfigurationSchemaType,
++  ConfigNodeType,
+   GetInheritedIdentifier,
++  MergeConfigDef,
+ } from './types.ts'
+ import type {
+   IAnyType,
+@@ -437,6 +439,10 @@ export interface ConfigurationSchemaType<
+   OPTIONS extends ConfigurationSchemaOptions<any, any>,
+ > extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
+   type: string
++  readonly Type: ConfigNodeType<ConfigurationSchemaType<DEFINITION, OPTIONS>> &
++    ReturnType<
++      typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>
++    >['Type']
+ }
+ 
+ export function ConfigurationSchema<
+@@ -453,7 +459,7 @@ export function ConfigurationSchema<
+   inputSchemaDefinition: DEFINITION,
+   inputOptions?: ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
+ ): ConfigurationSchemaType<
+-  DEFINITION,
++  MergeConfigDef<DEFINITION, BASE_SCHEMA> & ConfigurationSchemaDefinition,
+   ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>
+ > {
+   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
+diff --git a/packages/core/src/configuration/types.ts b/packages/core/src/configuration/types.ts
+index 5cfc68914b..bd76ff152e 100644
+--- a/packages/core/src/configuration/types.ts
++++ b/packages/core/src/configuration/types.ts
+@@ -60,6 +60,34 @@ export type ConfigurationSchemaForModel<MODEL> =
+     ? SCHEMA
+     : never
+ 
++/**
++ * SPIKE: the typed instance a config node presents, mapped over the schema's
++ * own definition instead of the `Record<string, any>` the factory assembles.
++ */
++export type MergeConfigDef<D, BASE> = BASE extends ConfigurationSchemaType<
++  infer BD,
++  any
++>
++  ? Omit<BD, keyof D> & {
++      [K in keyof D]: K extends keyof BD
++        ? BD[K] extends { type: string }
++          ? D[K] extends { type: string }
++            ? Omit<BD[K], keyof D[K]> & D[K]
++            : D[K]
++          : D[K]
++        : D[K]
++    }
++  : D
++
++type ConfigNodeValue<DEF> = DEF extends AnyConfigurationSchemaType
++  ? DEF['Type']
++  : SlotValueRawFromDef<DEF>
++
++export type ConfigNodeType<SCHEMA> =
++  SCHEMA extends ConfigurationSchemaType<infer D, any>
++    ? { [K in keyof D]: ConfigNodeValue<D[K]> }
++    : never
++
+ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
+   ? never
+   : SCHEMA extends ConfigurationSchemaType<infer D, any>
