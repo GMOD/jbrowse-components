@@ -20,7 +20,7 @@ export default function WithTrackColorShorthand() {
           displayDefaults: { color: 'green' },
         },
       ]}
-      init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_green'] }}
+      view={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_green'] }}
     />
   )
 }

@@ -70,7 +70,7 @@ const APlotFromJson = observer(function APlotFromJson() {
         { type: 'filter', expr: "jexl:startsWith(feature.name, 'AluY')" },
       ]),
     ],
-    init: {
+    view: {
       loc: 'chr1:151,000,000..151,030,000',
       tracks: ['alu_age'],
     },

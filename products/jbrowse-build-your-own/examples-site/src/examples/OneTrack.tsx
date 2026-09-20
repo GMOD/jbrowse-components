@@ -21,7 +21,7 @@ const OneTrack = observer(function OneTrack() {
         displayDefaults: { height: 100, color: '#3a7ca5' },
       },
     ],
-    init: {
+    view: {
       loc: 'chr17:43,044,295..43,125,364',
       tracks: ['hg38_phylop'],
     },

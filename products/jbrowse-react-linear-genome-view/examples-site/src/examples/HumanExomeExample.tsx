@@ -34,7 +34,7 @@ export default function HumanExomeExample() {
           },
         },
       ]}
-      init={{
+      view={{
         loc: '1:100,987,269..100,987,368',
         tracks: ['NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'],
       }}

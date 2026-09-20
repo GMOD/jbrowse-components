@@ -14,7 +14,7 @@ export default function WithTrackShorthand() {
           name: 'Volvox duplications',
         },
       ]}
-      init={{ tracks: ['volvox_sv'] }}
+      view={{ tracks: ['volvox_sv'] }}
     />
   )
 }

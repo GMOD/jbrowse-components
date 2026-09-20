@@ -70,7 +70,7 @@ export default function ExportSvg() {
         ref={ref}
         assembly={assembly}
         tracks={tracks}
-        init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_gff3'] }}
+        view={{ loc: 'ctgA:1..50,000', tracks: ['volvox_gff3'] }}
       />
     </div>
   )

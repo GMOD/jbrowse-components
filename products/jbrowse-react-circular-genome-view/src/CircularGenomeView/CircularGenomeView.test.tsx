@@ -41,7 +41,7 @@ test('<CircularGenomeView /> builds its own engine and shows regions via init', 
   // `assembly` prop (volvox) by the component. `{}` just opens that assembly
   const { findAllByText } = render(
     <Suspense fallback={<div>Loading...</div>}>
-      <CircularGenomeView ref={ref} assembly={assembly} tracks={[]} init={{}} />
+      <CircularGenomeView ref={ref} assembly={assembly} tracks={[]} view={{}} />
     </Suspense>,
   )
   await waitFor(() => {

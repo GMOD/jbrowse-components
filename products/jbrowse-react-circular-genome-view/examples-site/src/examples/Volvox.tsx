@@ -40,7 +40,7 @@ export default function Volvox() {
     <CircularGenomeView
       assembly={assembly}
       tracks={tracks}
-      init={{ tracks: ['volvox_sv_test'] }}
+      view={{ tracks: ['volvox_sv_test'] }}
     />
   )
 }

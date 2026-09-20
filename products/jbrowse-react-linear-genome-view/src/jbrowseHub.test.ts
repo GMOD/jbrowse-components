@@ -44,7 +44,7 @@ test("jbrowseHub brings the hub's assembly, catalog and search index, and the ho
   const state = await createViewStateAsync({
     jbrowseHub: 'volvox',
     tracks: [featureTrack('mine'), featureTrack('shared', 'the host copy')],
-    init: { loc: 'ctgA:1..100', tracks: ['hub_genes', 'mine'] },
+    view: { loc: 'ctgA:1..100', tracks: ['hub_genes', 'mine'] },
   })
   try {
     expect(fetchHub).toHaveBeenCalledWith('volvox')

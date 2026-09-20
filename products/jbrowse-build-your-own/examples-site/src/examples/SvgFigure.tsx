@@ -61,7 +61,7 @@ const SvgFigure = observer(function SvgFigure() {
         displayDefaults: { height: 120 },
       },
     ],
-    init: {
+    view: {
       loc: 'chr17:43,000,000..43,170,000',
       tracks: ['hg38_phylop', 'hg38_genes'],
       highlight: [

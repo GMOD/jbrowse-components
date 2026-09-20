@@ -23,7 +23,7 @@ export default function WithInitAdvanced() {
           },
         },
       ]}
-      init={{
+      view={{
         loc: 'chr1:11,106,077-11,261,675',
         tracklist: true,
         nav: true,

@@ -21,6 +21,7 @@ import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
   HighlightType,
   InitState,
+  LinearGenomeViewLaunchProps,
 } from '@jbrowse/plugin-linear-genome-view'
 import type {
   LocalFileInput,
@@ -105,33 +106,24 @@ export interface CreateViewStateBaseOptions {
    */
   localFiles?: LocalFileInput
   /**
-   * The declarative description of the view to open — where to navigate, which
-   * tracks to show, whether to open the track list — minus `assembly`, which is
-   * filled in from the `assembly` option so you never repeat it.
+   * The view to open, written flat the way a session spec or a config's view is
+   * (ADR-099): where to navigate (`loc`), which tracks to show (`tracks`),
+   * `highlight`, `tracklist`, and any of the view's own settings beside them
+   * (`hideHeader`, `showGridlines`, `trackLabels`). `type` and `assembly` are
+   * filled in.
    *
-   * Read ONCE, at create, the way `defaultValue` is: it seeds the view and is
-   * never consulted again, so changing it later moves nothing. That is what the
-   * name is for, and it is why this survived v5 removing `init` as a key ON a
-   * view — there the word named a second authoring shape for settings that now
-   * go directly on the view object (ADR-099), and a saved session or URL spec
-   * carries them flat. This is an argument to a factory, not a snapshot key.
-   *
-   * Shared by both entry points rather than being the managed component's own
-   * input, and that is the point: a host holding its own engine says
-   * `init: { loc, tracks: [...] }` instead of authoring a `defaultSession`
-   * around the same three fields, so choosing `useCreateViewState` over
-   * `<LinearGenomeView>` costs nothing. It is the choice that gets you an
-   * engine you can read during render and hand to `destroyViewState`.
+   * It is the default session's view, so it is read once at create, excludes
+   * `defaultSession`, and a restored `session` replaces it.
    */
-  init?: Omit<InitState, 'assembly'>
+  view?: Omit<InitState, 'assembly'> & LinearGenomeViewLaunchProps
 }
 
 // the imperative call adds the two session slots, plus two shorthands for init
 // fields; the managed component expresses the same through `init` alone
 export interface ViewStateOptions extends CreateViewStateBaseOptions {
-  /** sugar for `init.loc`, and it also accepts a parsed locstring. Wins over `init.loc` */
+  /** sugar for `view.loc`, and it also accepts a parsed locstring. Wins over `view.loc` */
   location?: string | ParsedLocString
-  /** sugar for `init.highlight`. Wins over `init.highlight` */
+  /** sugar for `view.highlight`. Wins over `view.highlight` */
   highlight?: (string | HighlightType)[]
   /** a session you author, checked against the session model's shape */
   defaultSession?: SessionSnapshot
@@ -218,7 +210,7 @@ function finishCreateViewState(
     internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
-    init,
+    view,
     location,
     highlight,
     disableAddTracks = false,
@@ -229,6 +221,27 @@ function finishCreateViewState(
     height,
     drawerViewHeight = '100vh',
   } = opts
+  if (view && defaultSession) {
+    throw new Error(
+      "pass view or defaultSession, not both: view is the default session's view",
+    )
+  }
+  const loc =
+    location === undefined || typeof location === 'string'
+      ? location
+      : assembleLocString(location)
+  // the view's own preprocessor sorts these into what it navigates by and what
+  // it restores (ADR-099), and an engine given none of them keeps its import
+  // form
+  const launch =
+    view || loc || highlight
+      ? {
+          ...view,
+          assembly: assembly.name,
+          loc: loc ?? view?.loc,
+          highlight: highlight ?? view?.highlight,
+        }
+      : undefined
   // registered once, here, rather than per track: each registration pushes a
   // File into core's process-global blobMap. Adapters are expanded out of their
   // `{ type, uri }` shorthand first, because that is the form the substitution
@@ -275,6 +288,7 @@ function finishCreateViewState(
         view: {
           id: 'linearGenomeView',
           type: 'LinearGenomeView',
+          ...launch,
         },
       },
     },
@@ -288,25 +302,15 @@ function finishCreateViewState(
     // validates it here and throws on a mismatch)
     stateTree.restoreSession(withPageBaseUri(session))
   }
-  if (init || location || highlight) {
-    // Applied after create rather than folded into the default session above,
-    // so one path serves all three inputs and composes with a `defaultSession`
-    // the caller authored: the init autorun skips auto-navigation when the
-    // session already has displayed regions, so a highlight-only init applies
-    // without clobbering that session's own navigation. It is also the same
-    // path URL and session-spec launches take, rather than a second
-    // navToLocString/addToHighlights/showTrack sequence written here — and it
-    // drives the loading-state machine, so the view shows a spinner rather than
-    // the import form while the assembly loads.
+  if ((defaultSession || session) && (loc || highlight)) {
+    // the caller's own session is in place, so the two shorthands go through
+    // the view's launch rather than its snapshot: the launch autorun skips
+    // navigation where the session already has regions, so a highlight alone
+    // does not move it
     stateTree.session.view.setLaunch({
-      ...init,
       assembly: assembly.name,
-      loc: location
-        ? typeof location === 'string'
-          ? location
-          : assembleLocString(location)
-        : init?.loc,
-      highlight: highlight ?? init?.highlight,
+      loc,
+      highlight,
     })
   }
   return stateTree

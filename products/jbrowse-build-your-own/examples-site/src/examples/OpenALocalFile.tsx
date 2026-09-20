@@ -167,7 +167,7 @@ const OpenALocalFile = observer(function OpenALocalFile() {
         displayDefaults: { height: 120 },
       },
     ],
-    init: {
+    view: {
       loc: 'chr10:122,831,700..122,840,800',
       tracks: ['hg38_genes'],
     },

@@ -45,11 +45,8 @@ export default function CircularSynteny() {
   const state = useCreateViewState({
     jbrowseHub: ['hg38', 'mm39'],
     tracks,
-    defaultSession: {
-      name: 'hg38 and mm39 on one circle',
-      view: { id: 'circularView', type: 'CircularView', height: 700 },
-    },
-    init: {
+    view: {
+      height: 700,
       displayedRegionNames: chromosomes,
       autoDiagonalize: true,
       tracks: ['hg38ToMm39_blocks'],

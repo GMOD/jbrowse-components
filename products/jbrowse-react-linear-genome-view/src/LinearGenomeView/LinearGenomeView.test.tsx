@@ -39,7 +39,7 @@ test('<LinearGenomeView /> builds its own engine and navigates via init', async 
       ref={ref}
       assembly={assembly}
       tracks={[]}
-      init={{ loc: 'ctgA:1-40' }}
+      view={{ loc: 'ctgA:1-40' }}
     />,
   )
   const getInputValue = () =>

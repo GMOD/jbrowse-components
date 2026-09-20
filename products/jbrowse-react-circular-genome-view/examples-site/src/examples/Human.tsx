@@ -28,7 +28,7 @@ export default function Human() {
     <CircularGenomeView
       assembly={assembly}
       tracks={tracks}
-      init={{ tracks: ['pacbio_sv_vcf'] }}
+      view={{ tracks: ['pacbio_sv_vcf'] }}
     />
   )
 }

@@ -55,7 +55,7 @@ export default function LocusZoomLD() {
     <LinearGenomeView
       assembly={assembly}
       tracks={[GIANT_BMI_TRACK, NCBI_REFSEQ_TRACK]}
-      init={{ loc: FTO_LOC, tracks: ['giant_bmi_ld', 'ncbi_refseq_hg19'] }}
+      view={{ loc: FTO_LOC, tracks: ['giant_bmi_ld', 'ncbi_refseq_hg19'] }}
     />
   )
 }

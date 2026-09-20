@@ -40,7 +40,7 @@ test('init reaches the view, with the assembly name filled in', () => {
   const state = createViewState({
     assembly,
     tracks,
-    init: { loc: 'ctgA:1..100', tracks: ['volvox_gff3'], tracklist: true },
+    view: { loc: 'ctgA:1..100', tracks: ['volvox_gff3'], tracklist: true },
   })
 
   expect(state.session.view.pendingLaunch).toEqual({
@@ -74,7 +74,7 @@ test('location wins over init.loc, and does not disturb the rest of init', () =>
     assembly,
     tracks,
     location: 'ctgA:200..300',
-    init: { loc: 'ctgA:1..100', tracks: ['volvox_gff3'] },
+    view: { loc: 'ctgA:1..100', tracks: ['volvox_gff3'] },
   })
 
   expect(state.session.view.pendingLaunch).toMatchObject({
@@ -96,6 +96,34 @@ test('no init input leaves the view with none, in a state that says so', () => {
   expect(state.session.view.pendingLaunch).toBeUndefined()
   expect(state.session.view.status).toEqual({ type: 'noRegions' })
   expect(state.session.view.ready).toBe(true)
+})
+
+test("a view's own settings sit beside where it opens, and both reach the view", () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    view: { loc: 'ctgA:1..100', hideHeader: true, showGridlines: false },
+  })
+  const { view } = state.session
+  expect(view.hideHeader).toBe(true)
+  expect(view.showGridlines).toBe(false)
+  expect(view.pendingLaunch).toMatchObject({
+    assembly: 'volvox',
+    loc: 'ctgA:1..100',
+  })
+})
+
+test("a view beside a defaultSession is refused, since it is that session's view", () => {
+  expect(() =>
+    createViewState({
+      assembly,
+      view: { loc: 'ctgA:1..100' },
+      defaultSession: {
+        name: 'mine',
+        view: { id: 'linearGenomeView', type: 'LinearGenomeView' },
+      },
+    }),
+  ).toThrow('pass view or defaultSession, not both')
 })
 
 // `localFiles` is only worth having if it survives all the way into the built

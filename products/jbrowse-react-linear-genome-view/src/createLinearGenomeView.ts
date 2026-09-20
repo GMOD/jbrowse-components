@@ -246,7 +246,7 @@ export function createLinearGenomeView(
       location: hasSession ? undefined : location,
       // a host with its own tracks opens them below, so a gene-name location
       // must not add the track its name was found in beside them
-      init:
+      view:
         hasSession || location === undefined
           ? undefined
           : { showHitTrack: tracks.length === 0 },

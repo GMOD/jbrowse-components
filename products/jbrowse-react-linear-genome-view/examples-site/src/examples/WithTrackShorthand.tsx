@@ -19,7 +19,7 @@ export default function WithTrackShorthand() {
           displayDefaults: { color: 'purple' },
         },
       ]}
-      init={{
+      view={{
         loc: 'ctgA:1..50,000',
         tracks: ['genes', 'microarray', 'duplications'],
       }}

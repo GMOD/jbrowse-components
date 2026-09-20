@@ -28,7 +28,7 @@ export default function WithInitAlignmentsDisplay() {
         geneticCodes: { MT: 2 },
       }}
       tracks={tracks}
-      init={{
+      view={{
         loc: '1:100,987,200..100,987,450',
         tracks: [
           {

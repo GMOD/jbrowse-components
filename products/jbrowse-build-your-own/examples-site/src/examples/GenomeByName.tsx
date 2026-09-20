@@ -24,7 +24,7 @@ const GenomeByName = observer(function GenomeByName() {
         displayDefaults: { height: 80, color: '#3a7ca5' },
       },
     ],
-    init: {
+    view: {
       loc: 'BRCA1',
       tracks: ['my_phylop', 'hg38-ncbiRefSeqCurated'],
     },

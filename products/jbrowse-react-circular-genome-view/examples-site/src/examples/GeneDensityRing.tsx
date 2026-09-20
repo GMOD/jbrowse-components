@@ -41,11 +41,8 @@ export default function GeneDensityRing() {
   const state = useCreateViewState({
     jbrowseHub: ['hg38', 'mm39'],
     tracks,
-    defaultSession: {
-      name: 'hg38 and mm39 with a gene density ring',
-      view: { id: 'circularView', type: 'CircularView', height: 700 },
-    },
-    init: {
+    view: {
+      height: 700,
       displayedRegionNames: ['chr1', 'chr2', 'chrX'],
       autoDiagonalize: true,
       tracks: ['hg38ToMm39_gene_density', 'hg38ToMm39_blocks'],

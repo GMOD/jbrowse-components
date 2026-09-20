@@ -42,7 +42,7 @@ export default function FixedHeight() {
           displayDefaults: { height: 200 },
         },
       ]}
-      init={{
+      view={{
         loc: 'ctgA:1..50,000',
         tracks: [
           'volvox_gff3',

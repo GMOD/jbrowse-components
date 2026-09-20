@@ -94,7 +94,7 @@ const TrackSettings = observer(function TrackSettings() {
         displayDefaults: { height: 150 },
       },
     ],
-    init: {
+    view: {
       loc: 'chr17:43,044,295..43,052,295 chr17:43,090,000..43,098,000',
       tracks: ['na12878_exome'],
     },

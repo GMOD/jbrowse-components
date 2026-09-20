@@ -151,7 +151,7 @@ const BringYourOwnOverlays = observer(function BringYourOwnOverlays() {
         displayDefaults: { height: 80 },
       },
     ],
-    init: {
+    view: {
       loc: 'chr17:43,044,295..43,125,364',
       tracks: ['hg38_phylop', 'hg38_genes', 'hg38_broken'],
     },

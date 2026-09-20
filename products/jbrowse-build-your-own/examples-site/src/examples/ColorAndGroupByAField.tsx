@@ -101,7 +101,7 @@ const ColorAndGroupByAField = observer(function ColorAndGroupByAField() {
         },
       },
     ],
-    init: {
+    view: {
       loc: 'chr17:42,900,000..43,400,000',
       tracks: ['genes'],
     },

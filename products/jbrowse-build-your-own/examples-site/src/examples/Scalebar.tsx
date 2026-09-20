@@ -127,7 +127,7 @@ const ScalebarAndGridlines = observer(function ScalebarAndGridlines() {
         displayDefaults: { height: 120 },
       },
     ],
-    init: {
+    view: {
       loc: 'chr17:43,044,295..43,060,000 chr17:43,100,000..43,125,364',
       tracks: ['hg38_phylop', 'hg38_genes'],
     },

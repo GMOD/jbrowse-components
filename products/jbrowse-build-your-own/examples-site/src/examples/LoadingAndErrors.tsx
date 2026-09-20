@@ -93,7 +93,7 @@ const Browser = observer(function Browser({
         displayDefaults: { height: 100, color: '#3a7ca5' },
       },
     ],
-    init: loc ? { loc, tracks } : undefined,
+    view: loc ? { loc, tracks } : undefined,
   })
   if (!state) {
     return null

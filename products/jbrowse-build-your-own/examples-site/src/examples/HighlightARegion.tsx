@@ -64,7 +64,7 @@ const HighlightARegion = observer(function HighlightARegion() {
     ],
     location: hits[0]!.loc,
     highlight: [hits[0]!.highlight],
-    init: { tracks: ['hg38_genes'] },
+    view: { tracks: ['hg38_genes'] },
   })
   if (!state) {
     return null

@@ -30,7 +30,7 @@ export default function WithMultiSampleVariantDisplay() {
           ],
         },
       ]}
-      init={{
+      view={{
         loc: 'ctgA:1..50,000',
         tracks: ['volvox_multisample_sv'],
       }}

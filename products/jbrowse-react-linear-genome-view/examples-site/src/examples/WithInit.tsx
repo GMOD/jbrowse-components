@@ -27,7 +27,7 @@ export default function WithInit() {
           },
         },
       ]}
-      init={{
+      view={{
         loc: 'chr7:155,799,529..155,812,871',
         tracks: ['hg38-ncbi-refseq-curated'],
       }}

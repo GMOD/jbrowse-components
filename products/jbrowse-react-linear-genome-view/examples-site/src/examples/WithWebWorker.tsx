@@ -17,7 +17,7 @@ export default function WithWebWorker() {
         uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
       },
     ],
-    init: { loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] },
+    view: { loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] },
     makeWorkerInstance: () => new RpcWorker(),
   })
   return state ? <JBrowseLinearGenomeView viewState={state} /> : null

@@ -27,7 +27,7 @@ function LocalFileView({ localFiles }: { localFiles: LocalFileInput }) {
     assembly,
     tracks,
     localFiles,
-    init: { loc: 'ctgA:1..20000', tracks: ['local_bam'] },
+    view: { loc: 'ctgA:1..20000', tracks: ['local_bam'] },
   })
   return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

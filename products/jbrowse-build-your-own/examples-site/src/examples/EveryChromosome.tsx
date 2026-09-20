@@ -31,7 +31,7 @@ const EveryChromosome = observer(function EveryChromosome() {
         displayDefaults: { height: 120, color: '#3a7ca5' },
       },
     ],
-    init: {
+    view: {
       loc: chromosomes.join(' '),
       tracks: ['hg38_phylop'],
     },

@@ -50,12 +50,12 @@ export default function HorizontallyFlip() {
   const state = useCreateViewState({
     assembly,
     tracks,
-    init: { loc: 'ctgA:1-50000' },
+    view: { loc: 'ctgA:1-50000' },
   })
   const flipped = useCreateViewState({
     assembly,
     tracks,
-    init: { loc: 'ctgA:1-50000[rev]' },
+    view: { loc: 'ctgA:1-50000[rev]' },
   })
   return (
     <div>

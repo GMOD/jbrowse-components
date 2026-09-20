@@ -77,7 +77,7 @@ const TrackLabels = observer(function TrackLabels() {
         displayDefaults: { height: 150 },
       },
     ],
-    init: {
+    view: {
       loc: 'chr17:43,044,295..43,125,364',
       tracks: ids,
     },

@@ -25,7 +25,7 @@ export default function WithWiggleTrack() {
           },
         },
       ]}
-      init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_microarray'] }}
+      view={{ loc: 'ctgA:1..50,000', tracks: ['volvox_microarray'] }}
     />
   )
 }

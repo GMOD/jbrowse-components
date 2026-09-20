@@ -20,7 +20,7 @@ export default function WithGtfTrack() {
           },
         },
       ]}
-      init={{ loc: 'ctgA:500..20,500', tracks: ['volvox_genes_gtf'] }}
+      view={{ loc: 'ctgA:500..20,500', tracks: ['volvox_genes_gtf'] }}
     />
   )
 }

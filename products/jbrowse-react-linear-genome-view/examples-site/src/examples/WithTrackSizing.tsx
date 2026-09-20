@@ -44,7 +44,7 @@ export default function WithTrackSizing() {
     <LinearGenomeView
       assembly={assembly}
       tracks={tracks}
-      init={{
+      view={{
         loc: 'chr17:7,560,000..7,600,000',
         tracks: ['refseq_grow', 'refseq_fit'],
       }}

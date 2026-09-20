@@ -14,7 +14,10 @@ import type {
   createSessionModel,
 } from './createModel/index.ts'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { CircularViewCommands } from '@jbrowse/plugin-circular-view'
+import type {
+  CircularViewCommands,
+  CircularViewStateModel,
+} from '@jbrowse/plugin-circular-view'
 import type {
   LocalFileInput,
   PluginInput,
@@ -23,6 +26,12 @@ import type {
 } from '@jbrowse/product-core'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
+type CircularViewLaunchProps = Partial<
+  Omit<
+    SnapshotIn<CircularViewStateModel>,
+    keyof CircularViewCommands | 'id' | 'type' | 'launch'
+  >
+>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
 type Assembly = NonNullable<ConfigSnapshot['assemblies']>[number]
 type Tracks = ConfigSnapshot['tracks']
@@ -74,35 +83,23 @@ export interface CreateViewStateBaseOptions {
    */
   localFiles?: LocalFileInput
   /**
-   * The declarative description of the ring to open — which chromosomes it is
-   * drawn from, which tracks to show — minus `assembly`, which is filled in
-   * from the `assembly` option so you never repeat it.
+   * The ring to open, written flat the way a session spec or a config's view is
+   * (ADR-099): which chromosomes it is drawn from (`displayedRegionNames`),
+   * which tracks to show (`tracks`), `autoDiagonalize`, and any of the view's
+   * own settings beside them (`height`). `type` and `assembly` are filled in.
    *
-   * Read ONCE, at create, the way `defaultValue` is: it seeds the view and is
-   * never consulted again, so changing it later moves nothing. That is what the
-   * name is for, and it is why this survived v5 removing `init` as a key ON a
-   * view — there the word named a second authoring shape for settings that now
-   * go directly on the view object (ADR-099), and a saved session or URL spec
-   * carries them flat. This is an argument to a factory, not a snapshot key.
-   *
-   * Shared by both entry points rather than being the managed component's own
-   * input, and that is the point: a host holding its own engine says
-   * `init: { displayedRegionNames: [...] }` instead of authoring a
-   * `defaultSession` around the same two fields, so choosing
-   * `useCreateViewState` over `<CircularGenomeView>` costs nothing.
-   *
-   * Optional, and `{}` is the same as leaving it off: the configured assembly
-   * is drawn either way, so this is how you restrict the ring or name tracks to
-   * open with it, not how you ask for the genome.
+   * It is the default session's view, so it is read once at create, excludes
+   * `defaultSession`, and a restored `session` replaces it. Left off, the
+   * configured genome is drawn whole.
    */
-  init?: Omit<CircularViewCommands, 'assembly'>
+  view?: Omit<CircularViewCommands, 'assembly'> & CircularViewLaunchProps
 }
 
 // the imperative call adds the two session slots, plus a shorthand for the one
-// init field a host reaches for; the managed component expresses the same
-// through `init` alone
+// view field a host reaches for; the managed component expresses the same
+// through `view` alone
 export interface ViewStateOptions extends CreateViewStateBaseOptions {
-  /** sugar for `init.displayedRegionNames`. Wins over it */
+  /** sugar for `view.displayedRegionNames`. Wins over it */
   displayedRegionNames?: string[]
   /** a session you author, checked against the session model's shape */
   defaultSession?: SessionSnapshot
@@ -166,11 +163,28 @@ export default async function createViewState(
     aggregateTextSearchAdapters,
     plugins = [],
     makeWorkerInstance,
-    init,
+    view: authored,
     displayedRegionNames,
     localFiles,
   } = opts
   const assemblies = [assembly].flat()
+  if (authored && opts.defaultSession) {
+    throw new Error(
+      "pass view or defaultSession, not both: view is the default session's view",
+    )
+  }
+  const assemblyNames = assemblies.map(a => a.name)
+  // the view's own preprocessor sorts these into what it lays out by and what
+  // it restores (ADR-099)
+  const launch =
+    authored !== undefined || displayedRegionNames !== undefined
+      ? {
+          ...authored,
+          assembly: assemblyNames,
+          displayedRegionNames:
+            displayedRegionNames ?? authored?.displayedRegionNames,
+        }
+      : undefined
   const { model, pluginManager } = await createModel(
     plugins,
     makeWorkerInstance,
@@ -219,6 +233,7 @@ export default async function createViewState(
         view: {
           id: 'circularView',
           type: 'CircularView',
+          ...launch,
         },
       },
     },
@@ -245,12 +260,9 @@ export default async function createViewState(
   // regions is left alone unless the caller asked for something.
   const positioned =
     view.displayedRegions.length > 0 || view.pendingLaunch !== undefined
-  if (init !== undefined || displayedRegionNames !== undefined || !positioned) {
-    view.setLaunch({
-      ...init,
-      assembly: assemblies.map(a => a.name),
-      displayedRegionNames: displayedRegionNames ?? init?.displayedRegionNames,
-    })
+  const ownSession = opts.defaultSession ?? opts.session
+  if ((ownSession && displayedRegionNames !== undefined) || !positioned) {
+    view.setLaunch({ assembly: assemblyNames, displayedRegionNames })
   }
   return stateTree
 }

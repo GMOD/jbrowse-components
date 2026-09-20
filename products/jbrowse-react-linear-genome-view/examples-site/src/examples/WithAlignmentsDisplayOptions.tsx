@@ -28,7 +28,7 @@ export default function WithAlignmentsDisplayOptions() {
     <LinearGenomeView
       assembly={assembly}
       tracks={tracks}
-      init={{
+      view={{
         loc: 'chr15:24,954,000..24,972,000',
         tracks: [
           {

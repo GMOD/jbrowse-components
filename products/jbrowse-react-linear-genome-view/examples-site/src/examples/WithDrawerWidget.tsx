@@ -23,7 +23,7 @@ export default function WithDrawerWidget() {
     ],
     height: '100vh',
     menuBar: true,
-    init: {
+    view: {
       loc: 'ctgA:1105..1221',
       tracks: ['volvox_gff3'],
       tracklist: true,

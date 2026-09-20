@@ -105,7 +105,7 @@ const SearchByName = observer(function SearchByName() {
         },
       },
     ],
-    init: {
+    view: {
       loc: 'chr17:43,044,295..43,125,364',
       tracks: ['genes'],
     },

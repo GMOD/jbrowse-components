@@ -35,7 +35,7 @@ const RunItInAWorker = observer(function RunItInAWorker() {
         displayDefaults: { height: 150 },
       },
     ],
-    init: {
+    view: {
       loc: 'chr17:43,044,295..43,125,364',
       tracks: ['hg38_phylop', 'hg38_genes', 'na12878_exome'],
     },

@@ -43,7 +43,7 @@ export default function WithShowTrack() {
         uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
       },
     ],
-    init: { loc: 'ctgA:1105..1221' },
+    view: { loc: 'ctgA:1105..1221' },
   })
   return state ? (
     <div>

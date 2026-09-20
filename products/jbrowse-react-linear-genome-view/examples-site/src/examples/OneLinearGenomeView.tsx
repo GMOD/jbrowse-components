@@ -19,7 +19,7 @@ export default function OneLinearGenomeView() {
           },
         },
       ]}
-      init={{ loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] }}
+      view={{ loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] }}
     />
   )
 }

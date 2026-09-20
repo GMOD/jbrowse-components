@@ -23,7 +23,7 @@ export default function WithFeatureHighlights() {
           },
         },
       ]}
-      init={{
+      view={{
         loc: 'chr12:25,150,000-25,400,000',
         tracks: [
           {

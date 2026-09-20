@@ -19,7 +19,7 @@ export default function WithGroupByTag() {
           },
         },
       ]}
-      init={{
+      view={{
         loc: 'ctgA:39,728..40,459',
         tracks: [
           {

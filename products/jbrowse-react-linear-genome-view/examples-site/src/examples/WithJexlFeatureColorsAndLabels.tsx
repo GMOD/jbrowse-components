@@ -25,7 +25,7 @@ export default function WithJexlFeatureColorsAndLabels() {
           },
         },
       ]}
-      init={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_jexl'] }}
+      view={{ loc: 'ctgA:1..50,000', tracks: ['volvox_genes_jexl'] }}
     />
   )
 }

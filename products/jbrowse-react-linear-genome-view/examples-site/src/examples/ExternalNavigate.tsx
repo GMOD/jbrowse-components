@@ -83,7 +83,7 @@ export default function ExternalNavigate() {
             },
           },
         ]}
-        init={{ loc: 'ctgA:1,000..5,000' }}
+        view={{ loc: 'ctgA:1,000..5,000' }}
       />
     </div>
   )
