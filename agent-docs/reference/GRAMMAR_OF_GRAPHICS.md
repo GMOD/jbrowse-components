@@ -226,7 +226,7 @@ The seams, named honestly:
   grammar has no equivalent. Every display with a meaning the encoding cannot
   say will look like this.
 - **The colour objects are one shape, and a preset is a field.** FeatureColor,
-  ManhattanColor, RibbonColor and MarkColor are each
+  ManhattanColor, RibbonColor, MarkColor and AlignmentsColor are each
   `{ value, field, scale, domain, palette, ramp }` from one display-kit factory
   (`colorChannelSlots`), `scale` drawn from
   `none | categorical | linear | log | threshold`
@@ -248,6 +248,22 @@ The seams, named honestly:
   legends and menus dispatch on — there is no mode vocabulary beside it.
   What stays local: a field under `none` is the menus' switch-back memory,
   which ggplot2 has no place for since a plot specification is a value.
+- **The pileup's read fill declares its scale and keeps its painter.** A read
+  dimension is a field under the facet's own name, a per-base variable
+  (`baseQuality`, `base`, `modifications`) a field the display paints as a cell
+  per base, `tags.XX` a SAM tag
+  ([ADR-148](../architecture-decision-records/adr-148-the-alignments-read-fill-is-the-colour-object.md)).
+  The painter was already the grammar's: `readColorCategory` derives one
+  categorical variable per read — `insertSizeAndOrientation` a `case_when` with
+  the mate and split overrides as further levels — and both backends index one
+  table by its level, which is how GenomeSpy resolves a categorical colour. A
+  declared `domain`, `palette`, `linear` ramp or `threshold` evaluates where the
+  tag colours already bake, once per read after layout, so it costs no fetch,
+  no layout and no per-frame work. The mismatch and modification marks stay
+  tables too: a key into a colour table (the base byte; the modification's type
+  index) with an opacity lane beside it (base quality; call probability), which
+  is GenomeSpy's `color: { field: 'base' }, opacity: { field: 'baseQuality' }`
+  spelled as `Paint` and `Fade` codes over typed arrays.
 - **A view-level colour is the plot-level `aes()` every layer inherits.** The
   linear synteny and dotplot views' `colorBy` is the same `SyntenyColor`
   object the multi-way display holds per layer as `ribbonColor`, with the

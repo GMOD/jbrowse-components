@@ -129,8 +129,11 @@ its own slots and the declared shorthand.
   [ADR-139](adr-139-the-synteny-views-colorby-is-the-colour-object-every-band-inherits.md):
   the synteny and dotplot views' `colorBy` is the `SyntenyColor` object, held
   as the MST property. `ChordSyntenyDisplay`'s `colorBy`
-  (`default | chromosome | strand`) has no field mode, so like alignments'
-  `colorBy` it selects a scheme and is outside this decision.
+  (`default | chromosome | strand`) has no field mode, so it selects a scheme
+  and is outside this decision. The alignments displays' `colorBy` was outside
+  it on the same ground until
+  [ADR-148](adr-148-the-alignments-read-fill-is-the-colour-object.md) made it
+  the `color` object.
 - A review of the landing found the config editor's per-slot writes and the
   menus' scale switches at odds with the object's refusals
   ([ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md)), and
