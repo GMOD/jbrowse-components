@@ -25,7 +25,11 @@ function isNetworkNoise(text: string): boolean {
     // HTTP 5xx from a remote data host (fetchJson.ts, RemoteFileWithRangeCache.ts
     // throw "HTTP <status> fetching <url>") is a transient host outage, not a
     // code regression
-    /HTTP 5\d\d fetching/.test(text)
+    /HTTP 5\d\d fetching/.test(text) ||
+    // core's own wording for a request that stalled or never connected
+    // (RemoteFileWithRangeCache.ts)
+    /No response from \S+/.test(text) ||
+    text.includes('Network error fetching')
   )
 }
 
@@ -142,8 +146,7 @@ export async function smokeExamplesSite({
     ],
   })
 
-  let failures = 0
-  for (const slug of slugs) {
+  async function visit(slug: string) {
     // '' is the landing page: `${base}/${slug}/` would give it a double slash
     const url = `http://localhost:${port}${base}/${slug ? `${slug}/` : ''}`
     const name = slug || 'index'
@@ -180,16 +183,18 @@ export async function smokeExamplesSite({
       await page.evaluateOnNewDocument(recordFromLoad)
     }
     const errors: string[] = []
+    const stalls: string[] = []
     const workers: string[] = []
     page.on('workercreated', w => {
       workers.push(w.url())
     })
     page.on('console', m => {
       const text = m.text()
-      if (
+      if (m.type() === 'error' && isNetworkNoise(text)) {
+        stalls.push(text)
+      } else if (
         m.type() === 'error' &&
         !isBrowserConsoleNoise(text) &&
-        !isNetworkNoise(text) &&
         !allowedConsoleError(text, slug)
       ) {
         errors.push(`console: ${text}`)
@@ -261,16 +266,38 @@ export async function smokeExamplesSite({
         )
       }
     }
+    await page.close()
+    return { errors, stalls }
+  }
+
+  // A data host that stops answering fails a page's own assertions as well as
+  // its console, since a track that never loads has no canvas to click and no
+  // key to read. One more visit tells that apart from a regression, which
+  // fails both times.
+  let failures = 0
+  for (const slug of slugs) {
+    const name = slug || 'index'
+    let { errors, stalls } = await visit(slug)
+    if (errors.length && stalls.length) {
+      log(
+        `     (note) ${name}: ${stalls.length} request(s) to a data host got no answer, so visiting once more`,
+      )
+      ;({ errors, stalls } = await visit(slug))
+    }
     if (errors.length) {
       failures++
       log(`FAIL ${name}`)
       for (const e of errors) {
         log(`     ${e}`)
       }
+      if (stalls.length) {
+        log(
+          `     ${stalls.length} request(s) got no answer on this visit too, so the above may be the network: ${stalls[0]}`,
+        )
+      }
     } else {
       log(`ok   ${name}`)
     }
-    await page.close()
   }
 
   await browser.close()
