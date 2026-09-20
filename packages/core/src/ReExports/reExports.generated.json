@@ -861,6 +861,7 @@
         "readConfObject",
         "readConfigValue",
         "setConf",
+        "shorthandForm",
         "slotChoices",
         "slotValueRefusal",
         "tabixIndexFields",
@@ -4310,12 +4311,15 @@
       "names": [
         "AXIS_GUTTER_WIDTH_PX",
         "AXIS_RIGHT_INSET_PX",
+        "AxisCaption",
+        "AxisCaptionOverlay",
         "AxisGutter",
         "BOTTOM_RIGHT_CONTROLS_ORDER",
         "BottomRightCornerContext",
         "COMPACT_AXIS_HEIGHT",
         "CrossHatchLines",
         "CrossHatches",
+        "DEFAULT_RULE_COLOR",
         "DisplayChromeOverlayProvider",
         "DisplayUIProvider",
         "FLOATING_LEGEND_TOP_PX",
@@ -4360,6 +4364,7 @@
       "names": [
         "AXIS_RIGHT_INSET_PX",
         "COMPACT_AXIS_HEIGHT",
+        "axisCaptionY",
         "axisDrawn",
         "axisGutterLeft"
       ],
@@ -4389,6 +4394,7 @@
     "@jbrowse/display-ui/yAxisConstants": {
       "package": "@jbrowse/display-ui",
       "names": [
+        "DEFAULT_RULE_COLOR",
         "SCORE_CAPTION_HEIGHT",
         "YSCALEBAR_LABEL_OFFSET"
       ],

@@ -9,7 +9,11 @@ import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterCon
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
-import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
+import {
+  DEFAULT_RULE_COLOR,
+  scalesSchema,
+  valueScaleSchema,
+} from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
 import { markColorSchema } from './markColorConfigSchema.ts'
@@ -519,7 +523,9 @@ export function configSchemaFactory() {
        * The scales the marks are read through, owned by the display rather
        * than by a mark: `y` alone, and every mark's `encoding.y` shares it.
        * The same object the wiggle family declares, with this display's own
-       * scale types — no symlog, which `valueToYPxScaled` does not place.
+       * scale types — no symlog, which `valueToYPxScaled` does not place —
+       * and with the guides the scale owns: `rules`, its reference lines,
+       * and `title`, the caption beside its axis.
        */
       scales: scalesSchema(
         valueScaleSchema({
@@ -528,6 +534,8 @@ export function configSchemaFactory() {
             modes: ['local', 'localsd', 'localpercentile'],
             default: 'local',
           },
+          rules: { color: DEFAULT_RULE_COLOR },
+          title: true,
         }),
       ),
       /**

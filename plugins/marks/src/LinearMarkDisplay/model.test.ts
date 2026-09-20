@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 
+import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
@@ -10,7 +11,10 @@ import LinearGenomeViewPlugin, {
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
 import { pointInsetPx } from '@jbrowse/render-core/marks'
-import { makePinCurrentRangeItem } from '@jbrowse/wiggle-core'
+import {
+  DEFAULT_RULE_COLOR,
+  makePinCurrentRangeItem,
+} from '@jbrowse/wiggle-core'
 import { render, screen, waitFor } from '@testing-library/react'
 
 import MarkFacetChips from './components/MarkFacetChips.tsx'
@@ -386,8 +390,165 @@ test('two valued marks share the one axis, whatever they measure', () => {
   const [only] = display.valueScales
   expect(only).toMatchObject({ domain: [0, 900] })
   expect(only!.side).toBeUndefined()
-  expect(only!.caption).toBeUndefined()
+  expect(only!.caption).toBe('')
   expect(display.axes.map(a => a.side)).toEqual([undefined])
+})
+
+function ruleMarksOf(display: LinearMarkDisplayModel) {
+  return display.axes[0]?.ruleMarks ?? []
+}
+
+test('a rule widens the axis to reach it and lands on its own value', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ shape: 'point', encoding: { y: 'neg_log10_p' } }],
+    REGION,
+    'BedAdapter',
+    {
+      scales: {
+        y: { rules: [20, { value: 5, color: 'red', label: 'suggestive' }] },
+      },
+    },
+  )
+  const { display } = createDisplay()
+  expect(ruleMarksOf(display)).toEqual([])
+  display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
+  expect(display.domain).toEqual([0, 20])
+  const [axis] = display.axes
+  const { yTop, yBottom } = axis!.ticks
+  const [top, suggestive] = ruleMarksOf(display)
+  expect(top).toEqual({ value: 20, color: DEFAULT_RULE_COLOR, y: yTop })
+  expect(suggestive).toMatchObject({
+    value: 5,
+    color: 'red',
+    label: 'suggestive',
+  })
+  expect(suggestive!.y).toBeCloseTo(yBottom - (5 / 20) * (yBottom - yTop))
+})
+
+test('a rule at zero is a rule, and a pinned end that excludes one drops it', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ shape: 'point', encoding: { y: 'log_ratio' } }],
+    REGION,
+    'BedAdapter',
+    { scales: { y: { rules: [0, 100], domainMax: 10 } } },
+  )
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [2, 8] }]), REGION)
+  expect(display.domain).toEqual([0, 10])
+  expect(ruleMarksOf(display).map(r => r.value)).toEqual([0])
+})
+
+test('a rule on a log axis sits where the log places its value', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ shape: 'point', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    {
+      scales: { y: { type: 'log', domainMin: 1, domainMax: 100, rules: [10] } },
+    },
+  )
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
+  const { yTop, yBottom } = display.axes[0]!.ticks
+  expect(ruleMarksOf(display)[0]!.y).toBeCloseTo((yTop + yBottom) / 2)
+})
+
+test('a rule in a banded plot is placed in the band every row repeats', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ shape: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { facet: 'source', scales: { y: { rules: [4] } } },
+  )
+  const { display } = createDisplay()
+  display.setRpcData(
+    0,
+    result(
+      [{ y: [3, 8], row: [0, 1] }],
+      [
+        { key: 'a', firstRow: 0, rowCount: 1 },
+        { key: 'b', firstRow: 1, rowCount: 1 },
+      ],
+    ),
+    REGION,
+  )
+  const [axis] = display.axes
+  expect(axis!.bandTops).toHaveLength(2)
+  const [rule] = ruleMarksOf(display)
+  const { yTop, yBottom } = axis!.ticks
+  expect(yBottom).toBeLessThanOrEqual(axis!.height)
+  expect(rule!.y).toBe(yBottom - (4 / 8) * (yBottom - yTop))
+})
+
+test('the axis is titled with the field every valued mark plots, and a multiscale pair retitles at its zoom', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 4 },
+    { shape: 'point', encoding: { y: 'score' }, maxBpPerPx: 4 },
+    { shape: 'span', encoding: { color: 'red' } },
+    { shape: 'bar', encoding: { y: 'count' }, minBpPerPx: 4 },
+  ])
+  const { display, view } = createDisplay()
+  view.zoomTo(2)
+  expect(display.valueScales[0]!.caption).toBe('score')
+  view.zoomTo(8)
+  expect(display.valueScales[0]!.caption).toBe('count')
+})
+
+test('two fields, or an expression, leave the axis untitled until title names it', () => {
+  const caption = (marks: unknown[], y: Record<string, unknown> = {}) =>
+    createTestEnvironment(marks, REGION, 'BedAdapter', {
+      scales: { y },
+    }).createDisplay().display.valueScales[0]!.caption
+  const expression = [{ shape: 'bar', encoding: { y: 'jexl:feature.score*2' } }]
+  expect(caption(expression)).toBe('')
+  expect(caption(expression, { title: 'doubled score' })).toBe('doubled score')
+  expect(
+    caption(
+      [
+        { shape: 'bar', encoding: { y: 'score' } },
+        { shape: 'point', encoding: { y: 'score' } },
+      ],
+      { title: '-log10 p' },
+    ),
+  ).toBe('-log10 p')
+})
+
+// Unset derives, text is the text, and the empty string is an axis the author
+// wants bare: three states, which `''` standing for unset could not hold.
+test('an empty title leaves the axis bare where unset would have derived one', () => {
+  const marks = [{ shape: 'bar', encoding: { y: 'score' } }]
+  const titled = (y: Record<string, unknown>) =>
+    createTestEnvironment(marks, REGION, 'BedAdapter', {
+      scales: { y },
+    }).createDisplay().display
+  expect(titled({}).valueScales[0]!.caption).toBe('score')
+  expect(titled({ title: '' }).valueScales[0]!.caption).toBe('')
+  const display = titled({ title: '' })
+  setConf(display, ['scales', 'y', 'title'], undefined)
+  expect(display.valueScales[0]!.caption).toBe('score')
+})
+
+test('a banded plot carries its one caption, which the chrome draws once', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ shape: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { facet: 'source' },
+  )
+  const { display } = createDisplay()
+  display.setRpcData(
+    0,
+    result(
+      [{ y: [3, 8], row: [0, 1] }],
+      [
+        { key: 'a', firstRow: 0, rowCount: 1 },
+        { key: 'b', firstRow: 1, rowCount: 1 },
+      ],
+    ),
+    REGION,
+  )
+  expect(display.valueScales[0]!.bandTops).toHaveLength(2)
+  expect(display.valueScales[0]!.caption).toBe('score')
 })
 
 function noticesOf(marks: unknown[], display: Record<string, unknown> = {}) {
@@ -436,8 +597,16 @@ test('an encoding channel refuses a key it does not declare', () => {
       { scales: { y: { min: 0 } } },
     ).createDisplay(),
   ).toThrow(
-    'ValueScale takes type, domainMin, domainMax, autoscale, numStdDev and numQuantile, not min',
+    'ValueScale takes type, domainMin, domainMax, autoscale, numStdDev, numQuantile, title and rules, not min',
   )
+  expect(() =>
+    createTestEnvironment(
+      [{ shape: 'bar', encoding: { y: 'score' } }],
+      REGION,
+      'BedAdapter',
+      { scales: { y: { rules: [{ value: 5, colour: 'red' }] } } },
+    ).createDisplay(),
+  ).toThrow('ValueScaleRule takes value, color and label, not colour')
 })
 
 // A span's ramp resolves in the worker (ADR-113), one table per region, under

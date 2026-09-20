@@ -26,10 +26,11 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 
 **A positional channel is a field and the value scale is the plot's**, where
 `color` and `glyph` each carry their own scale object.
-The display's own `scales.y` — `type`, `domainMin`, `domainMax` — is the one
+The display's own `scales.y` — `type`, `domainMin`, `domainMax`, the
+autoscale members, and the two guides it owns, `rules` and `title` — is the one
 value scale, and every mark's `encoding.y` names a field read through it, so
-the axis, its ticks and every mark's shapes read one declaration and the score
-menu's "Set min/max" writes there
+the axis, its ticks, its reference lines and every mark's shapes read one
+declaration and the score menu's "Set min/max" writes there
 ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)).
 `ScoreAxisMixin` is the contract it satisfies, and wiggle, Manhattan and the
 coverage band declare the same object with the members each of them draws, `ScoreScaleMixin` reading and writing it

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema({ types, autoscale, symlogConstant })` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node, except on a channel, which a `shorthand` marks. No migration: a v5 config still saying `scaleType: 'log'` loses it"
+summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema({ types, autoscale, symlogConstant })` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node, except on a channel, which a `shorthand` marks. No migration: a v5 config still saying `scaleType: 'log'` loses it. Amended 2026-09-20: the scale also owns `rules`, its reference lines as a typed array with a bare-number shorthand, and `title`, its axis caption as a three-state `maybeString`, each a factory opt-in; `ValueScale` carries both to the chrome, which draws a scale's rules down its own bands and its caption once however many bands it rules"
 ---
 
 # ADR-142: One value-scale object, on every quantitative display
@@ -13,7 +13,8 @@ display's alone, to wiggle, the multi-wiggle, Manhattan and the alignments
 coverage band, and retires
 [ADR-124](adr-124-the-score-axis-autoscales-over-what-is-loaded.md)'s
 `preProcessSnapshot` remap along with every other config migration on the v5
-path.
+path. Amended 2026-09-20 under Consequences: the scale owns its reference
+lines and its title.
 
 ## Context
 
@@ -60,6 +61,8 @@ alone — one scale per aesthetic, owned by the plot.
 | `numStdDev` | `localsd` is a mode | 3 | — | 3 | 3 |
 | `numQuantile` | `localpercentile` is a mode | 0.99 | — | — | 0.99 |
 | `symlogConstant` | `symlog` is a type | 0 | — | 1 | — |
+| `rules` | the factory is given `rules: { color }` | — | — | — | none, a rule drawn grey |
+| `title` | the factory is given `title: true` | — | — | — | unset, which derives the shared `encoding.y` field |
 
 `numStdDev` and `numQuantile` gate on the modes rather than on `autoscale`
 being present at all: the coverage band offers `local` and `localsd`, so a
@@ -157,6 +160,67 @@ statement about the others. The config editor's own `setSubschema` is untouched
   `displayCrossHatches` moved to `wiggleScoreConfigExtraSlots` — it is a
   display setting, not a member of the scale, and `RestatedMixinSlots.test.ts`
   now checks it across the four displays that declare it.
+
+### Amended 2026-09-20: the scale owns its reference lines and its title
+
+The factory takes two more opt-ins, `rules` and `title`, present only where a
+display passes them, for the reason `autoscale` is: a slot a display does not
+read is a dead slot. `rules: { color }` adds an array of
+`{ value, color, label }`, a bare number standing for `{ value }`, and names
+what a rule with no colour of its own is drawn in; `title: true` adds the axis
+caption. The members table above carries which display takes which.
+
+- **`rules` is a typed sub-schema array, never `frozen`**, for
+  [ADR-107](adr-107-the-quantitative-class-is-authored-in-config.md)'s reason:
+  the config docs, the JSON schema and the validator see `value`, `color` and
+  `label`. The bare-number form needed `shorthand` to lift a number where the
+  slot it names holds one (`shorthandForm`,
+  `packages/core/src/configuration/snapshotPreprocess.ts`); a string shorthand
+  lifts what it did.
+- **A rule is a member of the scale all the way to the chrome.** `ValueScale`
+  gains `rules` beside `caption`, and `YAxis` gains `ruleMarks`:
+  `ScoreAxisMixin.axes` places each scale's rules through that scale's type and
+  tick box, in the band's pixel space, and the two shells draw an axis's own
+  marks down its own bands. The host-level `scoreRuleMarks` member is gone. It
+  was one list the chrome drew over every axis of the host, so a display with
+  two scales would have ruled its coverage band and its insert-size band with
+  the same lines; and each display computed it in the whole-track box, which is
+  why a faceted wiggle track drew none. `ScoreScaleMixin` reads
+  `scales.y.rules` off the live nodes, since a snapshot strips a slot at its
+  default and a rule at 0 is one. Each display's `domain` widens its raw range
+  to the rule values through `widenRangeToRules`, under the pinned ends.
+- **`title` is the `caption` ADR-109 gave `ValueScale`, in three states.** It
+  is a `maybeString` slot, a slot type this change adds beside `maybeNumber`
+  and `maybeColor`: unset derives, some text is that text, and `""` is an axis
+  the author wants bare. A `string` slot defaulting to `''` had two states and
+  spent the empty string on "unset", and `null` cannot be the third because
+  [ADR-146](adr-146-null-is-the-json-spelling-of-a-slot-reset.md) reads it as
+  a reset. The config editor drives it with the text field and its reset
+  button, the JSON schema types it `string | jexl`, the docs generator links
+  it to the `maybe*` section of the slot-types guide, and
+  `ConfigSlotDefaults` snapshots it with no default. The mark display's
+  derivation is the `encoding.y` field every mark drawing a value at the
+  view's zoom shares, so a multiscale pair reads `score` at one zoom and
+  `count` at the other; marks naming two fields, a `jexl:` y, and the density
+  sidecar while it stands in derive none.
+- **The chrome draws a caption once per scale.** `AxisGutter` drew it once per
+  band, so the alignments' `TLEN` repeated down every grouped section and a
+  faceted plot would have repeated its title down every row. A caption names
+  the scale, and a scale with many bands still has one: `AxisCaption` draws it
+  beside the bands on screen, centred on their extent, the way ggplot2 titles
+  a faceted plot's axis beside the panel stack, on screen and in the export.
+  That is one guide per scale and no choice between two drawings, so ADR-109's
+  refusal of a member read only to pick a form does not reach it. A scale too
+  short for an axis leads its `[min, max]` caption with its title, which
+  otherwise had no gutter to be drawn in.
+- **What the scale still does not own.** `displayCrossHatches` stays a display
+  setting, as above: it toggles a guide, and the ticks the hatches sit on are
+  already the scale's. `scatterPointSize` is a mark's size. A rule has no zoom
+  range, so on a multiscale pair whose marks plot two quantities a rule drawn
+  for one draws over the other; the form that fixes it is a rule as a layer
+  with `minBpPerPx`/`maxBpPerPx`, and nothing is built for it
+  ([GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) §"Gaps against
+  the grammar").
 
 ## Rejected alternatives
 

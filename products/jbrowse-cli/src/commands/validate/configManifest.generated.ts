@@ -5864,6 +5864,28 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "numQuantile",
                   "type": "(JexlString | number)"
+                },
+                {
+                  "name": "title",
+                  "type": "(JexlString | (string | undefined))"
+                },
+                {
+                  "name": "rules",
+                  "type": "ValueScaleRuleConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | number)"
+                    },
+                    {
+                      "name": "color",
+                      "type": "(JexlString | CssColor)"
+                    },
+                    {
+                      "name": "label",
+                      "type": "(JexlString | string)"
+                    }
+                  ]
                 }
               ]
             }

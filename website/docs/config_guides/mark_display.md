@@ -113,6 +113,56 @@ Every mark drawing at the current zoom folds into that one domain, the way a
 grammar of graphics gives one scale per aesthetic. With a multiscale pair
 (below) only one mark draws, so the axis is that mark's values.
 
+### Reference lines and the axis title
+
+`scales.y` also holds the two guides a reader checks a plot against: `rules`,
+horizontal lines at chosen values, and `title`, the caption beside the axis.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "association",
+  "name": "Association",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://example.com/association.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "association-LinearMarkDisplay",
+      "scales": {
+        "y": {
+          "title": "-log10 p",
+          "rules": [{ "value": 7.3, "color": "red", "label": "p = 5e-8" }, 5]
+        }
+      },
+      "marks": [{ "shape": "point", "encoding": { "y": "score" } }]
+    }
+  ]
+}
+```
+
+Each entry of `rules` is `{ value, color, label }`, and a bare number is a grey
+unlabelled rule at that value: a significance threshold over a scatter of
+p-values, a zero line under a log ratio, an allele-frequency cut. An autoscaled
+end of the axis widens to keep every rule on it, so a threshold stays drawn over
+a window where no point clears it, while a pinned `domainMin` or `domainMax`
+that excludes a rule drops the rule. A rule belongs to the scale, so it draws in
+every band of a faceted plot and at every zoom: on a multiscale pair whose two
+marks plot different quantities, a rule written for one draws over the other
+too.
+
+`title` names what the axis measures, and has three states. Left unset, the
+display captions the axis with the `encoding.y` field wherever every mark
+drawing a value at the current zoom names the same one, so a multiscale pair of
+`milliDiv` and `count` reads `milliDiv` zoomed in and `count` zoomed out with
+nothing configured; marks naming two fields, a `jexl:` `y`, and the density
+sidecar while it stands in for the features derive no caption. Some text is that
+text at every zoom. `"title": ""` leaves the axis bare. A plot banded by a
+`facet` or a `row` field carries the one caption beside its bands.
+
 ## Two quantities
 
 A coverage run in the hundreds and a per-read mapping quality in the tens cannot
@@ -401,7 +451,7 @@ one fetch per region:
 
 A mark outside its range is off entirely — it is not drawn, not hovered, and its
 values do not set the y-axis, the legend or the row count — so the axis at each
-zoom is the drawing mark's.
+zoom is the drawing mark's, captioned with that mark's `y` field.
 
 ### A bin that follows the zoom
 

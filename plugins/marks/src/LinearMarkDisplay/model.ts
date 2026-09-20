@@ -25,6 +25,7 @@ import {
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -376,6 +377,18 @@ function layerSpans(entries: VisibleEntry<StoredLayer>[]): ScoreSpan[] {
         ]
       : []
   })
+}
+
+// The `y` field every mark plotting a value names, or '' where they differ or
+// name an expression, which is no title.
+function sharedValueField(marks: readonly MarkConfig[]) {
+  const fields = new Set(
+    marks.flatMap(({ shape, encoding }) =>
+      shape === 'span' || encoding.y === '' ? [] : [encoding.y],
+    ),
+  )
+  const [field = ''] = fields
+  return fields.size === 1 && !isJexl(field) ? field : ''
 }
 
 /**
@@ -738,16 +751,19 @@ export function stateModelFactory(
       /**
        * #getter
        * nice-rounded [min, max] over the `y` of every mark drawing at this
-       * zoom, through the autoscale mode `scales.y` names, widened to the
-       * origin whenever a bar mark draws, or undefined before any valued mark
-       * loads
+       * zoom, through the autoscale mode `scales.y` names, widened to every
+       * rule the scale declares and to the origin whenever a bar mark draws,
+       * or undefined before any valued mark loads
        */
       get domain() {
         const indices = self.valuedMarkIndices
         const folded = new Set(indices)
         const shapes = indices.map(i => self.markShapes[i]!)
-        const hasBar = shapes.includes('bar')
         const { origin, autoscaleType, numStdDev, numQuantile } = self
+        const reached = [
+          ...self.scoreRules.map(rule => rule.value),
+          ...(shapes.includes('bar') ? [origin] : []),
+        ]
         return visibleStatsDomain({
           active: shapes.some(s => s !== 'span'),
           view: self.host,
@@ -757,16 +773,17 @@ export function stateModelFactory(
               (l, i) => folded.has(i) && l.count > 0 && Number.isFinite(l.yMin),
             ),
           accumulate: entries => computeSpanStats(layerSpans(entries)),
-          range: (stats, entries) => {
-            const range = autoscaleDomainFromSpans({
-              stats,
-              autoscaleType,
-              numStdDev,
-              numQuantile,
-              spans: layerSpans(entries),
-            })
-            return hasBar ? widenRangeToRules(range, [origin]) : range
-          },
+          range: (stats, entries) =>
+            widenRangeToRules(
+              autoscaleDomainFromSpans({
+                stats,
+                autoscaleType,
+                numStdDev,
+                numQuantile,
+                spans: layerSpans(entries),
+              }),
+              reached,
+            ),
           bounds: [self.minScoreBound, self.maxScoreBound],
           scaleType: self.scaleType,
         })
@@ -789,9 +806,27 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * What the axis is captioned with: `scales.y.title` where the config
+       * wrote one, the empty string included, which is an axis left bare.
+       * Unset, the `y` field the marks drawing a value at this zoom share, so
+       * a multiscale pair reads `score` at one zoom and `count` at the other;
+       * empty where they differ or name an expression, and while the density
+       * sidecar stands in, whose bins are not the field's values.
+       */
+      get axisTitle(): string {
+        const { marks } = self.conf
+        return (
+          self.scaleTitle ??
+          (self.coarseTierStandsIn
+            ? ''
+            : sharedValueField(self.valuedMarkIndices.map(i => marks[i]!)))
+        )
+      },
+      /**
+       * #getter
        * The one y scale the chrome draws the axis from — `scales.y` resolved:
-       * its type, and its domain autoscaled where it pins nothing. Every
-       * mark's shapes read the same pair.
+       * its type, its domain autoscaled where it pins nothing, its title as
+       * the caption and its rules. Every mark's shapes read the same pair.
        */
       get valueScales(): ValueScale[] {
         const minimalTicks = getConf(self, 'minimalTicks')
@@ -823,6 +858,8 @@ export function stateModelFactory(
             scaleType: self.scaleType,
             ...band,
             minimalTicks,
+            caption: this.axisTitle,
+            rules: self.scoreRules,
           },
         ]
       },

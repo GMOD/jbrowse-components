@@ -1,14 +1,19 @@
 import {
   getConf,
   getSlotDefinition,
+  readConfObject,
   setConf,
   slotChoices,
 } from '@jbrowse/core/configuration'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 
-import type { scalesSchema } from './valueScaleConfigSchema.ts'
+import type {
+  ValueScaleRuleConfig,
+  scalesSchema,
+} from './valueScaleConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+import type { ValueScaleRule } from '@jbrowse/display-ui'
 
 /**
  * The whole of what `ScoreScaleMixin` needs a composing display to be: a
@@ -112,6 +117,33 @@ export function ScoreScaleMixin() {
        */
       get manualMaxScore(): number | undefined {
         return getConf(confNode(self), ['scales', 'y', 'domainMax'])
+      },
+      /**
+       * #getter
+       * `scales.y.title` as written: `undefined` while unset, which leaves
+       * the caption to the display, and the empty string for an axis the
+       * author wants bare. Also `undefined` on a display whose scale declares
+       * no title.
+       */
+      get scaleTitle(): string | undefined {
+        return getConf(confNode(self), ['scales', 'y', 'title'])
+      },
+      /**
+       * #getter
+       * `scales.y.rules`, read off the live nodes: a snapshot strips a slot at
+       * its default, and a rule at 0 is one. Empty on a display whose scale
+       * declares no rules.
+       */
+      get scoreRules(): ValueScaleRule[] {
+        const { rules = [] } = confNode(self).configuration.scales.y
+        return rules.map((rule: ValueScaleRuleConfig) => {
+          const label = readConfObject(rule, 'label')
+          return {
+            value: readConfObject(rule, 'value'),
+            color: readConfObject(rule, 'color'),
+            ...(label ? { label } : {}),
+          }
+        })
       },
     }))
     .actions(self => ({

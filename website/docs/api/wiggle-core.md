@@ -167,7 +167,7 @@ number, a missing value or a non-numeric one all have to survive being read.
 
 ```js
 // type signature
-(value: unknown) => ScoreRule[]
+(value: unknown) => ValueScaleRule[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
@@ -194,14 +194,7 @@ rather than hard-coded.
 
 ## ScoreRule
 
-One horizontal rule across a score plot, at a score the user chose.
-
-`label` is free text and carries no meaning this package assigns. That is
-deliberate: the obvious use is reading a coverage or CNV track against copy
-number, and there is no ploidy JBrowse could assume on the user's behalf. A
-whole-genome triplication is not diploid, plenty of genomes are not diploid to
-begin with, and a cancer sample can be neither — so "2 copies" is a claim only
-the person looking at the track can make.
+A `ValueScaleRule`, as `parseScoreRules` returns one.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
 
@@ -228,7 +221,7 @@ axis out differently, and the alignments coverage band does.
 
 ```js
 // type signature
-({…}: { rules: readonly ScoreRule[]; domain: [number, number] | undefined; box: { yTop: number; yBottom: number; }; normalize: (score: number) => number; }) => ScoreRuleMark[]
+({…}: { rules: readonly ValueScaleRule[]; domain: [number, number] | undefined; box: { yTop: number; yBottom: number; }; normalize: (score: number) => number; }) => ScoreRuleMark[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)

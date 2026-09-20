@@ -7734,6 +7734,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "ValueScaleRule": {
+      "title": "ValueScaleRule",
+      "anyOf": [
+        {
+          "type": "number",
+          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "the value the rule is drawn at.",
+              "$ref": "#/$defs/NumberOrJexl",
+              "default": 0
+            },
+            "color": {
+              "description": "line and label colour.",
+              "$ref": "#/$defs/CssColorOrJexl",
+              "default": "rgb(120,120,120)"
+            },
+            "label": {
+              "description": "text at the rule's right-hand end.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "ValueScale4": {
       "title": "ValueScale4",
       "type": "object",
@@ -7786,6 +7819,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "percentile the localpercentile autoscale clips at.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0.99
+        },
+        "title": {
+          "description": "axis caption; unset follows the plotted field, \\"\\" draws none.",
+          "$ref": "#/$defs/StringOrJexl"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ValueScaleRule"
+          }
         }
       },
       "patternProperties": {
