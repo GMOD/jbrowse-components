@@ -433,6 +433,30 @@ describe('an undeclared member of a config node does not compile', () => {
     expect(node.scales.domainMinn).toBeUndefined()
   })
 
+  // The identifier is folded into the definition as a synthetic string slot, so
+  // it reads as `string` and a subclass inherits it through the same merge that
+  // carries the base's slots. Carried as a type parameter instead it lands in a
+  // `Record<K, …>` key position and reads as invariant, which stops a concrete
+  // schema widening to `AnyConfigurationSchemaType`.
+  it('types the identifier, and a subclass inherits it', () => {
+    const base = ConfigurationSchema(
+      'ConfigTypoIdBase',
+      { inherited: { type: 'number', defaultValue: 0 } },
+      { explicitIdentifier: 'baseId' },
+    )
+    const sub = ConfigurationSchema(
+      'ConfigTypoIdSub',
+      { own: { type: 'string', defaultValue: 'x' } },
+      { baseConfiguration: base },
+    )
+    const node = sub.create({ baseId: 'one' }, { pluginManager })
+
+    assertType<Equal<typeof node.baseId, string>>()
+    assertType<Equal<typeof node.inherited, number>>()
+    expect(node.baseId).toBe('one')
+    expect(node.inherited).toBe(0)
+  })
+
   // The snapshot going IN is checked by `ConfigurationSnapshot<SCHEMA>`, not by
   // `create`. Typing the model's own `CreationType` off the definition was
   // built and measured: zero build errors, 115 in the test tree, because a
