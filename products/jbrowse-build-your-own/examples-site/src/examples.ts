@@ -117,19 +117,25 @@ export const pages: ExamplePage[] = [
   {
     slug: 'track-settings',
     title: 'Track settings',
-    description:
-      'Color by and group by from your own controls, and a key you place.',
+    description: 'A Color by menu, a legend toggle and a read-height slider.',
     group: 'Your own UI',
     sections: [
       {
         slug: 'color-by-from-your-own-ui',
         title: 'A Color by menu, and the legend it raises',
-        description: 'Reads colored by a preset, with a read-height slider.',
       },
+    ],
+  },
+  {
+    slug: 'color-and-group-by-a-field',
+    title: 'Coloring and grouping by a field',
+    description:
+      'Any attribute as a color or a row group, with a key you place.',
+    group: 'Your own UI',
+    sections: [
       {
         slug: 'color-and-group-by-a-field',
-        title: 'Color and group genes by a field',
-        description: 'Any attribute as a color or a row group, keyed above.',
+        title: 'Genes colored and grouped by an attribute',
       },
     ],
   },
@@ -167,21 +173,21 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'synteny',
-    title: 'Comparing genomes',
-    description:
-      'Human and mouse joined by ribbons, and twelve E. coli genomes as lanes.',
+    title: 'Comparing two genomes',
+    description: 'Human and mouse at BRCA1, joined by synteny ribbons.',
     group: 'Going further',
     sections: [
-      {
-        slug: 'synteny-ribbons',
-        title: 'Two linear views and a ribbon band',
-        description: 'Human and mouse at BRCA1.',
-      },
-      {
-        slug: 'gene-lanes',
-        title: 'A lane per genome under one view',
-        description: 'Twelve E. coli genomes joined on the gene symbol.',
-      },
+      { slug: 'synteny-ribbons', title: 'Two linear views and a ribbon band' },
+    ],
+  },
+  {
+    slug: 'gene-lanes',
+    title: 'Gene lanes across genomes',
+    description:
+      'Twelve E. coli genomes under one view, joined on gene symbol.',
+    group: 'Going further',
+    sections: [
+      { slug: 'gene-lanes', title: 'A lane per genome, and a key above them' },
     ],
   },
   {

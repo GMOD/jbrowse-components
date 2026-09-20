@@ -74,9 +74,9 @@ it belongs in a package and the example imports it like any reader would — whi
 also puts it under a real test, where a site-local helper never is. If no, it
 stays copied.
 
-**The tell is that the copies are worse than what JBrowse already runs**, and it
-has now held six times; in five of them the published version knew something the
-copies did not:
+**The tell is that the copies are worse than what JBrowse already runs.** Each
+row below is one time it held, and the middle column is what the published
+version knew that the copies did not:
 
 | the copies                        | what they were missing                                    | became                                  |
 | --------------------------------- | --------------------------------------------------------- | --------------------------------------- |
@@ -89,6 +89,10 @@ copies did not:
 | the display mount, the status box and the measured pan/zoom column, ×18 | the mount's overlay slot, which fourteen copies dropped | `Track`, `ViewStatus`, `TrackStack` in `@jbrowse/display-ui/embed` |
 | a site-mode watcher on `data-theme` and the media query, ×18 | nothing | `SessionPaletteProvider` following the page's declared `color-scheme` |
 | region seams ×4, a scalebar row ×2, a location box ×2 | nothing | `RegionSeams`, `Scalebar`, `LocationBox` in `@jbrowse/display-ui/embed` |
+| a highlight band, ×1 | the label: it sat in a `title` on a `pointer-events: none` box, so it never showed, and the SVG figure page drew its band in the figure and not in the live view | `Highlights` in `@jbrowse/display-ui/embed` |
+| a second `TrackStack` to put a resize bar under each track, ×1 | the grab cursor | `TrackStack`'s `renderTrack` and `ResizeHandle` |
+| a show/hide checkbox over `hideTrack` and `launchTrack`, ×2 | nothing | `TrackToggle`, over `view.launchToggleTrack` |
+| `SessionPaletteProvider` around `DisplayUIProvider`, ×14 | nothing | `EmbedProvider` |
 
 That is the argument for treating "the examples all write X" as a missing export
 rather than a duplication problem: the reader is not merely repeating himself,

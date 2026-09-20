@@ -68,12 +68,14 @@ const MUI_BUDGET = {
   // driven and because a census that only ever runs before the thing appears is
   // the `ultraminimal` unearned-zero trap one paragraph up.
   'track-settings': 0,
+  'color-and-group-by-a-field': 0,
   'search-by-name': 0,
   'local-files': 0,
   'highlight-a-region': 0,
   'web-workers': 0,
   // measured, not chosen -- see the note below the budget
   synteny: 0,
+  'gene-lanes': 0,
   // Two renderings of the same two tracks on one page -- the canvas stack behind
   // `DisplayUIProvider`, and the SVG figure under it -- and the figure's half of
   // this zero is free rather than installed: an SVG body draws no chrome, and the
@@ -486,6 +488,33 @@ async function dragToZoomFramesTheSpan(page, slug) {
 // So the census is re-run with one on screen. Three assertions, and the middle
 // one is the one that stops this becoming another unearned zero: the scheme is
 // picked, the legend is confirmed *present*, and only then is the count taken.
+// A key the page places is derived from what the display painted, so a row
+// naming the data is the proof that the display drew and the page read it.
+const PLACED_KEYS = {
+  'color-and-group-by-a-field': 'protein_coding',
+  'gene-lanes': 'atpA',
+}
+
+async function placedKeyNamesItsRows(page, slug) {
+  const row = PLACED_KEYS[slug]
+  if (!row) {
+    return []
+  }
+  try {
+    await page.waitForFunction(
+      text =>
+        document
+          .querySelector('[data-testid="embed-legend"]')
+          ?.innerText.includes(text),
+      { timeout: 60000 },
+      row,
+    )
+    return []
+  } catch {
+    return [`the key this page places above its track never listed "${row}"`]
+  }
+}
+
 async function legendIsPlainAndAboveTheSeams(page, slug) {
   if (slug !== 'track-settings') {
     return []
@@ -1065,6 +1094,7 @@ const failures = await smokeExamplesSite({
     ...(await highlightSurvivesAOneBaseRegion(page, slug)),
     ...(await dragToZoomFramesTheSpan(page, slug)),
     ...(await searchByNameResolvesNames(page, slug)),
+    ...(await placedKeyNamesItsRows(page, slug)),
     ...(await legendIsPlainAndAboveTheSeams(page, slug)),
     ...(await everyDisplayIsInAnOverlaySlot(page)),
     // adds displays to its own page, so it goes after every census above

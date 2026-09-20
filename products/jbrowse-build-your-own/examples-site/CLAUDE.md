@@ -6,8 +6,9 @@ Local to this one:
 
 An example imports only published packages: `@jbrowse/react-linear-genome-view2`
 plus the others that doc names. The mounting, status and chrome blocks every
-page needs come from `@jbrowse/display-ui/embed` (`Track`, `TrackStack`,
-`ViewStatus`, `Scalebar`, `RegionSeams`, `LocationBox`), so an example file is
+page needs come from `@jbrowse/display-ui/embed` (`EmbedProvider`, `Track`,
+`TrackStack`, `ViewStatus`, `Scalebar`, `RegionSeams`, `Highlights`,
+`LocationBox`, `TrackToggle`, `ResizeHandle`, `Legend`), so an example file is
 its engine options, its own controls and nothing else. No comments in example
 files.
 
@@ -40,6 +41,9 @@ failure naming only the "ever" number is the interesting one.
 `[data-track-overlay-slot]`, since a display's floating chrome escapes its
 `contain: strict` sandbox into that slot. `Track` mounts it; a page that mounts
 `RenderingComponent` another way owes it too.
+
+**`placedKeyNamesItsRows`** waits for a row of the data in the `Legend` a page
+places outside its track, on the two pages that place one.
 
 **`viewStatusStatesAreDrawn`** drives the loading-and-errors page through the
 snackbar, `noRegions` (an engine built with no `init`) and a 404 assembly. When
