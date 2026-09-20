@@ -23,6 +23,8 @@ const PAA_COLOR_DOMAIN = { start: 1445000, end: 1474500 }
 
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
+const AMYLASE_CONFIG = 'test_data/amylase/config.json'
+const AMYLASE_HG38 = 'chr1:103,520,894-103,832,637'
 
 // HG008-T v3.2 T2T assembly vs GRCh38 synteny as a session track, shared by the
 // sv_cgiab dotplot and synteny figures. Overriding with PairwiseIndexedPAFAdapter
@@ -1788,6 +1790,92 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportHeight: 1000,
+  },
+
+  // The same eight lanes over the amylase locus, where the reference has three
+  // AMY1 copies and the haplotypes carry two to five. Every record aligns a
+  // haplotype to GRCh38, so a lane's extra copies have nothing to align to.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hprc_amylase_lanes',
+    url: sessionSpec(
+      encodeURIComponent('https://jbrowse.org/demos/hprc_multiway/config.json'),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: AMYLASE_HG38,
+            tracks: [
+              'hg38_ncbiRefSeq_ucsc',
+              {
+                trackId: 'hprc_multiway',
+                type: 'MultiWaySyntenyDisplay',
+                height: 600,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportHeight: 1000,
+  },
+
+  // Five of those haplotypes ordered by AMY1 copies, each aligned to the row
+  // under it by minimap2 (scripts/build_amylase_haplotypes.sh), so every band
+  // draws a CIGAR: two-copy against two-copy runs straight, two against the
+  // reference's three and three against five each open one insertion wedge.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hprc_amylase_stack',
+    url: sessionSpec(AMYLASE_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              assembly: 'HG00097.1',
+              loc: 'CM094060.1:104,017,700-104,266,751',
+              tracks: ['hprc_genes_HG00097_1'],
+            },
+            {
+              assembly: 'HG00099.1',
+              loc: 'JBHDWO010000005.1:103,881,093-104,112,612',
+              tracks: ['hprc_genes_HG00099_1'],
+            },
+            {
+              assembly: 'hg38',
+              loc: AMYLASE_HG38,
+              tracks: ['hg38_ncbiRefSeq_ucsc'],
+            },
+            {
+              assembly: 'HG00133.1',
+              loc: 'CM090045.1:103,669,666-103,981,330',
+              tracks: ['hprc_genes_HG00133_1'],
+            },
+            {
+              assembly: 'HG00128.1',
+              loc: 'JBHIKS010000010.1:103,876,230-104,422,280',
+              tracks: ['hprc_genes_HG00128_1'],
+            },
+          ],
+          tracks: [
+            ['amylase_adjacent'],
+            ['amylase_adjacent'],
+            ['amylase_adjacent'],
+            ['amylase_adjacent'],
+          ],
+          colorBy: { field: 'strand' },
+          drawCurves: true,
+          levelHeights: [110, 110, 110, 110],
+        },
+      ],
+    }),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 240000,
+    viewportHeight: 1400,
   },
 
   // The same stack where the mammals break: at hg38 chr17 near 15.75 Mb the
