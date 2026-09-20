@@ -32,7 +32,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "useSliceWorkerPool",
@@ -82,7 +82,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -127,7 +127,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": []
@@ -156,7 +156,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -286,7 +286,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -499,7 +499,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -538,7 +538,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -734,7 +734,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "searchForward",
@@ -759,7 +759,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "pam",
@@ -816,7 +816,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "searchForward",
@@ -883,7 +883,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -920,7 +920,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": []
@@ -1025,7 +1025,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "windowSize",
@@ -1066,11 +1066,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "summaryAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "annotationAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -1103,11 +1103,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "summaryAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "annotationAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -1136,11 +1136,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "summaryAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "annotationAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": []
@@ -1183,11 +1183,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "summaryAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "annotationAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -1633,7 +1633,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "scoreTransform",
@@ -1641,7 +1641,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "ldAdapter",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         }
       ],
       "shorthandKeys": [
@@ -3320,7 +3320,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sortedBy",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "largeFeaturesFirst",
@@ -3332,7 +3332,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showOutline",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "linkedReads",
@@ -3688,7 +3688,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sortedBy",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "largeFeaturesFirst",
@@ -3700,7 +3700,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showOutline",
-          "type": "(JexlString | frozen)"
+          "type": "(JexlString | (frozen | undefined))"
         },
         {
           "name": "linkedReads",

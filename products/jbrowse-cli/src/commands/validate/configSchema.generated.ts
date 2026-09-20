@@ -311,8 +311,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 5000000
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "useSliceWorkerPool": {
           "description": "decode CRAM slices on a pool of workers rather than in the thread that asked.",
@@ -414,8 +413,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 5000000
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -514,8 +512,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": ""
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         }
       }
     },
@@ -566,8 +563,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -830,8 +826,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -1236,8 +1231,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "gene_name"
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -1298,8 +1292,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -1740,8 +1733,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": ""
         },
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "searchForward": {
           "$ref": "#/$defs/BooleanOrJexl",
@@ -1782,8 +1774,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "pam": {
           "$ref": "#/$defs/StringOrJexl",
@@ -1867,8 +1858,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": ""
         },
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "searchForward": {
           "$ref": "#/$defs/BooleanOrJexl",
@@ -1975,8 +1965,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 5000000
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -2049,8 +2038,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 5000000
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         }
       }
     },
@@ -2256,8 +2244,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "windowSize": {
           "$ref": "#/$defs/NumberOrJexl",
@@ -2336,12 +2323,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it. The \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, which is why this slot was left off at first — but span is only half of it. Cost is span × depth, and measured against HPRC's own v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, which is why this slot was left off at first — but span is only half of it. Cost is span × depth, and measured against HPRC's own v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -2408,12 +2393,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it. The zoom-out tier on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, but cost is span × depth and a deep alignment runs out of the second factor. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The zoom-out tier on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, but cost is span × depth and a deep alignment runs out of the second factor. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -2471,12 +2454,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         }
       }
     },
@@ -2530,12 +2511,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it. A tabix MAF carries every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track simply has no zoom-out path. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF carries every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track simply has no zoom-out path. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -3340,8 +3319,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "scoreTransform": {
           "description": "transform applied to the score column.",
@@ -3349,8 +3327,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "none"
         },
         "ldAdapter": {
-          "description": "sub-adapter config for PLINK .ld pairwise r² data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "sub-adapter config for PLINK .ld pairwise r² data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "uri": {
           "type": "string",
@@ -4188,8 +4165,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "sortedBy": {
-          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "largeFeaturesFirst": {
           "description": "Lay out large features first, in the lowest pileup rows.",
@@ -4202,8 +4178,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "showOutline": {
-          "description": "Draw an outline around each read (null = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "linkedReads": {
           "description": "View as pairs / link supplementary alignments: put a read, its mate and its split segments on one row.",
@@ -4704,8 +4679,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "sortedBy": {
-          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "largeFeaturesFirst": {
           "description": "Lay out large features first, in the lowest pileup rows.",
@@ -4718,8 +4692,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "showOutline": {
-          "description": "Draw an outline around each read (null = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": null
+          "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "linkedReads": {
           "description": "View as pairs / link supplementary alignments: put a read, its mate and its split segments on one row.",

@@ -39,7 +39,7 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "GCContentAda
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | don't set this — JBrowse computes GC from the assembly the track is displayed against. It stays as an escape hatch for scoring some *other* sequence, and setting it pins the track to that source even when the assembly's own sequence changes<br>_advanced_ |
+| <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | don't set this — JBrowse computes GC from the assembly the track is displayed against. It stays as an escape hatch for scoring some *other* sequence, and setting it pins the track to that source even when the assembly's own sequence changes<br>_advanced_ |
 | <span id="slot-windowsize">**windowSize**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | width in bp of the window each score is computed over, centered on the position. 1 scores single bases; wider windows smooth the signal<br>_advanced_ |
 | <span id="slot-windowdelta">**windowDelta**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | step in bp between successive windows. Equal to `windowSize` (the default) the windows tile without overlapping; smaller values overlap them, giving a denser, smoother signal for proportionally more work<br>_advanced_ |
 | <span id="slot-gcmode">**gcMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (content, skew) = <code>'content'</code> | calculate GC content fraction or GC skew (G-C)/(G+C) |

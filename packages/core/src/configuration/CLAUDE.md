@@ -13,13 +13,14 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
 - **`setSlot` throws on an undeclared name**, which is what makes a misspelled
   _write_ diagnosable at all; `setConf`'s compile-time guard only covers
   concrete schemas and a mixin erases that.
-- **`null` resets a slot to its default**, because JSON cannot spell `undefined`
-  and a session spec, share link or agent call would otherwise be able to set a
-  slot and not put it back. So **no slot stores `null` as a value** — a slot
-  that means "unset" is `maybeFrozen`, never `frozen` with `defaultValue: null`.
-  Omitting the key is a different thing: `setSlot` is the merge path, where an
-  absent key means "leave it alone", while a snapshot handed to `create` resets
-  an omitted slot already. ADR-146.
+- **`setSlot` reads `null` as a reset to the slot's default**, because JSON
+  cannot spell `undefined` and a session spec, share link or agent call would
+  otherwise be able to set a slot and not put it back. So **no slot declares
+  `null` as its default** — a slot meaning "unset" is `maybeFrozen`, never
+  `frozen` with `defaultValue: null`. Omitting the key is a different thing:
+  `setSlot` is the merge path, where an absent key means "leave it alone", while
+  a snapshot handed to `create` resets an omitted slot already — and still
+  stores a literal `null` if one is written there. ADR-146.
 - **A worker payload is `fullConfSnapshot`, not `getSnapshot`.** `stripDefault`
   omits a slot sitting at its default, and a worker has no schema to fill it
   back in.
@@ -69,6 +70,15 @@ a compile error and a sub-schema member reads as that sub-config's own node.
 rather than intersecting with them, which is what makes the name checked rather
 than merely typed; four type-level details hold it up and each fails quietly.
 ADR-145.
+
+**A typed prop is not a substitute for the reader**, so a typed
+`conf.assemblyNames` is not `getConf(track, 'assemblyNames')` with fewer
+characters: `readConfObject` evaluates a `jexl:` slot and resolves the default,
+and a raw prop read does neither. Reach for the prop where you want the stored
+value, the reader where you want the setting. For a track's assemblies the
+answer is neither — `getTrackAssemblyNames`, because `ReferenceSequenceTrack`
+declares no `assemblyNames` slot and names its assembly by being the `sequence`
+of one.
 
 **Run `scripts/audit-config-read-types.ts` after touching the node type.** A
 brand that loses its polymorphic `this` cuts every node back to

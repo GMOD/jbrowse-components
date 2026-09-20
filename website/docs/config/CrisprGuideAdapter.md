@@ -82,7 +82,7 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "CrisprGuideA
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | discouraged: leave unset. JBrowse supplies the assembly's sequence adapter automatically; this override exists only for the rare case of scanning a sequence other than the one the track is displayed against. |
+| <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | discouraged: leave unset. JBrowse supplies the assembly's sequence adapter automatically; this override exists only for the rare case of scanning a sequence other than the one the track is displayed against. |
 | <span id="slot-pam">**pam**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'NGG'</code> | PAM motif in IUPAC codes, e.g. NGG for SpCas9, TTTV for Cas12a |
 | <span id="slot-guidelength">**guideLength**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>20</code> | protospacer length in bp |
 | <span id="slot-pamlocation">**pamLocation**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (3prime, 5prime) = <code>'3prime'</code> | whether the PAM is 3' (Cas9) or 5' (Cas12a) of the protospacer |
