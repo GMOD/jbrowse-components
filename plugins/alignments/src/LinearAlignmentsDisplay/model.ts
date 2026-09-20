@@ -29,6 +29,7 @@ import {
   boundBandHeight,
   clampBandHeight,
 } from '@jbrowse/core/util/bandHeight'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -57,7 +58,7 @@ import {
   visibleStatsDomain,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
-import { autorun, observable } from 'mobx'
+import { autorun, compareStructural, observable } from 'mobx'
 
 import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
 import { computeArcsByGroup } from '../features/arcs/compute.ts'
@@ -68,6 +69,11 @@ import {
 } from '../features/linkedReads/computeOverlay.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
+import {
+  COLOR_FIELDS,
+  colorSnapshotFor,
+  isBakedScheme,
+} from '../shared/alignmentsColor.ts'
 import {
   COLOR_SCHEMES,
   isModificationScheme,
@@ -87,6 +93,11 @@ import {
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
+import {
+  bakedColorScale,
+  numericExtentAcrossGroups,
+  pinnedLinearDomain,
+} from './bakedColorScale.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
   framesUnpairedChainStrand,
@@ -168,6 +179,7 @@ import type {
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
+import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type {
   ArcColorByType,
   ColorBy,
@@ -176,6 +188,7 @@ import type {
   GroupBy,
   SortedBy,
 } from '../shared/types'
+import type { NumericExtent } from './bakedColorScale.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { ContextMenuHit } from './components/hitTestPipeline.ts'
@@ -1071,11 +1084,7 @@ export default function stateModelFactory(
            * it is O(reads).
            */
           get presentTagValues(): ReadonlySet<string> | undefined {
-            const { type } = self.colorBy
-            if (
-              !self.showLegend ||
-              (type !== 'tag' && type !== 'mateRefName')
-            ) {
+            if (!self.showLegend || !isBakedScheme(self.colorBy)) {
               return undefined
             }
             return collectAcrossGroups(
@@ -1116,7 +1125,13 @@ export default function stateModelFactory(
           // Derived from the session theme so it's always available — including
           // headless SVG export and RPC, where no component mounts to seed it.
           get colorPalette(): ColorPalette {
-            return buildColorPaletteFromPalette(getPaletteHost(self).palette)
+            const palette = buildColorPaletteFromPalette(
+              getPaletteHost(self).palette,
+            )
+            const { value } = self.colorSetting
+            return value
+              ? { ...palette, colorPairLR: cssColorToNormalizedRgb(value) }
+              : palette
           },
 
           /**
@@ -1221,6 +1236,7 @@ export default function stateModelFactory(
               presentTagValues: this.presentTagValues,
               presentModifications: this.presentModifications,
               refNamePosition: this.paintedRefNamePosition,
+              bakedScale: this.bakedColorScale,
               chainFramed: this.framesChainStrand,
             })
           },
@@ -1578,8 +1594,44 @@ export default function stateModelFactory(
             return {
               colorBy: self.colorBy,
               readColorOpts: this.readColorOpts,
-              refNamePosition: this.paintedRefNamePosition,
+              bakedScale: this.bakedColorScale,
             }
+          },
+
+          /**
+           * #getter
+           * The span of a linear colour field over the loaded reads, which an
+           * unpinned ramp stretches across. Undefined while `domain` pins the
+           * ramp or another scale paints, so a region arriving rebakes nothing
+           * then.
+           */
+          get bakedColorExtent(): NumericExtent | undefined {
+            const { scale, domain } = self.colorSetting
+            return self.colorBy.type === 'tag' &&
+              scale === 'linear' &&
+              !pinnedLinearDomain(domain)
+              ? numericExtentAcrossGroups(
+                  this.laidOutByGroupFramed,
+                  d => d.readTagValues,
+                )
+              : undefined
+          },
+
+          /**
+           * #getter
+           * The scale a tag, attribute or mate reference bakes through, read by
+           * the per-read bake and the key alike. Undefined for the fields the
+           * category table paints.
+           */
+          get bakedColorScale() {
+            return isBakedScheme(self.colorBy)
+              ? bakedColorScale(
+                  self.colorBy,
+                  self.colorSetting,
+                  this.paintedRefNamePosition,
+                  this.bakedColorExtent,
+                )
+              : undefined
           },
 
           /**
@@ -1671,7 +1723,11 @@ export default function stateModelFactory(
            * re-apply `hiddenGroupKeys`. See `buildRawDataByGroup`.
            */
           get rawDataByGroup() {
-            return buildRawDataByGroup(self.rpcDataMap, self.hiddenGroupKeys)
+            return buildRawDataByGroup(
+              self.rpcDataMap,
+              self.hiddenGroupKeys,
+              self.pinnedInsertSizeBand,
+            )
           },
 
           /**
@@ -3188,7 +3244,27 @@ export default function stateModelFactory(
            * #action
            */
           setColorBy(colorBy: ColorBy) {
-            setConf(self, 'colorBy', colorBy)
+            // A re-pick of the scheme in use writes nothing: the write would
+            // replace the slot's arrays, and every colour tier keys on them.
+            if (!compareStructural(colorBy, self.colorBy)) {
+              setConf(
+                self,
+                'color',
+                colorSnapshotFor(colorBy, self.colorSetting),
+              )
+              if (colorBy.modifications) {
+                setConf(self, 'modifications', colorBy.modifications)
+              }
+            }
+          },
+
+          /**
+           * #action
+           * Replace the `color` object whole: `"steelblue"`,
+           * `{ field: 'tags.HP', palette: [...] }`.
+           */
+          setColor(color: string | Partial<AlignmentsColorSetting>) {
+            setConf(self, 'color', color)
           },
 
           /**
@@ -3675,13 +3751,14 @@ export default function stateModelFactory(
               // choices (tag, methylation, base quality, ...) are preserved by
               // the gate.
               if (PAIRING_COLOR_SCHEMES.has(currentType)) {
-                setConf(self, 'colorBy', undefined)
+                setConf(self, 'color', { value: self.colorSetting.value })
               }
             } else if (currentType === 'normal') {
               // Entering pairs: nudge the plain default to the SV-signal
               // scheme, but don't clobber a scheme the user explicitly picked.
-              setConf(self, 'colorBy', {
-                type: 'insertSizeAndOrientation',
+              setConf(self, 'color', {
+                value: self.colorSetting.value,
+                field: COLOR_FIELDS.insertSizeAndOrientation,
               })
             }
             // No explicit invalidation here: `linkedReads` is an `rpcProps()`

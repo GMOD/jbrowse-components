@@ -300,8 +300,53 @@ describe('alignments colorBy', () => {
   })
 
   it('takes an explicit per-track scheme', () => {
-    const { display } = createDisplay({ colorBy: { type: 'strand' } })
+    const { display } = createDisplay({ color: { field: 'strand' } })
     expect(display.colorBy).toEqual({ type: 'strand' })
+  })
+
+  it('reads a tag, an attribute and the modification settings off the config', () => {
+    expect(
+      createDisplay({ color: { field: 'tags.HP' } }).display.colorBy,
+    ).toEqual({ type: 'tag', tag: 'HP' })
+    expect(
+      createDisplay({ color: { field: 'score' } }).display.colorBy,
+    ).toEqual({ type: 'tag', attribute: 'score' })
+    expect(
+      createDisplay({
+        color: { field: 'modifications' },
+        modifications: { threshold: 50 },
+      }).display.colorBy,
+    ).toEqual({ type: 'modifications', modifications: { threshold: 50 } })
+  })
+
+  it('a string is the constant read fill', () => {
+    const { display } = createDisplay({ color: 'rgb(0, 0, 255)' })
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.colorSetting.value).toBe('rgb(0, 0, 255)')
+  })
+
+  it('a scheme pick writes the field and keeps a declared palette for the way back', () => {
+    const { display } = createDisplay({
+      color: { field: 'tags.HP', palette: ['red', 'blue'] },
+    })
+    display.setColorBy({ type: 'normal' })
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.colorSetting.field).toBe('tags.HP')
+    display.setColorBy({ type: 'tag', tag: 'HP' })
+    expect(display.colorSetting.palette).toEqual(['red', 'blue'])
+    display.setColorBy({ type: 'strand' })
+    expect(display.colorSetting).toMatchObject({ field: 'strand', palette: [] })
+  })
+
+  it('an undeclared key in the colour object is refused', () => {
+    expect(() => createDisplay({ color: { type: 'strand' } })).toThrow()
+  })
+
+  it('pins the insert-size cut points from the domain', () => {
+    const { display } = createDisplay({
+      color: { field: 'insertSize', domain: ['150', '600'] },
+    })
+    expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
 
   // Leaving pairs mode discards the now-meaningless pairing scheme.

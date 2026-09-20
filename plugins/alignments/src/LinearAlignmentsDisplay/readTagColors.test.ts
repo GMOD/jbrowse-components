@@ -3,10 +3,13 @@ import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { bakedColorScale } from './bakedColorScale.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 import { buildReadTagColors, overlayReadTagColors } from './readTagColors.ts'
 
+import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type { ColorBy } from '../shared/types.ts'
+import type { RefNamePosition } from './colorTagUtils.ts'
 
 const TAG: ColorBy = { type: 'tag', tag: 'HP' }
 
@@ -19,6 +22,29 @@ function pileupWith(readTagValues: string[]) {
   })
 }
 
+const UNDECLARED: AlignmentsColorSetting = {
+  value: undefined,
+  field: '',
+  scale: undefined,
+  domain: [],
+  palette: [],
+  ramp: [],
+  domainMid: undefined,
+}
+
+function scaleFor(
+  colorBy: ColorBy,
+  declared: Partial<AlignmentsColorSetting> = {},
+  position?: RefNamePosition,
+) {
+  return bakedColorScale(
+    colorBy,
+    { ...UNDECLARED, ...declared },
+    position,
+    undefined,
+  )
+}
+
 const packed = (color: string) => {
   const [r, g, b] = cssColorToRgb(color)
   return packAbgr(r, g, b, 255)
@@ -28,7 +54,12 @@ describe('mateRefName (chromosome painting) colors', () => {
   const build = (
     names: string[],
     position?: (n: string) => number | undefined,
-  ) => buildReadTagColors(pileupWith(names), { type: 'mateRefName' }, position)
+  ) =>
+    buildReadTagColors(
+      pileupWith(names),
+      { type: 'mateRefName' },
+      scaleFor({ type: 'mateRefName' }, {}, position),
+    )
 
   test('bakes each mate refName the color its own value resolves', () => {
     expect([...build(['chr1', 'chr2'])]).toEqual([
@@ -70,7 +101,7 @@ describe('mateRefName (chromosome painting) colors', () => {
 
 describe('categorical tag colors', () => {
   const build = (values: string[]) =>
-    buildReadTagColors(pileupWith(values), { type: 'tag', tag: 'HP' })
+    buildReadTagColors(pileupWith(values), TAG, scaleFor(TAG))
 
   // The color comes from the value itself (`bakedValueColor`), so a read paints
   // the moment its value is known rather than once some earlier fetch had
@@ -102,6 +133,7 @@ describe('strand tag colors', () => {
     const [fwd, rev, dot, absent] = buildReadTagColors(
       pileupWith(['+', '-', '.', '']),
       colorBy,
+      scaleFor(colorBy),
     )
     expect(fwd).toBe(packed(colorFwdStrand))
     expect(rev).toBe(packed(colorRevStrand))
@@ -111,8 +143,11 @@ describe('strand tag colors', () => {
 
 describe('overlayReadTagColors', () => {
   const overlay = (colorBy: Parameters<typeof overlayReadTagColors>[1]) =>
-    overlayReadTagColors(new Map([[0, pileupWith(['chr1'])]]), colorBy).get(0)!
-      .readTagColors.length
+    overlayReadTagColors(
+      new Map([[0, pileupWith(['chr1'])]]),
+      colorBy,
+      colorBy && scaleFor(colorBy),
+    ).get(0)!.readTagColors.length
 
   test('bakes colors for mateRefName', () => {
     expect(overlay({ type: 'mateRefName' })).toBe(1)
@@ -128,5 +163,66 @@ describe('overlayReadTagColors', () => {
     expect(overlay({ type: 'strand' })).toBe(0)
     expect(overlay({ type: 'tag' })).toBe(0)
     expect(overlay(undefined)).toBe(0)
+  })
+})
+
+describe('a declared scale', () => {
+  const NM: ColorBy = { type: 'tag', tag: 'NM' }
+
+  test('a domain and palette hand the listed values their colours in order', () => {
+    const scale = scaleFor(TAG, {
+      domain: ['2', '1'],
+      palette: ['#ff0000', '#0000ff'],
+    })
+    expect([
+      ...buildReadTagColors(pileupWith(['1', '2', '']), TAG, scale),
+    ]).toEqual([packed('#0000ff'), packed('#ff0000'), 0])
+  })
+
+  test('a linear scale runs the ramp across a pinned domain and clamps past it', () => {
+    const scale = scaleFor(NM, {
+      scale: 'linear',
+      domain: ['0', '10'],
+      ramp: ['#000000', '#ffffff'],
+    })
+    const [low, high, past, text] = buildReadTagColors(
+      pileupWith(['0', '10', '99', 'x']),
+      NM,
+      scale,
+    )
+    expect(low).toBe(packed('#000000'))
+    expect(high).toBe(packed('#ffffff'))
+    expect(past).toBe(high)
+    expect(text).toBe(0)
+  })
+
+  test('an unpinned linear scale stretches over the loaded extent', () => {
+    const scale = bakedColorScale(
+      NM,
+      { ...UNDECLARED, scale: 'linear', ramp: ['#000000', '#ffffff'] },
+      undefined,
+      [4, 8],
+    )
+    const [low, high] = buildReadTagColors(pileupWith(['4', '8']), NM, scale)
+    expect([low, high]).toEqual([packed('#000000'), packed('#ffffff')])
+  })
+
+  test('a threshold scale paints the bin a value falls in', () => {
+    const scale = scaleFor(NM, {
+      scale: 'threshold',
+      domain: ['5'],
+      palette: ['#00ff00', '#ff0000'],
+    })
+    expect([
+      ...buildReadTagColors(pileupWith(['1', '5', '9']), NM, scale),
+    ]).toEqual([packed('#00ff00'), packed('#ff0000'), packed('#ff0000')])
+  })
+
+  test('a declared scale over a strand tag replaces the strand vocabulary', () => {
+    const XS: ColorBy = { type: 'tag', tag: 'XS' }
+    const scale = scaleFor(XS, { domain: ['+'], palette: ['#123456'] })
+    expect(buildReadTagColors(pileupWith(['+']), XS, scale)[0]).toBe(
+      packed('#123456'),
+    )
   })
 })

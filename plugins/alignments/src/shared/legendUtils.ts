@@ -9,6 +9,8 @@ import {
   methylated5mC,
   unmethylated5mC,
 } from '@jbrowse/core/ui/palette'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
+import { formatScore } from '@jbrowse/core/util/numericUtils'
 import { isMethylationFillType } from '@jbrowse/modifications-utils'
 
 import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
@@ -17,6 +19,7 @@ import {
   rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
+import { colorFieldOf, isBakedScheme } from './alignmentsColor.ts'
 import { isModificationScheme } from './colorSchemes.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
 import {
@@ -25,6 +28,7 @@ import {
   usesMethylationLegend,
 } from './types.ts'
 
+import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type {
   ReadColorCategory,
@@ -799,10 +803,29 @@ function bakedValueLegend(
   colorBy: ColorBy,
   present: ReadonlySet<string> | undefined,
   refNamePosition: RefNamePosition | undefined,
+  scale: BakedColorScale | undefined,
 ): LegendItem[] {
+  const field = colorFieldOf(colorBy)
+  if (scale?.kind === 'linear') {
+    const [min, max] = scale.domain
+    return scale.stops.map(({ offset, color }) => ({
+      color,
+      label: `${field} ${formatScore(min + offset * (max - min))}`,
+    }))
+  }
+  if (scale?.kind === 'threshold') {
+    return scale.bins.map(({ color, label }) => ({
+      color,
+      label: `${field} ${label}`,
+    }))
+  }
   const values = [...(present ?? [])].filter(value => value !== '')
-  return sortedBakedValues(values, colorBy, refNamePosition).map(value => ({
-    color: bakedValueColor(colorBy, value, refNamePosition),
+  const sorted = scale?.declared
+    ? [...values].sort(groupKeyComparator(scale.domain))
+    : sortedBakedValues(values, colorBy, refNamePosition)
+  return sorted.map(value => ({
+    color:
+      scale?.color(value) ?? bakedValueColor(colorBy, value, refNamePosition),
     label: value,
   }))
 }
@@ -868,6 +891,7 @@ type SchemeLegendArgs = Pick<
   | 'presentModifications'
   | 'presentTagValues'
   | 'refNamePosition'
+  | 'bakedScale'
 > & { palette: ColorPalette }
 
 function schemeLegend({
@@ -877,6 +901,7 @@ function schemeLegend({
   presentTagValues,
   presentModifications,
   refNamePosition,
+  bakedScale,
 }: SchemeLegendArgs): LegendItem[] {
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
@@ -888,19 +913,24 @@ function schemeLegend({
   if (
     colorBy === undefined ||
     colorBy.type === 'normal' ||
-    (colorBy.type === 'tag' && colorBy.tag === undefined)
+    (colorBy.type === 'tag' && !isBakedScheme(colorBy))
   ) {
     return [{ color: rgb255(palette.colorPairLR), label: 'Reads' }]
   }
   const colorType = colorBy.type
-  if (isStrandTag(colorBy)) {
+  if (isStrandTag(colorBy) && !bakedScale?.declared) {
     return [
       { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
       { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
     ]
   }
   if (colorType === 'tag' || colorType === 'mateRefName') {
-    return bakedValueLegend(colorBy, presentTagValues, refNamePosition)
+    return bakedValueLegend(
+      colorBy,
+      presentTagValues,
+      refNamePosition,
+      bakedScale,
+    )
   }
   if (colorType === 'mappingQuality') {
     // Ramp stops, not buckets: hue IS the score in degrees (categoryColor /
@@ -981,6 +1011,9 @@ interface ReadDisplayLegendArgs {
   // position, hash only where the order is unknown. Omitting it here is how the
   // box would key a colour no read paints.
   refNamePosition?: RefNamePosition
+  // The display's `bakedColorScale`: the scale the bake paints a tag, attribute
+  // or mate reference through, so a swatch is the painted colour.
+  bakedScale?: BakedColorScale
 }
 
 /**
@@ -1004,6 +1037,7 @@ export function getReadDisplayLegendItems({
   presentTagValues,
   presentModifications,
   refNamePosition,
+  bakedScale,
   chainFramed = false,
   overlaps,
 }: ReadDisplayLegendArgs & {
@@ -1028,6 +1062,7 @@ export function getReadDisplayLegendItems({
       presentTagValues,
       presentModifications,
       refNamePosition,
+      bakedScale,
     }),
     ...bucketItems(
       categories,

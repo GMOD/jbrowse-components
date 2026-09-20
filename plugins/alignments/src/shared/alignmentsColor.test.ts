@@ -1,0 +1,118 @@
+import {
+  COLOR_FIELDS,
+  colorByOf,
+  colorFieldOf,
+  colorSnapshotFor,
+  pinnedInsertSizeBand,
+} from './alignmentsColor.ts'
+import { GROUP_BY_LABELS } from './groupByLabels.ts'
+
+import type { AlignmentsColorSetting } from './alignmentsColor.ts'
+import type { ColorBy } from './types.ts'
+
+const UNSET: AlignmentsColorSetting = {
+  value: undefined,
+  field: '',
+  scale: undefined,
+  domain: [],
+  palette: [],
+  ramp: [],
+  domainMid: undefined,
+}
+
+describe('colorByOf', () => {
+  test('every preset field selects its scheme and names it back', () => {
+    for (const [scheme, field] of Object.entries(COLOR_FIELDS)) {
+      const colorBy = colorByOf({ field, scale: undefined })
+      expect(colorBy.type).toBe(scheme)
+      expect(colorFieldOf(colorBy)).toBe(field)
+    }
+  })
+
+  test('a read dimension the facet also offers is spelt the facet’s way', () => {
+    const shared = ['strand', 'firstOfPairStrand', 'pairOrientation', 'mapq']
+    for (const field of shared) {
+      expect(Object.hasOwn(GROUP_BY_LABELS, field)).toBe(true)
+      expect(Object.values(COLOR_FIELDS)).toContain(field)
+    }
+  })
+
+  test('tags.XX reads a SAM tag and any other name a feature attribute', () => {
+    expect(colorByOf({ field: 'tags.HP', scale: undefined })).toEqual({
+      type: 'tag',
+      tag: 'HP',
+    })
+    expect(colorByOf({ field: 'score', scale: undefined })).toEqual({
+      type: 'tag',
+      attribute: 'score',
+    })
+  })
+
+  test('no field, or a field under none, paints the plain fill', () => {
+    expect(colorByOf({ field: '', scale: undefined }).type).toBe('normal')
+    expect(colorByOf({ field: 'strand', scale: 'none' }).type).toBe('normal')
+  })
+
+  test('only the modification fields carry the modification settings', () => {
+    const settings = { threshold: 50 }
+    expect(
+      colorByOf({ field: 'modifications', scale: undefined }, settings),
+    ).toEqual({ type: 'modifications', modifications: settings })
+    expect(colorByOf({ field: 'strand', scale: undefined }, settings)).toEqual({
+      type: 'strand',
+    })
+  })
+})
+
+describe('colorSnapshotFor', () => {
+  const hp: AlignmentsColorSetting = {
+    ...UNSET,
+    field: 'tags.HP',
+    domain: ['1', '2'],
+    palette: ['red', 'blue'],
+  }
+  const tagHP: ColorBy = { type: 'tag', tag: 'HP' }
+
+  test('the plain fill keeps the field under none, and re-picking it restores it', () => {
+    expect(colorSnapshotFor({ type: 'normal' }, hp)).toMatchObject({
+      field: 'tags.HP',
+      scale: 'none',
+      domain: ['1', '2'],
+    })
+    const back = colorSnapshotFor(tagHP, { ...hp, scale: 'none' })
+    expect(back).toMatchObject({ field: 'tags.HP', palette: ['red', 'blue'] })
+    expect(back.scale).toBeUndefined()
+  })
+
+  test('a new field starts from no order or palette and keeps the constant', () => {
+    expect(
+      colorSnapshotFor({ type: 'strand' }, { ...hp, value: 'grey' }),
+    ).toEqual({ value: 'grey', field: 'strand' })
+  })
+})
+
+describe('pinnedInsertSizeBand', () => {
+  test('two ascending numbers under an insert-size field pin the band', () => {
+    expect(
+      pinnedInsertSizeBand({
+        ...UNSET,
+        field: 'insertSize',
+        domain: ['150', '600'],
+      }),
+    ).toEqual({ lower: 150, upper: 600 })
+    expect(
+      pinnedInsertSizeBand({
+        ...UNSET,
+        field: 'strand',
+        domain: ['150', '600'],
+      }),
+    ).toBeUndefined()
+    expect(
+      pinnedInsertSizeBand({
+        ...UNSET,
+        field: 'insertSize',
+        domain: ['600', '150'],
+      }),
+    ).toBeUndefined()
+  })
+})

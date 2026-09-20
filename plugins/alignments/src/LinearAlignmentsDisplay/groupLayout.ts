@@ -28,7 +28,7 @@ import type {
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
 import type { ColorBy, SortedBy } from '../shared/types.ts'
-import type { RefNamePosition } from './colorTagUtils.ts'
+import type { BakedColorScale } from './bakedColorScale.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 import type { GroupId } from './groupedDataMaps.ts'
 
@@ -230,13 +230,9 @@ export interface ReadColorContext {
   // per-base schemes onto `normal` (`framesUnpairedChainStrand`).
   colorBy: ColorBy
   readColorOpts: ReadColorOpts
-  // Chromosome painting's assembly order — see `RefNamePosition`. Undefined
-  // under every other scheme, and before the assembly loads.
-  //
-  // Required-but-nullable rather than optional, so dropping it from the model's
-  // context is a compile error instead of a silent fall back onto the hash —
-  // which paints a real colour and looks like the feature working.
-  refNamePosition: RefNamePosition | undefined
+  // Required-but-nullable, so dropping it from the model's context is a compile
+  // error instead of a silent fall back onto the plain fill.
+  bakedScale: BakedColorScale | undefined
 }
 
 /**
@@ -337,7 +333,7 @@ export function applyReadColorsByGroup(
     out.set(
       key,
       overlayReadColorCategories(
-        overlayReadTagColors(map, ctx.colorBy, ctx.refNamePosition),
+        overlayReadTagColors(map, ctx.colorBy, ctx.bakedScale),
         ctx.colorBy.type,
         ctx.readColorOpts,
       ),

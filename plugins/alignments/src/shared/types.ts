@@ -107,6 +107,8 @@ export type ColorSchemeType =
 export interface ColorBy {
   type: ColorSchemeType
   tag?: string
+  // a feature attribute read through `feature.get`, where `tag` names a SAM tag
+  attribute?: string
   modifications?: ModificationColorBy
 }
 

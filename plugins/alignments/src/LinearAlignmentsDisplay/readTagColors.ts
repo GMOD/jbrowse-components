@@ -1,7 +1,7 @@
 import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
-import { bakedValueColor } from './colorTagUtils.ts'
+import { isBakedScheme } from '../shared/alignmentsColor.ts'
 
 import type {
   LaidOutPileupData,
@@ -9,7 +9,7 @@ import type {
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy } from '../shared/types.ts'
-import type { RefNamePosition } from './colorTagUtils.ts'
+import type { BakedColorScale } from './bakedColorScale.ts'
 
 type ColorRgbTuple = [number, number, number]
 
@@ -38,13 +38,14 @@ const NO_TAG_COLORS = new Uint32Array(0)
 // region.
 function makeColorResolver(
   colorBy: ColorBy,
-  refNamePosition?: RefNamePosition,
+  scale: BakedColorScale,
 ): ColorResolver {
   // The strand tags first, and they have to be: they are `type: 'tag'` like any
   // other, but encode a strand rather than a categorical value, so they take
   // the fixed strand colors instead of a per-value one. A value that is neither
   // strand packs 0, the same neutral fallback as an absent tag below.
-  const tag = colorBy.type === 'tag' ? colorBy.tag : undefined
+  const tag =
+    colorBy.type === 'tag' && !scale.declared ? colorBy.tag : undefined
   if (tag === 'XS' || tag === 'TS') {
     return val => (val === '-' ? revStrand : val === '+' ? fwdStrand : 0)
   }
@@ -60,20 +61,11 @@ function makeColorResolver(
             : fwdStrand
           : 0
   }
-  // Chromosome painting and categorical tags alike: the color is a pure
-  // function of the value (`bakedValueColor`), so nothing has to have
-  // discovered it first.
-  //
   // A read the scheme resolved no value for — no mate, or the tag absent, both
-  // arriving as the empty string — packs 0. That is "no color", the shader's
-  // palette fallback (colorPairLR, which darkens with the theme), and it is also
-  // what `readColorCategory` reads to file the read under `noTagValue`.
-  //
-  // Values repeat across every read carrying them, and across regions, so the
-  // pack is cached per distinct value. That cache is the ONLY thing the old
-  // `colorTagMap` bought on this path — and it bought it in model state, where
-  // a newly discovered value invalidated `readColorContext` and rebaked every
-  // region already loaded.
+  // arriving as the empty string — and a value the scale has no bin for pack 0.
+  // That is "no color", the shader's palette fallback, and it is also what
+  // `readColorCategory` reads to file the read under `noTagValue`. Values repeat
+  // across reads and regions, so the pack is cached per distinct value.
   const cache = new Map<string, number>()
   return value => {
     if (value === '') {
@@ -81,9 +73,8 @@ function makeColorResolver(
     }
     let color = cache.get(value)
     if (color === undefined) {
-      color = packRgb(
-        cssColorToRgb(bakedValueColor(colorBy, value, refNamePosition)),
-      )
+      const css = scale.color(value)
+      color = css === undefined ? 0 : packRgb(cssColorToRgb(css))
       cache.set(value, color)
     }
     return color
@@ -120,9 +111,9 @@ function applyResolver(
 export function buildReadTagColors(
   data: WorkerPileupData,
   colorBy: ColorBy,
-  refNamePosition?: RefNamePosition,
+  scale: BakedColorScale,
 ): Uint32Array {
-  return applyResolver(data, makeColorResolver(colorBy, refNamePosition))
+  return applyResolver(data, makeColorResolver(colorBy, scale))
 }
 
 // Overlay freshly-baked `readTagColors` onto each laid-out region. Baking here
@@ -139,13 +130,12 @@ export function buildReadTagColors(
 export function overlayReadTagColors(
   map: Map<number, LaidOutPileupData>,
   colorBy: ColorBy | undefined,
-  refNamePosition?: RefNamePosition,
+  scale: BakedColorScale | undefined,
 ): Map<number, TagColoredPileupData> {
-  const baked =
-    colorBy?.type === 'mateRefName' ||
-    (colorBy?.type === 'tag' && !!colorBy.tag)
   const resolve =
-    colorBy && baked ? makeColorResolver(colorBy, refNamePosition) : undefined
+    colorBy && scale && isBakedScheme(colorBy)
+      ? makeColorResolver(colorBy, scale)
+      : undefined
   const out = new Map<number, TagColoredPileupData>()
   for (const [idx, data] of map) {
     out.set(idx, {

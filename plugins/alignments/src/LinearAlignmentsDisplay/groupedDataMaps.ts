@@ -20,6 +20,7 @@ import type {
   JunctionFilter,
   RegionJunctions,
 } from '../features/sashimi/junctions.ts'
+import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { SashimiArcsMode } from './constants.ts'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
@@ -222,16 +223,24 @@ export function buildReadIdsByChainName(
 // Key order is first-seen-across-regions, NOT the stacking order — the very case
 // `orderedGroups` re-sorts to fix. Every consumer looks a key up by `groupOrder`,
 // so nothing depends on this map's iteration order; don't start.
+//
+// `insertSizeBand` is the `color` object's pinned cut points. Every insert-size
+// reader — the read fills, the arcs, the hover — takes the band off the region's
+// data, so replacing it here is what keeps the three on one threshold.
 export function buildRawDataByGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden?: ReadonlySet<string>,
+  insertSizeBand?: InsertSizeBand,
 ): Map<string, Map<number, WorkerPileupData>> {
   const out = new Map<string, Map<number, WorkerPileupData>>()
   for (const { displayedRegionIndex, key, data } of eachGroup(
     rpcDataMap,
     hidden,
   )) {
-    getOrCreate(out, key, () => new Map()).set(displayedRegionIndex, data)
+    getOrCreate(out, key, () => new Map()).set(
+      displayedRegionIndex,
+      insertSizeBand ? { ...data, insertSizeStats: insertSizeBand } : data,
+    )
   }
   return out
 }

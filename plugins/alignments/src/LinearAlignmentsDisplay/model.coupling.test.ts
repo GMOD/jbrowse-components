@@ -1129,7 +1129,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const beforeLayout = display.laidOutByGroupUncolored
     const before = region0(display)
 
-    display.setColorBy({ type: 'tag', tag: 'HP' })
+    display.setColor({ field: 'tags.HP', palette: ['#ff0000'] })
 
     const after = region0(display)
     // Layout memoized across the recolor…
@@ -1140,6 +1140,16 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     expect(after.readYs).toBe(before.readYs)
     expect(after.mismatchYs).toBe(before.mismatchYs)
     expect(after.readTagColors).not.toBe(before.readTagColors)
+    expect(after.readTagColors[0]).toBe(0xff0000ff)
+  })
+
+  test('a declared palette is a recolor and not a refetch', () => {
+    const display = displayWithOneRead()
+    const before = display.rpcProps()
+
+    display.setColor({ field: 'tags.HP', palette: ['#ff0000'] })
+
+    expect(display.rpcProps()).toStrictEqual(before)
   })
 
   test('a fit-mode drag frame that changes no row count keeps the layout', () => {

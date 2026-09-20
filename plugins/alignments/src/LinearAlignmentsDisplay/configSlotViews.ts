@@ -1,14 +1,16 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 
-import { normalizeColorBy } from '../shared/colorSchemes.ts'
+import { colorByOf, pinnedInsertSizeBand } from '../shared/alignmentsColor.ts'
 import { normalizeFilterBy } from '../shared/types.ts'
 
+import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type {
   ArcColorByType,
   ColorBy,
   FilterBy,
   GroupBy,
+  ModificationColorBy,
 } from '../shared/types.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
 import type {
@@ -148,8 +150,38 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      */
+    get colorSetting(): AlignmentsColorSetting {
+      return {
+        value: getConf(self, ['color', 'value']),
+        field: getConf(self, ['color', 'field']),
+        scale: getConf(self, ['color', 'scale']),
+        domain: getConf(self, ['color', 'domain']),
+        palette: getConf(self, ['color', 'palette']),
+        ramp: getConf(self, ['color', 'ramp']),
+        domainMid: getConf(self, ['color', 'domainMid']),
+      }
+    },
+    /**
+     * #getter
+     * The short/long cut points `color.domain` pins under an insert-size
+     * field, undefined while the sampled band decides.
+     */
+    get pinnedInsertSizeBand() {
+      return pinnedInsertSizeBand(this.colorSetting)
+    },
+    /**
+     * #getter
+     */
+    get modificationSettings(): ModificationColorBy {
+      return getConf(self, 'modifications')
+    },
+    /**
+     * #getter
+     * The scheme `color` selects, with the settings the modification fields
+     * read beside it.
+     */
     get colorBy(): ColorBy {
-      return normalizeColorBy(getConf(self, 'colorBy'))
+      return colorByOf(this.colorSetting, this.modificationSettings)
     },
     /**
      * #getter

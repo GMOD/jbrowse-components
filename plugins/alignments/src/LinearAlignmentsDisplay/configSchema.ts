@@ -8,6 +8,7 @@ import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { ARC_COLOR_TYPES } from '../shared/arcColorOptions.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
+import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
 import {
   LINKED_READS_MODES,
   READ_CONNECTIONS_MODES,
@@ -40,7 +41,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * CRAM colored by CpG methylation (modBAM MM/ML tags). The `displayDefaults`
  * object shorthand applies settings without spelling out the display `type` or
  * `displayId` — equivalent to `displays: [{ type: 'LinearAlignmentsDisplay',
- * displayId: '...', colorBy: ... }]`. See
+ * displayId: '...', color: ... }]`. See
  * [configuring displays](/docs/config_guides/tracks#configuring-displays):
  * ```js
  * {
@@ -50,7 +51,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
  *   displayDefaults: {
- *     colorBy: { type: 'modifications', modifications: { fillUnmarked: true } },
+ *     color: { field: 'modifications' },
+ *     modifications: { fillUnmarked: true },
  *   },
  * }
  * ```
@@ -147,12 +149,23 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
           'Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does',
       },
       /**
-       * #slot
+       * #slot color
+       * The read fill: `"steelblue"` paints every read, `{ field: "strand" }`
+       * a read dimension's own vocabulary, `{ field: "tags.HP" }` a SAM tag
+       * and `{ field: "modifications" }` a cell per called base.
        */
-      colorBy: {
+      color: alignmentsColorConfigSchema,
+      /**
+       * #slot modifications
+       * What the `modifications` and `bisulfite` colour fields draw:
+       * `threshold` (percent, default 10), `twoColor`, `fillUnmarked`,
+       * `cytosineContext` and `shownModifications`; see the
+       * `ModificationColorBy` type.
+       */
+      modifications: {
         type: 'frozen',
-        defaultValue: { type: 'normal' },
-        description: 'Color scheme for reads',
+        defaultValue: {},
+        description: 'Settings of the modifications and bisulfite color fields',
         advanced: true,
       },
       /**
