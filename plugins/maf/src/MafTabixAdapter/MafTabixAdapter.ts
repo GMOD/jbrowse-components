@@ -49,7 +49,12 @@ function alignmentColumn(feature: Feature) {
 export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfig> {
   private configure: SubAdapterLoader = cachedSetup({
     label: 'Downloading index',
-    setup: () => loadSubAdapter(this, 'BedTabixAdapter'),
+    setup: () =>
+      loadSubAdapter(this, {
+        type: 'BedTabixAdapter',
+        bedGzLocation: this.getConf('bedGzLocation'),
+        index: this.getConf('index'),
+      }),
   })
 
   async getRefNames(opts?: BaseOptions) {

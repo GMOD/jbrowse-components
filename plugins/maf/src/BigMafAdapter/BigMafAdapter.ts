@@ -42,7 +42,11 @@ function mafBlockField(feature: Feature) {
 export default class BigMafAdapter extends MafAdapterBase<BigMafAdapterConfig> {
   private configure: SubAdapterLoader = cachedSetup({
     label: 'Downloading index',
-    setup: () => loadSubAdapter(this, 'BigBedAdapter'),
+    setup: () =>
+      loadSubAdapter(this, {
+        type: 'BigBedAdapter',
+        bigBedLocation: this.getConf('bigBedLocation'),
+      }),
   })
 
   async getRefNames(opts?: BaseOptions) {

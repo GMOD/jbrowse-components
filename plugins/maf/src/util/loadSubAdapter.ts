@@ -1,5 +1,3 @@
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
-
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -17,22 +15,22 @@ export type SubAdapterLoader = (
 ) => Promise<{ adapter: BaseFeatureDataAdapter }>
 
 /**
- * BigMafAdapter and MafTabixAdapter both wrap a sub-adapter (BigBed /
- * BedTabix) and need identical "snapshot config → swap type → typecast"
- * plumbing. This is the single source of truth.
+ * BigMafAdapter and MafTabixAdapter each read their alignment file through a
+ * sub-adapter (BigBed / BedTabix), whose config they state from their own
+ * location slots.
  *
  * Memoizing it, and labelling the download, is `cachedSetup`'s — each adapter
  * holds one of those as its `configure` field.
  */
 export async function loadSubAdapter<
   T extends BaseFeatureDataAdapter = BaseFeatureDataAdapter,
->(self: BaseFeatureDataAdapter, subType: string): Promise<{ adapter: T }> {
+>(
+  self: BaseFeatureDataAdapter,
+  subAdapterConfig: Record<string, unknown>,
+): Promise<{ adapter: T }> {
   if (!self.getSubAdapter) {
     throw new Error('no getSubAdapter available')
   }
-  const result = await self.getSubAdapter({
-    ...getSnapshot(self.config),
-    type: subType,
-  })
+  const result = await self.getSubAdapter(subAdapterConfig)
   return { adapter: result.dataAdapter as T }
 }
