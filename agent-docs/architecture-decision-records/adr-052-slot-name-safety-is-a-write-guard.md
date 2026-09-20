@@ -59,8 +59,9 @@ ways:
   consequence below it** — a mixin cannot name the composing schema and does not
   need to, since it can name the slots it owns; the cast was closed in 2026-08
   and this bullet is the reasoning that let it stand, not the state of the tree.
-- **A widened `baseConfiguration` poisons the whole schema**, since
-  `ConfigurationSlotName` recurses through `GetBase`. A schema taking its base
+- **A widened `baseConfiguration` poisons the whole schema**, since the merged
+  definition takes the base's keys and an `any` definition's are `string`. A
+  schema taking its base
   from `pluginManager.getDisplayType(…).configSchema` has unchecked reads of its
   *own* slots, with no downstream annotation able to recover them.
 - **The pluggable-element registries are correctly widened.** `DisplayType`,

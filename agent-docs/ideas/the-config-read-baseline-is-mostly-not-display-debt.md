@@ -46,7 +46,8 @@ each row wants is different:
 - **The root-config row is blocked rather than small.** That schema is assembled
   from the plugin manager at runtime, and a base taken from
   `pluginManager.getDisplayType(…).configSchema` poisons the whole schema
-  through `GetBase`, so it wants re-plumbing before naming it buys anything.
+  through the definition merge, so it wants re-plumbing before naming it buys
+  anything.
 - **The tail is one line each**, mostly factories that left `configSchema` at
   `AnyConfigurationSchemaType` — plus the `frozen`/`maybeFrozen` slots that are
   `any` by design and will never leave the list.

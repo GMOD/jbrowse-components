@@ -92,10 +92,17 @@ brand that loses its polymorphic `this` cuts every node back to
 `AnyConfigurationSchemaType`, switching the read-side check off tree-wide, and
 that typechecks clean — the audit is the only thing that reports it.
 
-**A widened `baseConfiguration` poisons the whole schema** —
-`ConfigurationSlotName` recurses through `GetBase`, so a schema taking its base
-from `pluginManager.getDisplayType(…).configSchema` has unchecked reads of its
-_own_ slots. Import the base schema directly.
+**A widened `baseConfiguration` poisons the whole schema** — `MergeConfigDef`
+maps over the base's keys and an `any` definition's keys are `string`, so a
+schema taking its base from `pluginManager.getDisplayType(…).configSchema` has
+unchecked reads of its _own_ slots. Import the base schema directly.
+
+**The merged definition is the only place the type level looks.** The base's
+slots, the identifier and an `explicitlyTyped` schema's `type` are all in it, so
+`ConfigurationSlotName`, the path types, `ConfigurationSnapshot` and a
+reference's instance read `keyof D` and walk no base chain. A second walk
+through the options was what admitted a path into a sub-schema the subclass had
+replaced — `['sub', 'dropped']` compiled and read `undefined`.
 
 `pnpm check-config-read-types` counts call sites reaching the narrowing
 (baselined in `scripts/configReadTypeGaps.txt`, `--write` to re-baseline). CI

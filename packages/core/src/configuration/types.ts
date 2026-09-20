@@ -14,47 +14,6 @@ import type {
   SnapshotOut,
 } from '@jbrowse/mobx-state-tree'
 
-export type GetOptions<SCHEMA> =
-  SCHEMA extends ConfigurationSchemaType<any, infer OPTIONS> ? OPTIONS : never
-
-export type GetBase<SCHEMA> = SCHEMA extends undefined
-  ? never
-  : GetOptions<SCHEMA> extends ConfigurationSchemaOptions<undefined, any>
-    ? undefined
-    : GetOptions<SCHEMA> extends ConfigurationSchemaOptions<
-          infer BASE extends AnyConfigurationSchemaType,
-          any
-        >
-      ? BASE
-      : never
-
-export type GetExplicitIdentifier<SCHEMA> =
-  GetOptions<SCHEMA> extends ConfigurationSchemaOptions<
-    any,
-    infer EXPLICIT_IDENTIFIER extends string
-  >
-    ? EXPLICIT_IDENTIFIER
-    : never
-
-/**
- * The identifier prop a schema declares **or inherits** — `trackId`,
- * `displayId`, or whatever `explicitIdentifier` names. Recursive because most
- * display schemas never declare it themselves: they pick up `displayId` from
- * `baseConfiguration: baseLinearDisplayConfigSchema`, whose options
- * `preprocessConfigurationSchemaArguments` merges in at runtime, leaving the
- * subclass's own `EXPLICIT_IDENTIFIER` param `undefined`. Same walk
- * `ConfigurationSlotName` does for inherited slot names.
- */
-export type GetInheritedIdentifier<SCHEMA> = SCHEMA extends undefined
-  ? never
-  : SCHEMA extends ConfigurationSchemaType<any, any>
-    ?
-        | GetExplicitIdentifier<SCHEMA>
-        | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-            ? GetInheritedIdentifier<GetBase<SCHEMA>>
-            : never)
-    : never
-
 export type ConfigurationSchemaForModel<MODEL> =
   MODEL extends IStateTreeNode<infer SCHEMA extends AnyConfigurationSchemaType>
     ? SCHEMA
@@ -215,18 +174,12 @@ export interface TypeSlotDef {
   defaultValue: ''
 }
 
-export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
-  ? never
-  : SCHEMA extends ConfigurationSchemaType<infer D, any>
-    ? // this provides the ability to type check names in the config readConfObject usage
-      // it is not commonly used but retained for now with this lint ignore
-
-      | (keyof D & string)
-      | GetExplicitIdentifier<SCHEMA>
-      | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-          ? ConfigurationSlotName<GetBase<SCHEMA>>
-          : never)
-    : never
+export type ConfigurationSlotName<SCHEMA> =
+  IsAny<SCHEMA> extends true
+    ? string
+    : SCHEMA extends ConfigurationSchemaType<infer D, any>
+      ? keyof D & string
+      : never
 
 /**
  * The names a config snapshot for `SCHEMA` may use — its own slots, its
@@ -247,11 +200,7 @@ export type ConfigurationSnapshot<SCHEMA> = SCHEMA extends undefined
         [K in keyof D]?: D[K] extends ConfigurationSchemaType<any, any>
           ? ConfigurationSnapshot<D[K]>
           : unknown
-      } & {
-        [K in GetExplicitIdentifier<SCHEMA>]?: string
-      } & (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-          ? ConfigurationSnapshot<GetBase<SCHEMA>>
-          : unknown)
+      }
     : unknown
 
 // Value type of a single slot, keyed on the slot's literal `type` — which the
@@ -377,28 +326,22 @@ type SubSchemaOf<SCHEMA, K> =
     : SCHEMA extends ConfigurationSchemaType<infer D, any>
       ? K extends keyof D
         ? D[K]
-        : GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-          ? SubSchemaOf<GetBase<SCHEMA>, K>
-          : never
+        : never
       : never
 
 type SubSchemaSlotPath<SCHEMA> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>
     ? IsAny<D> extends true
       ? readonly string[]
-      :
-          | {
-              [K in keyof D & string]: D[K] extends AnyConfigurationSchemaType
-                ?
-                    | readonly [K, ConfigurationSlotName<D[K]>]
-                    | readonly [K, ...SubSchemaSlotPath<D[K]>]
-                : D[K] extends IAnyType | { type: 'frozen' | 'maybeFrozen' }
-                  ? readonly [K, ...string[]]
-                  : never
-            }[keyof D & string]
-          | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-              ? SubSchemaSlotPath<GetBase<SCHEMA>>
-              : never)
+      : {
+          [K in keyof D & string]: D[K] extends AnyConfigurationSchemaType
+            ?
+                | readonly [K, ConfigurationSlotName<D[K]>]
+                | readonly [K, ...SubSchemaSlotPath<D[K]>]
+            : D[K] extends IAnyType | { type: 'frozen' | 'maybeFrozen' }
+              ? readonly [K, ...string[]]
+              : never
+        }[keyof D & string]
     : readonly string[]
 
 /**
@@ -434,9 +377,7 @@ export type ConfigurationSlotValue<SCHEMA, K extends string> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>
     ? K extends keyof D
       ? SlotValueRawFromDef<D[K]>
-      : GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-        ? ConfigurationSlotValue<GetBase<SCHEMA>, K>
-        : any
+      : any
     : any
 
 /**
@@ -482,7 +423,10 @@ export type ConfigModelForFields<
   FIELDS extends ConfigurationSchemaDefinition,
   BASE extends AnyConfigurationSchemaType | undefined = undefined,
 > = Instance<
-  ConfigurationSchemaType<FIELDS, ConfigurationSchemaOptions<BASE, undefined>>
+  ConfigurationSchemaType<
+    MergeConfigDef<FIELDS, BASE>,
+    ConfigurationSchemaOptions<BASE, undefined>
+  >
 >
 
 /**

@@ -29,7 +29,6 @@ import type {
   ConfigNodeActions,
   ConfigNodeBrand,
   ConfigNodeProps,
-  GetInheritedIdentifier,
   IdentifierSlotDef,
   MergeConfigDef,
   TypeSlotDef,
@@ -474,7 +473,6 @@ export interface ConfigurationSchemaType<
     OPTIONS
   >
 > {
-  type: string
   /**
    * Overrides the factory's, whose props come off a `Record<string, any>` and
    * so admit every name. Slots come from the definition — the identifier and
@@ -753,26 +751,14 @@ function DisplayConfigurationReference(schemaType: IAnyType) {
 // **widened** `AnyConfigurationSchemaType` — a factory that hasn't tightened its
 // `configSchema` param past it — has an `any` definition, so it reads `any`,
 // exactly as before this type existed: such factories gain no narrowing (their
-// slot values were already `any` via the `any` definition brand).
-//
-// Both branches are intersected with the schema's identifier prop, because
-// `makeConfigurationSchemaModel` builds the model from a `Record<string, any>`
-// `modelDefinition`, which erases every named prop — including the identifier it
-// installs from `explicitIdentifier`/`implicitIdentifier`. Without this, a
-// **concrete** display instance fails the repo-wide structural check of a display
-// against `{ displayId: string }` (`DisplayModel`, `DisplayContainer`), which is
-// what blocked pinning the widened display factories: pinning turns a vacuously-
-// passing `any` into a real instance with no `displayId` on it. The widened
-// branch is unaffected (`any & X` is `any`). See the "Config read type narrowing"
-// section of `./CLAUDE.md`.
+// slot values were already `any` via the `any` definition brand). The identifier
+// prop rides in `SCHEMA['Type']`, folded into the definition.
 type ConfigReferenceInstance<SCHEMA extends AnyConfigurationSchemaType> =
-  (SCHEMA extends ConfigurationSchemaType<infer D, any>
+  SCHEMA extends ConfigurationSchemaType<infer D, any>
     ? IsAny<D> extends true
       ? any
       : SCHEMA['Type']
-    : SCHEMA['Type']) & {
-    [K in GetInheritedIdentifier<SCHEMA>]: string
-  }
+    : SCHEMA['Type']
 
 /**
  * Static type of the value `ConfigurationReference` produces, and therefore of a

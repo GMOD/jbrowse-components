@@ -61,13 +61,6 @@ describe('configuration schemas', () => {
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(10)
     model.configuration.setSlot('someInteger', 42)
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(42)
-
-    // type "tests"
-    // const conf = model.configuration
-    // let schema: ConfigurationSchemaForModel<typeof conf>
-    // let options: GetOptions<typeof schema>
-    // let base: GetBase<typeof schema>
-    // let slot: ConfigurationSlotName<typeof schema>
   })
 
   test('can nest an array of configuration schemas', () => {
@@ -151,13 +144,6 @@ describe('configuration schemas', () => {
     const model = child.create(undefined, { pluginManager })
     expect(isConfigurationModel(model)).toBe(true)
     expect(readConfObject(model, 'someInteger')).toBe(12)
-
-    // type "tests"
-    // const conf = model
-    // let schema: ConfigurationSchemaForModel<typeof conf>
-    // let options: GetOptions<typeof schema>
-    // let baseConf: GetBase<typeof schema>
-    // let slot: ConfigurationSlotName<typeof schema>
   })
 
   // Everything else in the options merge is a shallow `{...base, ...child}`
@@ -402,6 +388,7 @@ describe('configuration schemas', () => {
       const node = child.create(undefined, { pluginManager })
       expect(readConfObject(node, ['mySubConfiguration', 'kept'])).toBe(10)
       expect(
+        // @ts-expect-error -- the replacement declares no `dropped`
         readConfObject(node, ['mySubConfiguration', 'dropped']),
       ).toBeUndefined()
     })
