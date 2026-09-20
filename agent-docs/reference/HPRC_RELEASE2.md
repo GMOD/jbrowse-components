@@ -19,7 +19,7 @@ that plugin's repo, not this one — and does not overlap.
 | `v2.1/…/hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` (53 GB, 464 haplotypes) | **yes**, `BgzipMafAdapter`, and this is the one the tutorial uses — a different alignment, not a repackaging of the TAF |
 | `sv.gfa` (minigraph rGFA) | yes, graph view plugin |
 | `wave.vcf.gz` (464-haplotype callset) | yes, genotype matrix |
-| `hprc25272.aln.paf.gz` (complete all-vs-all, 310 GB) | yes in principle, never tried at that size |
+| `hprc25272.aln.paf.gz` (310 GB, 25,221 haplotype pairs) and the same alignments split one file per target under `impg/pafs/all-vs-1/` (465 files, 490-870 MB) | yes in principle, but it is a **sparse** all-vs-all and unsorted — see below |
 | `hprc465vsgrch38.aln.paf.gz` (6.3 GB) | yes, but it is a **star** — see below |
 | per-chromosome pggb `.gfa.zst` | **no** — see the memory measurement below |
 | impg TPA (466 files, one per haplotype) | **no reader** |
@@ -102,16 +102,35 @@ alignments.
 **2. `hprc465vsgrch38.aln.paf.gz` is a pure star.** Sampled over 14 scattered
 BGZF slices (829k rows, 39 query samples): every row targets GRCh38, so **39 of
 780 sample pairs are stated and 741 are not**, and a synteny band between two
-non-reference assemblies is empty by construction. Use the complete all-vs-all
-(`hprc25272.aln.paf.gz`) if every pair is wanted. Both all-vs-all adapters raise
-`noSuchPairError` on this now rather than drawing an empty band.
+non-reference assemblies is empty by construction. Both all-vs-all adapters
+raise `noSuchPairError` on this now rather than drawing an empty band.
+
+**`hprc25272.aln.paf.gz` does not hold every pair either.** Its 25,221
+alignments are haplotype pairs, about 54 per target out of 464 possible:
+`all-vs-1/HG00232_hap1_hprc_r2_v1.0.1.merged.paf.gz` holds 732,349 records from
+50 query haplotypes, GRCh38 and a spread of populations among them, and
+NA18608#2, the row above HG00232#1 in the amylase stack, is not one. impg
+indexes each alignment in both directions, so an unordered pair has a direct
+`=`/`X` CIGAR about one time in five. A stack whose adjacent rows are chosen on
+biology mostly lands on unstated pairs, and `build_amylase_haplotypes.sh`
+aligns each pair with minimap2 for that reason. Where the pair is stated the
+wfmash record is no better across a copy-number array: 48 of the 50 partners
+break their chain at the amylase array and leave a mean 146 kb of HG00232#1
+unaligned.
+
+The per-target files are BGZF but not sorted by target position (290,918
+backward steps in the file above), so an index alone cannot make them
+range-requestable from the HPRC bucket; they would have to be re-sorted and
+re-hosted. `impg index` over that one 589 MB file took 134 s and wrote a 67 MB
+index, after which a 500 kb `impg query -o paf` returns in under a second with
+records trimmed to the window on whole-contig coordinates.
 
 **A composition tool for this was built and then deleted** (`jbrowse
 transitive-paf`, `a2858d0c86` → `79080af254`). **Do not rebuild it.** It worked —
-88% recall at 99.8% precision on a held-out E. coli pair — but the field solves
-this upstream: the complete all-vs-all is published, three stacked rows only need
-two bands (order the reference between them), and beyond that a pangenome is a
-multiple alignment rather than a stack of pairwise bands.
+88% recall at 99.8% precision on a held-out E. coli pair — but three stacked
+rows only need two bands (order the reference between them), a locus cut aligns
+pairwise in seconds, and beyond that a pangenome is a multiple alignment rather
+than a stack of pairwise bands.
 
 **3. The per-chromosome pggb graphs do not fit.** `pggb_gfa_to_bed.py` on chrY,
 the smallest of the 25 (343 MB zstd against chr21's 2.4 GB): 4.12M segments,
