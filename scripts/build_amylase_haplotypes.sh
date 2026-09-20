@@ -1,26 +1,30 @@
 #!/usr/bin/env bash
 #
-# Five assembled haplotypes across the human amylase locus, each aligned to the
-# row under it, for a linear synteny view whose every band is a real pairwise
-# alignment with a CIGAR.
+# Five assembled haplotypes across the human amylase locus, one of each common
+# structure from a single AMY1 copy to seven, each aligned to the row under it,
+# for a linear synteny view whose every band is a real pairwise alignment with a
+# CIGAR.
 #
-# The rows are HPRC release 2 haplotypes and GRCh38, ordered by how many AMY1
-# copies each carries. A stack aligned to GRCh38 alone cannot place what two
-# haplotypes share and GRCh38 lacks, so each row is aligned to its neighbour
-# instead: the locus is fetched from each assembly by range request, minimap2
-# aligns each adjacent pair, and the coordinates are lifted back onto the whole
-# contigs so the rows draw on the assemblies' own coordinates, under the gene
-# tracks demos/hprc_multiway already hosts for them.
+# A stack aligned to GRCh38 alone cannot place what two haplotypes share and
+# GRCh38 lacks, so each row is aligned to its neighbour instead. Which haplotype
+# has which structure comes from HPRC's own graph database: every haplotype's
+# coordinate at a unique window either side of the locus gives its span across
+# it, and the spans fall into the classes of Yilmaz et al. 2024. The locus is
+# then fetched from each chosen assembly by range request, minimap2 aligns each
+# adjacent pair, and the coordinates are lifted back onto the whole contigs so
+# the rows draw on the assemblies' own coordinates under their gene models.
 #
-# Requires: curl, awk, samtools (built with libcurl, for the range requests),
-#           minimap2, python3
+# Requires: curl, awk, python3, samtools (built with libcurl, for the range
+#           requests), minimap2, and Node.js for `npx`
 # Usage:    bash build_amylase_haplotypes.sh [outdir]
 #
 # Your own haplotypes: replace MANIFEST. A row is the JBrowse assembly name, the
 # PanSN name of the contig, a bgzipped and faidx-indexed FASTA (a URL or a
 # path) and the region to fetch from it, in the FASTA's own naming. The row
-# order is the stack order. The config step assumes the hosted HPRC assemblies;
-# for other genomes add each FASTA as an assembly and keep the track.
+# order is the stack order. The config step names the assemblies and one-model-
+# per-gene CAT annotations jbrowse.org/pangenome/hprc-grch38 hosts for every
+# release 2 haplotype; for other genomes add each FASTA as an assembly and keep
+# the track.
 
 set -euo pipefail
 
@@ -28,21 +32,58 @@ OUT="${1:-amylase_haplotypes}"
 mkdir -p "$OUT"
 cd "$OUT"
 
-HPRC=https://s3-us-west-2.amazonaws.com/human-pangenomics/working
-HOSTED=https://jbrowse.org/demos/hprc_multiway
+HPRC=https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC
+HOSTED=https://jbrowse.org/pangenome/hprc-grch38
+GBZ_DB=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
+GBZ_INDEX=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
 
-# Where the amylase locus sits on each haplotype comes from the alignment
-# demos/hprc_multiway hosts: `tabix hprc_multiway_gfa.pif.gz
-# 'tGRCh38#0#chr1:103500000-103900000'` names each haplotype's contig and the
-# two long records that flank the locus, and each region here is the stretch
-# between them with 100 kb either side.
+echo "== every haplotype's span across the locus, from the graph database"
+# One window inside RNPC3 and one past AMY1C, both single-copy, so each
+# haplotype crosses each exactly once. --context 0 reads the window alone, and
+# --alignments prints one record per haplotype with its own coordinates.
+for side in left:103540000..103541000 right:103800000..103801000; do
+  [ -s "${side%%:*}.json" ] || npx --yes -p @gmod/gbz-base gbz-base-query "$GBZ_DB" \
+    --haplotype-index "$GBZ_INDEX" --sample GRCh38 --contig chr1 \
+    --interval "${side#*:}" --context 0 --alignments >"${side%%:*}.json"
+done
+python3 - <<'PY'
+import json
+import re
+
+# GRCh38's own distance between the two windows
+REFERENCE = 103800000 - 103540000
+
+
+def positions(path):
+    found = {}
+    for record in json.load(open(path)):
+        if record.get('resolved'):
+            sample, haplotype, contig = re.sub(r'\[.*', '', record['name']).split('#')
+            found[f'{sample}#{haplotype}'] = (contig, record['hapStart'], record['strand'])
+    return found
+
+
+left, right = positions('left.json'), positions('right.json')
+with open('locus_spans.tsv', 'w') as fh:
+    fh.write('haplotype\tcontig\tstrand\tleft\tright\tspan\tspan_minus_GRCh38\n')
+    for name in sorted(left):
+        if name in right and left[name][0] == right[name][0]:
+            contig, a, strand = left[name]
+            span = abs(right[name][1] - a)
+            fh.write(f'{name}\t{contig}\t{strand}\t{a}\t{right[name][1]}\t{span}\t{span - REFERENCE}\n')
+PY
+echo "   $(($(wc -l <locus_spans.tsv) - 1)) haplotypes with both windows on one contig"
+
+# One haplotype of each span class, each on a chromosome-scale contig in the
+# reference's orientation. Each region runs from 19,106 bp left of the left
+# window to 33,637 bp past the right one, the same frame as the hg38 row.
 MANIFEST=$(
   cat <<EOF
-HG00097.1	HG00097#1#CM094060.1	$HPRC/HPRC/HG00097/assemblies/release2/HG00097_hap1_hprc_r2_v1.0.1.fa.gz	HG00097#1#CM094060.1:104017700-104266751
-HG00099.1	HG00099#1#JBHDWO010000005.1	$HPRC/HPRC/HG00099/assemblies/release2/HG00099_hap1_hprc_r2_v1.0.1.fa.gz	HG00099#1#JBHDWO010000005.1:103881093-104112612
+HG01361.1	HG01361#1#CM089019.1	$HPRC/HG01361/assemblies/release2/HG01361_pat_hprc_r2_v1.0.1.fa.gz	HG01361#1#CM089019.1:103831655-104050048
 hg38	GRCh38#0#chr1	https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz	1:103520894-103832637
-HG00133.1	HG00133#1#CM090045.1	$HPRC/HPRC/HG00133/assemblies/release2/HG00133_hap1_hprc_r2_v1.0.1.fa.gz	HG00133#1#CM090045.1:103669666-103981330
-HG00128.1	HG00128#1#JBHIKS010000010.1	$HPRC/HPRC/HG00128/assemblies/release2/HG00128_hap1_hprc_r2_v1.0.1.fa.gz	HG00128#1#JBHIKS010000010.1:103876230-104422280
+HG00133.1	HG00133#1#CM090045.1	$HPRC/HG00133/assemblies/release2/HG00133_hap1_hprc_r2_v1.0.1.fa.gz	HG00133#1#CM090045.1:103669666-103981330
+NA18608.2	NA18608#2#CM089849.1	$HPRC/NA18608/assemblies/release2/NA18608_hap2_hprc_r2_v1.0.1.fa.gz	NA18608#2#CM089849.1:103796766-104203421
+HG00232.1	HG00232#1#CM089991.1	$HPRC/HG00232/assemblies/release2/HG00232_hap1_hprc_r2_v1.0.1.fa.gz	HG00232#1#CM089991.1:103491008-103991760
 EOF
 )
 
@@ -137,7 +178,7 @@ def haplotype(name):
             'trackId': f'{name}-ReferenceSequenceTrack',
             'adapter': {
                 'type': 'ChromSizesAdapter',
-                'uri': f'{hosted}/{name}.gfa.chrom.sizes',
+                'uri': f'{hosted}/{name}.chrom.sizes',
             },
         },
     }
@@ -150,8 +191,8 @@ def genes(name):
         'name': f'{name} genes (HPRC release 2 CAT annotation)',
         'assemblyNames': [name],
         'adapter': {
-            'type': 'Gff3TabixAdapter',
-            'uri': f'{hosted}/{name}.genes.gff3.gz',
+            'type': 'BedTabixAdapter',
+            'uri': f'{hosted}/genes/{name}.genes.bed.gz',
         },
     }
 
@@ -201,4 +242,4 @@ with open('config.json', 'w') as fh:
     fh.write('\n')
 PY
 
-echo "Wrote $(pwd)/amylase_adjacent.paf and config.json"
+echo "Wrote $(pwd)/amylase_adjacent.paf, locus_spans.tsv, gene_copies.tsv and config.json"

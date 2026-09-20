@@ -1824,10 +1824,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1000,
   },
 
-  // Five of those haplotypes ordered by AMY1 copies, each aligned to the row
-  // under it by minimap2 (scripts/build_amylase_haplotypes.sh), so every band
-  // draws a CIGAR: two-copy against two-copy runs straight, two against the
-  // reference's three and three against five each open one insertion wedge.
+  // One haplotype of each common amylase structure, H1a to H7 in the naming of
+  // Yilmaz et al. 2024, with GRCh38 and a second three-copy haplotype as the
+  // straight-through control, each aligned to the row under it by minimap2
+  // (scripts/build_amylase_haplotypes.sh). One to three and three to five each
+  // open the same 94 kb insertion wedge.
   {
     mode: 'url',
     name: 'multiway_synteny/hprc_amylase_stack',
@@ -1837,14 +1838,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearSyntenyView',
           views: [
             {
-              assembly: 'HG00097.1',
-              loc: 'CM094060.1:104,017,700-104,266,751',
-              tracks: ['hprc_genes_HG00097_1'],
-            },
-            {
-              assembly: 'HG00099.1',
-              loc: 'JBHDWO010000005.1:103,881,093-104,112,612',
-              tracks: ['hprc_genes_HG00099_1'],
+              assembly: 'HG01361.1',
+              loc: 'CM089019.1:103,831,655-104,050,048',
+              tracks: ['hprc_genes_HG01361_1'],
             },
             {
               assembly: 'hg38',
@@ -1857,9 +1853,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: ['hprc_genes_HG00133_1'],
             },
             {
-              assembly: 'HG00128.1',
-              loc: 'JBHIKS010000010.1:103,876,230-104,422,280',
-              tracks: ['hprc_genes_HG00128_1'],
+              assembly: 'NA18608.2',
+              loc: 'CM089849.1:103,796,766-104,203,421',
+              tracks: ['hprc_genes_NA18608_2'],
+            },
+            {
+              assembly: 'HG00232.1',
+              loc: 'CM089991.1:103,491,008-103,991,760',
+              tracks: ['hprc_genes_HG00232_1'],
             },
           ],
           tracks: [

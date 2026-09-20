@@ -10,24 +10,13 @@
       }
     },
     {
-      "name": "HG00097.1",
+      "name": "HG01361.1",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "HG00097.1-ReferenceSequenceTrack",
+        "trackId": "HG01361.1-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
-          "uri": "https://jbrowse.org/demos/hprc_multiway/HG00097.1.gfa.chrom.sizes"
-        }
-      }
-    },
-    {
-      "name": "HG00099.1",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "HG00099.1-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "uri": "https://jbrowse.org/demos/hprc_multiway/HG00099.1.gfa.chrom.sizes"
+          "uri": "https://jbrowse.org/pangenome/hprc-grch38/HG01361.1.chrom.sizes"
         }
       }
     },
@@ -38,18 +27,29 @@
         "trackId": "HG00133.1-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
-          "uri": "https://jbrowse.org/demos/hprc_multiway/HG00133.1.gfa.chrom.sizes"
+          "uri": "https://jbrowse.org/pangenome/hprc-grch38/HG00133.1.chrom.sizes"
         }
       }
     },
     {
-      "name": "HG00128.1",
+      "name": "NA18608.2",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "HG00128.1-ReferenceSequenceTrack",
+        "trackId": "NA18608.2-ReferenceSequenceTrack",
         "adapter": {
           "type": "ChromSizesAdapter",
-          "uri": "https://jbrowse.org/demos/hprc_multiway/HG00128.1.gfa.chrom.sizes"
+          "uri": "https://jbrowse.org/pangenome/hprc-grch38/NA18608.2.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "HG00232.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG00232.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "https://jbrowse.org/pangenome/hprc-grch38/HG00232.1.chrom.sizes"
         }
       }
     }
@@ -68,22 +68,12 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "hprc_genes_HG00097_1",
-      "name": "HG00097.1 genes (HPRC release 2 CAT annotation)",
-      "assemblyNames": ["HG00097.1"],
+      "trackId": "hprc_genes_HG01361_1",
+      "name": "HG01361.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01361.1"],
       "adapter": {
-        "type": "Gff3TabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc_multiway/HG00097.1.genes.gff3.gz"
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "hprc_genes_HG00099_1",
-      "name": "HG00099.1 genes (HPRC release 2 CAT annotation)",
-      "assemblyNames": ["HG00099.1"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc_multiway/HG00099.1.genes.gff3.gz"
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/pangenome/hprc-grch38/genes/HG01361.1.genes.bed.gz"
       }
     },
     {
@@ -92,18 +82,28 @@
       "name": "HG00133.1 genes (HPRC release 2 CAT annotation)",
       "assemblyNames": ["HG00133.1"],
       "adapter": {
-        "type": "Gff3TabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc_multiway/HG00133.1.genes.gff3.gz"
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/pangenome/hprc-grch38/genes/HG00133.1.genes.bed.gz"
       }
     },
     {
       "type": "FeatureTrack",
-      "trackId": "hprc_genes_HG00128_1",
-      "name": "HG00128.1 genes (HPRC release 2 CAT annotation)",
-      "assemblyNames": ["HG00128.1"],
+      "trackId": "hprc_genes_NA18608_2",
+      "name": "NA18608.2 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["NA18608.2"],
       "adapter": {
-        "type": "Gff3TabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc_multiway/HG00128.1.genes.gff3.gz"
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/pangenome/hprc-grch38/genes/NA18608.2.genes.bed.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_genes_HG00232_1",
+      "name": "HG00232.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00232.1"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/pangenome/hprc-grch38/genes/HG00232.1.genes.bed.gz"
       }
     },
     {
@@ -111,28 +111,28 @@
       "trackId": "amylase_adjacent",
       "name": "Amylase locus, each haplotype against the next (minimap2)",
       "assemblyNames": [
-        "HG00097.1",
-        "HG00099.1",
+        "HG01361.1",
         "hg38",
         "HG00133.1",
-        "HG00128.1"
+        "NA18608.2",
+        "HG00232.1"
       ],
       "adapter": {
         "type": "MultiGenomePAFAdapter",
         "uri": "amylase_adjacent.paf",
         "assemblyNames": [
-          "HG00097.1",
-          "HG00099.1",
+          "HG01361.1",
           "hg38",
           "HG00133.1",
-          "HG00128.1"
+          "NA18608.2",
+          "HG00232.1"
         ],
         "assemblyNameToPanSN": {
-          "HG00097.1": "HG00097#1",
-          "HG00099.1": "HG00099#1",
+          "HG01361.1": "HG01361#1",
           "hg38": "GRCh38#0",
           "HG00133.1": "HG00133#1",
-          "HG00128.1": "HG00128#1"
+          "NA18608.2": "NA18608#2",
+          "HG00232.1": "HG00232#1"
         }
       }
     }

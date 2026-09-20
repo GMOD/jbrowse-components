@@ -406,11 +406,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.4, 0.86],
   },
   amylase_haplotypes: {
-    // The two insertion wedges with the reference row between them, which is
-    // the page's claim at card size: the collinear top band is left out so
-    // both wedges fit a 2:1 frame.
+    // The two matching insertion wedges with the straight three-copy band
+    // between them, which is the page's claim at card size; the five-to-seven
+    // band at the bottom is left out so all three fit a 2:1 frame.
     src: 'multiway_synteny/hprc_amylase_stack.png',
-    band: [0.4, 0.89],
+    band: [0.2, 0.69],
   },
   ecoli_orthologs_synteny: {
     // The top of the 44-lane stack at the atp operon, where the ortholog
