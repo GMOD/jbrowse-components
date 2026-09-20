@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { unwrapFeature } from '@jbrowse/core/util/simpleFeature'
 import { getParent } from '@jbrowse/mobx-state-tree'
 import {
   breakpointSplitViewId,
@@ -14,8 +15,8 @@ import { svChordColor } from './svChordColor.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewTypeRegistry } from '@jbrowse/core/PluginManager'
-import type { Feature } from '@jbrowse/core/util'
-import type { FindJunctionsNear } from '@jbrowse/sv-core'
+import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { FindJunctionsNear, SvEvent } from '@jbrowse/sv-core'
 
 // `chordTrack` is the ChordVariantDisplay: the display is what the
 // onChordClick config slot is read from, and it passes itself as `track`
@@ -38,7 +39,10 @@ function defaultOnChordClick(
       spreadsheetView?: {
         id: string
         drilldownTrackIds: string[]
-        spreadsheet?: { findJunctionsNear: () => FindJunctionsNear }
+        spreadsheet?: {
+          findJunctionsNear: () => FindJunctionsNear
+          svEventFor: (feature: SimpleFeatureSerialized) => SvEvent | undefined
+        }
       }
     }>(view)
     const inspector =
@@ -68,6 +72,9 @@ function defaultOnChordClick(
               ),
             }
           : {}),
+      event: inspector?.spreadsheet?.svEventFor(
+        unwrapFeature(feature).toJSON(),
+      ),
       defaultTrackIds: inspector?.drilldownTrackIds,
       // in the SV inspector, reuse the same view the sheet's own row menu opens
       // so a chord click and a row click don't stack two of them. Other

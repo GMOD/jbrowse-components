@@ -2,7 +2,7 @@
  * The launch keys `SpreadsheetView` writes code for. Not one of them is a
  * declared property of the view — the file and the assembly it is read against
  * are the import wizard's, and `filterText` belongs to the sheet the load
- * builds — so the partition lifts all four unconditionally.
+ * builds — so the partition lifts them all unconditionally.
  *
  * #launchKeys SpreadsheetView — the URL parameters page renders this interface
  * as the view's launch-key table. The `//` comment above each field is what
@@ -26,4 +26,7 @@ export interface SpreadsheetViewCommands {
   fileType?: string
   // search-box text, applied once the file is loaded
   filterText?: string
+  // the rearrangement event to open the sheet narrowed to: a value of the
+  // file's `INFO.EVENT`, matched whole
+  svEventFilter?: string
 }

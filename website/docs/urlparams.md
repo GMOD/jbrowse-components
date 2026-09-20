@@ -939,6 +939,7 @@ holds:
 | `baseUri` | what a relative `uri` resolves against. A config loaded from a URL stamps this beside every `uri` it carries, a `defaultSession` view's included, so the sheet's file resolves against the config the way a track's does |
 | `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
 | `filterText` | search-box text, applied once the file is loaded |
+| `svEventFilter` | the rearrangement event to open the sheet narrowed to: a value of the file's `INFO.EVENT`, matched whole |
 | `uri` | the file to load into the sheet. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |
 
 **Properties**, which are whatever the state model declares and the view
@@ -988,6 +989,7 @@ holds:
 | `drilldownTracks` | trackIds every view a row or chord opens starts with, beside the callset's own track: the tumor and normal alignments, a coverage track, an assembly's synteny track |
 | `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
 | `filterText` | search-box text for the spreadsheet half, applied once the file is loaded. The circular half draws the rows it leaves, so this is what makes a chord subset reachable from a link |
+| `svEventFilter` | the rearrangement event to open the sheet narrowed to: a value of the file's `INFO.EVENT`, matched whole |
 | `uri` | the file to load into the sheet. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |
 
 **Properties**, which are whatever the state model declares and the view

@@ -18,22 +18,22 @@ function row(id: number, alt: string, svtype?: string): GridRow {
 
 const FIELD = 'INFO.SVTYPE'
 
-test('counts by class and carries the raw tokens a filter needs', () => {
+test('counts by class', () => {
   expect(
     tallySvTypes(
       [row(0, '<DEL>', 'DEL'), row(1, '<DEL>', 'DEL'), row(2, '<DUP>', 'DUP')],
       FIELD,
     ),
   ).toEqual([
-    { type: 'DEL', label: 'Deletion', tokens: ['DEL'], count: 2 },
-    { type: 'DUP', label: 'Duplication', tokens: ['DUP'], count: 1 },
+    { type: 'DEL', label: 'Deletion', count: 2 },
+    { type: 'DUP', label: 'Duplication', count: 1 },
   ])
 })
 
 // The whole reason this exists. The dropdown listed the raw column values while
 // the legend bucketed by ALT, so a sniffles callset offered `TRA` in one control
 // and counted `Breakend` in the other, inches apart on screen.
-test('a class folds its spellings together and keeps both as tokens', () => {
+test('a class folds its spellings together', () => {
   expect(
     tallySvTypes(
       [
@@ -43,9 +43,7 @@ test('a class folds its spellings together and keeps both as tokens', () => {
       ],
       FIELD,
     ),
-  ).toEqual([
-    { type: 'BND', label: 'Breakend', tokens: ['BND', 'TRA'], count: 3 },
-  ])
+  ).toEqual([{ type: 'BND', label: 'Breakend', count: 3 }])
 })
 
 test('classes come back in canonical order, not arrival order', () => {
@@ -57,17 +55,10 @@ test('classes come back in canonical order, not arrival order', () => {
   ).toEqual(['DEL', 'DUP', 'INS'])
 })
 
-// a sheet whose SV classes are only in the ALT: still worth counting in the
-// legend, but there is no column for a filter to match, so the tokens are empty
-// and the caller can tell the entry is not clickable
-test('a class with no SVTYPE column carries no tokens', () => {
-  const [entry] = tallySvTypes([row(0, '<DEL>')], undefined)
-  expect(entry).toEqual({
-    type: 'DEL',
-    label: 'Deletion',
-    tokens: [],
-    count: 1,
-  })
+test('a sheet with no SVTYPE column is classed from the ALT', () => {
+  expect(tallySvTypes([row(0, '<DEL>')], undefined)).toEqual([
+    { type: 'DEL', label: 'Deletion', count: 1 },
+  ])
 })
 
 // an older session can restore rows whose parsed feature did not survive; the
@@ -75,7 +66,7 @@ test('a class with no SVTYPE column carries no tokens', () => {
 test('a row with no parsed feature is classed from its token', () => {
   const rows = [{ id: 0, 'INFO.SVTYPE': 'TRA' }] as unknown as GridRow[]
   expect(tallySvTypes(rows, FIELD)).toEqual([
-    { type: 'BND', label: 'Breakend', tokens: ['TRA'], count: 1 },
+    { type: 'BND', label: 'Breakend', count: 1 },
   ])
 })
 

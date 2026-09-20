@@ -17,10 +17,12 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { distinctJunctions, eventStops } from './eventStops.ts'
 import { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'
 import { navToSingleLevelBreak } from './navToSingleLevelBreak.ts'
 import { junctionFromFeature, walkBreakendChain } from './walkBreakendChain.ts'
 
+import type { SvEvent } from './eventStops.ts'
 import type { Track } from './types.ts'
 import type { BreakpointSplitViewHost } from './util.ts'
 import type { FindJunctionsNear } from './walkBreakendChain.ts'
@@ -53,6 +55,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     stableViewId,
     view,
     findJunctionsNear,
+    event,
     defaultTrackIds,
   }: {
     session: BreakpointSplitViewHost
@@ -62,6 +65,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     assemblyName: string
     stableViewId?: string
     findJunctionsNear?: FindJunctionsNear
+    event?: SvEvent
     defaultTrackIds?: string[]
   }) {
     // ONE STEP. This dialog used to ask its two questions on two screens --
@@ -83,6 +87,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     // isolated translocation it changes nothing, and where it does add a panel
     // that panel is part of the same shape.
     const [followChain, setFollowChain] = useState(true)
+    const [openEvent, setOpenEvent] = useState(true)
     const [windowSize, setWindowSize] = useLocalStorage(
       'breakpointWindowSize',
       '5000',
@@ -92,7 +97,9 @@ const BreakpointSplitViewChoiceDialog = observer(
     // Only for the stacked shape. A single-level view lays its loci along one
     // row, so a third one is more of the row rather than another panel, and
     // `navToSingleLevelBreak` frames the record's own pair.
-    const canFollowChain = findJunctionsNear !== undefined && isSplitLevel
+    const opensEvent = event !== undefined && isSplitLevel && openEvent
+    const canFollowChain =
+      findJunctionsNear !== undefined && isSplitLevel && !opensEvent
 
     const handleLaunch = () => {
       // `undefined`, not `[]`, when there is no view to copy from: the two are
@@ -109,15 +116,19 @@ const BreakpointSplitViewChoiceDialog = observer(
         stableViewId === undefined ? undefined : `${stableViewId}_${suffix}`
       void (async () => {
         try {
+          const assembly =
+            await session.assemblyManager.requireAssembly(assemblyName)
           const start =
             canFollowChain && followChain
-              ? junctionFromFeature(
-                  feature,
-                  await session.assemblyManager.requireAssembly(assemblyName),
-                )
+              ? junctionFromFeature(feature, assembly)
               : undefined
-          const stops =
-            start && findJunctionsNear
+          const stops = opensEvent
+            ? eventStops(
+                event.junctions,
+                windowSizeNum,
+                (assembly.regions ?? []).map(r => r.refName),
+              )
+            : start && findJunctionsNear
               ? await walkBreakendChain({ start, findJunctionsNear })
               : undefined
           await (isSplitLevel
@@ -192,6 +203,22 @@ const BreakpointSplitViewChoiceDialog = observer(
                   setCopyTracks(val)
                 }}
               />
+            ) : null}
+
+            {event && isSplitLevel ? (
+              <>
+                <LabeledCheckbox
+                  checked={openEvent}
+                  label={`Open every locus of ${event.label}`}
+                  onChange={val => {
+                    setOpenEvent(val)
+                  }}
+                />
+                <FormHelperText>
+                  The caller grouped {distinctJunctions(event.junctions).length}{' '}
+                  junctions under this event.
+                </FormHelperText>
+              </>
             ) : null}
 
             {canFollowChain ? (

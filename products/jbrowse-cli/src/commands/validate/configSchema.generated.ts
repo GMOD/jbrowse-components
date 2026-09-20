@@ -18705,6 +18705,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "svTypeFilter": {
               "type": "string"
             },
+            "svEventFilter": {
+              "type": "string"
+            },
             "filterText": {
               "type": "string"
             }
@@ -18739,6 +18742,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Launch key, resolved by the SpreadsheetView launcher on open."
         },
         "filterText": {
+          "description": "Launch key, resolved by the SpreadsheetView launcher on open."
+        },
+        "svEventFilter": {
           "description": "Launch key, resolved by the SpreadsheetView launcher on open."
         }
       }
@@ -18833,6 +18839,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Launch key, resolved by the SvInspectorView launcher on open."
         },
         "filterText": {
+          "description": "Launch key, resolved by the SvInspectorView launcher on open."
+        },
+        "svEventFilter": {
           "description": "Launch key, resolved by the SvInspectorView launcher on open."
         },
         "drilldownTracks": {

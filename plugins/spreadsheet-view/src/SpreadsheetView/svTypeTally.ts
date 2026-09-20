@@ -13,13 +13,23 @@ export interface SvTypeTally {
   type: string
   /** how a reader sees it named — "Deletion", "Breakend" */
   label: string
-  /**
-   * the raw `INFO.SVTYPE` values in this class, which a filter on that column
-   * has to match. More than one because the classes fold: `TRA` is how
-   * several callers spell a translocation and it belongs with `BND`
-   */
-  tokens: string[]
   count: number
+}
+
+/**
+ * A row's SV class, or undefined for a record that is not a structural variant.
+ * The ALT decides where it can, since it distinguishes what SVTYPE folds
+ * together (a `<CN3>` keeps its copy number). A row carrying the declared type
+ * and no parsed record — one restored from an older session — is classed from
+ * the `field` column's token.
+ */
+export function rowSvType(row: GridRow, field?: string) {
+  const raw = field ? row[field] : undefined
+  return (
+    (row.feature
+      ? getVariantSvType(new SimpleFeature(row.feature))
+      : svTypeFromToken(typeof raw === 'string' ? raw : '')) || undefined
+  )
 }
 
 const CANONICAL_ORDER = Object.fromEntries(
@@ -37,45 +47,21 @@ const CANONICAL_ORDER = Object.fromEntries(
  * and counted 273 `Breakend` in the other, inches apart.
  *
  * The class is what the circle draws and what a reader is looking at, so it is
- * the vocabulary both use; `tokens` is what carries a click on either back to
- * the column the grid actually filters.
+ * the vocabulary both use, and `rowSvType` is what the sheet filters rows by.
  *
  * Records that are not structural variants (a plain SNV in a mixed VCF) have no
  * class and are left out rather than tallied under an empty label.
  */
 export function tallySvTypes(rows: GridRow[] | undefined, field?: string) {
-  const tally = new Map<string, { count: number; tokens: Set<string> }>()
+  const tally = new Map<string, number>()
   for (const row of rows ?? []) {
-    const { feature } = row
-    const raw = field ? row[field] : undefined
-    const token = typeof raw === 'string' ? raw : ''
-    // the ALT decides where it can, since it distinguishes what SVTYPE folds
-    // together (a `<CN3>` keeps its copy number). A row carrying the declared
-    // type and no parsed record — one restored from an older session — is
-    // classed from the token rather than dropped
-    const type = feature
-      ? getVariantSvType(new SimpleFeature(feature))
-      : svTypeFromToken(token)
-    if (!type) {
-      continue
-    }
-    let entry = tally.get(type)
-    if (!entry) {
-      entry = { count: 0, tokens: new Set() }
-      tally.set(type, entry)
-    }
-    entry.count++
-    if (token) {
-      entry.tokens.add(token)
+    const type = rowSvType(row, field)
+    if (type) {
+      tally.set(type, (tally.get(type) ?? 0) + 1)
     }
   }
   return [...tally]
-    .map(([type, { count, tokens }]) => ({
-      type,
-      label: svTypeDisplayLabel(type),
-      tokens: [...tokens].sort((a, b) => a.localeCompare(b)),
-      count,
-    }))
+    .map(([type, count]) => ({ type, label: svTypeDisplayLabel(type), count }))
     .sort(
       (a, b) =>
         (CANONICAL_ORDER[a.type] ?? Number.POSITIVE_INFINITY) -

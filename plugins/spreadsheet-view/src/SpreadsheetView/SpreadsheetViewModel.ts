@@ -153,6 +153,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
                     ...spreadsheet,
                     visibleColumns: prev.visibleColumns,
                     svTypeFilter: prev.svTypeFilter,
+                    svEventFilter: prev.svEventFilter,
                     filterText: prev.filterText,
                   }
                 : spreadsheet,
@@ -257,6 +258,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
           async applyInit(init: LaunchInput<SpreadsheetViewCommands>) {
             const { importWizard } = self
             const { assembly, uri, baseUri, fileType, filterText } = init
+            const { svEventFilter } = init
             if (assembly) {
               importWizard.setSelectedAssemblyName(assembly)
             }
@@ -290,6 +292,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
               // sheet it was set on
               if (isAlive(self)) {
                 self.spreadsheet?.setFilterText(filterText)
+                self.spreadsheet?.setSvEventFilter(svEventFilter)
               }
             }
           },

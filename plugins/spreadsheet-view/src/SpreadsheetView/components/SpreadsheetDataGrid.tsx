@@ -21,10 +21,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// stable id so the dropdown's filter item is upserted/replaced in place rather
-// than stacking alongside the user's own column filters and quick-filter search
-const SV_TYPE_FILTER_ID = 'sv-type-quick-filter'
-
 function disposeAll(disposers: (() => void)[]) {
   return () => {
     for (const dispose of disposers) {
@@ -40,11 +36,10 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
 }) {
   const {
     rows,
+    gridRows,
     dataGridColumns,
     visibleColumns,
-    svTypeColumnField,
-    svTypeOptions,
-    svTypeFilter,
+    gridFacets,
     filterText,
     visibleRows,
     selectedRowId,
@@ -85,29 +80,6 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
         model.setFilterText(
           filterModel.quickFilterValues?.join(' ') || undefined,
         )
-        // the same direction for the SV-type dropdown: it owns one item in the
-        // grid's filter model, but the grid's own filter panel can edit or
-        // delete that item, and the dropdown then went on naming a filter
-        // nothing was applying
-        const { svTypeColumnField, svTypeOptions } = model
-        if (svTypeColumnField) {
-          const item = filterModel.items.find(
-            i => i.id === SV_TYPE_FILTER_ID && i.field === svTypeColumnField,
-          )
-          // the item's value is the class's raw tokens; map it back to the
-          // class the dropdown names. An edit that no longer matches a class
-          // clears the dropdown rather than leaving it naming something else
-          const tokens = Array.isArray(item?.value)
-            ? (item.value as string[])
-            : []
-          model.setSvTypeFilter(
-            svTypeOptions.find(
-              o =>
-                o.tokens.length === tokens.length &&
-                o.tokens.every(t => tokens.includes(t)),
-            )?.type,
-          )
-        }
       }),
     ])
   }, [apiRef, model, gridReady])
@@ -117,52 +89,18 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
   //
   // MODEL -> GRID is an `autorun`: it re-runs on whatever it read, where a
   // dependency array is a hand-maintained restatement of the body that goes
-  // stale as soon as the body reads one more thing. This one already did — the
-  // SV-type push grew a read of the class tally, and the array had to be
-  // corrected to match it.
+  // stale as soon as the body reads one more thing.
   //
-  // Both pushes compare before writing, so the round trip with the handlers
-  // below settles in one pass rather than ping-ponging, and both read the
-  // grid's current value rather than trusting a ref, so a remount (session
-  // reload, StrictMode) re-applies instead of skipping.
+  // The search push compares before writing, so the round trip with the handler
+  // above settles in one pass rather than ping-ponging, and it reads the grid's
+  // current value rather than trusting a ref, so a remount (session reload,
+  // StrictMode) re-applies instead of skipping.
   useEffect(() => {
     const api = apiRef.current
     if (!gridReady || !api) {
       return undefined
     }
     return disposeAll([
-      // Driven through the grid's own filter pipeline rather than a parallel
-      // row filter, so the `filteredRowsSet` handler above keeps everything
-      // downstream (the SV inspector's circle) in sync, and it composes with
-      // the user's column filters and quick search instead of replacing them.
-      autorun(() => {
-        const { svTypeColumnField, svTypeFilter, svTypeOptions } = model
-        if (!svTypeColumnField) {
-          return
-        }
-        if (svTypeFilter) {
-          // `isAnyOf` over the class's raw tokens, not `equals` on the class:
-          // the dropdown names a class (Breakend) while the column holds
-          // whatever the caller wrote (BND, or TRA, or both in one file). A
-          // value naming no class passes through as a token, so a session saved
-          // before the dropdown spoke classes still filters to what it did then
-          const { tokens } = svTypeOptions.find(
-            o => o.type === svTypeFilter,
-          ) ?? { tokens: [svTypeFilter] }
-          api.upsertFilterItem({
-            id: SV_TYPE_FILTER_ID,
-            field: svTypeColumnField,
-            operator: 'isAnyOf',
-            value: tokens,
-          })
-        } else {
-          api.deleteFilterItem({
-            id: SV_TYPE_FILTER_ID,
-            field: svTypeColumnField,
-            operator: 'isAnyOf',
-          })
-        }
-      }),
       // the search box is the grid's own uncontrolled state, so the persisted
       // text is pushed in rather than passed as a prop
       autorun(() => {
@@ -192,10 +130,9 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
     ])
   }, [apiRef, model, gridReady])
 
-  const showSvTypeFilter = !!svTypeColumnField && svTypeOptions.length > 0
   return rows && dataGridColumns ? (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {showSvTypeFilter || filterText ? (
+      {gridFacets.length || filterText ? (
         <div
           style={{
             display: 'flex',
@@ -204,26 +141,28 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
             margin: 8,
           }}
         >
-          {showSvTypeFilter ? (
+          {gridFacets.map(({ id, label, selected, options }) => (
             <TextField
+              key={id}
               select
               variant="outlined"
               size="small"
-              label="Filter by SV type"
-              value={svTypeFilter ?? ''}
+              label={label}
+              value={options.some(o => o.key === selected) ? selected : ''}
               onChange={event => {
-                model.setSvTypeFilter(event.target.value || undefined)
+                model.setGridFacet(id, event.target.value || undefined)
               }}
               sx={{ minWidth: 160 }}
+              slotProps={{ htmlInput: { 'data-testid': id } }}
             >
               <MenuItem value="">All</MenuItem>
-              {svTypeOptions.map(opt => (
-                <MenuItem key={opt.type} value={opt.type}>
-                  {opt.label} ({opt.count})
+              {options.map(opt => (
+                <MenuItem key={opt.key} value={opt.key}>
+                  {opt.label}
                 </MenuItem>
               ))}
             </TextField>
-          ) : null}
+          ))}
           {/* The search itself lives in the grid's own toolbar, which collapses
               to a magnifier once it loses focus — so with a search applied the
               rows are gone and nothing on screen says why. That is worst
@@ -260,7 +199,7 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
             },
           }}
           showToolbar
-          rows={rows}
+          rows={gridRows}
           columns={dataGridColumns}
           // the other direction of the same channel the circle reads: clicking
           // a row lights its chord, the way clicking a chord lands on its row

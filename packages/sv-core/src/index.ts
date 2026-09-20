@@ -43,6 +43,8 @@ export {
 export { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'
 export { openOrReuseSplitView } from './openSplitView.ts'
 export { makeFindJunctionsNear } from './findJunctionsNear.ts'
+export { distinctJunctions, eventStops } from './eventStops.ts'
+export type { SvEvent } from './eventStops.ts'
 export {
   BREAKEND_COLOCATION_BP,
   junctionFromFeature,

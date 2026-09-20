@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import type { SvEvent } from './eventStops.ts'
 import type { BreakpointSplitViewHost } from './util.ts'
 import type { FindJunctionsNear } from './walkBreakendChain.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -16,6 +17,7 @@ export function launchBreakpointSplitView({
   view,
   stableViewId,
   findJunctionsNear,
+  event,
   defaultTrackIds,
 }: {
   session: BreakpointSplitViewHost
@@ -31,6 +33,11 @@ export function launchBreakpointSplitView({
    * SA mate or from a pasted row.
    */
   findJunctionsNear?: FindJunctionsNear
+  /**
+   * The rearrangement event the caller filed the record under. The dialog then
+   * offers a panel per locus of the event, ahead of the inferred chain.
+   */
+  event?: SvEvent
   /**
    * Tracks every panel opens when there is no `view` to copy from. The SV
    * inspector passes the callset it loaded, so a split view launched from a row
@@ -53,6 +60,7 @@ export function launchBreakpointSplitView({
       view,
       stableViewId,
       findJunctionsNear,
+      event,
       defaultTrackIds,
     },
   ])

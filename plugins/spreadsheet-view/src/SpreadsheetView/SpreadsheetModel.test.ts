@@ -175,7 +175,7 @@ test('svType getters are inert without an INFO.SVTYPE column', () => {
 
 // the dropdown names CLASSES, not raw tokens, so it and the SV inspector's
 // legend cannot disagree about what a callset holds
-test('svTypeOptions lists the classes present, with their raw tokens', () => {
+test('svTypeOptions lists the classes present', () => {
   const model = makeModel({
     rowSet: {
       rows: [
@@ -189,8 +189,8 @@ test('svTypeOptions lists the classes present, with their raw tokens', () => {
   })
   expect(model.svTypeColumnField).toBe('INFO.SVTYPE')
   expect(model.svTypeOptions).toEqual([
-    { type: 'DEL', label: 'Deletion', tokens: ['DEL'], count: 2 },
-    { type: 'DUP', label: 'Duplication', tokens: ['DUP'], count: 1 },
+    { type: 'DEL', label: 'Deletion', count: 2 },
+    { type: 'DUP', label: 'Duplication', count: 1 },
   ])
 })
 
@@ -269,7 +269,7 @@ test('setSvTypeFilter stores the selected value', () => {
 describe('the junctions the sheet can walk', () => {
   const assembly = { initialized: true, getCanonicalRefName2: (r: string) => r }
 
-  function sheetWith(rows: Row[]) {
+  function sheetWith(rows: Row[], columns = ['INFO.SVTYPE']) {
     const Model = stateModelFactory()
     const Session = types
       .model({
@@ -283,7 +283,7 @@ describe('the junctions the sheet can walk', () => {
       configuration: {},
       sheet: {
         assemblyName: 'hg38',
-        columns: [{ name: 'INFO.SVTYPE' }],
+        columns: columns.map(name => ({ name })),
         rowSet: { rows },
       },
     }).sheet!
@@ -409,5 +409,106 @@ describe('the junctions the sheet can walk', () => {
       'chr3:300',
       'chr4:400',
     ])
+  })
+  const inEvent = (
+    row: ReturnType<typeof bnd>,
+    key: string,
+    event: string,
+  ) => ({
+    ...row,
+    feature: { ...row.feature, name: row.feature.uniqueId },
+    cellData: { ...row.cellData, [key]: event },
+  })
+  const mated = (row: ReturnType<typeof bnd>, mateId: string) => ({
+    ...row,
+    feature: { ...row.feature, INFO: { MATEID: [mateId] } },
+  })
+
+  // two junctions, each written from both ends, as the HG008 benchmark writes
+  // EVENT=cluster_3, beside a lone translocation
+  const chromoplexy = [
+    mated(bnd('a', 'chr3', 100, 'C]chr13:900]'), 'a2'),
+    mated(bnd('b', 'chr3', 5000, '[chr3:70001[C'), 'b2'),
+    mated(bnd('b2', 'chr3', 70000, '[chr3:5001[C'), 'b'),
+    mated(bnd('a2', 'chr13', 899, 'C]chr3:101]'), 'a'),
+  ].map(r => inEvent(r, 'INFO.EVENT', 'cluster_1'))
+  const lone = [
+    mated(bnd('c', 'chr1', 10, 'C]chr2:20]'), 'c2'),
+    mated(bnd('c2', 'chr2', 19, 'C]chr1:11]'), 'c'),
+  ]
+  const eventColumns = ['INFO.SVTYPE', 'INFO.EVENT']
+
+  test('an event is a caller group holding more than one junction', () => {
+    const sheet = sheetWith(
+      [
+        ...chromoplexy,
+        // GRIDSS gives EVENT to the two mate records of one breakpoint
+        ...lone.map(r => inEvent(r, 'INFO.EVENT', 'gridss7')),
+        ...lone.map(r => inEvent(r, 'INFO.EVENT', 'cluster_10')),
+      ],
+      eventColumns,
+    )
+    expect(
+      sheet.svEvents.map(({ label, count, refNames }) => ({
+        label,
+        count,
+        refNames,
+      })),
+    ).toEqual([{ label: 'cluster_1', count: 4, refNames: ['chr3', 'chr13'] }])
+    expect(sheet.svEvents[0]!.junctions).toHaveLength(4)
+  })
+
+  test('a caller-specific grouping key is not read as EVENT', () => {
+    const sheet = sheetWith(
+      chromoplexy.map(r => inEvent(r, 'INFO.CLUSTERID', 'severus_0')),
+      ['INFO.SVTYPE', 'INFO.CLUSTERID'],
+    )
+    expect(sheet.svEventColumnField).toBeUndefined()
+    expect(sheet.svEvents).toEqual([])
+  })
+
+  test('the event filter matches the whole value', () => {
+    const sheet = sheetWith(
+      [
+        ...chromoplexy,
+        ...chromoplexy.map(r => inEvent(r, 'INFO.EVENT', 'cluster_10')),
+      ],
+      eventColumns,
+    )
+    sheet.setGridFacet('sv-event-filter', 'cluster_1')
+    expect(sheet.svEventFilter).toBe('cluster_1')
+    expect(sheet.visibleRows?.map(r => r.id)).toEqual([0, 1, 2, 3])
+  })
+
+  test('the two dropdowns and the grid filter narrow together', () => {
+    const del = {
+      feature: {
+        uniqueId: 'd',
+        refName: 'chr3',
+        start: 5,
+        end: 900,
+        ALT: ['<DEL>'],
+      },
+      cellData: { 'INFO.SVTYPE': 'DEL', 'INFO.EVENT': 'cluster_1' },
+    }
+    const sheet = sheetWith([...chromoplexy, del, ...lone], eventColumns)
+    sheet.setGridFacet('sv-event-filter', 'cluster_1')
+    sheet.setGridFacet('sv-type-filter', 'BND')
+    expect(sheet.gridRows?.map(r => r.id)).toEqual([0, 1, 2, 3])
+    sheet.setVisibleRows({ 0: true, 1: false, 2: false, 3: true })
+    expect(sheet.visibleRows?.map(r => r.id)).toEqual([0, 3])
+    expect(sheet.svTypeOptions.map(o => o.count)).toEqual([1, 6])
+  })
+
+  test('a record names its event, and one outside any names none', () => {
+    const sheet = sheetWith([...chromoplexy, ...lone], eventColumns)
+    expect(sheet.svEventFor(chromoplexy[2]!.feature)?.label).toBe('cluster_1')
+    expect(sheet.svEventFor(lone[0]!.feature)).toBeUndefined()
+  })
+
+  test('a sheet with no event column offers no event dropdown', () => {
+    const sheet = sheetWith(lone)
+    expect(sheet.svEvents).toEqual([])
+    expect(sheet.gridFacets.map(f => f.id)).toEqual(['sv-type-filter'])
   })
 })

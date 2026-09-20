@@ -67,6 +67,34 @@ Table filters are reflected in the circular view.
 
 <Video src="/media/sv/inspector_route.mp4" caption="The same callset from the Add menu onward: the import form, the URL and assembly it takes, the table and circle it opens, and a chromosome typed into the table filter, which filters the chords too." />
 
+## Rearrangement events
+
+A complex rearrangement is several junctions, and some callers say which ones
+belong together in VCF 4.4's `EVENT` key; the C-GIAB benchmark and DRAGEN both
+write it. When the file has it, a **Filter by event** dropdown appears beside
+**Filter by SV type**, listing each event with its record count and the
+chromosomes it touches. Choosing one narrows the table and the circle to that
+event's records, and with **show only regions with data** on, the circle redraws
+over those chromosomes alone.
+
+The dropdown lists a value only when its records describe more than one
+junction. A breakend callset writes each junction twice, once from either end,
+and GRIDSS gives that pair an `EVENT` of its own, so a list of every value would
+name every breakpoint in the file.
+
+JBrowse reads the grouping and does not compute one, and it reads the standard
+key only. A caller that files the same grouping under its own key needs the key
+renamed before import. [Severus](https://github.com/KolmogorovLab/Severus)
+writes `CLUSTERID`, and `MATE_ID` where the specification has `MATEID`:
+
+```bash
+zcat severus_somatic.vcf.gz |
+  sed -e 's/^##INFO=<ID=CLUSTERID,/##INFO=<ID=EVENT,/' \
+      -e 's/^##INFO=<ID=MATE_ID,/##INFO=<ID=MATEID,/' \
+      -e 's/;CLUSTERID=/;EVENT=/' -e 's/;MATE_ID=/;MATEID=/' |
+  bgzip > severus_somatic.event.vcf.gz
+```
+
 ## Launching breakpoint split view
 
 Click a feature in the circular view, or the triangle dropdown on any table row,
@@ -77,6 +105,10 @@ breakpoint, both showing the callset. Add alignment tracks from the split view's
 track selector, and the arcs and splines connecting supporting reads appear
 automatically. The next row or chord opens in the same split view and keeps
 those tracks, including when its chain has more panels.
+
+For a record filed under an event, the dialog offers **Open every locus of**
+that event: one panel per locus the event's junctions touch, in genome order,
+with breakends closer together than the window size sharing a panel.
 
 To skip that step, name the evidence in the session or link: the
 [`drilldownTracks`](/docs/urlparams#sv-inspector) launch key lists the trackIds

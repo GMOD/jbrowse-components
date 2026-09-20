@@ -6364,6 +6364,7 @@ export const configManifest: ConfigManifest = {
         "baseUri",
         "fileType",
         "filterText",
+        "svEventFilter",
         "uri"
       ]
     },
@@ -6386,6 +6387,7 @@ export const configManifest: ConfigManifest = {
         "drilldownTracks",
         "fileType",
         "filterText",
+        "svEventFilter",
         "uri"
       ]
     },

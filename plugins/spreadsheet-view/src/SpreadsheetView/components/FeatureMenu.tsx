@@ -14,6 +14,7 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type {
   BreakpointSplitViewHost,
   FindJunctionsNear,
+  SvEvent,
 } from '@jbrowse/sv-core'
 
 // either side of each breakpoint when a row's two ends open as one view
@@ -26,6 +27,7 @@ export default function FeatureMenu({
   feature,
   trackIds,
   findJunctionsNear,
+  svEventFor,
 }: {
   spreadsheetViewId: string
   assemblyName: string
@@ -35,6 +37,7 @@ export default function FeatureMenu({
   trackIds: string[]
   /** the sheet's read of the callset; chain walking is offered only with it */
   findJunctionsNear?: FindJunctionsNear
+  svEventFor: (feature: SimpleFeatureSerialized) => SvEvent | undefined
 }) {
   return (
     <CascadingMenuButton
@@ -82,6 +85,7 @@ export default function FeatureMenu({
                     // want of a way to query the callset — while the chord
                     // click, over the same records, could
                     findJunctionsNear,
+                    event: svEventFor(feature),
                   })
                 },
               },

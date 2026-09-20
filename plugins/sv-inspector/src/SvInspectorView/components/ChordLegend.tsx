@@ -75,21 +75,14 @@ const ChordLegend = observer(function ChordLegend({
       {children}
       {tallies.length > 0 ? (
         <div className={classes.legend}>
-          {tallies.map(({ type, label, count, tokens }) => {
+          {tallies.map(({ type, label, count }) => {
             const active = spreadsheet?.svTypeFilter === type
             return (
               <button
                 key={type}
                 type="button"
                 className={cx(classes.row, active && classes.active)}
-                // a class the sheet has no SVTYPE column to filter on is still
-                // worth counting, but clicking it could not narrow anything
-                disabled={!tokens.length}
-                title={
-                  tokens.length
-                    ? `Show only ${label} (click again for all)`
-                    : undefined
-                }
+                title={`Show only ${label} (click again for all)`}
                 onClick={() => {
                   spreadsheet?.setSvTypeFilter(active ? undefined : type)
                 }}

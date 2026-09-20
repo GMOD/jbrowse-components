@@ -7,16 +7,20 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { junctionFromFeature, svMateLocus } from '@jbrowse/sv-core'
+import {
+  distinctJunctions,
+  junctionFromFeature,
+  svMateLocus,
+} from '@jbrowse/sv-core'
 
 import LocationCell from './components/LocationCell.tsx'
 import MateCell from './components/MateCell.tsx'
 import { svSize } from './svSize.ts'
-import { tallySvTypes } from './svTypeTally.ts'
+import { rowSvType, tallySvTypes } from './svTypeTally.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { Junction } from '@jbrowse/sv-core'
+import type { Junction, SvEvent } from '@jbrowse/sv-core'
 import type { GridColDef } from '@mui/x-data-grid'
 
 export interface Row {
@@ -42,6 +46,9 @@ interface LegacyRow extends Row {
 }
 
 type VisibleRowFlags = Record<number, boolean>
+
+/** VCF 4.4's key for the rearrangement event a record belongs to */
+const SV_EVENT_COLUMN = 'INFO.EVENT'
 
 /**
  * Rows to measure column widths against. Evenly spaced across the whole sheet
@@ -88,6 +95,17 @@ function sameVisibleRowFlags(a?: VisibleRowFlags, b?: VisibleRowFlags) {
   )
 }
 
+function naturalOrder(a: string, b: string) {
+  return a.localeCompare(b, undefined, { numeric: true })
+}
+
+function eventLabel(row: GridRow, field?: string) {
+  const value = field ? row[field] : undefined
+  return typeof value === 'string' || typeof value === 'number'
+    ? `${value}`
+    : undefined
+}
+
 function migrateRow(row: LegacyRow, columns: { name: string }[]): Row {
   const { feature, cellData, cells, extendedData } = row
   return {
@@ -129,13 +147,18 @@ export default function stateModelFactory() {
       ),
       /**
        * #property
-       * the SV class the quick-filter dropdown is showing (undefined = show
-       * all) — a class like `BND`, not a raw token, so it and the SV
-       * inspector's legend name the same thing. `svTypeOptions` carries the raw
-       * `INFO.SVTYPE` values behind each class, and the grid filters the column
-       * on those
+       * the SV class the sheet is narrowed to (undefined = show all) — a class
+       * like `BND`, not a raw `INFO.SVTYPE` token, so it and the SV inspector's
+       * legend name the same thing
        */
       svTypeFilter: types.maybe(types.string),
+      /**
+       * #property
+       * the caller's event the sheet is narrowed to (undefined = show all): a
+       * value of the `svEventColumnField` column, matched whole, so `cluster_1`
+       * leaves `cluster_10` out where the search box would keep it
+       */
+      svEventFilter: types.maybe(types.string),
       /**
        * #property
        * the search box's text (undefined = show all), applied as the grid's
@@ -189,6 +212,31 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
+       * the column holding the caller's grouping of records into rearrangement
+       * events, where the file has one. A caller with its own key for it
+       * (Severus's `CLUSTERID`) is renamed before import, not recognised here
+       */
+      get svEventColumnField() {
+        return self.columns.find(c => c.name === SV_EVENT_COLUMN)?.name
+      },
+      /**
+       * #getter
+       * each row's junction, canonical refNames and all; undefined for a row
+       * naming no other end, and for every row until the assembly loads
+       */
+      get rowJunctions() {
+        const { assemblyName } = self
+        const assembly = assemblyName
+          ? getSession(self).assemblyManager.get(assemblyName)
+          : undefined
+        return (this.rows ?? []).map(r =>
+          assembly?.initialized && r.feature
+            ? junctionFromFeature(new SimpleFeature(r.feature), assembly)
+            : undefined,
+        )
+      },
+      /**
+       * #getter
        * Every junction in the sheet, canonical refNames and all, for walking a
        * rearrangement from one of its records to the rest.
        *
@@ -201,18 +249,56 @@ export default function stateModelFactory() {
        * walk rather than once per hop.
        */
       get svJunctions() {
-        const { assemblyName } = self
-        const assembly = assemblyName
-          ? getSession(self).assemblyManager.get(assemblyName)
-          : undefined
-        return assembly?.initialized
-          ? (this.rows ?? []).flatMap(r => {
-              const j = r.feature
-                ? junctionFromFeature(new SimpleFeature(r.feature), assembly)
-                : undefined
-              return j ? [j] : []
-            })
-          : []
+        return this.rowJunctions.filter(j => j !== undefined)
+      },
+      /**
+       * #getter
+       * The rearrangement events the caller wrote: every value
+       * of `svEventColumnField` whose rows hold more than one junction. GRIDSS
+       * gives `EVENT` to the two mate records of one breakpoint, which is one
+       * junction and no grouping.
+       */
+      get svEvents() {
+        const field = this.svEventColumnField
+        const { rowJunctions } = this
+        const events = new Map<string, SvEvent & { count: number }>()
+        for (const row of field ? (this.rows ?? []) : []) {
+          const label = eventLabel(row, field)
+          if (label !== undefined) {
+            const event = events.get(label) ?? {
+              label,
+              junctions: [],
+              count: 0,
+            }
+            events.set(label, event)
+            event.count++
+            const junction = rowJunctions[row.id]
+            if (junction) {
+              event.junctions.push(junction)
+            }
+          }
+        }
+        return [...events.values()]
+          .filter(e => distinctJunctions(e.junctions).length > 1)
+          .map(e => ({
+            ...e,
+            refNames: [
+              ...new Set(e.junctions.flatMap(j => [j.refName, j.mateRefName])),
+            ].sort(naturalOrder),
+          }))
+          .sort((a, b) => naturalOrder(a.label, b.label))
+      },
+      /**
+       * #method
+       * the event a record belongs to, for a drill-down that opens every locus
+       * of it
+       */
+      svEventFor(feature: SimpleFeatureSerialized): SvEvent | undefined {
+        const row = this.rows?.find(
+          r => r.feature?.uniqueId === feature.uniqueId,
+        )
+        const label = row ? eventLabel(row, this.svEventColumnField) : undefined
+        return this.svEvents.find(e => e.label === label)
       },
       /**
        * #method
@@ -423,11 +509,29 @@ export default function stateModelFactory() {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The rows the grid is handed: the sheet narrowed by the two dropdowns.
+       * Narrowed here and not through the grid's filter model, which in the
+       * community grid holds one item — the reader's own column filter, which
+       * a dropdown's item would replace.
+       */
+      get gridRows() {
+        const { svTypeFilter, svEventFilter } = self
+        const { svTypeColumnField, svEventColumnField } = self
+        return self.rows?.filter(
+          row =>
+            (svTypeFilter === undefined ||
+              rowSvType(row, svTypeColumnField) === svTypeFilter) &&
+            (svEventFilter === undefined ||
+              eventLabel(row, svEventColumnField) === svEventFilter),
+        )
+      },
       get visibleRows() {
         const { visibleRowFlags } = self
         return visibleRowFlags
-          ? self.rows?.filter(row => visibleRowFlags[row.id] !== false)
-          : self.rows
+          ? this.gridRows?.filter(row => visibleRowFlags[row.id] !== false)
+          : this.gridRows
       },
       /**
        * #getter
@@ -446,6 +550,41 @@ export default function stateModelFactory() {
        */
       get visibleSvTypes() {
         return tallySvTypes(this.visibleRows, self.svTypeColumnField)
+      },
+      /**
+       * #getter
+       * the dropdowns above the grid, as data; `key` is what `setGridFacet`
+       * takes and the sheet persists
+       */
+      get gridFacets() {
+        return [
+          ...(self.svTypeColumnField && this.svTypeOptions.length
+            ? [
+                {
+                  id: 'sv-type-filter' as const,
+                  label: 'Filter by SV type',
+                  selected: self.svTypeFilter,
+                  options: this.svTypeOptions.map(o => ({
+                    key: o.type,
+                    label: `${o.label} (${o.count})`,
+                  })),
+                },
+              ]
+            : []),
+          ...(self.svEvents.length
+            ? [
+                {
+                  id: 'sv-event-filter' as const,
+                  label: 'Filter by event',
+                  selected: self.svEventFilter,
+                  options: self.svEvents.map(e => ({
+                    key: e.label,
+                    label: `${e.label} (${e.count} records; ${e.refNames.join(', ')})`,
+                  })),
+                },
+              ]
+            : []),
+        ]
       },
       /**
        * #getter
@@ -499,6 +638,23 @@ export default function stateModelFactory() {
        */
       setSvTypeFilter(arg?: string) {
         self.svTypeFilter = arg
+      },
+      /**
+       * #action
+       */
+      setSvEventFilter(arg?: string) {
+        self.svEventFilter = arg
+      },
+      /**
+       * #action
+       * select an option of one of `gridFacets` by its `key`
+       */
+      setGridFacet(id: 'sv-type-filter' | 'sv-event-filter', key?: string) {
+        if (id === 'sv-type-filter') {
+          self.svTypeFilter = key
+        } else {
+          self.svEventFilter = key
+        }
       },
       /**
        * #action

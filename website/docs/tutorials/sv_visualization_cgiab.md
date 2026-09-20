@@ -678,6 +678,9 @@ describes a translocation. The `EVENT` field groups them: the benchmark files
 both under `cluster_3` alongside two further breakends and tags them
 `EVENTTYPE=CHROMOPLEXY`. A caller can group junctions into an event because it
 sees the whole callset at once. It cannot show which molecule carries them.
+Choose `cluster_3` under **Filter by event** to leave its four records in the
+table and its two chords in the circle, and open any of them in a breakpoint
+split view to get a panel for each of the event's four loci.
 
 **The reads.** In the breakpoint split view above, the black splines join each
 tumor PacBio HiFi read's chr13 piece to its chr3 piece: chr13 forward into the
