@@ -14,6 +14,7 @@ interface FakeView {
   showLoading?: boolean
   initialized?: boolean
   pendingLaunch?: unknown
+  showImportForm?: boolean
   error?: unknown
   assemblyNames?: string[]
   tracks?: { trackId?: string; displays?: { displayPhase?: string }[] }[]
@@ -97,6 +98,28 @@ test('a view whose launch failed is ready, not loading', () => {
   expect(
     phaseOf([{ pendingLaunch: { tracks: [] }, error: 'launch failed' }]),
   ).toBe('ready')
+})
+
+// A comparative view clicked into existence lands on its import form with no
+// rows, and its `initialized` means "every row exists and is ready" — so it is
+// uninitialized for as long as the form is up, which is until a person fills
+// it in. The app read `loading` behind every import-form figure.
+test('a view on its import form is ready, not loading', () => {
+  expect(phaseOf([{ initialized: false, showImportForm: true }])).toBe('ready')
+})
+
+// The form is down again the moment a launch starts, so the window
+// `pendingLaunch` closes stays closed.
+test('a view launching out of its import form is loading', () => {
+  expect(
+    phaseOf([
+      {
+        initialized: false,
+        showImportForm: false,
+        pendingLaunch: { tracks: [] },
+      },
+    ]),
+  ).toBe('loading')
 })
 
 test('a display mid-fetch is loading', () => {

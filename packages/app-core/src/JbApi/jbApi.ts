@@ -119,6 +119,7 @@ interface ViewSelf {
   initialized?: boolean
   // the launch blob the view is still applying, if any — see viewState
   pendingLaunch?: unknown
+  showImportForm?: boolean
   error?: unknown
   visibleRegions?: {
     refName: string
@@ -248,16 +249,20 @@ export function sessionOf(pluginManager: PluginManager | undefined) {
  * The three terms are AppReadyMarker's, and they have to be: the marker decides
  * whether the settle ends, this decides what it says when it doesn't, and a
  * term in one and not the other is a settle that answers `false` with an empty
- * `notReady`. `launching` is the one that was missing — `initialized` goes true
- * the moment a linear view's regions land, while the same apply pass still has
- * the spec's tracks to attach, so a spec load timing out there reported no
- * reason at all.
+ * `notReady`, or one that names a view the marker was content with. `launching`
+ * is the one that was missing — `initialized` goes true the moment a linear
+ * view's regions land, while the same apply pass still has the spec's tracks to
+ * attach, so a spec load timing out there reported no reason at all.
+ *
+ * `showImportForm` excuses `initializing` on the same terms the marker gives
+ * it: a comparative view reads uninitialized for as long as its form is up, and
+ * the form is waiting on a person.
  */
 function viewState(v: ViewSelf) {
   if (v.error !== undefined) {
     return { error: String(v.error) }
   }
-  if (v.initialized === false) {
+  if (v.initialized === false && v.showImportForm !== true) {
     return { phase: 'initializing' }
   }
   return v.pendingLaunch === undefined

@@ -25,6 +25,7 @@ interface ViewFlags {
   initialized?: boolean
   error?: unknown
   pendingLaunch?: unknown
+  showImportForm?: boolean
 }
 interface DisplayLike {
   displayPhase?: string
@@ -51,14 +52,23 @@ function trackLoading(track: AbstractTrackModel) {
  * view, and says why in more detail. Not shared as one predicate: that one
  * requires `initialized`, while absent here means not loading, and an adapter
  * between the two null rules would read as agreement it does not have.
+ *
+ * `showImportForm` excuses the `initialized` term, and only that one. The
+ * comparative views spell `initialized` as "every row exists and is ready" —
+ * LinearSyntenyView's wants `views.length > 0`, dotplot's wants regions on both
+ * axes — so a view clicked into existence through `Add -> Linear synteny view`
+ * reads uninitialized for as long as its form is up, which is until a person
+ * fills it in. The app sat at `loading` behind every import-form figure. The
+ * other two terms keep their meaning: `showLoading` is the spinner the form
+ * yields to, and `showImportForm` is already false while a launch is pending.
  */
 function viewLoading(view: AbstractViewModel) {
   const flags = view as ViewFlags
   return (
     flags.error === undefined &&
     (flags.showLoading === true ||
-      flags.initialized === false ||
-      flags.pendingLaunch !== undefined)
+      flags.pendingLaunch !== undefined ||
+      (flags.initialized === false && flags.showImportForm !== true))
   )
 }
 
