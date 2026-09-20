@@ -457,6 +457,39 @@ describe('an undeclared member of a config node does not compile', () => {
     expect(node.inherited).toBe(0)
   })
 
+  // `type` rides in the same way, off `explicitlyTyped` as a type parameter.
+  // Declared unconditionally it was a small lie — a schema without the option
+  // has no such prop and answered `undefined`.
+  it('gives `type` to an explicitlyTyped schema and to its subclass only', () => {
+    const typed = ConfigurationSchema(
+      'ConfigTypedBase',
+      { own: { type: 'string', defaultValue: 'x' } },
+      { explicitlyTyped: true },
+    )
+    const sub = ConfigurationSchema(
+      'ConfigTypedSub',
+      {},
+      {
+        baseConfiguration: typed,
+      },
+    )
+    const untyped = ConfigurationSchema('ConfigUntyped', {
+      own: { type: 'string', defaultValue: 'x' },
+    })
+
+    const typedNode = typed.create(undefined, { pluginManager })
+    const subNode = sub.create(undefined, { pluginManager })
+    const untypedNode = untyped.create(undefined, { pluginManager })
+
+    assertType<Equal<typeof typedNode.type, string>>()
+    assertType<Equal<typeof subNode.type, string>>()
+    // @ts-expect-error a schema with no `explicitlyTyped` has no `type` prop
+    expect(untypedNode.type).toBeUndefined()
+
+    expect(typedNode.type).toBe('ConfigTypedBase')
+    expect(subNode.type).toBe('ConfigTypedSub')
+  })
+
   // The snapshot going IN is checked by `ConfigurationSnapshot<SCHEMA>`, not by
   // `create`. Typing the model's own `CreationType` off the definition was
   // built and measured: zero build errors, 115 in the test tree, because a

@@ -158,25 +158,10 @@ export type ConfigNodeProps<DEFINITION> = {
 }
 
 /**
- * What a config node carries besides its slots. The identifier prop comes from
- * the definition (`IdentifierSlotDef`) and MST's brand is below; these are the
- * same on every schema, and `makeConfigurationSchemaModel` annotates its
- * `.actions` block with `ConfigNodeActions` so the two cannot drift.
- */
-export type ConfigNodeMembers = ConfigNodeActions & {
-  /**
-   * Present only on an `explicitlyTyped` schema, and declared unconditionally
-   * because the option is not a type parameter. A read of it off a schema
-   * without one is `undefined` at runtime.
-   */
-  type: string
-}
-
-/**
- * A type alias rather than an interface, and separate from the `type` prop
- * above, because it annotates the `.actions` block: MST constrains that to
- * `ModelActions`, an index signature of functions, and only a type alias of an
- * object literal gets the implicit index signature that satisfies it.
+ * The three write actions every config node carries. A type alias rather than
+ * an interface because it annotates the `.actions` block: MST constrains that
+ * to `ModelActions`, an index signature of functions, and only a type alias of
+ * an object literal gets the implicit index signature that satisfies it.
  */
 export type ConfigNodeActions = {
   setSubschema: (slotName: string, data: unknown) => unknown
@@ -214,6 +199,18 @@ export type ConfigNodeBrand<IT extends IAnyType> = {
  * free, since `MergeConfigDef` already folds the base's whole definition in.
  */
 export interface IdentifierSlotDef {
+  type: 'string'
+  defaultValue: ''
+}
+
+/**
+ * The `type` prop an `explicitlyTyped` schema installs, folded into the
+ * definition the same way and for the same reasons. Separate from
+ * `IdentifierSlotDef` despite the identical shape, because the runtime prop is
+ * `types.literal(modelName)` and this is where that would be said if the model
+ * name ever became a type parameter.
+ */
+export interface TypeSlotDef {
   type: 'string'
   defaultValue: ''
 }

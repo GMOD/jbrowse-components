@@ -16,7 +16,6 @@ export type {
   ConfigModelForFields,
   ConfigNodeActions,
   ConfigNodeBrand,
-  ConfigNodeMembers,
   ConfigNodeProps,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
@@ -26,6 +25,7 @@ export type {
   ConfigurationSnapshot,
   HostChecksSlotNames,
   IdentifierSlotDef,
+  TypeSlotDef,
 } from './types.ts'
 
 export {

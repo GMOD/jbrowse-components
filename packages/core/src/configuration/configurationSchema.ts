@@ -28,11 +28,11 @@ import type {
   AnyConfigurationSchemaType,
   ConfigNodeActions,
   ConfigNodeBrand,
-  ConfigNodeMembers,
   ConfigNodeProps,
   GetInheritedIdentifier,
   IdentifierSlotDef,
   MergeConfigDef,
+  TypeSlotDef,
 } from './types.ts'
 import type {
   IAnyType,
@@ -78,8 +78,13 @@ export interface ConfigurationSchemaRequirement {
 export interface ConfigurationSchemaOptions<
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
   EXPLICIT_IDENTIFIER extends string | undefined,
+  // A parameter for the same reason `EXPLICIT_IDENTIFIER` is one: the prop it
+  // installs is real, and a node that does not have it should not read as
+  // though it does. Defaulted so the two-argument spelling still compiles —
+  // most references name the options type rather than infer it.
+  EXPLICITLY_TYPED extends boolean | undefined = boolean | undefined,
 > {
-  explicitlyTyped?: boolean
+  explicitlyTyped?: EXPLICITLY_TYPED
   explicitIdentifier?: EXPLICIT_IDENTIFIER
   implicitIdentifier?: string | boolean
   baseConfiguration?: BASE_SCHEMA
@@ -472,12 +477,13 @@ export interface ConfigurationSchemaType<
   type: string
   /**
    * Overrides the factory's, whose props come off a `Record<string, any>` and
-   * so admit every name. Slots come from the definition, the identifier rides
-   * in as one of them, and the brand names this schema — which is what
-   * `ConfigurationSchemaForModel` infers back out.
+   * so admit every name. Slots come from the definition — the identifier and
+   * an `explicitlyTyped` schema's `type` ride in as two of them — and the brand
+   * names this schema, which is what `ConfigurationSchemaForModel` infers back
+   * out.
    */
   readonly Type: ConfigNodeProps<DEFINITION> &
-    ConfigNodeMembers &
+    ConfigNodeActions &
     ConfigNodeBrand<this>
 }
 
@@ -490,16 +496,23 @@ export function ConfigurationSchema<
   const DEFINITION extends ConfigurationSchemaDefinition,
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined = undefined,
   EXPLICIT_IDENTIFIER extends string | undefined = undefined,
+  EXPLICITLY_TYPED extends boolean | undefined = undefined,
 >(
   modelName: string,
   inputSchemaDefinition: DEFINITION,
-  inputOptions?: ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
+  inputOptions?: ConfigurationSchemaOptions<
+    BASE_SCHEMA,
+    EXPLICIT_IDENTIFIER,
+    EXPLICITLY_TYPED
+  >,
 ): ConfigurationSchemaType<
   MergeConfigDef<
-    DEFINITION & Record<EXPLICIT_IDENTIFIER & string, IdentifierSlotDef>,
+    DEFINITION &
+      Record<EXPLICIT_IDENTIFIER & string, IdentifierSlotDef> &
+      (EXPLICITLY_TYPED extends true ? { type: TypeSlotDef } : unknown),
     BASE_SCHEMA
   >,
-  ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>
+  ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER, EXPLICITLY_TYPED>
 > {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
