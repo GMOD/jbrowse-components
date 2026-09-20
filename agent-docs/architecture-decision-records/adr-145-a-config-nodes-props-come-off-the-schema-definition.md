@@ -174,10 +174,19 @@ adapter checks that the class reads the schema it was registered with.
   definition the way the identifier does, so only a schema that declares the
   option has it. `ConfigNodeMembers` was that lie plus `ConfigNodeActions`, and
   is gone.
-- **`ConfigurationSnapshot` and `ConfigNodeProps` now overlap** — both read the
-  definition, the first for keys going in and the second for values coming out.
-  Worth a pass to see whether the first can be expressed over the second, now
-  that the identifier and the base merge are already in the definition.
+- **Nothing at the type level walks the base chain.** The base's slots, the
+  identifier and `type` are all in the definition, so `ConfigurationSlotName`,
+  the path types, `ConfigurationSlotValue`, `ConfigurationSnapshot` and a
+  reference's instance each read `keyof DEFINITION`, and the four helpers that
+  reached the base through the options are gone. The second walk was unsound as
+  well as redundant: it admitted a path into a sub-schema the subclass had
+  replaced, which compiled and read `undefined`. `ConfigurationSnapshot` and
+  `ConfigNodeProps` stay two mapped types over the one definition — keys going
+  in, values coming out.
+- **`ConfigurationSchemaType` declared a `type: string` no MST type has.**
+  Nothing read it, and it made every sub-schema match `MergeSlotDef`'s
+  `{ type: string }` slot test, so a redeclared sub-schema merged as
+  `Omit<Base, …> & Child` where the runtime replaces it. It is gone.
 - `AbstractTrackModel.configuration` is optimistic for `ReferenceSequenceTrack`,
   whose schema is deliberately a subset of `createBaseTrackConfig`: a read of
   `assemblyNames` off a sequence track is typed and answers `undefined`.
