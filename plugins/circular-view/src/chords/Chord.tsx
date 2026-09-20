@@ -1,14 +1,11 @@
 import { useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
+import { getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { bpToRadians } from '../CircularView/slices.ts'
-import { chordControlRadius, getEndpoint } from './chordGeometry.ts'
 import { chordLabel } from './chordLabel.ts'
 
-import type { ChordDisplayModel } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -16,46 +13,20 @@ const DIMMED_OPACITY = 0.15
 
 const Chord = observer(function Chord({
   feature,
-  sliceFor,
-  radius,
+  d,
   config,
-  bezierRadius,
   selected,
   dimmed,
   onClick,
 }: {
   feature: Feature
-  sliceFor: ChordDisplayModel['sliceFor']
-  radius: number
+  d: string
   config: AnyConfigurationModel
-  bezierRadius: number
   selected: boolean
   dimmed: boolean
   onClick: (feat: Feature) => void
 }) {
   const [hovered, setHovered] = useState(false)
-  const sliceForRef = (refName: string) => sliceFor(undefined, refName)
-  const startBlock = sliceForRef(feature.get('refName'))
-  if (!startBlock) {
-    return null
-  }
-  const startPos = feature.get('start')
-  const { endBlock, endPosition } = getEndpoint(
-    feature,
-    sliceForRef,
-    startBlock,
-  )
-  if (!endBlock) {
-    return null
-  }
-  const startRadians = bpToRadians(startBlock, startPos)
-  const endRadians = bpToRadians(endBlock, endPosition)
-  const [x1, y1] = polarToCartesian(radius, startRadians)
-  const [x2, y2] = polarToCartesian(radius, endRadians)
-  const [cx, cy] = polarToCartesian(
-    chordControlRadius({ startRadians, endRadians, radius, bezierRadius }),
-    (endRadians + startRadians) / 2,
-  )
   const stroke = readConfObject(
     config,
     hovered
@@ -69,7 +40,7 @@ const Chord = observer(function Chord({
     <path
       data-testid={`chord-${feature.id()}`}
       fill="none"
-      d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
+      d={d}
       {...getStrokeProps(stroke)}
       strokeWidth={hovered ? 3 : 1}
       opacity={dimmed && !hovered ? DIMMED_OPACITY : undefined}

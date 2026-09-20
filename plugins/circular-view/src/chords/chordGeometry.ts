@@ -1,4 +1,7 @@
+import { polarToCartesian } from '@jbrowse/core/util'
 import { svMateLocus } from '@jbrowse/sv-core'
+
+import { bpToRadians } from '../CircularView/slices.ts'
 
 import type { Slice } from '../CircularView/slices.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -51,4 +54,44 @@ export function getEndpoint(
   return mate
     ? { endBlock: sliceForRef(mate.refName), endPosition: mate.pos }
     : { endBlock: startBlock, endPosition: feature.get('end') }
+}
+
+/**
+ * A chord's SVG path, or undefined when there is nothing to draw: an end on a
+ * region the circle is not showing, or two ends under a pixel apart. The second
+ * is every deletion and insertion of a whole-genome callset. Such a stroke is
+ * an antialiased speck on the rim, under the ideogram, and a path per record is
+ * a DOM node each, which the browser lays out and paints one by one.
+ */
+export function chordPath({
+  feature,
+  sliceFor,
+  radius,
+  bezierRadius,
+}: {
+  feature: Feature
+  sliceFor: (refName: string) => Slice | undefined
+  radius: number
+  bezierRadius: number
+}) {
+  const startBlock = sliceFor(feature.get('refName'))
+  if (!startBlock) {
+    return undefined
+  }
+  const { endBlock, endPosition } = getEndpoint(feature, sliceFor, startBlock)
+  if (!endBlock) {
+    return undefined
+  }
+  const startRadians = bpToRadians(startBlock, feature.get('start'))
+  const endRadians = bpToRadians(endBlock, endPosition)
+  if (Math.abs(endRadians - startRadians) * radius < 1) {
+    return undefined
+  }
+  const [x1, y1] = polarToCartesian(radius, startRadians)
+  const [x2, y2] = polarToCartesian(radius, endRadians)
+  const [cx, cy] = polarToCartesian(
+    chordControlRadius({ startRadians, endRadians, radius, bezierRadius }),
+    (endRadians + startRadians) / 2,
+  )
+  return `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`
 }
