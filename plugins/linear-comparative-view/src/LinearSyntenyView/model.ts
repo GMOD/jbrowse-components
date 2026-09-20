@@ -1151,15 +1151,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Set every synteny band to one height in px.
-       */
-      setAllLevelHeights(height: number) {
-        for (const level of self.levels) {
-          level.setHeight(height)
-        }
-      },
-      /**
-       * #action
        */
       autoScaleLevelHeights() {
         const numLevels = self.levels.length
