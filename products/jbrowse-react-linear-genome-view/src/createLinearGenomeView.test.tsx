@@ -153,7 +153,7 @@ test('a field an update omits is untouched', async () => {
 // The engine being built is not the assembly being loaded, and a host sets a
 // location as soon as it has a widget. A bare navToLocString there resolves
 // refNames against an assembly that has none yet and throws into an unhandled
-// rejection; stating it through the view's `init` field waits instead.
+// rejection; stating it through the view's `launch` waits instead.
 test('update({ location }) before the assembly loads navigates once it has', async () => {
   const el = document.createElement('div')
   // its own longer contig: at 800px a 5bp request on the 10bp ctgA above clamps

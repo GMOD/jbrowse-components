@@ -131,7 +131,7 @@ export interface LinearGenomeViewController {
    * whose own state covers part of the view hands over that part.
    *
    * Resolves once the state has reached the view, not once the view has
-   * finished drawing it: a `location` is handed to the same init machinery a
+   * finished drawing it: a `location` is handed to the same launch machinery a
    * URL launch goes through, which waits for the assembly and then navigates.
    * Watch `onLocationChange` (or the model) to see it land. Safe to call before
    * the build settles — the state is recorded immediately and applied when the
@@ -242,7 +242,7 @@ export function createLinearGenomeView(
       configuration: opts.configuration,
       session: opts.session,
       // a session already positions the view; only route location
-      // through createViewState's init flow (spinner while loading) otherwise
+      // through createViewState's launch flow (spinner while loading) otherwise
       location: hasSession ? undefined : location,
       // a host with its own tracks opens them below, so a gene-name location
       // must not add the track its name was found in beside them
@@ -310,12 +310,12 @@ export function createLinearGenomeView(
       )
     }
     if (state.location !== undefined && location && assemblyName) {
-      // Stated through the view's own `init` field rather than called as
+      // Stated through the view's own `launch` rather than called as
       // navToLocString: the engine being built is not the assembly being
       // loaded, and a host that sets a location as soon as it has a widget —
       // which is when a notebook cell or a Shiny observer fires — hits a bare
       // navToLocString before there are refNames to resolve against, as an
-      // unhandled rejection. The init autorun waits for `initialized` and runs
+      // unhandled rejection. The launch autorun waits for `initialized` and runs
       // the same navToLocString, gene-name search included, then reports a
       // locstring that matched nothing as a snackbar rather than a throw.
       current.session.view.setLaunch({

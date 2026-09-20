@@ -6,7 +6,7 @@ tutorial_category: Configuration & embedding
 ---
 
 Embedding a genome browser in a web page takes one `<script>` tag and no build
-step. Drop `assembly`, `tracks`, and `init` into `<LinearGenomeView>` and the
+step. Drop `assembly`, `tracks`, and `view` into `<LinearGenomeView>` and the
 component runs the view engine, with nothing else to wire up.
 
 ## Prerequisites
@@ -63,7 +63,7 @@ Save as `index.html`:
         },
       ]
 
-      const init = {
+      const view = {
         loc: '10:29,838,565..29,838,850',
         tracks: ['ncbi_genes'],
       }
@@ -72,7 +72,7 @@ Save as `index.html`:
         document.getElementById('jbrowse_linear_genome_view'),
       )
       root.render(
-        React.createElement(LinearGenomeView, { assembly, tracks, init }),
+        React.createElement(LinearGenomeView, { assembly, tracks, view }),
       )
     </script>
   </body>
@@ -98,13 +98,13 @@ more track types, or name search, see the
 
 ## Using the component in a React app
 
-Pass the same `assembly`, `tracks`, and `init` as props:
+Pass the same `assembly`, `tracks`, and `view` as props:
 
 ```jsx
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 function GenomeBrowser() {
-  return <LinearGenomeView assembly={assembly} tracks={tracks} init={init} />
+  return <LinearGenomeView assembly={assembly} tracks={tracks} view={view} />
 }
 ```
 
@@ -182,14 +182,14 @@ const tracks = [
   },
 ]
 
-const init = {
+const view = {
   loc: '10:29,838,565..29,838,850',
   tracks: ['ncbi_genes', 'NA12878_exome', 'phyloP100way', '1000g_vcf'],
 }
 ```
 
 Drop these into the `index.html` from [Quick start](#quick-start) in place of
-the smaller `assembly`/`tracks`/`init`.
+the smaller `assembly`/`tracks`/`view`.
 
 - CRAM needs the assembly's sequence to decode reads, supplied automatically
   from the enclosing assembly. See the

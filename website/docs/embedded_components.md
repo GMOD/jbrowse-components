@@ -68,25 +68,31 @@ implementation of each.
 
 ## Driving it from your code
 
-`createViewState` takes the same view fields a config or a link does
-([](/docs/automating#what-a-view-takes)), and routes `location` and `highlight`
-through the same launch path, so an embedded view shows the loading spinner
-while the assembly loads:
+`createViewState` takes the view to open as `view`, written with the same fields
+a config or a link uses ([](/docs/automating#what-a-view-takes)): where it opens
+and which tracks it shows, with any of the view's own settings beside them. An
+embedded view shows the loading spinner while the assembly loads:
 
 ```js
 const state = createViewState({
   assembly,
   tracks,
-  location: 'chr1:1,000-2,000',
-  highlight: ['chr1:1,500-1,600'],
+  view: {
+    loc: 'chr1:1,000-2,000',
+    tracks: ['genes'],
+    highlight: ['chr1:1,500-1,600'],
+    hideHeader: true,
+  },
 })
 ```
 
-- **Full track control at launch** is a `defaultSession` whose view names its
-  tracks ([](/docs/tutorials/embed_linear_genome_view)).
+- **`location` and `highlight`** are shorthands for `view.loc` and
+  `view.highlight`, and the only two that also apply over a `defaultSession` or
+  a restored `session`. `view` is the default session's view, so it excludes
+  `defaultSession` ([](/docs/tutorials/embed_linear_genome_view)).
 - **`jbrowseHub: 'hg38'`** in place of `assembly` fetches that genome from
   [genomes.jbrowse.org](https://genomes.jbrowse.org): its sequence, refName
-  aliases, track catalog and gene-name search, so `init: { loc: 'BRCA1' }` works
+  aliases, track catalog and gene-name search, so `view: { loc: 'BRCA1' }` works
   and `tracks` adds your own files beside the hosted ones. Any UCSC database
   name or GenArk accession resolves. It is fetched, so it goes to
   `useCreateViewState` or `createViewStateAsync`; the imperative

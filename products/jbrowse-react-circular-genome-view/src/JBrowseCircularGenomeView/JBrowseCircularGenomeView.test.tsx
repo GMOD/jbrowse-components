@@ -89,7 +89,7 @@ test('createViewState with no defaultSession auto-displays the assembly', async 
   )
   await findAllByText('ctgA', {}, { timeout: 10000 })
 
-  // init drove the displayed regions, then cleared itself
+  // the launch drove the displayed regions, then cleared itself
   jest.runAllTimers()
   expect(state.session.view.pendingLaunch).toBeUndefined()
   expect(state.session.view.displayedRegions.length).toBe(2)

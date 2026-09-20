@@ -118,8 +118,8 @@ export interface CreateViewStateBaseOptions {
   view?: Omit<InitState, 'assembly'> & LinearGenomeViewLaunchProps
 }
 
-// the imperative call adds the two session slots, plus two shorthands for init
-// fields; the managed component expresses the same through `init` alone
+// the imperative call adds the two session slots, plus two shorthands for view
+// fields; the managed component expresses the same through `view` alone
 export interface ViewStateOptions extends CreateViewStateBaseOptions {
   /** sugar for `view.loc`, and it also accepts a parsed locstring. Wins over `view.loc` */
   location?: string | ParsedLocString

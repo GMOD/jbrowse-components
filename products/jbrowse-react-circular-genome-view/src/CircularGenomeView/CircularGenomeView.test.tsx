@@ -35,9 +35,9 @@ const assembly = {
 
 beforeEach(() => jest.useFakeTimers())
 
-test('<CircularGenomeView /> builds its own engine and shows regions via init', async () => {
+test('<CircularGenomeView /> builds its own engine and shows regions via view', async () => {
   const ref = createRef<ViewModel>()
-  // init omits the assembly name on purpose: it is filled in from the
+  // view omits the assembly name on purpose: it is filled in from the
   // `assembly` prop (volvox) by the component. `{}` just opens that assembly
   const { findAllByText } = render(
     <Suspense fallback={<div>Loading...</div>}>
@@ -50,7 +50,7 @@ test('<CircularGenomeView /> builds its own engine and shows regions via init', 
   ref.current!.session.view.setWidth(800)
   await findAllByText('ctgA', {}, { timeout: 10000 })
 
-  // init drove the displayed regions, then cleared itself
+  // the launch drove the displayed regions, then cleared itself
   jest.runAllTimers()
   expect(ref.current!.session.view.pendingLaunch).toBeUndefined()
 }, 10000)

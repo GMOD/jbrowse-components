@@ -694,7 +694,7 @@ holds:
 | Launch key | What it does |
 | --- | --- |
 | `autoDiagonalize` | After tracks load, automatically run the chromosome diagonalization pass so the bottom/vertical axis follows the top/horizontal axis. The canvas is hidden behind a "Reordering chromosomes…" spinner during the wait, so the user doesn't see an undiagonalized flash. |
-| `highlight` | loc-strings ("chr1:100-200") or JSON objects matching HighlightType, mirroring LinearGenomeView's init.highlight |
+| `highlight` | loc-strings ("chr1:100-200") or JSON objects matching HighlightType, mirroring the linear genome view's `highlight` |
 
 **Properties**, which are whatever the state model declares and the view
 restores natively:

@@ -15,7 +15,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'one-linear-genome-view',
         title: 'The simplest example',
-        description: 'One component, three props: assembly, tracks, init.',
+        description: 'One component, three props: assembly, tracks, view.',
       },
       {
         slug: 'with-track-shorthand',
@@ -24,7 +24,7 @@ export const pages: ExamplePage[] = [
       },
       {
         slug: 'with-init',
-        title: 'Declarative init',
+        title: 'The view to open',
         description: 'The same call against a real assembly (hg38).',
       },
       {
@@ -57,7 +57,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'default-session',
         title: 'Open on a default session',
-        description: 'The full snapshot form, for when init is not enough.',
+        description: 'The full snapshot form, for when view is not enough.',
       },
       {
         slug: 'disable-add-track',
@@ -176,7 +176,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-init-alignments-display',
         title: 'Initialize an alignments display',
-        description: 'A displaySnapshot on an init.tracks entry.',
+        description: 'A displaySnapshot on a view.tracks entry.',
       },
       {
         slug: 'with-group-by-tag',
@@ -244,13 +244,13 @@ export const pages: ExamplePage[] = [
 
   {
     slug: 'session-setup',
-    title: 'Init & persistence',
+    title: 'Opening state & persistence',
     description: 'A richer initial view, then saving or sharing the session.',
     group: 'Sessions & integration',
     sections: [
       {
         slug: 'with-init-advanced',
-        title: 'Advanced init',
+        title: 'A view spelled out',
         description:
           'displaySnapshot, trackSnapshot, tracklist, nav and highlight.',
       },

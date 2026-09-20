@@ -31,12 +31,12 @@ const tracks = [
   },
 ]
 
-// The three inputs all land on the same `init` blob, which is what lets a host
-// that holds its own engine say what `<LinearGenomeView init>` says. These read
+// The three inputs all land on the same `launch`, which is what lets a host
+// that holds its own engine say what `<LinearGenomeView view>` says. These read
 // the blob rather than the applied result: applying it is the view's own
 // afterAttach autorun, which waits on a real assembly load and is covered in
 // plugin-linear-genome-view's own tests.
-test('init reaches the view, with the assembly name filled in', () => {
+test("the view option reaches the engine's view, with the assembly name filled in", () => {
   const state = createViewState({
     assembly,
     tracks,
@@ -66,10 +66,10 @@ test('location and highlight are shorthands on the same blob', () => {
   })
 })
 
-// A host migrating from `location` to `init` may end up passing both — from a
+// A host migrating from `location` to `view` may end up passing both — from a
 // wrapper that always forwards its own `location` prop, say. The shorthand is
 // the more specific statement, so it wins rather than being silently dropped.
-test('location wins over init.loc, and does not disturb the rest of init', () => {
+test('location wins over view.loc, and does not disturb the rest of view', () => {
   const state = createViewState({
     assembly,
     tracks,
@@ -83,14 +83,14 @@ test('location wins over init.loc, and does not disturb the rest of init', () =>
   })
 })
 
-// Without an init of any kind the view has none, which is what shows the import
+// Without a view, location or highlight the view has no launch, which is what shows the import
 // form — the state a bare `createViewState({ assembly })` is supposed to land in
-// Withholding `init` is a supported way to build an engine — a host whose own
+// Withholding `view` is a supported way to build an engine — a host whose own
 // picker has not chosen anything yet — so what the view reports in that state
 // is part of the contract rather than an accident. `ready` says yes with
 // nothing on screen, which is why a host that gates on it alone draws an empty
 // box; `status` is where the state has a name.
-test('no init input leaves the view with none, in a state that says so', () => {
+test('no view input leaves the view with no launch, in a state that says so', () => {
   const state = createViewState({ assembly, tracks })
 
   expect(state.session.view.pendingLaunch).toBeUndefined()

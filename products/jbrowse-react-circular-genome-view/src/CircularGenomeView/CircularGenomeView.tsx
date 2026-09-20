@@ -25,7 +25,7 @@ export interface CircularGenomeViewProps extends CreateViewStateBaseOptions {
  * `defaultValue`): the engine is constructed once and later prop changes are
  * ignored. To swap assembly/plugins, remount via React `key`.
  *
- * `init` is the declarative input; for imperative control after launch take a
+ * `view` is the declarative input; for imperative control after launch take a
  * `ref` to the live engine. The `ref` arrives a render after mount, so a host
  * that needs the engine *during* render should call {@link useCreateViewState}
  * with the same options and render `<JBrowseCircularGenomeView>` itself — that
@@ -43,11 +43,11 @@ const CircularGenomeView = observer(function CircularGenomeView({
   ref,
   ...rest
 }: CircularGenomeViewProps) {
-  // `init` is passed straight through: createViewState takes the same blob and
+  // `view` is passed straight through: createViewState takes the same blob and
   // fills in the assembly name, so this component is the prop-shaped face of
-  // that call and nothing about launching a view lives only here. With no init
+  // that call and nothing about launching a view lives only here. With no view
   // the configured assembly is drawn anyway — a circular view's default is the
-  // whole genome, unlike the linear product, where no init means the import
+  // whole genome, unlike the linear product, where no view means the import
   // form.
   //
   // `useCreateOnce`, not `useState(() => …)`: StrictMode double-invokes a state

@@ -30,9 +30,9 @@ const assembly = {
   },
 }
 
-test('<LinearGenomeView /> builds its own engine and navigates via init', async () => {
+test('<LinearGenomeView /> builds its own engine and navigates via view', async () => {
   const ref = createRef<ViewModel>()
-  // init omits the assembly name on purpose: it is filled in from the
+  // view omits the assembly name on purpose: it is filled in from the
   // `assembly` prop (volvox) by the component
   const { getByPlaceholderText } = render(
     <LinearGenomeView
@@ -51,7 +51,7 @@ test('<LinearGenomeView /> builds its own engine and navigates via init', async 
     { timeout },
   )
 
-  // the ref exposed the live engine, and init cleared itself once applied
+  // the ref exposed the live engine, and the launch cleared itself once applied
   expect(ref.current).toBeDefined()
   await waitFor(
     () => {

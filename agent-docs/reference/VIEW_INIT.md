@@ -233,8 +233,10 @@ URL ?loc=&assembly=&tracks=&tracklist=&nav=&highlight=&regions=
 the same params over a config's defaultSession (&extendSession=true)
   → applyDefaultSessionViewInit: view.setLaunch({ …base, …init, assembly })
 
-createViewState({ location, highlight, init })  (react-linear-genome-view)
-  → view.setLaunch(...)   (loc-less input skips re-nav if regions exist)
+createViewState({ view, location, highlight })  (react-linear-genome-view)
+  → `view` spread into the default session's view snapshot, below
+  → location/highlight over a caller's own session: view.setLaunch(...)
+    (loc-less input skips re-nav if regions exist)
 
 session/config JSON, an addView literal, a session spec's view
   → the view object → withLaunchInput's preProcessSnapshot → `launch`

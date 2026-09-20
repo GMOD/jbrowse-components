@@ -25,7 +25,7 @@ export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
  * `defaultValue`): the engine is constructed once and later prop changes are
  * ignored. To swap assembly/plugins, remount via React `key`.
  *
- * `init` is the declarative input; for imperative control after launch take a
+ * `view` is the declarative input; for imperative control after launch take a
  * `ref` to the live engine. The `ref` arrives a render after mount, so a host
  * that needs the engine *during* render should call {@link useCreateViewState}
  * with the same options and render `<JBrowseLinearGenomeView>` itself — that is
@@ -43,9 +43,9 @@ const LinearGenomeView = observer(function LinearGenomeView({
   ref,
   ...rest
 }: LinearGenomeViewProps) {
-  // `init` is passed straight through: createViewState takes the same blob and
+  // `view` is passed straight through: createViewState takes the same blob and
   // fills in the assembly name, so this component is the prop-shaped face of
-  // that call and nothing about launching a view lives only here. With no init
+  // that call and nothing about launching a view lives only here. With no view
   // it shows the import form, same as a bare createViewState.
   //
   // `useCreateOnce`, not `useState(() => …)`: StrictMode double-invokes a state

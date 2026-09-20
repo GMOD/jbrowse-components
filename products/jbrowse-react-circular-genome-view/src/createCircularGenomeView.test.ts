@@ -46,7 +46,7 @@ const regionNames = (view: { displayedRegions: { refName: string }[] }) =>
   view.displayedRegions.map(r => r.refName)
 
 // The circular view draws its whole figure from displayedRegions, and only the
-// view's `init` blob can build them — an empty displayedRegions is the import
+// view's `launch` can build them — an empty displayedRegions is the import
 // form. So a controller that seeded nothing would mount to an empty ring.
 suppressTeardownNoise()
 
@@ -55,7 +55,7 @@ test('the whole assembly is on the ring when no regions are named', async () => 
   const controller = createCircularGenomeView(el, { assembly })
   const state = await controller.whenReady()
   const { view } = state.session
-  // the init autorun waits on a measured width, which jsdom never supplies
+  // the launch autorun waits on a measured width, which jsdom never supplies
   view.setWidth(800)
 
   await waitFor(() => {
@@ -81,7 +81,7 @@ test('displayedRegionNames restricts the ring at build time', async () => {
 })
 
 // Re-stating the region names redraws the ring. It goes through the view's own
-// `init` field rather than a setDisplayedRegions written here, so the alias and
+// `view` field rather than a setDisplayedRegions written here, so the alias and
 // glob resolution is the one the URL and session-spec launches use.
 test('update({ displayedRegionNames }) redraws the ring', async () => {
   const el = document.createElement('div')

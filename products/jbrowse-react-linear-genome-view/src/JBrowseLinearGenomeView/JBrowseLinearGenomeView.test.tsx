@@ -85,7 +85,7 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
   )
 }, 40000)
 
-test('top-level location + highlight navigate via init', async () => {
+test('top-level location + highlight navigate via view', async () => {
   const state = await createViewStateAsync({
     assembly,
     tracks: [],
@@ -103,7 +103,7 @@ test('top-level location + highlight navigate via init', async () => {
     },
     { timeout },
   )
-  // init consumes highlight and backfills assemblyName, then clears itself
+  // the launch consumes highlight and backfills assemblyName, then clears itself
   await waitFor(
     () => {
       expect(state.session.view.pendingLaunch).toBeUndefined()

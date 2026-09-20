@@ -851,7 +851,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
   out.push(...(await checkTextContrast(page)))
 
   // half two: view.status noRegions, the state `view.ready` answers "ready" to.
-  // The radio builds an engine with no `init`, so nothing has told the view
+  // The radio builds an engine with no `view`, so nothing has told the view
   // where to look, and the panel's button hands it one through `setLaunch`.
   //
   // **Both ends are asserted, and the second is the one that keeps the page
@@ -861,7 +861,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
   //
   // This scenario is also the only input on the site that reaches the branch at
   // all. Every `ViewStatus` here renders a `noRegions` arm and every
-  // `createViewState` call used to pass `init`, so the state the page argues
+  // `createViewState` call used to pass one, so the state the page argues
   // `view.ready` gets wrong was drawn by nothing, anywhere.
   if (!(await clickByText('no location yet'))) {
     return [...out, 'no unnavigated scenario radio on the page']
@@ -876,7 +876,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
     )
   } catch {
     out.push(
-      'an engine built with no `init` drew no noRegions state — the fourth ' +
+      'an engine built with no `view` drew no noRegions state — the fourth ' +
         'value of view.status is back to rendering nothing, which is the state ' +
         `view.ready reports as ready. Demo read:\n${await demoText()}`,
     )

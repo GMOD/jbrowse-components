@@ -15,7 +15,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'volvox',
         title: 'Volvox structural variants',
-        description: 'assembly, tracks and init as props.',
+        description: 'assembly, tracks and view as props.',
       },
       {
         slug: 'with-track-shorthand',
@@ -27,7 +27,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'show-track',
     title: 'Show a track programmatically',
-    description: 'Open a track from code rather than the init prop.',
+    description: 'Open a track from code rather than the view prop.',
     group: 'Getting started',
     sections: [{ slug: 'show-track', title: 'Show a track programmatically' }],
   },

@@ -44,7 +44,7 @@ type SessionSnapshot = ViewStateOptions['session']
  * holds the wanted state and hands it over whole, rather than diffing it into a
  * sequence of calls itself.
  *
- * The same two fields the view's own `init` blob carries, which is what a URL
+ * The same two fields the view's own `launch` carries, which is what a URL
  * spec and a saved session carry too — so this is the vocabulary throughout,
  * not a controller-only one.
  */
@@ -183,7 +183,7 @@ export function createCircularGenomeView(
   let tracks: TrackInput[] = opts.tracks ?? []
   let displayedRegionNames = opts.displayedRegionNames
   // the resolved assembly name, stamped onto tracks guessed from a bare URL and
-  // named by every init blob this controller writes
+  // named by every launch this controller writes
   let assemblyName: string | undefined
   // each registration pushes a File into core's process-global blobMap, so this
   // only ever grows, by names it has not seen
@@ -246,7 +246,7 @@ export function createCircularGenomeView(
       configuration: opts.configuration,
       session: opts.session,
       // a session already positions the ring; only route the region names
-      // through createViewState's init flow otherwise
+      // through createViewState's launch flow otherwise
       displayedRegionNames: hasSession ? undefined : displayedRegionNames,
     })
     // Nothing will ever reach this engine, so it dies here rather than leaking
@@ -292,8 +292,8 @@ export function createCircularGenomeView(
       )
     }
     if (state.displayedRegionNames && assemblyName) {
-      // Re-driven through the view's own `init` field rather than by resolving
-      // the names here and calling setDisplayedRegions: the init autorun
+      // Re-driven through the view's own `launch` rather than by resolving
+      // the names here and calling setDisplayedRegions: the launch autorun
       // re-fires on every setLaunch and owns the resolution — aliases, globs, and
       // the warning when a name matches nothing. A second implementation here
       // would be the one that drops the ring to its import form on a typo.

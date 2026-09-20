@@ -46,7 +46,7 @@ failure naming only the "ever" number is the interesting one.
 places outside its track, on the two pages that place one.
 
 **`viewStatusStatesAreDrawn`** drives the loading-and-errors page through the
-snackbar, `noRegions` (an engine built with no `init`) and a 404 assembly. When
+snackbar, `noRegions` (an engine built with no `view`) and a 404 assembly. When
 a demo names a state, check that some input on the site actually reaches it.
 
 **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
