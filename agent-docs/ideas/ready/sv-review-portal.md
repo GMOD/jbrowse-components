@@ -177,14 +177,28 @@ COLO829 callset is its first portal, tumor over normal.
 
 ## What a whole callset costs
 
-COLO829's 135 records, one process per sample, both at once on a 16-core laptop
-over the ONT open-data bucket:
+COLO829's 135 records on a 16-core laptop over the ONT open-data bucket, in one
+process and in the four `--jobs` defaults to:
 
-| sample | file | time | per record | failed |
+| sample | file | one process | four | failed |
 | --- | --- | --- | --- | --- |
-| tumor | CRAM | 5 min 45 s | 2.6 s | 0 |
-| matched normal | whole-genome BAM | 14 min 53 s | 6.6 s | 3 |
+| tumor | CRAM | 5 min 45 s | 1 min 48 s | 0 |
+| matched normal | whole-genome BAM | 14 min 53 s | 7 min 55 s | 3, then 0 |
 
+- **Four processes are four times one on the CRAM, and the curve is flat past
+  them.** In one sitting: 345 s, then 86 s at four, 78 s at eight and 73 s at
+  sixteen. The table's four-process run is a later one at 108 s, the link
+  being a home one. The BAM gains less than two, because its index hands back
+  far more bytes per window and the link is already full. The manifests match
+  the single process's row for row.
+- **Where one process's time goes**, from a CPU profile of 20 records: 29%
+  waiting on the network, 15% in `spawnSync` running `rsvg-convert` on each SVG,
+  10% in the CRAM codec's WebAssembly, 6% in `@gmod/cram`, 5% in
+  `Canvas.toDataURL` encoding layers the converter then decodes again, 4% in
+  garbage collection, and 6% in MST, mobx, React and jsdom building a fresh
+  model for every record. The decode is already compiled code, so a native
+  renderer would win the converter and the double encode, a fifth between
+  them, and the bytes would cost it the same.
 - **Two processes do not slow each other.** The tumor ran at 2.6 s a record
   alone and beside the normal, so a render is bound by one core and its own
   fetches.
@@ -197,23 +211,33 @@ over the ONT open-data bucket:
 - **The page holds up.** 135 cards with two images each is a 600 KB
   `index.html` beside 20 MB of PNG, lazily loaded.
 
+**A process used to take 3.2 s to print `--help`**, because the entry point
+imported some four thousand modules before reading its arguments. What draws is
+now imported where it is first needed: `--help`, `--version` and
+`batch --dryRun` take 0.05 s, and V8's on-disk compile cache takes a fifth off
+every later start. A single image is still about 3 s of loading before its
+first fetch, which bundling the CLI into one file is the way at.
+
 A somatic callset is therefore minutes. A long-read germline callset of 25,000
-records is 18 hours on one process, and nobody reviews that many cards: at that
+records is five to six hours at four processes, and nobody reviews that many
+cards: at that
 size the manifest is the product, a table of split-read support per call, and
 the page is for the subset a filter leaves.
 
 ## Pieces still unbuilt
 
-1. **`--jobs N`.** One process per core over the planned rows, one manifest at
-   the end. The measurement above says it scales until the network does, and
-   the 16-core laptop ran one core of it.
-2. **The cohort card**, for a multi-sample callset.
-3. **Read vs ref as a launch input**, above. `jb2export synteny` renders it, and
+1. **The PNG without the second process.** `rsvg-convert` is 15% of a render
+   and a prerequisite a reader installs by hand. An in-process rasteriser takes
+   both away, and moves every figure's antialiasing, so it is a decision about
+   the figure corpus before it is one about speed.
+2. **One bundled CLI file**, for the 3 s a process spends loading.
+3. **The cohort card**, for a multi-sample callset.
+4. **Read vs ref as a launch input**, above. `jb2export synteny` renders it, and
    the page gains the allele row.
-4. **Tutorial**: a "review queue" section on `sv_callset_review`, the shortest
+5. **Tutorial**: a "review queue" section on `sv_callset_review`, the shortest
    on the page, and the HG008 portal deployed with `scripts/deploy-demo.sh`.
 
-3 is the one with a design in it.
+4 is the one with a design in it.
 
 ## Risks
 
