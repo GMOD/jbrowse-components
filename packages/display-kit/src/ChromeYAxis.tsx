@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 
 import {
+  AxisCaptionOverlay,
   CrossHatches,
   SCORE_CAPTION_HEIGHT,
   ScoreDomainCaption,
@@ -10,7 +11,7 @@ import {
 } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
-import { captionedAxes } from './axisHost.ts'
+import { bandsOnScreen, captionedAxes } from './axisHost.ts'
 
 import type { AxisHost } from './axisHost.ts'
 
@@ -18,8 +19,9 @@ import type { AxisHost } from './axisHost.ts'
  * The on-screen y axes of a display declaring value scales, drawn by the
  * chrome off the ticks the mixin derived so no display places its own. For
  * each scale, once per band it rules that is on screen: the guide lines
- * across the band when the display shows them, the rules the reader placed
- * over those, and the labelled axis in its gutter over both. A scale whose bands are too short
+ * across the band when the display shows them, the scale's reference lines
+ * over those, and the labelled axis in its gutter over both. Once per scale:
+ * its caption, beside the bands on screen. A scale whose bands are too short
  * for an axis is captioned `[min, max]` once at the top-right instead, and
  * the legend starts below the captions. Its own observer, so a domain that
  * moves on every fetch re-renders the axes and not the chrome around it.
@@ -29,13 +31,7 @@ const ChromeYAxis = observer(function ChromeYAxis({
 }: {
   model: AxisHost
 }) {
-  const {
-    axes,
-    height,
-    canvasWidthPx: width,
-    showCrossHatches,
-    scoreRuleMarks = [],
-  } = model
+  const { axes, height, canvasWidthPx: width, showCrossHatches } = model
   if (axes.length === 0) {
     return null
   }
@@ -43,10 +39,9 @@ const ChromeYAxis = observer(function ChromeYAxis({
   return (
     <>
       {axes.map((axis, i) => {
-        const bandTops = (axis.bandTops ?? [0]).filter(
-          top => top + axis.height >= 0 && top <= height,
-        )
+        const bandTops = bandsOnScreen(axis, height)
         const fits = axisDrawn(axis)
+        const { ruleMarks = [] } = axis
         return (
           // eslint-disable-next-line @eslint-react/no-array-index-key -- the scales are declared in a fixed order
           <Fragment key={i}>
@@ -58,9 +53,9 @@ const ChromeYAxis = observer(function ChromeYAxis({
                 bandTops={bandTops}
               />
             ) : null}
-            {scoreRuleMarks.length > 0 ? (
+            {ruleMarks.length > 0 ? (
               <ScoreRules
-                marks={scoreRuleMarks}
+                marks={ruleMarks}
                 width={width}
                 height={height}
                 bandTops={bandTops}
@@ -76,6 +71,14 @@ const ChromeYAxis = observer(function ChromeYAxis({
                   />
                 ))
               : null}
+            {fits && axis.caption && bandTops.length > 0 ? (
+              <AxisCaptionOverlay
+                axis={axis}
+                bandTops={bandTops}
+                width={width}
+                height={height}
+              />
+            ) : null}
           </Fragment>
         )
       })}
@@ -100,6 +103,7 @@ const ChromeYAxis = observer(function ChromeYAxis({
                 domain={axis.domain}
                 scaleType={axis.scaleType}
                 canvasWidth={width}
+                caption={axis.caption}
               />
             </g>
           ))}

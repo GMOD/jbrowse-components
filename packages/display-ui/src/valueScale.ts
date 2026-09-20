@@ -1,6 +1,20 @@
+import type { ScoreRuleMark } from './ScoreRules.tsx'
 import type { YScaleTicks } from './yScaleTicks.ts'
 
 export type AxisSide = 'left' | 'right'
+
+/**
+ * #api
+ * One reference line a value scale declares, at a value in the scale's own
+ * units. `label` is free text and carries no meaning the chrome assigns: over
+ * a coverage plot "2 copies" is a claim only the author can make, since no
+ * ploidy can be assumed.
+ */
+export interface ValueScaleRule {
+  value: number
+  color?: string
+  label?: string
+}
 
 /**
  * #api
@@ -25,7 +39,9 @@ export type AxisSide = 'left' | 'right'
  * edges the display's own panels leave clear for a gutter: `right` where a
  * group label chip takes the left, `left: n` where a dendrogram takes the
  * first `n` px. `caption` is what the scale measures (`TLEN`), as a colour
- * scale's `field` is.
+ * scale's `field` is; the chrome draws it once for the scale, beside the
+ * bands on screen, however many it rules. `rules` are the reference lines the
+ * scale declares, which the chrome draws across every band.
  *
  * A member describes the scale or the band it rules, never the axis — not an
  * orientation, a form, a gutter width or a font. The chrome reads a member to
@@ -44,10 +60,15 @@ export interface ValueScale {
   side?: AxisSide
   left?: number
   caption?: string
+  rules?: readonly ValueScaleRule[]
 }
 
-/** A value scale whose ticks resolved: what the chrome draws. */
+/**
+ * A value scale whose ticks resolved: what the chrome draws. `ruleMarks` are
+ * its `rules` inside the domain, each at its y in the band's pixel space.
+ */
 export interface YAxis extends ValueScale {
   domain: [number, number]
   ticks: YScaleTicks
+  ruleMarks?: ScoreRuleMark[]
 }

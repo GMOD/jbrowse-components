@@ -1,7 +1,7 @@
 import { axisDrawn } from '@jbrowse/display-ui/axisPlacement'
 import { SCORE_CAPTION_HEIGHT } from '@jbrowse/display-ui/yAxisConstants'
 
-import type { ScoreRuleMark, YAxis } from '@jbrowse/display-ui'
+import type { YAxis } from '@jbrowse/display-ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -18,8 +18,13 @@ export interface AxisHost extends IStateTreeNode {
   canvasWidthPx: number
   /** Whether guide lines are ruled across the plot at each tick. */
   showCrossHatches?: boolean
-  /** Rules the reader placed at chosen values, drawn over the hatches. */
-  scoreRuleMarks?: ScoreRuleMark[]
+}
+
+/** The bands of an axis on screen, the ones scrolled off the display dropped. */
+export function bandsOnScreen(axis: YAxis, height: number) {
+  return (axis.bandTops ?? [0]).filter(
+    top => top + axis.height >= 0 && top <= height,
+  )
 }
 
 export function isAxisHost(model: object): model is AxisHost {

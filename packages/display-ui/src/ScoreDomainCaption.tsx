@@ -11,21 +11,24 @@ import { SCORE_CAPTION_HEIGHT } from './yAxisConstants.ts'
  * track whose rows each carry their own colour, so no single ramp describes
  * them. An axis stand-in rather than a key, which is why it is not a colour
  * scale and draws whether or not the legend does. Right-aligned to
- * `canvasWidth` at the top of the display.
+ * `canvasWidth` at the top of the display, led by the scale's `caption` where
+ * it has one, which has no gutter to sit in here.
  */
 export default function ScoreDomainCaption({
   domain,
   scaleType,
   canvasWidth,
+  caption,
 }: {
   domain: [number, number]
   scaleType: string
   canvasWidth: number
+  caption?: string
 }) {
   const palette = usePalette()
   const suffix =
     scaleType === 'log' ? ' (log)' : scaleType === 'symlog' ? ' (symlog)' : ''
-  const text = `[${formatScore(domain[0])}, ${formatScore(domain[1])}]${suffix}`
+  const text = `${caption ? `${caption} ` : ''}[${formatScore(domain[0])}, ${formatScore(domain[1])}]${suffix}`
   const len = measureLegendText(text, 12)
   const xpos = Math.max(0, canvasWidth - len - 10)
   return (

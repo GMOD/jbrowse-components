@@ -35,14 +35,11 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances } from '@jbrowse/render-core/marks'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import {
-  SCALE_TYPE_LINEAR,
   ScoreFieldConfigMixin,
   axisPlotBox,
   makeCrossHatchItem,
-  makeScoreNormalizer,
   makeScoreSubMenu,
   resolveRenderState,
-  scoreRuleMarks,
   visibleStatsDomain,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
@@ -351,47 +348,23 @@ export function stateModelFactory(
          * #getter
          * The y scale the chrome draws the axis from. Manhattan plots are
          * linear-only — `scales.y.type` admits nothing else, since the points
-         * are pre-transformed -log10 p values.
+         * are pre-transformed -log10 p values. The threshold is the scale's
+         * one rule, which the chrome and the export both draw off the axis.
          */
         get valueScales(): ValueScale[] {
+          const line = self.significanceLine
           return [
             {
               domain: self.domain,
               scaleType: self.scaleType,
               height: self.height,
               minimalTicks: getConf(self, 'minimalTicks'),
+              rules:
+                line === undefined
+                  ? []
+                  : [{ value: line, color: SIGNIFICANCE_LINE_COLOR }],
             },
           ]
-        },
-        /**
-         * #getter
-         * The threshold as a score rule, or `[]` when the slot is unset. Both
-         * the on-screen overlay and the SVG export take the line from here, so
-         * an exported figure cannot draw it at a different height than the
-         * screen did.
-         *
-         * A one-element read of the same `scoreRuleMarks` the wiggle displays
-         * place their configured rules with, since this display's threshold is
-         * a rule at a chosen score. Manhattan pins its
-         * axis linear (see `domain`), so the normalizer is the linear one.
-         *
-         * The helper still drops a rule outside the domain, which here only
-         * happens where `domain` could not widen to it: an explicit `scales.y`
-         * bound that excludes the line.
-         */
-        get scoreRuleMarks() {
-          const line = self.significanceLine
-          const domain = self.domain
-          if (line === undefined || !domain) {
-            return []
-          }
-          const [min, max] = domain
-          return scoreRuleMarks({
-            rules: [{ value: line, color: SIGNIFICANCE_LINE_COLOR }],
-            domain,
-            box: axisPlotBox(self.height),
-            normalize: makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR, 1),
-          })
         },
         /**
          * #method

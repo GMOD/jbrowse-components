@@ -26,7 +26,6 @@ import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
-import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import {
   ContextMenuMixin,
   TreeSidebarMixin,
@@ -51,10 +50,7 @@ import {
 import {
   axisPlotBox,
   makeCrossHatchItem,
-  makeScoreNormalizer,
   parseScoreRules,
-  resolveSymlogConstant,
-  scoreRuleMarks,
 } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -533,32 +529,6 @@ export default function stateModelFactory(
       get scoreRampApplies() {
         return self.isDensityMode && self.sources.every(s => !s.color)
       },
-
-      /**
-       * #getter
-       * Screen positions for the configured reference rules, or `[]`. Built
-       * from the display's own normalizer rather than a linear read of the
-       * domain, so a rule stays on the data it is meant to be read against when
-       * the axis is log or symlog. Empty wherever `scoreRuleValues` is.
-       */
-      get scoreRuleMarks() {
-        const domain = self.domain
-        if (!domain || self.scoreRuleValues.length === 0) {
-          return []
-        }
-        const [min, max] = domain
-        return scoreRuleMarks({
-          rules: self.scoreRules,
-          domain,
-          box: axisPlotBox(self.height),
-          normalize: makeScoreNormalizer(
-            min,
-            max,
-            scaleTypeCode(self.scaleType),
-            resolveSymlogConstant(min, max, self.symlogConstant),
-          ),
-        })
-      },
     }))
     .views(self => wiggleDisplayViews(self))
     .views(self => ({
@@ -589,6 +559,7 @@ export default function stateModelFactory(
                   getRowTop(row, self.effectiveRowHeight),
                 ),
             left: treeSidebarOffset(self),
+            rules: self.scoreRuleValues.length > 0 ? self.scoreRules : [],
           },
         ]
       },

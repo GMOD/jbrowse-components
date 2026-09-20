@@ -912,6 +912,54 @@ describe('the y axis', () => {
     await findByTestId('probe-canvas')
     expect(labelsOf(container)).toEqual(['0', '10', 'TLEN'])
   })
+
+  // A caption names the scale, so a scale ruling several bands still has one:
+  // beside the bands on screen, centred on their extent.
+  test('a scale ruling several bands is captioned once, beside the bands on screen', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({
+        axes: [
+          scale({ height: 100, bandTops: [0, 100, 900], caption: 'TLEN' }),
+        ],
+      }),
+    )
+    await findByTestId('probe-canvas')
+    const captions = [...container.querySelectorAll('text')].filter(
+      t => t.textContent === 'TLEN',
+    )
+    expect(captions).toHaveLength(1)
+    expect(captions[0]!.getAttribute('y')).toBe('100')
+    expect(captions[0]!.closest('svg')!.style.top).toBe('0px')
+  })
+
+  test('a scale too short for an axis leads its domain caption with its own', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({
+        axes: [scale({ height: 20, bandTops: [0, 20], caption: 'score' })],
+      }),
+    )
+    await findByTestId('probe-canvas')
+    expect(labelsOf(container)).toEqual(['score [0, 10]'])
+  })
+
+  test("a scale's rules are ruled across every band on screen, and only its own", async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({
+        axes: [
+          scale({
+            height: 40,
+            bandTops: [0, 60, 500],
+            ruleMarks: [{ value: 5, y: 20, label: 'cut' }],
+          }),
+          scale({ height: 40, bandTops: [120] }),
+        ],
+      }),
+    )
+    await findByTestId('probe-canvas')
+    const rules = [...container.querySelectorAll('line[stroke-dasharray]')]
+    expect(rules.map(rule => rule.getAttribute('y1'))).toEqual(['20', '80'])
+    expect(labelsOf(container).filter(t => t === 'cut')).toHaveLength(2)
+  })
 })
 
 // The chrome lights what a display answering `hoverInk` says is hovered or

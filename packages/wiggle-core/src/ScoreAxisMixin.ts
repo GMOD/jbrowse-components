@@ -1,6 +1,9 @@
 import { types } from '@jbrowse/mobx-state-tree'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 import { computeYTicks } from './computeYTicks.ts'
+import { makeScoreNormalizer, resolveSymlogConstant } from './normalize.ts'
+import { scoreRuleMarks } from './scoreRuleMarks.ts'
 
 import type { ValueScale, YAxis } from '@jbrowse/display-ui'
 
@@ -118,11 +121,13 @@ export function ScoreAxisMixin() {
        * #getter
        * The axes, one per declared scale whose domain resolved: where each
        * tick lands in the band's own pixel space, through `computeYTicks`
-       * unless the scale brought its own ladder.
+       * unless the scale brought its own ladder, and where each of the
+       * scale's `rules` inside the domain lands in that same box, through the
+       * scale type the renderer places its values by.
        */
       get axes(): YAxis[] {
         return self.valueScales.flatMap(scale => {
-          const { domain } = scale
+          const { domain, rules = [] } = scale
           const ticks =
             scale.ticks ??
             computeYTicks({
@@ -133,7 +138,25 @@ export function ScoreAxisMixin() {
               minimalTicks: scale.minimalTicks ?? false,
               symlogConstant: scale.symlogConstant,
             })
-          return domain && ticks ? [{ ...scale, domain, ticks }] : []
+          if (!domain || !ticks) {
+            return []
+          }
+          const [min, max] = domain
+          const ruleMarks =
+            rules.length > 0
+              ? scoreRuleMarks({
+                  rules,
+                  domain,
+                  box: ticks,
+                  normalize: makeScoreNormalizer(
+                    min,
+                    max,
+                    scaleTypeCode(scale.scaleType),
+                    resolveSymlogConstant(min, max, scale.symlogConstant ?? 0),
+                  ),
+                })
+              : []
+          return [{ ...scale, domain, ticks, ruleMarks }]
         })
       },
     }))

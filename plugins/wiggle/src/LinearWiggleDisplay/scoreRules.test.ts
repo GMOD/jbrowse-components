@@ -1,6 +1,10 @@
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { WiggleDataResult } from '@jbrowse/wiggle-core'
+import type { WiggleDataResult, YAxis } from '@jbrowse/wiggle-core'
+
+function ruleMarksOf(display: { axes: YAxis[] }) {
+  return display.axes[0]?.ruleMarks ?? []
+}
 
 // One feature spanning the visible window, scored 30, which autoscales to a
 // [0,30] domain with tick levels every 10 — so a rule can be placed both on a
@@ -50,7 +54,7 @@ it('places a configured rule on the axis its ticks were built in', () => {
   // bit. The placement bug this is here for — handing scoreRuleMarks a box the
   // ticks were not built in — moves a mark by 1.7px.
   const at = (value: number) => ticks.items.find(t => t.value === value)!.y
-  const marks = display.scoreRuleMarks
+  const marks = ruleMarksOf(display)
   expect(marks.map(({ value, label }) => ({ value, label }))).toEqual([
     { value: 20, label: '2 copies' },
     { value: 15, label: '1.5 copies' },
@@ -69,7 +73,7 @@ it('lifts the axis to a rule the visible data never reaches', () => {
     { value: 90, label: '6 copies' },
   ])
   expect(display.domain).toEqual([0, 90])
-  expect(display.scoreRuleMarks).toHaveLength(1)
+  expect(ruleMarksOf(display)).toHaveLength(1)
 })
 
 // An explicit bound is the config saying where the axis stops, so it still wins
@@ -79,12 +83,12 @@ it('leaves an explicitly bounded axis alone', () => {
   display.configuration.setSlot('scoreRules', [{ value: 90 }])
   display.setMaxScore(40)
   expect(display.domain?.[1]).toBe(40)
-  expect(display.scoreRuleMarks).toEqual([])
+  expect(ruleMarksOf(display)).toEqual([])
 })
 
 it('stops drawing rules in density mode', () => {
   const display = makeDisplay()
-  expect(display.scoreRuleMarks).toHaveLength(2)
+  expect(ruleMarksOf(display)).toHaveLength(2)
 
   // density spends color rather than height on the score, so there is no axis
   // for a rule to sit on — the same reason showCrossHatches goes false here,
@@ -93,7 +97,7 @@ it('stops drawing rules in density mode', () => {
   display.setRenderingType('density')
   expect(display.isDensityMode).toBe(true)
   expect(display.domain).toBeDefined()
-  expect(display.scoreRuleMarks).toEqual([])
+  expect(ruleMarksOf(display)).toEqual([])
 })
 
 // Density spends the domain on its color ramp instead of on height, so lifting
@@ -106,6 +110,6 @@ it('does not lift the axis for a rule density will not draw', () => {
   expect(display.domain).toEqual([0, 90])
 
   display.setRenderingType('density')
-  expect(display.scoreRuleMarks).toEqual([])
+  expect(ruleMarksOf(display)).toEqual([])
   expect(display.domain).toEqual([0, 30])
 })

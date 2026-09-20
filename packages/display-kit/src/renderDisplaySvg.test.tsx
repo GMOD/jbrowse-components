@@ -260,6 +260,43 @@ describe('the y axis', () => {
     expect(labelsOf(container)).toEqual(['0', '10', 'TLEN'])
   })
 
+  test('a scale ruling several bands is captioned once, beside the bands', async () => {
+    const { container } = await renderShell(
+      axisHost([scale({ height: 100, bandTops: [0, 100], caption: 'TLEN' })]),
+      [],
+    )
+    const captions = [...container.querySelectorAll('text')].filter(
+      t => t.textContent === 'TLEN',
+    )
+    expect(captions).toHaveLength(1)
+    expect(captions[0]!.getAttribute('y')).toBe('100')
+  })
+
+  test('a scale too short for an axis leads its domain caption with its own', async () => {
+    const { container } = await renderShell(
+      axisHost([scale({ height: 20, caption: 'score' })]),
+      [],
+    )
+    expect(labelsOf(container)).toEqual(['score [0, 10]'])
+  })
+
+  test("a scale's rules are ruled across every band, and only its own", async () => {
+    const { container } = await renderShell(
+      axisHost([
+        scale({
+          height: 40,
+          bandTops: [0, 60],
+          ruleMarks: [{ value: 5, y: 20, label: 'cut' }],
+        }),
+        scale({ height: 40, bandTops: [120] }),
+      ]),
+      [],
+    )
+    const rules = [...container.querySelectorAll('line[stroke-dasharray]')]
+    expect(rules.map(rule => rule.getAttribute('y1'))).toEqual(['20', '80'])
+    expect(labelsOf(container).filter(t => t === 'cut')).toHaveLength(2)
+  })
+
   // The chrome stacks the key over the axis on screen; a right-side axis and
   // the key share the top-right corner, so the export keeps the same order.
   test('the key draws over the axis, as on screen', async () => {

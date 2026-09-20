@@ -3,24 +3,13 @@ import {
   scoreToAxisY,
 } from '@jbrowse/display-ui/yScaleTicks'
 
-import type { ScoreRuleMark } from '@jbrowse/display-ui'
+import type { ScoreRuleMark, ValueScaleRule } from '@jbrowse/display-ui'
 
 /**
  * #api
- * One horizontal rule across a score plot, at a score the user chose.
- *
- * `label` is free text and carries no meaning this package assigns. That is
- * deliberate: the obvious use is reading a coverage or CNV track against copy
- * number, and there is no ploidy JBrowse could assume on the user's behalf. A
- * whole-genome triplication is not diploid, plenty of genomes are not diploid to
- * begin with, and a cancer sample can be neither — so "2 copies" is a claim only
- * the person looking at the track can make.
+ * A `ValueScaleRule`, as `parseScoreRules` returns one.
  */
-export interface ScoreRule {
-  value: number
-  label?: string
-  color?: string
-}
+export type ScoreRule = ValueScaleRule
 
 export type { ScoreRuleMark } from '@jbrowse/display-ui'
 

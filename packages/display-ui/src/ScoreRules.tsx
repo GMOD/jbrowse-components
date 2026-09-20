@@ -1,5 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
+import { DEFAULT_RULE_COLOR } from './yAxisConstants.ts'
+
 /**
  * One horizontal rule across a score plot at a chosen value, placed in the
  * plot's own pixel space; `label` is free text the reader chose.
@@ -10,8 +12,6 @@ export interface ScoreRuleMark {
   label?: string
   color?: string
 }
-
-const DEFAULT_RULE_COLOR = 'rgb(120,120,120)'
 
 // Bare marks, no wrapping <svg>, so the on-screen overlay and the SVG export
 // draw the same elements from the same y. Same split as CrossHatchLines.

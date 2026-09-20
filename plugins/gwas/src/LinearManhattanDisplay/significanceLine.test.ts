@@ -5,6 +5,11 @@ import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { YAxis } from '@jbrowse/wiggle-core'
+
+function ruleMarksOf(display: { axes: YAxis[] }) {
+  return display.axes[0]?.ruleMarks ?? []
+}
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 }
 
@@ -24,14 +29,14 @@ describe('significanceLine config slot', () => {
   it('defaults to unset, so no rule is drawn', () => {
     const { display } = createTestEnvironment().createDisplay()
     expect(getConf(display, 'significanceLine')).toBeUndefined()
-    expect(display.scoreRuleMarks).toEqual([])
+    expect(ruleMarksOf(display)).toEqual([])
   })
 
   it('draws nothing before the data gives it a domain', () => {
     const { display } = createTestEnvironment().createDisplay()
     setConf(display, 'significanceLine', 7.3)
     expect(display.significanceLine).toBe(7.3)
-    expect(display.scoreRuleMarks).toEqual([])
+    expect(ruleMarksOf(display)).toEqual([])
   })
 
   it('places the threshold in the significance red once there is a domain', () => {
@@ -41,7 +46,7 @@ describe('significanceLine config slot', () => {
 
     const box = axisPlotBox(display.height)
     expect(display.domain).toEqual([0, 10])
-    expect(display.scoreRuleMarks).toEqual([
+    expect(ruleMarksOf(display)).toEqual([
       {
         value: 5,
         // red, not the grey a wiggle rule defaults to: this one is a
@@ -61,7 +66,7 @@ describe('significanceLine config slot', () => {
     setConf(display, 'significanceLine', 7.3)
 
     expect(display.domain?.[1]).toBeGreaterThanOrEqual(7.3)
-    expect(display.scoreRuleMarks).toHaveLength(1)
+    expect(ruleMarksOf(display)).toHaveLength(1)
   })
 
   // The widening is on the raw range, before the configured bounds, so an axis
@@ -73,6 +78,6 @@ describe('significanceLine config slot', () => {
     display.setMaxScore(4)
 
     expect(display.domain?.[1]).toBe(4)
-    expect(display.scoreRuleMarks).toEqual([])
+    expect(ruleMarksOf(display)).toEqual([])
   })
 })

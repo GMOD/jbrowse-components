@@ -14,7 +14,11 @@ derived from a declared value scale.
 [ADR-097](adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)'s split
 is untouched: the shader's anchor stays each shape's own, and what is shared
 here is a CPU-side reader of the scale, the shape ADR-097 §Consequences names
-for one.
+for one. Amended 2026-09-20 by
+[ADR-142](adr-142-one-value-scale-object.md) §Consequences: the reference
+lines are a `ValueScale` member (`rules`, resolved to `YAxis.ruleMarks`) where
+this ADR read a host-level `scoreRuleMarks`, and a scale's `caption` is drawn
+once per scale where `AxisGutter` drew it once per band.
 
 ## Context
 

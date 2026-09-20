@@ -104,7 +104,12 @@ export {
 // `@jbrowse/display-kit`'s chrome places them for any display that declares
 // value scales, the way it places the legend; `@jbrowse/wiggle-core`
 // re-exports them under their published names.
-export type { AxisSide, ValueScale, YAxis } from './valueScale.ts'
+export type {
+  AxisSide,
+  ValueScale,
+  ValueScaleRule,
+  YAxis,
+} from './valueScale.ts'
 export {
   AXIS_GUTTER_WIDTH_PX,
   axisPlotBox,
@@ -113,6 +118,7 @@ export {
 } from './yScaleTicks.ts'
 export type { YScaleTicks } from './yScaleTicks.ts'
 export {
+  DEFAULT_RULE_COLOR,
   SCORE_CAPTION_HEIGHT,
   YSCALEBAR_LABEL_OFFSET,
 } from './yAxisConstants.ts'
@@ -123,6 +129,7 @@ export {
   axisGutterLeft,
 } from './axisPlacement.ts'
 export { default as AxisGutter } from './AxisGutter.tsx'
+export { AxisCaptionOverlay, default as AxisCaption } from './AxisCaption.tsx'
 export { default as YScaleBar } from './YScaleBar.tsx'
 export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 export { default as ScoreDomainCaption } from './ScoreDomainCaption.tsx'

@@ -1,6 +1,6 @@
 import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
 
-import type { ValueScale } from './valueScale.ts'
+import type { ValueScale, YAxis } from './valueScale.ts'
 
 /**
  * Below this band height a full `YScaleBar`'s tick labels overlap each other,
@@ -18,6 +18,16 @@ export function axisDrawn(scale: Pick<ValueScale, 'height' | 'bandTops'>) {
   return (
     (scale.bandTops?.length ?? 1) > 0 && scale.height >= COMPACT_AXIS_HEIGHT
   )
+}
+
+/**
+ * The y a scale's one caption centres on: halfway down the extent of the bands
+ * given, from the first's top tick to the last's bottom. One band gives the
+ * middle of its own axis.
+ */
+export function axisCaptionY(axis: Pick<YAxis, 'ticks'>, bandTops: number[]) {
+  const { yTop, yBottom } = axis.ticks
+  return (Math.min(...bandTops) + yTop + Math.max(...bandTops) + yBottom) / 2
 }
 
 /** How far in from the plot's right edge a right-side gutter ends in an export. */

@@ -8,7 +8,7 @@ import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { ScoreRuleMark, WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
+import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
 /** The right-clicked point and the SNP it resolved to, held as one value. */
 export type ManhattanContextMenuInfo = ContextMenuAnchor & { hit: ManhattanHit }
@@ -31,8 +31,6 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   hoveredFeature: ManhattanHit | undefined
   indexSnpMissing: boolean
   skippedFeatures: SkippedFeatures
-  // the significance threshold as a score rule, [] when unset or off-domain
-  scoreRuleMarks: ScoreRuleMark[]
   setHoveredFeature: (hit: ManhattanHit | undefined) => void
   clearHoveredFeature: () => void
   selectFeature: (hit: ManhattanHit) => void

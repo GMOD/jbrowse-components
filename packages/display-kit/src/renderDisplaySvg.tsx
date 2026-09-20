@@ -11,6 +11,7 @@ import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { splitPaintAlpha } from '@jbrowse/core/util/svgColorProps'
 import {
   AXIS_RIGHT_INSET_PX,
+  AxisCaption,
   AxisGutter,
   CrossHatchLines,
   SCORE_CAPTION_HEIGHT,
@@ -23,6 +24,7 @@ import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
 import {
   axisCaptionsReservedPx,
+  bandsOnScreen,
   captionedAxes,
   isAxisHost,
 } from './axisHost.ts'
@@ -172,7 +174,8 @@ export function SvgPinnedHighlight({ rects }: { rects: HighlightRect[] }) {
  * The exported y axes of a display declaring value scales, drawn by the shell
  * off the same ticks the chrome draws on screen: for each scale, once per band
  * it rules, the cross-hatch guide lines across the band when the display
- * shows them, the reader's rules over those, and the axis in its gutter. A
+ * shows them, the scale's reference lines over those, and the axis in its
+ * gutter; once per scale, its caption beside the bands. A
  * left-side axis nothing pushes right sits in the export margin with its
  * spine on the content edge, so the numbers land outside the plot. A scale
  * whose bands are too short for an axis is captioned `[min, max]` once at
@@ -189,40 +192,52 @@ export function SvgYAxis({
   width: number
 }) {
   const { axes, height, showCrossHatches } = model
-  const rules = model.scoreRuleMarks ?? []
   const contentLeft = Math.max(-view.offsetPx, 0)
   return (
     <>
       {axes.map((axis, i) => {
         const fits = axisDrawn(axis)
+        const { ruleMarks = [] } = axis
+        const bandTops = bandsOnScreen(axis, height)
         const gutterLeft = axisGutterLeft(
           axis,
           width,
           AXIS_RIGHT_INSET_PX,
           contentLeft,
         )
-        return (axis.bandTops ?? [0])
-          .filter(top => top + axis.height >= 0 && top <= height)
-          .map(top => (
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- the scales are declared in a fixed order
-            <Fragment key={`${i}-${top}`}>
-              {showCrossHatches && fits ? (
-                <CrossHatchLines
-                  ticks={axis.ticks}
-                  width={width}
-                  offsetY={top}
-                />
-              ) : null}
-              {rules.length > 0 ? (
-                <ScoreRuleLines marks={rules} width={width} offsetY={top} />
-              ) : null}
-              {fits ? (
-                <g transform={`translate(${gutterLeft} ${top})`}>
-                  <AxisGutter axis={axis} />
-                </g>
-              ) : null}
-            </Fragment>
-          ))
+        return (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- the scales are declared in a fixed order
+          <Fragment key={i}>
+            {bandTops.map(top => (
+              <Fragment key={top}>
+                {showCrossHatches && fits ? (
+                  <CrossHatchLines
+                    ticks={axis.ticks}
+                    width={width}
+                    offsetY={top}
+                  />
+                ) : null}
+                {ruleMarks.length > 0 ? (
+                  <ScoreRuleLines
+                    marks={ruleMarks}
+                    width={width}
+                    offsetY={top}
+                  />
+                ) : null}
+                {fits ? (
+                  <g transform={`translate(${gutterLeft} ${top})`}>
+                    <AxisGutter axis={axis} />
+                  </g>
+                ) : null}
+              </Fragment>
+            ))}
+            {fits && axis.caption && bandTops.length > 0 ? (
+              <g transform={`translate(${gutterLeft} 0)`}>
+                <AxisCaption axis={axis} bandTops={bandTops} />
+              </g>
+            ) : null}
+          </Fragment>
+        )
       })}
       {captionedAxes(model).map((axis, i) => (
         <g
@@ -234,6 +249,7 @@ export function SvgYAxis({
             domain={axis.domain}
             scaleType={axis.scaleType}
             canvasWidth={width}
+            caption={axis.caption}
           />
         </g>
       ))}

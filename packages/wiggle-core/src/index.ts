@@ -41,6 +41,7 @@ export type {
 // stub. The components that draw the axis are `./chrome`.
 export { axisDrawn } from '@jbrowse/display-ui/axisPlacement'
 export {
+  DEFAULT_RULE_COLOR,
   SCORE_CAPTION_HEIGHT,
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/display-ui/yAxisConstants'
@@ -50,7 +51,12 @@ export {
   clampStrokeInsideAxis,
   scoreToAxisY,
 } from '@jbrowse/display-ui/yScaleTicks'
-export type { ValueScale, YAxis, YScaleTicks } from '@jbrowse/display-ui'
+export type {
+  ValueScale,
+  ValueScaleRule,
+  YAxis,
+  YScaleTicks,
+} from '@jbrowse/display-ui'
 
 export { computeYTicks } from './computeYTicks.ts'
 
