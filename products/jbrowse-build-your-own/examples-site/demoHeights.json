@@ -1,4 +1,5 @@
 {
+  "a-plot-from-json": 190,
   "a-stack-of-tracks": 372,
   "bring-your-own-overlays": 368,
   "color-and-group-by-a-field": 306,
@@ -6,6 +7,7 @@
   "drive-it-from-your-app": 327,
   "every-chromosome": 142,
   "gene-lanes": 463,
+  "genome-by-name": 253,
   "highlight-a-region": 172,
   "loading-and-errors": 199,
   "one-track": 102,

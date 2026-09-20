@@ -35,6 +35,19 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'genome-by-name',
+    title: 'A genome by name',
+    description:
+      "A hosted genome's sequence, tracks and gene search from its name.",
+    group: 'Getting started',
+    sections: [
+      {
+        slug: 'genome-by-name',
+        title: 'hg38 by name, a gene as the location, tracks by id',
+      },
+    ],
+  },
+  {
     slug: 'default-session',
     title: 'Session & drawer',
     description:

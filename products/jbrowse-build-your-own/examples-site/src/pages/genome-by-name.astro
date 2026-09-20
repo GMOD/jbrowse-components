@@ -1,0 +1,16 @@
+---
+import GenomeByName from '../examples/GenomeByName.tsx'
+import GenomeByNameCode from '../examples/GenomeByName.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('genome-by-name')
+const sec = section(page, 'genome-by-name')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={GenomeByNameCode}>
+    <GenomeByName client:only="react" />
+  </Section>
+</Layout>

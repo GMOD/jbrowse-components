@@ -24,6 +24,19 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'genome-by-name',
+    title: 'A genome by name',
+    description:
+      "A hosted genome's sequence, tracks and gene search from its name.",
+    group: 'Basics',
+    sections: [
+      {
+        slug: 'genome-by-name',
+        title: 'hg38 by name, a gene as the location, your file on top',
+      },
+    ],
+  },
+  {
     slug: 'removing-material-ui',
     title: 'Removing Material UI',
     description: "Draw a track's loading and error states yourself.",
@@ -136,6 +149,18 @@ export const pages: ExamplePage[] = [
       {
         slug: 'color-and-group-by-a-field',
         title: 'Genes colored and grouped by an attribute',
+      },
+    ],
+  },
+  {
+    slug: 'a-plot-from-json',
+    title: 'A plot declared in JSON',
+    description: 'Alu copies as bars: height is age, color is lineage.',
+    group: 'Your own UI',
+    sections: [
+      {
+        slug: 'a-plot-from-json',
+        title: 'A BED column as bar height, another as color',
       },
     ],
   },

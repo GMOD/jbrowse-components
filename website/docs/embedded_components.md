@@ -84,6 +84,13 @@ const state = createViewState({
 
 - **Full track control at launch** is a `defaultSession` whose view names its
   tracks ([](/docs/tutorials/embed_linear_genome_view)).
+- **`assembly: 'hg38'`**, a name in place of a config, fetches that genome from
+  [genomes.jbrowse.org](https://genomes.jbrowse.org): its sequence, refName
+  aliases, track catalog and gene-name search, so `init: { loc: 'BRCA1' }` works
+  and `tracks` adds your own files beside the hosted ones. A name is fetched, so
+  it goes to `useCreateViewState`, `createViewStateAsync` or
+  `createLinearGenomeView`, and any UCSC database name or GenArk accession
+  resolves.
 - **`localFiles`**, a `name -> bytes` map, serves a host whose data lives in a
   process rather than at a URL: a notebook kernel, an R session, anywhere with
   no web server and no CORS. `tracks` then refers to a registered name as if it

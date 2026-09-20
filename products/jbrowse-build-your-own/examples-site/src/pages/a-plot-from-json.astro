@@ -1,0 +1,16 @@
+---
+import APlotFromJson from '../examples/APlotFromJson.tsx'
+import APlotFromJsonCode from '../examples/APlotFromJson.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('a-plot-from-json')
+const sec = section(page, 'a-plot-from-json')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={APlotFromJsonCode}>
+    <APlotFromJson client:only="react" />
+  </Section>
+</Layout>

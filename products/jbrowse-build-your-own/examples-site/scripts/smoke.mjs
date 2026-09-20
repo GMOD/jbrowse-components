@@ -69,6 +69,8 @@ const MUI_BUDGET = {
   // the `ultraminimal` unearned-zero trap one paragraph up.
   'track-settings': 0,
   'color-and-group-by-a-field': 0,
+  'a-plot-from-json': 0,
+  'genome-by-name': 0,
   'search-by-name': 0,
   'local-files': 0,
   'highlight-a-region': 0,
@@ -493,6 +495,7 @@ async function dragToZoomFramesTheSpan(page, slug) {
 const PLACED_KEYS = {
   'color-and-group-by-a-field': 'protein_coding',
   'gene-lanes': 'atpA',
+  'a-plot-from-json': 'AluY',
 }
 
 async function placedKeyNamesItsRows(page, slug) {
