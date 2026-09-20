@@ -64,6 +64,45 @@ test('a declared y skips the features whose value is not finite, and counts them
   expect(fb.search(90, 39, 160, 41)).toEqual([1])
 })
 
+// `Number()` answers 0 for every one of these, which plotted a VCF's `DP=.`
+// as a measured zero.
+test('a value that holds no number is skipped, never plotted at zero', () => {
+  const values = [30, null, '', [], [null], true, '.', [0.4, 0.1]]
+  const r = encodeFeatures(
+    values.map((qual, i) => feature(i, { qual })),
+    { y: 'qual' },
+    ['y'],
+  )
+  expect([...r.y]).toEqual([30])
+  expect(r.skipped).toBe(values.length - 1)
+})
+
+test('a one-element list and a numeric string are the numbers they hold', () => {
+  const r = encodeFeatures(
+    [[0.25], '12', ' 7 '].map((qual, i) => feature(i, { qual })),
+    { y: 'qual' },
+    ['y'],
+  )
+  expect([...r.y]).toEqual([0.25, 12, 7])
+})
+
+test('a ramp value that holds no number paints the misconfiguration grey, not the colour of zero', () => {
+  const r = encodeFeatures(
+    [-1, null, 1].map((score, i) => feature(i, { score })),
+    {
+      color: {
+        field: 'score',
+        scale: 'linear',
+        domain: [-1, 1],
+        ramp: ['blue', 'white', 'red'],
+      },
+    },
+    ['color'],
+  )
+  expect(r.color[1]).toBe(cssColorToABGR('#808080'))
+  expect(r.color[1]).not.toBe(r.color[0])
+})
+
 test('a jexl: field ref is the escape for a derived channel', () => {
   const r = encodeFeatures(
     features,

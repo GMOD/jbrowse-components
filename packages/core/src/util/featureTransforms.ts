@@ -1,6 +1,7 @@
 import { categoricalField } from './categoricalField.ts'
 import { fieldReader } from './fieldReader.ts'
 import { stringToJexlExpression } from './jexlStrings.ts'
+import { numericValue } from './numericValue.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
@@ -183,7 +184,7 @@ function bin(features: readonly Feature[], step: BinStep) {
   }
   const [asStart, asEnd] = step.as ?? DEFAULT_BIN_AS
   return features.map(f => {
-    const v = Number(f.get(field))
+    const v = numericValue(f.get(field))
     const start = Math.floor(v / size) * size
     return new DerivedFeature(f, { [asStart]: start, [asEnd]: start + size })
   })
@@ -270,7 +271,7 @@ function aggregateValue(
   let min = Infinity
   let max = -Infinity
   for (const m of members) {
-    const v = Number(m.get(field))
+    const v = numericValue(m.get(field))
     if (!Number.isFinite(v)) {
       continue
     }
@@ -306,12 +307,12 @@ function stack(features: readonly Feature[], step: StackStep) {
   const [startField, endField] = step.fields ?? DEFAULT_STACK_FIELDS
   const padding = step.padding ?? 0
   const sorted = [...features].sort(
-    (a, b) => Number(a.get(startField)) - Number(b.get(startField)),
+    (a, b) => numericValue(a.get(startField)) - numericValue(b.get(startField)),
   )
   const rowEnds: number[] = []
   return sorted.map(f => {
-    const start = Number(f.get(startField))
-    const end = Number(f.get(endField))
+    const start = numericValue(f.get(startField))
+    const end = numericValue(f.get(endField))
     let row = 0
     while (row < rowEnds.length && rowEnds[row]! > start) {
       row++

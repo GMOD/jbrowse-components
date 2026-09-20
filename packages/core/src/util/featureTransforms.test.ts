@@ -83,6 +83,19 @@ test('aggregate with no groupby summarises the whole list over its extent', () =
   expect(rows(out, 'start', 'end', 'sum_score')).toEqual([[5, 60, 6]])
 })
 
+test('a mean is over the values that hold a number, a missing one counting as no zero', () => {
+  const out = runTransforms(
+    [
+      feature(0, 5, { qual: 30 }),
+      feature(5, 10, { qual: null }),
+      feature(10, 15, { qual: '' }),
+      feature(15, 20, { qual: [null] }),
+    ],
+    [{ type: 'aggregate', ops: [{ op: 'mean', field: 'qual' }] }],
+  )
+  expect(rows(out, 'mean_qual')).toEqual([[30]])
+})
+
 test('coverage is one feature per run of constant depth, zero runs left out', () => {
   const out = runTransforms(
     [feature(10, 30), feature(0, 20), feature(50, 60), feature(50, 60)],

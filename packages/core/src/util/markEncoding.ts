@@ -12,6 +12,7 @@ import { fieldReader } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
+import { numericValue } from './numericValue.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 import {
   numericDomain,
@@ -336,9 +337,9 @@ export function encodeFeatures<L extends LaneName>(
   for (let i = 0; i < n; i++) {
     report?.(i)
     const f = features[i]!
-    const xv = Number(readX(f))
-    const x2v = Number(readX2(f))
-    const yv = readY ? Number(readY(f)) : 0
+    const xv = numericValue(readX(f))
+    const x2v = numericValue(readX2(f))
+    const yv = readY ? numericValue(readY(f)) : 0
     if (!Number.isFinite(xv) || !Number.isFinite(x2v) || !Number.isFinite(yv)) {
       continue
     }
@@ -368,7 +369,7 @@ export function encodeFeatures<L extends LaneName>(
     if (colorCategories) {
       colorCategories.collect(f, count)
     } else if (rampValues && readColor) {
-      rampValues[count] = Number(readColor(f))
+      rampValues[count] = numericValue(readColor(f))
     } else if (binColors && cuts && color && readColor) {
       const bin = thresholdIndex(readColor(f), cuts)
       color[count] = bin < 0 ? FALLBACK_COLOR : binColors[bin]!

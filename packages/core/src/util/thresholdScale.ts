@@ -1,4 +1,5 @@
 import { categoricalPalette } from '../ui/colors.ts'
+import { numericValue } from './numericValue.ts'
 
 /**
  * #api
@@ -21,7 +22,7 @@ export function thresholdIndex(
   value: unknown,
   domain: readonly number[],
 ): number {
-  const v = typeof value === 'number' ? value : Number(value)
+  const v = numericValue(value)
   if (!Number.isFinite(v)) {
     return -1
   }
