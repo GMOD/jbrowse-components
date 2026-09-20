@@ -302,8 +302,8 @@ bare form matches a rendered label and was left alone.
 
 ## 8. SV review
 
-`ideas/multihop-sv-review-portal.md` §"Where this stands", §"Cards for a callset
-with no chains", §"Sorting the queue is what makes it finishable".
+`ideas/sv-review-portal.md` §"What a card is", §"Sorting the queue is what makes
+it finishable".
 
 ## Order
 

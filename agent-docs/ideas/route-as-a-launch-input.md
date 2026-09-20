@@ -67,8 +67,9 @@ in a session spec:
   `INV_chr1:39658980-39660275,DUP_chr1:39660047-39660275`) is the route
   `A C′ B′ C D`, and its two junctions are the LL and RR pairs the
   `sv_multisamples` tutorial's SV-channels figure shows.
-- [multihop-sv-review-portal](multihop-sv-review-portal.md) is a consumer — one
-  card per route, whoever produced it, with the live link being this spec.
+- [sv-review-portal](sv-review-portal.md) is a consumer — one card per route,
+  whoever produced it, with the live link being this spec. A route with a
+  sequence behind it (a contig BAM) takes that doc's read-vs-ref launch instead.
 - Desktop's MCP surface is the agent-driven version of the same verb.
 - `derive --jbrowse-out` prints a session URL today. It would print a route,
   and its custom config goes away.
