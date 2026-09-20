@@ -40,28 +40,14 @@ check by fixing the manifest, not by removing a skip.
   tested source. `sync-doc-snippets --check` ratchets un-included fences, so
   convert one and lower `DOC_FENCE_BASELINE`. The marker fills an existing
   fence, so write an empty one under it first.
-- **Never retype a measurement table out of `agent-docs`** — bracket the copy
-  with `<!-- BEGIN GENERATED MEASUREMENT <id> -->` / `END`
-  (`sync-measurements.ts`). It comes from `agent-docs/measurements/<id>.json`
-  through the doc that owns it, so a number here is three generators away from
-  the run that produced it and typed nowhere. The whole table comes across; a
-  page wanting fewer rows is a page arguing with the doc that owns the number.
-  **Link the doc you published the table from** — `sync-measurements` requires
-  it, because a table with no link back hands the reader a figure and no
-  measurement.
-- **Don't restate a number the page already carries** — quote the cell:
-  `12.5ms<!--m:synteny-pick-random.1-10k.warmPickMs-->`, resolved by
-  `sync-inline-figures` — marker after the value, no space in the pair, since a
-  line starting `<!--` is an HTML block that ends its paragraph. `72%` beside a
-  published `28%`, or `200x` off a `0.005` in the table above it, is arithmetic
-  that goes stale the next time the table is regenerated, and
-  `check-quoted-figures` cannot catch it because the old value is still in the
-  doc it was copied from. Better still, say what the table cannot.
-- Having a measurement block opts the page into `check-quoted-figures`, which
-  requires every `<number><unit>` in its prose to appear in an agent-doc **the
-  page links** or in the JSDoc of an **exported symbol the page names**. Both
-  haystacks are what the page points a reader at, so cite the doc or name the
-  symbol you took the figure from.
+- **Never retype a measurement table out of `agent-docs`**, and never restate a
+  number the page already carries — bracket the table and quote the cell.
+  `agent-docs/CLAUDE.md` has both syntaxes and the checker they answer to. The
+  whole table comes across; a page wanting fewer rows is a page arguing with the
+  doc that owns the number, and that doc has to be linked or the reader gets a
+  figure and no measurement. `72%` beside a published `28%`, or `200x` off a
+  `0.005` in the table above it, is arithmetic that goes stale the next time the
+  table is regenerated. Better still, say what the table cannot.
 - **Write `displayDefaults`, not a `displays` array**, unless the example
   selects a non-default display type or needs real `displayId`s.
 - **Show a whole track config, not a fragment**, tagged ```json addtrack —
