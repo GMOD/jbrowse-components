@@ -1,10 +1,6 @@
 import { stripTrackIds } from '@jbrowse/core/util'
 
-import {
-  awaitSplitViewSettled,
-  openDefaultTracks,
-  openOrReuseSplitView,
-} from './openSplitView.ts'
+import { awaitSplitViewSettled, openOrReuseSplitView } from './openSplitView.ts'
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
@@ -44,12 +40,9 @@ export async function navToMultiLevelBreak({
   tracks?: Track[]
   /**
    * Tracks every panel opens when the launcher has no source view — the SV
-   * inspector's own callset, say. Separate from `tracks` because that one
-   * doubles as "the reader expressed an opinion about tracks", and
-   * `openOrReuseSplitView` reads it to choose between re-navigating a view and
-   * rebuilding it; passing these as `tracks` would rebuild on every chord click
-   * and the reuse path exists to stop that flashing. So they are opened on a
-   * view this call BUILT, and a reused one already has them.
+   * inspector's callset and the reader's evidence tracks. Separate from
+   * `tracks`, which `openOrReuseSplitView` reads as the rebuild signal: passing
+   * these there would rebuild, and flash, on every chord click.
    */
   defaultTrackIds?: string[]
   /**
@@ -91,16 +84,16 @@ export async function navToMultiLevelBreak({
     return { ...stop, region }
   })
 
-  const tracks = viewTracks ?? []
   const { view, reused } = await openOrReuseSplitView({
     session,
     stableViewId,
     tracks: viewTracks,
+    defaultTrackIds,
     // A view reused across launches was built for the panel count of whichever
     // record opened it first, so a chain of a different length has to rebuild
     // it rather than nav a panel that isn't there (or leave a stale one behind).
     stillFits: v => v.views.length === panels.length,
-    snapshot: {
+    snapshot: tracks => ({
       type: 'BreakpointSplitView',
       displayName: makeTitle(feature),
       views: panels.map((_panel, idx) => ({
@@ -115,12 +108,10 @@ export async function navToMultiLevelBreak({
           mirror === true && idx % 2 === 1 ? [...tracks].reverse() : tracks,
         ),
       })),
-    },
+    }),
   })
   if (reused) {
     view.setDisplayName(makeTitle(feature))
-  } else {
-    await openDefaultTracks(view.views, defaultTrackIds)
   }
   await Promise.all(
     panels.map((panel, idx) =>

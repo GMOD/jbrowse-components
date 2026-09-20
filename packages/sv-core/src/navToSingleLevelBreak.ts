@@ -5,11 +5,7 @@ import {
 } from '@jbrowse/core/util'
 import { bpToOffset, compareBpOffsets } from '@jbrowse/core/util/Base1DUtils'
 
-import {
-  awaitSplitViewSettled,
-  openDefaultTracks,
-  openOrReuseSplitView,
-} from './openSplitView.ts'
+import { awaitSplitViewSettled, openOrReuseSplitView } from './openSplitView.ts'
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
@@ -254,16 +250,16 @@ export async function navToSingleLevelBreak({
     session,
     stableViewId,
     tracks,
-    snapshot: {
+    defaultTrackIds,
+    stillFits: v => v.views.length === 1,
+    snapshot: built => ({
       ...snap,
-      views: [{ ...snap.views[0], tracks: stripTrackIds(tracks ?? []) }],
-    },
+      views: [{ ...snap.views[0], tracks: stripTrackIds(built) }],
+    }),
   })
   if (reused) {
     view.views[0]?.setDisplayedRegions(snap.views[0]!.displayedRegions)
     view.setDisplayName(snap.displayName)
-  } else {
-    await openDefaultTracks(view.views, defaultTrackIds)
   }
   await awaitSplitViewSettled(view)
   const lgv = view.views[0]!

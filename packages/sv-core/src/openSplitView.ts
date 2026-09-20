@@ -1,5 +1,6 @@
 import { launchOrReplaceView } from '@jbrowse/core/util'
 import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import type { BreakpointSplitView, Track } from './types.ts'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
@@ -22,6 +23,12 @@ import type { AbstractViewContainer } from '@jbrowse/core/util'
  * what keeps the SV inspector's chord-after-chord flow off the rebuild path,
  * where a remount would flash. `[]` is the reader asking for no tracks, which
  * is a construction choice like any other and rebuilds.
+ *
+ * A view that no longer fits — a chain of a different length — rebuilds too,
+ * and a launcher with no opinion then carries the first panel's tracks across:
+ * the reader opened those alignments by hand, and the next record's panel count
+ * is no reason to lose them. The first panel, because `mirror` reverses the
+ * odd ones.
  *
  * Rebuilding goes through `launchOrReplaceView` rather than remove-then-add so the
  * view keeps the slot it already had, along with the focus, instead of
@@ -54,12 +61,15 @@ export async function openOrReuseSplitView({
   session,
   stableViewId,
   tracks,
+  defaultTrackIds,
   stillFits,
   snapshot,
 }: {
   session: AbstractViewContainer
   stableViewId?: string
   tracks?: Track[]
+  /** opened on a view built with nothing named and nothing carried */
+  defaultTrackIds?: string[]
   /**
    * The per-shape half of "can this view be re-navigated" — for the stacked
    * shape, whether it has a panel per stop. Not asked when there is no view to
@@ -67,7 +77,7 @@ export async function openOrReuseSplitView({
    */
   stillFits?: (view: BreakpointSplitView) => boolean
   /** what to build when reuse is declined; `id` is filled in from here */
-  snapshot: Record<string, unknown>
+  snapshot: (tracks: Track[]) => Record<string, unknown>
 }): Promise<{ view: BreakpointSplitView; reused: boolean }> {
   const found = session.views.find(f => f.id === stableViewId)
   const existing = found as BreakpointSplitView | undefined
@@ -78,15 +88,18 @@ export async function openOrReuseSplitView({
   ) {
     return { view: existing, reused: true }
   }
-  return {
-    view: (await launchOrReplaceView({
-      session,
-      typeName: 'BreakpointSplitView',
-      initialState: { ...snapshot, id: stableViewId },
-      replacing: found,
-    })) as unknown as BreakpointSplitView,
-    reused: false,
+  const panel = tracks === undefined ? existing?.views[0] : undefined
+  const carried = panel ? (getSnapshot(panel.tracks) as Track[]) : undefined
+  const view = (await launchOrReplaceView({
+    session,
+    typeName: 'BreakpointSplitView',
+    initialState: { ...snapshot(tracks ?? carried ?? []), id: stableViewId },
+    replacing: found,
+  })) as unknown as BreakpointSplitView
+  if (tracks === undefined && carried === undefined) {
+    await openDefaultTracks(view.views, defaultTrackIds)
   }
+  return { view, reused: false }
 }
 
 /**

@@ -363,3 +363,81 @@ test('a chain of a different length replaces the view in its slot', async () => 
   expect(session.views.indexOf(second)).toBe(0)
   expect(session.views).toHaveLength(2)
 })
+
+function featureTrack(trackId: string) {
+  return {
+    type: 'FeatureTrack',
+    trackId,
+    name: trackId,
+    assemblyNames: ['volvox'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  }
+}
+
+function panelTrackIds(view: unknown) {
+  return (view as BreakpointViewModel).views.map(v =>
+    v.tracks.map(t => t.configuration.trackId),
+  )
+}
+
+const threeStops = [
+  { refName: 'ctgA', pos: 60_000 },
+  { refName: 'ctgB', pos: 20_000 },
+  { refName: 'ctgA', pos: 10_000 },
+]
+
+function stackedArgs(session: ReturnType<typeof createTestSession>) {
+  session.addSessionTrackConf(featureTrack('calls'))
+  session.addSessionTrackConf(featureTrack('reads'))
+  return {
+    session,
+    assemblyName: 'volvox',
+    stableViewId: STABLE_ID,
+    windowSize: 5000,
+    defaultTrackIds: ['calls'],
+    feature: breakend('ctgA', 60_000, 'A[ctgB:20001['),
+  }
+}
+
+test('a chain of a different length keeps the tracks the reader opened', async () => {
+  const session = setup()
+  const args = stackedArgs(session)
+  await withWidth(session, () => navToMultiLevelBreak(args))
+  const first = splitViews(session)[0] as unknown as BreakpointViewModel
+  expect(panelTrackIds(first)).toEqual([['calls'], ['calls']])
+  await first.views[0]!.launchTrack('reads')
+
+  await withWidth(session, () =>
+    navToMultiLevelBreak({ ...args, stops: threeStops }),
+  )
+
+  expect(panelTrackIds(splitViews(session)[0])).toEqual([
+    ['calls', 'reads'],
+    ['calls', 'reads'],
+    ['calls', 'reads'],
+  ])
+})
+
+test('a default track the reader closed stays closed across a rebuild', async () => {
+  const session = setup()
+  const args = stackedArgs(session)
+  await withWidth(session, () => navToMultiLevelBreak(args))
+  const first = splitViews(session)[0] as unknown as BreakpointViewModel
+  first.views[0]!.hideTrack('calls')
+
+  await withWidth(session, () =>
+    navToMultiLevelBreak({ ...args, stops: threeStops }),
+  )
+
+  expect(panelTrackIds(splitViews(session)[0])).toEqual([[], [], []])
+})
+
+test('a one-row relaunch of a stacked view rebuilds it with its tracks', async () => {
+  const session = setup()
+  const args = stackedArgs(session)
+  await withWidth(session, () => navToMultiLevelBreak(args))
+
+  await launch(session, args)
+
+  expect(panelTrackIds(splitViews(session)[0])).toEqual([['calls']])
+})
