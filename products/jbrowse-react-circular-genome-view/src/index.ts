@@ -3,7 +3,10 @@ export { default as CircularGenomeView } from './CircularGenomeView/index.ts'
 export type { CircularGenomeViewProps } from './CircularGenomeView/index.ts'
 export { default as createModel } from './createModel/index.ts'
 export { default as createViewState } from './createViewState.ts'
-export type { ViewStateOptions } from './createViewState.ts'
+export type {
+  AsyncViewStateOptions,
+  ViewStateOptions,
+} from './createViewState.ts'
 // the non-React door: hand it an element and drive the view through the
 // returned controller, for a host (anywidget, htmlwidgets, a <script> page)
 // that cannot write JSX

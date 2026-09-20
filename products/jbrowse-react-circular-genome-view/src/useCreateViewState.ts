@@ -3,7 +3,7 @@ import { useAsyncEngineLifecycle } from '@jbrowse/product-core'
 import createViewState from './createViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
-import type { ViewStateOptions } from './createViewState.ts'
+import type { AsyncViewStateOptions } from './createViewState.ts'
 
 /**
  * Build an engine for a component's lifetime and hand back the model — the hook
@@ -27,7 +27,7 @@ import type { ViewStateOptions } from './createViewState.ts'
  * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
  */
 export function useCreateViewState(
-  opts: ViewStateOptions,
+  opts: AsyncViewStateOptions,
 ): ViewModel | undefined {
   // undefined until the engine's lazily loaded state models resolve — render a
   // fallback (or nothing) for that frame

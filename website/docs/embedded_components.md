@@ -90,7 +90,9 @@ const state = createViewState({
   and `tracks` adds your own files beside the hosted ones. Any UCSC database
   name or GenArk accession resolves. It is fetched, so it goes to
   `useCreateViewState` or `createViewStateAsync`; the imperative
-  `createLinearGenomeView` takes the same name as its `assembly`.
+  `createLinearGenomeView` takes the same name as its `assembly`. The circular
+  view takes a list, `jbrowseHub: ['hg38', 'mm39']`, for two genomes on one
+  circle.
 - **`localFiles`**, a `name -> bytes` map, serves a host whose data lives in a
   process rather than at a URL: a notebook kernel, an R session, anywhere with
   no web server and no CORS. `tracks` then refers to a registered name as if it

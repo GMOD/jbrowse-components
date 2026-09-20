@@ -2,6 +2,7 @@ import { expandAssemblyShorthand } from '@jbrowse/core/assemblyManager/assemblyC
 import {
   normalizeAdapterSnapshots,
   registerLocalFiles,
+  resolveAssemblies,
   resolveLocalFileUris,
 } from '@jbrowse/product-core'
 
@@ -115,12 +116,48 @@ export interface ViewStateOptions extends CreateViewStateBaseOptions {
 }
 
 /**
+ * `jbrowseHub` in place of `assembly` names one genome hosted at
+ * genomes.jbrowse.org, or several (`['hg38', 'mm39']`), and fetches each: its
+ * sequence, chromosome sizes, refName aliases and track catalog. `tracks` and
+ * `aggregateTextSearchAdapters` add to the hubs' and win on a shared id.
+ */
+export type AsyncViewStateOptions =
+  | (ViewStateOptions & { jbrowseHub?: never })
+  | (Omit<ViewStateOptions, 'assembly'> & {
+      jbrowseHub: string | string[]
+      assembly?: never
+    })
+
+async function resolveJBrowseHub(
+  opts: AsyncViewStateOptions,
+): Promise<ViewStateOptions> {
+  if (!('jbrowseHub' in opts)) {
+    return opts
+  }
+  if ('assembly' in opts) {
+    throw new Error('pass assembly or jbrowseHub, not both')
+  }
+  const { jbrowseHub, ...rest } = opts
+  const hubs = await resolveAssemblies([jbrowseHub].flat(), {
+    tracks: rest.tracks ?? [],
+    aggregateTextSearchAdapters: rest.aggregateTextSearchAdapters,
+  })
+  return {
+    ...rest,
+    assembly: hubs.assemblies,
+    tracks: hubs.tracks,
+    aggregateTextSearchAdapters: hubs.aggregateTextSearchAdapters,
+  }
+}
+
+/**
  * Asynchronous because CircularView's state model is lazily registered and
  * must be loaded before the session model can embed it.
  */
 export default async function createViewState(
-  opts: ViewStateOptions,
+  input: AsyncViewStateOptions,
 ): Promise<ViewModel> {
+  const opts = await resolveJBrowseHub(input)
   const {
     assembly,
     tracks,
