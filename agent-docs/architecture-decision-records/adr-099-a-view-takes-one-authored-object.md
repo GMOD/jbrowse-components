@@ -95,6 +95,17 @@ The four broken artifacts above became correct verbatim. Moving a view between a
 config, a URL and an `addView` call no longer means reshaping it, which was the
 residual cost the old design accepted and named in its own diagnostic.
 
+**The embedded factories followed on 2026-09-20.** `createViewState`,
+`useCreateViewState` and the managed `<LinearGenomeView>` and
+`<CircularGenomeView>` kept an `init` option through the first pass, on the
+reasoning that an argument to a factory is not a snapshot key. It could carry
+only the launch keys, so a host wanting `hideHeader` beside `loc` still had to
+author a `defaultSession`, which is the two-shapes problem again one level up.
+The option is `view` now: the factory spreads it into the default session's view
+snapshot, the view's own preprocessor partitions it, and it excludes
+`defaultSession`. `init` on a factory never shipped in a stable release, so it
+went with no alias.
+
 **One declaration now feeds four consumers**, none of which restates it:
 `ViewType.acceptedKeys` (properties + launch keys + `passThrough`) is what
 `loadSessionSpec` classifies a spec's keys against, what `jbrowse validate`
