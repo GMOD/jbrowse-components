@@ -132,6 +132,7 @@ typed, a slot can be edited graphically without an author writing any UI.
 | <code>maybeNumber</code> | <code>types.maybe(types.number)</code> | <code>number &#124; undefined</code> | numeric text field |
 | <code>numberMap</code> | <code>types.map(types.number)</code> | <code>Record&lt;string, number&gt;</code> | one card per key, each holding that key's numeric field |
 | <code>string</code> | <code>types.string</code> | <code>string</code> | single-line text field |
+| <code>maybeString</code> | <code>types.maybe(types.string)</code> | <code>string &#124; undefined</code> | single-line text field |
 | <code>stringArray</code> | <code>types.array(types.string)</code> | <code>string[]</code> | "todolist" of text fields, one per entry, with add and delete |
 | <code>stringArrayMap</code> | <code>types.map(types.array(types.string))</code> | <code>Record&lt;string, string[]&gt;</code> | one card per key, each holding that key's "todolist" of strings |
 | <code>stringEnum</code> | the `model` the slot declares | the `model` enumeration's members | dropdown of the `model`'s members |

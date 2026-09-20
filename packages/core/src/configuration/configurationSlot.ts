@@ -61,6 +61,9 @@ const slotTypes = {
   maybeColor: { model: types.maybe(CssColorType) },
   // object-valued, e.g. alignments `sortedBy`
   maybeFrozen: { model: types.maybe(types.frozen()) },
+  // for text whose unset state is a third thing beside some text and none: an
+  // axis title is derived while unset, and drawn bare once it is ''
+  maybeString: { model: types.maybe(types.string) },
   string: { model: types.string, fallbackDefault: '' },
   text: { model: types.string, fallbackDefault: '' },
   fileLocation: {

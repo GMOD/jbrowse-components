@@ -322,6 +322,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   // per slot is what ajv spends its compile time on.
   const SHARED_SLOT_DEFS: Record<string, [string, JsonSchema]> = {
     string: ['StringOrJexl', { type: 'string' }],
+    maybeString: ['StringOrJexl', { type: 'string' }],
     text: ['StringOrJexl', { type: 'string' }],
     color: ['CssColorOrJexl', ref('CssColor')],
     maybeColor: ['CssColorOrJexl', ref('CssColor')],
@@ -358,6 +359,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       case 'maybeColor':
         return ref('CssColor')
       case 'string':
+      case 'maybeString':
       case 'text':
         return { type: 'string' }
       case 'integer':

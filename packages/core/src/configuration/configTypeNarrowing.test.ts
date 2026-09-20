@@ -1,4 +1,4 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import {
@@ -119,6 +119,7 @@ describe('getConf slot-value type narrowing', () => {
       maybeNumber: { type: 'maybeNumber', defaultValue: undefined },
       maybeBoolean: { type: 'maybeBoolean', defaultValue: undefined },
       maybeColor: { type: 'maybeColor', defaultValue: undefined },
+      maybeString: { type: 'maybeString' },
       frozen: { type: 'frozen', defaultValue: {} },
       maybeFrozen: { type: 'maybeFrozen', defaultValue: undefined },
       number: { type: 'number', defaultValue: 1 },
@@ -137,6 +138,7 @@ describe('getConf slot-value type narrowing', () => {
     const maybeNumber = readConfObject(node, 'maybeNumber')
     const maybeBoolean = readConfObject(node, 'maybeBoolean')
     const maybeColor = readConfObject(node, 'maybeColor')
+    const maybeString = readConfObject(node, 'maybeString')
     const frozen = readConfObject(node, 'frozen')
     const maybeFrozen = readConfObject(node, 'maybeFrozen')
     const number = readConfObject(node, 'number')
@@ -153,6 +155,7 @@ describe('getConf slot-value type narrowing', () => {
     assertType<Equal<typeof maybeNumber, number | undefined>>()
     assertType<Equal<typeof maybeBoolean, boolean | undefined>>()
     assertType<Equal<typeof maybeColor, string | undefined>>()
+    assertType<Equal<typeof maybeString, string | undefined>>()
     // the escape hatch for dynamic JSON, `any` on purpose in both forms
     assertType<Equal<typeof frozen, any>>()
     assertType<Equal<typeof maybeFrozen, any>>()
@@ -167,6 +170,15 @@ describe('getConf slot-value type narrowing', () => {
     expect(integer).toBe(1)
     expect(maybeNumber).toBeUndefined()
     expect(color).toBe('red')
+
+    // unset, some text and the empty string are three states, and the third
+    // survives a snapshot, where a `string` slot defaulting to '' strips it
+    expect(maybeString).toBeUndefined()
+    node.setSlot('maybeString', '')
+    expect(readConfObject(node, 'maybeString')).toBe('')
+    expect(getSnapshot(node)).toEqual({ maybeString: '' })
+    node.setSlot('maybeString', null)
+    expect(readConfObject(node, 'maybeString')).toBeUndefined()
   })
 
   test('a maybe* slot surfaces its unset state at the read', () => {

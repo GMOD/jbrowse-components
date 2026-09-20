@@ -234,6 +234,7 @@ interface SlotValueByType {
   maybeNumber: number | undefined
   maybeBoolean: boolean | undefined
   maybeColor: string | undefined
+  maybeString: string | undefined
   /**
    * `frozen` and its `maybe*` form are `any` deliberately — arbitrary dynamic
    * JSON whose shape the caller asserts at the read boundary. `unknown` would

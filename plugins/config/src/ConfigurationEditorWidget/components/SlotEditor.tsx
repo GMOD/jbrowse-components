@@ -34,17 +34,20 @@ interface StringSlot {
   set: (arg: string) => void
 }
 
+// Also drives `maybeString`, whose value is `undefined` while unset: clearing
+// the field leaves the empty string, which is a value, and the reset button
+// returns the slot to unset.
 /** #slotEditor single-line text field */
 const StringEditor = observer(function StringEditor({
   slot,
 }: {
-  slot: StringSlot
+  slot: Omit<StringSlot, 'value'> & { value: string | undefined }
 }) {
   return (
     <ConfigurationTextField
       label={slot.name}
       helperText={slot.description}
-      value={slot.value}
+      value={slot.value ?? ''}
       onChange={evt => {
         slot.set(evt.target.value)
       }}
@@ -149,6 +152,7 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
 // The editors stay fully typed internally; only this lookup is untyped.
 const valueComponents: Record<string, React.ComponentType<any>> = {
   string: StringEditor,
+  maybeString: StringEditor,
   text: TextEditor,
   fileLocation: FileSelectorWrapper,
   stringArray: StringArrayEditor,
