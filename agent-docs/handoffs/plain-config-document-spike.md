@@ -1,6 +1,6 @@
 ---
 name: plain-config-document-spike
-description: A spike on 2026-09-20 had every data adapter read its config as a plain document resolved against the schema's slot table rather than as an MST node, with no adapter and no test edited; the whole non-web suite passed but for one line in the MAF plugin, since fixed on main. The read half of the config system does not depend on MST. A Fable review the same day found the larger duplication on the write half — a track's config held as a plain document and as a throwaway MST node, reconciled by a debounced diff — and recommends one plain substrate reached through a write-half spike first. Nothing past the spike is agreed.
+description: A spike on 2026-09-20 had every data adapter read its config as a plain document resolved against the schema's slot table rather than as an MST node, with no adapter and no test edited; the whole non-web suite passed but for one line in the MAF plugin, since fixed on main. The read half of the config system does not depend on MST. A Fable review the same day found the larger duplication on the write half — a track's config held as a plain document and as a throwaway MST node, reconciled by a debounced diff. The write-half spike it asked for then ran: every track and display config as a handle over the session's own document, no display edited, 1,992 of 1,994 non-web suites and 178 of 184 web suites green, none of its stop conditions met, every remaining failure a test of the mechanism itself. Both spikes are on one unlanded branch. Open: whether to commit to it, with honest types as the next step.
 ---
 
 # A config as a plain document: the adapter spike
@@ -116,26 +116,95 @@ The review's counts correct two above: the accessor calls are 583 in source by
 the TypeScript audit, the 1,048 figure being source plus tests, and the external
 checkouts hold 37 schemas in 19 plugins.
 
+## The write-half spike, run the same day
+
+Colin said to continue. The second commit on the branch has
+`TrackConfigurationReference` answer a config handle in place of a node, so a
+display's config arrives as one too, through `track.configuration.displays`. No
+display was edited. `configHandle.ts`, new on the branch, holds two kinds:
+
+- **One that owns nothing**, for a session that can save. A read asks
+  `session.getTrackById`, through one computed per slot with a structural
+  compare; a write builds the next document and hands it to
+  `updateTrackConfiguration` in the same tick.
+- **One that owns a deep-observable copy**, for a test harness session with no
+  store.
+
+**Results.** Non-web: 1,992 of 1,994 suites, 22,388 of 22,391 run tests. The
+`jbrowse-web` project: 178 of 184 suites and 1,154 of 1,163 tests in the full
+run, after which five of the nine failing tests cleared with one production
+line and two test edits, run on their three suites alone. Sabotage: every slot
+read through a handle throwing fails 23 suites and 183 tests in the wiggle and
+canvas plugins; every slot write a no-op fails 8 suites and 37 tests across
+five plugins.
+
+**None of the review's stop conditions appeared.**
+
+- A write wakes the reader of that slot and no other, and a write of the same
+  value wakes none.
+- `installPerRegionFetchAutoruns.test.ts` lists the fetch autorun's
+  dependencies by name, and the two lists map one to one: `adapter`,
+  `assemblyNames` and `trackId` before and after, nothing added.
+- The handle is one object per track across an admin's edit and an undo, where
+  a node is replaced.
+- **Undo is the result to keep.** A first version whose handle owned a copy
+  failed both undo tests in `UpdateTrackConfiguration.test.ts`, for the reason
+  the comment above them gives for the old working copy. The version that owns
+  nothing passes them with no invalidation step.
+
+**What still fails, all seven being tests of the mechanism itself**: a resolved
+config is an MST node; `getType` of one; the literal names of the fetch's
+dependencies; no delta until 400 ms after an edit; an admin's edit yields a new
+`track.configuration` object; and two on the shape of `getSnapshot` of a config.
+
+**Production code that applied an MST node API to a config, six sites, each
+found by a test reaching it and none by reading:** the MAF loader (on main);
+`confAssemblyNames` in `packages/core/src/util/tracks.ts`, where a sequence
+track walks to the assembly config it sits inside; `describeSlots` in
+`packages/app-core/src/JbApi/jbApi.ts`; `preProcessSlotValues` and the namespace
+merge in `packages/core/src/configuration/slotFacade.ts`; the 400 ms saver in
+`BaseTrackModel.ts`; and the dotplot's open-as-linear-view in
+`plugins/dotplot-view/src/DotplotView/model.ts`. The branch makes each take
+either form.
+
+**What it changed in the plan.**
+
+- **The non-admin reset is not a separate fix.** A handle that owns nothing
+  shows at once what a delta cannot record, so the reset does not take at all,
+  and under this design a tombstone is required. It is also not a few lines in
+  `packages/core/src/util/trackConfigDelta.ts`: `null` for a key the base sets
+  and the edit took out is only right when both sides are in one normal form,
+  and `planWebExport` in `packages/product-core/src/sessionUtils.ts` drops a key
+  on purpose and means "do not ship this". The no-tombstone rule was carrying
+  both. On the branch the save path asks for resets and normalizes both sides,
+  and the reset survives.
+- **Assemblies are already entangled with tracks**, through the sequence
+  track's parent walk, which argues for the review's one-substrate condition.
+- **Three rules a real version needs**: handles are memoized per plugin manager
+  and schema, as `hydratedTrackConfig` already is and its tests require; a
+  union member names its own `type`, which every registered adapter, track and
+  display does and a test double may not, since MST's snapshot drops the `type`
+  of a member that declares none; and the snapshot processors on the pluggable
+  track and adapter unions run on the plain path too, since they expand the
+  loose forms.
+
+**What it does not show.** Honest types — a handle is typed as the MST instance,
+which is how all six sites compiled. A browser, a production bundle, the config
+editor by hand. Assembly, connection, internet-account and root configs, all
+still nodes. Retention: each slot read holds a `keepAlive` computed. Hub-scale
+cost. And a handle validates a value with the slot's MST type, so MST is out of
+the config objects and not out of the picture.
+
 ## The decision this leaves
 
-The review recommends a plain document plus the slot table for every config,
-with MST holding documents only, **on the condition that the end state is one
-substrate** — assemblies, connections and internet accounts included — and
-withdraws the recommendation if it is not. It calls the adapter-only hybrid the
-worst place to stop, since two substrates is the defect this thread keeps
-finding, and it puts the honest `BaseAdapter.config` type third rather than
-first: that step measures the half already shown to work and retires none of
-the risks that can end the direction.
+Whether to take the config system off MST nodes. The review's condition stands:
+one substrate at the end, assemblies, connections and internet accounts
+included. Its order changes in one place: **honest types come next rather than
+last**, since six sites compiled against a type that was not true and each
+surfaced only where a test happened to reach it, which the compiler would do for
+every path at once. Then the write-through save path with the tombstone, which
+the branch already roughs out.
 
-Its first step is a throwaway spike of the write half, the mirror of this one:
-`TrackConfigurationReference` and `DisplayConfigurationReference` answer a
-handle over an observable resolved document, no display is edited, and the
-non-web suite runs. It passes on a handful of distinct failures that are each an
-MST node API applied to a config, and ends the direction on any semantic one —
-an observer that did not fire, a refetch loop, identity churn between two views
-of one track, a drag that wakes every reader.
-
-None of that is agreed. Colin's to answer first: whether the non-admin reset is
-a defect to fix, whether a prebuilt store bundle must load unmodified in v5,
+Colin's to answer: whether a prebuilt store bundle must load unmodified in v5,
 whether the non-track configs become documents too, and whether production
-builds should validate at all.
+builds should validate at all. The reset is no longer a separate question.
