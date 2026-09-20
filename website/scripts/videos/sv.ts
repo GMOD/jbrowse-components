@@ -299,6 +299,13 @@ export const svVideos: VideoSpec[] = [
     // the strip the caption chip is fixed into, which is off the FRAME's bottom
     // rather than the app's. The Set min/max dialog is ~206px centred in the
     // frame, so it lands inside the app at this height. Even, per the encode.
+    //
+    // Nesting the plots under a layout put the open submenu's last row under
+    // the caption chip, and 600 was tried to clear it: the chip moves down with
+    // the frame but the menu stays anchored to the app, so the row stayed
+    // covered and the poster — the last frame — gained 194px of page
+    // background. The caption names the plot being picked, so the covered row
+    // costs less than the dead space.
     viewportHeight: 520,
     // The rows have to be carrying the whole chromosome before the camera
     // starts. A tour of an autoscaled axis being capped is a tour of nothing

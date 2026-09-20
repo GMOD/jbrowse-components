@@ -496,7 +496,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:60 \
   --loc chr2:162,000,000-162,300,000 --width 1400 --out scatac_multiwiggle.png
 ```
 
-![CATlas single-cell ATAC accessibility across 16 cell types over the GCG locus, with the Alpha (glucagon) row showing cell-type-specific open chromatin](https://jbrowse.org/jb2-figures/jbrowse-img/scatac_multiwiggle.9663f7aca4cf.png)
+![CATlas single-cell ATAC accessibility across 16 cell types over the GCG locus, with the Alpha (glucagon) row showing cell-type-specific open chromatin](https://jbrowse.org/jb2-figures/jbrowse-img/scatac_multiwiggle.d2d85abc5bb1.png)
 
 ### Variant tracks
 
@@ -1039,7 +1039,7 @@ jb2export circular --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --width 800 --out circular_chords.png
 ```
 
-![Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations](https://jbrowse.org/jb2-figures/jbrowse-img/circular_chords.d3023abf23c5.png)
+![Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations](https://jbrowse.org/jb2-figures/jbrowse-img/circular_chords.e41a3e71f1ed.png)
 
 Run `jb2export circular --help` for the full list of options.
 
