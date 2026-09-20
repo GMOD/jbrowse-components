@@ -25,7 +25,7 @@ no established tool does?
 - **`chains`** grouped junctions into rearrangements by co-location alone. LINX
   clusters breakends under eleven rules with allele-specific copy number and a
   centromere constraint, validated across 1,479 samples; Severus resolves
-  complex-SV subgraphs from phased long reads and writes a `CLUSTER_ID` per
+  complex-SV subgraphs from phased long reads and writes a `CLUSTERID` per
   cluster into its VCF; gGnome/JaBbA walk a junction-balanced genome graph. Ours
   took a distance threshold.
 - **`derive`** selected reads spanning every locus, took the longest as a

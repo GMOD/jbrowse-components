@@ -94,7 +94,7 @@ that decision are the place to get one.
   allele-specific copy-number constraints, writing `chainId` and `chainIndex`
   per link ([Shale et al. 2022](https://doi.org/10.1016/j.xgen.2022.100112)).
 - [Severus](https://github.com/KolmogorovLab/Severus) builds breakpoint graphs
-  from phased tumor and normal long reads and writes a `CLUSTER_ID` per complex
+  from phased tumor and normal long reads and writes a `CLUSTERID` per complex
   subgraph into its VCF, which suits the ONT data this page uses.
 - [gGnome and JaBbA](https://github.com/mskilab-org/JaBbA) infer a
   junction-balanced genome graph whose walks are allelic paths
