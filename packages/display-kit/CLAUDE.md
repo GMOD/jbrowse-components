@@ -13,13 +13,12 @@ overridable hooks). Status chrome is `DisplayChrome.tsx` —
 `agent-docs/reference/DISPLAYCHROME.md`, adr-026.
 
 **Two LGV foundations, not three.** `GlobalFetchMixin` is the whole global
-family now; `GlobalDataDisplayMixin` was deleted on 2026-08-23 and the reason it
-existed — arc declining `RenderLifecycleMixin` — is in ARCHITECTURE.md's
-"Display stacks". `installGlobalFetchAutorun` lives in its own file beside it.
-`KeyedFetchMixin` is a layer under it, not a foundation: `FetchMixin` plus the
-`currentFetchKey` / `loadedFetchKey` compare, split out on 2026-09 so the
-comparative foundation (`ComparativeFetchMixin`, `@jbrowse/synteny-core`)
-composes the same pair instead of restating it (ADR-105).
+family, and `installGlobalFetchAutorun` lives in its own file beside it;
+ARCHITECTURE.md's "Display stacks" has the ladder. `KeyedFetchMixin` is a layer
+under it, not a foundation: `FetchMixin` plus the `currentFetchKey` /
+`loadedFetchKey` compare, split out so the comparative foundation
+(`ComparativeFetchMixin`, `@jbrowse/synteny-core`) composes the same pair
+instead of restating it (ADR-105).
 
 **The fetch sequence itself is in core**, not here: `runFetchOnce` /
 `installFetch` (`@jbrowse/core/util/installFetch`) own begin → clear the error →

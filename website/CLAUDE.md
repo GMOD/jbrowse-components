@@ -54,7 +54,7 @@ the tour was filmed in.
   of that survives being filmed.
 - **Filming a route retires nothing.** The clip and the stills both stay, even
   where the still is a menu cascade over its own result and the clip performs
-  exactly that. Two figures were retired on 2026-08-21 and restored the same
+  exactly that. Retiring two of them for a clip was tried and reversed the same
   day; what a clip can shorten is PROSE, and a candidate that offers to delete a
   figure is offering nothing.
 - **One order works, and no check enforces it**: rebuild `@jbrowse/web`, write
@@ -75,8 +75,8 @@ the tour was filmed in.
   link. `pnpm video` runs the spec half before it films.
 - **Width is not a per-tour decision, so a spec states only its height.**
   `VIDEO_FRAME_DEFAULTS` is a full-screen browser on a 1080p display, which is
-  the window a reader has open; the corpus was filmed at 1280 until 2026-08-19,
-  which laid every linear view out in a column narrower than anyone runs.
+  the window a reader has open. Filmed at 1280 instead, every linear view lays
+  out in a column narrower than anyone runs.
 - **A viewport is even on both sides.** The scale filter's `-2` rounds an odd
   height up, so the spec's frame is a pixel off the clip every reader plays
   (`annotation_1d` said 1045 and shipped 1046) — and an odd WIDTH fails the

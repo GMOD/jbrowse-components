@@ -23,11 +23,10 @@ shader every fill buffer carried those 20 bytes for nothing — 164MB rather tha
 ceiling rather than waste.
 
 The two line renderings read different neighbours: the step line the previous
-and next scores, the center line the previous bin's span and score. Until
-2026-09-17 they shared one 44-byte record carrying both, and splitting it moved
-an FST scan's raw section at 1000 sources from 586MiB to 426MiB (step) and
-480MiB (center). `ideas/wiggle-instance-records-carry-per-row-constants.md` has
-the measurements.
+and next scores, the center line the previous bin's span and score. Sharing one
+44-byte record carrying both cost an FST scan's raw section at 1000 sources
+586MiB, against 426MiB (step) and 480MiB (center) split.
+`ideas/wiggle-instance-records-carry-per-row-constants.md` has the measurements.
 
 `wiggleBand.slang` fills a line plot's whiskers band on a 44-byte record. **The
 GPU draws it after the lines with `blend: behind`**, because the interpolated
@@ -55,8 +54,8 @@ The consequence differs by backend and the rule does not: on the GPU the record
 sizes mean a pass reading the wrong one reads past the end of its instances; on
 Canvas2D the layer SET is chosen by the rendering (`filled` splits whiskers by
 sign) and so is `gapLimitBp`, so the new painter over the old layers is a plot
-that is neither. Canvas2D read `state` until 2026-08 and drew chords across
-every hole for that frame.
+that is neither. Canvas2D read `state` once and drew chords across every hole
+for that frame.
 
 Each pass packs its own buffer and returns **empty** for renderings that are not
 its own — an empty pack is how a pass releases its buffer.

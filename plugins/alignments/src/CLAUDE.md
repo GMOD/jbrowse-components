@@ -12,11 +12,11 @@ keep shaders display-local and are right to: theirs have one consumer.
 `buildArrays.ts` (worker), `mark.ts` (the pass: packer, painter, hit test),
 `types.ts`. Not every pass needs all four, but a pass that has one of these
 spells it that way, so `features/` can be read as the pass list.
-`renderers/pileupMarks.ts` is the list itself, `PILEUP_MARKS`, in paint order:
-every entry is a render-core `defineMark`, and both renderers and the hit chain
-walk that one list, so a mark cannot be added to one backend alone or gated on
-one alone. `arcs/` is a band of its own with the six-file set, drawn through
-`drawMarks`.
+`LinearAlignmentsDisplay/renderers/pileupMarks.ts` is the list itself,
+`PILEUP_MARKS`, in paint order: every entry is a render-core `defineMark`, and
+both renderers and the hit chain walk that one list, so a mark cannot be added
+to one backend alone or gated on one alone. `arcs/` is a band of its own with
+the six-file set, drawn through `drawMarks`.
 
 **`pileupShape` is the one shape every row-instanced pass is an instance of.**
 `features/pileupShape.ts` states the projection, the reversed-block edge
@@ -66,7 +66,7 @@ merged array the worker ships rather than pre-sliced views of it.
 `indicator/` keep their computes, and the band's passes, painters, hit test
 (`hitCoverageBand`, `coverageBinAt`) and tooltip tables are
 `@jbrowse/alignments-core`'s, shared with MAF and declared once in
-`renderers/coverageMarks.ts`.
+`LinearAlignmentsDisplay/renderers/coverageMarks.ts`.
 
 One directory is **not** a pass and says so by having no `packGpu.ts` —
 `sashimi/` computes geometry for a React SVG overlay, which is a separate draw

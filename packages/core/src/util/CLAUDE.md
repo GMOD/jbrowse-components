@@ -2,10 +2,10 @@
 
 **A module here imports its siblings by path, not through `./index.ts`.**
 `no-restricted-imports` in `eslint.config.mjs` fails the barrel import and says
-why: `index.ts` is 68 value re-export statements, so one edge through it puts
-the whole package in the importing module's graph — `fetchContext.ts` reached
-`getSession` that way and carried 122 files for it.
-`scripts/moduleClosure.test.ts` holds the leaves to a ceiling.
+why: `index.ts` re-exports the whole package, so one edge through it puts all of
+it in the importing module's graph — `fetchContext.ts` reached `getSession` that
+way and carried 122 files for it. `scripts/moduleClosure.test.ts` holds the
+leaves to a ceiling.
 
 The barrel itself is unaffected and must stay whole: `@jbrowse/core/util` is a
 plugin ABI module (`reference/PLUGIN_ABI_STABILITY.md`), so nothing is ever

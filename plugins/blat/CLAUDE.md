@@ -10,7 +10,7 @@ Two facts not in the source: UCSC caps a key at **5000 hits/day** on top of the
 two shorter than the junk — BLAT extends a block through matching junk bases,
 which is its call, not the conversion's.
 
-hgBlat answers a no-match with `"blat": []` (confirmed through the proxy
-2026-09-02 with a random 40-mer against hg38): a zero-hit result is an answer,
-so the dialog's "No BLAT hits found" and the proxy's any-HTML-is-a-bad-key rule
-are both sound. hgPcr is the one that answers "No matches" as an HTML page.
+hgBlat answers a no-match with `"blat": []`, confirmed through the proxy with a
+random 40-mer against hg38: a zero-hit result is an answer, so the dialog's "No
+BLAT hits found" and the proxy's any-HTML-is-a-bad-key rule are both sound.
+hgPcr is the one that answers "No matches" as an HTML page.

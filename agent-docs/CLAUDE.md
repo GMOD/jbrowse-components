@@ -174,15 +174,8 @@ about the alternative. A real limitation stays, as does an outage we hit.
 changed. Snapshots only after a visually verified change. **Then commit.** Don't
 push or open a PR unless asked.
 
-`verify` runs format, typos, oxlint and eslint over the files changed against
-main, plus the whole-program typecheck — seconds, where the same gates over the
-tree are ~2 minutes (`--all`). `test-related` runs the suites that executed a
-changed file on their last run, so a suite that exercises the change from
-outside is in the run where `pnpm test <path>` would miss it. It leaves out the
-`jbrowse-web` jest project, which only remote CI runs — including for a config
-slot, menu, label or snapshot change, the class those suites catch; a red there
-after push gets fixed forward. How it selects, and what it costs:
-`reference/TEST_INFRASTRUCTURE.md` §"Which suites a change runs".
+What each of those two runs over, and the `jbrowse-web` project neither of them
+touches, is `CLAUDE.md` § Tooling.
 
 **Three CI jobs are gated by none of that**: `pnpm check-docs`, `pnpm build:esm`
 and type-aware lint of files the change did not touch. `pnpm verify --full` runs

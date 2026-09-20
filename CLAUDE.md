@@ -113,12 +113,12 @@ Desktop's MCP server — `run_javascript`, `docs`, `open`, `screenshot` — and
   executed on their last run — holds a changed file; a comment- or type-only
   edit runs nothing. `reference/TEST_INFRASTRUCTURE.md` §"Which suites a change
   runs".
-- **The `jbrowse-web` jest project runs on remote CI, not here.** Its 182
-  app-level suites are half the suite clock; `pnpm test` and `test-related`
-  leave them out, and `pnpm test-ci` on push runs them. Don't run them before
-  landing, not even for a config slot, menu, label or snapshot change — a red
-  there after push gets fixed forward. Name one web suite only to chase a
-  failure CI reported or to back a claim that nothing covers a mechanism.
+- **The `jbrowse-web` jest project runs on remote CI, not here.** Its app-level
+  suites are half the suite clock; `pnpm test` and `test-related` leave them
+  out, and `pnpm test-ci` on push runs them. Don't run them before landing, not
+  even for a config slot, menu, label or snapshot change — a red there after
+  push gets fixed forward. Name one web suite only to chase a failure CI
+  reported or to back a claim that nothing covers a mechanism.
 - **An agent's jest run prints nothing for a passing suite.** jest 30 swaps in
   `AgentReporter` once it detects an agent environment (`CLAUDECODE` is one),
   and it prints only files that fail — so every `console.log`/`warn`/`error` a

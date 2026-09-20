@@ -160,16 +160,13 @@ three of the four. **`rows` is the opt-out**: a display declaring its row order
 elsewhere (the wiggle display's is `facet.domain`) passes no `rows` sentence,
 gets no `domain` slot, and states its own `rowDomain` getter after the mixin —
 omitting both throws where the mixin reads the slot. **The mixin declares the
-accessors over those slots**, so a display composes both halves or neither — it
-used to hand-write six `getConf` / `setConf` one-liners while this package's own
-code read them, which is how the labels toggle came to be spelled
-`showSidebarLabels` on one display and silently ignore its config.
-`showRowLabelsMenuItem` is the row, and `treeSidebarShowMenuItems` the two tree
-toggles beside it — all three under "Show..." on every display, with
-`RowLabelsOverlay` mounted whether or not a tree is showing. The tree toggles
-used to sit under "Clustering" on two displays and under "Show..." on the other
-two, and a display that mounted its labels only under `showTree` needed a gate
-on the labels row.
+accessors over those slots**, so a display composes both halves or neither.
+Hand-written `getConf` / `setConf` one-liners beside slots this package's own
+code reads are how the labels toggle came to be spelled `showSidebarLabels` on
+one display and silently ignore its config. `showRowLabelsMenuItem` is the row,
+and `treeSidebarShowMenuItems` the two tree toggles beside it — all three under
+"Show..." on every display, with `RowLabelsOverlay` mounted whether or not a
+tree is showing.
 
 ## Two row-height arguments, and neither is the display height
 

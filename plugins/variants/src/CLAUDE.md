@@ -155,7 +155,7 @@ and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no
 `color` of its own to spend. `applyColorByPalette` writes it there, the group
 legend and the tooltip swatch read it there, and `getSources` folds a
 `samplesTsv` `color` column onto it. Carrying the tint under `color` is what
-kept these displays on a label gutter of their own until 2026-08.
+kept these displays on a label gutter of their own.
 
 **`rowColor` beats whatever color the row already carried**, `samplesTsv`
 included: a channel bound to a variable beats a per-row constant. It is also

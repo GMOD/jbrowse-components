@@ -45,9 +45,8 @@ silent.
   counted, cleared as a group) and `featureMarks` (highlights, pins). A
   highlight isn't filtering anything.
 - **Where it doesn't fit**: a display whose filters live wholly in a dialog with
-  no menu-level clear keeps a plain `activeCount`. `LinearAlignmentsDisplay`
-  used to be the example and no longer is — its read categories are menu rows,
-  so it has real `clear`s to write and declares `narrowings`.
+  no menu-level clear keeps a plain `activeCount`. A display whose narrowings
+  are menu rows has real `clear`s to write and declares `narrowings`.
 - **The jexl-filter entry is `jexlFilterNarrowing`**, shared by all three
   displays with that row. Its count is "the override differs from what the
   config declared", never a length: a filter an admin declared is not a user

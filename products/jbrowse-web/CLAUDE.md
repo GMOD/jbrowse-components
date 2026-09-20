@@ -42,10 +42,10 @@ compares, so a fresh clone needs no command.
   dpr 1 to dpr 2 under cover of whatever change is in flight. Shoot webgpu
   goldens where the existing ones were shot, or pin the pref first.
 - **A `-u` run rewrites every golden past the 0.5% gate, not the ones your
-  change moved.** Measured on the wiggle suites 2026-08-22: 22 of them were past
-  it, and the same 22 were past it with the change reverted. Diff your own
-  captures against captures of the same suites at the base commit before reading
-  an update list as yours — `browser-tests/probe-bar-top-aa.ts` does that
+  change moved.** Measured on the wiggle suites: 22 of them were past it, and
+  the same 22 were past it with the change reverted. Diff your own captures
+  against captures of the same suites at the base commit before reading an
+  update list as yours — `browser-tests/probe-bar-top-aa.ts` does that
   comparison and classifies each differing pixel as a horizontal or a vertical
   run, which is what separates "the mark moved" from "the mark is missing". A
   capture that is short of its features reads as a huge blob diff with no edge
@@ -59,10 +59,10 @@ compares, so a fresh clone needs no command.
   timeout. Wait on the `loading-overlay` test-id count, or `data-display-drawn`
   for canvas paint (`findDisplayPainted`).
 - **One `runner.ts` at a time per worktree.** Two gate runs in one checkout took
-  each other down twice on 2026-08-22: one was reaped at 117/136 captures, the
-  other wedged indefinitely on a suite the first was filtered to. A
-  golden-refresh wrapper doing `rm -rf __snapshots__` before restoring its own
-  copy is what makes it destructive rather than merely slow. Check
+  each other down twice: one was reaped part way through its captures, the other
+  wedged indefinitely on a suite the first was filtered to. A golden-refresh
+  wrapper doing `rm -rf __snapshots__` before restoring its own copy is what
+  makes it destructive rather than merely slow. Check
   `ps -Ao command | grep runner.ts` before starting one, and read a
   `--gate-only --drift-report` number as void if another run overlapped it.
 - `runner.ts` reaps orphaned test browsers at startup; SIGKILLed prior runs
