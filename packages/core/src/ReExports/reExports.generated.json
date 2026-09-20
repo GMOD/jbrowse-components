@@ -4366,15 +4366,23 @@
     "@jbrowse/display-ui/embed": {
       "package": "@jbrowse/display-ui",
       "names": [
+        "EmbedProvider",
+        "Highlights",
+        "Legend",
         "LocationBox",
         "RegionSeams",
+        "ResizeHandle",
         "Scalebar",
         "Track",
         "TrackStack",
+        "TrackToggle",
         "ViewStatus",
         "useLocationBox"
       ],
-      "worker": "real"
+      "worker": "stub",
+      "uiVia": [
+        "react-dom"
+      ]
     },
     "@jbrowse/display-ui/yAxisConstants": {
       "package": "@jbrowse/display-ui",

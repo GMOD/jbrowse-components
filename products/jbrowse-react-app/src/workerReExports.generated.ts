@@ -61,7 +61,6 @@ import * as m73 from '@jbrowse/display-kit/triangleYScalar'
 import * as m74 from '@jbrowse/display-kit/types'
 import * as m75 from '@jbrowse/display-kit/viewportEmpty'
 import * as m77 from '@jbrowse/display-ui/axisPlacement'
-import * as m78 from '@jbrowse/display-ui/embed'
 import * as m79 from '@jbrowse/display-ui/yAxisConstants'
 import * as m80 from '@jbrowse/display-ui/yScaleTicks'
 import * as m81 from '@jbrowse/render-core/blockClipUtils'
@@ -202,7 +201,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/viewportEmpty': m75,
   '@jbrowse/display-ui': uiNamespace(['AXIS_GUTTER_WIDTH_PX', 'AXIS_RIGHT_INSET_PX', 'AxisGutter', 'BOTTOM_RIGHT_CONTROLS_ORDER', 'BottomRightCornerContext', 'COMPACT_AXIS_HEIGHT', 'CrossHatchLines', 'CrossHatches', 'DisplayChromeOverlayProvider', 'DisplayUIProvider', 'FLOATING_LEGEND_TOP_PX', 'FloatingLegend', 'FloatingSvgOverlay', 'PointerLayer', 'SCORE_CAPTION_HEIGHT', 'ScoreDomainCaption', 'ScoreRuleLines', 'ScoreRules', 'Tooltip', 'TrackControlProvider', 'TrackOverlayContext', 'TrackOverlayPortal', 'TrackOverlaySlot', 'YSCALEBAR_LABEL_OFFSET', 'YScaleBar', 'YScaleBarOverlay', 'axisDrawn', 'axisGutterLeft', 'axisPlotBox', 'clampStrokeInsideAxis', 'formatScore', 'isLiveModel', 'plainChromeOverlays', 'plainTrackControl', 'resolveOverlays', 'scoreToAxisY', 'tooLargeBannerText', 'useChromeOverlayOverride', 'useTooltip', 'useTrackControlMenu', 'useTrackControlOverride']),
   '@jbrowse/display-ui/axisPlacement': m77,
-  '@jbrowse/display-ui/embed': m78,
+  '@jbrowse/display-ui/embed': uiNamespace(['EmbedProvider', 'Highlights', 'Legend', 'LocationBox', 'RegionSeams', 'ResizeHandle', 'Scalebar', 'Track', 'TrackStack', 'TrackToggle', 'ViewStatus', 'useLocationBox']),
   '@jbrowse/display-ui/yAxisConstants': m79,
   '@jbrowse/display-ui/yScaleTicks': m80,
   '@jbrowse/render-core/blockClipUtils': m81,
