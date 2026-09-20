@@ -13,8 +13,7 @@ display's alone, to wiggle, the multi-wiggle, Manhattan and the alignments
 coverage band, and retires
 [ADR-124](adr-124-the-score-axis-autoscales-over-what-is-loaded.md)'s
 `preProcessSnapshot` remap along with every other config migration on the v5
-path. Package A of the
-[grammar-vocabulary handoff](../handoffs/grammar-vocabulary-for-wiggle.md).
+path.
 
 ## Context
 

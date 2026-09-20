@@ -7,9 +7,8 @@ summary: "`MultiLinearWiggleDisplay` is deleted as a display type and its model,
 
 ## Status
 
-Accepted (2026-09-19). Completes the package plan in
-[grammar-vocabulary-for-wiggle](../handoffs/grammar-vocabulary-for-wiggle.md)
-after [ADR-141](adr-141-one-y-scale-the-displays.md) and
+Accepted (2026-09-19). Follows
+[ADR-141](adr-141-one-y-scale-the-displays.md) and
 [ADR-142](adr-142-one-value-scale-object.md). Extends
 [ADR-130](adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)
 and [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md)'s `facet`

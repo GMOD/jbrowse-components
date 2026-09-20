@@ -7,9 +7,8 @@ summary: "The quantitative display's six colour spellings — `color`, `posColor
 
 ## Status
 
-Accepted (2026-09-19). Package B of the
-[grammar-vocabulary handoff](../handoffs/grammar-vocabulary-for-wiggle.md),
-after [ADR-142](adr-142-one-value-scale-object.md) and
+Accepted (2026-09-19). Follows
+[ADR-142](adr-142-one-value-scale-object.md) and
 [ADR-143](adr-143-one-quantitative-display-and-facet-is-the-layout.md).
 Applies [ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)'s
 shared colour shape to the display that had not taken it, and finishes
