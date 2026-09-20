@@ -390,3 +390,153 @@ test('a facet stacks a section of 200,000 features', () => {
   expect(sections).toEqual([{ key: 'a', firstRow: 0, rowCount: 4 }])
   expect(layers[0]).toHaveLength(200_000)
 })
+
+function variant(start: number, dp: number, svtype: string, svend: number) {
+  return feature(start, start + 1, {
+    ALT: [`<${svtype}>`],
+    svend,
+    INFO: { DP: [dp], SVTYPE: [svtype], END: [svend] },
+  })
+}
+
+const VARIANTS = [
+  variant(100, 10, 'DEL', 900),
+  variant(200, 20, 'DEL', 400),
+  variant(300, 30, 'DUP', 1200),
+]
+
+// A step read `f.get(name)` where a channel and the facet read a dotted path,
+// so a VCF's INFO fields reached an encoding and no step.
+test('an aggregate op reads a dotted path, and its output reads back as the channel it names', () => {
+  const out = runTransforms(VARIANTS, [
+    { type: 'aggregate', ops: [{ op: 'mean', field: 'INFO.DP' }] },
+  ])
+  expect(rows(out, 'mean_INFO.DP')).toEqual([[20]])
+})
+
+test('a dotted groupby groups by the value a one-element list holds, and hands that value on', () => {
+  const out = runTransforms(VARIANTS, [
+    {
+      type: 'aggregate',
+      groupby: ['INFO.SVTYPE'],
+      ops: [{ op: 'count' }, { op: 'max', field: 'INFO.DP' }],
+    },
+  ])
+  expect(rows(out, 'INFO.SVTYPE', 'count', 'max_INFO.DP')).toEqual([
+    ['DEL', 2, 20],
+    ['DUP', 1, 30],
+  ])
+})
+
+test('a plain groupby over a field holding one-element lists groups by the element', () => {
+  const out = runTransforms(VARIANTS, [
+    { type: 'aggregate', groupby: ['ALT'], ops: [{ op: 'count' }] },
+  ])
+  expect(rows(out, 'ALT', 'count')).toEqual([
+    ['<DEL>', 2],
+    ['<DUP>', 1],
+  ])
+})
+
+test('bin and stack read a dotted path as they read the same values under a plain name', () => {
+  const edges = (field: string) =>
+    rows(
+      runTransforms(VARIANTS, [{ type: 'bin', step: 500, field }]),
+      'start',
+      'end',
+    )
+  expect(edges('INFO.END')).toEqual(edges('svend'))
+  expect(edges('INFO.END')).toEqual([
+    [500, 1000],
+    [0, 500],
+    [1000, 1500],
+  ])
+  const packed = (end: string) =>
+    rows(
+      runTransforms(VARIANTS, [{ type: 'stack', fields: ['start', end] }]),
+      'row',
+    )
+  expect(packed('INFO.END')).toEqual(packed('svend'))
+  expect(packed('INFO.END')).toEqual([[0], [1], [2]])
+})
+
+test('a field whose own name holds a dot is read whole, so a config naming one means what it did', () => {
+  const dotted = [
+    feature(0, 10, { 'a.b': 3, kind: 'x' }),
+    feature(20, 30, { 'a.b': 5, kind: 'x' }),
+  ]
+  const plain = [
+    feature(0, 10, { ab: 3, kind: 'x' }),
+    feature(20, 30, { ab: 5, kind: 'x' }),
+  ]
+  const summed = (features: Feature[], field: string) =>
+    rows(
+      runTransforms(features, [
+        {
+          type: 'aggregate',
+          groupby: ['kind'],
+          ops: [{ op: 'sum', field, as: 'sum' }],
+        },
+      ]),
+      'kind',
+      'sum',
+    )
+  expect(summed(dotted, 'a.b')).toEqual(summed(plain, 'ab'))
+  expect(summed(dotted, 'a.b')).toEqual([['x', 8]])
+})
+
+test('a jexl: field on a step names the step and points at formula', () => {
+  expect(() =>
+    runTransforms(
+      VARIANTS,
+      [
+        {
+          type: 'aggregate',
+          ops: [{ op: 'mean', field: 'jexl:feature.score' }],
+        },
+      ],
+      jexl,
+    ),
+  ).toThrow(/an aggregate field is a name or a dotted path.*formula/)
+  expect(() =>
+    runTransforms(VARIANTS, [{ type: 'bin', step: 10, field: 'jexl:1' }], jexl),
+  ).toThrow(/a bin field is a name or a dotted path.*formula/)
+})
+
+// The packing as it was written before it read each interval once: a stable
+// sort through a comparator, then first fit. Ties keep the order they arrived
+// in, and an unsorted list is what a transform in front of a stack hands it.
+function comparatorStack(features: readonly Feature[], padding: number) {
+  const sorted = [...features].sort((a, b) => a.get('start') - b.get('start'))
+  const rowEnds: number[] = []
+  return sorted.map(f => {
+    const start: number = f.get('start')
+    const end: number = f.get('end')
+    let row = 0
+    while (row < rowEnds.length && rowEnds[row]! > start) {
+      row++
+    }
+    rowEnds[row] = (end > start ? end : start) + padding
+    return [f.id(), row]
+  })
+}
+
+test('a stack over shuffled input with tied starts packs as the comparator sort did', () => {
+  let seed = 7
+  const next = () => (seed = (seed * 1103515245 + 12345) % 2147483648)
+  const shuffled = Array.from({ length: 2000 }, (_, i) => {
+    const start = (next() % 300) * 10
+    return new SimpleFeature({
+      uniqueId: `f${i}`,
+      refName: 'ctgA',
+      start,
+      end: start + 10 + (next() % 200),
+    })
+  })
+  for (const padding of [0, 5]) {
+    const out = runTransforms(shuffled, [{ type: 'stack', padding }])
+    expect(out.map(f => [f.id(), f.get('row')])).toEqual(
+      comparatorStack(shuffled, padding),
+    )
+  }
+})

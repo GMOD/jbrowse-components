@@ -308,6 +308,11 @@ display's own `transform` takes the same steps and runs before every mark's:
 | `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`; `keepEmpty` holds on to a feature whose array is empty               |
 | `stack`     | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                      |
 
+A field a step reads is a name or a dotted path into a structured field, so a
+VCF's `INFO.DP` is the `field` of a `mean` and `INFO.SVTYPE` a `groupby`; a
+field holding a one-element list groups by its element. A computed value is a
+`formula` step's to write, for the steps after it to read by name.
+
 A `bin` followed by an `aggregate` is a density: one bar per bin, its height the
 count of features whose start fell in it. The `aggregate` groups by the edges
 the `bin` wrote unless it names `groupby` fields of its own, so the grouping is

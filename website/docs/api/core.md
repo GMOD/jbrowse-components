@@ -323,6 +323,19 @@ The hit index over `count` instances: each a box from `x` to `x2` at its
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
+## isPlainFieldRef
+
+Whether a field ref is a bare name: what `feature.get` answers on its own,
+with no path to walk and no expression to evaluate. A loop over a plain name
+keeps the direct call, and only a config that writes a path pays for one.
+
+```js
+// type signature
+(ref: string) => ref is never
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)
+
 ## LaneName
 
 The lanes a caller asks the encoder to fill, beyond `x`, `x2` and

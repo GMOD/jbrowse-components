@@ -1,6 +1,6 @@
 import { categoricalField } from './categoricalField.ts'
-import { fieldReader } from './fieldReader.ts'
-import { stringToJexlExpression } from './jexlStrings.ts'
+import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
+import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 
@@ -92,6 +92,29 @@ function expression(expr: string, jexl: JexlInstance | undefined) {
   return stringToJexlExpression(expr, jexl)
 }
 
+// A step reads a name or a dotted path. A plain name keeps the direct
+// `f.get` its loop has always made; this is the reader a path takes instead,
+// chosen once per step. A computed field is a `formula` step's to make.
+function pathReader(ref: string, step: string) {
+  if (isJexl(ref)) {
+    throw new Error(
+      `${step} field is a name or a dotted path, and a formula step in front computes one (${ref})`,
+    )
+  }
+  return fieldReader(ref, undefined)
+}
+
+// A list holding one value is that value, as a VCF's ALT and INFO fields
+// arrive, and a longer one is its text: a Map keys a list by identity, which
+// made every feature a group of its own.
+function groupKey(value: unknown): unknown {
+  return Array.isArray(value)
+    ? value.length === 1
+      ? value[0]
+      : value.join(',')
+    : (value ?? undefined)
+}
+
 function filter(
   features: readonly Feature[],
   expr: string,
@@ -154,8 +177,11 @@ class FlattenedFeature implements Feature {
 function flatten(features: readonly Feature[], step: FlattenStep) {
   const { field = 'subfeatures', index, keepEmpty } = step
   const out: Feature[] = []
+  const read = isPlainFieldRef(field)
+    ? undefined
+    : pathReader(field, 'a flatten')
   for (const f of features) {
-    const items = f.get(field)
+    const items: unknown = read ? read(f) : f.get(field)
     if (!Array.isArray(items) || items.length === 0) {
       if (keepEmpty) {
         out.push(f)
@@ -183,8 +209,16 @@ function bin(features: readonly Feature[], step: BinStep) {
     throw new Error(`a bin step needs a positive size (${size})`)
   }
   const [asStart, asEnd] = step.as ?? DEFAULT_BIN_AS
+  if (isPlainFieldRef(field)) {
+    return features.map(f => {
+      const v = numericValue(f.get(field))
+      const start = Math.floor(v / size) * size
+      return new DerivedFeature(f, { [asStart]: start, [asEnd]: start + size })
+    })
+  }
+  const read = pathReader(field, 'a bin')
   return features.map(f => {
-    const v = numericValue(f.get(field))
+    const v = numericValue(read(f))
     const start = Math.floor(v / size) * size
     return new DerivedFeature(f, { [asStart]: start, [asEnd]: start + size })
   })
@@ -231,11 +265,67 @@ function groupMembers(
   return groups
 }
 
+type Read = (feature: Feature) => unknown
+
+// `groupMembers` over readers and normalized keys: what a dotted groupby, or
+// one over a field holding lists, takes in place of the direct trie above.
+function groupMembersBy(
+  features: readonly Feature[],
+  reads: readonly Read[],
+): Feature[][] {
+  const last = reads.length - 1
+  const root: GroupTrie = new Map()
+  const groups: Feature[][] = []
+  for (const f of features) {
+    let node = root
+    for (let i = 0; i < last; i++) {
+      const v = groupKey(reads[i]!(f))
+      let next = node.get(v) as GroupTrie | undefined
+      if (!next) {
+        next = new Map()
+        node.set(v, next)
+      }
+      node = next
+    }
+    const v = groupKey(reads[last]!(f))
+    let members = node.get(v) as Feature[] | undefined
+    if (!members) {
+      members = []
+      node.set(v, members)
+      groups.push(members)
+    }
+    members.push(f)
+  }
+  return groups
+}
+
+// Whether a groupby needs its keys read and normalized: a path names one, or
+// the field holds lists, which the first feature says once for the whole walk.
+function keyedGroupby(
+  features: readonly Feature[],
+  groupby: readonly string[],
+) {
+  const first = features[0]
+  return groupby.some(
+    field => !isPlainFieldRef(field) || typeof first?.get(field) === 'object',
+  )
+}
+
 function aggregate(features: readonly Feature[], step: AggregateStep) {
   const { groupby = [], ops } = step
   const out: Feature[] = []
   let serial = 0
-  for (const members of groupMembers(features, groupby)) {
+  const reads = keyedGroupby(features, groupby)
+    ? groupby.map(field => pathReader(field, 'an aggregate'))
+    : undefined
+  const opReads = ops.map(({ op, field }) =>
+    op === 'count' || field === undefined || isPlainFieldRef(field)
+      ? undefined
+      : pathReader(field, 'an aggregate'),
+  )
+  for (const members of reads
+    ? groupMembersBy(features, reads)
+    : groupMembers(features, groupby)) {
     const first = members[0]!
     const refName = first.get('refName')
     let start = Infinity
@@ -245,11 +335,14 @@ function aggregate(features: readonly Feature[], step: AggregateStep) {
       end = Math.max(end, m.get('end'))
     }
     const data: Record<string, unknown> = {}
-    for (const field of groupby) {
-      data[field] = first.get(field)
+    for (const [i, field] of groupby.entries()) {
+      data[field] = reads ? groupKey(reads[i]!(first)) : first.get(field)
     }
-    for (const agg of ops) {
-      data[aggregateFieldName(agg)] = aggregateValue(members, agg)
+    for (const [k, agg] of ops.entries()) {
+      const read = opReads[k]
+      data[aggregateFieldName(agg)] = read
+        ? aggregateValueBy(members, agg.op, read)
+        : aggregateValue(members, agg)
     }
     out.push(new MadeFeature({ ...data, refName, start, end }, `#${serial++}`))
   }
@@ -296,6 +389,39 @@ function aggregateValue(
   }
 }
 
+// `aggregateValue` over a reader, for an op naming a dotted path. A function
+// of its own, and the fold written out again, so the loop above stays the size
+// it was: both variants in one body measured 1.04-1.20x on a plain field.
+function aggregateValueBy(
+  members: readonly Feature[],
+  op: AggregateOp['op'],
+  read: Read,
+) {
+  let sum = 0
+  let n = 0
+  let min = Infinity
+  let max = -Infinity
+  for (const m of members) {
+    const v = numericValue(read(m))
+    if (!Number.isFinite(v)) {
+      continue
+    }
+    sum += v
+    n++
+    min = Math.min(min, v)
+    max = Math.max(max, v)
+  }
+  return op === 'sum'
+    ? sum
+    : n === 0
+      ? undefined
+      : op === 'mean'
+        ? sum / n
+        : op === 'min'
+          ? min
+          : max
+}
+
 /**
  * The lowest row each feature fits on, greedy first fit in start order: the
  * layout a pileup is, as a step in front of the encoder rather than a packer
@@ -306,20 +432,46 @@ function stack(features: readonly Feature[], step: StackStep) {
   const as = step.as ?? DEFAULT_STACK_AS
   const [startField, endField] = step.fields ?? DEFAULT_STACK_FIELDS
   const padding = step.padding ?? 0
-  const sorted = [...features].sort(
-    (a, b) => numericValue(a.get(startField)) - numericValue(b.get(startField)),
-  )
+  const n = features.length
+  const starts = new Float64Array(n)
+  const ends = new Float64Array(n)
+  let inOrder = true
+  if (isPlainFieldRef(startField) && isPlainFieldRef(endField)) {
+    for (let i = 0; i < n; i++) {
+      const f = features[i]!
+      starts[i] = numericValue(f.get(startField))
+      ends[i] = numericValue(f.get(endField))
+      inOrder &&= i === 0 || starts[i]! >= starts[i - 1]!
+    }
+  } else {
+    const readStart = pathReader(startField, 'a stack')
+    const readEnd = pathReader(endField, 'a stack')
+    for (let i = 0; i < n; i++) {
+      const f = features[i]!
+      starts[i] = numericValue(readStart(f))
+      ends[i] = numericValue(readEnd(f))
+      inOrder &&= i === 0 || starts[i]! >= starts[i - 1]!
+    }
+  }
+  const order = inOrder
+    ? undefined
+    : Uint32Array.from(starts, (_, i) => i).sort(
+        (a, b) => starts[a]! - starts[b]! || a - b,
+      )
   const rowEnds: number[] = []
-  return sorted.map(f => {
-    const start = numericValue(f.get(startField))
-    const end = numericValue(f.get(endField))
+  const out: Feature[] = []
+  for (let k = 0; k < n; k++) {
+    const i = order ? order[k]! : k
+    const start = starts[i]!
+    const end = ends[i]!
     let row = 0
     while (row < rowEnds.length && rowEnds[row]! > start) {
       row++
     }
     rowEnds[row] = (end > start ? end : start) + padding
-    return new DerivedFeature(f, { [as]: row })
-  })
+    out.push(new DerivedFeature(features[i]!, { [as]: row }))
+  }
+  return out
 }
 
 /**

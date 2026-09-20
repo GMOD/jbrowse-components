@@ -2750,7 +2750,8 @@
     "@jbrowse/core/util/fieldReader": {
       "package": "@jbrowse/core",
       "names": [
-        "fieldReader"
+        "fieldReader",
+        "isPlainFieldRef"
       ],
       "worker": "real"
     },

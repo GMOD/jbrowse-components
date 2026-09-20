@@ -23,6 +23,8 @@ export interface MarkProblem {
 interface StepSnapshot {
   type?: string
   expr?: string
+  field?: string
+  fields?: string[]
   step?: number | string
   as?: string[] | string
   groupby?: string[]
@@ -219,6 +221,29 @@ function ownProblems(mark: MarkSnapshot): Omit<MarkProblem, 'mark'>[] {
         problems.push({
           slot: `transform.${i}.ops.${k}.field`,
           message: `${op} reads a field and names none`,
+        })
+      }
+    }
+    const read: [string, string | undefined][] = [
+      ['field', step.field],
+      ...(step.fields ?? []).map((f, k): [string, string] => [
+        `fields.${k}`,
+        f,
+      ]),
+      ...(step.groupby ?? []).map((f, k): [string, string] => [
+        `groupby.${k}`,
+        f,
+      ]),
+      ...(step.ops ?? []).map((o, k): [string, string | undefined] => [
+        `ops.${k}.field`,
+        o.field,
+      ]),
+    ]
+    for (const [slot, ref] of read) {
+      if (ref && isJexl(ref)) {
+        problems.push({
+          slot: `transform.${i}.${slot}`,
+          message: `the ${type} step reads a field name or a dotted path; a formula step in front computes one`,
         })
       }
     }

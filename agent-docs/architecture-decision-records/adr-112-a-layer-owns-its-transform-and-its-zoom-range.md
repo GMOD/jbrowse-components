@@ -38,7 +38,20 @@ render state rather than a new mechanism.
   `start` and `end` by default, so an `aggregate` grouped by those two is a
   density whose bars span the bins with the encoding's `x`/`x2` defaults
   untouched. `aggregate` keys its groups by raw field values through one
-  `Map` per groupby field. A `formula` or `bin` answers a `DerivedFeature`
+  `Map` per groupby field. A step's field is a name or a dotted path
+  (`INFO.DP`), as a channel's is, and each step picks its loop once: a plain
+  name keeps the direct `f.get` it always made, and a path, or a groupby field
+  whose first feature holds a list, takes a reader variant that keys a
+  one-element list by its element. Against main's loops on plain configs,
+  interleaved with a copy of the new code as the control (which measured
+  0.95-1.05x against itself): `bin+count` 1.04x, `bin+mean` 0.99x, a groupby
+  1.01x. Both variants in one `aggregateValue` body measured 1.04-1.20x on a
+  plain field, which is why the reader variant is a function of its own. A
+  config writing a path pays 1.14-1.17x on that step. `stack` reads each
+  interval once and sorts only input that is not already in start order:
+  0.56-0.66x on sorted input and 0.37-0.42x on shuffled. A `jexl:` step
+  field is refused in the worker and named in the display's notice, a
+  `formula` step being where a field is computed. A `formula` or `bin` answers a `DerivedFeature`
   over the input; an `aggregate` or `coverage` answers a `MadeFeature` that
   carries only what it wrote.
 - **A layer has its own steps.** `LayerRequest.transform` runs after the

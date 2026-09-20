@@ -140,6 +140,20 @@ test('a step says which of its slots cannot run', () => {
   ])
 })
 
+test('a jexl: field on a step is pointed at formula, where a dotted path is read', () => {
+  const mean = (field: string) => [
+    {
+      shape: 'bar',
+      encoding: { y: 'm' },
+      transform: [{ type: 'aggregate', ops: [{ op: 'mean', field, as: 'm' }] }],
+    },
+  ]
+  expect(texts(mean('INFO.DP'))).toEqual([])
+  expect(texts(mean('jexl:feature.INFO.DP[0]'))).toEqual([
+    'mark 0 transform.0.ops.0.field: the aggregate step reads a field name or a dotted path; a formula step in front computes one',
+  ])
+})
+
 test('a zoom range that admits no zoom never draws', () => {
   expect(
     texts([

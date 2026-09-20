@@ -31,6 +31,16 @@ export function fieldReader(
   }
 }
 
+/**
+ * #api
+ * Whether a field ref is a bare name: what `feature.get` answers on its own,
+ * with no path to walk and no expression to evaluate. A loop over a plain name
+ * keeps the direct call, and only a config that writes a path pays for one.
+ */
+export function isPlainFieldRef(ref: string) {
+  return !ref.includes('.') && !isJexl(ref)
+}
+
 function readPath(root: unknown, path: readonly string[]) {
   let value = root
   for (let i = 1; i < path.length; i++) {

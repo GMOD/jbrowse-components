@@ -261,7 +261,8 @@ const transformStepSchema = ConfigurationSchema(
      * #slot marks.transform.field
      * For a `bin` step, the field placing a feature in a bin, `start` when
      * empty; for a `flatten` step, the array field fanned out, `subfeatures` when
-     * empty.
+     * empty. A name or a dotted path into a structured field (`INFO.END`), as
+     * every field a step reads is; a `formula` step in front computes one.
      */
     field: {
       type: 'string',

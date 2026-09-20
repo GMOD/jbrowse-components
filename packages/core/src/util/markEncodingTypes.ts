@@ -361,7 +361,7 @@ export interface FlattenStep {
 export interface StackStep {
   type: 'stack'
   as?: string
-  fields?: [string, string]
+  fields?: [FieldRef, FieldRef]
   padding?: number
 }
 
