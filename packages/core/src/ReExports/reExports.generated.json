@@ -1679,14 +1679,6 @@
         "@mui/material"
       ]
     },
-    "@jbrowse/core/ui/highlightChipReveal": {
-      "package": "@jbrowse/core",
-      "names": [
-        "OverlayPointerProvider",
-        "useHighlightChip"
-      ],
-      "worker": "real"
-    },
     "@jbrowse/core/ui/hoverBoxStyle": {
       "package": "@jbrowse/core",
       "names": [

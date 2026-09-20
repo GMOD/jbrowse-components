@@ -214,7 +214,6 @@ export default [
   '@jbrowse/core/ui/filterMenuItems',
   '@jbrowse/core/ui/gpuFallback',
   '@jbrowse/core/ui/GpuFallbackButton',
-  '@jbrowse/core/ui/highlightChipReveal',
   '@jbrowse/core/ui/hoverBoxStyle',
   '@jbrowse/core/ui/HoverTooltip',
   '@jbrowse/core/ui/Icons',

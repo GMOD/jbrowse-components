@@ -1,4 +1,3 @@
-import { useHighlightChip } from '@jbrowse/core/ui/highlightChipReveal'
 import { colord } from '@jbrowse/core/util/colord'
 import { highlightKey } from '@jbrowse/core/util/highlights'
 import {
@@ -32,10 +31,6 @@ const BookmarkHighlight = observer(function BookmarkHighlight({
 }) {
   const coords = model.getHighlightCoords(bookmark)
   const label = model.labelsVisible ? bookmark.label : undefined
-  const { chipVisible, setMenuOpen } = useHighlightChip(
-    coords,
-    model.showHighlightChips,
-  )
 
   return coords ? (
     <HighlightBand
@@ -43,12 +38,11 @@ const BookmarkHighlight = observer(function BookmarkHighlight({
       background={bookmark.highlight}
       label={label}
     >
-      {chipVisible && coords.width >= CHIP_MIN_WIDTH ? (
+      {coords.width >= CHIP_MIN_WIDTH ? (
         <HighlightChip
           color={colord(bookmark.highlight)}
           label={label}
           tooltip={bookmark.label}
-          setOpen={setMenuOpen}
           menuItems={[
             {
               label: 'Open bookmark widget',

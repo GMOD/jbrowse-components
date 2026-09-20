@@ -29,9 +29,8 @@ defaultSession: {
 
 `assembly`, `loc`, `tracks`, `tracklist`, `nav` and `highlight` need
 on-attach resolution and are captured into the `launch` property below;
-`colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels` and
-`showHighlightChips` are plain view props MST restores natively. Both are
-written the same way.
+`colorByCDS`, `showAminoAcids`, `showCenterLine` and `trackLabels` are plain
+view props MST restores natively. Both are written the same way.
 At runtime the same model is driven imperatively — every property and action
 below is reachable on `viewState.session.views[0]`:
 
@@ -75,7 +74,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | <span data-pagefind-ignore>displayName is displayed in the header of the view, or assembly names being used if none is specified</span> | [BaseViewModel](../baseviewmodel#property-displayname) |
 | <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>collapse the view to its header bar, keeping it in the session rather than closing it</span> | [BaseViewModel](../baseviewmodel#property-minimized) |
 | <span id="property-highlight">**highlight**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>highlight: types.stripDefault( types.array(types.frozen&lt;Highlig…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>highlight: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(types.frozen&lt;HighlightType&gt;()),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | <span data-pagefind-ignore>translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu</span> | [HighlightsMixin](../highlightsmixin#property-highlight) |
-| <span id="property-showhighlightchips">**showHighlightChips**</span><br><code>showHighlightChips: types.stripDefault(types.boolean, false)</code> | <span data-pagefind-ignore>pins the interactive highlight chip (link icon + context menu) to every highlight band; off by default, where a band instead reveals its chip while the pointer is in it. This is what a screenshot needs, since nothing hovers in one</span> | [HighlightsMixin](../highlightsmixin#property-showhighlightchips) |
 
 ## Volatiles
 
@@ -300,4 +298,3 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-sethighlight">**setHighlight**</span><br><code>(highlight?: HighlightType[] &#124; undefined) =&gt; void</code> |  | [HighlightsMixin](../highlightsmixin#action-sethighlight) |
 | <span id="action-removehighlight">**removeHighlight**</span><br><code>(highlight: HighlightType) =&gt; void</code> |  | [HighlightsMixin](../highlightsmixin#action-removehighlight) |
 | <span id="action-updatehighlight">**updateHighlight**</span><br><code>(old: HighlightType, updates: Partial&lt;HighlightType&gt;) =&gt; void</code> |  | [HighlightsMixin](../highlightsmixin#action-updatehighlight) |
-| <span id="action-setshowhighlightchips">**setShowHighlightChips**</span><br><code>(arg: boolean) =&gt; void</code> |  | [HighlightsMixin](../highlightsmixin#action-setshowhighlightchips) |

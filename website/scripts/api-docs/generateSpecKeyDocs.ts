@@ -17,9 +17,9 @@ import type { SourceCorpus } from './util.ts'
 //   the default is the visitor's stored preference, so a spec omitting them
 //   does not open the same way for everyone.
 // - the synteny `colorBy` list named nine of its ten modes, missing `dnds`.
-// - `showHighlightChips` is declared by a mixin, so a list built by reading the
-//   view's own file omitted it; a missing row reads as "not settable" exactly
-//   the way a blank cell reads as "does nothing".
+// - `highlight` is declared by a mixin, so a list built by reading the view's
+//   own file omitted it; a missing row reads as "not settable" exactly the way
+//   a blank cell reads as "does nothing".
 // - the linear genome view's keys were split across two lists on no principle,
 //   with members of BOTH buckets in each. The launcher partitions them exactly
 //   two ways, and the page's word for one bucket ("init options") named the

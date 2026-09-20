@@ -1680,13 +1680,6 @@ export const viewFields: Record<string, FieldRecipe> = {
           path: `Drag the bar at the bottom edge of the view to resize it (${value}px here).`,
         }
       : undefined,
-  showHighlightChips: (value, { viewType }) =>
-    typeof value === 'boolean' && viewType === 'LinearGenomeView'
-      ? {
-          path: `View menu → Bookmarks/highlights → Always show highlight chips (${value ? 'checked' : 'unchecked'})`,
-          note: 'Greyed out while highlights themselves are hidden — the chip is drawn on a highlight band. Leave it off and a band still reveals its chip while the pointer is over it.',
-        }
-      : undefined,
   showIntraviewLinks: (value, { viewType }) =>
     typeof value === 'boolean' && viewType === 'BreakpointSplitView'
       ? {

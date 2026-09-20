@@ -1,4 +1,3 @@
-import { useHighlightChip } from '@jbrowse/core/ui/highlightChipReveal'
 import { getSession } from '@jbrowse/core/util'
 import CloseIcon from '@mui/icons-material/Close'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
@@ -29,10 +28,6 @@ const Highlight = observer(function Highlight({
   const coords = model.getHighlightCoords(highlight)
   const bandColor = getHighlightColor(highlight, theme)
   const label = model.labelsVisible ? highlight.label : undefined
-  const { chipVisible, setMenuOpen } = useHighlightChip(
-    coords,
-    model.showHighlightChips,
-  )
 
   return coords ? (
     <HighlightBand
@@ -40,12 +35,11 @@ const Highlight = observer(function Highlight({
       background={bandColor.toRgbString()}
       label={label}
     >
-      {chipVisible && coords.width >= CHIP_MIN_WIDTH ? (
+      {coords.width >= CHIP_MIN_WIDTH ? (
         <HighlightChip
           color={bandColor}
           label={label}
           tooltip={highlight.label ?? 'Highlighted region'}
-          setOpen={setMenuOpen}
           menuItems={[
             {
               label: 'Dismiss highlight',

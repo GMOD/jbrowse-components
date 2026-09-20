@@ -329,9 +329,8 @@ function isTrackSelectorVisible(self: IAnyStateTreeNode) {
  * ```
  * `assembly`, `loc`, `tracks`, `tracklist`, `nav` and `highlight` need
  * on-attach resolution and are captured into the `launch` property below;
- * `colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels` and
- * `showHighlightChips` are plain view props MST restores natively. Both are
- * written the same way.
+ * `colorByCDS`, `showAminoAcids`, `showCenterLine` and `trackLabels` are plain
+ * view props MST restores natively. Both are written the same way.
  * At runtime the same model is driven imperatively — every property and action
  * below is reachable on `viewState.session.views[0]`:
  * ```js

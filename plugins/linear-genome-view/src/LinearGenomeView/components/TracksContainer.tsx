@@ -1,8 +1,6 @@
 import { Suspense, lazy, useRef } from 'react'
 
 import { PluggableElements } from '@jbrowse/core/ui'
-import { OverlayPointerProvider } from '@jbrowse/core/ui/highlightChipReveal'
-import { useMouseTracking } from '@jbrowse/core/ui/useMouseTracking'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
@@ -60,10 +58,6 @@ const TracksContainer = observer(function TracksContainer({
   // a separate range-select instance from the one inside <Rubberband> (the
   // scalebar control); don't dedupe them — they cover different regions.
   const range = useRangeSelect(ref, model, true)
-  // published rather than held (see `useMouseTracking`): the highlight bands
-  // read it, and a position in state here would re-render the whole tracks area
-  // every frame the pointer moves over it
-  const { mouseTracker, handleMouseMove, handleMouseLeave } = useMouseTracking()
 
   return (
     <div
@@ -75,51 +69,47 @@ const TracksContainer = observer(function TracksContainer({
         range.mouseDown(event)
       }}
       onMouseMove={event => {
-        handleMouseMove(event)
         range.mouseMove(event)
       }}
       onMouseLeave={() => {
-        handleMouseLeave()
         range.mouseOut()
       }}
       onMouseUp={mouseUp}
     >
-      <OverlayPointerProvider value={mouseTracker}>
-        {showGridlines ? (
-          <>
-            <Gridlines model={model} />
-            <PaddingBlocks model={model} />
-          </>
-        ) : null}
-        <Suspense fallback={null}>
-          {showCenterLine ? <CenterLine model={model} /> : null}
-        </Suspense>
-        <RangeSelectOverlay model={model} range={range} />
-        {model.volatileGuides.map((guide, idx) => (
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed 2-entry positional list (left/right guide), never reordered
-          <VerticalGuide key={idx} model={model} coordX={guide.xPos} />
-        ))}
-        <Rubberband
-          model={model}
-          ControlComponent={
-            <Scalebar
-              model={model}
-              style={{
-                height: SCALE_BAR_HEIGHT,
-                boxSizing: 'border-box',
-              }}
-            />
-          }
-        />
-        <ScalebarHighlightGroup model={model} />
-        <HighlightGroup model={model} />
-        <PluggableElements
-          pluginManager={pluginManager}
-          name="LinearGenomeView-TracksContainerComponent"
-          props={{ model }}
-        />
-        {children}
-      </OverlayPointerProvider>
+      {showGridlines ? (
+        <>
+          <Gridlines model={model} />
+          <PaddingBlocks model={model} />
+        </>
+      ) : null}
+      <Suspense fallback={null}>
+        {showCenterLine ? <CenterLine model={model} /> : null}
+      </Suspense>
+      <RangeSelectOverlay model={model} range={range} />
+      {model.volatileGuides.map((guide, idx) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed 2-entry positional list (left/right guide), never reordered
+        <VerticalGuide key={idx} model={model} coordX={guide.xPos} />
+      ))}
+      <Rubberband
+        model={model}
+        ControlComponent={
+          <Scalebar
+            model={model}
+            style={{
+              height: SCALE_BAR_HEIGHT,
+              boxSizing: 'border-box',
+            }}
+          />
+        }
+      />
+      <ScalebarHighlightGroup model={model} />
+      <HighlightGroup model={model} />
+      <PluggableElements
+        pluginManager={pluginManager}
+        name="LinearGenomeView-TracksContainerComponent"
+        props={{ model }}
+      />
+      {children}
     </div>
   )
 })

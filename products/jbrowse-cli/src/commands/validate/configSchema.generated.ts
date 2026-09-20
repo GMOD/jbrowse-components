@@ -17012,9 +17012,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "showHighlightChips": {
-          "type": "boolean"
-        },
         "windowStartBp": {
           "type": "number"
         },
@@ -18209,9 +18206,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             ]
           }
-        },
-        "showHighlightChips": {
-          "type": "boolean"
         },
         "colorBy": {
           "$ref": "#/$defs/SyntenyColor"

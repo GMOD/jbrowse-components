@@ -337,7 +337,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               label: 'rrnC operon: the copies pggb collapses',
             },
           ],
-          showHighlightChips: true,
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {

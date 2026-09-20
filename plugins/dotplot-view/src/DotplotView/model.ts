@@ -1490,7 +1490,6 @@ export default function stateModelFactory(pm: PluginManager) {
           if (result) {
             self.addToHighlights(dragToHighlight(result.x1, result.x2))
             self.addToHighlights(dragToHighlight(result.y2, result.y1))
-            self.setShowHighlightChips(true)
           }
         },
         /**

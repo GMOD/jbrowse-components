@@ -6,7 +6,6 @@ import {
   ResizeHandle,
   ViewLoadingScreen,
 } from '@jbrowse/core/ui'
-import { OverlayPointerProvider } from '@jbrowse/core/ui/highlightChipReveal'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ChromeLegend from '@jbrowse/display-kit/ChromeLegend'
 import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
@@ -142,10 +141,8 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
           <div className={classes.content} {...interaction.containerProps}>
-            <OverlayPointerProvider value={interaction.mouseTracker}>
-              <DotplotTooltips model={model} interaction={interaction} />
-              <MouseInteractionLayer model={model} interaction={interaction} />
-            </OverlayPointerProvider>
+            <DotplotTooltips model={model} interaction={interaction} />
+            <MouseInteractionLayer model={model} interaction={interaction} />
           </div>
           <div className={classes.overlay}>
             <DotplotCanvas model={model} />

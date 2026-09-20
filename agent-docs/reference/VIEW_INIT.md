@@ -86,8 +86,7 @@ interface InitState {
 `LinearGenomeViewLaunchProps` is the other half of what an author may write, and
 it is derived rather than listed: every declared property of the view, minus the
 launch keys and the view's identity. `showCenterLine`, `trackLabels`,
-`colorByCDS`, `showHighlightChips` and the rest sit beside `loc` and `tracks` on
-the same object.
+`colorByCDS` and the rest sit beside `loc` and `tracks` on the same object.
 
 ## The partition
 

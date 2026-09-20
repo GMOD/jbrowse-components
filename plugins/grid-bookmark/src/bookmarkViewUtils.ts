@@ -3,10 +3,7 @@ import HighlightIcon from '@mui/icons-material/Highlight'
 
 import type { GridBookmarkModel } from './GridBookmarkWidget/model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type {
-  IAnyStateTreeNode,
-  IStateTreeNode,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // get-or-create the singleton GridBookmark widget and bring it to front
 export function activateBookmarkWidget(node: IAnyStateTreeNode) {
@@ -33,11 +30,6 @@ export function ensureBookmarkWidget(node: IAnyStateTreeNode) {
   }
 }
 
-interface ChipToggleableView {
-  showHighlightChips: boolean
-  setShowHighlightChips: (arg: boolean) => void
-}
-
 // single checkbox for the one session-wide highlight-visibility flag
 export function toggleHighlightsMenuItem(self: IAnyStateTreeNode): MenuItem {
   const session = getSession(self)
@@ -48,25 +40,6 @@ export function toggleHighlightsMenuItem(self: IAnyStateTreeNode): MenuItem {
     checked: session.highlightsVisible,
     onClick: () => {
       session.setHighlightsVisible(!session.highlightsVisible)
-    },
-  }
-}
-
-// single checkbox that pins the interactive chip (link icon + context menu) to
-// every band, which a band otherwise reveals only while the pointer is over it.
-// Disabled while highlights are hidden
-export function toggleHighlightChipsMenuItem(
-  self: IStateTreeNode & ChipToggleableView,
-): MenuItem {
-  const session = getSession(self)
-  return {
-    label: 'Always show highlight chips',
-    icon: HighlightIcon,
-    type: 'checkbox',
-    checked: self.showHighlightChips,
-    disabled: !session.highlightsVisible,
-    onClick: () => {
-      self.setShowHighlightChips(!self.showHighlightChips)
     },
   }
 }

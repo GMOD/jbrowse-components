@@ -10,8 +10,7 @@ import type { HighlightType } from '../../util/highlights.ts'
  * #category view
  *
  * The `view.highlight` band state shared verbatim by the LinearGenomeView and
- * DotplotView: an array of translucent highlight regions plus the
- * `showHighlightChips` toggle for their interactive chips. Both views compose
+ * DotplotView: an array of translucent highlight regions. Both views compose
  * this so the props and actions stay identical by construction rather than by
  * two hand-kept copies. Visibility across all views is the session-wide
  * `highlightsVisible` flag (on BaseSession), not a prop here.
@@ -28,14 +27,6 @@ export default function HighlightsMixin() {
         types.array(types.frozen<HighlightType>()),
         [],
       ),
-      /**
-       * #property
-       * pins the interactive highlight chip (link icon + context menu) to every
-       * highlight band; off by default, where a band instead reveals its chip
-       * while the pointer is in it. This is what a screenshot needs, since
-       * nothing hovers in one
-       */
-      showHighlightChips: types.stripDefault(types.boolean, false),
     })
     .actions(self => ({
       /**
@@ -68,12 +59,6 @@ export default function HighlightsMixin() {
           // visible. Not a growth, so revealHighlightsOnGrowth can't see it
           getSession(self).revealHighlights()
         }
-      },
-      /**
-       * #action
-       */
-      setShowHighlightChips(arg: boolean) {
-        self.showHighlightChips = arg
       },
     }))
     .actions(self => ({

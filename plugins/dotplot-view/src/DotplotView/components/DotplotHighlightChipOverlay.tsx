@@ -1,5 +1,4 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { useHighlightChip } from '@jbrowse/core/ui/highlightChipReveal'
 import { getSession } from '@jbrowse/core/util'
 import { highlightKey } from '@jbrowse/core/util/highlights'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -11,7 +10,6 @@ import { observer } from 'mobx-react'
 import { getHighlightColor } from './highlightUtils.ts'
 
 import type { DotplotViewModel } from '../model.ts'
-import type { HighlightStripe } from '@jbrowse/core/ui/highlightChipReveal'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 
 const useStyles = makeStyles()({
@@ -21,18 +19,14 @@ const useStyles = makeStyles()({
 })
 
 // One band's chip, anchored at the band's edge of the plot: the x-axis band's
-// at the top of its column, the y-axis band's at the left of its row. Each
-// answers for its own stripe, so pointing at one axis' band does not light up
-// the other's chip.
+// at the top of its column, the y-axis band's at the left of its row.
 const HighlightChip = observer(function HighlightChip({
   model,
   highlight,
-  stripe,
   position,
 }: {
   model: DotplotViewModel
   highlight: HighlightType
-  stripe: HighlightStripe
   position: { left: number; top: number }
 }) {
   const theme = useTheme()
@@ -40,17 +34,13 @@ const HighlightChip = observer(function HighlightChip({
   const bandColor = getHighlightColor(highlight, theme)
   const chipColor =
     bandColor.alpha() === 0 ? 'inherit' : bandColor.alpha(0.8).toRgbString()
-  const { chipVisible, setMenuOpen } = useHighlightChip(
-    stripe,
-    model.showHighlightChips,
-  )
 
   // The plot starts a drag on pointerdown and takes POINTER CAPTURE for it, and
   // a captured pointer drags the compatibility mouse events with it — so
   // `click` is delivered to the plot rather than to the chip's button, and the
   // menu silently never opened. Stopping the pointerdown means a press that
   // starts on a chip never captures, the same fix `JBrowseTabMenu` carries.
-  return chipVisible ? (
+  return (
     <div
       className={classes.chip}
       style={position}
@@ -60,7 +50,6 @@ const HighlightChip = observer(function HighlightChip({
     >
       <CascadingMenuButton
         data-testid="highlight-chip"
-        setOpen={setMenuOpen}
         menuItems={[
           {
             label: 'Dismiss highlight',
@@ -78,7 +67,7 @@ const HighlightChip = observer(function HighlightChip({
         </Tooltip>
       </CascadingMenuButton>
     </div>
-  ) : null
+  )
 })
 
 const HighlightChips = observer(function HighlightChips({
@@ -96,7 +85,6 @@ const HighlightChips = observer(function HighlightChips({
         <HighlightChip
           model={model}
           highlight={highlight}
-          stripe={h}
           position={{ left: h.left, top: 0 }}
         />
       ) : null}
@@ -104,7 +92,6 @@ const HighlightChips = observer(function HighlightChips({
         <HighlightChip
           model={model}
           highlight={highlight}
-          stripe={v}
           position={{ left: 0, top: v.top }}
         />
       ) : null}

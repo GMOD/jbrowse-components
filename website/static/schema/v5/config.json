@@ -16003,9 +16003,6 @@
             ]
           }
         },
-        "showHighlightChips": {
-          "type": "boolean"
-        },
         "windowStartBp": {
           "type": "number"
         },
@@ -17152,9 +17149,6 @@
               }
             ]
           }
-        },
-        "showHighlightChips": {
-          "type": "boolean"
         },
         "colorBy": {
           "$ref": "#/$defs/SyntenyColor"

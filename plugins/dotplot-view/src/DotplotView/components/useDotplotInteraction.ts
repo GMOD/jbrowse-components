@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
-import { useMouseTracking } from '@jbrowse/core/ui/useMouseTracking'
 import { createFrameCoalescer } from '@jbrowse/core/util/frameCoalescer'
 
 import { DRAG_THRESHOLD_PX } from '../types.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { Coord } from '../types.ts'
-import type { MouseTracker } from '@jbrowse/core/ui/useMouseTracking'
 import type React from 'react'
 
 // A pointer sample in both frames the UI needs: component-relative (bp math,
@@ -57,11 +55,6 @@ export interface DotplotInteraction {
     onPointerCancel: () => void
     onPointerLeave: () => void
   }
-  // The same pointer, published rather than held, for the overlays drawn over
-  // the plot through an extension point — a highlight band reveals its chip off
-  // this. `pointer` below cannot answer that: during a drag it is the squared-off
-  // rect corner rather than where the cursor is.
-  mouseTracker: MouseTracker
   // drag anchor, undefined outside a drag
   anchor: PointerSample | undefined
   // Where the pointer is, or undefined once it has left the plot — which is
@@ -92,10 +85,6 @@ export function useDotplotInteraction(
 
   // eslint-disable-next-line @eslint-react/use-state -- callback ref (ref={el}), not a setState setter
   const [refEl, setRefEl] = useState<HTMLDivElement | null>(null)
-  // A React PointerEvent is a MouseEvent, so the plot's existing pointer stream
-  // feeds this — no second set of handlers, and the tracked position follows
-  // pointer capture the same way the drag does.
-  const { mouseTracker, handleMouseMove, handleMouseLeave } = useMouseTracking()
   const [down, setDown] = useState<PointerSample>()
   const [curr, setCurr] = useState<PointerSample>()
   const [up, setUp] = useState<PointerSample>()
@@ -234,7 +223,6 @@ export function useDotplotInteraction(
         }
       },
       onPointerMove: event => {
-        handleMouseMove(event)
         const s = sample(event)
         const last = lastRef.current
         lastRef.current = s
@@ -273,7 +261,6 @@ export function useDotplotInteraction(
       // pans it. Dropping the anchor is the same thing a click does.
       onPointerCancel: () => {
         cancelHover()
-        handleMouseLeave()
         lastRef.current = undefined
         clear()
       },
@@ -283,12 +270,10 @@ export function useDotplotInteraction(
       // the pointer had when it crossed the edge.
       onPointerLeave: () => {
         cancelHover()
-        handleMouseLeave()
         setCurr(undefined)
         model.setHoveredFeature(undefined)
       },
     },
-    mouseTracker,
     anchor: down,
     pointer,
     dx,
