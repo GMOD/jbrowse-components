@@ -341,7 +341,11 @@ export interface ScalebarRefNameLabel {
  * the row is (`prefix`, synteny only) and whether the whole row is flipped. The
  * chip takes `captionSpanPx` of the strip and the labels get the rest, so the
  * sticky label pins to the chip's right edge ("hg38" then "chr1") and rides the
- * run under THAT edge. A run the chip covers entirely goes unnamed.
+ * run under THAT edge. A run the chip covers entirely goes unnamed, and the
+ * chip is not shortened to uncover it: a width fitted to the run under it
+ * changes with every run that pans past, and a fixed cap short enough to
+ * uncover a 55px chromosome cuts ordinary names. The assembly's `displayName`
+ * is where a long name gets shortened.
  *
  * `orientation` decides the ` [rev]` marker, following `assembleLocStrings`: say
  * it where it distinguishes, once where it does not.
