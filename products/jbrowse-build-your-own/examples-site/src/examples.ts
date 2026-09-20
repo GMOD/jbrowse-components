@@ -167,11 +167,21 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'synteny',
-    title: 'Comparing two genomes',
-    description: 'Human and mouse at BRCA1, joined by synteny ribbons.',
+    title: 'Comparing genomes',
+    description:
+      'Human and mouse joined by ribbons, and twelve E. coli genomes as lanes.',
     group: 'Going further',
     sections: [
-      { slug: 'synteny-ribbons', title: 'Two linear views and a ribbon band' },
+      {
+        slug: 'synteny-ribbons',
+        title: 'Two linear views and a ribbon band',
+        description: 'Human and mouse at BRCA1.',
+      },
+      {
+        slug: 'gene-lanes',
+        title: 'A lane per genome under one view',
+        description: 'Twelve E. coli genomes joined on the gene symbol.',
+      },
     ],
   },
   {
