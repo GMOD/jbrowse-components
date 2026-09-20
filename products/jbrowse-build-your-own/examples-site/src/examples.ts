@@ -117,12 +117,19 @@ export const pages: ExamplePage[] = [
   {
     slug: 'track-settings',
     title: 'Track settings',
-    description: 'A Color by menu, a legend toggle and a read-height slider.',
+    description:
+      'Color by and group by from your own controls, and a key you place.',
     group: 'Your own UI',
     sections: [
       {
         slug: 'color-by-from-your-own-ui',
         title: 'A Color by menu, and the legend it raises',
+        description: 'Reads colored by a preset, with a read-height slider.',
+      },
+      {
+        slug: 'color-and-group-by-a-field',
+        title: 'Color and group genes by a field',
+        description: 'Any attribute as a color or a row group, keyed above.',
       },
     ],
   },

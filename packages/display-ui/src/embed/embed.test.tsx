@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 
-import { TrackStack } from './index.tsx'
+import { Legend, Track, TrackStack, TrackToggle } from './index.tsx'
 
 import type { EmbedDisplay } from './index.tsx'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
@@ -104,4 +104,81 @@ test('an error is an alert naming what failed', () => {
   expect(screen.getByRole('alert').textContent).toBe(
     'Could not load: no such genome',
   )
+})
+
+test('renderTrack draws each row, so a page puts its own chrome beside a track', () => {
+  const view = fakeView({ type: 'ready' })
+  render(
+    <TrackStack
+      view={view}
+      renderTrack={id => (
+        <>
+          <Track view={view} trackId={id} />
+          <div data-testid={`after-${id}`} />
+        </>
+      )}
+    />,
+  )
+  expect(
+    screen
+      .getByTestId('drawn-genes')
+      .compareDocumentPosition(screen.getByTestId('after-genes')) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy()
+  expect(screen.getByTestId('after-reads')).toBeTruthy()
+})
+
+test('a track toggle is checked while its track is shown, and asks the view to flip it', () => {
+  const asked: string[] = []
+  const view = {
+    tracks: [{ configuration: { trackId: 'genes' } }],
+    launchToggleTrack: (trackId: string) => {
+      asked.push(trackId)
+      return Promise.resolve(true)
+    },
+  }
+  render(
+    <>
+      <TrackToggle view={view} trackId="genes">
+        Genes
+      </TrackToggle>
+      <TrackToggle view={view} trackId="reads">
+        Reads
+      </TrackToggle>
+    </>,
+  )
+  const genes = screen.getByLabelText<HTMLInputElement>('Genes')
+  const reads = screen.getByLabelText<HTMLInputElement>('Reads')
+  expect([genes.checked, reads.checked]).toEqual([true, false])
+  fireEvent.click(reads)
+  expect(asked).toEqual(['reads'])
+})
+
+test('a legend lists the rows of the key a display derived, and nothing for an empty key', () => {
+  const { rerender } = render(
+    <Legend
+      display={{
+        legendSpec: {
+          title: 'strand',
+          sections: [
+            {
+              id: 'strand',
+              items: [
+                { label: 'forward', color: 'red' },
+                { label: 'reverse', color: 'blue', hidden: true },
+              ],
+            },
+            { id: 'empty', items: [] },
+          ],
+        },
+      }}
+    />,
+  )
+  const legend = screen.getByTestId('embed-legend')
+  expect(legend.textContent).toBe('strandforwardreverse')
+  expect(legend.querySelectorAll('rect')).toHaveLength(2)
+  expect(screen.getByText('reverse').style.textDecoration).toBe('line-through')
+
+  rerender(<Legend display={{ legendSpec: { sections: [] } }} />)
+  expect(screen.queryByTestId('embed-legend')).toBeNull()
 })

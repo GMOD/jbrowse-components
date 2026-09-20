@@ -1,7 +1,8 @@
-import { Suspense } from 'react'
+import { Fragment, Suspense } from 'react'
 
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
+import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { observer } from 'mobx-react'
 
 import { TrackOverlaySlot } from '../trackOverlay/TrackOverlaySlot.tsx'
@@ -11,8 +12,10 @@ import type { ViewStatus as ViewStatusValue } from '@jbrowse/core/util/viewStatu
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
+export { Legend } from './legend.tsx'
 export { LocationBox, useLocationBox } from './location.tsx'
-export { RegionSeams, Scalebar } from './regions.tsx'
+export { EmbedProvider } from './provider.tsx'
+export { Highlights, RegionSeams, Scalebar } from './regions.tsx'
 
 export interface EmbedDisplay {
   height: number
@@ -55,6 +58,80 @@ export const Track = observer(function Track({
   )
 })
 
+export interface ResizableDisplay {
+  setResizing: (resizing: boolean) => void
+  resizeHeight: (distance: number) => unknown
+}
+
+export const ResizeHandle = observer(function ResizeHandle({
+  view,
+  trackId,
+  style,
+}: {
+  view: {
+    getTrack: (
+      trackId: string,
+    ) => { activeDisplay: ResizableDisplay } | undefined
+  }
+  trackId: string
+  style?: React.CSSProperties
+}) {
+  const display = view.getTrack(trackId)?.activeDisplay
+  const props = useResizeDrag({
+    onDragStart: () => {
+      display?.setResizing(true)
+    },
+    onDrag: distance => {
+      display?.resizeHeight(distance)
+    },
+    onDragEnd: () => {
+      display?.setResizing(false)
+    },
+  })
+  return (
+    <div
+      {...props}
+      data-gesture-owner="true"
+      aria-label={`Resize ${trackId}`}
+      style={{
+        height: 4,
+        cursor: 'row-resize',
+        touchAction: 'none',
+        background: 'color-mix(in srgb, currentColor 20%, transparent)',
+        ...style,
+      }}
+    />
+  )
+})
+
+export const TrackToggle = observer(function TrackToggle({
+  view,
+  trackId,
+  style,
+  children,
+}: {
+  view: {
+    tracks: { configuration: { trackId: string } }[]
+    launchToggleTrack: (trackId: string) => Promise<unknown>
+  }
+  trackId: string
+  style?: React.CSSProperties
+  children?: React.ReactNode
+}) {
+  return (
+    <label style={style}>
+      <input
+        type="checkbox"
+        checked={view.tracks.some(t => t.configuration.trackId === trackId)}
+        onChange={() => {
+          void view.launchToggleTrack(trackId)
+        }}
+      />
+      {children}
+    </label>
+  )
+})
+
 export const ViewStatus = observer(function ViewStatus({
   view,
   style,
@@ -85,11 +162,13 @@ export const ViewStatus = observer(function ViewStatus({
 export const TrackStack = observer(function TrackStack({
   view,
   trackIds,
+  renderTrack,
   style,
   children,
 }: {
   view: EmbedView
   trackIds?: string[]
+  renderTrack?: (trackId: string) => React.ReactNode
   style?: React.CSSProperties
   children?: React.ReactNode
 }) {
@@ -110,9 +189,13 @@ export const TrackStack = observer(function TrackStack({
       {view.status.type === 'ready' ? (
         <>
           {children}
-          {ids.map(id => (
-            <Track key={id} view={view} trackId={id} />
-          ))}
+          {ids.map(id =>
+            renderTrack ? (
+              <Fragment key={id}>{renderTrack(id)}</Fragment>
+            ) : (
+              <Track key={id} view={view} trackId={id} />
+            ),
+          )}
         </>
       ) : (
         <ViewStatus view={view} />

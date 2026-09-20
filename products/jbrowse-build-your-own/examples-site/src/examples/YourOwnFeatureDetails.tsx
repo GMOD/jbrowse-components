@@ -1,7 +1,5 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { isFeature } from '@jbrowse/core/util/simpleFeature'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -94,24 +92,22 @@ const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
   }
   const { session } = state
   return (
-    <SessionPaletteProvider session={session}>
-      <DisplayUIProvider>
-        <div style={{ display: 'flex' }}>
-          <TrackStack view={session.view} style={{ flex: 1, minWidth: 0 }} />
-          <div
-            style={{
-              width: 260,
-              flex: 'none',
-              overflow: 'auto',
-              borderLeft:
-                '1px solid color-mix(in srgb, currentColor 25%, transparent)',
-            }}
-          >
-            <FeatureDetails session={session} />
-          </div>
+    <EmbedProvider session={session}>
+      <div style={{ display: 'flex' }}>
+        <TrackStack view={session.view} style={{ flex: 1, minWidth: 0 }} />
+        <div
+          style={{
+            width: 260,
+            flex: 'none',
+            overflow: 'auto',
+            borderLeft:
+              '1px solid color-mix(in srgb, currentColor 25%, transparent)',
+          }}
+        >
+          <FeatureDetails session={session} />
         </div>
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+      </div>
+    </EmbedProvider>
   )
 })
 

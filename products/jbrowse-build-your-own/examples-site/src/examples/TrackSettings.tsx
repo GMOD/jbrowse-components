@@ -1,6 +1,8 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { RegionSeams, TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  RegionSeams,
+  TrackStack,
+} from '@jbrowse/display-ui/embed'
 import { pickColorOptions } from '@jbrowse/plugin-alignments'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -106,14 +108,12 @@ const TrackSettings = observer(function TrackSettings() {
     | LinearAlignmentsDisplayModel
     | undefined
   return (
-    <SessionPaletteProvider session={session}>
-      <DisplayUIProvider>
-        {display ? <Settings display={display} /> : null}
-        <TrackStack view={view}>
-          <RegionSeams view={view} />
-        </TrackStack>
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={session}>
+      {display ? <Settings display={display} /> : null}
+      <TrackStack view={view}>
+        <RegionSeams view={view} />
+      </TrackStack>
+    </EmbedProvider>
   )
 })
 

@@ -1,4 +1,5 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { highlightKey } from '@jbrowse/core/util/highlights'
 import { observer } from 'mobx-react'
 
 import type React from 'react'
@@ -26,6 +27,20 @@ export interface ScalebarView {
       paddingLeft: number
     }[]
   }
+}
+
+export interface HighlightsView {
+  highlight: readonly {
+    assemblyName?: string
+    refName: string
+    start: number
+    end: number
+    color?: string
+    label?: string
+  }[]
+  getHighlightCoords: (
+    highlight: HighlightsView['highlight'][number],
+  ) => { left: number; width: number } | undefined
 }
 
 const spanFill = {
@@ -69,6 +84,51 @@ export const RegionSeams = observer(function RegionSeams({
       ))}
     </div>
   )
+})
+
+export const Highlights = observer(function Highlights({
+  view,
+}: {
+  view: HighlightsView
+}) {
+  const palette = usePalette()
+  return view.highlight.map((highlight, i) => {
+    const coords = view.getHighlightCoords(highlight)
+    return coords ? (
+      <div
+        key={highlightKey(highlight, i)}
+        data-testid="highlight-band"
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          width: coords.width,
+          transform: `translateX(${coords.left}px)`,
+          zIndex: 3,
+          pointerEvents: 'none',
+          background:
+            highlight.color ??
+            `color-mix(in srgb, ${palette.highlight.main} 20%, transparent)`,
+        }}
+      >
+        {highlight.label ? (
+          <span
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 3,
+              fontSize: '0.7rem',
+              whiteSpace: 'nowrap',
+              color: palette.text.primary,
+            }}
+          >
+            {highlight.label}
+          </span>
+        ) : null}
+      </div>
+    ) : null
+  })
 })
 
 const SCALEBAR_HEIGHT = 20

@@ -1,6 +1,4 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import RpcWorker from '@jbrowse/react-linear-genome-view2/esm/rpcWorker?worker'
 import { observer } from 'mobx-react'
@@ -43,11 +41,9 @@ const RunItInAWorker = observer(function RunItInAWorker() {
     },
   })
   return state ? (
-    <SessionPaletteProvider session={state.session}>
-      <DisplayUIProvider>
-        <TrackStack view={state.session.view} />
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={state.session}>
+      <TrackStack view={state.session.view} />
+    </EmbedProvider>
   ) : null
 })
 

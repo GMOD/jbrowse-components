@@ -1,10 +1,10 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  Highlights,
+  TrackStack,
+} from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
-
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const hits = [
   {
@@ -43,35 +43,6 @@ const hits = [
   },
 ]
 
-const Bands = observer(function Bands({
-  view,
-}: {
-  view: LinearGenomeViewModel
-}) {
-  return view.highlight.map(highlight => {
-    const coords = view.getHighlightCoords(highlight)
-    return coords ? (
-      <div
-        key={`${highlight.refName}:${highlight.start}-${highlight.end}`}
-        data-testid="highlight-band"
-        title={highlight.label}
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: coords.left,
-          width: coords.width,
-          zIndex: 3,
-          pointerEvents: 'none',
-          background:
-            highlight.color ??
-            'color-mix(in srgb, CanvasText 18%, transparent)',
-        }}
-      />
-    ) : null
-  })
-})
-
 const HighlightARegion = observer(function HighlightARegion() {
   const state = useCreateViewState({
     assembly: {
@@ -101,47 +72,45 @@ const HighlightARegion = observer(function HighlightARegion() {
   const { session } = state
   const { view } = session
   return (
-    <SessionPaletteProvider session={session}>
-      <DisplayUIProvider>
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 6,
-            paddingBottom: 8,
-            fontSize: '0.85rem',
-          }}
-        >
-          {hits.map(({ label, loc, highlight }) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => {
-                view.setHighlight([highlight])
-                view.navToLocString(loc).catch((e: unknown) => {
-                  console.error(e)
-                })
-              }}
-            >
-              {label}
-            </button>
-          ))}
-          <label>
-            <input
-              type="checkbox"
-              checked={session.highlightsVisible}
-              onChange={event => {
-                session.setHighlightsVisible(event.target.checked)
-              }}
-            />
-            Show highlights
-          </label>
-        </div>
-        <TrackStack view={view}>
-          {session.highlightsVisible ? <Bands view={view} /> : null}
-        </TrackStack>
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={session}>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 6,
+          paddingBottom: 8,
+          fontSize: '0.85rem',
+        }}
+      >
+        {hits.map(({ label, loc, highlight }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => {
+              view.setHighlight([highlight])
+              view.navToLocString(loc).catch((e: unknown) => {
+                console.error(e)
+              })
+            }}
+          >
+            {label}
+          </button>
+        ))}
+        <label>
+          <input
+            type="checkbox"
+            checked={session.highlightsVisible}
+            onChange={event => {
+              session.setHighlightsVisible(event.target.checked)
+            }}
+          />
+          Show highlights
+        </label>
+      </div>
+      <TrackStack view={view}>
+        {session.highlightsVisible ? <Highlights view={view} /> : null}
+      </TrackStack>
+    </EmbedProvider>
   )
 })
 

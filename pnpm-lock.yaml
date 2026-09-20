@@ -2071,6 +2071,9 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:*
         version: link:../../../plugins/alignments
+      '@jbrowse/plugin-canvas':
+        specifier: workspace:*
+        version: link:../../../plugins/canvas
       '@jbrowse/plugin-linear-comparative-view':
         specifier: workspace:*
         version: link:../../../plugins/linear-comparative-view

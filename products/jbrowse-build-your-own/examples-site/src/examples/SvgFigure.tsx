@@ -1,6 +1,8 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  Highlights,
+  TrackStack,
+} from '@jbrowse/display-ui/embed'
 import { useViewSvgFigure } from '@jbrowse/plugin-linear-genome-view'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -78,12 +80,12 @@ const SvgFigure = observer(function SvgFigure() {
   }
   const { session } = state
   return (
-    <SessionPaletteProvider session={session}>
-      <DisplayUIProvider>
-        <TrackStack view={session.view} />
-      </DisplayUIProvider>
+    <EmbedProvider session={session}>
+      <TrackStack view={session.view}>
+        <Highlights view={session.view} />
+      </TrackStack>
       <Figure view={session.view} />
-    </SessionPaletteProvider>
+    </EmbedProvider>
   )
 })
 

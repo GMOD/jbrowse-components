@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 
-import { RegionSeams, Scalebar } from './regions.tsx'
+import { Highlights, RegionSeams, Scalebar } from './regions.tsx'
 
 test('one span per padding span, in a layer translated into the viewport', () => {
   const { container } = render(
@@ -59,4 +59,31 @@ test('a scalebar draws the coordinate labels and region names, and owns its gest
   const ticks = row.firstElementChild as HTMLElement
   expect(ticks.style.transform).toBe('translateX(-11px)')
   expect(screen.getByText('chr17').style.maxWidth).toBe('200px')
+})
+
+test('a band per highlight the view can place, each with its label drawn', () => {
+  render(
+    <Highlights
+      view={{
+        highlight: [
+          { refName: 'chr17', start: 100, end: 200, label: 'BRCA1' },
+          { refName: 'chr17', start: 300, end: 301, color: 'orange' },
+          { refName: 'chrZ', start: 1, end: 2, label: 'off screen' },
+        ],
+        getHighlightCoords: ({ refName, start, end }) =>
+          refName === 'chr17'
+            ? { left: start, width: Math.max(end - start, 3) }
+            : undefined,
+      }}
+    />,
+  )
+  const bands = screen.getAllByTestId('highlight-band')
+  expect(
+    bands.map(b => [b.style.transform, b.style.width, b.textContent]),
+  ).toEqual([
+    ['translateX(100px)', '100px', 'BRCA1'],
+    ['translateX(300px)', '3px', ''],
+  ])
+  expect(bands[1]!.style.background).toBe('orange')
+  expect(bands[0]!.style.pointerEvents).toBe('none')
 })

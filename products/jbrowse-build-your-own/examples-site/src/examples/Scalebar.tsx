@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 
-import {
-  SessionPaletteProvider,
-  usePalette,
-} from '@jbrowse/core/ui/PaletteContext'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { usePointerDrag } from '@jbrowse/core/util/usePointerDrag'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { RegionSeams, Scalebar, TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  RegionSeams,
+  Scalebar,
+  TrackStack,
+} from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -132,11 +133,9 @@ const ScalebarAndGridlines = observer(function ScalebarAndGridlines() {
     },
   })
   return state ? (
-    <SessionPaletteProvider session={state.session}>
-      <DisplayUIProvider>
-        <Demo view={state.session.view} />
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={state.session}>
+      <Demo view={state.session.view} />
+    </EmbedProvider>
   ) : null
 })
 

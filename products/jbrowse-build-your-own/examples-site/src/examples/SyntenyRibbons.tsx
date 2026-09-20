@@ -1,9 +1,11 @@
 import { Suspense } from 'react'
 
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack, ViewStatus } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  TrackStack,
+  ViewStatus,
+} from '@jbrowse/display-ui/embed'
 import { LevelSyntenyCanvas } from '@jbrowse/plugin-linear-comparative-view'
 import { useCreateViewState } from '@jbrowse/react-app2'
 import { observer } from 'mobx-react'
@@ -139,11 +141,9 @@ const SyntenyRibbons = observer(function SyntenyRibbons() {
   }
   const { session } = state
   return (
-    <SessionPaletteProvider session={session}>
-      <DisplayUIProvider>
-        <Rows view={session.views[0] as LinearSyntenyViewModel} />
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={session}>
+      <Rows view={session.views[0] as LinearSyntenyViewModel} />
+    </EmbedProvider>
   )
 })
 

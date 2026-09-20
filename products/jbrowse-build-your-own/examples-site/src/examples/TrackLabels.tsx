@@ -1,9 +1,9 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
-import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { Track, ViewStatus } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  ResizeHandle,
+  Track,
+  TrackStack,
+} from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -18,39 +18,6 @@ const labels = {
 const ids = Object.keys(labels) as (keyof typeof labels)[]
 
 const BAR = 4
-
-const ResizeBar = observer(function ResizeBar({
-  view,
-  trackId,
-}: {
-  view: LinearGenomeViewModel
-  trackId: string
-}) {
-  const display = view.getTrack(trackId)?.activeDisplay
-  const props = useResizeDrag({
-    onDragStart: () => {
-      display?.setResizing(true)
-    },
-    onDrag: distance => {
-      display?.resizeHeight(distance)
-    },
-    onDragEnd: () => {
-      display?.setResizing(false)
-    },
-  })
-  return (
-    <div
-      {...props}
-      aria-label={`Resize ${trackId}`}
-      style={{
-        height: BAR,
-        cursor: 'row-resize',
-        touchAction: 'none',
-        background: 'color-mix(in srgb, currentColor 20%, transparent)',
-      }}
-    />
-  )
-})
 
 const Labels = observer(function Labels({
   view,
@@ -75,33 +42,6 @@ const Labels = observer(function Labels({
           </div>
         ) : null
       })}
-    </div>
-  )
-})
-
-const Tracks = observer(function Tracks({
-  view,
-}: {
-  view: LinearGenomeViewModel
-}) {
-  const ref = useWidthSetter(view)
-  const { containerProps } = usePanZoom(ref, view)
-  return (
-    <div
-      ref={ref}
-      {...containerProps}
-      style={{ position: 'relative', overflow: 'hidden', flex: 1, minWidth: 0 }}
-    >
-      {view.status.type === 'ready' ? (
-        ids.map(id => (
-          <div key={id}>
-            <Track view={view} trackId={id} />
-            <ResizeBar view={view} trackId={id} />
-          </div>
-        ))
-      ) : (
-        <ViewStatus view={view} />
-      )}
     </div>
   )
 })
@@ -143,14 +83,26 @@ const TrackLabels = observer(function TrackLabels() {
     },
   })
   return state ? (
-    <SessionPaletteProvider session={state.session}>
-      <DisplayUIProvider>
-        <div style={{ display: 'flex' }}>
-          <Labels view={state.session.view} />
-          <Tracks view={state.session.view} />
-        </div>
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={state.session}>
+      <div style={{ display: 'flex' }}>
+        <Labels view={state.session.view} />
+        <TrackStack
+          view={state.session.view}
+          trackIds={ids}
+          style={{ flex: 1, minWidth: 0 }}
+          renderTrack={id => (
+            <>
+              <Track view={state.session.view} trackId={id} />
+              <ResizeHandle
+                view={state.session.view}
+                trackId={id}
+                style={{ height: BAR }}
+              />
+            </>
+          )}
+        />
+      </div>
+    </EmbedProvider>
   ) : null
 })
 

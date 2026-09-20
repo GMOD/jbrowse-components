@@ -1,8 +1,6 @@
 import { useState } from 'react'
 
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -103,35 +101,33 @@ const Browser = observer(function Browser({
   const { session } = state
   const { view } = session
   return (
-    <SessionPaletteProvider session={session}>
-      <DisplayUIProvider>
-        <button
-          type="button"
-          style={{ marginBottom: 8 }}
-          onClick={() => {
-            void view.launchTrack('a_track_that_is_not_in_the_config')
-          }}
-        >
-          Show a track that isn't in the config
-        </button>
-        {view.status.type === 'noRegions' ? (
-          <div role="status" style={{ padding: '10px 12px' }}>
-            Nothing has told this view where to look yet.{' '}
-            <button
-              type="button"
-              onClick={() => {
-                view.setLaunch({ assembly: assembly.name, loc: brca1, tracks })
-              }}
-            >
-              Show {brca1}
-            </button>
-          </div>
-        ) : (
-          <TrackStack view={view} />
-        )}
-        <Notifications session={session} />
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={session}>
+      <button
+        type="button"
+        style={{ marginBottom: 8 }}
+        onClick={() => {
+          void view.launchTrack('a_track_that_is_not_in_the_config')
+        }}
+      >
+        Show a track that isn't in the config
+      </button>
+      {view.status.type === 'noRegions' ? (
+        <div role="status" style={{ padding: '10px 12px' }}>
+          Nothing has told this view where to look yet.{' '}
+          <button
+            type="button"
+            onClick={() => {
+              view.setLaunch({ assembly: assembly.name, loc: brca1, tracks })
+            }}
+          >
+            Show {brca1}
+          </button>
+        </div>
+      ) : (
+        <TrackStack view={view} />
+      )}
+      <Notifications session={session} />
+    </EmbedProvider>
   )
 })
 

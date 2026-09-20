@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { refNameMismatchMessage } from '@jbrowse/core/assemblyManager/assembly'
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import {
   UNKNOWN,
   UNSUPPORTED,
@@ -9,8 +8,7 @@ import {
   guessTrackType,
   storeBlobLocation,
 } from '@jbrowse/core/util/tracks'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -175,12 +173,10 @@ const OpenALocalFile = observer(function OpenALocalFile() {
     },
   })
   return state ? (
-    <SessionPaletteProvider session={state.session}>
-      <DisplayUIProvider>
-        <FilePicker session={state.session} />
-        <TrackStack view={state.session.view} />
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={state.session}>
+      <FilePicker session={state.session} />
+      <TrackStack view={state.session.view} />
+    </EmbedProvider>
   ) : null
 })
 

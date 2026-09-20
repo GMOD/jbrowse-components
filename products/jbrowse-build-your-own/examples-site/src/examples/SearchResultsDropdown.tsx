@@ -1,10 +1,8 @@
 import { useState } from 'react'
 
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useDebounce } from '@jbrowse/core/util/hooks'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { fetchResults } from '@jbrowse/plugin-linear-genome-view'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -133,14 +131,12 @@ const SearchResultsDropdown = observer(function SearchResultsDropdown() {
     },
   })
   return state ? (
-    <SessionPaletteProvider session={state.session}>
-      <DisplayUIProvider>
-        <div style={{ paddingBottom: 8 }}>
-          <SearchPanel session={state.session} />
-        </div>
-        <TrackStack view={state.session.view} />
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={state.session}>
+      <div style={{ paddingBottom: 8 }}>
+        <SearchPanel session={state.session} />
+      </div>
+      <TrackStack view={state.session.view} />
+    </EmbedProvider>
   ) : null
 })
 

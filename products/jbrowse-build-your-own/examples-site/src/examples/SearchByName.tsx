@@ -1,6 +1,8 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack, useLocationBox } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  TrackStack,
+  useLocationBox,
+} from '@jbrowse/display-ui/embed'
 import { SearchResultsNotFoundError } from '@jbrowse/plugin-linear-genome-view'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -109,12 +111,10 @@ const SearchByName = observer(function SearchByName() {
     },
   })
   return state ? (
-    <SessionPaletteProvider session={state.session}>
-      <DisplayUIProvider>
-        <SearchBox session={state.session} />
-        <TrackStack view={state.session.view} />
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={state.session}>
+      <SearchBox session={state.session} />
+      <TrackStack view={state.session.view} />
+    </EmbedProvider>
   ) : null
 })
 

@@ -1,6 +1,10 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { LocationBox, RegionSeams, TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  LocationBox,
+  RegionSeams,
+  TrackStack,
+  TrackToggle,
+} from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -30,7 +34,6 @@ const Toolbar = observer(function Toolbar({
 }: {
   view: LinearGenomeViewModel
 }) {
-  const shown = new Set(view.tracks.map(t => t.configuration.trackId))
   return (
     <div
       style={{
@@ -77,20 +80,9 @@ const Toolbar = observer(function Toolbar({
         </button>
       ))}
       {catalogue.map(({ id, label }) => (
-        <label key={id}>
-          <input
-            type="checkbox"
-            checked={shown.has(id)}
-            onChange={() => {
-              if (shown.has(id)) {
-                view.hideTrack(id)
-              } else {
-                void view.launchTrack(id)
-              }
-            }}
-          />
+        <TrackToggle key={id} view={view} trackId={id}>
           {label}
-        </label>
+        </TrackToggle>
       ))}
     </div>
   )
@@ -137,14 +129,12 @@ const DriveItFromYourApp = observer(function DriveItFromYourApp() {
   }
   const { session } = state
   return (
-    <SessionPaletteProvider session={session}>
-      <DisplayUIProvider>
-        <Toolbar view={session.view} />
-        <TrackStack view={session.view}>
-          <RegionSeams view={session.view} />
-        </TrackStack>
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={session}>
+      <Toolbar view={session.view} />
+      <TrackStack view={session.view}>
+        <RegionSeams view={session.view} />
+      </TrackStack>
+    </EmbedProvider>
   )
 })
 

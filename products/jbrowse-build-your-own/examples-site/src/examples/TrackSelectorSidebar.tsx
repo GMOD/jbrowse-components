@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  TrackStack,
+  TrackToggle,
+} from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -40,7 +42,6 @@ const TrackSelector = observer(function TrackSelector({
 }) {
   const [filter, setFilter] = useState('')
   const { view } = session
-  const shown = new Set(view.tracks.map(t => t.configuration.trackId))
   const needle = filter.trim().toLowerCase()
   const groups = Map.groupBy(
     listTracks(session).filter(e =>
@@ -72,20 +73,14 @@ const TrackSelector = observer(function TrackSelector({
         <div key={category}>
           <strong>{category}</strong>
           {entries.map(({ trackId, name }) => (
-            <label key={trackId} style={{ display: 'block' }}>
-              <input
-                type="checkbox"
-                checked={shown.has(trackId)}
-                onChange={() => {
-                  if (shown.has(trackId)) {
-                    view.hideTrack(trackId)
-                  } else {
-                    void view.launchTrack(trackId)
-                  }
-                }}
-              />
+            <TrackToggle
+              key={trackId}
+              view={view}
+              trackId={trackId}
+              style={{ display: 'block' }}
+            >
               {name}
-            </label>
+            </TrackToggle>
           ))}
         </div>
       ))}
@@ -175,18 +170,16 @@ const TrackSelectorSidebar = observer(function TrackSelectorSidebar() {
   }
   const { session } = state
   return (
-    <SessionPaletteProvider session={session}>
-      <DisplayUIProvider>
-        <div style={{ display: 'flex', minHeight: 330 }}>
-          <TrackSelector session={session} />
-          <TrackStack
-            view={session.view}
-            trackIds={listTracks(session).map(e => e.trackId)}
-            style={{ flex: 1, minWidth: 0 }}
-          />
-        </div>
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={session}>
+      <div style={{ display: 'flex', minHeight: 330 }}>
+        <TrackSelector session={session} />
+        <TrackStack
+          view={session.view}
+          trackIds={listTracks(session).map(e => e.trackId)}
+          style={{ flex: 1, minWidth: 0 }}
+        />
+      </div>
+    </EmbedProvider>
   )
 })
 

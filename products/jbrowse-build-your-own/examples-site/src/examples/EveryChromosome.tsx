@@ -1,6 +1,9 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { RegionSeams, Scalebar, TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  RegionSeams,
+  Scalebar,
+  TrackStack,
+} from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -38,14 +41,12 @@ const EveryChromosome = observer(function EveryChromosome() {
   }
   const { session } = state
   return (
-    <SessionPaletteProvider session={session}>
-      <DisplayUIProvider>
-        <TrackStack view={session.view}>
-          <Scalebar view={session.view} />
-          <RegionSeams view={session.view} />
-        </TrackStack>
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+    <EmbedProvider session={session}>
+      <TrackStack view={session.view}>
+        <Scalebar view={session.view} />
+        <RegionSeams view={session.view} />
+      </TrackStack>
+    </EmbedProvider>
   )
 })
 
