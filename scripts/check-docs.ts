@@ -66,19 +66,10 @@ function needsRebuild({
     : true
 }
 
-// A demo whose config is addressed to a third-party plugin, which declares its
-// own slots and creates its own tracks at runtime. The manifest carries core's
-// schema and no plugin's, so it reads both as errors: `apollo3` fails on
-// `configuration.ApolloPlugin` and on the `apollo_track_hg38` its session opens,
-// and both work in a browser. Validating these means the manifest learning what
-// a declared plugin serves; until then a name here is the exemption, and
-// `demos/<name>/README.md` says what was checked by hand instead.
-const PLUGIN_CONFIGS = new Set(['apollo3'])
-
 // Enumerated rather than listed, so a new demo directory is validated by
 // existing rather than by an edit here.
 const demoConfigs = readdirSync(join(root, 'demos'), { withFileTypes: true })
-  .filter(d => d.isDirectory() && !PLUGIN_CONFIGS.has(d.name))
+  .filter(d => d.isDirectory())
   .map(d => join('demos', d.name, 'config.json'))
   .filter(p => existsSync(join(root, p)))
   .sort()

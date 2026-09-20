@@ -325,6 +325,57 @@ describe('validateConfig', () => {
     expect(validateConfig(config).notes[0]).toContain('plugin(s)')
   })
 
+  // demos/apollo3: a root configuration slot the plugin registers, and a track
+  // it creates at runtime that the session opens
+  describe('what only a plugin could supply', () => {
+    const withPluginThings = () => {
+      const config = baseConfig()
+      return {
+        ...config,
+        configuration: { ApolloPlugin: { ontologies: [] } },
+        defaultSession: {
+          ...config.defaultSession,
+          views: [
+            {
+              ...config.defaultSession.views[0],
+              tracks: ['sample_bam', 'apollo_track_hg38'],
+            },
+          ],
+        },
+      }
+    }
+
+    it('is an error in a config declaring no plugin', () => {
+      expect(errorsOf(withPluginThings()).map(e => e.where)).toEqual([
+        'configuration.ApolloPlugin',
+        'defaultSession.views[0].tracks[1]',
+      ])
+    })
+
+    it('is a warning beside a declared plugin', () => {
+      const config = {
+        ...withPluginThings(),
+        plugins: [{ name: 'Apollo', url: 'apollo.js' }],
+      }
+      expect(errorsOf(config)).toEqual([])
+      expect(warningsOf(config).map(w => w.where)).toEqual([
+        'configuration.ApolloPlugin',
+        'defaultSession.views[0].tracks[1]',
+      ])
+    })
+
+    it('still checks the root slots core does declare', () => {
+      const config = {
+        ...withPluginThings(),
+        configuration: { ApolloPlugin: {}, disableAnalytics: 'yes' },
+        plugins: [{ name: 'Apollo', url: 'apollo.js' }],
+      }
+      expect(errorsOf(config).map(e => e.where)).toEqual([
+        'configuration.disableAnalytics',
+      ])
+    })
+  })
+
   it('reports a config with no assemblies', () => {
     expect(errorsOf({ tracks: [] }).map(e => e.where)).toContain('assemblies')
   })

@@ -392,4 +392,12 @@ export function schemaProblems(data: unknown, pointer = ''): Problem[] {
   return problems
 }
 
+/**
+ * The keys core declares directly under `configuration`. A plugin adds its own
+ * beside them, the way `LinearGenomeViewPlugin` is core's.
+ */
+export const rootConfigurationSlots = new Set(
+  Object.keys(defs.RootConfiguration!.properties as Schema),
+)
+
 export { schemaId as configSchemaUrl }

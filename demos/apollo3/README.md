@@ -52,12 +52,8 @@ Frank list, so nobody rediscovers these by being surprised.
   peer-depends on. The pin has to move with the plugin rather than with our
   releases; pointing it at `main` breaks the day core drifts from what the
   bundle was built against.
-- **Two config keys the repo's validator rejects** are declared by the plugin at
-  runtime: `configuration.ApolloPlugin` and the `apollo_track_hg38` the session
-  opens. So this directory commits with `SKIP_CONFIG_CHECK=1`, and
-  `PLUGIN_CONFIGS` in `scripts/check-docs.ts` holds it out of the demo-config
-  gate, which otherwise blocks every push from the repo. Both were checked in a
-  browser instead: the ontology loads from the pinned URL rather than from
+- **Two config keys are the plugin's**, declared at runtime:
+  `configuration.ApolloPlugin` and the `apollo_track_hg38` the session opens.
+  The repo's validator cannot check either and warns about both. Both were
+  checked in a browser: the ontology loads from the pinned URL and not from
   GitHub, and the track opens from the session spec, with nothing logged.
-  Teaching the manifest what a declared plugin serves would retire the
-  exemption.

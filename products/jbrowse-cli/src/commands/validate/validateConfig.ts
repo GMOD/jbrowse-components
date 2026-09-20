@@ -10,7 +10,7 @@
 // Pure: no filesystem, no process exit. The command wrapper owns both.
 
 import { configManifest } from './configManifest.generated.ts'
-import { schemaProblems } from './schemaValidate.ts'
+import { rootConfigurationSlots, schemaProblems } from './schemaValidate.ts'
 import { didYouMean } from './suggest.ts'
 
 import type {
@@ -166,6 +166,9 @@ interface Ctx {
   // every id a session may legally name: the tracks plus each assembly's
   // ReferenceSequenceTrack, which lives on the assembly rather than in `tracks`
   sequenceTrackIds: Set<string>
+  // a declared plugin registers slots and creates tracks at runtime, so what
+  // only a plugin could supply is a warning here and an error without one
+  declaresPlugins: boolean
 }
 
 function checkTrack(
@@ -363,10 +366,15 @@ function checkViewReferences(
       !ctx.seenTrackIds.has(trackId) &&
       !ctx.sequenceTrackIds.has(trackId)
     ) {
-      report.error(
-        `${where}.tracks[${j}]`,
-        `trackId "${trackId}" is not defined in this config${didYouMean(trackId, [...ctx.seenTrackIds, ...ctx.sequenceTrackIds])}`,
-      )
+      const message = `trackId "${trackId}" is not defined in this config${didYouMean(trackId, [...ctx.seenTrackIds, ...ctx.sequenceTrackIds])}`
+      if (ctx.declaresPlugins) {
+        report.warn(
+          `${where}.tracks[${j}]`,
+          `${message} — a plugin it declares may create it`,
+        )
+      } else {
+        report.error(`${where}.tracks[${j}]`, message)
+      }
     }
   }
 }
@@ -448,13 +456,39 @@ export function validateConfig(
     report.error('', 'config is not a JSON object')
     return report.result()
   }
-  if (Array.isArray(config.plugins) && config.plugins.length > 0) {
+  const declaresPlugins =
+    Array.isArray(config.plugins) && config.plugins.length > 0
+  if (declaresPlugins) {
     report.note(
-      `config declares ${config.plugins.length} plugin(s); the types and slots they register are not in the schema and cannot be checked`,
+      `config declares ${(config.plugins as unknown[]).length} plugin(s); the types and slots they register are not in the schema and cannot be checked`,
     )
   }
 
-  report.problems.push(...schemaProblems(config))
+  const { configuration } = config
+  const pluginSlots =
+    declaresPlugins && isRecord(configuration)
+      ? Object.keys(configuration).filter(k => !rootConfigurationSlots.has(k))
+      : []
+  for (const key of pluginSlots) {
+    report.warn(
+      `configuration.${key}`,
+      `core declares no "${key}" slot${didYouMean(key, [...rootConfigurationSlots])} — a plugin this config declares may`,
+    )
+  }
+  report.problems.push(
+    ...schemaProblems(
+      pluginSlots.length && isRecord(configuration)
+        ? {
+            ...config,
+            configuration: Object.fromEntries(
+              Object.entries(configuration).filter(
+                ([k]) => !pluginSlots.includes(k),
+              ),
+            ),
+          }
+        : config,
+    ),
+  )
 
   const assemblies = (
     Array.isArray(config.assemblies)
@@ -476,6 +510,7 @@ export function validateConfig(
     ),
     assemblyCount: assemblies.length,
     seenTrackIds: new Set(),
+    declaresPlugins,
     // Both the written trackId and the one the `{name, uri}` shorthand derives,
     // since a config using the shorthand still gets the derived id at runtime.
     sequenceTrackIds: new Set(
