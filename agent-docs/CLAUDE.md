@@ -186,7 +186,9 @@ after push gets fixed forward. How it selects, and what it costs:
 
 **Three CI jobs are gated by none of that**: `pnpm check-docs`, `pnpm build:esm`
 and type-aware lint of files the change did not touch. `pnpm verify --full` runs
-the first two. A validator that cannot import is not one that passed —
+the first two and **`--all` is what runs the third** — `--full` still scopes
+both linters to the changed files, so a change to a widely-read type lands green
+and reds the tree. A validator that cannot import is not one that passed —
 `check-docs` reports ERR_MODULE_NOT_FOUND as a failure with no detail, so read
 the body, not the tally.
 

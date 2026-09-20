@@ -128,12 +128,24 @@ adapter checks that the class reads the schema it was registered with.
 
 - **Intersecting the derived props with MST's.** Narrows reads, detects no
   typos, and its `.d.ts` grows 2.7%.
-- **Typing the model's `CreationType` off the definition**, so `create()` would
-  refuse an unknown key. Zero build errors and 115 in the test tree, and they
-  are not a backlog: an `explicitlyTyped` schema takes `type` (101 of them), a
-  `shorthand` schema takes a bare string, and a `preProcessSnapshot` migration
-  takes the legacy keys it exists to rewrite — the last of which cannot be a
-  type parameter. `ConfigurationSnapshot<SCHEMA>` stays the opt-in check at the
+- **Typing `create()` off the definition**, so it would refuse an unknown key.
+  Measured twice. First at 115 test-tree errors, 101 of them an
+  `explicitlyTyped` schema taking `type`; **re-measured once that became a type
+  parameter, it is 1 build error and 47 in the test tree**, and the shape of the
+  remainder is the answer rather than the count. Take `create`'s parameter off
+  the definition and a `shorthand` schema stops accepting its bare string (12),
+  and every `preProcessSnapshot` migration stops accepting the legacy keys it
+  exists to rewrite — `uri`, `renderer`, `color1`, `_comment`, `drivers`,
+  `fieldName`. **Refusing an unknown key means refusing keys that work.** None
+  of the 47 was a real typo.
+
+  The residual is not a type-system limit, though. `shorthand` threads exactly
+  as `explicitlyTyped` did, and the shorthand vocabulary the rest of it needs is
+  **already derived** — `generateConfigManifest` probes each `normalizeSnapshot`
+  and records `shorthandKeys` for 59 schemas — just not anywhere a type
+  parameter can reach. What it would take is in
+  [ideas/typed-create-needs-the-shorthand-vocabulary.md](../ideas/typed-create-needs-the-shorthand-vocabulary.md).
+  Until then `ConfigurationSnapshot<SCHEMA>` stays the opt-in check at the
   embedder boundary.
 - **Walking the base chain for the identifier**, keyed on OPTIONS: 111 `TS2589`
   excessively-deep errors, one per consuming file. A one-level version keyed on
@@ -153,9 +165,11 @@ adapter checks that the class reads the schema it was registered with.
 - **Run `scripts/audit-config-read-types.ts` after touching the node type.** It
   is the only thing that sees the brand degrading, and a degraded brand
   typechecks clean.
-- **`type: string` on every node is a small lie.** `ConfigNodeMembers` declares
-  it unconditionally because `explicitlyTyped` is not a type parameter, so a
-  node from a schema without one reads `string` and answers `undefined`.
+- **`type: string` on every node was a small lie, and is fixed.**
+  `explicitlyTyped` is a type parameter now and the prop rides into the
+  definition the way the identifier does, so only a schema that declares the
+  option has it. `ConfigNodeMembers` was that lie plus `ConfigNodeActions`, and
+  is gone.
 - **`ConfigurationSnapshot` and `ConfigNodeProps` now overlap** — both read the
   definition, the first for keys going in and the second for values coming out.
   Worth a pass to see whether the first can be expressed over the second, now

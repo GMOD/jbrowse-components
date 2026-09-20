@@ -19,7 +19,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-connections">**connections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; { ...; } &amp; ConfigNode…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; { ...; } &amp; ConfigNodeBrand&lt;...&gt;)[]</code></pre></dialog></span> |  |
+| <span id="getter-connections">**connections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;...&gt;)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;...&gt;)[]</code></pre></dialog></span> |  |
 
 ## Actions
 

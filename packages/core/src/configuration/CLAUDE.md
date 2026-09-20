@@ -71,6 +71,13 @@ rather than intersecting with them, which is what makes the name checked rather
 than merely typed; four type-level details hold it up and each fails quietly.
 ADR-145.
 
+**The identifier and an `explicitlyTyped` schema's `type` are folded into that
+definition** as synthetic string slots, which is what gives a subclass both
+through the ordinary base merge rather than through a second recursion — a
+recursion that was built and costs 111 excessively-deep errors. They are props
+and readable, but the runtime slot table never held them, so `setSlot` throws on
+either. Both are identity; writing one was never the intent.
+
 **A typed prop is not a substitute for the reader**, so a typed
 `conf.assemblyNames` is not `getConf(track, 'assemblyNames')` with fewer
 characters: `readConfObject` evaluates a `jexl:` slot and resolves the default,
