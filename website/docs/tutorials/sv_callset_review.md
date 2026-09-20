@@ -147,10 +147,12 @@ What each picture shows:
   connectors are drawn from what the aligner reported, so a read mismapped into
   a repeat contributes a confident-looking curve
 
-The manifest's `links` column is the first three as a number: the reads with
-pieces in more than one panel of that image. Sorting `tumor/manifest.tsv` on it
-puts the calls no read joins at the top, and the same column of
-`normal/manifest.tsv` says which calls the normal carries too.
+The manifest's `links` column counts those curves: the split reads with pieces
+in more than one panel of that image. Sorting `tumor/manifest.tsv` on it puts
+the calls no split read joins at the top, and the same column of
+`normal/manifest.tsv` says which calls the normal carries too. A deletion short
+enough for one alignment to carry draws a gap through both panels and no curve,
+so it counts as none with its support in plain sight.
 
 ## Opening a call in the browser
 
