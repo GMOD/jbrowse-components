@@ -54,11 +54,12 @@ string lifting into `value`.
 `feature.get(name)` through the tag scheme's per-read value lane, so a PAF
 block's column colours the way a tag does.
 
-**A per-base variable is a field too.** `baseQuality`, `base`, `modifications`
-and `bisulfite` vary per base, so the display paints them as a cell per base
-over a plain read. The reader names a variable and the display picks the mark
-from its grain, which is ADR-095's position that "the reader never picks a
-mark".
+~~**A per-base variable is a field too.** `baseQuality`, `base`,
+`modifications` and `bisulfite` vary per base, so the display paints them as a
+cell per base over a plain read.~~ Superseded by
+[ADR-149](adr-149-the-per-base-layer-is-its-own-colour-object.md): the per-base
+variable is the `baseColor` object's field, drawn over whatever `color` fills
+the reads with.
 
 **The scheme name is the runtime form.** `colorByOf` maps the object onto the
 `ColorBy` the worker request, the classifier, the shader dispatch and the menus
@@ -114,8 +115,9 @@ retired `methylation`, `stranded` and `insertSizeGradient` names now resolve.
 
 ## Rejected alternatives
 
-- **Splitting the per-base layers from the read fill**, a `color` for the read
-  and a layer switch for quality, letters and modifications, so a read coloured
+- ~~**Splitting the per-base layers from the read fill**~~ (done in
+  [ADR-149](adr-149-the-per-base-layer-is-its-own-colour-object.md)), a `color`
+  for the read and a layer switch for quality, letters and modifications, so a read coloured
   by `tags.HP` could carry methylation marks. It is the grammar's layer stage
   and the one combination users ask for, and it changes what every "Color by"
   radio means. One object with one field keeps today's menu and leaves the split

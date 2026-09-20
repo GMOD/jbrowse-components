@@ -8,10 +8,8 @@ import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { ARC_COLOR_TYPES } from '../shared/arcColorOptions.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
-import {
-  alignmentsBaseColorConfigSchema,
-  alignmentsColorConfigSchema,
-} from './alignmentsColorConfigSchema.ts'
+import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
+import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
 import {
   LINKED_READS_MODES,
   READ_CONNECTIONS_MODES,

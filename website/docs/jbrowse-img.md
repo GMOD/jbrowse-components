@@ -707,7 +707,9 @@ Layout & sizing:
 | `maxHeight:N`                | `maxHeight:4000`                                 | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                           |
 
 Available `color:` fields. Anything else is a CSS color, painting every read
-with it:
+with it. The four per-base fields (`baseQuality`, `base`, `modifications` with
+its `methylation` shorthand, `bisulfite`) draw over the reads, so one combines
+with a read field: `color:tag:HP color:methylation`.
 
 | Field                      | Description                                               |
 | -------------------------- | --------------------------------------------------------- |

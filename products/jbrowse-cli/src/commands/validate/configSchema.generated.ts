@@ -3978,7 +3978,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/CssColorOrJexl"
             },
             "field": {
-              "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; baseQuality, base, modifications and bisulfite paint a cell per base; tags.XX reads a SAM tag and any other name a feature attribute.",
+              "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
@@ -4030,6 +4030,40 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
               "$ref": "#/$defs/NumberOrJexl"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AlignmentsBaseColor": {
+      "title": "AlignmentsBaseColor",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"field\\": ... }\`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "field": {
+              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            },
+            "scale": {
+              "description": "none draws no layer and keeps the field for a switch back.",
+              "anyOf": [
+                {
+                  "const": "none"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             }
           },
           "patternProperties": {
@@ -4203,6 +4237,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "$ref": "#/$defs/AlignmentsColor"
+        },
+        "baseColor": {
+          "$ref": "#/$defs/AlignmentsBaseColor"
         },
         "modifications": {
           "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -4640,7 +4677,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/CssColorOrJexl"
             },
             "field": {
-              "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; baseQuality, base, modifications and bisulfite paint a cell per base; tags.XX reads a SAM tag and any other name a feature attribute.",
+              "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
               "$ref": "#/$defs/StringOrJexl",
               "default": "strand"
             },
@@ -4793,6 +4830,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color": {
           "$ref": "#/$defs/LGVSyntenyColor"
+        },
+        "baseColor": {
+          "$ref": "#/$defs/AlignmentsBaseColor"
         },
         "modifications": {
           "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -8683,6 +8723,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "color": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/color"
             },
+            "baseColor": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/baseColor"
+            },
             "modifications": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/modifications"
             },
@@ -10894,6 +10937,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxHeight": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
+            },
+            "baseColor": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/baseColor"
             },
             "modifications": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/modifications"

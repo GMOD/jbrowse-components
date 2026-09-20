@@ -248,11 +248,16 @@ The seams, named honestly:
   legends and menus dispatch on — there is no mode vocabulary beside it.
   What stays local: a field under `none` is the menus' switch-back memory,
   which ggplot2 has no place for since a plot specification is a value.
-- **The pileup's read fill declares its scale and keeps its painter.** A read
-  dimension is a field under the facet's own name, a per-base variable
-  (`baseQuality`, `base`, `modifications`) a field the display paints as a cell
-  per base, `tags.XX` a SAM tag
-  ([ADR-148](../architecture-decision-records/adr-148-the-alignments-read-fill-is-the-colour-object.md)).
+- **The pileup declares two colour channels and keeps its painters.** `color`
+  fills the reads — a read dimension under the facet's own name, `tags.XX` a SAM
+  tag
+  ([ADR-148](../architecture-decision-records/adr-148-the-alignments-read-fill-is-the-colour-object.md))
+  — and `baseColor` names the per-base variable drawn over them
+  (`modifications`, `bisulfite`, `baseQuality`, `base`), the layer stage's two
+  marks with a channel apiece
+  ([ADR-149](../architecture-decision-records/adr-149-the-per-base-layer-is-its-own-colour-object.md)).
+  A modification layer still owns hue at base grain: mismatches draw grey
+  under it, whatever fills the reads.
   The painter was already the grammar's: `readColorCategory` derives one
   categorical variable per read — `insertSizeAndOrientation` a `case_when` with
   the mate and split overrides as further levels — and both backends index one

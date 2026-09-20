@@ -36,7 +36,7 @@ displayId: '...', color: ... }]`. See
   assemblyNames: ['hg38'],
   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
   displayDefaults: {
-    color: { field: 'modifications' },
+    baseColor: { field: 'modifications' },
     modifications: { fillUnmarked: true },
   },
 }
@@ -86,7 +86,8 @@ These slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDisp
 | <span id="slot-hidenoncanonicaljunctions">**hideNonCanonicalJunctions**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays |
 | <span id="slot-maxheight">**maxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6000</code> | Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)<br>_advanced_ |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>250</code> | Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does |
-| <span id="slot-color">**color**</span><br>[AlignmentsColor](../alignmentscolor) | The read fill: `"steelblue"` paints every read, `{ field: "strand" }` a read dimension's own vocabulary, `{ field: "tags.HP" }` a SAM tag and `{ field: "modifications" }` a cell per called base. |
+| <span id="slot-color">**color**</span><br>[AlignmentsColor](../alignmentscolor) | The read fill: `"steelblue"` paints every read, `{ field: "strand" }` a read dimension's own vocabulary and `{ field: "tags.HP" }` a SAM tag. |
+| <span id="slot-basecolor">**baseColor**</span><br>[AlignmentsBaseColor](../alignmentsbasecolor) | The per-base layer drawn over the reads, whatever fills them: `{ field: "modifications" }`, `"bisulfite"`, `"baseQuality"` or `"base"`. |
 | <span id="slot-modifications">**modifications**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | What the `modifications` and `bisulfite` colour fields draw: `threshold` (percent, default 10), `twoColor`, `fillUnmarked`, `cytosineContext` and `shownModifications`; see the `ModificationColorBy` type.<br>_advanced_ |
 | <span id="slot-filterby">**filterBy**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>defaultFilterFlags</code> | Every read filter, in one object: the flag masks, a read name, tag filters, and the four read categories.<br><br>default filter flags is exclude 1540 read unmapped (0x4) read fails platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)<br><br>A read category takes `"only"` or `"exclude"`, and is absent when it isn't filtering — `{ "properPairs": "exclude", "split": "only" }` for the split reads of discordant pairs. `spliced`, `properPairs`, `singletons` and `split`; see the `FilterBy` type.<br>_advanced_ |
 | <span id="slot-facet">**facet**</span><br>[Facet](../facet) | In-track stacked grouping, one labelled section per value: a read dimension (`strand`, `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq`, `mateAssembly`), a tag (`tags.HP`), or any other field. `{ field: "tags.HP", domain: ["2", "1"] }` stacks the listed values first. |

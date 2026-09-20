@@ -136,10 +136,13 @@ export type { AlignmentsColorSetting } from './shared/alignmentsColor.ts'
 export type {
   ArcColorByType,
   CategoryFilter,
+  BaseLayer,
   ColorBy,
+  ColorSchemeType,
   FilterBy,
   GroupBy,
   ModificationColorBy,
+  ReadColorBy,
   SortedBy,
 } from './shared/types.ts'
 export type { ReadCategoryKey } from './shared/readCategoryFilters.ts'

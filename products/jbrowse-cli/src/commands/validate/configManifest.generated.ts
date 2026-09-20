@@ -3279,6 +3279,20 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
+          "name": "baseColor",
+          "type": "AlignmentsBaseColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | (AlignmentsBaseColorScale | undefined))"
+            }
+          ]
+        },
+        {
           "name": "modifications",
           "type": "(JexlString | frozen)"
         },
@@ -3677,6 +3691,20 @@ export const configManifest: ConfigManifest = {
             {
               "name": "domainMid",
               "type": "(JexlString | (number | undefined))"
+            }
+          ]
+        },
+        {
+          "name": "baseColor",
+          "type": "AlignmentsBaseColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | (AlignmentsBaseColorScale | undefined))"
             }
           ]
         },
