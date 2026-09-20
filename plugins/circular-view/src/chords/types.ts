@@ -25,7 +25,7 @@ export interface ChordDisplayFrameModel {
 // is looked up by the assembly AND refName a feature carries, since two genomes
 // on one circle can each carry a `chr1`
 export interface ChordDisplayModel extends ChordDisplayFrameModel {
-  features: Feature[] | undefined
+  drawnFeatures: Feature[] | undefined
   selectedFeatureId: string | undefined
   highlightedFeatureIdSet?: Set<string>
   bezierRadius: number

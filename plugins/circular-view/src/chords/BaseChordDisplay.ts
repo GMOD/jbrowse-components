@@ -104,6 +104,13 @@ export function BaseChordDisplay() {
        * event here
        */
       highlightedFeatureIds: undefined as string[] | undefined,
+      /**
+       * #volatile
+       * ids of the features to draw; undefined draws them all. The SV
+       * inspector writes the rows its sheet's filters leave here, so a filter
+       * change is a redraw and no refetch
+       */
+      visibleFeatureIds: undefined as string[] | undefined,
     }))
     .views(self => ({
       /**
@@ -231,6 +238,19 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
+       * what the chord components draw: `features`, narrowed to
+       * `visibleFeatureIds`
+       */
+      get drawnFeatures() {
+        const visible = self.visibleFeatureIds
+          ? new Set(self.visibleFeatureIds)
+          : undefined
+        return visible
+          ? self.features?.filter(f => visible.has(f.id()))
+          : self.features
+      },
+      /**
+       * #getter
        */
       get highlightedFeatureIdSet() {
         return self.highlightedFeatureIds
@@ -291,6 +311,12 @@ export function BaseChordDisplay() {
        */
       setHighlightedFeatureIds(ids: string[] | undefined) {
         self.highlightedFeatureIds = ids
+      },
+      /**
+       * #action
+       */
+      setVisibleFeatureIds(ids: string[] | undefined) {
+        self.visibleFeatureIds = ids
       },
       /**
        * #action

@@ -77,10 +77,9 @@ function sampleRows<T>(rows: T[] | undefined) {
  * pipeline, and several of those passes cannot have changed the result: it
  * re-applies filters on `rowsSet`, on a strategy-processor change, and on a
  * column-visibility change while a quick filter is active. A new object each
- * time is a new `visibleRows`, which for the SV inspector means a new chord
- * track configuration — and that track carries every visible feature inline, so
- * rebuilding it deep-clones and re-validates the whole callset. Comparing the
- * lookups is one linear scan, which is far less than that.
+ * time is a new `visibleRows`, and everything the SV inspector derives from the
+ * rows on screen recomputes: the legend's tally, the circle's regions, the ids
+ * its chord display draws. Comparing the lookups is one linear scan.
  */
 function sameVisibleRowFlags(a?: VisibleRowFlags, b?: VisibleRowFlags) {
   if (a === b) {
@@ -612,8 +611,7 @@ export default function stateModelFactory() {
       setVisibleRows(arg?: VisibleRowFlags) {
         // the grid reports an empty lookup when nothing is filtered (its own
         // selectors read it that way), so normalize that back to undefined:
-        // otherwise mounting the grid reads as a filter change and rebuilds the
-        // SV inspector's chord track for no reason
+        // otherwise mounting the grid reads as a filter change
         const next = arg && Object.keys(arg).length ? arg : undefined
         // and a re-filter that lands on the same rows is the same non-change,
         // just spelled as a fresh object rather than an empty one

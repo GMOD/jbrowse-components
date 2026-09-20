@@ -11,7 +11,7 @@ const Chords = observer(function Chords({
   display: ChordDisplayModel
 }) {
   const {
-    features,
+    drawnFeatures,
     configuration,
     sliceFor,
     radiusPx,
@@ -27,7 +27,7 @@ const Chords = observer(function Chords({
     // chord — a whole-genome SV set is tens of thousands of them, and each copy
     // is also a dead attribute in the SVG export
     <g data-testid="structuralVariantChordRenderer" cursor="crosshair">
-      {features?.map(feature => {
+      {drawnFeatures?.map(feature => {
         const d = chordPath({
           feature,
           sliceFor: sliceForRefName,

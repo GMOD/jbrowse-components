@@ -233,6 +233,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * the records of the rows the sheet's filters leave
        */
       get features() {
         return (
@@ -240,6 +241,30 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             ?.map(row => row.feature)
             .filter(f => !!f) ?? []
         )
+      },
+      /**
+       * #getter
+       * every record of the sheet, which the chord track is built from once per
+       * file. A track config is copied whole several times on its way to a
+       * track, so one holding the rows a filter left was the whole callset
+       * copied again on every filter change
+       */
+      get allFeatures() {
+        return (
+          self.spreadsheetView.spreadsheet?.rows
+            ?.map(row => row.feature)
+            .filter(f => !!f) ?? []
+        )
+      },
+      /**
+       * #getter
+       * the records the circle draws, as ids on the chord display; undefined
+       * while no filter is narrowing the sheet
+       */
+      get visibleChordIds() {
+        return this.features.length === this.allFeatures.length
+          ? undefined
+          : this.features.map(f => f.uniqueId)
       },
       /**
        * #getter
@@ -339,7 +364,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               name: 'features from tabular data',
               adapter: {
                 type: 'FromConfigAdapter',
-                features: this.features,
+                features: this.allFeatures,
               },
               assemblyNames: [assemblyName],
               displays: [
@@ -526,8 +551,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             () => {
               const { circularView, variantTrackId } = self
               const conf = self.featuresCircularTrackConfiguration
-              // the conf carries the feature list inline, so a changed feature
-              // set means a whole new track: drop the old one first. Both calls
+              // the conf carries the sheet's records inline, so a new file
+              // means a whole new track: drop the old one first. Both calls
               // are MST actions, which run untracked, so neither one's read of
               // circularView.tracks makes this autorun depend on its own writes
               circularView.hideTrack(variantTrackId)
@@ -547,16 +572,17 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const { highlightedChordIds, variantTrackId } = self
+              const { highlightedChordIds, visibleChordIds } = self
               for (const track of self.circularView.tracks) {
-                if (trackConfId(track.configuration) === variantTrackId) {
+                if (trackConfId(track.configuration) === self.variantTrackId) {
                   for (const display of track.displays) {
                     display.setHighlightedFeatureIds?.(highlightedChordIds)
+                    display.setVisibleFeatureIds?.(visibleChordIds)
                   }
                 }
               }
             },
-            { name: 'SvInspectorView event highlight binding' },
+            { name: 'SvInspectorView chord display state binding' },
           ),
         )
       },

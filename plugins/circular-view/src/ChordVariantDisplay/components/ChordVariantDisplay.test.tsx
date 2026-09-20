@@ -24,7 +24,7 @@ function chordModel(
     ready: phase === 'ready',
     displayPhase: phase,
     svgReady: phase !== 'loading',
-    features: [],
+    drawnFeatures: [],
     sliceFor: () => undefined,
     selectedFeatureId: undefined,
     configuration,
@@ -115,7 +115,7 @@ test('chords outside the highlighted set dim, and with no set none do', () => {
       <svg>
         <ChordVariantDisplay
           display={chordModel('ready', {
-            features,
+            drawnFeatures: features,
             sliceFor: () => slice,
             ...overrides,
           })}

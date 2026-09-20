@@ -37,7 +37,7 @@ const rows = [
   bnd('c', 9000, 'C]ctgB:20]'),
 ]
 
-test('selecting a record of an event names the chords of that event', async () => {
+async function inspectorWithRows() {
   const session = createTestSession()
   session.addAssemblyConf(assembly)
   const view = (await session.launchView(
@@ -50,6 +50,11 @@ test('selecting a record of an event names the chords of that event', async () =
     columns: [{ name: 'INFO.SVTYPE' }, { name: 'INFO.EVENT' }],
     rowSet: { rows },
   })
+  return { session, view }
+}
+
+test('selecting a record of an event names the chords of that event', async () => {
+  const { session, view } = await inspectorWithRows()
   expect(view.highlightedChordIds).toBeUndefined()
 
   session.setSelection(new SimpleFeature(rows[1]!.feature))
@@ -62,4 +67,27 @@ test('selecting a record of an event names the chords of that event', async () =
   session.setSelection(new SimpleFeature(rows[2]!.feature))
   expect(view.highlightedChordIds).toBeUndefined()
   expect(display.highlightedFeatureIds).toBeUndefined()
+})
+
+test('a filter narrows what the chord display draws, on the same track', async () => {
+  const { view } = await inspectorWithRows()
+  await when(() => view.circularView.tracks.length > 0)
+  const track = view.circularView.tracks[0]!
+  const [display] = track.displays
+  expect(track.configuration.adapter.features).toHaveLength(3)
+  expect(display.visibleFeatureIds).toBeUndefined()
+
+  view.spreadsheetView.spreadsheet!.setSvEventFilter('cluster_1')
+
+  expect(view.circularView.tracks[0]).toBe(track)
+  expect(track.configuration.adapter.features).toHaveLength(3)
+  expect(display.visibleFeatureIds).toEqual(['a', 'b'])
+  display.setFeatures(rows.map(r => new SimpleFeature(r.feature)))
+  expect(display.drawnFeatures.map((f: SimpleFeature) => f.id())).toEqual([
+    'a',
+    'b',
+  ])
+
+  view.spreadsheetView.spreadsheet!.setSvEventFilter(undefined)
+  expect(display.visibleFeatureIds).toBeUndefined()
 })
