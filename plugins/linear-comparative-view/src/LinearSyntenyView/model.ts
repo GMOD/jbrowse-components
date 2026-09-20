@@ -598,9 +598,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Opt each sub-view's scalebar into prefixing its refName labels with the
-       * assembly name (e.g. "hg38:chr1"), so stacked genome rows of different
-       * assemblies stay distinguishable. Read duck-typed by the child
+       * Opt each sub-view's scalebar into captioning its refName labels with the
+       * assembly name ("hg38" ahead of "chr1"), so stacked genome rows of
+       * different assemblies stay distinguishable. Read duck-typed by the child
        * LinearGenomeView (scalebarDisplayPrefix) to avoid an upward plugin
        * dependency.
        */

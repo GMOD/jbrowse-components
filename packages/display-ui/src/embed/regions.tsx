@@ -26,6 +26,7 @@ export interface ScalebarView {
       maxWidth: number
       paddingLeft: number
     }[]
+    caption?: string
   }
 }
 
@@ -210,6 +211,11 @@ export const Scalebar = observer(function Scalebar({
             {text}
           </span>
         ),
+      )}
+      {scalebarRefNameLabels.caption === undefined ? null : (
+        <span style={{ ...chip, left: 0, fontWeight: 'bold' }}>
+          {scalebarRefNameLabels.caption}
+        </span>
       )}
     </div>
   )

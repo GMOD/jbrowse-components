@@ -801,8 +801,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Assembly-name prefix for the scalebar refName labels, or undefined for
-       * none. A container view (e.g. LinearSyntenyView) opts its sub-views in by
+       * Assembly name captioning the scalebar ahead of its refName labels, or
+       * undefined for none. A container view (e.g. LinearSyntenyView) opts its sub-views in by
        * exposing showAssemblyNameInSubviewScalebar; duck-typed rather than
        * matching a concrete view type so no upward plugin dependency is needed
        * and any container can opt in. A wrong nesting depth simply yields no
@@ -2415,8 +2415,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * into that through `scalebarDisplayPrefix`) and whether it is flipped.
          * A ` [rev]` there is a fact about the ROW; the same marker on a
          * chromosome name means that one region, which only happens under mixed
-         * orientation. `captionSpanPx` is the width it takes, which the
-         * coordinate numbers stay out from under. The SVG export deliberately
+         * orientation. `captionSpanPx` is the width it takes: the sticky label
+         * pins to its right edge rather than the viewport's, and the coordinate
+         * numbers stay out from under it. The SVG export deliberately
          * calls `getScalebarRefNameLabels` itself with no prefix rather than
          * reading this, since it draws its own assembly name above the ruler.
          */

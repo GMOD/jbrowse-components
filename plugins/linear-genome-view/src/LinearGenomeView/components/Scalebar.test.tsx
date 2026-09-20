@@ -10,8 +10,7 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 // a LinearGenomeView nested in a LinearSyntenyView, which opts its sub-views
 // into the assembly-name scalebar prefix via showAssemblyNameInSubviewScalebar.
-// bpPerPx 0.25 draws each 100bp region 400px wide, wide enough that the folded
-// "volvox:ctgA" label fits inside the region it names
+// bpPerPx 0.25 draws each 100bp region 400px wide
 async function syntenySubView(offsetPx: number, bpPerPx = 0.25) {
   const session = (await createTestSessionAsync({
     sessionSnapshot: {
@@ -141,66 +140,26 @@ describe('Scalebar genome view component', () => {
     expect(ret4).toBe(null)
   })
 
-  it('displays assembly name prefix only on the leftmost label when no pinned block', async () => {
-    const model = await syntenySubView(0)
+  // 0: ctgA starts under the caption. 50: ctgA's left end is off screen.
+  // -300: the row's data starts mid-viewport, as it does for every genome but
+  // the longest in a stack of whole-genome synteny rows
+  it.each([0, 50, -300])(
+    'captions the row with its assembly name and leaves the refNames bare, at offsetPx %d',
+    async offsetPx => {
+      const model = await syntenySubView(offsetPx)
 
-    const { getByTestId, queryByTestId, container } = render(
-      <Scalebar model={model} />,
-    )
-    await waitFor(() => {
-      const labelA = getByTestId('refLabel-ctgA')
-      const labelB = getByTestId('refLabel-ctgB')
-      // Only leftmost label should have the prefix
-      expect(labelA.textContent).toBe('volvox:ctgA')
-      expect(labelB.textContent).toBe('ctgB')
-      // Verify only one instance of the prefix exists
-      expect(container.textContent.match(/volvox:/g)?.length).toBe(1)
-      // The sticky label carries the prefix, so the standalone bare-assembly
-      // prefix must not also render (would show "volvox" twice)
-      expect(queryByTestId('refLabel-prefix')).toBeNull()
-    })
-  })
+      const { getByTestId } = render(<Scalebar model={model} />)
+      await waitFor(() => {
+        expect(getByTestId('refLabel-prefix').textContent).toBe('volvox')
+        expect(getByTestId('refLabel-ctgA').textContent).toBe('ctgA')
+        expect(getByTestId('refLabel-ctgB').textContent).toBe('ctgB')
+      })
+    },
+  )
 
-  it('displays assembly name prefix only on pinned label when scrolled', async () => {
-    // scrolled so ctgA's left end is off-screen (its label pins to the viewport)
-    const model = await syntenySubView(50)
-
-    const { queryByTestId, container } = render(<Scalebar model={model} />)
-    await waitFor(() => {
-      // The pinned label should have the prefix, non-pinned labels should not
-      // Verify only one instance of the prefix exists (on the pinned label)
-      expect(container.textContent.match(/volvox:/g)?.length).toBe(1)
-      // The pinned label contains volvox:ctgA
-      expect(container.textContent).toContain('volvox:ctgA')
-      // ctgB should appear without prefix
-      expect(container.textContent).toContain('ctgB')
-      expect(container.textContent).not.toContain('volvox:ctgB')
-      // The sticky label carries the prefix, so the standalone bare-assembly
-      // prefix must not also render
-      expect(queryByTestId('refLabel-prefix')).toBeNull()
-    })
-  })
-
-  it('pins the bare assembly name when the view is scrolled left of its regions', async () => {
-    // negative offsetPx: the row's data starts mid-viewport, as it does for
-    // every genome but the longest one in a stack of whole-genome synteny rows
-    const model = await syntenySubView(-300)
-
-    const { getByTestId, container } = render(<Scalebar model={model} />)
-    await waitFor(() => {
-      // ctgA's label is out at the region's left edge, 300px from the viewport
-      // edge, so folding the assembly name into it would leave the left of the
-      // row unlabeled while rows whose data starts at 0 are labeled
-      expect(getByTestId('refLabel-ctgA').textContent).toBe('ctgA')
-      expect(getByTestId('refLabel-prefix').textContent).toBe('volvox')
-      expect(container.textContent).not.toContain('volvox:')
-    })
-  })
-
-  it('pins the bare assembly name when the folded label would not fit', async () => {
-    // ctgA drawn 100px wide, of which 50 are left after the scroll: no room for
-    // "volvox:ctgA" without running over ctgB, and a name clipped mid-glyph
-    // names a chromosome that does not exist
+  it('drops a refName with no room left after the caption', async () => {
+    // ctgA drawn 100px wide, of which 50 are left after the scroll and ~37 of
+    // those are under the caption
     const model = await syntenySubView(50, 1)
 
     const { getByTestId, queryByTestId } = render(<Scalebar model={model} />)

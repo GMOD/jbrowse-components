@@ -513,7 +513,7 @@ describe('getScalebarRefNameLabels', () => {
     ])
   })
 
-  test('prefix folds into the sticky label as prefix:refName', () => {
+  test('the sticky label pins to the right edge of the prefix caption', () => {
     const blocks = [
       refBlock({
         key: 'a',
@@ -524,13 +524,15 @@ describe('getScalebarRefNameLabels', () => {
         isLeftEndOfDisplayedRegion: true,
       }),
     ]
-    const { labels, caption } = getScalebarRefNameLabels({
+    const { labels, caption, captionSpanPx } = getScalebarRefNameLabels({
       blocks,
       offsetPx: 0,
       prefix: 'hg38',
     })
-    expect(caption).toBeUndefined()
-    expect(labels[0]!.text).toBe('hg38:chr1')
+    expect(caption).toBe('hg38')
+    expect(labels[0]!.text).toBe('chr1')
+    expect(labels[0]!.transform).toBe(captionSpanPx)
+    expect(labels[0]!.maxWidth).toBe(800 - captionSpanPx - 1)
   })
 
   test('adjacent same-refName regions label the name once', () => {
@@ -658,7 +660,7 @@ describe('getScalebarRefNameLabels', () => {
     ])
   })
 
-  test('left-overscroll with a prefix: sticky label keeps the bare refName, prefix goes standalone', () => {
+  test('left-overscroll with a prefix: the label sits out at its region edge', () => {
     const blocks = [
       refBlock({
         key: 'a',
@@ -674,16 +676,12 @@ describe('getScalebarRefNameLabels', () => {
       offsetPx: -300,
       prefix: 'hg38',
     })
-    // the label is out at the region's left edge (screen 300), nowhere near the
-    // assembly name pinned at 0, so folding them into one string would leave the
-    // viewport's left edge unlabeled — the row would not say which assembly it
-    // is, while a neighboring row whose first region starts at 0 would
     expect(labels[0]!.text).toBe('chr1')
     expect(labels[0]!.transform).toBe(300)
     expect(caption).toBe('hg38')
   })
 
-  test('slight left-overscroll: sticky label still absorbs the prefix it would overlap', () => {
+  test('the sticky label stays pinned until its region edge clears the caption', () => {
     const blocks = [
       refBlock({
         key: 'a',
@@ -694,37 +692,18 @@ describe('getScalebarRefNameLabels', () => {
         isLeftEndOfDisplayedRegion: true,
       }),
     ]
-    const { labels, caption } = getScalebarRefNameLabels({
-      blocks,
-      offsetPx: -5,
-      prefix: 'hg38',
-    })
-    expect(labels[0]!.text).toBe('hg38:chr1')
-    expect(caption).toBeUndefined()
-  })
-
-  test('the sticky label unfolds only once it clears the standalone chip', () => {
-    const blocks = [
-      refBlock({
-        key: 'a',
-        refName: 'chr1',
-        displayedRegionIndex: 0,
-        offsetPx: 0,
-        widthPx: 800,
-        isLeftEndOfDisplayedRegion: true,
-      }),
-    ]
-    const textAt = (offsetPx: number) =>
-      getScalebarRefNameLabels({
+    const at = (offsetPx: number) => {
+      const { labels, captionSpanPx } = getScalebarRefNameLabels({
         blocks,
         offsetPx,
         prefix: 'hg38',
-      }).labels[0]!.text
-    // "hg38" is ~25.6px wide and a sticky label carries no padding of its own,
-    // so at a transform of 27 the two would sit a glyph-and-a-half apart and
-    // read as "hg38chr1" — keep folding until there's real clearance
-    expect(textAt(-27)).toBe('hg38:chr1')
-    expect(textAt(-30)).toBe('chr1')
+      })
+      return { transform: labels[0]!.transform, captionSpanPx }
+    }
+    // "hg38" is ~25.6px wide plus the gap, so a region edge at 27 is still
+    // under the chip and one at 30 is clear of it
+    expect(at(-27).transform).toBe(at(-27).captionSpanPx)
+    expect(at(-30).transform).toBe(30)
   })
 
   // a second region of the given pixel width, following a wide chr1
@@ -775,7 +754,7 @@ describe('getScalebarRefNameLabels', () => {
     expect(withSecondRegion('X', 14).map(l => l.refName)).toEqual(['chr1'])
   })
 
-  test('too-narrow sticky region drops its label, prefix falls back to standalone', () => {
+  test('a region too narrow for its name drops the label and keeps the caption', () => {
     const blocks = [
       refBlock({
         key: 'a',
@@ -795,7 +774,10 @@ describe('getScalebarRefNameLabels', () => {
     expect(caption).toBe('hg38')
   })
 
-  test('a standalone caption keeps the next region label out from under it', () => {
+  // A long assembly name over a narrow first chromosome: the row used to show
+  // the caption and no chromosome name, for as long as EMU13's own left edge
+  // stayed under the chip.
+  test('a caption wider than the first region names the region at its right edge', () => {
     const blocks = (secondStartPx: number) => [
       refBlock({
         key: 'a',
@@ -824,9 +806,38 @@ describe('getScalebarRefNameLabels', () => {
     }
     const under = drawn(40)
     expect(under.caption).toBe('Ephydatia (sponge)')
-    expect(under.labels).toEqual([])
-    const clear = drawn(Math.ceil(under.captionSpanPx) + 1)
-    expect(clear.labels.map(l => l.text)).toEqual(['EMU13'])
+    expect(
+      under.labels.map(l => ({
+        text: l.text,
+        sticky: l.sticky,
+        transform: l.transform,
+      })),
+    ).toEqual([{ text: 'EMU13', sticky: true, transform: under.captionSpanPx }])
+    const clearPx = Math.ceil(under.captionSpanPx) + 1
+    const clear = drawn(clearPx)
+    expect(
+      clear.labels.map(l => ({ text: l.text, transform: l.transform })),
+    ).toEqual([{ text: 'EMU13', transform: clearPx - 1 }])
+  })
+
+  test('a first run behind an elided block is labeled at its own edge', () => {
+    const blocks = [
+      { type: 'ElidedBlock' as const, key: 'e', offsetPx: 0, widthPx: 30 },
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 5,
+        offsetPx: 30,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const { labels } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 0,
+      prefix: undefined,
+    })
+    expect(labels.map(l => [l.transform, l.maxWidth])).toEqual([[30, 799]])
   })
 
   test('a label fitted to its region can still overrun the view edge', () => {

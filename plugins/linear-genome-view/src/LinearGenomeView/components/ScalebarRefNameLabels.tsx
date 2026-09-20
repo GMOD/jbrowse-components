@@ -23,9 +23,7 @@ type LGV = LinearGenomeViewModel
 
 interface MenuState {
   anchorEl: HTMLElement
-  refName: string
-  displayedRegionIndex: number
-  lastDisplayedRegionIndex: number
+  label: ScalebarRefNameLabel
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -53,18 +51,14 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'clip',
     whiteSpace: 'nowrap',
   },
-  // only a refName label opens a menu. The assembly-name chip beside it is a
-  // caption, and wearing the pointer and the hover tint made it look like the
-  // one thing on the row that does nothing when clicked
+  // refName labels only: the caption chip opens no menu
   clickable: {
     cursor: 'pointer',
     '&:hover': {
-      // action.hover is a mode-aware translucent overlay; the old hardcoded
-      // grey[300] stayed light in dark mode, washing out the light label text
       background: theme.palette.action.hover,
     },
   },
-  prefixLabel: {
+  caption: {
     zIndex: 100,
   },
 }))
@@ -77,41 +71,25 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const { classes, cx } = useStyles()
   const [menuState, setMenuState] = useState<MenuState>()
 
-  // `model.scalebarRefNameLabels`, not a getScalebarRefNameLabels call of its
-  // own: a host drawing its own region names reads the same getter, so the
-  // sticky/dedup/fit rules can't be one thing here and another there. The SVG
-  // export still calls the helper directly, deliberately and with no prefix.
   const { labels, caption } = model.scalebarRefNameLabels
 
   return (
     <>
-      {/* Keyed by POSITION, not by the run's key, which makes this list a pool:
-      a zoom changes every block key at once, so keying by it tore down and
-      rebuilt every label each frame of a zoom gesture rather than repositioning
-      and relabelling it. Same reasoning, and the same measurement, as the tick
-      numbers next door — see ScalebarCoordinateLabels. These are stateless
-      spans, so position is a safe identity. */}
+      {/* Keyed by position, which makes this list a pool: a zoom changes every
+      run key at once, and keying by it rebuilt every label each frame of the
+      gesture. See ScalebarCoordinateLabels. */}
       {labels.map((label, i) => (
         <RefLabel
           // eslint-disable-next-line @eslint-react/no-array-index-key -- position IS the identity here; keying by the run makes the list churn on zoom
           key={i}
           model={model}
           label={label}
-          onOpenMenu={state => {
-            setMenuState(state)
-          }}
+          onOpenMenu={setMenuState}
         />
       ))}
-      {/* The row's own caption, pinned far-left: which assembly this row is,
-      and whether it is flipped. The assembly name alone appears here only when
-      no sticky label folded it in — the view is scrolled left of its first
-      region (so that label sits out at the region's own edge), or the leftmost
-      region had no room for a label at all. A flipped row always draws it, and
-      the sticky label starts clear of it, since `[rev]` on a chromosome NAME is
-      how the mixed case says that one region is flipped. */}
       {caption === undefined ? null : (
         <span
-          className={cx(classes.prefixLabel, classes.refLabel)}
+          className={cx(classes.caption, classes.refLabel)}
           data-testid="refLabel-prefix"
         >
           {caption}
@@ -145,15 +123,7 @@ function RefLabel({
   onOpenMenu: (state: MenuState) => void
 }) {
   const { classes, cx } = useStyles()
-  const {
-    refName,
-    displayedRegionIndex,
-    lastDisplayedRegionIndex,
-    transform,
-    maxWidth,
-    paddingLeft,
-    text,
-  } = label
+  const { refName, transform, maxWidth, paddingLeft, text } = label
   return (
     <span
       className={cx(classes.refLabel, classes.clickable)}
@@ -169,12 +139,7 @@ function RefLabel({
       onClick={e => {
         model.setScalebarRefNameClickPending(false)
         model.setIsScalebarRefNameMenuOpen(true)
-        onOpenMenu({
-          anchorEl: e.currentTarget,
-          refName,
-          displayedRegionIndex,
-          lastDisplayedRegionIndex,
-        })
+        onOpenMenu({ anchorEl: e.currentTarget, label })
       }}
     >
       {text}
@@ -196,7 +161,7 @@ const RefNameMenu = observer(function RefNameMenu({
     refName,
     displayedRegionIndex: idx,
     lastDisplayedRegionIndex: lastIdx,
-  } = menuState
+  } = menuState.label
   const numRegions = displayedRegions.length
   const labeled = displayedRegions.slice(idx, lastIdx + 1)
   // A label naming several regions is the collapsed-intron case: adjacent

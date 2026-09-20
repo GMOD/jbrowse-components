@@ -267,13 +267,15 @@ function refNameRuns(blocks: BaseBlock[]) {
 }
 
 /**
- * Index of the run carrying the "sticky" refName label pinned to the left edge:
- * the rightmost run whose left edge has scrolled off the left of the viewport,
- * or the first run when none have.
+ * Index of the run carrying the "sticky" refName label pinned to the strip's
+ * left edge: the rightmost run starting left of `leftEdgePx` (block frame), or
+ * the first run when none does.
  */
-function stickyRunIndex(runs: RefNameRun[], offsetPx: number) {
-  const scrolledOff = runs.findLastIndex(run => run.offsetPx < offsetPx)
-  return scrolledOff === -1 ? 0 : scrolledOff
+function stickyRunIndex(runs: RefNameRun[], leftEdgePx: number) {
+  return Math.max(
+    0,
+    runs.findLastIndex(run => run.offsetPx < leftEdgePx),
+  )
 }
 
 /**
@@ -305,24 +307,24 @@ export function regionsOrientation(
  */
 const REV_MARKER = ' [rev]'
 
-/** Clearance between the standalone assembly-name chip and a sticky label. */
-const PREFIX_GAP = 4
+/** Clearance between the caption chip and the sticky label after it. */
+const CAPTION_GAP = 4
 
-/** Left inset of a non-sticky refName label from its region's left edge. */
+/**
+ * Left inset of a non-sticky refName label from its region's left edge, clear
+ * of the 3px region divider drawn there.
+ */
 const REF_NAME_LABEL_PADDING_PX = 7
 
 export interface ScalebarRefNameLabel {
   key: string
   refName: string
   // first and last displayed region the label names. They differ only where
-  // adjacent regions share a refName (collapsed introns), which is exactly
-  // where the one deduped label stands for several regions — a menu hung off it
-  // has to know that rather than act on an arbitrary member
+  // adjacent regions share a refName (collapsed introns)
   displayedRegionIndex: number
   lastDisplayedRegionIndex: number
-  // the label pinned to the viewport's left edge, as opposed to one sitting at
-  // its own run's left edge. Only this one moves with the scroll, so it is the
-  // only one the coordinate numbers cannot dodge in the block frame
+  // pinned to the strip's left edge rather than sitting at its own run's left
+  // edge, so its x moves with the scroll
   sticky: boolean
   transform: number
   maxWidth: number
@@ -331,92 +333,28 @@ export interface ScalebarRefNameLabel {
 }
 
 /**
- * translateX, maxWidth and paddingLeft for one refName label. Sticky labels
- * start at the viewport's left edge; others start at their run's left edge.
- *
- * maxWidth is the width of the whole label box, paddingLeft included, so the
- * text has `maxWidth - paddingLeft` to draw in — that is what both consumers
- * clip to (a border-box max-width on the span, an SVG clip rect from the box's
- * own left edge). The caller decides whether the name it wants to draw fits in
- * that (see refNameLabelWidth); a name is drawn whole or not at all.
- */
-function refLabelLayout({
-  run,
-  offsetPx,
-  sticky,
-  // left-edge x a sticky label may not start before, so a caption chip drawn
-  // there keeps the strip to itself. Zero wherever the caption folds into the
-  // label instead (the assembly prefix does)
-  minTransform = 0,
-}: {
-  run: RefNameRun
-  offsetPx: number
-  sticky: boolean
-  minTransform?: number
-}) {
-  const transform = sticky
-    ? Math.max(minTransform, -offsetPx)
-    : run.offsetPx - offsetPx - 1
-  // block-frame x where the label actually starts. Derived from `transform` (=
-  // transform + offsetPx) so the width-to-run-end clip stays in lockstep with
-  // where the label is drawn: a sticky label pins to the run's left edge, not
-  // the viewport's, whenever the view is left-overscrolled (offsetPx < 0) —
-  // reading offsetPx directly there over-counted the available width by
-  // |offsetPx|, letting the name bleed past its run's right edge.
-  const labelStartPx = transform + offsetPx
-  // A non-sticky label's transform anchors at the same x as the region
-  // divider drawn just to its left (SVGRegionSeparators, a 3px bar spanning
-  // local [0,3] from this same run.offsetPx edge), so paddingLeft must clear
-  // that bar plus a few px of breathing room, else the text visually touches
-  // the divider. Sticky labels sit at the viewport's own left edge, no divider.
-  const paddingLeft = sticky ? 0 : REF_NAME_LABEL_PADDING_PX
-  return { transform, maxWidth: run.endPx - labelStartPx - 1, paddingLeft }
-}
-
-/**
  * Builds the refName labels drawn along the scalebar as plain data (no JSX): one
- * label per run of same-refName regions (deduped so collapsed introns don't
- * repeat the name) plus a "sticky" label pinned to the left edge naming the
- * refName under the viewport's left border.
+ * label per run of same-refName regions, the leftmost of them "sticky" — pinned
+ * so the run under the left edge stays named once its own left edge scrolls off.
  *
- * `caption` is the row-level chip at the viewport's left edge, and it says two
- * things: which assembly this row is (`prefix`, an assembly name, synteny only)
- * and whether the row is flipped. Without it a row of stacked genomes would
- * label some rows with the assembly name and some without, depending only on
- * how wide their leftmost chromosome happens to be.
+ * `caption` is the row-level chip at the viewport's left edge: which assembly
+ * the row is (`prefix`, synteny only) and whether the whole row is flipped. The
+ * chip takes `captionSpanPx` of the strip and the labels get the rest, so the
+ * sticky label pins to the chip's right edge ("hg38" then "chr1") and rides the
+ * run under THAT edge. A run the chip covers entirely goes unnamed.
  *
- * The assembly name alone folds into the sticky label instead — "prefix:refName"
- * — whenever the two would collide at the left edge, and stands alone when the
- * sticky label sits far enough right not to (a view scrolled left of its first
- * region, so the row's data starts mid-viewport) or when there is no sticky
- * label at all.
+ * `orientation` decides the ` [rev]` marker, following `assembleLocStrings`: say
+ * it where it distinguishes, once where it does not.
  *
- * `orientation` decides the ` [rev]` marker, and it is the row's
- * (`displayedRegionsOrientation`) rather than anything read off the blocks —
- * blocks cover the window, and a row is flipped or not whatever part of it you
- * are looking at. The rule is `assembleLocStrings`': say it where it
- * distinguishes, once where it does not.
- *
- * - `reversed`: the whole row is flipped, which is a fact about the row, so the
- *   caption carries it and NO name does. The caption cannot fold in this state
- *   — the sticky label is pushed clear of it instead — because a marker sitting
- *   on a chromosome name is how the mixed case spells a fact about that one
- *   region. `chr1 [rev] | chr2` would otherwise mean both "the row is flipped,
- *   said once" and "chr1 is flipped and chr2 is not", in identical pixels.
- * - `mixed`: only some regions are flipped — reachable through the label menu's
- *   per-region "Reverse region" — so every reversed run is marked and the
- *   forward ones are left alone. Here the marker on a name is the only thing
- *   telling two labels apart.
+ * - `reversed`: the caption carries the marker and no name does. A marker on a
+ *   chromosome name is how the mixed case flags that one region.
+ * - `mixed`: every reversed run is marked. A marked label that fails the fit
+ *   test falls back to the bare name rather than dropping.
  * - `forward`: no marker.
  *
- * Saying it once is the point: a flipped whole-genome row would otherwise
- * repeat `[rev]` after all 24 chromosomes to say a single thing about the row.
- *
- * Under `mixed` the marker never costs a name: a suffixed label that fails the
- * fit test falls back to the bare name rather than being dropped. Widening the
- * text moves the region width a name needs from ~30px to ~56px at 11px bold,
- * and a feature meant to surface information should not be deleting chromosome
- * names in the narrow half of that gap.
+ * `maxWidth` is the whole label box, `paddingLeft` included — both consumers
+ * clip from the box's left edge. A name is drawn whole or not at all: clipped
+ * mid-glyph, "chr16" reads as "chr1".
  */
 export function getScalebarRefNameLabels({
   blocks,
@@ -429,90 +367,47 @@ export function getScalebarRefNameLabels({
   prefix: string | undefined
   orientation?: RegionsOrientation
 }) {
-  const hasPrefix = prefix !== undefined && prefix !== ''
-  const rowIsReversed = orientation === 'reversed'
-  const captionText = rowIsReversed
-    ? `${hasPrefix ? prefix : ''}${REV_MARKER}`.trimStart()
-    : prefix
-  // the caption chip occupies the viewport's left edge, so a sticky label
-  // starting inside that span has to yield: absorb the assembly name, or, where
-  // the caption carries the row's orientation and so cannot fold, start after
-  // it. The gap is part of the span: a sticky label carries no padding of its
-  // own, so one starting at exactly the chip's right edge abuts it and the two
-  // read as a single word ("volvoxctgA") for the few px of scroll around the
-  // threshold
-  const captionSpanPx = captionText
-    ? refNameLabelWidth(captionText) + PREFIX_GAP
-    : 0
+  const caption =
+    [prefix, orientation === 'reversed' ? REV_MARKER.trim() : undefined]
+      .filter(Boolean)
+      .join(' ') || undefined
+  const captionSpanPx = caption ? refNameLabelWidth(caption) + CAPTION_GAP : 0
   const runs = refNameRuns(blocks)
-  const stickyIdx = stickyRunIndex(runs, offsetPx)
+  const stickyIdx = stickyRunIndex(runs, offsetPx + captionSpanPx)
   const labels: ScalebarRefNameLabel[] = []
-  let stickyHasPrefix = false
 
   for (const [i, run] of runs.entries()) {
     const sticky = i === stickyIdx
-    // A non-sticky run starting left of the viewport is entirely off-screen:
-    // the sticky run is by definition the rightmost one starting there, so
-    // every earlier run also *ends* left of the viewport. Its label would just
-    // repeat the name the sticky label already shows, drawn off-canvas —
-    // invisible on screen (overflow:clip) but bleeding into the margin of an
-    // SVG export, which has no such clip.
-    const runStart = run.offsetPx >= offsetPx && run.isLeftEndOfDisplayedRegion
-    if (!(sticky || runStart)) {
+    // runs left of the sticky one end under the caption or off screen
+    if (i < stickyIdx || !(sticky || run.isLeftEndOfDisplayedRegion)) {
       continue
     }
-    const layout = refLabelLayout({
-      run,
-      offsetPx,
-      sticky,
-      minTransform: rowIsReversed ? captionSpanPx : 0,
-    })
-    const captionStandsAlone = rowIsReversed || (hasPrefix && !stickyHasPrefix)
-    if (!sticky && captionStandsAlone && layout.transform < captionSpanPx) {
-      continue
-    }
-    const withPrefix =
-      !rowIsReversed && sticky && hasPrefix && layout.transform < captionSpanPx
-    const name = withPrefix ? `${prefix}:${run.refName}` : run.refName
-    // draw the name whole or not at all: a name clipped mid-glyph reads as a
-    // different chromosome ("LG2" cut to "LG"), and measuring it means a short
-    // name gets its label in a region a fixed minimum width would have skipped.
-    // The marker is the one part that degrades instead of dropping the label
+    const runStartPx = run.offsetPx - offsetPx
+    const transform = sticky
+      ? Math.max(captionSpanPx, runStartPx)
+      : runStartPx - 1
+    const paddingLeft = sticky ? 0 : REF_NAME_LABEL_PADDING_PX
+    const maxWidth = run.endPx - offsetPx - transform - 1
     const text = (
       orientation === 'mixed' && run.reversed
-        ? [`${name}${REV_MARKER}`, name]
-        : [name]
-    ).find(
-      candidate =>
-        layout.maxWidth >= layout.paddingLeft + refNameLabelWidth(candidate),
-    )
-    if (text === undefined) {
-      continue
+        ? [`${run.refName}${REV_MARKER}`, run.refName]
+        : [run.refName]
+    ).find(candidate => maxWidth >= paddingLeft + refNameLabelWidth(candidate))
+    if (text !== undefined) {
+      labels.push({
+        key: run.key,
+        refName: run.refName,
+        displayedRegionIndex: run.firstRegionIndex,
+        lastDisplayedRegionIndex: run.lastRegionIndex,
+        sticky,
+        transform,
+        maxWidth,
+        paddingLeft,
+        text,
+      })
     }
-    stickyHasPrefix ||= withPrefix
-    labels.push({
-      key: run.key,
-      refName: run.refName,
-      displayedRegionIndex: run.firstRegionIndex,
-      lastDisplayedRegionIndex: run.lastRegionIndex,
-      sticky,
-      transform: layout.transform,
-      maxWidth: layout.maxWidth,
-      paddingLeft: layout.paddingLeft,
-      text,
-    })
   }
-  return {
-    labels,
-    // the chip to draw at the left edge, or undefined for none. A caption
-    // carrying the orientation always draws; one carrying only the assembly
-    // name draws when no sticky label folded it in
-    caption:
-      rowIsReversed || (hasPrefix && !stickyHasPrefix)
-        ? captionText
-        : undefined,
-    captionSpanPx,
-  }
+  return { labels, caption, captionSpanPx }
 }
 
 /**

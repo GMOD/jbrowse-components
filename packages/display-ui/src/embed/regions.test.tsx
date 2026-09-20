@@ -61,6 +61,32 @@ test('a scalebar draws the coordinate labels and region names, and owns its gest
   expect(screen.getByText('chr17').style.maxWidth).toBe('200px')
 })
 
+test('a scalebar draws the caption a flipped row reports', () => {
+  render(
+    <Scalebar
+      data-testid="scalebar"
+      view={{
+        staticBlocks: { totalWidthPx: 800 },
+        staticBlocksTranslateX: 0,
+        scalebarLabels: [],
+        scalebarRefNameLabels: {
+          labels: [
+            {
+              key: 'chr17',
+              text: 'chr17',
+              transform: 30,
+              maxWidth: 200,
+              paddingLeft: 0,
+            },
+          ],
+          caption: '[rev]',
+        },
+      }}
+    />,
+  )
+  expect(screen.getByTestId('scalebar').textContent).toBe('chr17[rev]')
+})
+
 test('a band per highlight the view can place, each with its label drawn', () => {
   render(
     <Highlights

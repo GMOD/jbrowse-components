@@ -88,8 +88,7 @@ function Ruler({
 // pinned to the viewport's left edge when a region has scrolled off — otherwise
 // the name renders off-canvas whenever you export a view zoomed into a
 // chromosome interior. No assembly-name prefix here (unlike the on-screen
-// scalebar): the SVG export already draws a standalone assembly-name label
-// above the ruler, so folding it into this one too is redundant.
+// scalebar): the SVG export already draws the assembly name above the ruler.
 //
 // `orientation` is not redundant, and this is the surface that needed it most.
 // A stacked export gives each row SVGRowHeader — assembly name, ruler, refName
