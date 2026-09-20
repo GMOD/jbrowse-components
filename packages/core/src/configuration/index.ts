@@ -57,6 +57,7 @@ export { fillLocations } from './fillLocations.ts'
 export {
   preProcessConfigSnapshot,
   preProcessSnapshotWith,
+  shorthandForm,
 } from './snapshotPreprocess.ts'
 export { expandTabixShorthand, tabixIndexSnapshot } from './tabixShorthand.ts'
 export { tabixIndexFields } from './tabixIndexFields.ts'

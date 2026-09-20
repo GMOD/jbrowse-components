@@ -1530,6 +1530,44 @@ describe('a declared shorthand', () => {
   })
 })
 
+describe('a shorthand naming a number slot', () => {
+  const Rule = ConfigurationSchema(
+    'ShorthandRule',
+    {
+      value: { type: 'number', defaultValue: 0 },
+      label: { type: 'string', defaultValue: '' },
+    },
+    { shorthand: 'value', closed: true },
+  )
+  const Scale = ConfigurationSchema('ShorthandScale', {
+    rules: types.array(Rule),
+  })
+
+  test('lifts a bare number, in an array beside the object form', () => {
+    const node = Scale.create({ rules: [7.3, { value: 5, label: 'cut' }] })
+    expect(getSnapshot(node)).toEqual({
+      rules: [{ value: 7.3 }, { value: 5, label: 'cut' }],
+    })
+  })
+
+  test('a rule at the default value is still a rule', () => {
+    expect(Scale.create({ rules: [0] }).rules).toHaveLength(1)
+  })
+
+  test('lifts through setSubschemaArray', () => {
+    const node = Scale.create({})
+    node.setSubschemaArray('rules', [2])
+    expect(node.rules[0]!.value).toBe(2)
+  })
+
+  test('refuses a string by what it holds, a number slot lifting no string', () => {
+    expect(preProcessConfigSnapshot(Rule, 7.3)).toEqual({ value: 7.3 })
+    expect(() => Scale.create({ rules: ['7.3'] })).toThrow(
+      'ShorthandRule takes value and label, not "7.3"',
+    )
+  })
+})
+
 describe('a closed schema', () => {
   const Color = ConfigurationSchema(
     'ClosedColor',

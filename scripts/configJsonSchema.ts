@@ -71,6 +71,8 @@ export interface Deps {
     views: ElementEntry[]
   }
   metadataOf: (type: MstType) => SchemaMetadata | undefined
+  /** The bare value a schema's `shorthand` lifts, as the config reader decides it. */
+  shorthandFormOf: (meta: SchemaMetadata) => 'string' | 'number' | undefined
   /** The CSS named colors, as the painters' table spells them. */
   cssColorNames: readonly string[]
   isType: (thing: unknown) => boolean
@@ -503,7 +505,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       }
     }
     return {
-      string: meta.options.shorthand !== undefined,
+      bare: deps.shorthandFormOf(meta),
       uri: lifts({ uri: 'probe' }),
     }
   }
@@ -532,7 +534,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   // string shorthand lifts into with that target slot non-empty.
   function namesAValue(sub: SchemaMetadata | undefined): JsonSchema {
     const target =
-      sub && liftedForms(sub).string ? stringTarget(sub) : undefined
+      sub && liftedForms(sub).bare === 'string' ? stringTarget(sub) : undefined
     return target
       ? {
           anyOf: [
@@ -602,11 +604,11 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         : {}),
     }
     const object = closed(properties, [], requirements(meta))
-    const schema = forms.string
+    const schema = forms.bare
       ? {
           anyOf: [
             {
-              type: 'string',
+              type: forms.bare,
               description: `Shorthand for \`{ "${stringTarget(meta)}": ... }\`.`,
             },
             object,
@@ -652,8 +654,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
   }
 
-  // The slot a bare string lands on, read off the lift itself.
-  // The slot a bare string lifts into, as the schema declares it.
+  // The slot a bare value lifts into, as the schema declares it.
   function stringTarget(meta: SchemaMetadata) {
     return meta.options.shorthand ?? 'value'
   }
