@@ -129,6 +129,18 @@ test('a key naming neither a launch key nor a property is named on attach', asyn
   )
 })
 
+test('the row coupling is one property, and the getters it feeds are not keys', async () => {
+  const view = await open({ views: ROWS, rowSync: 'follow' })
+  expect([view.followSynteny, view.linkViews]).toEqual([true, false])
+  expect(warnings()).toEqual([])
+
+  const stale = await open({ views: ROWS, followSynteny: true })
+  expect(stale.rowSync).toBe('independent')
+  expect(warnings()).toContain(
+    'LinearSyntenyView ignored unknown key(s): followSynteny',
+  )
+})
+
 test('an unknown key is reported once', async () => {
   await open({ drawCurvez: true })
   expect(warnings()).toHaveLength(1)

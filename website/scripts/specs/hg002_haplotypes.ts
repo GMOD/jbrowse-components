@@ -285,7 +285,7 @@ function haplotypeSession(
   patLoc: string,
   matTracks: PanelTracks = [],
   patTracks: PanelTracks = matTracks,
-  // The view's own props: `followSynteny` / `followAnchorIndex` for the two
+  // The view's own props: `rowSync` / `followAnchorIndex` for the two
   // frames that open ALREADY FOLLOWING, `levelHeights` where the ribbon is what
   // the figure is about. All of them are model props the view restores natively
   // (urlparams.md lists them), so a frame of a follow's steady state needs no

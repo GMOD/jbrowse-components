@@ -42,9 +42,9 @@ interface NavigationModel extends FollowHost {
   squareView: () => void
   showAllRegionsAcrossRows: (sameScale: boolean) => void
   sameScale: boolean
-  linkViews: boolean
+  rowSync: RowSyncMode
   followMatchOrientation: boolean
-  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
+  setRowSyncMode: (mode: RowSyncMode) => void
   setFollowMatchOrientation: (arg: boolean) => void
 }
 
@@ -63,11 +63,13 @@ const SHOW_ALL_REGIONS_MODES = [
   },
 ] as const
 
-const ROW_SYNC_MODES = [
+export const ROW_SYNC_MODES = [
   ['independent', 'Independent'],
   ['link', 'Locked together - rows move together pixel-by-pixel'],
   ['follow', 'Follow - other rows track the anchor through the alignment'],
 ] as const
+
+export type RowSyncMode = (typeof ROW_SYNC_MODES)[number][0]
 
 /**
  * The three zoom commands that act on every row at once, and the coupling that
@@ -81,7 +83,7 @@ const ROW_SYNC_MODES = [
 export function navigationMenuItems(model: NavigationModel): MenuItem[] {
   const {
     sameScale,
-    linkViews,
+    rowSync,
     followSynteny,
     followAnchorIndex,
     followMatchOrientation,
@@ -100,7 +102,7 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
     makeRadioSubMenu({
       label: 'Sync rows',
       icon: LinkIcon,
-      value: followSynteny ? 'follow' : linkViews ? 'link' : 'independent',
+      value: rowSync,
       options: ROW_SYNC_MODES,
       onChange: mode => {
         model.setRowSyncMode(mode)

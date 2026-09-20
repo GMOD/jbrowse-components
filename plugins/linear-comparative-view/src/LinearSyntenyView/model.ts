@@ -52,6 +52,7 @@ import { FADE_AUTO_MIN_FEATURES, fadesThinAt } from './fadeThin.ts'
 import { linearSyntenyLaunchKeys } from './launchKeys.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 import {
+  ROW_SYNC_MODES,
   autoScaleMenuItems,
   compactViewsMenuItems,
   displayCanShowCigar,
@@ -63,6 +64,7 @@ import {
 import { sharedFit } from './sharedFit.ts'
 
 import type { FollowReport } from '../SyntenyFollow/followHost.ts'
+import type { RowSyncMode } from './menus.ts'
 import type {
   CigarMode,
   ExportSvgOptions,
@@ -243,18 +245,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
-         * sync scroll and zoom across the genome rows, so panning one pans
-         * them all
-         */
-        linkViews: types.stripDefault(types.boolean, false),
-        /**
-         * #property
-         * Move the non-anchor genome rows to whatever region aligns to the
+         * How the genome rows track each other. 'link' replays a pan or zoom of
+         * one row onto the others in pixels, which drifts as indels accumulate.
+         * 'follow' moves the non-anchor rows to whatever region aligns to the
          * anchor row, re-resolved through the synteny data each time the anchor
-         * settles. Mutually exclusive with `linkViews`, which locks the rows in
-         * pixels and drifts as indels accumulate (see setRowSyncMode).
+         * settles.
          */
-        followSynteny: types.stripDefault(types.boolean, false),
+        rowSync: types.stripDefault(
+          types.enumeration(ROW_SYNC_MODES.map(([mode]) => mode)),
+          'independent',
+        ),
         /**
          * #property
          * Hold every genome row on one bp/px — the coarsest row's fit — so the
@@ -265,7 +265,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         sameScale: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * Which genome row drives the others while `followSynteny` is on.
+         * Which genome row drives the others while `rowSync` is 'follow'.
          */
         followAnchorIndex: types.stripDefault(types.number, 0),
         /**
@@ -324,6 +324,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       fadeThinLatch: false,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the rows are locked together in pixels
+       */
+      get linkViews() {
+        return self.rowSync === 'link'
+      },
+      /**
+       * #getter
+       * the non-anchor rows follow the anchor through the alignment
+       */
+      get followSynteny() {
+        return self.rowSync === 'follow'
+      },
       /**
        * #getter
        * nothing aligns under the anchor's window, so the other rows are holding
@@ -785,12 +799,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * How the rows track each other. One setter, so `linkViews` and
-       * `followSynteny` can't both be on.
        */
-      setRowSyncMode(mode: 'independent' | 'link' | 'follow') {
-        self.linkViews = mode === 'link'
-        self.followSynteny = mode === 'follow'
+      setRowSyncMode(mode: RowSyncMode) {
+        self.rowSync = mode
       },
       /**
        * #action
@@ -960,16 +971,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.diagonalizeAnchorRow = lastRow - self.diagonalizeAnchorRow
       },
 
-      /**
-       * #action
-       * Kept for the plugin ABI; `setRowSyncMode` is what the UI calls.
-       */
-      setLinkViews(arg: boolean) {
-        self.linkViews = arg
-        if (arg) {
-          self.followSynteny = false
-        }
-      },
       /**
        * #action
        */
@@ -1421,10 +1422,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         // a hand-authored session typically writes `views` and no `levels`
         self.reconcileLevels()
-        // and one naming both couplings gets the follow, as the header reports
-        if (self.followSynteny) {
-          self.linkViews = false
-        }
         installLinkedViewSync(self, ['horizontalScroll', 'zoomTo'])
         installSyntenyFollow(self)
         addDisposer(

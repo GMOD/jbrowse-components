@@ -6,6 +6,7 @@ import {
   rowMenuItems,
 } from './menus.ts'
 
+import type { RowSyncMode } from './menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const SHOW_ALL_REGIONS_LABELS = [
@@ -20,8 +21,7 @@ describe('navigationMenuItems', () => {
   function build(
     state: Partial<{
       sameScale: boolean
-      linkViews: boolean
-      followSynteny: boolean
+      rowSync: RowSyncMode
       followAnchorIndex: number
       followMatchOrientation: boolean
     }> = {},
@@ -30,8 +30,8 @@ describe('navigationMenuItems', () => {
     const items = navigationMenuItems({
       views: [{ assemblyNames: ['hg002mat'] }, { assemblyNames: ['hg002pat'] }],
       sameScale: false,
-      linkViews: false,
-      followSynteny: false,
+      rowSync: 'independent',
+      followSynteny: state.rowSync === 'follow',
       followAnchorIndex: 0,
       followMatchOrientation: false,
       ...state,
@@ -66,14 +66,14 @@ describe('navigationMenuItems', () => {
   }
 
   test('the coupling is the one group, and the zoom commands are not in it', () => {
-    const { items } = build({ followSynteny: true })
+    const { items } = build({ rowSync: 'follow' })
     expect(items.flatMap(i => ('subMenu' in i ? [i.label] : []))).toEqual([
       'Sync rows',
     ])
   })
 
   test('the anchor picker opens where the mode was picked, not a level deeper', () => {
-    const { linkViews } = build({ followSynteny: true })
+    const { linkViews } = build({ rowSync: 'follow' })
     expect(linkViews.some(i => 'subMenu' in i)).toBe(false)
     expect(
       linkViews.flatMap(i =>
@@ -86,7 +86,7 @@ describe('navigationMenuItems', () => {
     const label = 'Flip rows to match the anchor - inside inverted alignments'
     expect(labelled(build().linkViews, label)).toBeUndefined()
     const { linkViews, calls } = build({
-      followSynteny: true,
+      rowSync: 'follow',
       followMatchOrientation: true,
     })
     expect(labelled(linkViews, label)?.checked).toBe(true)
@@ -153,11 +153,11 @@ describe('navigationMenuItems', () => {
     for (const [state, expected] of [
       [{}, 'Independent'],
       [
-        { linkViews: true },
+        { rowSync: 'link' },
         'Locked together - rows move together pixel-by-pixel',
       ],
       [
-        { followSynteny: true },
+        { rowSync: 'follow' },
         'Follow - other rows track the anchor through the alignment',
       ],
     ] as const) {
@@ -188,14 +188,14 @@ describe('navigationMenuItems', () => {
   test('the anchor rows are only offered while following', () => {
     expect(labelled(build().linkViews, 'hg002mat')).toBeUndefined()
     expect(
-      labelled(build({ followSynteny: true }).linkViews, 'hg002mat'),
+      labelled(build({ rowSync: 'follow' }).linkViews, 'hg002mat'),
     ).toBeDefined()
   })
 
   test('the anchor rows are named by assembly, with the current one marked', () => {
     // offered even for a plain two-row view: which haplotype drives and which
     // follows is the whole choice, and nothing about the pan reveals it
-    const { linkViews } = build({ followSynteny: true, followAnchorIndex: 1 })
+    const { linkViews } = build({ rowSync: 'follow', followAnchorIndex: 1 })
     expect(labelled(linkViews, 'hg002mat')?.checked).toBe(false)
     expect(labelled(linkViews, 'hg002pat')?.checked).toBe(true)
   })
@@ -210,7 +210,7 @@ describe('navigationMenuItems', () => {
   })
 
   test('picking an anchor row hands back its index, not its label', () => {
-    const { linkViews, calls } = build({ followSynteny: true })
+    const { linkViews, calls } = build({ rowSync: 'follow' })
     labelled(linkViews, 'hg002pat')?.onClick?.()
     expect(calls).toEqual([1])
   })
