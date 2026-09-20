@@ -14,7 +14,8 @@ import type { ProgressReporter } from './progress.ts'
 const mockRenderRegion = jest.fn()
 const mockResolveConfigObject = jest.fn()
 jest.mock('./renderRegion.ts', () => ({
-  renderRegion: (...args: unknown[]) => mockRenderRegion(...args) as unknown,
+  renderRegionReport: (...args: unknown[]) =>
+    mockRenderRegion(...args) as unknown,
 }))
 jest.mock('./resolveHub.ts', () => ({
   resolveConfigObject: (...args: unknown[]) =>
@@ -40,7 +41,7 @@ let dir: string
 beforeEach(() => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-batch-'))
   mockRenderRegion.mockReset()
-  mockRenderRegion.mockResolvedValue('<svg/>')
+  mockRenderRegion.mockResolvedValue({ svg: '<svg/>' })
   mockResolveConfigObject.mockReset()
   mockResolveConfigObject.mockResolvedValue(undefined)
 })
@@ -99,7 +100,7 @@ describe('runBatch', () => {
   it('keeps going after a failed row and reports it as a failure, not a step', async () => {
     mockRenderRegion
       .mockRejectedValueOnce(new Error('boom'))
-      .mockResolvedValueOnce('<svg/>')
+      .mockResolvedValueOnce({ svg: '<svg/>' })
     const { seen, progress } = steps()
     const { done, failures } = await runBatch(opts({ progress }))
     expect(done).toBe(1)
@@ -139,9 +140,9 @@ describe('runBatch', () => {
       .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
       .trim()
       .split('\n')
-    expect(rows[0]).toBe('file\tlocs\tname\tline\tevent\tstatus')
+    expect(rows[0]).toBe('file\tlocs\tname\tline\tevent\tlinks\tstatus')
     expect(rows[1]).toBe(
-      '1_chr1_1000-chr5_2000_SV_1.svg\tchr1:501-1501 chr5:1501-2501\tSV_1\t1\t\tfailed',
+      '1_chr1_1000-chr5_2000_SV_1.svg\tchr1:501-1501 chr5:1501-2501\tSV_1\t1\t\t\tfailed',
     )
     expect(rows[2]).toMatch(/\tok$/)
   })
@@ -184,7 +185,9 @@ describe('runBatch', () => {
       .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
       .trim()
       .split('\n')
-    expect(rows[1]).toBe('1_chr1_4999_ins1.svg\tchr1:4400-5600\tins1\t3\t\tok')
+    expect(rows[1]).toBe(
+      '1_chr1_4999_ins1.svg\tchr1:4400-5600\tins1\t3\t\t\tok',
+    )
   })
 
   it('loads every panel whatever its index estimates, unless the track says force:false', async () => {
@@ -208,6 +211,33 @@ describe('runBatch', () => {
       ['track', ['normal_reads', 'force:true', 'force:false']],
     ])
     expect(handed.trackList).toEqual([['bam', ['reads.bam', 'force:true']]])
+  })
+
+  function manifestRows() {
+    return fs
+      .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
+      .trim()
+      .split('\n')
+      .map(row => row.split('\t'))
+  }
+
+  it('reports the reads joining an image’s panels, per track, and keeps them across --resume', async () => {
+    mockRenderRegion
+      .mockResolvedValueOnce({ svg: '<svg/>', links: [29, 0] })
+      .mockResolvedValueOnce({ svg: '<svg/>', links: [] })
+    await runBatch(opts({ manifest: true, progress: steps().progress }))
+    const linksAt = manifestRows()[0]!.indexOf('links')
+    expect(manifestRows().map(r => r[linksAt])).toEqual(['links', '29,0', ''])
+
+    // the second run renders nothing, so the first run's counts are all there is
+    await runBatch(
+      opts({ manifest: true, resume: true, progress: steps().progress }),
+    )
+    expect(manifestRows().map(r => [r[linksAt], r.at(-1)])).toEqual([
+      ['links', 'status'],
+      ['29,0', 'exists'],
+      ['', 'exists'],
+    ])
   })
 
   function eventVcf() {
@@ -257,7 +287,7 @@ describe('runBatch', () => {
       .trim()
       .split('\n')
     expect(rows.at(-1)).toBe(
-      'event_1_der3.svg\tchr3:24400-26000 chr10:57400-58800 chr12:71400-72800\tder3\t\tder3\tok',
+      'event_1_der3.svg\tchr3:24400-26000 chr10:57400-58800 chr12:71400-72800\tder3\t\tder3\t\tok',
     )
     expect(rows.filter(r => r.includes('bp7'))).toHaveLength(1)
   })

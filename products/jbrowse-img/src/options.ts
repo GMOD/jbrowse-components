@@ -521,7 +521,7 @@ export const batchOptionDefs: OptionDef[] = [
   {
     name: 'manifest',
     description:
-      'Also write manifest.tsv to --outDir: one row per image with its file, loci, name, line in the input, EVENT and status',
+      'Also write manifest.tsv to --outDir: one row per image with its file, loci, name, line in the input, EVENT, the reads joining its panels and status',
     default: false,
   },
   {

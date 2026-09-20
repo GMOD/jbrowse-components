@@ -153,7 +153,17 @@ interface ModeContext {
   spec?: ViewSpec
 }
 
-type ModeRenderer = (ctx: ModeContext) => Promise<string>
+/**
+ * An image and what can be counted off it. `links` is a breakpoint view's
+ * reads with pieces in more than one panel, per alignments track in track
+ * order: the molecules its connectors are drawn for.
+ */
+export interface Rendered {
+  svg: string
+  links?: number[]
+}
+
+type ModeRenderer = (ctx: ModeContext) => Promise<string | Rendered>
 
 // Rasterized layers draw into a real node-canvas rather than whatever jsdom
 // hands back from document.createElement, so PNG-embedded layers (alignments,
@@ -554,11 +564,22 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   // renderToSvg awaits every panel itself (awaitViewInitialized covers
   // pendingLaunch), and renderRegion's throwOnRenderError catches a failure
   // that reached only the session.
-  return renderBreakpointToSvg(view, {
+  const svg = await renderBreakpointToSvg(view, {
     ...baseSvgOpts(opts),
     trackLabels: opts.trackLabels,
     showGridlines: opts.showGridlines,
   })
+  return {
+    svg,
+    links: [...view.overlayMatches.values()]
+      .filter(({ kind }) => kind === 'alignment')
+      .map(
+        ({ layoutMatches }) =>
+          layoutMatches.filter(
+            pieces => new Set(pieces.map(piece => piece.level)).size > 1,
+          ).length,
+      ),
+  }
 }
 
 // Options only renderLinear reads. A comparative or circular view takes its
@@ -642,6 +663,15 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
  * caller reusing one across calls has to hand over a copy each time.
  */
 export async function renderRegion(opts: Opts, configObject?: Config) {
+  const { svg } = await renderRegionReport(opts, configObject)
+  return svg
+}
+
+/** `renderRegion`, with what can be counted off the image beside it. */
+export async function renderRegionReport(
+  opts: Opts,
+  configObject?: Config,
+): Promise<Rendered> {
   const data = readData(opts, configObject ?? (await resolveConfigObject(opts)))
   const spec = opts.spec ? parseSpec(opts.spec) : undefined
   // before the model is built, so a subcommand that cannot draw the --spec is
@@ -672,7 +702,7 @@ export async function renderRegion(opts: Opts, configObject?: Config) {
     // `awaitSvgReady`), rather than drawing the error into the figure for a
     // post-hoc pass over `view.tracks` to read back out of the model.
     throwOnRenderError(model.session)
-    return result
+    return typeof result === 'string' ? { svg: result } : result
   } finally {
     destroy(model)
   }

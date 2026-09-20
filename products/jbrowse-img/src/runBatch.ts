@@ -12,7 +12,7 @@ import {
 } from './batch.ts'
 import { batchRefusedOptions, DEFAULT_WIDTH } from './options.ts'
 import { createProgress } from './progress.ts'
-import { renderRegion } from './renderRegion.ts'
+import { renderRegionReport } from './renderRegion.ts'
 import { resolveConfigObject } from './resolveHub.ts'
 import { writeRendered } from './util.ts'
 import { parseVcfJunctions } from './vcfJunctions.ts'
@@ -23,7 +23,7 @@ import type { Entry } from './parseArgv.ts'
 import type { ProgressReporter } from './progress.ts'
 import type { Opts } from './types.ts'
 
-// Drives `renderRegion` once per record, in-process. The module graph loads
+// Drives `renderRegionReport` once per record, in-process. The module graph loads
 // once for the whole callset rather than once per variant, which is the reason
 // this is a subcommand and not a shell loop over `jb2export`: on a few hundred
 // rows the per-process startup dominates everything else.
@@ -182,6 +182,8 @@ export async function runBatch(opts: BatchOpts) {
   const width = opts.width ?? DEFAULT_WIDTH
   const failures: { name: string; error: unknown }[] = []
   const status: RecordStatus[] = []
+  // a reused image keeps the count the run that drew it reported
+  const links = opts.resume ? priorLinks(outDir) : new Map<string, string>()
   let done = 0
   const progress =
     opts.progress ??
@@ -210,7 +212,7 @@ export async function runBatch(opts: BatchOpts) {
         showTracks: forceLoaded(opts.showTracks),
         trackList: forceLoaded(opts.trackList),
       }
-      const svg = await renderRegion(
+      const rendered = await renderRegionReport(
         locs.length > 1
           ? {
               ...shared,
@@ -221,7 +223,8 @@ export async function runBatch(opts: BatchOpts) {
           : { ...shared, mode: 'linear', argv, loc: locs[0] },
         configObject && structuredClone(configObject),
       )
-      writeRendered(svg, out, width)
+      writeRendered(rendered.svg, out, width)
+      links.set(file, rendered.links?.join(',') ?? '')
       done++
       status.push('ok')
       progress.step(file)
@@ -237,7 +240,7 @@ export async function runBatch(opts: BatchOpts) {
     }
   }
   if (opts.manifest) {
-    writeManifest(outDir, planned, status)
+    writeManifest(outDir, planned, status, links)
   }
   // The reused count is named, or a fully-resumed run reports "wrote 0/400" and
   // reads as a run in which nothing worked.
@@ -259,12 +262,44 @@ export async function runBatch(opts: BatchOpts) {
 // `line` is the record's line in the input, the key that joins a row back to
 // every column the file holds. `locs` is one locus per panel, space separated.
 // An event's row has no line and its label as both name and event, so filtering
-// on `event` lists the event's image above its records'.
+// on `event` lists the event's image above its records'. `links` is the reads
+// with pieces in more than one panel, per alignments track: what a reviewer
+// reads as a fan of curves, as a number a queue can be sorted on. Empty for an
+// image of one panel.
+const MANIFEST_COLUMNS = [
+  'file',
+  'locs',
+  'name',
+  'line',
+  'event',
+  'links',
+  'status',
+]
+
+function priorLinks(outDir: string) {
+  const file = path.join(outDir, 'manifest.tsv')
+  const [head = '', ...rows] = fs.existsSync(file)
+    ? fs.readFileSync(file, 'utf8').split('\n')
+    : []
+  const columns = head.split('\t')
+  const fileAt = columns.indexOf('file')
+  const linksAt = columns.indexOf('links')
+  return new Map(
+    fileAt === -1 || linksAt === -1
+      ? []
+      : rows.map(row => {
+          const f = row.split('\t')
+          return [f[fileAt] ?? '', f[linksAt] ?? ''] as const
+        }),
+  )
+}
+
 function writeManifest(
   outDir: string,
   planned: { rec: BatchRecord; file: string; locs: string[] }[],
   // index-aligned with `planned`: the loop pushes exactly one per record
   status: RecordStatus[],
+  links: Map<string, string>,
 ) {
   const rows = planned.map(({ rec, file, locs }, i) =>
     [
@@ -273,11 +308,12 @@ function writeManifest(
       rec.name ?? '',
       rec.line ?? '',
       rec.event ?? '',
+      links.get(file) ?? '',
       status[i],
     ].join('\t'),
   )
   fs.writeFileSync(
     path.join(outDir, 'manifest.tsv'),
-    `${['file', 'locs', 'name', 'line', 'event', 'status'].join('\t')}\n${rows.join('\n')}\n`,
+    `${MANIFEST_COLUMNS.join('\t')}\n${rows.join('\n')}\n`,
   )
 }
