@@ -15,7 +15,10 @@ export { default as createViewState } from './createViewState.ts'
 // display types whose state models are lazily loaded — a session restored from
 // a URL is the usual one
 export { createViewStateAsync } from './createViewState.ts'
-export type { ViewStateOptions } from './createViewState.ts'
+export type {
+  AsyncViewStateOptions,
+  ViewStateOptions,
+} from './createViewState.ts'
 // tear down an engine the host built and is discarding — React unmount alone
 // leaves its RPC workers and autoruns running
 export { destroyViewState } from './destroyViewState.ts'

@@ -3,7 +3,7 @@ import { useAsyncEngineLifecycle } from '@jbrowse/product-core'
 import { createViewStateAsync } from './createViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
-import type { ViewStateOptions } from './createViewState.ts'
+import type { AsyncViewStateOptions } from './createViewState.ts'
 
 /**
  * Build an engine for a component's lifetime and hand back the model. For
@@ -31,7 +31,7 @@ import type { ViewStateOptions } from './createViewState.ts'
  * renders nothing until then.
  */
 export function useCreateViewState(
-  opts: ViewStateOptions,
+  opts: AsyncViewStateOptions,
 ): ViewModel | undefined {
   return useAsyncEngineLifecycle(() => createViewStateAsync(opts))
 }

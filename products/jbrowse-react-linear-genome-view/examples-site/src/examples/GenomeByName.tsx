@@ -5,7 +5,7 @@ import {
 
 export default function GenomeByName() {
   const state = useCreateViewState({
-    assembly: 'hg38',
+    jbrowseHub: 'hg38',
     init: {
       loc: 'BRCA1',
       tracks: [

@@ -15,7 +15,7 @@ const hubTracks = [
 
 const GenomeByName = observer(function GenomeByName() {
   const state = useCreateViewState({
-    assembly: 'hg38',
+    jbrowseHub: 'hg38',
     tracks: [
       {
         trackId: 'my_phylop',

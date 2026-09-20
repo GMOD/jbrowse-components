@@ -39,10 +39,10 @@ const hub = {
   ],
 }
 
-test("a genome name brings the hub's assembly, catalog and search index, and the host's tracks win on a shared id", async () => {
+test("jbrowseHub brings the hub's assembly, catalog and search index, and the host's tracks win on a shared id", async () => {
   jest.mocked(fetchHub).mockResolvedValue(hub)
   const state = await createViewStateAsync({
-    assembly: 'volvox',
+    jbrowseHub: 'volvox',
     tracks: [featureTrack('mine'), featureTrack('shared', 'the host copy')],
     init: { loc: 'ctgA:1..100', tracks: ['hub_genes', 'mine'] },
   })
@@ -85,7 +85,16 @@ test('an assembly config asks no hub', async () => {
 })
 
 test('the synchronous creator names the two that can fetch', () => {
-  expect(() => createViewState({ assembly: 'hg38' })).toThrow(
-    /useCreateViewState or createViewStateAsync/,
-  )
+  expect(() =>
+    // @ts-expect-error the synchronous options have no jbrowseHub
+    createViewState({ jbrowseHub: 'hg38' }),
+  ).toThrow(/useCreateViewState or createViewStateAsync/)
+})
+
+test('an assembly beside a jbrowseHub is refused', async () => {
+  const both = { jbrowseHub: 'hg38', assembly: hub.assemblies[0]! }
+  await expect(
+    // @ts-expect-error a hub is a whole genome, so it excludes `assembly`
+    createViewStateAsync(both),
+  ).rejects.toThrow('pass assembly or jbrowseHub, not both')
 })

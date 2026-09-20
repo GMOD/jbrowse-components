@@ -36,14 +36,14 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'genome-by-name',
-    title: 'A genome by name',
+    title: 'A hosted genome',
     description:
-      "A hosted genome's sequence, tracks and gene search from its name.",
+      'jbrowseHub fetches a genome, its tracks and its gene search by name.',
     group: 'Getting started',
     sections: [
       {
         slug: 'genome-by-name',
-        title: 'hg38 by name, a gene as the location, tracks by id',
+        title: 'jbrowseHub, a gene as the location, tracks by id',
       },
     ],
   },
