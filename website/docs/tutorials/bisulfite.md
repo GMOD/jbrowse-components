@@ -196,7 +196,7 @@ the track menu switches it afterwards:
     "uri": "arabidopsis_wgbs.bam"
   },
   "displayDefaults": {
-    "color": { "field": "bisulfite" },
+    "baseColor": { "field": "bisulfite" },
     "modifications": { "cytosineContext": "CG" }
   }
 }

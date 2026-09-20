@@ -50,7 +50,7 @@ function wgbsContextTrack(
     display: {
       trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
       type: 'LinearAlignmentsDisplay',
-      color: { field: 'bisulfite' },
+      baseColor: { field: 'bisulfite' },
       // methylated-only is the default, so the tri-context contrast reads as
       // presence/absence of red rather than a red/blue mix per read
       modifications: { cytosineContext: context },
@@ -212,7 +212,7 @@ const snrpnReadsPanel = ({ grouped = false } = {}) =>
         height: 320,
         forceLoad: true,
         ...(grouped ? { facet: 'tags.HP' } : {}),
-        color: { field: 'modifications' },
+        baseColor: { field: 'modifications' },
         modifications: { fillUnmarked: true },
       },
     ],
@@ -246,7 +246,7 @@ export const bisulfiteVideoFixtures = {
       {
         trackId: 'arabidopsis_wgbs',
         type: 'LinearAlignmentsDisplay',
-        color: { field: 'bisulfite' },
+        baseColor: { field: 'bisulfite' },
         modifications: { cytosineContext: 'CG' },
         showCoverage: false,
         heightMode: 'fixed',
@@ -420,7 +420,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
               // aren't what this figure is about (reviewer: 6mA only). An
               // allow-list (shownModifications: 6mA code 'a') keeps it
               // 6mA-only regardless of what else the caller emitted.
-              color: { field: 'modifications' },
+              baseColor: { field: 'modifications' },
               modifications: { shownModifications: ['a'] },
               // compact pileup: displayMode isn't a real slot on this
               // display (that's the shared canvas base schema) — fixed
@@ -436,7 +436,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
               trackId: 'PBA15131-nanopore',
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
-              color: { field: 'modifications' },
+              baseColor: { field: 'modifications' },
               modifications: { shownModifications: ['a'] },
               heightMode: 'fixed',
               featureHeight: 3,
@@ -613,7 +613,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
               height: 460,
               forceLoad: true,
               facet: 'tags.HP',
-              color: { field: 'modifications' },
+              baseColor: { field: 'modifications' },
               modifications: { fillUnmarked: true },
             },
           ],

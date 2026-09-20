@@ -1,6 +1,7 @@
 import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import {
   COLOR_FIELDS,
+  baseLayerOf,
   colorByOf,
 } from '../../../../plugins/alignments/src/shared/alignmentsColor.ts'
 import { COLOR_SCHEMES } from '../../../../plugins/alignments/src/shared/colorSchemes.ts'
@@ -177,12 +178,30 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
     asList(color.domain) ?? asList(color.palette) ?? asString(color.scale)
   return {
     path: colorBy.tag ? `${path} → enter tag "${colorBy.tag}"` : path,
+    note: declared
+      ? "This figure also declares the colour scale's domain, palette or ramp, which only the config sets."
+      : undefined,
+  }
+}
+
+// The alignments displays' `baseColor`: the per-base layer's row in the same
+// Color by... menu. The two modification rows are submenus, whose radio the
+// sibling `modifications` slot settles (`modificationsStep`).
+const baseColorStep: FieldRecipe = value => {
+  const layer = baseLayerOf({
+    field: asString(value) ?? asString(asRecord(value)?.field) ?? '',
+    scale: asRecord(value)?.scale === 'none' ? 'none' : undefined,
+  })
+  if (!layer) {
+    return undefined
+  }
+  const { menu } = COLOR_SCHEMES[layer.type]
+  return {
+    path: `${TRACK_MENU} → Color by... → ${SPECIAL_COLOR_MENUS[layer.type] ?? menu.label}`,
     note:
-      colorBy.type === 'modifications'
+      layer.type === 'modifications'
         ? 'Needs MM/ML modification tags in your BAM/CRAM.'
-        : declared
-          ? "This figure also declares the colour scale's domain, palette or ramp, which only the config sets."
-          : undefined,
+        : undefined,
   }
 }
 
@@ -197,7 +216,7 @@ function namesAlignmentsColor(value: unknown) {
   )
 }
 
-// The `modifications` slot beside `color: { field: 'modifications' }` or
+// The `modifications` slot beside `baseColor: 'modifications'` or
 // `'bisulfite'`: which radio inside that submenu the figure picked.
 const modificationsStep: FieldRecipe = value => {
   const mods = asRecord(value)
@@ -943,6 +962,7 @@ const numberField =
 
 export const trackFields: Record<string, FieldRecipe> = {
   color: colorStep,
+  baseColor: baseColorStep,
   modifications: modificationsStep,
   rowColor: rowColorStep,
   facet: facetStep,

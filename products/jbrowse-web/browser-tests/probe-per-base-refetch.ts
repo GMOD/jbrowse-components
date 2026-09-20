@@ -55,7 +55,7 @@ const GESTURES = ALL_GESTURES.filter(
 )
 
 type Mode = (typeof ALL_MODES)[number]
-// The `color` field each mode writes; an empty field is the plain read fill.
+// The `baseColor` field each mode writes; an empty field draws no layer.
 const COLOR_FIELD: Record<Mode, string> = {
   normal: '',
   perBaseQuality: 'baseQuality',
@@ -203,7 +203,7 @@ async function installHook(page: Page) {
         issuedAt: performance.now(),
         perBaseBinBp: args.perBaseBinBp as number,
         colorBy:
-          (args.colorBy as { type: string } | undefined)?.type ?? 'default',
+          (args.baseLayer as { type: string } | undefined)?.type ?? 'default',
         region: `${region.refName}:${region.start}-${region.end}`,
         statusAfterStop: 0,
       }
@@ -362,7 +362,7 @@ async function runOne(
           tracks: [
             {
               trackId: fixture.trackId,
-              displaySnapshot: { color: { field: COLOR_FIELD[mode] } },
+              displaySnapshot: { baseColor: { field: COLOR_FIELD[mode] } },
             },
           ],
         },

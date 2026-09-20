@@ -30,7 +30,9 @@ index resolves automatically. Coloring, height, and filtering are slots on the
   [`LinearAlignmentsDisplay`](/docs/config/linearalignmentsdisplay) slots. Reads
   draw gray with mismatches marked until
   [`color`](/docs/config/linearalignmentsdisplay/#slot-color) names a field —
-  `strand`, `pairOrientation`, `insertSize` or `tags.XX`; the
+  `strand`, `pairOrientation`, `insertSize` or `tags.XX` — and
+  [`baseColor`](/docs/config/linearalignmentsdisplay/#slot-basecolor) draws
+  modifications or base quality over them; the
   [cookbook](/docs/cookbook#alignments-tracks) has the coloring, grouping and
   flag-filter recipe
 

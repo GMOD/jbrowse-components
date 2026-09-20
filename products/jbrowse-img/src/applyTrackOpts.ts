@@ -30,6 +30,24 @@ type WiggleDisplayModel = Instance<
   ReturnType<typeof linearWiggleDisplayModelFactory>
 >
 
+// What `color:` names on an alignments track: a read field fills the reads, a
+// per-base field draws over them, and anything else is a CSS colour.
+const ALIGNMENTS_COLOR_FIELDS = new Set([
+  'strand',
+  'firstOfPairStrand',
+  'mapq',
+  'insertSize',
+  'pairOrientation',
+  'insertSizeAndOrientation',
+  'mateRefName',
+])
+const ALIGNMENTS_BASE_COLOR_FIELDS = new Set([
+  'modifications',
+  'bisulfite',
+  'baseQuality',
+  'base',
+])
+
 // Display category: which display a track opens with, and so which snapshot keys
 // are meaningful for it. Lets us build the right snapshot before the display
 // instance exists, and gate each modifier to the track types it applies to.
@@ -185,6 +203,7 @@ interface DisplaySnapshot {
   displayMode?: 'normal' | 'compact' | 'superCompact'
   heightMode?: HeightMode
   // alignments
+  baseColor?: { field: string }
   modifications?: { fillUnmarked?: boolean }
   facet?: string
   sortedBy?: {
@@ -250,10 +269,9 @@ type WiggleConfigSlotKey = 'defaultRendering' | 'color' | 'scales'
 // divergently-named `configForceLoad` getter, so `keyof` the instance misses it
 // the same way it misses the wiggle slots above.
 type BaseConfigSlotKey = 'forceLoad'
-// `modifications` is the alignments config slot the modification and bisulfite
-// colour fields read, reached through the divergently-named
-// `modificationSettings` getter.
-type AlignmentsConfigSlotKey = 'modifications'
+// `modifications` and `baseColor` are alignments config slots read through the
+// divergently-named `modificationSettings` and `baseLayer` getters.
+type AlignmentsConfigSlotKey = 'modifications' | 'baseColor'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
@@ -708,6 +726,8 @@ const modifiers: Record<string, Modifier> = {
   },
 
   // ——— coloring ———
+  // A per-base field draws over the reads through `baseColor`, so it combines
+  // with a read colour: `color:tag:HP,color:methylation`.
   // `color:` asks the same question of every track type, but each display
   // answers it through a different slot, so this routes rather than writing one
   // key. Alignments and the canvas-based displays name a field; wiggle takes a
@@ -723,15 +743,18 @@ const modifiers: Record<string, Modifier> = {
         // one word for the everyday CpG picture, which otherwise needs the
         // JSON escape hatch to reach the sibling `modifications` slot.
         if (value === 'methylation') {
-          r.snap.color = { field: 'modifications' }
+          r.snap.baseColor = { field: 'modifications' }
           r.snap.modifications = { fillUnmarked: true }
-        } else {
+        } else if (ALIGNMENTS_BASE_COLOR_FIELDS.has(value)) {
+          r.snap.baseColor = { field: value }
+        } else if (value === 'tag') {
           r.snap.color = {
-            field:
-              value === 'tag'
-                ? `tags.${parseStr('color:tag', arg ?? '', 'tag')}`
-                : value,
+            field: `tags.${parseStr('color:tag', arg ?? '', 'tag')}`,
           }
+        } else {
+          r.snap.color = ALIGNMENTS_COLOR_FIELDS.has(value)
+            ? { field: value }
+            : value
         }
       } else if (category === 'hic') {
         // the hic display has no color slot of either kind

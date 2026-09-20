@@ -100,7 +100,7 @@
             "trackId": "arabidopsis_wgbs",
             "displaySnapshot": {
               "type": "LinearAlignmentsDisplay",
-              "color": {
+              "baseColor": {
                 "field": "bisulfite"
               }
             }

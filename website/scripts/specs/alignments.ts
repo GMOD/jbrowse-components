@@ -1224,7 +1224,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             'cpgisland_ucsc_hg38',
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram_modifications',
-              color: { field: 'modifications' },
+              baseColor: { field: 'modifications' },
               // lift the fetch-size gate so the CRAM auto-loads headless
               // instead of sitting on the force-load prompt (same mechanism
               // as the smalldel/multisv specs)
@@ -1235,7 +1235,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // the methylation view is now modifications + fillUnmarked (the
               // "fill in unmarked cytosines" checkbox): every CpG painted, with
               // implicit-unmethylated ones blue
-              color: { field: 'modifications' },
+              baseColor: { field: 'modifications' },
               modifications: { fillUnmarked: true },
               forceLoad: true,
             },

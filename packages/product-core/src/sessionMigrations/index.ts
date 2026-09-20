@@ -80,9 +80,14 @@ const V4_COLOR_FIELDS: Record<string, string> = {
   stranded: 'firstOfPairStrand',
   pairOrientation: 'pairOrientation',
   insertSizeAndOrientation: 'insertSizeAndOrientation',
+  mateRefName: 'mateRefName',
+}
+
+// The v4 schemes that drew a cell per base, which are the `baseColor` object's
+// field now rather than the read fill's.
+const V4_BASE_COLOR_FIELDS: Record<string, string> = {
   perBaseQuality: 'baseQuality',
   perBaseLetter: 'base',
-  mateRefName: 'mateRefName',
   modifications: 'modifications',
   methylation: 'modifications',
   bisulfite: 'bisulfite',
@@ -99,6 +104,8 @@ function colorSlotsOf(value: unknown): Record<string, unknown> {
       : typeof type === 'string'
         ? V4_COLOR_FIELDS[type]
         : undefined
+  const baseField =
+    typeof type === 'string' ? V4_BASE_COLOR_FIELDS[type] : undefined
   const settings =
     type === 'methylation'
       ? {
@@ -108,6 +115,7 @@ function colorSlotsOf(value: unknown): Record<string, unknown> {
       : modifications
   return {
     ...(field ? { color: { field } } : {}),
+    ...(baseField ? { baseColor: { field: baseField } } : {}),
     ...(isObject(settings) ? { modifications: settings } : {}),
   }
 }
@@ -130,8 +138,8 @@ function colorSlotsOf(value: unknown): Record<string, unknown> {
 // no longer exists.
 //
 // `spread` carries one old key across as several slots: a v4 `colorBy` named a
-// scheme and held the modification settings, which are the `color` object's
-// field and the `modifications` slot now.
+// scheme and held the modification settings, which are the `color` or
+// `baseColor` object's field and the `modifications` slot now.
 const MIGRATED_INSTANCE_SLOTS: Record<
   string,
   {
@@ -273,8 +281,8 @@ function migrateDisplayType(
  * reference, i.e. only for a session instance. A *config* display node reaches
  * this same function through `migrateConfigSnapshot`, and there `filterBy` and
  * friends are the live slots — lifting them would strip a working config. Its
- * `colorBy` is the one key rewritten in place, onto the `color` and
- * `modifications` slots that replaced it.
+ * `colorBy` is the one key rewritten in place, onto the `color`, `baseColor`
+ * and `modifications` slots that replaced it.
  */
 function extractAlignmentsInstanceSettings(
   display: Record<string, unknown>,

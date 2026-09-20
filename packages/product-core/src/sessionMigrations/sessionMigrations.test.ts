@@ -281,7 +281,7 @@ describe('migrateSessionSnapshot', () => {
     expect(delta.trackId).toBe('track1')
     const deltaDisplay = delta.displays[0]
     expect(deltaDisplay.displayId).toBe('track1-LinearAlignmentsDisplay')
-    expect(deltaDisplay.color).toEqual({ field: 'modifications' })
+    expect(deltaDisplay.baseColor).toEqual({ field: 'modifications' })
     expect(deltaDisplay.filterBy).toEqual({ flagInclude: 0, flagExclude: 1536 })
   })
 
@@ -306,7 +306,7 @@ describe('migrateSessionSnapshot', () => {
     // no delta for a user-added track — edited in place
     expect(result.trackConfigDeltas).toBeUndefined()
     const display = (result.sessionTracks as any)[0].displays[0]
-    expect(display.color).toEqual({ field: 'modifications' })
+    expect(display.baseColor).toEqual({ field: 'modifications' })
     expect(display.filterBy).toEqual({ flagInclude: 0, flagExclude: 1536 })
   })
 
@@ -350,7 +350,7 @@ describe('migrateSessionSnapshot', () => {
     expect(display.PileupDisplay).toBeUndefined()
     const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
     expect(deltaDisplay.displayId).toBe('track1-LinearAlignmentsDisplay')
-    expect(deltaDisplay.color).toEqual({ field: 'modifications' })
+    expect(deltaDisplay.baseColor).toEqual({ field: 'modifications' })
     expect(deltaDisplay.filterBy).toEqual({
       flagInclude: 0,
       flagExclude: 1540,
@@ -463,7 +463,7 @@ describe('migrateSessionSnapshot', () => {
     })
     const display = (result.tracks as any)[0].displays[0]
     expect(display.type).toBe('LinearAlignmentsDisplay')
-    expect(display.color).toEqual({ field: 'modifications' })
+    expect(display.baseColor).toEqual({ field: 'modifications' })
     expect(result.trackConfigDeltas).toBeUndefined()
   })
 
@@ -483,7 +483,7 @@ describe('migrateSessionSnapshot', () => {
     const result = migrateSessionSnapshot(snap)
     const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
     expect(deltaDisplay.height).toBe(321)
-    expect(deltaDisplay.color).toEqual({ field: 'modifications' })
+    expect(deltaDisplay.baseColor).toEqual({ field: 'modifications' })
   })
 
   test('routes legacy heightPreConfig onto the height slot as a trackConfigDelta', () => {
@@ -668,7 +668,7 @@ describe('migrateSessionSnapshot', () => {
       const display = (result.views as any)[0].tracks[0].displays[0]
       expect(display[key]).toBeUndefined()
       const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
-      expect(deltaDisplay.color).toEqual({ field: 'modifications' })
+      expect(deltaDisplay.baseColor).toEqual({ field: 'modifications' })
       expect(deltaDisplay.modifications).toEqual({ fillUnmarked: true })
     },
   )

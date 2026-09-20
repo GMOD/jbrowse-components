@@ -2970,7 +2970,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_t_reads_meth',
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
-              color: { field: 'modifications' },
+              baseColor: { field: 'modifications' },
               modifications: { fillUnmarked: true },
               // `fit`, so the WHOLE pileup is in the frame at once. The pattern
               // this figure is about is a column, and a column only reads as one

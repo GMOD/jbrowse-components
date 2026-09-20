@@ -409,6 +409,26 @@ describe('color routing', () => {
     })
   })
 
+  test('a per-base field draws over the reads, so it combines with a read colour', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['color:tag:HP', 'color:methylation'])
+        .snap,
+    ).toEqual({
+      color: { field: 'tags.HP' },
+      baseColor: { field: 'modifications' },
+      modifications: { fillUnmarked: true },
+    })
+    expect(
+      buildDisplaySnapshot('alignments', ['color:baseQuality']).snap,
+    ).toEqual({ baseColor: { field: 'baseQuality' } })
+  })
+
+  test('anything else on alignments is a CSS colour for every read', () => {
+    expect(buildDisplaySnapshot('alignments', ['color:purple']).snap).toEqual({
+      color: 'purple',
+    })
+  })
+
   // The canvas displays take a CSS color or a jexl in the same `color` slot the
   // wiggle display uses — never a colorBy object, which is what used to be
   // written for them and dropped as an unknown MST key.

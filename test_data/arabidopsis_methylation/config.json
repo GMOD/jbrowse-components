@@ -53,7 +53,7 @@
             "trackId": "arabidopsis_meth",
             "displaySnapshot": {
               "type": "LinearAlignmentsDisplay",
-              "color": {
+              "baseColor": {
                 "field": "modifications"
               },
               "modifications": {

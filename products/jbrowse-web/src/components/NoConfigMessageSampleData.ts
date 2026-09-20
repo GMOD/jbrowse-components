@@ -257,7 +257,7 @@ export const demoSessions: readonly SampleLink[] = [
     label: 'Paired-end stranded RNA-seq',
   },
   {
-    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"15:23615000-23680000","type":"LinearGenomeView","tracks":[{"trackId":"HG002_WGS_fiberseq.MAGEL2_2","displaySnapshot":{"type":"LinearAlignmentsDisplay","color":{"field":"modifications"}}}]}]}',
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"15:23615000-23680000","type":"LinearGenomeView","tracks":[{"trackId":"HG002_WGS_fiberseq.MAGEL2_2","displaySnapshot":{"type":"LinearAlignmentsDisplay","baseColor":{"field":"modifications"}}}]}]}',
     label: 'Fiber-seq (5mC/6mA, MAGEL2)',
   },
   {

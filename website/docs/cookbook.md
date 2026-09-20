@@ -276,8 +276,10 @@ pass every expression, on variant tracks too:
 }
 ```
 
-- `color`'s field also takes `strand`, `pairOrientation`, `insertSize`,
-  `tags.XX` and `modifications`; a string is one colour for every read
+- `color`'s field also takes `strand`, `pairOrientation`, `insertSize` and
+  `tags.XX`; a string is one colour for every read
+- `baseColor` draws a per-base layer over the reads, whatever `color` fills them
+  with: `"modifications"`, `"bisulfite"`, `"baseQuality"` or `"base"`
 - `facet` also takes `strand`, `firstOfPairStrand`, `pairOrientation`,
   `splitRead`, `mapq`, or any read field
 - `flagExclude` 1540 hides unmapped, vendor-failed, and duplicate reads; 3844
