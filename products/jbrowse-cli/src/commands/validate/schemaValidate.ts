@@ -279,7 +279,7 @@ function explain(
 ) {
   const covered = new Set<string>()
   const emit = (where: string, message: string) => {
-    const key = `${where} ${message}`
+    const key = `${where}\0${message}`
     if (!covered.has(key)) {
       covered.add(key)
       problems.push({ level: 'error', where, message })
