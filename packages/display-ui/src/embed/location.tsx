@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -13,6 +13,7 @@ export function useLocationBox(view: LocationView) {
   const [draft, setDraft] = useState<string>()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<unknown>()
+  const requests = useRef(0)
   const value = draft ?? view.coarseVisibleLocStrings
   return {
     value,
@@ -26,19 +27,27 @@ export function useLocationBox(view: LocationView) {
       setError(undefined)
     },
     go(input = value) {
+      const request = ++requests.current
+      const isLatest = () => request === requests.current
       setDraft(input)
       setError(undefined)
       setPending(true)
       view
         .navToLocString(input)
         .then(() => {
-          setDraft(undefined)
+          if (isLatest()) {
+            setDraft(undefined)
+          }
         })
         .catch((e: unknown) => {
-          setError(e)
+          if (isLatest()) {
+            setError(e)
+          }
         })
         .finally(() => {
-          setPending(false)
+          if (isLatest()) {
+            setPending(false)
+          }
         })
     },
   }
