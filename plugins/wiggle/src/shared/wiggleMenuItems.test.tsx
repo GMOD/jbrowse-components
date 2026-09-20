@@ -6,6 +6,8 @@ import {
   makeResolutionSubMenu,
 } from './wiggleMenuItems.tsx'
 
+import type { MenuItem } from '@jbrowse/core/ui'
+
 // minimal stand-in for the display: resolution + the clamping setter, the only
 // bits the stepper reads/writes
 function makeSelf(resolution: number) {
@@ -58,38 +60,78 @@ test('stepping finer doubles the resolution', () => {
   expect(self.calls).toEqual([4])
 })
 
-// minimal stand-in for the display: the plot radios plus the facet toggle and
-// the raw adapter rows the gate counts
+const PLOTS = [
+  ['xyplot', 'XY plot'],
+  ['density', 'Density'],
+] as const
+
+// minimal stand-in for the display: the two axes a leaf writes, and the raw
+// adapter rows that decide whether there is a layout axis at all
 function makePlotSelf(sourceCount: number, isFaceted: boolean) {
-  const calls: boolean[] = []
+  const writes: (string | boolean)[] = []
   return {
-    calls,
+    writes,
     renderingType: 'xyplot',
-    setRenderingType: () => {},
+    setRenderingType: (t: string) => {
+      writes.push(t)
+    },
     isFaceted,
     setFaceted: (on: boolean) => {
-      calls.push(on)
+      writes.push(on)
     },
     sourcesWithoutLayout: Array.from({ length: sourceCount }, (_, i) => i),
   }
 }
 
-function plotLabels(sourceCount: number, isFaceted = false) {
-  const item = makeRenderingTypeSubMenu(makePlotSelf(sourceCount, isFaceted), [
-    ['xyplot', 'XY plot'],
-  ])
-  const rows = 'subMenu' in item ? resolveSubMenu(item) : []
-  return rows.map(i => ('label' in i ? i.label : undefined))
+const rowsOf = (item: MenuItem | undefined): MenuItem[] =>
+  item && 'subMenu' in item ? resolveSubMenu(item) : []
+const labelsOf = (item: MenuItem | undefined) =>
+  rowsOf(item).map(i => ('label' in i ? i.label : undefined))
+const checkedIn = (item: MenuItem | undefined) =>
+  rowsOf(item)
+    .filter(i => 'checked' in i && i.checked)
+    .map(i => ('label' in i ? i.label : undefined))
+
+function plotMenu(sourceCount: number, isFaceted = false) {
+  const self = makePlotSelf(sourceCount, isFaceted)
+  return { self, item: makeRenderingTypeSubMenu(self, PLOTS) }
 }
 
-test('two sources offer the row split', () => {
-  expect(plotLabels(2)).toContain('One row per source')
+test('several sources drill through the layout to the plot', () => {
+  expect(labelsOf(plotMenu(2).item)).toEqual(['Multi-row', 'Overlapping'])
 })
 
-test('one source does not, so no tree can be raised over a single row', () => {
-  expect(plotLabels(1)).not.toContain('One row per source')
+test('every layout offers every plot, overlapping density included', () => {
+  const [multirow, overlapping] = rowsOf(plotMenu(2).item)
+  expect(labelsOf(multirow)).toEqual(['XY plot', 'Density'])
+  expect(labelsOf(overlapping)).toEqual(['XY plot', 'Density'])
 })
 
-test('a faceted display keeps the toggle when its sources drop to one', () => {
-  expect(plotLabels(1, true)).toContain('One row per source')
+test('one source meets the plots flat, with no layout to drill through', () => {
+  expect(labelsOf(plotMenu(1).item)).toEqual(['XY plot', 'Density'])
+})
+
+test('a faceted display keeps the groups when its sources drop to one', () => {
+  expect(labelsOf(plotMenu(1, true).item)).toEqual(['Multi-row', 'Overlapping'])
+})
+
+test('the checked leaf is the pair, not the plot alone', () => {
+  // renderingType 'xyplot' with the facet off: checked under Overlapping only,
+  // where a plot-alone value would tick XY plot in both groups
+  const [multirow, overlapping] = rowsOf(plotMenu(2).item)
+  expect(checkedIn(multirow)).toEqual([])
+  expect(checkedIn(overlapping)).toEqual(['XY plot'])
+})
+
+test('one leaf writes both axes', () => {
+  const { self, item } = plotMenu(2)
+  const [multirow] = rowsOf(item)
+  const density = rowsOf(multirow).find(
+    i => 'label' in i && i.label === 'Density',
+  )
+  if (!density || !('onClick' in density)) {
+    throw new Error('no Density row under Multi-row')
+  }
+  density.onClick()
+  expect(self.writes).toEqual(['density', true])
 })

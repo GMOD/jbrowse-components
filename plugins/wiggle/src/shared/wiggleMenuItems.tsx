@@ -1,10 +1,6 @@
 import { getSlotDefinition } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import {
-  makeRadioSubMenu,
-  radioItems,
-  toggleItem,
-} from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
 import { makeScoreSubMenu } from '@jbrowse/wiggle-core'
 import {
   makePointSizeSubMenu,
@@ -24,10 +20,27 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AutoscaleModel, ScoreScaleModel } from '@jbrowse/wiggle-core'
 
-// The plot and the layout in one submenu: five radios for what a source is
-// drawn as, then the checkbox for whether each source gets a row of its own.
-// They were a nine-entry cross-product nested one level by layout, which made
-// "switch to density" and "stack the rows" the same click.
+const LAYOUTS = [
+  ['rows', 'Multi-row'],
+  ['overlay', 'Overlapping'],
+] as const
+
+// `<layout>:<renderingType>`, and MENU-LOCAL. The model still holds the two
+// axes apart — five `renderingType` names that say what a source is drawn as,
+// `facet` that says where it sits — and nothing outside this file reads a key
+// (plugins/wiggle/CLAUDE.md, ADR-143). Reviving the nine names as config values
+// is what put the layout back inside a plot name, where `isOverlayMode` had to
+// recover it by string-set membership.
+const leafKey = (layout: string, rendering: string) => `${layout}:${rendering}`
+
+// The plot and the layout, picked in one click: a group per layout, the same
+// five plots inside each. Flat five plots plus a "One row per source" checkbox
+// is the same two facts in two controls, which taxes the first choice —
+// "multi-row XY plot" is one thought — to untax later ones.
+//
+// Ten leaves, where the pre-ADR-143 menu had nine: it omitted overlapping
+// density, which the merged display draws (one density plot, no left axis —
+// `prefersOffset`). A menu change is the wrong place to retire a rendering.
 export function makeRenderingTypeSubMenu(
   self: {
     renderingType: string
@@ -38,27 +51,44 @@ export function makeRenderingTypeSubMenu(
   },
   renderings: readonly (readonly [string, string])[],
 ): MenuItem {
-  // One source has nothing to split, and ticking the box anyway used to raise
-  // the tree and row-label items over a dendrogram that can never draw
-  // (clustering refuses a single row). Still offered while faceted, so a track
-  // whose sources dropped to one can turn it back off.
-  const splittable = self.isFaceted || self.sourcesWithoutLayout.length > 1
-  return makeRadioSubMenu({
+  // One source has no layout axis to drill through, so it meets the five plots
+  // flat. It also cannot be faceted usefully — a lone row raises the tree and
+  // row-label items over a dendrogram that can never draw, since clustering
+  // refuses a single row. Grouped while faceted, so a track whose sources
+  // dropped to one can still get back to one box.
+  if (!self.isFaceted && self.sourcesWithoutLayout.length <= 1) {
+    return makeRadioSubMenu({
+      label: 'Plot type',
+      icon: ShowChartIcon,
+      value: self.renderingType,
+      onChange: t => {
+        self.setRenderingType(t)
+      },
+      options: renderings,
+    })
+  }
+  const current = leafKey(
+    self.isFaceted ? 'rows' : 'overlay',
+    self.renderingType,
+  )
+  return {
     label: 'Plot type',
     icon: ShowChartIcon,
-    value: self.renderingType,
-    onChange: t => {
-      self.setRenderingType(t)
-    },
-    options: renderings,
-    extraItems: splittable
-      ? [
-          toggleItem('One row per source', self.isFaceted, on => {
-            self.setFaceted(on)
-          }),
-        ]
-      : [],
-  })
+    subMenu: LAYOUTS.map(([layout, layoutLabel]) =>
+      makeRadioSubMenu({
+        label: layoutLabel,
+        value: current,
+        onChange: key => {
+          const cut = key.indexOf(':')
+          self.setRenderingType(key.slice(cut + 1))
+          self.setFaceted(key.slice(0, cut) === 'rows')
+        },
+        options: renderings.map(
+          ([value, label]) => [leafKey(layout, value), label] as const,
+        ),
+      }),
+    ),
+  }
 }
 
 export function makePointSizeMenuItems(

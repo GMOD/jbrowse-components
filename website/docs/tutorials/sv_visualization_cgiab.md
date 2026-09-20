@@ -807,9 +807,9 @@ multi-bigwig track, which is fast at any zoom:
   every chromosome at once.
 - **Score → Set min/max score...** in the track menu pins the axis, holding the
   scale off the centromere and repeat spikes.
-- **Plot type → Scatter**, with **One row per source** unticked under the same
-  submenu, draws the two samples as points in one band, tumor red and normal
-  blue.
+- **Plot type → Overlapping → Scatter** draws the two samples as points in one
+  band, tumor red and normal blue. The same five plot styles sit under
+  **Multi-row**, which is the row-per-sample stack the track opens in.
 
 <Figure caption="The linear genome view start screen: click Show all regions in assembly to lay out every chromosome across the view." src="/img/sv_cgiab/cnv_show_all_regions.png" />
 
@@ -827,7 +827,7 @@ Zoom to a region and open the benchmark CNV BED to check the coverage changes
 against the called intervals. Coverage marks that a level changed; the BAF track
 in the same window shows what changed.
 
-<Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Both menu routes on the coverage track, over chr5: Set min/max score pinning the axis, then Plot type to Scatter with One row per source unticked, which redraws the two stacked rows as one band of points with the normal flat under the tumor's steps." />
+<Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Both menu routes on the coverage track, over chr5: Set min/max score pinning the axis, then Plot type to Overlapping and Scatter, which redraws the two stacked rows as one band of points with the normal flat under the tumor's steps." />
 
 <Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal indexcov coverage as overlapping scatter, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF lane shows what each step is." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 

@@ -286,13 +286,13 @@ export const svVideos: VideoSpec[] = [
   // Then the row-per-source default gives each sample an axis of its own,
   // which is exactly what a reader must not have here: the claim is that the
   // tumor steps while its own normal holds still, and that is only a claim
-  // while both are drawn against one axis. Unticking "One row per source" is
+  // while both are drawn against one axis. Plot type → Overlapping → Scatter is
   // what puts them there, and the clip ends on it — the lane the chr5 figure
   // below the embed prints.
   {
     name: 'sv_cgiab/copy_number_layout',
     description:
-      "HG008's tumor and normal coverage brought onto one axis: Score → Set min/max score... to pin the scale, then Plot type → Scatter with One row per source unticked, which redraws the two stacked rows as one band of points",
+      "HG008's tumor and normal coverage brought onto one axis: Score → Set min/max score... to pin the scale, then Plot type → Overlapping → Scatter, which redraws the two stacked rows as one band of points",
     url: cgiabVideoFixtures.coverageAsLoaded,
     // 406px of app at every frame the run measured — nothing here grows it,
     // since both routes rewrite settings on a lane that keeps its height — plus
@@ -369,22 +369,23 @@ export const svVideos: VideoSpec[] = [
         selector: cascade('submenu', 'Plot type'),
         hold: 1400,
       },
+      // The layout is the group a plot name sits under, so "as points, on one
+      // axis" is one leaf rather than a radio and then a checkbox. Only the
+      // open group's rows are on screen, which is what keeps `Scatter` — a
+      // label both groups carry — resolving to this one.
+      {
+        type: 'waitForSelector',
+        selector: cascade('submenu', 'Overlapping'),
+      },
+      {
+        type: 'click',
+        selector: cascade('submenu', 'Overlapping'),
+        hold: 1400,
+      },
       { type: 'waitForSelector', selector: cascade('menuitem', 'Scatter') },
-      // The radio mark moving is the only frame that says which of the five
-      // plot types is now in force; the checkbox under them is the layout, and
-      // unticking it is what brings the two rows onto one axis.
       {
         type: 'click',
         selector: cascade('menuitem', 'Scatter'),
-        hold: 1400,
-      },
-      {
-        type: 'waitForSelector',
-        selector: cascade('menuitem', 'One row per source'),
-      },
-      {
-        type: 'click',
-        selector: cascade('menuitem', 'One row per source'),
         hold: 1400,
       },
       ...leaveTheMenu,

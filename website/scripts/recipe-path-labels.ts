@@ -117,6 +117,10 @@ export const PATH_PROSE = new Set([
   // ChannelSpecDialog's text area, which the quantitative display's colour
   // object is written into whole
   'the JSON box',
+  // the five plot names, which both Plot type groups carry — the recipe's
+  // subject is the group a reader picks, and naming one plot would make the
+  // path wrong for the other four
+  'the plot name',
 ])
 
 /**

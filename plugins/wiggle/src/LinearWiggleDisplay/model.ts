@@ -814,11 +814,12 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * The Plot type menu's "One row per source" checkbox. Writes the field
-       * alone: an order declared in `facet.domain` survives a trip through the
-       * shared plot and comes back with the rows. Writing the object whole
-       * would not — `rowDomain` reads the order back through `facet`, which is
-       * undefined while the sources share a plot.
+       * The layout half of a Plot type leaf — `Multi-row` or `Overlapping`,
+       * each holding the five plot names. Writes the field alone: an order
+       * declared in `facet.domain` survives a trip through the shared plot and
+       * comes back with the rows. Writing the object whole would not —
+       * `rowDomain` reads the order back through `facet`, which is undefined
+       * while the sources share a plot.
        */
       setFaceted(on: boolean) {
         setConf(self, ['facet', 'field'], on ? 'source' : '')

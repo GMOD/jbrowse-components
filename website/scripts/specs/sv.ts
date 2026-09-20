@@ -400,8 +400,8 @@ export const svVideoFixtures = {
 // first gets it, which is the state neither cgiab figure holds. Both of them
 // mount HG008_INDEXCOV_TRACK with the walkthrough's settings already applied
 // (an overlaid scatter over a fixed 0..3), so the two menu routes that page
-// lists as bullets — Score → Set min/max score..., then Plot type → Scatter
-// with One row per source unchecked — happen before every picture on it.
+// lists as bullets — Score → Set min/max score..., then Plot type →
+// Overlapping → Scatter — happen before every picture on it.
 //
 // So the lane here carries NO display settings beyond its height: it arrives at
 // the track type's own row-per-source `xyplot` default, one filled row per

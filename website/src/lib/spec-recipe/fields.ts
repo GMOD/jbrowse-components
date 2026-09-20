@@ -487,10 +487,12 @@ function facetStep(
   const field = facetField(value)
   const ordered = !!asList(asRecord(value)?.domain)
   // The quantitative display's facet is its layout, and the only field it takes
-  // is `source`, so the whole setting is one checkbox under the plot radios.
+  // is `source`, so it is the group a plot name sits under rather than a
+  // setting of its own. A track with one source meets the plots flat and has no
+  // group to name.
   if (displayType === 'LinearWiggleDisplay') {
     return {
-      path: `${TRACK_MENU} → Plot type → One row per source (${field ? 'checked' : 'unchecked'})`,
+      path: `${TRACK_MENU} → Plot type → ${field ? 'Multi-row' : 'Overlapping'} → the plot name`,
       note: ordered
         ? 'The row order has no menu row of its own; the figure declares it in the track config, and "Reset row order" returns to it.'
         : undefined,
@@ -1270,7 +1272,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show... → ${TREE_SIDEBAR_TOGGLE} (${state})`,
           note:
             displayType === 'LinearWiggleDisplay'
-              ? 'On by default. The item is disabled until there is a tree to show, and drops out entirely once "One row per source" is off, which collapses every source onto one row for a dendrogram to align to.'
+              ? 'On by default. The item is disabled until there is a tree to show, and drops out entirely under an Overlapping plot, which collapses every source onto one row for a dendrogram to align to.'
               : 'On by default. The item is disabled until there is a tree to show — a clustering run, or a MAF track’s guide tree; the row labels have their own toggle beneath it.',
         }
       : undefined

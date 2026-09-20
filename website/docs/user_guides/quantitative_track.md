@@ -74,9 +74,10 @@ guide writes the same object into a config file.
 
 A `MultiQuantitativeTrack` combines several quantitative signals (typically
 BigWig files) into one track on a shared Y axis, and opens with one row per
-signal. **Plot type → One row per source** is the switch between that stack and
-every signal drawn in one shared plot box; the five plot styles apply either
-way.
+signal. **Plot type** holds the five plot styles twice, once under **Multi-row**
+and once under **Overlapping**, so one click picks both how a signal is drawn
+and whether it gets a row of its own. A track with a single signal has no layout
+to choose and lists the five styles on their own.
 
 <Figure caption="The track menu lists the available plot types." src="/img/multiwig/multi_renderer_types.png" />
 

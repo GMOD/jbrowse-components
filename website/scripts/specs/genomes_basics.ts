@@ -145,12 +145,13 @@ const H3K27AC_OVERLAY = {
   facet: '',
 }
 
-// The checkbox the two frames differ by, spelled once so the hovers, the
-// callout boxes and the prose cannot name it three ways. Written out rather
-// than imported: check-menu-labels resolves each segment against the app's own
-// literals, which is the check that would catch a rename, and an import would
-// make it vacuous.
-const PLOT_TYPE_PATH = ['Plot type', 'One row per source']
+// The leaf the two frames differ by, spelled once so the hovers, the callout
+// boxes and the prose cannot name it three ways. The tracks open at `facet: ''`
+// on the default plot, so the pick that splits them is the same plot under the
+// other layout. Written out rather than imported: check-menu-labels resolves
+// each segment against the app's own literals, which is the check that would
+// catch a rename, and an import would make it vacuous.
+const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
 
 // gnomAD's own consequence class for the variant: pLoF, missense, synonymous
 // or other. pLoF is the high-impact end, 93 of the 4,695 records over TP53.
