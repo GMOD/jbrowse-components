@@ -154,21 +154,33 @@ with `file, locs, name, line, event, status`. `line` is the record's line in the
 VCF, so the page reads `SVTYPE`, `SVLEN`, `FILTER` and the rest from the callset
 itself and `jb2export` holds no list of blessed INFO keys.
 
-1. **The page.** gene-review-portal's `app.jsx` with its card generalised to
-   `{id, title, images[], links, meta}`, fed from a tumor manifest and a normal
-   one joined on `line`.
-2. **Read vs ref as a launch input**, above. `jb2export synteny` renders it.
-3. **Tutorial**: a "review queue" section on `sv_callset_review`, the shortest
+The page is built: `variant-review-portal`, a repo of its own beside
+gene-review-portal and carrying that page's keyboard, verdicts and TSV
+round trip. It takes the VCF and one `--images` directory per sample, joins them
+on `line`, and needs no JBrowse dependency. COLO829's der(3) is its first
+portal, tumor over normal. It is a local repository until Colin publishes it.
+
+1. **Sort keys**, under
+   [Sorting the queue](#sorting-the-queue-is-what-makes-it-finishable). The page
+   lists cards in callset order, and nothing counts reads yet.
+2. **The cohort card**, for a multi-sample callset.
+3. **Read vs ref as a launch input**, above. `jb2export synteny` renders it, and
+   the page gains the allele row.
+4. **Tutorial**: a "review queue" section on `sv_callset_review`, the shortest
    on the page, and the HG008 portal deployed with `scripts/deploy-demo.sh`.
 
-1 is two days and needs nothing else. 2 is the one with a design in it.
+3 is the one with a design in it.
 
 ## Risks
 
-- **Byte gate.** Every evidence panel needs `force:true` at 116x-200x, one panel
-  per locus at a fixed flank, never one window per event.
+- **Byte gate.** `batch` loads every panel as if given `force:true`: over the
+  matched normal, COLO829's chr12 panel drew "Region too large to render", which
+  beside a tumor panel full of connectors reads as no support. One panel per
+  locus at a fixed flank keeps that load bounded, never one window per event.
   [per-region-banner-for-a-mixed-region-set](per-region-banner-for-a-mixed-region-set.md)
   is the open bug a mixed-size region set hits.
+- **Blank space under a panel.** A split-view panel keeps its height whatever
+  the pileup fills, so two stacked samples make a card taller than a window.
 - **Capture readiness.** Software-rasterised Chromium over several panels of
   deep long reads is slow, which is why `jb2export` is the renderer and
   `@jbrowse/capture` the opt-in.
@@ -177,7 +189,6 @@ itself and `jb2export` holds no list of blessed INFO keys.
 
 ## Decisions for Colin
 
-- Where the page generator lives: a second bin in `gene-review-portal`
-  (proposed), or a repo of its own sharing that `lib/`.
+- Whether `variant-review-portal` is the name it publishes under.
 - HG008 first (has `EVENT`, needs NCBI range requests) or COLO829 first (all
   hosted, no events). Proposed: HG008.
