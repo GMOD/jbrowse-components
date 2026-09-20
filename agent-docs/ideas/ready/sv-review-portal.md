@@ -139,8 +139,22 @@ over reads the render fetches anyway:
 | curves in the normal too | the same count in the matched normal |
 | a dense fan in a region of ragged coverage | mappability of the two flanks |
 
-The review then runs unsupported calls first, the ones the normal also carries
-second, everything else after. Mappability is the one new input:
+The first three are built. `batch` writes a `links` column, the split reads
+with pieces in more than one panel of an image, and the page's support filter
+sorts a callset on it. On COLO829's der(3) it reports 29 in the tumor and 0 in
+the normal, the 29 spanning reads and 0 of 115 that
+[reference/SV_MULTIHOP.md](../../reference/SV_MULTIHOP.md) measured another way.
+Over the whole callset, 82 records have panels to join: 67 have split reads in
+the tumor alone, 12 in the normal too, and 3 none.
+
+**None is not unsupported.** All 3 are deletions of 1.5 to 2.9 kb that one
+alignment carries as a gap, so the image draws the gap through both panels and
+no connector, and chrX's is clonal with every read carrying it. Counting those
+means reading a CIGAR for a gap over an interval, which is genotyping and a
+caller's job. The count stays what the picture draws, and the page says "split
+read" wherever it prints one.
+
+Mappability is the one input still missing:
 `mappability_qc.md` §"the number behind it" gives the command over the UCSC Umap
 k100 bigWig, including the trap that a zero-mappability span emits no interval,
 so an unweighted mean reads high on the regions it should condemn. An assembly
@@ -150,7 +164,7 @@ MAPQ 0.
 ## Pieces
 
 `jb2export batch --manifest` already writes what the page reads: a row per image
-with `file, locs, name, line, event, status`. `line` is the record's line in the
+with `file, locs, name, line, event, links, status`. `line` is the record's line in the
 VCF, so the page reads `SVTYPE`, `SVLEN`, `FILTER` and the rest from the callset
 itself and `jb2export` holds no list of blessed INFO keys.
 
@@ -158,12 +172,41 @@ The page is built:
 [variant-review-portal](https://github.com/cmdcolin/variant-review-portal), a
 repo of its own beside gene-review-portal and carrying that page's keyboard,
 verdicts and TSV round trip. It takes the VCF and one `--images` directory per
-sample, joins them on `line`, and needs no JBrowse dependency. COLO829's der(3)
-is its first portal, tumor over normal.
+sample, joins them on `line`, and needs no JBrowse dependency. The whole
+COLO829 callset is its first portal, tumor over normal.
 
-1. **Sort keys**, under
-   [Sorting the queue](#sorting-the-queue-is-what-makes-it-finishable). The page
-   lists cards in callset order, and nothing counts reads yet.
+## What a whole callset costs
+
+COLO829's 135 records, one process per sample, both at once on a 16-core laptop
+over the ONT open-data bucket:
+
+| sample | file | time | per record | failed |
+| --- | --- | --- | --- | --- |
+| tumor | CRAM | 5 min 45 s | 2.6 s | 0 |
+| matched normal | whole-genome BAM | 14 min 53 s | 6.6 s | 3 |
+
+- **Two processes do not slow each other.** The tumor ran at 2.6 s a record
+  alone and beside the normal, so a render is bound by one core and its own
+  fetches.
+- **The 3 failures are a fetch that got no response.** One fell on the same
+  record in two runs, over a byte range `curl` reads at once, and that record
+  renders alone.
+  `@gmod/range-cache-filehandle` leaves retrying to its caller by design, and
+  `--resume` is that caller: it re-rendered the 3 in 17 s and kept the other 132
+  rows' counts.
+- **The page holds up.** 135 cards with two images each is a 600 KB
+  `index.html` beside 20 MB of PNG, lazily loaded.
+
+A somatic callset is therefore minutes. A long-read germline callset of 25,000
+records is 18 hours on one process, and nobody reviews that many cards: at that
+size the manifest is the product, a table of split-read support per call, and
+the page is for the subset a filter leaves.
+
+## Pieces still unbuilt
+
+1. **`--jobs N`.** One process per core over the planned rows, one manifest at
+   the end. The measurement above says it scales until the network does, and
+   the 16-core laptop ran one core of it.
 2. **The cohort card**, for a multi-sample callset.
 3. **Read vs ref as a launch input**, above. `jb2export synteny` renders it, and
    the page gains the allele row.
