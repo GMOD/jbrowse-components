@@ -23,10 +23,9 @@ export const densityAdapterConfigSchemaFields = {
    * #slot
    */
   densityAdapter: {
-    type: 'frozen',
-    defaultValue: null,
+    type: 'maybeFrozen',
     description:
-      'optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; null disables it',
+      'optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable',
   },
 } as const
 

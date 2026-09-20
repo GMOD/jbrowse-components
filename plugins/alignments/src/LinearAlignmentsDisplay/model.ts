@@ -721,7 +721,7 @@ export default function stateModelFactory(
            * sorts nothing, which is the same answer this now gives explicitly.
            */
           get sortedBy(): SortedBy | undefined {
-            const sortedBy = getConf(self, 'sortedBy') as SortedBy | null
+            const sortedBy = getConf(self, 'sortedBy') as SortedBy | undefined
             return sortedBy &&
               typeof sortedBy.refName === 'string' &&
               typeof sortedBy.pos === 'number'

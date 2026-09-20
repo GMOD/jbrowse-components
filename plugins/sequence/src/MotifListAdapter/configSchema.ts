@@ -50,8 +50,7 @@ const configSchema = ConfigurationSchema(
      * scanning a sequence other than the one the track is displayed against.
      */
     sequenceAdapter: {
-      type: 'frozen',
-      defaultValue: null,
+      type: 'maybeFrozen',
     },
     /**
      * #slot

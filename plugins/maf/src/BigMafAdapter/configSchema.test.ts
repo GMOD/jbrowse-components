@@ -3,9 +3,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import configSchema from './configSchema.ts'
 
 describe('BigMafAdapter configSchema', () => {
-  test('summaryAdapter defaults to null (no zoom-out summary)', () => {
+  test('summaryAdapter defaults to unset (no zoom-out summary)', () => {
     const conf = configSchema.create({ type: 'BigMafAdapter' })
-    expect(readConfObject(conf, 'summaryAdapter')).toBe(null)
+    expect(readConfObject(conf, 'summaryAdapter')).toBeUndefined()
   })
 
   test('summaryAdapter stores a swappable sub-adapter config verbatim', () => {
@@ -17,9 +17,9 @@ describe('BigMafAdapter configSchema', () => {
     expect(readConfObject(conf, 'summaryAdapter')).toEqual(summaryAdapter)
   })
 
-  test('annotationAdapter defaults to null (no CDS-frames overlay)', () => {
+  test('annotationAdapter defaults to unset (no CDS-frames overlay)', () => {
     const conf = configSchema.create({ type: 'BigMafAdapter' })
-    expect(readConfObject(conf, 'annotationAdapter')).toBe(null)
+    expect(readConfObject(conf, 'annotationAdapter')).toBeUndefined()
   })
 
   test('annotationAdapter stores the CDS-frames sub-adapter config verbatim', () => {

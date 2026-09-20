@@ -364,7 +364,14 @@ function makeConfigurationSchemaModel<
       // Slot-name safety is a write guard (ADR-052); `setSlot`'s tests in
       // `configurationSchema.test.ts` pin both halves. `slotKeys` already has
       // base-schema slots merged in, so an inherited slot passes.
-      setSlot(slotName: string, value: unknown) {
+      // `null` resets, the same thing `undefined` does, because a JSON-borne
+      // caller cannot spell `undefined`: a session spec, share link or agent
+      // call can set a slot and then has no way to put it back. Omitting the
+      // key is not that — this action is the merge path, where an absent key
+      // means "leave it alone". A sub-schema already reads `null` this way
+      // (`mergedSubschemaValue`), and no slot stores `null` as a value.
+      setSlot(slotName: string, rawValue: unknown) {
+        const value = rawValue ?? undefined
         if (!slotKeys.has(slotName)) {
           // the sub-schema branch re-classifies off the definition rather than
           // carrying a second Set: it runs only on the way to a throw, and the

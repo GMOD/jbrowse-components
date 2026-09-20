@@ -719,6 +719,40 @@ describe('setSlot', () => {
     expect(readConfObject(node, 'showLabels')).toBe(false)
   })
 
+  // JSON cannot spell `undefined`, so without this a session spec, share link
+  // or agent call could set a slot and had no way to put it back — while the
+  // sub-schema beside it took `null` as a clear already.
+  test('null resets a slot to its default, whatever the slot type', () => {
+    const schema = ConfigurationSchema('Resettable', {
+      height: { type: 'number', defaultValue: 100 },
+      label: { type: 'string', defaultValue: 'hello' },
+      sidecar: { type: 'maybeFrozen' },
+    })
+    const node = schema.create(
+      { height: 250, label: 'bye', sidecar: { type: 'X' } },
+      { pluginManager },
+    )
+
+    node.setSlot('height', null)
+    node.setSlot('label', null)
+    node.setSlot('sidecar', null)
+
+    expect(readConfObject(node, 'height')).toBe(100)
+    expect(readConfObject(node, 'label')).toBe('hello')
+    expect(readConfObject(node, 'sidecar')).toBeUndefined()
+  })
+
+  // The write-side twin of the reset: `null` reaching a typed slot used to be
+  // refused outright, so the token had to be free before it could mean this.
+  test('null is not stored, so a reset round-trips through a snapshot', () => {
+    const schema = ConfigurationSchema('RoundTrip', {
+      height: { type: 'number', defaultValue: 100 },
+    })
+    const node = schema.create({ height: 250 }, { pluginManager })
+    node.setSlot('height', null)
+    expect(getSnapshot(node)).not.toHaveProperty('height', null)
+  })
+
   test('the error names the valid slots', () => {
     const schema = ConfigurationSchema('Named', {
       alpha: { type: 'integer', defaultValue: 1 },

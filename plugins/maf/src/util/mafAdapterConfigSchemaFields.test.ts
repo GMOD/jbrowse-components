@@ -46,11 +46,13 @@ test('the samples description names both navigation fields', () => {
 
 // The one slot whose prose is genuinely per format — what a zoom-out read costs
 // depends on the file it reads — so only its shape is shared.
-test('summaryAdapter keeps its type and default across the four', () => {
+test('summaryAdapter keeps its type across the four', () => {
   for (const adapter of NAMES) {
     expect(slot(SCHEMAS[adapter], 'summaryAdapter')).toMatchObject({
-      type: 'frozen',
-      defaultValue: null,
+      type: 'maybeFrozen',
     })
+    expect(slot(SCHEMAS[adapter], 'summaryAdapter')).not.toHaveProperty(
+      'defaultValue',
+    )
   }
 })

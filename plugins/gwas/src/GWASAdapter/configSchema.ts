@@ -91,11 +91,10 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
      * #slot
      * optional PLINK .ld sub-adapter (PlinkLDAdapter / PlinkLDTabixAdapter)
      * supplying pairwise r² used for LocusZoom-style coloring when the Manhattan
-     * display's `color.field` is `ld`; null disables it
+     * display's `color.field` is `ld`; leave it unset to disable
      */
     ldAdapter: {
-      type: 'frozen',
-      defaultValue: null,
+      type: 'maybeFrozen',
       description: 'sub-adapter config for PLINK .ld pairwise r² data',
     },
   },

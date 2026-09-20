@@ -256,7 +256,7 @@ describe('the summaryAdapter slot exists where the display expects it', () => {
     const conf = MafTabixConfigSchema.create({
       bedGzLocation: { uri: 'x.bed.gz', locationType: 'UriLocation' },
     })
-    expect(readConfObject(conf, 'summaryAdapter')).toBeNull()
+    expect(readConfObject(conf, 'summaryAdapter')).toBeUndefined()
   })
 
   // These two used to be the exception: a `.tai` seeks within an alignment, so

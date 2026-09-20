@@ -51,18 +51,16 @@ export function mafAdapterConfigSchemaFields({
      * #slot
      */
     summaryAdapter: {
-      type: 'frozen',
+      type: 'maybeFrozen',
       description: summaryAdapter,
-      defaultValue: null,
     },
     /**
      * #slot
      */
     annotationAdapter: {
-      type: 'frozen',
+      type: 'maybeFrozen',
       description:
-        'optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way',
-      defaultValue: null,
+        'optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way',
     },
   } as const
 }

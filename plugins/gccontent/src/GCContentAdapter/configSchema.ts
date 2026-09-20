@@ -33,8 +33,7 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
        * assembly's own sequence changes
        */
       sequenceAdapter: {
-        type: 'frozen',
-        defaultValue: null,
+        type: 'maybeFrozen',
         advanced: true,
       },
       /**

@@ -244,10 +244,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       sortedBy: {
-        type: 'frozen',
-        defaultValue: null,
+        type: 'maybeFrozen',
         description:
-          'Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)',
+          'Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted)',
         advanced: true,
       },
       /**
@@ -279,9 +278,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * true/false to force it on or off regardless of mode.
        */
       showOutline: {
-        type: 'frozen',
-        defaultValue: null,
-        description: 'Draw an outline around each read (null = auto by mode)',
+        type: 'maybeFrozen',
+        description: 'Draw an outline around each read (unset = auto by mode)',
         advanced: true,
       },
       /**

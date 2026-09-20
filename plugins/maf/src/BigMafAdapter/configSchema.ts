@@ -42,7 +42,7 @@ const configSchema = ConfigurationSchema(
     },
     ...mafAdapterConfigSchemaFields({
       summaryAdapter:
-        'optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; null disables it',
+        'optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; leave it unset to disable',
     }),
   },
   { explicitlyTyped: true },

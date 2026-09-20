@@ -13,6 +13,13 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
 - **`setSlot` throws on an undeclared name**, which is what makes a misspelled
   _write_ diagnosable at all; `setConf`'s compile-time guard only covers
   concrete schemas and a mixin erases that.
+- **`null` resets a slot to its default**, because JSON cannot spell `undefined`
+  and a session spec, share link or agent call would otherwise be able to set a
+  slot and not put it back. So **no slot stores `null` as a value** — a slot
+  that means "unset" is `maybeFrozen`, never `frozen` with `defaultValue: null`.
+  Omitting the key is a different thing: `setSlot` is the merge path, where an
+  absent key means "leave it alone", while a snapshot handed to `create` resets
+  an omitted slot already. ADR-146.
 - **A worker payload is `fullConfSnapshot`, not `getSnapshot`.** `stripDefault`
   omits a slot sitting at its default, and a worker has no schema to fill it
   back in.
