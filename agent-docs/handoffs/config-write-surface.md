@@ -1,6 +1,6 @@
 ---
 name: config-write-surface
-description: The configuration write API — `setConf` takes only a name where `getConf` takes a path, so a nested member write has no spelling and callers fabricate holders or read-modify-write. Candidate P (a path-taking `setConf`) is built, green and landable on `candidate-p`; the typed-props work underneath it is measured but not viable as spiked.
+description: The configuration write API — `setConf` takes only a name where `getConf` takes a path, so a nested member write has no spelling and callers fabricate holders or read-modify-write. Candidate P (a path-taking `setConf`) is built, green and landable on `candidate-p`; typed config-node props reach zero errors and a smaller .d.ts on a second branch.
 ---
 
 # The configuration write surface
