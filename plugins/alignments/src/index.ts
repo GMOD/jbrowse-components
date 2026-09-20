@@ -129,11 +129,17 @@ export type { HoverCoverageBand } from './LinearAlignmentsDisplay/model.ts'
 export type { LayoutOrder } from './LinearAlignmentsDisplay/menus/sortGroup.ts'
 export type { CoverageRegionFields } from './features/coverage/types.ts'
 export type {
+  BakedColorScale,
+  NumericExtent,
+} from './LinearAlignmentsDisplay/bakedColorScale.ts'
+export type { AlignmentsColorSetting } from './shared/alignmentsColor.ts'
+export type {
   ArcColorByType,
   CategoryFilter,
   ColorBy,
   FilterBy,
   GroupBy,
+  ModificationColorBy,
   SortedBy,
 } from './shared/types.ts'
 export type { ReadCategoryKey } from './shared/readCategoryFilters.ts'
