@@ -1,6 +1,6 @@
 ---
 name: grammar-vocabulary-for-wiggle
-description: The wiggle displays adopted the grammar's config vocabulary without adopting its renderer, in four landings on 2026-09-19 — ADR-142 (one `scales.y` value scale on every quantitative display), the `threshold` colour scale with the worker-side sign split deleted, ADR-143 (one `LinearWiggleDisplay`, `facet: 'source'` for rows) and ADR-144 (one `color` object) — with the column encoder and the wiggle port parked on the bench verdict. Left: the docs sweep for 143/144 and its figure reshoot, two figures that fail to capture for older reasons, and two follow-ups.
+description: The wiggle displays adopted the grammar's config vocabulary without adopting its renderer, in four landings on 2026-09-19 — ADR-142 (one `scales.y` value scale on every quantitative display), the `threshold` colour scale with the worker-side sign split deleted, ADR-143 (one `LinearWiggleDisplay`, `facet: 'source'` for rows) and ADR-144 (one `color` object) — with the column encoder and the wiggle port parked on the bench verdict. Left: two figures that fail to capture for older reasons, and two follow-ups.
 ---
 
 # Grammar vocabulary for the wiggle displays
@@ -13,10 +13,6 @@ forward the same day. The read_marks and cgiab demo configs are deployed.
 
 ## Still to do by hand
 
-- The docs sweep for ADR-143 and ADR-144 (the multiquantitative guides fold
-  into the quantitative ones; the specs still spelling `multi*` renderings or
-  `posColor`/`bicolorPivot` render wrong today), then rebuild `@jbrowse/web` and
-  reshoot the figures those specs drive.
 - `demos/ecoli_pangenome/config.json` differs from the hosted copy for reasons
   older than this thread; diff before deploying it.
 - Merging `QuantitativeTrack` and `MultiQuantitativeTrack` (ADR-143's report
