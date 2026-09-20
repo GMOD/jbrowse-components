@@ -28,7 +28,7 @@ The configuration slots for this model are documented on its [config schema page
 | <span id="getter-clientid">**clientId**</span><br><code>string</code> |  |
 | <span id="getter-scopes">**scopes**</span><br><code>string</code> |  |
 | <span id="getter-state">**state**</span><br><code>string</code> | OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1<br><br>Can override or extend if dynamic state is needed. |
-| <span id="getter-responsetype">**responseType**</span><br><code>"code" &#124; "token"</code> |  |
+| <span id="getter-responsetype">**responseType**</span><br><code>string</code> |  |
 | <span id="getter-refreshtokenkey">**refreshTokenKey**</span><br><code>string</code> |  |
 | <span id="getter-authflowparams">**authFlowParams**</span><br><code>Record&lt;string, string&gt;</code> | Extra parameters to add to the authorization request. Empty here; a provider that needs one of its own overrides this. |
 

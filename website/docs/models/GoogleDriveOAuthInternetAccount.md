@@ -32,7 +32,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-clientid">**clientId**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-clientid) |
 | <span id="getter-scopes">**scopes**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-scopes) |
 | <span id="getter-state">**state**</span><br><code>string</code> | <span data-pagefind-ignore>OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1<br><br>Can override or extend if dynamic state is needed.</span> | [OAuthInternetAccount](../oauthinternetaccount#getter-state) |
-| <span id="getter-responsetype">**responseType**</span><br><code>"code" &#124; "token"</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-responsetype) |
+| <span id="getter-responsetype">**responseType**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-responsetype) |
 | <span id="getter-refreshtokenkey">**refreshTokenKey**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-refreshtokenkey) |
 | <span id="getter-authflowparams">**authFlowParams**</span><br><code>Record&lt;string, string&gt;</code> | <span data-pagefind-ignore>Extra parameters to add to the authorization request. Empty here; a provider that needs one of its own overrides this.</span> | [OAuthInternetAccount](../oauthinternetaccount#getter-authflowparams) |
 
