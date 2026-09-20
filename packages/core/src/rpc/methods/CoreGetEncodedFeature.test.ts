@@ -81,7 +81,7 @@ test('two reads over one span each read back as themselves', async () => {
       {
         encoding: { row: 'row' },
         lanes: ['row', 'color'],
-        transform: [{ type: 'stack' }],
+        transform: [{ type: 'pileup' }],
       },
     ],
   })
@@ -149,7 +149,7 @@ test('only the layer asked about runs its steps, and answers as it did beside th
   const stacked = {
     encoding: { row: 'row' },
     lanes: ['row' as const],
-    transform: [{ type: 'stack' as const }],
+    transform: [{ type: 'pileup' as const }],
   }
   const throwing = {
     encoding: { y: 'sum' },

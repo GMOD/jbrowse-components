@@ -607,8 +607,8 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
         { type: 'coverage', as: 'depth' },
         { type: 'flatten' },
         { type: 'flatten', field: 'exons', as: 'nth' },
-        { type: 'stack' },
-        { type: 'stack', as: 'lane', fields: ['s', 'e'], padding: 20 },
+        { type: 'pileup' },
+        { type: 'pileup', as: 'lane', fields: ['s', 'e'], padding: 20 },
       ],
     },
     { shape: 'bar', encoding: { y: 'score' } },
@@ -632,15 +632,15 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
     { type: 'coverage', as: 'depth' },
     { type: 'flatten', field: undefined, index: undefined },
     { type: 'flatten', field: 'exons', index: 'nth' },
-    { type: 'stack', as: undefined, fields: undefined, padding: undefined },
-    { type: 'stack', as: 'lane', fields: ['s', 'e'], padding: 20 },
+    { type: 'pileup', as: undefined, fields: undefined, padding: undefined },
+    { type: 'pileup', as: 'lane', fields: ['s', 'e'], padding: 20 },
   ])
   expect(layers[1]).not.toHaveProperty('transform')
 })
 
 // Each of these is a restatement a config author had to write out, and each
 // has one answer the step or the channel beside it already knows.
-test('a bin hands its edges to the aggregate behind it, and a stack its rows to the encoding', () => {
+test('a bin hands its edges to the aggregate behind it, and a pileup its rows to the encoding', () => {
   const { createDisplay } = createTestEnvironment([
     {
       shape: 'bar',
@@ -663,10 +663,10 @@ test('a bin hands its edges to the aggregate behind it, and a stack its rows to 
       transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
       encoding: { y: 'count' },
     },
-    { shape: 'span', transform: [{ type: 'stack' }], encoding: {} },
+    { shape: 'span', transform: [{ type: 'pileup' }], encoding: {} },
     {
       shape: 'span',
-      transform: [{ type: 'stack', as: 'lane' }],
+      transform: [{ type: 'pileup', as: 'lane' }],
       encoding: {},
     },
     { shape: 'span', encoding: {} },
@@ -1254,7 +1254,7 @@ test('a bar sharing the axis keeps it on the plot box, where a bar top is drawn'
 })
 
 const FACET_MARKS = [
-  { shape: 'span', transform: [{ type: 'stack' }], encoding: { row: 'row' } },
+  { shape: 'span', transform: [{ type: 'pileup' }], encoding: { row: 'row' } },
 ]
 
 function facetedEnvironment(display: Record<string, unknown> = {}) {
@@ -1629,7 +1629,7 @@ test('the dialog submit writes the plot and its binned count into config', () =>
 // dialog says so before it does.
 test('a declared list the dialog cannot read counts as what a save replaces', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'span', transform: [{ type: 'stack' }], encoding: {} },
+    { shape: 'span', transform: [{ type: 'pileup' }], encoding: {} },
     { shape: 'bar', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()

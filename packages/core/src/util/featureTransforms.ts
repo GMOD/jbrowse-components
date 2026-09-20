@@ -13,15 +13,15 @@ import type {
   FacetSection,
   FieldRef,
   FlattenStep,
-  StackStep,
+  PileupStep,
   TransformStep,
 } from './markEncodingTypes.ts'
 import type { Feature, SimpleFeatureSerialized } from './simpleFeature.ts'
 
 export const DEFAULT_BIN_AS: [string, string] = ['start', 'end']
 export const DEFAULT_COVERAGE_AS = 'coverage'
-export const DEFAULT_STACK_AS = 'row'
-export const DEFAULT_STACK_FIELDS: [string, string] = ['start', 'end']
+export const DEFAULT_PILEUP_AS = 'row'
+export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']
 
 /**
  * A feature with fields written over another's: what `formula` and `bin`
@@ -423,14 +423,14 @@ function aggregateValueBy(
 }
 
 /**
- * The lowest row each feature fits on, greedy first fit in start order: the
- * layout a pileup is, as a step in front of the encoder rather than a packer
- * behind it. `rowEnds[r]` is where row `r` is free again, so the scan is over
- * rows rather than over features.
+ * The lowest row each feature fits on, greedy first fit in start order, as a
+ * step in front of the encoder rather than a packer behind it. `rowEnds[r]` is
+ * where row `r` is free again, so the scan is over rows rather than over
+ * features.
  */
-function stack(features: readonly Feature[], step: StackStep) {
-  const as = step.as ?? DEFAULT_STACK_AS
-  const [startField, endField] = step.fields ?? DEFAULT_STACK_FIELDS
+function pileup(features: readonly Feature[], step: PileupStep) {
+  const as = step.as ?? DEFAULT_PILEUP_AS
+  const [startField, endField] = step.fields ?? DEFAULT_PILEUP_FIELDS
   const padding = step.padding ?? 0
   const n = features.length
   const starts = new Float64Array(n)
@@ -444,8 +444,8 @@ function stack(features: readonly Feature[], step: StackStep) {
       inOrder &&= i === 0 || starts[i]! >= starts[i - 1]!
     }
   } else {
-    const readStart = pathReader(startField, 'a stack')
-    const readEnd = pathReader(endField, 'a stack')
+    const readStart = pathReader(startField, 'a pileup')
+    const readEnd = pathReader(endField, 'a pileup')
     for (let i = 0; i < n; i++) {
       const f = features[i]!
       starts[i] = numericValue(readStart(f))
@@ -562,7 +562,9 @@ export function facetLayers(
       byKey.set(key, [f])
     }
   }
-  const readRows = layers.map(l => fieldReader(l.row ?? DEFAULT_STACK_AS, jexl))
+  const readRows = layers.map(l =>
+    fieldReader(l.row ?? DEFAULT_PILEUP_AS, jexl),
+  )
   const out = layers.map((): Feature[] => [])
   const sections: FacetSection[] = []
   let next = 0
@@ -631,8 +633,8 @@ export function runTransforms(
         current = coverage(current, step)
         break
       }
-      case 'stack': {
-        current = stack(current, step)
+      case 'pileup': {
+        current = pileup(current, step)
         break
       }
     }

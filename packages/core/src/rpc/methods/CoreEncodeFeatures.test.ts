@@ -124,7 +124,7 @@ test('a facet runs every layer per section and stacks the sections', async () =>
       {
         encoding: { row: 'row' },
         lanes: ['row'],
-        transform: [{ type: 'stack' }],
+        transform: [{ type: 'pileup' }],
       },
       {
         encoding: { y: 'coverage' },

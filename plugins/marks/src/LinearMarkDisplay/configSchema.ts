@@ -144,12 +144,12 @@ const markEncodingSchema = ConfigurationSchema(
      * The feature field, or jexl callback, naming the band the mark stands in,
      * an integer from 0; a feature with nothing there sits on band 0. Empty
      * puts every mark on one band across the whole plot, unless this mark's
-     * own `transform` holds a `stack`, whose output field it then reads.
+     * own `transform` holds a `pileup`, whose output field it then reads.
      */
     row: {
       type: 'string',
       defaultValue: '',
-      description: 'band field; empty follows a stack step',
+      description: 'band field; empty follows a pileup step',
     },
     /**
      * #slot marks.encoding.color
@@ -176,7 +176,7 @@ export const TRANSFORM_TYPES = [
   'aggregate',
   'coverage',
   'flatten',
-  'stack',
+  'pileup',
 ] as const
 export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
 
@@ -236,7 +236,7 @@ const transformStepSchema = ConfigurationSchema(
      * the two names in `as`); `aggregate` folds each `groupby` group into
      * one feature carrying `ops`; `coverage` replaces the features with
      * runs of how many overlap each stretch, in `as` (`coverage`);
-     * `flatten` fans out an array field; `stack` writes each feature's row
+     * `flatten` fans out an array field; `pileup` writes each feature's row
      * in a greedy first-fit packing, which a `span` reading `row` draws as
      * a pileup.
      */
@@ -245,7 +245,7 @@ const transformStepSchema = ConfigurationSchema(
       model: types.enumeration('MarkTransformType', [...TRANSFORM_TYPES]),
       defaultValue: 'filter',
       description:
-        'filter, formula, bin, aggregate, coverage, flatten or stack',
+        'filter, formula, bin, aggregate, coverage, flatten or pileup',
     },
     /**
      * #slot marks.transform.expr
@@ -284,10 +284,10 @@ const transformStepSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.transform.as
-     * The field a `formula`, `coverage` or `stack` step writes, the two
+     * The field a `formula`, `coverage` or `pileup` step writes, the two
      * fields a `bin` step writes its edges to, or the field a `flatten`
      * step writes each element's index to. A single name may be written as
-     * a string. A `stack` leaving it empty writes `row`, and a `formula`
+     * a string. A `pileup` leaving it empty writes `row`, and a `formula`
      * leaving it empty writes `value`.
      */
     as: {
@@ -297,17 +297,17 @@ const transformStepSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.transform.fields
-     * For a `stack` step: the two fields giving the interval it packs,
+     * For a `pileup` step: the two fields giving the interval it packs,
      * `start` and `end` when empty.
      */
     fields: {
       type: 'stringArray',
       defaultValue: [],
-      description: "a stack's [start, end] fields",
+      description: "a pileup's [start, end] fields",
     },
     /**
      * #slot marks.transform.padding
-     * For a `stack` step: bp of clearance kept between two features sharing
+     * For a `pileup` step: bp of clearance kept between two features sharing
      * a row, so a pileup does not butt its reads together.
      */
     padding: {

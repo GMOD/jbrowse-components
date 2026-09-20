@@ -397,7 +397,7 @@ test('a stack over the volvox BAM is a declared pileup, its rows packed in the w
       [
         {
           shape: 'span',
-          transform: [{ type: 'stack' }],
+          transform: [{ type: 'pileup' }],
           encoding: { row: 'row', color: 'red' },
         },
       ],
@@ -466,7 +466,7 @@ test('spans over a VCF stack the variants the worker packed', async () => {
       [
         {
           shape: 'span',
-          transform: [{ type: 'stack', padding: 10000 }],
+          transform: [{ type: 'pileup', padding: 10000 }],
           encoding: { row: 'row', color: 'green' },
         },
       ],

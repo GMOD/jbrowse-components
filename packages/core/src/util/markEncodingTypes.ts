@@ -358,8 +358,8 @@ export interface FlattenStep {
  * sharing a row. The answer is the input in start order, so a `span`
  * encoding `row` stacks it. Under a facet it packs each section on its own.
  */
-export interface StackStep {
-  type: 'stack'
+export interface PileupStep {
+  type: 'pileup'
   as?: string
   fields?: [FieldRef, FieldRef]
   padding?: number
@@ -378,7 +378,7 @@ export type TransformStep =
   | BinStep
   | AggregateStep
   | CoverageStep
-  | StackStep
+  | PileupStep
 
 export type CoreEncodeFeaturesArgs = {
   adapterConfig: Record<string, unknown>

@@ -111,12 +111,12 @@ function drawTogether(a: MarkSnapshot, b: MarkSnapshot) {
   return lower(a) < upper(b) && lower(b) < upper(a)
 }
 
-function stacks(mark: MarkSnapshot) {
-  return stepsOf(mark).some(s => s.type === 'stack')
+function packs(mark: MarkSnapshot) {
+  return stepsOf(mark).some(s => s.type === 'pileup')
 }
 
 function banded(mark: MarkSnapshot) {
-  return stacks(mark) || !!mark.encoding?.row
+  return packs(mark) || !!mark.encoding?.row
 }
 
 // The fields the last step that makes its features from nothing leaves behind,
@@ -152,7 +152,7 @@ function madeFields(mark: MarkSnapshot) {
     const [as] = listOf(step.as)
     if (step.type === 'formula') {
       fields.add(as ?? 'value')
-    } else if (step.type === 'stack') {
+    } else if (step.type === 'pileup') {
       fields.add(as ?? 'row')
     } else if (step.type === 'flatten' && as) {
       fields.add(as)
@@ -310,11 +310,11 @@ export function markProblems(
           message: `stands in the first of the rows mark ${j} bands the plot into, its axis repeated per row`,
         })
       }
-      if (i > j && stacks(mark) && stacks(other)) {
+      if (i > j && packs(mark) && packs(other)) {
         problems.push({
           mark: i,
           slot: 'transform',
-          message: `packs rows of its own, as mark ${j} does, and the two share row numbers; one stack in the display's transform packs them together`,
+          message: `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the display's transform packs them together`,
         })
       }
       if (i > j && mark.source === 'density' && other.source === 'density') {

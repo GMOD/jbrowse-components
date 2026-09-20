@@ -13,7 +13,7 @@ const COVERAGE = {
   transform: [{ type: 'coverage' }],
   encoding: { y: 'coverage' },
 }
-const PILEUP = { shape: 'span', transform: [{ type: 'stack' }] }
+const PILEUP = { shape: 'span', transform: [{ type: 'pileup' }] }
 
 interface ShippedConfig {
   tracks: {
@@ -79,10 +79,10 @@ test('a valued mark beside a stacked span is told it stands in the first row, un
   expect(texts([COVERAGE, PILEUP], true)).toEqual([])
 })
 
-test('two marks packing rows of their own are pointed at one shared stack', () => {
+test('two marks packing rows of their own are pointed at one shared pileup', () => {
   const filtered = (expr: string) => ({
     shape: 'span',
-    transform: [{ type: 'filter', expr }, { type: 'stack' }],
+    transform: [{ type: 'filter', expr }, { type: 'pileup' }],
   })
   expect(texts([filtered('jexl:a'), filtered('jexl:b')])).toEqual([
     expect.stringMatching(

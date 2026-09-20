@@ -223,7 +223,7 @@ test('flatten twice reaches a gene’s exons, and a bin then counts them', () =>
   ])
 })
 
-test('stack packs overlapping features onto the lowest free row, in start order', () => {
+test('pileup packs overlapping features onto the lowest free row, in start order', () => {
   const out = runTransforms(
     [
       feature(50, 90),
@@ -232,7 +232,7 @@ test('stack packs overlapping features onto the lowest free row, in start order'
       feature(15, 25),
       feature(25, 40),
     ],
-    [{ type: 'stack' }],
+    [{ type: 'pileup' }],
   )
   expect(rows(out, 'start', 'end', 'row')).toEqual([
     [0, 20, 0],
@@ -244,10 +244,10 @@ test('stack packs overlapping features onto the lowest free row, in start order'
   expect(out[1]!.toJSON()).toMatchObject({ start: 10, end: 30, row: 1 })
 })
 
-test('stack padding keeps a row busy past the feature it holds', () => {
+test('pileup padding keeps a row busy past the feature it holds', () => {
   const out = runTransforms(
     [feature(0, 20), feature(25, 40)],
-    [{ type: 'stack', padding: 10 }],
+    [{ type: 'pileup', padding: 10 }],
   )
   expect(rows(out, 'start', 'row')).toEqual([
     [0, 0],
@@ -255,10 +255,10 @@ test('stack padding keeps a row busy past the feature it holds', () => {
   ])
 })
 
-test('stack reads the interval fields the step names and writes the field as names', () => {
+test('pileup reads the interval fields the step names and writes the field as names', () => {
   const out = runTransforms(
     [feature(0, 100, { s: 0, e: 20 }), feature(0, 100, { s: 30, e: 40 })],
-    [{ type: 'stack', fields: ['s', 'e'], as: 'lane' }],
+    [{ type: 'pileup', fields: ['s', 'e'], as: 'lane' }],
   )
   expect(rows(out, 's', 'lane')).toEqual([
     [0, 0],
@@ -266,11 +266,11 @@ test('stack reads the interval fields the step names and writes the field as nam
   ])
 })
 
-// The claim ADR-118 rests on: `stack` is the same first-fit rule the display
-// packers run, so what separates the transform stage from a pileup is the
-// representation and the extra inputs, never the packing. `placeRect`'s
-// clearance is 2, which is what the step spells as `padding`.
-test('stack with placeRect padding assigns the rows placeRect does', () => {
+// The claim ADR-118 rests on: `pileup` is the same first-fit rule the display
+// packers run, so what separates the transform stage from the alignments
+// packer is the representation and the extra inputs, never the packing.
+// `placeRect`'s clearance is 2, which is what the step spells as `padding`.
+test('pileup with placeRect padding assigns the rows placeRect does', () => {
   const spans: [number, number][] = []
   let seed = 1
   for (let i = 0; i < 500; i++) {
@@ -282,13 +282,13 @@ test('stack with placeRect padding assigns the rows placeRect does', () => {
   const expected = spans.map(([start, end]) => placeRect(rowsState, start, end))
   const out = runTransforms(
     spans.map(([start, end]) => feature(start, end)),
-    [{ type: 'stack', padding: 2 }],
+    [{ type: 'pileup', padding: 2 }],
   )
   expect(out.map(f => f.get('row'))).toEqual(expected)
   expect(Math.max(...expected)).toBeGreaterThan(3)
 })
 
-const STACK = [{ transform: [{ type: 'stack' as const }] }]
+const PILEUP = [{ transform: [{ type: 'pileup' as const }] }]
 
 test('a facet packs each section on its own and stacks the sections', () => {
   const { layers, sections } = facetLayers(
@@ -298,7 +298,7 @@ test('a facet packs each section on its own and stacks the sections', () => {
       feature(0, 20, { sample: 'a' }),
     ],
     'sample',
-    STACK,
+    PILEUP,
   )
   expect(sections).toEqual([
     { key: 'a', firstRow: 0, rowCount: 1 },
@@ -318,7 +318,7 @@ test('a faceted section is the unfaceted layer over its own features, offset', (
     feature(10, 30, { sample: 'a' }),
     feature(12, 14, { sample: 'b' }),
   ]
-  const steps = [{ type: 'stack' as const }]
+  const steps = [{ type: 'pileup' as const }]
   const { layers, sections } = facetLayers(features, 'sample', [
     { transform: steps },
   ])
@@ -338,7 +338,7 @@ test('a section is as tall as the tallest layer packed it, and a rowless layer s
   const { layers, sections } = facetLayers(
     [feature(0, 20, { sample: 'a' }), feature(5, 25, { sample: 'a' })],
     'sample',
-    [...STACK, {}],
+    [...PILEUP, {}],
   )
   expect(sections).toEqual([{ key: 'a', firstRow: 0, rowCount: 2 }])
   expect(layers[1]!.map(f => f.get(FACET_ROW))).toEqual([0, 0])
@@ -348,7 +348,7 @@ test('a facet orders digit keys by magnitude and files a missing value under its
   const { sections } = facetLayers(
     [feature(0, 10, { bin: 10 }), feature(0, 10, { bin: 2 }), feature(0, 10)],
     'bin',
-    STACK,
+    PILEUP,
   )
   expect(sections.map(s => s.key)).toEqual(['2', '10', ''])
 })
@@ -362,7 +362,7 @@ test('a strand facet stacks forward, reverse, unstranded, and a missing strand i
       feature(0, 10),
     ],
     'strand',
-    STACK,
+    PILEUP,
   )
   expect(sections).toEqual([
     { key: '1', firstRow: 0, rowCount: 1 },
@@ -375,7 +375,7 @@ test('a facet reads its field through a jexl expression', () => {
   const { sections } = facetLayers(
     [feature(0, 10, { tags: { HP: 1 } }), feature(0, 10, { tags: { HP: 2 } })],
     "jexl:get(feature,'tags').HP",
-    STACK,
+    PILEUP,
     createJexlInstance(),
   )
   expect(sections.map(s => s.key)).toEqual(['1', '2'])
@@ -386,7 +386,7 @@ test('a facet stacks a section of 200,000 features', () => {
     const start = Math.floor(i / 4) * 100
     return feature(start, start + 50, { sample: 'a' })
   })
-  const { layers, sections } = facetLayers(features, 'sample', STACK)
+  const { layers, sections } = facetLayers(features, 'sample', PILEUP)
   expect(sections).toEqual([{ key: 'a', firstRow: 0, rowCount: 4 }])
   expect(layers[0]).toHaveLength(200_000)
 })
@@ -438,7 +438,7 @@ test('a plain groupby over a field holding one-element lists groups by the eleme
   ])
 })
 
-test('bin and stack read a dotted path as they read the same values under a plain name', () => {
+test('bin and pileup read a dotted path as they read the same values under a plain name', () => {
   const edges = (field: string) =>
     rows(
       runTransforms(VARIANTS, [{ type: 'bin', step: 500, field }]),
@@ -453,7 +453,7 @@ test('bin and stack read a dotted path as they read the same values under a plai
   ])
   const packed = (end: string) =>
     rows(
-      runTransforms(VARIANTS, [{ type: 'stack', fields: ['start', end] }]),
+      runTransforms(VARIANTS, [{ type: 'pileup', fields: ['start', end] }]),
       'row',
     )
   expect(packed('INFO.END')).toEqual(packed('svend'))
@@ -505,8 +505,8 @@ test('a jexl: field on a step names the step and points at formula', () => {
 
 // The packing as it was written before it read each interval once: a stable
 // sort through a comparator, then first fit. Ties keep the order they arrived
-// in, and an unsorted list is what a transform in front of a stack hands it.
-function comparatorStack(features: readonly Feature[], padding: number) {
+// in, and an unsorted list is what a transform in front of a pileup hands it.
+function comparatorPileup(features: readonly Feature[], padding: number) {
   const sorted = [...features].sort((a, b) => a.get('start') - b.get('start'))
   const rowEnds: number[] = []
   return sorted.map(f => {
@@ -521,7 +521,7 @@ function comparatorStack(features: readonly Feature[], padding: number) {
   })
 }
 
-test('a stack over shuffled input with tied starts packs as the comparator sort did', () => {
+test('a pileup over shuffled input with tied starts packs as the comparator sort did', () => {
   let seed = 7
   const next = () => (seed = (seed * 1103515245 + 12345) % 2147483648)
   const shuffled = Array.from({ length: 2000 }, (_, i) => {
@@ -534,9 +534,9 @@ test('a stack over shuffled input with tied starts packs as the comparator sort 
     })
   })
   for (const padding of [0, 5]) {
-    const out = runTransforms(shuffled, [{ type: 'stack', padding }])
+    const out = runTransforms(shuffled, [{ type: 'pileup', padding }])
     expect(out.map(f => [f.id(), f.get('row')])).toEqual(
-      comparatorStack(shuffled, padding),
+      comparatorPileup(shuffled, padding),
     )
   }
 })
