@@ -104,7 +104,7 @@ so every no-call becomes its site's mean over the called samples — a fraction.
 On the hosted 3,202-sample 1KGP SV callset 15% of sites carry a no-call (0.7%
 of cells), so fractional rows are the norm on a real panel; the 1000 Genomes
 phase 3 slices carry none, which is why the measurements behind
-`ideas/gpu-sample-distance-matrix.md` saw integer dosages.
+`ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` saw integer dosages.
 
 ### Variants phased mode (`getPhasedGenotypeMatrix.ts`)
 
@@ -223,7 +223,7 @@ so a 1000 Genomes window is thousands to tens of thousands of columns wide, and
 there the Euclidean distance build is the run: on chr22:20-21 Mb (2504 samples,
 22,383 sites) the merge loop is ~40 ms of a run that takes seconds to minutes.
 `pnpm bench:real` in the hclust repo measures that regime on real genotypes,
-and `ideas/gpu-sample-distance-matrix.md` carries the table and the case for
+and `ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` carries the table and the case for
 doing the build on a compute shader.
 
 Two things changed in hclust 5.1.0, which this tree pins, because of that
@@ -268,7 +268,7 @@ window the tree is identical to the wasm's.
 the shipped `gpuDistanceMatrix` into headed Chrome and times it, then times
 hclust's merge on the matrix that came back, against the wasm doing both;
 `--matrix` reads the dumps `pnpm bench:real --dump` writes in the hclust repo.
-`ideas/gpu-sample-distance-matrix.md` has the numbers.
+`ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` has the numbers.
 
 The other way the merge loop stops being noise is ties. hclust caches each
 cluster's nearest neighbour and rescans when that neighbour merges away, and on

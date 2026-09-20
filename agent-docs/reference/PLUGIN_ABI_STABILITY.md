@@ -497,7 +497,7 @@ declaration rides along.
 So: the ledger below did not have to grow, but not because nothing was silent.
 The one silent break was invisible to the ledger too. And the largest class by
 count — the dependency ranges — no checker sees either
-([ideas/a-dependency-bump-is-an-abi-event.md](../ideas/a-dependency-bump-is-an-abi-event.md)).
+([ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md](../ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md)).
 
 ### The sweep that property implied: seven more, all silent
 
@@ -791,7 +791,7 @@ belong *inside* RFC-001 §7 rather than bolted beside it.
   behind it.
 - [ ] **Name the dependencies that cross the boundary.** The largest error class
   in the v5 measurement, and the only one with no mechanism —
-  [ideas/a-dependency-bump-is-an-abi-event.md](../ideas/a-dependency-bump-is-an-abi-event.md)
+  [ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md](../ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md)
   has the directions; its first move is a measurement, not a build.
 - [ ] **Runtime deprecation-warning wrapper.** A tiny helper to mark a specific
   export deprecated; apply to gray-area exports like `BaseLinearDisplay` first.

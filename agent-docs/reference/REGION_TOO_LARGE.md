@@ -488,7 +488,7 @@ table above for a fetch the tier already bounds. `LinearManhattanDisplay`
 never opts in, by decision: its case is a genome-wide summary-stats view.
 `LGVSyntenyDisplay` inherits alignments' opt-in but no comparative adapter
 implements the estimate, so its gate is inert
-([ideas/synteny-byte-gate.md](../ideas/synteny-byte-gate.md)).
+([ideas/waiting-on-a-call/synteny-byte-gate.md](../ideas/waiting-on-a-call/synteny-byte-gate.md)).
 `LDTrackDisplay` declines the gate outright (`gateEnabled` is false): an LD
 record source (`PlinkLDAdapter`, `PlinkLDTabixAdapter`) serves no features and
 has no index estimate to read, so the only verdict the byte axis could return is

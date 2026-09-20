@@ -44,7 +44,7 @@ is what to read before widening it.
 the difference is the runner rather than the pixels: webgpu is Firefox Nightly,
 launched headed, and `ubuntu-latest` has neither the browser nor a display. So
 CI's two backends are a coverage gap, not a verdict —
-`agent-docs/ideas/render-webgpu-in-the-blocking-cross-backend-gate-job.md`
+`agent-docs/ideas/waiting-on-someone-else/render-webgpu-in-the-blocking-cross-backend-gate-job.md`
 carries what closing it needs.
 
 **The 10-25% blank-capture flake was `fullPage: true`** (fixed 2026-07-26).

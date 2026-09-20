@@ -48,7 +48,7 @@ export const MIN_CLUSTER_ROWS = 2
  * At population-panel sizes the run is the sample-by-sample distance build, so
  * that goes to a WebGPU kernel first and hclust gets the matrix; below the work
  * gate, without a device, or if the dispatch fails or reads back wrong, hclust
- * builds it itself. `ideas/gpu-sample-distance-matrix.md` has the numbers.
+ * builds it itself. `ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` has the numbers.
  *
  * `order` is indices into the matrix's key order, which is what
  * `buildClusteredLayout` maps back through — so a caller must build `data` in

@@ -210,7 +210,7 @@ work:
 - **The audit script and its baseline stay.** Their value is diagnostic —
   telling you whether narrowing a particular factory would buy anything — rather
   than a number to drive toward. The populations that remain are counted in
-  [the-config-read-baseline-is-mostly-not-display-debt](../ideas/the-config-read-baseline-is-mostly-not-display-debt.md),
+  [the-config-read-baseline-is-mostly-not-display-debt](../ideas/closed/the-config-read-baseline-is-mostly-not-display-debt.md),
   and most of the surface left
   is reads against a track or assembly config that no display narrowing reaches.
 - **The general principle**: when a compile-time guard is structurally unable to

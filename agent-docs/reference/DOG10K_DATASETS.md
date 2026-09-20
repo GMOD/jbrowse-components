@@ -11,7 +11,7 @@ What the `local_ancestry`, `dog10k_svs` and `dog10k_lof` tutorials rest on. The
 infrastructure is in place (`test_data/dog10k/config.json`, remote slicing,
 breed-labeled `layout`), so a new locus is roughly an hour. Forward-looking
 tutorial ideas live in
-[ideas/tutorial-ideas-audit.md](../ideas/tutorial-ideas-audit.md);
+[ideas/collections/tutorial-ideas-audit.md](../ideas/collections/tutorial-ideas-audit.md);
 the editorial rules these pages follow are in `website/CLAUDE.md`.
 
 ## Which dog assembly

@@ -19,7 +19,7 @@ chaining junctions belongs to LINX, Severus or gGnome, assembling the allele to
 an assembler, and its VCF-to-BEDPE step to `jb2export batch --vcf`. What this
 file keeps is the measured facts, which outlive it. The forward-looking dataset
 ideas that used to sit at the bottom of this file are in
-[ideas/figures-blocked-on-data.md](../ideas/figures-blocked-on-data.md).
+[ideas/waiting-on-someone-else/figures-blocked-on-data.md](../ideas/waiting-on-someone-else/figures-blocked-on-data.md).
 
 ## What exists
 
@@ -41,7 +41,7 @@ the repo rebuilds it.
 
 Which cell lines are usable at all — and which are dead ends nobody should
 re-check — is in
-[ideas/figures-blocked-on-data.md](../ideas/figures-blocked-on-data.md).
+[ideas/waiting-on-someone-else/figures-blocked-on-data.md](../ideas/waiting-on-someone-else/figures-blocked-on-data.md).
 This section is about the two the tutorial uses.
 
 **COLO829 chain 1** is a closed 3-junction cycle across three chromosomes,
@@ -245,7 +245,7 @@ shares a contig with the arrival junction — only when exactly one does, and
 never when the locus was unambiguous anyway. Synthetic test only: no GRIDSS or
 Esvee callset is in the tree. The rest of that stack — LINX's `links.tsv` as a
 ready-made chain, junction copy number as a tiebreak — is parked in
-[ideas/linx-chains-in-the-breakend-walk.md](../ideas/linx-chains-in-the-breakend-walk.md).
+[ideas/waiting-on-a-call/linx-chains-in-the-breakend-walk.md](../ideas/waiting-on-a-call/linx-chains-in-the-breakend-walk.md).
 
 ## HG008-T, the reconstruction's second dataset
 

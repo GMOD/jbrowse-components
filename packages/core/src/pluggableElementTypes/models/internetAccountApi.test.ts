@@ -31,7 +31,7 @@ import { InternetAccount } from './InternetAccountModel.ts'
 // Absence is deliberately not pinned, for the same reason: an assertion that
 // `SelectorComponent` is gone would fail on a legitimate re-add, and what a
 // re-add would cost is a design argument, not a compatibility one. That removal
-// is recorded in `agent-docs/ideas/internet-accounts.md` with the bundles read.
+// is recorded in `agent-docs/ideas/waiting-on-a-call/internet-accounts.md` with the bundles read.
 const PLUGIN_FACING = {
   // --- overridden wholesale, so the name and the call signature both matter
   getToken: 'apollo overrides it',

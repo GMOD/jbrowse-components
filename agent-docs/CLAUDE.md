@@ -9,7 +9,9 @@ is filed:
   and this repo's code is the evidence. Built and load-bearing, never proposed;
   the filename is the `name:` slug, and
   [mechanisms/README.md](mechanisms/README.md) carries the admission test.
-- `ideas/` — a proposal parked, one per file.
+- `ideas/` — a proposal parked, one per file, in the subfolder naming what it
+  waits on: `ready/`, `waiting-on-a-call/`, `waiting-on-a-number/`,
+  `waiting-on-someone-else/`, `collections/`, `closed/`.
 - `architecture-decision-records/` — *why*, one per file.
 - `handoffs/` — live state of an unfinished thread, usually a review whose
   findings nobody has committed to. **Pointers, not content.** Delete when the
@@ -154,8 +156,9 @@ between a marker pair is hand-editable, here or under `website/docs`.
   first move and position live.
 - **If a sentence tells the reader to go look at a file, generate the table
   under it from that file.**
-- Docs and source cite `TODO.md` sections by title, and `todo/`, `ideas/` and
-  `mechanisms/` by filename — grep before renaming.
+- Docs and source cite `TODO.md` sections by title, `todo/` and `mechanisms/` by
+  filename, and `ideas/` by `<folder>/<filename>` — grep before renaming, and
+  before moving a proposal between folders.
 - **A diagram is a `.dot` in a `diagrams/` directory with its `.svg` committed
   beside it** — `pnpm diagrams` renders it, `pnpm diagrams:check` fails on a
   source edited without a re-render or a diagram no doc embeds. A fenced `dot`

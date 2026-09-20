@@ -275,7 +275,7 @@ all, and every later step is unverifiable while the renderer won't boot.
    two unlisted channels for as long as they existed. What is left is the four
    callers outside the product that still hand-roll `window.require('electron')`
    and restate the contract with casts; the shape for those is
-   [ideas/plugin-main-process-bridge.md](../ideas/plugin-main-process-bridge.md).
+   [ideas/ready/plugin-main-process-bridge.md](../ideas/ready/plugin-main-process-bridge.md).
    Doing that is what makes step 5's validation type-checked, and what keeps the
    allowlist from drifting again.
 3. IPC-backed `GenericFilehandle` behind `openLocation` + the capability check.

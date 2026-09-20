@@ -13,24 +13,30 @@
 // renders the descriptions into one page, and it fails when a doc is missing
 // the frontmatter that would put it there.
 //
-// It does not rank, and it groups only where the grouping is already a field
-// every doc carries and something else already checks. The ADR index sorts by
-// number because ADRs are numbered; these have no such order, and a grouping
-// invented here would be a hand-maintained judgement — the exact thing this is
-// replacing. `reference/` splits on `audience:`, which is neither invented nor
-// hand-maintained: it is the decision `check-reference-citations.ts` enforces
-// (an internal doc needs no website link, a citeable one does), so the two
-// tables cannot drift away from the checker's idea of which doc is which. That
-// directory reached 79 docs in one alphabetical table where half the rows are a
-// figure harness, a CI gate or an audit and the other half are behaviour a
-// reader can hit, and nothing on the page said so. Within a table, alphabetical,
-// matching `ls`.
+// It does not rank, and it groups only where the grouping is somewhere a reader
+// and a checker both already look — never a judgement this file invents and
+// nothing re-derives. The ADR index sorts by number because ADRs are numbered.
+// `reference/` splits on `audience:`, which is the decision
+// `check-reference-citations.ts` enforces (an internal doc needs no website
+// link, a citeable one does), so the two tables cannot drift away from the
+// checker's idea of which doc is which. `reference/` reached 79 docs in one
+// alphabetical table where half the rows are a figure harness, a CI gate or an
+// audit and the other half are behaviour a reader can hit, and nothing on the
+// page said so. Within a table, alphabetical, matching `ls`.
 //
 // `ideas/` joined in 2026-08 when OTHER_IDEAS.md was exploded into one file per
 // proposal. Its hand-maintained 104-line index was the very shape agent-docs
 // /CLAUDE.md warns about ("a list some author transcribed once and no one
 // re-derived"), and generating it was the point of the split as much as the
 // per-idea files were.
+//
+// `ideas/` splits on its subfolders, and that is a stronger version of what
+// `reference/` gets from `audience:`: the grouping is where the file lives, so
+// it cannot disagree with the table, and it reaches the reader who runs `ls`
+// and never opens the index at all. The folders name what each proposal is
+// waiting on, because 95 of them sorted by effort would go stale every time
+// half of one landed, and what blocks a proposal is already the thing its own
+// "Why it is parked" paragraph states.
 //
 // Only the block between the markers is generated; the prose above it is
 // hand-maintained. Run: `pnpm autogen` (or `--check` in CI).
@@ -65,6 +71,26 @@ const KIND_GROUPS = [
   match: (doc: Doc) => doc.kind === kind,
 }))
 
+// `ideas/` groups on the subfolder each proposal sits in, which answers what is
+// holding it up — a decision, a measurement, someone outside this repo, or
+// nothing but the work. The folders ARE the index for anyone who reads `ls`
+// rather than this table, so the grouping is the directory layout rather than a
+// field, and a doc left loose at the top level fails the run below.
+const PARKED_GROUPS = [
+  ['ready', 'Ready: nothing in the way but the work'],
+  ['waiting-on-a-call', 'Waiting on a call: small once the decision is made'],
+  ['waiting-on-a-number', 'Waiting on a number: a measurement comes first'],
+  [
+    'waiting-on-someone-else',
+    'Waiting on someone else: upstream, a client, data or a CI runner',
+  ],
+  ['collections', 'Collections: several proposals in one file, triage inside'],
+  ['closed', 'Closed: a verdict, nothing to pick up'],
+].map(([folder, title]) => ({
+  title: title!,
+  match: (doc: Doc) => doc.folder === folder,
+}))
+
 // A description is the row a reader picks a doc by, and the index is read
 // whole; past this it is an abstract, and the abstract belongs in the doc's
 // first paragraph.
@@ -86,6 +112,8 @@ const INDEXES = [
     // Not "Read when": these are proposals to pick up, and the description is
     // written as the hook you pick one up by.
     heading: 'What it covers',
+    subfolders: true,
+    groups: PARKED_GROUPS,
   },
   {
     // The distilled technique statements. Newest of the four directories and
@@ -116,24 +144,49 @@ const INDEXES = [
 
 interface Doc {
   file: string
+  folder: string | undefined
   name: string
   description: string
   audience: string | undefined
   kind: string | undefined
 }
 
+// A directory that groups by subfolder lists `<folder>/<file>.md`, which is
+// both the path from its README and the string every group matches on.
+function filesUnder(docsDir: string, subfolders: boolean) {
+  const entries = readdirSync(docsDir, { withFileTypes: true })
+  const top = entries
+    .filter(e => e.isFile() && e.name.endsWith('.md') && e.name !== SELF)
+    .map(e => e.name)
+  if (!subfolders) {
+    return top
+  }
+  return [
+    ...top,
+    ...entries
+      .filter(e => e.isDirectory())
+      .flatMap(e =>
+        readdirSync(join(docsDir, e.name))
+          .filter(f => f.endsWith('.md'))
+          .map(f => `${e.name}/${f}`),
+      ),
+  ]
+}
+
 function collectDocs(
   dir: string,
   slugFilenames = false,
   maxDescriptionWords?: number,
+  subfolders = false,
 ): Doc[] {
   const docsDir = join(repoRoot, 'agent-docs', dir)
   const docs: Doc[] = []
   const unindexable: string[] = []
-  for (const file of readdirSync(docsDir)) {
-    if (!file.endsWith('.md') || file === SELF) {
-      continue
-    }
+  for (const file of filesUnder(docsDir, subfolders)) {
+    const base = file.includes('/') ? file.slice(file.indexOf('/') + 1) : file
+    const folder = file.includes('/')
+      ? file.slice(0, file.indexOf('/'))
+      : undefined
     // `description` is prose and routinely wraps across lines in these files;
     // parseFrontmatter re-flows a wrapped value onto one line for the cell.
     const fm = parseFrontmatter(readFileSync(join(docsDir, file), 'utf8'))
@@ -146,7 +199,7 @@ function collectDocs(
     const description = fm.description?.trim().replaceAll(/\s+/g, ' ')
     if (!name || !description) {
       unindexable.push(`${file} (needs ${!name ? 'name' : 'description'})`)
-    } else if (slugFilenames && file !== `${name}.md`) {
+    } else if (slugFilenames && base !== `${name}.md`) {
       unindexable.push(
         `${file} (\`name: ${name}\` wants the filename ${name}.md)`,
       )
@@ -160,6 +213,7 @@ function collectDocs(
     } else {
       docs.push({
         file,
+        folder,
         name,
         description,
         audience: fm.audience?.trim(),
@@ -194,16 +248,17 @@ for (const {
   slugFilenames,
   groups,
   maxDescriptionWords,
+  subfolders,
 } of INDEXES) {
   const indexPath = join(repoRoot, 'agent-docs', dir, SELF)
-  const docs = collectDocs(dir, slugFilenames, maxDescriptionWords)
+  const docs = collectDocs(dir, slugFilenames, maxDescriptionWords, subfolders)
   const filled = groups?.filter(g => docs.some(g.match))
   const ungrouped = groups
     ? docs.filter(d => !groups.some(g => g.match(d)))
     : []
   if (ungrouped.length) {
     throw new Error(
-      `agent-docs/${dir}/: ${ungrouped.map(d => d.file).join(', ')} match no group of the index, so they would be invisible on it. Each needs the frontmatter field the groups split on (\`kind:\` in reference/), set to one of the values in website/scripts/generate-doc-indexes.ts`,
+      `agent-docs/${dir}/: ${ungrouped.map(d => d.file).join(', ')} match no group of the index, so they would be invisible on it. Each needs what the groups split on — the \`kind:\` frontmatter in reference/, one of the subfolders in ideas/ — named in website/scripts/generate-doc-indexes.ts`,
     )
   }
   checkOrWrite({

@@ -14,7 +14,7 @@ beside JBrowse. **Delete this file when the new clips are embedded.**
 The harness and its traps are `scripts/agent-demos/CLAUDE.md`; each take's plan
 is `scripts/agent-demos/takes/<take>.md`. The Claude desktop app harness
 (`recordDemoApp.mjs`) was tried on 2026-09-08 and judged not showcase material;
-[ideas/land-the-agent-client-demo-videos.md](../ideas/land-the-agent-client-demo-videos.md)
+[ideas/closed/land-the-agent-client-demo-videos.md](../ideas/closed/land-the-agent-client-demo-videos.md)
 says why.
 
 ## Running a take

@@ -201,7 +201,7 @@ function hiddenSegments<E extends MinEntry>(
           const clip = getClip(cigar, fields[2] === '-' ? -1 : 1)
           // A clip OUTSIDE the chain is the read leaving the screen and not
           // coming back — a real mark this display does not draw, and not this
-          // junction's business (ideas/sa-hops-in-the-bezier-overlay.md).
+          // junction's business (ideas/waiting-on-a-call/sa-hops-in-the-bezier-overlay.md).
           if (clip > firstClip && clip < lastClip && !onScreen.has(clip)) {
             candidates.set(clip, record)
           }

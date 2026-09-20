@@ -1,0 +1,226 @@
+---
+name: sa-hops-in-the-bezier-overlay
+description: Drawing the split-read hops whose far end nothing fetched — the bezier connector overlay has no mark for them, while the arc band answers the same question twice depending on whether the hop crosses chromosomes. Plus the shared `Chain` type that lost the caller it was proposed for, and why no allele is built in-app.
+---
+
+# SA hops in the bezier overlay
+
+This file was `multi-hop-fusion-chaining`, a four-phase proposal for showing
+cancer multi-hop rearrangements the way
+[SplitThreader](https://github.com/marianattestad/splitthreader) does. Two of its
+phases shipped in August 2026 as the derivative-allele picker and were removed
+on 2026-09-18
+([ADR-137](../../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
+What is parked here is the additive half of the remainder — the marks nobody
+draws — plus a deflated refactor.
+
+**The correctness half is not here, and it shipped.** `68eab1e8c7` stopped the
+overlay drawing a solid junction across segments it never fetched: it walks the
+SA tags of the segments it did fetch, dashes a junction spanning one it did not,
+and names the hidden loci in the hover. It did NOT go through
+`unpairedReadChain`, as this file and the backlog both once proposed — `SegAln`
+carries no route back to the `ReadEntry`, and the overlay needs the entry at
+both ends for its `readYs` row and `displayedRegionIndex`, so it copied
+`markHiddenSegments`' clip window instead. The same-strand case, which
+`isNormal` routed to the straight-line pass, is fixed too: that pass leaves any
+pair with hidden segments to the overlay (`isGpuLinkedReadLine`).
+
+Read [`reference/SV_MULTIHOP.md`](../../reference/SV_MULTIHOP.md) before starting
+any of it — it carries the line this feature area does not cross, and the three
+questions that killed the last idea in it.
+
+## Settled — do not re-propose
+
+**A multi-read allele built in-app** — a ranked list of routes, a synthetic
+derivative axis, a split view per segment — shipped and was removed
+([ADR-137](../../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)):
+it proposed routes at ordinary loci and took copy counts from read edges. An
+allele is drawn only when a tool outside JBrowse built it
+([route-as-a-launch-input](route-as-a-launch-input.md)).
+
+**What the fusion contig is built from** is settled in both directions. Offline,
+`scripts/sv_multihop.py derive` polishes the spanning reads into a consensus and
+realigns them onto it. In-app, nothing is built: `projectReadsOntoDerivative`
+placed each supporting read onto the path and was reverted in `e7b4f2b29b`,
+because its evidence was the same chains the path came from.
+
+---
+
+## The one-ended hop
+
+A hop whose far end was never fetched — the read leaves the screen and does not
+come back — has no `x` (`bpToScreenX` returns `undefined`) and no `y` (no
+`readYs` row). The overlay draws nothing for it. This is the additive half: a
+mark that does not exist rather than a mark that is wrong.
+
+**It no longer waits on anything.** The correctness fix was expected to put the
+whole chain in the overlay's hands and did not: `68eab1e8c7` parses SA records,
+but keeps only those whose clip lands strictly BETWEEN two on-screen segments,
+which is exactly the test a one-ended hop fails. So the SA parse is now in the
+overlay and this case is still unreachable through it — what is needed is that
+window widened to the ends of the chain, plus the extrapolating projector below,
+and neither is a consequence of the other.
+
+**Both answers already exist one band up**, and they are split by exactly the
+test the overlay already computes in `classifyPair` (`interchromOf` →
+`LINKED_READ_COLOR_INTERCHROM`). `resolveArcs` decides:
+
+- **Same chromosome** — keep the real geometry. The arc's leg rises at the
+  on-screen foot and the curve runs off the block edge (`arcTouchesRegion`, whose
+  comment calls the rising leg "the correct picture").
+- **Interchromosomal** — replace the mark with a **tick** at the on-screen foot
+  naming the far chromosome (`resolveArcs`, inside `if (p1Ref !== p2Ref)`),
+  because a tick's whole job is "there is a connection to somewhere you cannot
+  see".
+
+Adopt both rather than inventing a third vocabulary for the band directly below
+the one that already says this. The earlier A1 (baseline drop) / A2 (edge clamp)
+/ A3 (multi-region only) menu is superseded: A2 is the same-chr answer done worse
+— a clamp invents a position where extrapolation does not — and A1 is a mark the
+display has no other use for.
+
+### The concrete blocker
+
+The arcs project absolute genomic bp inside a region block, so an off-block
+coordinate lands off-block for free. The overlay cannot: `makeBpToScreenX`
+delegates to `view.bpToPx`, which returns `undefined` for any coordinate no
+displayed region covers — including a coordinate on a *displayed* refName that is
+merely outside the displayed range. **An extrapolating projector is the missing
+piece**, and it is what the same-chr case needs before any of the drawing
+matters.
+
+### Traps
+
+- **`iterLinkedPairs` short-circuits on `entries.length >= 2`**, and its own
+  comment is the warning: *"Do not grow a branch off this count: which mates are
+  on screen is the mate partition's question, and answering it from an entry
+  count is what once dropped a split read's off-screen mate arc."* A read with
+  one on-screen segment and an SA tag is exactly the group this skips — which is
+  why this half is harder than the TODO half, where both flanking segments are
+  fetched and the group clears the gate.
+- **`enumerateBezierPairs`' `crossRegion` scope short-circuits on
+  `laidOutPileupMap.size < 2`**, and that scope is *not* opt-in — it is what
+  chain mode gets with curved connectors unticked. A one-ended hop in a
+  single-region view is precisely `size < 2` with something to draw. Decide
+  deliberately whether the new marks belong to the `all` scope only.
+- **Cost.** The `crossRegion` short-circuit measures 0.0ms at 200k reads; the
+  multi-region case that does enumerate is ~63–80ms, against the 587–1317ms
+  `buildLaidOutChainMap` relayout beside it. The single-region grouping the
+  lift would newly pay is measured now (`benches/bezierEnumerate.probe.ts`,
+  synthetic reads, min of 25 rounds on a quiet box): **~85ms at 200k short
+  reads, 10% paired**, ~108ms at 50% paired, ~5ms at 20k reads. Same order as
+  the multi-region case, so by the standard that accepted `crossRegion` it is
+  affordable — but a first run under a concurrent typecheck reported 375ms,
+  which is BENCHMARKING.md's drift warning in practice: quote the min of a
+  quiet run, and gate the lift on `readSuppAlignments` being present anyway,
+  since the worker ships it only when some read carries an SA tag and the
+  deep short-read view then pays nothing.
+- **A mark on a chain's row has to clear its span.** `buildChainConnectingData`
+  draws ONE solid span per chain per region, min start to max end, so a dash
+  lying on the row vanishes into it. `computePileupBezierArcs` bows a
+  hidden-segment line whose ends share a row for that reason, and a one-ended
+  hop's mark needs the same.
+- **Gate on the settings that exist**: `drawLongRange` ("Draw long-range
+  read-connection arcs") and `drawInter` ("Draw inter-chromosomal
+  read-connection arcs"), combined by `emitsOffScreenPartner` — which exists
+  because layering them as an AND once made unticking off-screen mates silently
+  untick inter-chromosomal pairs.
+- **Legend.** `bezierConnectionLegendItems` builds one row per *color*, and each
+  row is a plain colour box. A foot is a new shape rather than a new color, so
+  the key has nowhere to put it without reviving a per-row glyph.
+- **`LinkedPair` has no shape for this.** It is `{e1: ReadEntry, e2: ReadEntry,
+  c: ClassifiedPair}` and `readScreenY` reads `e.data.readYs[e.readIdx]`, so the
+  far end becomes an anchor-plus-target: one real entry supplying the row, plus
+  `{refName, bp, strand}` for the segment that is not there. A discriminated pair
+  type keeps `isBezierArcPair` / `isCrossRegionPair` honest, since neither
+  predicate has an answer for a one-ended connection.
+
+---
+
+## A dashed arc names loci nobody can act on
+
+The hover prints `hiddenSegmentsBetween`, and that is the only place those loci
+appear. Making them walkable is smaller than it looks and blocked on a UI call,
+not plumbing:
+
+- **The loci are already structured before they are strings.** `hiddenSegments`
+  in `shared/readGroupConnections.ts` gets `refName`/`start`/`end` back from
+  `featurizeSAEntries` and keeps only `formatLocationRange` of them. Carrying
+  `{refName, start, end}` beside `loc` through `ReadConnection` → `LinkedPair`
+  → `PileupArc` is a field on each.
+- **Adding them is one existing helper away**, `showRegionsWithUndo` from the
+  LGV plugin, which `viewSplitAlignmentRegionsInCurrentView` already wraps —
+  but that helper REPLACES the view's regions with one window per segment. A
+  dashed arc wants the hidden windows INSERTED between the two it joins, in
+  read order, so it is the same undo-able call with a different region list.
+- **An inserted window that overlaps another on its refName has to merge into
+  it**, as `viewSplitAlignmentRegionsInCurrentView` does in read order, even
+  across a visit elsewhere. Overlapping windows fetch the same records,
+  `dedupeByReadId` keeps one copy per record id, and both ends of the junction
+  land in the region that copy came from, so the other window draws the reads
+  again with no connector. `buildSplitViewFromPath` can keep a panel per visit
+  because each panel there is a separate view.
+- **The gesture is the open half.** `PileupBezierOverlay` has no context menu,
+  and a plain click already selects the nearer endpoint. Either a right-click
+  item on the arc target (the display's `openContextMenu` builds its items from
+  a read feature, so an arc needs its own item source) or a modified click.
+  Decide that before the plumbing, since it fixes where the region list is
+  built.
+
+---
+
+## The shared `Chain` type lost its caller
+
+The chain walk is still written three times:
+
+| Where | Builder | Element | Input |
+| --- | --- | --- | --- |
+| `alignments/features/arcs/arcChains.ts` | `unpairedReadChain` → `unpairedChainArcs` | `SegAln` (`{refName, start, end, strand, clipAtStart, onScreen}`) | worker TypedArrays |
+| `alignments/shared/readGroupConnections.ts` | `splitJunctions` in `readGroupConnections` | `ReadConnection<ReadEntry>` | worker TypedArrays |
+| `breakpoint-split-view/…/featureMatching.ts` | `readChainSegments` → `markHiddenSegments` | `ChainSegment` (`{clip, refName, start, end}`) | `Feature` objects |
+
+There is no `renderChainPaths` emitter over the shared `bezierConnectorPath`
+either. But the extraction was proposed as the *enabling* refactor for the two
+phases that shipped, and they shipped without it, so what is left is a refactor
+for its own sake — and it is harder than the type table makes it look:
+
+- The three chains **are not the same chain**. `unpairedReadChain` is the complete
+  walk, on-screen entries merged with SA segments and deduped by locus
+  (`segLocusKey`), on-screen record winning. `readChainSegments` is the
+  SA-declared segments *only*, deduped by clip — its on-screen half arrives
+  separately as `LayoutMatch`. `splitJunctions` is the on-screen segments only,
+  which is the bug the TODO entry fixes.
+- They read **different input universes**: two walk worker TypedArrays through
+  `MinEntry`, one walks `Feature` objects through `getTag`. The shared layer that
+  could hold a common type is `@jbrowse/cigar-utils`, which already hosts what
+  they genuinely share — `featurizeSAEntries`, `splitSA`, `getClip`,
+  `connectionEndpointBps`.
+- There is a **measured precedent going the other way**. The layer directly
+  underneath — one shared `groupReadsByName` — was extracted, priced at 1.4–1.9x
+  over 200k reads, and declined. The per-entry accessors are what did share, and that is
+  the shape to aim at: share the layer with no per-read allocation in it.
+
+The honest version is therefore narrow: **make `ChainSegment` and `SegAln` one
+type** (the former is the latter minus `strand` and `onScreen`, with `clip`
+renamed), lift it beside `featurizeSAEntries`, and leave the three walks alone.
+That is a type-level change with no per-read cost. Anyone proposing more owes a
+reason the full version lands differently from the `groupReadsByName`
+measurement.
+
+---
+
+## Closed — do not re-file
+
+- **The overlay click always selected `arc.id1`**, so the far endpoint of a hop
+  was unreachable from its arc. Fixed: `PileupArc` carries both endpoint xs and
+  the click selects the nearer one, through the same `selectReadWithChain` the
+  canvas click uses. The hover boxes the whole chain (or both ends outside chain
+  mode) and thickens every arc of the hovered read, and selection is read off
+  the model rather than a local mirror of the last click.
+
+- **`arcIsVisible` culling a bowed curve by its endpoints' Y alone.** Fixed. It
+  pads by `BEZIER_CONNECTOR_MAX_REACH_PX` and is now over-inclusive rather than
+  lossy, with the asymmetry deliberate and commented.
+- **A consensus fusion contig built in the browser.** Reverted in `e7b4f2b29b`;
+  `SV_MULTIHOP.md` carries the three questions that killed it and generalizes
+  them to anything new in this area.

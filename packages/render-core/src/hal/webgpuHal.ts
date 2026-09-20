@@ -46,7 +46,7 @@ class ShaderCompileError extends Error {
 // to 768, so 1.5 MiB each side, per track. A frame is measured using 2-4 of
 // those slots, which is what makes the count above the oversized term rather
 // than any struct:
-// agent-docs/ideas/size-the-uniform-ring-to-its-measured-occupancy.md.
+// agent-docs/ideas/closed/size-the-uniform-ring-to-its-measured-occupancy.md.
 //
 // Exhausting it does not throw: the write is dropped and its draws render
 // against the previous batch's uniforms, which is wrong data rather than stale

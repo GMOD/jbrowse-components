@@ -222,7 +222,7 @@ the fine tier to the pixel and only sub-5 kb stripes are absent. The move-panel
 items appear on the coarse tier and land within the fold bound of the fine
 walk. No console errors. Two things it surfaced: `auto` resolves off the min of
 both rows, so a follow that zooms one row past the threshold flips the tier
-([ideas/one-zoomed-row-forces-a-genome-wide-fine-fetch.md](../ideas/one-zoomed-row-forces-a-genome-wide-fine-fetch.md)),
+([ideas/waiting-on-a-number/one-zoomed-row-forces-a-genome-wide-fine-fetch.md](../ideas/waiting-on-a-number/one-zoomed-row-forces-a-genome-wide-fine-fetch.md)),
 and the follow tooltip's "approximate" now names both of its causes, a window
 wider than one alignment being the usual one.
 

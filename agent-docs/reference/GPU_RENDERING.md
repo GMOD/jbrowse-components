@@ -1520,7 +1520,7 @@ check, and it costs nothing next to a build.
 read the other.** This conversion and the per-display MSAA sample-count question
 are not independent: `glyphEdgeAlpha` sits behind `pointGlyph` and manhattan's
 SDFs, and the primitives
-[ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md)
+[ideas/ready/arc-antialiasing-without-msaa.md](../ideas/ready/arc-antialiasing-without-msaa.md)
 records as still depending on the 4x MSAA target are wiggle/coverage bar tops,
 read arrow tips and the tiled Hi-C/LD diamonds. A ramp change and a sample-count
 change on one build produce a number neither effort can attribute, so record the
@@ -1716,7 +1716,7 @@ structural.** Every mark there shares a horizontal edge with another mark:
 hic's `drawHicBlocks.ts` and §"Tiled cells" above are the two earlier findings
 this is the third of. The shape that would let the coverage band go analytic is
 the same one §5 of
-[ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md)
+[ideas/ready/arc-antialiasing-without-msaa.md](../ideas/ready/arc-antialiasing-without-msaa.md)
 offers hi-C: draw a position's whole stack as ONE primitive, deriving the segment
 in the fragment, so the shared edges stop being primitive boundaries. Nothing has
 costed that.
@@ -1833,7 +1833,7 @@ every compute proposal in one line: **compute is right when the CPU fallback is
 "the feature does not exist", and wrong when a CPU fallback must exist anyway.**
 The LD kernels pass — O(n²) pairwise over genotypes, embarrassingly parallel,
 large output, and a CPU version too slow to be a real fallback, so "WebGPU-only"
-is an honest answer (`ideas/gpu-sample-distance-matrix.md` applies the same
+is an honest answer (`ideas/waiting-on-a-call/gpu-sample-distance-matrix.md` applies the same
 criterion to the next candidates). Instance packing fails it: Canvas2D is a
 mandatory floor, so the CPU packer has to exist, and a compute packer would be a
 second packer emitting bytes the first must match — the same logic in two

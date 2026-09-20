@@ -13,7 +13,7 @@ that ship on it, the cost of a lane, the correctness findings that have landed,
 and how far the frame carries toward a graph pangenome. What is still unbuilt or
 undecided — per-base lanes, the cohort-scale surfaces, the graph data path, the
 test gaps — lives in
-[../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md),
+[../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md),
 which is also the design record this file cites by section name.
 
 Read against the code on 2026-09-06 and re-checked on 2026-09-07, 2026-09-09 and
@@ -65,7 +65,7 @@ Re-checked against the code and every tutorial the display appears in.
   (`MW/laneDecision.ts`). §4 below carries what each found.
 
 Still open, and carried in
-[../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md):
+[../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md):
 **4.7** (the serialisation boundary
 no test names), **4.9** (what the tests do not pin), and the remainder of
 **4.8**.
@@ -104,7 +104,7 @@ everywhere else `laneSelection` filters `rowAssemblies` locally. Before a
 reader chooses, a lane-declaring source opens on the track's own
 `assemblyNames` beside the anchor (`configuredLanes`). The design record carries what a lane selection
 saves on a graph source
-([../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
+([../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md)
 §"HPRC at scale: lane selection"; `P/agent-docs/GBZ_PLAN.md:297-301`).
 
 **Groups.** `groupFeatures` (`MW/layoutMultiWay.ts`) folds features into
@@ -147,7 +147,7 @@ half a span either side (`frameReach`), the margin a pan translates into view
 before the lanes re-lay out, while its placements stay filtered at the frame
 edge (`groupRunsOnRow`). This machinery is
 measured (the stability table under
-[../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
+[../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md)
 §"Lane stability, measured") and is the
 best-engineered part of the display; nothing here recommends touching it.
 
@@ -298,7 +298,7 @@ negative (each lane draws its own cluster and no ribbon). The adapter loads
   most symbols; the reader is told "the reduced Shigella genomes fall toward the
   bottom without anything naming them". A 44-way stack wants a tree order; the
   seriation design is written but not built
-  ([../ideas/ordering-synteny-lanes-by-similarity.md](../ideas/ordering-synteny-lanes-by-similarity.md)).
+  ([../ideas/waiting-on-a-call/ordering-synteny-lanes-by-similarity.md](../ideas/waiting-on-a-call/ordering-synteny-lanes-by-similarity.md)).
 - *44 lane-gene RPCs per settle* (one tabix query per lane; the per-lane
   staleness gate reduces a pan to the lanes whose grid cell moved, design record
   §"Genome scale over an alignment-level source"). Fine at 44, and the reason
@@ -528,7 +528,7 @@ differ here", which is the only question a reader has at that scale.
 
 The findings below are the reading as it was taken. The block at the top of this
 file says which have landed since, and the ones still open are in
-[../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md).
+[../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md).
 
 ### 4.1 Alignment sources were drawn as affine blocks — fixed
 
@@ -697,7 +697,7 @@ chooses.
 ### 5.2 Row-per-haplotype is not the frame at 464 or 4,000
 
 The design record and the plugin already say so ("464 are not a lane stack",
-[../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
+[../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md)
 §"HPRC at scale: lane selection"; "89 lanes is not a lane stack any more than
 464 are", `GBZ_HANDOFF.md:298-301`).
 The three reasons are independent and each is sufficient:
@@ -717,7 +717,7 @@ puts each haplotype in its own coordinates with its own genes under a shared
 anchor, and the CFH figure is the proof. The honest scaling story is two
 surfaces with a hand-off rather than one surface that grows; what those two
 surfaces would be is
-[../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
+[../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md)
 §"HPRC at scale: lane selection".
 
 ### 5.3 Tie-ins to the graph plugin
@@ -746,7 +746,7 @@ an eight-haplotype cut showed exactly that. Drawing carriage instead would mean
 per-(node, carrier) positions and a renderer key other than node id — and the
 result, a row per haplotype with a tube wherever it carries a node, is the
 genotype matrix drawn as tubes, which is the reason not to build it there.
-[../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
+[../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md)
 §"The graph data path, and what Sample rows should draw" carries what to do
 instead.
 

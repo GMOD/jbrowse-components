@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // How many ribbons an SVG export actually draws as a 1px centerline stroke
 // rather than as a filled silhouette, and therefore how big `N` is in the parked
-// item this exists to price: agent-docs/ideas/synteny-comparative.md
+// item this exists to price: agent-docs/ideas/collections/synteny-comparative.md
 // §"Canvas2D fades a curved sub-pixel ribbon by one number".
 //
 // That item's own "first move if it is picked up" is *decide it on the SVG

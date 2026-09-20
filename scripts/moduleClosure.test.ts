@@ -14,7 +14,7 @@ import { closure } from './moduleClosure.ts'
 // session family — rather than from `util/types/data.ts` beside it.
 //
 // The fetch harness now has type ceilings too. They were ~370 apiece until the
-// session interface split (`agent-docs/ideas/lightweight-toolkit.md` §2): each
+// session interface split (`agent-docs/ideas/waiting-on-a-call/lightweight-toolkit.md` §2): each
 // of these files reaches its host for one service, and a `getSession` — whose
 // return type is the whole application — is what would put the 370 back.
 //

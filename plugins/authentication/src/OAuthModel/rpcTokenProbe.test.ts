@@ -64,7 +64,7 @@ function countHeads() {
 // because caching the pre-authorization turned these red, that is the fix
 // landing — re-derive both counts from the new behavior rather than widening
 // the assertions. Cached, the first is 2 and the second is 0.
-// agent-docs/ideas/internet-accounts.md, "The pre-flight the base model says it
+// agent-docs/ideas/waiting-on-a-call/internet-accounts.md, "The pre-flight the base model says it
 // avoids".
 test('every RPC serialization re-probes every location it carries', async () => {
   sessionStorage.setItem('testOAuth-token', 'a-good-token')

@@ -100,7 +100,7 @@ holding a whole callset, its records are meant to share pixels rather than each
 claim a row, and stacking them honestly needs 68px — which cost the band every
 name through the fit ladder. Its old flatness came from the reservation bug, so
 this is the same picture asked for rather than inherited. A `displayMode:
-'collapsed'` that keeps its names generally is `ideas/collapsed-mode-labels.md`,
+'collapsed'` that keeps its names generally is `ideas/waiting-on-a-call/collapsed-mode-labels.md`,
 still parked.
 
 **2. Explicit `displayMode: 'collapsed'` (whole-track, user-chosen).** A

@@ -260,7 +260,7 @@ own argument for why a point event must stay opaque when a screen holds more
 bases than pixels. Fetch-side object churn elsewhere — Manhattan's per-line
 `Feature` objects, `flatbushItems` / `subfeatureInfos` — is a different thread,
 and
-[ideas/stop-rewriting-the-workers-arrays-to-lay-out-features.md](../ideas/stop-rewriting-the-workers-arrays-to-lay-out-features.md)
+[ideas/ready/stop-rewriting-the-workers-arrays-to-lay-out-features.md](../ideas/ready/stop-rewriting-the-workers-arrays-to-lay-out-features.md)
 holds its 365ms clone measurement.
 
 ## What is still open
@@ -270,7 +270,7 @@ holds its 365ms clone measurement.
   declined — over a 16-512 bp window the honest blend is one mud colour — so a
   zoom threshold answers the first and a per-instance span the bin wide answers
   the second, neither built:
-  [ideas/per-base-wall-at-wide-zoom.md](../ideas/per-base-wall-at-wide-zoom.md).
+  [ideas/ready/per-base-wall-at-wide-zoom.md](../ideas/ready/per-base-wall-at-wide-zoom.md).
 - ~~**No cross-backend test covers a per-base mode at any zoom.**~~ Answered on
   2026-08-27 and **closed rather than fixed**: two scenes were added, both failed
   on their first run against a disagreement that predates the bin, and the scenes
@@ -280,7 +280,7 @@ holds its 365ms clone measurement.
   means for this doc is below.
 - **Typed columns instead of entry objects**, which the closest in-tree
   measurement says would be a loss —
-  [ideas/bench-typed-columns-against-the-per-base-extract.md](../ideas/bench-typed-columns-against-the-per-base-extract.md).
+  [ideas/waiting-on-a-number/bench-typed-columns-against-the-per-base-extract.md](../ideas/waiting-on-a-number/bench-typed-columns-against-the-per-base-extract.md).
 - ~~**The new refetch traffic** the octave-crossing key introduces, unwatched
   on a real BAM.~~ Counted on 2026-09-02 and closed as a note — §"The refetch
   on zoom, counted" above.

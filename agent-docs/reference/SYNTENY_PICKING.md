@@ -133,7 +133,7 @@ transparent mode — bounded by one pixel per rendered indel, since a segment
 stops merging as soon as it clears one. Where match runs are consistently
 sub-pixel and the indels between them are not, that is the entire feature:
 nothing is painted, so there are no tiles, so there is no body. See
-[ideas/a-merged-cigar-segment-is-labelled-by-its-last-op.md](../ideas/a-merged-cigar-segment-is-labelled-by-its-last-op.md).
+[ideas/ready/a-merged-cigar-segment-is-labelled-by-its-last-op.md](../ideas/ready/a-merged-cigar-segment-is-labelled-by-its-last-op.md).
 
 ## Two things this corrects
 

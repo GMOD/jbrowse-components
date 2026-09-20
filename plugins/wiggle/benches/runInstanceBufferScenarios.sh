@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The six scenarios agent-docs/ideas/wiggle-instance-records-carry-per-row-constants.md
+# The six scenarios agent-docs/ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md
 # quotes, one node process each, sequential so no two contend.
 #   SCRNA=/path/CD4_T.bw FST=/path/fst_scan.bw bash plugins/wiggle/benches/runInstanceBufferScenarios.sh out/
 set -euo pipefail

@@ -9,7 +9,7 @@ import type React from 'react'
 // point of the split is the other direction. A module that only issues RPCs
 // takes an `RpcHost` and its type graph stops at the RPC registry, where taking
 // a whole session put `PluginManager`, the configuration schemas and every
-// widget in it — see `agent-docs/ideas/lightweight-toolkit.md` §2 and
+// widget in it — see `agent-docs/ideas/waiting-on-a-call/lightweight-toolkit.md` §2 and
 // `scripts/moduleClosure.ts` for the number.
 //
 // Nothing app-shaped may be imported here. `AssemblyManager` is the service
@@ -78,7 +78,7 @@ export type DialogComponentType =
  * dialog. It is the most-called session member from plugin code (49 sites), and
  * nearly all of them are a display saying "the user wants to configure
  * something" — so a host drawing its own UI needs exactly this one name, not a
- * session. `agent-docs/ideas/lightweight-toolkit.md` §3.
+ * session. `agent-docs/ideas/waiting-on-a-call/lightweight-toolkit.md` §3.
  */
 export interface DialogHost {
   DialogComponent?: DialogComponentType

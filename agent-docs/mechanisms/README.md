@@ -18,7 +18,7 @@ the subject. That is the whole difference from `reference/`, where a subsystem
 is the subject and the technique is incidental to explaining it.
 
 This directory exists because
-[ideas/upstreamable-ideas.md](../ideas/upstreamable-ideas.md) sets the goal —
+[ideas/waiting-on-a-call/upstreamable-ideas.md](../ideas/waiting-on-a-call/upstreamable-ideas.md) sets the goal —
 other libraries copying the ideas, not more people installing JBrowse — and
 names the failure case: the ideas do not die with the code, they die *in the
 repo*, spread across 200 files addressed to agents editing this tree. A

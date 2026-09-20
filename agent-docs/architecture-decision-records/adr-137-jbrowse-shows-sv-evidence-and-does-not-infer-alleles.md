@@ -9,7 +9,7 @@ summary: "The in-app \"Reconstruct derivative allele\" workflow is removed: it p
 
 Accepted (2026-09-18). Removes the derivative-allele picker, its lettering and
 segment map, and the derive-command button. Makes
-[ideas/route-as-a-launch-input](../ideas/route-as-a-launch-input.md) the only
+[ideas/route-as-a-launch-input](../ideas/waiting-on-a-call/route-as-a-launch-input.md) the only
 in-app path to drawing an allele.
 
 ## Context
@@ -57,7 +57,7 @@ rather than deciding.
   offline tool (`sv_multihop.py derive`), an assembly contig, a caller's own
   interpretation (a GATK-SV `CPX_INTERVALS` record), or a paper — and the
   figure names that source. The route input is
-  [ideas/route-as-a-launch-input](../ideas/route-as-a-launch-input.md).
+  [ideas/route-as-a-launch-input](../ideas/waiting-on-a-call/route-as-a-launch-input.md).
 - **Tutorials carry the interpretation**, reproducing a published result and
   showing the offline workflow that got there; an AI agent driving JBrowse is
   one such workflow (`scripts/agent-demos/takes/derivative.md`).

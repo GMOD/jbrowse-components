@@ -13,7 +13,7 @@ and `WiggleFeatureArrays` carries no `pos*`/`neg*` arrays. The General rule
 below is unchanged, and this decision's own rule is what named the exit —
 `origin` is a uniform, and both line shaders already coloured by side off it.
 The measurements are in
-`ideas/wiggle-instance-records-carry-per-row-constants.md` §4: the split cost
+`ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md` §4: the split cost
 the worker 57-85ms per region at 1000 signed sources and doubled what a region
 shipped (+51 MiB) and retained (+33 MiB), for a partition every other summary
 mode already re-derived main-thread.
@@ -101,7 +101,7 @@ Two consequences for anyone applying this ADR's rule:
   export calls `buildSourceRenderData(data, gpuProps)` directly. Since the
   supersession it is the only copy.
 - **The mirror-image proposal meets the same accounting from the other side.**
-  Moving wiggle's instance packing *to* the worker (`ideas/zoom-perf-followups.md`)
+  Moving wiggle's instance packing *to* the worker (`ideas/collections/zoom-perf-followups.md`)
   is this ADR's preferred direction — O(K) per region at fetch time — but the
   encoder cannot leave, only be duplicated, because the no-refetch re-encodes
   above still have to be served main-thread. This ADR does not forbid that move;

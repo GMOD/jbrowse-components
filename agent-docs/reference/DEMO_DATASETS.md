@@ -153,7 +153,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
     anyway.
 
   So the open question is a machine, not a method. Note
-  [ideas/synteny-comparative.md](../ideas/synteny-comparative.md) carries a
+  [ideas/collections/synteny-comparative.md](../ideas/collections/synteny-comparative.md) carries a
   *different* great-apes route — precomputed ntSynt synteny blocks — that needs
   no alignment run at all.
 
@@ -218,7 +218,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   Illumina 161x, using `samtools view -q20 -f65 -F2316` for one primary record
   per pair. The tutorial and its two build scripts were removed in
   `16250c4b58`, which is where the pipeline is if it is wanted again;
-  `agent-docs/ideas/tutorial-ideas-audit.md` records why it went.
+  `agent-docs/ideas/collections/tutorial-ideas-audit.md` records why it went.
 
 ## Cohort and population
 

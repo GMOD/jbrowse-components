@@ -9,7 +9,7 @@ A check that cannot fail is indistinguishable, from the outside, from a check
 that passes. This repo has now hit eight of them from eight different
 directions, which is enough to name the class rather than treat each as its own
 bug. Audience and framing:
-[upstreamable-ideas](../ideas/upstreamable-ideas.md).
+[upstreamable-ideas](../ideas/waiting-on-a-call/upstreamable-ideas.md).
 
 The common shape: **something between the assertion and the code silently
 supplied the property being asserted** — or, in the last one, silently absorbed

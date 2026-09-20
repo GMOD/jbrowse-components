@@ -238,7 +238,7 @@ need not have existed, and the redundancy tax of rule 3 paid for nothing.
 - The measurements, and the offline tool that answers the same question from a
   callset: [reference/SV_MULTIHOP.md](../reference/SV_MULTIHOP.md).
 - What is still parked in this feature area:
-  [ideas/sa-hops-in-the-bezier-overlay.md](../ideas/sa-hops-in-the-bezier-overlay.md).
+  [ideas/waiting-on-a-call/sa-hops-in-the-bezier-overlay.md](../ideas/waiting-on-a-call/sa-hops-in-the-bezier-overlay.md).
 
 ## What travels
 
@@ -251,4 +251,4 @@ unique within the entity, not within the world** (4); **anything derived from
 "what this query saw" is a fact about the query** (6); and the one to lead with,
 because every reader has shipped it — **a gap you closed silently looks exactly
 like real structure** (5). Framing and audience:
-[ideas/upstreamable-ideas.md](../ideas/upstreamable-ideas.md).
+[ideas/waiting-on-a-call/upstreamable-ideas.md](../ideas/waiting-on-a-call/upstreamable-ideas.md).

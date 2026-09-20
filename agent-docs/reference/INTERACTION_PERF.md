@@ -64,7 +64,7 @@ in the long tasks; and the relayout a zoom legitimately owes
 Both named targets were taken up on 2026-08-30 and only one survived. The mint
 count is not the `createObjectURL` frame — see "The stop-token probe" below. The
 per-frame component count got the render census, whose findings are in
-[ideas/zoom-perf-followups.md](../ideas/zoom-perf-followups.md).
+[ideas/collections/zoom-perf-followups.md](../ideas/collections/zoom-perf-followups.md).
 
 ### Honest next step
 

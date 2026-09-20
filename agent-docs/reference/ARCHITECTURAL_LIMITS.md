@@ -165,7 +165,7 @@ allowed to keep in tile memory and never commit — so on Apple Silicon (a large
 share of our users) these figures may be near zero, while on the immediate-mode
 AMD/Intel parts they were taken on they are real. **Profile residency at 4x
 against 1x before spending anything on the size**: it is the first item in
-[../ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md),
+[../ideas/ready/arc-antialiasing-without-msaa.md](../ideas/ready/arc-antialiasing-without-msaa.md),
 and if the target turns out memoryless the rest of this entry is moot on that
 hardware.
 
@@ -201,7 +201,7 @@ use.
 **Every display still asks for 4**, so none of those bytes have gone anywhere
 yet. Which displays should drop to 1 is a look-at-the-pixels decision taken one
 display at a time, and the captures to look at are in
-[../ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md).
+[../ideas/ready/arc-antialiasing-without-msaa.md](../ideas/ready/arc-antialiasing-without-msaa.md).
 WebGL2 has no counterpart in our accounting, because `antialias: true` puts the
 multisample backbuffer inside the browser's budget.
 
@@ -814,7 +814,7 @@ removes one on its own, which is why that is a note here rather than the entry.
 **Retire when** a track close and an undo across one both measure zero liveliness
 reads. That is the same root cause as the session-switch residual, not a second
 one: the undisposed `observer()` reactions in
-[ideas/destroying-an-mst-tree-that-something-still-observes.md](../ideas/destroying-an-mst-tree-that-something-still-observes.md)
+[ideas/waiting-on-a-number/destroying-an-mst-tree-that-something-still-observes.md](../ideas/waiting-on-a-number/destroying-an-mst-tree-that-something-still-observes.md)
 are what recompute against the dying nodes, and nothing below a view has to be
 detached if nothing is left observing it.
 
@@ -978,7 +978,7 @@ new global display that forgets it hangs its export rather than failing to
 compile. Deliberate (fail-hung over fail-stale). Making it a *required* member
 would need a composition trick that
 [ADR-041](../architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
-rules out; tracked in `agent-docs/ideas/deferred-architecture-review.md`.
+rules out; tracked in `agent-docs/ideas/collections/deferred-architecture-review.md`.
 
 ---
 

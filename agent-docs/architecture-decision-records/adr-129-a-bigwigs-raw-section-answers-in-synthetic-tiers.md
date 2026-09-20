@@ -8,7 +8,7 @@ summary: "`BigWigAdapter` serves up to two synthetic zoom tiers between a file's
 ## Status
 
 Accepted (2026-09-17). Candidate 1 of
-[wiggle-instance-records-carry-per-row-constants](../ideas/wiggle-instance-records-carry-per-row-constants.md).
+[wiggle-instance-records-carry-per-row-constants](../ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md).
 Narrows the raw-section range
 [ADR-125](adr-125-the-adapter-declares-the-zoom-range-its-answer-serves.md)
 declares, through the mechanism that ADR set up.
