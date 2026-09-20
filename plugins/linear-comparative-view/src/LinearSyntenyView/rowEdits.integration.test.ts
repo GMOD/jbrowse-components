@@ -187,3 +187,27 @@ test('the menu names every row once a third is stacked, and none before', async 
   view.removeRow(0)
   expect(removeRowMenuItems(view)).toEqual([])
 })
+
+test('reversing the stack keeps every row, band and anchor with its partner', async () => {
+  const { view } = await openStack()
+  const rowIds = view.views.map(v => v.id)
+  const bandIds = view.levels.map(l => l.id)
+  view.levels[0]!.setHeight(140)
+  view.setFollowAnchorIndex(0)
+  view.setDiagonalizeAnchorRow(1)
+
+  view.reverseRows()
+
+  expect(rows(view)).toEqual(['asmD', 'asmC', 'asmB', 'asmA'])
+  expect(bands(view)).toEqual([['asmC_asmD'], ['asmB_asmC'], ['asmA_asmB']])
+  expect(view.views.map(v => v.id)).toEqual([...rowIds].reverse())
+  expect(view.levels.map(l => l.id)).toEqual([...bandIds].reverse())
+  expect(view.levels.map(l => l.height)).toEqual([100, 100, 140])
+  expect(view.levels.map(l => l.assemblyNames)).toEqual([
+    ['asmD', 'asmC'],
+    ['asmC', 'asmB'],
+    ['asmB', 'asmA'],
+  ])
+  expect(view.followAnchorIndex).toBe(3)
+  expect(view.diagonalizeAnchorRow).toBe(2)
+})

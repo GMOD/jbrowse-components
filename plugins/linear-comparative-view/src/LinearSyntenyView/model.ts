@@ -34,6 +34,7 @@ import AddIcon from '@mui/icons-material/Add'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import ViewStreamIcon from '@mui/icons-material/ViewStream'
 import { autorun } from 'mobx'
 
@@ -1105,6 +1106,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Flip the stack top to bottom. Every band keeps the pair of rows it
+       * draws between, so its tracks stay with it.
+       */
+      reverseRows() {
+        const lastRow = self.views.length - 1
+        self.views.replace([...self.views].reverse())
+        self.levels.replace([...self.levels].reverse())
+        self.followAnchorIndex = lastRow - self.followAnchorIndex
+        self.diagonalizeAnchorRow = lastRow - self.diagonalizeAnchorRow
+      },
+
+      /**
+       * #action
        * Kept for the plugin ABI; `setRowSyncMode` is what the UI calls. It
        * still has to drop the follow, since the exclusion below is a property
        * of the two flags rather than of the action that happens to set them.
@@ -1566,6 +1580,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                       },
                     ]),
                 ...removeRowMenuItems(self),
+                {
+                  label: 'Reverse row order',
+                  icon: SwapVertIcon,
+                  onClick: () => {
+                    self.reverseRows()
+                  },
+                },
                 {
                   label: 'Re-order chromosomes',
                   onClick: () => {

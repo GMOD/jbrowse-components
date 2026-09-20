@@ -72,12 +72,10 @@ export async function runDiagonalize(
     model.views.length - 1,
   )
   // levels below the anchor, top-down; then levels above it, bottom-up
+  const levelIndices = model.levels.map((_, i) => i)
   const order = [
-    ...Array.from(
-      { length: model.levels.length - anchor },
-      (_, k) => anchor + k,
-    ).filter(i => i < model.levels.length),
-    ...Array.from({ length: anchor }, (_, k) => anchor - 1 - k),
+    ...levelIndices.slice(anchor),
+    ...levelIndices.slice(0, anchor).reverse(),
   ]
   for (const i of order) {
     const downward = i >= anchor
