@@ -8705,347 +8705,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "SyntenyTrackSlots": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "assemblyNames": {
-          "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
-          "default": [
-            "assemblyName"
-          ]
-        },
-        "description": {
-          "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "category": {
-          "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
-        "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
-        },
-        "adapter": {
-          "$ref": "#/$defs/Adapter"
-        },
-        "textSearching": {
-          "$ref": "#/$defs/textSearching"
-        },
-        "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
-          }
-        },
-        "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
-        },
-        "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
-        }
-      }
-    },
-    "SyntenyTrack": {
-      "title": "SyntenyTrack",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/SyntenyTrackSlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "SyntenyTrack"
-        },
-        "trackId": {
-          "type": "string"
-        },
-        "uri": {
-          "type": "string",
-          "description": "The data file, from which JBrowse infers the adapter and, when \`type\` is omitted, the track type. Write this or \`adapter\`."
-        },
-        "index": {
-          "type": "string",
-          "description": "The index file beside \`uri\`, when it is not at the conventional name."
-        },
-        "displayDefaults": {
-          "title": "SyntenyTrackDisplayDefaults",
-          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
-          "type": "object",
-          "properties": {
-            "bezierRadiusRatio": {
-              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/bezierRadiusRatio"
-            },
-            "colorBy": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorBy"
-                },
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
-                }
-              ]
-            },
-            "color": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/color"
-                }
-              ]
-            },
-            "colorSelected": {
-              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorSelected"
-            },
-            "colorHover": {
-              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorHover"
-            },
-            "fetchSizeLimit": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/fetchSizeLimit"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/fetchSizeLimit"
-                }
-              ]
-            },
-            "forceLoad": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/forceLoad"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/forceLoad"
-                }
-              ]
-            },
-            "height": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/height"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/height"
-                }
-              ]
-            },
-            "mouseover": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/mouseover"
-                }
-              ]
-            },
-            "featureHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/featureHeight"
-            },
-            "heightMode": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/heightMode"
-            },
-            "growMaxHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/growMaxHeight"
-            },
-            "densityTier": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTier"
-            },
-            "densityTierBpPerPx": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTierBpPerPx"
-            },
-            "readConnectionsLineWidth": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsLineWidth"
-            },
-            "showSashimiLabels": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSashimiLabels"
-            },
-            "hideNonCanonicalJunctions": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideNonCanonicalJunctions"
-            },
-            "maxHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
-            },
-            "filterBy": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
-            },
-            "facet": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/facet"
-            },
-            "collapseGroupRows": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/collapseGroupRows"
-            },
-            "scales": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
-            },
-            "mismatchAlpha": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha"
-            },
-            "showLowFreqMismatches": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showLowFreqMismatches"
-            },
-            "showLegend": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showLegend"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLegend"
-                }
-              ]
-            },
-            "sortedBy": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sortedBy"
-            },
-            "largeFeaturesFirst": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/largeFeaturesFirst"
-            },
-            "splicedReadsFirst": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/splicedReadsFirst"
-            },
-            "showOutline": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showOutline"
-            },
-            "linkedReads": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"
-            },
-            "showBezierConnections": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showBezierConnections"
-            },
-            "showCoverage": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showCoverage"
-            },
-            "showPileup": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showPileup"
-            },
-            "coverageHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/coverageHeight"
-            },
-            "coverageSnpMinFrequency": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/coverageSnpMinFrequency"
-            },
-            "showMismatches": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showMismatches"
-            },
-            "showInterbaseIndicators": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showInterbaseIndicators"
-            },
-            "flipStrandLongReadChains": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/flipStrandLongReadChains"
-            },
-            "colorSupplementaryChains": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorSupplementaryChains"
-            },
-            "drawInter": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawInter"
-            },
-            "drawProperPairArcs": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawProperPairArcs"
-            },
-            "minInterchromSupport": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minInterchromSupport"
-            },
-            "drawLongRange": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawLongRange"
-            },
-            "arcColorByType": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/arcColorByType"
-            },
-            "readConnections": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnections"
-            },
-            "readConnectionsDown": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsDown"
-            },
-            "showSashimiArcs": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSashimiArcs"
-            },
-            "sashimiArcsMode": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimiArcsMode"
-            },
-            "minSashimiScore": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minSashimiScore"
-            },
-            "sashimiArcsHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimiArcsHeight"
-            },
-            "readConnectionsHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsHeight"
-            },
-            "showSoftClipping": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSoftClipping"
-            },
-            "lodMode": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/lodMode"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/lodMode"
-                }
-              ]
-            },
-            "hideSelfAlignments": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSelfAlignments"
-            },
-            "utrColor": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
-            },
-            "domain": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/domain"
-            },
-            "ribbonColor": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/ribbonColor"
-            },
-            "hideUnlabelled": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/hideUnlabelled"
-            },
-            "drawCurves": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/drawCurves"
-            },
-            "bridgeSkippedLanes": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/bridgeSkippedLanes"
-            },
-            "showLaneTicks": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLaneTicks"
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false,
-      "anyOf": [
-        {
-          "required": [
-            "adapter"
-          ]
-        },
-        {
-          "required": [
-            "uri"
-          ]
-        }
-      ]
-    },
     "ReferenceSequenceTrackSlots": {
       "type": "object",
       "properties": {
@@ -10886,6 +10545,347 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "squashToHeight": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/squashToHeight"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "unevaluatedProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "adapter"
+          ]
+        },
+        {
+          "required": [
+            "uri"
+          ]
+        }
+      ]
+    },
+    "SyntenyTrackSlots": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "descriptive name of the track, falls back to the trackId when unset.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "assemblyNames": {
+          "description": "name of the assembly (or assemblies) track belongs to.",
+          "$ref": "#/$defs/StringArrayOrJexl",
+          "default": [
+            "assemblyName"
+          ]
+        },
+        "description": {
+          "description": "a description of the track.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "category": {
+          "description": "the category and sub-categories of a track.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
+        "metadata": {
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+        },
+        "adapter": {
+          "$ref": "#/$defs/Adapter"
+        },
+        "textSearching": {
+          "$ref": "#/$defs/textSearching"
+        },
+        "displays": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Display"
+          }
+        },
+        "formatDetails": {
+          "$ref": "#/$defs/FormatDetails"
+        },
+        "formatAbout": {
+          "$ref": "#/$defs/FormatAbout"
+        }
+      }
+    },
+    "SyntenyTrack": {
+      "title": "SyntenyTrack",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/SyntenyTrackSlots"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "SyntenyTrack"
+        },
+        "trackId": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string",
+          "description": "The data file, from which JBrowse infers the adapter and, when \`type\` is omitted, the track type. Write this or \`adapter\`."
+        },
+        "index": {
+          "type": "string",
+          "description": "The index file beside \`uri\`, when it is not at the conventional name."
+        },
+        "displayDefaults": {
+          "title": "SyntenyTrackDisplayDefaults",
+          "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
+          "type": "object",
+          "properties": {
+            "bezierRadiusRatio": {
+              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/bezierRadiusRatio"
+            },
+            "colorBy": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorBy"
+                },
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
+                }
+              ]
+            },
+            "color": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/color"
+                }
+              ]
+            },
+            "colorSelected": {
+              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorSelected"
+            },
+            "colorHover": {
+              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorHover"
+            },
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
+            },
+            "forceLoad": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/forceLoad"
+                }
+              ]
+            },
+            "height": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/height"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/mouseover"
+                }
+              ]
+            },
+            "featureHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/featureHeight"
+            },
+            "heightMode": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/heightMode"
+            },
+            "growMaxHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/growMaxHeight"
+            },
+            "densityTier": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTier"
+            },
+            "densityTierBpPerPx": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTierBpPerPx"
+            },
+            "readConnectionsLineWidth": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsLineWidth"
+            },
+            "showSashimiLabels": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSashimiLabels"
+            },
+            "hideNonCanonicalJunctions": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideNonCanonicalJunctions"
+            },
+            "maxHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
+            },
+            "filterBy": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
+            },
+            "facet": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/facet"
+            },
+            "collapseGroupRows": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/collapseGroupRows"
+            },
+            "scales": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scales"
+            },
+            "mismatchAlpha": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha"
+            },
+            "showLowFreqMismatches": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showLowFreqMismatches"
+            },
+            "showLegend": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLegend"
+                }
+              ]
+            },
+            "sortedBy": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sortedBy"
+            },
+            "largeFeaturesFirst": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/largeFeaturesFirst"
+            },
+            "splicedReadsFirst": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/splicedReadsFirst"
+            },
+            "showOutline": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showOutline"
+            },
+            "linkedReads": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"
+            },
+            "showBezierConnections": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showBezierConnections"
+            },
+            "showCoverage": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showCoverage"
+            },
+            "showPileup": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showPileup"
+            },
+            "coverageHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/coverageHeight"
+            },
+            "coverageSnpMinFrequency": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/coverageSnpMinFrequency"
+            },
+            "showMismatches": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showMismatches"
+            },
+            "showInterbaseIndicators": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showInterbaseIndicators"
+            },
+            "flipStrandLongReadChains": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/flipStrandLongReadChains"
+            },
+            "colorSupplementaryChains": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorSupplementaryChains"
+            },
+            "drawInter": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawInter"
+            },
+            "drawProperPairArcs": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawProperPairArcs"
+            },
+            "minInterchromSupport": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minInterchromSupport"
+            },
+            "drawLongRange": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawLongRange"
+            },
+            "arcColorByType": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/arcColorByType"
+            },
+            "readConnections": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnections"
+            },
+            "readConnectionsDown": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsDown"
+            },
+            "showSashimiArcs": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSashimiArcs"
+            },
+            "sashimiArcsMode": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimiArcsMode"
+            },
+            "minSashimiScore": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minSashimiScore"
+            },
+            "sashimiArcsHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimiArcsHeight"
+            },
+            "readConnectionsHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsHeight"
+            },
+            "showSoftClipping": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSoftClipping"
+            },
+            "lodMode": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/lodMode"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/lodMode"
+                }
+              ]
+            },
+            "hideSelfAlignments": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSelfAlignments"
+            },
+            "utrColor": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
+            },
+            "domain": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/domain"
+            },
+            "ribbonColor": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/ribbonColor"
+            },
+            "hideUnlabelled": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/hideUnlabelled"
+            },
+            "drawCurves": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/drawCurves"
+            },
+            "bridgeSkippedLanes": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/bridgeSkippedLanes"
+            },
+            "showLaneTicks": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLaneTicks"
             }
           },
           "patternProperties": {
@@ -13406,7 +13406,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "enum": [
                 "FeatureTrack",
                 "AlignmentsTrack",
-                "SyntenyTrack",
                 "ReferenceSequenceTrack",
                 "VariantTrack",
                 "LDTrack",
@@ -13415,6 +13414,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "GCContentTrack",
                 "MafTrack",
                 "HicTrack",
+                "SyntenyTrack",
                 "GWASTrack"
               ]
             },
@@ -13462,22 +13462,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/AlignmentsTrack"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "SyntenyTrack"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/SyntenyTrack"
           }
         },
         {
@@ -13606,6 +13590,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/HicTrack"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "SyntenyTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/SyntenyTrack"
           }
         },
         {
@@ -15202,48 +15202,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "SyntenyTrackSnapshot": {
-      "title": "SyntenyTrackSnapshot",
-      "description": "A SyntenyTrack node inside a saved session view.",
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "SyntenyTrack"
-        },
-        "id": {
-          "type": "string"
-        },
-        "configuration": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/SyntenyTrack"
-            }
-          ]
-        },
-        "minimized": {
-          "type": "boolean"
-        },
-        "pinned": {
-          "type": "boolean"
-        },
-        "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DisplaySnapshot"
-          }
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "ReferenceSequenceTrackSnapshot": {
       "title": "ReferenceSequenceTrackSnapshot",
       "description": "A ReferenceSequenceTrack node inside a saved session view.",
@@ -15556,6 +15514,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             {
               "$ref": "#/$defs/HicTrack"
+            }
+          ]
+        },
+        "minimized": {
+          "type": "boolean"
+        },
+        "pinned": {
+          "type": "boolean"
+        },
+        "displays": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DisplaySnapshot"
+          }
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "SyntenyTrackSnapshot": {
+      "title": "SyntenyTrackSnapshot",
+      "description": "A SyntenyTrack node inside a saved session view.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "SyntenyTrack"
+        },
+        "id": {
+          "type": "string"
+        },
+        "configuration": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/SyntenyTrack"
             }
           ]
         },
@@ -16064,7 +16064,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "enum": [
                 "FeatureTrack",
                 "AlignmentsTrack",
-                "SyntenyTrack",
                 "ReferenceSequenceTrack",
                 "VariantTrack",
                 "LDTrack",
@@ -16073,6 +16072,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "GCContentTrack",
                 "MafTrack",
                 "HicTrack",
+                "SyntenyTrack",
                 "GWASTrack"
               ]
             },
@@ -16117,22 +16117,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/AlignmentsTrackSnapshot"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "SyntenyTrack"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/SyntenyTrackSnapshot"
           }
         },
         {
@@ -16261,6 +16245,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/HicTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "SyntenyTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/SyntenyTrackSnapshot"
           }
         },
         {
@@ -18529,9 +18529,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                       "$ref": "#/$defs/AlignmentsTrackSnapshot"
                     },
                     {
-                      "$ref": "#/$defs/SyntenyTrackSnapshot"
-                    },
-                    {
                       "$ref": "#/$defs/ReferenceSequenceTrackSnapshot"
                     },
                     {
@@ -18554,6 +18551,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     },
                     {
                       "$ref": "#/$defs/HicTrackSnapshot"
+                    },
+                    {
+                      "$ref": "#/$defs/SyntenyTrackSnapshot"
                     },
                     {
                       "$ref": "#/$defs/GWASTrackSnapshot"

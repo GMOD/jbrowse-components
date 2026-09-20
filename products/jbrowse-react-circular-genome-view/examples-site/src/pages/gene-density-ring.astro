@@ -1,0 +1,15 @@
+---
+import Example from '../examples/GeneDensityRing.tsx'
+import code from '../examples/GeneDensityRing.tsx?raw'
+import { pages } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = pages.find(p => p.slug === 'gene-density-ring')!
+---
+
+<Layout page={page}>
+  <Section slug="gene-density-ring" code={code}>
+    <Example client:only="react" />
+  </Section>
+</Layout>

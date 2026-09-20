@@ -1859,111 +1859,6 @@ export const configManifest: ConfigManifest = {
         "LinearMarkDisplay"
       ]
     },
-    "SyntenyTrack": {
-      "slots": [
-        {
-          "name": "type",
-          "type": "\"SyntenyTrack\""
-        },
-        {
-          "name": "trackId",
-          "type": "identifier"
-        },
-        {
-          "name": "name",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "assemblyNames",
-          "type": "(JexlString | string[])"
-        },
-        {
-          "name": "description",
-          "type": "(JexlString | string)"
-        },
-        {
-          "name": "category",
-          "type": "(JexlString | string[])"
-        },
-        {
-          "name": "metadata",
-          "type": "(JexlString | frozen)"
-        },
-        {
-          "name": "adapter",
-          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipMafAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | MultiGenomePAFAdapterConfigurationSchema | MultiGenomeIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | MultiPairwiseSyntenyAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
-        },
-        {
-          "name": "textSearching",
-          "type": "textSearchingConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
-            },
-            {
-              "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
-            },
-            {
-              "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
-            },
-            {
-              "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
-            }
-          ]
-        },
-        {
-          "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
-        },
-        {
-          "name": "formatDetails",
-          "type": "FormatDetailsConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "feature",
-              "type": "(JexlString | frozen)"
-            },
-            {
-              "name": "subfeatures",
-              "type": "(JexlString | frozen)"
-            },
-            {
-              "name": "depth",
-              "type": "(JexlString | (number | undefined))"
-            },
-            {
-              "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
-            }
-          ]
-        },
-        {
-          "name": "formatAbout",
-          "type": "FormatAboutConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "config",
-              "type": "(JexlString | frozen)"
-            },
-            {
-              "name": "hideUris",
-              "type": "(JexlString | boolean)"
-            }
-          ]
-        }
-      ],
-      "displayTypes": [
-        "ChordSyntenyDisplay",
-        "DotplotDisplay",
-        "LinearSyntenyDisplay",
-        "LGVSyntenyDisplay",
-        "MultiWaySyntenyDisplay"
-      ]
-    },
     "ReferenceSequenceTrack": {
       "slots": [
         {
@@ -2730,6 +2625,111 @@ export const configManifest: ConfigManifest = {
       ],
       "displayTypes": [
         "LinearHicDisplay"
+      ]
+    },
+    "SyntenyTrack": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"SyntenyTrack\""
+        },
+        {
+          "name": "trackId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "category",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "metadata",
+          "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "adapter",
+          "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipMafAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | MultiGenomePAFAdapterConfigurationSchema | MultiGenomeIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | MultiPairwiseSyntenyAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
+        },
+        {
+          "name": "textSearching",
+          "type": "textSearchingConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "indexingAttributes",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToExclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "indexingFeatureTypesToInclude",
+              "type": "(JexlString | string[])"
+            },
+            {
+              "name": "textSearchAdapter",
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+            }
+          ]
+        },
+        {
+          "name": "displays",
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema)[]"
+        },
+        {
+          "name": "formatDetails",
+          "type": "FormatDetailsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "feature",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "subfeatures",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "depth",
+              "type": "(JexlString | (number | undefined))"
+            },
+            {
+              "name": "maxDepth",
+              "type": "(JexlString | (number | undefined))"
+            }
+          ]
+        },
+        {
+          "name": "formatAbout",
+          "type": "FormatAboutConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "config",
+              "type": "(JexlString | frozen)"
+            },
+            {
+              "name": "hideUris",
+              "type": "(JexlString | boolean)"
+            }
+          ]
+        }
+      ],
+      "displayTypes": [
+        "ChordSyntenyDisplay",
+        "DotplotDisplay",
+        "LinearSyntenyDisplay",
+        "LGVSyntenyDisplay",
+        "MultiWaySyntenyDisplay"
       ]
     },
     "GWASTrack": {

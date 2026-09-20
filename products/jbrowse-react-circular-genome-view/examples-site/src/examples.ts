@@ -45,6 +45,22 @@ export const pages: ExamplePage[] = [
     group: 'Real-world demos',
     sections: [{ slug: 'human', title: 'Human structural variants (hg19)' }],
   },
+  {
+    slug: 'circular-synteny',
+    title: 'Human and mouse on one circle',
+    description: 'Two genomes on one circle, their liftOver blocks as ribbons.',
+    group: 'Real-world demos',
+    sections: [
+      { slug: 'circular-synteny', title: 'Human and mouse on one circle' },
+    ],
+  },
+  {
+    slug: 'gene-density-ring',
+    title: 'Gene density as a ring',
+    description: 'A bigWig drawn as a ring inside the two-genome ideogram.',
+    group: 'Real-world demos',
+    sections: [{ slug: 'gene-density-ring', title: 'Gene density as a ring' }],
+  },
 ]
 
 export const examples = flattenExamples(pages)

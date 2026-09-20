@@ -21,9 +21,6 @@ inference.
   LinearManhattanDisplay, LinearMarkDisplay
 - [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) —
   displays: LinearAlignmentsDisplay, LinearMarkDisplay
-- [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) —
-  displays: ChordSyntenyDisplay, DotplotDisplay, LinearSyntenyDisplay,
-  LGVSyntenyDisplay, MultiWaySyntenyDisplay
 - [ReferenceSequenceTrack](https://jbrowse.org/jb2/docs/config/referencesequencetrack.md)
   — displays: LinearReferenceSequenceDisplay, LinearGCContentDisplay
 - [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack.md) —
@@ -42,6 +39,9 @@ inference.
   LinearMafDisplay
 - [HicTrack](https://jbrowse.org/jb2/docs/config/hictrack.md) — displays:
   LinearHicDisplay
+- [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) —
+  displays: ChordSyntenyDisplay, DotplotDisplay, LinearSyntenyDisplay,
+  LGVSyntenyDisplay, MultiWaySyntenyDisplay
 - [GWASTrack](https://jbrowse.org/jb2/docs/config/gwastrack.md) — displays:
   LinearManhattanDisplay
 
