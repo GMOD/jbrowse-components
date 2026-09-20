@@ -14,6 +14,18 @@
 // the permission mode (Auto, the product default, which is what a viewer
 // gets), and the MCP server goes in the app's own config because a user-scope
 // ~/.claude.json entry and a project .mcp.json are both ignored here.
+//
+// It runs end to end and its output was judged not showcase material. tmux
+// gives the TUI harness real text state; here every interaction is a pixel
+// probe, and on the first real take three of them failed SILENTLY at once --
+// the model never switched, the account email and usage card filmed, and a
+// blind banner click detached the session's folder, so the agent aligned two
+// unrelated FASTAs it found elsewhere on disk while reporting success. Each
+// probe's own failure mode is documented at its definition in appClient.mjs,
+// and --dry-run stops before the camera so startup can be iterated for zero
+// model turns. In Auto mode the app blocks any command it cannot statically
+// analyze and waits on a dialog, which goes as quiet as a finished turn, so a
+// shell-heavy take needs Bypass permissions.
 import { spawn, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
