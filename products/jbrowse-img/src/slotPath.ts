@@ -1,0 +1,68 @@
+const UNSAFE_SEGMENTS = new Set(['__proto__', 'constructor', 'prototype'])
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function scalar(text: string): string | number | boolean {
+  if (text === 'true' || text === 'false') {
+    return text === 'true'
+  }
+  const n = Number(text)
+  return text.trim() !== '' && Number.isFinite(n) ? n : text
+}
+
+/**
+ * The value of a `path=value` modifier: `true`/`false`, a number, a
+ * comma-separated list (a trailing comma makes a list of one), or the text as
+ * written.
+ */
+export function slotValue(text: string) {
+  return text.includes(',')
+    ? text
+        .split(',')
+        .filter(item => item !== '')
+        .map(scalar)
+    : scalar(text)
+}
+
+/** Whether a track option is a `path=value` slot write rather than a named modifier. */
+export function isSlotPathOption(opt: string) {
+  return /^[A-Za-z_][\w.]*=/.test(opt)
+}
+
+/**
+ * Merge `patch` into `target`, object into object and anything else replacing
+ * what was there, so `color.field=…` and `color.palette=…` fill one object in
+ * either order.
+ */
+export function mergeSettings(
+  target: Record<string, unknown>,
+  patch: Record<string, unknown>,
+) {
+  for (const [key, value] of Object.entries(patch)) {
+    if (UNSAFE_SEGMENTS.has(key)) {
+      throw new Error(`Invalid track option key "${key}"`)
+    }
+    const existing = target[key]
+    if (isPlainObject(value) && isPlainObject(existing)) {
+      mergeSettings(existing, value)
+    } else {
+      target[key] = isPlainObject(value) ? mergeSettings({}, value) : value
+    }
+  }
+  return target
+}
+
+/** `color.palette=tan,teal` as the settings object it writes: `{ color: { palette: [...] } }`. */
+export function slotPathSettings(opt: string) {
+  const eq = opt.indexOf('=')
+  const segments = opt.slice(0, eq).split('.')
+  if (segments.includes('')) {
+    throw new Error(`Invalid track option "${opt}": an empty path segment`)
+  }
+  return segments.reduceRight<unknown>(
+    (value, segment) => ({ [segment]: value }),
+    slotValue(opt.slice(eq + 1)),
+  ) as Record<string, unknown>
+}

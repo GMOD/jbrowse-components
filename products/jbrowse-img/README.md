@@ -418,7 +418,7 @@ jb2export --fasta ref.fa --bam reads.bam baseColor:modifications featureHeight:s
   --loc chr1:1-10000
 
 ## methylation over reads tinted by haplotype, in two quiet colors
-jb2export --fasta ref.fa --bam reads.bam color:tag:HP domain:1,2 palette:#d9c9a3,#b7c4b1 \
+jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 color.palette=#d9c9a3,#b7c4b1 \
   baseColor:methylation legend --loc chr1:1-10000
 
 ## color by insert size + orientation to highlight structural variants
@@ -655,7 +655,6 @@ Reads & coloring:
 | -------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `color:field` or `color:tag:TAG` | `color:strand`, `color:tag:XS` | Color reads by a field (see fields below), or paint them all one CSS color                                                         |
 | `baseColor:field`                | `baseColor:methylation`        | Draw a per-base layer over the reads, whatever `color:` fills them with (see fields below)                                         |
-| `domain:a,b` and `palette:a,b`   | `domain:1,2 palette:tan,teal`  | The values of `color:`'s field that take the palette first, and the CSS colors they take                                           |
 | `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                                                                      |
 | `group:type` or `group:type:tag` | `group:strand`, `group:tag:HP` | Group reads into in-track stacked sections (`strand`, `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq`, or `tag:<TAG>`) |
 | `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                                                                                            |
@@ -736,7 +735,6 @@ These share one display base, so every modifier below applies to both.
 | ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `color:value`                       | `color:magenta`         | Glyph fill: any CSS color, or `strand` to color by feature strand (tomato forward, cornflowerblue reverse)                                                                                                        |
 | `color:attribute:name`              | `color:attribute:type`  | One stable color per distinct value of that feature attribute — the canvas analogue of an alignments `color:tag:XX`                                                                                               |
-| `domain:a,b` and `palette:a,b`      | `palette:tomato,teal`   | The attribute values that take the palette first, and the CSS colors they take                                                                                                                                    |
 | `featureHeight:preset`              | `featureHeight:compact` | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                               |
 | `heightMode:<fixed\|grow\|fit>[:N]` | `heightMode:fit:200`    | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too |
 
@@ -756,15 +754,38 @@ figure wants. The rest are BigWig-only and warn on any other track type.
 | `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier)  |
 | `color:value`            | `color:purple`         | Fill color (any CSS color — `tag:` form is BAM/CRAM only) |
 
-### Raw display settings (JSON)
+### Any display setting (`slot.path=value`)
 
-Any track modifier that starts with `{` is parsed as JSON and merged into the
-display's settings: an escape hatch for settings without a dedicated modifier
-above. Use compact JSON (a single shell token, no spaces):
+A modifier written `slot.path=value` sets that slot of the track's display, so
+every setting in the [config docs](https://jbrowse.org/jb2/docs/config/) is
+reachable without a modifier of its own. Paths nest with dots and several fill
+one object in any order, beside the named modifiers above:
 
 ```bash
-jb2export --fasta ref.fa --bam reads.bam '{"color":{"field":"strand"}}' \
+## a numeric tag on a colour ramp
+jb2export --fasta ref.fa --bam reads.bam color.field=tags.NM color.scale=linear \
+  color.ramp=white,darkred --loc chr1:1-10000 --out out.svg
+
+## haplotype in two declared colours, methylation over it, a log coverage axis
+jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
+  color.palette=#d9c9a3,#b7c4b1 baseColor:methylation scales.y.type=log \
   --loc chr1:1-10000 --out out.svg
+```
+
+- `true` and `false` are booleans and a number is a number
+- a comma makes a list, and a trailing comma a list of one: `color.palette=tan,`
+- a slot the display does not declare, or a key its object refuses, fails the
+  export with the display's own message
+
+### Raw display settings (JSON)
+
+A modifier that starts with `{` is parsed as JSON and merged into the same
+settings, for a value `slot.path=value` cannot write: a color with commas of its
+own, or a list of objects. Use compact JSON (a single shell token, no spaces):
+
+```bash
+jb2export --fasta ref.fa --bam reads.bam '{"color":{"palette":["rgb(217,201,163)"]}}' \
+  color:tag:HP --loc chr1:1-10000 --out out.svg
 ```
 
 ## Comparative views

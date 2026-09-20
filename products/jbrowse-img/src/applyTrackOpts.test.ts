@@ -434,34 +434,56 @@ describe('color routing', () => {
     ).toThrow(/baseQuality/)
   })
 
-  test('domain and palette fill the colour object in any order', () => {
+  test('a path=value option writes a slot, and fills one object in any order', () => {
     const expected = {
       color: {
         field: 'tags.HP',
-        domain: ['1', '2'],
+        domain: [1, 2],
         palette: ['#d9c9a3', '#b7c4b1'],
       },
     }
     expect(
       buildDisplaySnapshot('alignments', [
         'color:tag:HP',
-        'domain:1,2',
-        'palette:#d9c9a3,#b7c4b1',
+        'color.domain=1,2',
+        'color.palette=#d9c9a3,#b7c4b1',
       ]).snap,
     ).toEqual(expected)
     expect(
       buildDisplaySnapshot('alignments', [
-        'palette:#d9c9a3,#b7c4b1',
-        'domain:1,2',
+        'color.palette=#d9c9a3,#b7c4b1',
+        'color.domain=1,2',
         'color:tag:HP',
       ]).snap,
     ).toEqual(expected)
+  })
+
+  test('a slot write reaches settings no named modifier covers', () => {
     expect(
-      buildDisplaySnapshot('feature', [
-        'color:attribute:biotype',
-        'palette:red,blue',
+      buildDisplaySnapshot('alignments', [
+        'color.field=tags.NM',
+        'color.scale=linear',
+        'color.ramp=white,darkred',
+        'modifications.threshold=50',
+        'showOutline=false',
       ]).snap,
-    ).toEqual({ color: { field: 'biotype', palette: ['red', 'blue'] } })
+    ).toEqual({
+      color: { field: 'tags.NM', scale: 'linear', ramp: ['white', 'darkred'] },
+      modifications: { threshold: 50 },
+      showOutline: false,
+    })
+  })
+
+  test('a JSON option merges into what earlier options wrote', () => {
+    expect(
+      buildDisplaySnapshot('alignments', [
+        'color:tag:HP',
+        '{"color":{"palette":["rgb(1,2,3)"]},"height":300}',
+      ]).snap,
+    ).toEqual({
+      color: { field: 'tags.HP', palette: ['rgb(1,2,3)'] },
+      height: 300,
+    })
   })
 
   test('anything else on alignments is a CSS colour for every read', () => {

@@ -1,5 +1,10 @@
 import { samFlagNames } from '@jbrowse/cigar-utils'
 
+import {
+  isSlotPathOption,
+  mergeSettings,
+  slotPathSettings,
+} from './slotPath.ts'
 import { trackMatches, trackName } from './trackFields.ts'
 
 import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
@@ -53,18 +58,17 @@ const BASE_COLORS = [
 ] as const
 const BASE_COLOR_NAMES: ReadonlySet<string> = new Set(BASE_COLORS)
 
-// `domain:` and `palette:` write into the colour object `color:` names a field
-// on, in whichever order the three arrive.
+// `color:` names a field on the colour object a `color.palette=…` slot write
+// may already have started, so it merges rather than replaces. The object's
+// other slots have no modifier of their own: a `domain:` and `palette:` pair
+// was tried, and each was one slice of the object, bound to `color:` without
+// saying so where `group:` orders by a domain too, with every further scale
+// slot wanting another.
 function mergeColor(r: BuildResult, patch: Partial<ColorObject>) {
   r.snap.color = {
     ...(typeof r.snap.color === 'object' ? r.snap.color : {}),
     ...patch,
   }
-}
-
-function parseList(prefix: string, val: string, expected: string) {
-  const items = val.split(',').filter(Boolean)
-  return items.length > 0 ? items : invalid(prefix, val, expected)
 }
 
 // Display category: which display a track opens with, and so which snapshot keys
@@ -766,25 +770,6 @@ const modifiers: Record<string, Modifier> = {
       }
     },
   },
-  // The values of `color:`'s field that take `palette:` first, in order, and the
-  // CSS colours they take. Comma-separated, as `flags:` lists are, so a colour
-  // written with commas of its own (`rgb(…)`) goes through the JSON form.
-  domain: {
-    on: ['alignments', 'feature', 'variant'],
-    apply: (r, v) => {
-      mergeColor(r, {
-        domain: parseList('domain', v, 'values, comma-separated'),
-      })
-    },
-  },
-  palette: {
-    on: ['alignments', 'feature', 'variant'],
-    apply: (r, v) => {
-      mergeColor(r, {
-        palette: parseList('palette', v, 'CSS colors, comma-separated'),
-      })
-    },
-  },
   // `color:` asks the same question of every track type, but each display
   // answers it through a different slot, so this routes rather than writing one
   // key. Alignments and the canvas-based displays name a field; wiggle takes a
@@ -923,6 +908,13 @@ function applyModifier(
   }
 }
 
+// The snapshot as the open bag a slot write or a JSON modifier merges into: the
+// display refuses a key it does not declare when the settings are applied, and
+// jb2export fails on that report, so nothing here re-checks one.
+function settingsOf(result: BuildResult) {
+  return result.snap as Record<string, unknown>
+}
+
 // Raw JSON escape hatch for settings without a dedicated modifier. Reported with
 // the offending token, since a bare SyntaxError from a shell-mangled brace names
 // nothing.
@@ -943,7 +935,14 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
   const deferred: [string, string, string | undefined][] = []
   for (const opt of opts) {
     if (opt.startsWith('{')) {
-      Object.assign(result.snap, parseJsonModifier(opt))
+      mergeSettings(
+        settingsOf(result),
+        settingsOf({ snap: parseJsonModifier(opt) }),
+      )
+      continue
+    }
+    if (isSlotPathOption(opt)) {
+      mergeSettings(settingsOf(result), slotPathSettings(opt))
       continue
     }
     const [prefix = '', val1 = '', val2] = opt.split(':')
