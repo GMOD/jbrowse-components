@@ -1,4 +1,11 @@
-import { outputName, parseBedpe, recordArgv, recordLocs } from './batch.ts'
+import {
+  eventOutputName,
+  eventRecords,
+  outputName,
+  parseBedpe,
+  recordArgv,
+  recordLocs,
+} from './batch.ts'
 
 const ROW = {
   loci: [
@@ -16,7 +23,7 @@ describe('parseBedpe', () => {
     const { records } = parseBedpe(
       bedpe('chr1\t1000\t1001\tchr5\t2000\t2001\tSV_20\t.\t+\t-'),
     )
-    expect(records).toEqual([{ ...ROW, name: 'SV_20' }])
+    expect(records).toEqual([{ ...ROW, line: 1, name: 'SV_20' }])
   })
 
   it('skips comments, track/browser lines and blanks', () => {
@@ -40,6 +47,7 @@ describe('parseBedpe', () => {
     )
     expect(records[1]).toEqual({
       loci: [{ refName: 'chr7', start: 500, end: 501 }],
+      line: 2,
     })
     expect(skipped).toEqual([])
   })
@@ -119,6 +127,69 @@ describe('recordLocs / recordArgv', () => {
       ['loc', ['chr1:901-1101']],
       ['loc', ['chr5:1901-2101']],
     ])
+  })
+})
+
+describe('eventRecords', () => {
+  const at = (refName: string, start: number) => ({
+    refName,
+    start,
+    end: start + 1,
+  })
+
+  it('gathers the loci of every record filed under one event, in genome order', () => {
+    const events = eventRecords(
+      [
+        { loci: [at('chr12', 700), at('chr3', 900)], event: 'c1' },
+        { loci: [at('chr3', 100), at('chr10', 500)], event: 'c1' },
+        { loci: [at('chr1', 5), at('chr2', 5)] },
+        { loci: [at('chr7', 1)], event: 'c2' },
+      ],
+      ['chr3', 'chr10', 'chr12'],
+    )
+    expect(events).toEqual([
+      {
+        event: 'c1',
+        name: 'c1',
+        loci: [
+          at('chr3', 100),
+          at('chr3', 900),
+          at('chr10', 500),
+          at('chr12', 700),
+        ],
+      },
+      { event: 'c2', name: 'c2', loci: [at('chr7', 1)] },
+    ])
+  })
+
+  it('puts a contig the header never named after the ones it did', () => {
+    const [event] = eventRecords(
+      [{ loci: [at('scaffold_9', 1), at('chr3', 1)], event: 'c1' }],
+      ['chr3'],
+    )
+    expect(event!.loci.map(l => l.refName)).toEqual(['chr3', 'scaffold_9'])
+  })
+
+  it('draws ends of one event that share a window as one panel', () => {
+    const [event] = eventRecords(
+      [
+        { loci: [at('chr3', 1000), at('chr10', 5000)], event: 'c1' },
+        { loci: [at('chr10', 5200), at('chr3', 1400)], event: 'c1' },
+      ],
+      ['chr3', 'chr10'],
+    )
+    expect(recordLocs(event!, 600)).toEqual([
+      'chr3:401-2001',
+      'chr10:4401-5801',
+    ])
+  })
+})
+
+describe('eventOutputName', () => {
+  it('sorts after the numbered records and sanitizes the label', () => {
+    expect(
+      eventOutputName({ loci: [], name: 'cluster 3/a' }, 2, 15, 'png'),
+    ).toBe('event_03_cluster-3-a.png')
   })
 })
 

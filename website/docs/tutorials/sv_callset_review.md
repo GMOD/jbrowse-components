@@ -82,8 +82,7 @@ because hand-parsing it goes wrong four ways, none of them raising an error:
 
 One image per row, named `002_chr1_33053494-chr6_2919922_r_0_0.png`: the
 filename opens with the index so the directory sorts in callset order, then the
-coordinates, then the caller's ID. A file with no ID column falls back to
-`junction_<n>`.
+coordinates, then the caller's ID where the record has one.
 
 `--flank` frames the panel, since a breakend is one base. `--dryRun` prints the
 file and loci of every row and renders nothing, and `--limit 20` renders the
@@ -91,9 +90,12 @@ first few, to check the framing before the whole callset.
 
 For a long run:
 
-- `--resume` skips a row whose image is already in `--outDir`
-- `--manifest` writes `manifest.tsv` beside the images: one row per record with
-  its file, its panels' loci, its name, and whether it rendered
+- `--resume` skips a row whose image is already in `--outDir`. A `--limit` run
+  names its images as the whole run will, so the whole run picks them up
+- `--manifest` writes `manifest.tsv` beside the images: one row per image with
+  its file, its panels' loci, its name, its `EVENT`, and whether it rendered.
+  The `line` column is the record's line in the VCF, which joins a row back to
+  any column of the callset
 - `--passOnly` drops records the caller filtered out. `--limit` takes the first
   N in file order, so on an unfiltered callset the two go together
 
@@ -167,6 +169,15 @@ two commands:
 - **PURPLE** copy-number segments are not junctions. Convert the segment TSV to
   a bedGraph, `bedGraphToBigWig` it, and add it as a `--bigwig` so every image
   carries the copy number under the reads
+
+COLO829's callset leaves its junctions ungrouped, which is why der(3)'s third
+panel above took a hand-written `--loc` list. A caller that files the junctions
+of one rearrangement under VCF 4.4's `EVENT` key, as DRAGEN and the C-GIAB
+benchmark do, gets that image from `batch` itself: every event visiting more
+than two loci is drawn once more as `event_<n>_<label>`, one panel per locus in
+contig order. Severus writes the same grouping as `CLUSTERID`, and the
+[SV inspector guide](/docs/user_guides/sv_inspector_view#rearrangement-events)
+has the rename.
 
 Ordering breakends into a derivative chromosome needs allele-specific copy
 number and a centromere constraint.

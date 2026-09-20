@@ -521,7 +521,7 @@ export const batchOptionDefs: OptionDef[] = [
   {
     name: 'manifest',
     description:
-      'Also write manifest.tsv to --outDir: one row per record with its file, loci, name and status',
+      'Also write manifest.tsv to --outDir: one row per image with its file, loci, name, line in the input, EVENT and status',
     default: false,
   },
   {
@@ -603,6 +603,10 @@ export function buildBatchHelp(scriptName: string) {
     'The ALT grammar is parsed by @gmod/vcf, so inserted sequence at the',
     'junction and upper-cased mate contigs are handled; reciprocal breakend',
     'pairs collapse, so each junction is queued once.',
+    '',
+    'Records a caller files under one VCF EVENT are also drawn together, as',
+    'event_<n>_<label>, when the event visits more than two loci: one panel per',
+    'locus, in contig order.',
   ].join('\n')
 }
 

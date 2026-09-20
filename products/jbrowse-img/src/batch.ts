@@ -13,12 +13,17 @@ export interface Locus {
 }
 
 /**
- * One row of a callset and the loci it is drawn on: two for a junction, one for
- * a record naming no other end (an insertion, a single breakend).
+ * One image of a run and the loci it is drawn on: two for a junction, one for a
+ * record naming no other end (an insertion, a single breakend), every locus of
+ * its records for a caller's event.
  */
 export interface BatchRecord {
   loci: Locus[]
   name?: string
+  /** 1-based line of the input file; an event, read from many, has none */
+  line?: number
+  /** VCF's `EVENT`: the rearrangement the caller filed the record under */
+  event?: string
 }
 
 function parseLocus(refName?: string, start?: string, end?: string) {
@@ -65,6 +70,7 @@ export function parseBedpe(text: string) {
     }
     records.push({
       loci: mate ? [own, mate] : [own],
+      line: lineNo,
       ...(name && name !== '.' ? { name } : {}),
     })
   }
@@ -112,6 +118,41 @@ export function outputName(
   const where = rec.loci.map(l => `${l.refName}_${l.start}`).join('-')
   const label = rec.name ? `_${rec.name}` : ''
   return `${`${num}_${where}${label}`.replaceAll(/[^\w.-]+/g, '-')}.${ext}`
+}
+
+/**
+ * One record per caller's event, holding every locus its records name, in
+ * `refNameOrder` then by position, so its panels read in genome order.
+ */
+export function eventRecords(records: BatchRecord[], refNameOrder: string[]) {
+  const rank = new Map(refNameOrder.map((refName, i) => [refName, i]))
+  const lociByEvent = new Map<string, Locus[]>()
+  for (const { event, loci } of records) {
+    if (event !== undefined) {
+      lociByEvent.set(event, [...(lociByEvent.get(event) ?? []), ...loci])
+    }
+  }
+  return [...lociByEvent].map(([event, loci]): BatchRecord => ({
+    event,
+    name: event,
+    loci: loci.sort(
+      (a, b) =>
+        (rank.get(a.refName) ?? Infinity) - (rank.get(b.refName) ?? Infinity) ||
+        a.refName.localeCompare(b.refName) ||
+        a.start - b.start,
+    ),
+  }))
+}
+
+/** Sorts after every record's image, which opens with a digit. */
+export function eventOutputName(
+  rec: BatchRecord,
+  idx: number,
+  total: number,
+  ext: string,
+) {
+  const num = String(idx + 1).padStart(String(total).length, '0')
+  return `${`event_${num}_${rec.name}`.replaceAll(/[^\w.-]+/g, '-')}.${ext}`
 }
 
 /** The argv entries one record contributes: a `--loc` per panel. */

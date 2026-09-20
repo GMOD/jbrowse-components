@@ -38,10 +38,12 @@ One record of the callset, which is one row of `jb2export batch --manifest`:
 - **Live link**: a `BreakpointSplitView` or `LinearGenomeView` session spec over
   the manifest's loci and the run's tracks.
 
-A caller's `EVENT` is a property of a card and a filter over the queue. An event
-of several junctions also gets one card of its own, every locus in one image,
-which is the static form of the SV inspector's **Open every locus of**.
-`eventStops` in `@jbrowse/sv-core` already lays those panels out.
+A caller's `EVENT` is a property of a card and a filter over the queue, and the
+manifest's `event` column carries it. An event visiting more than two loci also
+gets one card of its own from `batch`'s `event_<n>_<label>` image, every locus
+in one picture, which is the static form of the SV inspector's **Open every
+locus of**. On the HG008-T benchmark that is 10 of its 17 `EVENT` values at a
+600 bp flank, from 3 panels to the 10 of `cluster_6`.
 
 ## The allele row is a BAM record
 
@@ -147,20 +149,19 @@ MAPQ 0.
 
 ## Pieces
 
-1. **The manifest carries a join key.** A row is `file, loc1, loc2, name,
-   status`, and `name` is `junction_<n>` for a record whose ID is `.`, so
-   nothing joins a row back to its VCF line. Add the record's line number, and a
-   consumer reads any column it wants with `bcftools query`. No list of blessed
-   INFO keys in `jb2export`.
-2. **`batch` draws an `EVENT` of several junctions as one image**, through
-   `eventStops`, beside the per-record images.
-3. **Read vs ref as a launch input**, above. `jb2export synteny` renders it.
-4. **The page.** gene-review-portal's `app.jsx` with its card generalised to
-   `{id, title, images[], links, meta}`, fed from one or two manifests.
-5. **Tutorial**: a "review queue" section on `sv_callset_review`, the shortest
+`jb2export batch --manifest` already writes what the page reads: a row per image
+with `file, locs, name, line, event, status`. `line` is the record's line in the
+VCF, so the page reads `SVTYPE`, `SVLEN`, `FILTER` and the rest from the callset
+itself and `jb2export` holds no list of blessed INFO keys.
+
+1. **The page.** gene-review-portal's `app.jsx` with its card generalised to
+   `{id, title, images[], links, meta}`, fed from a tumor manifest and a normal
+   one joined on `line`.
+2. **Read vs ref as a launch input**, above. `jb2export synteny` renders it.
+3. **Tutorial**: a "review queue" section on `sv_callset_review`, the shortest
    on the page, and the HG008 portal deployed with `scripts/deploy-demo.sh`.
 
-1 and 2 are each under a day. 3 is the one with a design in it. 4 is two days.
+1 is two days and needs nothing else. 2 is the one with a design in it.
 
 ## Risks
 

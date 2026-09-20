@@ -165,11 +165,30 @@ describe('parseVcfJunctions', () => {
     expect(records[0]!.name).toBe('gridss12o')
   })
 
-  it('falls back to an index when the file supplies no ID', () => {
+  it('leaves a record with no ID unnamed, and joinable by its line', () => {
     const { records } = parseVcfJunctions(
       vcf('chr3\t1000\t.\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=2000'),
     )
-    expect(records[0]!.name).toBe('junction_0')
+    expect(records[0]!.name).toBeUndefined()
+    // four header lines in `vcf()`
+    expect(records[0]!.line).toBe(5)
+  })
+
+  it('carries the caller’s EVENT, and the contig order its panels stack in', () => {
+    const { records, refNames } = parseVcfJunctions(
+      vcf(
+        'chr12\t700\ta\tG\tG[chr3:900[\t.\tPASS\tSVTYPE=BND;EVENT=cluster_3',
+        'chr3\t100\tb\tG\tG[chr10:500[\t.\tPASS\tSVTYPE=BND;EVENT=cluster_3',
+        'chr3\t5000\tc\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=9000',
+      ),
+    )
+    expect(records.map(r => r.event)).toEqual([
+      'cluster_3',
+      'cluster_3',
+      undefined,
+    ])
+    // the header's two; chr10 is only ever a mate, so no record files under it
+    expect(refNames).toEqual(['chr3', 'chr12'])
   })
 
   it('canonicalizes a mate contig first seen before its own record', () => {

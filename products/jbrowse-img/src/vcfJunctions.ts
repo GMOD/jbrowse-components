@@ -31,6 +31,8 @@ interface VcfRecord {
   own: Endpoint
   mate?: Endpoint
   id?: string
+  event?: string
+  line: number
 }
 
 function near(a: number, b: number, tolerance: number) {
@@ -152,10 +154,13 @@ export function parseVcfJunctions(
           : undefined
     // an insertion's END is its own POS, which is one locus written twice
     const mateIsOwn = mate?.[0] === chrom && mate[1] === pos
+    const event = infoField(info, 'EVENT')
     found.push({
       own: [chrom, pos],
+      line: lineNo,
       ...(mate && !mateIsOwn ? { mate } : {}),
       ...(id && id !== '.' ? { id } : {}),
+      ...(event ? { event } : {}),
     })
   }
 
@@ -179,10 +184,12 @@ export function parseVcfJunctions(
       ...(r.mate ? { mate: canonical(r.mate) } : {}),
     })),
     tolerance,
-  ).map(({ own, mate, id }, i) => ({
+  ).map(({ own, mate, id, event, line }) => ({
     loci: mate ? [locus(own), locus(mate)] : [locus(own)],
-    // the caller's own ID, so an image traces back to the VCF row
-    name: id ?? `junction_${i}`,
+    line,
+    ...(id ? { name: id } : {}),
+    ...(event ? { event } : {}),
   }))
-  return { records, skipped }
+  // header order, then first appearance: the order an event's panels stack in
+  return { records, skipped, refNames: [...contigs.values()] }
 }

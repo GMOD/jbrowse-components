@@ -139,14 +139,14 @@ describe('runBatch', () => {
       .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
       .trim()
       .split('\n')
-    expect(rows[0]).toBe('file\tloc1\tloc2\tname\tstatus')
-    expect(rows[1]).toMatch(
-      /^1_chr1_1000-chr5_2000_SV_1\.svg\t.*\tSV_1\tfailed$/,
+    expect(rows[0]).toBe('file\tlocs\tname\tline\tevent\tstatus')
+    expect(rows[1]).toBe(
+      '1_chr1_1000-chr5_2000_SV_1.svg\tchr1:501-1501 chr5:1501-2501\tSV_1\t1\t\tfailed',
     )
     expect(rows[2]).toMatch(/\tok$/)
   })
 
-  it('renders a record that fits one panel as a linear view, and leaves loc2 empty', async () => {
+  it('renders a record that fits one panel as a linear view, with one locus in the manifest', async () => {
     const vcf = path.join(dir, 'calls.vcf')
     fs.writeFileSync(
       vcf,
@@ -184,12 +184,90 @@ describe('runBatch', () => {
       .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
       .trim()
       .split('\n')
-    expect(rows[1]).toBe('1_chr1_4999_ins1.svg\tchr1:4400-5600\t\tins1\tok')
+    expect(rows[1]).toBe('1_chr1_4999_ins1.svg\tchr1:4400-5600\tins1\t3\t\tok')
+  })
+
+  function eventVcf() {
+    const vcf = path.join(dir, 'events.vcf')
+    fs.writeFileSync(
+      vcf,
+      [
+        '##fileformat=VCFv4.4',
+        '##contig=<ID=chr3>',
+        '##contig=<ID=chr10>',
+        '##contig=<ID=chr12>',
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+        // three junctions over three loci: a closed chr3-chr10-chr12 triangle
+        'chr3\t25000\ta\tN\tN[chr10:58000[\t.\tPASS\tSVTYPE=BND;EVENT=der3',
+        'chr10\t58200\tb\tN\tN[chr12:72000[\t.\tPASS\tSVTYPE=BND;EVENT=der3',
+        'chr12\t72200\tc\tN\tN[chr3:25400[\t.\tPASS\tSVTYPE=BND;EVENT=der3',
+        // GRIDSS files one breakpoint's two mates under an EVENT of their own
+        'chr3\t90000\td\tN\tN[chr10:1000[\t.\tPASS\tSVTYPE=BND;EVENT=bp7',
+        'chr10\t1000\te\tN\t]chr3:90000]N\t.\tPASS\tSVTYPE=BND;EVENT=bp7',
+      ].join('\n'),
+    )
+    return vcf
+  }
+
+  it('draws an event that visits more than two loci once more, every locus in one image', async () => {
+    await runBatch({
+      vcf: eventVcf(),
+      outDir: path.join(dir, 'out'),
+      format: 'svg',
+      flank: 600,
+      manifest: true,
+      progress: steps().progress,
+    })
+    const last = mockRenderRegion.mock.calls.at(-1)![0] as {
+      mode: string
+      argv: [string, string[]][]
+    }
+    expect(mockRenderRegion).toHaveBeenCalledTimes(5)
+    expect(last.mode).toBe('breakpoint')
+    expect(last.argv).toEqual([
+      ['loc', ['chr3:24400-26000']],
+      ['loc', ['chr10:57400-58800']],
+      ['loc', ['chr12:71400-72800']],
+    ])
+    const rows = fs
+      .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
+      .trim()
+      .split('\n')
+    expect(rows.at(-1)).toBe(
+      'event_1_der3.svg\tchr3:24400-26000 chr10:57400-58800 chr12:71400-72800\tder3\t\tder3\tok',
+    )
+    expect(rows.filter(r => r.includes('bp7'))).toHaveLength(1)
+  })
+
+  it('names a --limit run’s images as the whole run will, so --resume finds them', async () => {
+    // ten records, so the whole run pads its index to two digits
+    const vcf = path.join(dir, 'ten.vcf')
+    fs.writeFileSync(
+      vcf,
+      [
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+        ...Array.from(
+          { length: 10 },
+          (_, i) =>
+            `chr1\t${(i + 1) * 100000}\t.\tN\t<INS>\t.\tPASS\tSVTYPE=INS`,
+        ),
+      ].join('\n'),
+    )
+    const outDir = path.join(dir, 'out')
+    const base = { vcf, outDir, format: 'svg' as const }
+    await runBatch({ ...base, limit: 2, progress: steps().progress })
+    expect(fs.readdirSync(outDir).sort()).toEqual([
+      '01_chr1_99999.svg',
+      '02_chr1_199999.svg',
+    ])
+    mockRenderRegion.mockClear()
+    await runBatch({ ...base, resume: true, progress: steps().progress })
+    expect(mockRenderRegion).toHaveBeenCalledTimes(8)
   })
 
   it('blames the flag, not the file, when --limit selects nothing', async () => {
     await expect(runBatch(opts({ limit: 0 }))).rejects.toThrow(
-      /--limit 0 selected none of the 2 junctions/,
+      /--limit 0 selected none of the 2 records/,
     )
   })
 })

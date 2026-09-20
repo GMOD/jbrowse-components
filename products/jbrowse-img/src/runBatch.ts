@@ -2,7 +2,14 @@ import fs from 'node:fs'
 import path from 'node:path'
 import zlib from 'node:zlib'
 
-import { outputName, parseBedpe, recordArgv, recordLocs } from './batch.ts'
+import {
+  eventOutputName,
+  eventRecords,
+  outputName,
+  parseBedpe,
+  recordArgv,
+  recordLocs,
+} from './batch.ts'
 import { batchRefusedOptions, DEFAULT_WIDTH } from './options.ts'
 import { createProgress } from './progress.ts'
 import { renderRegion } from './renderRegion.ts'
@@ -10,11 +17,12 @@ import { resolveConfigObject } from './resolveHub.ts'
 import { writeRendered } from './util.ts'
 import { parseVcfJunctions } from './vcfJunctions.ts'
 
+import type { BatchRecord } from './batch.ts'
 import type { BatchFormat } from './options.ts'
 import type { ProgressReporter } from './progress.ts'
 import type { Opts } from './types.ts'
 
-// Drives `renderRegion` once per BEDPE row, in-process. The module graph loads
+// Drives `renderRegion` once per record, in-process. The module graph loads
 // once for the whole callset rather than once per variant, which is the reason
 // this is a subcommand and not a shell loop over `jb2export`: on a few hundred
 // rows the per-process startup dominates everything else.
@@ -69,7 +77,8 @@ function readJunctions(opts: BatchOpts) {
         'Warning: --passOnly reads a VCF FILTER column; --bedpe has none',
       )
     }
-    return parseBedpe(fs.readFileSync(bedpe, 'utf8'))
+    // a BEDPE row carries no EVENT, so no panel order is ever asked for
+    return { ...parseBedpe(fs.readFileSync(bedpe, 'utf8')), refNames: [] }
   } else {
     throw new Error('batch needs --vcf <file> or --bedpe <file>')
   }
@@ -101,7 +110,7 @@ export async function runBatch(opts: BatchOpts) {
     )
   }
   const source = opts.vcf ?? opts.bedpe
-  const { records, skipped } = readJunctions(opts)
+  const { records, skipped, refNames } = readJunctions(opts)
   // Counted rather than listed one line each: a whole-genome callset's
   // insertions are hundreds of rows, and burying the run's real output under
   // them is its own kind of silence. Not "name no junction to draw" any more —
@@ -111,25 +120,37 @@ export async function runBatch(opts: BatchOpts) {
       `Warning: skipped ${skipped.length} record(s), e.g. ${skipped[0]}`,
     )
   }
-  const selected = limit === undefined ? records : records.slice(0, limit)
-  if (selected.length === 0) {
+  // An event whose loci fit two panels is the picture its records already draw:
+  // GRIDSS files each breakpoint's two mates under one EVENT, and an inversion's
+  // two junctions share their loci.
+  const events = eventRecords(records, refNames).filter(
+    e => recordLocs(e, flank).length > 2,
+  )
+  // Named and located up front, so `--dryRun` and the manifest report the rows
+  // the loop renders. The index pads to the whole callset, so a `--limit` run
+  // writes the names the full run will and `--resume` finds them.
+  const planned = [
+    ...records.map((rec, idx) => ({
+      rec,
+      file: outputName(rec, idx, records.length, format),
+    })),
+    ...events.map((rec, idx) => ({
+      rec,
+      file: eventOutputName(rec, idx, events.length, format),
+    })),
+  ]
+    .slice(0, limit)
+    .map(row => ({ ...row, locs: recordLocs(row.rec, flank) }))
+  if (planned.length === 0) {
     // Which of the two emptied it: the file having nothing usable in it is a
     // different problem from `--limit 0`, and blaming the file for the flag sends
     // a reader to re-check their callset.
     throw new Error(
       records.length
-        ? `--limit ${limit} selected none of the ${records.length} junctions in ${source}`
-        : `no usable junctions in ${source}`,
+        ? `--limit ${limit} selected none of the ${records.length} records in ${source}`
+        : `no usable records in ${source}`,
     )
   }
-
-  // Name and locate every record up front, so `--dryRun` and the manifest report
-  // the same rows the loop renders rather than a second derivation of them.
-  const planned = selected.map((rec, idx) => ({
-    rec,
-    file: outputName(rec, idx, selected.length, format),
-    locs: recordLocs(rec, flank),
-  }))
 
   if (dryRun) {
     for (const { file, locs } of planned) {
@@ -211,23 +232,34 @@ export async function runBatch(opts: BatchOpts) {
   return { done, failures, skipped }
 }
 
-// A run's own index, so the directory is reviewable as the contact sheet the
-// workflow calls it: which file is which junction, under the caller's own name,
+// A run's own index: which file is which record, under the caller's own name,
 // and which rows produced no image at all. Failures otherwise exist only in the
 // stderr of a run that has already scrolled past, and pairing a tumor directory
-// against a normal one rests on both having produced identical row orders —
-// true, until a --limit or a --passOnly differs between them.
+// against a normal one rests on both having produced identical row orders,
+// true until a --limit or a --passOnly differs between them.
+//
+// `line` is the record's line in the input, the key that joins a row back to
+// every column the file holds. `locs` is one locus per panel, space separated.
+// An event's row has no line and its label as both name and event, so filtering
+// on `event` lists the event's image above its records'.
 function writeManifest(
   outDir: string,
-  planned: { rec: { name?: string }; file: string; locs: string[] }[],
+  planned: { rec: BatchRecord; file: string; locs: string[] }[],
   // index-aligned with `planned`: the loop pushes exactly one per record
   status: RecordStatus[],
 ) {
   const rows = planned.map(({ rec, file, locs }, i) =>
-    [file, locs[0], locs[1] ?? '', rec.name ?? '', status[i]].join('\t'),
+    [
+      file,
+      locs.join(' '),
+      rec.name ?? '',
+      rec.line ?? '',
+      rec.event ?? '',
+      status[i],
+    ].join('\t'),
   )
   fs.writeFileSync(
     path.join(outDir, 'manifest.tsv'),
-    `${['file', 'loc1', 'loc2', 'name', 'status'].join('\t')}\n${rows.join('\n')}\n`,
+    `${['file', 'locs', 'name', 'line', 'event', 'status'].join('\t')}\n${rows.join('\n')}\n`,
   )
 }
