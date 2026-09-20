@@ -261,8 +261,17 @@ chain holding a single 94,204 bp deletion, the step minimap2 measures as
 94,138 bp. NA18608#2 against HG00232#1 comes out as 26 records on both strands,
 because the graph folds the amylase paralogs onto shared nodes. The reader's own
 `--cigar` compares no bases (the stretch between two shared nodes becomes an
-`M`), and the converter pairs private stretches as `X` without comparing them
-either, which wrote one 75,004 bp `X` run for NA18608#2 against HG00133#1.
+`M`), and the converter's default pairs private stretches as `X` without
+comparing them, which wrote one 75,004 bp `X` run for NA18608#2 against
+HG00133#1 and 25,521 `X` columns whose bases are equal. `--compare-bases` keeps
+the node sequences and aligns each private stretch, and an oracle that rebuilds
+both walks from the S lines then finds every `=` column equal and every `X`
+column different over 588,074 + 310 columns at C4, reverse-strand records
+included. `scripts/build_graph_haplotype_stack.sh` wraps the two steps into a
+stacked LinearSyntenyView config in 14 s; `test_data/hprc_c4_stack` and the
+figure `multiway_synteny/hprc_c4_graph_stack` are its C4 run, where two
+three-module haplotypes align straight through the 32,738 bp module GRCh38
+lacks.
 
 **This run is the v2.0 GFA, and the hosted files are not.** The script's default
 `GFA_URL` is release 2.1's `hprc-v2.1-mc-grch38.gfa.gz` and the published

@@ -24,6 +24,7 @@ const PAA_COLOR_DOMAIN = { start: 1445000, end: 1474500 }
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
+const C4_STACK_CONFIG = 'test_data/hprc_c4_stack/config.json'
 const SYRI_CONFIG = 'test_data/syri/config.json'
 const AMYLASE_HG38 = 'chr1:103,520,894-103,832,637'
 
@@ -1878,6 +1879,87 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 240000,
     viewportHeight: 1400,
+  },
+
+  // Five haplotypes across C4, each aligned to the row under it off the HPRC
+  // graph's own walks (scripts/build_graph_haplotype_stack.sh).
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hprc_c4_graph_stack',
+    url: sessionSpec(C4_STACK_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              assembly: 'HG01978.2',
+              loc: 'CM089273.1:31,872,045-32,055,037',
+              tracks: ['hprc_genes_HG01978_2'],
+            },
+            {
+              assembly: 'HG02004.2',
+              loc: 'JBHDRU010000054.1:31,876,435-32,059,471',
+              tracks: ['hprc_genes_HG02004_2'],
+            },
+            {
+              assembly: 'hg38',
+              loc: 'chr6:31,939,722-32,090,034',
+              tracks: ['hg38_ncbiRefSeq_ucsc'],
+            },
+            {
+              assembly: 'HG02818.1',
+              loc: 'JAHEOS020000050.1:31,980,558-32,124,509',
+              tracks: ['hprc_genes_HG02818_1'],
+            },
+            {
+              assembly: 'HG00146.1',
+              loc: 'CM090015.1:31,912,959-32,024,178',
+              tracks: ['hprc_genes_HG00146_1'],
+            },
+          ],
+          tracks: [
+            ['graph_adjacent'],
+            ['graph_adjacent'],
+            ['graph_adjacent'],
+            ['graph_adjacent'],
+          ],
+          colorBy: { field: 'strand' },
+          drawCurves: true,
+          levelHeights: [110, 110, 110, 110],
+        },
+      ],
+    }),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 240000,
+    viewportHeight: 1400,
+  },
+
+  // The same alignments at base level, in HG02004.2's own view, inside the
+  // module GRCh38 lacks.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hprc_c4_graph_bases',
+    url: sessionSpec(C4_STACK_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'HG02004.2',
+          loc: 'JBHDRU010000054.1:31,942,330-31,942,580',
+          tracks: [
+            {
+              trackId: 'graph_adjacent',
+              type: 'LGVSyntenyDisplay',
+              facet: 'mateAssembly',
+              featureHeight: 14,
+              height: 160,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'Each haplotype against the next',
+    readyTimeout: 120000,
+    viewportHeight: 230,
   },
 
   // SyRI's typed regions between two Arabidopsis accessions

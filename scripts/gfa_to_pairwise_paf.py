@@ -60,8 +60,9 @@ was compared: the private runs are not realigned.
 contig's length is the largest W `end` seen for it (a P path's is its walk
 length), which is the true length when the last piece reaches the contig's
 end and short otherwise; --contig-lengths <chrom.sizes or .fai> supplies exact
-lengths instead, keyed by contig or by `sample#hap#contig` (the first two
-columns are read, so an assembly's .fai works as is). Records are written once
+lengths instead, the reference's included, keyed by contig or by
+`sample#hap#contig` (the first two columns are read, so an assembly's .fai
+works as is). Records are written once
 the input ends, since the length sits in column 2 of every row.
 
 stderr gets a line per reference walk as it is indexed (progress, on a file
@@ -534,14 +535,16 @@ class Converter:
                 qname = f'{query.name}#{contig}'.encode()
                 qlen = contig_lengths.get(qname, contig_lengths.get(contig.encode(), query.contig_lengths[contig]))
                 for qstart, qend, flipped, ref_contig, tstart, tend, matches, columns, cigar in rows:
+                    tname = f'{self.reference_name}#{ref_contig}'.encode()
+                    tlen = contig_lengths.get(tname, contig_lengths.get(ref_contig.encode(), self.reference.lengths[ref_contig]))
                     out.write(b'\t'.join([
                         qname,
                         b'%d' % qlen,
                         b'%d' % qstart,
                         b'%d' % qend,
                         b'-' if flipped else b'+',
-                        f'{self.reference_name}#{ref_contig}'.encode(),
-                        b'%d' % self.reference.lengths[ref_contig],
+                        tname,
+                        b'%d' % tlen,
                         b'%d' % tstart,
                         b'%d' % tend,
                         b'%d' % matches,

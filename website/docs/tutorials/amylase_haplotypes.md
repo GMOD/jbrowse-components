@@ -325,6 +325,120 @@ minimap2 -c --eqx -x asm20 -N 50 -p 0.5 HG00232.1.fa genes.fa |
 
 GRCh38 comes back with the three _AMY1_ copies it is annotated with.
 
+## Pair alignments read off the graph {#read-off-the-graph}
+
+The HPRC graph already aligns every haplotype to every other: two walks through
+one node carry the same bases. At a locus the graph resolves, a stack needs no
+FASTA and no aligner. The complement _C4_ locus is one. A haplotype carries one
+to four copies of a 32.7 kb module, and the _C4_ gene in each copy is long or
+short by a 6.4 kb HERV-K insertion (Sekar et al. 2016).
+
+One request reads the window out of the graph database as GFA, with a walk for
+each row on that haplotype's own coordinates:
+
+```bash
+GBZ_DB=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
+GBZ_INDEX=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
+# --format gfa writes the window's nodes with their sequences, and the walks
+# --keep names a haplotype whose walk the GFA carries, beside GRCh38's
+npx --yes -p @gmod/gbz-base gbz-base-query $GBZ_DB --haplotype-index $GBZ_INDEX \
+  --sample GRCh38 --contig chr6 --interval 31940000..32090000 --context 0 \
+  --format gfa --keep 'HG01978#2' --keep 'HG02004#2' --keep 'HG02818#1' \
+  --keep 'HG00146#1' > window.gfa
+```
+
+[`gfa_to_pairwise_paf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_to_pairwise_paf.py)
+then writes each row against the row under it, and any walk can be the
+`--reference`:
+
+```bash
+# a node both walks visit becomes a run of =
+# --compare-bases aligns what lies between two shared nodes base by base
+# --max-gap keeps a module-sized insertion inside one record, where the view
+#   draws it from the CIGAR
+# --hold-queries reads the whole file before aligning, since the reference
+#   walk can come after the query's
+python3 gfa_to_pairwise_paf.py window.gfa --reference 'HG02004#2' \
+  --queries 'HG01978#2' --hold-queries --compare-bases --max-gap 200000 \
+  --contig-lengths contig_lengths.tsv >> adjacent.paf
+```
+
+The rows are two haplotypes with three modules, GRCh38 with two, HG02818.1 with
+two and a short _C4B_, and HG00146.1 with one:
+
+```json session config=test_data/hprc_c4_stack/config.json
+{
+  "defaultSession": {
+    "name": "C4 haplotypes, each against the next, from the graph",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "views": [
+          {
+            "assembly": "HG01978.2",
+            "loc": "CM089273.1:31,872,045-32,055,037",
+            "tracks": ["hprc_genes_HG01978_2"]
+          },
+          {
+            "assembly": "HG02004.2",
+            "loc": "JBHDRU010000054.1:31,876,435-32,059,471",
+            "tracks": ["hprc_genes_HG02004_2"]
+          },
+          {
+            "assembly": "hg38",
+            "loc": "chr6:31,939,722-32,090,034",
+            "tracks": ["hg38_ncbiRefSeq_ucsc"]
+          },
+          {
+            "assembly": "HG02818.1",
+            "loc": "JAHEOS020000050.1:31,980,558-32,124,509",
+            "tracks": ["hprc_genes_HG02818_1"]
+          },
+          {
+            "assembly": "HG00146.1",
+            "loc": "CM090015.1:31,912,959-32,024,178",
+            "tracks": ["hprc_genes_HG00146_1"]
+          }
+        ],
+        "tracks": [
+          ["graph_adjacent"],
+          ["graph_adjacent"],
+          ["graph_adjacent"],
+          ["graph_adjacent"]
+        ],
+        "colorBy": { "field": "strand" },
+        "drawCurves": true,
+        "levelHeights": [110, 110, 110, 110]
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="Five haplotypes across C4, each with its own gene track and each aligned to the row under it off the graph's walks. The two three-module rows at the top align straight through. Below them the wedges are the module GRCh38 lacks, the HERV-K insertion inside GRCh38's C4B, and, in two pieces, the module the one-module row lacks." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
+
+The top band runs through a module GRCh38 does not have. Open the same track in
+HG02004.2's own view at `JBHDRU010000054.1:31,942,330-31,942,580`, inside that
+module, where a synteny track draws each aligned haplotype as a row:
+
+<Figure caption="The synteny track in HG02004.2's own view, inside the module GRCh38 lacks. The HG01978.2 row marks each substituted base, an insertion and a deletion; the hg38 row is one deletion across the whole window." src="/img/multiway_synteny/hprc_c4_graph_bases.png" />
+
+The [check above](#check-it-against-the-paf) on `adjacent.paf` prints the module
+as one 32,738 bp insertion and the HERV-K as 6,367 bp. The last record holds the
+same module as a short one and its HERV-K, 26,370 and 6,368 bp.
+
+At the amylase locus the graph folds the paralogous copies onto shared nodes,
+and the walks of NA18608.2 and HG00232.1 come out as short records on both
+strands, so that stack takes its alignments from minimap2.
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_graph_haplotype_stack.sh
+# REGION is on GRCh38; ROWS is the stack from the top, GRCh38#0 for the reference
+REGION=chr6:31940000-32090000 \
+  ROWS='HG01978#2 HG02004#2 GRCh38#0 HG02818#1 HG00146#1' \
+  bash build_graph_haplotype_stack.sh
+```
+
 ## Reproduce it end to end
 
 The script reads the two windows from the graph database, fetches the five
@@ -350,6 +464,8 @@ bash build_amylase_haplotypes.sh
 
 ## References
 
+- Sekar A, et al. Schizophrenia risk from complex variation of complement
+  component 4. Nature (2016). https://doi.org/10.1038/nature16549
 - Yilmaz F, et al. Reconstruction of the human amylase locus reveals ancient
   duplications seeding modern-day variation. Science (2024).
   https://doi.org/10.1126/science.adn0609

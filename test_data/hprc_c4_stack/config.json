@@ -1,0 +1,140 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+      "refNameAliases": {
+        "uri": "https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      }
+    },
+    {
+      "name": "HG01978.2",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG01978.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "https://jbrowse.org/pangenome/hprc-grch38/HG01978.2.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "HG02004.2",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG02004.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "https://jbrowse.org/pangenome/hprc-grch38/HG02004.2.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "HG02818.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG02818.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "https://jbrowse.org/pangenome/hprc-grch38/HG02818.1.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "HG00146.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG00146.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "https://jbrowse.org/pangenome/hprc-grch38/HG00146.1.chrom.sizes"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (hg38)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_genes_HG01978_2",
+      "name": "HG01978.2 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01978.2"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/pangenome/hprc-grch38/genes/HG01978.2.genes.bed.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_genes_HG02004_2",
+      "name": "HG02004.2 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG02004.2"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/pangenome/hprc-grch38/genes/HG02004.2.genes.bed.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_genes_HG02818_1",
+      "name": "HG02818.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG02818.1"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/pangenome/hprc-grch38/genes/HG02818.1.genes.bed.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_genes_HG00146_1",
+      "name": "HG00146.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00146.1"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/pangenome/hprc-grch38/genes/HG00146.1.genes.bed.gz"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "graph_adjacent",
+      "name": "Each haplotype against the next, read off the HPRC graph",
+      "assemblyNames": [
+        "HG01978.2",
+        "HG02004.2",
+        "hg38",
+        "HG02818.1",
+        "HG00146.1"
+      ],
+      "adapter": {
+        "type": "MultiGenomePAFAdapter",
+        "uri": "adjacent.paf",
+        "assemblyNames": [
+          "HG01978.2",
+          "HG02004.2",
+          "hg38",
+          "HG02818.1",
+          "HG00146.1"
+        ],
+        "assemblyNameToPanSN": {
+          "HG01978.2": "HG01978#2",
+          "HG02004.2": "HG02004#2",
+          "hg38": "GRCh38#0",
+          "HG02818.1": "HG02818#1",
+          "HG00146.1": "HG00146#1"
+        }
+      }
+    }
+  ]
+}
