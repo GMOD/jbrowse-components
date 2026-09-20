@@ -714,6 +714,17 @@ every comparison against it declines.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
 
+### PileupStep
+
+Assign every feature the lowest row on which it overlaps nothing already there —
+greedy first fit in start order, the packing a pileup is — and write it to the
+field `as` (`row`). `fields` names the interval read (`start`, `end`); `padding`
+is bp of clearance kept between two features sharing a row. The answer is the
+input in start order, so a `span` encoding `row` stacks it. Under a facet it
+packs each section on its own.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ### preProcessConfigSnapshot
 
 A snapshot as `type` admits it: the same lift and checks `type.create` applies,
@@ -956,17 +967,6 @@ carries its own draw rect beside the stack.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
-
-### StackStep
-
-Assign every feature the lowest row on which it overlaps nothing already there —
-greedy first fit in start order, the packing a pileup is — and write it to the
-field `as` (`row`). `fields` names the interval read (`start`, `end`); `padding`
-is bp of clearance kept between two features sharing a row. The answer is the
-input in start order, so a `span` encoding `row` stacks it. Under a facet it
-packs each section on its own.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### stopsFromRampLut
 

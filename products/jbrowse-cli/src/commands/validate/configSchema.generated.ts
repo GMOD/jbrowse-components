@@ -7499,7 +7499,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": ""
         },
         "row": {
-          "description": "band field; empty follows a stack step.",
+          "description": "band field; empty follows a pileup step.",
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
@@ -7558,7 +7558,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "type": {
-          "description": "filter, formula, bin, aggregate, coverage, flatten or stack.",
+          "description": "filter, formula, bin, aggregate, coverage, flatten or pileup.",
           "anyOf": [
             {
               "enum": [
@@ -7568,7 +7568,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "aggregate",
                 "coverage",
                 "flatten",
-                "stack"
+                "pileup"
               ]
             },
             {
@@ -7611,7 +7611,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "fields": {
-          "description": "a stack's [start, end] fields.",
+          "description": "a pileup's [start, end] fields.",
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "padding": {

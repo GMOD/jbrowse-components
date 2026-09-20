@@ -2717,8 +2717,8 @@
       "names": [
         "DEFAULT_BIN_AS",
         "DEFAULT_COVERAGE_AS",
-        "DEFAULT_STACK_AS",
-        "DEFAULT_STACK_FIELDS",
+        "DEFAULT_PILEUP_AS",
+        "DEFAULT_PILEUP_FIELDS",
         "FACET_ROW",
         "aggregateFieldName",
         "facetLayers",
