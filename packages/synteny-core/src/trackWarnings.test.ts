@@ -19,10 +19,12 @@ const Display = types.model('Display', {
 })
 
 function display(name: string, warnings: ComparativeWarning[]): WarningSource {
+  // The fixture schema declares only `name`, the one slot `collectTrackWarnings`
+  // reads; `WarningSource` asks for a whole `BaseTrackConfig`.
   return Display.create({
     parentTrack: { configuration: { name } },
     warnings,
-  })
+  }) as unknown as WarningSource
 }
 
 const swapped: ComparativeWarning = {

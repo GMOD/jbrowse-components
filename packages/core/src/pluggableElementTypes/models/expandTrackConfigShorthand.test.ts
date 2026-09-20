@@ -6,6 +6,8 @@ import {
   mergeOverridesIntoDisplays,
 } from './expandTrackConfigShorthand.ts'
 
+import type { AnyConfigurationSchemaType } from '../../configuration/index.ts'
+
 const ScaledColor = ConfigurationSchema(
   'ScaledColor',
   {
@@ -21,7 +23,7 @@ const ScaledColor = ConfigurationSchema(
 // Three displays of one track: two declare `color`, one as a plain colour
 // slot and one as an object with a scale, and the third names its colour
 // `strokeColor`.
-const displaySchemas = new Map([
+const displaySchemas = new Map<string, AnyConfigurationSchemaType>([
   [
     'LinearBasicDisplay',
     ConfigurationSchema('LinearBasicDisplay', {

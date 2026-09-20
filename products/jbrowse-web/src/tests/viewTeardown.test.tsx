@@ -28,6 +28,7 @@ import {
 
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -309,7 +310,7 @@ test('a view-local track config goes out with the view', async () => {
   // is what says a real view-local track reaches that predicate at all.
   const menu = flatten(
     session.getTrackActionMenuItems({
-      config: configuration,
+      config: configuration as BaseTrackConfig,
       view: synteny.views[1],
     }),
   )

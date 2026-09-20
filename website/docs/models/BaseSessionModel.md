@@ -45,7 +45,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-configuration">**configuration**</span><br><code>Instance&lt;JB_CONFIG_SCHEMA&gt;</code> |  | BaseSessionModel |
 | <span id="getter-adminmode">**adminMode**</span><br><code>boolean</code> |  | BaseSessionModel |
 | <span id="getter-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  | BaseSessionModel |
-| <span id="getter-assemblies">**assemblies**</span><br><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;)[]</code> |  | BaseSessionModel |
+| <span id="getter-assemblies">**assemblies**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ConfigNodeType&lt;…&gt; &amp; ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTr…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ConfigNodeType&lt;…&gt; &amp; ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;)[]</code></pre></dialog></span> |  | BaseSessionModel |
 | <span id="getter-dialogcomponent">**DialogComponent**</span><br><code>DialogComponentType</code> |  | BaseSessionModel |
 | <span id="getter-dialogprops">**DialogProps**</span><br><code>Record&lt;string, unknown&gt;</code> |  | BaseSessionModel |
 | <span id="getter-animationmode">**animationMode**</span><br><code>AnimationMode</code> | resolved feature-layout animation mode (never undefined) | BaseSessionModel |

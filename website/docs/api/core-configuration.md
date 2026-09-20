@@ -53,7 +53,7 @@ returns the pristine mirror beside it. The two have the same content;
 
 ```js
 // type signature
-(pluginManager: PluginManager, config: Record<string, unknown>) => (ModelInstanceTypeProps<Record<string, any>> & { ...; } & IStateTreeNode<...>) | undefined
+(pluginManager: PluginManager, config: Record<string, unknown>) => (ConfigNodeType<any> & ModelInstanceTypeProps<Record<string, any>> & { ...; } & IStateTreeNode<...>) | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)
