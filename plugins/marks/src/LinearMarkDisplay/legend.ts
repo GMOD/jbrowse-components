@@ -96,13 +96,10 @@ function union(current: ScaleTable, next: ScaleTable) {
       // and the painting cannot disagree across a pan. A pinned one already
       // agrees.
       if (next.kind === 'ramp' && !current.pinned && !next.pinned) {
-        Object.assign(
-          current,
-          rampOverExtent(current, [
-            Math.min(current.extent[0], next.extent[0]),
-            Math.max(current.extent[1], next.extent[1]),
-          ]),
-        )
+        current.extent = [
+          Math.min(current.extent[0], next.extent[0]),
+          Math.max(current.extent[1], next.extent[1]),
+        ]
       }
       break
   }
@@ -173,6 +170,12 @@ export function buildMarkLegend(
         }
       }
     })
+  }
+  for (const section of sections.values()) {
+    const { scale } = section
+    if (scale.kind === 'ramp' && !scale.pinned) {
+      section.scale = rampOverExtent(scale, scale.extent)
+    }
   }
   return [...sections.values()].sort(
     (a, b) =>

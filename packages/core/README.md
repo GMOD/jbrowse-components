@@ -722,6 +722,10 @@ again where a `domainMid` places its middle stop by that domain. Each region
 baked its own, so keeping the first region's put the middle colour at a value
 none of them declared.
 
+One table per stop list and middle position, so a display asking again over an
+extent that has not moved gets the bytes it already uploaded: a backend
+re-uploads a ramp on identity.
+
 ```js
 // type signature
 (table: {…}, extent: [...]) => { ...; }

@@ -160,3 +160,17 @@ test('an unpinned diverging ramp unioned over two regions keeps its middle stop 
   const valueAtWhite = min + (whitest / (entries - 1)) * (max - min)
   expect(Math.abs(valueAtWhite)).toBeLessThan((max - min) / entries)
 })
+
+// A backend re-uploads a ramp on identity, and the key is rebuilt whenever a
+// region lands.
+test('a key rebuilt over an extent that has not moved hands back the table it baked', () => {
+  const regions = [divergingRegion([-0.2, 0.2]), divergingRegion([-0.1, 3])]
+  const lutOf = (loaded: MarkRegionData[]) => {
+    const { scale } = buildMarkLegend(loaded)[0]!
+    return scale.kind === 'ramp' ? scale.lut : undefined
+  }
+  const first = lutOf(regions)
+  expect(first).toBeDefined()
+  expect(lutOf(regions)).toBe(first)
+  expect(lutOf([...regions, divergingRegion([-1, 0.5])])).not.toBe(first)
+})

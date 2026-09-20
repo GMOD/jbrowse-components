@@ -145,6 +145,31 @@ test('a bin reads back as the bin the steps made', async () => {
   ])
 })
 
+test('only the layer asked about runs its steps, and answers as it did beside the others', async () => {
+  const stacked = {
+    encoding: { row: 'row' },
+    lanes: ['row' as const],
+    transform: [{ type: 'stack' as const }],
+  }
+  const throwing = {
+    encoding: { y: 'sum' },
+    lanes: ['y' as const],
+    transform: [{ type: 'aggregate' as const, ops: [{ op: 'sum' as const }] }],
+  }
+  const details = new CoreGetEncodedFeature(pluginManager)
+  const names = await Promise.all(
+    [0, 1, 2].map(async featureIndex => {
+      const feature = await details.invoke({
+        ...request({ facet: { field: 'HP' }, layers: [stacked, throwing] }),
+        layer: 0,
+        featureIndex,
+      })
+      return feature?.name
+    }),
+  )
+  expect(names).toEqual(['r1', 'r2', 'r3'])
+})
+
 test('an index past the layer answers nothing', async () => {
   const details = new CoreGetEncodedFeature(pluginManager)
   expect(

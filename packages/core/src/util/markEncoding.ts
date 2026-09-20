@@ -505,24 +505,32 @@ export function encodeFeatures<L extends LaneName>(
   return encoded as Encoded<L>
 }
 
+function rampMid(
+  scale: 'linear' | 'log',
+  domain: [number, number],
+  domainMid: number | undefined,
+) {
+  return domainMid === undefined
+    ? 0.5
+    : makeScoreNormalizer(
+        domain[0],
+        domain[1],
+        scaleTypeCode(scale),
+        1,
+      )(domainMid)
+}
+
 function rampLut(
   stops: readonly ColorRampStop[],
   scale: 'linear' | 'log',
   domain: [number, number],
   domainMid: number | undefined,
 ) {
-  return buildColorRampLut(
-    stops,
-    domainMid === undefined
-      ? 0.5
-      : makeScoreNormalizer(
-          domain[0],
-          domain[1],
-          scaleTypeCode(scale),
-          1,
-        )(domainMid),
-  )
+  return buildColorRampLut(stops, rampMid(scale, domain, domainMid))
 }
+
+const MAX_BAKED_RAMPS = 16
+const bakedRamps = new Map<string, Uint8Array>()
 
 /**
  * #api
@@ -531,19 +539,30 @@ function rampLut(
  * baked again where a `domainMid` places its middle stop by that domain. Each
  * region baked its own, so keeping the first region's put the middle colour
  * at a value none of them declared.
+ *
+ * One table per stop list and middle position, so a display asking again over
+ * an extent that has not moved gets the bytes it already uploaded: a backend
+ * re-uploads a ramp on identity.
  */
 export function rampOverExtent(
   table: Extract<ColorScaleTable, { kind: 'ramp' }>,
   extent: [number, number],
 ): Extract<ColorScaleTable, { kind: 'ramp' }> {
-  return {
-    ...table,
-    extent,
-    domain: extent,
-    lut: table.stops
-      ? rampLut(table.stops, table.scale, extent, table.domainMid)
-      : table.lut,
+  const { stops } = table
+  if (!stops) {
+    return { ...table, extent, domain: extent }
   }
+  const mid = rampMid(table.scale, extent, table.domainMid)
+  const key = `${mid}|${stops.join(';')}`
+  let lut = bakedRamps.get(key)
+  if (!lut) {
+    if (bakedRamps.size >= MAX_BAKED_RAMPS) {
+      bakedRamps.delete(bakedRamps.keys().next().value!)
+    }
+    lut = buildColorRampLut(stops, mid)
+    bakedRamps.set(key, lut)
+  }
+  return { ...table, extent, domain: extent, lut }
 }
 
 function keysAreNumeric(entries: readonly { value: string }[]) {
