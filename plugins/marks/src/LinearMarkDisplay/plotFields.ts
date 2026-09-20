@@ -1,3 +1,5 @@
+import { deepEqual } from '@jbrowse/core/util/deepEqual'
+
 import { markColorScale } from './configSchema.ts'
 
 import type { MarkColorScale } from './configSchema.ts'
@@ -83,18 +85,15 @@ export function scanPlotFields(features: Feature[]): PlotFields {
 export const MARK_SHAPE_CHOICES = ['bar', 'point'] as const
 export type PlotShape = (typeof MARK_SHAPE_CHOICES)[number]
 
-/**
- * What the declared colour carries beside its field. Kept on the spec and
- * keyed by the field it came from, so reopening the dialog and saving writes
- * the same colour back, and picking another field starts from neither.
- */
-export interface PlotColorScale {
-  field: string
-  scale: MarkColorScale | undefined
-  domain: string[]
-  palette: string[]
-  ramp: string[]
-}
+/** A mark's `encoding.color` as a config snapshot holds it. */
+type ColorSnapshot =
+  | string
+  | {
+      field?: string
+      scale?: MarkColorScale
+      ramp?: readonly string[]
+      [member: string]: unknown
+    }
 
 /** What the Plot field dialog asks for, and what the marks are built from. */
 export interface PlotSpec {
@@ -102,7 +101,12 @@ export interface PlotSpec {
   shape: PlotShape
   colorField: string
   binned: boolean
-  colorScale?: PlotColorScale
+  /**
+   * The declared colour as written and the field it paints. A save that leaves
+   * the colour field alone writes it back whole, and picking another field
+   * starts from none of it.
+   */
+  declaredColor?: { field: string; color: ColorSnapshot }
 }
 
 export const EMPTY_PLOT_SPEC: PlotSpec = {
@@ -112,29 +116,29 @@ export const EMPTY_PLOT_SPEC: PlotSpec = {
   binned: false,
 }
 
-interface MarkSnapshot {
-  shape: string
-  encoding: Record<string, unknown>
+/** One `marks` entry as a config snapshot holds it, defaults left off. */
+export interface MarkSnapshot {
+  shape?: string
+  encoding?: { y?: string; color?: ColorSnapshot; [channel: string]: unknown }
   transform?: Record<string, unknown>[]
   minBpPerPx?: number
   maxBpPerPx?: number
+  [slot: string]: unknown
 }
 
-function colorEncoding(spec: PlotSpec, fields: PlotFields) {
-  const { colorField, colorScale } = spec
-  if (colorField === '') {
-    return undefined
+function colorEncoding(
+  { colorField, declaredColor }: PlotSpec,
+  fields: PlotFields,
+): ColorSnapshot | undefined {
+  if (declaredColor?.field === colorField) {
+    return declaredColor.color
   }
-  const kept = colorScale?.field === colorField ? colorScale : undefined
-  return {
-    field: colorField,
-    scale:
-      kept?.scale ??
-      (fields.numeric.includes(colorField) ? 'linear' : 'categorical'),
-    ...(kept?.domain.length ? { domain: kept.domain } : {}),
-    ...(kept?.palette.length ? { palette: kept.palette } : {}),
-    ...(kept?.ramp.length ? { ramp: kept.ramp } : {}),
-  }
+  return colorField === ''
+    ? undefined
+    : {
+        field: colorField,
+        scale: fields.numeric.includes(colorField) ? 'linear' : 'categorical',
+      }
 }
 
 /** The `marks` a spec writes: the plot itself, and a binned count beside it. */
@@ -142,7 +146,7 @@ export function plotMarks(spec: PlotSpec, fields: PlotFields): MarkSnapshot[] {
   const color = colorEncoding(spec, fields)
   const plot: MarkSnapshot = {
     shape: spec.shape,
-    encoding: { y: spec.field, ...(color ? { color } : {}) },
+    encoding: { y: spec.field, ...(color === undefined ? {} : { color }) },
     ...(spec.binned ? { maxBpPerPx: BINNED_BP_PER_PX } : {}),
   }
   return spec.binned
@@ -179,54 +183,49 @@ export function defaultPlotMarks(fields: PlotFields) {
     : undefined
 }
 
-interface MarkLike {
-  shape: string
-  encoding: {
-    y: string
-    color: {
-      field: string
-      scale: MarkColorScale | undefined
-      domain: readonly string[]
-      palette: readonly string[]
-      ramp: readonly string[]
-    }
+const NO_FIELDS: PlotFields = { numeric: [], categorical: [] }
+
+function paintedField(color: ColorSnapshot | undefined) {
+  if (typeof color !== 'object') {
+    return ''
   }
-  transform: { type: string }[]
+  const { field = '', scale, ramp = [] } = color
+  return markColorScale({ field, scale, ramp }) === 'none' ? '' : field
+}
+
+function isPlotShape(shape: string): shape is PlotShape {
+  return (MARK_SHAPE_CHOICES as readonly string[]).includes(shape)
 }
 
 /**
- * The spec a declared `marks` reopens the dialog on, or nothing where the
- * config says more than the dialog can: a span, a third mark, a transform on
- * the plot itself.
+ * The spec a declared `marks` reopens the dialog on, or nothing where a save
+ * would not be the round trip it looks like: the marks the spec writes back,
+ * through `canonical` (the config schema's own snapshot of a list), have to be
+ * the marks declared. So a channel, a step, a zoom range or a slot added after
+ * this was written counts as more than the dialog can read without being
+ * listed here.
  */
-export function specOfMarks(marks: readonly MarkLike[]): PlotSpec | undefined {
-  const [plot, second, ...rest] = marks
-  if (
-    !plot ||
-    rest.length > 0 ||
-    plot.transform.length > 0 ||
-    !(MARK_SHAPE_CHOICES as readonly string[]).includes(plot.shape) ||
-    (second && !second.transform.some(s => s.type === 'bin'))
-  ) {
+export function specOfMarks(
+  declared: readonly MarkSnapshot[],
+  canonical: (marks: readonly MarkSnapshot[]) => unknown,
+): PlotSpec | undefined {
+  const [plot, second] = declared
+  const shape = plot?.shape ?? 'bar'
+  if (!plot || !isPlotShape(shape)) {
     return undefined
   }
-  const { color } = plot.encoding
-  const colorField = markColorScale(color) === 'none' ? '' : color.field
-  return {
-    field: plot.encoding.y,
-    shape: plot.shape as PlotShape,
+  const color = plot.encoding?.color
+  const colorField = paintedField(color)
+  const spec: PlotSpec = {
+    field: plot.encoding?.y ?? '',
+    shape,
     colorField,
     binned: second !== undefined,
-    ...(colorField
-      ? {
-          colorScale: {
-            field: colorField,
-            scale: color.scale,
-            domain: [...color.domain],
-            palette: [...color.palette],
-            ramp: [...color.ramp],
-          },
-        }
-      : {}),
+    ...(color === undefined
+      ? {}
+      : { declaredColor: { field: colorField, color } }),
   }
+  return deepEqual(canonical(plotMarks(spec, NO_FIELDS)), canonical(declared))
+    ? spec
+    : undefined
 }

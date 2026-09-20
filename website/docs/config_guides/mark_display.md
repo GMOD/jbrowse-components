@@ -360,7 +360,8 @@ Over an `AlignmentsTrack` that is a declared pileup, coloured by any field a
 read answers; the display's `facet` packs each section on rows of its own. A
 mark whose `encoding.row` is empty reads the field its own `stack` wrote, so
 `"encoding": {}` draws the packing. The plot divides into as many bands as the
-highest row needs, so the track grows with the depth on screen.
+highest row needs, so the rows thin as the depth on screen grows and the track
+keeps its height.
 
 The display's `jexlFilters` run before every mark's own steps.
 

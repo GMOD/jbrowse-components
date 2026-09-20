@@ -1,4 +1,4 @@
-import { buildMarkLegend, markColorScales } from './legend.ts'
+import { buildMarkLegend, categoryLabel, markColorScales } from './legend.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { ColorScaleTable } from '@jbrowse/core/util/markEncoding'
@@ -87,4 +87,21 @@ test('two regions of one threshold declaration share a key', () => {
   ])
   expect(sections).toHaveLength(1)
   expect(markColorScales(sections)).toHaveLength(1)
+})
+
+test('a colour two values hashed onto names both of them on hover', () => {
+  const shared: ColorScaleTable = {
+    kind: 'categorical',
+    field: 'biotype',
+    domain: [],
+    entries: [
+      { value: 'lncRNA', color: 0xff111111 },
+      { value: 'snoRNA', color: 0xff111111 },
+      { value: 'tRNA', color: 0xff222222 },
+    ],
+  }
+  expect(categoryLabel(shared, 0xff111111)).toBe('lncRNA, snoRNA')
+  expect(categoryLabel(shared, 0xff222222)).toBe('tRNA')
+  expect(categoryLabel(shared, 0xff333333)).toBeUndefined()
+  expect(categoryLabel(thresholdTable(), 0xff222222)).toBe('0.1 – 0.5')
 })

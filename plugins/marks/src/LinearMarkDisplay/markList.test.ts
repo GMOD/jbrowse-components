@@ -1,6 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
+import { pointInsetPx } from '@jbrowse/render-core/marks'
 import * as barShader from '@jbrowse/render-core/shaders/barMarkIface'
 import * as pointShader from '@jbrowse/render-core/shaders/pointMarkIface'
 import * as spanShader from '@jbrowse/render-core/shaders/spanMarkIface'
@@ -71,6 +72,7 @@ const state: MarkRenderState = {
   origin: 0,
   minWidthPx: 1,
   pointDiameterPx: 4,
+  valueInsetPx: pointInsetPx(4),
   rowCount: 1,
 }
 

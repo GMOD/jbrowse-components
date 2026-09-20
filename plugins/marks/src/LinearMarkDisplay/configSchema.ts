@@ -105,67 +105,71 @@ const markGlyphSchema = ConfigurationSchema(
   },
 )
 
-const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
-  /**
-   * #slot marks.encoding.x
-   * The feature field, or jexl callback over `feature`, giving the mark's
-   * left edge in bp.
-   */
-  x: {
-    type: 'string',
-    defaultValue: 'start',
-    description: 'left edge field',
+const markEncodingSchema = ConfigurationSchema(
+  'MarkEncoding',
+  {
+    /**
+     * #slot marks.encoding.x
+     * The feature field, or jexl callback over `feature`, giving the mark's
+     * left edge in bp.
+     */
+    x: {
+      type: 'string',
+      defaultValue: 'start',
+      description: 'left edge field',
+    },
+    /**
+     * #slot marks.encoding.x2
+     * The feature field, or jexl callback, giving the mark's right edge in bp.
+     */
+    x2: {
+      type: 'string',
+      defaultValue: 'end',
+      description: 'right edge field',
+    },
+    /**
+     * #slot marks.encoding.y
+     * The feature field, or jexl callback over `feature`, plotted on the score
+     * axis. A feature whose value is not a finite number is skipped. Empty for
+     * a mark with no value, such as a span; a bar or point must name one, and
+     * the config is refused where it does not. The scale it is read through is
+     * the display's `scales.y`.
+     */
+    y: {
+      type: 'string',
+      defaultValue: '',
+      description: 'value field, or jexl callback',
+      contextVariable: ['feature'],
+    },
+    /**
+     * #slot marks.encoding.row
+     * The feature field, or jexl callback, naming the band the mark stands in,
+     * an integer from 0; a feature with nothing there sits on band 0. Empty
+     * puts every mark on one band across the whole plot, unless this mark's
+     * own `transform` holds a `stack`, whose output field it then reads.
+     */
+    row: {
+      type: 'string',
+      defaultValue: '',
+      description: 'band field; empty follows a stack step',
+    },
+    /**
+     * #slot marks.encoding.color
+     * The mark's colour: a CSS colour, a jexl callback returning one, or an
+     * object binding a field to a categorical or continuous scale. A scale is
+     * what the legend describes.
+     */
+    color: markColorSchema,
+    /**
+     * #slot marks.encoding.glyph
+     * For a point mark: `disc`, `triangle` or `diamond`, a jexl callback over
+     * `feature` returning one, or an object binding a field to a categorical
+     * scale over those names. A scale is what the legend describes.
+     */
+    glyph: markGlyphSchema,
   },
-  /**
-   * #slot marks.encoding.x2
-   * The feature field, or jexl callback, giving the mark's right edge in bp.
-   */
-  x2: {
-    type: 'string',
-    defaultValue: 'end',
-    description: 'right edge field',
-  },
-  /**
-   * #slot marks.encoding.y
-   * The feature field, or jexl callback over `feature`, plotted on the score
-   * axis. A feature whose value is not a finite number is skipped. Empty for
-   * a mark with no value, such as a span; a bar or point must name one, and
-   * the config is refused where it does not. The scale it is read through is
-   * the display's `scales.y`.
-   */
-  y: {
-    type: 'string',
-    defaultValue: '',
-    description: 'value field, or jexl callback',
-    contextVariable: ['feature'],
-  },
-  /**
-   * #slot marks.encoding.row
-   * The feature field, or jexl callback, naming the band the mark stands in,
-   * an integer from 0; a feature with nothing there sits on band 0. Empty
-   * puts every mark on one band across the whole plot, unless this mark's
-   * own `transform` holds a `stack`, whose output field it then reads.
-   */
-  row: {
-    type: 'string',
-    defaultValue: '',
-    description: 'band field; empty follows a stack step',
-  },
-  /**
-   * #slot marks.encoding.color
-   * The mark's colour: a CSS colour, a jexl callback returning one, or an
-   * object binding a field to a categorical or continuous scale. A scale is
-   * what the legend describes.
-   */
-  color: markColorSchema,
-  /**
-   * #slot marks.encoding.glyph
-   * For a point mark: `disc`, `triangle` or `diamond`, a jexl callback over
-   * `feature` returning one, or an object binding a field to a categorical
-   * scale over those names. A scale is what the legend describes.
-   */
-  glyph: markGlyphSchema,
-})
+  { closed: true },
+)
 
 export const TRANSFORM_TYPES = [
   'filter',
@@ -178,36 +182,40 @@ export const TRANSFORM_TYPES = [
 ] as const
 export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
 
-const aggregateOpSchema = ConfigurationSchema('MarkAggregateOp', {
-  /**
-   * #slot marks.transform.ops.op
-   * `count` needs no field; `sum`, `mean`, `min` and `max` read one.
-   */
-  op: {
-    type: 'stringEnum',
-    model: types.enumeration('MarkAggregateOpName', [...AGGREGATE_OPS]),
-    defaultValue: 'count',
-    description: 'count, sum, mean, min or max',
+const aggregateOpSchema = ConfigurationSchema(
+  'MarkAggregateOp',
+  {
+    /**
+     * #slot marks.transform.ops.op
+     * `count` needs no field; `sum`, `mean`, `min` and `max` read one.
+     */
+    op: {
+      type: 'stringEnum',
+      model: types.enumeration('MarkAggregateOpName', [...AGGREGATE_OPS]),
+      defaultValue: 'count',
+      description: 'count, sum, mean, min or max',
+    },
+    /**
+     * #slot marks.transform.ops.field
+     * The feature field the op reads, for every op but `count`.
+     */
+    field: {
+      type: 'string',
+      defaultValue: '',
+      description: 'field the op reads',
+    },
+    /**
+     * #slot marks.transform.ops.as
+     * The output field. Empty is `count`, or `<op>_<field>`.
+     */
+    as: {
+      type: 'string',
+      defaultValue: '',
+      description: 'output field',
+    },
   },
-  /**
-   * #slot marks.transform.ops.field
-   * The feature field the op reads, for every op but `count`.
-   */
-  field: {
-    type: 'string',
-    defaultValue: '',
-    description: 'field the op reads',
-  },
-  /**
-   * #slot marks.transform.ops.as
-   * The output field. Empty is `count`, or `<op>_<field>`.
-   */
-  as: {
-    type: 'string',
-    defaultValue: '',
-    description: 'output field',
-  },
-})
+  { closed: true },
+)
 
 // `as: 'depth'` on a formula or coverage step is the one name; a bin step's
 // two names are already a list. One array slot holds both spellings.
@@ -337,7 +345,7 @@ const transformStepSchema = ConfigurationSchema(
      */
     ops: types.array(aggregateOpSchema),
   },
-  { preProcessSnapshot: liftAs },
+  { closed: true, preProcessSnapshot: liftAs },
 )
 
 interface MarkSnapshot {
@@ -505,6 +513,7 @@ const markSchema = ConfigurationSchema(
     },
   },
   {
+    closed: true,
     requires: [{ when: { shape: ['bar', 'point'] }, slots: ['encoding.y'] }],
   },
 )

@@ -2,7 +2,6 @@ import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import {
   barMark,
   defineMark,
-  pointInsetPx,
   pointMark,
   spanMark,
 } from '@jbrowse/render-core/marks'
@@ -80,6 +79,8 @@ export interface MarkRenderState extends MarkFrame {
   origin: number
   minWidthPx: number
   pointDiameterPx: number
+  /** The px the y scale stands in from both ends of its band, the axis's own. */
+  valueInsetPx: number
   /** The bands the plot is split into: the facet's, or the highest `row` any loaded layer carries plus one. */
   rowCount: number
 }
@@ -149,7 +150,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
             scaleType: s.scaleTypeY,
             ramp: s.colorRamps[i],
             diameterPx: s.pointDiameterPx,
-            insetPx: pointInsetPx(s.pointDiameterPx),
+            insetPx: s.valueInsetPx,
             rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           }),
           texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,

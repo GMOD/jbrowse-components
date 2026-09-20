@@ -45,7 +45,7 @@ import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
-import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, pointInsetPx } from '@jbrowse/render-core/marks'
 import {
@@ -452,7 +452,23 @@ export function stateModelFactory(
        * are a plot the dialog could have written, else an empty one.
        */
       get plotSpec(): PlotSpec {
-        return specOfMarks(self.conf.marks) ?? EMPTY_PLOT_SPEC
+        return this.declaredPlotSpec ?? EMPTY_PLOT_SPEC
+      },
+      /**
+       * #getter
+       * The declared marks as a spec, where writing that spec back is the
+       * marks declared.
+       */
+      get declaredPlotSpec(): PlotSpec | undefined {
+        return specOfMarks(getSnapshot(self.conf.marks), marks =>
+          getSnapshot(
+            configSchema.create({
+              type: 'LinearMarkDisplay',
+              displayId: 'plotSpec',
+              marks,
+            }).marks,
+          ),
+        )
       },
       /**
        * #getter
@@ -461,8 +477,7 @@ export function stateModelFactory(
        * rather than edit. 0 where a save is the round trip it looks like.
        */
       get plotSpecReplaces(): number {
-        const { marks } = self.conf
-        return specOfMarks(marks) === undefined ? marks.length : 0
+        return this.declaredPlotSpec ? 0 : self.conf.marks.length
       },
       /**
        * #getter
@@ -766,6 +781,20 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * The px the y scale stands in from both ends of its band, one number
+       * for the axis and every shape: glyph room where only points draw, and
+       * none beside a bar, whose top edge is its datum and wants the plot box
+       * itself.
+       */
+      get valueInsetPx(): number {
+        const indices = self.valuedMarkIndices
+        return indices.length > 0 &&
+          indices.every(i => self.markShapes[i] === 'point')
+          ? pointInsetPx(self.scatterPointSize)
+          : 0
+      },
+      /**
+       * #getter
        * The one y scale the chrome draws the axis from — `scales.y` resolved:
        * its type, and its domain autoscaled where it pins nothing. Every
        * mark's shapes read the same pair.
@@ -773,14 +802,7 @@ export function stateModelFactory(
       get valueScales(): ValueScale[] {
         const minimalTicks = getConf(self, 'minimalTicks')
         const height = self.height
-        const indices = self.valuedMarkIndices
-        // A point stands at its centre and needs glyph room at both ends; a
-        // bar's top edge is its datum and wants the plot box itself.
-        const glyphInset =
-          indices.length > 0 &&
-          indices.every(i => self.markShapes[i] === 'point')
-            ? pointInsetPx(self.scatterPointSize)
-            : 0
+        const glyphInset = this.valueInsetPx
         // One band per row where the marks stand in rows, the scale ruling
         // each on its own the way the multi-wiggle display's does; the whole
         // plot box otherwise.
@@ -885,6 +907,7 @@ export function stateModelFactory(
           origin: self.origin,
           minWidthPx: self.minWidthPx,
           pointDiameterPx: self.scatterPointSize,
+          valueInsetPx: this.valueInsetPx,
           rowCount: this.rowCount,
         }))
       },

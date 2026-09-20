@@ -497,6 +497,34 @@ test('a channel the shape does not read is refused where the config is read', ()
   ).not.toThrow()
 })
 
+test('a mistyped key on a mark, a step or an op is refused where the config is read', () => {
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'bar', encoding: { y: 'score' }, transforms: [] },
+    ]).createDisplay(),
+  ).toThrow(/Mark takes .* not transforms/)
+  expect(() =>
+    createTestEnvironment([
+      {
+        shape: 'bar',
+        encoding: { y: 'count' },
+        transform: [{ type: 'aggregate', groupBy: ['type'] }],
+      },
+    ]).createDisplay(),
+  ).toThrow(/MarkTransformStep takes .* not groupBy/)
+  expect(() =>
+    createTestEnvironment([
+      {
+        shape: 'bar',
+        encoding: { y: 'mean_score' },
+        transform: [
+          { type: 'aggregate', ops: [{ op: 'mean', fields: 'score' }] },
+        ],
+      },
+    ]).createDisplay(),
+  ).toThrow(/MarkAggregateOp takes .* not fields/)
+})
+
 // `encodingOf` maps the ramp's domain through `Number`, so an empty entry pins
 // that end to 0 rather than autoscaling it the way `y.domain` does.
 test('a colour ramp domain with an open end is refused where the config is read', () => {
@@ -1236,6 +1264,7 @@ test('a point-only axis is inset by the glyph room the shape draws in', () => {
   const inset = pointInsetPx(display.scatterPointSize)
   expect(inset).toBeGreaterThan(0)
   expect(display.valueScales[0]!.offset).toBe(YSCALEBAR_LABEL_OFFSET + inset)
+  expect(display.renderState.valueInsetPx).toBe(inset)
   const [axis] = display.axes
   expect(axis!.ticks.yTop).toBe(YSCALEBAR_LABEL_OFFSET + inset)
   expect(axis!.ticks.yBottom).toBe(
@@ -1251,6 +1280,8 @@ test('a bar sharing the axis keeps it on the plot box, where a bar top is drawn'
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [3, 8] }, { y: [12, 20] }]), REGION)
   expect(display.valueScales[0]!.offset).toBe(YSCALEBAR_LABEL_OFFSET)
+  // the point reads the same box, so a point and a bar top at one value meet
+  expect(display.renderState.valueInsetPx).toBe(0)
 })
 
 const FACET_MARKS = [

@@ -335,14 +335,21 @@ export function glyphLabel(scale: ScaleTable | undefined, glyph: GlyphName) {
   return values.length > 0 ? values.join(', ') : undefined
 }
 
-/** The interval or category a packed colour names, if its table has one. */
+/**
+ * The intervals or categories a packed colour names, if its table has any. An
+ * instance carries its colour and not its value, so two values hashed onto one
+ * palette entry are both named, as {@link glyphLabel} names a shared glyph.
+ */
 export function categoryLabel(scale: ScaleTable | undefined, color: number) {
-  if (scale?.kind === 'threshold') {
-    return scale.entries.find(e => e.color === color)?.value
-  }
-  if (scale?.kind !== 'categorical') {
+  if (scale?.kind !== 'threshold' && scale?.kind !== 'categorical') {
     return undefined
   }
-  const entry = scale.entries.find(e => e.color === color)
-  return entry && categoricalField(scale.field).label(entry.value)
+  const label =
+    scale.kind === 'categorical'
+      ? categoricalField(scale.field).label
+      : (value: string) => value
+  const values = scale.entries
+    .filter(e => e.color === color)
+    .map(e => label(e.value))
+  return values.length > 0 ? values.join(', ') : undefined
 }

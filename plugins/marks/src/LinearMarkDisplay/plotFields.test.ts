@@ -1,5 +1,7 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
+import { configSchemaFactory } from './configSchema.ts'
 import {
   BINNED_BP_PER_PX,
   defaultPlotMarks,
@@ -8,7 +10,7 @@ import {
   specOfMarks,
 } from './plotFields.ts'
 
-import type { MarkColorScale } from './configSchema.ts'
+import type { MarkSnapshot } from './plotFields.ts'
 
 function features(recs: Record<string, unknown>[]) {
   return recs.map(
@@ -87,7 +89,7 @@ test('a colour field takes a palette or a ramp by what it holds', () => {
     plotMarks(
       { field: 'score', shape: 'bar', colorField: 'depth', binned: false },
       fields,
-    )[0]!.encoding.color,
+    )[0]!.encoding!.color,
   ).toEqual({ field: 'depth', scale: 'linear' })
 })
 
@@ -112,95 +114,94 @@ test('the binned box adds a zoom-following count and hands the axis over', () =>
   })
 })
 
-function markLike(
-  shape: string,
-  y: string,
-  color = '',
-  transform: { type: string }[] = [],
-  colorScale?: MarkColorScale,
-  extras: { domain?: string[]; palette?: string[]; ramp?: string[] } = {},
-) {
-  return {
-    shape,
-    encoding: {
-      y,
-      color: {
-        field: color,
-        scale: colorScale,
-        domain: extras.domain ?? [],
-        palette: extras.palette ?? [],
-        ramp: extras.ramp ?? [],
-      },
-    },
-    transform,
-  }
+const schema = configSchemaFactory()
+
+function canonical(marks: readonly MarkSnapshot[]) {
+  return getSnapshot(
+    schema.create({ type: 'LinearMarkDisplay', displayId: 'test', marks })
+      .marks,
+  )
 }
 
-test('a single-mark config reopens the dialog on what it declared', () => {
-  expect(specOfMarks([markLike('point', 'score', 'repClass')])).toEqual({
-    field: 'score',
-    shape: 'point',
-    colorField: 'repClass',
-    binned: false,
-    colorScale: {
-      field: 'repClass',
-      scale: undefined,
-      domain: [],
-      palette: [],
-      ramp: [],
+function specOf(marks: MarkSnapshot[]) {
+  return specOfMarks(canonical(marks) as MarkSnapshot[], canonical)
+}
+
+const FIELDS = { numeric: ['score', 'depth'], categorical: ['repClass'] }
+
+test('a config the dialog wrote reopens on the spec that wrote it', () => {
+  for (const spec of [
+    { field: 'score', shape: 'point', colorField: 'repClass', binned: false },
+    { field: 'score', shape: 'bar', colorField: 'depth', binned: true },
+    { field: 'score', shape: 'bar', colorField: '', binned: true },
+  ] as const) {
+    expect(specOf(plotMarks(spec, FIELDS))).toMatchObject(spec)
+  }
+})
+
+test('a colour field kept under the none scale reopens as no colour, and a save keeps it', () => {
+  const declared: MarkSnapshot[] = [
+    {
+      shape: 'point',
+      encoding: { y: 'score', color: { field: 'repClass', scale: 'none' } },
     },
-  })
-  expect(
-    specOfMarks([
-      markLike('bar', 'score'),
-      markLike('bar', 'count', '', [{ type: 'bin' }]),
-    ])?.binned,
-  ).toBe(true)
+  ]
+  const spec = specOf(declared)!
+  expect(spec.colorField).toBe('')
+  expect(canonical(plotMarks(spec, FIELDS))).toEqual(canonical(declared))
 })
 
-test('a colour field kept under the none scale reopens as no colour', () => {
-  const spec = specOfMarks([markLike('point', 'score', 'repClass', [], 'none')])
-  expect(spec?.colorField).toBe('')
-  expect(spec?.colorScale).toBeUndefined()
-})
-
-// The dialog offers a field and a shape; the domain, palette and ramp beside
-// them are the config author's, and a save used to drop all three.
+// The dialog offers a field and a shape; every other member of the colour is
+// the config author's, and a save used to drop them one slot at a time.
 test('a reopened colour carries the members the dialog does not ask about', () => {
-  const declared = markLike('bar', 'score', 'depth', [], 'log', {
-    domain: ['1', '1000'],
-    ramp: ['white', 'red'],
-  })
-  const spec = specOfMarks([declared])!
-  expect(
-    plotMarks(spec, { numeric: ['score', 'depth'], categorical: [] })[0]!
-      .encoding.color,
-  ).toEqual({
+  const color = {
     field: 'depth',
-    scale: 'log',
-    domain: ['1', '1000'],
-    ramp: ['white', 'red'],
-  })
-  // another field starts from neither
+    scale: 'linear' as const,
+    domain: ['-2', '6'],
+    ramp: ['blue', 'white', 'red'],
+    domainMid: 0,
+  }
+  const spec = specOf([{ shape: 'bar', encoding: { y: 'score', color } }])!
+  expect(plotMarks(spec, FIELDS)[0]!.encoding!.color).toEqual(color)
   expect(
-    plotMarks(
-      { ...spec, colorField: 'score' },
-      { numeric: ['score', 'depth'], categorical: [] },
-    )[0]!.encoding.color,
+    plotMarks({ ...spec, colorField: 'score' }, FIELDS)[0]!.encoding!.color,
   ).toEqual({ field: 'score', scale: 'linear' })
 })
 
-test('a config the dialog could not have written reopens empty', () => {
-  expect(specOfMarks([])).toBeUndefined()
-  expect(specOfMarks([markLike('span', '')])).toBeUndefined()
-  expect(
-    specOfMarks([markLike('bar', 'depth', '', [{ type: 'coverage' }])]),
-  ).toBeUndefined()
-  expect(
-    specOfMarks([
-      markLike('bar', 'score'),
-      markLike('bar', 'score'),
-      markLike('bar', 'score'),
-    ]),
-  ).toBeUndefined()
+test('a constant colour survives a save that picks no colour field', () => {
+  const declared = [
+    { shape: 'bar', encoding: { y: 'score', color: 'steelblue' } },
+  ]
+  const spec = specOf(declared)!
+  expect(spec.colorField).toBe('')
+  expect(canonical(plotMarks(spec, FIELDS))).toEqual(canonical(declared))
+})
+
+test('a config saying more than the dialog can write back reopens empty', () => {
+  const plot = { shape: 'bar', encoding: { y: 'score' } }
+  const unreadable: MarkSnapshot[][] = [
+    [],
+    [{ shape: 'span', encoding: {} }],
+    [{ ...plot, transform: [{ type: 'coverage' }] }],
+    [plot, plot, plot],
+    [{ shape: 'point', encoding: { y: 'score', glyph: { field: 'svtype' } } }],
+    [{ shape: 'bar', encoding: { y: 'score', x: 'thickStart' } }],
+    [{ ...plot, maxBpPerPx: 50 }],
+    [{ ...plot, source: 'density' }],
+    [
+      { ...plot, maxBpPerPx: BINNED_BP_PER_PX },
+      {
+        shape: 'bar',
+        transform: [
+          { type: 'bin', step: 10000 },
+          { type: 'aggregate', ops: [{ op: 'count' }] },
+        ],
+        encoding: { y: 'count' },
+        minBpPerPx: BINNED_BP_PER_PX,
+      },
+    ],
+  ]
+  for (const marks of unreadable) {
+    expect(specOf(marks)).toBeUndefined()
+  }
 })
