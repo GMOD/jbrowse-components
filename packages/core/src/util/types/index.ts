@@ -200,15 +200,12 @@ export interface AbstractSessionModel
   version: string
   gitCommit?: string
   getTrackActionMenuItems?: (arg: {
-    config: AnyConfigurationModel
+    config: BaseTrackConfig
     view?: TrackActionView
   }) => MenuItem[]
-  getTrackActions?: (
-    arg: AnyConfigurationModel,
-    view?: TrackActionView,
-  ) => MenuItem[]
+  getTrackActions?: (arg: BaseTrackConfig, view?: TrackActionView) => MenuItem[]
   getTrackListMenuItems?: (
-    arg: AnyConfigurationModel,
+    arg: BaseTrackConfig,
     view?: TrackActionView,
   ) => MenuItem[]
   addAssembly?: (conf: Record<string, unknown>) => void

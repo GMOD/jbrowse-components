@@ -9,6 +9,7 @@ import MoreHorizGlyph from './MoreHorizGlyph.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 
 const TrackSelectorTrackMenu = observer(function TrackSelectorTrackMenu({
   id,
@@ -34,8 +35,13 @@ const TrackSelectorTrackMenu = observer(function TrackSelectorTrackMenu({
       data-testid={`htsTrackEntryMenu-${id}`}
       menuItems={() => {
         const session = getSession(model)
+        // `session.tracks` is an MST union of every registered track schema,
+        // which TypeScript can only read as a widened config node. Every entry
+        // is built from `createBaseTrackConfig`, which is what the menu
+        // builders read their slots off.
+        const trackConf = conf as BaseTrackConfig
         const flatMenuItems =
-          session.getTrackListMenuItems?.(conf, model.trackContainer) ?? []
+          session.getTrackListMenuItems?.(trackConf, model.trackContainer) ?? []
         return [
           ...flatMenuItems,
           model.isFavorite(trackId)

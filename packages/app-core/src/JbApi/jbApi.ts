@@ -1615,10 +1615,13 @@ async function addTrack(
 
 // A track already in the catalog, shown: the same view choice and the same
 // settle the file route ends in.
+// `conf` is whatever `session.getTrackById` answered, which is a track config
+// but not necessarily a `BaseTrackConfig` — an assembly's ReferenceSequenceTrack
+// declares a subset of those slots. The four reads below are all ones it has.
 async function showCatalogTrack(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
-  conf: BaseTrackConfig,
+  conf: AnyConfigurationModel,
   args: Record<string, unknown>,
 ) {
   // index, assembly and name describe the file being added, and the catalog's
