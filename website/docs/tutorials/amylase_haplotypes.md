@@ -95,9 +95,14 @@ view, which is where the regions in the next step come from.
 ## Aligning each haplotype to its neighbour
 
 Five rows make the stack, ordered by _AMY1_ copies: HG00097.1 and HG00099.1 with
-two, GRCh38 and HG00133.1 with three, HG00128.1 with five. `samtools faidx`
-reads a region of a remote bgzipped FASTA through its `.fai` and `.gzi`, so each
-row's copy of the locus, with 100 kb either side, is one request:
+two, GRCh38 and HG00133.1 with three, HG00128.1 with five.
+[Yilmaz et al. 2024](https://doi.org/10.1126/science.adn0609) name a structure
+at this locus by its gene counts, `H` and the _AMY1_ copies, then `A` and `B`
+with the _AMY2A_ and _AMY2B_ copies where either is not one. GRCh38 is their
+H3r.1, the reference arrangement, and the two-copy rows, which carry no _AMY2A_,
+are their H2A0. `samtools faidx` reads a region of a remote bgzipped FASTA
+through its `.fai` and `.gzi`, so each row's copy of the locus, with 100 kb
+either side, is one request:
 
 <!-- from: scripts/build_amylase_haplotypes.sh -->
 
@@ -223,7 +228,8 @@ the array's two oppositely oriented _AMY1_ copies align to each other. The
 second band joins a two-copy haplotype to GRCh38 and opens a single wedge on the
 reference side, over _AMY2A_ and _AMY1A_. The fourth joins three copies to five,
 and its wedge on the HG00128.1 side spans a repeat of the unit that lane's gene
-track draws again and again.
+track draws again and again, a unit that carries an _AMY2A_ copy with each
+_AMY1_.
 
 <Figure caption="Five haplotypes across the amylase locus in order of AMY1 copies, each with its own gene track and each aligned to the row under it, colored by strand. Rows with the same gene content align straight through. Between rows that differ, the alignment's insertion opens as a wedge over the genes only one of them carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
@@ -246,6 +252,33 @@ EOF
 The HG00099 to GRCh38 record holds a 64,790 bp deletion and the HG00133 to
 HG00128 record one of 115,750 bp. No record of the two same-content bands holds
 an operation past 838 bp.
+
+The gene counts behind the row order come from sequence too. A lifted annotation
+places one model per source gene, so HG00128.1's lane carries a single _AMY2A_.
+Aligning GRCh38's copy of each gene to a row and keeping every full-length hit
+counts them all:
+
+<!-- from: scripts/build_amylase_haplotypes.sh -->
+
+```bash
+# -N keeps that many secondary hits, which is what the extra copies are
+# -p 0.5 lets a copy scoring half of the best one through
+minimap2 -c --eqx -x asm20 -N 50 -p 0.5 HG00128.1.fa genes.fa |
+  # a copy is a hit over 90% of the gene at 97% identity or better
+  awk -F'\t' '($4-$3)/$2>=0.9 && $10/$11>=0.97 { c[$1]++ }
+    END { for (g in c) print g, c[g] }'
+```
+
+| Row       | _AMY1_ | _AMY2A_ | _AMY2B_ |
+| --------- | ------ | ------- | ------- |
+| HG00097.1 | 2      | 0       | 1       |
+| HG00099.1 | 2      | 0       | 1       |
+| GRCh38    | 3      | 1       | 1       |
+| HG00133.1 | 3      | 1       | 1       |
+| HG00128.1 | 5      | 3       | 1       |
+
+GRCh38 comes back with the three _AMY1_ copies it is annotated with. HG00128.1
+comes back with three _AMY2A_, which in the naming above is H5A3.
 
 ## Reproduce it end to end
 

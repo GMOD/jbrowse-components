@@ -90,6 +90,34 @@ awk -F'\t' -v OFS='\t' '
     print
   }' contig_lengths.tsv adjacent.regions.paf >amylase_adjacent.paf
 
+echo "== amylase gene copies in each row, counted from sequence"
+# The three genes as GRCh38 holds them (RefSeq AMY2B, AMY2A and AMY1A), written
+# in the coordinates of the fetched hg38 piece, which starts at chr1:103520894.
+# A lifted annotation places one model per source gene, so a haplotype's extra
+# copies go uncounted there; aligning the gene back finds each of them.
+: >genes.fa
+while read -r gene start end; do
+  samtools faidx hg38.fa "GRCh38#0#chr1:103520894-103832637:$start-$end" |
+    awk -v g="$gene" 'NR==1{print ">" g; next} {print}' >>genes.fa
+done <<EOF
+AMY2B 33751 58641
+AMY2A 95758 104887
+AMY1 134626 143661
+EOF
+{
+  printf 'row\tAMY1\tAMY2A\tAMY2B\n'
+  while IFS=$'\t' read -r name _; do
+    # -N keeps that many secondary hits, which is what the extra copies are;
+    # -p 0.5 lets a copy scoring half of the best one through
+    minimap2 -c --eqx -x asm20 -N 50 -p 0.5 "$name.fa" genes.fa 2>/dev/null |
+      # a copy is a hit over 90% of the gene at 97% identity or better
+      awk -F'\t' -v n="$name" '
+        ($4-$3)/$2>=0.9 && $10/$11>=0.97 { c[$1]++ }
+        END { printf "%s\t%d\t%d\t%d\n", n, c["AMY1"], c["AMY2A"], c["AMY2B"] }'
+  done <<<"$MANIFEST"
+} >gene_copies.tsv
+cat gene_copies.tsv
+
 echo "== config.json"
 MANIFEST="$MANIFEST" HOSTED="$HOSTED" python3 - <<'PY'
 import json
