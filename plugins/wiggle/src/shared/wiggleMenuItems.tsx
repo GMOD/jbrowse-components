@@ -34,9 +34,15 @@ export function makeRenderingTypeSubMenu(
     setRenderingType: (t: string) => void
     isFaceted: boolean
     setFaceted: (on: boolean) => void
+    sourcesWithoutLayout: readonly unknown[]
   },
   renderings: readonly (readonly [string, string])[],
 ): MenuItem {
+  // One source has nothing to split, and ticking the box anyway used to raise
+  // the tree and row-label items over a dendrogram that can never draw
+  // (clustering refuses a single row). Still offered while faceted, so a track
+  // whose sources dropped to one can turn it back off.
+  const splittable = self.isFaceted || self.sourcesWithoutLayout.length > 1
   return makeRadioSubMenu({
     label: 'Plot type',
     icon: ShowChartIcon,
@@ -45,11 +51,13 @@ export function makeRenderingTypeSubMenu(
       self.setRenderingType(t)
     },
     options: renderings,
-    extraItems: [
-      toggleItem('One row per source', self.isFaceted, on => {
-        self.setFaceted(on)
-      }),
-    ],
+    extraItems: splittable
+      ? [
+          toggleItem('One row per source', self.isFaceted, on => {
+            self.setFaceted(on)
+          }),
+        ]
+      : [],
   })
 }
 
