@@ -7,6 +7,10 @@
     "chunks": 217,
     "gzipKb": 390
   },
+  "a-table-of-calls": {
+    "chunks": 214,
+    "gzipKb": 388
+  },
   "color-and-group-by-a-field": {
     "chunks": 216,
     "gzipKb": 389

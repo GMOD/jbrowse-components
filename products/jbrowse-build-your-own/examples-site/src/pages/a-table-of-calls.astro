@@ -1,0 +1,16 @@
+---
+import ATableOfCalls from '../examples/ATableOfCalls.tsx'
+import ATableOfCallsCode from '../examples/ATableOfCalls.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('a-table-of-calls')
+const sec = section(page, 'a-table-of-calls')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={ATableOfCallsCode}>
+    <ATableOfCalls client:only="react" />
+  </Section>
+</Layout>

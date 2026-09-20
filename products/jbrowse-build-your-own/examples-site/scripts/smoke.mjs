@@ -71,6 +71,7 @@ const MUI_BUDGET = {
   'color-and-group-by-a-field': 0,
   'a-plot-from-json': 0,
   'genome-by-name': 0,
+  'a-table-of-calls': 0,
   'search-by-name': 0,
   'local-files': 0,
   'highlight-a-region': 0,
@@ -515,6 +516,34 @@ async function placedKeyNamesItsRows(page, slug) {
     return []
   } catch {
     return [`the key this page places above its track never listed "${row}"`]
+  }
+}
+
+async function aTableRowMovesTheView(page, slug) {
+  if (slug !== 'a-table-of-calls') {
+    return []
+  }
+  await page.evaluate(() => {
+    document.querySelectorAll('tbody tr')[1]?.click()
+  })
+  try {
+    await page.waitForFunction(
+      () =>
+        document
+          .querySelector('tr[aria-selected="true"]')
+          ?.innerText.includes('SV_20') &&
+        document.querySelector('[data-testid="highlight-band"]')?.innerText ===
+          'SV_20' &&
+        [...document.querySelectorAll('[data-gesture-owner]')].some(el =>
+          el.innerText.includes('139,97'),
+        ),
+      { timeout: 60000 },
+    )
+    return []
+  } catch {
+    return [
+      'clicking the SV_20 row did not select it, mark it and move the view to chr3:139.97 Mb',
+    ]
   }
 }
 
@@ -1098,6 +1127,7 @@ const failures = await smokeExamplesSite({
     ...(await dragToZoomFramesTheSpan(page, slug)),
     ...(await searchByNameResolvesNames(page, slug)),
     ...(await placedKeyNamesItsRows(page, slug)),
+    ...(await aTableRowMovesTheView(page, slug)),
     ...(await legendIsPlainAndAboveTheSeams(page, slug)),
     ...(await everyDisplayIsInAnOverlaySlot(page)),
     // adds displays to its own page, so it goes after every census above

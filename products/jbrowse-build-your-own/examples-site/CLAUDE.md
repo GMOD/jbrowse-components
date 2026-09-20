@@ -45,6 +45,10 @@ failure naming only the "ever" number is the interesting one.
 **`placedKeyNamesItsRows`** waits for a row of the data in the `Legend` a page
 places outside its track, on the two pages that place one.
 
+**`aTableRowMovesTheView`** clicks the second row of the calls table and waits
+for the row to be selected, the band to carry its id and the scalebar to read
+its locus.
+
 **`viewStatusStatesAreDrawn`** drives the loading-and-errors page through the
 snackbar, `noRegions` (an engine built with no `view`) and a 404 assembly. When
 a demo names a state, check that some input on the site actually reaches it.

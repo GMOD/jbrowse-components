@@ -110,6 +110,18 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'a-table-of-calls',
+    title: 'A table that drives the view',
+    description: 'Click a structural variant call to open and mark it.',
+    group: 'Your own UI',
+    sections: [
+      {
+        slug: 'a-table-of-calls',
+        title: 'Three tumor calls, and the reads under each',
+      },
+    ],
+  },
+  {
     slug: 'search-by-name',
     title: 'Searching by name',
     description: 'Gene names in a location box, and your own list of hits.',
