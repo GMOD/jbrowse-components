@@ -1,0 +1,73 @@
+{
+  "id": "config-schema-construction",
+  "measured": "2026-09-20",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx jest products/jbrowse-web/src/configSchemaCost.test.ts --selectProjects jbrowse-web --reporters=default",
+    "notes": "Counts every MST type jbrowse-web's 31 core plugins build, through a proxy over `types` in the suite itself; a config slot type is a `stripDefault(union(...))` pair, and two slots are the same distinct type when the union's arguments and the default match. node/jsdom under jest rather than a browser, and the proxy adds a few ms of its own. Each ms is the minimum of five runs. Module eval has no ms because under jest that clock is the babel transform's, not the app's."
+  },
+  "columns": [
+    { "key": "phase", "label": "phase" },
+    {
+      "key": "ms",
+      "label": "ms",
+      "format": "ms",
+      "precision": 1,
+      "align": "right",
+      "absent": "—"
+    },
+    {
+      "key": "types",
+      "label": "MST types built",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "slots",
+      "label": "config slot types",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "distinct",
+      "label": "distinct slot types",
+      "format": "int",
+      "align": "right",
+      "absent": "—"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "phase": "module eval",
+        "types": 1147,
+        "slots": 385
+      }
+    },
+    {
+      "values": {
+        "phase": "plugin registration",
+        "ms": 32.7,
+        "types": 2267,
+        "slots": 812
+      }
+    },
+    {
+      "values": {
+        "phase": "262 track config nodes",
+        "ms": 159.4,
+        "types": 1,
+        "slots": 0
+      }
+    },
+    {
+      "values": {
+        "phase": "all three",
+        "types": 3415,
+        "slots": 1197,
+        "distinct": 222
+      }
+    }
+  ]
+}

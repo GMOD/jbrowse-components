@@ -206,6 +206,11 @@ export type ConfigSlotDefinition =
  * (type/description/defaultValue/contextVariable) lives in the schema registry
  * (a WeakMap keyed by the MST type, see schemaRegistry.ts); jexl callbacks are
  * evaluated on read by `readConfObject`.
+ *
+ * Interning the returned type on `(type, model, defaultValue)` was prototyped
+ * and declined: a session builds 1197 slot types for 222 distinct ones, and
+ * removing the repeats moves neither the time nor the heap
+ * (`config-schema-construction`, published in `reference/EAGER_BUNDLE.md`).
  */
 export default function ConfigSlot(definition: ConfigSlotDefinition) {
   const { model, type, defaultValue } = definition
