@@ -131,6 +131,7 @@ export const TUTORIAL_ORDER = [
   'synteny_visualization',
   'multiway_synteny_grape_peach_cacao',
   'allvsall_synteny',
+  'syri_synteny',
   'hg002_haplotypes',
   'amylase_haplotypes',
   'pangenome_ecoli',

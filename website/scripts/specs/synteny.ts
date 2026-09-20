@@ -24,6 +24,7 @@ const PAA_COLOR_DOMAIN = { start: 1445000, end: 1474500 }
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
+const SYRI_CONFIG = 'test_data/syri/config.json'
 const AMYLASE_HG38 = 'chr1:103,520,894-103,832,637'
 
 // HG008-T v3.2 T2T assembly vs GRCh38 synteny as a session track, shared by the
@@ -1876,6 +1877,67 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 240000,
     viewportHeight: 1400,
+  },
+
+  // SyRI's typed regions between two Arabidopsis accessions
+  // (scripts/build_syri_synteny.sh), colored by the table's own type column.
+  // The crossed ribbon is the 1.17 Mb Chr4 inversion between Col-0 and Ler, with
+  // syntenic regions either side of it as the control.
+  {
+    mode: 'url',
+    name: 'syri/col_ler_chr4',
+    url: sessionSpec(SYRI_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            { assembly: 'Col-0', loc: 'Chr4:1-6,000,000' },
+            { assembly: 'Ler', loc: 'Chr4:1-6,000,000' },
+          ],
+          tracks: [['syri_Col-0_Ler']],
+          colorBy: { field: 'type' },
+          drawCurves: true,
+          alpha: 0.9,
+          fadeThinAlignmentsMode: 'off',
+          collapseEmptyRows: true,
+          levelHeights: [260],
+        },
+      ],
+    }),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    viewportHeight: 460,
+  },
+
+  // The four accessions plotsr's own figure stacks, each band the SyRI run
+  // between the two genomes it joins. The Chr4 inversion crosses under Col-0 and
+  // in no band below it.
+  {
+    mode: 'url',
+    name: 'syri/four_accessions',
+    url: sessionSpec(SYRI_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            { assembly: 'Col-0' },
+            { assembly: 'Ler' },
+            { assembly: 'Cvi' },
+            { assembly: 'Eri' },
+          ],
+          tracks: [['syri_Col-0_Ler'], ['syri_Ler_Cvi'], ['syri_Cvi_Eri']],
+          colorBy: { field: 'type' },
+          drawCurves: true,
+          alpha: 0.9,
+          fadeThinAlignmentsMode: 'off',
+          collapseEmptyRows: true,
+          levelHeights: [180, 180, 180],
+        },
+      ],
+    }),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    viewportHeight: 800,
   },
 
   // The same stack where the mammals break: at hg38 chr17 near 15.75 Mb the

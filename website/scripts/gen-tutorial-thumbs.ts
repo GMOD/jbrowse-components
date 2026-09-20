@@ -398,6 +398,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.29, 0.86],
     position: 'left',
   },
+  syri_synteny: {
+    // The ribbon band alone: the crossed inversion between grey syntenic
+    // regions is the whole shape, and the two empty track panels above and
+    // below it add nothing at card size.
+    src: 'syri/col_ler_chr4.png',
+    band: [0.4, 0.86],
+  },
   amylase_haplotypes: {
     // The two insertion wedges with the reference row between them, which is
     // the page's claim at card size: the collinear top band is left out so

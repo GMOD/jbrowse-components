@@ -1,0 +1,111 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "Col-0",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Col-0-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Col-0.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "Ler",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Ler-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Ler.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "Cvi",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Cvi-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Cvi.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "Eri",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Eri-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Eri.chrom.sizes"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "syri_Col-0_Ler",
+      "name": "Col-0 vs Ler, SyRI regions",
+      "assemblyNames": ["Col-0", "Ler"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "Col-0_Ler.blocks",
+        "blockAssemblies": ["Col-0", "Ler"],
+        "bedLocations": [
+          {
+            "uri": "Col-0_Ler.Col-0.bed"
+          },
+          {
+            "uri": "Col-0_Ler.Ler.bed"
+          }
+        ],
+        "attributeColumns": ["type", "color", "length"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "syri_Ler_Cvi",
+      "name": "Ler vs Cvi, SyRI regions",
+      "assemblyNames": ["Ler", "Cvi"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "Ler_Cvi.blocks",
+        "blockAssemblies": ["Ler", "Cvi"],
+        "bedLocations": [
+          {
+            "uri": "Ler_Cvi.Ler.bed"
+          },
+          {
+            "uri": "Ler_Cvi.Cvi.bed"
+          }
+        ],
+        "attributeColumns": ["type", "color", "length"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "syri_Cvi_Eri",
+      "name": "Cvi vs Eri, SyRI regions",
+      "assemblyNames": ["Cvi", "Eri"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "Cvi_Eri.blocks",
+        "blockAssemblies": ["Cvi", "Eri"],
+        "bedLocations": [
+          {
+            "uri": "Cvi_Eri.Cvi.bed"
+          },
+          {
+            "uri": "Cvi_Eri.Eri.bed"
+          }
+        ],
+        "attributeColumns": ["type", "color", "length"]
+      }
+    }
+  ]
+}
