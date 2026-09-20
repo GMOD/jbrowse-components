@@ -14,6 +14,7 @@ import {
   registerConfigurationSchema,
 } from './schemaRegistry.ts'
 import {
+  isBareConfigurationSchemaType,
   isConfigurationSchemaType,
   isConstantEntry,
   isSlotDefinitionEntry,
@@ -68,10 +69,18 @@ export interface ConfigurationSchemaDefinition {
  * named slot holds one of the listed values, each dotted slot path in `slots`
  * has to name a value. The generated JSON Schema turns it into `if`/`then`, so
  * the CLI validator and an editor refuse what the config reader refuses.
+ *
+ * `ConfigurationSchema()` types `when` and `slots` off the definition and
+ * throws at construction for a name the types admit and the schema lacks: a
+ * misspelt `when` key would never fire, and a misspelt path would require a
+ * key `closed` then refuses.
  */
-export interface ConfigurationSchemaRequirement {
-  when: Record<string, string[]>
-  slots: string[]
+export interface ConfigurationSchemaRequirement<
+  SLOT extends string = string,
+  PATH extends string = string,
+> {
+  when: Partial<Record<SLOT, string[]>>
+  slots: PATH[]
 }
 
 export interface ConfigurationSchemaOptions<
@@ -82,6 +91,8 @@ export interface ConfigurationSchemaOptions<
   // though it does. Defaulted so the two-argument spelling still compiles —
   // most references name the options type rather than infer it.
   EXPLICITLY_TYPED extends boolean | undefined = boolean | undefined,
+  REQUIREMENT extends ConfigurationSchemaRequirement =
+    ConfigurationSchemaRequirement,
 > {
   explicitlyTyped?: EXPLICITLY_TYPED
   explicitIdentifier?: EXPLICIT_IDENTIFIER
@@ -107,7 +118,7 @@ export interface ConfigurationSchemaOptions<
   preProcessSnapshot?: (
     snapshot: Record<string, unknown>,
   ) => Record<string, unknown>
-  requires?: ConfigurationSchemaRequirement[]
+  requires?: REQUIREMENT[]
 }
 
 type SchemaHook = (self: unknown) => any
@@ -245,6 +256,56 @@ function preprocessConfigurationSchemaArguments(
   return { schemaDefinition, options }
 }
 
+function requiredPathProblem(
+  modelName: string,
+  definition: ConfigurationSchemaDefinition,
+  path: string[],
+): string | undefined {
+  const [head = '', ...rest] = path
+  const entry = Object.hasOwn(definition, head) ? definition[head] : undefined
+  const sub = isBareConfigurationSchemaType(entry)
+    ? getConfigurationSchemaMetadata(entry)
+    : undefined
+  return entry === undefined
+    ? `${modelName} declares no "${head}"`
+    : rest.length > 0
+      ? sub
+        ? requiredPathProblem(sub.name, sub.definition, rest)
+        : `"${head}" is not a single sub-schema, so no path runs through it`
+      : isSlotDefinitionEntry(entry) || sub?.options.shorthand !== undefined
+        ? undefined
+        : `"${head}" is neither a slot nor a sub-schema a string lifts into`
+}
+
+function checkRequirements(
+  modelName: string,
+  definition: ConfigurationSchemaDefinition,
+  requires: ConfigurationSchemaRequirement[],
+) {
+  for (const { when, slots } of requires) {
+    for (const slot of Object.keys(when)) {
+      if (
+        !Object.hasOwn(definition, slot) ||
+        !isSlotDefinitionEntry(definition[slot])
+      ) {
+        throw new Error(
+          `${modelName} requires something when "${slot}" holds a value, and declares no such slot`,
+        )
+      }
+    }
+    for (const path of slots) {
+      const problem = requiredPathProblem(
+        modelName,
+        definition,
+        path.split('.'),
+      )
+      if (problem) {
+        throw new Error(`${modelName} requires "${path}", and ${problem}`)
+      }
+    }
+  }
+}
+
 function makeConfigurationSchemaModel<
   DEFINITION extends ConfigurationSchemaDefinition,
   OPTIONS extends MergedConfigurationSchemaOptions<any, any>,
@@ -332,6 +393,7 @@ function makeConfigurationSchemaModel<
       )
     }
   }
+  checkRequirements(modelName, schemaDefinition, options.requires ?? [])
 
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
@@ -485,6 +547,22 @@ export interface ConfigurationSchemaType<
     ConfigNodeBrand<this>
 }
 
+type RequirementPath<D> = {
+  [K in keyof D & string]:
+    | K
+    | (D[K] extends ConfigurationSchemaType<infer SUB, any>
+        ? `${K}.${RequirementPath<SUB>}`
+        : never)
+}[keyof D & string]
+
+type RequirementOf<D, BASE> =
+  BASE extends ConfigurationSchemaType<infer BD, any>
+    ? ConfigurationSchemaRequirement<
+        (keyof D | keyof BD) & string,
+        RequirementPath<D> | RequirementPath<BD>
+      >
+    : ConfigurationSchemaRequirement<keyof D & string, RequirementPath<D>>
+
 export function ConfigurationSchema<
   // `const` preserves each slot's literal `type` ('stringArray', 'maybeNumber',
   // …) through inference so `SlotValueFromDef` can key on it and return a
@@ -501,7 +579,8 @@ export function ConfigurationSchema<
   inputOptions?: ConfigurationSchemaOptions<
     BASE_SCHEMA,
     EXPLICIT_IDENTIFIER,
-    EXPLICITLY_TYPED
+    EXPLICITLY_TYPED,
+    RequirementOf<NoInfer<DEFINITION>, NoInfer<BASE_SCHEMA>>
   >,
 ): ConfigurationSchemaType<
   MergeConfigDef<

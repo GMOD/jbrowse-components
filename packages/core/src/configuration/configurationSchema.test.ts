@@ -1611,3 +1611,121 @@ describe('a closed schema', () => {
     })
   })
 })
+
+describe('a declared requirement', () => {
+  const Color = ConfigurationSchema(
+    'RequiresColor',
+    { value: { type: 'color', defaultValue: 'red' } },
+    { shorthand: 'value' },
+  )
+  const Encoding = ConfigurationSchema('RequiresEncoding', {
+    y: { type: 'string', defaultValue: '' },
+    color: Color,
+  })
+  const Step = ConfigurationSchema('RequiresStep', {
+    expr: { type: 'string', defaultValue: '' },
+  })
+  const definition = {
+    shape: { type: 'string', defaultValue: 'bar' },
+    encoding: Encoding,
+    transform: types.array(Step),
+  } as const
+
+  test('names a slot, a path into a sub-schema, or a sub-schema a string lifts into', () => {
+    expect(() =>
+      ConfigurationSchema('RequiresMark', definition, {
+        requires: [
+          {
+            when: { shape: ['bar'] },
+            slots: ['shape', 'encoding.y', 'encoding.color'],
+          },
+        ],
+      }),
+    ).not.toThrow()
+  })
+
+  test('reaches a slot the base declares', () => {
+    const Base = ConfigurationSchema('RequiresBase', definition)
+    expect(() =>
+      ConfigurationSchema(
+        'RequiresChild',
+        { origin: { type: 'number', defaultValue: 0 } },
+        {
+          baseConfiguration: Base,
+          requires: [{ when: { shape: ['bar'] }, slots: ['encoding.y'] }],
+        },
+      ),
+    ).not.toThrow()
+  })
+
+  test('throws for a when key that names no slot', () => {
+    expect(() =>
+      ConfigurationSchema('RequiresMark', definition, {
+        requires: [
+          {
+            // @ts-expect-error a when key is a slot of the definition
+            when: { shap: ['bar'] },
+            slots: ['encoding.y'],
+          },
+        ],
+      }),
+    ).toThrow(
+      'RequiresMark requires something when "shap" holds a value, and declares no such slot',
+    )
+    expect(() =>
+      ConfigurationSchema('RequiresMark', definition, {
+        requires: [{ when: { encoding: ['bar'] }, slots: ['encoding.y'] }],
+      }),
+    ).toThrow('"encoding" holds a value, and declares no such slot')
+  })
+
+  test('throws for a path that names no slot', () => {
+    expect(() =>
+      ConfigurationSchema('RequiresMark', definition, {
+        requires: [
+          {
+            when: { shape: ['bar'] },
+            // @ts-expect-error a path starts at a member of the definition
+            slots: ['fill.y'],
+          },
+        ],
+      }),
+    ).toThrow(
+      'RequiresMark requires "fill.y", and RequiresMark declares no "fill"',
+    )
+    expect(() =>
+      ConfigurationSchema('RequiresMark', definition, {
+        requires: [
+          {
+            when: { shape: ['bar'] },
+            // @ts-expect-error a path ends at a member of the sub-schema
+            slots: ['encoding.yy'],
+          },
+        ],
+      }),
+    ).toThrow(
+      'RequiresMark requires "encoding.yy", and RequiresEncoding declares no "yy"',
+    )
+  })
+
+  test('throws for a path the JSON schema cannot require', () => {
+    expect(() =>
+      ConfigurationSchema('RequiresMark', definition, {
+        requires: [
+          {
+            when: { shape: ['bar'] },
+            // @ts-expect-error a path runs through a single sub-schema
+            slots: ['transform.expr'],
+          },
+        ],
+      }),
+    ).toThrow('"transform" is not a single sub-schema')
+    expect(() =>
+      ConfigurationSchema('RequiresMark', definition, {
+        requires: [{ when: { shape: ['bar'] }, slots: ['encoding'] }],
+      }),
+    ).toThrow(
+      '"encoding" is neither a slot nor a sub-schema a string lifts into',
+    )
+  })
+})
