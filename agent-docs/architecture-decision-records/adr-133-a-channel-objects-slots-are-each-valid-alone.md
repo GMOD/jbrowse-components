@@ -70,8 +70,14 @@ starts from neither.
   of their own, a `y` its own steps do not write. The display draws what it
   can, says the rest in its corner notice, and hands the same lines to an
   agent's settle report as `notices`, since a display that loads raises no
-  snackbar. The JSON schema keeps `requires`, so `jbrowse validate` still
-  reports a bar naming no `y` as an error where the app shows a notice.
+  snackbar. A bar naming no `y` is the mark schema's own `requires` entry, read
+  by `requirementProblems` for the notice and carried into the generated JSON
+  Schema as `if`/`then` for an editor; `jbrowse validate` reports that entry
+  and, from a generated copy of the rule list
+  (`scripts/generateMarkRules.ts`), every other rule — an error where a mark
+  draws nothing, never draws or cannot run its steps, a warning where a slot
+  waits unread. A file has no intermediate editor states, so what a load must
+  not refuse a validator may.
 - The Edit as JSON dialog still refuses a spec naming no field or colour, with
   its own message: a whole-object writer has no intermediate states to pass
   through, and such a spec changes nothing.

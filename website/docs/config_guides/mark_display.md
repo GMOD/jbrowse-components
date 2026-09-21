@@ -528,7 +528,12 @@ chip in its corner naming the mark and the slot:
 - a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
   draws.
 
-`jbrowse validate` reports the first of these as an error in the file.
+`jbrowse validate` reports the same list over a config file, which has none of
+the half-written states an editor passes through: a mark that draws nothing,
+never draws, or names a step that cannot run is an error, and a slot left unread
+— a channel the shape ignores, a `source` a second mark already stands in for —
+is a warning. Each finding names the mark and the slot, and `--json` carries the
+rule's id beside it.
 
 ## What the track menu offers
 

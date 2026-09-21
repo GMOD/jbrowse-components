@@ -122,12 +122,21 @@ That is the single most common way an authored config is wrong, and the only
 symptom is "it rendered but not how I asked". The validator's error/warning
 split is drawn on exactly this line:
 
-|             | meaning                                                                                                                                                                                    |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **error**   | JBrowse accepts it and silently does the wrong thing — unknown slot, a key a `defaultSession` view or display does not declare, dangling `trackId`/assembly reference, duplicate `trackId` |
-| **warning** | JBrowse will tell you itself on load — unknown type name, legacy key a migration rewrites                                                                                                  |
+|             | meaning                                                                                                                                                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **error**   | JBrowse accepts it and silently does the wrong thing — unknown slot, a key a `defaultSession` view or display does not declare, dangling `trackId`/assembly reference, duplicate `trackId`, a mark that draws nothing |
+| **warning** | JBrowse will tell you itself on load — unknown type name, legacy key a migration rewrites, a mark display slot left unread                                                                                            |
 
 So: fix every error. Read the warnings and decide.
+
+A `LinearMarkDisplay` is the one type whose slots disagree with each other
+rather than with the schema: a `marks` list loads whenever its keys and value
+types are right, and the app says what it cannot draw in a corner notice that a
+headless render never shows. The validator runs that same rule list over the
+file — a bar or point naming no `y`, a channel the shape does not read, a `y` no
+step writes, a zoom range that admits no zoom — so a marks config is worth
+validating even when you are sure of the slot names. `--json` carries each
+finding's stable `rule` id.
 
 Types registered by a **plugin** aren't in the manifest, so they surface as
 unknown-type warnings — expected, not a problem. Legacy type names a current
