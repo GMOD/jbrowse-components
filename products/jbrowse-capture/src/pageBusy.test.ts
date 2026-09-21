@@ -17,6 +17,7 @@ test.each([
   ['a LoadingEllipses label', '<p data-busy="true">Loading features</p>'],
   ['a display mid-fetch', '<div data-display-phase="loading"></div>'],
   ['a view resolving its assembly', '<div data-view-phase="loading"></div>'],
+  ['a display mid-morph', '<div data-display-animating="true"></div>'],
 ])('%s is busy', (_name, html) => {
   document.body.innerHTML = html
   expect(isPageBusyInPage(BUSY_SELECTOR)).toBe(true)
@@ -31,6 +32,11 @@ test.each(['ready', 'canceled'])(
     expect(isPageBusyInPage(BUSY_SELECTOR)).toBe(false)
   },
 )
+
+test('a display whose morph has landed is not busy', () => {
+  document.body.innerHTML = '<div data-display-animating="false"></div>'
+  expect(isPageBusyInPage(BUSY_SELECTOR)).toBe(false)
+})
 
 test('the canceled overlay is not busy', () => {
   document.body.innerHTML = '<div data-testid="loading-overlay-canceled"></div>'

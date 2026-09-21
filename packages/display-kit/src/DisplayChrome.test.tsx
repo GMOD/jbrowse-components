@@ -764,6 +764,19 @@ test('the chrome publishes data-clustered off the positioned tree', async () => 
   expect(el.dataset.clustered).toBe('true')
 })
 
+test('the chrome publishes data-display-animating off the model, leaving the phase ready', async () => {
+  const model = TestChromeModel.create({})
+  const { findByTestId } = renderChrome(model, 'chrome')
+
+  const el = await findByTestId('chrome')
+  expect(el.dataset.displayAnimating).toBe('false')
+  act(() => {
+    model.setAnimating(true)
+  })
+  expect(el.dataset.displayAnimating).toBe('true')
+  expect(el.dataset.displayPhase).toBe('ready')
+})
+
 // One element carries the display's whole identity. Three testid shapes and a
 // second wrapper element used to split this across two nodes, which is what
 // forced `PENDING_DISPLAYS` into a three-way union and `displayReady()` into a

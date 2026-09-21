@@ -81,9 +81,9 @@ describe('sessionOf', () => {
 })
 
 // The coupling nothing else pins: waitReady reads app chrome that lives in
-// other packages (AppReadyMarker's data-app-phase, LoadingOverlay's testid),
-// so a rename there would otherwise only surface as a settle that never
-// settles.
+// other packages (AppReadyMarker's data-app-phase, LoadingOverlay's testid, the
+// display chrome's data-display-animating), so a rename there would otherwise
+// only surface as a settle that never settles.
 describe('waitReady', () => {
   afterEach(() => {
     document.body.replaceChildren()
@@ -101,6 +101,12 @@ describe('waitReady', () => {
   it('does not settle while a loading overlay is up', async () => {
     document.body.innerHTML =
       '<div data-app-phase="ready"></div><div data-testid="loading-overlay"></div>'
+    expect(await waitReady(300, session)).toMatchObject({ settled: false })
+  })
+
+  it('does not settle while a display is animating', async () => {
+    document.body.innerHTML =
+      '<div data-app-phase="ready"></div><div data-display-animating="true"></div>'
     expect(await waitReady(300, session)).toMatchObject({ settled: false })
   })
 

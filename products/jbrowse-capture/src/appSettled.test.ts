@@ -62,6 +62,22 @@ test('a view body still waiting on its component keeps the app unsettled', async
   clearTimeout(arrived)
 })
 
+// A morph runs with the app finished and every display `ready`, so the marker
+// alone would take a frame between its two pictures.
+test('a display still animating keeps the app unsettled', async () => {
+  document.body.innerHTML = `<span hidden data-app-phase="ready"></span>
+    <div data-display-phase="ready" data-display-animating="true"></div>`
+  const landed = setTimeout(() => {
+    document
+      .querySelector('[data-display-animating]')!
+      .setAttribute('data-display-animating', 'false')
+  }, 100)
+  const start = Date.now()
+  await expect(waitForAppSettled(jsdomPage(), FAST)).resolves.toBe(true)
+  expect(Date.now() - start).toBeGreaterThanOrEqual(100 + FAST.holdMs)
+  clearTimeout(landed)
+})
+
 test('an app still working when the timeout expires reports false', async () => {
   setPhase('loading')
   await expect(

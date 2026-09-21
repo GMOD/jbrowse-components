@@ -234,7 +234,7 @@ async function waitForLoadingOverlayGone(page: Page, timeout: number) {
 //   1. the loading overlay is down          — the view has data to draw
 //   2. no display is in its `loading` phase — every display's fetch is finished
 //   3. every display has reported canvasDrawn — and has painted that data
-//   4. morphFromTops is clear               — the row animation has landed
+//   4. no display is animating              — every morph has landed
 //
 // (2) and (3) are the pair that was missing, and their order is the point.
 // `waitForDisplaysDone` keys on canvasDrawn, which is FIRST paint and flips on a
@@ -425,43 +425,26 @@ export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
   }
 }
 
-// Feature rows morph-animate into place (morphProgress 0->1, easeInOutCubic; see
-// LinearBasicDisplay/baseModel.ts). The `*-done`/canvasDrawn testid fires per
-// paint, so a capture can land MID-morph with features at intermediate Y — a
-// frame the deterministic layout never settles on. Two independent browser runs
-// catch different morph frames, producing a false cross-backend diff. Wait until
-// every display has cleared `morphFromTops` (morph settled) before capturing.
-// Best-effort: a view or display type without the field reads as idle, and a
-// timeout proceeds anyway (the pixel comparison is still the real assertion).
+// A morph — canvas's feature rows, a multi-way lane re-aligning — draws frames
+// the settled layout never shows, and the `*-done`/canvasDrawn testid fires per
+// paint, so a capture can land mid-flight. Two independent browser runs catch
+// different frames, producing a false cross-backend diff. Wait until no display
+// publishes `data-display-animating="true"` (DisplayChromeBase, off the
+// display's own `animating` getter) before capturing. Best-effort: a display
+// type with no motion publishes nothing and reads as idle, and a timeout
+// proceeds anyway (the pixel comparison is still the real assertion).
 //
 // **This does nothing for an alignments display, so it is not the explanation
-// for the pileup gate flakiness** — a claim this comment used to make. Grep
-// says it: `morphFromTops` is declared in plugins/canvas
-// LinearBasicDisplay/baseModel.ts and read only by that plugin's
-// FeatureComponent. LinearAlignmentsDisplay has no such field, so the predicate
-// below reads `undefined == null` -> true on the first poll and the wait
-// returns immediately for exactly the displays that flake. The same overclaim
-// was corrected in browser-tests/README.md and crossBackendGate.ts by
-// 8d8239d3ad and had grown back here; whatever settles an alignments capture,
-// it is not this function.
+// for the pileup gate flakiness** — a claim this comment used to make.
+// LinearAlignmentsDisplay has no `animating` getter, so the wait returns on the
+// first poll for exactly the displays that flake. The same overclaim was
+// corrected in browser-tests/README.md and crossBackendGate.ts by 8d8239d3ad
+// and had grown back here; whatever settles an alignments capture, it is not
+// this function.
 async function waitForMorphIdle(page: Page, timeout = 10000) {
   await page
     .waitForFunction(
-      () => {
-        const w = window as unknown as {
-          JBrowseSession?: {
-            views: { tracks?: { displays?: { morphFromTops?: unknown }[] }[] }[]
-          }
-        }
-        const session = w.JBrowseSession
-        return session
-          ? session.views.every(v =>
-              (v.tracks ?? []).every(t =>
-                (t.displays ?? []).every(d => d.morphFromTops == null),
-              ),
-            )
-          : true
-      },
+      () => document.querySelector('[data-display-animating="true"]') === null,
       { timeout, polling: 100 },
     )
     .catch(() => {})

@@ -501,7 +501,8 @@ export async function waitReady(
   while (outcome === undefined) {
     const ready =
       root.querySelector('[data-app-phase="ready"]') !== null &&
-      root.querySelector('[data-testid="loading-overlay"]') === null
+      root.querySelector('[data-testid="loading-overlay"]') === null &&
+      root.querySelector('[data-display-animating="true"]') === null
     readySince = ready ? (readySince ?? Date.now()) : undefined
     if (readySince !== undefined && Date.now() - readySince >= READY_HOLD_MS) {
       outcome = { settled: true }

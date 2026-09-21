@@ -235,8 +235,8 @@ was right: nothing was ever shown to reorder reads between two runs (`@gmod/bam`
 walks chunks in a sequential loop, CRAM record order is likewise deterministic),
 so the arrival-order hypothesis only ever had the symptom behind it. The symptom
 belonged to the capture, not the layout. Note also that `waitForMorphIdle` is
-vacuous for these tests — it waits on `morphFromTops`, which exists on
-`LinearBasicDisplay` and not `LinearAlignmentsDisplay`.
+vacuous for these tests — it waits on `data-display-animating`, which
+`LinearAlignmentsDisplay` never publishes.
 
 ## Reviewing Snapshots
 

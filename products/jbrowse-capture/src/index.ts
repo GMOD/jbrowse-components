@@ -14,6 +14,7 @@ export {
   trackIdsFromSession,
 } from './session.ts'
 export {
+  ANIMATING_DISPLAYS,
   PENDING_DISPLAYS,
   displayPainted,
   displaySettled,

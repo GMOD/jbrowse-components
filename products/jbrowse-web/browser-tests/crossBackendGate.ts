@@ -272,8 +272,8 @@ export function formatThresholdPct(threshold: number) {
 // explains this drift: nothing was ever shown to reorder reads between runs
 // (@gmod/bam walks chunks sequentially, CRAM record order is deterministic).
 // Unexplored: the read SET differing between runs, and capture timing — note
-// snapshot.ts waitForMorphIdle is vacuous here, since morphFromTops lives on
-// LinearBasicDisplay, not LinearAlignmentsDisplay.
+// snapshot.ts waitForMorphIdle is vacuous here, since LinearAlignmentsDisplay
+// publishes no `data-display-animating`.
 //
 // The gate is clean for the deterministic view types (synteny/wiggle/dotplot/
 // bigwig/variants/gwas/hic/genes) — 0 false positives across all runs.

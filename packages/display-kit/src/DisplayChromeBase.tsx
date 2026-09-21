@@ -46,6 +46,10 @@ export type ChromeModel = {
   // reads a member of its own type; a display without a sidebar leaves it
   // undeclared and publishes nothing.
   hierarchy?: unknown
+  // A transition still drawing frames toward the settled picture, published as
+  // `data-display-animating`. Not a phase: the phase stays `ready`, so no scrim
+  // goes up over a motion the reader is meant to watch.
+  animating?: boolean
 } & StatusChromeModel
 
 export interface CanvasHandle {
@@ -231,6 +235,11 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
       // its own copy of this sentence.
       data-clustered={
         'hierarchy' in model ? String(!!model.hierarchy) : undefined
+      }
+      // The capture waits hold until no display reads `true`, so a figure is
+      // never taken between a morph's two pictures.
+      data-display-animating={
+        'animating' in model ? String(!!model.animating) : undefined
       }
       // Composed, never replacing: a caller still binding its own pointer
       // handlers (maf's drag-selection, which owns a rubberband rect and a

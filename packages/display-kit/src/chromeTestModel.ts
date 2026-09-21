@@ -46,6 +46,7 @@ export const TestChromeModel = types
     // stands in for a sidebar display's positioned dendrogram, which the chrome
     // publishes as `data-clustered`
     hierarchy: types.maybe(types.frozen<object>()),
+    animating: false,
   })
   .volatile(
     (): {
@@ -125,5 +126,8 @@ export const TestChromeModel = types
     },
     setHierarchy(hierarchy?: object) {
       self.hierarchy = hierarchy
+    },
+    setAnimating(value: boolean) {
+      self.animating = value
     },
   }))

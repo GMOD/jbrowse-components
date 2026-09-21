@@ -43,6 +43,15 @@ export const LOADING_OVERLAY = '[data-testid="loading-overlay"]'
 export const APP_READY = '[data-app-phase="ready"]'
 
 /**
+ * A display drawing a transition between two settled pictures: canvas's row
+ * morph, a multi-way lane re-aligning. The app is finished working and every
+ * display reads `ready`, so neither the marker nor the phase can say so; the
+ * display publishes it itself, and a frame taken while it reads `true` is a
+ * picture no settled state ever shows.
+ */
+export const ANIMATING_DISPLAYS = '[data-display-animating="true"]'
+
+/**
  * How long `ready` has to HOLD before an interaction's work counts as finished.
  *
  * Above the ~600ms `FetchVisibleRegions` debounce, which is the whole reason
@@ -319,12 +328,14 @@ export function waitForViewPhases(page: Page, timeoutMs: number) {
  *                          wherever it tells a user it is working
  *   `data-display-phase`   one display's own fetch, newer builds
  *   `data-view-phase`      a view still resolving its assembly, newer builds
+ *   `data-display-animating`  a display drawing a morph, newer builds
  */
 export const BUSY_SELECTOR = [
   LOADING_OVERLAY,
   '[data-busy="true"]',
   '[data-display-phase="loading"]',
   '[data-view-phase="loading"]',
+  ANIMATING_DISPLAYS,
 ].join(', ')
 
 /**
@@ -430,8 +441,8 @@ function hasAppReadyMarker(page: Page): Promise<boolean> {
  * replaced. Requiring the idle to HOLD costs the hold and no more, and catches
  * the same late-starting work.
  *
- * The hold also requires no view body to be waiting on its lazy component,
- * which the marker cannot see.
+ * The hold also requires no view body to be waiting on its lazy component and
+ * no display to be animating, neither of which the marker can see.
  *
  * Throws on a build too old for the marker rather than falling back — see the
  * body.
@@ -460,11 +471,13 @@ export async function waitForAppSettled(
     () =>
       page
         .evaluate(
-          (ready, pending) =>
+          (ready, pending, animating) =>
             document.querySelector(ready) !== null &&
-            document.querySelector(pending) === null,
+            document.querySelector(pending) === null &&
+            document.querySelector(animating) === null,
           APP_READY,
           VIEW_COMPONENT_PENDING,
+          ANIMATING_DISPLAYS,
         )
         .catch(() => false),
     { holdMs, timeout, pollMs },

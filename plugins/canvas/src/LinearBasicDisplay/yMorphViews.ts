@@ -72,6 +72,14 @@ export function yMorphViews(self: YMorphHost) {
     },
     /**
      * #getter
+     * a row morph is in flight, which the chrome publishes for the capture
+     * waits
+     */
+    get animating() {
+      return self.morphFromTops !== undefined
+    },
+    /**
+     * #getter
      */
     // Returns `laidOutDataMap` by reference when idle, so consumers do not
     // re-upload unless an animation is in flight.
