@@ -390,9 +390,10 @@ export interface TickGeometry {
 }
 
 /**
- * Each lane's own ticks at one shared bp interval, as the synteny passes'
- * zero-width location markers: a marker's two corners coincide per axis, so
- * it draws as a 1px vertical line at its packed alpha, hover and all.
+ * Each lane's own ticks at one shared bp interval, over the stretch its
+ * baseline draws, as the synteny passes' zero-width location markers: a
+ * marker's two corners coincide per axis, so it draws as a 1px vertical line
+ * at its packed alpha, hover and all.
  */
 export function buildTickGeometry({
   stack,
@@ -414,7 +415,9 @@ export function buildTickGeometry({
     }
     const ticks = new RibbonBuilder()
     for (const x of frameTickXs(lane.frame, tickIntervalBp, width)) {
-      ticks.add([x, x], [x, x], KIND_MARKER, 0, packed)
+      if (lane.baseline.some(([x1, x2]) => x >= x1 && x <= x2)) {
+        ticks.add([x, x], [x, x], KIND_MARKER, 0, packed)
+      }
     }
     const key = ticksKey(row)
     cells.set(key, ticks.build())

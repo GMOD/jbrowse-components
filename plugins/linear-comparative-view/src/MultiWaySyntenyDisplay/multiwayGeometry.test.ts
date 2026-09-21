@@ -22,6 +22,7 @@ import {
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
+import type { BuildLanesOpts } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -102,10 +103,12 @@ function stack({
   features,
   assemblyNames = ['grape', 'peach'],
   peach = peachFrame,
+  contigOf = () => undefined,
 }: {
   features: Feature[]
   assemblyNames?: string[]
   peach?: RowFrame
+  contigOf?: BuildLanesOpts['contigOf']
 }) {
   const groups = groupFeatures(features)
   return buildLanes({
@@ -124,7 +127,7 @@ function stack({
     laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
     anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
-    contigOf: () => undefined,
+    contigOf,
     refNameAliasOf: () => undefined,
     width: WIDTH,
     height: HEIGHT,
@@ -619,6 +622,23 @@ test('the ticks are zero-width markers in each framed lane’s band', () => {
   expect([...new Set(data.kinds)]).toEqual([KIND_MARKER])
   expect(layers[0]!.yTop).toBe(s.lanes[1]!.bandTop)
   expect(layers[0]!.height).toBe(s.bandHeight)
+})
+
+test('the ticks stop where the lane’s baseline stops, at its contig end', () => {
+  const s = stack({
+    features: [pairFeature('g1', 100, 200)],
+    contigOf: () => ({ start: 0, end: 1500 }),
+  })
+  expect(s.lanes[1]!.baseline).toEqual([[-800, 400]])
+  const { cells } = buildTickGeometry({
+    stack: s,
+    tickIntervalBp: 200,
+    width: WIDTH,
+    color: 'rgba(0,0,0,0.12)',
+  })
+  expect([...ribbonData(cells, 'ticks:1').bp1]).toEqual([
+    -320, -160, 0, 160, 320,
+  ])
 })
 
 test('a band covers each mate lane, striped on alternate rows', () => {

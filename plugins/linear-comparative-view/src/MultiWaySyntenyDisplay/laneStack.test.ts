@@ -268,6 +268,18 @@ describe('the baseline', () => {
       expect(display.laneStack.lanes[1]!.baseline).toEqual(DIVIDER)
     })
 
+    test('a genome the session does not hold is never asked of the assembly manager', async () => {
+      const asked: string[] = []
+      const { display } = await framedDisplay('hg002', {
+        assemblyOf: name => {
+          asked.push(name)
+          return testAssembly()
+        },
+      })
+      expect(display.laneStack.lanes).toHaveLength(2)
+      expect(asked).not.toContain('hg002')
+    })
+
     test('a genome still loading keeps the divider until its load redraws the lane', async () => {
       const loaded = observable.box(false)
       const assembly = testAssembly()

@@ -1529,6 +1529,10 @@ export function stateModelFactory(
        */
       get laneStack(): LaneStack {
         const { assemblyManager } = getSession(self)
+        const heldAssembly = (assemblyName: string) =>
+          self.holdsAssembly(assemblyName)
+            ? assemblyManager.get(assemblyName)
+            : undefined
         const view = self.lgv
         return buildLanes({
           assemblyNames: [self.anchorAssemblyName, ...self.rowAssemblies],
@@ -1540,14 +1544,12 @@ export function stateModelFactory(
             axisSpan(view, refName, start, end, self.renderOriginPx),
           anchorRegionSpans: displayedRegionSpans(view, self.renderOriginPx),
           contigOf: (assemblyName, refName) => {
-            const assembly = self.holdsAssembly(assemblyName)
-              ? assemblyManager.get(assemblyName)
-              : undefined
+            const assembly = heldAssembly(assemblyName)
             const index = assembly?.refNameToIndex?.get(refName)
             return index === undefined ? undefined : assembly?.regions?.[index]
           },
           refNameAliasOf: assemblyName => {
-            const assembly = assemblyManager.get(assemblyName)
+            const assembly = heldAssembly(assemblyName)
             return (
               assembly && (refName => assembly.getCanonicalRefName2(refName))
             )
