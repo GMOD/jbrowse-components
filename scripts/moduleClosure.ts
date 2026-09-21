@@ -64,7 +64,7 @@ function allSpecifiersAreTypes(
   )
 }
 
-function edgesOf(file: string) {
+export function edgesOf(file: string) {
   const source = parse(file)
   const edges: Edge[] = []
   for (const statement of source.statements) {
@@ -94,7 +94,7 @@ function edgesOf(file: string) {
   return edges
 }
 
-function resolve(specifier: string, containingFile: string) {
+export function resolve(specifier: string, containingFile: string) {
   const resolved = ts.resolveModuleName(
     specifier,
     containingFile,

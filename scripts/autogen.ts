@@ -240,6 +240,14 @@ const GENERATORS: Generator[] = [
     independent: true,
   },
   {
+    // products/jbrowse-cli/src/commands/validate/markRules: the mark display's
+    // rule list and the modules it stands on, copied whole, so `jbrowse
+    // validate` reports what the display's corner notice reports.
+    name: 'mark rule list',
+    argv: rootScript('generateMarkRules.ts'),
+    independent: true,
+  },
+  {
     // The config-slot manifest `jbrowse validate` checks against, read out of
     // the live ConfigurationSchema objects, plus the jbrowse-authoring skill's
     // config-types.md index. It bundles the live source tree, add-track-core's

@@ -86,6 +86,14 @@ const CEILINGS = [
     runtime: 5,
     types: 2,
   },
+  // 8 runtime / 8 type, and no headroom: `jbrowse validate` carries a copy of
+  // every file here (scripts/generateMarkRules.ts), so an edge added to the
+  // rule list is a file the CLI publishes.
+  {
+    entry: 'plugins/marks/src/LinearMarkDisplay/markProblems.ts',
+    runtime: 8,
+    types: 8,
+  },
 ]
 
 test.each(CEILINGS)('$entry stays a leaf', ({ entry, runtime, types }) => {
