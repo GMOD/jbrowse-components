@@ -244,18 +244,18 @@ describe('a marks list in a config file', () => {
   })
 
   it('points a jexl: field on a step at formula', () => {
-    const mean = (field: string) => [
+    const grouped = (field: string) => [
       {
         shape: 'bar',
-        encoding: { y: 'm' },
+        encoding: { y: 'count' },
         transform: [
-          { type: 'aggregate', ops: [{ op: 'mean', field, as: 'm' }] },
+          { type: 'aggregate', groupby: [field], ops: [{ op: 'count' }] },
         ],
       },
     ]
-    expect(found(mean('INFO.DP'))).toEqual([])
-    expect(found(mean('jexl:feature.INFO.DP[0]'))).toEqual([
-      `error step-field-expression ${DISPLAY}.marks[0].transform[0].ops[0].field`,
+    expect(found(grouped('INFO.DP'))).toEqual([])
+    expect(found(grouped('jexl:feature.INFO.DP[0]'))).toEqual([
+      `error step-field-expression ${DISPLAY}.marks[0].transform[0].groupby[0]`,
     ])
   })
 
@@ -451,7 +451,10 @@ describe('a transform step in a config file', () => {
 
   it('reads a slot whose value is itself a choice as that choice', () => {
     expect(stepProblems({ type: 'bin', step: 'wide' })).toEqual([
-      `${STEP}.step: expected a number or "auto" or a "jexl:" expression, got "wide"`,
+      `${STEP}.step: expected a number or "auto", got "wide"`,
+    ])
+    expect(stepProblems({ type: 'bin', step: 'jexl:1000' })).toEqual([
+      `${STEP}.step: takes no "jexl:" callback, and "jexl:1000" is one: a slot that takes a callback lists its callback args in the config docs`,
     ])
   })
 })

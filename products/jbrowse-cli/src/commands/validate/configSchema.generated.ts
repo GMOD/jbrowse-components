@@ -155,7 +155,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "JexlString": {
       "type": "string",
       "pattern": "^jexl:",
-      "description": "A jexl callback evaluated when the slot is read, e.g. \`jexl:get(feature, \\"score\\") > 10 ? \\"red\\" : \\"blue\\"\`. Every slot accepts one in place of a fixed value."
+      "description": "A jexl callback evaluated when the slot is read, e.g. \`jexl:get(feature, \\"score\\") > 10 ? \\"red\\" : \\"blue\\"\`. A slot takes one in place of a fixed value where its config docs list callback args."
+    },
+    "PlainString": {
+      "type": "string",
+      "not": {
+        "$ref": "#/$defs/JexlString"
+      }
     },
     "FeatureField": {
       "type": "string",
@@ -283,7 +289,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "cytobandLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/cytoband.txt.gz"
           }
@@ -324,26 +330,29 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 5000000
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "useSliceWorkerPool": {
           "description": "decode CRAM slices on a pool of workers rather than in the thread that asked.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "cramLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.cram",
             "locationType": "UriLocation"
           }
         },
         "craiLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.cram.crai",
             "locationType": "UriLocation"
@@ -385,21 +394,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "indexType": {
-          "anyOf": [
-            {
-              "enum": [
-                "BAI",
-                "CSI"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "BAI",
+            "CSI"
           ],
           "default": "BAI"
         },
         "location": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bam.bai",
             "locationType": "UriLocation"
@@ -415,7 +417,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bamLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bam",
             "locationType": "UriLocation"
@@ -426,11 +428,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "fetchSizeLimit": {
           "description": "size to fetch in bytes over which to display a warning to the user that too much data will be fetched.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 5000000
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -471,14 +476,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "samLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.sam",
             "locationType": "UriLocation"
           }
         },
         "samText": {
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "uri": {
@@ -517,7 +522,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "htsgetBase": {
           "description": "the base URL to fetch from.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "",
             "locationType": "UriLocation"
@@ -525,11 +530,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "htsgetTrackId": {
           "description": "the trackId, which is appended to the base URL.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         }
       }
     },
@@ -558,7 +566,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigBedLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bb",
             "locationType": "UriLocation"
@@ -566,21 +574,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "scoreColumn": {
           "description": "The column to use as a \\"score\\" attribute.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "aggregateField": {
           "description": "An attribute to aggregate features with.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "geneName2"
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -618,7 +629,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bedLocation": {
           "description": "path to bed file, also allows gzipped bed.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
@@ -626,36 +637,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "scoreColumn": {
           "description": "The column to use as a \\"score\\" attribute.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "autoSql": {
           "description": "The autoSql definition for the data fields in the file.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "colRef": {
           "description": "The column to use as a \\"refName\\" attribute.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "colStart": {
           "description": "The column to use as a \\"start\\" attribute.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "colEnd": {
           "description": "The column to use as a \\"end\\" attribute.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 2
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "uri": {
@@ -694,7 +708,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bedpeLocation": {
           "description": "can be plaintext or gzipped, not indexed so loaded into memory on startup.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bedpe.gz",
             "locationType": "UriLocation"
@@ -702,7 +716,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "uri": {
           "type": "string",
@@ -740,7 +757,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "starFusionLocation": {
           "description": "STAR-Fusion TSV output file (plain text or gzipped).",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/star-fusion.fusion_predictions.tsv",
             "locationType": "UriLocation"
@@ -783,22 +800,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "indexType": {
           "description": "\`TBI\` is the usual \`tabix\` output. \`CSI\` is required for a reference longer than 512 Mb, which TBI cannot address.",
-          "anyOf": [
-            {
-              "enum": [
-                "TBI",
-                "CSI"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "TBI",
+            "CSI"
           ],
           "default": "TBI"
         },
         "location": {
           "description": "location of the tabix index. Only needed when it is not named \`<file>.tbi\`, which is what the \`uri\` shorthand assumes — a \`.csi\` beside the file is reached with \`csi: true\` rather than by spelling this out.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gz.tbi",
             "locationType": "UriLocation"
@@ -814,7 +824,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGzLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
@@ -825,25 +835,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "scoreColumn": {
           "description": "The column to use as a \\"score\\" attribute.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "autoSql": {
           "description": "The autoSql definition for the data fields in the file.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -884,7 +900,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGraphLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bedgraph",
             "locationType": "UriLocation"
@@ -892,7 +908,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "uri": {
           "type": "string",
@@ -929,7 +948,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGraphGzLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bedgraph",
             "locationType": "UriLocation"
@@ -940,7 +959,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "uri": {
           "type": "string",
@@ -981,11 +1003,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapterId": {
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "features": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         }
       }
     },
@@ -1014,11 +1039,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapterId": {
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "features": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         }
       }
     },
@@ -1047,11 +1075,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapterId": {
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "features": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         }
       }
     },
@@ -1080,19 +1111,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my/aliases.txt",
             "locationType": "UriLocation"
           }
         },
         "refNameColumn": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "refNameColumnHeaderName": {
           "description": "alternative to refNameColumn, instead looks at header (starts with # and finds column name).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "uri": {
@@ -1130,7 +1161,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my/sequence_report.tsv",
             "locationType": "UriLocation"
@@ -1138,7 +1169,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "useNameOverride": {
           "description": "forces usage of the UCSC names over the NCBI style names from a FASTA.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "uri": {
@@ -1177,7 +1208,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "gtfLocation": {
           "description": "path to gtf file, also allows for gzipped gtf.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gtf",
             "locationType": "UriLocation"
@@ -1185,7 +1216,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "aggregateField": {
           "description": "attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "gene_name"
         },
         "uri": {
@@ -1223,7 +1254,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "gtfGzLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gtf.gz",
             "locationType": "UriLocation"
@@ -1233,7 +1264,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/TabixIndex"
         },
         "dontRedispatch": {
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "chromosome",
             "region",
@@ -1244,11 +1278,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "aggregateField": {
           "description": "attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "gene_name"
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -1289,7 +1326,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "gffGzLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gff.gz",
             "locationType": "UriLocation"
@@ -1299,7 +1336,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/TabixIndex"
         },
         "dontRedispatch": {
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "chromosome",
             "region",
@@ -1309,7 +1349,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -1350,7 +1393,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "gffLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gff",
             "locationType": "UriLocation"
@@ -1391,7 +1434,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "rootUrlTemplate": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my/{refseq}/trackData.json",
             "locationType": "UriLocation"
@@ -1399,7 +1442,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "refNames": {
           "description": "List of refNames used by the NCList used for aliasing.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1429,7 +1475,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "endpoint": {
           "description": "URL of the SPARQL endpoint.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "https://somesite.com/sparql",
             "locationType": "UriLocation"
@@ -1437,21 +1483,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "queryTemplate": {
           "description": "SPARQL query where {start} {end} and {refName} will get replaced for each call.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "refNamesQueryTemplate": {
           "description": "SPARQL query that returns the possible refNames in a ?refName column.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "refNames": {
           "description": "Possible refNames used by the SPARQL endpoint (ignored if \\"refNamesQueryTemplate\\" is provided).",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "additionalQueryParams": {
           "description": "Additional parameters to add to the query, e.g. \\"format=JSON\\".",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1480,7 +1532,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "twoBitLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.2bit",
             "locationType": "UriLocation"
@@ -1488,7 +1540,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "chromSizesLocation": {
           "description": "An optional chrom.sizes file can be supplied to speed up loading since parsing the twobit file can take time.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/default.chrom.sizes",
             "locationType": "UriLocation"
@@ -1532,14 +1584,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fastaLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa.gz",
             "locationType": "UriLocation"
           }
         },
         "faiLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa.gz.fai",
             "locationType": "UriLocation"
@@ -1547,14 +1599,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/fa.metadata.yaml",
             "locationType": "UriLocation"
           }
         },
         "gziLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa.gz.gzi",
             "locationType": "UriLocation"
@@ -1595,7 +1647,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "chromSizesLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/species.chrom.sizes",
             "locationType": "UriLocation"
@@ -1636,14 +1688,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fastaLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa",
             "locationType": "UriLocation"
           }
         },
         "faiLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa.fai",
             "locationType": "UriLocation"
@@ -1651,7 +1703,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/fa.metadata.yaml",
             "locationType": "UriLocation"
@@ -1696,7 +1748,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": ""
         },
         "fastaLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa",
             "locationType": "UriLocation"
@@ -1704,7 +1756,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/fa.metadata.yaml",
             "locationType": "UriLocation"
@@ -1746,22 +1798,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "search": {
           "description": "Search string or regex to search for.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "searchForward": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "searchReverse": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "caseInsensitive": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         }
       }
@@ -1791,56 +1846,52 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "pam": {
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "NGG"
         },
         "guideLength": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 20
         },
         "pamLocation": {
-          "anyOf": [
-            {
-              "enum": [
-                "3prime",
-                "5prime"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "3prime",
+            "5prime"
           ],
           "default": "3prime"
         },
         "cutOffset": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 3
         },
         "cutOffsetBottom": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 3
         },
         "minGcPercent": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "maxGcPercent": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "excludePolyT": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "searchForward": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "searchReverse": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         }
       }
@@ -1871,18 +1922,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "motifs": {
           "description": "Named motifs to search for, one per line.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "searchForward": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "searchReverse": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         }
       }
@@ -1912,14 +1966,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "vcfLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.vcf",
             "locationType": "UriLocation"
           }
         },
         "samplesTsvLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/samples.tsv",
             "locationType": "UriLocation"
@@ -1960,7 +2014,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "vcfGzLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.vcf.gz",
             "locationType": "UriLocation"
@@ -1970,7 +2024,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/TabixIndex"
         },
         "samplesTsvLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/samples.tsv",
             "locationType": "UriLocation"
@@ -1978,11 +2032,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 5000000
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -2023,27 +2080,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "vcfGzLocationMap": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "indexLocationMap": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "indexType": {
-          "anyOf": [
-            {
-              "enum": [
-                "TBI",
-                "CSI"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "TBI",
+            "CSI"
           ],
           "default": "TBI"
         },
         "samplesTsvLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/samples.tsv",
             "locationType": "UriLocation"
@@ -2051,11 +2107,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 5000000
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         }
       }
     },
@@ -2084,7 +2143,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "ldLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/plink.ld",
             "locationType": "UriLocation"
@@ -2125,7 +2184,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "ldLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/plink.ld.gz",
             "locationType": "UriLocation"
@@ -2173,14 +2232,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "subadapters": {
-          "description": "array of subadapter JSON objects. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "array of subadapter JSON objects. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "bigWigs": {
-          "description": "array of BigWig URLs/paths, alternative to the subadapters slot. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "array of BigWig URLs/paths, alternative to the subadapters slot. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "baseUri": {
           "description": "what relative bigWigs URLs resolve against, stamped from the location the config was loaded from.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         }
       }
@@ -2210,7 +2275,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigWigLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bw",
             "locationType": "UriLocation"
@@ -2218,12 +2283,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "source": {
           "description": "Label added to all features; used as the subtrack/row name when this adapter is a subadapter of a multi-wiggle track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "resolutionMultiplier": {
           "description": "Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points).",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "uri": {
@@ -2261,28 +2326,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "sequenceAdapter": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "windowSize": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "windowDelta": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "gcMode": {
           "description": "calculate GC content fraction or GC skew (G-C)/(G+C).",
-          "anyOf": [
-            {
-              "enum": [
-                "content",
-                "skew"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "content",
+            "skew"
           ],
           "default": "content"
         }
@@ -2314,7 +2375,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "mafGzLocation": {
           "description": "bgzip-compressed MAF file.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.maf.gz",
             "locationType": "UriLocation"
@@ -2322,28 +2383,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "taiLocation": {
           "description": "taffy index.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.maf.gz.tai",
             "locationType": "UriLocation"
           }
         },
         "samples": {
-          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.nh",
             "locationType": "UriLocation"
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, which is why this slot was left off at first — but span is only half of it. Cost is span × depth, and measured against HPRC's own v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, which is why this slot was left off at first — but span is only half of it. Cost is span × depth, and measured against HPRC's own v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -2384,7 +2454,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "tafGzLocation": {
           "description": "bgzip taffy file.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.taf.gz",
             "locationType": "UriLocation"
@@ -2392,28 +2462,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "taiLocation": {
           "description": "taffy index.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.taf.gz.tai",
             "locationType": "UriLocation"
           }
         },
         "samples": {
-          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.nh",
             "locationType": "UriLocation"
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The zoom-out tier on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, but cost is span × depth and a deep alignment runs out of the second factor. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The zoom-out tier on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, but cost is span × depth and a deep alignment runs out of the second factor. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -2453,28 +2532,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigBedLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bb",
             "locationType": "UriLocation"
           }
         },
         "samples": {
-          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.nh",
             "locationType": "UriLocation"
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         }
       }
     },
@@ -2503,35 +2591,44 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGzLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
           }
         },
         "refAssemblyName": {
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "index": {
           "$ref": "#/$defs/TabixIndex"
         },
         "samples": {
-          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.nh",
             "locationType": "UriLocation"
           }
         },
         "summaryAdapter": {
-          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF carries every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track simply has no zoom-out path. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF carries every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track simply has no zoom-out path. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "annotationAdapter": {
-          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -2575,7 +2672,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "hicLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.hic",
             "locationType": "UriLocation"
@@ -2616,17 +2713,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "assemblyNames": {
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "pafLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.paf",
             "locationType": "UriLocation"
           }
         },
         "assemblyNameToPanSN": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -2666,21 +2769,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "assemblyNames": {
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "pifGzLocation": {
           "description": "location of the multi-genome tabix indexed PAF (pif).",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/all_vs_all.pif.gz",
             "locationType": "UriLocation"
           }
         },
         "assemblyNameToPanSN": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "coarseBpPerPxThreshold": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 10000
         },
         "index": {
@@ -2729,20 +2838,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "pafLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.paf",
             "locationType": "UriLocation"
@@ -2784,28 +2896,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "pifGzLocation": {
           "description": "location of pairwise tabix indexed PAF (pif).",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/data/file.pif.gz",
             "locationType": "UriLocation"
           }
         },
         "coarseBpPerPxThreshold": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 10000
         },
         "index": {
@@ -2850,10 +2965,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapters": {
-          "description": "array of pairwise synteny adapter configs sharing one assembly. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "array of pairwise synteny adapter configs sharing one assembly. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "coarseBpPerPxThreshold": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 10000
         }
       }
@@ -2884,20 +3002,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "deltaLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.delta",
             "locationType": "UriLocation"
@@ -2939,20 +3060,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "chainLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.chain",
             "locationType": "UriLocation"
@@ -2993,28 +3117,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mcscanAnchorsLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/mcscan.anchors",
             "locationType": "UriLocation"
           }
         },
         "bed1Location": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
           }
         },
         "bed2Location": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
           }
         },
         "assemblyNames": {
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "uri": {
           "type": "string",
@@ -3070,23 +3197,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mcscanBlocksLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/mcscan.blocks",
             "locationType": "UriLocation"
           }
         },
         "blockAssemblies": {
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "bedLocations": {
-          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "assemblyNames": {
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "attributeColumns": {
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "uri": {
           "type": "string",
@@ -3123,28 +3262,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mcscanSimpleAnchorsLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/mcscan.anchors.simple",
             "locationType": "UriLocation"
           }
         },
         "bed1Location": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
           }
         },
         "bed2Location": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
           }
         },
         "assemblyNames": {
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "uri": {
           "type": "string",
@@ -3201,20 +3343,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "outLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/mashmap.out",
             "locationType": "UriLocation"
@@ -3256,20 +3401,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "blastTableLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/blastTable.tsv",
             "locationType": "UriLocation"
@@ -3277,7 +3425,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columns": {
           "description": "Optional space-separated column name list. If custom columns were used in outfmt, enter them here exactly as specified in the command. At least qseqid, sseqid, qstart, qend, sstart, and send are required.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
         }
       }
@@ -3307,7 +3455,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGzLocation": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
@@ -3318,25 +3466,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "scoreColumn": {
           "description": "BED column to read as the Manhattan plot score.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "neg_log_pvalue"
         },
         "autoSql": {
           "description": "The autoSql definition for the data fields in the file.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "scoreTransform": {
           "description": "transform applied to the score column.",
@@ -3344,7 +3498,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "none"
         },
         "ldAdapter": {
-          "description": "sub-adapter config for PLINK .ld pairwise r² data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "sub-adapter config for PLINK .ld pairwise r² data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "uri": {
           "type": "string",
@@ -3404,46 +3561,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; unset follows field.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "none",
-                    "categorical"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
+              "enum": [
+                "none",
+                "categorical"
               ]
             },
             "domain": {
               "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             },
             "range": {
               "description": "CSS colours the domain takes, in order, continuing into the default palette past its end.",
-              "$ref": "#/$defs/CssColorArrayOrJexl"
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
             }
           },
           "patternProperties": {
@@ -3458,7 +3604,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/FeatureField",
           "default": "",
           "type": "string"
         },
@@ -3475,24 +3621,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "values whose sections stack first, in order.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             }
@@ -3529,17 +3668,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given feature track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 5000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "mouseover": {
@@ -3549,58 +3688,47 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps a scrollable fixed height, \`grow\` expands the track to show all features, \`fit\` squeezes features to fill the current height. Orthogonal to the per-feature size set by \`displayMode\`. Unifies the former \`autoHeight\` (grow) + \`squeezeToDisplayHeight\` (fit) settings.",
-          "anyOf": [
-            {
-              "enum": [
-                "fixed",
-                "grow",
-                "fit"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "fixed",
+            "grow",
+            "fit"
           ],
           "default": "fixed"
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 800
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "features",
-                "density"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "features",
+            "density"
           ],
           "default": "auto"
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "maxFeatureScreenDensity": {
           "description": "maximum features per pixel before showing a \\"too many features\\" message.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "showLegend": {
           "description": "show the color key. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showLabels": {
@@ -3624,21 +3752,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ],
               "deprecated": true,
               "description": "Legacy spellings a migration rewrites when the config loads."
-            },
-            {
-              "$ref": "#/$defs/JexlString"
             }
           ],
           "default": "auto"
         },
         "maxLabelFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0.2
         },
         "maxDescriptionFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0.1
         },
         "color": {
@@ -3654,7 +3779,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
-          "$ref": "#/$defs/CssColorOrJexl",
+          "$ref": "#/$defs/CssColor",
           "default": ""
         },
         "featureHeight": {
@@ -3680,9 +3805,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ],
               "deprecated": true,
               "description": "Legacy spellings a migration rewrites when the config loads."
-            },
-            {
-              "$ref": "#/$defs/JexlString"
             }
           ],
           "default": "normal"
@@ -3692,43 +3814,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "geneGlyphMode": {
           "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "all",
-                "longestCoding"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "all",
+            "longestCoding"
           ],
           "default": "auto"
         },
         "subfeatureLabels": {
           "description": "subfeature label display mode: \`none\` (the default), \`below\` or \`overlay\`.",
-          "anyOf": [
-            {
-              "enum": [
-                "none",
-                "below",
-                "overlay"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "none",
+            "below",
+            "overlay"
           ],
           "default": "none"
         },
         "displayDirectionalChevrons": {
           "description": "Display directional chevrons on intron lines to indicate strand direction. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "transcriptTypes": {
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "mRNA",
             "transcript",
@@ -3740,11 +3851,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "canonicalTranscriptField": {
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "tag"
         },
         "canonicalTranscriptTags": {
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "MANE Select",
             "MANE_Select",
@@ -3755,35 +3869,41 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "containerTypes": {
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "proteoform_orf"
           ]
         },
         "subParts": {
           "description": "subparts for a glyph.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "CDS,UTR,five_prime_UTR,three_prime_UTR"
         },
         "impliedUTRs": {
           "description": "imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "hideSourceFeatures": {
           "description": "hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "labels": {
           "$ref": "#/$defs/CanvasFeatureLabels"
         },
         "showOnlyGenes": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "legend": {
-          "description": "explicit {label,color} color key for a jexl-colored track; empty draws none. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "explicit {label,color} color key for a jexl-colored track; empty draws none. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "renderer": {
           "deprecated": true,
@@ -3847,17 +3967,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given feature track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 5000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "mouseover": {
@@ -3877,7 +3997,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "lengthField": {
           "description": "feature attribute holding a signed bp length change vs the reference; enables indel glyphs. Empty = off.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "color": {
@@ -3885,87 +4005,95 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/CssColorOrJexl"
         },
         "sampleColorMap": {
-          "description": "map of partition value to color; overrides the color slot for matching features. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "map of partition value to color; overrides the color slot for matching features. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "rowHeight": {
           "description": "fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "rowProportion": {
           "description": "fraction of the row height each block fills.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "features",
-                "density"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "features",
+            "density"
           ],
           "default": "auto"
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "colorRowLabels": {
           "description": "tint each sidebar label with the color that row's blocks are painted in.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showLegend": {
           "description": "show the categorical color key for per-feature coloring. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "legend": {
-          "description": "explicit {label,color} color key for color-encoded categories; overrides the auto-derived legend. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "explicit {label,color} color key for color-encoded categories; overrides the auto-derived legend. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "colorDomain": {
           "description": "optional legend order for the color categories; listed labels first, the rest sorted.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "rowGroups": {
-          "description": "array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "showTree": {
           "description": "show the cluster tree sidebar.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showRowLabels": {
           "description": "draw the row name over the left of each row.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 80
         },
         "domain": {
           "description": "optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -3998,7 +4126,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/CssColorOrJexl",
+          "$ref": "#/$defs/CssColor",
           "type": "string"
         },
         {
@@ -4007,85 +4135,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour of a read no field paints.",
-              "$ref": "#/$defs/CssColorOrJexl"
+              "$ref": "#/$defs/CssColor"
             },
             "field": {
               "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/PlainString",
               "default": ""
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "none",
-                    "categorical",
-                    "linear",
-                    "threshold"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
+              "enum": [
+                "none",
+                "categorical",
+                "linear",
+                "threshold"
               ]
             },
             "domain": {
               "description": "for a categorical scale, the values that take the range first, in order; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             },
             "domainMin": {
               "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             },
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis.",
-              "$ref": "#/$defs/CssColorArrayOrJexl"
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "anyOf": [
-                {
-                  "const": "viridis"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "const": "viridis"
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "$ref": "#/$defs/BooleanOrJexl",
+              "type": "boolean",
               "default": false
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             }
           },
           "patternProperties": {
@@ -4100,18 +4210,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "anyOf": [
-            {
-              "enum": [
-                "baseQuality",
-                "base",
-                "modifications",
-                "bisulfite"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "baseQuality",
+            "base",
+            "modifications",
+            "bisulfite"
           ],
           "type": "string"
         },
@@ -4121,30 +4224,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "field": {
               "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset draws none.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "baseQuality",
-                    "base",
-                    "modifications",
-                    "bisulfite"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
+              "enum": [
+                "baseQuality",
+                "base",
+                "modifications",
+                "bisulfite"
               ]
             },
             "scale": {
               "description": "none draws no layer and keeps the field for a switch back.",
-              "anyOf": [
-                {
-                  "const": "none"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "const": "none"
             }
           },
           "patternProperties": {
@@ -4161,51 +4250,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "description": "linear or log or symlog.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log",
-                "symlog"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "linear",
+            "log",
+            "symlog"
           ],
           "default": "linear"
         },
         "domainMin": {
           "description": "pinned bottom of the axis; unset autoscales.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "symlogConstant": {
           "description": "width of symlog's linear region around zero.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "autoscale": {
           "description": "local or localsd.",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "local",
+            "localsd"
           ],
           "default": "local"
         },
         "numStdDev": {
           "description": "standard deviations for the localsd autoscale.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 3
         }
       },
@@ -4233,17 +4308,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 250
         },
         "mouseover": {
@@ -4253,69 +4328,55 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 7
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps \`featureHeight\` and scrolls; \`grow\` expands the track to show every read at the configured height; \`fit\` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by \`featureHeight\`.",
-          "anyOf": [
-            {
-              "enum": [
-                "fixed",
-                "grow",
-                "fit"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "fixed",
+            "grow",
+            "fit"
           ],
           "default": "fixed"
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 800
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "features",
-                "density"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "features",
+            "density"
           ],
           "default": "auto"
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "readConnectionsLineWidth": {
           "description": "Line width for read-connection arcs/lines in pixels.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "showSashimiLabels": {
           "description": "Draw the supporting-read count on each sashimi arc.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "hideNonCanonicalJunctions": {
           "description": "Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "maxHeight": {
           "description": "Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth).",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 6000
         },
         "color": {
@@ -4325,10 +4386,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/AlignmentsBaseColor"
         },
         "modifications": {
-          "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "filterBy": {
           "description": "Filter settings for reads. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          },
           "default": {
             "flagInclude": 0,
             "flagExclude": 1540
@@ -4339,7 +4406,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "collapseGroupRows": {
           "description": "Draw each group as a single row rather than a stack.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "scales": {
@@ -4347,191 +4414,169 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "mismatchAlpha": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showLowFreqMismatches": {
           "description": "Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the \`filterMismatchesByFrequency\` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showLegend": {
           "description": "Show the color-scheme legend overlay. Defaults to off.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "sortedBy": {
-          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "largeFeaturesFirst": {
           "description": "Lay out large features first, in the lowest pileup rows.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "splicedReadsFirst": {
           "description": "Lay out spliced reads first, in the lowest pileup rows.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showOutline": {
-          "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "linkedReads": {
           "description": "View as pairs / link supplementary alignments: put a read, its mate and its split segments on one row.",
-          "anyOf": [
-            {
-              "enum": [
-                "off",
-                "normal"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "off",
+            "normal"
           ],
           "default": "off"
         },
         "showBezierConnections": {
           "description": "Draw paired-read connection curves over the pileup.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showCoverage": {
           "description": "Draw the coverage histogram band.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showPileup": {
           "description": "Draw the stacked-read pileup band.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "coverageHeight": {
           "description": "Height of the coverage band in pixels.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 45
         },
         "coverageSnpMinFrequency": {
           "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`showLowFreqMismatches\`, which turns OFF the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "showMismatches": {
           "description": "Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showInterbaseIndicators": {
           "description": "Draw interbase insertion/clip count bars and indicator triangles.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "flipStrandLongReadChains": {
           "description": "Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "colorSupplementaryChains": {
           "description": "Paint every chain carrying a supplementary segment a flat supplementary color, paired or not.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "drawInter": {
           "description": "Draw inter-chromosomal read-connection arcs.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "drawProperPairArcs": {
           "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "minInterchromSupport": {
           "description": "Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 2
         },
         "drawLongRange": {
           "description": "Draw long-range read-connection arcs.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "arcColorByType": {
           "description": "How to color read-connection arcs.",
-          "anyOf": [
-            {
-              "enum": [
-                "insertSizeAndOrientation",
-                "insertSize",
-                "orientation"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "insertSizeAndOrientation",
+            "insertSize",
+            "orientation"
           ],
           "default": "insertSizeAndOrientation"
         },
         "readConnections": {
           "description": "Read-connection rendering mode (mate pairs + split reads).",
-          "anyOf": [
-            {
-              "enum": [
-                "off",
-                "arc",
-                "cloud"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "off",
+            "arc",
+            "cloud"
           ],
           "default": "off"
         },
         "readConnectionsDown": {
           "description": "Draw read connections below the coverage band. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showSashimiArcs": {
           "description": "Draw sashimi (splice-junction) arcs.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "sashimiArcsMode": {
           "description": "Sashimi junction-arc placement.",
-          "anyOf": [
-            {
-              "enum": [
-                "up",
-                "down",
-                "auto"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "up",
+            "down",
+            "auto"
           ],
           "default": "up"
         },
         "minSashimiScore": {
           "description": "Hide sashimi arcs with fewer than this many supporting reads.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 2
         },
         "sashimiArcsHeight": {
           "description": "Height of the sashimi-arc band in pixels.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 40
         },
         "readConnectionsHeight": {
           "description": "Height of the read-connection band in pixels.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 35
         },
         "showSoftClipping": {
           "description": "Draw soft-clipped read portions. Defaults to off.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       }
@@ -4571,7 +4616,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bezierRadiusRatio": {
           "description": "how deep a chord bows toward the center, as a fraction of the circle radius: 0 draws it straight across, and a larger value bows it further in.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0.1
         },
         "onChordClick": {
@@ -4629,22 +4674,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bezierRadiusRatio": {
           "description": "how deep a chord bows toward the center, as a fraction of the circle radius: 0 draws it straight across, and a larger value bows it further in.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0.1
         },
         "colorBy": {
           "description": "what a ribbon's hue says: 'default' is the color slot, 'chromosome' the arc color of the chromosome it joins on the circle's first genome, and 'strand' the alignment's strand, which is also the twist in every mode.",
-          "anyOf": [
-            {
-              "enum": [
-                "default",
-                "chromosome",
-                "strand"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "default",
+            "chromosome",
+            "strand"
           ],
           "default": "default"
         },
@@ -4750,7 +4788,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ..., \\"scale\\": \\"none\\" }\`.",
-          "$ref": "#/$defs/CssColorOrJexl",
+          "$ref": "#/$defs/CssColor",
           "type": "string"
         },
         {
@@ -4759,85 +4797,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour of a read no field paints.",
-              "$ref": "#/$defs/CssColorOrJexl"
+              "$ref": "#/$defs/CssColor"
             },
             "field": {
               "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/PlainString",
               "default": "strand"
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "none",
-                    "categorical",
-                    "linear",
-                    "threshold"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
+              "enum": [
+                "none",
+                "categorical",
+                "linear",
+                "threshold"
               ]
             },
             "domain": {
               "description": "for a categorical scale, the values that take the range first, in order; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             },
             "domainMin": {
               "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             },
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis.",
-              "$ref": "#/$defs/CssColorArrayOrJexl"
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "anyOf": [
-                {
-                  "const": "viridis"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "const": "viridis"
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "$ref": "#/$defs/BooleanOrJexl",
+              "type": "boolean",
               "default": false
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             }
           },
           "patternProperties": {
@@ -4852,17 +4872,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 250
         },
         "mouseover": {
@@ -4872,69 +4892,55 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 7
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps \`featureHeight\` and scrolls; \`grow\` expands the track to show every read at the configured height; \`fit\` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by \`featureHeight\`.",
-          "anyOf": [
-            {
-              "enum": [
-                "fixed",
-                "grow",
-                "fit"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "fixed",
+            "grow",
+            "fit"
           ],
           "default": "fixed"
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 800
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "features",
-                "density"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "features",
+            "density"
           ],
           "default": "auto"
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "readConnectionsLineWidth": {
           "description": "Line width for read-connection arcs/lines in pixels.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "showSashimiLabels": {
           "description": "Draw the supporting-read count on each sashimi arc.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "hideNonCanonicalJunctions": {
           "description": "Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "maxHeight": {
           "description": "Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth).",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 6000
         },
         "color": {
@@ -4944,10 +4950,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/AlignmentsBaseColor"
         },
         "modifications": {
-          "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "filterBy": {
           "description": "Filter settings for reads. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          },
           "default": {
             "flagInclude": 0,
             "flagExclude": 1540
@@ -4958,7 +4970,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "collapseGroupRows": {
           "description": "Draw each group as a single row rather than a stack.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "scales": {
@@ -4966,212 +4978,183 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "mismatchAlpha": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showLowFreqMismatches": {
           "description": "Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the \`filterMismatchesByFrequency\` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showLegend": {
           "description": "Show the color-scheme legend overlay. Defaults to off.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "sortedBy": {
-          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "largeFeaturesFirst": {
           "description": "Lay out large features first, in the lowest pileup rows.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "splicedReadsFirst": {
           "description": "Lay out spliced reads first, in the lowest pileup rows.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showOutline": {
-          "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "linkedReads": {
           "description": "View as pairs / link supplementary alignments: put a read, its mate and its split segments on one row.",
-          "anyOf": [
-            {
-              "enum": [
-                "off",
-                "normal"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "off",
+            "normal"
           ],
           "default": "off"
         },
         "showBezierConnections": {
           "description": "Draw paired-read connection curves over the pileup.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showCoverage": {
           "description": "Draw the coverage histogram band.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showPileup": {
           "description": "Draw the stacked-read pileup band.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "coverageHeight": {
           "description": "Height of the coverage band in pixels.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 45
         },
         "coverageSnpMinFrequency": {
           "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`showLowFreqMismatches\`, which turns OFF the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "showMismatches": {
           "description": "Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showInterbaseIndicators": {
           "description": "Draw interbase insertion/clip count bars and indicator triangles.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "flipStrandLongReadChains": {
           "description": "Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "colorSupplementaryChains": {
           "description": "Paint every chain carrying a supplementary segment a flat supplementary color, paired or not.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "drawInter": {
           "description": "Draw inter-chromosomal read-connection arcs.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "drawProperPairArcs": {
           "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "minInterchromSupport": {
           "description": "Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 2
         },
         "drawLongRange": {
           "description": "Draw long-range read-connection arcs.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "arcColorByType": {
           "description": "How to color read-connection arcs.",
-          "anyOf": [
-            {
-              "enum": [
-                "insertSizeAndOrientation",
-                "insertSize",
-                "orientation"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "insertSizeAndOrientation",
+            "insertSize",
+            "orientation"
           ],
           "default": "insertSizeAndOrientation"
         },
         "readConnections": {
           "description": "Read-connection rendering mode (mate pairs + split reads).",
-          "anyOf": [
-            {
-              "enum": [
-                "off",
-                "arc",
-                "cloud"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "off",
+            "arc",
+            "cloud"
           ],
           "default": "off"
         },
         "readConnectionsDown": {
           "description": "Draw read connections below the coverage band. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showSashimiArcs": {
           "description": "Draw sashimi (splice-junction) arcs.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "sashimiArcsMode": {
           "description": "Sashimi junction-arc placement.",
-          "anyOf": [
-            {
-              "enum": [
-                "up",
-                "down",
-                "auto"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "up",
+            "down",
+            "auto"
           ],
           "default": "up"
         },
         "minSashimiScore": {
           "description": "Hide sashimi arcs with fewer than this many supporting reads.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 2
         },
         "sashimiArcsHeight": {
           "description": "Height of the sashimi-arc band in pixels.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 40
         },
         "readConnectionsHeight": {
           "description": "Height of the read-connection band in pixels.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 35
         },
         "showSoftClipping": {
           "description": "Draw soft-clipped read portions. Defaults to off.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "lodMode": {
           "description": "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "fine",
-                "coarse"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "fine",
+            "coarse"
           ],
           "default": "auto"
         },
         "hideSelfAlignments": {
           "description": "Hide the group matching the view's own assembly when grouping by mate assembly.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       }
@@ -5205,7 +5188,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/CssColorOrJexl",
+          "$ref": "#/$defs/CssColor",
           "default": "rgba(130,130,130,0.3)",
           "type": "string"
         },
@@ -5215,47 +5198,33 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "the color of the ribbons connecting adjacent lanes.",
-              "$ref": "#/$defs/CssColorOrJexl",
+              "$ref": "#/$defs/CssColor",
               "default": "rgba(130,130,130,0.3)"
             },
             "field": {
               "description": "what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/PlainString",
               "default": ""
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; unset, a field paints.",
-              "anyOf": [
-                {
-                  "const": "none"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "const": "none"
             },
             "domain": {
               "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             }
@@ -5272,17 +5241,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 240
         },
         "mouseover": {
@@ -5300,50 +5269,46 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "lodMode": {
           "description": "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "fine",
-                "coarse"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "fine",
+            "coarse"
           ],
           "default": "auto"
         },
         "domain": {
           "description": "the lanes that stack first below the anchor, in order; the rest follow densest-first, so a ribbon chain through adjacent lanes is cut as late as possible. What the Lanes menu and a header drag write.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "ribbonColor": {
           "$ref": "#/$defs/RibbonColor"
         },
         "hideUnlabelled": {
           "description": "under a text column, draw only the ribbons whose pair carries a label.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "drawCurves": {
           "description": "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's view-level \`drawCurves\` override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "bridgeSkippedLanes": {
           "description": "join a group across a lane that places nothing for it, to the next lane down that does. A ribbon otherwise joins adjacent lanes only, so a sparse lane mid-stack cuts every chain running through it.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showLegend": {
           "description": "show the color key: the anchor lane's drawn gene colors, and what \`ribbonColor\` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so a \`color\` slot resolving to one color and a ribbon scale painting nothing key nothing. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showLaneTicks": {
           "description": "draw each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. Turning this off leaves the header's span and multiple as the only scale statement.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         }
       }
@@ -5377,31 +5342,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "display height in pixels; unset auto-fits to the sequence.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "showForward": {
           "description": "show the forward-strand sequence row.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showReverse": {
           "description": "show the reverse-complement sequence row (DNA only).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showTranslation": {
           "description": "show the translation frame rows (DNA only).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       }
@@ -5435,17 +5400,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "mouseover": {
@@ -5455,58 +5420,47 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps a scrollable fixed height, \`grow\` expands the track to show all features, \`fit\` squeezes features to fill the current height. Orthogonal to the per-feature size set by \`displayMode\`. Unifies the former \`autoHeight\` (grow) + \`squeezeToDisplayHeight\` (fit) settings.",
-          "anyOf": [
-            {
-              "enum": [
-                "fixed",
-                "grow",
-                "fit"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "fixed",
+            "grow",
+            "fit"
           ],
           "default": "fixed"
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 800
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "features",
-                "density"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "features",
+            "density"
           ],
           "default": "auto"
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "maxFeatureScreenDensity": {
           "description": "maximum features per pixel before showing a \\"too many features\\" message.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "showLegend": {
           "description": "show the color key. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showLabels": {
@@ -5530,21 +5484,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ],
               "deprecated": true,
               "description": "Legacy spellings a migration rewrites when the config loads."
-            },
-            {
-              "$ref": "#/$defs/JexlString"
             }
           ],
           "default": "auto"
         },
         "maxLabelFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0.2
         },
         "maxDescriptionFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0.1
         },
         "color": {
@@ -5560,7 +5511,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
-          "$ref": "#/$defs/CssColorOrJexl",
+          "$ref": "#/$defs/CssColor",
           "default": ""
         },
         "featureHeight": {
@@ -5586,9 +5537,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ],
               "deprecated": true,
               "description": "Legacy spellings a migration rewrites when the config loads."
-            },
-            {
-              "$ref": "#/$defs/JexlString"
             }
           ],
           "default": "normal"
@@ -5598,43 +5546,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "geneGlyphMode": {
           "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "all",
-                "longestCoding"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "all",
+            "longestCoding"
           ],
           "default": "auto"
         },
         "subfeatureLabels": {
           "description": "subfeature label display mode: \`none\` (the default), \`below\` or \`overlay\`.",
-          "anyOf": [
-            {
-              "enum": [
-                "none",
-                "below",
-                "overlay"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "none",
+            "below",
+            "overlay"
           ],
           "default": "none"
         },
         "displayDirectionalChevrons": {
           "description": "Display directional chevrons on intron lines to indicate strand direction. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "transcriptTypes": {
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "mRNA",
             "transcript",
@@ -5646,11 +5583,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "canonicalTranscriptField": {
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "tag"
         },
         "canonicalTranscriptTags": {
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "MANE Select",
             "MANE_Select",
@@ -5661,24 +5601,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "containerTypes": {
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "proteoform_orf"
           ]
         },
         "subParts": {
           "description": "subparts for a glyph.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "CDS,UTR,five_prime_UTR,three_prime_UTR"
         },
         "impliedUTRs": {
           "description": "imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "hideSourceFeatures": {
           "description": "hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "labels": {
@@ -5743,17 +5686,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "Starting height in pixels for the genotype rows; drag-resizable, and the rows divide it while row height is on auto-fit.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 200
         },
         "mouseover": {
@@ -5762,64 +5705,63 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "lineZoneHeight": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "showTree": {
           "description": "Show the sample clustering tree in the sidebar.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showRowLabels": {
           "description": "Show the per-sample row labels in the sidebar.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 80
         },
         "domain": {
           "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showTooltips": {
           "description": "show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "renderingMode": {
           "description": "'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype.",
-          "anyOf": [
-            {
-              "enum": [
-                "alleleCount",
-                "phased"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "alleleCount",
+            "phased"
           ],
           "default": "alleleCount"
         },
@@ -5829,27 +5771,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "shadeByDosage": {
           "description": "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "minorAlleleFrequencyFilter": {
           "description": "Hide variants whose minor allele frequency is below this threshold.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "maxMissingnessFilter": {
           "description": "Hide variants whose fraction of no-call (missing) genotypes is above this threshold; 1 keeps every variant.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "showLegend": {
           "description": "Whether to show the floating legend over the display; turn it off to size a short lane to its rows rather than to its key. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "rowColor": {
           "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "facet": {
@@ -5857,48 +5799,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "referenceDrawingMode": {
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
-          "anyOf": [
-            {
-              "enum": [
-                "draw",
-                "skip"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "draw",
+            "skip"
           ],
           "default": "skip"
         },
         "showInsertionGlyphs": {
           "description": "widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showVariantLane": {
           "description": "draw a lane of the variants themselves above the genotype rows, at their genomic positions.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "variantLaneHeight": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 40
         },
         "variantLaneLabels": {
           "description": "which label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull.",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "nameAndDescription",
-                "name",
-                "description",
-                "none"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "nameAndDescription",
+            "name",
+            "description",
+            "none"
           ],
           "default": "auto"
         }
@@ -5936,17 +5864,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "Starting height in pixels for the whole display, including the lineZoneHeight band above the rows; drag-resizable, and the rows divide what is left over while row height is on auto-fit.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 250
         },
         "mouseover": {
@@ -5955,64 +5883,63 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "lineZoneHeight": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 20
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "showTree": {
           "description": "Show the sample clustering tree in the sidebar.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showRowLabels": {
           "description": "Show the per-sample row labels in the sidebar.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 80
         },
         "domain": {
           "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showTooltips": {
           "description": "show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "renderingMode": {
           "description": "'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype.",
-          "anyOf": [
-            {
-              "enum": [
-                "alleleCount",
-                "phased"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "alleleCount",
+            "phased"
           ],
           "default": "alleleCount"
         },
@@ -6022,27 +5949,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "shadeByDosage": {
           "description": "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "minorAlleleFrequencyFilter": {
           "description": "Hide variants whose minor allele frequency is below this threshold.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "maxMissingnessFilter": {
           "description": "Hide variants whose fraction of no-call (missing) genotypes is above this threshold; 1 keeps every variant.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "showLegend": {
           "description": "Whether to show the floating legend over the display; turn it off to size a short lane to its rows rather than to its key. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "rowColor": {
           "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "facet": {
@@ -6050,16 +5977,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "referenceDrawingMode": {
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
-          "anyOf": [
-            {
-              "enum": [
-                "draw",
-                "skip"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "draw",
+            "skip"
           ],
           "default": "skip"
         }
@@ -6097,17 +6017,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 400
         },
         "mouseover": {
@@ -6116,53 +6036,46 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "lineZoneHeight": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "ldMetric": {
-          "anyOf": [
-            {
-              "enum": [
-                "r2",
-                "dprime"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "r2",
+            "dprime"
           ],
           "default": "r2"
         },
         "showLegend": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showLDTriangle": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "squashToHeight": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "maxVariantSeparation": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "showVerticalGuides": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showLabels": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "tickHeight": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 6
         },
         "useGenomicPositions": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       }
@@ -6196,7 +6109,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/CssColorOrJexl",
+          "$ref": "#/$defs/CssColor",
           "type": "string"
         },
         {
@@ -6205,87 +6118,62 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour painting every bar.",
-              "$ref": "#/$defs/CssColorOrJexl"
+              "$ref": "#/$defs/CssColor"
             },
             "field": {
               "description": "score, the value each bar carries, or source, the subtrack it came from.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "score",
-                    "source"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
+              "enum": [
+                "score",
+                "source"
               ]
             },
             "scale": {
               "description": "how field becomes a colour: threshold cuts score at its lowest cut and paints each side; linear and log fade from the colour at domainMid out to the ends of the y domain, which is the density picture, through range, else scheme, else the two-sided fade; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "none",
-                    "categorical",
-                    "linear",
-                    "log",
-                    "threshold"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
+              "enum": [
+                "none",
+                "categorical",
+                "linear",
+                "log",
+                "threshold"
               ]
             },
             "domain": {
               "description": "for a threshold scale, the cut point the two sides part at, the lowest where it lists several, empty meaning the origin; for a categorical scale over source, the subtracks outside a group that take the range first, in order.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             },
             "range": {
               "description": "a threshold scale's colour below the cut and at or above it; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear or log scale's stops, evenly spaced.",
-              "$ref": "#/$defs/CssColorArrayOrJexl"
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "anyOf": [
-                {
-                  "const": "viridis"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "const": "viridis"
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "$ref": "#/$defs/BooleanOrJexl",
+              "type": "boolean",
               "default": false
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             }
           },
           "patternProperties": {
@@ -6300,9 +6188,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0,
-          "type": "number"
+          "type": "number",
+          "default": 0
         },
         {
           "type": "object",
@@ -6310,16 +6197,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "the value the rule is drawn at.",
-              "$ref": "#/$defs/NumberOrJexl",
+              "type": "number",
               "default": 0
             },
             "color": {
               "description": "line and label colour; unset is the chrome’s own.",
-              "$ref": "#/$defs/CssColorOrJexl"
+              "$ref": "#/$defs/CssColor"
             },
             "label": {
               "description": "text at the rule's right-hand end.",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/PlainString",
               "default": ""
             }
           },
@@ -6337,57 +6224,43 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "description": "linear or log or symlog.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log",
-                "symlog"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "linear",
+            "log",
+            "symlog"
           ],
           "default": "linear"
         },
         "domainMin": {
           "description": "pinned bottom of the axis; unset autoscales.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "symlogConstant": {
           "description": "width of symlog's linear region around zero.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "autoscale": {
           "description": "local or localsd or localpercentile.",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd",
-                "localpercentile"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "local",
+            "localsd",
+            "localpercentile"
           ],
           "default": "localpercentile"
         },
         "numStdDev": {
           "description": "standard deviations for the localsd autoscale.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 3
         },
         "numQuantile": {
           "description": "percentile the localpercentile autoscale clips at.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0.99
         },
         "rules": {
@@ -6421,19 +6294,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "defaultRendering": {
           "description": "Default rendering type.",
-          "anyOf": [
-            {
-              "enum": [
-                "xyplot",
-                "density",
-                "line",
-                "linecenter",
-                "scatter"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "xyplot",
+            "density",
+            "line",
+            "linecenter",
+            "scatter"
           ],
           "default": "xyplot"
         },
@@ -6442,7 +6308,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "color": {
@@ -6450,37 +6316,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "score"
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "origin": {
           "description": "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot rendering. Defaults to 2.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 2
         },
         "lineWidth": {
           "description": "Line thickness in px for line rendering. Defaults to 1.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "maxGapMultiple": {
           "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "scales": {
@@ -6488,54 +6354,47 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showLegend": {
           "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "summaryScoreMode": {
           "description": "choose whether to use max/min/average or whiskers which combines all three into the same rendering.",
-          "anyOf": [
-            {
-              "enum": [
-                "max",
-                "min",
-                "avg",
-                "whiskers"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "max",
+            "min",
+            "avg",
+            "whiskers"
           ],
           "default": "whiskers"
         },
         "showTree": {
           "description": "Show the subtrack clustering tree in the sidebar.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showRowLabels": {
           "description": "Name each subtrack row down the left edge.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 80
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       }
@@ -6569,19 +6428,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "defaultRendering": {
           "description": "Default rendering type.",
-          "anyOf": [
-            {
-              "enum": [
-                "xyplot",
-                "density",
-                "line",
-                "linecenter",
-                "scatter"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "xyplot",
+            "density",
+            "line",
+            "linecenter",
+            "scatter"
           ],
           "default": "xyplot"
         },
@@ -6590,7 +6442,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "color": {
@@ -6598,37 +6450,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "score"
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "origin": {
           "description": "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot rendering. Defaults to 2.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 2
         },
         "lineWidth": {
           "description": "Line thickness in px for line rendering. Defaults to 1.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "maxGapMultiple": {
           "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "scales": {
@@ -6636,75 +6488,61 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showLegend": {
           "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "summaryScoreMode": {
           "description": "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces the above-origin colour on every bin (buildSourceRenderData skips the two-sided split for whiskers) and hides negative GC-skew as if it were positive.",
-          "anyOf": [
-            {
-              "enum": [
-                "max",
-                "min",
-                "avg",
-                "whiskers"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "max",
+            "min",
+            "avg",
+            "whiskers"
           ],
           "default": "avg"
         },
         "showTree": {
           "description": "Show the subtrack clustering tree in the sidebar.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showRowLabels": {
           "description": "Name each subtrack row down the left edge.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 80
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "windowSize": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "windowDelta": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "gcMode": {
-          "anyOf": [
-            {
-              "enum": [
-                "content",
-                "skew"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "content",
+            "skew"
           ],
           "default": "content"
         }
@@ -6739,19 +6577,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "defaultRendering": {
           "description": "Default rendering type.",
-          "anyOf": [
-            {
-              "enum": [
-                "xyplot",
-                "density",
-                "line",
-                "linecenter",
-                "scatter"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "xyplot",
+            "density",
+            "line",
+            "linecenter",
+            "scatter"
           ],
           "default": "xyplot"
         },
@@ -6760,7 +6591,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "color": {
@@ -6768,37 +6599,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "score"
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "origin": {
           "description": "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot rendering. Defaults to 2.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 2
         },
         "lineWidth": {
           "description": "Line thickness in px for line rendering. Defaults to 1.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "maxGapMultiple": {
           "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "scales": {
@@ -6806,75 +6637,61 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showLegend": {
           "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "summaryScoreMode": {
           "description": "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces the above-origin colour on every bin (buildSourceRenderData skips the two-sided split for whiskers) and hides negative GC-skew as if it were positive.",
-          "anyOf": [
-            {
-              "enum": [
-                "max",
-                "min",
-                "avg",
-                "whiskers"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "max",
+            "min",
+            "avg",
+            "whiskers"
           ],
           "default": "avg"
         },
         "showTree": {
           "description": "Show the subtrack clustering tree in the sidebar.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showRowLabels": {
           "description": "Name each subtrack row down the left edge.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 80
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "windowSize": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "windowDelta": {
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "gcMode": {
-          "anyOf": [
-            {
-              "enum": [
-                "content",
-                "skew"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "content",
+            "skew"
           ],
           "default": "content"
         }
@@ -6909,17 +6726,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 5000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "height": {
           "description": "display height in pixels; unset fits rows to content, bounded so a deep alignment shrinks its rows rather than growing the track off-screen.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
@@ -6928,142 +6745,131 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "rowProportion": {
           "description": "fraction of the row height each glyph fills.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0.8
         },
         "showAllLetters": {
           "description": "draw every base letter instead of only mismatches.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "mismatchRendering": {
           "description": "color bases by mismatch to the reference.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showAsUpperCase": {
           "description": "uppercase all base letters.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showTree": {
           "description": "show the species tree sidebar.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showRowLabels": {
           "description": "draw the species name over the left of each row.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 80
         },
         "domain": {
           "description": "row order: the guide tree rotates so the species listed come as early as its topology allows, the way ggtree's rotate turns a clade — a species brings its clade with it, so this is a preference the tree honours rather than a placement. The dendrogram keeps drawing. With no guide tree the species listed simply lead, and the rest keep the order the adapter reported them in.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "showLegend": {
           "description": "show the color key for the active row rendering. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showCoverage": {
           "description": "show the coverage band.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showAlignments": {
           "description": "show the per-sample alignment rows.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "coverageHeight": {
           "description": "height of the coverage band in px.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 45
         },
         "showConservation": {
           "description": "show the conservation band.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "conservationHeight": {
           "description": "height of the conservation band in px.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 40
         },
         "conservationMode": {
           "description": "conservation band resolution: base or codon.",
-          "anyOf": [
-            {
-              "enum": [
-                "base",
-                "codon"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "base",
+            "codon"
           ],
           "default": "base"
         },
         "rowIdentityMode": {
           "description": "per-row identity rendering: none, heatmap, or xyplot.",
-          "anyOf": [
-            {
-              "enum": [
-                "none",
-                "heatmap",
-                "xyplot"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "none",
+            "heatmap",
+            "xyplot"
           ],
           "default": "none"
         },
         "rowIdentityAutoZoom": {
           "description": "show the base/SNP coloring instead of the per-row identity plot once zoomed in to base level (UCSC wigMaf); false pins the plot on at every zoom.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showAnnotations": {
           "description": "show the per-species CDS reading-frame overlay.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showTranslation": {
           "description": "draw translated amino acids in place of nucleotides.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "colorByChromosome": {
           "description": "color alignment blocks by source chromosome.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showReferenceRow": {
           "description": "give the reference species a row of its own.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showInversions": {
           "description": "hatch strand-flipped (inverted) alignment blocks.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       }
@@ -7097,58 +6903,51 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the Hi-C track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 300
         },
         "colorScheme": {
           "description": "color ramp used to render contact intensity.",
-          "anyOf": [
-            {
-              "enum": [
-                "juicebox",
-                "fall",
-                "viridis"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "juicebox",
+            "fall",
+            "viridis"
           ],
           "default": "juicebox"
         },
         "showLegend": {
           "description": "show the color scale legend. Defaults to off.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "resolutionBias": {
           "description": "offset from the auto-picked resolution binsize.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "useLogScale": {
           "description": "map contact counts to color on a log2 scale.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "useColorPercentile": {
           "description": "saturate color at the 95th percentile of counts.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "showResolutionControls": {
           "description": "show the on-figure resolution dropdown in the overlay.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "selectedNormalization": {
           "description": "preferred matrix normalization scheme.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "KR"
         },
         "squashToHeight": {
           "description": "squash the triangle vertically to fit the display height instead of drawing square bins.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       }
@@ -7182,7 +6981,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "color": {
@@ -7212,32 +7011,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayMode": {
           "description": "render semi-circles instead of arcs.",
-          "anyOf": [
-            {
-              "enum": [
-                "arcs",
-                "semicircles"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "arcs",
+            "semicircles"
           ],
           "default": "arcs"
         },
         "minScore": {
           "description": "hide arcs whose feature score is below this; features with no score are always drawn.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "renderer": {
@@ -7275,7 +7067,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "color": {
@@ -7285,22 +7077,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "lineWidth": {
           "description": "the stroke width of the arcs, in pixels.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 3
         },
         "minScore": {
           "description": "hide arcs whose feature score is below this; features with no score are always drawn.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       }
@@ -7354,47 +7146,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points domain lists; unset follows field, and is threshold over ld and categorical over anything else.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "none",
-                    "categorical",
-                    "threshold"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
+              "enum": [
+                "none",
+                "categorical",
+                "threshold"
               ]
             },
             "domain": {
               "description": "under a categorical scale, the field's values that take the range first, in order, in the key as on the points, the rest following sorted, each on a colour no listed value paints; under a threshold scale, the cut points in ascending order, range taking one entry more than this, one per interval; r² to the index SNP cuts at 0.2, 0.4, 0.6 and 0.8 into the LocusZoom blue-through-red bins unless these say otherwise.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, continuing into the default palette past its end, or a threshold scale hands its intervals, lowest first.",
-              "$ref": "#/$defs/CssColorArrayOrJexl"
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
             }
           },
           "patternProperties": {
@@ -7411,23 +7192,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "description": "linear.",
-          "anyOf": [
-            {
-              "const": "linear"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "const": "linear",
           "default": "linear"
         },
         "domainMin": {
           "description": "pinned bottom of the axis; unset autoscales.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "rules": {
           "type": "array",
@@ -7460,7 +7234,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 100
         },
         "color": {
@@ -7468,7 +7242,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "score"
         },
         "scales": {
@@ -7476,22 +7250,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "scatterPointSize": {
           "description": "Diameter in px of Manhattan points.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 4
         },
         "showLegend": {
           "description": "Draw the color key while LD or field coloring is active. Defaults to on.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         }
       }
@@ -7545,77 +7319,59 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "scale": {
               "description": "how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset beside a field, it is categorical.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "none",
-                    "categorical",
-                    "linear",
-                    "log",
-                    "threshold"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
+              "enum": [
+                "none",
+                "categorical",
+                "linear",
+                "log",
+                "threshold"
               ]
             },
             "domain": {
               "description": "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             },
             "domainMin": {
               "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             },
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
-              "$ref": "#/$defs/CssColorArrayOrJexl"
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "anyOf": [
-                {
-                  "const": "viridis"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "const": "viridis"
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "$ref": "#/$defs/BooleanOrJexl",
+              "type": "boolean",
               "default": false
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
-              "$ref": "#/$defs/NumberOrJexl"
+              "type": "number"
             }
           },
           "patternProperties": {
@@ -7672,58 +7428,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "scale": {
               "description": "none or categorical; unset follows field.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "none",
-                    "categorical"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
+              "enum": [
+                "none",
+                "categorical"
               ]
             },
             "range": {
               "description": "glyph names, in order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "enum": [
-                      "disc",
-                      "triangle",
-                      "diamond"
-                    ]
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "type": "array",
+              "items": {
+                "enum": [
+                  "disc",
+                  "triangle",
+                  "diamond"
+                ]
+              }
             },
             "domain": {
               "description": "category order.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             }
@@ -7806,7 +7541,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "as": {
           "description": "output field.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "value"
         }
       },
@@ -7827,29 +7562,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "bin width in bp, or \\"auto\\" to follow the zoom.",
           "anyOf": [
             {
-              "anyOf": [
-                {
-                  "type": "number"
-                },
-                {
-                  "const": "auto"
-                }
-              ]
+              "type": "number"
             },
             {
-              "$ref": "#/$defs/JexlString"
+              "const": "auto"
             }
           ],
           "default": 10000
         },
         "field": {
           "description": "field placing a feature in a bin.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "start"
         },
         "as": {
           "description": "the bin's start and end fields.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "start",
             "end"
@@ -7868,30 +7599,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "op": {
           "description": "count, sum, mean, min or max.",
-          "anyOf": [
-            {
-              "enum": [
-                "count",
-                "sum",
-                "mean",
-                "min",
-                "max"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "count",
+            "sum",
+            "mean",
+            "min",
+            "max"
           ],
           "default": "count"
         },
         "field": {
           "description": "field the op reads.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "as": {
           "description": "output field.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         }
       },
@@ -7910,7 +7634,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "groupby": {
           "description": "grouping fields; empty follows a preceding bin.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "ops": {
           "type": "array",
@@ -7934,7 +7661,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "as": {
           "description": "depth field.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "coverage"
         }
       },
@@ -7953,17 +7680,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "field": {
           "description": "array field fanned out.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "subfeatures"
         },
         "index": {
           "description": "field for the element's position.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "keepEmpty": {
           "description": "keep a feature whose array field is empty.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       },
@@ -7982,12 +7709,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "as": {
           "description": "row field.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "row"
         },
         "fields": {
           "description": "start and end fields of the packed interval.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "start",
             "end"
@@ -7995,7 +7725,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "padding": {
           "description": "bp between two features on one row.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         }
       },
@@ -8184,17 +7914,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "shape": {
           "description": "bar, point or span.",
-          "anyOf": [
-            {
-              "enum": [
-                "bar",
-                "point",
-                "span"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "bar",
+            "point",
+            "span"
           ],
           "default": "bar"
         },
@@ -8209,27 +7932,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "source": {
           "description": "features, or density past the fetch budget.",
-          "anyOf": [
-            {
-              "enum": [
-                "features",
-                "density"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "features",
+            "density"
           ],
           "default": "features"
         },
         "minBpPerPx": {
           "description": "draw only at or above this bp/px.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "maxBpPerPx": {
           "description": "draw only below this bp/px.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         }
       },
@@ -8245,56 +7961,42 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "description": "linear or log.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "linear",
+            "log"
           ],
           "default": "linear"
         },
         "domainMin": {
           "description": "pinned bottom of the axis; unset autoscales.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "autoscale": {
           "description": "local or localsd or localpercentile.",
-          "anyOf": [
-            {
-              "enum": [
-                "local",
-                "localsd",
-                "localpercentile"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "local",
+            "localsd",
+            "localpercentile"
           ],
           "default": "local"
         },
         "numStdDev": {
           "description": "standard deviations for the localsd autoscale.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 3
         },
         "numQuantile": {
           "description": "percentile the localpercentile autoscale clips at.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0.99
         },
         "title": {
           "description": "axis caption; unset follows the plotted field, \\"\\" draws none.",
-          "$ref": "#/$defs/StringOrJexl"
+          "$ref": "#/$defs/PlainString"
         },
         "rules": {
           "type": "array",
@@ -8327,38 +8029,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 150
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "features",
-                "density"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "auto",
+            "features",
+            "density"
           ],
           "default": "auto"
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "marks": {
@@ -8381,37 +8076,40 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "origin": {
           "description": "baseline value for bars.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         },
         "minWidthPx": {
           "description": "minimum bar/span width in px.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 1
         },
         "scatterPointSize": {
           "description": "point diameter in px.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 4
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "displayCrossHatches": {
           "description": "rule the plot at the tick positions.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "showLegend": {
           "description": "draw the colour key.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -8444,7 +8142,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "namesIndexLocation": {
           "description": "the location of the JBrowse1 names index data directory.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/volvox/names",
             "locationType": "UriLocation"
@@ -8452,11 +8150,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "tracks": {
           "description": "List of tracks covered by text search adapter.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "assemblyNames": {
           "description": "List of assemblies covered by text search adapter.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -8488,14 +8192,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "ixFilePath": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "out.ix",
             "locationType": "UriLocation"
           }
         },
         "ixxFilePath": {
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "out.ixx",
             "locationType": "UriLocation"
@@ -8503,7 +8207,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "assemblyNames": {
           "description": "List of assemblies covered by text search adapter.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "uri": {
           "type": "string",
@@ -8545,7 +8252,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "indexingAttributes": {
           "description": "list of which feature attributes to index for text searching.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "Name",
             "ID",
@@ -8554,7 +8264,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "indexingFeatureTypesToExclude": {
           "description": "list of feature types to exclude in text search index.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "CDS",
             "exon"
@@ -8562,7 +8275,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "indexingFeatureTypesToInclude": {
           "description": "the only feature types to index; empty means index every type not excluded.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "textSearchAdapter": {
           "$ref": "#/$defs/TextSearchAdapter"
@@ -8585,11 +8301,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "depth": {
           "description": "levels of subfeature the formatDetails.subfeatures callback runs on, default 2.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         },
         "maxDepth": {
           "description": "hide subfeatures nested deeper than this, default no limit.",
-          "$ref": "#/$defs/NumberOrJexl"
+          "type": "number"
         }
       },
       "patternProperties": {
@@ -8605,7 +8321,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "formats configuration object in about dialog. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "hideUris": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       },
@@ -8619,27 +8335,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -9089,27 +8814,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -9430,21 +9164,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "name": {
           "description": "optional track name, otherwise uses the \\"Reference sequence (assemblyName)\\".",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "sequenceType": {
           "description": "either dna or pep.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "dna"
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "formatAbout": {
           "$ref": "#/$defs/FormatAbout"
@@ -9602,27 +9339,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -10163,27 +9909,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -10307,27 +10062,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -10549,27 +10313,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -10791,27 +10564,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -10962,27 +10744,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -11148,27 +10939,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -11277,27 +11077,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -11620,27 +11429,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "adapter": {
           "$ref": "#/$defs/Adapter"
@@ -11746,16 +11564,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "a unique name for this connection.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "nameOfConnection"
         },
         "assemblyNames": {
           "description": "optional list of genomes to import from this track hub, if empty all genomes will be imported.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "hubTxtLocation": {
           "description": "location of the hub file (usually called hub.txt).",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "https://mysite.com/path/to/hub.txt",
             "locationType": "UriLocation"
@@ -11792,16 +11613,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "a unique name for this connection.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "nameOfConnection"
         },
         "assemblyNames": {
           "description": "optional list of genomes to import from this config.json, if empty all genomes will be imported.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "configJsonLocation": {
           "description": "location of the jb2 config file (usually called config.json).",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "https://mysite.com/path/to/config.json",
             "locationType": "UriLocation"
@@ -11838,16 +11662,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "a unique name for this connection.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "nameOfConnection"
         },
         "assemblyNames": {
           "description": "name of the assembly the connection belongs to, should be a single entry.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "dataDirLocation": {
           "description": "the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "https://mysite.com/jbrowse/data/",
             "locationType": "UriLocation"
@@ -11884,61 +11711,64 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "Bearer"
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "authEndpoint": {
           "description": "the authorization code endpoint of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "tokenEndpoint": {
           "description": "the token endpoint of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "needsPKCE": {
           "description": "boolean to indicate if the endpoint needs a PKCE code.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "clientId": {
           "description": "id for the OAuth application.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "scopes": {
           "description": "optional scopes for the authorization call.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "state": {
           "description": "optional state for the authorization call.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "code"
         }
       }
@@ -11972,31 +11802,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "validateWithHEAD": {
           "description": "validate the token with a HEAD request before using it.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         }
       }
@@ -12030,31 +11863,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "Basic"
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "validateWithHEAD": {
           "description": "validate the token with a HEAD request before using it.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         }
       }
@@ -12088,27 +11924,30 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "Bearer"
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "addtodropbox.com",
             "db.tt",
@@ -12121,37 +11960,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "authEndpoint": {
           "description": "the authorization code endpoint of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "https://www.dropbox.com/oauth2/authorize"
         },
         "tokenEndpoint": {
           "description": "the token endpoint of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "https://api.dropbox.com/oauth2/token"
         },
         "needsPKCE": {
           "description": "boolean to indicate if the endpoint needs a PKCE code.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "clientId": {
           "description": "id for the OAuth application.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "scopes": {
           "description": "optional scopes for the authorization call.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "state": {
           "description": "optional state for the authorization call.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "code"
         }
       }
@@ -12185,64 +12024,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "Bearer"
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "drive.google.com"
           ]
         },
         "authEndpoint": {
           "description": "the authorization code endpoint of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "https://accounts.google.com/o/oauth2/v2/auth"
         },
         "tokenEndpoint": {
           "description": "the token endpoint of the internet account.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "needsPKCE": {
           "description": "boolean to indicate if the endpoint needs a PKCE code.",
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "clientId": {
           "description": "id for the OAuth application.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "scopes": {
           "description": "optional scopes for the authorization call.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "https://www.googleapis.com/auth/drive.readonly"
         },
         "state": {
           "description": "optional state for the authorization call.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "responseType": {
           "description": "the type of response from the authorization endpoint.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "token"
         }
       }
@@ -14048,27 +13890,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "$ref": "#/$defs/StringArrayOrJexl",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "metadata": {
-          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "textSearching": {
           "$ref": "#/$defs/textSearching"
@@ -14424,21 +14275,30 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "aliases": {
           "description": "Other possible names for the assembly.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "sequence": {
           "$ref": "#/$defs/AssemblySequence"
         },
         "refNameColors": {
           "description": "Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "geneticCodes": {
-          "description": "Map of reference sequence name to NCBI genetic-code (translation table) id for sequences not using the standard code, e.g. { \\"chrM\\": 2 }. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Map of reference sequence name to NCBI genetic-code (translation table) id for sequences not using the standard code, e.g. { \\"chrM\\": 2 }. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "geneticCodesLocation": {
           "description": "Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "",
             "locationType": "UriLocation"
@@ -14452,7 +14312,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayName": {
           "description": "A human readable display name for the assembly e.g. \\"Homo sapiens (hg38)\\" while the assembly name may just be \\"hg38\\".",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "uri": {
@@ -18768,7 +18628,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/CssColorOrJexl",
+          "$ref": "#/$defs/CssColor",
           "type": "string"
         },
         {
@@ -18777,46 +18637,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "the color of every alignment in place of the default scheme.",
-              "$ref": "#/$defs/CssColorOrJexl"
+              "$ref": "#/$defs/CssColor"
             },
             "field": {
               "description": "what colours an alignment: strand paints forward and reverse; query and target one colour per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mappingQual and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/PlainString",
               "default": ""
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; unset, a field paints.",
-              "anyOf": [
-                {
-                  "const": "none"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "const": "none"
             },
             "domain": {
               "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it.",
               "anyOf": [
                 {
-                  "anyOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
                       }
-                    }
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
+                    ]
+                  }
                 }
               ]
             }
@@ -20060,12 +19906,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "defaultDriver": {
           "description": "the RPC driver to run data fetching on: MainThreadRpcDriver or WebWorkerRpcDriver. Leave empty to use the default for this application.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": ""
         },
         "workerCount": {
           "description": "The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.",
-          "$ref": "#/$defs/NumberOrJexl",
+          "type": "number",
           "default": 0
         }
       },
@@ -20079,11 +19925,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "trackNames": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "categories": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       },
@@ -20097,14 +19943,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "categoryNames": {
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "topLevelCategories": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "subCategories": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       },
@@ -20122,7 +19971,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "defaultFolderCategories": {
           "description": "list of category names to display as folders by default.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "defaultCollapsed": {
           "$ref": "#/$defs/defaultCollapsed"
@@ -20138,34 +19990,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "animationMode": {
-          "anyOf": [
-            {
-              "enum": [
-                "system",
-                "enabled",
-                "disabled"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "system",
+            "enabled",
+            "disabled"
           ],
           "default": "enabled"
         },
         "scrollZoom": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "numberGrouping": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": true
         },
         "useWorkspaces": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "developerMode": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         }
       },
@@ -20179,17 +20024,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "trackLabels": {
-          "anyOf": [
-            {
-              "enum": [
-                "offset",
-                "overlapping",
-                "hidden"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
+          "enum": [
+            "offset",
+            "overlapping",
+            "hidden"
           ],
           "default": "offset"
         }
@@ -20214,11 +20052,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/FormatAbout"
         },
         "shareURL": {
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/PlainString",
           "default": "https://share.jbrowse.org/api/v1/"
         },
         "disableAnalytics": {
-          "$ref": "#/$defs/BooleanOrJexl",
+          "type": "boolean",
           "default": false
         },
         "hierarchical": {
@@ -20228,14 +20066,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/Preferences"
         },
         "theme": {
-          "description": "Material UI theme overrides applied to the JBrowse UI. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "Material UI theme overrides applied to the JBrowse UI. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "extraThemes": {
-          "description": "additional named themes the user can switch between. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+          "description": "additional named themes the user can switch between. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         },
         "logoPath": {
           "description": "path to a custom logo image displayed in the app header.",
-          "$ref": "#/$defs/FileLocationOrJexl",
+          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "",
             "locationType": "UriLocation"

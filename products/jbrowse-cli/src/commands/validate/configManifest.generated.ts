@@ -12,7 +12,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "cytobandLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -28,23 +28,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "useSliceWorkerPool",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "cramLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "craiLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -60,7 +60,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bamLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "index",
@@ -68,21 +68,21 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -99,11 +99,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "samLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "samText",
-          "type": "(JexlString | string)"
+          "type": "string"
         }
       ],
       "shorthandKeys": [
@@ -119,15 +119,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "htsgetBase",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "htsgetTrackId",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": []
@@ -140,23 +140,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bigBedLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "scoreColumn",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "aggregateField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "disableGeneHeuristic",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -172,35 +172,35 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bedLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "columnNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "scoreColumn",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "autoSql",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "colRef",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "colStart",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "colEnd",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "disableGeneHeuristic",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "shorthandKeys": [
@@ -216,11 +216,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bedpeLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "columnNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": [
@@ -236,7 +236,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "starFusionLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -252,7 +252,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bedGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "index",
@@ -260,33 +260,33 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         },
         {
           "name": "columnNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "scoreColumn",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "autoSql",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "disableGeneHeuristic",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -303,11 +303,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bedGraphLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "columnNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": [
@@ -323,7 +323,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bedGraphGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "index",
@@ -331,17 +331,17 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         },
         {
           "name": "columnNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": [
@@ -358,11 +358,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "adapterId",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "features",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         }
       ],
       "shorthandKeys": []
@@ -375,11 +375,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "adapterId",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "features",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         }
       ],
       "shorthandKeys": []
@@ -392,11 +392,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "adapterId",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "features",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         }
       ],
       "shorthandKeys": []
@@ -409,15 +409,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "location",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "refNameColumn",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "refNameColumnHeaderName",
-          "type": "(JexlString | string)"
+          "type": "string"
         }
       ],
       "shorthandKeys": [
@@ -433,11 +433,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "location",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "useNameOverride",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "shorthandKeys": [
@@ -453,11 +453,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "gtfLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "aggregateField",
-          "type": "(JexlString | string)"
+          "type": "string"
         }
       ],
       "shorthandKeys": [
@@ -473,7 +473,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "gtfGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "index",
@@ -481,25 +481,25 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         },
         {
           "name": "dontRedispatch",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "aggregateField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -516,7 +516,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "gffGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "index",
@@ -524,21 +524,21 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         },
         {
           "name": "dontRedispatch",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -555,7 +555,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "gffLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -571,11 +571,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rootUrlTemplate",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "refNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": []
@@ -588,23 +588,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "endpoint",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "queryTemplate",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "refNamesQueryTemplate",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "refNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "additionalQueryParams",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": []
@@ -617,11 +617,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "twoBitLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "chromSizesLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -638,19 +638,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fastaLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "faiLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "metadataLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "gziLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -666,7 +666,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "chromSizesLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -682,15 +682,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fastaLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "faiLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "metadataLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -710,11 +710,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fastaLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "metadataLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -730,23 +730,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "search",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "sequenceAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "searchForward",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "searchReverse",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "caseInsensitive",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "shorthandKeys": []
@@ -759,47 +759,47 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "pam",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "guideLength",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "pamLocation",
-          "type": "(JexlString | PamLocation)"
+          "type": "PamLocation"
         },
         {
           "name": "cutOffset",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "cutOffsetBottom",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "minGcPercent",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "maxGcPercent",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "excludePolyT",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "searchForward",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "searchReverse",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "shorthandKeys": []
@@ -812,19 +812,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "motifs",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "sequenceAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "searchForward",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "searchReverse",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "shorthandKeys": []
@@ -837,11 +837,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "vcfLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "samplesTsvLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -857,7 +857,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "vcfGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "index",
@@ -865,25 +865,25 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         },
         {
           "name": "samplesTsvLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -900,27 +900,27 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "vcfGzLocationMap",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "indexLocationMap",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "indexType",
-          "type": "(JexlString | IndexType)"
+          "type": "IndexType"
         },
         {
           "name": "samplesTsvLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": []
@@ -933,7 +933,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "ldLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -949,7 +949,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "ldLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "index",
@@ -957,11 +957,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         }
@@ -980,15 +980,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "subadapters",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "bigWigs",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "baseUri",
-          "type": "(JexlString | string)"
+          "type": "string"
         }
       ],
       "shorthandKeys": []
@@ -1001,15 +1001,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bigWigLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "source",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "resolutionMultiplier",
-          "type": "(JexlString | number)"
+          "type": "number"
         }
       ],
       "shorthandKeys": [
@@ -1025,19 +1025,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "windowSize",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "windowDelta",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "gcMode",
-          "type": "(JexlString | gcMode)"
+          "type": "gcMode"
         }
       ],
       "shorthandKeys": []
@@ -1050,27 +1050,27 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "mafGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "taiLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "samples",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "nhLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "summaryAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "annotationAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -1087,27 +1087,27 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "tafGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "taiLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "samples",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "nhLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "summaryAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "annotationAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -1124,23 +1124,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bigBedLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "samples",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "nhLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "summaryAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "annotationAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": []
@@ -1153,11 +1153,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bedGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "refAssemblyName",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "index",
@@ -1165,29 +1165,29 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         },
         {
           "name": "samples",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "nhLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "summaryAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "annotationAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -1205,7 +1205,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "hicLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -1221,15 +1221,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "pafLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "assemblyNameToPanSN",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         }
       ],
       "shorthandKeys": [
@@ -1248,19 +1248,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "pifGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "assemblyNameToPanSN",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "coarseBpPerPxThreshold",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "index",
@@ -1268,11 +1268,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         }
@@ -1294,19 +1294,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "targetAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "queryAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "pafLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -1322,23 +1322,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "targetAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "queryAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "pifGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "coarseBpPerPxThreshold",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "index",
@@ -1346,11 +1346,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         }
@@ -1369,11 +1369,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "adapters",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "coarseBpPerPxThreshold",
-          "type": "(JexlString | number)"
+          "type": "number"
         }
       ],
       "shorthandKeys": []
@@ -1386,19 +1386,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "targetAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "queryAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "deltaLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -1414,19 +1414,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "targetAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "queryAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "chainLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -1442,19 +1442,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "mcscanAnchorsLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "bed1Location",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "bed2Location",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": [
@@ -1476,23 +1476,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "mcscanBlocksLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "blockAssemblies",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "bedLocations",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "attributeColumns",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": [
@@ -1508,19 +1508,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "mcscanSimpleAnchorsLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "bed1Location",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "bed2Location",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": [
@@ -1542,19 +1542,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "targetAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "queryAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "outLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
       "shorthandKeys": [
@@ -1570,23 +1570,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "targetAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "queryAssembly",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "blastTableLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "columns",
-          "type": "(JexlString | string)"
+          "type": "string"
         }
       ],
       "shorthandKeys": []
@@ -1599,7 +1599,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bedGzLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "index",
@@ -1607,33 +1607,33 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexType",
-              "type": "(JexlString | IndexType)"
+              "type": "IndexType"
             },
             {
               "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+              "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
           ]
         },
         {
           "name": "columnNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "scoreColumn",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "autoSql",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "disableGeneHeuristic",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "densityAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "scoreTransform",
@@ -1641,7 +1641,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "ldAdapter",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -1664,23 +1664,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -1692,15 +1692,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -1726,11 +1726,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -1744,7 +1744,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -1769,23 +1769,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -1797,15 +1797,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -1831,11 +1831,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -1849,7 +1849,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -1879,19 +1879,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "sequenceType",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "formatAbout",
@@ -1903,7 +1903,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -1925,23 +1925,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -1953,15 +1953,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -1987,11 +1987,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -2005,7 +2005,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -2031,23 +2031,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -2059,15 +2059,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -2093,11 +2093,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -2111,7 +2111,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -2132,23 +2132,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -2160,15 +2160,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -2194,11 +2194,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -2212,7 +2212,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -2234,23 +2234,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -2262,15 +2262,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -2296,11 +2296,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -2314,7 +2314,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -2336,23 +2336,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -2364,15 +2364,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -2398,11 +2398,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -2416,7 +2416,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -2437,23 +2437,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -2465,15 +2465,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -2499,11 +2499,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -2517,7 +2517,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -2538,23 +2538,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -2566,15 +2566,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -2600,11 +2600,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -2618,7 +2618,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -2639,23 +2639,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -2667,15 +2667,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -2701,11 +2701,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -2719,7 +2719,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -2744,23 +2744,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "category",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "metadata",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "adapter",
@@ -2772,15 +2772,15 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "indexingAttributes",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToExclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "indexingFeatureTypesToInclude",
-              "type": "(JexlString | string[])"
+              "type": "string[]"
             },
             {
               "name": "textSearchAdapter",
@@ -2806,11 +2806,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ]
         },
@@ -2824,7 +2824,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "hideUris",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             }
           ]
         }
@@ -2847,15 +2847,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "mouseover",
@@ -2863,43 +2863,43 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "heightMode",
-          "type": "(JexlString | heightMode)"
+          "type": "heightMode"
         },
         {
           "name": "growMaxHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "densityTier",
-          "type": "(JexlString | Density tier)"
+          "type": "Density tier"
         },
         {
           "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "jexlFilters",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLabels",
-          "type": "(JexlString | showLabels)"
+          "type": "showLabels"
         },
         {
           "name": "maxLabelFeatureDensity",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "maxDescriptionFeatureDensity",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -2911,20 +2911,20 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (FeatureColorScale | undefined))"
+              "type": "(FeatureColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             },
             {
               "name": "range",
-              "type": "(JexlString | CssColorEntry[])"
+              "type": "CssColorEntry[]"
             }
           ],
           "shorthand": "value"
@@ -2939,7 +2939,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "outlineColor",
-          "type": "(JexlString | CssColor)"
+          "type": "CssColor"
         },
         {
           "name": "featureHeight",
@@ -2947,7 +2947,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displayMode",
-          "type": "(JexlString | displayMode)"
+          "type": "displayMode"
         },
         {
           "name": "facet",
@@ -2955,11 +2955,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -2967,43 +2967,43 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "geneGlyphMode",
-          "type": "(JexlString | geneGlyphMode)"
+          "type": "geneGlyphMode"
         },
         {
           "name": "subfeatureLabels",
-          "type": "(JexlString | subfeatureLabels)"
+          "type": "subfeatureLabels"
         },
         {
           "name": "displayDirectionalChevrons",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "transcriptTypes",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "canonicalTranscriptField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "canonicalTranscriptTags",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "containerTypes",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "subParts",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "impliedUTRs",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "hideSourceFeatures",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "labels",
@@ -3021,11 +3021,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showOnlyGenes",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "legend",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         }
       ],
       "legacyKeys": [
@@ -3077,15 +3077,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "mouseover",
@@ -3093,15 +3093,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "partitionField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "clusterField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "lengthField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "color",
@@ -3109,67 +3109,67 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sampleColorMap",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "rowHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "rowProportion",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showRowSeparators",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "densityTier",
-          "type": "(JexlString | Density tier)"
+          "type": "Density tier"
         },
         {
           "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "colorRowLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "legend",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "colorDomain",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "rowGroups",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "showTree",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showBranchLength",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showRowLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "treeAreaWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "domain",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "stateModelProps": [
@@ -3198,15 +3198,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "mouseover",
@@ -3214,39 +3214,39 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "featureHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "heightMode",
-          "type": "(JexlString | heightMode)"
+          "type": "heightMode"
         },
         {
           "name": "growMaxHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "densityTier",
-          "type": "(JexlString | Density tier)"
+          "type": "Density tier"
         },
         {
           "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "readConnectionsLineWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showSashimiLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "hideNonCanonicalJunctions",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "maxHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -3254,44 +3254,44 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
+              "type": "(CssColor | undefined)"
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (AlignmentsColorScale | undefined))"
+              "type": "(AlignmentsColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             },
             {
               "name": "domainMin",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "domainMax",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "range",
-              "type": "(JexlString | CssColorEntry[])"
+              "type": "CssColorEntry[]"
             },
             {
               "name": "scheme",
-              "type": "(JexlString | (ColorScheme | undefined))"
+              "type": "(ColorScheme | undefined)"
             },
             {
               "name": "reverse",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             },
             {
               "name": "domainMid",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ],
           "shorthand": "value"
@@ -3302,22 +3302,22 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | (AlignmentsBaseColorField | undefined))"
+              "type": "(AlignmentsBaseColorField | undefined)"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (AlignmentsBaseColorScale | undefined))"
+              "type": "(AlignmentsBaseColorScale | undefined)"
             }
           ],
           "shorthand": "field"
         },
         {
           "name": "modifications",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "filterBy",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "facet",
@@ -3325,11 +3325,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -3337,7 +3337,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "collapseGroupRows",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "scales",
@@ -3349,27 +3349,27 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "type",
-                  "type": "(JexlString | ValueScaleType)"
+                  "type": "ValueScaleType"
                 },
                 {
                   "name": "domainMin",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "domainMax",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "symlogConstant",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "autoscale",
-                  "type": "(JexlString | ValueScaleAutoscale)"
+                  "type": "ValueScaleAutoscale"
                 },
                 {
                   "name": "numStdDev",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 }
               ]
             }
@@ -3377,123 +3377,123 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "mismatchAlpha",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLowFreqMismatches",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "sortedBy",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "largeFeaturesFirst",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "splicedReadsFirst",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showOutline",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "linkedReads",
-          "type": "(JexlString | LinkedReadsMode)"
+          "type": "LinkedReadsMode"
         },
         {
           "name": "showBezierConnections",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showCoverage",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showPileup",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "coverageHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "coverageSnpMinFrequency",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showMismatches",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showInterbaseIndicators",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "flipStrandLongReadChains",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "colorSupplementaryChains",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "drawInter",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "drawProperPairArcs",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "minInterchromSupport",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "drawLongRange",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "arcColorByType",
-          "type": "(JexlString | ArcColorByType)"
+          "type": "ArcColorByType"
         },
         {
           "name": "readConnections",
-          "type": "(JexlString | ReadConnectionsMode)"
+          "type": "ReadConnectionsMode"
         },
         {
           "name": "readConnectionsDown",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showSashimiArcs",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "sashimiArcsMode",
-          "type": "(JexlString | SashimiArcsMode)"
+          "type": "SashimiArcsMode"
         },
         {
           "name": "minSashimiScore",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "sashimiArcsHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "readConnectionsHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showSoftClipping",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "aliases": [
@@ -3520,7 +3520,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bezierRadiusRatio",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "onChordClick",
@@ -3560,11 +3560,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bezierRadiusRatio",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "colorBy",
-          "type": "(JexlString | ChordSyntenyColorBy)"
+          "type": "ChordSyntenyColorBy"
         },
         {
           "name": "color",
@@ -3631,15 +3631,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "mouseover",
@@ -3647,39 +3647,39 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "featureHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "heightMode",
-          "type": "(JexlString | heightMode)"
+          "type": "heightMode"
         },
         {
           "name": "growMaxHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "densityTier",
-          "type": "(JexlString | Density tier)"
+          "type": "Density tier"
         },
         {
           "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "readConnectionsLineWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showSashimiLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "hideNonCanonicalJunctions",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "maxHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -3687,44 +3687,44 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
+              "type": "(CssColor | undefined)"
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (AlignmentsColorScale | undefined))"
+              "type": "(AlignmentsColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             },
             {
               "name": "domainMin",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "domainMax",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             },
             {
               "name": "range",
-              "type": "(JexlString | CssColorEntry[])"
+              "type": "CssColorEntry[]"
             },
             {
               "name": "scheme",
-              "type": "(JexlString | (ColorScheme | undefined))"
+              "type": "(ColorScheme | undefined)"
             },
             {
               "name": "reverse",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             },
             {
               "name": "domainMid",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ],
           "shorthand": "value"
@@ -3735,22 +3735,22 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | (AlignmentsBaseColorField | undefined))"
+              "type": "(AlignmentsBaseColorField | undefined)"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (AlignmentsBaseColorScale | undefined))"
+              "type": "(AlignmentsBaseColorScale | undefined)"
             }
           ],
           "shorthand": "field"
         },
         {
           "name": "modifications",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "filterBy",
-          "type": "(JexlString | frozen)"
+          "type": "frozen"
         },
         {
           "name": "facet",
@@ -3758,11 +3758,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -3770,7 +3770,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "collapseGroupRows",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "scales",
@@ -3782,27 +3782,27 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "type",
-                  "type": "(JexlString | ValueScaleType)"
+                  "type": "ValueScaleType"
                 },
                 {
                   "name": "domainMin",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "domainMax",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "symlogConstant",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "autoscale",
-                  "type": "(JexlString | ValueScaleAutoscale)"
+                  "type": "ValueScaleAutoscale"
                 },
                 {
                   "name": "numStdDev",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 }
               ]
             }
@@ -3810,131 +3810,131 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "mismatchAlpha",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLowFreqMismatches",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "sortedBy",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "largeFeaturesFirst",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "splicedReadsFirst",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showOutline",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(frozen | undefined)"
         },
         {
           "name": "linkedReads",
-          "type": "(JexlString | LinkedReadsMode)"
+          "type": "LinkedReadsMode"
         },
         {
           "name": "showBezierConnections",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showCoverage",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showPileup",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "coverageHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "coverageSnpMinFrequency",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showMismatches",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showInterbaseIndicators",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "flipStrandLongReadChains",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "colorSupplementaryChains",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "drawInter",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "drawProperPairArcs",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "minInterchromSupport",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "drawLongRange",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "arcColorByType",
-          "type": "(JexlString | ArcColorByType)"
+          "type": "ArcColorByType"
         },
         {
           "name": "readConnections",
-          "type": "(JexlString | ReadConnectionsMode)"
+          "type": "ReadConnectionsMode"
         },
         {
           "name": "readConnectionsDown",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showSashimiArcs",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "sashimiArcsMode",
-          "type": "(JexlString | SashimiArcsMode)"
+          "type": "SashimiArcsMode"
         },
         {
           "name": "minSashimiScore",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "sashimiArcsHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "readConnectionsHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showSoftClipping",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "lodMode",
-          "type": "(JexlString | LodMode)"
+          "type": "LodMode"
         },
         {
           "name": "hideSelfAlignments",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "stateModelProps": [
@@ -3955,15 +3955,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "mouseover",
@@ -3979,20 +3979,20 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (FeatureColorScale | undefined))"
+              "type": "(FeatureColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             },
             {
               "name": "range",
-              "type": "(JexlString | CssColorEntry[])"
+              "type": "CssColorEntry[]"
             }
           ],
           "shorthand": "value"
@@ -4003,11 +4003,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "lodMode",
-          "type": "(JexlString | LodMode)"
+          "type": "LodMode"
         },
         {
           "name": "domain",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "ribbonColor",
@@ -4015,19 +4015,19 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | CssColor)"
+              "type": "CssColor"
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (RibbonColorScale | undefined))"
+              "type": "(RibbonColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -4035,23 +4035,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "hideUnlabelled",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "drawCurves",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "bridgeSkippedLanes",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLaneTicks",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "stateModelProps": [
@@ -4073,27 +4073,27 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(number | undefined)"
         },
         {
           "name": "showForward",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showReverse",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showTranslation",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "stateModelProps": [
@@ -4114,15 +4114,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "mouseover",
@@ -4130,43 +4130,43 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "heightMode",
-          "type": "(JexlString | heightMode)"
+          "type": "heightMode"
         },
         {
           "name": "growMaxHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "densityTier",
-          "type": "(JexlString | Density tier)"
+          "type": "Density tier"
         },
         {
           "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "jexlFilters",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "maxFeatureScreenDensity",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLabels",
-          "type": "(JexlString | showLabels)"
+          "type": "showLabels"
         },
         {
           "name": "maxLabelFeatureDensity",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "maxDescriptionFeatureDensity",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -4178,20 +4178,20 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (FeatureColorScale | undefined))"
+              "type": "(FeatureColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             },
             {
               "name": "range",
-              "type": "(JexlString | CssColorEntry[])"
+              "type": "CssColorEntry[]"
             }
           ],
           "shorthand": "value"
@@ -4206,7 +4206,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "outlineColor",
-          "type": "(JexlString | CssColor)"
+          "type": "CssColor"
         },
         {
           "name": "featureHeight",
@@ -4214,7 +4214,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displayMode",
-          "type": "(JexlString | displayMode)"
+          "type": "displayMode"
         },
         {
           "name": "facet",
@@ -4222,11 +4222,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -4234,43 +4234,43 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "geneGlyphMode",
-          "type": "(JexlString | geneGlyphMode)"
+          "type": "geneGlyphMode"
         },
         {
           "name": "subfeatureLabels",
-          "type": "(JexlString | subfeatureLabels)"
+          "type": "subfeatureLabels"
         },
         {
           "name": "displayDirectionalChevrons",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "transcriptTypes",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "canonicalTranscriptField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "canonicalTranscriptTags",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "containerTypes",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "subParts",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "impliedUTRs",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "hideSourceFeatures",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "labels",
@@ -4333,15 +4333,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "mouseover",
@@ -4349,47 +4349,47 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "lineZoneHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "jexlFilters",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "rowHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showTree",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showBranchLength",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showRowLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "treeAreaWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "domain",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "showRowSeparators",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showTooltips",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "renderingMode",
-          "type": "(JexlString | RenderingMode)"
+          "type": "RenderingMode"
         },
         {
           "name": "featureColor",
@@ -4397,23 +4397,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "shadeByDosage",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "minorAlleleFrequencyFilter",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "maxMissingnessFilter",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "rowColor",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "facet",
@@ -4421,11 +4421,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -4433,23 +4433,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "referenceDrawingMode",
-          "type": "(JexlString | ReferenceDrawingMode)"
+          "type": "ReferenceDrawingMode"
         },
         {
           "name": "showInsertionGlyphs",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showVariantLane",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "variantLaneHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "variantLaneLabels",
-          "type": "(JexlString | variantLaneLabels)"
+          "type": "variantLaneLabels"
         }
       ],
       "aliases": [
@@ -4481,15 +4481,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "mouseover",
@@ -4497,47 +4497,47 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "lineZoneHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "jexlFilters",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "rowHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showTree",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showBranchLength",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showRowLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "treeAreaWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "domain",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "showRowSeparators",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showTooltips",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "renderingMode",
-          "type": "(JexlString | RenderingMode)"
+          "type": "RenderingMode"
         },
         {
           "name": "featureColor",
@@ -4545,23 +4545,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "shadeByDosage",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "minorAlleleFrequencyFilter",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "maxMissingnessFilter",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "rowColor",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "facet",
@@ -4569,11 +4569,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -4581,7 +4581,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "referenceDrawingMode",
-          "type": "(JexlString | ReferenceDrawingMode)"
+          "type": "ReferenceDrawingMode"
         }
       ],
       "aliases": [
@@ -4613,15 +4613,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "mouseover",
@@ -4629,43 +4629,43 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "lineZoneHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "ldMetric",
-          "type": "(JexlString | LDMetric)"
+          "type": "LDMetric"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLDTriangle",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "squashToHeight",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "maxVariantSeparation",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showVerticalGuides",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "tickHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "useGenomicPositions",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "stateModelProps": [
@@ -4686,7 +4686,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "defaultRendering",
-          "type": "(JexlString | Rendering type)"
+          "type": "Rendering type"
         },
         {
           "name": "facet",
@@ -4694,11 +4694,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -4706,7 +4706,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -4714,67 +4714,67 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
+              "type": "(CssColor | undefined)"
             },
             {
               "name": "field",
-              "type": "(JexlString | (WiggleColorField | undefined))"
+              "type": "(WiggleColorField | undefined)"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (WiggleColorScale | undefined))"
+              "type": "(WiggleColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             },
             {
               "name": "range",
-              "type": "(JexlString | CssColorEntry[])"
+              "type": "CssColorEntry[]"
             },
             {
               "name": "scheme",
-              "type": "(JexlString | (ColorScheme | undefined))"
+              "type": "(ColorScheme | undefined)"
             },
             {
               "name": "reverse",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             },
             {
               "name": "domainMid",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ],
           "shorthand": "value"
         },
         {
           "name": "scoreField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "displayCrossHatches",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "resolution",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "origin",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "lineWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "maxGapMultiple",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "scales",
@@ -4786,31 +4786,31 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "type",
-                  "type": "(JexlString | ValueScaleType)"
+                  "type": "ValueScaleType"
                 },
                 {
                   "name": "domainMin",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "domainMax",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "symlogConstant",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "autoscale",
-                  "type": "(JexlString | ValueScaleAutoscale)"
+                  "type": "ValueScaleAutoscale"
                 },
                 {
                   "name": "numStdDev",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "numQuantile",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "rules",
@@ -4818,15 +4818,15 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | number)"
+                      "type": "number"
                     },
                     {
                       "name": "color",
-                      "type": "(JexlString | (CssColor | undefined))"
+                      "type": "(CssColor | undefined)"
                     },
                     {
                       "name": "label",
-                      "type": "(JexlString | string)"
+                      "type": "string"
                     }
                   ],
                   "shorthand": "value"
@@ -4837,35 +4837,35 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "minimalTicks",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "summaryScoreMode",
-          "type": "(JexlString | Score type)"
+          "type": "Score type"
         },
         {
           "name": "showTree",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showBranchLength",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showRowLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "treeAreaWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showRowSeparators",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "stateModelProps": [
@@ -4893,7 +4893,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "defaultRendering",
-          "type": "(JexlString | Rendering type)"
+          "type": "Rendering type"
         },
         {
           "name": "facet",
@@ -4901,11 +4901,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -4913,7 +4913,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -4921,67 +4921,67 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
+              "type": "(CssColor | undefined)"
             },
             {
               "name": "field",
-              "type": "(JexlString | (WiggleColorField | undefined))"
+              "type": "(WiggleColorField | undefined)"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (WiggleColorScale | undefined))"
+              "type": "(WiggleColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             },
             {
               "name": "range",
-              "type": "(JexlString | CssColorEntry[])"
+              "type": "CssColorEntry[]"
             },
             {
               "name": "scheme",
-              "type": "(JexlString | (ColorScheme | undefined))"
+              "type": "(ColorScheme | undefined)"
             },
             {
               "name": "reverse",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             },
             {
               "name": "domainMid",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ],
           "shorthand": "value"
         },
         {
           "name": "scoreField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "displayCrossHatches",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "resolution",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "origin",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "lineWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "maxGapMultiple",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "scales",
@@ -4993,31 +4993,31 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "type",
-                  "type": "(JexlString | ValueScaleType)"
+                  "type": "ValueScaleType"
                 },
                 {
                   "name": "domainMin",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "domainMax",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "symlogConstant",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "autoscale",
-                  "type": "(JexlString | ValueScaleAutoscale)"
+                  "type": "ValueScaleAutoscale"
                 },
                 {
                   "name": "numStdDev",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "numQuantile",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "rules",
@@ -5025,15 +5025,15 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | number)"
+                      "type": "number"
                     },
                     {
                       "name": "color",
-                      "type": "(JexlString | (CssColor | undefined))"
+                      "type": "(CssColor | undefined)"
                     },
                     {
                       "name": "label",
-                      "type": "(JexlString | string)"
+                      "type": "string"
                     }
                   ],
                   "shorthand": "value"
@@ -5044,47 +5044,47 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "minimalTicks",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "summaryScoreMode",
-          "type": "(JexlString | Score type)"
+          "type": "Score type"
         },
         {
           "name": "showTree",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showBranchLength",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showRowLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "treeAreaWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showRowSeparators",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "windowSize",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "windowDelta",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "gcMode",
-          "type": "(JexlString | gcMode)"
+          "type": "gcMode"
         }
       ],
       "stateModelProps": [
@@ -5112,7 +5112,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "defaultRendering",
-          "type": "(JexlString | Rendering type)"
+          "type": "Rendering type"
         },
         {
           "name": "facet",
@@ -5120,11 +5120,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -5132,7 +5132,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -5140,67 +5140,67 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "(JexlString | (CssColor | undefined))"
+              "type": "(CssColor | undefined)"
             },
             {
               "name": "field",
-              "type": "(JexlString | (WiggleColorField | undefined))"
+              "type": "(WiggleColorField | undefined)"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (WiggleColorScale | undefined))"
+              "type": "(WiggleColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             },
             {
               "name": "range",
-              "type": "(JexlString | CssColorEntry[])"
+              "type": "CssColorEntry[]"
             },
             {
               "name": "scheme",
-              "type": "(JexlString | (ColorScheme | undefined))"
+              "type": "(ColorScheme | undefined)"
             },
             {
               "name": "reverse",
-              "type": "(JexlString | boolean)"
+              "type": "boolean"
             },
             {
               "name": "domainMid",
-              "type": "(JexlString | (number | undefined))"
+              "type": "(number | undefined)"
             }
           ],
           "shorthand": "value"
         },
         {
           "name": "scoreField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "displayCrossHatches",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "resolution",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "origin",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "lineWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "maxGapMultiple",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "scales",
@@ -5212,31 +5212,31 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "type",
-                  "type": "(JexlString | ValueScaleType)"
+                  "type": "ValueScaleType"
                 },
                 {
                   "name": "domainMin",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "domainMax",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "symlogConstant",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "autoscale",
-                  "type": "(JexlString | ValueScaleAutoscale)"
+                  "type": "ValueScaleAutoscale"
                 },
                 {
                   "name": "numStdDev",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "numQuantile",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "rules",
@@ -5244,15 +5244,15 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | number)"
+                      "type": "number"
                     },
                     {
                       "name": "color",
-                      "type": "(JexlString | (CssColor | undefined))"
+                      "type": "(CssColor | undefined)"
                     },
                     {
                       "name": "label",
-                      "type": "(JexlString | string)"
+                      "type": "string"
                     }
                   ],
                   "shorthand": "value"
@@ -5263,47 +5263,47 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "minimalTicks",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "summaryScoreMode",
-          "type": "(JexlString | Score type)"
+          "type": "Score type"
         },
         {
           "name": "showTree",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showBranchLength",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showRowLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "treeAreaWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showRowSeparators",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "windowSize",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "windowDelta",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "gcMode",
-          "type": "(JexlString | gcMode)"
+          "type": "gcMode"
         }
       ],
       "stateModelProps": [
@@ -5331,15 +5331,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "height",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(number | undefined)"
         },
         {
           "name": "mouseover",
@@ -5347,99 +5347,99 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "rowProportion",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showAllLetters",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "mismatchRendering",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showAsUpperCase",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showTree",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showBranchLength",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showRowLabels",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "treeAreaWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "domain",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showCoverage",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showAlignments",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "coverageHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showConservation",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "conservationHeight",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "conservationMode",
-          "type": "(JexlString | MafConservationMode)"
+          "type": "MafConservationMode"
         },
         {
           "name": "rowIdentityMode",
-          "type": "(JexlString | RowIdentityMode)"
+          "type": "RowIdentityMode"
         },
         {
           "name": "rowIdentityAutoZoom",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showAnnotations",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showTranslation",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "colorByChromosome",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showReferenceRow",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showInversions",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "stateModelProps": [
@@ -5467,39 +5467,39 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "colorScheme",
-          "type": "(JexlString | HicColorScheme)"
+          "type": "HicColorScheme"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "resolutionBias",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "useLogScale",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "useColorPercentile",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showResolutionControls",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "selectedNormalization",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "squashToHeight",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "stateModelProps": [
@@ -5520,7 +5520,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -5544,19 +5544,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displayMode",
-          "type": "(JexlString | DisplayMode)"
+          "type": "DisplayMode"
         },
         {
           "name": "minScore",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "legacyKeys": [
@@ -5580,7 +5580,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -5588,19 +5588,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "lineWidth",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "minScore",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "stateModelProps": [
@@ -5621,7 +5621,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "color",
@@ -5633,27 +5633,27 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "scale",
-              "type": "(JexlString | (ManhattanColorScale | undefined))"
+              "type": "(ManhattanColorScale | undefined)"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             },
             {
               "name": "range",
-              "type": "(JexlString | CssColorEntry[])"
+              "type": "CssColorEntry[]"
             }
           ],
           "shorthand": "value"
         },
         {
           "name": "scoreField",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "scales",
@@ -5665,15 +5665,15 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "type",
-                  "type": "(JexlString | ValueScaleType)"
+                  "type": "ValueScaleType"
                 },
                 {
                   "name": "domainMin",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "domainMax",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "rules",
@@ -5681,15 +5681,15 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | number)"
+                      "type": "number"
                     },
                     {
                       "name": "color",
-                      "type": "(JexlString | (CssColor | undefined))"
+                      "type": "(CssColor | undefined)"
                     },
                     {
                       "name": "label",
-                      "type": "(JexlString | string)"
+                      "type": "string"
                     }
                   ],
                   "shorthand": "value"
@@ -5700,19 +5700,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displayCrossHatches",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "minimalTicks",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ],
       "stateModelProps": [
@@ -5735,23 +5735,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "fetchSizeLimit",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "forceLoad",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "densityTier",
-          "type": "(JexlString | Density tier)"
+          "type": "Density tier"
         },
         {
           "name": "densityTierBpPerPx",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "marks",
@@ -5759,7 +5759,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "shape",
-              "type": "(JexlString | MarkShape)"
+              "type": "MarkShape"
             },
             {
               "name": "encoding",
@@ -5767,19 +5767,19 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "x",
-                  "type": "(JexlString | string)"
+                  "type": "string"
                 },
                 {
                   "name": "x2",
-                  "type": "(JexlString | string)"
+                  "type": "string"
                 },
                 {
                   "name": "y",
-                  "type": "(JexlString | string)"
+                  "type": "string"
                 },
                 {
                   "name": "row",
-                  "type": "(JexlString | string)"
+                  "type": "string"
                 },
                 {
                   "name": "color",
@@ -5791,40 +5791,40 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "field",
-                      "type": "(JexlString | string)"
+                      "type": "string"
                     },
                     {
                       "name": "scale",
-                      "type": "(JexlString | (MarkColorScale | undefined))"
+                      "type": "(MarkColorScale | undefined)"
                     },
                     {
                       "name": "domain",
-                      "type": "(JexlString | string[])",
+                      "type": "string[]",
                       "liftsNumbers": true
                     },
                     {
                       "name": "domainMin",
-                      "type": "(JexlString | (number | undefined))"
+                      "type": "(number | undefined)"
                     },
                     {
                       "name": "domainMax",
-                      "type": "(JexlString | (number | undefined))"
+                      "type": "(number | undefined)"
                     },
                     {
                       "name": "range",
-                      "type": "(JexlString | CssColorEntry[])"
+                      "type": "CssColorEntry[]"
                     },
                     {
                       "name": "scheme",
-                      "type": "(JexlString | (ColorScheme | undefined))"
+                      "type": "(ColorScheme | undefined)"
                     },
                     {
                       "name": "reverse",
-                      "type": "(JexlString | boolean)"
+                      "type": "boolean"
                     },
                     {
                       "name": "domainMid",
-                      "type": "(JexlString | (number | undefined))"
+                      "type": "(number | undefined)"
                     }
                   ],
                   "shorthand": "value"
@@ -5839,19 +5839,19 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "field",
-                      "type": "(JexlString | string)"
+                      "type": "string"
                     },
                     {
                       "name": "scale",
-                      "type": "(JexlString | (MarkGlyphScale | undefined))"
+                      "type": "(MarkGlyphScale | undefined)"
                     },
                     {
                       "name": "range",
-                      "type": "(JexlString | GlyphName[])"
+                      "type": "GlyphName[]"
                     },
                     {
                       "name": "domain",
-                      "type": "(JexlString | string[])",
+                      "type": "string[]",
                       "liftsNumbers": true
                     }
                   ],
@@ -5865,15 +5865,15 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "source",
-              "type": "(JexlString | MarkSource)"
+              "type": "MarkSource"
             },
             {
               "name": "minBpPerPx",
-              "type": "(JexlString | number)"
+              "type": "number"
             },
             {
               "name": "maxBpPerPx",
-              "type": "(JexlString | number)"
+              "type": "number"
             }
           ]
         },
@@ -5887,11 +5887,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])",
+              "type": "string[]",
               "liftsNumbers": true
             }
           ],
@@ -5907,31 +5907,31 @@ export const configManifest: ConfigManifest = {
               "subSlots": [
                 {
                   "name": "type",
-                  "type": "(JexlString | ValueScaleType)"
+                  "type": "ValueScaleType"
                 },
                 {
                   "name": "domainMin",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "domainMax",
-                  "type": "(JexlString | (number | undefined))"
+                  "type": "(number | undefined)"
                 },
                 {
                   "name": "autoscale",
-                  "type": "(JexlString | ValueScaleAutoscale)"
+                  "type": "ValueScaleAutoscale"
                 },
                 {
                   "name": "numStdDev",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "numQuantile",
-                  "type": "(JexlString | number)"
+                  "type": "number"
                 },
                 {
                   "name": "title",
-                  "type": "(JexlString | (string | undefined))"
+                  "type": "(string | undefined)"
                 },
                 {
                   "name": "rules",
@@ -5939,15 +5939,15 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | number)"
+                      "type": "number"
                     },
                     {
                       "name": "color",
-                      "type": "(JexlString | (CssColor | undefined))"
+                      "type": "(CssColor | undefined)"
                     },
                     {
                       "name": "label",
-                      "type": "(JexlString | string)"
+                      "type": "string"
                     }
                   ],
                   "shorthand": "value"
@@ -5958,31 +5958,31 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "origin",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "minWidthPx",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | number)"
+          "type": "number"
         },
         {
           "name": "minimalTicks",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "displayCrossHatches",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "jexlFilters",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "stateModelProps": [
@@ -6006,15 +6006,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "namesIndexLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "tracks",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": []
@@ -6031,15 +6031,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "ixFilePath",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "ixxFilePath",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         }
       ],
       "shorthandKeys": [
@@ -6061,15 +6061,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "hubTxtLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ]
     },
@@ -6085,15 +6085,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "configJsonLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ]
     },
@@ -6109,15 +6109,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "assemblyNames",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "dataDirLocation",
-          "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ]
     }
@@ -6135,51 +6135,51 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "authHeader",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "tokenType",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "domains",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "authEndpoint",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "tokenEndpoint",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "needsPKCE",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "clientId",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "scopes",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "state",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "responseType",
-          "type": "(JexlString | string)"
+          "type": "string"
         }
       ]
     },
@@ -6195,27 +6195,27 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "authHeader",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "tokenType",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "domains",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "validateWithHEAD",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ]
     },
@@ -6231,27 +6231,27 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "authHeader",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "tokenType",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "domains",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "validateWithHEAD",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         }
       ]
     },
@@ -6267,51 +6267,51 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "authHeader",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "tokenType",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "domains",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "authEndpoint",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "tokenEndpoint",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "needsPKCE",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "clientId",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "scopes",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "state",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "responseType",
-          "type": "(JexlString | string)"
+          "type": "string"
         }
       ]
     },
@@ -6327,51 +6327,51 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "name",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "description",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "authHeader",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "tokenType",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "domains",
-          "type": "(JexlString | string[])"
+          "type": "string[]"
         },
         {
           "name": "authEndpoint",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "tokenEndpoint",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "needsPKCE",
-          "type": "(JexlString | boolean)"
+          "type": "boolean"
         },
         {
           "name": "clientId",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "scopes",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "state",
-          "type": "(JexlString | string)"
+          "type": "string"
         },
         {
           "name": "responseType",
-          "type": "(JexlString | string)"
+          "type": "string"
         }
       ]
     }

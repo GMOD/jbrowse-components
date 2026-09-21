@@ -33,6 +33,11 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
 - **An arg-less read of a `jexl:` slot still evaluates**, against a context
   where every name is `undefined`, and returns the fallout as the setting.
   Skipping evaluation when `args` is empty was built, measured and backed out.
+- **A slot takes `jexl:` only where it declares `contextVariable`.** Its MST
+  type refuses one elsewhere, and so does the snapshot preprocessor, which runs
+  in a build with MST's type check off. A `featureField` holds a `jexl:`
+  expression as a field the display evaluates per feature, and the reader hands
+  it over raw. ADR-155.
 
 ## Schema composition
 

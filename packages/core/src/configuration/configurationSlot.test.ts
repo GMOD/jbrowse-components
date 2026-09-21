@@ -12,10 +12,6 @@ const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 const jexl = pluginManager.jexl
 
-// A config slot is now a bare value-union property on the parent: the value
-// type OR a `jexl:...` callback string. jexl is evaluated on read by
-// readConfObject. These tests exercise that runtime behavior through a schema.
-
 function makeConfig(def: Parameters<typeof ConfigSlot>[0], value?: unknown) {
   const schema = ConfigurationSchema('Test', { slot: def })
   return schema.create(value === undefined ? undefined : { slot: value }, {
@@ -55,19 +51,25 @@ test('ConfigSlot requires a defaultValue', () => {
 
 test('a jexl callback is evaluated on read with args', () => {
   const config = makeConfig(
-    { type: 'color', defaultValue: 'red' },
+    { type: 'color', defaultValue: 'red', contextVariable: ['a'] },
     "jexl:'#'+a",
   )
   expect(readConfObject(config, 'slot', { a: 'zonk' })).toBe('#zonk')
 })
 
 test('a numeric jexl callback is evaluated on read', () => {
-  const config = makeConfig({ type: 'number', defaultValue: 1 }, 'jexl:5+a')
+  const config = makeConfig(
+    { type: 'number', defaultValue: 1, contextVariable: ['a'] },
+    'jexl:5+a',
+  )
   expect(readConfObject(config, 'slot', { a: 5 })).toBe(10)
 })
 
 test('an empty jexl body reads back literally without throwing (#4181)', () => {
-  const config = makeConfig({ type: 'color', defaultValue: 'red' }, 'jexl:')
+  const config = makeConfig(
+    { type: 'color', defaultValue: 'red', contextVariable: ['feature'] },
+    'jexl:',
+  )
   expect(() => readConfObject(config, 'slot')).not.toThrow()
   expect(readConfObject(config, 'slot')).toBe('jexl:')
 })
@@ -76,12 +78,62 @@ test('a callback default is evaluated per-read', () => {
   const config = makeConfig({
     type: 'string',
     defaultValue: "jexl:get(feature,'name')",
+    contextVariable: ['feature'],
   })
   expect(
     readConfObject(config, 'slot', {
       feature: { get: (k: string) => (k === 'name' ? 'abc' : undefined) },
     }),
   ).toBe('abc')
+})
+
+describe('a slot declaring no contextVariable', () => {
+  const callback = "jexl:get(feature,'name')"
+
+  test.each([
+    { type: 'string', defaultValue: '' },
+    { type: 'text', defaultValue: '' },
+    { type: 'maybeString' },
+    { type: 'color', defaultValue: 'red' },
+    { type: 'number', defaultValue: 1 },
+    { type: 'boolean', defaultValue: true },
+    { type: 'frozen', defaultValue: {} },
+    { type: 'maybeFrozen' },
+    {
+      type: 'stringEnum',
+      model: types.enumeration('Mode', ['a', 'b']),
+      defaultValue: 'a',
+    },
+  ] as const)('refuses a jexl: callback at load in a $type slot', def => {
+    expect(() => makeConfig(def, callback)).toThrow(
+      `Test.slot takes no jexl: callback, and ${JSON.stringify(callback)} is one`,
+    )
+  })
+
+  test('refuses one on a write, naming the slot', () => {
+    const config = makeConfig({ type: 'string', defaultValue: 'x' })
+    expect(() => {
+      config.setSlot('slot', callback)
+    }).toThrow(
+      `Test.slot takes no jexl: callback, and ${JSON.stringify(callback)} is one`,
+    )
+    expect(readConfObject(config, 'slot')).toBe('x')
+  })
+
+  test('refuses a jexl: default at construction', () => {
+    expect(() =>
+      ConfigSlot({ type: 'string', defaultValue: callback }),
+    ).toThrow(/contextVariable/)
+  })
+
+  test('still takes a string that only mentions jexl', () => {
+    expect(
+      readConfObject(
+        makeConfig({ type: 'string', defaultValue: '' }, 'a jexl: note'),
+        'slot',
+      ),
+    ).toBe('a jexl: note')
+  })
 })
 
 describe('a featureField slot', () => {
@@ -141,8 +193,12 @@ describe('a color slot', () => {
     expect(readConfObject(colorSlot(value), 'slot')).toBe(value)
   })
 
-  test('accepts a jexl callback', () => {
-    expect(readConfObject(colorSlot("jexl:'blue'"), 'slot')).toBe('blue')
+  test('accepts a jexl callback where it declares a contextVariable', () => {
+    const config = makeConfig(
+      { type: 'color', defaultValue: 'red', contextVariable: ['feature'] },
+      "jexl:'blue'",
+    )
+    expect(readConfObject(config, 'slot')).toBe('blue')
   })
 
   test('accepts the empty string, which outlineColor spells "no outline" with', () => {

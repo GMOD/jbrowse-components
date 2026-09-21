@@ -35,3 +35,20 @@ test('leaving the field drops an unparsed draft', () => {
   expect(set).not.toHaveBeenCalled()
   expect(getByDisplayValue('green')).toBe(field)
 })
+
+test('writes a jexl: callback only where the slot declares a contextVariable', () => {
+  const callback = "jexl:feature.strand == 1 ? 'red' : 'blue'"
+  const set = jest.fn()
+  const plain = { name: 'color', value: 'green', description: '', set }
+  const { getByDisplayValue, unmount } = render(<ColorEditor slot={plain} />)
+  fireEvent.change(getByDisplayValue('green'), { target: { value: callback } })
+  expect(set).not.toHaveBeenCalled()
+  unmount()
+
+  const withCallback = { ...plain, contextVariable: ['feature'] }
+  const second = render(<ColorEditor slot={withCallback} />)
+  fireEvent.change(second.getByDisplayValue('green'), {
+    target: { value: callback },
+  })
+  expect(set).toHaveBeenCalledWith(callback)
+})

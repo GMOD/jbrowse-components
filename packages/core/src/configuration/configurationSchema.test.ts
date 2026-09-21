@@ -36,11 +36,13 @@ describe('configuration schemas', () => {
           description: "the track's background color",
           type: 'color',
           defaultValue: '#eee',
+          contextVariable: ['a'],
         },
         someInteger: {
           description: 'an integer slot',
           type: 'integer',
           defaultValue: 12,
+          contextVariable: ['a'],
         },
       }),
     })
@@ -697,13 +699,38 @@ describe('setSlot', () => {
       expect(() => {
         node.setSlot('showLabels', 'false')
       }).toThrow(/Typed.showLabels is a boolean slot/)
+      expect(() => {
+        node.setSlot('showLabels', 'jexl:1 > 2')
+      }).toThrow(/Typed.showLabels takes no jexl: callback/)
       node.setSlot('height', 250)
-      node.setSlot('showLabels', 'jexl:1 > 2')
+      node.setSlot('showLabels', false)
     } finally {
       setTypeChecking(undefined)
     }
     expect(readConfObject(node, 'height')).toBe(250)
     expect(readConfObject(node, 'showLabels')).toBe(false)
+  })
+
+  test('refuses a jexl: callback at load where no contextVariable admits one, with type checking off', () => {
+    const schema = ConfigurationSchema('Typed', {
+      height: { type: 'number', defaultValue: 100 },
+      label: { type: 'string', defaultValue: '', contextVariable: ['feature'] },
+    })
+    setTypeChecking(false)
+    try {
+      expect(() =>
+        schema.create({ height: 'jexl:feature.score' }, { pluginManager }),
+      ).toThrow(/Typed.height takes no jexl: callback/)
+      expect(
+        readConfObject(
+          schema.create({ label: 'jexl:feature.name' }, { pluginManager }),
+          'label',
+          { feature: { get: () => 'x', name: 'x' } },
+        ),
+      ).toBe('x')
+    } finally {
+      setTypeChecking(undefined)
+    }
   })
 
   // JSON cannot spell `undefined`, so without this a session spec, share link

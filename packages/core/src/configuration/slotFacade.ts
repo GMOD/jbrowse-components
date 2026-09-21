@@ -8,7 +8,7 @@ import {
 
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
-import ConfigSlot from './configurationSlot.ts'
+import ConfigSlot, { slotWriteRefusal } from './configurationSlot.ts'
 import {
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
@@ -162,7 +162,7 @@ export function slotValueRefusal(
     if (subSchema) {
       subSchema.create(lifted)
     } else if (isSlotDefinitionEntry(entry) && !ConfigSlot(entry).is(lifted)) {
-      return `${meta.name}.${key} is a ${entry.type} slot and cannot take ${JSON.stringify(value)}`
+      return slotWriteRefusal(`${meta.name}.${key}`, entry.type, value)
     }
     return undefined
   } catch (e) {

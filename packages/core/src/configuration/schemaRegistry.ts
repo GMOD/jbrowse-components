@@ -24,6 +24,8 @@ export interface ConfigurationSchemaMetadata {
   storesNull: ReadonlySet<string>
   /** the `featureField` slots, which the reader hands over as written */
   featureFields: ReadonlySet<string>
+  /** the slots that refuse a `jexl:` string: every one but a callback and a featureField */
+  takesNoCallback: ReadonlyMap<string, string>
 }
 
 // Per-schema metadata keyed by the MST type itself. Registered for BOTH the

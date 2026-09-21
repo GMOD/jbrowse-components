@@ -24,7 +24,7 @@ interface SlotTypeSpec {
 // empty string a slot such as `outlineColor` spells "none" with; a field name
 // written where a color goes used to load and paint the invalid sentinel.
 function notAColor(value: unknown) {
-  return `${JSON.stringify(value)} is not a color. A color is a CSS color: a name like "red" or "steelblue", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", or "transparent"; a color computed per feature is a "jexl:" callback`
+  return `${JSON.stringify(value)} is not a color. A color is a CSS color: a name like "red" or "steelblue", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", or "transparent"; a color computed per feature is a "jexl:" callback, in a slot that takes one`
 }
 
 const CssColorType = types.refinement(
@@ -175,12 +175,33 @@ export type MaybeSlotTypeName = MaybeBuiltinSlotTypeName | 'maybeStringEnum'
 
 const JexlStringType = types.refinement('JexlString', types.string, isJexl)
 
+const CALLBACK_SLOTS =
+  'a slot that takes a callback declares the names it reads, which its config docs list as callback args'
+
+function notACallbackSlot(value: unknown) {
+  return `${JSON.stringify(value)} is a jexl: callback, and this slot takes a value: ${CALLBACK_SLOTS}`
+}
+
+/** Why the slot `name`, of type `type`, refuses `value` on a write. */
+export function slotWriteRefusal(name: string, type: string, value: unknown) {
+  return isJexl(value)
+    ? `${name} takes no jexl: callback, and ${JSON.stringify(value)} is one: ${CALLBACK_SLOTS}`
+    : `${name} is a ${type} slot and cannot take ${JSON.stringify(value)}`
+}
+
+function refusingCallbacks(model: IAnyType) {
+  return types.refinement(model, value => !isJexl(value), notACallbackSlot)
+}
+
 interface ConfigSlotDefinitionCommon {
   /** human-readable description of the slot's meaning */
   description?: string
   /** custom base MST model for the slot's value */
   model?: IAnyType
-  /** parameter names of the function callback */
+  /**
+   * The names a `jexl:` callback in this slot reads. Declaring any is what
+   * makes the slot take a callback; every other slot refuses one.
+   */
   contextVariable?: string[]
   /**
    * hide this slot behind a "Show advanced settings" toggle in the config
@@ -223,14 +244,18 @@ export type ConfigSlotDefinition =
     })
 
 /**
- * A configuration slot is a plain value-union MST property: the slot's value
- * type, OR a `jexl:...` callback string. The value lives directly on the parent
- * configuration model — there is no per-slot sub-model. `types.stripDefault`
- * omits the property from the parent snapshot when it equals the default, so
- * saved sessions stay minimal. Per-slot metadata
- * (type/description/defaultValue/contextVariable) lives in the schema registry
- * (a WeakMap keyed by the MST type, see schemaRegistry.ts); jexl callbacks are
- * evaluated on read by `readConfObject`.
+ * A configuration slot is a plain MST property holding the slot's value type,
+ * or, where the slot declares a `contextVariable`, that or a `jexl:...`
+ * callback string. Every other slot refuses a `jexl:` string, so a callback
+ * the reader would evaluate is one the schema says it takes. A `featureField`
+ * holds a `jexl:` expression as its value, which the display evaluates per
+ * feature. The value lives directly on the parent configuration model — there
+ * is no per-slot sub-model. `types.stripDefault` omits the property from the
+ * parent snapshot when it equals the default, so saved sessions stay minimal.
+ * Per-slot metadata (type/description/defaultValue/contextVariable) lives in
+ * the schema registry (a WeakMap keyed by the MST type, see
+ * schemaRegistry.ts); jexl callbacks are evaluated on read by
+ * `readConfObject`.
  *
  * Interning the returned type on `(type, model, defaultValue)` was prototyped
  * and declined: a session builds 1197 slot types for 222 distinct ones, and
@@ -273,14 +298,25 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
       `a "${type}" slot cannot have a concrete defaultValue (${JSON.stringify(defaultValue)}): unset is the state a maybe* slot exists for, and no config can spell undefined, so it would be unreachable. If this slot overrides a base slot, the base's defaultValue merged in — state 'defaultValue: undefined' to overwrite it. Otherwise use the non-maybe form of the type.`,
     )
   }
-  if (type === 'featureField' && definition.contextVariable?.length) {
+  const callback = !!definition.contextVariable?.length
+  if (type === 'featureField' && callback) {
     throw new Error(
       'a "featureField" slot names a field the display reads per feature, and its jexl: expression is evaluated there, never called with a contextVariable. If this slot overrides a base callback slot, state \'contextVariable: undefined\'.',
     )
   }
+  if (!callback && isJexl(defaultValue)) {
+    throw new Error(
+      `the defaultValue ${JSON.stringify(defaultValue)} is a jexl: callback, so the slot declares the contextVariable names it reads`,
+    )
+  }
 
+  const value = enumShaped(type, valueModel)
   return types.stripDefault(
-    types.union(JexlStringType, enumShaped(type, valueModel)),
+    callback
+      ? types.union(JexlStringType, value)
+      : type === 'featureField'
+        ? value
+        : refusingCallbacks(value),
     defaultValue,
   )
 }

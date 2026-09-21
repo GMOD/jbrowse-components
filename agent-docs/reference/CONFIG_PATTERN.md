@@ -268,12 +268,13 @@ resolving read, and it needs either a feature in `args` or an `isJexl` guard.
 examples of the second kind: raw read, `isJexl` guard, fall back to a default,
 because no single swatch can show a per-feature expression.
 
-Slots that can hold a callback are the ones declaring `contextVariable` — that is
-what gates `SlotEditor`'s value/callback toggle. It is editor metadata only:
-nothing in the read path consults it, so a slot that forgets to declare one is
-still reachable by hand-writing `jexl:` into JSON. (`partitionField` had
-forgotten, which is how it shipped broken.) Declare it so the editor works; don't
-rely on it as a correctness signal.
+Slots that can hold a callback are the ones declaring `contextVariable`, and
+only those: every other slot refuses a `jexl:` string at load, on `setSlot`, in
+the config editor and in the JSON Schema, naming the slot
+([ADR-155](../architecture-decision-records/adr-155-a-slot-takes-a-callback-only-where-it-declares-one.md)).
+A slot naming a field the display reads per feature is a `featureField`, which
+the reader hands over raw, so its `jexl:` expression reaches `fieldReader`
+without a raw read at the call site.
 
 ## Key functions
 

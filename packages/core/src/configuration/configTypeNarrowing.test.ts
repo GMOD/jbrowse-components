@@ -48,7 +48,11 @@ const schema = ConfigurationSchema('ConfigNarrowingTest', {
   },
   // numeric slot whose default is a jexl string: must still type as `number`
   // (SlotValueFromDef keys scalars on `type`, not the string default value).
-  thickness: { type: 'number', defaultValue: 'jexl:1+1' },
+  thickness: {
+    type: 'number',
+    defaultValue: 'jexl:1+1',
+    contextVariable: ['feature'],
+  },
 })
 
 const Container = types.model('ConfigNarrowingContainer', {

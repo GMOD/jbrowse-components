@@ -28,6 +28,7 @@ export interface SlotDefinition {
   description?: string
   defaultValue?: unknown
   model?: MstType
+  contextVariable?: string[]
 }
 
 export interface SchemaMetadata {
@@ -367,9 +368,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
   }
 
-  // The value half of the common slot types, shared as one def each: a slot is
-  // `<value> | jexl:` and there are seven hundred of them, so an inline anyOf
-  // per slot is what ajv spends its compile time on.
+  // The value half of the common callback slot types, shared as one def each:
+  // a callback slot is `<value> | jexl:`, and an inline anyOf per slot is what
+  // ajv spends its compile time on.
   const SHARED_SLOT_DEFS: Record<string, [string, JsonSchema]> = {
     string: ['StringOrJexl', { type: 'string' }],
     maybeString: ['StringOrJexl', { type: 'string' }],
@@ -417,7 +418,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       case 'string':
       case 'maybeString':
       case 'text':
-        return { type: 'string' }
+        return ref('PlainString')
       case 'featureField':
         return ref('FeatureField')
       case 'integer':
@@ -474,14 +475,17 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
               ],
             }
           : builtinSlot(def.type)
-    const form =
-      def.type === 'featureField'
-        ? value
+    const form = def.contextVariable?.length
+      ? frozen
+        ? {}
         : shared && !def.model && !legacyValues?.length
           ? ref(shared[0])
-          : frozen
-            ? {}
-            : { anyOf: [value, ...legacy, ref('JexlString')] }
+          : { anyOf: [value, ...legacy, ref('JexlString')] }
+      : frozen
+        ? { not: ref('JexlString') }
+        : legacy.length
+          ? { anyOf: [value, ...legacy] }
+          : value
     const withDefault =
       def.defaultValue === undefined ||
       typeof def.defaultValue === 'function' ||
@@ -846,7 +850,11 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     type: 'string',
     pattern: '^jexl:',
     description:
-      'A jexl callback evaluated when the slot is read, e.g. `jexl:get(feature, "score") > 10 ? "red" : "blue"`. Every slot accepts one in place of a fixed value.',
+      'A jexl callback evaluated when the slot is read, e.g. `jexl:get(feature, "score") > 10 ? "red" : "blue"`. A slot takes one in place of a fixed value where its config docs list callback args.',
+  }
+  defs.PlainString = {
+    type: 'string',
+    not: ref('JexlString'),
   }
   defs.FeatureField = {
     type: 'string',

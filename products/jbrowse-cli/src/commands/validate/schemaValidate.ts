@@ -224,8 +224,39 @@ function unknownKeyMessage(
   return `unknown slot "${key}"${guess} — JBrowse ignores keys it does not declare, so this setting silently does nothing`
 }
 
-function isJexl(value: unknown) {
+function isJexl(value: unknown): value is string {
   return typeof value === 'string' && value.startsWith('jexl:')
+}
+
+// The keywords a slot declaring no contextVariable fails a `jexl:` string on:
+// a plain string's `not`, a number's `type`, a color's `pattern`, an enum's
+// own, and a union of those
+const REFUSES_CALLBACK = new Set([
+  'not',
+  'type',
+  'pattern',
+  'enum',
+  'const',
+  'anyOf',
+])
+
+function refusedCallback(value: string) {
+  return `takes no "jexl:" callback, and ${JSON.stringify(value)} is one: a slot that takes a callback lists its callback args in the config docs`
+}
+
+function isScalar(schema: Schema) {
+  const resolved = resolve(schema)
+  return (
+    resolved.properties === undefined &&
+    resolved.items === undefined &&
+    resolved.allOf === undefined &&
+    resolved.type !== 'object' &&
+    resolved.type !== 'array'
+  )
+}
+
+function isJexlBranch(schema: Schema) {
+  return refName(schema) === 'JexlString'
 }
 
 function branchesOf(error: ErrorObject) {
@@ -375,6 +406,14 @@ function explain(
       continue
     }
     const parent = error.parentSchema as Schema
+    if (
+      isJexl(error.data) &&
+      REFUSES_CALLBACK.has(error.keyword) &&
+      !(error.keyword === 'anyOf' && branchesOf(error).some(isJexlBranch))
+    ) {
+      emit(where, refusedCallback(error.data))
+      continue
+    }
     switch (error.keyword) {
       case 'additionalProperties':
       case 'unevaluatedProperties': {
@@ -400,12 +439,23 @@ function explain(
           )
           break
         }
-        const jexlBranch = branches.findIndex(b => refName(b) === 'JexlString')
+        const jexlBranch = branches.findIndex(isJexlBranch)
         if (jexlBranch >= 0 && !isJexl(value)) {
           const others = branches.filter((_, i) => i !== jexlBranch)
           emit(
             where,
             `expected ${others.map(describe).join(' or ')} or a "jexl:" expression, got ${JSON.stringify(value)}`,
+          )
+          break
+        }
+        if (
+          !isRecord(value) &&
+          !Array.isArray(value) &&
+          branches.every(isScalar)
+        ) {
+          emit(
+            where,
+            `expected ${branches.map(describe).join(' or ')}, got ${JSON.stringify(value)}`,
           )
           break
         }
@@ -434,7 +484,9 @@ function explain(
       case 'pattern':
         emit(
           where,
-          `expected a string matching /${String(parent.pattern)}/, got ${JSON.stringify(error.data)}`,
+          error.schemaPath.endsWith('/CssColor/pattern')
+            ? `expected ${describe({ $ref: '#/$defs/CssColor' })}, got ${JSON.stringify(error.data)}`
+            : `expected a string matching /${String(parent.pattern)}/, got ${JSON.stringify(error.data)}`,
         )
         break
       case 'type':

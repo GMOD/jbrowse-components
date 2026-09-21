@@ -8,7 +8,7 @@ import {
 
 import { getContainingTrack, getSession } from '../util/mstUtils.ts'
 import { ElementId } from '../util/types/mst.ts'
-import ConfigSlot from './configurationSlot.ts'
+import ConfigSlot, { slotWriteRefusal } from './configurationSlot.ts'
 import { checkRequirements } from './requirements.ts'
 import {
   getConfigurationSchemaMetadata,
@@ -289,6 +289,7 @@ function makeConfigurationSchemaModel<
   const slotKeys = new Set<string>()
   const storesNull = new Set<string>()
   const featureFields = new Set<string>()
+  const takesNoCallback = new Map<string, string>()
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (isConfigurationSchemaType(slotDefinition)) {
       // a sub-configuration. A bare sub-schema is already stripDefault-wrapped
@@ -316,6 +317,8 @@ function makeConfigurationSchemaModel<
         }
         if (slotDefinition.type === 'featureField') {
           featureFields.add(slotName)
+        } else if (!slotDefinition.contextVariable?.length) {
+          takesNoCallback.set(slotName, slotDefinition.type)
         }
       } catch (e) {
         throw new Error(
@@ -402,7 +405,7 @@ function makeConfigurationSchemaModel<
             ? declared.type
             : 'value'
           throw new Error(
-            `${modelName}.${slotName} is a ${slotType} slot and cannot take ${JSON.stringify(value)}`,
+            slotWriteRefusal(`${modelName}.${slotName}`, slotType, value),
           )
         }
         self[slotName] = value
@@ -429,6 +432,7 @@ function makeConfigurationSchemaModel<
     options,
     storesNull,
     featureFields,
+    takesNoCallback,
   }
   completeModel = completeModel.preProcessSnapshot(snapshot =>
     preProcessSnapshotWith(metadata, snapshot),

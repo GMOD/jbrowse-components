@@ -135,8 +135,7 @@ describe('the schema', () => {
     ]
     const [error] = schemaProblems(config)
     expect(error?.where).toBe('tracks[0].displays[0].height')
-    expect(error?.message).toContain('expected a number')
-    expect(error?.message).toContain('"jexl:" expression')
+    expect(error?.message).toBe('expected a number, got "tall"')
   })
 
   it('reports a field name written where a color goes', () => {
@@ -170,7 +169,7 @@ describe('the schema', () => {
     const [error] = schemaProblems(config)
     expect(error?.where).toBe('tracks[0].displays[0].color')
     expect(error?.message).toBe(
-      'expected a CSS color (a name like "red", "#rrggbb", "rgb()" or "hsl()") or a "jexl:" expression, got "bluee"',
+      'expected a CSS color (a name like "red", "#rrggbb", "rgb()" or "hsl()"), got "bluee"',
     )
     config.tracks[0]!.displays = [
       { type: 'LinearAlignmentsDisplay', color: 'steelblue' },
@@ -178,10 +177,46 @@ describe('the schema', () => {
     expect(schemaProblems(config)).toEqual([])
   })
 
-  it('accepts a jexl: string where a number is expected', () => {
+  it('accepts a jexl: callback where a callback slot expects a number', () => {
     const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      type: 'FeatureTrack',
+      adapter: { type: 'Gff3TabixAdapter', uri: 'g.gff.gz' },
+      displays: [{ type: 'LinearBasicDisplay', featureHeight: 'jexl:5 + 5' }],
+    }
+    expect(schemaProblems(config)).toEqual([])
+  })
+
+  it('refuses a jexl: callback where a slot declares no callback args', () => {
+    const config = baseConfig()
+    config.tracks[0]!.name = 'jexl:feature.name'
     config.tracks[0]!.displays = [
       { type: 'LinearAlignmentsDisplay', height: 'jexl:100 + 50' },
+    ]
+    const refusal = (value: string) =>
+      `takes no "jexl:" callback, and ${JSON.stringify(value)} is one: a slot that takes a callback lists its callback args in the config docs`
+    expect(schemaProblems(config)).toEqual([
+      {
+        level: 'error',
+        where: 'tracks[0].name',
+        message: refusal('jexl:feature.name'),
+      },
+      {
+        level: 'error',
+        where: 'tracks[0].displays[0].height',
+        message: refusal('jexl:100 + 50'),
+      },
+    ])
+  })
+
+  it('accepts a jexl: expression in a featureField', () => {
+    const config = baseConfig()
+    config.tracks[0]!.displays = [
+      {
+        type: 'LinearAlignmentsDisplay',
+        facet: { field: "jexl:get(feature,'template_length') > 500" },
+      },
     ]
     expect(schemaProblems(config)).toEqual([])
   })

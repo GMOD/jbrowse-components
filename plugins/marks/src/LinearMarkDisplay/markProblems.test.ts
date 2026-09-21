@@ -222,16 +222,18 @@ test('a pair slot naming another number of fields says it reads the default', ()
 })
 
 test('a jexl: field on a step is pointed at formula, where a dotted path is read', () => {
-  const mean = (field: string) => [
+  const grouped = (field: string) => [
     {
       shape: 'bar',
-      encoding: { y: 'm' },
-      transform: [{ type: 'aggregate', ops: [{ op: 'mean', field, as: 'm' }] }],
+      encoding: { y: 'count' },
+      transform: [
+        { type: 'aggregate', groupby: [field], ops: [{ op: 'count' }] },
+      ],
     },
   ]
-  expect(found(mean('INFO.DP'))).toEqual([])
-  expect(found(mean('jexl:feature.INFO.DP[0]'))).toEqual([
-    'error step-field-expression mark 0 transform.0.ops.0.field',
+  expect(found(grouped('INFO.DP'))).toEqual([])
+  expect(found(grouped('jexl:feature.INFO.DP[0]'))).toEqual([
+    'error step-field-expression mark 0 transform.0.groupby.0',
   ])
 })
 

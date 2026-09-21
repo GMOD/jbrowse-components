@@ -47,7 +47,7 @@ test('a misspelt slot, a wrong value and a dangling trackId fail the run', async
       'error: tracks[0].adapter.bamLocatoin: unknown slot "bamLocatoin" — did you mean "bamLocation"?',
     )
     expect(stdout).toContain(
-      'error: tracks[0].displays[0].height: expected a number or a "jexl:" expression, got "tall"',
+      'error: tracks[0].displays[0].height: expected a number, got "tall"',
     )
     expect(stdout).toContain(
       'error: defaultSession.views[0].tracks[0]: trackId "reeds" is not defined in this config — did you mean "reads"?',

@@ -36,7 +36,13 @@ function makePluginManager() {
       name,
       configSchema: ConfigurationSchema(
         name,
-        { [colorSlot]: { type: 'color', defaultValue: 'goldenrod' } },
+        {
+          [colorSlot]: {
+            type: 'color',
+            defaultValue: 'goldenrod',
+            contextVariable: ['feature'],
+          },
+        },
         { explicitIdentifier: 'displayId', explicitlyTyped: true },
       ),
       stateModel: types.model(name, {}),

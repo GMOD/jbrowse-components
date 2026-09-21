@@ -1,3 +1,5 @@
+import { isJexl } from '../util/jexlStrings.ts'
+import { slotWriteRefusal } from './configurationSlot.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
   identifierName,
@@ -38,6 +40,23 @@ function refuseUndeclaredKeys(
     throw new Error(
       `${name} takes ${listed(declared)}, not ${unknown.join(', ')}`,
     )
+  }
+}
+
+// Checked here as well as by each slot's MST type because this runs on every
+// create, where MST's own check is off in a build that has not enabled it
+function refuseCallbacks(
+  { name, takesNoCallback }: ConfigurationSchemaMetadata,
+  snapshot: unknown,
+) {
+  if (typeof snapshot === 'object' && snapshot !== null) {
+    for (const key in snapshot) {
+      const type = takesNoCallback.get(key)
+      const value: unknown = (snapshot as Record<string, unknown>)[key]
+      if (type !== undefined && isJexl(value)) {
+        throw new Error(slotWriteRefusal(`${name}.${key}`, type, value))
+      }
+    }
   }
 }
 
@@ -83,7 +102,8 @@ function nullMembersAsUnset(
  * `shorthandWith` slots, and `null` into the empty object that clears it; a
  * `null` member reads as unset, except in a frozen-family slot, which stores
  * it; a `closed` schema refuses a key it does not declare, then the schema's
- * own `preProcessSnapshot` runs. A bare value the shorthand does not lift
+ * own `preProcessSnapshot` runs, and a `jexl:` callback in a slot declaring no
+ * `contextVariable` is refused. A bare value the shorthand does not lift
  * passes through for MST to refuse.
  */
 export function preProcessSnapshotWith(
@@ -104,7 +124,9 @@ export function preProcessSnapshotWith(
   if (closed) {
     refuseUndeclaredKeys(schema, lifted)
   }
-  return preProcessSnapshot ? preProcessSnapshot(lifted) : lifted
+  const processed = preProcessSnapshot ? preProcessSnapshot(lifted) : lifted
+  refuseCallbacks(schema, processed)
+  return processed
 }
 
 /**

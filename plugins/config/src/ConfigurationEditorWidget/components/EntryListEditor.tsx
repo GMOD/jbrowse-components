@@ -87,10 +87,7 @@ const ColorArrayEditor = observer(function ColorArrayEditor({
       slot={slot}
       added={value => value.at(-1) ?? 'black'}
       entry={(color, set) => (
-        <ColorEditor
-          slot={{ name: '', description: '', value: color, set }}
-          admitsJexl={false}
-        />
+        <ColorEditor slot={{ name: '', description: '', value: color, set }} />
       )}
     />
   )

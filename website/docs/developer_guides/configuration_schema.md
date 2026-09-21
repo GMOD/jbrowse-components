@@ -455,9 +455,9 @@ it.)
 
 ## Config callbacks (jexl)
 
-Any slot can hold a callback or a plain value. A slot's `contextVariable` field
-lists the arguments the callback expects; the calling code supplies them as the
-third argument to `readConfObject`:
+A slot takes a callback in place of a plain value where it declares
+`contextVariable`, the arguments the callback reads; the calling code supplies
+them as the third argument to `readConfObject`:
 
 <!-- include: plugins/arc/src/LinearArcDisplay/configSchema.ts#contextVariableSlot -->
 
@@ -551,11 +551,16 @@ A callback may call custom jexl functions your plugin registers with
 for a worked example). The [jexl config guide](/docs/config_guides/jexl) covers
 the expression language itself.
 
-`contextVariable` is editor metadata and nothing more: it raises the config
-editor's value/callback toggle, and no part of the read path consults it. A slot
-that declares none is still reachable by hand-writing `jexl:` into the JSON, so
-declare one to make the editor work — but never read it as a signal that a slot
-does or doesn't hold a callback.
+A slot that declares no `contextVariable` refuses a `jexl:` string: loading a
+config, `setSlot`, the config editor and the generated JSON Schema each name the
+slot. A callback the code evaluates is one the schema says it takes, so a
+missing declaration shows up the first time a config writes one.
+
+A slot naming a field the display reads per feature, such as a colour or facet
+`field`, is a `featureField` rather than a callback. It takes a field name, a
+dotted path, or a `jexl:` expression deriving the value, and the display
+evaluates that expression per feature, so `readConfObject` and `getConf` hand it
+over as written.
 
 ## Configuration internals
 
