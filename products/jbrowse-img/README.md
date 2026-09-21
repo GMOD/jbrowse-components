@@ -1134,6 +1134,12 @@ example resolves data/volvox/volvox.dup.vcf.gz
 See data/volvox/config.json for a config that contains localPaths, or
 data/config.json for a config that just contains URLs
 
+A mark display (`LinearMarkDisplay`) loads a `marks` list whose slots disagree
+with each other, and the app says what it cannot draw in the track's corner
+chip. jb2export prints each of those problems to stderr, and fails without
+writing an image on one the display's rule list calls an error, such as a bar
+naming no `y`. `jbrowse validate` checks a config file against the same rules.
+
 ### Use a session file exported from jbrowse
 
 In jbrowse-web, File->Export session produces a session.json file for the

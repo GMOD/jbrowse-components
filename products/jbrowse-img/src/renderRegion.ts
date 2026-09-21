@@ -1,4 +1,5 @@
 import { getEnv } from '@jbrowse/core/util'
+import { openTracks } from '@jbrowse/core/util/openViews'
 import {
   viewCanDisplayTrack,
   viewDisplayNames,
@@ -214,6 +215,51 @@ function throwOnRenderError(session: RenderErrorSources) {
   const error = firstRenderError(session)
   if (error !== undefined) {
     throw toError(error)
+  }
+}
+
+interface ConfigProblem {
+  level: string
+  mark: number
+  slot: string
+  message: string
+}
+
+function configProblemsOf(display: object): readonly ConfigProblem[] {
+  return 'configProblems' in display && Array.isArray(display.configProblems)
+    ? display.configProblems
+    : []
+}
+
+/**
+ * What each open display says it cannot draw as configured, the mark display's
+ * rule list that the app shows in the track's corner chip. Read off the
+ * display rather than run over the config, so the problems are the ones of the
+ * display type drawn, after every modifier, in the display's own words. A
+ * warning goes to stderr and an error fails the run, ahead of any render
+ * failure it may have caused. Read once the render has settled or failed,
+ * which leaves no fetch in flight for the teardown to cut off.
+ */
+function reportConfigProblems(session: Model['session']) {
+  const errors = new Set<string>()
+  const warnings = new Set<string>()
+  for (const track of openTracks(session)) {
+    for (const display of track.displays) {
+      for (const { level, mark, slot, message } of configProblemsOf(display)) {
+        const line = `track "${track.configuration.trackId}" mark ${mark} ${slot}: ${message}`
+        if (level === 'error') {
+          errors.add(line)
+        } else {
+          warnings.add(line)
+        }
+      }
+    }
+  }
+  for (const line of warnings) {
+    console.warn(`Warning: ${line}`)
+  }
+  if (errors.size > 0) {
+    throw new Error(`cannot draw as configured:\n  ${[...errors].join('\n  ')}`)
   }
 }
 
@@ -692,13 +738,21 @@ export async function renderRegionReport(
     model.session.setThemeName(opts.themeName)
   }
   try {
-    const result = await modeRenderers[mode]({
+    const rendered = await modeRenderers[mode]({
       model,
       data,
       opts,
       width: opts.width ?? DEFAULT_WIDTH,
       spec,
-    })
+    }).then(
+      result => ({ result }),
+      (error: unknown) => ({ error }),
+    )
+    reportConfigProblems(model.session)
+    if ('error' in rendered) {
+      throw rendered.error
+    }
+    const { result } = rendered
     // a failure reported to the session during the render (a bad track config,
     // a failed assembly load) means the SVG is incomplete — fail rather than
     // emit a silently-broken image. Per-track data-load errors need no check

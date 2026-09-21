@@ -152,6 +152,62 @@ describe('a path write into a setting the config already writes', () => {
   }, 60000)
 })
 
+describe('a mark display the rule list finds a problem in', () => {
+  const marks = (...list: Record<string, unknown>[]) =>
+    configWith({ type: 'LinearMarkDisplay', marks: list })
+
+  test.each([
+    ['a bar naming no y', marks({ shape: 'bar', encoding: {} })],
+    [
+      'a y its aggregate does not write',
+      marks({
+        shape: 'bar',
+        transform: [
+          { type: 'bin', step: 'auto' },
+          {
+            type: 'aggregate',
+            groupby: ['start', 'end'],
+            ops: [{ op: 'count' }],
+          },
+        ],
+        encoding: { y: 'score' },
+      }),
+    ],
+  ])(
+    'fails on an error, %s, naming the track and the slot',
+    async (_, config) => {
+      await expect(exportTrack(config)).rejects.toThrow(
+        /track "genes" mark 0 encoding\.y: /,
+      )
+    },
+    60000,
+  )
+
+  test('puts an error ahead of the render failure it causes', async () => {
+    await expect(
+      exportTrack(
+        marks({
+          shape: 'bar',
+          transform: [{ type: 'filter', expr: 'score>5' }],
+          encoding: { y: 'score' },
+        }),
+      ),
+    ).rejects.toThrow(/track "genes" mark 0 transform\.0\.expr: /)
+  }, 60000)
+
+  test('says a warning and draws', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const svg = await exportTrack(
+      marks({ shape: 'span', encoding: { y: 'score' } }),
+    )
+    expect(svg).toContain('<svg')
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^Warning: track "genes" mark 0 encoding\.y: /),
+    )
+    warn.mockRestore()
+  }, 60000)
+})
+
 describe('a jexl: value in a path write', () => {
   const nameIs = "jexl:get(feature,'name')=='EDEN.1'"
 
