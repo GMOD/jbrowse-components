@@ -61,9 +61,9 @@ export interface SyntenyFollowHost extends FollowAnchorHost {
 // The root actions a person's own gesture on a row produces: a drag or a
 // wheel (`horizontalScroll`, `zoomTo`, `scrollTo`), the header's zoom and pan
 // buttons (`zoom`, `slide`), a rubber band, a ruler label, a feature's
-// "navigate" or a mark's flight (`moveTo`, `navTo`, `flyTo`, `flyToCenter`;
-// `centerAt` is a plain function over `scrollTo`), the row's search box
-// (`navToLocString`), its own menu
+// "navigate" or a mark's flight (`moveTo`, `navTo`, `flyTo`, `flyToCenter`,
+// `flyToFit`; `centerAt` is a plain function over `scrollTo`), the row's
+// search box (`navToLocString`), its own menu
 // (`showAllRegions`, `showAllRegionsInAssembly`, `fitAllRegions`) and a
 // bookmark (`navigateNewestBookmark`).
 //
@@ -80,6 +80,7 @@ export const ROW_GESTURES = new Set([
   'navTo',
   'flyTo',
   'flyToCenter',
+  'flyToFit',
   'navToLocString',
   'navigateNewestBookmark',
   'showAllRegions',

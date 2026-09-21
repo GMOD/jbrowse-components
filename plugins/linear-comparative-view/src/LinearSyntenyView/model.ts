@@ -322,8 +322,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Whether the 'auto' thin-fade is latched on (see `fadeThinAlignments`).
        */
       fadeThinLatch: false,
+      /**
+       * #volatile
+       * The row sync the reader left for the follow, which the header toggle
+       * returns to rather than always to 'independent', so a pixel lock
+       * survives a look through the alignment.
+       */
+      rowSyncBeforeFollow: 'independent' as RowSyncMode,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The rows a drag or a wheel on a band moves: every row, or while
+       * following the anchor alone, which the follow then places the others
+       * against, as it does a gesture on the anchor itself.
+       */
+      get bandGestureRows() {
+        return self.rowSync === 'follow'
+          ? self.views.slice(self.followAnchorIndex, self.followAnchorIndex + 1)
+          : self.views
+      },
       /**
        * #getter
        * the rows are locked together in pixels
@@ -775,6 +793,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setRowSyncMode(mode: RowSyncMode) {
+        if (mode === 'follow' && self.rowSync !== 'follow') {
+          self.rowSyncBeforeFollow = self.rowSync
+        }
         self.rowSync = mode
       },
       /**
@@ -1031,16 +1052,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * A band's drag: every row, or while following the anchor alone, which
-       * the follow then places the others against, as it does a drag on the
-       * anchor itself. The rows' scrolls nest under this action, so none of
-       * them reads as a gesture that would take the anchor.
+       * A band's drag, over `bandGestureRows`. The rows' scrolls nest under
+       * this action, so none of them reads as a gesture that would take the
+       * anchor.
        */
       panStack(dx: number) {
-        const rows = self.followSynteny
-          ? self.views.slice(self.followAnchorIndex, self.followAnchorIndex + 1)
-          : self.views
-        for (const row of rows) {
+        for (const row of self.bandGestureRows) {
           row.horizontalScroll(dx)
         }
       },

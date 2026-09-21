@@ -35,6 +35,7 @@ import type {
 export interface ParentViewDuck extends FollowAnchorHost {
   width: number
   views: LinearGenomeViewModel[]
+  bandGestureRows: LinearGenomeViewModel[]
   panStack: (dx: number) => void
   levels: readonly IStateTreeNode[]
   scrollZoom: boolean

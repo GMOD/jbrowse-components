@@ -561,9 +561,15 @@ will read. The snackbar printed `coord0` and so named a base one before the one
 the row landed on.
 
 **The scroll class places the row's window in its own cumBp.** The drawn span
-is already in that space, so the click hands `setWindow` or `flyTo` a window
-centred on it: at the row's zoom where the span fits, and framing it padded by
-`OFFSCREEN_MATE_NAV_GROW` a side where it does not, since a mark standing for a
-run of anchors can name a union many windows wide whose middle holds none of
-them. A union across two displayed copies of one contig centres between them,
-which is why the staleness test asks the span's ends as well as its centre.
+is already in that space, so the click centres the row on it: at the row's zoom
+where the span fits, and framing it padded by `OFFSCREEN_MATE_NAV_GROW` a side
+where it does not, since a mark standing for a run of anchors can name a union
+many windows wide whose middle holds none of them. The frame is capped at the
+widest window the row can show, or the zoom's clamp shifts it off centre. A
+flight goes through `flyToFit`, which widens from the zoom a flight already in
+the air is heading to rather than the arc's current width, so a second click
+mid-flight does not land pulled back. Under `linkViews` the click only scrolls:
+the lock replays a zoom from a root action alone, and a framing inside the
+level's action would unlock the clicked row. A union across two displayed
+copies of one contig centres between them, which is why the staleness test asks
+the span's ends as well as its centre.

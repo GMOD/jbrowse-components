@@ -13,10 +13,11 @@ interface UseWheelScrollZoomResult {
 
 const SCROLL_IDLE_MS = 150
 
-// Wheel handling for the synteny canvas: the shared controller drives every view
-// in the stack from one gesture, so the connectors and both flanking LGVs stay in
-// step, and the canvas swallows gestures it doesn't act on rather than letting
-// the page jump out from under a connector.
+// Wheel handling for the synteny canvas: the shared controller drives the
+// rows a band gesture moves (`bandGestureRows`) from one gesture, so the
+// connectors and both flanking LGVs stay in step, and the canvas swallows
+// gestures it doesn't act on rather than letting the page jump out from under
+// a connector.
 //
 // `swallowUnhandled` is why a plain vertical wheel with scroll-to-zoom off does
 // nothing at all here rather than scrolling the page: the band is a few dozen
@@ -44,7 +45,7 @@ export function useWheelScrollZoom(
         }, SCROLL_IDLE_MS)
       },
       resolveTarget: () => ({
-        views: parentView.views,
+        views: parentView.bandGestureRows,
         scrollZoom: parentView.scrollZoom,
         originElement: () => canvas,
         hold: fn => parentView.holdFollowAnchor(fn),

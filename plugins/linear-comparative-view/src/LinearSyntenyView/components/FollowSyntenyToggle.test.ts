@@ -136,3 +136,15 @@ test('but not the unaligned wording', () => {
     }),
   ).toMatch(/nothing aligns here/)
 })
+
+test('several contigs elsewhere read as a list, and the reader scrolls onto one', () => {
+  expect(
+    followToggleTitle({
+      followSynteny: true,
+      anchorLabel: 'grape',
+      partial: { following: 'chr1', elsewhere: ['chr2', 'chr3', 'chr9'] },
+    }),
+  ).toBe(
+    'Following grape on chr1 — chr2, chr3 and chr9 align too far away to show at once, so scroll onto one to follow it instead',
+  )
+})

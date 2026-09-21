@@ -522,6 +522,48 @@ test('a drawn span across two displayed copies of its contig still scrolls', asy
   expect(row.windowStartBp).toBe(600_000 - 350_000)
 })
 
+// Mid-flight the row's width is a point on the arc, pulled back to hold both
+// ends. A second click read that as the zoom to keep and landed pulled back.
+test('a second click during a flight lands at the zoom the first was heading to', async () => {
+  const { level, row } = await scrollableSetup()
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 200_000, end: 201_000 },
+      mateCumBp: { start: BP + 200_000, end: BP + 201_000 },
+    }),
+  )
+  await when(() => row.windowWidthBp > 80_000, { timeout: 5000 })
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 300_000, end: 301_000 },
+      mateCumBp: { start: BP + 300_000, end: BP + 301_000 },
+    }),
+  )
+  await when(() => row.windowStartBp === BP + 300_500 - row.windowWidthBp / 2, {
+    timeout: 5000,
+  })
+
+  expect(row.windowWidthBp).toBe(40_000)
+}, 20000)
+
+// Rows locked in pixels replay a zoom only from a root action, so framing the
+// clicked row from inside the level's would unlock it from the others.
+test('with the rows locked together the click scrolls at the zoom they share', async () => {
+  const { view, level, row } = await scrollableSetup()
+  view.setRowSyncMode('link')
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 100_000, end: 300_000 },
+      mateCumBp: { start: BP + 100_000, end: BP + 300_000 },
+    }),
+  )
+
+  expect(row.windowWidthBp).toBe(40_000)
+  expect(row.windowStartBp).toBe(BP + 200_000 - 20_000)
+})
+
 // Flown, not jumped — so the row is somewhere else on the way and the reader
 // can see the distance being crossed. Asserted on the zoom rather than the
 // position, since the pull-back is the half a jump could not produce.

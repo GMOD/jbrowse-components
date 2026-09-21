@@ -84,7 +84,10 @@ export function followToggleTitle({
   // carries it — no button, no undo, just the row they are already driving —
   // and the only thing they cannot do is guess that region is there.
   if (partial?.elsewhere.length) {
-    return `Following ${anchor} on ${partial.following} — ${partial.elsewhere.join(', ')} aligns too far away to show at once, so scroll onto it to follow that instead`
+    const { following, elsewhere } = partial
+    return elsewhere.length === 1
+      ? `Following ${anchor} on ${following} — ${elsewhere[0]} aligns too far away to show at once, so scroll onto it to follow that instead`
+      : `Following ${anchor} on ${following} — ${elsewhere.slice(0, -1).join(', ')} and ${elsewhere.at(-1)} align too far away to show at once, so scroll onto one to follow it instead`
   }
   if (approximate) {
     return `Following ${anchor} — positions are approximate here, since the window spans more than one alignment or only a coarse alignment is loaded at this zoom`
@@ -107,7 +110,8 @@ export function followToggleTitle({
  * obvious way to cover both and was worse than either — a ToggleButton reads as
  * on/off, so a third state makes "selected" ambiguous and leaves the tooltip as
  * the only way to tell which coupling is running. Turning this on clears
- * `linkViews` (setRowSyncMode), so the two can still never fight.
+ * `linkViews` (setRowSyncMode), so the two can still never fight, and turning
+ * it off returns to the mode it was turned on from.
  */
 const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
   model,
@@ -144,7 +148,9 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
           selected={followSynteny}
           disabled={views.length < 2}
           onChange={() => {
-            model.setRowSyncMode(followSynteny ? 'independent' : 'follow')
+            model.setRowSyncMode(
+              followSynteny ? model.rowSyncBeforeFollow : 'follow',
+            )
           }}
           className={classes.button}
           size="small"

@@ -3430,6 +3430,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
             )
           }
         },
+
+        /**
+         * #action
+         * A flight to a linear bp centre at the zoom the view is on, or is
+         * already flying to, widened where that is narrower than `fitWidthBp`.
+         * The current width mid-flight is a point on the arc, so a second
+         * flight read from it would land pulled back.
+         */
+        flyToFit(centerBp: number, fitWidthBp: number) {
+          flyTo(
+            centerBp,
+            Math.max(
+              heading ? heading.windowWidthBp : self.windowWidthBp,
+              fitWidthBp,
+            ),
+          )
+        },
       }
     })
     .actions(self => ({

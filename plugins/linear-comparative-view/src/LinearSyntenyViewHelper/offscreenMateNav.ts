@@ -53,9 +53,10 @@ export type MateNavDestination =
   | {
       kind: 'scroll'
       loc: string
-      // the window in the row's own cumBp, which `setWindow` and `flyTo` take
+      // in the row's own cumBp, which `setWindow` and `flyToFit` take: where
+      // to centre, and the narrowest window that holds the span, padded
       centerBp: number
-      widthBp: number
+      fitWidthBp: number
     }
   | {
       kind: 'show'
@@ -141,9 +142,11 @@ export function mateNavDestination({
           kind: 'scroll',
           loc,
           centerBp: (drawn.start + drawn.end) / 2,
-          widthBp: Math.max(
-            view.windowWidthBp,
+          // no wider than the row can show, or the zoom's clamp shifts the
+          // window it was centred for
+          fitWidthBp: Math.min(
             (drawn.end - drawn.start) * (1 + 2 * OFFSCREEN_MATE_NAV_GROW),
+            view.maxBpPerPx * view.width,
           ),
         }
   }

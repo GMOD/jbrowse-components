@@ -159,16 +159,22 @@ export function computeSyntenyColors({
   const identities = featureData.attributes.identity
   const out = new Uint32Array(instanceCount)
 
+  const indelColors: Record<number, number> = {
+    [KIND_CIGAR_I]: colorI,
+    [KIND_CIGAR_D]: colorD,
+    [KIND_CIGAR_N]: colorN,
+  }
   for (let i = 0; i < instanceCount; i++) {
     const kind = kinds[i]!
+    const indelColor = indelColors[kind]
     if (kind === KIND_MARKER) {
       out[i] = marker
-    } else if (kind === KIND_CIGAR_I) {
-      out[i] = colorI
-    } else if (kind === KIND_CIGAR_D) {
-      out[i] = colorD
-    } else if (kind === KIND_CIGAR_N) {
-      out[i] = colorN
+    } else if (indelColor !== undefined) {
+      // an indel of a ribbon the colour mode hides goes with it
+      out[i] =
+        hideUnlabelled && colorFn(instanceFeatureIdx[i]!) >>> 24 === 0
+          ? 0
+          : indelColor
     } else {
       const f = instanceFeatureIdx[i]!
       const base = colorFn(f)

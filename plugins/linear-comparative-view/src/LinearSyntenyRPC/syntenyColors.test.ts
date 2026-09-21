@@ -146,6 +146,36 @@ test('a ribbon the colour mode hides stays hidden under the identity fade', () =
   expect(abgrAlpha(colors[1]!)).toBe(0)
 })
 
+// A coloured-CIGAR ribbon draws its indels as instances of their own, painted
+// from the indel palette, so hiding the ribbon left its insertions standing.
+test("a hidden ribbon's indels are hidden with it", () => {
+  const group = { labels: ['A'], colors: {} }
+  const colors = computeSyntenyColors({
+    groundColor: '#fff',
+    instanceData: {
+      kinds: new Uint8Array([KIND_CIGAR_I, KIND_CIGAR_I]),
+      instanceFeatureIdx: new Uint32Array([0, 1]),
+      instanceCount: 2,
+    },
+    featureData: {
+      ...features(
+        [
+          { refName: 'chr1', mateRefName: 'chrA' },
+          { refName: 'chr2', mateRefName: 'chrB' },
+        ],
+        { group: new Float32Array([0, -1]) },
+      ),
+      attributeRanges: { group },
+    },
+    field: 'group',
+    trackColor: TRACK_COLOR,
+    attributeRanges: { group },
+    hideUnlabelled: true,
+  })
+  expect(colors[0]).toBe(abgrOfHex('#ffff00'))
+  expect(abgrAlpha(colors[1]!)).toBe(0)
+})
+
 // The location-marker toggle is a COLOR decision, which is what keeps it out of
 // `currentFetchKey`: the worker emits every tick unconditionally, and "off" is a
 // zero alpha written here. Ticking the checkbox used to re-download and re-parse

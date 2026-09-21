@@ -532,12 +532,22 @@ export function linearSyntenyViewHelperModelFactory(
         }
         const { restore, anchor } = beginStackMove(parentView, hit.navRow)
         if (dest.kind === 'scroll') {
-          // the flight reads back what it wrote each frame, so the Undo below
-          // ends it rather than being overwritten by its next frame
-          if (mateFlightAllowed(parentView, session.animationMode)) {
-            view.flyTo(dest.centerBp, dest.widthBp)
+          const { centerBp, fitWidthBp } = dest
+          if (parentView.linkViews) {
+            // the lock replays a row's zoom only from a root action, so a
+            // framing here would unlock the clicked row: it scrolls at the zoom
+            // every row shares
+            view.setWindow(
+              view.windowWidthBp,
+              centerBp - view.windowWidthBp / 2,
+            )
+          } else if (mateFlightAllowed(parentView, session.animationMode)) {
+            // the flight reads back what it wrote each frame, so the Undo
+            // below ends it rather than being overwritten by its next frame
+            view.flyToFit(centerBp, fitWidthBp)
           } else {
-            view.setWindow(dest.widthBp, dest.centerBp - dest.widthBp / 2)
+            const widthBp = Math.max(view.windowWidthBp, fitWidthBp)
+            view.setWindow(widthBp, centerBp - widthBp / 2)
           }
         } else {
           // one transaction, or a per-bp consumer scans a window never on

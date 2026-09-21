@@ -157,6 +157,18 @@ test('a band drag moves the anchor alone while following, and every row when not
   expect(offsets()).toEqual(after.map(x => x + 40))
 })
 
+// The header toggle turned the follow off onto 'independent' whatever the
+// reader had before, so a pixel lock did not survive a look through the
+// alignment.
+test('turning the follow off returns to the lock it was turned on from', async () => {
+  const view = await launchStack({})
+  view.setRowSyncMode('link')
+  view.setRowSyncMode('follow')
+  view.setRowSyncMode('follow')
+  view.setRowSyncMode(view.rowSyncBeforeFollow)
+  expect(view.rowSync).toBe('link')
+})
+
 // the view-wide zooms reach every row from one of the stack's own actions,
 // which nests the rows' zooms under it
 test('a view-wide zoom is not one either', async () => {
