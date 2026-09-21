@@ -56,7 +56,7 @@ JBrowse 2 stands on the shoulders of many great scientists that came before us.
 Points of reference:
 
 - Savant genome browser: genome arcs
-- Gap5 genome browser: the read cloud, a cousin of genome arcs
+- Gap5 genome browser, samplot: the "read cloud", a cousin of genome arcs
 - [Mummerplots](https://jmonlong.github.io/Hippocamplus/2017/09/19/mummerplots-with-ggplot2/):
   auto-diagonalization routines for better synteny figures
 - minimap2 and the PAF format: the basis our synteny visualizations are built on
@@ -74,8 +74,10 @@ Points of reference:
 - IGV and igv.js: much of the alignments track, particularly read pairing and
   modBAM color schemes, view as pairs, and link supplementary alignments
 - D-GENIES: for establishing a very high quality, easy to use dotplot viewer
-- GenomeSpy and HiGlass/Gosling: for proving WebGL powered browsers
+- GenomeSpy: for proving GPU powered and grammar of graphics tecniques
 - [Every other genome visualization developer](https://cmdcolin.github.io/awesome-genome-visualization/?latest=true)
+- UCSC genome browser - For their genome browser and open data sharing, enabling
+  genomes.jbrowse.org
 
 ## Contact
 
