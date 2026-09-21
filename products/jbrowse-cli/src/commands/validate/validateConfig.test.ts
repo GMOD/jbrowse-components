@@ -305,7 +305,10 @@ describe('validateConfig', () => {
     expect(validateConfig(withLayer('modifications')).problems).toEqual([])
     expect(
       errorsOf(withLayer({ field: 'methylation' })).map(e => e.where),
-    ).toEqual(['tracks[0].displays[0].baseColor'])
+    ).toEqual(['tracks[0].displays[0].baseColor.field'])
+    expect(errorsOf(withLayer('methylation')).map(e => e.where)).toEqual([
+      'tracks[0].displays[0].baseColor',
+    ])
   })
 
   function sessionDisplay(display: Record<string, unknown>) {

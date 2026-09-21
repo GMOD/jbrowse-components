@@ -77,7 +77,7 @@ when one is set.
   `colorBy` migrates there (`V4_BASE_COLOR_FIELDS`).
 - `baseColor.field` is an enum of the four, so a load refuses any other name,
   jb2export's `methylation` alias among them. `jbrowse validate` refuses one in
-  the object form; its schema types a shorthand string as any string.
+  either form, since its schema types a shorthand as the slot it lifts into.
 - Group by tag with "also color by tag" ticked no longer costs a
   modification-coloured pileup its marks.
 - The default tag palette leads with a blue and a pink, and the two-colour

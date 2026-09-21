@@ -711,10 +711,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       ...requirements(meta),
       ...(meta.options.closed ? { [CLOSED]: true } : {}),
     })
+    const target = properties[stringTarget(meta)]
     const schema = forms.bare
       ? {
           anyOf: [
             {
+              ...target,
               type: forms.bare,
               description: `Shorthand for \`{ "${stringTarget(meta)}": ...${companionText(meta)} }\`.`,
             },

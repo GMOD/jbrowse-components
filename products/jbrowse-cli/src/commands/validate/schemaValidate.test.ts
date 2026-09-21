@@ -162,6 +162,22 @@ describe('the schema', () => {
     },
   )
 
+  it('checks a shorthand string as the slot it lifts into', () => {
+    const config = baseConfig()
+    config.tracks[0]!.displays = [
+      { type: 'LinearAlignmentsDisplay', color: 'bluee' },
+    ]
+    const [error] = schemaProblems(config)
+    expect(error?.where).toBe('tracks[0].displays[0].color')
+    expect(error?.message).toBe(
+      'expected a CSS color (a name like "red", "#rrggbb", "rgb()" or "hsl()") or a "jexl:" expression, got "bluee"',
+    )
+    config.tracks[0]!.displays = [
+      { type: 'LinearAlignmentsDisplay', color: 'steelblue' },
+    ]
+    expect(schemaProblems(config)).toEqual([])
+  })
+
   it('accepts a jexl: string where a number is expected', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [

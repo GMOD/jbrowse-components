@@ -139,6 +139,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+function jsonTypeOf(data: unknown) {
+  return Array.isArray(data)
+    ? 'array'
+    : data === null
+      ? 'null'
+      : typeof data === 'object'
+        ? 'object'
+        : typeof data
+}
+
 function typeOf(data: unknown) {
   return isRecord(data) && typeof data.type === 'string' ? data.type : undefined
 }
@@ -236,6 +246,13 @@ function pickBranch(
     if (byType >= 0) {
       return byType
     }
+  }
+  const jsonType = jsonTypeOf(data)
+  const byJsonType = branches.flatMap((b, i) =>
+    (b.type ?? resolve(b).type) === jsonType ? [i] : [],
+  )
+  if (byJsonType.length === 1) {
+    return byJsonType[0]!
   }
   if (isRecord(data)) {
     const tagged = branches.findIndex(

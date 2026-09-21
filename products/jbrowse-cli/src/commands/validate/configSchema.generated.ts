@@ -3381,8 +3381,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "FeatureColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",
@@ -3452,8 +3453,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "Facet",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"field\\": ... }\`."
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "",
+          "type": "string"
         },
         {
           "type": "object",
@@ -3990,8 +3993,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "AlignmentsColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",
@@ -4091,8 +4095,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "AlignmentsBaseColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"field\\": ... }\`."
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "anyOf": [
+            {
+              "enum": [
+                "baseQuality",
+                "base",
+                "modifications",
+                "bisulfite"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "type": "string"
         },
         {
           "type": "object",
@@ -4728,8 +4745,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "LGVSyntenyColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ..., \\"scale\\": \\"none\\" }\`."
+          "description": "Shorthand for \`{ \\"value\\": ..., \\"scale\\": \\"none\\" }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",
@@ -5182,8 +5200,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "RibbonColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "default": "rgba(130,130,130,0.3)",
+          "type": "string"
         },
         {
           "type": "object",
@@ -6171,8 +6191,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "WiggleColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",
@@ -6265,8 +6286,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "ValueScaleRule",
       "anyOf": [
         {
-          "type": "number",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 0,
+          "type": "number"
         },
         {
           "type": "object",
@@ -7297,8 +7320,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "ManhattanColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "default": "#0068d1",
+          "type": "string"
         },
         {
           "type": "object",
@@ -7486,8 +7511,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "MarkColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "default": "#0068d1",
+          "type": "string"
         },
         {
           "type": "object",
@@ -7589,8 +7616,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "MarkGlyph",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "anyOf": [
+            {
+              "enum": [
+                "disc",
+                "triangle",
+                "diamond"
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "disc",
+          "type": "string"
         },
         {
           "type": "object",
@@ -18714,8 +18754,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "SyntenyColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",

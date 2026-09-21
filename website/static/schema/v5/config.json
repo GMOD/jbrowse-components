@@ -3241,8 +3241,9 @@
       "title": "FeatureColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",
@@ -3309,8 +3310,10 @@
       "title": "Facet",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"field\": ... }`."
+          "description": "Shorthand for `{ \"field\": ... }`.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "",
+          "type": "string"
         },
         {
           "type": "object",
@@ -3805,8 +3808,9 @@
       "title": "AlignmentsColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",
@@ -3901,8 +3905,16 @@
       "title": "AlignmentsBaseColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"field\": ... }`."
+          "description": "Shorthand for `{ \"field\": ... }`.",
+          "anyOf": [
+            {
+              "enum": ["baseQuality", "base", "modifications", "bisulfite"]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "type": "string"
         },
         {
           "type": "object",
@@ -4489,8 +4501,9 @@
       "title": "LGVSyntenyColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"value\": ..., \"scale\": \"none\" }`."
+          "description": "Shorthand for `{ \"value\": ..., \"scale\": \"none\" }`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",
@@ -4909,8 +4922,10 @@
       "title": "RibbonColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "default": "rgba(130,130,130,0.3)",
+          "type": "string"
         },
         {
           "type": "object",
@@ -5836,8 +5851,9 @@
       "title": "WiggleColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",
@@ -5924,8 +5940,10 @@
       "title": "ValueScaleRule",
       "anyOf": [
         {
-          "type": "number",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 0,
+          "type": "number"
         },
         {
           "type": "object",
@@ -6881,8 +6899,10 @@
       "title": "ManhattanColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "default": "#0068d1",
+          "type": "string"
         },
         {
           "type": "object",
@@ -7064,8 +7084,10 @@
       "title": "MarkColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "default": "#0068d1",
+          "type": "string"
         },
         {
           "type": "object",
@@ -7161,8 +7183,17 @@
       "title": "MarkGlyph",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "anyOf": [
+            {
+              "enum": ["disc", "triangle", "diamond"]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": "disc",
+          "type": "string"
         },
         {
           "type": "object",
@@ -17614,8 +17645,9 @@
       "title": "SyntenyColor",
       "anyOf": [
         {
-          "type": "string",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
         },
         {
           "type": "object",
