@@ -14,9 +14,8 @@ import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 import type { FollowCandidate } from './pickFollowFeature.ts'
 
-// Everything one level's placement needs, with every observable already read:
-// the pass that builds this is an autorun and the pass that consumes it is
-// async, so a field missing here cannot be fetched later.
+// Everything one level's placement needs, read in the autorun: the async pass
+// that consumes it tracks nothing.
 export interface FollowStep {
   display: LinearSyntenyDisplayModel
   feat: FeatPos
@@ -24,14 +23,9 @@ export interface FollowStep {
   toMate: boolean
   hasCigar: boolean
   windowInsideFeat: boolean
-  // the union of everything under the window, and undefined when the window is
-  // inside one alignment, which is the only case that does not read it
+  // undefined when the window is inside one alignment
   envelope: ResolvedSpan | undefined
-  // Whether the moving row should read right-to-left against the anchor:
-  // inside one alignment that alignment's strand, wider than one only when
-  // nearly everything under the window agrees. `undefined` leaves the row's
-  // orientation alone, which is what a mixed window deserves — the crossing
-  // ribbons ARE the picture of a rearrangement.
+  // undefined for a mixed window, which leaves the row's orientation alone
   wantReversed: boolean | undefined
 }
 
@@ -53,11 +47,7 @@ interface FollowPick extends FollowCandidate {
 
 /**
  * Which alignment this level places its moving row from, across every synteny
- * track on it. Widest wins, so a sparse track does not outvote the one covering
- * the locus, and the same hysteresis applies again here — comparing the
- * displays' answers on raw overlap let two tracks over one locus trade the
- * follow on rounding.
- *
+ * track on it: the widest, with the block pick's hysteresis across tracks too.
  * `undefined` means nothing covers the window, and the caller holds the row.
  */
 export function planFollowStep({
@@ -96,8 +86,6 @@ export function planFollowStep({
     if (!widest || pick.overlap > widest.overlap) {
       widest = pick
     }
-    // read off the answer rather than searched for, so a display that has
-    // abandoned the incumbent for a better block does not re-nominate it
     if (
       incumbentId !== undefined &&
       data.featureIds[candidate.index] === incumbentId
@@ -112,9 +100,7 @@ export function planFollowStep({
   const { display, data } = best
   const feat = getFeatureAtIndex(data, best.index)
   const inside = windowInsideFeat(feat, window, toMate)
-  // AFTER the winner is known, and only in the case that reads it: a full scan
-  // of every loaded block, which a level with several synteny tracks used to
-  // pay for once per improving candidate
+  // a full scan of the blocks, so once, for the winner
   const envelope = inside
     ? undefined
     : followWindowMapping({
@@ -132,9 +118,7 @@ export function planFollowStep({
     hasCigar: data.hasCigar,
     windowInsideFeat: inside,
     envelope,
-    // Over the contig the row is PLACED ON, which is the envelope's own answer
-    // — and the picked block's mate when the envelope has none, since that is
-    // then what `resolveFollowSpan` interpolates across.
+    // voted over the contig the row is placed on
     wantReversed: inside
       ? feat.strand === -1
       : wantReversedFor(

@@ -20,11 +20,9 @@ function noFollowAnchor(): FollowAnchorTake {
   }
 }
 
-// Point the follow at `row` for a navigation, and hand back the undo. Taken
-// before the navigation, because the follow propagates away from the anchor
-// and a row navigated while another holds it is pulled straight back.
-// `release` is safe on any path and any number of times: it writes only while
-// the host is alive and the anchor is still the one this take set.
+// Point the follow at `row` before a navigation, or the follow pulls the row
+// back, and hand back the undo. `release` writes only while the anchor is still
+// the one this take set.
 export function takeFollowAnchor(
   host: FollowAnchorHost,
   row: number,
@@ -79,8 +77,6 @@ export interface StackMoveHost
   views: LinearGenomeViewModel[]
 }
 
-// The members are one fact, so they are tested as one: a stack carrying
-// `followSynteny` but no setter would take an optional call and write nothing
 function hasFollow(
   stack: StackMoveHost,
 ): stack is StackMoveHost & FollowAnchorHost {
@@ -92,9 +88,8 @@ function hasFollow(
   )
 }
 
-// How every navigation that moves the stack begins: every row's viewport
-// captured for the Undo, then the anchor taken for the row that drives. In
-// that order, because the take already re-places the other rows.
+// every row's viewport captured for the Undo, then the anchor taken, which
+// re-places the other rows
 export function beginStackMove(stack: StackMoveHost, row: number) {
   const restore = captureStackViewports([...stack.views])
   const anchor = hasFollow(stack)
@@ -103,9 +98,8 @@ export function beginStackMove(stack: StackMoveHost, row: number) {
   return { restore, anchor }
 }
 
-// The snackbar every stack-moving navigation posts, with the Undo that puts
-// every row's viewport back and gives the anchor back in one transaction, so
-// the follow sees the settled pre-click state rather than a half-restored one
+// the Undo restores every row and the anchor in one transaction, so the follow
+// never sees a half-restored stack
 export function notifyStackMove({
   session,
   loc,

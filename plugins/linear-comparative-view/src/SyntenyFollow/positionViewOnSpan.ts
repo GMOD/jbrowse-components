@@ -8,18 +8,9 @@ import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * The interval of a layout that runs from the leftmost of these spans to the
- * rightmost.
- *
- * SPANS ON DIFFERENT CONTIGS ARE A PLACE HERE, where one `ResolvedSpan` cannot
- * name one: the row lays its `displayedRegions` end to end, so an interval of
- * that layout is exactly what `moveTo` takes. A span outside those regions is
- * SKIPPED rather than fatal — the row is showing another contig, and changing
- * that is a real navigation the exact pass is already on its way to do.
- *
- * Its own function because `spreadCoverage` measures against it: two spellings
- * of these bounds would be two answers to how much of the placed row is filler,
- * and the one that decides has to be the one that places.
+ * The interval of the row's layout from the leftmost of these spans to the
+ * rightmost, skipping a span outside its displayed regions. `spreadCoverage`
+ * measures against the same bounds this places.
  */
 export function spanBounds(
   displayedRegions: LinearGenomeViewModel['displayedRegions'],
@@ -30,9 +21,7 @@ export function spanBounds(
   for (const { refName, start, end } of spans) {
     for (const coord of [start, end]) {
       const at = bpToOffset({ refName, coord, displayedRegions })
-      // min and max rather than a sorted pair, since a reversed region puts a
-      // span's end left of its start and moveTo computes a negative bpPerPx
-      // from a backwards pair rather than refusing
+      // a reversed region puts a span's end left of its start
       if (at) {
         lo = !lo || compareBpOffsets(at, lo) < 0 ? at : lo
         hi = !hi || compareBpOffsets(at, hi) > 0 ? at : hi
@@ -43,19 +32,10 @@ export function spanBounds(
 }
 
 /**
- * Put `view` on every span at once — the interval of its own layout that runs
- * from the leftmost of them to the rightmost — synchronously and without
- * touching its displayed regions, so an anchor row showing a whole genome
- * places its neighbour on a whole genome rather than on whichever single contig
- * won a vote.
- *
- * Base1DUtils' `moveTo`, NOT the view action of the same name, which wraps it
- * and then flushes the view's coarse blocks — sixty times a second that would
- * wake the exact pass, which tracks them, into an RPC per frame.
- *
- * `minBpPerPx` widens a narrower interval around its centre.
- *
- * False when nothing landed at all.
+ * Put `view` on every span at once without touching its displayed regions.
+ * Base1DUtils' `moveTo`, not the view action, which flushes the coarse blocks
+ * and so would cost an RPC per frame. `minBpPerPx` widens a narrower interval
+ * around its centre. False when nothing landed.
  */
 export function positionViewOnSpans(
   view: LinearGenomeViewModel,
@@ -74,10 +54,6 @@ export function positionViewOnSpans(
   return true
 }
 
-/**
- * Put `view` on one span. The single-contig case of
- * {@link positionViewOnSpans}.
- */
 export function positionViewOnSpan(
   view: LinearGenomeViewModel,
   span: ResolvedSpan,

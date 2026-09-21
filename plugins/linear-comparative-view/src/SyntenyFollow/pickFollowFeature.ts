@@ -11,11 +11,8 @@ export interface FollowCandidate {
 
 /**
  * Which loaded alignment to map the anchor window through: the one covering
- * most of it, biased toward the one already being followed. Scans the packed
- * arrays rather than materializing `FeatPos`, since this runs on every settled
- * pan over hundreds of thousands of blocks.
- *
- * `undefined` means nothing covers the window, and the caller holds the row.
+ * most of it, biased toward the one already being followed. `undefined` means
+ * nothing covers the window, and the caller holds the row.
  */
 export function pickFollowFeature({
   data,
@@ -51,8 +48,6 @@ export function pickFollowFeature({
     ) {
       continue
     }
-    // start <= end, direction in `strands` — the packing convention, and what
-    // windowInsideFeat and interpolateFollowSpan already read these arrays as
     const overlap =
       Math.min(ends[i]!, window.end) - Math.max(starts[i]!, window.start)
     if (overlap <= 0) {

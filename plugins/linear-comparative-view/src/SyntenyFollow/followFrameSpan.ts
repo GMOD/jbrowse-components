@@ -14,26 +14,12 @@ import type { FollowWindow } from './followAnchorWindow.ts'
 import type { FollowTransform } from './followTransform.ts'
 
 /**
- * Where the followed row belongs on ONE FRAME: everything the exact pass does
- * except the RPC, against the live window and the block the last settle chose.
+ * Where the followed row belongs on one frame, against the live window and the
+ * block the last settle chose: the CIGAR map, else the settle's transform, else
+ * an interpolation across the block. `undefined` holds the row.
  *
- * `undefined` means hold the row where it is, and only the mapping says it; an
- * interpolator handed a window panned clean off its block collapses it to a
- * point, which `positionViewOnSpan` refuses.
- *
- * THREE WAYS TO ANSWER, BEST FIRST. The map reads the block's own indels and is
- * what the settle would say; the transform is a straight line fitted to the last
- * settled window, so it drifts by whatever indels lie between that window and
- * this one; the interpolation is a straight line across the whole block, which
- * is all a CIGAR-less block supports. The map is the reason the settle stopped
- * being visible: it agrees with where the row already is, so `alreadyShowing`
- * says yes and nothing navigates.
- *
- * FRACTIONAL bp, unlike every other `ResolvedSpan` here, and deliberately: the
- * cached transform is the smooth path and rounding it quantizes the row's
- * motion to whole bases, which below 1 bp/px is a visible stutter. So this feeds
- * `positionViewOnSpan`, which is pixel arithmetic, and never `navToResolvedSpan`,
- * which would assemble a locstring out of it.
+ * Fractional bp, so it feeds `positionViewOnSpan` and never `navToResolvedSpan`:
+ * rounding quantizes the row's motion to whole bases.
  */
 export function followFrameSpan({
   feat,

@@ -4,14 +4,9 @@ import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
 /**
- * Read one axis's offset off the map at a point on the other.
- *
- * `into[i]` where `from[i]` first reaches `x`, interpolated between the two
- * points it falls between. First rather than last is the half-open rule
- * `findPosInCigar` breaks the same tie with: an insertion sitting exactly at `x`
- * is zero-width on the feature axis and is NOT consumed, so the answer is the
- * offset before it. Getting that backwards moves the row by the insertion's
- * whole length every time a window edge lands on one.
+ * One axis's offset at a point on the other, interpolated. Where `from` first
+ * reaches `x`, the half-open rule `findPosInCigar` uses: an insertion exactly at
+ * `x` is not consumed.
  */
 function readAt(from: Uint32Array, into: Uint32Array, x: number) {
   const n = from.length
@@ -41,28 +36,10 @@ function readAt(from: Uint32Array, into: Uint32Array, x: number) {
 }
 
 /**
- * The window mapped through one alignment's CIGAR, on the main thread.
- *
- * WHAT THE FRAME PASS USES INSTEAD OF EXTRAPOLATING. `applyFollowTransform` is a
- * straight line fitted to the last settled window, so panning away from that
- * window drifts by the indels in between and the next settle snaps the row back;
- * this reads the indels themselves and is within `map.toleranceBp` either side
- * of the walk the settle would do. The settle then agrees with where the row
- * already is, so there is no snap.
- *
- * The same conventions as `resolveAlignmentSpan`, deliberately duplicated rather
- * than shared: that one walks ops and this one reads a map, but a window is
- * clamped to the block on both and a reverse-strand mate is counted down from
- * its far end on both. They are checked against each other in
- * `cigarMapSpan.test.ts`.
- *
- * `undefined` when the map does not describe THIS block. The offsets count from
- * coordinates the map carries and the caller holds separately, so a map that
- * outlived its pick — a refetch renumbering ids across a LOD tier, a level
- * re-picking mid-flight — would otherwise be read against the wrong ones.
- *
- * FRACTIONAL bp, like the rest of the frame pass: `positionViewOnSpan` is pixel
- * arithmetic, and rounding here quantizes the row's motion to whole bases.
+ * The window mapped through one alignment's CIGAR map, within `toleranceBp` of
+ * the walk the settle would do. It keeps `resolveAlignmentSpan`'s conventions,
+ * checked against it in `cigarMapSpan.test.ts`. `undefined` when the map is not
+ * this block's. Fractional bp, like the rest of the frame pass.
  */
 export function cigarMapSpan({
   feat,
@@ -119,7 +96,5 @@ export function cigarMapSpan({
 
   const start = Math.min(a, b)
   const end = Math.max(a, b)
-  // a window that maps onto a single coordinate is not a place, and the frame
-  // pass holds the row rather than flinging it to base-level zoom
   return end > start ? { refName, start, end } : undefined
 }

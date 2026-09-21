@@ -1,14 +1,8 @@
 /* eslint-disable no-console */
-// What each level's settled pass decided, in one line per level. OFF unless
-// `localStorage.debugSyntenyFollow` is set, and read per call so it can be
-// turned on against a session already open.
-//
-// It is here rather than deleted with the investigation that wanted it because
-// the numbers this prints are the only way to see the rung decision from
-// outside: which rung, off which windows, how much of the placed row is answer.
-// The sparse-spread report was diagnosed by adding exactly this and driving the
-// live demo with `browser-tests/follow-spread-probe.ts`, and the next report
-// about a row landing somewhere odd wants it again.
+// What each level's settled pass decided, while
+// `localStorage.debugSyntenyFollow` is set: the one view of the rung decision
+// from outside. `browser-tests/follow-spread-probe.ts` drives a live session
+// with it.
 import { untracked } from 'mobx'
 
 import { followAnchorWindows } from './followAnchorWindow.ts'
@@ -22,8 +16,6 @@ function on() {
   try {
     return !!localStorage.getItem('debugSyntenyFollow')
   } catch {
-    // storage can be denied outright, and a diagnostic may not be the thing
-    // that takes the view down with it
     return false
   }
 }
@@ -47,10 +39,7 @@ function panel(view: LinearGenomeViewModel) {
     .join(', ')
 }
 
-// WHOLE or PARTIAL against the region it sits in, px-weighted, by the very
-// rule the decision applies — a second spelling printed "partial" for a window
-// the decision had judged whole, which is the log disagreeing with the thing it
-// exists to explain.
+// by the rule the decision applies, so the log cannot disagree with it
 function wholeness(view: LinearGenomeViewModel, windows: FollowWindow[]) {
   const regions = view.displayedRegions
   const parts = windows.map(
@@ -64,8 +53,6 @@ function wholeness(view: LinearGenomeViewModel, windows: FollowWindow[]) {
   return `${parts.join(', ')} — partial by px: ${Math.round(share * 100)}%`
 }
 
-// visible bp of a row, which for a spread placement is the interval the union
-// forced — the denominator of the coverage the fix would threshold on
 function shown(view: LinearGenomeViewModel) {
   const blocks = view.dynamicBlocks.contentBlocks
   return {
@@ -74,9 +61,7 @@ function shown(view: LinearGenomeViewModel) {
   }
 }
 
-// Untracked, all of it: both logs run inside the exact pass's autorun, and a
-// debug read of either row would add a dependency and change the thing being
-// measured.
+// untracked: both logs run inside the exact pass's autorun
 export function logFollowSpread({
   stayingView,
   movingView,

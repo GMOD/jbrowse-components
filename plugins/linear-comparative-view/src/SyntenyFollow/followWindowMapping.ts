@@ -93,34 +93,24 @@ function span(target: Target): ResolvedSpan | undefined {
   }
   const lo = Math.min(p, q)
   const hi = Math.max(p, q)
-  // No zero-clamp: every value `resolve` can return is a block coordinate or a
-  // point between two of them, so it is already in range — and clamping only
-  // `start` while `end` came off the unclamped `lo` would invert the span it was
-  // added to protect.
   return hi > lo
     ? {
         refName: target.name,
         start: Math.floor(lo),
-        // at least one base, since a zero-width span assembles into an inverted
-        // locstring
+        // a zero-width span assembles into an inverted locstring
         end: Math.max(Math.floor(lo) + 1, Math.ceil(hi)),
       }
     : undefined
 }
 
 /**
- * Where each anchor window maps to, across every alignment under it.
+ * Where each anchor window maps to, across every alignment under it,
+ * positionally, `undefined` where nothing under that window mapped.
  *
- * Each window EDGE mapped, not the union of the mapped blocks. The union is the
- * right answer but a step function — its edges jump as blocks enter and leave —
- * which measured as 1 movement in 30 drag steps on grape/peach at 5 Mb.
- *
- * SEVERAL WINDOWS IN ONE PASS, one per contig the anchor row is showing. The
- * blocks are the expensive part — hundreds of thousands of them, scanned per
- * frame — so calling the single-window form once per contig would multiply the
- * pass by the contig count, which at whole-genome zoom is the whole assembly.
- * The answers come back positionally, `undefined` where nothing under that
- * window mapped.
+ * Each window edge is mapped, not the union of the mapped blocks: the union is
+ * a step function, measured as 1 movement in 30 drag steps on grape/peach at
+ * 5 Mb. Every window goes in one scan of the blocks, since the blocks are the
+ * per-frame cost and a whole-genome anchor has as many windows as contigs.
  */
 export function followWindowsMapping({
   data,
@@ -151,29 +141,11 @@ export function followWindowsMapping({
   } = followAxes({ data, windows, toMate, mateAssembly })
   const n = refNameIds.length
 
-  // One pass, and NOTHING ALLOCATED PER BLOCK — that is the measurement, not
-  // "no objects": this runs per frame over hundreds of thousands of blocks on a
-  // whole-genome PAF, where a small object per block measured 51ms a frame at
-  // 500k against 5ms for a bare pass. A `Target` is per CONTIG PAIR, of which
-  // even a whole-genome window reaches a few dozen, so the loop below allocates
-  // once per pair and then only reads.
-  //
-  // A slot per dictionary id, not a search. Blocks do NOT arrive grouped by
-  // contig — `executeSyntenyFeaturesAndPositions` sorts them by feature LENGTH
-  // so big ribbons composite over sub-pixel noise — so a "same contig as last
-  // block" shortcut in front of a scan hits almost never and the scan runs per
-  // block. Ids are dense, since `renameDictLane` re-interns the lane. Measured
-  // both ways at 300k blocks over 8, 24 and 200 contigs and there is no
-  // difference; this spelling is simply the one that assumes no ordering.
-  //
-  // Which window a block belongs to is the same lookup one step earlier, so a
-  // multi-contig pass costs one array read per block over a single-contig one
-  // rather than a pass per contig. The mate-side slots are allocated LAZILY,
-  // per window that a block actually reaches: an anchor showing 200 contigs
-  // against a dictionary of 200 would otherwise allocate 40,000 slots to fill a
-  // few hundred.
-  // resolved to a dictionary id once, like the filters in `followAxes`, so the
-  // named test below is an integer compare per block
+  // Nothing is allocated per block: an object per block measured 51ms a frame
+  // at 500k blocks against 5ms for a bare pass. A `Target` is per contig pair.
+  // Blocks arrive sorted by length, not grouped by contig, so each lookup is a
+  // slot per dictionary id; the mate-side slots are allocated per window a
+  // block reaches.
   const unnamedId = unnamedNameId(data.nameDict)
   const windowOfRefNameId = new Int32Array(windowRefNameDictLength).fill(-1)
   for (const [w, id] of windowRefNameIds.entries()) {
@@ -184,9 +156,6 @@ export function followWindowsMapping({
   const targetsPerWindow = windows.map(() => [] as Target[])
   const slotsPerWindow = new Array<Int32Array | undefined>(windows.length)
   for (let i = 0; i < n; i++) {
-    // an id past the dictionary the windows were resolved against is no
-    // window's, the same answer a name no dictionary holds gets — and reading
-    // it as `undefined` would sail through the test below into `windows[w]`
     const w = windowOfRefNameId[refNameIds[i]!] ?? -1
     if (
       w < 0 ||
@@ -203,7 +172,7 @@ export function followWindowsMapping({
       slotsPerWindow[w] = slots
     }
     const nameId = otherRefNameIds[i]!
-    // 0 is "no target yet", so a slot holds the index one on
+    // 0 is "no target yet", so a slot holds the index plus one
     let slot = slots[nameId]!
     if (slot === 0) {
       slot = targets.length + 1
@@ -218,20 +187,13 @@ export function followWindowsMapping({
     const target = targets[slot - 1]!
     const aLo = starts[i]!
     const aHi = ends[i]!
-    // ONE TARGET CONTIG PER WINDOW, by summed evidence — `voteEvidence`, the
-    // same rule the multi-way lane and the launch vote with, so a followed row
-    // lands on the contig those two pick from the same data. A genome-scale
-    // window reaches several of the other assembly's contigs, and an answer
-    // spanning them is not a place. One only reached by blocks off the
-    // window's ends totals zero and so never wins, which is what stops a
-    // neighbour from being picked.
+    // one target contig per window, by the same `voteEvidence` the multi-way
+    // lane and the launch vote with; a block off the window's ends adds nothing
     const overlap = Math.min(aHi, windowEndBp) - Math.max(aLo, windowStartBp)
     if (overlap > 0) {
       target.overlap += voteEvidence(data.nameIds[i]! !== unnamedId, overlap)
     }
-    // `atLo`/`atHi` are the mate coordinates this block's LEFT and RIGHT anchor
-    // edges map to, so a reverse-strand block simply reports them swapped and
-    // one interpolation formula serves both orientations.
+    // where this block's left and right anchor edges land on the mate
     const flip = data.strands[i] === -1
     const atLo = flip ? otherEnds[i]! : otherStarts[i]!
     const atHi = flip ? otherStarts[i]! : otherEnds[i]!
@@ -250,12 +212,8 @@ export function followWindowsMapping({
         incumbent = t
       }
     }
-    // THE SAME HYSTERESIS THE BLOCK PICK HAS, and for a case that is worse:
-    // panning a window across a fusion breakpoint moves summed overlap from one
-    // mate contig to the other, and the two are equal at the midpoint, so a bare
-    // comparison flung the row to another chromosome on the rounding — every
-    // frame, since the frame pass re-runs this. An incumbent that no block under
-    // the window reaches totals zero and cannot hold the answer.
+    // hysteresis, or a fusion breakpoint flips the row between chromosomes on
+    // the rounding, every frame
     const chosen = preferIncumbent(best, incumbent)
     return chosen && chosen.overlap > 0 ? span(chosen) : undefined
   })

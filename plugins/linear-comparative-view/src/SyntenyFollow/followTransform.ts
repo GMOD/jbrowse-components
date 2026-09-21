@@ -3,9 +3,7 @@ import type { FollowWindow } from './followAnchorWindow.ts'
 
 /**
  * The anchor-axis window a0..a1 an exact resolve was measured over and the span
- * b0..b1 it answered, applied per frame so the row moves between resolves. One
- * alignment block is affine outside its indels, so the next resolve corrects
- * accumulated error rather than supplying all the motion.
+ * b0..b1 it answered, applied per frame so the row moves between resolves.
  */
 export interface FollowTransform {
   refName: string
@@ -44,10 +42,8 @@ export function applyFollowTransform(
   const at = (x: number) => t.b0 + ((x - t.a0) / (t.a1 - t.a0)) * (t.b1 - t.b0)
   const p = at(window.start)
   const q = at(window.end)
-  // Clamped BEFORE the ordering test, unlike the mapping, which needs no clamp
-  // at all: this one extrapolates, so a window panned left of `a0` maps below
-  // zero, and clamping only `start` afterwards turned a wholly-negative answer
-  // into an inverted span rather than into no answer.
+  // clamped before the ordering test, so a wholly negative extrapolation is no
+  // answer rather than an inverted span
   const lo = Math.max(0, Math.min(p, q))
   const hi = Math.max(p, q)
   return hi > lo

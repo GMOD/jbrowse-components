@@ -6,19 +6,13 @@ import type { FollowStep } from './planFollowStep.ts'
 
 export interface FollowAnswer {
   span: ResolvedSpan
-  // Proportional rather than walked, which is what the header reports — or
-  // walked through a coarse fold at a zoom where its gap is wider than a pixel.
-  // It comes back with the answer because the PLAN cannot always tell:
-  // `hasCigar` is per-FETCH, so a mixed file reaches the walk with a block that
-  // has none and only the empty result says so.
+  // with the answer, since `hasCigar` is per fetch and only an empty walk says
+  // this block had none
   approximate: boolean
 }
 
-/**
- * ONE ALIGNMENT ONLY WHEN THE WINDOW IS INSIDE ONE: both single-block resolvers
- * clamp the window to the block, so past that edge the row would land on the
- * block's own width however far the anchor is zoomed out.
- */
+// one alignment only when the window is inside one: both single-block
+// resolvers clamp the window to the block
 export async function resolveFollowSpan(
   step: FollowStep,
 ): Promise<FollowAnswer> {
