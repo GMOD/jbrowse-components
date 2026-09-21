@@ -16,8 +16,8 @@ const {
   closeUpSpans,
   closeUpSession,
   addTrackUrl,
-  bookmarkSession,
-  bookmarkSpan,
+  highlightSession,
+  highlightSpan,
   bulkAddUrls,
   elsewhere,
   emptyConfig,
@@ -35,37 +35,34 @@ const {
 const SEQUENCE_TYPE = '[aria-label="Sequence type"]'
 const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 
-// The bookmark row's location cell, which is a link that navigates. The
+// A highlight row's location cell, which is a link that navigates. The
 // `.MuiDataGrid-cell` prefix is what tells it from its column header, which
 // carries the same `data-field`.
-const BOOKMARK_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
+const LOCATION_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
 
 // The button that takes the Add close-up view dialog, which is one checkbox the
 // tour leaves checked.
 const CLOSE_UP_SUBMIT = 'form button[type="submit"]'
 
 export const uiVideos: VideoSpec[] = [
-  // A LOOP, which is what bookmark_widget.md is about and what neither of its
-  // two figures can be. The page's first sentence says a bookmark is "shown as a
-  // colored highlight on the LGV; clicking one navigates a linear genome view
-  // (LGV) to it" — a claim about what happens next, made over a still of a
-  // widget. Its figures hold the two halves that ARE picturable: the rubberband
-  // menu with Bookmark region in it, and a label being typed into the grid.
-  // Between them sit the two steps a reader has to take on faith, which is the
-  // menu path to the widget and the navigation back.
+  // A LOOP, which is what highlights.md is about and what neither of its two
+  // figures can be. Its figures hold the two halves that ARE picturable: the
+  // rubberband menu with Highlight region in it, and a label being typed into
+  // the list. Between them sit the two steps a reader has to take on faith,
+  // which is the menu path to the list and the navigation back.
   //
-  // So the tour runs the loop end to end: select a span, bookmark it, open the
-  // widget, name it, leave the region entirely, and come back by clicking the
+  // So the tour runs the loop end to end: select a span, highlight it, open the
+  // list, name it, leave the region entirely, and come back by clicking the
   // row. The last click is the payoff, and it is the one thing on the page that
   // no still can hold, because what it produces is a CHANGE of location.
   {
-    name: 'ui/bookmark_region',
+    name: 'ui/highlight_region',
     description:
-      'A bookmark from the rubberband to the return trip: drag the scalebar, Bookmark region, open the widget from the view menu, name the row, navigate away, and click the row to come back',
-    url: bookmarkSession,
+      'A highlight from the rubberband to the return trip: drag the scalebar, Highlight region, open the list from the view menu, name the row, navigate away, and click the row to come back',
+    url: highlightSession,
     // An LGV with one gene track, and a drawer that opens beside it rather than
     // under it, so the app holds at the 306px the run reports throughout — the
-    // bookmark table arrives at the top of the drawer, not below the view.
+    // highlight list arrives at the top of the drawer, not below the view.
     viewportHeight: 360,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
@@ -77,30 +74,30 @@ export const uiVideos: VideoSpec[] = [
       // already.
       {
         type: 'drag',
-        fromAnchor: { locus: bookmarkSpan.start, band: RUBBERBAND },
-        toAnchor: { locus: bookmarkSpan.end, band: RUBBERBAND },
-        say: 'Bookmark the span on screen',
+        fromAnchor: { locus: highlightSpan.start, band: RUBBERBAND },
+        toAnchor: { locus: highlightSpan.end, band: RUBBERBAND },
+        say: 'Highlight the span on screen',
         hold: 600,
       },
-      { type: 'waitForText', text: 'Bookmark region' },
-      { type: 'click', text: 'Bookmark region', hold: 1800 },
-      // The highlight is now on the view and the bookmark is in a widget nobody
-      // has opened. The menu path to it is the half the page states in prose.
+      { type: 'waitForText', text: 'Highlight region' },
+      { type: 'click', text: 'Highlight region', hold: 1800 },
+      // The band is now on the view, and the list holding it is one nobody has
+      // opened. The menu path to it is the half the page states in prose.
       {
         type: 'click',
         selector: '[data-testid="view_menu_icon"]',
-        say: 'Open the bookmark widget from the view menu',
+        say: 'Open the highlight list from the view menu',
         hold: 800,
       },
-      { type: 'waitForText', text: 'Bookmarks/highlights' },
-      { type: 'click', text: 'Bookmarks/highlights', hold: 800 },
-      { type: 'waitForText', text: 'Open bookmark widget' },
-      { type: 'click', text: 'Open bookmark widget' },
+      { type: 'waitForText', text: 'Highlights' },
+      { type: 'click', text: 'Highlights', hold: 800 },
+      { type: 'waitForText', text: 'Open highlight list' },
+      { type: 'click', text: 'Open highlight list' },
       { type: 'waitForText', text: 'Add label...' },
       { type: 'delay', ms: 1200 },
       // One click puts the cell in edit mode, which is the thing the label
       // figure's callout has to say in words. Targeted by the placeholder the
-      // empty cell renders, the way bookmark_widget_edit_label does: while it is
+      // empty cell renders, the way highlight_list_edit_label does: while it is
       // being edited the cell is an <input>, so its own text is not a handle.
       {
         type: 'type',
@@ -113,7 +110,7 @@ export const uiVideos: VideoSpec[] = [
       { type: 'delay', ms: 2000 },
       // Leave, so the return has somewhere to return from. Typed into the
       // search box the way a reader would rather than reloaded, and the
-      // bookmark's highlight leaves the view with it.
+      // band leaves the view with it.
       {
         type: 'type',
         selector: LOCATION_BOX,
@@ -128,8 +125,8 @@ export const uiVideos: VideoSpec[] = [
       // view goes back to the span the drag made.
       {
         type: 'click',
-        selector: BOOKMARK_LINK_CELL,
-        say: 'Click the saved row to navigate back',
+        selector: LOCATION_LINK_CELL,
+        say: 'Click the row to navigate back',
       },
       { type: 'waitForAppSettled', timeout: 120000 },
     ],

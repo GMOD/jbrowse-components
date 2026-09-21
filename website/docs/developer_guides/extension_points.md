@@ -1202,9 +1202,9 @@ scalebar:
 }>
 ```
 
-Render custom overlays inside the overview scalebar, e.g. bookmark highlights.
-Contribute the node with `addExtensionElement`, or `contributeToExtensionPoint`
-if you need to build it yourself.
+Render custom overlays inside the overview scalebar. Contribute the node with
+`addExtensionElement`, or `contributeToExtensionPoint` if you need to build it
+yourself.
 
 ### LinearGenomeView-searchResultSelected
 

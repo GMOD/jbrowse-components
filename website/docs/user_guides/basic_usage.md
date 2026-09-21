@@ -249,8 +249,8 @@ Click and drag on either the main (lower) or overview (upper) scale bar.
 <Figure caption="Rubberbanding the main and overview scalebars. The main one produces extra options on selection." src="/img/rubberband.png" />
 
 The main scale bar's menu holds **Zoom to region**, **Get sequence**, **Copy
-range**, **Highlight region** and **Bookmark region**, then a **Launch** submenu
-of what can open from the selection:
+range**, **Highlight region** ([](/docs/user_guides/highlights)), then a
+**Launch** submenu of what can open from the selection:
 
 - [**Close-up view**](#close-up-views), a zoomed-in copy of the view below its
   tracks
@@ -365,7 +365,7 @@ See the [configuration guide](/docs/config_guides/track_selector).
 ## See also
 
 - [](/docs/user_guides/connections)
-- [](/docs/user_guides/bookmark_widget)
+- [](/docs/user_guides/highlights)
 - [](/docs/user_guides/plugin_store)
 - [Track selector configuration](/docs/config_guides/track_selector)
 - [](/docs/config_guides/avoiding_stale_config)

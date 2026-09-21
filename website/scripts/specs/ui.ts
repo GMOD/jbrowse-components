@@ -72,11 +72,11 @@ function toolbarCallout(opts: {
   ]
 }
 
-// The bookmark widget's editable Label cell. `.MuiDataGrid-cell` is what tells
+// The highlight list's editable Label cell. `.MuiDataGrid-cell` is what tells
 // it from the column header, which carries the same `data-field`.
-const BOOKMARK_LABEL_CELL = '.MuiDataGrid-cell[data-field="label"]'
+const LABEL_CELL = '.MuiDataGrid-cell[data-field="label"]'
 
-// The window both bookmark figures are taken in: config_demo's hg19 over PTEN,
+// The window the highlight figures are taken in: config_demo's hg19 over PTEN,
 // wide enough that a rubberband covers a readable part of the gene rather than
 // the whole of it.
 const PTEN_WINDOW = 'chr10:89,613,000-89,740,000'
@@ -213,13 +213,13 @@ export const uiVideoFixtures = {
       ],
     },
   ),
-  bookmarkSession: lgvSession(DEMO_CONFIG, {
+  highlightSession: lgvSession(DEMO_CONFIG, {
     assembly: 'hg19',
     loc: PTEN_WINDOW,
     tracks: ['ncbi_gff_hg19'],
   }),
   // The span the tour rubberbands, inside the window above.
-  bookmarkSpan: { start: 'chr10:89,620,000', end: 'chr10:89,650,000' },
+  highlightSpan: { start: 'chr10:89,620,000', end: 'chr10:89,650,000' },
   // Somewhere else on chr10, so the return has somewhere to return from.
   elsewhere: 'chr10:100,000,000-100,200,000',
   // A volvox window with one gene lane in it, and a file from the same test
@@ -1856,16 +1856,15 @@ export const uiSpecs: ScreenshotSpec[] = [
   },
 
   // ────────────────────────────────────────────────────────────────────────
-  // Bookmark widget screenshots
+  // Highlight list screenshots
   // ────────────────────────────────────────────────────────────────────────
 
-  // Bookmark create, two-stage figure: top frame is the rubberband context menu
-  // with "Bookmark region" boxed; bottom frame clicks it so the bookmarked
-  // region appears as a colored highlight across the view. Uses config_demo hg19
-  // over the PTEN gene with a shorter viewport.
+  // Two stages: the rubberband context menu with "Highlight region" boxed, then
+  // the band it draws across the view. config_demo hg19 over PTEN, with a
+  // shorter viewport.
   {
     mode: 'url',
-    name: 'bookmark_widget_create',
+    name: 'highlight_list_create',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: PTEN_WINDOW,
@@ -1877,26 +1876,26 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 440,
     actions: [
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
-      { type: 'waitForText', text: 'Bookmark region' },
+      { type: 'waitForText', text: 'Highlight region' },
     ],
     stages: [
       {
-        annotations: [{ type: 'box', anchor: { text: 'Bookmark region' } }],
+        annotations: [{ type: 'box', anchor: { text: 'Highlight region' } }],
       },
       {
         actions: [
-          { type: 'click', text: 'Bookmark region' },
+          { type: 'click', text: 'Highlight region' },
           { type: 'delay', ms: 1500 },
         ],
       },
     ],
   },
 
-  // Bookmark widget with a bookmark label showing a highlight on the LGV, over
-  // config_demo's hg19. Shorter viewport keeps the figure tight.
+  // The highlight list with a label being typed, which names the band on the
+  // LGV, over config_demo's hg19. Shorter viewport keeps the figure tight.
   {
     mode: 'url',
-    name: 'bookmark_widget_edit_label',
+    name: 'highlight_list_edit_label',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr1:1-20,000',
@@ -1906,22 +1905,20 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     viewportHeight: 520,
     actions: [
-      // create a bookmark via rubberband
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
-      { type: 'waitForText', text: 'Bookmark region' },
-      { type: 'click', text: 'Bookmark region' },
+      { type: 'waitForText', text: 'Highlight region' },
+      { type: 'click', text: 'Highlight region' },
       { type: 'delay', ms: 500 },
-      // open the bookmark widget
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      ...menuCascade(['Bookmarks/highlights', 'Open bookmark widget']),
-      { type: 'click', text: 'Open bookmark widget' },
+      ...menuCascade(['Highlights', 'Open highlight list']),
+      { type: 'click', text: 'Open highlight list' },
       { type: 'waitForText', text: 'Add label...' },
       { type: 'delay', ms: 1000 },
       // single-click the "Add label..." cell to enter edit mode, then type
       { type: 'type', text: 'Add label...', value: 'my region' },
       { type: 'delay', ms: 1500 },
     ],
-    // The pill anchors to the "Label" column header in the bookmark widget. The
+    // The pill anchors to the Location column header in the highlight list. The
     // callout text is left-aligned, so it's pulled well left of the right-side
     // widget header and width-clamped to keep it from running off the right
     // edge.
@@ -1937,15 +1934,15 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         text: 'Single-click the label to edit it',
-        anchor: { text: 'Bookmark link' },
+        anchor: { text: 'Location' },
         dx: -190,
         dy: 170,
         maxWidth: 230,
       },
       {
         type: 'arrow',
-        fromAnchor: { selector: BOOKMARK_LABEL_CELL, dx: -162, dy: 125 },
-        anchor: { selector: BOOKMARK_LABEL_CELL },
+        fromAnchor: { selector: LABEL_CELL, dx: -162, dy: 125 },
+        anchor: { selector: LABEL_CELL },
         dx: -7,
         dy: 18,
       },

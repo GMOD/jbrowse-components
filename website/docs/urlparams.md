@@ -98,9 +98,11 @@ form of the spec's [`displayedRegionNames`](#fields-every-view-takes).
 [&assembly=](#assembly) and [&loc=](#loc).
 
 - Several regions are space-separated (`%20`).
-- Always pass `&assembly=`. Highlights are stored by assembly name so the chip
-  menu's actions can resolve them; the same applies to `view.highlight` in a
-  session JSON, where each entry takes `assemblyName`.
+- Always pass `&assembly=`. A highlight is stored with an assembly name, and
+  every view of that assembly draws it; a saved session keeps them in its
+  `highlights` list, where each entry takes `assemblyName`.
+- The [highlight list](/docs/user_guides/highlights) shows them, with links back
+  to each.
 - A URL-encoded JSON object in place of a locstring adds `color` (used as-is,
   alpha included) and `label` (shown beside the chip icon):
   `&highlight={"refName":"11","start":32200274,"end":32203877,"color":"rgba(240,128,128,0.3)","label":"R2_intron"}`.

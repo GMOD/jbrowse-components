@@ -42,9 +42,19 @@ that expressed it are **not** migrated. A v4 session carrying a dismissed band â
 the LGV's own `highlightsVisible`, or grid-bookmark's
 `bookmarkHighlightsVisible`, both written out only when the user turned the band
 off â€” reopens with the band visible, because MST drops a snapshot key the model
-no longer declares. Dismissing it again is one click on the
-"Bookmarks/highlights" toggle, and it now applies to every view at once. The
-setting is the only thing lost; nothing about the session fails to load.
+no longer declares. Dismissing it again is one click on the "Toggle highlights"
+item, and it now applies to every view at once. The setting is the only thing
+lost; nothing about the session fails to load.
+
+Bookmarks are gone; highlights replace them. The session holds one list,
+`session.highlights`, and every view draws the entries on its own assemblies, so
+a view's `highlight` array became the read-only getter `highlights`, and
+`addToHighlights`, `setHighlight`, `removeHighlight` and `updateHighlight` moved
+to the session as `addHighlight`, `setHighlights`, `removeHighlight` and
+`updateHighlight`. A v4 view snapshot's `highlight` list still loads, onto the
+session's. Bookmarks a v4 browser kept in localStorage, and the
+`sharedBookmarks` a v4 share link carried, are not read; export them as BED from
+v4 and import that file.
 
 ## The renderer registry is gone
 

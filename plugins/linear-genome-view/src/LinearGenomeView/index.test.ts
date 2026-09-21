@@ -2882,12 +2882,17 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
       end: 200,
       assemblyName: 'volvox',
     }
-    const model = makeModel({
-      displayedRegions: [
-        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-      ],
-      highlight: [saved],
-    } as InitState)
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+        ],
+        highlight: [saved],
+      }),
+    )
+    model.setWidth(800)
     await waitFor(() => {
       expect(getSession(model).highlights).toEqual([saved])
     })
