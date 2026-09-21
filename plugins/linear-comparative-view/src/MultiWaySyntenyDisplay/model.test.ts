@@ -136,6 +136,7 @@ test('lane links are asked for only between lanes the session holds', () => {
     alsoOn: [],
     alsoOnMore: 0,
     pinned: false,
+    orientationPinned: false,
   }
   display.setLaneFrames(
     0,
@@ -508,6 +509,7 @@ describe('the lane stack scrolls once lanes would crush', () => {
             alsoOn: [],
             alsoOnMore: 0,
             pinned: false,
+            orientationPinned: false,
           },
         ],
       ]),
@@ -643,6 +645,7 @@ const decisionOn = (refName: string, pivotLaneBp: number) => ({
   alsoOn: [],
   alsoOnMore: 0,
   pinned: false,
+  orientationPinned: false,
 })
 
 const mateRecord = (id: string, mateAssembly: string, name?: string) =>

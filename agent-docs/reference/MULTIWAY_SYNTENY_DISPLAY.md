@@ -139,8 +139,13 @@ by `keepNearMedian` (`OUTLIER_REACH = 1.5` window spans), rung off
 lane *above* (`orientationVote`, `decideOrientation`), offset by the
 weighted-median displacement to the lane above clamped to the rung's slack
 (`alignFrameTo`), and a placement hold while the frame still shows 90% of the
-placed weight (`HOLD_COVERAGE`). The decision is
-`{refName, flipped, rung, pivotAnchor, pivotLaneBp, fitMin, fitMax, alsoOn, pinned}`
+placed weight (`HOLD_COVERAGE`). Two reader pins from the lane header menu
+outrank the vote: a contig pin (`pinnedLaneContigs`) while the window places
+anything on that contig, and a flip pin (`pinnedLaneFlips`, against the anchor's
+order) while the lane draws the contig it was set on. A lapsed or released pin
+leaves no incumbent, so the lane decides fresh, and a commit of another anchor's
+features drops every flip pin. The decision is
+`{refName, flipped, rung, pivotAnchor, pivotLaneBp, fitMin, fitMax, alsoOn, alsoOnMore, pinned, orientationPinned}`
 and the drawn frame is derived from it against the live view on every pan
 (`frameFromDecision`; the model's `rowFrames`). A mate lane draws its frame plus
 half a span either side (`frameReach`), the margin a pan translates into view
@@ -415,7 +420,7 @@ so an eight-mate launch is eight 40 px bands.
 
 | | MultiWay lanes (one track) | LinearSyntenyView (one LGV per row) |
 | --- | --- | --- |
-| **Control** | Order by drag/menu, hide, pick, pin contig, re-anchor; no per-lane zoom, no extra tracks, no per-lane locstring | Full LGV per row: any tracks, independent navigation, rubberband, feature detail; order by moving views; no densest-first, no bridging, no lane picker |
+| **Control** | Order by drag/menu, hide, pick, pin contig, flip, re-anchor; no per-lane zoom, no extra tracks, no per-lane locstring | Full LGV per row: any tracks, independent navigation, rubberband, feature detail; order by moving views; no densest-first, no bridging, no lane picker |
 | **State** | the `domain` slot, and `laneFilter` and `lodMode`, on one display; features volatile | N `LinearGenomeView` models plus N-1 `LinearSyntenyLevel` models, each level holding its own full track model, display and rendering backend (`LinearSyntenyView`'s `levels` and `reconcileLevels`; `LinearSyntenyViewHelper`); every row's tracks persist |
 | **Fetches** | 1 star fetch (+ N children inside the adapter) + N lane-gene RPCs + (N-1) link RPCs for nameless non-star sources | N-1 synteny fetches (one per level, each its own display) + each row's own track fetches; each level refetches independently on its own pair of viewports |
 | **Performance** | One canvas, ~10 GPU draw calls per lane (§3), 22 px per lane floor | N LGV React trees and rulers, a synteny canvas per level; rows are ≥ ruler height each, so 8 rows fill a screen and 44 do not fit |

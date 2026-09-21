@@ -268,6 +268,7 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
           anchorReversed: self.anchorReversed,
           previous,
           pinned: self.pinnedLaneContigs,
+          pinnedFlips: self.pinnedLaneFlips,
         })
         if (
           // eslint-disable-next-line no-restricted-syntax -- SELF-WRITE: setLaneFrames writes it

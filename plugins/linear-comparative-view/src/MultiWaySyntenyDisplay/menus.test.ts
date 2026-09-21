@@ -55,8 +55,14 @@ const grape: HeaderLane = {
 function headerModel({
   held = true,
   pinned,
+  flipPinned,
   canReanchor = true,
-}: { held?: boolean; pinned?: string; canReanchor?: boolean } = {}) {
+}: {
+  held?: boolean
+  pinned?: string
+  flipPinned?: string
+  canReanchor?: boolean
+} = {}) {
   const calls: string[] = []
   const model = {
     rowAssemblies: ['peach', 'cacao'],
@@ -81,6 +87,17 @@ function headerModel({
     },
     pinLaneContig: (name: string, refName: string | undefined) => {
       calls.push(`pin ${name} ${refName}`)
+    },
+    pinnedLaneFlips: new Map(
+      flipPinned === undefined
+        ? []
+        : [['peach', { refName: flipPinned, flipped: true }] as const],
+    ),
+    flipLane: (name: string) => {
+      calls.push(`flip ${name}`)
+    },
+    unpinLaneFlip: (name: string) => {
+      calls.push(`unflip ${name}`)
     },
   }
   return { model, calls }
@@ -265,6 +282,7 @@ test('a lane names its other contigs and offers each, and a pin offers its relea
   expect(labelsOf(items).slice(5)).toEqual([
     'Show Pp5 in this lane',
     'Show Pp7 in this lane',
+    'Flip lane',
   ])
   click(items[5])
   expect(calls).toEqual(['pin peach pp5'])
@@ -277,6 +295,7 @@ test('a lane names its other contigs and offers each, and a pin offers its relea
   expect(labelsOf(pinnedItems).slice(5)).toEqual([
     'Show Pp1 in this lane',
     'Let the lane choose its contig (pinned to Pp5)',
+    'Flip lane',
   ])
   click(pinnedItems[6])
   expect(pinnedModel.calls).toEqual(['pin peach undefined'])
@@ -299,6 +318,7 @@ test('a mate lane header opens its assembly elsewhere or re-anchors the track on
     'Hide lane',
     'Open peach at the matching region',
     'Re-anchor on peach',
+    'Flip lane',
   ])
   click(items[3])
   click(items[4])
@@ -320,11 +340,32 @@ test('a source aligned to one anchor offers no re-anchor', () => {
     'Move down',
     'Hide lane',
     'Open peach at the matching region',
+    'Flip lane',
   ])
 })
 
+// A lane in a window whose blocks split about evenly reads the way its vote
+// fell; the reader turns it round, and hands the choice back from the same menu
+test('a lane flips from its menu, and a flip pin offers its release', () => {
+  const { model, calls } = headerModel()
+  click(laneHeaderMenuItems(model, peach)[5])
+  expect(calls).toEqual(['flip peach'])
+  expect(
+    labelsOf(laneHeaderMenuItems(model, { ...peach, frame: undefined })),
+  ).not.toContain('Flip lane')
+
+  const pinned = headerModel({ flipPinned: 'pp1' })
+  const items = laneHeaderMenuItems(pinned.model, peach)
+  expect(labelsOf(items).slice(5)).toEqual([
+    'Flip lane',
+    'Let the lane choose its orientation (pinned on Pp1)',
+  ])
+  click(items[6])
+  expect(pinned.calls).toEqual(['unflip peach'])
+})
+
 test('the two hops are dead without a frame, and without the genome in the session', () => {
-  const hops = (items: MenuItem[]) => disabledOf(items).slice(3)
+  const hops = (items: MenuItem[]) => disabledOf(items).slice(3, 5)
   expect(hops(laneHeaderMenuItems(headerModel().model, peach))).toEqual([
     false,
     false,

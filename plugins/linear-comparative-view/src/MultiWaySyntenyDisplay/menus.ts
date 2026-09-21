@@ -12,6 +12,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { laneRegion } from './laneHeader.ts'
 import { laneResetLabel } from './laneSelection.ts'
 
+import type { LaneFlipPin } from './laneDecision.ts'
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -31,9 +32,12 @@ export interface LaneHeaderModel {
   holdsAssembly: (assemblyName: string) => boolean
   canReanchor: boolean
   pinnedLaneContigs: ReadonlyMap<string, string>
+  pinnedLaneFlips: ReadonlyMap<string, LaneFlipPin>
   openInNewView: (assemblyName: string, loc: string) => void
   reanchor: (assemblyName: string, loc: string) => void
   pinLaneContig: (assemblyName: string, refName: string | undefined) => void
+  flipLane: (assemblyName: string) => void
+  unpinLaneFlip: (assemblyName: string) => void
 }
 
 export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
@@ -63,9 +67,9 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
 /**
  * The menu a lane's header raises, and the same menu under that lane in the
  * track menu's Lanes submenu. A mate lane offers its moves, its assembly in a
- * view of its own at the frame the lane draws, the track re-anchored on it, and
- * the other contigs the anchor window touches there. The hops are dead while
- * the lane places nothing or the session does not hold the genome, and a
+ * view of its own at the frame the lane draws, the track re-anchored on it, the
+ * other contigs the anchor window touches there, and a flip. The hops are dead
+ * while the lane places nothing or the session does not hold the genome, and a
  * source aligned to one anchor offers no re-anchor.
  */
 export function laneHeaderMenuItems(
@@ -116,6 +120,7 @@ export function laneHeaderMenuItems(
         ]
       : []),
     ...laneContigMenuItems(model, lane),
+    ...laneFlipMenuItems(model, lane),
   ]
 }
 
@@ -139,6 +144,36 @@ function laneContigMenuItems(
             label: `Let the lane choose its contig (pinned to ${lane.canon(pinned)})`,
             onClick: () => {
               model.pinLaneContig(name, undefined)
+            },
+          },
+        ]),
+  ]
+}
+
+function laneFlipMenuItems(
+  model: LaneHeaderModel,
+  lane: HeaderLane,
+): MenuItem[] {
+  const name = lane.assemblyName
+  const pin = model.pinnedLaneFlips.get(name)
+  return [
+    ...(lane.frame === undefined
+      ? []
+      : [
+          {
+            label: 'Flip lane',
+            onClick: () => {
+              model.flipLane(name)
+            },
+          },
+        ]),
+    ...(pin === undefined
+      ? []
+      : [
+          {
+            label: `Let the lane choose its orientation (pinned on ${lane.canon(pin.refName)})`,
+            onClick: () => {
+              model.unpinLaneFlip(name)
             },
           },
         ]),

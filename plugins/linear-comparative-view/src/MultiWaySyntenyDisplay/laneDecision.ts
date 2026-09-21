@@ -44,6 +44,17 @@ export interface LaneDecision {
    * is gone it is not an incumbent and the lane decides fresh
    */
   pinned: boolean
+  /** the same for the orientation, from a `LaneFlipPin` */
+  orientationPinned: boolean
+}
+
+/**
+ * the orientation the reader pinned a lane to, against the anchor's order the
+ * way `LaneDecision.flipped` is, holding while the lane draws `refName`
+ */
+export interface LaneFlipPin {
+  refName: string
+  flipped: boolean
 }
 
 // The scales a lane's frame is allowed to sit at, as multiples of the anchor's
@@ -517,12 +528,14 @@ export interface DecideLaneFramesOpts {
   previous: ReadonlyMap<string, LaneDecision | undefined>
   // the contig the reader pinned each lane onto, which outranks its vote
   pinned?: ReadonlyMap<string, string>
+  pinnedFlips?: ReadonlyMap<string, LaneFlipPin>
 }
 
 function sameDecision(a: LaneDecision, b: LaneDecision) {
   return (
     a.refName === b.refName &&
     a.pinned === b.pinned &&
+    a.orientationPinned === b.orientationPinned &&
     a.flipped === b.flipped &&
     a.rung === b.rung &&
     a.pivotLaneBp === b.pivotLaneBp &&
@@ -557,6 +570,7 @@ export function decideLaneFrames({
   anchorReversed = false,
   previous,
   pinned,
+  pinnedFlips,
 }: DecideLaneFramesOpts) {
   const out = new Map<string, LaneDecision | undefined>()
   let upperX = anchorX
@@ -578,7 +592,7 @@ export function decideLaneFrames({
     // the vote reads screen px, so it comes back in screen terms; the
     // decision is stated against the anchor's order
     const vote = orientationVote(upperX, placements)
-    const relativeFlipped = decideOrientation(
+    const voted = decideOrientation(
       fitted.flipped,
       vote && {
         shared: vote.shared,
@@ -588,8 +602,11 @@ export function decideLaneFrames({
             ? undefined
             : vote.backwards !== anchorReversed,
       },
-      prev?.flipped,
+      prev?.orientationPinned ? undefined : prev?.flipped,
     )
+    const flipPin = pinnedFlips?.get(assemblyName)
+    const orientationPinned = flipPin?.refName === fitted.refName
+    const relativeFlipped = orientationPinned ? flipPin.flipped : voted
     const oriented = { ...fitted, flipped: relativeFlipped !== anchorReversed }
     const aligned = alignFrameTo(upperX, placements, oriented, width)
 
@@ -608,6 +625,7 @@ export function decideLaneFrames({
         ...held,
         rung,
         pinned: onPin,
+        orientationPinned,
         fitMin: aligned.fitMin,
         fitMax: aligned.fitMax,
         alsoOn: aligned.alsoOn,
@@ -649,6 +667,7 @@ export function decideLaneFrames({
           alsoOn: aligned.alsoOn,
           alsoOnMore: aligned.alsoOnMore,
           pinned: onPin,
+          orientationPinned,
         }
         if (prev && sameDecision(prev, decision)) {
           decision = prev

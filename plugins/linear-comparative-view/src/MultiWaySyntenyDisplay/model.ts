@@ -104,7 +104,7 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 import type { AxisPlacement } from './anchorAxis.ts'
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
-import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
+import type { AnchorCoord, LaneDecision, LaneFlipPin } from './laneDecision.ts'
 import type {
   DeclaredLane,
   HeldLaneGenes,
@@ -293,6 +293,14 @@ export function stateModelFactory(
       pinnedLaneContigs: new Map<string, string>(),
       /**
        * #volatile
+       * the orientation the reader pinned a lane to from its header menu,
+       * which outranks the lane's own vote while it draws the contig the pin
+       * was set on. A commit of another anchor's features drops them all:
+       * the pins are stated against the anchor's order
+       */
+      pinnedLaneFlips: new Map<string, LaneFlipPin>(),
+      /**
+       * #volatile
        * the view's scroll offset the stack is laid out against, refreshed with
        * the decisions. Between refreshes a pan is one translate of the whole
        * stack (`dragOffsetPx`), not a relayout of every lane
@@ -330,6 +338,16 @@ export function stateModelFactory(
           features: Feature[],
           anchor: string = containingLgv(self).assemblyNames[0]!,
         ) {
+          if (
+            self.pinnedLaneFlips.size > 0 &&
+            !isSameAssemblyName(
+              self.fetchedFeatures?.anchor,
+              anchor,
+              getSession(self).assemblyManager,
+            )
+          ) {
+            self.pinnedLaneFlips = new Map()
+          }
           self.fetchedFeatures = { anchor, features }
           observeRibbonFeatures(features)
           dropDirectLinkClick()
@@ -403,6 +421,29 @@ export function stateModelFactory(
             pins.set(assemblyName, refName)
           }
           self.pinnedLaneContigs = pins
+        },
+        /**
+         * #action
+         * mirror a lane against its current orientation, pinned to the contig
+         * it draws
+         */
+        flipLane(assemblyName: string) {
+          const decision = self.laneDecisions.get(assemblyName)
+          if (decision) {
+            self.pinnedLaneFlips = new Map(self.pinnedLaneFlips).set(
+              assemblyName,
+              { refName: decision.refName, flipped: !decision.flipped },
+            )
+          }
+        },
+        /**
+         * #action
+         * let a flipped lane choose its orientation again
+         */
+        unpinLaneFlip(assemblyName: string) {
+          const pins = new Map(self.pinnedLaneFlips)
+          pins.delete(assemblyName)
+          self.pinnedLaneFlips = pins
         },
         /**
          * #action
