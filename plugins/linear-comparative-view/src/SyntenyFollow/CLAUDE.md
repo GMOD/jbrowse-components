@@ -329,9 +329,12 @@ on a 500ms throttle, so an answer can land after the staying row has moved and
 before the settle that move brings; navigating on it sent the row back to the
 window the anchor had left. `execute` compares the staying row's live windows
 with the ones it planned from, and on a difference records the pick and stops
-there: the frame pass places the row through that pick, and the coarse refresh
-brings a settle for where the row stopped. A carried level reads no row, so it
-is not checked.
+there: the next frame of motion places the row through that pick, and the coarse
+refresh brings a settle for where the row stopped. Unless the answer is on a
+contig the moving row does not display, which only a navigation reaches: a
+staying row that moves away and back inside one throttle brings no settle, and
+held there the row stayed on the wrong contig. A carried level reads no row, so
+it is not checked.
 
 Switching the mode off issues no pass at all, so it still needs its own check in
 `execute` — and switching it back on defeats that check, since dropping the

@@ -21,6 +21,7 @@ import { planFollowStep } from './planFollowStep.ts'
 import {
   positionViewOnSpan,
   positionViewOnSpans,
+  spanBounds,
 } from './positionViewOnSpan.ts'
 import { requestCigarMap } from './requestCigarMap.ts'
 import { decideSpread } from './spreadDecision.ts'
@@ -267,7 +268,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       seq !== state.seq ||
       generation !== levelStates.generation ||
       !isAlive(self) ||
-      !isAlive(movingView)
+      !isAlive(movingView) ||
+      (staying !== undefined && !isAlive(staying.view))
     const { span, approximate } = await state.answer(step)
     if (stale() || !self.followSynteny) {
       return
@@ -307,16 +309,19 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         : undefined,
     }
     ensureCigarMap(state, step)
-    // The staying row moved while the answer was in flight. The frame pass
-    // places the row from the pick above, and the staying row's coarse refresh
-    // brings a settle for where it stopped; navigating now sends the row back
-    // to a window it has left.
+    // The staying row moved while the answer was in flight, so navigating
+    // would send the row back to a window the staying row has left. A span
+    // the row can show is left to the next frame of motion, which places
+    // through the pick above, and to the settle the staying row's coarse
+    // refresh brings. A span on a contig the row does not display is
+    // navigated regardless, since nothing else reaches it.
     if (
       staying &&
       !sameWindows(
         followAnchorWindows(staying.view.dynamicBlocks.contentBlocks),
         staying.windows,
-      )
+      ) &&
+      spanBounds(movingView.displayedRegions, [span])
     ) {
       return
     }

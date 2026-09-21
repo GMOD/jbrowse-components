@@ -692,6 +692,35 @@ test('an answer for a window the anchor has left does not navigate', async () =>
   )
 })
 
+// Unless only a navigation reaches the answer: a staying row that moves away
+// and back inside one throttle brings no settle, and held, the row stayed on
+// the wrong contig.
+test('an answer on a contig the row does not display navigates even after a move', async () => {
+  const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+  const { rows, host } = twoRows([
+    display([pairing('chr1', 'chr1'), pairing('chr2', 'chr5')]),
+  ])
+  rows[1]!.setDisplayedRegions([
+    { refName: 'chr1', start: 0, end: CONTIG, assemblyName: 'b' },
+  ])
+  place(rows[0]!, 400_000, 500_000)
+  installSyntenyFollow(host)
+  await settle()
+  await settle()
+  expect(shown(rows[1]!)).toEqual(['chr1'])
+
+  rows[0]!.holdCoarseBlocks()
+  rows[1]!.holdCoarseBlocks()
+  place(rows[0]!, CONTIG + 400_000, CONTIG + 500_000)
+  rows[0]!.releaseCoarseBlocks()
+  rows[0]!.holdCoarseBlocks()
+  place(rows[0]!, CONTIG + 420_000, CONTIG + 520_000)
+  await settle()
+  await settle()
+
+  expect(shown(rows[1]!)).toEqual(['chr5'])
+})
+
 const reversedOf = (view: ReturnType<typeof row>) =>
   !!view.dynamicBlocks.contentBlocks[0]?.reversed
 

@@ -317,8 +317,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * The rows a drag or a wheel on a band moves: every row the follow does
-       * not place. Off, that is every row; on, it is the anchor and any row
+       * The rows a drag or a wheel on a band moves: every row the follow
+       * cannot place. Off, that is every row; on, it is the anchor and any row
        * whose level toward the anchor has no synteny track.
        */
       get bandGestureRows() {
