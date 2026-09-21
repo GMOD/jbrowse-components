@@ -155,9 +155,9 @@ const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
 
 // gnomAD's own consequence class for the variant: pLoF, missense, synonymous
 // or other. pLoF is the high-impact end, 93 of the 4,695 records over TP53.
-// A filter row, built on the dialog's default Conditions tab: the field picker
-// lists only generic feature fields, so the column is typed in, and a typed
-// field opens on the `is` operator.
+// A filter row, built on the dialog's default Conditions tab: the column is
+// typed into the field picker, and a column of no declared type opens on the
+// `is` operator.
 const GNOMAD_PLOF = { field: 'annot', value: 'pLoF' }
 
 // The first condition row's inputs. Tab, not Enter, commits a typed field:
@@ -648,8 +648,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   //
   // The pLoF filter rather than the AF one: a consequence class has no
   // visible-in-the-picture analogue (a frequency cut looks like fewer
-  // variants), and it is a row the Conditions tab can build, where a typed
-  // column offers no numeric operators.
+  // variants).
   {
     mode: 'url',
     name: 'genomes_basics/gnomad_filter_menu',

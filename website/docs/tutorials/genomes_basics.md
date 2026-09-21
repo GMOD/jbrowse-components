@@ -158,14 +158,12 @@ H3K27ac an active one; all seven cell lines carry both.
 **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** under Variation and Repeats opens as
 several thousand records over _TP53_, one block of colour. **Track menu → Filter
 by...** takes the track's own columns as rows of field, operator and value. Type
-the column name into the field box, which lists only the fields every feature
-has. A typed column compares as text, so a numeric cut goes on the dialog's Text
-tab as jexl, one expression per line:
+the column name into the field box, which lists the file's columns with the
+description it gives each. A record has to pass every row:
 
 - **annot** is `pLoF` keeps gnomAD's predicted loss-of-function consequence
   class (the others are missense, synonymous and other)
-- `jexl:feature.AF >= 0.001` on the Text tab keeps the variants standing in the
-  population
+- **AF** ≥ `0.001` keeps the variants standing in the population
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class row filled in." />
 
