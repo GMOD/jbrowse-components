@@ -341,15 +341,14 @@ GBZ_DB=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/re
 GBZ_INDEX=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
 # --stack lists the rows from the top, and each is aligned to the next: a node
 #   both walks visit becomes a run of =, and the bases between two shared nodes
-#   are aligned into =, X, I and D
-# --max-gap keeps a module-sized insertion inside one record, where the view
-#   draws it from the CIGAR
+#   are aligned into =, X, I and D, so a module-sized insertion stays inside
+#   one record, where the view draws it from the CIGAR
 # --contig-lengths fills the PAF's two length columns, which a window of the
 #   graph does not hold
 npx --yes -p @gmod/gbz-base gbz-base-query $GBZ_DB --haplotype-index $GBZ_INDEX \
   --sample GRCh38 --contig chr6 --interval 31940000..32090000 --context 0 \
   --stack 'HG01978#2,HG02004#2,GRCh38#0,HG02818#1,HG00146#1' \
-  --max-gap 200000 --contig-lengths contig_lengths.tsv > adjacent.paf
+  --contig-lengths contig_lengths.tsv > adjacent.paf
 ```
 
 The rows are two haplotypes with three modules, GRCh38 with two, HG02818.1 with
