@@ -1804,8 +1804,8 @@ export function stateModelFactory(
           ...self.ribbonGeometry.layers,
           ...self.tickGeometry.layers,
           ...lanes.flatMap((_lane, row): MultiWayLayer[] => [
-            { kind: 'glyphs', key: glyphsKey(row), scrolled: true },
-            { kind: 'glyphs', key: boxesKey(row), scrolled: true },
+            { kind: 'glyphs', key: glyphsKey(row), scrolled: true, row },
+            { kind: 'glyphs', key: boxesKey(row), scrolled: true, row },
           ]),
         ]
       },
@@ -1979,6 +1979,7 @@ export function stateModelFactory(
           scrollTopPx: self.scrollTop,
           hoveredFeatureId: self.hoveredFeatureId,
           clickedFeatureId: self.clickedFeatureId,
+          laneMaps: new Map(),
           groundColor: bandGroundColor(),
           layers: self.renderLayers,
         }

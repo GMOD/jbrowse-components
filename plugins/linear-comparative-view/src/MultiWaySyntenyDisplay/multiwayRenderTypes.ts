@@ -48,13 +48,30 @@ export interface RibbonLayer {
   yTop: number
   height: number
   curves: boolean
+  /** the lane rows its top and bottom edges ride, for their `LaneMap`s */
+  rows: readonly [number, number]
 }
 
 export interface GlyphLayer {
   kind: 'glyphs'
   key: string
   scrolled: boolean
+  /** the lane row it draws, for its `LaneMap`; none for the bands */
+  row?: number
 }
+
+/**
+ * Where a lane draws its cells: packed px `x` lands at `scale * x + offset`.
+ * Identity for a settled lane; while a re-alignment, a rung change or a flip
+ * runs, the map carries the lane from its old frame's picture to its new one
+ * without repacking anything. A mirror is a negative scale.
+ */
+export interface LaneMap {
+  scale: number
+  offset: number
+}
+
+const IDENTITY_LANE_MAP: LaneMap = { scale: 1, offset: 0 }
 
 /**
  * The outline of the clicked group in one gutter — its own layer beside the
@@ -79,6 +96,8 @@ export interface MultiWayRenderState extends FrameDimensions {
   scrollTopPx: number
   hoveredFeatureId: number
   clickedFeatureId: number
+  /** by lane row, each moving lane's `LaneMap`; a row absent is settled */
+  laneMaps: ReadonlyMap<number, LaneMap>
   /**
    * The stack's ground, which the ribbon gutters share with the linear band:
    * `drawSyntenyTrack` blends an indel wedge against it and the shaders bake it
@@ -104,10 +123,30 @@ export type MultiWayRenderingBackend = PerRegionRenderingBackend<
   MultiWayRenderState
 >
 
+export function laneMapOf(
+  state: Pick<MultiWayRenderState, 'laneMaps'>,
+  row: number | undefined,
+) {
+  return (
+    (row === undefined ? undefined : state.laneMaps.get(row)) ??
+    IDENTITY_LANE_MAP
+  )
+}
+
+export function drawnPx(map: LaneMap, px: number) {
+  return map.scale * px + map.offset
+}
+
+export function packedPx(map: LaneMap, px: number) {
+  return (px - map.offset) / map.scale
+}
+
 export function ribbonParams(
   layer: RibbonLayer,
   state: MultiWayRenderState,
 ): SyntenyTrackRenderParams {
+  const top = laneMapOf(state, layer.rows[0])
+  const bottom = laneMapOf(state, layer.rows[1])
   return {
     yTop: layer.yTop - state.scrollTopPx,
     height: layer.height,
@@ -116,14 +155,29 @@ export function ribbonParams(
     minAlignmentLength: 0,
     hoveredFeatureId: state.hoveredFeatureId,
     clickedFeatureId: state.clickedFeatureId,
-    offsetPx0: -state.dragOffsetPx,
-    offsetPx1: -state.dragOffsetPx,
-    bpPerPx0: 1,
-    bpPerPx1: 1,
+    offsetPx0: -(top.offset + state.dragOffsetPx),
+    offsetPx1: -(bottom.offset + state.dragOffsetPx),
+    bpPerPx0: 1 / top.scale,
+    bpPerPx1: 1 / bottom.scale,
     drawCurves: layer.curves,
   }
 }
 
-export function glyphRangeStart(layer: GlyphLayer, state: MultiWayRenderState) {
-  return PX_ORIGIN - (layer.scrolled ? state.dragOffsetPx : 0)
+/**
+ * The packed px a glyph layer's block spans over the canvas: the drag, for a
+ * scrolled layer, and its lane's map, inverted — so a reversed block is a
+ * lane drawn mirrored.
+ */
+export function glyphBlockRange(layer: GlyphLayer, state: MultiWayRenderState) {
+  const map = laneMapOf(state, layer.row)
+  const shift = layer.scrolled ? state.dragOffsetPx : 0
+  const reversed = map.scale < 0
+  const start =
+    PX_ORIGIN +
+    ((reversed ? state.canvasWidth : 0) - map.offset - shift) / map.scale
+  return {
+    start,
+    end: start + state.canvasWidth / Math.abs(map.scale),
+    reversed,
+  }
 }

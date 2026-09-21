@@ -351,6 +351,7 @@ export function buildRibbonGeometry({
       yTop: y1,
       height: y2 - y1,
       curves: drawCurves,
+      rows: [row, row + 1],
     })
     for (const [toRow, builder] of bridges) {
       const bridgeKey = ribbonsKey(row, toRow)
@@ -361,6 +362,7 @@ export function buildRibbonGeometry({
         yTop: y1,
         height: lanes[toRow]!.glyphTop - y1,
         curves: drawCurves,
+        rows: [row, toRow],
       })
     }
   }
@@ -407,6 +409,7 @@ export function buildTickGeometry({
       yTop: lane.bandTop,
       height: stack.bandHeight,
       curves: false,
+      rows: [row, row],
     })
   })
   return { cells, layers }

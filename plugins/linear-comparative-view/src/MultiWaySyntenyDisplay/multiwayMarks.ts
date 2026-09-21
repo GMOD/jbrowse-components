@@ -5,7 +5,7 @@ import {
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
 import { syntenyRibbonMarks } from '../LinearSyntenyDisplay/syntenyRibbonMarks.ts'
-import { glyphRangeStart, ribbonParams } from './multiwayRenderTypes.ts'
+import { glyphBlockRange, ribbonParams } from './multiwayRenderTypes.ts'
 
 import type {
   MultiWayCell,
@@ -32,9 +32,9 @@ function ribbonLayerOf(layer: MultiWayLayer | undefined) {
  * stated once per mark rather than once per backend.
  *
  * A lane's gene glyphs are drawn under the stack's own axis: positions are px
- * rather than bp, so the block a layer draws over runs from `glyphRangeStart`
- * for the stack's width, one px per "bp". No continuation markers — a lane is
- * one unclipped band.
+ * rather than bp, so the block a layer draws over is `glyphBlockRange`, one px
+ * per "bp" for a settled lane. No continuation markers — a lane is one
+ * unclipped band.
  */
 export const MULTIWAY_MARKS = [
   ...syntenyRibbonMarks<MultiWayCell, MultiWayRenderState>({
@@ -77,14 +77,11 @@ function multiwayBlock(
 ): RenderBlock {
   const { canvasWidth } = state
   if (layer.kind === 'glyphs') {
-    const start = glyphRangeStart(layer, state)
     return {
       displayedRegionIndex: key,
-      start,
-      end: start + canvasWidth,
+      ...glyphBlockRange(layer, state),
       screenStartPx: 0,
       screenEndPx: canvasWidth,
-      reversed: false,
     }
   } else {
     return canvasWideBlock(key, canvasWidth)

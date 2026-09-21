@@ -21,6 +21,7 @@ import type {
   MultiWayCell,
   MultiWayLayer,
   MultiWayRenderState,
+  RibbonLayer,
 } from './multiwayRenderTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -82,12 +83,13 @@ const cells = new Map<number, MultiWayCell>([
   [GLYPH_KEY, { kind: 'glyphs', data: glyphs }],
 ])
 
-const ribbonLayer: MultiWayLayer = {
+const ribbonLayer: RibbonLayer = {
   kind: 'ribbons',
   key: 'ribbons:0',
   yTop: 30,
   height: 80,
   curves: false,
+  rows: [0, 1],
 }
 
 const state: MultiWayRenderState = {
@@ -97,10 +99,11 @@ const state: MultiWayRenderState = {
   scrollTopPx: 0,
   hoveredFeatureId: 0,
   clickedFeatureId: 0,
+  laneMaps: new Map(),
   groundColor: '#fff',
   layers: new Map<number, MultiWayLayer>([
     [RIBBON_KEY, ribbonLayer],
-    [GLYPH_KEY, { kind: 'glyphs', key: 'glyphs:1', scrolled: true }],
+    [GLYPH_KEY, { kind: 'glyphs', key: 'glyphs:1', scrolled: true, row: 1 }],
   ]),
 }
 
@@ -338,4 +341,66 @@ test('a pick over the drawn ribbon answers its instance through the same transfo
   expect(ribbon.instanceFeatureIdx[0]).toBe(7)
   expect(pick(150, 70)).toBeUndefined()
   expect(pick(250 + DRAG, 20)).toBeUndefined()
+})
+
+// A moving lane's map rides the same two transforms as the drag: the ribbon
+// edge through its scale and pan, the glyph block through its range and
+// `reversed`. Neither backend is handed anything else, so both put the lane at
+// `scale * px + offset` and nothing is re-uploaded for it.
+describe.each([
+  ['a slide', { scale: 1, offset: 120 }],
+  ['a rescale', { scale: 0.5, offset: 200 }],
+  ['a mirror', { scale: -1, offset: 900 }],
+])('under %s', (_name, map) => {
+  const moving: MultiWayRenderState = {
+    ...state,
+    laneMaps: new Map([[1, map]]),
+  }
+  const drawn = (px: number) => map.scale * px + map.offset + DRAG
+
+  test('a glyph lands where the map puts it on both backends', () => {
+    const ctx = recordingCtx()
+    drawMultiWay(ctx, moving)
+    const fill = ctx.calls.find(c => c.method === 'fillRect')!
+    const [x1, x2] = [drawn(500), drawn(560)].sort((a, b) => a - b)
+    expect(fill.args[0]).toBeCloseTo(x1!, 6)
+    expect(fill.args[2]).toBeCloseTo(x2! - x1!, 6)
+
+    const { hal } = gpuFrame(moving)
+    const u = hal.uniformsOf(hal.draws().find(d => d.passId === 'rect')!)!
+    // the hp split of the block's leading end and its signed length, which
+    // is the far end and a negative length for a reversed block
+    const lead = u[0]! + u[1]!
+    const gpuX = (px: number) => (WIDTH * (PX_ORIGIN + px - lead)) / u[2]!
+    expect(gpuX(500)).toBeCloseTo(drawn(500), 3)
+    expect(gpuX(560)).toBeCloseTo(drawn(560), 3)
+  })
+
+  test('the ribbon edge on that lane moves with it, the other edge stays', () => {
+    const ctx = recordingCtx()
+    drawMultiWay(ctx, moving)
+    const move = ctx.calls.find(c => c.method === 'moveTo')!
+    expect(move.args[0]).toBe(100 + DRAG)
+
+    const { hal } = gpuFrame(moving)
+    const u = hal.uniformsOf(
+      hal.draws().find(d => d.passId === 'fillStraight')!,
+    )!
+    expect(u[SYNTENY_U.bpPerPxInv0]).toBe(1)
+    expect(u[SYNTENY_U.panPx0]).toBe(DRAG)
+    expect(u[SYNTENY_U.bpPerPxInv1]).toBeCloseTo(map.scale, 6)
+    expect(u[SYNTENY_U.panPx1]).toBeCloseTo(map.offset + DRAG, 3)
+  })
+
+  test('the pick answers the ribbon where the map draws it', () => {
+    const pick = createSyntenyPicker(polygonPickCtx)
+    const regions = new Map([[RIBBON_KEY, ribbon]])
+    // a quarter of the way down the gutter, clear of the pinch a mirrored
+    // edge makes at mid-height
+    const x = 150 + DRAG + (drawn(350) - 150 - DRAG) / 4
+    expect(pick(regions, pickState(moving), WIDTH, x, 50)).toEqual({
+      key: RIBBON_KEY,
+      instanceIndex: 0,
+    })
+  })
 })
