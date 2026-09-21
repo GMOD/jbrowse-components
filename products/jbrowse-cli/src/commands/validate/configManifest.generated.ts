@@ -5631,7 +5631,8 @@ export const configManifest: ConfigManifest = {
                       "name": "label",
                       "type": "(JexlString | string)"
                     }
-                  ]
+                  ],
+                  "shorthand": "value"
                 }
               ]
             }
