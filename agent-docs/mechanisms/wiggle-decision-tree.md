@@ -78,16 +78,21 @@ scheme }` — and where the config leaves it unset the layout answers for it:
 - **The default moves with the layout, so it is a resolved getter
   (`effectiveColor`) rather than a slot default** — a `defaultValue` cannot ask
   how many plots share the box.
-- `resolveWiggleColor` answers `{ posColor, negColor, pivot, rampLut, perSource }`,
-  which is the whole of what the encoder and both backends read: the pair every
-  mode partitions by, the value they part at, the density LUT, and whether a
-  source paints its own colour on both sides.
+- `colorEncoding` resolves the object through display-kit's `colorEncodingOf`,
+  as every display's colour does, and `resolveWiggleColor` turns that into
+  `{ posColor, negColor, pivot, rampLut, perSource }`, which is the whole of
+  what the encoder and both backends read: the pair every mode partitions by,
+  the value they part at, the density LUT, and whether a source paints its own
+  colour on both sides. A pairing the two sides cannot paint, a colour per
+  score or a cut over subtrack names, paints the misconfiguration grey.
 - **In density, `color` is a scale, not an identity**, so identity moves one
   channel over to `labelColor` — which the row-label sidebar paints and the ramp
   ignores.
 - The colour key follows the scale, so which channel it reads and what an unset
   one falls back to come from the same table.
-- One cursor hands out every palette entry: groups first, then ungrouped rows.
+- One cursor hands out every palette entry, the colour's `range` and then the
+  default palette: groups first, then ungrouped rows, those its `domain` lists
+  ahead of the rest.
 
 ## Why the odd-looking branches are there
 

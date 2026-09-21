@@ -1475,7 +1475,7 @@ export default function baseStateModelFactory(
        * sections' order where the facet reads the same field.
        */
       get derivedColorScales(): ColorScale[] {
-        const scale = self.colorEncoding
+        const scale = self.colorField
         const { facet, hiddenGroupKeys } = self
         if (!scale) {
           return []
@@ -1518,7 +1518,7 @@ export default function baseStateModelFactory(
         field: string | undefined,
         colorByGroup: boolean,
       ): ChannelSpec {
-        const colorField = self.colorEncoding?.field ?? ''
+        const colorField = self.colorField?.field ?? ''
         const current = facetOf(self.facet)
         const wasGroupColor =
           colorField !== '' &&
@@ -1642,7 +1642,7 @@ export default function baseStateModelFactory(
               model: self,
               handleClose,
               color: self.colorSettings.value,
-              colorField: self.colorEncoding?.field ?? '',
+              colorField: self.colorField?.field ?? '',
             },
           ])
         },

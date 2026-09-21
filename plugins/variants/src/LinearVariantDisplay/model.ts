@@ -103,18 +103,13 @@ export default function stateModelFactory(
        * #getter
        */
       get colorsByConsequenceImpact() {
-        return (
-          !self.colorEncoding &&
-          self.colorSettings.value === CONSEQUENCE_IMPACT_JEXL
-        )
+        return self.colorEncoding === CONSEQUENCE_IMPACT_JEXL
       },
       /**
        * #getter
        */
       get colorsBySvType() {
-        return (
-          !self.colorEncoding && self.colorSettings.value === SV_TYPE_COLOR_JEXL
-        )
+        return self.colorEncoding === SV_TYPE_COLOR_JEXL
       },
       /**
        * #getter

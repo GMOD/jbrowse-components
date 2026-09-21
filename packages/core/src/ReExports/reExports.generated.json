@@ -2583,6 +2583,7 @@
       "package": "@jbrowse/core",
       "names": [
         "CSS_COLOR_NAMES",
+        "MISCONFIGURED_COLOR",
         "NO_CATEGORY_COLOR",
         "emphasize",
         "isNamedColor",
@@ -3735,6 +3736,7 @@
       "names": [
         "CATEGORICAL_COLOR_SCALES",
         "COLOR_SCALES",
+        "categoricalColorField",
         "colorChannelOptions",
         "colorChannelSlots",
         "colorConfigSchema",

@@ -1,5 +1,5 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
-import { filterRowsBySubtree } from '@jbrowse/tree-sidebar'
+import { filterRowsBySubtree, orderRowsByDomain } from '@jbrowse/tree-sidebar'
 
 import type { Source } from '../util.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
@@ -57,14 +57,17 @@ export function sourcesFromRegionData(
  *
  * Whether a source with no colour of its own takes a palette entry is the
  * colour object's question, not this file's: `color: { field: 'source' }`
- * hands one out (`perSource`), and anything else leaves the row on the
- * display's own colours.
+ * hands one out, from its `range` and then the default palette, and anything
+ * else leaves the row on the display's own colours.
  */
 
-// Palette color by position, wrapping modulo palette length.
-function paletteColor(index: number) {
-  return overlayColors[index % overlayColors.length]!
+/** The order and colours a categorical scale over `source` hands out. */
+export interface SourcePalette {
+  domain: readonly string[]
+  range: readonly string[]
 }
+
+const DEFAULT_PALETTE: SourcePalette = { domain: [], range: [] }
 
 interface PaletteColors {
   // by group name — shared by every source in the group, in every mode
@@ -78,7 +81,8 @@ interface PaletteColors {
  * The palette entries a track's rows and groups draw from, in first-appearance
  * order over the full (pre-filter) source list.
  *
- * **One cursor hands out every entry**, so the two maps are disjoint by
+ * **One cursor hands out every entry**, the `range` a colour per source lists
+ * and then the default palette past its end, so the two maps are disjoint by
  * construction, with no offset for anyone to check. They
  * were built as two independent 0-based sequences — groups by group order, rows
  * by source index — and a track that mixes grouped and ungrouped subadapters
@@ -90,19 +94,24 @@ interface PaletteColors {
  * an all-ungrouped one starts the cursor at 0, where index-among-ungrouped is
  * exactly the source index it always was.
  */
-function buildPaletteColors(sources: readonly Source[]): PaletteColors {
+function buildPaletteColors(
+  sources: Source[],
+  { domain, range }: SourcePalette,
+): PaletteColors {
+  const entry = (index: number) =>
+    range[index] ??
+    overlayColors[(index - range.length) % overlayColors.length]!
   let assigned = 0
   const groupColors = new Map<string, string>()
   const rowColors = new Map<string, string>()
   for (const s of sources) {
     if (s.group !== undefined && !groupColors.has(s.group)) {
-      groupColors.set(s.group, paletteColor(assigned++))
+      groupColors.set(s.group, entry(assigned++))
     }
   }
-  for (const s of sources) {
-    if (s.group === undefined) {
-      rowColors.set(s.name, paletteColor(assigned++))
-    }
+  const ungrouped = sources.filter(s => s.group === undefined)
+  for (const s of orderRowsByDomain(ungrouped, domain)) {
+    rowColors.set(s.name, entry(assigned++))
   }
   return { groupColors, rowColors }
 }
@@ -143,7 +152,8 @@ function synthesizeColors(
 }
 
 // What the canvas/SVG renderers consume: the editable sources with their colors
-// resolved per the table above, then narrowed to the focused subtree.
+// resolved per the table above, then narrowed to the focused subtree. `palette`
+// is what a colour per source hands out, undefined where the colour is not one.
 //
 // **Synthesis runs over the full list and the filter applies after**, so a
 // source's color is keyed to its position among all sources rather than among
@@ -153,14 +163,14 @@ function synthesizeColors(
 export function buildSources(
   editableSources: Source[],
   subtreeFilter: readonly string[] | undefined,
-  perSource: boolean,
+  palette: SourcePalette | undefined,
   isDensity: boolean,
 ): Source[] {
-  const palette = buildPaletteColors(editableSources)
+  const colors = buildPaletteColors(editableSources, palette ?? DEFAULT_PALETTE)
   return filterRowsBySubtree(
     editableSources.map(s => ({
       ...s,
-      ...synthesizeColors(s, perSource, isDensity, palette),
+      ...synthesizeColors(s, palette !== undefined, isDensity, colors),
     })),
     subtreeFilter,
   )

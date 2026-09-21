@@ -4,6 +4,7 @@ import {
   getSlotDefinition,
   slotChoices,
 } from '@jbrowse/core/configuration'
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -183,17 +184,22 @@ function listed(values: readonly string[]) {
   return values.length > 0 ? [...values] : undefined
 }
 
+/** A colour that maps a field: every form of {@link ColorEncoding} but the constant. */
+export type FieldColorEncoding = Exclude<ColorEncoding, string>
+
 /**
- * A colour object as the encoder takes it: the scale it paints through,
- * `fieldScale` beside a field naming none, with the members that scale reads
- * under the names the config spells them. Each scale answers one fixed set of
- * keys, absent members `undefined`, so a fetch key built over it compares
- * alike whichever members a config happens to write.
+ * What any display's colour object paints: its `value` while it names no
+ * field or sits under `none`, which is `undefined` on an object whose `value`
+ * may be unset, else the field through the scale it paints through,
+ * `fieldScale` where it writes none, with the members that scale reads under
+ * the names the config spells them. Each scale answers one fixed set of keys,
+ * absent members `undefined`, so a fetch key built over it compares alike
+ * whichever members a config happens to write.
  */
-export function colorEncodingOf(
-  color: ColorSetting & { value: string },
+export function colorEncodingOf<V extends string | undefined>(
+  color: ColorSetting & { value: V },
   fieldScale: ColorScaleName,
-): ColorEncoding {
+): V | FieldColorEncoding {
   const { field } = color
   const scale = paintedScale(color, fieldScale)
   switch (scale) {
@@ -226,6 +232,19 @@ export function colorEncodingOf(
         reverse: color.reverse ?? false,
       }
   }
+}
+
+/**
+ * A categorical encoding's field as every categorical channel keys, orders,
+ * names and paints it, or `undefined` for any other encoding.
+ */
+export function categoricalColorField(encoding: ColorEncoding | undefined) {
+  return typeof encoding === 'object' && encoding.scale === 'categorical'
+    ? categoricalField(encoding.field, {
+        domain: encoding.domain?.map(String),
+        range: encoding.range,
+      })
+    : undefined
 }
 
 /**

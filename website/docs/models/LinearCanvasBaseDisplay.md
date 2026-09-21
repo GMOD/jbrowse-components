@@ -89,7 +89,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-utrcolor">**utrColor**</span><br><code>string</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-colorbymode">**colorByMode**</span><br><code>"attribute" &#124; "default" &#124; "solid" &#124; "strand"</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-colorbyattribute">**colorByAttribute**</span><br><code>string</code> |  | LinearCanvasBaseDisplay |
-| <span id="getter-colorencoding">**colorEncoding**</span><br><code>CategoricalField &#124; undefined</code> | The color channel's field, or undefined while `color.value` paints. | LinearCanvasBaseDisplay |
+| <span id="getter-colorencoding">**colorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> | `colorSettings` as it paints, through the one resolver every display's colour object goes through: `color.value`, or a field's categorical scale. | LinearCanvasBaseDisplay |
+| <span id="getter-colorfield">**colorField**</span><br><code>CategoricalField &#124; undefined</code> | The color channel's field, or undefined while `color.value` paints. | LinearCanvasBaseDisplay |
 | <span id="getter-colorscalechoices">**colorScaleChoices**</span><br><code>string[]</code> | The scales this display's colour paints, for the Edit as JSON box. | LinearCanvasBaseDisplay |
 | <span id="getter-colormembers">**colorMembers**</span><br><code>string[]</code> | The members this display's colour object declares, for the Edit as JSON box. | LinearCanvasBaseDisplay |
 | <span id="getter-colorsettings">**colorSettings**</span><br><code>ColorSetting</code> | The `color` object as written, its `value` and `field` raw: either may be a `jexl:` expression over a feature, which has none here. | LinearCanvasBaseDisplay |

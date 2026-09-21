@@ -2,8 +2,10 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
-
-import { featureColorScale } from '../featureColors.ts'
+import {
+  categoricalColorField,
+  colorEncodingOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { SectionStamp } from '../rpcTypes.ts'
@@ -23,7 +25,9 @@ export interface PaintedValue {
  * values can leave it.
  */
 export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
-  const field = featureColorScale(config.color)
+  const field = categoricalColorField(
+    colorEncodingOf(config.color, 'categorical'),
+  )
   if (!field) {
     return undefined
   }

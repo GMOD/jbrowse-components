@@ -17,6 +17,9 @@ consequences). The flattening of
 [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md) and
 [ADR-142](adr-142-one-value-scale-object.md) stands: a channel carries its
 scale's members, it does not nest a scale object.
+[ADR-153](adr-153-every-display-resolves-its-colour-through-one-function.md)
+extends the one bridge below from the mark and Manhattan displays to every
+display holding a colour object.
 
 ## Context
 

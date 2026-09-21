@@ -266,7 +266,7 @@ describe('Color by... > Strand', () => {
     ) as { onClick: () => void }
     strand.onClick()
     expect(display.colorByMode).toBe('strand')
-    expect(display.colorEncoding?.field).toBe('strand')
+    expect(display.colorField?.field).toBe('strand')
   })
 })
 
@@ -287,6 +287,6 @@ describe('the Default color rung', () => {
     ) as { onClick: () => void }
     item.onClick()
     expect(display.colorByMode).toBe('default')
-    expect(display.colorEncoding).toBeUndefined()
+    expect(display.colorField).toBeUndefined()
   })
 })

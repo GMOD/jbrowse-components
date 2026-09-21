@@ -100,6 +100,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-showlaneticks">**showLaneTicks**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorsettings">**geneColorSettings**</span><br><code>GeneColorSettings</code> | the `color` object and `utrColor` as written, neither evaluated | MultiWaySyntenyDisplay |
+| <span id="getter-genecolorencoding">**geneColorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> | the gene `color` as it paints, through the one resolver every display's colour object goes through | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorfield">**geneColorField**</span><br><code>string</code> | the field the genes paint by, `''` while `color.value` paints | MultiWaySyntenyDisplay |
 | <span id="getter-genecolordomain">**geneColorDomain**</span><br><code>readonly string[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-boxcolors">**boxColors**</span><br><code>GeneColors</code> | the placement boxes' fills, off the groups' own records: resolved once per ortholog fetch and colour setting, so a settle runs no jexl | MultiWaySyntenyDisplay |

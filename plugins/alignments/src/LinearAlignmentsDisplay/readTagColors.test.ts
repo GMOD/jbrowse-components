@@ -3,6 +3,10 @@ import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import {
+  alignmentsColorEncoding,
+  colorFieldOf,
+} from '../shared/alignmentsColor.ts'
 import { bakedColorScale } from './bakedColorScale.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 import { buildReadTagColors, overlayReadTagColors } from './readTagColors.ts'
@@ -35,6 +39,17 @@ const UNDECLARED: AlignmentsColorSetting = {
   domainMid: undefined,
 }
 
+function encodingFor(
+  colorBy: ColorBy,
+  declared: Partial<AlignmentsColorSetting> = {},
+) {
+  return alignmentsColorEncoding({
+    ...UNDECLARED,
+    field: colorFieldOf(colorBy),
+    ...declared,
+  })
+}
+
 function scaleFor(
   colorBy: ColorBy,
   declared: Partial<AlignmentsColorSetting> = {},
@@ -42,7 +57,7 @@ function scaleFor(
 ) {
   return bakedColorScale(
     colorBy,
-    { ...UNDECLARED, ...declared },
+    encodingFor(colorBy, declared),
     position,
     undefined,
   )
@@ -203,7 +218,7 @@ describe('a declared scale', () => {
   test('an unpinned linear scale stretches over the loaded extent', () => {
     const scale = bakedColorScale(
       NM,
-      { ...UNDECLARED, scale: 'linear', range: ['#000000', '#ffffff'] },
+      encodingFor(NM, { scale: 'linear', range: ['#000000', '#ffffff'] }),
       undefined,
       [4, 8],
     )
@@ -220,12 +235,11 @@ describe('a declared scale', () => {
         NM,
         bakedColorScale(
           NM,
-          {
-            ...UNDECLARED,
+          encodingFor(NM, {
             scale: 'linear',
             range: ['#000000', '#ffffff'],
             ...declared,
-          },
+          }),
           undefined,
           [4, 8],
         ),
@@ -242,12 +256,11 @@ describe('a declared scale', () => {
   test('a pinned floor holds while the open ceiling follows the reads', () => {
     const scale = bakedColorScale(
       NM,
-      {
-        ...UNDECLARED,
+      encodingFor(NM, {
         scale: 'linear',
         domainMin: 0,
         range: ['#000000', '#ffffff'],
-      },
+      }),
       undefined,
       [4, 8],
     )

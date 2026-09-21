@@ -439,6 +439,24 @@ describe('alignments colorBy', () => {
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
 
+  it('an insert-size domain is the cuts of the threshold its field defaults to', () => {
+    const { display } = createDisplay({
+      color: { field: 'insertSize', domain: ['600', '150'] },
+    })
+    expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
+  })
+
+  it('under a categorical scale an insert-size domain orders and pins nothing', () => {
+    const { display } = createDisplay({
+      color: {
+        field: 'insertSize',
+        scale: 'categorical',
+        domain: ['150', '600'],
+      },
+    })
+    expect(display.pinnedInsertSizeBand).toBeUndefined()
+  })
+
   // Leaving pairs mode discards the now-meaningless pairing scheme.
   it('leaving pairs resets colorBy to normal', () => {
     const { display } = createDisplay()

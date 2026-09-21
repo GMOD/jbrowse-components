@@ -1,15 +1,17 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
-import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
+import { categoricalColorField } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
-import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type {
+  ColorSetting,
+  FieldColorEncoding,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
  * The structural field of the gene colour: a gene takes the ortholog group
@@ -28,13 +30,6 @@ export interface PaintedFill {
 export interface GeneColorSettings {
   color: ColorSetting
   utrColor: unknown
-}
-
-/** the gene colour's field, or undefined while `color.value` paints */
-export function geneColorScale({ field, scale, domain, range }: ColorSetting) {
-  return paintedScale({ field, scale }, 'categorical') === 'categorical'
-    ? categoricalField(field, { domain, range })
-    : undefined
 }
 
 /**
@@ -57,9 +52,14 @@ function memo<K, V>(map: Map<K, V>, key: K, make: () => V) {
   return value
 }
 
+/**
+ * `encoding` is the gene `color` as it paints (`geneColorEncoding` on the
+ * display), and `utrColor` the slot as written.
+ */
 export function geneColors(
   conf: AnyConfigurationModel,
-  { color, utrColor }: GeneColorSettings,
+  encoding: string | undefined | FieldColorEncoding,
+  utrColor: unknown,
   jexl: JexlInstance,
 ): GeneColors {
   const byCss = new Map<string, PaintedFill>()
@@ -78,7 +78,7 @@ export function geneColors(
       cssColorToABGR(String(readConfObject(conf, 'utrColor', { feature }))),
     )
 
-  const field = geneColorScale(color)
+  const field = categoricalColorField(encoding)
   if (field) {
     const keyed = (key: string) =>
       memo(byKey, key, () => {
@@ -95,7 +95,7 @@ export function geneColors(
       utr,
     }
   }
-  const value = color.value ?? featureDefaultColor
+  const value = typeof encoding === 'string' ? encoding : featureDefaultColor
   const constant = isJexl(value) ? undefined : painted(value)
   return {
     fill: feature =>

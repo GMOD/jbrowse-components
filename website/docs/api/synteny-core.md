@@ -226,11 +226,12 @@ drift this module exists to prevent — see the header.
 ## paintedField
 
 The field a synteny colour object paints by, or `''` while it paints its
-constant: `scale: 'none'`, or no field named.
+constant: `scale: 'none'`, or no field named. Read through the one resolver
+every display's colour object goes through.
 
 ```js
 // type signature
-({ scale, field }: SyntenyColorSnapshot) => string
+({ value, scale, field, domain, }: SyntenyColorSnapshot) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)

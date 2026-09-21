@@ -1,4 +1,4 @@
-import { colorByOf } from './alignmentsColor.ts'
+import { alignmentsColorEncoding, colorByOf } from './alignmentsColor.ts'
 import {
   COLOR_SCHEMES,
   isDataFillScheme,
@@ -7,7 +7,20 @@ import {
 
 test('a field naming no scheme reads as an attribute rather than reaching a lookup that throws', () => {
   for (const field of ['perBaseLettering', 'toString', 'constructor']) {
-    const colorBy = colorByOf({ field, scale: undefined })
+    const colorBy = colorByOf(
+      alignmentsColorEncoding({
+        value: undefined,
+        field,
+        scale: undefined,
+        domain: [],
+        range: [],
+        scheme: undefined,
+        reverse: false,
+        domainMin: undefined,
+        domainMax: undefined,
+        domainMid: undefined,
+      }),
+    )
     expect(colorBy).toEqual({ type: 'tag', attribute: field })
     expect(() => workerColorBy(colorBy)).not.toThrow()
   }

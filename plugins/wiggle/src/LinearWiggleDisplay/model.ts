@@ -10,10 +10,7 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
-import {
-  numericDomain,
-  thresholdLabels,
-} from '@jbrowse/core/util/thresholdScale'
+import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
 import LegendMixin, {
   legendCheckboxItem,
 } from '@jbrowse/display-kit/LegendMixin'
@@ -57,7 +54,12 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
-import { resolveWiggleColor, wiggleColorScale } from '../shared/wiggleColor.ts'
+import {
+  declaredCut,
+  resolveWiggleColor,
+  sourcePalette,
+  wiggleColorEncoding,
+} from '../shared/wiggleColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
@@ -208,7 +210,7 @@ export default function stateModelFactory(
       get colorSetting(): ColorSetting {
         return {
           value: getConf(self, ['color', 'value']),
-          field: getConf(self, ['color', 'field']),
+          field: getConf(self, ['color', 'field']) ?? '',
           scale: getConf(self, ['color', 'scale']),
           domain: getConf(self, ['color', 'domain']),
           range: getConf(self, ['color', 'range']),
@@ -379,10 +381,20 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `effectiveColor` as the encoder and both backends take it.
+       * `effectiveColor` as it paints, through the one resolver every
+       * display's colour object goes through.
+       */
+      get colorEncoding() {
+        return wiggleColorEncoding(self.effectiveColor)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `colorEncoding` as the encoder and both backends take it.
        */
       get wiggleColor(): ResolvedWiggleColor {
-        return resolveWiggleColor(self.effectiveColor, self.origin)
+        return resolveWiggleColor(self.colorEncoding, self.origin)
       },
 
       /**
@@ -420,7 +432,7 @@ export default function stateModelFactory(
         return buildSources(
           self.editableSources,
           self.subtreeFilter,
-          self.wiggleColor.perSource,
+          sourcePalette(self.colorEncoding),
           self.isDensityMode,
         )
       },
@@ -664,16 +676,8 @@ export default function stateModelFactory(
        * for. Density draws none either: there the ramp is the key.
        */
       get thresholdColorScale(): ColorScale | undefined {
-        const color = self.colorSetting
-        // The first cut alone, because that is the one the encoder paints:
-        // the layers partition into two sides and a second cut point reaches
-        // no instance, so a key listing it would describe nothing.
-        const cuts = numericDomain(color.domain).slice(0, 1)
-        if (
-          self.isDensityMode ||
-          cuts.length === 0 ||
-          wiggleColorScale(color) !== 'threshold'
-        ) {
+        const cut = declaredCut(self.colorEncoding)
+        if (self.isDensityMode || cut === undefined) {
           return undefined
         }
         const { posColor, negColor } = self.wiggleColor
@@ -681,8 +685,8 @@ export default function stateModelFactory(
         return {
           kind: 'categorical',
           id: 'threshold',
-          title: color.field,
-          entries: thresholdLabels(cuts).map((label, i) => ({
+          title: 'score',
+          entries: thresholdLabels([cut]).map((label, i) => ({
             value: label,
             label,
             color: colors[i]!,

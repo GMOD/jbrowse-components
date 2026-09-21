@@ -28,6 +28,10 @@ import {
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import {
+  categoricalColorField,
+  colorEncodingOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -61,7 +65,7 @@ import { isNamedRecord } from '../syntenyMate.ts'
 import { axisPlacement, axisSpan, displayedRegionSpans } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { composeLaneLinks } from './composeLaneLinks.ts'
-import { geneColorScale, geneColors } from './geneColor.ts'
+import { geneColors } from './geneColor.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
@@ -746,10 +750,20 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the gene `color` as it paints, through the one resolver every
+       * display's colour object goes through
+       */
+      get geneColorEncoding() {
+        return colorEncodingOf(self.geneColorSettings.color, 'categorical')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * the field the genes paint by, `''` while `color.value` paints
        */
       get geneColorField(): string {
-        return geneColorScale(self.geneColorSettings.color)?.field ?? ''
+        return categoricalColorField(self.geneColorEncoding)?.field ?? ''
       },
       /**
        * #getter
@@ -786,7 +800,12 @@ export function stateModelFactory(
             boxes = {
               features,
               settings,
-              colors: geneColors(self.configuration, geneColorSettings, jexl),
+              colors: geneColors(
+                self.configuration,
+                self.geneColorEncoding,
+                geneColorSettings.utrColor,
+                jexl,
+              ),
             }
           }
           return boxes.colors
@@ -815,7 +834,8 @@ export function stateModelFactory(
                     settings,
                     colors: geneColors(
                       self.configuration,
-                      geneColorSettings,
+                      self.geneColorEncoding,
+                      geneColorSettings.utrColor,
                       jexl,
                     ),
                   },
@@ -1793,12 +1813,12 @@ export function stateModelFactory(
           return cell?.kind === 'glyphs' ? cell.data.hits : []
         })
         const onScreen: Span = [0, self.canvasWidth]
-        const { color } = self.geneColorSettings
-        const field = geneColorScale(color)
+        const encoding = self.geneColorEncoding
+        const field = categoricalColorField(encoding)
         if (field) {
           return laneFieldKey(hits, onScreen, field)
         }
-        const items = isJexl(color.value) ? laneColorKey(hits, onScreen) : []
+        const items = isJexl(encoding) ? laneColorKey(hits, onScreen) : []
         return legendIsReadable(items, MAX_LEGEND_ENTRIES)
           ? [
               {

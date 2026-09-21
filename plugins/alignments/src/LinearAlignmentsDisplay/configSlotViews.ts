@@ -3,6 +3,7 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
 import {
+  alignmentsColorEncoding,
   baseLayerOf,
   bodyColorScheme,
   colorByOf,
@@ -10,7 +11,10 @@ import {
 } from '../shared/alignmentsColor.ts'
 import { normalizeFilterBy } from '../shared/types.ts'
 
-import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
+import type {
+  AlignmentsColorEncoding,
+  AlignmentsColorSetting,
+} from '../shared/alignmentsColor.ts'
 import type {
   ArcColorByType,
   BaseLayer,
@@ -66,7 +70,7 @@ function colorSettingOf(self: ConfigSlotSelf): AlignmentsColorSetting {
 
 export function configSlotViews(self: ConfigSlotSelf) {
   const insertSizeBand = stableIdentityComputed(() =>
-    pinnedInsertSizeBand(colorSettingOf(self)),
+    pinnedInsertSizeBand(alignmentsColorEncoding(colorSettingOf(self))),
   )
   return {
     /** #getter */
@@ -181,6 +185,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
+     * `colorSetting` as it paints, through the one resolver every display's
+     * colour object goes through.
+     */
+    get colorEncoding(): AlignmentsColorEncoding {
+      return alignmentsColorEncoding(this.colorSetting)
+    },
+    /**
+     * #getter
      * The short/long cut points `color.domain` pins under an insert-size
      * field, undefined while the sampled band decides. Compared by value, so
      * a colour write that leaves the cut points alone relayouts nothing.
@@ -199,7 +211,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * The read fill `color` selects.
      */
     get colorBy(): ReadColorBy {
-      return colorByOf(this.colorSetting)
+      return colorByOf(this.colorEncoding)
     },
     /**
      * #getter

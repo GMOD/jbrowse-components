@@ -244,14 +244,14 @@ function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
 
 interface ColorPinSelf {
   colorSettings: { domain: readonly string[] }
-  colorEncoding: { field: string } | undefined
+  colorField: { field: string } | undefined
   pinnedColorDomain: readonly string[]
   pinColorDomain: () => void
 }
 
 function pinColorsItems(self: ColorPinSelf): MenuItem[] {
   const { domain } = self.colorSettings
-  return self.colorEncoding
+  return self.colorField
     ? [
         { type: 'divider' },
         {

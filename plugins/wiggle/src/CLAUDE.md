@@ -83,9 +83,14 @@ default.** A slot default cannot move with the layout, and this one does:
 several sources sharing one plot box default to `{ field: 'source' }`, because
 overlaid plots need a colour each to be told apart, while a row per source and a
 lone plot in the box default to the threshold pair a quantitative track has
-always drawn. `resolveWiggleColor` then hands the encoder
+always drawn. `colorEncoding` resolves it through display-kit's
+`colorEncodingOf`, the one resolver every display's colour object goes through,
+and `resolveWiggleColor` turns that into
 `{ posColor, negColor, pivot, rampLut, perSource }`, which is the whole of what
-the layers and both backends read. ADR-144.
+the layers and both backends read. `score` paints through `threshold`, `linear`
+and `log`, `source` through `categorical`, and the other pairings paint the
+misconfiguration grey, because a two-sided plot has nothing to paint a colour
+per score or a cut over subtrack names with. ADR-144, ADR-153.
 
 **Everything shared over the geometry is `wiggleDisplayViews`**: `ticks`,
 `scoreColorScale`, `renderState` and the shared halves of the two props methods,

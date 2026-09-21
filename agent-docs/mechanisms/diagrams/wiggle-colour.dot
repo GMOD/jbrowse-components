@@ -4,7 +4,7 @@ digraph wiggle_colour {
   { node [shape=diamond] declared; layout }
 
   declared [label="color\na string, or a field\nthrough a scale"]
-  declared -> resolved [label=" the config wrote one"]
+  declared -> encoding [label=" the config wrote one"]
   declared -> layout   [label=" unset"]
 
   layout [label="how many plots\nshare the box"]
@@ -14,8 +14,11 @@ digraph wiggle_colour {
   shared [label="several sources in one box:\nfield: source, so each takes a\npalette entry and paints both\nsides of the origin in it"]
   row    [label="a row per source, or one plot:\nfield: score through threshold,\nthe pos/neg pair about the origin"]
 
+  encoding [label="colorEncodingOf:\nthe one resolver every\ndisplay's colour goes through"]
+  shared -> encoding  row -> encoding
+
   resolved [label="resolveWiggleColor:\nposColor, negColor, pivot,\nrampLut, perSource", style=bold]
-  shared -> resolved  row -> resolved
+  encoding -> resolved
 
   density [label="under density the pair is the ramp's\ntwo fade ends, so a hue set on a row\nwould replace the scale it is read by:\nidentity moves to labelColor"]
   resolved -> density
@@ -23,6 +26,6 @@ digraph wiggle_colour {
   legend [label="the colour key follows the SCALE,\nso the channel and its fallback\ncome from one table"]
   resolved -> legend  density -> legend
 
-  palette [label="one cursor hands out every entry:\ngroups first, then ungrouped rows"]
+  palette [label="one cursor hands out range,\nthen the default palette:\ngroups first, then ungrouped rows"]
   shared -> palette
 }

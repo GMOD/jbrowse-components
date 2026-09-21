@@ -57,7 +57,7 @@ const Channels = observer(function Channels({
     >
       <FieldSelect
         label="Color by"
-        value={display.colorEncoding?.field}
+        value={display.colorField?.field}
         onChange={field => {
           display.setColorScale(
             field ? { field, domain: domains[field] } : undefined,

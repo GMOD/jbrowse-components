@@ -237,8 +237,15 @@ The seams, named honestly:
   set-versus-map distinction (a parameter beside `aes()` creates no scale),
   and a field left without a scale takes the kind its display declares for the
   field (`paintedScale`), never one read off the data or off which other
-  member is written: the mark display answers `categorical`, and Manhattan
-  answers `threshold` over `field: 'ld'` and `categorical` over anything else.
+  member is written. One function turns every display's object into what it
+  paints, `colorEncodingOf` (`@jbrowse/display-kit/colorConfigSchema`),
+  answering the `ColorEncoding` the encoder takes, so a painter reads the
+  scale that was resolved rather than the object's slots
+  ([ADR-153](../architecture-decision-records/adr-153-every-display-resolves-its-colour-through-one-function.md)):
+  the mark display and the canvas feature, multi-way and synteny colours answer
+  `categorical`, Manhattan `threshold` over `field: 'ld'`, the quantitative
+  display `categorical` over `source` and `threshold` over `score`, and the
+  alignments displays `threshold` over the two insert-size fields.
   `range` is one output word for every kind, a palette, a threshold's colours
   or a ramp's stops, and `scheme` a named ramp from one table every baker
   reads. `threshold` is ggplot2's `scale_colour_steps`: ascending cut points in

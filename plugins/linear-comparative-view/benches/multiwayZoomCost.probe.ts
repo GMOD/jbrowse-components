@@ -294,20 +294,7 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
     })
   })
   const freshFills = () =>
-    geneColors(
-      config,
-      {
-        color: {
-          value: config.color.value,
-          field: '',
-          scale: undefined,
-          domain: [],
-          range: [],
-        },
-        utrColor: config.utrColor,
-      },
-      pm.jexl,
-    )
+    geneColors(config, config.color.value, config.utrColor, pm.jexl)
   const minOf = (f: () => void) => Math.min(...[0, 1, 2, 3, 4].map(() => ms(f)))
   let geneCount = 0
   let onCanvasCount = 0

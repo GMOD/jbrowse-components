@@ -1,3 +1,6 @@
+import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
+import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
+
 import { TAG_FIELD_PREFIX, facetTag } from './groupByLabels.ts'
 
 import type {
@@ -74,6 +77,25 @@ const READS_MODIFICATION_SETTINGS = new Set<BaseLayerType>([
   'bisulfite',
 ])
 
+const INSERT_SIZE_FIELDS = new Set([
+  COLOR_FIELDS.insertSize,
+  COLOR_FIELDS.insertSizeAndOrientation,
+])
+
+/**
+ * The `color` object as it paints. Unset beside a field, the scale follows the
+ * field: an insert-size field is a threshold, whose `domain` is the cuts
+ * between short, normal and long, and any other field is categorical.
+ */
+export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
+  return colorEncodingOf(
+    setting,
+    INSERT_SIZE_FIELDS.has(setting.field) ? 'threshold' : 'categorical',
+  )
+}
+
+export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>
+
 /** The field a read scheme paints, `''` for the plain fill. */
 export function colorFieldOf(colorBy: ColorBy) {
   return colorBy.type === 'tag'
@@ -85,18 +107,16 @@ export function colorFieldOf(colorBy: ColorBy) {
 }
 
 /**
- * The read scheme a `color` object selects: a preset field its own scheme,
+ * The read scheme a resolved `color` selects: a preset field its own scheme,
  * `tags.XX` the tag scheme, any other name a feature attribute through the
- * same per-read bake. A field under `none`, or a per-base variable, which
- * `baseColor` draws, paints the plain fill.
+ * same per-read bake. A constant, or a per-base variable, which `baseColor`
+ * draws, paints the plain fill.
  */
-export function colorByOf({
-  field,
-  scale,
-}: Pick<AlignmentsColorSetting, 'field' | 'scale'>): ReadColorBy {
-  if (!field || scale === 'none' || LAYER_OF_FIELD.has(field)) {
+export function colorByOf(encoding: AlignmentsColorEncoding): ReadColorBy {
+  if (typeof encoding !== 'object' || LAYER_OF_FIELD.has(encoding.field)) {
     return { type: 'normal' }
   }
+  const { field } = encoding
   const scheme = SCHEME_OF_FIELD.get(field)
   if (scheme) {
     return { type: scheme }
@@ -117,13 +137,17 @@ export interface BaseColorSetting {
  * named, or one waits under `none`.
  */
 export function baseLayerOf(
-  { field, scale }: BaseColorSetting,
+  { field = '', scale }: BaseColorSetting,
   modifications?: ModificationColorBy,
 ): BaseLayer | undefined {
+  const encoding = colorEncodingOf(
+    { value: undefined, field, scale, domain: [], range: [] },
+    'categorical',
+  )
   const type =
-    scale === 'none' || field === undefined
-      ? undefined
-      : LAYER_OF_FIELD.get(field)
+    typeof encoding === 'object'
+      ? LAYER_OF_FIELD.get(encoding.field)
+      : undefined
   return type === undefined
     ? undefined
     : READS_MODIFICATION_SETTINGS.has(type) && modifications
@@ -180,15 +204,10 @@ export function colorSnapshotFor(
         : { value: current.value, field }
 }
 
-const INSERT_SIZE_FIELDS = new Set([
-  COLOR_FIELDS.insertSize,
-  COLOR_FIELDS.insertSizeAndOrientation,
-])
-
 /**
- * The short/long cut points an insert-size field's `domain` pins, in place of
- * the band sampled from the reads. Undefined unless it lists two ascending
- * numbers.
+ * The short/long cut points an insert-size field's threshold pins, in place of
+ * the band sampled from the reads. Undefined unless its `domain` names two
+ * distinct numbers.
  *
  * Insert size stays a threshold scale. A gradient from the neutral toward each
  * endpoint by severity shipped once (`insertSizeGradient`) and was retired:
@@ -196,15 +215,17 @@ const INSERT_SIZE_FIELDS = new Set([
  * tinted grey, closest exactly where a deletion signature has to be told from
  * an insertion one.
  */
-export function pinnedInsertSizeBand({
-  field,
-  scale,
-  domain,
-}: Pick<AlignmentsColorSetting, 'field' | 'scale' | 'domain'>) {
-  const [lower, upper] = domain.map(Number)
-  return INSERT_SIZE_FIELDS.has(field) &&
-    scale !== 'none' &&
-    domain.length === 2 &&
+export function pinnedInsertSizeBand(encoding: AlignmentsColorEncoding) {
+  if (
+    typeof encoding !== 'object' ||
+    encoding.scale !== 'threshold' ||
+    !INSERT_SIZE_FIELDS.has(encoding.field)
+  ) {
+    return undefined
+  }
+  const cuts = thresholdCuts(encoding.domain ?? [])
+  const [lower, upper] = cuts
+  return cuts.length === 2 &&
     lower !== undefined &&
     upper !== undefined &&
     lower < upper

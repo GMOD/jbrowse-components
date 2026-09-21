@@ -63,11 +63,11 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
       field:
         'what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute',
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset follows field',
+        'none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field',
     }),
     ...colorDomainSlot({
       domain:
-        'the values that take the range first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under threshold the cut points',
+        'for a categorical scale, the values that take the range first, in order; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them',
     }),
     ...colorDomainEndsSlots,
     ...colorRangeSlot({

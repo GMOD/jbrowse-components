@@ -1611,10 +1611,12 @@ export default function stateModelFactory(
            * arriving rebakes nothing then.
            */
           get bakedColorExtent(): NumericExtent | undefined {
-            const { scale, domainMin, domainMax } = self.colorSetting
+            const encoding = self.colorEncoding
             return self.colorBy.type === 'tag' &&
-              scale === 'linear' &&
-              (domainMin === undefined || domainMax === undefined)
+              typeof encoding === 'object' &&
+              encoding.scale === 'linear' &&
+              (encoding.domainMin === undefined ||
+                encoding.domainMax === undefined)
               ? numericExtentAcrossGroups(
                   this.laidOutByGroupFramed,
                   d => d.readTagValues,
@@ -1632,7 +1634,7 @@ export default function stateModelFactory(
             return isBakedScheme(self.colorBy)
               ? bakedColorScale(
                   self.colorBy,
-                  self.colorSetting,
+                  self.colorEncoding,
                   this.paintedRefNamePosition,
                   this.bakedColorExtent,
                 )

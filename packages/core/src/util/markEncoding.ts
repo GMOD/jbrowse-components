@@ -6,6 +6,7 @@ import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { categoricalScale } from '../ui/colors.ts'
 import { categoricalField } from './categoricalField.ts'
+import { MISCONFIGURED_COLOR } from './color/index.ts'
 import { cssColorToABGR, packAbgr } from './colorBits.ts'
 import { buildColorRampLut, colorRampStops, rampDomain } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
@@ -73,10 +74,7 @@ export { NO_VALUE_LABEL } from './categoricalField.ts'
 
 export const DEFAULT_MARK_COLOR = '#0068d1'
 
-// What a feature paints when a `jexl:` colour yields a non-string or a ramp
-// reads a value that is not finite: a misconfiguration, so it surfaces rather
-// than vanishing, and darker than the no-category grey beside it.
-const FALLBACK_COLOR = cssColorToABGR('#808080')
+const FALLBACK_COLOR = cssColorToABGR(MISCONFIGURED_COLOR)
 
 /**
  * #api

@@ -16,10 +16,14 @@ import {
 import { isBakedScheme } from '../shared/alignmentsColor.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 
-import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
+import type { AlignmentsColorEncoding } from '../shared/alignmentsColor.ts'
 import type { ColorBy } from '../shared/types.ts'
 import type { RefNamePosition } from './colorTagUtils.ts'
 import type { RampStop } from '@jbrowse/core/ui'
+import type {
+  ContinuousRef,
+  ThresholdRef,
+} from '@jbrowse/core/util/markEncoding'
 
 export type NumericExtent = readonly [number, number]
 
@@ -59,14 +63,14 @@ export type BakedColorScale =
 const LEGEND_RAMP_STOPS = 8
 
 function linearScale(
-  setting: AlignmentsColorSetting,
+  encoding: ContinuousRef,
   [min, max]: NumericExtent,
 ): LinearBakedScale {
   const span = max - min
   const norm = (v: number) => (span > 0 ? (v - min) / span : 0.5)
-  const { domainMid } = setting
+  const { domainMid } = encoding
   const lut = buildColorRampLut(
-    colorRampStops(setting),
+    colorRampStops(encoding),
     domainMid === undefined ? 0.5 : norm(domainMid),
   )
   const last = lut.length / 4 - 1
@@ -94,9 +98,9 @@ function linearScale(
 }
 
 function thresholdScale({
-  domain,
+  domain = [],
   range,
-}: AlignmentsColorSetting): ThresholdBakedScale {
+}: ThresholdRef): ThresholdBakedScale {
   const cuts = thresholdCuts(domain)
   const colors = thresholdPalette(cuts.length + 1, range)
   const labels = thresholdLabels(cuts)
@@ -110,40 +114,42 @@ function thresholdScale({
 }
 
 /**
- * The scale the tag, attribute and mate-reference fields bake through. With
- * nothing declared a value's colour is a function of the value alone
- * (`bakedValueColor`); a `domain` or `range` hands the listed values their
- * colours in order, over the same tag palette.
+ * The scale the tag, attribute and mate-reference fields bake through, read
+ * off the resolved `color`. With nothing declared a value's colour is a
+ * function of the value alone (`bakedValueColor`); a `domain` or `range` hands
+ * the listed values their colours in order, over the same tag palette. A
+ * linear or threshold scale reads a tag or attribute, and waits unread beside
+ * a mate reference, whose values are sequence names.
  */
 export function bakedColorScale(
   colorBy: ColorBy,
-  setting: AlignmentsColorSetting,
+  encoding: AlignmentsColorEncoding,
   refNamePosition: RefNamePosition | undefined,
   extent: NumericExtent | undefined,
 ): BakedColorScale {
-  const { scale, domain, range } = setting
-  if (colorBy.type === 'tag' && scale === 'linear') {
+  const scaled = typeof encoding === 'object' ? encoding : undefined
+  if (colorBy.type === 'tag' && scaled?.scale === 'linear') {
     return linearScale(
-      setting,
+      scaled,
       rampDomain(
-        setting.domainMin,
-        setting.domainMax,
+        scaled.domainMin,
+        scaled.domainMax,
         extent ?? [Infinity, -Infinity],
       ),
     )
   }
-  if (colorBy.type === 'tag' && scale === 'threshold') {
-    return thresholdScale(setting)
+  if (colorBy.type === 'tag' && scaled?.scale === 'threshold') {
+    return thresholdScale(scaled)
   }
-  if (isBakedScheme(colorBy) && (domain.length > 0 || range.length > 0)) {
+  const domain =
+    scaled?.scale === 'categorical' ? (scaled.domain?.map(String) ?? []) : []
+  const range = scaled?.scale === 'categorical' ? scaled.range : undefined
+  if (isBakedScheme(colorBy) && (domain.length > 0 || range)) {
     return {
       kind: 'categorical',
       declared: true,
       domain,
-      color: categoricalColorScale(
-        domain,
-        range.length > 0 ? range : tagColorPalette,
-      ),
+      color: categoricalColorScale(domain, range ?? tagColorPalette),
     }
   }
   return {

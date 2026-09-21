@@ -160,6 +160,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-readconnectionsheight">**readConnectionsHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showsoftclipping">**showSoftClipping**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-colorsetting">**colorSetting**</span><br><code>AlignmentsColorSetting</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-colorencoding">**colorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> | `colorSetting` as it paints, through the one resolver every display's colour object goes through. | LinearAlignmentsDisplay |
 | <span id="getter-pinnedinsertsizeband">**pinnedInsertSizeBand**</span><br><code>{ lower: number; upper: number; } &#124; undefined</code> | The short/long cut points `color.domain` pins under an insert-size field, undefined while the sampled band decides. Compared by value, so a colour write that leaves the cut points alone relayouts nothing. | LinearAlignmentsDisplay |
 | <span id="getter-modificationsettings">**modificationSettings**</span><br><code>ModificationColorBy</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-colorby">**colorBy**</span><br><code>ReadColorBy</code> | The read fill `color` selects. | LinearAlignmentsDisplay |

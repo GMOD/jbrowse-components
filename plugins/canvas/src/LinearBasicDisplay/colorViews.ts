@@ -2,15 +2,15 @@ import { getConf } from '@jbrowse/core/configuration'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
+  categoricalColorField,
+  colorEncodingOf,
   colorMembersOf,
   colorScaleChoicesOf,
-  paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import {
   FEATURE_DEFAULT_COLOR,
   UTR_DEFAULT_COLOR,
-  featureColorScale,
 } from '../RenderFeatureDataRPC/featureColors.ts'
 
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
@@ -64,14 +64,14 @@ export function colorViews(self: ColorHost) {
      * #getter
      */
     get colorByMode(): 'default' | 'strand' | 'attribute' | 'solid' {
-      const { value, field } = this.colorSettings
-      if (paintedScale(this.colorSettings, 'categorical') === 'categorical') {
-        return field === STRAND_FIELD ? 'strand' : 'attribute'
+      const encoding = this.colorEncoding
+      if (typeof encoding === 'object') {
+        return encoding.field === STRAND_FIELD ? 'strand' : 'attribute'
       }
-      if (value === undefined) {
+      if (encoding === undefined) {
         return 'default'
       }
-      return isJexl(value) ? 'attribute' : 'solid'
+      return isJexl(encoding) ? 'attribute' : 'solid'
     },
 
     /**
@@ -84,10 +84,20 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
-     * The color channel's field, or undefined while `color.value` paints.
+     * `colorSettings` as it paints, through the one resolver every display's
+     * colour object goes through: `color.value`, or a field's categorical
+     * scale.
      */
     get colorEncoding() {
-      return featureColorScale(this.colorSettings)
+      return colorEncodingOf(this.colorSettings, 'categorical')
+    },
+
+    /**
+     * #getter
+     * The color channel's field, or undefined while `color.value` paints.
+     */
+    get colorField() {
+      return categoricalColorField(this.colorEncoding)
     },
 
     /**

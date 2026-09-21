@@ -107,6 +107,10 @@ export {
 // equally light and equally colorful, so it cannot be one more hue.
 export const NO_CATEGORY_COLOR = '#afafaf'
 
+// What a colour declaration paints where it reads nothing it can colour, so a
+// misconfiguration surfaces rather than passing for the no-category grey.
+export const MISCONFIGURED_COLOR = '#808080'
+
 const RANDOM_COLOR_TIERS = [
   { lightness: 0.66, chroma: 0.15 },
   { lightness: 0.56, chroma: 0.14 },

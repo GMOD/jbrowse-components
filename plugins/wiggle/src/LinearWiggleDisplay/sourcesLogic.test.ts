@@ -5,6 +5,8 @@ import { buildSources } from './sourcesLogic.ts'
 
 import type { SourceInfo } from '@jbrowse/wiggle-core'
 
+const PER_SOURCE = { domain: [], range: [] }
+
 const adapter = (count: number): SourceInfo[] =>
   Array.from({ length: count }, (_, i) => ({ name: `source_${i}` }))
 
@@ -16,13 +18,13 @@ const adapter = (count: number): SourceInfo[] =>
 describe('buildSources', () => {
   it('synthesizes overlay palette only in overlay mode', () => {
     const editable = reconcileLayout(adapter(3), [])
-    const overlay = buildSources(editable, undefined, true, false)
+    const overlay = buildSources(editable, undefined, PER_SOURCE, false)
     expect(overlay.map(s => s.color)).toEqual([
       overlayColors[0],
       overlayColors[1],
       overlayColors[2],
     ])
-    const rows = buildSources(editable, undefined, false, false)
+    const rows = buildSources(editable, undefined, undefined, false)
     expect(rows.every(s => s.color === undefined)).toBe(true)
   })
 
@@ -35,7 +37,7 @@ describe('buildSources', () => {
       ],
       [],
     )
-    const out = buildSources(editable, undefined, true, false)
+    const out = buildSources(editable, undefined, PER_SOURCE, false)
     expect(out[0]!.color).toBe('#ff0000')
     expect(out[1]!.color).toBe(overlayColors[1])
     expect(out[2]!.color).toBe('#00ff00')
@@ -46,7 +48,7 @@ describe('buildSources', () => {
     const out = buildSources(
       reconcileLayout(adapter(n + 2), []),
       undefined,
-      true,
+      PER_SOURCE,
       false,
     )
     expect(out[n]!.color).toBe(overlayColors[0])
@@ -55,8 +57,13 @@ describe('buildSources', () => {
 
   it('keeps each overlay palette color across a subtree filter', () => {
     const editable = reconcileLayout(adapter(12), [])
-    const unfiltered = buildSources(editable, undefined, true, false)
-    const out = buildSources(editable, ['source_0', 'source_5'], true, false)
+    const unfiltered = buildSources(editable, undefined, PER_SOURCE, false)
+    const out = buildSources(
+      editable,
+      ['source_0', 'source_5'],
+      PER_SOURCE,
+      false,
+    )
     expect(out.map(s => s.name)).toEqual(['source_0', 'source_5'])
     expect(out[0]!.color).toBe(unfiltered[0]!.color)
     expect(out[1]!.color).toBe(unfiltered[5]!.color)
@@ -71,8 +78,8 @@ describe('buildSources', () => {
       ],
       [],
     )
-    const unfiltered = buildSources(editable, undefined, false, false)
-    const out = buildSources(editable, ['c'], false, false)
+    const unfiltered = buildSources(editable, undefined, undefined, false)
+    const out = buildSources(editable, ['c'], undefined, false)
     expect(out[0]!.color).toBe(unfiltered[2]!.color)
   })
 
@@ -81,7 +88,7 @@ describe('buildSources', () => {
       [{ name: 'a' }, { name: 'b' }],
       [{ name: 'a', color: '#0000ff' }, { name: 'b' }],
     )
-    const out = buildSources(editable, undefined, false, false)
+    const out = buildSources(editable, undefined, undefined, false)
     expect(out[0]!.color).toBe('#0000ff')
     expect(out[1]!.color).toBeUndefined()
   })
@@ -91,7 +98,7 @@ describe('buildSources', () => {
       [{ name: 'a' }, { name: 'b' }],
       [{ name: 'a', color: '#0000ff' }, { name: 'b' }],
     )
-    const out = buildSources(editable, undefined, true, false)
+    const out = buildSources(editable, undefined, PER_SOURCE, false)
     expect(out[0]!.color).toBe('#0000ff')
     // 'b' had no explicit color, so palette synthesizes by its index
     expect(out[1]!.color).toBe(overlayColors[1])
@@ -107,7 +114,12 @@ describe('buildSources', () => {
       [],
     )
     for (const perSource of [false, true]) {
-      const out = buildSources(editable, undefined, perSource, false)
+      const out = buildSources(
+        editable,
+        undefined,
+        perSource ? PER_SOURCE : undefined,
+        false,
+      )
       // 'a' and 'c' share 'tumor' → same color
       expect(out[0]!.color).toBe(out[2]!.color)
       // 'b' is 'normal' → different color from 'tumor'
@@ -129,7 +141,7 @@ describe('buildSources', () => {
       ],
       [],
     )
-    const out = buildSources(editable, undefined, true, false)
+    const out = buildSources(editable, undefined, PER_SOURCE, false)
     expect(new Set(out.map(s => s.color)).size).toBe(4)
     // groups take the head of the palette, ungrouped rows continue past them
     expect(out[1]!.color).toBe(overlayColors[0])
@@ -144,7 +156,7 @@ describe('buildSources', () => {
     const out = buildSources(
       reconcileLayout(adapter(3), []),
       undefined,
-      true,
+      PER_SOURCE,
       false,
     )
     expect(out.map(s => s.color)).toEqual([
@@ -159,7 +171,7 @@ describe('buildSources', () => {
       [{ name: 'a', color: '#ff0000', group: 'tumor' }],
       [],
     )
-    const out = buildSources(editable, undefined, false, false)
+    const out = buildSources(editable, undefined, undefined, false)
     expect(out[0]!.color).toBe('#ff0000')
   })
 
@@ -175,7 +187,7 @@ describe('buildSources', () => {
       ],
       [],
     )
-    const out = buildSources(editable, undefined, false, true)
+    const out = buildSources(editable, undefined, undefined, true)
     for (const s of out) {
       expect(s.color).toBeUndefined()
     }
@@ -188,7 +200,7 @@ describe('buildSources', () => {
       [{ name: 'a', color: '#ff0000', group: 'PUR' }],
       [],
     )
-    const out = buildSources(editable, undefined, false, true)
+    const out = buildSources(editable, undefined, undefined, true)
     expect(out[0]!.color).toBe('#ff0000')
     expect(out[0]!.labelColor).toBeDefined()
   })
@@ -205,7 +217,7 @@ describe('buildSources', () => {
       ],
       [],
     )
-    const out = buildSources(editable, undefined, false, true)
+    const out = buildSources(editable, undefined, undefined, true)
     expect(out[0]!.labelColor).toBe('#8c564b')
     // two cell types inside one group keep their own colors rather than
     // collapsing to the group's
@@ -219,7 +231,7 @@ describe('buildSources', () => {
       [{ name: 'a', labelColor: '#00ff00', group: 'PUR' }],
       [],
     )
-    const out = buildSources(editable, undefined, false, true)
+    const out = buildSources(editable, undefined, undefined, true)
     expect(out[0]!.labelColor).toBe('#00ff00')
   })
 })

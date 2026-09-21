@@ -40,10 +40,7 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import {
-  colorEncodingOf,
-  paintedScale,
-} from '@jbrowse/display-kit/colorConfigSchema'
+import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -309,11 +306,10 @@ function toBinEdges(region: Region, step: number, bounds: Region) {
 // would have packed it. A scale has no meaning over a bin the sidecar wrote,
 // and a jexl callback has no feature to read.
 function markConstantColor(mark: MarkConfig): number {
-  const { color } = mark.encoding
+  const encoding = colorEncodingOf(mark.encoding.color, 'categorical')
   return cssColorToABGR(
-    paintedScale(color, 'categorical') === 'none' &&
-      !color.value.startsWith('jexl:')
-      ? color.value
+    typeof encoding === 'string' && !isJexl(encoding)
+      ? encoding
       : DEFAULT_MARK_COLOR,
   )
 }

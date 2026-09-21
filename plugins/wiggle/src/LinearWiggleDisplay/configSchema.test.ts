@@ -13,7 +13,14 @@ function create(snap: Record<string, unknown>) {
 test('a bare color is the constant', () => {
   const conf = create({ color: 'green' })
   expect(readConfObject(conf, ['color', 'value'])).toBe('green')
-  expect(readConfObject(conf, ['color', 'field'])).toBe('')
+  expect(readConfObject(conf, ['color', 'field'])).toBeUndefined()
+})
+
+test('the field is score or source, and any other name is refused', () => {
+  expect(
+    readConfObject(create({ color: { field: 'source' } }), ['color', 'field']),
+  ).toBe('source')
+  expect(() => create({ color: { field: 'pvalue' } })).toThrow()
 })
 
 test('the object carries the scale and the slots it reads', () => {

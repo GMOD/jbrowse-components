@@ -4718,7 +4718,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "(JexlString | (WiggleColorField | undefined))"
             },
             {
               "name": "scale",
@@ -4925,7 +4925,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "(JexlString | (WiggleColorField | undefined))"
             },
             {
               "name": "scale",
@@ -5144,7 +5144,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "(JexlString | (WiggleColorField | undefined))"
             },
             {
               "name": "scale",

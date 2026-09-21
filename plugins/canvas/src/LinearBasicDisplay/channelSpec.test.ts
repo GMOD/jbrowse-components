@@ -64,8 +64,8 @@ test('strand is a field on both channels, painting its own colors', () => {
   const d = display()
   d.applyDisplaySettings({ facet: 'strand', color: { field: 'strand' } })
   expect(d.colorByMode).toBe('strand')
-  expect(d.colorEncoding?.color('1')).toBe('tomato')
-  expect(d.colorEncoding?.color('-1')).toBe('cornflowerblue')
+  expect(d.colorField?.color('1')).toBe('tomato')
+  expect(d.colorField?.color('-1')).toBe('cornflowerblue')
   expect(d.channelSpec).toMatchObject({
     facet: { field: 'strand' },
     color: { field: 'strand' },
@@ -77,9 +77,9 @@ test('strand takes a range like any other field', () => {
   const spec = { color: { field: 'strand', range: ['red', 'blue'] } }
   expect(d.channelSpecProblems(spec)).toEqual([])
   d.applyDisplaySettings(spec)
-  expect(d.colorEncoding?.domain).toEqual(['1', '-1', '0'])
-  expect(d.colorEncoding?.color('1')).toBe('red')
-  expect(d.colorEncoding?.color('-1')).toBe('blue')
+  expect(d.colorField?.domain).toEqual(['1', '-1', '0'])
+  expect(d.colorField?.color('1')).toBe('red')
+  expect(d.colorField?.color('-1')).toBe('blue')
 })
 
 test('an object replaces the channel whole, and null clears it', () => {
@@ -207,7 +207,7 @@ test('Solid color keeps the field, its order and range under scale none for the 
   d.setColorScale({ field: 'biotype', domain: ['lncRNA'], range: ['red'] })
   d.setFeatureColor('purple')
   expect(d.colorByMode).toBe('solid')
-  expect(d.colorEncoding).toBeUndefined()
+  expect(d.colorField).toBeUndefined()
   expect(d.channelSpec.color).toBe('purple')
   expect(d.colorSettings).toMatchObject({
     value: 'purple',
@@ -217,8 +217,8 @@ test('Solid color keeps the field, its order and range under scale none for the 
   expect(d.colorByAttribute).toBe('biotype')
   d.colorByField('biotype')
   expect(d.colorByMode).toBe('attribute')
-  expect(d.colorEncoding?.domain).toEqual(['lncRNA'])
-  expect(d.colorEncoding?.color('lncRNA')).toBe('red')
+  expect(d.colorField?.domain).toEqual(['lncRNA'])
+  expect(d.colorField?.color('lncRNA')).toBe('red')
   d.setFeatureColor(undefined)
   expect(d.colorByMode).toBe('default')
   expect(d.colorSettings).toMatchObject({ field: 'biotype', scale: 'none' })

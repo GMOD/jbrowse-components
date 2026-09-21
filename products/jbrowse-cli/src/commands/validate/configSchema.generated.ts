@@ -4011,7 +4011,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
               "anyOf": [
                 {
                   "enum": [
@@ -4027,7 +4027,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "the values that take the range first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under threshold the cut points.",
+              "description": "for a categorical scale, the values that take the range first, in order; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
               "anyOf": [
                 {
                   "anyOf": [
@@ -4763,7 +4763,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "strand"
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
               "anyOf": [
                 {
                   "enum": [
@@ -4779,7 +4779,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "the values that take the range first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under threshold the cut points.",
+              "description": "for a categorical scale, the values that take the range first, in order; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
               "anyOf": [
                 {
                   "anyOf": [
@@ -6205,11 +6205,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "field": {
               "description": "score, the value each bar carries, or source, the subtrack it came from.",
-              "$ref": "#/$defs/StringOrJexl",
-              "default": ""
+              "anyOf": [
+                {
+                  "enum": [
+                    "score",
+                    "source"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             },
             "scale": {
-              "description": "how field becomes a colour: threshold cuts score at the domain and paints each side; linear and log fade from the colour at domainMid out to the ends of the y domain, which is the density picture, through range, else scheme, else the two-sided fade; categorical hands each source a range colour; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
+              "description": "how field becomes a colour: threshold cuts score at its lowest cut and paints each side; linear and log fade from the colour at domainMid out to the ends of the y domain, which is the density picture, through range, else scheme, else the two-sided fade; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
               "anyOf": [
                 {
                   "enum": [
@@ -6226,7 +6235,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "for a threshold scale, the one cut point the two sides part at, empty meaning the origin; for a categorical scale over source, the sources that take the range first, in order.",
+              "description": "for a threshold scale, the cut point the two sides part at, the lowest where it lists several, empty meaning the origin; for a categorical scale over source, the subtracks outside a group that take the range first, in order.",
               "anyOf": [
                 {
                   "anyOf": [
@@ -6251,7 +6260,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "range": {
-              "description": "a threshold scale's colour below the cut and at or above it; a categorical scale's colour per source, continuing into the default palette; a linear or log scale's stops, evenly spaced.",
+              "description": "a threshold scale's colour below the cut and at or above it; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear or log scale's stops, evenly spaced.",
               "$ref": "#/$defs/CssColorArrayOrJexl"
             },
             "scheme": {

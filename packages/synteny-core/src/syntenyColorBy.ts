@@ -1,14 +1,24 @@
-import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
+import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 
 /**
  * #api
  * The field a synteny colour object paints by, or `''` while it paints its
- * constant: `scale: 'none'`, or no field named.
+ * constant: `scale: 'none'`, or no field named. Read through the one resolver
+ * every display's colour object goes through.
  */
-export function paintedField({ scale, field = '' }: SyntenyColorSnapshot) {
-  return paintedScale({ scale, field }, 'categorical') === 'none' ? '' : field
+export function paintedField({
+  value,
+  scale,
+  field = '',
+  domain = [],
+}: SyntenyColorSnapshot) {
+  const encoding = colorEncodingOf(
+    { value, field, scale, domain, range: [] },
+    'categorical',
+  )
+  return typeof encoding === 'object' ? encoding.field : ''
 }
 
 /**

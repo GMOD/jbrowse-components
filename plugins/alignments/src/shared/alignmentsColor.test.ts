@@ -1,6 +1,7 @@
 import {
   BASE_COLOR_FIELDS,
   COLOR_FIELDS,
+  alignmentsColorEncoding,
   baseLayerOf,
   bodyColorScheme,
   colorByOf,
@@ -26,10 +27,14 @@ const UNSET: AlignmentsColorSetting = {
   domainMid: undefined,
 }
 
+function readFill(field: string, scale?: AlignmentsColorSetting['scale']) {
+  return colorByOf(alignmentsColorEncoding({ ...UNSET, field, scale }))
+}
+
 describe('colorByOf', () => {
   test('every preset field selects its scheme and names it back', () => {
     for (const [scheme, field] of Object.entries(COLOR_FIELDS)) {
-      const colorBy = colorByOf({ field, scale: undefined })
+      const colorBy = readFill(field)
       expect(colorBy.type).toBe(scheme)
       expect(colorFieldOf(colorBy)).toBe(field)
     }
@@ -44,24 +49,24 @@ describe('colorByOf', () => {
   })
 
   test('tags.XX reads a SAM tag and any other name a feature attribute', () => {
-    expect(colorByOf({ field: 'tags.HP', scale: undefined })).toEqual({
+    expect(readFill('tags.HP')).toEqual({
       type: 'tag',
       tag: 'HP',
     })
-    expect(colorByOf({ field: 'score', scale: undefined })).toEqual({
+    expect(readFill('score')).toEqual({
       type: 'tag',
       attribute: 'score',
     })
   })
 
   test('no field, or a field under none, paints the plain fill', () => {
-    expect(colorByOf({ field: '', scale: undefined }).type).toBe('normal')
-    expect(colorByOf({ field: 'strand', scale: 'none' }).type).toBe('normal')
+    expect(readFill('').type).toBe('normal')
+    expect(readFill('strand', 'none').type).toBe('normal')
   })
 
   test('a per-base field is no read fill, and costs no attribute lookup', () => {
     for (const field of Object.values(BASE_COLOR_FIELDS)) {
-      expect(colorByOf({ field, scale: undefined })).toEqual({ type: 'normal' })
+      expect(readFill(field)).toEqual({ type: 'normal' })
     }
   })
 })
@@ -130,27 +135,20 @@ describe('colorSnapshotFor', () => {
 })
 
 describe('pinnedInsertSizeBand', () => {
-  test('two ascending numbers under an insert-size field pin the band', () => {
+  const band = (over: Partial<AlignmentsColorSetting>) =>
+    pinnedInsertSizeBand(alignmentsColorEncoding({ ...UNSET, ...over }))
+
+  test('two cuts under an insert-size field pin the band', () => {
+    expect(band({ field: 'insertSize', domain: ['150', '600'] })).toEqual({
+      lower: 150,
+      upper: 600,
+    })
+    expect(band({ field: 'strand', domain: ['150', '600'] })).toBeUndefined()
     expect(
-      pinnedInsertSizeBand({
-        ...UNSET,
-        field: 'insertSize',
-        domain: ['150', '600'],
-      }),
-    ).toEqual({ lower: 150, upper: 600 })
-    expect(
-      pinnedInsertSizeBand({
-        ...UNSET,
-        field: 'strand',
-        domain: ['150', '600'],
-      }),
+      band({ field: 'insertSize', domain: ['150', '150'] }),
     ).toBeUndefined()
     expect(
-      pinnedInsertSizeBand({
-        ...UNSET,
-        field: 'insertSize',
-        domain: ['600', '150'],
-      }),
+      band({ field: 'insertSize', scale: 'none', domain: ['150', '600'] }),
     ).toBeUndefined()
   })
 })

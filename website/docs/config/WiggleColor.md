@@ -29,14 +29,15 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 _See the **Config slots** section below for all available configuration fields._
 
-The quantitative display's `color`: one CSS colour for every bar, or a
-field through a scale. `score` through a `threshold` scale is the bicolor
-plot — one cut point, one colour each side, the `origin` where the domain
-names none — and through `linear` or `log` it is the density ramp.
-`source` through a `categorical` scale gives each subtrack a range colour,
-which is what several sources sharing one plot box need to be told apart.
-A wiggle colours per signal rather than per feature, so a `jexl:` callback
-over a feature has nothing to read here.
+The quantitative display's `color`: one CSS colour for every bar, or one of
+its two fields through a scale. `score` through a `threshold` scale is the
+bicolor plot — one cut point, one colour each side, the `origin` where the
+domain names none — and through `linear` or `log` it is the density ramp.
+`source` through a `categorical` scale gives each subtrack a colour of its
+own, which is what several sources sharing one plot box need to be told
+apart. Any other pairing paints the misconfiguration grey. A wiggle colours
+per signal rather than per feature, so a `jexl:` callback over a feature has
+nothing to read here.
 
 ## Config slots
 
@@ -46,10 +47,10 @@ These slots go on a display entry: `"displays": [{ "type": "WiggleColor", ... }]
 | Slot | Description |
 | --- | --- |
 | <span id="slot-value">**value**</span><br>`maybeColor` | One CSS colour for every bar. Writing `color: "darkgreen"` lands here. Unset, the display paints the picture its layout asks for: a palette entry per source where several share one plot box, and the pos/neg pair about the `origin` otherwise. |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | score, the value each bar carries, or source, the subtrack it came from |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, log, threshold) | how field becomes a colour: threshold cuts score at the domain and paints each side; linear and log fade from the colour at domainMid out to the ends of the y domain, which is the density picture, through range, else scheme, else the two-sided fade; categorical hands each source a range colour; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | for a threshold scale, the one cut point the two sides part at, empty meaning the origin; for a categorical scale over source, the sources that take the range first, in order |
-| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | a threshold scale's colour below the cut and at or above it; a categorical scale's colour per source, continuing into the default palette; a linear or log scale's stops, evenly spaced |
+| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (score, source) | `score`, the value each bar carries, or `source`, the subtrack it came from. Unset, the colour paints `value`. |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, log, threshold) | how field becomes a colour: threshold cuts score at its lowest cut and paints each side; linear and log fade from the colour at domainMid out to the ends of the y domain, which is the density picture, through range, else scheme, else the two-sided fade; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score |
+| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | for a threshold scale, the cut point the two sides part at, the lowest where it lists several, empty meaning the origin; for a categorical scale over source, the subtracks outside a group that take the range first, in order |
+| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | a threshold scale's colour below the cut and at or above it; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear or log scale's stops, evenly spaced |
 | <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis) | a named ramp for a linear or log scale; range's colours, where it lists any, win over it |
 | <span id="slot-reverse">**reverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain |
 | <span id="slot-domainmid">**domainMid**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it |
