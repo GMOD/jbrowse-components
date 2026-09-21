@@ -190,7 +190,7 @@ test('a step says which of its slots cannot run', () => {
         shape: 'bar',
         encoding: { y: 'sum' },
         transform: [
-          { expr: 'feature.score > 1' },
+          { type: 'filter', expr: 'feature.score > 1' },
           { type: 'bin', step: 0 },
           { type: 'aggregate', ops: [{ op: 'sum', as: 'sum' }] },
         ],
@@ -200,6 +200,24 @@ test('a step says which of its slots cannot run', () => {
     'error step-expression mark 0 transform.0.expr',
     'error bin-width mark 0 transform.1.step',
     'error op-field mark 0 transform.2.ops.0.field',
+  ])
+})
+
+test('a pair slot naming another number of fields says it reads the default', () => {
+  expect(
+    problemsOf([
+      {
+        shape: 'span',
+        encoding: {},
+        transform: [
+          { type: 'bin', step: 10, as: ['lo'] },
+          { type: 'pileup', fields: ['s', 'e', 'x'] },
+        ],
+      },
+    ]).map(p => `${p.rule} ${p.slot}: ${p.message}`),
+  ).toEqual([
+    'step-pair transform.0.as: a bin reads two field names from as and this names 1, so it reads start and end',
+    'step-pair transform.1.fields: a pileup reads two field names from fields and this names 3, so it reads start and end',
   ])
 })
 

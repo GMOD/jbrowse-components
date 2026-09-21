@@ -1,11 +1,17 @@
 import { createElement } from 'react'
 
-import { setConf } from '@jbrowse/core/configuration'
+import {
+  getConfigurationSchemaDefinition,
+  getConfigurationSchemaUnion,
+  isSlotDefinitionEntry,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
+import { isArrayType, isType } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -16,11 +22,13 @@ import { render, screen, waitFor } from '@testing-library/react'
 
 import MarkFacetChips from './components/MarkFacetChips.tsx'
 import { configSchemaFactory } from './configSchema.ts'
+import { markTransformStep } from './markTransformConfigSchema.ts'
 import { stateModelFactory } from './model.ts'
 import { BINNED_BP_PER_PX, defaultPlotMarks } from './plotFields.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { EncodedFeaturesResult } from '@jbrowse/core/util/markEncoding'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const REGION = {
   refName: 'ctgA',
@@ -675,7 +683,23 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
         transform: [{ type: 'aggregate', groupBy: ['type'] }],
       },
     ]).createDisplay(),
-  ).toThrow(/MarkTransformStep takes .* not groupBy/)
+  ).toThrow('aggregate takes groupby, ops and type, not groupBy')
+  expect(() =>
+    createTestEnvironment([
+      {
+        shape: 'bar',
+        encoding: { y: 'score' },
+        transform: [{ type: 'filter', expr: 'jexl:true', step: 50 }],
+      },
+    ]).createDisplay(),
+  ).toThrow('filter takes expr and type, not step')
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'bar', encoding: { y: 'score' }, transform: [{ step: 1000 }] },
+    ]).createDisplay(),
+  ).toThrow(
+    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten and pileup, and names none',
+  )
   expect(() =>
     createTestEnvironment([
       {
@@ -754,7 +778,7 @@ test('a span outside its zoom range adds no bands', () => {
   expect(display.rowCount).toBe(3)
 })
 
-test("a transform list reaches the worker as its own layer's steps, defaults left off", () => {
+test("a transform list reaches the worker as its own layer's steps, every slot written out", () => {
   const { createDisplay } = createTestEnvironment([
     {
       shape: 'bar',
@@ -772,7 +796,7 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
         { type: 'coverage' },
         { type: 'coverage', as: 'depth' },
         { type: 'flatten' },
-        { type: 'flatten', field: 'exons', as: 'nth' },
+        { type: 'flatten', field: 'exons', index: 'nth' },
         { type: 'pileup' },
         { type: 'pileup', as: 'lane', fields: ['s', 'e'], padding: 20 },
       ],
@@ -784,7 +808,7 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
   expect(layers[0]!.transform).toEqual([
     { type: 'filter', expr: "jexl:get(feature,'score') > 1" },
     { type: 'formula', expr: 'jexl:feature.score*2', as: 'twice' },
-    { type: 'bin', step: 5000, field: undefined, as: undefined },
+    { type: 'bin', step: 5000, field: 'start', as: ['start', 'end'] },
     { type: 'bin', step: 10, field: 'end', as: ['b0', 'b1'] },
     {
       type: 'aggregate',
@@ -794,11 +818,16 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
         { op: 'mean', field: 'twice', as: 'm' },
       ],
     },
-    { type: 'coverage', as: undefined },
+    { type: 'coverage', as: 'coverage' },
     { type: 'coverage', as: 'depth' },
-    { type: 'flatten', field: undefined, index: undefined },
-    { type: 'flatten', field: 'exons', index: 'nth' },
-    { type: 'pileup', as: undefined, fields: undefined, padding: undefined },
+    {
+      type: 'flatten',
+      field: 'subfeatures',
+      index: '',
+      keepEmpty: false,
+    },
+    { type: 'flatten', field: 'exons', index: 'nth', keepEmpty: false },
+    { type: 'pileup', as: 'row', fields: ['start', 'end'], padding: 0 },
     { type: 'pileup', as: 'lane', fields: ['s', 'e'], padding: 20 },
   ])
   expect(layers[1]).not.toHaveProperty('transform')
@@ -865,19 +894,81 @@ test('a flatten keeping its empty features says so on the wire', () => {
   ])
   const { display } = createDisplay()
   expect(display.rpcProps().layers[0]!.transform).toEqual([
-    {
-      type: 'flatten',
-      field: undefined,
-      index: undefined,
-      keepEmpty: true,
-    },
-    {
-      type: 'flatten',
-      field: 'exons',
-      index: undefined,
-      keepEmpty: undefined,
-    },
+    { type: 'flatten', field: 'subfeatures', index: '', keepEmpty: true },
+    { type: 'flatten', field: 'exons', index: '', keepEmpty: false },
   ])
+})
+
+// What a step writes at its defaults, as pairs of snapshots meaning the same
+// step: the slot left off, and the slot written at its default. An array of
+// sub-schemas (an aggregate's ops) contributes each of its entry's pairs.
+function defaultWrites(
+  schema: IAnyType,
+): [Record<string, unknown>, Record<string, unknown>][] {
+  return Object.entries(getConfigurationSchemaDefinition(schema)!).flatMap(
+    ([slot, entry]): [Record<string, unknown>, Record<string, unknown>][] =>
+      isSlotDefinitionEntry(entry)
+        ? [[{}, { [slot]: entry.defaultValue }]]
+        : isType(entry) && isArrayType(entry)
+          ? defaultWrites(entry.getChildType()).map(([left, written]) => [
+              { [slot]: [left] },
+              { [slot]: [written] },
+            ])
+          : [],
+  )
+}
+
+function stepFetch(steps: Record<string, unknown>[]) {
+  return createTestEnvironment(
+    [{ shape: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { transform: steps },
+  )
+    .createDisplay()
+    .display.rpcProps()
+}
+
+// A step on the wire that leaned on a worker default for a slot would be one
+// fetch left off and another written at that default, drawing one picture
+// from two cache entries: every slot is written out instead.
+test('every step type reaches the worker with each of its slots written out', () => {
+  const { members } = getConfigurationSchemaUnion(markTransformStep)!
+  const types = Object.keys(members)
+  const wire = stepFetch(types.map(type => ({ type }))).transform
+  expect(
+    wire.map(step =>
+      Object.entries(step).flatMap(([key, value]) =>
+        value === undefined ? [] : [key],
+      ),
+    ),
+  ).toEqual(
+    types.map(type => [
+      'type',
+      ...Object.keys(getConfigurationSchemaDefinition(members[type]!)!),
+    ]),
+  )
+})
+
+test('a step slot left at its default and one written at it are one fetch, for every step type', () => {
+  const { members } = getConfigurationSchemaUnion(markTransformStep)!
+  const pairs = Object.entries(members).flatMap(([type, member]) =>
+    defaultWrites(member).map(
+      ([left, written]): [Record<string, unknown>, Record<string, unknown>] => [
+        { type, ...left },
+        { type, ...written },
+      ],
+    ),
+  )
+  const fetchKey = (step: Record<string, unknown>) =>
+    JSON.stringify(stepFetch([step]))
+  expect(pairs.map(([, written]) => written)).toContainEqual({
+    type: 'aggregate',
+    ops: [{ field: '' }],
+  })
+  for (const [left, written] of pairs) {
+    expect([written, fetchKey(written)]).toEqual([written, fetchKey(left)])
+  }
 })
 
 test('a mark outside its zoom range leaves the shared domain and the legend', () => {

@@ -5789,64 +5789,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "transform",
-              "type": "MarkTransformStepConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "type",
-                  "type": "(JexlString | MarkTransformType)"
-                },
-                {
-                  "name": "expr",
-                  "type": "(JexlString | string)"
-                },
-                {
-                  "name": "field",
-                  "type": "(JexlString | string)"
-                },
-                {
-                  "name": "step",
-                  "type": "(JexlString | (number | \"auto\"))"
-                },
-                {
-                  "name": "as",
-                  "type": "(JexlString | string[])",
-                  "liftsString": true
-                },
-                {
-                  "name": "fields",
-                  "type": "(JexlString | string[])"
-                },
-                {
-                  "name": "padding",
-                  "type": "(JexlString | number)"
-                },
-                {
-                  "name": "keepEmpty",
-                  "type": "(JexlString | boolean)"
-                },
-                {
-                  "name": "groupby",
-                  "type": "(JexlString | string[])"
-                },
-                {
-                  "name": "ops",
-                  "type": "MarkAggregateOpConfigurationSchema[]",
-                  "subSlots": [
-                    {
-                      "name": "op",
-                      "type": "(JexlString | MarkAggregateOpName)"
-                    },
-                    {
-                      "name": "field",
-                      "type": "(JexlString | string)"
-                    },
-                    {
-                      "name": "as",
-                      "type": "(JexlString | string)"
-                    }
-                  ]
-                }
-              ]
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema)[]"
             },
             {
               "name": "source",
@@ -5864,64 +5807,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "transform",
-          "type": "MarkTransformStepConfigurationSchema[]",
-          "subSlots": [
-            {
-              "name": "type",
-              "type": "(JexlString | MarkTransformType)"
-            },
-            {
-              "name": "expr",
-              "type": "(JexlString | string)"
-            },
-            {
-              "name": "field",
-              "type": "(JexlString | string)"
-            },
-            {
-              "name": "step",
-              "type": "(JexlString | (number | \"auto\"))"
-            },
-            {
-              "name": "as",
-              "type": "(JexlString | string[])",
-              "liftsString": true
-            },
-            {
-              "name": "fields",
-              "type": "(JexlString | string[])"
-            },
-            {
-              "name": "padding",
-              "type": "(JexlString | number)"
-            },
-            {
-              "name": "keepEmpty",
-              "type": "(JexlString | boolean)"
-            },
-            {
-              "name": "groupby",
-              "type": "(JexlString | string[])"
-            },
-            {
-              "name": "ops",
-              "type": "MarkAggregateOpConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "op",
-                  "type": "(JexlString | MarkAggregateOpName)"
-                },
-                {
-                  "name": "field",
-                  "type": "(JexlString | string)"
-                },
-                {
-                  "name": "as",
-                  "type": "(JexlString | string)"
-                }
-              ]
-            }
-          ]
+          "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema)[]"
         },
         {
           "name": "facet",

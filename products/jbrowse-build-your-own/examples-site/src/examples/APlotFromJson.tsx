@@ -13,7 +13,7 @@ import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 const lineage = {
   type: 'formula',
   expr: 'jexl:substring(feature.name, 0, 4)',
-  as: ['lineage'],
+  as: 'lineage',
 }
 
 const color = {

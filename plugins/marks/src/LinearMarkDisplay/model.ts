@@ -78,6 +78,7 @@ import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
 import { buildMarkList, markDrawsAt, markRowHeightPx } from './markList.ts'
 import { markProblems, pinnedPair, problemText } from './markProblems.ts'
+import { DEFAULT_BIN_AS, DEFAULT_PILEUP_FIELDS } from './markVocabulary.ts'
 import {
   EMPTY_PLOT_SPEC,
   defaultPlotMarks,
@@ -227,7 +228,7 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
   // A `pileup` writes the row this mark then stands in, so its output field
   // is the row channel's default and a pileup restates nothing.
   const packed = mark.transform.find(
-    (s: MarkTransformStepConfig) => s.type === 'pileup',
+    (s: MarkTransformStepConfig): s is PileupStepConfig => s.type === 'pileup',
   )
   return {
     x,
@@ -237,14 +238,27 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
     // axis type and its bounds in the fetch's inputs, so a menu toggle
     // between linear and log would refetch every region to no effect.
     y: y === '' ? undefined : y,
-    row: row || (packed ? (packed.as[0] ?? 'row') : undefined),
+    row: row || packed?.as,
     color: scaled,
     glyph: glyphEncoding,
   }
 }
 
-// A step list as the worker's, with the empty slot values that mean
-// "default" left off the wire and an `auto` bin resolved at `bpPerPx`.
+type PileupStepConfig = Extract<MarkTransformStepConfig, { type: 'pileup' }>
+
+function pairOf(
+  values: readonly string[],
+  fallback: readonly [string, string],
+): [string, string] {
+  const [a, b] = values
+  return values.length === 2 && a !== undefined && b !== undefined
+    ? [a, b]
+    : [...fallback]
+}
+
+// A step list as the worker's, every slot written out so a slot left at its
+// default and one written at it are one fetch, and an `auto` bin resolved at
+// `bpPerPx`.
 function stepsOf(
   steps: readonly MarkTransformStepConfig[],
   bpPerPx: number,
@@ -253,26 +267,20 @@ function stepsOf(
   // when it names no fields of its own.
   let binEdges: [string, string] | undefined
   return steps.map((step): TransformStep => {
-    const as: string[] = [...step.as]
     switch (step.type) {
-      case 'filter': {
+      case 'filter':
         return { type: 'filter', expr: step.expr }
-      }
-      case 'formula': {
-        return { type: 'formula', expr: step.expr, as: as[0] ?? 'value' }
-      }
-      case 'bin': {
-        const edges: [string, string] | undefined =
-          as.length === 2 ? [as[0]!, as[1]!] : undefined
-        binEdges = edges ?? ['start', 'end']
+      case 'formula':
+        return { type: 'formula', expr: step.expr, as: step.as }
+      case 'bin':
+        binEdges = pairOf(step.as, DEFAULT_BIN_AS)
         return {
           type: 'bin',
           step: binStepWidth(step.step, bpPerPx),
-          field: step.field || undefined,
-          as: edges,
+          field: step.field,
+          as: binEdges,
         }
-      }
-      case 'aggregate': {
+      case 'aggregate':
         return {
           type: 'aggregate',
           groupby:
@@ -285,30 +293,22 @@ function stepsOf(
             }),
           ),
         }
-      }
-      case 'coverage': {
-        return { type: 'coverage', as: as[0] }
-      }
-      case 'flatten': {
+      case 'coverage':
+        return { type: 'coverage', as: step.as }
+      case 'flatten':
         return {
           type: 'flatten',
-          field: step.field || undefined,
-          index: as[0],
-          keepEmpty: step.keepEmpty || undefined,
+          field: step.field,
+          index: step.index,
+          keepEmpty: step.keepEmpty,
         }
-      }
-      case 'pileup': {
-        const fields = [...step.fields]
+      case 'pileup':
         return {
           type: 'pileup',
-          as: as[0],
-          fields: fields.length === 2 ? [fields[0]!, fields[1]!] : undefined,
-          padding: step.padding || undefined,
+          as: step.as,
+          fields: pairOf(step.fields, DEFAULT_PILEUP_FIELDS),
+          padding: step.padding,
         }
-      }
-      default: {
-        throw new Error(`unknown transform step ${String(step.type)}`)
-      }
     }
   })
 }

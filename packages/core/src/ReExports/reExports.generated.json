@@ -2721,7 +2721,9 @@
       "package": "@jbrowse/core",
       "names": [
         "DEFAULT_BIN_AS",
+        "DEFAULT_BIN_FIELD",
         "DEFAULT_COVERAGE_AS",
+        "DEFAULT_FLATTEN_FIELD",
         "DEFAULT_PILEUP_AS",
         "DEFAULT_PILEUP_FIELDS",
         "FACET_ROW",

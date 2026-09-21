@@ -79,7 +79,7 @@ the legend order and colours.
             {
               "type": "formula",
               "expr": "jexl:substring(feature.name, 0, 4)",
-              "as": ["lineage"]
+              "as": "lineage"
             }
           ],
           "encoding": {
@@ -118,7 +118,7 @@ over the copies a `filter` admits, in AluY's colour.
   {
     "shape": "bar",
     "transform": [
-      { "type": "formula", "expr": "jexl:substring(feature.name, 0, 4)", "as": ["lineage"] }
+      { "type": "formula", "expr": "jexl:substring(feature.name, 0, 4)", "as": "lineage" }
     ],
     "encoding": {
       "y": "milliDiv",
@@ -203,7 +203,7 @@ The adapter gains a `densityAdapter` and the count mark gains
             {
               "type": "formula",
               "expr": "jexl:substring(feature.name, 0, 4)",
-              "as": ["lineage"]
+              "as": "lineage"
             }
           ],
           "encoding": {

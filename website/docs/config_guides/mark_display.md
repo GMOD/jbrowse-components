@@ -346,17 +346,20 @@ the legend and the value axis along with the plot.
 
 A mark's `transform` is a list of steps over the region's features, run in the
 worker before the encoding, in order, each reading what the last answered. The
-display's own `transform` takes the same steps and runs before every mark's:
+display's own `transform` takes the same steps and runs before every mark's.
+Each step names its `type` and takes that step's own settings, which the
+[MarkTransform config reference](/docs/config/marktransform) lists; a key
+belonging to another step is refused where the config is read:
 
-| Step        | What it does                                                                                                                                                                                                            |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                 |
-| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                        |
-| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges over `start` and `end`                                                                                                  |
-| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges a preceding `bin` wrote |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                        |
-| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`; `keepEmpty` holds on to a feature whose array is empty               |
-| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                      |
+| Step        | What it does                                                                                                                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                         |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                   |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges a preceding `bin` wrote         |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its position in the field `index` names; `keepEmpty` holds on to a feature whose array is empty |
+| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                              |
 
 A field a step reads is a name or a dotted path into a structured field, so a
 VCF's `INFO.DP` is the `field` of a `mean` and `INFO.SVTYPE` a `groupby`; a

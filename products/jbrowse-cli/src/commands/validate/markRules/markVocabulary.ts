@@ -24,7 +24,14 @@ export const TRANSFORM_TYPES = [
   'pileup',
 ] as const
 export type TransformTypeName = (typeof TRANSFORM_TYPES)[number]
-export const DEFAULT_TRANSFORM_TYPE: TransformTypeName = 'filter'
+
+export const DEFAULT_FORMULA_AS = 'value'
+export const DEFAULT_BIN_FIELD = 'start'
+export const DEFAULT_BIN_AS = ['start', 'end'] as const
+export const DEFAULT_COVERAGE_AS = 'coverage'
+export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
+export const DEFAULT_PILEUP_AS = 'row'
+export const DEFAULT_PILEUP_FIELDS = ['start', 'end'] as const
 
 export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
 export type AggregateOpName = (typeof AGGREGATE_OPS)[number]

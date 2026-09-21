@@ -7582,6 +7582,92 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "filter": {
+      "title": "filter",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "filter"
+        },
+        "expr": {
+          "description": "jexl callback over feature.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "formula": {
+      "title": "formula",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "formula"
+        },
+        "expr": {
+          "description": "jexl callback over feature.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "as": {
+          "description": "output field.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "value"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "bin": {
+      "title": "bin",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "bin"
+        },
+        "step": {
+          "description": "bin width in bp, or \\"auto\\" to follow the zoom.",
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "const": "auto"
+                }
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ],
+          "default": 10000
+        },
+        "field": {
+          "description": "field placing a feature in a bin.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "start"
+        },
+        "as": {
+          "description": "the bin's start and end fields.",
+          "$ref": "#/$defs/StringArrayOrJexl",
+          "default": [
+            "start",
+            "end"
+          ]
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MarkAggregateOp": {
       "title": "MarkAggregateOp",
       "type": "object",
@@ -7620,93 +7706,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "MarkTransformStep": {
-      "title": "MarkTransformStep",
+    "aggregate": {
+      "title": "aggregate",
       "type": "object",
       "properties": {
         "type": {
-          "description": "filter, formula, bin, aggregate, coverage, flatten or pileup.",
-          "anyOf": [
-            {
-              "enum": [
-                "filter",
-                "formula",
-                "bin",
-                "aggregate",
-                "coverage",
-                "flatten",
-                "pileup"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "filter"
-        },
-        "expr": {
-          "description": "jexl callback over feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "field": {
-          "description": "field a bin or a flatten reads.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "step": {
-          "description": "bin width in bp, or \\"auto\\" to follow the zoom.",
-          "anyOf": [
-            {
-              "anyOf": [
-                {
-                  "type": "number"
-                },
-                {
-                  "const": "auto"
-                }
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": 10000
-        },
-        "as": {
-          "description": "output field, or a bin's two.",
-          "anyOf": [
-            {
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
-        },
-        "fields": {
-          "description": "a pileup's [start, end] fields.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
-        "padding": {
-          "description": "bp between two features on one row.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 0
-        },
-        "keepEmpty": {
-          "description": "keep a feature whose array field is empty.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": false
+          "const": "aggregate"
         },
         "groupby": {
           "description": "grouping fields; empty follows a preceding bin.",
@@ -7717,6 +7722,83 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "items": {
             "$ref": "#/$defs/MarkAggregateOp"
           }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "coverage": {
+      "title": "coverage",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "coverage"
+        },
+        "as": {
+          "description": "depth field.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "coverage"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "flatten": {
+      "title": "flatten",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "flatten"
+        },
+        "field": {
+          "description": "array field fanned out.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "subfeatures"
+        },
+        "index": {
+          "description": "field for the element's position.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "keepEmpty": {
+          "description": "keep a feature whose array field is empty.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": false
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "pileup": {
+      "title": "pileup",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "pileup"
+        },
+        "as": {
+          "description": "row field.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "row"
+        },
+        "fields": {
+          "description": "start and end fields of the packed interval.",
+          "$ref": "#/$defs/StringArrayOrJexl",
+          "default": [
+            "start",
+            "end"
+          ]
+        },
+        "padding": {
+          "description": "bp between two features on one row.",
+          "$ref": "#/$defs/NumberOrJexl",
+          "default": 0
         }
       },
       "patternProperties": {
@@ -7789,7 +7871,29 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "transform": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/MarkTransformStep"
+            "anyOf": [
+              {
+                "$ref": "#/$defs/filter"
+              },
+              {
+                "$ref": "#/$defs/formula"
+              },
+              {
+                "$ref": "#/$defs/bin"
+              },
+              {
+                "$ref": "#/$defs/aggregate"
+              },
+              {
+                "$ref": "#/$defs/coverage"
+              },
+              {
+                "$ref": "#/$defs/flatten"
+              },
+              {
+                "$ref": "#/$defs/pileup"
+              }
+            ]
           }
         },
         "source": {
@@ -7953,7 +8057,29 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "transform": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/MarkTransformStep"
+            "anyOf": [
+              {
+                "$ref": "#/$defs/filter"
+              },
+              {
+                "$ref": "#/$defs/formula"
+              },
+              {
+                "$ref": "#/$defs/bin"
+              },
+              {
+                "$ref": "#/$defs/aggregate"
+              },
+              {
+                "$ref": "#/$defs/coverage"
+              },
+              {
+                "$ref": "#/$defs/flatten"
+              },
+              {
+                "$ref": "#/$defs/pileup"
+              }
+            ]
           }
         },
         "facet": {

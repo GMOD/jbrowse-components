@@ -3,8 +3,12 @@ import { markColorScale } from './markColorScale.ts'
 import { isJexl } from './markRuleFacts.ts'
 import {
   DEFAULT_AGGREGATE_OP,
+  DEFAULT_BIN_AS,
+  DEFAULT_COVERAGE_AS,
+  DEFAULT_FORMULA_AS,
   DEFAULT_MARK_SHAPE,
-  DEFAULT_TRANSFORM_TYPE,
+  DEFAULT_PILEUP_AS,
+  DEFAULT_PILEUP_FIELDS,
 } from './markVocabulary.ts'
 import { SHAPE_LANES } from './shapeLanes.ts'
 
@@ -13,7 +17,6 @@ import type {
   AggregateOpName,
   MarkShapeName,
   MarkSourceName,
-  TransformTypeName,
 } from './markVocabulary.ts'
 
 /**
@@ -38,6 +41,7 @@ export const MARK_RULES = {
   'empty-zoom-range': 'error',
   'step-expression': 'error',
   'bin-width': 'error',
+  'step-pair': 'warning',
   'op-field': 'error',
   'step-field-expression': 'error',
   'unwritten-y': 'error',
@@ -66,16 +70,21 @@ export interface MarkProblem {
 
 type OwnProblem = Omit<MarkProblem, 'mark'>
 
-interface StepSnapshot {
-  type?: TransformTypeName
-  expr?: string
+interface OpSnapshot {
+  op?: AggregateOpName
   field?: string
-  fields?: string[]
-  step?: number | string
-  as?: string[]
-  groupby?: string[]
-  ops?: { op?: AggregateOpName; field?: string; as?: string }[]
+  as?: string
 }
+
+/** One `transform` step as a config snapshot holds it, defaults left off. */
+export type StepSnapshot =
+  | { type: 'filter'; expr?: string }
+  | { type: 'formula'; expr?: string; as?: string }
+  | { type: 'bin'; step?: number | string; field?: string; as?: string[] }
+  | { type: 'aggregate'; groupby?: string[]; ops?: OpSnapshot[] }
+  | { type: 'coverage'; as?: string }
+  | { type: 'flatten'; field?: string; index?: string; keepEmpty?: boolean }
+  | { type: 'pileup'; as?: string; fields?: string[]; padding?: number }
 
 interface ColorSnapshot {
   field?: string
@@ -167,6 +176,41 @@ function drawTogether(a: MarkSnapshot, b: MarkSnapshot) {
   return lower(a) < upper(b) && lower(b) < upper(a)
 }
 
+type BinSnapshot = Extract<StepSnapshot, { type: 'bin' }>
+
+// The field names a step reads, by the slot each is written in.
+function fieldRefs(step: StepSnapshot): [string, string | undefined][] {
+  const list = (slot: string, refs: readonly string[] = []) =>
+    refs.map((ref, k): [string, string] => [`${slot}.${k}`, ref])
+  switch (step.type) {
+    case 'bin':
+    case 'flatten':
+      return [['field', step.field]]
+    case 'pileup':
+      return list('fields', step.fields)
+    case 'aggregate':
+      return [
+        ...list('groupby', step.groupby),
+        ...(step.ops ?? []).map((o, k): [string, string | undefined] => [
+          `ops.${k}.field`,
+          o.field,
+        ]),
+      ]
+    default:
+      return []
+  }
+}
+
+// A slot naming two fields, and the default it reads as when it names another
+// number of them.
+function pairSlot(step: StepSnapshot) {
+  return step.type === 'bin'
+    ? { slot: 'as', names: step.as, fallback: DEFAULT_BIN_AS }
+    : step.type === 'pileup'
+      ? { slot: 'fields', names: step.fields, fallback: DEFAULT_PILEUP_FIELDS }
+      : undefined
+}
+
 function packs(mark: MarkSnapshot) {
   return stepsOf(mark).some(s => s.type === 'pileup')
 }
@@ -189,10 +233,12 @@ function madeFields(mark: MarkSnapshot) {
   }
   const fields = new Set(['refName', 'start', 'end'])
   if (last.type === 'coverage') {
-    fields.add(last.as?.[0] ?? 'coverage')
-  } else {
-    const bin = steps.slice(0, made).findLast(s => s.type === 'bin')
-    const edges = bin?.as ?? []
+    fields.add(last.as ?? DEFAULT_COVERAGE_AS)
+  } else if (last.type === 'aggregate') {
+    const bin = steps
+      .slice(0, made)
+      .findLast((s): s is BinSnapshot => s.type === 'bin')
+    const edges = bin?.as ?? DEFAULT_BIN_AS
     for (const field of last.groupby?.length
       ? last.groupby
       : edges.length === 2
@@ -205,13 +251,12 @@ function madeFields(mark: MarkSnapshot) {
     }
   }
   for (const step of steps.slice(made + 1)) {
-    const as = step.as?.[0]
     if (step.type === 'formula') {
-      fields.add(as ?? 'value')
+      fields.add(step.as ?? DEFAULT_FORMULA_AS)
     } else if (step.type === 'pileup') {
-      fields.add(as ?? 'row')
-    } else if (step.type === 'flatten' && as) {
-      fields.add(as)
+      fields.add(step.as ?? DEFAULT_PILEUP_AS)
+    } else if (step.type === 'flatten' && step.index) {
+      fields.add(step.index)
     }
   }
   return fields
@@ -286,7 +331,7 @@ function ownProblems(mark: MarkSnapshot) {
     )
   }
   for (const [i, step] of stepsOf(mark).entries()) {
-    const type = step.type ?? DEFAULT_TRANSFORM_TYPE
+    const { type } = step
     if ((type === 'filter' || type === 'formula') && !isJexl(step.expr ?? '')) {
       problems.push(
         found(
@@ -310,35 +355,32 @@ function ownProblems(mark: MarkSnapshot) {
         ),
       )
     }
-    for (const [k, { op = DEFAULT_AGGREGATE_OP, field }] of (
-      step.ops ?? []
-    ).entries()) {
-      if (type === 'aggregate' && op !== 'count' && !field) {
-        problems.push(
-          found(
-            'op-field',
-            `transform.${i}.ops.${k}.field`,
-            `${op} reads a field and names none`,
-          ),
-        )
+    const pair = pairSlot(step)
+    if (pair?.names && pair.names.length !== 2) {
+      problems.push(
+        found(
+          'step-pair',
+          `transform.${i}.${pair.slot}`,
+          `a ${type} reads two field names from ${pair.slot} and this names ${pair.names.length}, so it reads ${pair.fallback.join(' and ')}`,
+        ),
+      )
+    }
+    if (type === 'aggregate') {
+      for (const [k, { op = DEFAULT_AGGREGATE_OP, field }] of (
+        step.ops ?? []
+      ).entries()) {
+        if (op !== 'count' && !field) {
+          problems.push(
+            found(
+              'op-field',
+              `transform.${i}.ops.${k}.field`,
+              `${op} reads a field and names none`,
+            ),
+          )
+        }
       }
     }
-    const read: [string, string | undefined][] = [
-      ['field', step.field],
-      ...(step.fields ?? []).map((f, k): [string, string] => [
-        `fields.${k}`,
-        f,
-      ]),
-      ...(step.groupby ?? []).map((f, k): [string, string] => [
-        `groupby.${k}`,
-        f,
-      ]),
-      ...(step.ops ?? []).map((o, k): [string, string | undefined] => [
-        `ops.${k}.field`,
-        o.field,
-      ]),
-    ]
-    for (const [slot, ref] of read) {
+    for (const [slot, ref] of fieldRefs(step)) {
       if (ref && isJexl(ref)) {
         problems.push(
           found(

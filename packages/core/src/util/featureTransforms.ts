@@ -18,7 +18,9 @@ import type {
 } from './markEncodingTypes.ts'
 import type { Feature, SimpleFeatureSerialized } from './simpleFeature.ts'
 
+export const DEFAULT_BIN_FIELD = 'start'
 export const DEFAULT_BIN_AS: [string, string] = ['start', 'end']
+export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']
@@ -176,7 +178,7 @@ class FlattenedFeature implements Feature {
 }
 
 function flatten(features: readonly Feature[], step: FlattenStep) {
-  const { field = 'subfeatures', index, keepEmpty } = step
+  const { field = DEFAULT_FLATTEN_FIELD, index, keepEmpty } = step
   const out: Feature[] = []
   const read = isPlainFieldRef(field)
     ? undefined
@@ -205,7 +207,7 @@ function flatten(features: readonly Feature[], step: FlattenStep) {
 }
 
 function bin(features: readonly Feature[], step: BinStep) {
-  const { field = 'start', step: size } = step
+  const { field = DEFAULT_BIN_FIELD, step: size } = step
   if (!(size > 0)) {
     throw new Error(`a bin step needs a positive size (${size})`)
   }

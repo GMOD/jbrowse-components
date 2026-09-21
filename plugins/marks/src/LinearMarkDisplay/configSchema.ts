@@ -14,17 +14,13 @@ import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightC
 import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
-import { AUTO_BIN } from './autoBin.ts'
 import { markColorSchema } from './markColorConfigSchema.ts'
+import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
-  AGGREGATE_OPS,
-  DEFAULT_AGGREGATE_OP,
   DEFAULT_MARK_SHAPE,
   DEFAULT_MARK_SOURCE,
-  DEFAULT_TRANSFORM_TYPE,
   MARK_SHAPES,
   MARK_SOURCES,
-  TRANSFORM_TYPES,
 } from './markVocabulary.ts'
 
 import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
@@ -32,12 +28,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export { markColorScale } from './markColorConfigSchema.ts'
 export type { MarkColorScale } from './markColorConfigSchema.ts'
-export {
-  AGGREGATE_OPS,
-  MARK_SHAPES,
-  MARK_SOURCES,
-  TRANSFORM_TYPES,
-} from './markVocabulary.ts'
+export { MARK_SHAPES, MARK_SOURCES } from './markVocabulary.ts'
 export type { MarkShapeName, MarkSourceName } from './markVocabulary.ts'
 
 export const DEFAULT_POINT_DIAMETER_PX = 4
@@ -184,173 +175,6 @@ const markEncodingSchema = ConfigurationSchema(
   { closed: true },
 )
 
-const aggregateOpSchema = ConfigurationSchema(
-  'MarkAggregateOp',
-  {
-    /**
-     * #slot marks.transform.ops.op
-     * `count` needs no field; `sum`, `mean`, `min` and `max` read one.
-     */
-    op: {
-      type: 'stringEnum',
-      model: types.enumeration('MarkAggregateOpName', [...AGGREGATE_OPS]),
-      defaultValue: DEFAULT_AGGREGATE_OP,
-      description: 'count, sum, mean, min or max',
-    },
-    /**
-     * #slot marks.transform.ops.field
-     * The feature field the op reads, for every op but `count`.
-     */
-    field: {
-      type: 'string',
-      defaultValue: '',
-      description: 'field the op reads',
-    },
-    /**
-     * #slot marks.transform.ops.as
-     * The output field. Empty is `count`, or `<op>_<field>`.
-     */
-    as: {
-      type: 'string',
-      defaultValue: '',
-      description: 'output field',
-    },
-  },
-  { closed: true },
-)
-
-// `as: 'depth'` on a formula or coverage step is the one name; a bin step's
-// two names are already a list. One array slot holds both spellings.
-function liftAs(snap: unknown) {
-  const obj = { ...(snap as Record<string, unknown>) }
-  if (typeof obj.as === 'string') {
-    obj.as = [obj.as]
-  }
-  return obj
-}
-
-const transformStepSchema = ConfigurationSchema(
-  'MarkTransformStep',
-  {
-    /**
-     * #slot marks.transform.type
-     * `filter` keeps the features `expr` admits; `formula` writes `expr`'s
-     * value into `as`; `bin` snaps each feature to the `step`-bp bin its
-     * `field` falls in, writing the bin's edges over `start` and `end` (or
-     * the two names in `as`); `aggregate` folds each `groupby` group into
-     * one feature carrying `ops`; `coverage` replaces the features with
-     * runs of how many overlap each stretch, in `as` (`coverage`);
-     * `flatten` fans out an array field; `pileup` writes each feature's row
-     * in a greedy first-fit packing, which a `span` reading `row` draws as
-     * a pileup.
-     */
-    type: {
-      type: 'stringEnum',
-      model: types.enumeration('MarkTransformType', [...TRANSFORM_TYPES]),
-      defaultValue: DEFAULT_TRANSFORM_TYPE,
-      description:
-        'filter, formula, bin, aggregate, coverage, flatten or pileup',
-    },
-    /**
-     * #slot marks.transform.expr
-     * A jexl callback over `feature`, for a `filter` or `formula` step.
-     */
-    expr: {
-      type: 'string',
-      defaultValue: '',
-      description: 'jexl callback over feature',
-      contextVariable: ['feature'],
-    },
-    /**
-     * #slot marks.transform.field
-     * For a `bin` step, the field placing a feature in a bin, `start` when
-     * empty; for a `flatten` step, the array field fanned out, `subfeatures` when
-     * empty. A name or a dotted path into a structured field (`INFO.END`), as
-     * every field a step reads is; a `formula` step in front computes one.
-     */
-    field: {
-      type: 'string',
-      defaultValue: '',
-      description: 'field a bin or a flatten reads',
-    },
-    /**
-     * #slot marks.transform.step
-     * For a `bin` step: the bin width in bp, aligned to the genome, or
-     * `"auto"` for a width that follows the view's zoom — the target of four
-     * pixels per bin, snapped up to the next 1/2/5 rung, resolved before the
-     * fetch and keyed into it.
-     */
-    step: {
-      type: 'number',
-      model: types.union(types.number, types.literal(AUTO_BIN)),
-      defaultValue: 10000,
-      description: 'bin width in bp, or "auto" to follow the zoom',
-    },
-    /**
-     * #slot marks.transform.as
-     * The field a `formula`, `coverage` or `pileup` step writes, the two
-     * fields a `bin` step writes its edges to, or the field a `flatten`
-     * step writes each element's index to. A single name may be written as
-     * a string. A `pileup` leaving it empty writes `row`, and a `formula`
-     * leaving it empty writes `value`.
-     */
-    as: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: "output field, or a bin's two",
-    },
-    /**
-     * #slot marks.transform.fields
-     * For a `pileup` step: the two fields giving the interval it packs,
-     * `start` and `end` when empty.
-     */
-    fields: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: "a pileup's [start, end] fields",
-    },
-    /**
-     * #slot marks.transform.padding
-     * For a `pileup` step: bp of clearance kept between two features sharing
-     * a row, so a pileup does not butt its reads together.
-     */
-    padding: {
-      type: 'number',
-      defaultValue: 0,
-      description: 'bp between two features on one row',
-    },
-    /**
-     * #slot marks.transform.keepEmpty
-     * For a `flatten` step: keep a feature whose array field holds nothing,
-     * which is otherwise dropped.
-     */
-    keepEmpty: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'keep a feature whose array field is empty',
-    },
-    /**
-     * #slot marks.transform.groupby
-     * For an `aggregate` step: the fields whose distinct value sets make
-     * the groups. Empty takes the edges a preceding `bin` in the same list
-     * wrote — its `as`, or `["start", "end"]` — so binning and counting needs
-     * no restatement; with no `bin` in front it folds the whole region into
-     * one feature.
-     */
-    groupby: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'grouping fields; empty follows a preceding bin',
-    },
-    /**
-     * #slot marks.transform.ops
-     * For an `aggregate` step: the summaries each group carries.
-     */
-    ops: types.array(aggregateOpSchema),
-  },
-  { closed: true, preProcessSnapshot: liftAs },
-)
-
 // The one thing a load refuses of a `marks` list: a shape the display does
 // not draw, which the slot's own enumeration refuses on a write too, named
 // here because its message would otherwise be the enumeration's. Everything
@@ -404,7 +228,7 @@ const markSchema = ConfigurationSchema(
      * under a facet. A `bin` then an `aggregate` grouped by `start` and `end`
      * is a density: `count` per bin, plotted as `y`.
      */
-    transform: types.array(transformStepSchema),
+    transform: types.array(markTransformStep),
     /**
      * #slot marks.source
      * Where this mark draws from once the byte gate refuses the features.
@@ -541,7 +365,7 @@ export function configSchemaFactory() {
        * before any mark's own, after `jexlFilters`: where a field the facet
        * reads is made, such as a formula lifting a read's tag.
        */
-      transform: types.array(transformStepSchema),
+      transform: types.array(markTransformStep),
       /**
        * #slot facet
        * One band of rows per value of a field, split after `transform` and
@@ -643,4 +467,4 @@ export type LinearMarkDisplayConfigModel = ReturnType<
 >
 export type LinearMarkDisplayConfig = Instance<LinearMarkDisplayConfigModel>
 export type MarkConfig = Instance<typeof markSchema>
-export type MarkTransformStepConfig = Instance<typeof transformStepSchema>
+export type { MarkTransformStepConfig } from './markTransformConfigSchema.ts'

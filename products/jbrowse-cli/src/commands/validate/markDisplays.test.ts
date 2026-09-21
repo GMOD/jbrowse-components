@@ -198,7 +198,7 @@ describe('a marks list in a config file', () => {
     ).toEqual([])
   })
 
-  it('reads a step output written as a string or as a list the same way', () => {
+  it('reads a step output by the name the step writes it to', () => {
     const depth = (as: unknown) => [
       {
         shape: 'bar',
@@ -207,10 +207,20 @@ describe('a marks list in a config file', () => {
       },
     ]
     expect(found(depth('depth'))).toEqual([])
-    expect(found(depth(['depth']))).toEqual([])
     expect(found(depth('reads'))).toEqual([
       `error unwritten-y ${DISPLAY}.marks[0].encoding.y`,
     ])
+  })
+
+  it('says a pair slot naming another number of fields reads its default', () => {
+    expect(
+      found([
+        {
+          shape: 'span',
+          transform: [{ type: 'bin', step: 10, as: ['lo'] }],
+        },
+      ]),
+    ).toEqual([`warning step-pair ${DISPLAY}.marks[0].transform[0].as`])
   })
 
   it('says which slot of a step cannot run', () => {
@@ -220,7 +230,7 @@ describe('a marks list in a config file', () => {
           shape: 'bar',
           encoding: { y: 'sum' },
           transform: [
-            { expr: 'feature.score > 1' },
+            { type: 'filter', expr: 'feature.score > 1' },
             { type: 'bin', step: 0 },
             { type: 'aggregate', ops: [{ op: 'sum', as: 'sum' }] },
           ],
@@ -440,7 +450,7 @@ describe('the lift a file takes before the rules read it', () => {
             color: { value: 'red' },
             glyph: { value: 'triangle' },
           },
-          transform: [{ type: 'coverage', as: ['depth'] }],
+          transform: [{ type: 'coverage', as: 'depth' }],
         },
         { encoding: { color: { field: 'score', domain: ['0', '10'] } } },
       ],

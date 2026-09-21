@@ -237,10 +237,12 @@ export function accumulateConfig(
     // day a shared slot table arrived.
     // `types.model(` as well as `ConfigurationSchema(`: the root config is a
     // factory returning the former, and it is documenting the thing it returns
-    // either way. A `normalizeSnapshot` body has neither, which is the whole
-    // set of offenders.
+    // either way. `ConfigurationSchemaUnion(` documents its members, whose
+    // `#slot` tags name them. A `normalizeSnapshot` body has none of the three,
+    // which is the whole set of offenders.
     if (
       !obj.node.includes('ConfigurationSchema(') &&
+      !obj.node.includes('ConfigurationSchemaUnion(') &&
       !obj.node.includes('types.model(')
     ) {
       throw new Error(
