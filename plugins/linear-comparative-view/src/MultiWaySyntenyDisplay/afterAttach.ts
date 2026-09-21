@@ -1,13 +1,9 @@
-import {
-  dedupe,
-  getSession,
-  isAbortException,
-  morphClockMs,
-} from '@jbrowse/core/util'
+import { dedupe, getSession, isAbortException } from '@jbrowse/core/util'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
+import { installAnimationDeadline } from '@jbrowse/display-kit/displayAutoruns'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import {
   installClearHoverOnSurfaceMove,
   installLodTierInfoFetch,
@@ -289,43 +285,6 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
   )
 }
 
-/**
- * The lane transitions' own end. The component's frame loop drops each one as
- * its clock passes the end, but a loop that stalls — a hidden tab, a display
- * not mounted — would leave `animating` true and the lane culled wide for good,
- * so a timer at the latest end drops whatever the loop has not.
- */
-function installLaneMotionDeadline(self: MultiWaySyntenyDisplayModel) {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const clear = () => {
-    clearTimeout(timer)
-    timer = undefined
-  }
-  addDisposer(self, clear)
-  addDisposer(
-    self,
-    autorun(
-      () => {
-        clear()
-        const ends = [...self.laneTransitions.values()].map(laneMotionEnd)
-        if (ends.length > 0) {
-          const end = Math.max(...ends)
-          timer = setTimeout(
-            () => {
-              timer = undefined
-              if (isAlive(self)) {
-                self.tickLaneMotion(Math.max(morphClockMs(), end))
-              }
-            },
-            Math.max(0, end - morphClockMs()),
-          )
-        }
-      },
-      { name: 'MultiWayLaneMotionDeadline' },
-    ),
-  )
-}
-
 export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   // The viewport clear the fetch foundation installs answers the axes the VIEW
   // moves on. The lanes also relayout with the view still — a reorder, a hidden
@@ -341,7 +300,17 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     name: 'MultiWayClearHoverOnLaneRelayout',
   })
   installLaneFrameDecision(self)
-  installLaneMotionDeadline(self)
+  installAnimationDeadline(
+    self,
+    () => {
+      const ends = [...self.laneTransitions.values()].map(laneMotionEnd)
+      return ends.length > 0 ? Math.max(...ends) : undefined
+    },
+    () => {
+      self.endLaneMotion()
+    },
+    'MultiWayLaneMotionDeadline',
+  )
   // the header is also read for an untiered adapter that declares its lanes,
   // so the picker can offer the whole universe before any lane is placed
   installLodTierInfoFetch(self, {

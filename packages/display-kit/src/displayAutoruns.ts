@@ -1,5 +1,6 @@
+import { morphClockMs } from '@jbrowse/core/util'
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
 import { containingHost } from './foundationView.ts'
@@ -76,6 +77,42 @@ export function onDisplayedRegionsChange(
     view => {
       void view.displayedRegions
       clear()
+    },
+    { name },
+  )
+}
+
+/**
+ * End a display's transition at `endMs` whatever its frame loop did. The loop
+ * is the component's, and one that never runs — a display not mounted, a
+ * hidden tab — would hold `animating`, and every capture wait on it, for good.
+ * `endMs` is undefined while nothing moves.
+ */
+export function installAnimationDeadline(
+  self: IAnyStateTreeNode,
+  endMs: () => number | undefined,
+  end: () => void,
+  name: string,
+) {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  addDisposer(self, () => {
+    clearTimeout(timer)
+  })
+  namedAutorun(
+    self,
+    () => {
+      clearTimeout(timer)
+      const at = endMs()
+      if (at !== undefined) {
+        timer = setTimeout(
+          () => {
+            if (isAlive(self)) {
+              end()
+            }
+          },
+          Math.max(0, at - morphClockMs()),
+        )
+      }
     },
     { name },
   )

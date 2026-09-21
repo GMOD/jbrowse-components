@@ -5,9 +5,11 @@ import {
   getSession,
   morphClockMs,
 } from '@jbrowse/core/util'
-import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { autorun, untracked } from 'mobx'
+import {
+  autorunOnReadyView,
+  installAnimationDeadline,
+} from '@jbrowse/display-kit/displayAutoruns'
+import { untracked } from 'mobx'
 
 import { maxBottom } from './layoutQueries.ts'
 import {
@@ -197,35 +199,15 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
     },
     { name: 'CanvasYMorph' },
   )
-  installYMorphDeadline(self)
-}
-
-// The component's frame loop ends a morph, and one that never runs — a display
-// not mounted, a hidden tab — would hold `animating`, and every capture wait on
-// it, for good. A timer at the end time ends whatever the loop has not.
-function installYMorphDeadline(self: YMorphAutorunHost) {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  addDisposer(self, () => {
-    clearTimeout(timer)
-  })
-  addDisposer(
+  installAnimationDeadline(
     self,
-    autorun(
-      () => {
-        clearTimeout(timer)
-        const from = self.morphFromTops
-        if (from !== undefined) {
-          timer = setTimeout(
-            () => {
-              if (isAlive(self) && self.morphFromTops === from) {
-                self.endYMorph()
-              }
-            },
-            Math.max(0, self.morphStartMs + MORPH_DURATION_MS - morphClockMs()),
-          )
-        }
-      },
-      { name: 'CanvasYMorphDeadline' },
-    ),
+    () =>
+      self.morphFromTops === undefined
+        ? undefined
+        : self.morphStartMs + MORPH_DURATION_MS,
+    () => {
+      self.endYMorph()
+    },
+    'CanvasYMorphDeadline',
   )
 }
