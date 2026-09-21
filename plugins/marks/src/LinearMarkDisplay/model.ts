@@ -183,11 +183,6 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
           range: glyph.range.length > 0 ? [...glyph.range] : undefined,
           domain: glyph.domain.length > 0 ? [...glyph.domain] : undefined,
         }
-  // A `pileup` writes the row this mark then stands in, so its output field
-  // is the row channel's default and a pileup restates nothing.
-  const packed = mark.transform.find(
-    (s): s is PileupStepConfig => s.type === 'pileup',
-  )
   return {
     x,
     x2,
@@ -196,13 +191,11 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
     // axis type and its bounds in the fetch's inputs, so a menu toggle
     // between linear and log would refetch every region to no effect.
     y: y === '' ? undefined : y,
-    row: row || packed?.as,
+    row: row || undefined,
     color: scaled,
     glyph: glyphEncoding,
   }
 }
-
-type PileupStepConfig = Extract<MarkTransformStepConfig, { type: 'pileup' }>
 
 function pairOf(
   values: readonly string[],

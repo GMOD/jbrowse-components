@@ -893,7 +893,7 @@ test("a transform list reaches the worker as its own layer's steps, every slot w
 
 // Each of these is a restatement a config author had to write out, and each
 // has one answer the step or the channel beside it already knows.
-test('a bin hands its edges to the aggregate behind it, and a pileup its rows to the encoding', () => {
+test('a bin hands its edges to the aggregate behind it, and a pileup leaves the row to the worker', () => {
   const { createDisplay } = createTestEnvironment([
     {
       shape: 'bar',
@@ -934,9 +934,13 @@ test('a bin hands its edges to the aggregate behind it, and a pileup its rows to
   expect((layers[2]!.transform![0] as { groupby: string[] }).groupby).toEqual(
     [],
   )
-  expect(layers[3]!.encoding.row).toBe('row')
-  expect(layers[4]!.encoding.row).toBe('lane')
-  expect(layers[5]!.encoding.row).toBeUndefined()
+  // the worker reads the layer's own pileup (CoreEncodeFeatures.test.ts), so
+  // a caller of the RPC gets the same row a display does
+  expect(layers.slice(3).map(l => l.encoding.row)).toEqual([
+    undefined,
+    undefined,
+    undefined,
+  ])
 })
 
 test('a flatten keeping its empty features says so on the wire', () => {

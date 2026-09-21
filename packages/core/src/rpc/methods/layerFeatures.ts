@@ -1,5 +1,9 @@
 import { checkAbortSignal } from '../../util/aborting.ts'
-import { facetLayers, runTransforms } from '../../util/featureTransforms.ts'
+import {
+  DEFAULT_PILEUP_AS,
+  facetLayers,
+  runTransforms,
+} from '../../util/featureTransforms.ts'
 import { updateStatus } from '../../util/progress.ts'
 
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
@@ -7,9 +11,23 @@ import type { JexlInstance } from '../../util/jexlStrings.ts'
 import type {
   CoreEncodeFeaturesArgs,
   FacetSection,
+  LayerRequest,
+  PileupStep,
 } from '../../util/markEncodingTypes.ts'
 import type { StatusCallback } from '../../util/progress.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
+
+/**
+ * The field a layer's `row` channel reads: the one its encoding names, else the
+ * one its own `pileup` writes, so a packed layer restates nothing.
+ */
+export function layerRow({ encoding, transform = [] }: LayerRequest) {
+  const pileup = transform.find((s): s is PileupStep => s.type === 'pileup')
+  return (
+    encoding.row ??
+    (pileup === undefined ? undefined : (pileup.as ?? DEFAULT_PILEUP_AS))
+  )
+}
 
 /**
  * The feature list each layer of a `CoreEncodeFeatures` request encodes: the
@@ -52,7 +70,7 @@ export async function layerFeatures(
     ? facetLayers(
         shared,
         facet.field,
-        requested.map(r => ({ transform: r.transform, row: r.encoding.row })),
+        requested.map(r => ({ transform: r.transform, row: layerRow(r) })),
         jexl,
       )
     : undefined

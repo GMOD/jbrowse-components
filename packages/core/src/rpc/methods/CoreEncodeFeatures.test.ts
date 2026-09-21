@@ -7,6 +7,8 @@ import type PluginManager from '../../PluginManager.ts'
 import type {
   CoreEncodeFeaturesArgs,
   EncodedFeaturesResult,
+  FacetSpec,
+  LayerRequest,
 } from '../../util/markEncodingTypes.ts'
 import type { RpcResult } from '../RpcServer.ts'
 
@@ -141,6 +143,60 @@ test('a facet runs every layer per section and stacks the sections', async () =>
   expect([...layers[0]!.row!]).toEqual([0, 1, 2])
   expect([...layers[1]!.row!]).toEqual([0, 1, 1, 1])
   expect([...layers[1]!.y!]).toEqual([1, 1, 2, 1])
+})
+
+// The display used to write this default into the encoding it sent, so a
+// caller of the RPC itself read row 0 for every instance of a packed layer,
+// and a facet read `row` whatever field the pileup wrote.
+describe("a layer's own pileup is the row it stands in where its encoding names none", () => {
+  const reads = (['a', 'b', 'c'] as const).map(
+    (uniqueId, i) =>
+      new SimpleFeature({
+        uniqueId,
+        refName: 'ctgA',
+        start: i * 10,
+        end: 100,
+        source: 'k',
+      }),
+  )
+  async function rowsOf(layers: LayerRequest[], facet?: FacetSpec) {
+    jest.mocked(getAdapter).mockResolvedValue({
+      dataAdapter: {
+        getFeatures: () => {},
+        getFeaturesArray: async () => reads,
+        getZoomRange: async () => undefined,
+        setSequenceAdapterConfig: () => {},
+      },
+    } as unknown as Awaited<ReturnType<typeof getAdapter>>)
+    const method = new CoreEncodeFeatures({
+      jexl: createJexlInstance(),
+    } as PluginManager)
+    const result = await method.invoke({
+      sessionId: 's',
+      adapterConfig: { type: 'AnyAdapter' },
+      region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+      layers,
+      facet,
+    })
+    const { value } = result as RpcResult<EncodedFeaturesResult>
+    return value.layers.map(l => [...l.row!])
+  }
+  const packed = (row?: string): LayerRequest => ({
+    encoding: row === undefined ? {} : { row },
+    lanes: ['row'],
+    transform: [{ type: 'pileup', as: 'lane' }],
+  })
+
+  test('without a facet', async () => {
+    expect(await rowsOf([packed(), packed('score')])).toEqual([
+      [0, 1, 2],
+      [0, 0, 0],
+    ])
+  })
+
+  test('under a facet', async () => {
+    expect(await rowsOf([packed()], { field: 'source' })).toEqual([[0, 1, 2]])
+  })
 })
 
 test("a layer's own transform runs after the shared one, and the other layer sees neither", async () => {
