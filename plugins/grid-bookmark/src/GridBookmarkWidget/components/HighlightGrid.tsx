@@ -4,6 +4,7 @@ import {
   getSession,
   resolveSelectedIds,
 } from '@jbrowse/core/util'
+import { getHighlightColor } from '@jbrowse/core/util/highlights'
 import { useTheme } from '@mui/material'
 import {
   DataGrid,
@@ -35,7 +36,6 @@ interface Row {
   locString: string
   label: string
   assemblyName: string
-  color?: string
 }
 
 // lets us pass a context-aware empty message through DataGrid's noRowsOverlay
@@ -74,23 +74,24 @@ const HighlightGrid = observer(function HighlightGrid({
   const session = getSession(model)
   const hiddenCount = session.highlights.length - model.rows.length
   const rows = model.rows.map(({ key, highlight }): Row => {
-    const { assemblyName, refName, start, end, label, color } = highlight
+    const { assemblyName, refName, start, end, label } = highlight
     return {
       id: key,
       highlight,
       locString: assembleLocString({ refName, start, end }),
       label: label ?? '',
       assemblyName,
-      color,
     }
   })
-  const themeColor = theme.palette.highlight.main
+  const bandColor = (h: { color?: string }) =>
+    getHighlightColor(h, theme).toRgbString()
+  const [firstSelected] = model.selectedHighlights
 
   return (
     <DataGridFlexContainer>
       <SelectionActions
         count={model.selectedHighlights.length}
-        color={model.selectedHighlights[0]?.color ?? themeColor}
+        color={bandColor(firstSelected ?? {})}
         onDelete={() => {
           model.removeSelectedHighlights()
         }}
@@ -122,7 +123,7 @@ const HighlightGrid = observer(function HighlightGrid({
           ...assemblyColumn<Row>(rows.map(r => r.assemblyName)),
           colorColumn<Row>(
             'color',
-            row => row.color ?? themeColor,
+            row => bandColor(row.highlight),
             (row, color) => {
               session.updateHighlight(row.highlight, { color })
             },
