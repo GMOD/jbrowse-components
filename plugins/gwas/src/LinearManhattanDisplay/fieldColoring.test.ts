@@ -203,6 +203,16 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
+  it('keys threshold cuts written high to low in the order the points paint them', () => {
+    const { display } = createTestEnvironment({
+      color: { field: 'p', scale: 'threshold', domain: ['0.5', '0.1'] },
+    }).createDisplay()
+    const [scale] = display.colorScales
+    expect(
+      scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+    ).toEqual(['< 0.1', '0.1 – 0.5', '≥ 0.5'])
+  })
+
   it('LD is the ld field on a threshold scale, whose cuts default to the r² bins', () => {
     const { display } = createTestEnvironment({
       color: { field: 'population', domain: ['EUR'] },

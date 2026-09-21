@@ -15,7 +15,7 @@ import {
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
 import {
-  numericDomain,
+  thresholdCuts,
   thresholdLabels,
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
@@ -536,7 +536,7 @@ export function stateModelFactory(
             if (isLdColoring(self.color)) {
               return []
             }
-            const labels = thresholdLabels(numericDomain(domain))
+            const labels = thresholdLabels(thresholdCuts(domain))
             const colors = thresholdPalette(labels.length, palette)
             return [
               {

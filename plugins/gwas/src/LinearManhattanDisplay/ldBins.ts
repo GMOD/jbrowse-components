@@ -1,6 +1,6 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
-  numericDomain,
+  thresholdCuts,
   thresholdIndex,
   thresholdLabels,
   thresholdPalette,
@@ -68,7 +68,7 @@ export function ldColorDefaults(color: Pick<LdColor, 'domain' | 'palette'>) {
 // the default — spend the palette exactly and reach neither.
 function ldBins(color: Pick<LdColor, 'domain' | 'palette'>) {
   const { domain, palette } = ldColorDefaults(color)
-  const cuts = numericDomain(domain)
+  const cuts = thresholdCuts(domain)
   return { cuts, colors: thresholdPalette(cuts.length + 1, palette) }
 }
 

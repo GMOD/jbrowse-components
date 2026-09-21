@@ -80,3 +80,18 @@ test('a config moves the cuts and recolours the bins', () => {
     'No LD data',
   ])
 })
+
+test('cuts written high to low are read ascending, on the points and in the key', () => {
+  const custom = {
+    domain: ['0.8', '0.2'],
+    palette: ['#000080', '#008000', '#800000'],
+  }
+  expect(ldBinColor(custom)(0.5)).toBe(cssColorToABGR('#008000'))
+  expect(ldLegend(custom).map(s => s.label)).toEqual([
+    'Index SNP',
+    '≥ 0.8',
+    '0.2 – 0.8',
+    '< 0.2',
+    'No LD data',
+  ])
+})

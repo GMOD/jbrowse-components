@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/util/colorRamp'
 import {
   numericDomain,
+  thresholdCuts,
   thresholdIndex,
   thresholdLabels,
   thresholdPalette,
@@ -120,7 +121,7 @@ function thresholdScale({
   domain,
   palette,
 }: AlignmentsColorSetting): ThresholdBakedScale {
-  const cuts = numericDomain(domain)
+  const cuts = thresholdCuts(domain)
   const colors = thresholdPalette(cuts.length + 1, palette)
   const labels = thresholdLabels(cuts)
   return {

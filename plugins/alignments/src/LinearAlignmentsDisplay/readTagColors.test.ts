@@ -225,6 +225,18 @@ describe('a declared scale', () => {
     expect(scale.color('chr2')).toBe('#ff0000')
   })
 
+  test('threshold cuts written high to low are read ascending', () => {
+    const scale = scaleFor(NM, {
+      scale: 'threshold',
+      domain: ['0.5', '0.1'],
+      palette: ['#0000ff', '#00ff00', '#ff0000'],
+    })
+    expect(scale.color('0.3')).toBe('#00ff00')
+    expect(
+      scale.kind === 'threshold' ? scale.bins.map(b => b.label) : [],
+    ).toEqual(['< 0.1', '0.1 – 0.5', '≥ 0.5'])
+  })
+
   test('a declared scale over a strand tag replaces the strand vocabulary', () => {
     const XS: ColorBy = { type: 'tag', tag: 'XS' }
     const scale = scaleFor(XS, { domain: ['+'], palette: ['#123456'] })
