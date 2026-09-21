@@ -1,0 +1,187 @@
+import createJexlInstance from './jexl.ts'
+import {
+  addRow,
+  readFilterRows,
+  removeRow,
+  replaceRow,
+  resolveFields,
+  typedField,
+  withField,
+  withOp,
+  writeFilterRows,
+} from './jexlFilterRows.ts'
+
+import type { ConditionRow, FilterRows } from './jexlFilterRows.ts'
+
+const jexl = createJexlInstance()
+
+const choices = resolveFields([
+  { label: 'QUAL', path: ['QUAL'], type: 'number' },
+  { label: 'FILTER', path: ['FILTER'], type: 'text', multi: true },
+  { label: 'DB', path: ['INFO', 'DB'], type: 'flag' },
+  { label: 'maf', call: 'maf', type: 'number' },
+  { label: 'consequences', call: 'consequences', type: 'text' },
+])
+
+const read = (lines: string[]) => readFilterRows(lines, jexl, choices)
+
+function conditionAt(state: FilterRows, index: number) {
+  const row = state.rows[index]
+  if (row?.kind !== 'condition') {
+    throw new Error(`row ${index} is not a condition`)
+  }
+  return row
+}
+
+test('a line of conditions reads as one row each', () => {
+  const state = read([
+    "jexl:feature.QUAL >= 25 && feature.FILTER == 'PASS' && maf(feature) > 0.1",
+  ])
+  expect(
+    state.rows.map(row =>
+      row.kind === 'condition'
+        ? [row.field?.label, row.op, row.value, row.line]
+        : row.text,
+    ),
+  ).toEqual([
+    ['QUAL', '>=', '25', 0],
+    ['FILTER', '==', 'PASS', 0],
+    ['maf', '>', '0.1', 0],
+  ])
+})
+
+test('untouched lines write back byte-identical', () => {
+  const lines = [
+    "jexl:feature.QUAL>=25&&feature.FILTER=='PASS'",
+    'jexl:feature.INFO.AC / feature.INFO.AN > 0.1',
+    "jexl:get(feature,'score') > 5",
+    'jexl:feature.QUAL >',
+  ]
+  expect(writeFilterRows(read(lines))).toEqual(lines)
+})
+
+test('editing one condition writes each row of its line alone', () => {
+  const state = read([
+    "jexl:feature.QUAL>=25&&feature.FILTER=='PASS'",
+    'jexl:!feature.INFO.DB',
+  ])
+  const edited = replaceRow(state, { ...conditionAt(state, 0), value: '30' })
+  expect(writeFilterRows(edited)).toEqual([
+    'jexl:feature.QUAL >= 30',
+    "jexl:feature.FILTER == 'PASS'",
+    'jexl:!feature.INFO.DB',
+  ])
+})
+
+test('removing a condition keeps its siblings', () => {
+  const state = read(["jexl:feature.QUAL>=25&&feature.FILTER=='PASS'"])
+  expect(writeFilterRows(removeRow(state, state.rows[0]!.id))).toEqual([
+    "jexl:feature.FILTER == 'PASS'",
+  ])
+})
+
+test('a line rows cannot express stays text', () => {
+  const state = read([
+    'jexl:feature.INFO.AC / feature.INFO.AN > 0.1',
+    "jexl:'missense_variant' in consequences(feature)",
+    "jexl:feature.QUAL > 30 && feature.FILTER != 'PASS' || maf(feature) > 0",
+    'jexl:feature.QUAL >',
+    "jexl:feature.QUAL == 'high'",
+  ])
+  expect(state.rows.map(row => row.kind)).toEqual([
+    'text',
+    'text',
+    'text',
+    'text',
+    'text',
+  ])
+  expect(state.rows[0]).toMatchObject({
+    text: 'feature.INFO.AC / feature.INFO.AN > 0.1',
+  })
+})
+
+test('an edited text row is written with the prefix', () => {
+  const state = read(['jexl:feature.INFO.AC / feature.INFO.AN > 0.1'])
+  const row = state.rows[0]!
+  expect(
+    writeFilterRows(
+      replaceRow(state, {
+        kind: 'text',
+        id: row.id,
+        text: ' nAlt(feature) == 1 ',
+      }),
+    ),
+  ).toEqual(['jexl:nAlt(feature) == 1'])
+})
+
+test('a field outside the list shows as its path', () => {
+  const state = read(['jexl:feature.INFO.AF[0] > 0.1'])
+  expect(conditionAt(state, 0).field).toMatchObject({
+    label: 'INFO.AF[0]',
+    type: 'number',
+  })
+})
+
+test('a new row is written once complete', () => {
+  const state = addRow(read(["jexl:feature.FILTER == 'PASS'"]))
+  const blank = conditionAt(state, 1)
+  expect(writeFilterRows(state)).toEqual(["jexl:feature.FILTER == 'PASS'"])
+
+  const qual = withField(blank, choices[0]!)
+  expect(qual.op).toBe('>')
+  const done = replaceRow(state, { ...qual, op: '>=', value: '25' })
+  expect(writeFilterRows(done)).toEqual([
+    "jexl:feature.FILTER == 'PASS'",
+    'jexl:feature.QUAL >= 25',
+  ])
+})
+
+test('is one of writes a list, and switching operator keeps the value', () => {
+  const row: ConditionRow = withField(
+    { kind: 'condition', id: 0, op: '==', value: '' },
+    choices[1]!,
+  )
+  const list = withOp({ ...row, value: 'PASS' }, 'in')
+  expect(list.value).toEqual(['PASS'])
+  const state = replaceRow(
+    { lines: [], rows: [list] },
+    { ...list, value: ['PASS', 'q10'] },
+  )
+  expect(writeFilterRows(state)).toEqual([
+    "jexl:feature.FILTER in ['PASS', 'q10']",
+  ])
+  expect(withOp(list, '~').value).toBe('PASS')
+})
+
+test('flags and typed fields', () => {
+  const flag = withField(
+    { kind: 'condition', id: 0, op: '==', value: '' },
+    choices[2]!,
+  )
+  const typed = withField(
+    { kind: 'condition', id: 1, op: '==', value: '' },
+    typedField('INFO.CLNSIG'),
+  )
+  expect(
+    writeFilterRows({
+      lines: [],
+      rows: [
+        { ...flag, op: '!set' },
+        { ...typed, op: '~', value: '(?i)pathogenic' },
+      ],
+    }),
+  ).toEqual([
+    'jexl:!feature.INFO.DB',
+    "jexl:feature.INFO.CLNSIG ~ '(?i)pathogenic'",
+  ])
+})
+
+test('a number field drops a value that is not a number', () => {
+  const qual = withField(
+    { kind: 'condition', id: 0, op: '==', value: '' },
+    choices[0]!,
+  )
+  expect(
+    writeFilterRows({ lines: [], rows: [{ ...qual, value: 'abc' }] }),
+  ).toEqual([])
+})

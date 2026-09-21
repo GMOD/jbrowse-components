@@ -776,6 +776,13 @@ export default function MultiSampleVariantBaseModelF(
           },
           /**
            * #action
+           * The adapter's header metadata, fetched once per adapter config.
+           */
+          fetchAdapterMetadata() {
+            return fetchMetadata()
+          },
+          /**
+           * #action
            */
           selectFeature(feature: Feature) {
             fetchMetadata()

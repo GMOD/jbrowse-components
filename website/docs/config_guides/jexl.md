@@ -67,7 +67,7 @@ jexl: getInherited(feature, 'gene_biotype') // the attribute from the feature, o
 
 ```js
 jexl: max(0, 2)
-jexl: min(0, 2)
+jexl: min(feature.INFO.AF)
 jexl: sqrt(4)
 jexl: ceil(0.5)
 jexl: floor(0.5)

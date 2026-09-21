@@ -1,4 +1,5 @@
 import { getDialogHost } from '@jbrowse/core/util'
+import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the canvas base display model would undo that display's lazy loading.
@@ -14,6 +15,7 @@ import {
   getImpactColor,
 } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
+import { variantFilterFields } from '../shared/variantFilterFields.ts'
 import {
   SV_TYPE_COLOR_JEXL,
   svTypeLegendEntries,
@@ -227,25 +229,29 @@ export default function stateModelFactory(
         ]
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      // Same dialog as the base display's, seeded with the VCF vocabulary
-      // instead of the GFF one — see VARIANT_FILTER_EXAMPLES. Overridden rather
-      // than parameterized on the base because the two multi-sample displays
-      // and LD want the same list and none of them descends from it.
-      openFilterDialog() {
-        getDialogHost(self).queueDialog(handleClose => [
-          JexlFilterDialog,
-          {
-            model: self,
-            handleClose,
-            examples: VARIANT_FILTER_EXAMPLES,
-          },
-        ])
-      },
-    }))
+    .actions(self => {
+      const fetchMetadata = createAdapterMetadataFetch(self)
+      return {
+        /**
+         * #action
+         */
+        // Same dialog as the base display's, seeded with the VCF vocabulary
+        // instead of the GFF one — see VARIANT_FILTER_EXAMPLES. Overridden
+        // rather than parameterized on the base because the two multi-sample
+        // displays and LD want the same list and none of them descends from it.
+        openFilterDialog() {
+          getDialogHost(self).queueDialog(handleClose => [
+            JexlFilterDialog,
+            {
+              model: self,
+              handleClose,
+              examples: VARIANT_FILTER_EXAMPLES,
+              fields: variantFilterFields(fetchMetadata()),
+            },
+          ])
+        },
+      }
+    })
 }
 
 export type LinearVariantDisplayStateModel = ReturnType<
