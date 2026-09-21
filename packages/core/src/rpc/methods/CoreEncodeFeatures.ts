@@ -1,6 +1,5 @@
 import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegion from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts'
-import { FACET_ROW } from '../../util/featureTransforms.ts'
 import { rpcResult } from '../../util/librpc.ts'
 import {
   encodeFeatures,
@@ -58,13 +57,14 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
     const { jexl } = pluginManager
     const {
       layers: features,
+      rows,
       sections,
       zoomRange,
     } = await layerFeatures(dataAdapter, args, jexl)
     const layers = requested.map(({ encoding, lanes }, i) =>
       encodeFeatures(
         features[i]!,
-        sections ? { ...encoding, row: FACET_ROW } : encoding,
+        rows ? { ...encoding, row: rows[i] } : encoding,
         lanes,
         {
           jexl,

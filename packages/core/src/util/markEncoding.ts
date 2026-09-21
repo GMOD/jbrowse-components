@@ -88,14 +88,16 @@ export type ChannelReader<T = unknown> = (feature: Feature) => T
 /**
  * #api
  * What `encodeFeatures` takes: a {@link MarkEncoding}, any channel of which
- * may be a {@link ChannelReader} in place of its declared form. The declared
- * form is what crosses the wire; a reader is built in the worker.
+ * may be a {@link ChannelReader} in place of its declared form, and `row` the
+ * values themselves, one per input feature, where the caller computed them —
+ * a facet's stacked rows. The declared form is what crosses the wire; a
+ * reader or a value list is built in the worker.
  */
 export interface MarkEncodingInput {
   x?: FieldRef | ChannelReader
   x2?: FieldRef | ChannelReader
   y?: FieldRef | ChannelReader
-  row?: FieldRef | ChannelReader
+  row?: FieldRef | ChannelReader | ArrayLike<number>
   color?: ColorEncoding | ChannelReader<number>
   glyph?: GlyphEncoding | ChannelReader<number>
 }
@@ -246,9 +248,12 @@ export function encodeFeatures<L extends LaneName>(
     has('y') && yEncoding !== undefined
       ? channelReader(yEncoding, jexl)
       : undefined
+  const { row: rowEncoding } = encoding
+  const rowValues =
+    has('row') && typeof rowEncoding === 'object' ? rowEncoding : undefined
   const readRow =
-    has('row') && encoding.row !== undefined
-      ? channelReader(encoding.row, jexl)
+    has('row') && rowEncoding !== undefined && typeof rowEncoding !== 'object'
+      ? channelReader(rowEncoding, jexl)
       : undefined
 
   const x = new Uint32Array(n)
@@ -358,6 +363,9 @@ export function encodeFeatures<L extends LaneName>(
     }
     if (row && readRow) {
       const rv = Number(readRow(f))
+      row[count] = rv > 0 ? rv : 0
+    } else if (row && rowValues) {
+      const rv = rowValues[i]!
       row[count] = rv > 0 ? rv : 0
     }
     if (glyphCategories) {

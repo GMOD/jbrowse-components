@@ -1,6 +1,5 @@
 import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegion from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts'
-import { FACET_ROW } from '../../util/featureTransforms.ts'
 import { layerFeatures } from './layerFeatures.ts'
 
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
@@ -36,11 +35,6 @@ export default class CoreGetEncodedFeature extends RpcMethodTypeWithRenameRegion
       { ...args, layers: [asked] },
       pluginManager.jexl,
     )
-    const feature = layers[0]?.[featureIndex]
-    if (!feature) {
-      return undefined
-    }
-    const { [FACET_ROW]: _row, ...json } = feature.toJSON()
-    return json
+    return layers[0]?.[featureIndex]?.toJSON()
   }
 }

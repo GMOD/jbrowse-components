@@ -2726,7 +2726,6 @@
         "DEFAULT_FLATTEN_FIELD",
         "DEFAULT_PILEUP_AS",
         "DEFAULT_PILEUP_FIELDS",
-        "FACET_ROW",
         "aggregateFieldName",
         "facetLayers",
         "runTransforms"

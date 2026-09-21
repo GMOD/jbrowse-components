@@ -520,15 +520,19 @@ function coverage(features: readonly Feature[], step: CoverageStep) {
   return out
 }
 
-/**
- * #api
- * The field a faceted layer's features carry their stacked row in.
- */
-export const FACET_ROW = '\u0000row'
-
 function rowOf(value: unknown) {
   const row = Number(value)
   return row > 0 ? Math.floor(row) : 0
+}
+
+/**
+ * #api
+ * One layer of a faceted request: its features in section order, and the
+ * stacked row of each, index for index.
+ */
+export interface FacetedLayer {
+  features: readonly Feature[]
+  rows: readonly number[]
 }
 
 /**
@@ -537,15 +541,15 @@ function rowOf(value: unknown) {
  * layer's own steps run over each section alone, and the sections stacked —
  * a section's rows start where the one above it ends, and it is as tall as
  * the tallest layer packed it. Every layer's features come back in section
- * order carrying their stacked row in `FACET_ROW`, so a faceted display is
- * the unfaceted one drawn once per section.
+ * order beside their stacked rows, so a faceted display is the unfaceted one
+ * drawn once per section, and a feature is handed on as its steps left it.
  */
 export function facetLayers(
   features: readonly Feature[],
   field: FieldRef,
   layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[],
   jexl?: JexlInstance,
-) {
+): { layers: FacetedLayer[]; sections: FacetSection[] } {
   const categories = categoricalField(field)
   const read = fieldReader(field, jexl)
   const byKey = new Map<string, Feature[]>()
@@ -561,34 +565,34 @@ export function facetLayers(
   const readRows = layers.map(l =>
     fieldReader(l.row ?? DEFAULT_PILEUP_AS, jexl),
   )
-  const out = layers.map((): Feature[] => [])
+  const out = layers.map((): { features: Feature[]; rows: number[] } => ({
+    features: [],
+    rows: [],
+  }))
   const sections: FacetSection[] = []
   let next = 0
   for (const key of [...byKey.keys()].sort(categories.compare)) {
     const members = byKey.get(key)!
-    const placed = layers.map(({ transform }, l) =>
-      (transform?.length
+    let rowCount = 1
+    for (const [l, { transform }] of layers.entries()) {
+      const placed = transform?.length
         ? runTransforms(members, transform, jexl)
         : members
-      ).map(f => ({ f, row: rowOf(readRows[l]!(f)) })),
-    )
-    let rowCount = 1
-    for (const layer of placed) {
-      for (const { row } of layer) {
+      const readRow = readRows[l]!
+      const layer = out[l]!
+      for (const f of placed) {
+        const row = rowOf(readRow(f))
         if (row + 1 > rowCount) {
           rowCount = row + 1
         }
+        layer.features.push(f)
+        layer.rows.push(next + row)
       }
     }
-    placed.forEach((layer, l) => {
-      for (const { f, row } of layer) {
-        out[l]!.push(new DerivedFeature(f, { [FACET_ROW]: next + row }))
-      }
-    })
     sections.push({ key, firstRow: next, rowCount })
     next += rowCount
   }
-  return { layers: out as readonly (readonly Feature[])[], sections }
+  return { layers: out, sections }
 }
 
 /**

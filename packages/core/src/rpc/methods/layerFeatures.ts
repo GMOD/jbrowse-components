@@ -14,9 +14,9 @@ import type { Feature } from '../../util/simpleFeature.ts'
 /**
  * The feature list each layer of a `CoreEncodeFeatures` request encodes: the
  * region's features through the shared steps, split by the facet where the
- * request names one, then through each layer's own steps. An instance's
- * `featureIndex` indexes its layer's list, so the same request answers which
- * feature an instance is.
+ * request names one, then through each layer's own steps, with each faceted
+ * layer's stacked rows beside it. An instance's `featureIndex` indexes its
+ * layer's list, so the same request answers which feature an instance is.
  */
 export async function layerFeatures(
   dataAdapter: BaseFeatureDataAdapter,
@@ -59,11 +59,12 @@ export async function layerFeatures(
   const layers: (readonly Feature[])[] = requested.map(
     ({ transform: own }, i) =>
       faceted
-        ? faceted.layers[i]!
+        ? faceted.layers[i]!.features
         : own
           ? runTransforms(shared, own, jexl)
           : shared,
   )
+  const rows = faceted?.layers.map(l => l.rows)
   const sections: FacetSection[] | undefined = faceted?.sections
-  return { layers, sections, zoomRange }
+  return { layers, rows, sections, zoomRange }
 }

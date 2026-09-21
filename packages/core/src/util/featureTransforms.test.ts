@@ -1,4 +1,4 @@
-import { FACET_ROW, facetLayers, runTransforms } from './featureTransforms.ts'
+import { facetLayers, runTransforms } from './featureTransforms.ts'
 import createJexlInstance from './jexl.ts'
 import { placeRect } from './layouts/placeRect.ts'
 import SimpleFeature from './simpleFeature.ts'
@@ -304,11 +304,13 @@ test('a facet packs each section on its own and stacks the sections', () => {
     { key: 'a', firstRow: 0, rowCount: 1 },
     { key: 'b', firstRow: 1, rowCount: 2 },
   ])
-  expect(rows(layers[0]!, 'sample', 'start', FACET_ROW)).toEqual([
-    ['a', 0, 0],
-    ['b', 0, 1],
-    ['b', 5, 2],
+  const { features, rows: stacked } = layers[0]!
+  expect(rows(features, 'sample', 'start')).toEqual([
+    ['a', 0],
+    ['b', 0],
+    ['b', 5],
   ])
+  expect(stacked).toEqual([0, 1, 2])
 })
 
 test('a faceted section is the unfaceted layer over its own features, offset', () => {
@@ -327,11 +329,24 @@ test('a faceted section is the unfaceted layer over its own features, offset', (
       features.filter(f => f.get('sample') === key),
       steps,
     )
-    const faceted = layers[0]!.filter(f => f.get('sample') === key)
-    expect(faceted.map(f => Number(f.get(FACET_ROW)) - firstRow)).toEqual(
-      alone.map(f => f.get('row')),
+    const { features: placed, rows: stacked } = layers[0]!
+    const inSection = placed.flatMap((f, i) =>
+      f.get('sample') === key ? [stacked[i]! - firstRow] : [],
     )
+    expect(inSection).toEqual(alone.map(f => f.get('row')))
   }
+})
+
+// The encoder reads each feature's own fields, and the row beside it.
+test('a faceted layer hands on its features as its steps left them', () => {
+  const features = [
+    feature(0, 20, { sample: 'b' }),
+    feature(0, 20, { sample: 'a' }),
+  ]
+  const { layers } = facetLayers(features, 'sample', [{}])
+  const [first, second] = layers[0]!.features
+  expect(first).toBe(features[1])
+  expect(second).toBe(features[0])
 })
 
 test('a section is as tall as the tallest layer packed it, and a rowless layer sits on its first row', () => {
@@ -341,7 +356,7 @@ test('a section is as tall as the tallest layer packed it, and a rowless layer s
     [...PILEUP, {}],
   )
   expect(sections).toEqual([{ key: 'a', firstRow: 0, rowCount: 2 }])
-  expect(layers[1]!.map(f => f.get(FACET_ROW))).toEqual([0, 0])
+  expect(layers[1]!.rows).toEqual([0, 0])
 })
 
 test('a facet orders digit keys by magnitude and files a missing value under its own section', () => {
@@ -388,7 +403,8 @@ test('a facet stacks a section of 200,000 features', () => {
   })
   const { layers, sections } = facetLayers(features, 'sample', PILEUP)
   expect(sections).toEqual([{ key: 'a', firstRow: 0, rowCount: 4 }])
-  expect(layers[0]).toHaveLength(200_000)
+  expect(layers[0]!.features).toHaveLength(200_000)
+  expect(layers[0]!.rows).toHaveLength(200_000)
 })
 
 function variant(start: number, dp: number, svtype: string, svend: number) {

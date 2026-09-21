@@ -337,14 +337,10 @@ transferables.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
-### FACET_ROW
+### FacetedLayer
 
-The field a faceted layer's features carry their stacked row in.
-
-```js
-// type signature
-'\0row'
-```
+One layer of a faceted request: its features in section order, and the stacked
+row of each, index for index.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
 
@@ -353,9 +349,9 @@ The field a faceted layer's features carry their stacked row in.
 A faceted request's layers: the features split on `field`'s key, each layer's
 own steps run over each section alone, and the sections stacked — a section's
 rows start where the one above it ends, and it is as tall as the tallest layer
-packed it. Every layer's features come back in section order carrying their
-stacked row in `FACET_ROW`, so a faceted display is the unfaceted one drawn once
-per section.
+packed it. Every layer's features come back in section order beside their
+stacked rows, so a faceted display is the unfaceted one drawn once per section,
+and a feature is handed on as its steps left it.
 
 ```js
 // type signature
@@ -714,8 +710,10 @@ a feature in the band it names.
 ### MarkEncodingInput
 
 What `encodeFeatures` takes: a MarkEncoding, any channel of which may be a
-ChannelReader in place of its declared form. The declared form is what crosses
-the wire; a reader is built in the worker.
+ChannelReader in place of its declared form, and `row` the values themselves,
+one per input feature, where the caller computed them — a facet's stacked rows.
+The declared form is what crosses the wire; a reader or a value list is built in
+the worker.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 

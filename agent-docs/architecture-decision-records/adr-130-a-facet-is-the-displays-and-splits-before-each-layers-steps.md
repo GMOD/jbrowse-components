@@ -48,13 +48,14 @@ a mark does and runs before the facet, where a field the facet reads is made.
 **The worker splits before each mark's steps** (`facetLayers`): the display's
 steps run, the features split on `categoricalField(field).key`, each mark's
 steps run over each section alone, a section is as tall as the tallest mark
-packed it, and each feature carries its stacked row in `FACET_ROW`. The
-request carries `facet: { field }` and no domain.
+packed it, and each layer's stacked rows come back beside its features,
+which the encoder takes as the row channel's values. The request carries
+`facet: { field }` and no domain.
 
 **The main thread owns order, cap and visibility.** `facetLayout` caps over
 every loaded region's keys in natural order, keeps each merged value's band
 inside the overflow section, orders by the domain and drops the hidden
-sections. `remapFacetRows` moves every region's rows onto that layout and
+sections. `facetRegion` moves a region's rows onto that layout and
 filters a hidden section's instances out of every lane, rebuilding the hit
 index (`hitIndexOf`); the key and the extents are then read off what is
 drawn.
