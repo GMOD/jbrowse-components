@@ -3,19 +3,12 @@ import {
   assembleLocString,
   getSession,
 } from '@jbrowse/core/util'
-import { isAlive } from '@jbrowse/mobx-state-tree'
-import { runInAction } from 'mobx'
 
 import type {
   OffscreenMateLocus,
   OffscreenMateSpan,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
-import type { FollowHost } from '../SyntenyFollow/followHost.ts'
-import type {
-  AnimationMode,
-  NotificationSink,
-  Region,
-} from '@jbrowse/core/util'
+import type { AnimationMode, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -46,90 +39,6 @@ export function navSpan(
   return { start, end: Math.min(region.end, start + span) }
 }
 
-export interface FollowAnchorHost extends IStateTreeNode, FollowHost {
-  views: readonly unknown[]
-  // runs a navigation as the follow's own rather than as a gesture that takes
-  // the anchor
-  holdFollowAnchor: <T>(fn: () => T) => T
-}
-
-export interface FollowAnchorTake {
-  taken: boolean
-  release: () => void
-  hold: <T>(fn: () => T) => T
-}
-
-// for a panel stack that cannot follow
-export function noFollowAnchor(): FollowAnchorTake {
-  return {
-    taken: false,
-    release() {},
-    hold: fn => fn(),
-  }
-}
-
-// Point the follow at `row` for a navigation, and hand back the undo. Taken
-// before the navigation, because the follow propagates away from the anchor
-// and a row navigated while another holds it is pulled straight back.
-// `release` is safe on any path and any number of times: it writes only while
-// the host is alive and the anchor is still the one this take set.
-export function takeFollowAnchor(
-  host: FollowAnchorHost,
-  row: number,
-): FollowAnchorTake {
-  const previous = host.followAnchorIndex
-  const anchored = host.views[row]
-  const taken = host.followSynteny && previous !== row
-  if (taken) {
-    host.setFollowAnchorIndex(row)
-  }
-  return {
-    taken,
-    hold: fn => host.holdFollowAnchor(fn),
-    release() {
-      // by node, since a removal renumbers the rows
-      if (taken && isAlive(host)) {
-        const holder = host.views.indexOf(anchored)
-        if (holder !== -1 && host.followAnchorIndex === holder) {
-          host.setFollowAnchorIndex(previous)
-        }
-      }
-    },
-  }
-}
-
-// The snackbar every stack-moving navigation posts, with the Undo that puts
-// every row's viewport back and gives the anchor back in one transaction, so
-// the follow sees the settled pre-click state rather than a half-restored one
-export function notifyStackMove({
-  session,
-  loc,
-  anchor,
-  restore,
-  followNote,
-}: {
-  session: NotificationSink
-  loc: string
-  anchor: FollowAnchorTake
-  restore: () => void
-  // how the snackbar names the row the anchor went to
-  followNote: string
-}) {
-  session.notify(
-    anchor.taken ? `Showing ${loc}, ${followNote}` : `Showing ${loc}`,
-    'info',
-    {
-      name: 'Undo',
-      onClick: () => {
-        runInAction(() => {
-          restore()
-          anchor.release()
-        })
-      },
-    },
-  )
-}
-
 // `linkViews` holds the rows together in pixels and `installLinkedViewSync`
 // replays a row's zoom onto the others but not its scroll, so a flight there
 // pulls every row back to the apex while one of them travels
@@ -138,29 +47,6 @@ export function mateFlightAllowed(
   mode: AnimationMode,
 ) {
   return animationAllowed(mode) && !host.linkViews
-}
-
-// A bp window rather than a pixel pair: a snackbar carrying an action never
-// auto-hides, so the capture and its Undo can be a resize apart
-function captureRowViewport(view: LinearGenomeViewModel) {
-  const regions: Region[] = [...view.displayedRegions]
-  const { windowWidthBp, windowStartBp } = view
-  return () => {
-    if (isAlive(view)) {
-      view.setDisplayedRegions(regions)
-      view.setWindow(windowWidthBp, windowStartBp)
-    }
-  }
-}
-
-// Every row, since the follow re-places the others when one takes the anchor
-export function captureStackViewports(views: LinearGenomeViewModel[]) {
-  const restores = views.map(view => captureRowViewport(view))
-  return () => {
-    for (const restore of restores) {
-      restore()
-    }
-  }
 }
 
 export type MateNavDestination =

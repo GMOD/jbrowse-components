@@ -27,11 +27,10 @@ import { decideSpread } from './spreadDecision.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
-import type { FollowHost, FollowReport } from './followHost.ts'
+import type { FollowAnchorHost, FollowReport } from './followHost.ts'
 import type { FollowLevelState } from './followLevelStates.ts'
 import type { FollowStep } from './planFollowStep.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   LinearGenomeViewModel,
   RegionsOrientation,
@@ -50,16 +49,13 @@ export interface FollowPair {
   movingIndex: number
 }
 
-export interface SyntenyFollowHost extends IStateTreeNode, FollowHost {
+export interface SyntenyFollowHost extends FollowAnchorHost {
   followMatchOrientation: boolean
   followPairs: FollowPair[]
   setFollowReport: (report: Partial<FollowReport>) => void
   // which row a gesture landed on, and whether that row is showing anything
   // yet — a row's first navigation is its initialization, not a gesture
   views: readonly { displayedRegions: readonly unknown[] }[]
-  // an action, so that every navigation run inside it is a NESTED action and
-  // the gesture middleware below, which reads root actions alone, lets it by
-  holdFollowAnchor: <T>(fn: () => T) => T
 }
 
 // The root actions a person's own gesture on a row produces: a drag or a

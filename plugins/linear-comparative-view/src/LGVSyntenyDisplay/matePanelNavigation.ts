@@ -4,16 +4,12 @@ import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
 
 import { resolvedMateSpan } from '../LaunchSyntenyView/resolvePanel.ts'
 import { movePanelsToSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
-import {
-  captureStackViewports,
-  noFollowAnchor,
-  takeFollowAnchor,
-} from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
+import { beginStackMove } from '../SyntenyFollow/stackMove.ts'
 import { hasAlignmentString } from '../syntenyMate.ts'
 
 import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
-import type { FollowAnchorHost } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
+import type { FollowAnchorHost } from '../SyntenyFollow/followHost.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   AbstractViewModel,
@@ -39,27 +35,6 @@ export interface PanelStack
   levels?: { tracks: { configuration: AnyConfigurationModel }[] }[]
   // The follow state is OPTIONAL because only one of the two stacks has it: a
   // LinearSyntenyView can be following, BreakpointSplitView has no such mode.
-}
-
-/**
- * A stack that has the follow at all, whether or not it is switched on.
- *
- * The three properties are one fact, so they are tested as one: with them
- * declared independently optional, a stack carrying `followSynteny` but no
- * setter would take an optional call and write nothing, so the follow anchor
- * would stay where it was and the caller would never learn. Whether the follow is ON is
- * `takeFollowAnchor`'s decision and stays there — this only answers whether
- * there is anything to ask.
- */
-type FollowingStack = PanelStack & FollowAnchorHost
-
-function isFollowingStack(stack: PanelStack): stack is FollowingStack {
-  return (
-    typeof stack.followSynteny === 'boolean' &&
-    typeof stack.followAnchorIndex === 'number' &&
-    typeof stack.setFollowAnchorIndex === 'function' &&
-    typeof stack.holdFollowAnchor === 'function'
-  )
 }
 
 /**
@@ -203,8 +178,7 @@ export function matePanelSpan(
  * MEANS: this panel stays, the others come to it, which is the item's own label.
  * `showOffscreenMateContig` states the rule at length.
  *
- * `takeFollowAnchor` itself rather than the two conditions restated here, which
- * is what a stack with no follow at all needs `isFollowingStack` for.
+ * `beginStackMove` decides whether the stack has a follow to take at all.
  * `movePanelsToSpan` owns the rest: the release when nothing landed, and the
  * Undo for a panel that could only be moved by replacing its regions.
  */
@@ -226,11 +200,7 @@ export async function moveMatePanels({
 }) {
   const span = matePanelSpan(feature, region)
   if (span) {
-    // captured before the take, which already re-places the other panels
-    const restore = captureStackViewports([...stack.views])
-    const anchor = isFollowingStack(stack)
-      ? takeFollowAnchor(stack, anchorIndex)
-      : noFollowAnchor()
+    const { restore, anchor } = beginStackMove(stack, anchorIndex)
     await movePanelsToSpan({
       panels: indexes
         .map(i => stack.views[i])

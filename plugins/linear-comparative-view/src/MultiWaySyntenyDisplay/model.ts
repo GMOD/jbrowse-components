@@ -53,7 +53,7 @@ import {
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
-import { captureStackViewports } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
+import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
 import { axisPlacement, axisSpan, displayedRegionSpans } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'

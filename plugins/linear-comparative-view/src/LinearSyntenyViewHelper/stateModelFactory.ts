@@ -20,13 +20,8 @@ import {
 } from '@jbrowse/synteny-core'
 
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
-import {
-  captureStackViewports,
-  mateFlightAllowed,
-  mateNavDestination,
-  notifyStackMove,
-  takeFollowAnchor,
-} from './offscreenMateNav.ts'
+import { beginStackMove, notifyStackMove } from '../SyntenyFollow/stackMove.ts'
+import { mateFlightAllowed, mateNavDestination } from './offscreenMateNav.ts'
 import { offscreenMateStrips } from './offscreenMateStrip.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
@@ -524,9 +519,7 @@ export function linearSyntenyViewHelperModelFactory(
           session.notify(dest.reason, 'warning')
           return
         }
-        // captured before the take, which already re-places the other rows
-        const restoreStack = captureStackViewports([...parentView.views])
-        const anchor = takeFollowAnchor(parentView, hit.navRow)
+        const { restore, anchor } = beginStackMove(parentView, hit.navRow)
         if (dest.kind === 'scroll') {
           // the flight reads back what it wrote each frame, so the Undo below
           // ends it rather than being overwritten by its next frame
@@ -548,7 +541,7 @@ export function linearSyntenyViewHelperModelFactory(
           session,
           loc: dest.loc,
           anchor,
-          restore: restoreStack,
+          restore,
           followNote: 'and following this panel',
         })
       },

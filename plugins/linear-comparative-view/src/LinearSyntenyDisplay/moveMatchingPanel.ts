@@ -7,17 +7,13 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { getCanonicalRefNameFn } from '@jbrowse/synteny-core'
 
-import {
-  captureStackViewports,
-  notifyStackMove,
-  takeFollowAnchor,
-} from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
+import { beginStackMove, notifyStackMove } from '../SyntenyFollow/stackMove.ts'
 
 import type {
   ResolvedSpan,
   SpanOfInterest,
 } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
-import type { FollowAnchorTake } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
+import type { FollowAnchorTake } from '../SyntenyFollow/stackMove.ts'
 import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
 import type { NotificationSink } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -340,11 +336,9 @@ export async function moveMatchingPanel({
   })
   if (isAlive(stack) && isAlive(movingView)) {
     if (span) {
-      // Captured before the take, which already re-places the other panels.
-      // After the resolve too, so an alignment that turns out to have no answer
-      // leaves the anchor where the user had it.
-      const restore = captureStackViewports([...stack.views])
-      const anchor = takeFollowAnchor(stack, stayingIndex)
+      // after the resolve, so an alignment that turns out to have no answer
+      // leaves the anchor where the user had it
+      const { restore, anchor } = beginStackMove(stack, stayingIndex)
       await movePanelsToSpan({
         panels: [movingView],
         span,

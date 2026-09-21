@@ -1,3 +1,5 @@
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 // The follow state every surface that reads or takes the anchor agrees on: the
 // header toggle, the sync menu, the row menus, the off-screen mate click and
 // the LGV display's panel move each used to redeclare these three.
@@ -5,6 +7,16 @@ export interface FollowHost {
   followSynteny: boolean
   followAnchorIndex: number
   setFollowAnchorIndex: (idx: number) => void
+}
+
+// A stack a navigation can take the anchor on: its rows, so a take finds its
+// row again after a removal renumbers them, and the action that runs a
+// navigation as the follow's own. An action, so everything run inside it is a
+// NESTED action, which the gesture middleware, reading root actions alone,
+// lets by.
+export interface FollowAnchorHost extends IStateTreeNode, FollowHost {
+  views: readonly unknown[]
+  holdFollowAnchor: <T>(fn: () => T) => T
 }
 
 /**
