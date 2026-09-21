@@ -2444,6 +2444,16 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/animationAllowed": {
+      "package": "@jbrowse/core",
+      "names": [
+        "MORPH_DURATION_MS",
+        "animationAllowed",
+        "easeInOutCubic",
+        "morphClockMs"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/assemblyConfigUtils": {
       "package": "@jbrowse/core",
       "names": [

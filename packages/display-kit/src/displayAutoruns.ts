@@ -1,4 +1,4 @@
-import { morphClockMs } from '@jbrowse/core/util'
+import { morphClockMs } from '@jbrowse/core/util/animationAllowed'
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'

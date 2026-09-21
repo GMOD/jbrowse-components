@@ -257,6 +257,7 @@ export default [
   '@jbrowse/core/util/adapterMetadata',
   '@jbrowse/core/util/addRelativeUris',
   '@jbrowse/core/util/analytics',
+  '@jbrowse/core/util/animationAllowed',
   '@jbrowse/core/util/assemblyConfigUtils',
   '@jbrowse/core/util/bandHeight',
   '@jbrowse/core/util/bandLayout',
