@@ -156,6 +156,21 @@ measured (the stability table under
 §"Lane stability, measured") and is the
 best-engineered part of the display; nothing here recommends touching it.
 
+**Transitions.** A settle that re-decides a lane onto the contig it already
+draws moves the lane over `MORPH_DURATION_MS` rather than snapping it
+(`laneTransitionsAfter`, `MW/laneMotion.ts`). Both frames are affine in the
+lane's bp, so the move is a per-lane map in the render state (`laneMaps`), which
+the ribbons take through their per-edge scale and pan and the glyphs through
+their block's range and `reversed`; a frame of the move uploads nothing. While a
+lane moves, its frame carries the frames it moves from (`RowFrame.morphFrom`)
+and the lane culls to all of them, so the first frame is the old picture; the
+lane repacks once more when the move lands. A contig change, a first decision,
+a jump whose two pictures share nothing on screen, a start more than 4×
+magnified, a move under half a pixel, and `animationAllowed` saying no all
+snap. The model publishes `animating` for the capture waits, and a deadline in
+`MW/afterAttach.ts` ends every transition at its end time whatever the
+component's frame loop did.
+
 **Lane genes.** `laneGeneAdapters` walks every session track (connections
 included) and keeps, per lane, the best-ranked single-assembly annotation track
 by adapter type (`MW/laneAnnotation.ts`). One `CoreGetFeatures` per lane over
