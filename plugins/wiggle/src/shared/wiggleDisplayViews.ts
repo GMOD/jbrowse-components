@@ -117,6 +117,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
     sharedGpuProps() {
       return {
         wiggleColor: self.wiggleColor,
+        origin: self.origin,
         effectiveSummaryScoreMode: self.effectiveSummaryScoreMode,
         renderingType: self.renderingType,
         maxGapMultiple: self.maxGapMultiple,

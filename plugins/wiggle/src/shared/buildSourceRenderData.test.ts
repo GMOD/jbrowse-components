@@ -40,6 +40,7 @@ const baseColor: ResolvedWiggleColor = {
   negColor: '#e01e26',
   pivot: 0,
   rampLut: null,
+  rampMid: undefined,
   perSource: false,
 }
 
@@ -49,6 +50,7 @@ const baseGpuProps: WiggleGpuProps = {
   sources: [{ name: 'default' }],
   faceted: true,
   wiggleColor: baseColor,
+  origin: 0,
   effectiveSummaryScoreMode: 'avg',
   renderingType: 'xyplot',
   maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,

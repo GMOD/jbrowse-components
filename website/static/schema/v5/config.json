@@ -5779,7 +5779,7 @@
               "enum": ["score", "source"]
             },
             "scale": {
-              "description": "how field becomes a colour: threshold cuts score at its lowest cut and paints each side; linear and log fade from the colour at domainMid out to the ends of the y domain, which is the density picture, through range, else scheme, else the two-sided fade; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
+              "description": "how field becomes a colour: threshold cuts score at its lowest cut and paints each side; linear and log run range, else scheme, else viridis across the y domain with domainMid at the middle stop, which is the density picture, and a one-colour range fades from white at domainMid; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
               "enum": ["none", "categorical", "linear", "log", "threshold"]
             },
             "domain": {

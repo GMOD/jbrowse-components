@@ -27,6 +27,7 @@ function sourceLayers({
   posColor,
   negColor,
   pivot,
+  origin,
 }: {
   source: WiggleSourceData
   summaryScoreMode: string
@@ -34,6 +35,7 @@ function sourceLayers({
   posColor: [number, number, number]
   negColor: [number, number, number]
   pivot: number
+  origin: number
 }): WiggleLayer[] {
   if (
     renderingType === RENDERING_TYPE_LINE ||
@@ -56,6 +58,7 @@ function sourceLayers({
     posColor,
     negColor,
     pivot,
+    origin,
     renderingType,
   })
 }
@@ -74,6 +77,8 @@ export interface WiggleGpuProps {
   // The `color` object resolved: the pair each mode partitions by, the value
   // they part at, and whether each source paints its own colour on both sides.
   wiggleColor: ResolvedWiggleColor
+  // The score filled bars grow from, which orders a band's layers.
+  origin: number
   // The mode actually drawn, never the raw config slot, since density has no
   // whiskers presentation and resolves to 'avg'. Named for the model getter
   // that produces it so a new caller cannot skip the resolution.
@@ -130,6 +135,7 @@ export function buildSourceRenderData(
     sources,
     faceted,
     wiggleColor,
+    origin,
     effectiveSummaryScoreMode: summaryScoreMode,
     renderingType,
     maxGapMultiple,
@@ -173,6 +179,7 @@ export function buildSourceRenderData(
         posColor,
         negColor: perSource ? posColor : defaultNegColor,
         pivot,
+        origin,
       })
       for (const layer of layers) {
         const into = layer.band ? bands : result

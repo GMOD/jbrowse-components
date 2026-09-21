@@ -9,6 +9,7 @@ import {
   RENDERING_TYPE_SCATTER,
 } from '@jbrowse/wiggle-core'
 
+import { rampMidNorm } from './getDensityColor.ts'
 import * as wiggleShader from './shaders/wiggle.generated.ts'
 import * as wiggleBandShader from './shaders/wiggleBand.generated.ts'
 import * as wiggleDensityShader from './shaders/wiggleDensity.generated.ts'
@@ -62,6 +63,8 @@ interface WiggleParams {
   scatterPointSize: number
   lineWidth: number
   origin: number
+  pivot: number
+  rampMid: number | undefined
   // Density's named-ramp table, resolved from a name on the render state: the
   // GPU samples these bytes as the density pass's texture and Canvas2D indexes
   // the same cached array. Never the instance buffer — the score→colour
@@ -83,6 +86,8 @@ function wiggleParams(
     scatterPointSize: state.scatterPointSize,
     lineWidth: state.lineWidth,
     origin: state.origin,
+    pivot: state.pivot,
+    rampMid: state.rampMid,
     rampLut:
       renderingType === RENDERING_TYPE_DENSITY ? (state.rampLut ?? null) : null,
   }
@@ -118,6 +123,14 @@ function writeWiggleUniforms(
     scatterPointSize: p.scatterPointSize,
     lineWidth: p.lineWidth,
     origin: p.origin,
+    pivot: p.pivot,
+    rampMidNorm: rampMidNorm(
+      p.domainY[0],
+      p.domainY[1],
+      p.scaleType,
+      p.rampMid,
+      p.symlogConstant,
+    ),
     // Screen density, so a fragment measuring a true CSS-px distance can size
     // its ramp to one OUTPUT pixel. `getDpr()` and not `clip.pxH /
     // canvasHeight`: past the backing-store clamp the two differ, and the ramp
@@ -188,6 +201,7 @@ function wiggleShape(
             scaleType: p.scaleType,
             symlogConstant: p.symlogConstant,
             origin: p.origin,
+            pivot: p.pivot,
           },
           p,
         )
@@ -228,7 +242,12 @@ const densityShape = wiggleShape(
   },
   type => type === RENDERING_TYPE_DENSITY,
   (row, p) => {
-    drawDensity({ ...row, ...rgb255(row.source), rampLut: p.rampLut })
+    drawDensity({
+      ...row,
+      ...rgb255(row.source),
+      rampLut: p.rampLut,
+      rampMid: p.rampMid,
+    })
   },
 )
 

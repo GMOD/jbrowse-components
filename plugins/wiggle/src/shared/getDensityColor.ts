@@ -1,13 +1,16 @@
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
-import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
+import {
+  densityGradientT,
+  densityRampT,
+} from './shaders/wiggleCommon.js.generated.ts'
 
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 // Density-color factory: maps a score to an "rgb(r,g,b)" string that fades
-// from white at the pivot (`origin`, default 0) toward the (r,g,b) color as
-// |score - origin| grows toward the bigger end of the domain. Caches 256 string
+// from white at the pivot (default 0) toward the (r,g,b) color as
+// |score - pivot| grows toward the bigger end of the domain. Caches 256 string
 // buckets so the hot drawing loop avoids per-feature string allocation.
 export function makeDensityRgbStringFn(
   domainMin: number,
@@ -16,7 +19,7 @@ export function makeDensityRgbStringFn(
   r: number,
   g: number,
   b: number,
-  origin = 0,
+  pivot = 0,
   symlogConstant = 1,
 ) {
   const normalize = makeScoreNormalizer(
@@ -25,7 +28,7 @@ export function makeDensityRgbStringFn(
     scaleType,
     symlogConstant,
   )
-  const zeroNorm = normalize(origin)
+  const zeroNorm = normalize(pivot)
   // The ramp position is wiggleCommon.slang's own `densityGradientT`, generated
   // into TS (adr-051). Both sides feed it already-normalized scores: the
   // normalizer is the other decision, and it is shared too (scoreScale.slang,
@@ -52,9 +55,30 @@ export function makeDensityRgbStringFn(
   }
 }
 
-// The named-ramp counterpart, for a density track whose `densityColorRamp`
-// names a LUT (viridis etc.): the same score → t chain the default fn and the
-// shader share (normalizeScore then densityGradientT), indexed into the same
+/**
+ * Where a named ramp's middle stop sits in the normalized domain: `rampMid`'s
+ * position, else 0.5, which runs the ramp straight from one end to the other.
+ * The GPU's `rampMidNorm` uniform and the Canvas2D fill read this one number.
+ */
+export function rampMidNorm(
+  domainMin: number,
+  domainMax: number,
+  scaleType: ScaleTypeCode,
+  rampMid: number | undefined,
+  symlogConstant = 1,
+) {
+  return rampMid === undefined
+    ? 0.5
+    : makeScoreNormalizer(
+        domainMin,
+        domainMax,
+        scaleType,
+        symlogConstant,
+      )(rampMid)
+}
+
+// The named-ramp counterpart: the same normalizer the default fn and the
+// shader share, then wiggleCommon.slang's `densityRampT` into the same
 // 256-entry ramp bytes the GPU samples as the density pass's texture —
 // `makeRampFillStyleLut` is the fillStyle LUT HiC's and LD's Canvas2D twins
 // already index the same way. densityColorParity.test.ts sweeps the two
@@ -64,7 +88,7 @@ export function makeDensityLutFillFn(
   domainMax: number,
   scaleType: ScaleTypeCode,
   ramp: Uint8Array,
-  origin = 0,
+  rampMid: number | undefined,
   symlogConstant = 1,
 ) {
   const normalize = makeScoreNormalizer(
@@ -73,7 +97,13 @@ export function makeDensityLutFillFn(
     scaleType,
     symlogConstant,
   )
-  const zeroNorm = normalize(origin)
+  const midNorm = rampMidNorm(
+    domainMin,
+    domainMax,
+    scaleType,
+    rampMid,
+    symlogConstant,
+  )
   const fill = makeRampFillStyleLut(ramp)
-  return (score: number) => fill(densityGradientT(normalize(score), zeroNorm))
+  return (score: number) => fill(densityRampT(normalize(score), midNorm))
 }

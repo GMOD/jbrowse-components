@@ -427,11 +427,13 @@ function runEncodeScenario(fixture: SourceColumns[]) {
   const gpuProps: WiggleGpuProps = {
     sources: fixture.map(s => ({ name: s.name })),
     faceted: true,
+    origin: 0,
     wiggleColor: {
       posColor: WIGGLE_POS_COLOR_DEFAULT,
       negColor: WIGGLE_NEG_COLOR_DEFAULT,
       pivot: PIVOT,
       rampLut: null,
+      rampMid: undefined,
       perSource: false,
     },
     effectiveSummaryScoreMode: 'avg',

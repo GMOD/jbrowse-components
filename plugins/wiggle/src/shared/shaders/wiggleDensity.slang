@@ -74,17 +74,17 @@ DensityVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
 
   float norm = normalizeScore(
     inst.score, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
-  float zeroNorm = normalizeScore(
-    u.origin, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
+  float pivotNorm = normalizeScore(
+    u.pivot, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
 
-  float t = densityGradientT(norm, zeroNorm);
+  float t = densityGradientT(norm, pivotNorm);
 
   DensityVsOut o;
   o.position = rowRectClipPos(
     inst.startEnd.x, inst.startEnd.y, inst.rowIndex, vid, r);
   o.color = float4(
     lerp(float3(1.0), unpackRGBA(inst.color).rgb, t), 1.0);
-  o.rampT = t;
+  o.rampT = densityRampT(norm, u.rampMidNorm);
   return o;
 }
 

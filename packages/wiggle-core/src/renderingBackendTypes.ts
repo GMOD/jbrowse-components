@@ -71,10 +71,14 @@ export interface WiggleGPURenderState {
   // Stroke thickness in px for line rendering. Default 1 matches the canvas
   // default line width.
   lineWidth: number
-  // Score value the xyplot bars pivot around and the density gradient centers
-  // on (= the origin config slot). Bars grow up for scores above it and
-  // down for scores below; default 0 reproduces the fixed-at-zero baseline.
+  // The score xyplot bars grow from, the `origin` config slot.
   origin: number
+  // The score the colour parts at: which side a line, band or bar paints, and
+  // where the two-sided density fade is white. A threshold's cut, else `origin`.
+  pivot: number
+  // The score at a density ramp's middle stop; absent runs the ramp straight
+  // across the domain.
+  rampMid?: number
   // Density's colour ramp, already resolved to its 256 RGBA entries. Absent
   // is the inline white→track-colour fade, which is what a per-row colour
   // needs and one LUT cannot encode; present, both backends colour through

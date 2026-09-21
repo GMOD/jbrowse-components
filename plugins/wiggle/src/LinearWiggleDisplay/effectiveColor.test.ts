@@ -1,5 +1,6 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 
+import { makeWiggleRenderState } from '../shared/wiggleComponentUtils.ts'
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
@@ -141,4 +142,15 @@ test('a threshold parts at its lowest cut, as every threshold scale sorts them',
     '< 2',
     '≥ 2',
   ])
+})
+
+test('a threshold cut moves the colour, and the bars still grow from the origin', () => {
+  const display = makeDisplay(['a'], true)
+  display.setColor({ field: 'score', scale: 'threshold', domain: ['2'] })
+  const state = makeWiggleRenderState(display, {
+    width: 100,
+    height: 50,
+    numRows: 1,
+  })
+  expect([state.origin, state.pivot]).toEqual([0, 2])
 })

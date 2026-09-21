@@ -136,6 +136,7 @@ describe('the wiggle painters', () => {
     scatterPointSize: 2,
     lineWidth: 1,
     origin: 0,
+    pivot: 0,
   }
 
   test('draws XY plot rectangles', () => {
@@ -170,6 +171,7 @@ describe('the wiggle painters', () => {
     paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       origin: 5,
+      pivot: 5,
     })
 
     expect(fillRectCalls.length).toBe(2)
@@ -488,6 +490,7 @@ const lineState = {
   scatterPointSize: 2,
   lineWidth: 1,
   origin: 0,
+  pivot: 0,
 }
 const zeroY = 200
 const score5Y = 100
@@ -718,6 +721,7 @@ describe('a log domain entirely under 1', () => {
     scatterPointSize: 2,
     lineWidth: 1,
     origin: 0,
+    pivot: 0,
   }
 
   function barHeights(scores: number[]) {
@@ -826,6 +830,7 @@ describe('the whiskers band', () => {
     scatterPointSize: 2,
     lineWidth: 1,
     origin: 0,
+    pivot: 0,
   }
   const posColor: [number, number, number] = [0, 0, 1]
   const negColor: [number, number, number] = [1, 0, 0]

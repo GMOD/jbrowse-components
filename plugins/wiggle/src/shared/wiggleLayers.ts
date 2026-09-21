@@ -207,6 +207,7 @@ export function makeSummaryLayers({
   posColor,
   negColor,
   pivot,
+  origin,
   renderingType,
 }: {
   data: FeatureArrays
@@ -214,6 +215,7 @@ export function makeSummaryLayers({
   posColor: [number, number, number]
   negColor: [number, number, number]
   pivot: number
+  origin: number
   renderingType: WiggleRenderingType
 }): WiggleLayer[] {
   const { featurePositions, numFeatures } = data
@@ -225,15 +227,15 @@ export function makeSummaryLayers({
   // per instance? Two things force the split:
   //   - density paints a row from the layer color alone (`drawDensity` builds
   //     one gradient function per layer and has no per-instance path), and
-  //   - filled bars of MORE THAN ONE band nest around the pivot — every band
-  //     shares the pivot edge and extends to its value — so they must paint
+  //   - filled bars of MORE THAN ONE band nest around the origin — every band
+  //     shares the origin edge and extends to its value — so they must paint
   //     back-to-front, largest magnitude first. That order is opposite between
   //     the two sides (positive: max..min; negative: min..max), which a single
   //     band order can't express.
   // Everything else keeps the band whole and colors per instance: scatter
   // doesn't overpaint. A lone filled band is in that group too — its pos and
-  // neg bars grow away from the pivot in opposite directions and never overlap.
-  if (isDensityMode || (isFilled && bands.length > 1)) {
+  // neg bars grow away from the origin in opposite directions and never overlap.
+  if (isDensityMode) {
     const sides = bands.map(b =>
       whiskerBandSides(
         featurePositions,
@@ -244,9 +246,44 @@ export function makeSummaryLayers({
         b.negTint(negColor),
       ),
     )
+    return [
+      ...sides.map(s => s.pos),
+      ...[...sides].reverse().map(s => s.neg),
+    ].filter(l => l !== undefined)
+  }
+  if (isFilled && bands.length > 1) {
+    // The sides are the ones bars grow into from the origin, which sets the
+    // painting order; each bar still takes its colour from its side of the
+    // pivot, which is the same side unless a threshold cuts elsewhere.
+    const sides = bands.map(b => {
+      const { pos, neg } = whiskerBandSides(
+        featurePositions,
+        b.scores,
+        numFeatures,
+        origin,
+        b.posTint(posColor),
+        b.negTint(negColor),
+      )
+      const colored = (layer: WiggleLayer | undefined, tint: Tint) => {
+        if (!layer || origin === pivot) {
+          return layer
+        }
+        const colorsAbgr = bandColorsAbgr(
+          layer.featureScores,
+          layer.numFeatures,
+          pivot,
+          posColor,
+          negColor,
+          tint,
+          tint,
+        )
+        return colorsAbgr ? { ...layer, colorsAbgr } : layer
+      }
+      return { pos: colored(pos, b.posTint), neg: colored(neg, b.negTint) }
+    })
     // Positive side back-to-front: max (light, tallest) painted first, min
-    // (dark) on top near the pivot. Negative side reverses: min (light,
-    // deepest) first, max (dark) on top near the pivot.
+    // (dark) on top near the origin. Negative side reverses: min (light,
+    // deepest) first, max (dark) on top near the origin.
     return [
       ...sides.map(s => s.pos),
       ...[...sides].reverse().map(s => s.neg),

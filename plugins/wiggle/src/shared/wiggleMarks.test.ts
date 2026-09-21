@@ -70,6 +70,7 @@ const DEFAULT_STATE = {
   scatterPointSize: 2,
   lineWidth: 1,
   origin: 0,
+  pivot: 0,
 }
 
 describe('the wiggle mark list', () => {
@@ -603,6 +604,7 @@ describe('the wiggle mark list', () => {
     backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       origin: 5,
+      pivot: 5,
     })
 
     const f32 = hal.getLastUniformsF32()!

@@ -19,6 +19,7 @@ const RAMP = {
   posColor: '#b2182b',
   negColor: '#2166ac',
   pivot: 0,
+  rampMid: undefined,
 }
 
 // A configured constant well away from the auto value this domain derives
@@ -31,9 +32,11 @@ function makeModel(symlogConstant: number, scheme?: 'viridis') {
     renderingType: 'density',
     scatterPointSize: 2,
     lineWidth: 1,
+    origin: 0,
     wiggleColor: {
       ...RAMP,
       rampLut: scheme ? rampLutOf({ scheme }) : null,
+      rampMid: undefined,
       perSource: false,
     },
   }
@@ -89,7 +92,7 @@ test('and still agrees when the constant is left at the auto default', () => {
 // Named-ramp mode: every stop is verbatim a render LUT entry — the same cached
 // bytes the GPU uploads as the density pass's texture and the Canvas2D/SVG
 // painter indexes — reached through the same score → t chain the plot paints
-// with, so the pivot end sits on LUT[0].
+// with, so the low end of the domain sits on LUT[0].
 test('named-ramp stops are the render LUT entries the plot paints', () => {
   const model = makeModel(10, 'viridis')
   const state = renderState(model)
@@ -99,7 +102,7 @@ test('named-ramp stops are the render LUT entries the plot paints', () => {
     DOMAIN[1],
     state.scaleType,
     lut,
-    state.origin,
+    state.rampMid,
     state.symlogConstant,
   )
   const bar = stops(model)
@@ -138,6 +141,7 @@ test('a CSS color the picker writes is parsed, not read as hex', () => {
     posColor: 'rgb(178, 24, 43)',
     pivot: 2,
     rampLut: null,
+    rampMid: undefined,
   })
   expect(scale.stops.at(-1)!.color).toBe('rgb(178,24,43)')
 })

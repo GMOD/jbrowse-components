@@ -19,6 +19,7 @@ export interface ScoreRamp {
   posColor: string
   negColor: string
   pivot: number
+  rampMid: number | undefined
   // the resolved densityColorRamp LUT — the same cached bytes both renderers
   // color through — or null for the default white→track-color fade. Required
   // rather than optional so a new producer can't quietly leave the key on the
@@ -38,7 +39,7 @@ const STEPS = 16
  * A hand-written neg-white-pos gradient would show both ends fully saturated
  * and so overstate the short side. A named ramp (`rampLut`) goes through the
  * same score → t chain into the same LUT bytes the renderers index, so each
- * stop is verbatim a render LUT entry and the pivot sits on LUT[0].
+ * stop is verbatim a render LUT entry and `rampMid` sits on the middle one.
  *
  * `symlogConstant` is the raw slot: `0` there means "derive from the domain",
  * and this resolves it the way the backends do, so the bar cannot draw a
@@ -55,7 +56,14 @@ export function scoreRampScale(
   const c = resolveSymlogConstant(min, max, symlogConstant)
   let colorAt: (score: number) => string
   if (ramp.rampLut) {
-    colorAt = makeDensityLutFillFn(min, max, type, ramp.rampLut, ramp.pivot, c)
+    colorAt = makeDensityLutFillFn(
+      min,
+      max,
+      type,
+      ramp.rampLut,
+      ramp.rampMid,
+      c,
+    )
   } else {
     const [pr, pg, pb] = cssColorToRgb(ramp.posColor)
     const [nr, ng, nb] = cssColorToRgb(ramp.negColor)

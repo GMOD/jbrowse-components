@@ -160,11 +160,13 @@ function props(renderingType: string, mode: string): WiggleGpuProps {
   return {
     sources: sourceList,
     faceted: true,
+    origin: 0,
     wiggleColor: {
       posColor: WIGGLE_POS_COLOR_DEFAULT,
       negColor: WIGGLE_NEG_COLOR_DEFAULT,
       pivot,
       rampLut: null,
+      rampMid: undefined,
       perSource: false,
     },
     effectiveSummaryScoreMode: mode,
@@ -430,6 +432,7 @@ function rowArgs(c: never, layer: SourceRenderData) {
     scaleType: SCALE_TYPE_LINEAR,
     symlogConstant: 1,
     origin: pivot,
+    pivot,
     lineWidth: 1,
   }
 }

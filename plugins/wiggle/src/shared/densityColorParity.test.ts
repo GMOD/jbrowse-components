@@ -10,8 +10,12 @@ import { rampLutOf } from './densityColorRamp.ts'
 import {
   makeDensityLutFillFn,
   makeDensityRgbStringFn,
+  rampMidNorm,
 } from './getDensityColor.ts'
-import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
+import {
+  densityGradientT,
+  densityRampT,
+} from './shaders/wiggleCommon.js.generated.ts'
 import { GLSL_FRAGMENT } from './shaders/wiggleDensity.glsl.generated.ts'
 import { WGSL_SOURCE } from './shaders/wiggleDensity.wgsl.generated.ts'
 
@@ -79,8 +83,9 @@ const TRACK_COLORS: [number, number, number][] = [
   [37, 118, 189],
 ]
 
-// The named-ramp (LUT) mode's GPU side: the same generated score→t chain as
-// above, then wiggleDensity.slang's fragment samples the ramp texture through
+// The named-ramp (LUT) mode's GPU side: the generated normalizer, then
+// wiggleCommon.slang's `densityRampT` against the `rampMidNorm` uniform, then
+// wiggleDensity.slang's fragment samples the ramp texture through
 // colorRampLut.slang — a linear-filter, clamp-to-edge SampleLevel that both
 // HALs configure identically, mirrored here texel for texel. `rampColor` maps
 // t into texel space so entry i lands on its own texel center, which is why
@@ -90,13 +95,13 @@ function gpuLutChannels(
   score: number,
   domainMin: number,
   domainMax: number,
-  scaleType: number,
+  scaleType: ScaleTypeCode,
   symlogConstant: number,
-  origin: number,
+  rampMid: number | undefined,
 ) {
-  const t = densityGradientT(
+  const t = densityRampT(
     normalizeScore(score, domainMin, domainMax, scaleType, symlogConstant),
-    normalizeScore(origin, domainMin, domainMax, scaleType, symlogConstant),
+    rampMidNorm(domainMin, domainMax, scaleType, rampMid, symlogConstant),
   )
   const u = Math.min(Math.max(t, 0), 1) * (COLOR_RAMP_LUT_ENTRIES - 1)
   const i0 = Math.floor(u)
@@ -319,79 +324,52 @@ describe('named-ramp (LUT) density mode', () => {
     expect(bucketStep).toBeLessThanOrEqual(4)
   })
 
-  describe.each(CASES)(
+  const LUT_CASES = CASES.flatMap(c => [
+    { ...c, name: `${c.name}, no domainMid`, rampMid: undefined },
+    { ...c, name: `${c.name}, domainMid at the origin`, rampMid: c.origin },
+  ])
+
+  describe.each(LUT_CASES)(
     '$name',
-    ({ domain, scaleType, symlogConstant, origin }) => {
+    ({ domain, scaleType, symlogConstant, rampMid }) => {
       const [min, max] = domain
       const canvasFn = makeDensityLutFillFn(
         min,
         max,
         scaleType,
         lut,
-        origin,
+        rampMid,
         symlogConstant,
       )
+      const gpuAt = (score: number) =>
+        gpuLutChannels(lut, score, min, max, scaleType, symlogConstant, rampMid)
+      const entry = (i: number) => [lut[i * 4], lut[i * 4 + 1], lut[i * 4 + 2]]
+      const withinBucket = (got: number[], want: number[]) => {
+        for (const [i, c] of want.entries()) {
+          expect(Math.abs(got[i]! - c)).toBeLessThanOrEqual(bucketStep)
+        }
+      }
 
       test.each(samples(domain))(
         'both backends land within one LUT bucket at score %p',
         score => {
-          const gpu = gpuLutChannels(
-            lut,
-            score,
-            min,
-            max,
-            scaleType,
-            symlogConstant,
-            origin,
-          )
-          const canvas = parseRgba(canvasFn(score))
-          for (let i = 0; i < 3; i++) {
-            expect(Math.abs(gpu[i]! - canvas[i]!)).toBeLessThanOrEqual(
-              bucketStep,
-            )
-          }
+          withinBucket(parseRgba(canvasFn(score)), gpuAt(score))
         },
       )
 
-      test('the pivot is the first LUT entry on both backends, exactly', () => {
-        const first = [lut[0], lut[1], lut[2]]
-        expect(
-          gpuLutChannels(
-            lut,
-            origin,
-            min,
-            max,
-            scaleType,
-            symlogConstant,
-            origin,
-          ),
-        ).toEqual(first)
-        expect(parseRgba(canvasFn(origin))).toEqual(first)
+      test('the domain ends are the ramp ends, not folded onto one', () => {
+        if (max > min && (rampMid === undefined || rampMid > min)) {
+          expect(gpuAt(min)).toEqual(entry(0))
+          withinBucket(parseRgba(canvasFn(min)), entry(0) as number[])
+          expect(gpuAt(max)).toEqual(entry(255))
+          withinBucket(parseRgba(canvasFn(max)), entry(255) as number[])
+        }
       })
 
-      test('the far end of the domain is the last LUT entry', () => {
-        const far = max === min ? null : origin - min < max - origin ? max : min
-        if (far !== null) {
-          const last = [lut[255 * 4], lut[255 * 4 + 1], lut[255 * 4 + 2]]
-          const gpu = gpuLutChannels(
-            lut,
-            far,
-            min,
-            max,
-            scaleType,
-            symlogConstant,
-            origin,
-          )
-          // GPU-exact: t = 1 puts both bilinear taps on texel 255 under
-          // clamp-to-edge. The Canvas side hoists the normalizer's reciprocal,
-          // so on symlog its t can land one bucket short (the same
-          // pre-existing wrinkle the default mode's sweep documents) — within
-          // one bucket, not exact.
-          expect(gpu).toEqual(last)
-          const canvas = parseRgba(canvasFn(far))
-          for (const [i, c] of last.entries()) {
-            expect(Math.abs(canvas[i]! - c!)).toBeLessThanOrEqual(bucketStep)
-          }
+      test('domainMid sits on the middle stop', () => {
+        if (rampMid !== undefined && rampMid > min && rampMid < max) {
+          withinBucket(gpuAt(rampMid), entry(127) as number[])
+          withinBucket(parseRgba(canvasFn(rampMid)), entry(127) as number[])
         }
       })
     },

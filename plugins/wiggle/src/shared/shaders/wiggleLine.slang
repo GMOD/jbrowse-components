@@ -96,7 +96,7 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
   o.negColor = float4(unpackRGBA(inst.negColor).rgb, 1.0);
   o.centerLine = centerLine;
-  o.pivotYPx = rowScoreToYPx(u.origin, rowTop, rowHeight, u);
+  o.pivotYPx = rowScoreToYPx(u.pivot, rowTop, rowHeight, u);
   o.yPx = (1.0 - sy) / pxToClip;
   return o;
 }

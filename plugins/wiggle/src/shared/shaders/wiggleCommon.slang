@@ -25,7 +25,7 @@
 // back from there.
 //! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, NO_PREV_START, MIN_FILL_WIDTH_PX
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
-//! js-export: densityGradientT
+//! js-export: densityGradientT, densityRampT
 //! js-skip: scoreToY — a plot-box wrapper over scoreScale.slang's normalizeScore, which is where the shared decision is and where it is exported from. The Canvas2D side composes the same normalizer with its own box (wiggle-core yScaleTicks.ts), so a twin of this signature would have no caller
 module wiggleCommon;
 
@@ -79,9 +79,14 @@ public struct Uniforms {
   public float  viewportWidth;
   public float  scatterPointSize;
   public float  lineWidth;
-  // Score the xyplot bars pivot around and the density gradient centers on
-  // (= origin). Default 0 keeps the fixed-at-zero baseline.
+  // The score xyplot bars grow from.
   public float  origin;
+  // The score the colour parts at: the line and band colour sides and the
+  // density fade's white. A threshold's cut, else `origin`.
+  public float  pivot;
+  // Where a named density ramp's middle stop sits, as a normalized score:
+  // `domainMid`'s, else 0.5, which runs the ramp straight across the domain.
+  public float  rampMidNorm;
   // symlog's linear-region width, already resolved on the JS side (a 0 in the
   // config means "derive from the domain", and that rule lives there so both
   // backends normalize against the same number). Unread for the other scales.
@@ -135,4 +140,13 @@ public float4 pivotSideColor(float centerLineYPx, float pivotYPx, float4 posColo
 public float densityGradientT(float norm, float zeroNorm) {
   float maxDist = max(zeroNorm, 1.0 - zeroNorm);
   return abs(norm - zeroNorm) / max(maxDist, 0.0001);
+}
+
+// A named ramp's position: the domain's ends at its end stops and `midNorm` at
+// its middle one, linear on each side, so a diverging scheme parts at
+// `domainMid` and a sequential one runs low to high.
+public float densityRampT(float norm, float midNorm) {
+  return norm <= midNorm
+    ? 0.5 * norm / max(midNorm, 0.0001)
+    : 0.5 + 0.5 * (norm - midNorm) / max(1.0 - midNorm, 0.0001);
 }

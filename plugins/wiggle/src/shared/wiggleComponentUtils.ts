@@ -84,6 +84,7 @@ export interface WiggleRenderStateModel {
   renderingType: string
   scatterPointSize: number
   lineWidth: number
+  origin: number
   wiggleColor: ResolvedWiggleColor
 }
 
@@ -118,8 +119,9 @@ export function makeWiggleRenderState(
     numRows: Math.max(1, numRows),
     scatterPointSize: self.scatterPointSize,
     lineWidth: self.lineWidth,
-    // bars pivot around, and density fades from, the colour's cut point
-    origin: self.wiggleColor.pivot,
+    origin: self.origin,
+    pivot: self.wiggleColor.pivot,
     rampLut: self.wiggleColor.rampLut ?? undefined,
+    rampMid: self.wiggleColor.rampMid,
   }))
 }

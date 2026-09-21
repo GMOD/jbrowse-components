@@ -11,3 +11,13 @@ function _max(a: number, b: number) {
 export function densityGradientT(norm: number, zeroNorm: number): number {
   return (Math.abs((norm - zeroNorm)) / _max(_max(zeroNorm, (1.0 - zeroNorm)), 0.00009999999747379))
 }
+
+export function densityRampT(norm: number, midNorm: number): number {
+  let _t0: number
+  if ((norm <= midNorm)) {
+    _t0 = ((0.5 * norm) / _max(midNorm, 0.00009999999747379))
+  } else {
+    _t0 = (0.5 + ((0.5 * (norm - midNorm)) / _max((1.0 - midNorm), 0.00009999999747379)))
+  }
+  return _t0
+}

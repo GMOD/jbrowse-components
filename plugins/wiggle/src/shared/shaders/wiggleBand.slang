@@ -89,7 +89,7 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
   o.posColor = float4(unpackRGBA(inst.posColor).rgb, 1.0);
   o.negColor = float4(unpackRGBA(inst.negColor).rgb, 1.0);
   o.inkPx = float2((y - topEdge) * topPerp, (bottomEdge - y) * bottomPerp);
-  o.belowPivotPx = y - rowScoreToYPx(u.origin, rowTop, rowHeight, u);
+  o.belowPivotPx = y - rowScoreToYPx(u.pivot, rowTop, rowHeight, u);
   return o;
 }
 

@@ -139,15 +139,18 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
       scatterPointSize: 2,
       lineWidth: 1,
       origin: 0,
+      pivot: 0,
     },
     gpuProps: () => ({
       sources: [{ name: 'a' }, { name: 'b' }],
       faceted: true,
+      origin: 0,
       wiggleColor: {
         posColor: '#0068d1',
         negColor: '#e01e26',
         pivot: 0,
         rampLut: null,
+        rampMid: undefined,
         perSource: false,
       },
       effectiveSummaryScoreMode: 'avg',

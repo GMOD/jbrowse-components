@@ -61,7 +61,7 @@ test('a scheme resolves to the LUT both backends index', () => {
     color({ field: 'score', scale: 'linear', scheme: 'viridis' }),
     0,
   )
-  expect(out.rampLut).toBe(rampLutOf({ scheme: 'viridis' }))
+  expect(out.rampLut).toEqual(rampLutOf({ scheme: 'viridis' }))
 })
 
 // A ramp field named anything else used to become linear because a ramp was
@@ -91,14 +91,15 @@ test('reverse turns a ramp and its ends round', () => {
   expect([...reversed.rampLut!.slice(0, 4)]).toEqual([
     ...forward.rampLut!.slice(-4),
   ])
-  const fade = resolved(
-    color({ field: 'score', scale: 'linear', reverse: true }),
-    0,
-  )
-  expect([fade.negColor, fade.posColor]).toEqual([
-    WIGGLE_POS_COLOR_DEFAULT,
-    WIGGLE_NEG_COLOR_DEFAULT,
-  ])
+})
+
+test('a linear scale with no range or scheme paints viridis', () => {
+  const out = resolved(color({ field: 'score', scale: 'linear' }), 0)
+  expect(out.rampLut).toEqual(rampLutOf({ scheme: 'viridis' }))
+  expect(
+    resolved(color({ field: 'score', scale: 'linear', reverse: true }), 0)
+      .rampLut,
+  ).toEqual(rampLutOf({ scheme: 'viridis', reverse: true }))
 })
 
 test('CSS stops build one cached LUT, and domainMid moves the pivot', () => {

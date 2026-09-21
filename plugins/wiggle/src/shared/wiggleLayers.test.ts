@@ -1,3 +1,4 @@
+import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_SCATTER,
@@ -36,6 +37,7 @@ describe('makeSummaryLayers', () => {
     posColor,
     negColor,
     pivot: 0,
+    origin: 0,
     summaryScoreMode: 'whiskers',
   }
 
@@ -98,6 +100,7 @@ describe('makeSummaryLayers', () => {
       data: summaryData,
       ...base,
       pivot: 6,
+      origin: 6,
       renderingType: RENDERING_TYPE_XYPLOT,
     })
     // no per-instance colors: each split layer is a single solid color
@@ -112,12 +115,40 @@ describe('makeSummaryLayers', () => {
     ])
   })
 
+  test('filled bands stack by the origin and colour by the pivot', () => {
+    // origin 0, pivot 6: every value grows up from 0, so there is one stack
+    // max..avg..min, and each bar takes pos or neg by its side of 6.
+    const result = makeSummaryLayers({
+      data: summaryData,
+      ...base,
+      pivot: 6,
+      origin: 0,
+      renderingType: RENDERING_TYPE_XYPLOT,
+    })
+    expect(result.map(l => [...l.featureScores])).toEqual([
+      [9, 12],
+      [5, 8],
+      [2, 4],
+    ])
+    const abgr = (c: [number, number, number]) => normalizedRgbToABGR(...c)
+    const light = (c: [number, number, number]) =>
+      abgr(c.map(v => v + (1 - v) * 0.4) as [number, number, number])
+    const dark = (c: [number, number, number]) =>
+      abgr(c.map(v => v * 0.6) as [number, number, number])
+    expect(result.map(l => [...l.colorsAbgr!])).toEqual([
+      [light(posColor), light(posColor)],
+      [abgr(negColor), abgr(posColor)],
+      [dark(negColor), dark(negColor)],
+    ])
+  })
+
   test('density splits a lone band into solid sides', () => {
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
       summaryScoreMode: 'min',
       pivot: 3,
+      origin: 3,
       renderingType: RENDERING_TYPE_DENSITY,
     })
     expect(result.map(l => [...l.featureScores])).toEqual([[4], [2]])
@@ -141,6 +172,7 @@ describe('makeSummaryLayers', () => {
       ...base,
       summaryScoreMode,
       pivot: 6,
+      origin: 6,
       renderingType: RENDERING_TYPE_SCATTER,
     })
 
@@ -163,6 +195,7 @@ describe('makeSummaryLayers', () => {
       data: noSummaryData,
       ...base,
       pivot: 6,
+      origin: 6,
       renderingType: RENDERING_TYPE_SCATTER,
     })[0]!.colorsAbgr!
     const [below, above] = [avg[0]!, avg[1]!]
@@ -178,6 +211,7 @@ describe('makeSummaryLayers', () => {
       data: summaryData,
       ...base,
       pivot: 6,
+      origin: 6,
       renderingType: RENDERING_TYPE_SCATTER,
     })
     expect(avg!.colorsAbgr).toHaveLength(2)
@@ -200,6 +234,7 @@ describe('makeSummaryLayers', () => {
       data: summaryData,
       ...base,
       pivot: 100,
+      origin: 100,
       renderingType: RENDERING_TYPE_SCATTER,
     })
     const red = (abgr: number | undefined) => (abgr ?? 0) & 0xff

@@ -41,8 +41,11 @@ export interface RowDraw {
   // the other scales, but carried on every row draw so the Canvas2D fallback
   // and the SVG export normalize with the number the shader was handed.
   symlogConstant: number
-  // Score the bars pivot around / density gradient centers on (origin).
+  // The score xyplot bars grow from.
   origin: number
+  // The score the colour parts at: a line's and band's sides, and the white of
+  // the two-sided density fade.
+  pivot: number
 }
 
 // Per-instance colors (summary bands) exist on every layer the GPU encodes
@@ -125,19 +128,26 @@ export function drawDensity({
   domainY,
   scaleType,
   symlogConstant,
-  origin,
+  pivot,
   r,
   g,
   b,
   rampLut,
-}: RowDraw & { r: number; g: number; b: number; rampLut: Uint8Array | null }) {
+  rampMid,
+}: RowDraw & {
+  r: number
+  g: number
+  b: number
+  rampLut: Uint8Array | null
+  rampMid: number | undefined
+}) {
   const colorFn = rampLut
     ? makeDensityLutFillFn(
         domainY[0],
         domainY[1],
         scaleType,
         rampLut,
-        origin,
+        rampMid,
         symlogConstant,
       )
     : makeDensityRgbStringFn(
@@ -147,7 +157,7 @@ export function drawDensity({
         r,
         g,
         b,
-        origin,
+        pivot,
         symlogConstant,
       )
   const positions = source.featurePositions
@@ -261,7 +271,7 @@ export function drawLine({
   domainY,
   scaleType,
   symlogConstant,
-  origin,
+  pivot,
   rgb,
   negRgb,
   lineWidth,
@@ -276,7 +286,7 @@ export function drawLine({
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
-  strokeBySide(ctx, scoreToY(origin) + rowTop, rgb, negRgb, pen => {
+  strokeBySide(ctx, scoreToY(pivot) + rowTop, rgb, negRgb, pen => {
     let inRun = false
     for (let i = 0; i < n; i++) {
       const endBp = positions[i * 2 + 1]!
@@ -317,7 +327,7 @@ export function drawLineCenter({
   domainY,
   scaleType,
   symlogConstant,
-  origin,
+  pivot,
   rgb,
   negRgb,
   lineWidth,
@@ -335,7 +345,7 @@ export function drawLineCenter({
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
-  strokeBySide(ctx, scoreToY(origin) + rowTop, rgb, negRgb, pen => {
+  strokeBySide(ctx, scoreToY(pivot) + rowTop, rgb, negRgb, pen => {
     for (let i = 0; i < n; i++) {
       const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
       const cy = scoreToY(scores[i]!) + rowTop
@@ -361,7 +371,7 @@ export function drawWhiskerBand({
   domainY,
   scaleType,
   symlogConstant,
-  origin,
+  pivot,
   interpolated,
 }: RowDraw & { interpolated: boolean }) {
   const { band, numFeatures: n } = source
@@ -428,14 +438,14 @@ export function drawWhiskerBand({
   let above = false
   let below = false
   for (let i = 0; i < n; i++) {
-    above ||= maxScores[i]! >= origin
-    below ||= minScores[i]! < origin
+    above ||= maxScores[i]! >= pivot
+    below ||= minScores[i]! < pivot
   }
   const posFill = cssRgba(source.color, WHISKER_BAND_OPACITY)
   const negFill = cssRgba(source.negColor ?? source.color, WHISKER_BAND_OPACITY)
   if (above && below && posFill !== negFill) {
     const dpr = getDpr()
-    const pivotY = Math.round((scoreToY(origin) + rowTop) * dpr) / dpr
+    const pivotY = Math.round((scoreToY(pivot) + rowTop) * dpr) / dpr
     const rowBottom = rowTop + rowHeight
     withClip(ctx, -1e6, rowTop - 1, 2e6, pivotY - rowTop + 1, () => {
       ctx.fillStyle = posFill

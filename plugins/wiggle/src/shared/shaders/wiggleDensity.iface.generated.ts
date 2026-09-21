@@ -25,15 +25,17 @@ export const UNIFORM_OFFSET_F32 = {
   scatterPointSize: 11,
   lineWidth: 12,
   origin: 13,
-  symlogConstant: 14,
-  devicePixelRatio: 15,
+  pivot: 14,
+  rampMidNorm: 15,
+  symlogConstant: 16,
+  devicePixelRatio: 17,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
   scaleType: 4,
   renderingType: 5,
-  densityRampLut: 16,
+  densityRampLut: 18,
 } as const
 
 
@@ -50,6 +52,8 @@ export interface Uniforms {
   scatterPointSize: number
   lineWidth: number
   origin: number
+  pivot: number
+  rampMidNorm: number
   symlogConstant: number
   devicePixelRatio: number
   densityRampLut: number
@@ -72,9 +76,11 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[11] = uniforms.scatterPointSize
   f32[12] = uniforms.lineWidth
   f32[13] = uniforms.origin
-  f32[14] = uniforms.symlogConstant
-  f32[15] = uniforms.devicePixelRatio
-  i32[16] = uniforms.densityRampLut
+  f32[14] = uniforms.pivot
+  f32[15] = uniforms.rampMidNorm
+  f32[16] = uniforms.symlogConstant
+  f32[17] = uniforms.devicePixelRatio
+  i32[18] = uniforms.densityRampLut
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

@@ -97,7 +97,7 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
   o.localPos = local;
   o.segHalfLen = len * 0.5;
   o.centerLine = float2(centerYpx, f.tangent.y);
-  o.pivotYPx = rowScoreToYPx(u.origin, rowTop, rowHeight, u);
+  o.pivotYPx = rowScoreToYPx(u.pivot, rowTop, rowHeight, u);
   return o;
 }
 

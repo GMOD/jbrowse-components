@@ -86,9 +86,13 @@ lone plot in the box default to the threshold pair a quantitative track has
 always drawn. `colorEncoding` resolves it through display-kit's
 `colorEncodingOf`, the one resolver every display's colour object goes through,
 and `resolveWiggleColor` turns that into
-`{ posColor, negColor, pivot, rampLut, perSource }`, which is the whole of what
-the layers and both backends read. `score` paints through `threshold`, `linear`
-and `log`, `source` through `categorical`, and the other pairings paint the
+`{ posColor, negColor, pivot, rampLut, rampMid, perSource }`, which is the whole
+of what the layers and both backends read. `pivot` is where the colour parts and
+never where bars grow from: the render state carries both, bars read `origin`,
+and the lines, band and density fade read `pivot`. A density ramp indexes by
+position with `rampMid` on its middle stop, while the white-centred fade
+measures distance from `pivot`. `score` paints through `threshold`, `linear` and
+`log`, `source` through `categorical`, and the other pairings paint the
 misconfiguration grey, because a two-sided plot has nothing to paint a colour
 per score or a cut over subtrack names with. ADR-144, ADR-153.
 
@@ -210,12 +214,14 @@ nothing. ADR-016, which put the split in the worker, is superseded;
 ## A band splits into solid layers only when the bars nest
 
 `isDensityMode || (isFilled && bands.length > 1)`. Back-to-front, largest
-magnitude first — the opposite order on each side of the pivot, which a single
-band order can't express. Density needs it because `drawDensity` builds one
-gradient per layer, and it is the only mode that reaches the split with a single
-band (`avg`). Everything else keeps each band whole and carries `colorsAbgr`,
-one packed colour per instance — or none at all where both sides of the pivot
-come out the same colour, which is what a solid-colour track is.
+magnitude first — the opposite order on each side of the origin, which a single
+band order can't express. Filled bars split at the origin they grow from and
+carry `colorsAbgr` for the pivot where a threshold cuts elsewhere; density
+splits at the pivot. Density needs it because `drawDensity` builds one gradient
+per layer, and it is the only mode that reaches the split with a single band
+(`avg`). Everything else keeps each band whole and carries `colorsAbgr`, one
+packed colour per instance — or none at all where both sides of the pivot come
+out the same colour, which is what a solid-colour track is.
 
 ## A line plot is one line, coloured by the side of the pivot it is on
 

@@ -23,10 +23,12 @@ export interface ResolvedWiggleColor {
   posColor: string
   /** Below `pivot`. */
   negColor: string
-  /** Where the two sides part, and the value density draws its ramp's middle stop at. */
+  /** Where the two sides part, and where the two-sided density fade is white. */
   pivot: number
-  /** A declared ramp's 256 entries, or null for the two-sided fade off `posColor`/`negColor`. */
+  /** A ramp's 256 entries, or null for the two-sided fade off `posColor`/`negColor`. */
   rampLut: Uint8Array | null
+  /** The score at the ramp's middle stop; unset runs the ramp straight across the domain. */
+  rampMid: number | undefined
   /** Each source takes a palette entry of its own (`field: 'source'`). */
   perSource: boolean
 }
@@ -90,6 +92,7 @@ function solid(color: string, pivot: number): ResolvedWiggleColor {
     negColor: color,
     pivot,
     rampLut: null,
+    rampMid: undefined,
     perSource: false,
   }
 }
@@ -117,28 +120,23 @@ export function resolveWiggleColor(
         negColor,
         pivot: declaredCut(encoding) ?? origin,
         rampLut: null,
+        rampMid: undefined,
         perSource: false,
       }
     }
     case 'linear':
     case 'log': {
-      // A ramp runs from the colour at `pivot` out to the ends of the y
-      // domain, so its stops are a magnitude and `domainMid` is where that
-      // magnitude is zero. With no range or scheme it is the two-sided fade
-      // off the pos/neg pair.
+      // `domainMid` is the ramp's middle stop, and a range of one colour is
+      // the two-sided fade off it rather than a one-stop ramp.
       const { range = [], scheme, reverse = false, domainMid } = encoding
       const ends = reverse ? range.toReversed() : range
-      const [neg, pos] = reverse
-        ? [WIGGLE_POS_COLOR_DEFAULT, WIGGLE_NEG_COLOR_DEFAULT]
-        : [WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT]
       return {
-        negColor: ends[0] ?? (scheme ? WIGGLE_NEG_COLOR_DEFAULT : neg),
-        posColor: ends.at(-1) ?? (scheme ? WIGGLE_POS_COLOR_DEFAULT : pos),
+        negColor: ends[0] ?? WIGGLE_NEG_COLOR_DEFAULT,
+        posColor: ends.at(-1) ?? WIGGLE_POS_COLOR_DEFAULT,
         pivot: domainMid ?? origin,
         rampLut:
-          range.length > 1 || (range.length === 0 && scheme)
-            ? rampLutOf({ range, scheme, reverse })
-            : null,
+          range.length === 1 ? null : rampLutOf({ range, scheme, reverse }),
+        rampMid: domainMid,
         perSource: false,
       }
     }
