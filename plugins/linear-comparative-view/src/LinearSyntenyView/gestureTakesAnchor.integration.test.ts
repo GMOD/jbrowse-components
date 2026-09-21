@@ -119,8 +119,8 @@ test('a navigation held for the follow is not a gesture', async () => {
 
 // The band's drag and wheel drive every row from a React handler, where a
 // plain transaction makes each row's call a root action and the follow reads
-// N gestures, the last non-anchor row winning. `LevelSyntenyCanvas.dragPan`
-// and `useWheelScrollZoom`'s `hold` run them under `holdFollowAnchor` instead.
+// N gestures, the last non-anchor row winning. The drag runs as the stack's
+// `panStack` and `useWheelScrollZoom`'s `hold` under `holdFollowAnchor`.
 test('a band gesture over every row is held, not taken by the last row', async () => {
   const view = await openStack()
   transaction(() => {
@@ -138,6 +138,23 @@ test('a band gesture over every row is held, not taken by the last row', async (
     })
   })
   expect(view.followAnchorIndex).toBe(0)
+})
+
+// A drag on the anchor moves the anchor and the follow places the rest, so a
+// row with nothing aligned holds. The band's drag moved every row, holding
+// rows included.
+test('a band drag moves the anchor alone while following, and every row when not', async () => {
+  const view = await openStack()
+  const offsets = () => view.views.map(row => row.offsetPx)
+  const before = offsets()
+  view.panStack(40)
+  expect(offsets()).toEqual([before[0]! + 40, before[1], before[2]])
+  expect(view.followAnchorIndex).toBe(0)
+
+  view.setRowSyncMode('independent')
+  const after = offsets()
+  view.panStack(40)
+  expect(offsets()).toEqual(after.map(x => x + 40))
 })
 
 // the view-wide zooms reach every row from one of the stack's own actions,

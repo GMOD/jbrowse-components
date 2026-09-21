@@ -1031,6 +1031,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * A band's drag: every row, or while following the anchor alone, which
+       * the follow then places the others against, as it does a drag on the
+       * anchor itself. The rows' scrolls nest under this action, so none of
+       * them reads as a gesture that would take the anchor.
+       */
+      panStack(dx: number) {
+        const rows = self.followSynteny
+          ? self.views.slice(self.followAnchorIndex, self.followAnchorIndex + 1)
+          : self.views
+        for (const row of rows) {
+          row.horizontalScroll(dx)
+        }
+      },
+      /**
+       * #action
        * Every row onto the rows' average bp/px, each keeping its centre.
        */
       squareView() {

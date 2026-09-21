@@ -49,9 +49,9 @@ The synteny render pipeline goes:
 
 ```
 drag (mousemove on the synteny canvas)     wheel
-  → dragPan(dx), synchronously               → createWheelZoomController
+  → panStack(dx), synchronously              → createWheelZoomController
       ↓                                          ↓
-  transaction(() => for each v: v.horizontalScroll(dx) / zoomTo(...))
+  one action: for each row moved, horizontalScroll(dx) / zoomTo(...)
     → offsetPx / bpPerPx change (MobX observable mutation)
       → autorun deps fire (renderState getter, etc.)
         → render autorun callback runs
@@ -60,10 +60,10 @@ drag (mousemove on the synteny canvas)     wheel
       → mobx-react flushes observer() re-renders (React commit)
 ```
 
-**There is no rAF in the synteny drag path, deliberately** — `dragPan`
-(`LevelSyntenyCanvas.tsx`) flushes on every mousemove, since those already
-arrive at ~60Hz and `transaction` is what coalesces the several views a stack
-drives from one gesture. Don't go looking for a frame boundary to measure
+**There is no rAF in the synteny drag path, deliberately** — the stack's
+`panStack` runs on every mousemove (`LevelSyntenyCanvas.tsx`), since those
+already arrive at ~60Hz and the action is what coalesces the several views a
+stack drives from one gesture. Don't go looking for a frame boundary to measure
 across; the batching is the transaction. The rAF-coalesced path is the *LGV*'s
 own side-scroll (`useSideScroll`'s `flushScroll`), which is a different pipeline
 reached by dragging a track rather than the connector canvas.

@@ -132,9 +132,9 @@ Two changes remove it:
   `trueMin >= storedMin + min(d)` and `trueMax <= storedMax + max(d)`. Stabbing
   `[x - max(d), x - min(d)]` is therefore a conservative superset of the
   instances covering `x`. When both views move together — which includes the
-  synteny canvas's own drag-pan, since `LevelSyntenyCanvas.dragPan` scrolls
-  every view by the same `dx` — `d0 == d1` and the stab is a *point*, exactly
-  as precise as a freshly built index, for zero rebuild cost.
+  synteny canvas's own drag-pan outside the follow, since the stack's
+  `panStack` scrolls every view by the same `dx` — `d0 == d1` and the stab is a
+  *point*, exactly as precise as a freshly built index, for zero rebuild cost.
 - **Every per-instance predicate moved into the candidate loop.** The viewport
   cull and the sub-pixel `perpW < 1` pickability test both depend on the live
   pan (`perpW` keys on the ribbon's slope, which changes when the two views pan

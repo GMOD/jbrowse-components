@@ -6,7 +6,6 @@ import { openFeatureWidget } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
-import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
@@ -18,7 +17,10 @@ import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { OffscreenMateHover } from './OffscreenMateTooltip.tsx'
-import type { OffscreenMateHit } from './offscreenMateStrip.ts'
+import type {
+  OffscreenMateHit,
+  OffscreenMateStrip,
+} from './offscreenMateStrip.ts'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type React from 'react'
 
@@ -27,17 +29,17 @@ const useStyles = makeStyles()({
     position: 'absolute',
     inset: 0,
     background: 'transparent',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 5,
-      background: 'linear-gradient(to bottom, rgba(0,0,0,0.15), transparent)',
-      pointerEvents: 'none',
-      zIndex: 10,
-    },
+  },
+  // between the ribbons and the mate marks in DOM order, so it shades the
+  // ribbons and not the strip of marks along the same edge
+  shadow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 5,
+    background: 'linear-gradient(to bottom, rgba(0,0,0,0.15), transparent)',
+    pointerEvents: 'none',
   },
   canvas: {
     position: 'absolute',
@@ -117,32 +119,32 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const dragRef = useRef<
     { startX: number; lastX: number; panned: boolean } | undefined
   >(undefined)
-  // The mark under the pointer, stamped with the band transform it was picked
-  // under: the band moving under a stationary cursor fires no pointer event,
-  // so a hover is valid only for the transform that produced it. Local rather
-  // than on the model beside `hoveredFeature`, since a mark is not a feature.
+  // The mark under the pointer, stamped with the strips it was picked from: the
+  // band moving or a refetch landing under a stationary cursor fires no pointer
+  // event, and either rebuilds the strips. Local rather than on the model beside
+  // `hoveredFeature`, since a mark is not a feature.
   const [hoveredMark, setHoveredMark] = useState<
-    (OffscreenMateHover & { bandTransformKey: string }) | undefined
+    (OffscreenMateHover & { strips: OffscreenMateStrip[] }) | undefined
   >(undefined)
   const [markMenu, setMarkMenu] = useState<
     { hit: OffscreenMateHit; clientX: number; clientY: number } | undefined
   >(undefined)
-  const { bandTransformKey } = model
-  const hover =
-    hoveredMark?.bandTransformKey === bandTransformKey ? hoveredMark : undefined
+  const strips = model.offscreenMateStrips
+  const hover = hoveredMark?.strips === strips ? hoveredMark : undefined
   // One pick per frame: a pick is under 0.1ms on collinear data but ~12.5ms on
   // an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse reporting faster
   // than the display would otherwise spend the whole frame budget on hovers
   // nothing draws.
   const { queue: queueHover, cancel: cancelHover } =
     useCoalescedPointer<CanvasPoint>(at => {
-      const mate = offscreenMateHit(model.offscreenMateStrips, at.x, at.y)
+      const current = model.offscreenMateStrips
+      const mate = offscreenMateHit(current, at.x, at.y)
       setHoveredMark(
         mate && {
           ...mate,
           clientX: at.clientX,
           clientY: at.clientY,
-          bandTransformKey: model.bandTransformKey,
+          strips: current,
         },
       )
       // a mark hovered is not a ribbon hovered
@@ -188,18 +190,6 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     }
   }
 
-  // Flushes per event, since pointer moves already arrive at about frame rate.
-  // Held so the follow reads one stack pan, not a gesture on each row.
-  function dragPan(dx: number) {
-    parentView.holdFollowAnchor(() => {
-      transaction(() => {
-        for (const v of parentView.views) {
-          v.horizontalScroll(dx)
-        }
-      })
-    })
-  }
-
   function handlePointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
     const drag = dragRef.current
     if (drag) {
@@ -207,7 +197,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       drag.lastX = event.clientX
       drag.panned ||=
         Math.abs(event.clientX - drag.startX) >= CLICK_DRAG_THRESHOLD_PX
-      dragPan(dx)
+      // per event, since pointer moves already arrive at about frame rate
+      parentView.panStack(dx)
       return
     }
     // hovering under a wheel-zoom fights the gesture for the main thread, and
@@ -356,6 +347,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
           cursor: model.hoveringFeature || hover ? 'pointer' : 'default',
         }}
       />
+      <div className={classes.shadow} />
       <OffscreenMateOverlay model={model} />
       {hover ? (
         <OffscreenMateTooltip
