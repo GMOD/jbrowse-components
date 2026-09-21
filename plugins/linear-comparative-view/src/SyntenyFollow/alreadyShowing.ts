@@ -19,12 +19,7 @@ const ALREADY_THERE_FRACTION = 0.02
  * window the span merely sits inside; on the numbers alone that is never
  * "already there", and every wake renavigated to the same place — which flushes
  * the row's coarse blocks and wakes the pass again. A swapped-assembly track
- * spun one core on that indefinitely.
- *
- * It is not only that track. `interpolateFollowSpan` and `followWindowMapping`
- * both clamp their answer up to a base, deliberately, so an interpolation that
- * collapses arrives here one base wide rather than zero and gets past the
- * degenerate check in the caller. Passing 0 keeps the plain comparison.
+ * spun one core on that indefinitely. Passing 0 keeps the plain comparison.
  */
 export function alreadyShowing(
   shown: FollowWindow | undefined,

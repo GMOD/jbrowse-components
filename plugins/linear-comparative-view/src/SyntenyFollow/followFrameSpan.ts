@@ -17,9 +17,9 @@ import type { FollowTransform } from './followTransform.ts'
  * Where the followed row belongs on ONE FRAME: everything the exact pass does
  * except the RPC, against the live window and the block the last settle chose.
  *
- * `undefined` means hold the row where it is, and only the mapping can say it —
- * the interpolators clamp the window to their block, so one panned clean off
- * collapses to a span ONE BASE WIDE and flings the row to maximum zoom.
+ * `undefined` means hold the row where it is, and only the mapping says it; an
+ * interpolator handed a window panned clean off its block collapses it to a
+ * point, which `positionViewOnSpan` refuses.
  *
  * THREE WAYS TO ANSWER, BEST FIRST. The map reads the block's own indels and is
  * what the settle would say; the transform is a straight line fitted to the last

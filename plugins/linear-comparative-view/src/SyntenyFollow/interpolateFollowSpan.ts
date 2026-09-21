@@ -7,13 +7,12 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * to walk. Clamped to the block, so a window wider than the alignment lands on
  * its ends rather than off the far side of the mate.
  *
- * THE ONE PLACE THE SYNTENY CODE NAVIGATES ON AN INTERPOLATION, unlike the
- * click-driven move, which refuses (`resolveAlignmentSpan`). A block with
- * nothing to walk — a CIGAR-less PAF, or a coarse tier built before the fold
- * existed — still serves whole-genome zoom, so refusing would make the mode
- * work zoomed in and leave rows unmoved zoomed out. Nothing bounds the skew
- * across such a block, so a caller
- * that can say the answer is approximate should.
+ * The follow navigates on this where the click-driven move refuses
+ * (`resolveAlignmentSpan`): a block with nothing to walk — a CIGAR-less PAF, or
+ * a coarse tier built before the fold existed — still serves whole-genome zoom,
+ * so refusing would make the mode work zoomed in and leave rows unmoved zoomed
+ * out. Nothing bounds the skew across such a block, so a caller that can say
+ * the answer is approximate should.
  */
 export function interpolateFollowSpan({
   feat,

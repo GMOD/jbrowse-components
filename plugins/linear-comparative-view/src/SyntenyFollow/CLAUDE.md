@@ -137,13 +137,17 @@ construction, so the gate would open on every one — and the second row of an
 honest overview would demote, then the third. The level that decided it already
 judged it.
 
-**The decision is the settle's, and the frame pass follows it.** The rung's
-_answer_ is still recomputed per frame; whether to take the rung is not. These
-are the two furthest-apart placements this subsystem can produce, and a
-per-frame re-decision flips between them across a threshold the user is panning
-along. `FollowLevelState.spread` carries it, with a band on the way back up and
+**The decision is made once and followed.** The rung's _answer_ is still
+recomputed per frame; whether to take the rung is not. These are the two
+furthest-apart placements this subsystem can produce, and a per-frame
+re-decision flips between them across a threshold the user is panning along.
+`FollowLevelState.spread` carries it, with a band on the way back up and
 `preferIncumbent` on the window kept — 100% against 49% of the panel is one pan
-from a coin toss.
+from a coin toss. The settle makes it, except where a drag carries a second
+contig on screen before any settle has: the frame pass then decides once by the
+same `decideSpread` and records it, since undecided it spread, throwing the row
+across every contig between the two answers until the settle refused and put it
+back. The settle inherits that answer as its previous one.
 
 **And it is measured over a window set, so it dies with one.** `planSpread` runs
 only past two windows, so below that nothing rewrites the decision and a refusal
@@ -297,13 +301,13 @@ the exact pass writes it every pass. And the `FollowReport` (`unaligned`,
 the header**, through one merging setter; a new flag goes on the report, not
 beside it.
 
-**Which rung a level is on is `followRung`, read by both clocks.** The exact
-pass decides whether to spread; the frame pass follows that decision, and the
-one function turns the windows and the decision into the rung so the two cannot
-be spelled differently. And a refusal lands **on a contig that answered**: the
-widest window regardless was, on a panel half filled by an unaligned contig, a
-level with nothing to place from — every row held, and the header said nothing
-aligned while `elsewhere` named two contigs that did.
+**Which rung a level is on is `followRung`, read by both clocks.** One decision
+about spreading, made as above, and the one function turns the windows and the
+decision into the rung so the two cannot be spelled differently. And a refusal
+lands **on a contig that answered**: the widest window regardless was, on a
+panel half filled by an unaligned contig, a level with nothing to place from —
+every row held, and the header said nothing aligned while `elsewhere` named two
+contigs that did.
 
 ## `seq` is bumped per PASS, not per resolve
 
@@ -375,8 +379,10 @@ otherwise take the anchor straight back. Neither `showRegions` nor
 `navToLocations` is in the set, since `navToLocString` reaches for them after an
 await, as fresh roots, on the follow's own behalf; nor `horizontallyFlip`, since
 a hand flip of a followed row is meant to stand. The view-wide zooms
-(`squareView`, `showAllRegionsAcrossRows`) are the stack's own actions and nest
-the rows' zooms under them.
+(`squareView`, `showAllRegionsAcrossRows`, the stack's rubber-band "Zoom to
+region(s)") nest the rows' zooms under the stack's own actions, and
+`centerStackOnFeature` holds its two navigations the same way after handing the
+anchor to the feature's own row.
 
 **The set is a list of names, so a contract test holds it against the view.**
 Every navigation-shaped action the row actually has must be in `ROW_GESTURES` or
@@ -589,9 +595,10 @@ Keyed by index, an entry outlived a removed level and a re-added row inherited a
 dead level's incumbent feature id and cached transform. A `WeakMap` on the node
 is also the entire pruning story.
 
-The store hands out two things on purpose: `get` mints state, `pickFor` does
-not. Only the exact pass decides anything, so the frame pass reading through
-`get` would mint an entry for a level that pass has never reached.
+The store hands out two things on purpose: `get` mints state, `pickFor` and
+`spreadFor` do not. The frame pass steers by the exact pass's pick and must not
+mint one; the only state it writes is the spread decision it makes for an
+undecided level.
 
 `lastErrorMessage` lives there too, per level rather than per view — a follow
 that cannot resolve cannot resolve repeatedly, so it says so once, and a single
@@ -614,19 +621,19 @@ setting rather than an implementation detail of the navigation.
 a model-level test cannot see it, since with no alignments there is nothing to
 re-assert.
 
-**Three call sites, and a move anchors the row it does NOT navigate.** The
-band's two items and the LGV display's "move other panel" take it as well, and
-which row is not the same answer a mark gives: a mark anchors the row it sends
-somewhere, a move anchors the row it leaves alone, because that is what the
-label promises — this one stays, the others come to it. Untaken, "move the top
-panel" ran and the follow put the top panel back, while "move the bottom panel"
-moved the anchor itself and dragged the top one along.
-`LinearSyntenyMoveFollow.test.tsx` measures the second as row 1 pulled 998bp by
-a later pan of row 0, which is the half a model-level test cannot reach.
-`bandMoveTargets` carries the staying row's index rather than letting the item
-re-derive it from `toMate` and the level — that is the only thing the two items
-differ in, and a second spelling of it is how the item and the action come to
-disagree.
+**Three call sites, each opening with `beginStackMove`, and a move anchors the
+row it does NOT navigate.** The band's two items and the LGV display's "move
+other panel" take it as well, and which row is not the same answer a mark gives:
+a mark anchors the row it sends somewhere, a move anchors the row it leaves
+alone, because that is what the label promises — this one stays, the others come
+to it. Untaken, "move the top panel" ran and the follow put the top panel back,
+while "move the bottom panel" moved the anchor itself and dragged the top one
+along. `LinearSyntenyMoveFollow.test.tsx` measures the second as row 1 pulled
+998bp by a later pan of row 0, which is the half a model-level test cannot
+reach. `bandMoveTargets` carries the staying row's index rather than letting the
+item re-derive it from `toMate` and the level — that is the only thing the two
+items differ in, and a second spelling of it is how the item and the action come
+to disagree.
 
 **A take is not earned until the navigation lands, so `movePanelsToSpan` gives
 it back when nothing moved.** Not only the throwing case: `navToLocString`

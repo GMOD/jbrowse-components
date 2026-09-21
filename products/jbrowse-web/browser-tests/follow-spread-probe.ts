@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 // One-off probe: load the shared grape/peach/cacao session off the running dev
-// server and capture what SyntenyFollow decides, per settle, per level. Pair it
-// with the temporary logging in SyntenyFollow/followDebug.ts.
+// server and capture what SyntenyFollow decides, per settle, per level, through
+// the logging SyntenyFollow/followDebug.ts prints under
+// `localStorage.debugSyntenyFollow`.
 //
 //   node products/jbrowse-web/browser-tests/follow-spread-probe.ts
 import { launch } from 'puppeteer'

@@ -74,9 +74,9 @@ function shown(view: LinearGenomeViewModel) {
   }
 }
 
-// UNTRACKED, all of it: this runs inside the exact pass's autorun, and rung 3
-// deliberately does not read its moving row — a debug read would add the
-// dependency and change the thing being measured.
+// Untracked, all of it: both logs run inside the exact pass's autorun, and a
+// debug read of either row would add a dependency and change the thing being
+// measured.
 export function logFollowSpread({
   stayingView,
   movingView,
@@ -95,25 +95,23 @@ export function logFollowSpread({
   if (!on()) {
     return
   }
-  // eslint-disable-next-line no-restricted-syntax -- instrumentation
-  const after = untracked(() => shown(movingView))
   const mapped = bp(spans)
-  console.log(
-    // eslint-disable-next-line no-restricted-syntax -- instrumentation
-    `${untracked(
-      () =>
-        `[follow] SPREAD ${stayingView.assemblyNames[0]} -> ${movingView.assemblyNames[0]}`,
-    )}\n` +
+  // eslint-disable-next-line no-restricted-syntax -- instrumentation
+  const message = untracked(() => {
+    const after = shown(movingView)
+    return (
+      `[follow] SPREAD ${stayingView.assemblyNames[0]} -> ${movingView.assemblyNames[0]}\n` +
       `  anchor panel: ${panel(stayingView)}\n` +
       `  windows (${carried ? 'carried' : 'off blocks'}) x${windows.length}: ${windows.map(w => span(w)).join(', ')}\n` +
       `  kept by the floor: ${followAnchorWindows(stayingView.coarseDynamicBlocks).length}\n` +
-      // eslint-disable-next-line no-restricted-syntax -- instrumentation
-      `  wholeness: ${untracked(() => wholeness(stayingView, windows))}\n` +
+      `  wholeness: ${wholeness(stayingView, windows)}\n` +
       `  spans x${spans.length}: ${spans.map(s => span(s)).join(', ')}\n` +
       `  placed on ${after.contigs.length} contigs, ${(after.bp / 1e6).toFixed(1)}Mb: ${after.contigs.join(', ')}\n` +
       `  mapped ${(mapped / 1e6).toFixed(1)}Mb of that = ${Math.round((mapped / after.bp) * 100)}% covered\n` +
-      `  DECISION: ${decision.spreading ? 'spread' : `demote onto ${decision.onto}`}${decision.coverage === undefined ? '' : ` (measured ${Math.round(decision.coverage * 100)}%)`}`,
-  )
+      `  DECISION: ${decision.spreading ? 'spread' : `demote onto ${decision.onto}`}${decision.coverage === undefined ? '' : ` (measured ${Math.round(decision.coverage * 100)}%)`}`
+    )
+  })
+  console.log(message)
 }
 
 export function logFollowStep({
@@ -134,14 +132,13 @@ export function logFollowStep({
   if (!on()) {
     return
   }
-  console.log(
-    // eslint-disable-next-line no-restricted-syntax -- instrumentation
-    `${untracked(
-      () =>
-        `[follow] ${rung} ${stayingView.assemblyNames[0]} -> ${movingView.assemblyNames[0]}`,
-    )}\n` +
+  // eslint-disable-next-line no-restricted-syntax -- instrumentation
+  const message = untracked(
+    () =>
+      `[follow] ${rung} ${stayingView.assemblyNames[0]} -> ${movingView.assemblyNames[0]}\n` +
       `  anchor panel: ${panel(stayingView)}\n` +
       `  window (${carried ? 'carried' : 'off blocks'}): ${span(window)}\n` +
       `  incumbent target: ${target ?? 'none'}`,
   )
+  console.log(message)
 }

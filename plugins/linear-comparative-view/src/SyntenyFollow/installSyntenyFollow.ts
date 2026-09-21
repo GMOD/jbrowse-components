@@ -306,14 +306,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       state.lastNav = undefined
     } else {
       // THE BACKSTOP, and it bounds the loop without claiming to diagnose it.
-      // Nothing else damps this: `navToLocString` replaces the row's
-      // `displayedRegions` whether or not it moves the row, which invalidates
-      // `followPairs` and wakes this pass. Measured on the swapped track —
-      // coarse blocks, featureData and width all stable across fourteen
-      // consecutive passes — so an `alreadyShowing` that says no while the row
-      // has stopped moving is a locked tab, not a misplacement. The two checks
-      // above close the two ways that is reachable today; this closes the shape
-      // of it.
+      // This pass reads the moving row, so any placement it disagrees with
+      // wakes it again, and `navToResolvedSpan`'s `navToLocString` fallback
+      // replaces the row's `displayedRegions` whether or not it moves the row,
+      // which invalidates `followPairs` as well. An `alreadyShowing` that says
+      // no while the row has stopped moving is a locked tab, not a
+      // misplacement.
       //
       // The same target asked for from the same place twice is the one thing
       // that cannot be a real disagreement: the first attempt already had its
