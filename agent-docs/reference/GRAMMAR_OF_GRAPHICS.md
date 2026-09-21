@@ -86,7 +86,7 @@ in full and of the format-typed displays only where it says so.
 | Stage | What the grammar means | Where the tree answers | How far |
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own. An adapter with zoom levels is sent the view's `bpPerPx` ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)), so a BigWig answers from the summary tier the wiggle display reads |
-| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own | whole, layout included — `pileup` is a read pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
+| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup` — each step its own schema taking only its own slots ([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)), run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own | whole, layout included — `pileup` is a read pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
 | scale | domain → range, separate from the encoding | the colour and glyph channels carry their own, `{ field, scale, domain, palette \| range \| ramp }`, read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (a quantitative ramp); the value scale is the display's one `scales.y`, which every mark's `encoding.y` field is read through and `ScoreAxisMixin` derives the axis from ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md), generalised to every quantitative display by [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)) | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, its title, hatches, and the reference lines `scales.y.rules` declares (`packages/wiggle-core/src/ScoreAxisMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
@@ -538,9 +538,12 @@ the row axis in the vocabulary above, and none is a new channel.
 A new channel or scale kind is the encoder's (`markEncodingTypes.ts`) and
 needs a shape that reads it. A new guide is a hook on the mixin that owns the
 scale and a placement in the two shells; a guide over the painting reads the
-shapes' `ink`. A transform is a `type` on `TransformStep`, an arm in
-`runTransforms` and a slot on the mark display's step schema, measured in
-`featureTransforms.bench.ts` beside the others — and it needs a `marks` config
+shapes' `ink`. A transform is a name in `TRANSFORM_TYPES`, a `type` on
+`TransformStep`, an arm in `runTransforms`, a member of the `MarkTransform`
+union with its own slots and an arm in `stepsOf`, which a test and the compiler
+refuse to let disagree
+([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)),
+measured in `featureTransforms.bench.ts` beside the others — and it needs a `marks` config
 that wants it, not a display whose code it resembles (ADR-118). A new shape clears ADR-040's bar with two consumers. A
 display that wants the encoding for a meaning it cannot say hands the encoder
 a reader and says so at the call. Anything that composes a display stack from

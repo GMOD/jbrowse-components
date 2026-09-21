@@ -145,6 +145,18 @@ walks it in order:
 | `coverage` | one feature per run of constant depth over the spans, where the depth is not zero | `as` (`coverage`) |
 | `pileup` | every feature, on the lowest row where it overlaps nothing already there — greedy first fit in start order over `fields` (`start`, `end`), `padding` bp of clearance | `as` (`row`) |
 
+In config a step is one member of `MarkTransform`
+(`plugins/marks/src/LinearMarkDisplay/markTransformConfigSchema.ts`), a
+`ConfigurationSchemaUnion`: it names its `type` and takes only its own slots,
+each defaulting to what the worker reads for a slot the wire leaves off, and a
+key of another step is refused at load. The display writes every slot of every
+step onto the wire (`stepsOf`), so a step left at its defaults and the same
+step written at them are one fetch; `model.test.ts` pins that for every slot of
+every step type. Four lists name the step types — `TRANSFORM_TYPES`, the
+union's keys, the wire's `TransformStep` and the rule list's `StepSnapshot` —
+and `markTransformConfigSchema.test.ts` fails when they disagree
+([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)).
+
 `bin` writes over `start` and `end` on purpose: an `aggregate` grouped by
 those two is then a density whose bars span the bins, with the encoding's
 `x`/`x2` defaults untouched and `y: 'count'`, and the group's extent is the
