@@ -39,41 +39,23 @@
           "displayId": "dtu_muscle_vs_liver-LinearBasicDisplay",
           "height": 285,
           "subfeatureLabels": "below",
-          "color": "jexl:feature.parent.dtu=='muscle'?(parseFloat(feature.parent.dif)>0.6?'#901e21':parseFloat(feature.parent.dif)>0.3?'#c63335':'#d5716a'):feature.parent.dtu=='liver'?(parseFloat(feature.parent.dif)<-0.6?'#124f95':parseFloat(feature.parent.dif)<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
+          "color": {
+            "field": "dif_called",
+            "scale": "threshold",
+            "domain": ["-0.6", "-0.3", "0", "0.3", "0.6"],
+            "range": [
+              "#124f95",
+              "#2370cc",
+              "#6394d5",
+              "#d5716a",
+              "#c63335",
+              "#901e21"
+            ]
+          },
           "labels": {
             "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"
           },
-          "mouseover": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif",
-          "legend": [
-            {
-              "label": "muscle-preferred, ΔIF > 0.6",
-              "color": "#901e21"
-            },
-            {
-              "label": "muscle-preferred, ΔIF 0.3–0.6",
-              "color": "#c63335"
-            },
-            {
-              "label": "muscle-preferred, ΔIF 0.1–0.3",
-              "color": "#d5716a"
-            },
-            {
-              "label": "no usage shift (FDR ≥ 0.05)",
-              "color": "#b2b1ac"
-            },
-            {
-              "label": "liver-preferred, ΔIF 0.1–0.3",
-              "color": "#6394d5"
-            },
-            {
-              "label": "liver-preferred, ΔIF 0.3–0.6",
-              "color": "#2370cc"
-            },
-            {
-              "label": "liver-preferred, ΔIF > 0.6",
-              "color": "#124f95"
-            }
-          ]
+          "mouseover": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif"
         }
       ]
     },

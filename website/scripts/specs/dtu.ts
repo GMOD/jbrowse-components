@@ -7,16 +7,14 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // transcript *usage* (the fraction of a gene's reads assigned to each
 // transcript) between skeletal muscle and liver, 4 donors each, on RSEM
 // quantifications against GENCODE v29; the per-transcript result was written
-// back into the GFF3 attribute column, and the canvas gene glyph paints it
-// through a `jexl:` color callback. Data + config:
-// demos/dtu/config.json, hosted at jbrowse.org/demos/dtu/.
+// back into the GFF3 attribute column, and the canvas gene glyph bins it
+// through a threshold color. Data + config: demos/dtu/config.json, hosted at
+// jbrowse.org/demos/dtu/.
 //
 // What makes these figures worth having is that the color is not a category
 // someone assigned — it is a continuous statistic (ΔIF, the change in isoform
 // fraction) that came out of the analysis, so the glyph carries the result
-// rather than illustrating it. The `legend` slot on the display declares what
-// the ramp means, because a jexl expression is otherwise a lookup table only
-// its author can read.
+// rather than illustrating it. The key the threshold derives lists every bin.
 // ──────────────────────────────────────────────────────────────────────────
 
 const DTU_CONFIG = encodeURIComponent(

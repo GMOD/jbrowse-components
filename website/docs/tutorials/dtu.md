@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-A per-transcript statistic goes into the GFF3 attribute column, and a `jexl:`
-color callback on the gene track paints it. We build that GFF3 from ENCODE
-quantifications, and the track configuration below reads it.
+A per-transcript statistic goes into the GFF3 attribute column, and the gene
+track's color bins it, with a key listing each bin. We build that GFF3 from
+ENCODE quantifications, and the track configuration below reads it.
 
 ## Prerequisites
 
@@ -124,21 +124,18 @@ chr10  HAVANA  transcript  7788129  7807815  .  +  .
   ID=ENST00000356708.11;Parent=ENSG00000165629.19;gene_name=ATP5F1C;
   transcript_name=ATP5F1C-202;...;
   dif=-0.299;fdr=0.0022;if_muscle=0.075;if_liver=0.375;
-  tpm_muscle=10.03;tpm_liver=28.88;dtu=liver
+  tpm_muscle=10.03;tpm_liver=28.88;dtu=liver;dif_called=-0.299
 ```
 
-Three properties of that line, each of which fails without an error:
-
-- **keys are lowercase**: the GFF parser lowercases them, so `dIF=` read back as
-  `feature.dIF` is undefined, and an undefined branch returns the default color
-- **values are strings**, so numeric comparison requires `parseFloat`
-- **the numbers are on the transcript row and nothing below it**: the glyph
-  evaluates the color against the box it paints, so the callback reaches up with
-  `feature.parent.dif`. `feature.dif` reads the exon and paints the default
+The numbers sit on the transcript row and nothing below it; the exons, CDS and
+UTRs paint their transcript's value. The keys are lowercase because the GFF
+parser lowercases them, so a color field named `dIF` reads nothing and paints
+every transcript grey.
 
 `dtu` is a flag with the values `muscle`, `liver` and `ns`, set by the same
-threshold the script reports on. The color branches on it before reading `dif`,
-so transcripts the test could not separate stay neutral.
+threshold the script reports on. `dif_called` is `dif` on the transcripts the
+flag calls and absent on the rest, so a transcript the test could not separate
+has no value to color and stays grey.
 
 ### The effect size and the FDR gate
 
@@ -153,11 +150,15 @@ count.
 
 ## Configuring the track
 
-One expression covers the whole transcript: a UTR follows `color` unless
+`color` bins `dif_called` through a threshold scale: `domain` lists the cut
+points and `range` one color per interval between them, liver-preferred blues
+below zero and muscle-preferred reds above. A value on a cut takes the interval
+above it. The key lists every interval under the field's name, and a
+`(no value)` row for the uncalled transcripts. A UTR follows `color` unless
 `utrColor` is set. `labels.name` reads GENCODE's `transcript_name`, which also
-names the isoform under the cursor, and `legend` declares what the ramp means.
-`mouseover` resolves against the gene, so it summarizes the gene; an isoform's
-own numbers are in the details panel, one click away.
+names the isoform under the cursor. `mouseover` resolves against the gene, so it
+summarizes the gene; an isoform's own numbers are in the details panel, one
+click away.
 
 ```json addtrack
 {
@@ -171,20 +172,23 @@ own numbers are in the details panel, one click away.
   },
   "displayDefaults": {
     "subfeatureLabels": "below",
-    "color": "jexl:feature.parent.dtu=='muscle'?(parseFloat(feature.parent.dif)>0.6?'#901e21':parseFloat(feature.parent.dif)>0.3?'#c63335':'#d5716a'):feature.parent.dtu=='liver'?(parseFloat(feature.parent.dif)<-0.6?'#124f95':parseFloat(feature.parent.dif)<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
+    "color": {
+      "field": "dif_called",
+      "scale": "threshold",
+      "domain": ["-0.6", "-0.3", "0", "0.3", "0.6"],
+      "range": [
+        "#124f95",
+        "#2370cc",
+        "#6394d5",
+        "#d5716a",
+        "#c63335",
+        "#901e21"
+      ]
+    },
     "labels": {
       "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"
     },
-    "mouseover": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif",
-    "legend": [
-      { "label": "muscle-preferred, ΔIF > 0.6", "color": "#901e21" },
-      { "label": "muscle-preferred, ΔIF 0.3–0.6", "color": "#c63335" },
-      { "label": "muscle-preferred, ΔIF 0.1–0.3", "color": "#d5716a" },
-      { "label": "no usage shift (FDR ≥ 0.05)", "color": "#b2b1ac" },
-      { "label": "liver-preferred, ΔIF 0.1–0.3", "color": "#6394d5" },
-      { "label": "liver-preferred, ΔIF 0.3–0.6", "color": "#2370cc" },
-      { "label": "liver-preferred, ΔIF > 0.6", "color": "#124f95" }
-    ]
+    "mouseover": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif"
   }
 }
 ```

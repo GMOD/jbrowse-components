@@ -234,12 +234,12 @@ Rscript dtu.R
 # ------------------------------------------------------------ GFF3 for JBrowse
 # Subset GENCODE to the called genes and write the statistics into the attribute
 # column. Each transcript's numbers go on its own row and nowhere else; the
-# exon/CDS/UTR rows pass through untouched, and the color callback reaches up
-# with `feature.parent`.
+# exon/CDS/UTR rows pass through untouched and paint their transcript's value.
+# `dif_called` is `dif` on the transcripts the test called and absent on the
+# rest, so the track's threshold colour paints an uncalled one the no-value grey.
 #
 # Keys are written lowercase because gff-nostream lowercases them on the way in:
-# `dIF=` read back as feature.dIF is undefined, and an undefined branch just
-# takes the default color.
+# a colour field named `dIF` reads nothing and paints every transcript grey.
 python3 - <<'PY'
 import csv
 import gzip
@@ -297,7 +297,8 @@ def tx_attrs(tx_id):
             f';if_liver={num(r["IF_liver"]):.3f}'
             f';tpm_muscle={num(r["tpm_muscle"]):.2f}'
             f';tpm_liver={num(r["tpm_liver"]):.2f}'
-            f';dtu={direction}')
+            f';dtu={direction}'
+            + ('' if direction == 'ns' else f';dif_called={dif:.3f}'))
 
 
 records = []

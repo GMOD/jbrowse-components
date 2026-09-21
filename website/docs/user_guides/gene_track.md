@@ -180,20 +180,21 @@ and JBrowse remembers it across sessions.
 
 ## Color transcripts by a value in the file
 
-The `color` slot takes a jexl expression evaluated against each drawn part, so a
-per-transcript number in the GFF3 attribute column can drive the fill:
+The [`color`](/docs/config/FeatureColor) object binds a field in the GFF3
+attribute column to a scale. Under `categorical` each value takes its own color;
+under `threshold` a number takes the color of the interval it falls in, between
+the cut points `domain` lists, with one `range` color per interval. A
+transcript's exons, CDS and UTRs paint the transcript's value, and a UTR follows
+`color` unless `utrColor` overrides it.
 
-- **JBrowse lowercases attribute names**; values stay strings. `dIF=0.79` reads
-  under the key `dif`, and comparing it numerically needs `parseFloat`
-- **JBrowse evaluates the expression against the box being painted** (an exon,
-  CDS, or UTR), so a transcript's own attribute is `feature.parent.dif`. A UTR
-  follows `color` unless `utrColor` overrides it
-- **Test the significance flag, not the magnitude.** The expression in the
-  tutorial below branches on a `dtu` attribute the analysis wrote and only then
-  reads the size
+- **JBrowse lowercases attribute names.** `dIF=0.79` reads under the key `dif`,
+  so the field is `dif`
+- **A transcript with no value paints grey**, keyed as `(no value)`. The
+  tutorial below writes its effect size only on the transcripts its test called,
+  so the rest stay grey
 
-Declare what the colors mean in the `legend` slot; the key draws over the track,
-and you can dismiss it. See the
+The key lists every interval and draws over the track, and you can dismiss it.
+For a rule no scale expresses, `color` also takes a jexl expression; see the
 [jexl configuration guide](/docs/config_guides/jexl).
 
 <Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38): ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is the cassette exon, which only one of the two colored transcripts includes." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
