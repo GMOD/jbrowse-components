@@ -52,9 +52,8 @@ Left open from the `jexl:` work:
    `{ scale: 'none' }` the plain fill, `{ value, scale: 'none' }` a constant.
    After the constant and back, a field paints through its default scale, as
    ADR-151 records: Colin chose the plain rule over guessing the kind
-   (2026-09-21). Open, waiting on Colin: the alignments Tag dialog picks no
-   scale, so a numeric tag opens categorical and a gradient is reachable only
-   through the config editor.
+   (2026-09-21). The alignments Tag dialog now asks for a colour per value or
+   a gradient, so that choice is one click rather than a config edit.
 3. **Colour rules on every display.** `threshold-cuts`, `ramp-domain` and
    `ramp-ends` live only in the mark display's rule list
    (`plugins/marks/src/LinearMarkDisplay/markProblems.ts`), so a bad colour
