@@ -13,6 +13,7 @@ import packageJSON from '../../package.json' with { type: 'json' }
 import type { AbstractSessionModel, SessionShareMode } from '@jbrowse/core/util'
 import type {
   HostedBaseConfig,
+  HydratedForms,
   WebExportInput,
   WebExportPlan,
 } from '@jbrowse/product-core'
@@ -36,6 +37,7 @@ export interface PreparedExport {
 export async function prepareExport(
   snapshot: WebExportInput,
   session: AbstractSessionModel,
+  forms: HydratedForms,
 ): Promise<PreparedExport> {
   const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
   // If the hosted base config can't be fetched (hub down, offline), fall back
@@ -54,7 +56,10 @@ export async function prepareExport(
     // an edit.
     addRelativeUris(baseConfig, new URL(sourceConfigUrl))
   }
-  const plan = planWebExport(snapshot, baseConfig)
+  const plan = planWebExport(
+    snapshot,
+    baseConfig && { config: baseConfig, forms },
+  )
   return {
     plan,
     // Stamp what this desktop instance resolves at read time, the same as

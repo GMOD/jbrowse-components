@@ -12,6 +12,7 @@ import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
+  hydratedForms,
   openConnectionMenuItem,
   openTrackMenuItem,
   pluginStoreMenuItem,
@@ -450,6 +451,10 @@ export default function rootModelFactory({
                             {
                               snapshot: getSaveSession(self),
                               session,
+                              forms: hydratedForms(
+                                pluginManager,
+                                assemblyConfigSchema,
+                              ),
                               handleClose: () => {
                                 done()
                               },

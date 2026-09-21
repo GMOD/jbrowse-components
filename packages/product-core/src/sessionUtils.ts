@@ -17,6 +17,7 @@ import {
 
 import { asArray, isRecord } from './snapshotUtils.ts'
 
+import type { HydratedForms } from './Session/hydratedForms.ts'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type {
   IAnyStateTreeNode,
@@ -280,6 +281,14 @@ export interface HostedBaseConfig {
   [key: string]: unknown
 }
 
+// The hub's config comes as its JSON spells it and desktop's copy of an edited
+// track as its schema wrote it back, so each track and assembly is diffed
+// through `forms` first — the form the recipient merges the delta over.
+export interface HostedBase {
+  config: HostedBaseConfig
+  forms: HydratedForms
+}
+
 export interface WebExportPlan {
   // hostedConfigBase: open `?config=<configUrl>` and let the hosted config
   // provide the assembly + its tracks; the session carries only the delta.
@@ -408,21 +417,19 @@ function withoutBaseAssemblies(
 // `withoutBaseAssemblies` drops to keep the recipient's safeReferences
 // unambiguous.
 //
-// Edited-ness is `flattenTrackConfigDelta`, the same gate `splitTracksAgainstBase`
-// uses, so an export can't call an assembly edited on a diff too thin to be worth
+// Edited-ness is `editedDelta`, the same gate `splitTracksAgainstBase` uses, so
+// an export can't call an assembly edited on a diff too thin to be worth
 // shipping for a track.
 function assembliesRevertedToBase(
   assemblies: AssemblySnapshot[],
   sessionAssemblies: unknown[],
   baseAssemblies: AssemblySnapshot[],
+  form: HydratedForms['assembly'],
 ): string[] {
   const baseByName = new Map(baseAssemblies.map(a => [a.name, a]))
   const edited = assemblies.flatMap(assembly => {
     const base = baseByName.get(assembly.name)
-    return base &&
-      flattenTrackConfigDelta(base, diffTrackConfig(base, assembly)).length > 0
-      ? [assembly.name]
-      : []
+    return base && editedDelta(base, assembly, form) ? [assembly.name] : []
   })
   const shadowed = sessionAssemblies.flatMap(a => {
     const name = readAssemblyName(a)
@@ -538,24 +545,33 @@ function nonPortableUserTracks(
 function splitTracksAgainstBase(
   tracks: TrackSnapshot[],
   baseTracks: TrackSnapshot[],
+  form: HydratedForms['track'],
 ) {
   const baseById = new Map(baseTracks.map(t => [t.trackId, t]))
   const addedTracks = tracks.filter(t => !baseById.has(t.trackId))
   const editDeltas = Object.fromEntries(
     tracks.flatMap((track): [string, Record<string, unknown>][] => {
       const base = baseById.get(track.trackId)
-      if (!base) {
-        return []
-      }
-      const delta = diffTrackConfig(base, track)
-      // gate on real slot changes, not the identity keys / injected display
-      // stubs a raw diff carries (matches the web session's "is edited" test)
-      return flattenTrackConfigDelta(base, delta).length > 0
-        ? [[track.trackId, delta]]
-        : []
+      const delta = base && editedDelta(base, track, form)
+      return delta ? [[track.trackId, delta]] : []
     }),
   )
   return { addedTracks, editDeltas }
+}
+
+// The delta from `base` to `edited` with both in their hydrated form, or
+// undefined when no setting changed — the web session's own "is edited" test,
+// which a bare key count fails on the identity keys and display stubs
+function editedDelta<T extends Record<string, unknown>>(
+  base: T,
+  edited: T,
+  form: (conf: T) => T,
+) {
+  const hydratedBase = form(base)
+  const delta = diffTrackConfig(hydratedBase, form(edited))
+  return flattenTrackConfigDelta(hydratedBase, delta).length > 0
+    ? delta
+    : undefined
 }
 
 // Overlays edited-track deltas onto the session's trackConfigDeltas, preserving
@@ -678,12 +694,12 @@ function withCarriedConfigs(
 // Decides how to hand a desktop session to jbrowse-web. When the session was
 // launched from a hosted hub config (sourceConfigUrl) that still covers all of
 // its assemblies, that config is reused as the base and only user-added/edited
-// tracks ride along; otherwise the session is made self-contained. `baseConfig`
-// is the fetched hub config (already rebased with addRelativeUris by the caller),
+// tracks ride along; otherwise the session is made self-contained. `base` holds
+// the fetched hub config (already rebased with addRelativeUris by the caller),
 // used to tell hub tracks from user-added ones and to diff edited hub tracks.
 export function planWebExport(
   snapshot: WebExportInput,
-  baseConfig?: HostedBaseConfig,
+  base?: HostedBase,
 ): WebExportPlan {
   const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
   const assemblies = snapshot.assemblies ?? []
@@ -691,16 +707,17 @@ export function planWebExport(
   const priorSessionAssemblies = asArray(defaultSession.sessionAssemblies)
   const inputTracks = snapshot.tracks ?? []
   const inputSessionTracks = asArray(defaultSession.sessionTracks)
+  const baseConfig = base?.config
 
   const baseAssemblyNames = new Set(
     (baseConfig?.assemblies ?? []).map(a => a.name),
   )
   const coveredByBase =
     !!sourceConfigUrl &&
-    !!baseConfig &&
+    !!base &&
     assemblies.every(a => baseAssemblyNames.has(a.name))
   const hubIndexes = new Map(
-    (coveredByBase ? (baseConfig.tracks ?? []) : []).map(t => [
+    (coveredByBase ? (base.config.tracks ?? []) : []).map(t => [
       t.trackId,
       t.textSearching,
     ]),
@@ -730,7 +747,7 @@ export function planWebExport(
   const tracks = allTracks.filter(keep)
   const priorSessionTracks = allSessionTracks.filter(keep)
 
-  // `baseConfig` is undefined only because the caller could not fetch
+  // `base` is undefined only because the caller could not fetch
   // `sourceConfigUrl` — it is the same fetch that produces it — so the two ways
   // a hub drops out of the plan are distinguishable here without a flag.
   const selfContainedReason: SelfContainedReason | undefined = coveredByBase
@@ -746,7 +763,7 @@ export function planWebExport(
   // defined exactly when the hostedConfigBase strategy applies, so it doubles as
   // the strategy flag for the shared tail below
   const hosted = coveredByBase
-    ? splitTracksAgainstBase(tracks, baseConfig.tracks ?? [])
+    ? splitTracksAgainstBase(tracks, base.config.tracks ?? [], base.forms.track)
     : undefined
 
   const session = withCarriedConfigs(
@@ -800,11 +817,12 @@ export function planWebExport(
         ...strippedTextIndexNames(inputSessionTracks, allSessionTracks),
       ]),
     ],
-    revertedAssemblies: hosted
+    revertedAssemblies: coveredByBase
       ? assembliesRevertedToBase(
           assemblies,
           priorSessionAssemblies,
-          baseConfig?.assemblies ?? [],
+          base.config.assemblies ?? [],
+          base.forms.assembly,
         )
       : [],
     unavailableAccounts: unavailableAccountIds(

@@ -9,6 +9,7 @@ import { applySnapshot, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
 import { TracksManagerSessionMixin } from './Tracks.ts'
+import { hydratedTrackForm } from './hydratedForms.ts'
 import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
@@ -100,33 +101,20 @@ function withoutDelta(
  * #stateModel SessionTracksManagerSessionMixin
  */
 export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
-  // A jbrowse.tracks base entry and a shown track's persisted snapshot are in
-  // two different config "normal forms". A base is the raw config-file object:
-  // shorthand `uri`, no injected display stubs. But a shown track's snapshot
-  // comes from a live hydrated config node, so it is
-  // post-preProcessSnapshot: the `uri` shorthand is expanded to
-  // bamLocation/index, `baseUri` is propagated into those locations, and a
-  // {type, displayId} stub is injected per compatible display type. Diffing or
-  // merging across those two forms makes every expanded/injected field read as
-  // a user edit — pinning whole adapters and content-free display stubs into
-  // deltas, and defeating the delta's purpose (a later admin adapter-URL fix
-  // would then be masked by the pinned copy). Normalize a base to the hydrated
-  // form by running it through the same track schema, so diff/merge compare
-  // like with like and cancel everything untouched. Memoized per frozen-base
-  // identity (stable until a jbrowse.tracks write).
+  // A base is the raw config-file object — shorthand `uri`, no display stubs —
+  // and a working copy's snapshot is hydrated. Diffing or merging across the
+  // two reads every expanded field as an edit, pinning whole adapters into the
+  // delta, and every default the admin spelled out as a reset. So a base goes
+  // through the same schema first, memoized per frozen-base identity, which is
+  // stable until a jbrowse.tracks write.
+  const hydrate = hydratedTrackForm(pluginManager)
   const canonicalBaseCache = new WeakMap<object, PlainTrackConfig>()
   function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
     const cached = canonicalBaseCache.get(base)
     if (cached) {
       return cached
     }
-    const schema = pluginManager.pluggableConfigSchemaType('track')
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc7 sees getSnapshot here as unknown (eslint's TS6 service disagrees)
-    /* oxlint-disable typescript/no-unnecessary-type-assertion */
-    const hydrated = getSnapshot(
-      schema.create(base, { pluginManager }),
-    ) as unknown as PlainTrackConfig
-    /* oxlint-enable typescript/no-unnecessary-type-assertion */
+    const hydrated = hydrate(base)
     canonicalBaseCache.set(base, hydrated)
     return hydrated
   }

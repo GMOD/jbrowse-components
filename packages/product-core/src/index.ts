@@ -47,6 +47,7 @@ export {
   getShareableSessionSnapshot,
   copyTrackSnapshot,
   finalizeSession,
+  hydratedForms,
   isBaseSession,
   isSession,
   isSessionWithConnections,
@@ -66,6 +67,7 @@ export type {
   BaseSessionType,
   ConnectionTrackConfigEntry,
   EditableTrackConfig,
+  HydratedForms,
   PlainTrackConfig,
   ReferringNode,
   SessionWithConnections,
@@ -171,6 +173,7 @@ export {
 export type {
   AssemblySnapshot,
   DroppedSessionNode,
+  HostedBase,
   HostedBaseConfig,
   NonPortableLocation,
   SelfContainedReason,

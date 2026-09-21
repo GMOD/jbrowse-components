@@ -14,6 +14,26 @@ import {
   planWebExport,
 } from './sessionUtils.ts'
 
+import type { HydratedForms } from './Session/hydratedForms.ts'
+import type { HostedBaseConfig } from './sessionUtils.ts'
+
+// the configs below are written the way a schema writes them back already
+const asWritten: HydratedForms = { track: t => t, assembly: a => a }
+
+function hub(config: HostedBaseConfig) {
+  return { config, forms: asWritten }
+}
+
+// Stands in for a schema's `stripDefault`, taking a height of 100 and an empty
+// alias list as the defaults it leaves out
+const stripsDefaults: HydratedForms = {
+  track: ({ height, ...rest }) => (height === 100 ? rest : { ...rest, height }),
+  assembly: ({ aliases, ...rest }) =>
+    Array.isArray(aliases) && aliases.length === 0
+      ? rest
+      : { ...rest, aliases },
+}
+
 const Item = types.model('Item', {
   id: types.identifier,
   name: types.string,
@@ -296,7 +316,7 @@ test('planWebExport reuses the hosted base, carrying only user-added tracks', ()
       },
       defaultSession: { name: 'session', views: [] },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [hubTrack] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [hubTrack] }),
   )
   expect(plan.strategy).toBe('hostedConfigBase')
   expect(plan.configUrl).toBe('https://jbrowse.org/ucsc/hg38/config.json')
@@ -318,13 +338,52 @@ test('planWebExport ships an edited hub track as a trackConfigDeltas entry', () 
       },
       defaultSession: { name: 'session', views: [] },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [base] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [base] }),
   )
   expect(plan.strategy).toBe('hostedConfigBase')
   // the edit rides along as a minimal delta, not a full sessionTracks shadow
   expect(plan.session.sessionTracks).toEqual([])
   expect(plan.session.trackConfigDeltas).toEqual({
     'hub-track': { trackId: 'hub-track', color: 'blue' },
+  })
+})
+
+const hubExport = {
+  assemblies: [{ name: 'hg38' }],
+  configuration: {
+    sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+  },
+  defaultSession: { name: 'session', views: [] },
+}
+
+test('planWebExport ships a reset of a hub slot as a null', () => {
+  const plan = planWebExport(
+    { ...hubExport, tracks: [{ trackId: 'hub-track', name: 'Hub track' }] },
+    hub({
+      assemblies: [{ name: 'hg38' }],
+      tracks: [{ trackId: 'hub-track', name: 'Hub track', color: 'red' }],
+    }),
+  )
+  expect(plan.session.trackConfigDeltas).toEqual({
+    'hub-track': { trackId: 'hub-track', color: null },
+  })
+})
+
+// Desktop writes an edited track back through its schema, which leaves a slot
+// at its default out, while the hub's JSON may spell it
+test('planWebExport diffs a hub track in its hydrated form, so a default the hub spells is no reset', () => {
+  const plan = planWebExport(
+    { ...hubExport, tracks: [{ trackId: 'hub-track', name: 'Edited' }] },
+    {
+      config: {
+        assemblies: [{ name: 'hg38' }],
+        tracks: [{ trackId: 'hub-track', name: 'Hub track', height: 100 }],
+      },
+      forms: stripsDefaults,
+    },
+  )
+  expect(plan.session.trackConfigDeltas).toEqual({
+    'hub-track': { trackId: 'hub-track', name: 'Edited' },
   })
 })
 
@@ -344,7 +403,7 @@ test('planWebExport preserves a prior trackConfigDeltas entry alongside an edit'
         trackConfigDeltas: { other: { trackId: 'other', height: 200 } },
       },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [base] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [base] }),
   )
   expect(plan.session.trackConfigDeltas).toEqual({
     other: { trackId: 'other', height: 200 },
@@ -403,7 +462,7 @@ test('planWebExport falls back to self-contained when an assembly is not in the 
       },
       defaultSession: { name: 'session' },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [] }),
   )
   expect(plan.strategy).toBe('selfContained')
 })
@@ -569,7 +628,7 @@ test('planWebExport reports a local session assembly as blocking under a hosted 
         ],
       },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [] }),
   )
   expect(plan.strategy).toBe('hostedConfigBase')
   expect(plan.droppedTracks).toEqual([])
@@ -600,7 +659,7 @@ test('planWebExport does not report a local config assembly under a hosted base'
       },
       defaultSession: { name: 'session' },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [] }),
   )
   expect(plan.strategy).toBe('hostedConfigBase')
   expect(plan.droppedTracks).toEqual([])
@@ -663,7 +722,7 @@ test('planWebExport carries only the plugins a hosted base does not declare', ()
       },
       defaultSession: { name: 'session' },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [], plugins: [shared] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [], plugins: [shared] }),
   )
   expect(plan.strategy).toBe('hostedConfigBase')
   // the base's own plugins[] is loaded by jbrowse-web from ?config=, so shipping
@@ -712,7 +771,7 @@ test('planWebExport carries only the connections a hosted base does not declare'
       },
       defaultSession: { name: 'session' },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [], connections: [shared] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [], connections: [shared] }),
   )
   expect(plan.strategy).toBe('hostedConfigBase')
   // the recipient concatenates jbrowse.connections with sessionConnections, so
@@ -737,7 +796,7 @@ test('planWebExport drops a session assembly the hosted base already provides', 
         sessionAssemblies: [{ name: 'hg38' }, { name: 'mine' }],
       },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [] }),
   )
   expect(plan.strategy).toBe('hostedConfigBase')
   expect(plan.session.sessionAssemblies).toEqual([{ name: 'mine' }])
@@ -976,7 +1035,7 @@ test('planWebExport does not ship a local text index as a hub track edit', () =>
       ],
       configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
     },
-    { assemblies: [{ name: 'hg38' }], tracks: [base] },
+    hub({ assemblies: [{ name: 'hg38' }], tracks: [base] }),
   )
   expect(plan.strategy).toBe('hostedConfigBase')
   expect(plan.session).not.toHaveProperty('trackConfigDeltas')
@@ -1002,7 +1061,7 @@ test('planWebExport says why a self-contained export is self-contained', () => {
         assemblies: [{ name: 'hg19' }],
         configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
       },
-      { assemblies: [{ name: 'hg38' }] },
+      hub({ assemblies: [{ name: 'hg38' }] }),
     ).selfContainedReason,
   ).toBe('assembliesNotInBase')
   expect(
@@ -1011,7 +1070,7 @@ test('planWebExport says why a self-contained export is self-contained', () => {
         assemblies: [{ name: 'hg38' }],
         configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
       },
-      { assemblies: [{ name: 'hg38' }] },
+      hub({ assemblies: [{ name: 'hg38' }] }),
     ).selfContainedReason,
   ).toBeUndefined()
 })
@@ -1044,7 +1103,7 @@ test('planWebExport reports an edited assembly the hosted base takes back', () =
       ],
       configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
     },
-    { assemblies: [baseAssembly] },
+    hub({ assemblies: [baseAssembly] }),
   )
   expect(plan.strategy).toBe('hostedConfigBase')
   expect(plan.revertedAssemblies).toEqual(['hg38'])
@@ -1058,10 +1117,25 @@ test('planWebExport reports a session assembly the hosted base shadows', () => {
       configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
       defaultSession: { sessionAssemblies: [{ name: 'hg38' }] },
     },
-    { assemblies: [assembly] },
+    hub({ assemblies: [assembly] }),
   )
   expect(plan.session.sessionAssemblies).toEqual([])
   expect(plan.revertedAssemblies).toEqual(['hg38'])
+})
+
+test('planWebExport compares an assembly in its hydrated form, so a default the hub spells is no edit', () => {
+  expect(
+    planWebExport(
+      {
+        assemblies: [{ name: 'hg38' }],
+        configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+      },
+      {
+        config: { assemblies: [{ name: 'hg38', aliases: [] }] },
+        forms: stripsDefaults,
+      },
+    ).revertedAssemblies,
+  ).toEqual([])
 })
 
 test('planWebExport reports no reverted assembly when nothing was edited', () => {
@@ -1072,7 +1146,7 @@ test('planWebExport reports no reverted assembly when nothing was edited', () =>
         assemblies: [assembly],
         configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
       },
-      { assemblies: [assembly] },
+      hub({ assemblies: [assembly] }),
     ).revertedAssemblies,
   ).toEqual([])
 })
@@ -1103,10 +1177,10 @@ test('planWebExport reports an internet account the recipient will not have', ()
         tracks: [track],
         configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
       },
-      {
+      hub({
         assemblies: [{ name: 'hg38' }],
         internetAccounts: [{ internetAccountId: 'dropbox1' }],
-      },
+      }),
     ).unavailableAccounts,
   ).toEqual([])
 })

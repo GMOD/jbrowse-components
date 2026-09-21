@@ -1,9 +1,11 @@
+import { assemblyConfigSchemaFactory } from '@jbrowse/core/assemblyManager'
 import {
   hydrateTrackConfig,
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { getEnv, getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { hydratedForms, planWebExport } from '@jbrowse/product-core'
 import { waitFor } from '@testing-library/react'
 
 import { createViewState, createViewStateAsync } from './index.ts'
@@ -362,4 +364,60 @@ describe('a reset of an admin-set slot survives a reload', () => {
     expect(sessionOf(state).trackConfigDeltas[FST]).toEqual(rulesDelta)
     expect(readConfObject(manhattan(effective(state)), RULES)).toHaveLength(0)
   })
+})
+
+// Desktop's copy of an edited hub track is what its schema wrote back, and the
+// hub's JSON is what its author typed: `uri` shorthand, `displayDefaults`, a
+// slot spelled at its default. Only the edit may reach the delta.
+test('a desktop export diffs a hub track and assembly through their schemas', () => {
+  const hubTrack = {
+    type: 'FeatureTrack',
+    trackId: 'genes',
+    name: 'Genes',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'Gff3TabixAdapter', uri: 'genes.gff.gz' },
+    displays: [
+      {
+        type: 'LinearBasicDisplay',
+        displayId: 'genes-LinearBasicDisplay',
+        height: 100,
+      },
+    ],
+    displayDefaults: { color: 'purple' },
+  }
+  const hubAssembly = {
+    name: 'volvox',
+    aliases: [],
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: 'volvox_refseq',
+      adapter: { type: 'TwoBitAdapter', uri: 'volvox.2bit' },
+    },
+  }
+  const state = createViewState({ assembly, tracks: [hubTrack] })
+  const pluginManager = getEnv<{ pluginManager: PluginManager }>(
+    state,
+  ).pluginManager
+  const forms = hydratedForms(
+    pluginManager,
+    assemblyConfigSchemaFactory(pluginManager),
+  )
+  const edited = hydrateTrackConfig(pluginManager, structuredClone(hubTrack))!
+  setConf(edited, 'name', 'Edited genes')
+
+  const plan = planWebExport(
+    {
+      assemblies: [forms.assembly(hubAssembly)],
+      tracks: [getSnapshot(edited) as { trackId: string }],
+      configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+    },
+    {
+      config: { assemblies: [hubAssembly], tracks: [hubTrack] },
+      forms,
+    },
+  )
+  expect(plan.session.trackConfigDeltas).toEqual({
+    genes: { trackId: 'genes', name: 'Edited genes' },
+  })
+  expect(plan.revertedAssemblies).toEqual([])
 })

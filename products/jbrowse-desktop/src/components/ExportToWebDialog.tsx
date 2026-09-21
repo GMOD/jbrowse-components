@@ -29,7 +29,11 @@ import ExportToWebInfoDialog from './ExportToWebInfoDialog.tsx'
 import { buildLink, prepareExport } from './buildWebExport.ts'
 
 import type { AbstractSessionModel, SessionShareMode } from '@jbrowse/core/util'
-import type { WebExportInput, WebExportPlan } from '@jbrowse/product-core'
+import type {
+  HydratedForms,
+  WebExportInput,
+  WebExportPlan,
+} from '@jbrowse/product-core'
 
 const SHARE_MODES = [
   // the default first, and in the order ExportToWebInfoDialog explains them
@@ -250,10 +254,12 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
   handleClose,
   snapshot,
   session,
+  forms,
 }: {
   handleClose: () => void
   snapshot: WebExportInput
   session: AbstractSessionModel
+  forms: HydratedForms
 }) {
   // Default to 'long' — a fully local, inline link, and the one mode that has a
   // usable answer the moment the dialog opens. Selecting 'short' still sends
@@ -266,7 +272,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
   // bake at a different moment than the snapshot was taken, and must not blank
   // the portability warnings while it re-encodes.
   const prepared = useFetch(['exportToWebPlan'], () =>
-    prepareExport(snapshot, session),
+    prepareExport(snapshot, session, forms),
   )
   // The short mode is the only one that leaves this computer, so it waits for
   // the user to ask; the inline modes assemble locally and need no permission.
