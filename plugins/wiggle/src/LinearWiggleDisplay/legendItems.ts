@@ -24,8 +24,9 @@ interface LegendSource {
  * group do not. An ungrouped source keeps a row of its own, since
  * nothing else identifies it.
  *
- * **Density decides which channel the color comes from.** `color` is a row's
- * identity everywhere except density, where it is the score ramp and identity
+ * **A score gradient decides which channel the color comes from.** `color` is
+ * a row's identity except where a gradient paints (density, or bars and points
+ * under a declared `linear`/`log` colour): there it is the score ramp and identity
  * sits in `labelColor` — see the channel note in sourcesLogic.ts. Reading
  * `color` in density gave a grouped-but-uncolored cohort N rows that were all
  * `fallbackColor`, naming groups that were on screen in as many different
@@ -50,13 +51,13 @@ interface LegendSource {
  */
 export function buildLegendItems(
   sources: LegendSource[],
-  isDensity: boolean,
+  gradientPaints: boolean,
   fallbackColor: string,
 ): LegendItem[] {
   const seen = new Set<string>()
   const items: LegendItem[] = []
   for (const s of sources) {
-    const color = isDensity ? s.labelColor : (s.color ?? fallbackColor)
+    const color = gradientPaints ? s.labelColor : (s.color ?? fallbackColor)
     if (color === undefined) {
       continue
     }

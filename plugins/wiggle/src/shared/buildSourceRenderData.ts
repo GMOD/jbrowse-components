@@ -30,6 +30,7 @@ function sourceLayers({
   origin,
   cuts,
   innerColors,
+  gradient,
 }: {
   source: WiggleSourceData
   summaryScoreMode: string
@@ -40,6 +41,7 @@ function sourceLayers({
   origin: number
   cuts: number[]
   innerColors: [number, number, number][]
+  gradient: boolean
 }): WiggleLayer[] {
   if (
     renderingType === RENDERING_TYPE_LINE ||
@@ -66,6 +68,7 @@ function sourceLayers({
     cuts,
     innerColors,
     renderingType,
+    gradient,
   })
 }
 
@@ -191,6 +194,7 @@ export function buildSourceRenderData(
         origin,
         cuts,
         innerColors,
+        gradient: wiggleColor.rampLut !== null,
       })
       for (const layer of layers) {
         const into = layer.band ? bands : result

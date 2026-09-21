@@ -437,6 +437,8 @@ function rowArgs(c: never, layer: SourceRenderData) {
     pivot,
     cuts: [pivot],
     innerColors: [],
+    rampLut: null,
+    rampMid: undefined,
     lineWidth: 1,
   }
 }

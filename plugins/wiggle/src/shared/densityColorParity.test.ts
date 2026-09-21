@@ -4,8 +4,11 @@ import {
   sampleColorRamp,
 } from '@jbrowse/core/util/colorRamp'
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
+import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
 import {
+  RENDERING_TYPE_SCATTER,
+  RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
@@ -18,13 +21,21 @@ import {
   rampMidNorm,
 } from './getDensityColor.ts'
 import {
+  GLSL_FRAGMENT as FILL_GLSL_FRAGMENT,
+  GLSL_VERTEX as FILL_GLSL_VERTEX,
+} from './shaders/wiggle.glsl.generated.ts'
+import { WGSL_SOURCE as FILL_WGSL_SOURCE } from './shaders/wiggle.wgsl.generated.ts'
+import {
   densityGradientT,
   densityRampT,
 } from './shaders/wiggleCommon.js.generated.ts'
 import { GLSL_FRAGMENT } from './shaders/wiggleDensity.glsl.generated.ts'
 import { WGSL_SOURCE } from './shaders/wiggleDensity.wgsl.generated.ts'
+import { WIGGLE_MARKS } from './wiggleMarks.ts'
 
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import type { WiggleRenderingType } from '@jbrowse/wiggle-core'
 
 // Gate C of agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md: both backends land on
 // the same density colour, swept across every scale type. The GPU path is
@@ -425,11 +436,158 @@ describe('the emitted ramp sample lands entry i on its own texel', () => {
   }
 
   test.each([
-    ['WGSL', WGSL_SOURCE],
-    ['GLSL', GLSL_FRAGMENT],
+    ['density WGSL', WGSL_SOURCE],
+    ['density GLSL', GLSL_FRAGMENT],
+    ['fill WGSL', FILL_WGSL_SOURCE],
+    ['fill GLSL', FILL_GLSL_FRAGMENT],
   ])('%s remaps t into texel space', (_lang, src) => {
     const body = sampleBody(src)
     expect(body).toContain(`${COLOR_RAMP_LUT_ENTRIES - 1}.0`)
     expect(body).toContain(`/ ${COLOR_RAMP_LUT_ENTRIES}.0`)
+  })
+})
+
+// Bars and points under a gradient: the fill pass's vertex stage places each
+// instance on the ramp through the same two decisions density does, and its
+// fragment samples the same texture, so the GPU side is the density mirror
+// above. The emitted source is read to hold the shader to that; the Canvas2D
+// side is painted through the mark list, which is also the SVG export.
+describe('bars and points under a gradient', () => {
+  const lut = rampLutOf({ scheme: 'viridis' })
+  const bucketStep = maxAdjacentStep(lut)
+
+  test.each([
+    ['WGSL', FILL_WGSL_SOURCE],
+    ['GLSL', FILL_GLSL_VERTEX],
+  ])(
+    '%s places each instance on the ramp as density does, under the flag alone',
+    (_lang, src) => {
+      expect(src).toMatch(
+        /rampLut_0\) == (i32\()?1\)?\)[^}]*densityRampT_0\(normalizeScore_0\([^;]*score[^;]*\), u_0\.rampMidNorm_0\);/,
+      )
+    },
+  )
+
+  test.each([
+    ['WGSL', FILL_WGSL_SOURCE],
+    ['GLSL', FILL_GLSL_FRAGMENT],
+  ])('%s samples the ramp only under the flag', (_lang, src) => {
+    expect(src).toMatch(/rampLut_0\) == (i32\()?1\)?\)[^}]*rampColor_0\(/)
+  })
+
+  function paintedFills(
+    renderingType: WiggleRenderingType,
+    scores: number[],
+    domainY: [number, number],
+    rampLut: Uint8Array | undefined,
+  ) {
+    const fills: string[] = []
+    const record = () => fills.push(ctx.fillStyle)
+    const ctx = {
+      fillStyle: '',
+      strokeStyle: '',
+      lineWidth: 1,
+      fillRect: record,
+      rect: record,
+      arc: record,
+      save() {},
+      restore() {},
+      beginPath() {},
+      moveTo() {},
+      lineTo() {},
+      closePath() {},
+      fill() {},
+      stroke() {},
+      clip() {},
+    }
+    const positions = new Uint32Array(
+      scores.flatMap((_, i) => [i * 10, i * 10 + 10]),
+    )
+    paintMarkBlocks(
+      ctx as unknown as MarkContext2D,
+      WIGGLE_MARKS,
+      new Map([
+        [
+          0,
+          [
+            {
+              featurePositions: positions,
+              featureScores: new Float32Array(scores),
+              numFeatures: scores.length,
+              color: [0.5, 0.5, 0.5],
+              rowIndex: 0,
+              renderingType,
+            },
+          ],
+        ],
+      ]),
+      [
+        {
+          displayedRegionIndex: 0,
+          start: 0,
+          end: scores.length * 10,
+          screenStartPx: 0,
+          screenEndPx: 800,
+          reversed: false,
+        },
+      ],
+      {
+        canvasWidth: 800,
+        canvasHeight: 100,
+        renderingType,
+        scaleType: SCALE_TYPE_LINEAR,
+        symlogConstant: 1,
+        domainY,
+        numRows: 1,
+        scatterPointSize: 4,
+        lineWidth: 1,
+        origin: domainY[1],
+        pivot: domainY[1],
+        cuts: [domainY[1]],
+        innerColors: [],
+        rampLut,
+      },
+    )
+    // the block's clip rect, drawn before any fill is set
+    return fills.filter(fill => fill !== '')
+  }
+
+  describe.each([
+    ['xyplot', RENDERING_TYPE_XYPLOT],
+    ['scatter', RENDERING_TYPE_SCATTER],
+  ] as const)('%s', (_name, renderingType) => {
+    const domainY: [number, number] = [-900, 0]
+    const scores = [-900, -700, -450, -200, -1, 0]
+
+    test('both backends land within one LUT bucket for every instance', () => {
+      const fills = paintedFills(renderingType, scores, domainY, lut)
+      expect(fills).toHaveLength(scores.length)
+      for (const [i, score] of scores.entries()) {
+        const gpu = gpuLutChannels(
+          lut,
+          score,
+          domainY[0],
+          domainY[1],
+          SCALE_TYPE_LINEAR,
+          1,
+          undefined,
+        )
+        const canvas = parseRgba(fills[i]!)
+        for (const [c, v] of gpu.entries()) {
+          expect(Math.abs(canvas[c]! - v)).toBeLessThanOrEqual(bucketStep)
+        }
+      }
+      expect(parseRgba(fills[0]!)).toEqual([lut[0], lut[1], lut[2]])
+      expect(parseRgba(fills.at(-1)!)).toEqual([
+        lut[255 * 4],
+        lut[255 * 4 + 1],
+        lut[255 * 4 + 2],
+      ])
+    })
+
+    test('without a gradient every instance paints the layer colour', () => {
+      const fills = paintedFills(renderingType, scores, domainY, undefined)
+      expect(new Set(fills)).toEqual(new Set(['rgb(128,128,128)']))
+    })
   })
 })

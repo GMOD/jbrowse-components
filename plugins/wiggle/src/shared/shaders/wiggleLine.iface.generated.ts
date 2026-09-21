@@ -33,7 +33,7 @@ export const UNIFORM_OFFSET_F32 = {
 export const UNIFORM_OFFSET_I32 = {
   scaleType: 4,
   renderingType: 5,
-  densityRampLut: 18,
+  rampLut: 18,
   numCuts: 19,
 } as const
 
@@ -97,7 +97,7 @@ export interface Uniforms {
   rampMidNorm: number
   symlogConstant: number
   devicePixelRatio: number
-  densityRampLut: number
+  rampLut: number
   numCuts: number
   cuts: [[number, number, number, number], [number, number, number, number]]
   innerColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
@@ -124,7 +124,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[15] = uniforms.rampMidNorm
   f32[16] = uniforms.symlogConstant
   f32[17] = uniforms.devicePixelRatio
-  i32[18] = uniforms.densityRampLut
+  i32[18] = uniforms.rampLut
   i32[19] = uniforms.numCuts
   f32[20] = uniforms.cuts[0][0]
   f32[21] = uniforms.cuts[0][1]

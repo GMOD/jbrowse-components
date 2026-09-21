@@ -67,12 +67,15 @@ interface WiggleParams {
   cuts: number[]
   innerColors: [number, number, number][]
   rampMid: number | undefined
-  // Density's named-ramp table, resolved from a name on the render state: the
-  // GPU samples these bytes as the density pass's texture and Canvas2D indexes
-  // the same cached array. Never the instance buffer — the score→colour
-  // mapping moving must not re-upload a byte.
+  // A gradient's table, which bars, points and density colour through: the GPU
+  // samples these bytes as the pass's texture and Canvas2D indexes the same
+  // cached array. Never the instance buffer — the score→colour mapping moving
+  // must not re-upload a byte. Null for lines, which still part in two.
   rampLut: Uint8Array | null
 }
+
+const isLineFamily = (type: WiggleRenderingType) =>
+  type === RENDERING_TYPE_LINE || type === RENDERING_TYPE_LINE_CENTER
 
 function wiggleParams(
   state: WiggleGPURenderState,
@@ -92,8 +95,7 @@ function wiggleParams(
     cuts: state.cuts,
     innerColors: state.innerColors,
     rampMid: state.rampMid,
-    rampLut:
-      renderingType === RENDERING_TYPE_DENSITY ? (state.rampLut ?? null) : null,
+    rampLut: isLineFamily(renderingType) ? null : (state.rampLut ?? null),
   }
 }
 
@@ -140,7 +142,7 @@ function writeWiggleUniforms(
     // canvasHeight`: past the backing-store clamp the two differ, and the ramp
     // wants the density of the screen the mark is read on.
     devicePixelRatio: getDpr(),
-    densityRampLut: p.rampLut ? 1 : 0,
+    rampLut: p.rampLut ? 1 : 0,
     numCuts: p.cuts.length,
     cuts: [cutQuad(p.cuts, 0), cutQuad(p.cuts, 4)],
     innerColor: [
@@ -242,6 +244,8 @@ function wiggleShape(
             pivot: p.pivot,
             cuts: p.cuts,
             innerColors: p.innerColors,
+            rampLut: p.rampLut,
+            rampMid: p.rampMid,
           },
           p,
         )
@@ -281,18 +285,10 @@ const densityShape = wiggleShape(
     pack: packFillInstances,
   },
   type => type === RENDERING_TYPE_DENSITY,
-  (row, p) => {
-    drawDensity({
-      ...row,
-      ...rgb255(row.source),
-      rampLut: p.rampLut,
-      rampMid: p.rampMid,
-    })
+  row => {
+    drawDensity({ ...row, ...rgb255(row.source) })
   },
 )
-
-const isLineFamily = (type: WiggleRenderingType) =>
-  type === RENDERING_TYPE_LINE || type === RENDERING_TYPE_LINE_CENTER
 
 // The GPU draws the band after the lines and composites it behind them.
 // MarkContext2D exposes no compositing operator, so on Canvas2D the line marks
@@ -344,10 +340,15 @@ const lineCenterShape = wiggleShape(
 
 const channels = (sources: SourceRenderData[]) => sources
 
+// Off the render state, per pass: a gradient is one 256×1 texture and a
+// uniform flag, and no gradient binds the inert table the backend keeps.
+const rampTexture = (state: WiggleGPURenderState) => state.rampLut
+
 const fill = defineMark({
   shape: fillShape,
   channels,
   params: wiggleParams,
+  texture: rampTexture,
 })
 
 /**
@@ -369,9 +370,7 @@ export const WIGGLE_MARKS = [
     channels,
     params: wiggleParams,
     bufferOf: fill,
-    // Off the render state, per pass: a declared ramp is one 256×1 texture
-    // and a uniform flag, and no ramp binds the inert table the backend keeps.
-    texture: (state: WiggleGPURenderState) => state.rampLut,
+    texture: rampTexture,
   }),
   defineMark({
     shape: lineShape,

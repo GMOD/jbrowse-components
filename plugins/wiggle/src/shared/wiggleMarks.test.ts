@@ -4,6 +4,7 @@ import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
+  RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
@@ -397,77 +398,99 @@ describe('the wiggle mark list', () => {
     expect([...f32.slice(secondInner, secondInner + 4)]).toEqual([0, 1, 0, 1])
   })
 
-  // The named-ramp gauge (agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md): a named
-  // ramp on a density track is a uniform flag and one 256×1 LUT upload through
-  // the shared path — no new shader, no buffer byte. The LUT bytes are the
-  // cached table Canvas2D indexes too (densityColorParity.test.ts holds the
-  // colour parity).
-  it('a named density ramp is a uniform flag and one LUT texture upload', () => {
-    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
-    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
-    const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
-    const state = {
-      ...DEFAULT_STATE,
-      renderingType: RENDERING_TYPE_DENSITY,
-      rampLut: rampLutOf({ scheme: 'viridis' }),
-    }
+  const texUploads = (hal: MockHal, pass: string) =>
+    hal.callsOf('uploadTexture').filter(c => c.args[0] === pass).length
 
-    backend.upload(0, [source])
-    const uploadedBufferBytes = () =>
-      hal
-        .callsOf('uploadBuffer')
-        .reduce((total, c) => total + (c.args[2] as number), 0)
-    const loadBytes = uploadedBufferBytes()
-    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+  // The gradient gauge (agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md):
+  // a gradient on bars, points or density is a uniform flag and one 256×1 LUT
+  // upload to the pass that draws — no new shader, no buffer byte. The LUT
+  // bytes are the cached table Canvas2D indexes too (densityColorParity.test.ts
+  // holds the colour parity). An autoscale pan re-colours every bar, and must
+  // still cost one uniform write: the failure this pins is a colour baked into
+  // the instance lane from the domain.
+  describe.each([
+    ['density', RENDERING_TYPE_DENSITY],
+    ['xyplot', RENDERING_TYPE_XYPLOT],
+    ['scatter', RENDERING_TYPE_SCATTER],
+  ] as const)('a gradient on %s', (_name, renderingType) => {
+    const pass = renderingType === RENDERING_TYPE_DENSITY ? 'density' : 'fill'
 
-    const texCalls = hal.callsOf('uploadTexture')
-    expect(texCalls.length).toBe(1)
-    expect(texCalls[0]!.args).toEqual(['density', 256 * 4, 256, 1])
-    const i32 = hal.getLastUniformsI32()!
-    expect(i32[UI.densityRampLut]).toBe(1)
-    // the uploaded bytes are the shared cached table Canvas2D indexes too
-    expect(hal.getTexture('density')).toEqual(rampLutOf({ scheme: 'viridis' }))
+    it('is a uniform flag and one LUT texture upload, and a pan re-uploads nothing', () => {
+      const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+      const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
+      const source = makeSource({ renderingType })
+      const state = {
+        ...DEFAULT_STATE,
+        renderingType,
+        rampLut: rampLutOf({ scheme: 'viridis' }),
+      }
 
-    // an autoscale pan in LUT mode is still one uniform write, zero buffer
-    // bytes and zero texture re-uploads — the ramp memo holds across frames
-    backend.renderBlocks(
-      [makeBlock({ start: 250, end: 1250 })],
-      new Map([[0, [source]]]),
-      { ...state, domainY: [0, 35] as [number, number] },
-    )
-    expect(hal.callsOf('uploadTexture').length).toBe(1)
-    expect(uploadedBufferBytes()).toBe(loadBytes)
-    expect(hal.callsOf('writeUniforms').length).toBe(2)
+      backend.upload(0, [source])
+      const uploadedBufferBytes = () =>
+        hal
+          .callsOf('uploadBuffer')
+          .reduce((total, c) => total + (c.args[2] as number), 0)
+      const loadBytes = uploadedBufferBytes()
+      backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+
+      expect(texUploads(hal, pass)).toBe(1)
+      expect(
+        hal.callsOf('uploadTexture').find(c => c.args[0] === pass)!.args,
+      ).toEqual([pass, 256 * 4, 256, 1])
+      expect(hal.getLastUniformsI32()![UI.rampLut]).toBe(1)
+      expect(hal.getTexture(pass)).toEqual(rampLutOf({ scheme: 'viridis' }))
+      const textureCalls = hal.callsOf('uploadTexture').length
+
+      backend.renderBlocks(
+        [makeBlock({ start: 250, end: 1250 })],
+        new Map([[0, [source]]]),
+        { ...state, domainY: [0, 35] as [number, number] },
+      )
+      expect(hal.callsOf('uploadTexture').length).toBe(textureCalls)
+      expect(uploadedBufferBytes()).toBe(loadBytes)
+      expect(hal.getLastUniformsF32()![U.domainYMax]).toBe(35)
+      const writes = hal.callsOf('writeUniforms')
+      expect(writes.length).toBe(2)
+      expect(writes.at(-1)!.args[0]).toBe(UNIFORMS_SIZE_BYTES)
+    })
+
+    // With no gradient the pass binds an inert LUT once — the shader owns a
+    // sampler unconditionally, and a textured pass with no texture never draws
+    // on the WebGPU HAL — while the uniform flag keeps it unsampled.
+    it('binds an inert LUT once and leaves the flag off without one', () => {
+      const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+      const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
+      const source = makeSource({ renderingType })
+      const state = { ...DEFAULT_STATE, renderingType }
+
+      backend.upload(0, [source])
+      backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+      backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
+
+      expect(texUploads(hal, pass)).toBe(1)
+      expect(hal.getTexture(pass)).toEqual(new Uint8Array(256 * 4))
+      expect(hal.getLastUniformsI32()![UI.rampLut]).toBe(0)
+
+      backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+        ...state,
+        rampLut: rampLutOf({ scheme: 'viridis' }),
+      })
+      expect(texUploads(hal, pass)).toBe(2)
+      expect(hal.getLastUniformsI32()![UI.rampLut]).toBe(1)
+    })
   })
 
-  // Default density mode binds an inert LUT once — wiggleDensity.slang owns a
-  // sampler unconditionally, and a textured pass with no texture never draws on
-  // the WebGPU HAL — while the uniform flag keeps it unsampled.
-  it('default density binds an inert LUT once and leaves the flag off', () => {
+  it('a line leaves the gradient flag off: its colour still parts in two', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
-    const source = makeSource({ renderingType: RENDERING_TYPE_DENSITY })
-    const state = {
-      ...DEFAULT_STATE,
-      renderingType: RENDERING_TYPE_DENSITY,
-    }
-
+    const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
     backend.upload(0, [source])
-    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
-    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), state)
-
-    const texCalls = hal.callsOf('uploadTexture')
-    expect(texCalls.length).toBe(1)
-    expect(texCalls[0]!.args[0]).toBe('density')
-    expect(hal.getLastUniformsI32()![UI.densityRampLut]).toBe(0)
-
-    // flipping to a named ramp re-uploads exactly once and flips the flag
     backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
-      ...state,
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_LINE,
       rampLut: rampLutOf({ scheme: 'viridis' }),
     })
-    expect(hal.callsOf('uploadTexture').length).toBe(2)
-    expect(hal.getLastUniformsI32()![UI.densityRampLut]).toBe(1)
+    expect(hal.getLastUniformsI32()![UI.rampLut]).toBe(0)
   })
 
   it('uses fill pass for XY plot rendering type', () => {

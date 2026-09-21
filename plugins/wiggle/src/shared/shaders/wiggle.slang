@@ -13,18 +13,27 @@
 // step-line's prevScore/nextScore and the center-line's
 // prevStartEnd/prevScoreLine — 20 bytes per feature that no fill pass reads,
 // and tens of MB of a 1000-source multiwiggle's single per-region allocation.
+//
+// Under a gradient (`u.rampLut`) a bar or point takes the colorRamp LUT's
+// colour at its score, as wiggleDensity.slang does: the vertex stage places the
+// flat ramp position and the fragment samples, since the HALs bind textures to
+// the fragment stage. The domain stays a uniform, so an autoscale pan
+// re-colours without touching the instance buffer.
 //! targets: wgsl, glsl
 
 import antialias;
 import hpmath;
 import colorPack;
+import colorRampLut;
 import pointGlyph;
+import scoreScale;
 import wiggleCommon;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
 
 struct VsOut {
   float4 position : SV_Position;
@@ -38,6 +47,7 @@ struct VsOut {
   // syntenyTypes.slang's `vertCoverage`, which is where the band-as-a-difference
   // -of-two-ramps form is written up.
   float2 barInkPx : TEXCOORD1;
+  nointerpolation float rampT : COLOR1;
 };
 
 // Which glyph the pass draws follows entirely from uniforms, so both stages
@@ -133,18 +143,27 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
   o.localPos = localPos;
   o.barInkPx = barInkPx;
+  o.rampT = u.rampLut == 1
+    ? densityRampT(
+        normalizeScore(inst.score, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant),
+        u.rampMidNorm)
+    : 0.0;
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
+  float4 color = fragIn.color;
+  if (u.rampLut == 1) {
+    color = rampColor(colorRamp, fragIn.rampT);
+  }
   float4 outColor;
   if (drawsDisc()) {
     float alpha = discAlpha(fragIn.localPos);
     if (alpha <= 0.0) {
       discard;
     }
-    outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
+    outColor = float4(color.rgb, color.a * alpha);
   } else if (drawsBar()) {
     // A bar's top cut IS the datum, so it must not quantise to the output grid:
     // the reader takes the score off that edge, and rounding it to a whole
@@ -174,11 +193,11 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     if (alpha <= 0.0) {
       discard;
     }
-    outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
+    outColor = float4(color.rgb, color.a * alpha);
   } else {
     // The crisp small-point square is a flat fill whose edges are meant to be
     // hard — pixel-snapped by the vertex stage.
-    outColor = fragIn.color;
+    outColor = color;
   }
   return outColor;
 }

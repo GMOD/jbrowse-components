@@ -26,7 +26,7 @@
 //
 // The default colour resolves in the vertex stage, as it always has: every
 // fragment of a density quad is one flat colour, so per-vertex is the cheaper
-// stage. The alternative named-ramp mode (`u.densityRampLut`) samples the
+// stage. The alternative named-ramp mode (`u.rampLut`) samples the
 // shared 256×1 LUT texture instead — the same colorRampLut module and binding
 // slot HiC and LD sample through — and that sample has to be the fragment's,
 // because the HALs bind textures with fragment-stage visibility only. The
@@ -90,7 +90,7 @@ DensityVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(DensityVsOut v) : SV_Target {
-  if (u.densityRampLut == 1) {
+  if (u.rampLut == 1) {
     return rampColor(colorRamp, v.rampT);
   }
   return v.color;

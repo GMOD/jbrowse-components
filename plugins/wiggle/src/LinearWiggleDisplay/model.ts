@@ -61,7 +61,11 @@ import {
   wiggleColorEncoding,
   wiggleColorNotices,
 } from '../shared/wiggleColor.ts'
-import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
+import {
+  getRowHeight,
+  getRowTop,
+  isLineMode,
+} from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
   makeLineWidthMenuItems,
@@ -388,14 +392,6 @@ export default function stateModelFactory(
       get colorEncoding() {
         return wiggleColorEncoding(self.effectiveColor)
       },
-      /**
-       * #getter
-       * What `colorSetting`'s slots say together that it cannot paint as
-       * written, for the corner notice.
-       */
-      get notices(): string[] {
-        return wiggleColorNotices(self.colorSetting)
-      },
     }))
     .views(self => ({
       /**
@@ -404,6 +400,36 @@ export default function stateModelFactory(
        */
       get wiggleColor(): ResolvedWiggleColor {
         return resolveWiggleColor(self.colorEncoding, self.origin)
+      },
+
+      /**
+       * #getter
+       * Whether colour is spent on the score, so a row's identity moves to
+       * its `labelColor`: density always, where the white fade counts, and
+       * bars or points under a declared `linear` or `log` colour. Lines part
+       * in two colours even then.
+       */
+      get scoreGradientPaints() {
+        return (
+          self.isDensityMode ||
+          (this.wiggleColor.rampLut !== null && !isLineMode(self.renderingType))
+        )
+      },
+
+      /**
+       * #getter
+       * What `colorSetting`'s slots say together that it cannot paint as
+       * written, and a gradient a line cannot paint, for the corner notice.
+       */
+      get notices(): string[] {
+        const notices = wiggleColorNotices(self.colorSetting)
+        return this.wiggleColor.rampLut !== null &&
+          isLineMode(self.renderingType)
+          ? [
+              ...notices,
+              'color.scale: a gradient colours bars, points and density; a line paints its two end colours',
+            ]
+          : notices
       },
 
       /**
@@ -442,7 +468,7 @@ export default function stateModelFactory(
           self.editableSources,
           self.subtreeFilter,
           sourcePalette(self.colorEncoding),
-          self.isDensityMode,
+          self.scoreGradientPaints,
         )
       },
     }))
@@ -481,7 +507,7 @@ export default function stateModelFactory(
       get legendItems(): LegendItem[] {
         return buildLegendItems(
           self.sources,
-          self.isDensityMode,
+          self.scoreGradientPaints,
           self.wiggleColor.posColor,
         )
       },
@@ -536,13 +562,28 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Only density spends color on the score, and only when every row shares
-       * the one ramp: a source with its own color is drawn on its own pos side
-       * (see buildSourceRenderData), so a single bar would describe none of
-       * them.
+       * Whether one ramp describes the colour of every row: wherever a score
+       * gradient paints, since a declared gradient's one table ignores the
+       * rows' own colours. Density's white fade does not: a source with its
+       * own colour fades to it (see buildSourceRenderData), so a single bar
+       * would describe none of them.
        */
       get scoreRampApplies() {
-        return self.isDensityMode && self.sources.every(s => !s.color)
+        return (
+          self.scoreGradientPaints &&
+          (self.wiggleColor.rampLut !== null ||
+            self.sources.every(s => !s.color))
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * A density row has no y scale, so under the one ramp the ramp is the
+       * key and carries the domain; bars and points keep their axis beside it.
+       */
+      get scoreRampReplacesAxis() {
+        return self.isDensityMode && self.scoreRampApplies
       },
     }))
     .views(self => wiggleDisplayViews(self))
@@ -556,7 +597,7 @@ export default function stateModelFactory(
        * one ramp the ramp is the key and carries the domain itself.
        */
       get valueScales(): ValueScale[] {
-        if (self.scoreRampApplies) {
+        if (self.scoreRampReplacesAxis) {
           return []
         }
         const { tickHeight, yTop, numRows } = self.plotGeometry

@@ -180,3 +180,103 @@ test('a threshold range that does not fit its cuts is a notice', () => {
     expect.stringMatching(/^color\.range: 2 threshold cuts make 3 intervals/),
   ])
 })
+
+// A display with a domain, which a ramp key needs.
+function scoredDisplay(sources: { name: string; color?: string }[]) {
+  const { createDisplay } = createTestEnvironment()
+  const { display, view } = createDisplay()
+  display.setFaceted(true)
+  view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+  display.setRpcData(
+    0,
+    {
+      sources: sources.map(s => ({
+        ...s,
+        featurePositions: new Uint32Array([0, 1000]),
+        featureScores: new Float32Array([30]),
+        featureMinScores: new Float32Array([30]),
+        featureMaxScores: new Float32Array([30]),
+        numFeatures: 1,
+        hasSummaryScores: false,
+      })),
+    },
+    view.displayedRegions[0],
+  )
+  return display
+}
+
+const scoreKey = (display: ReturnType<typeof scoredDisplay>) =>
+  display.colorScales.find(s => s.id === 'score')
+
+const viridis = { field: 'score', scale: 'linear', scheme: 'viridis' } as const
+
+test.each(['xyplot', 'scatter'])(
+  'a gradient on %s keys its ramp, into the export too, and keeps the axis',
+  renderingType => {
+    const display = scoredDisplay([{ name: 'a' }])
+    display.setRenderingType(renderingType)
+    display.setColor(viridis)
+    expect(display.domain).toBeDefined()
+    expect(scoreKey(display)?.kind).toBe('ramp')
+    expect(display.legendSpec.sections?.map(s => s.id)).toContain('score')
+    expect(display.valueScales).toHaveLength(1)
+    expect(display.notices).toEqual([])
+  },
+)
+
+test.each([
+  ['the default pair', undefined],
+  ['a threshold', { field: 'score', scale: 'threshold', domain: ['2'] }],
+  ['a solid colour', 'green'],
+] as const)('%s on xyplot draws no gradient key', (_name, color) => {
+  const display = scoredDisplay([{ name: 'a' }])
+  if (color !== undefined) {
+    display.setColor(color)
+  }
+  expect(display.domain).toBeDefined()
+  expect(scoreKey(display)).toBeUndefined()
+  expect(display.scoreGradientPaints).toBe(false)
+})
+
+test('a colour per source on xyplot draws no gradient key', () => {
+  const display = scoredDisplay([{ name: 'a' }, { name: 'b' }])
+  display.setFaceted(false)
+  expect(display.wiggleColor.perSource).toBe(true)
+  expect(display.domain).toBeDefined()
+  expect(scoreKey(display)).toBeUndefined()
+})
+
+test('density keeps its key: the fade is keyed until a row brings its own colour', () => {
+  const display = scoredDisplay([{ name: 'a' }])
+  display.setRenderingType('density')
+  expect(scoreKey(display)?.kind).toBe('ramp')
+  expect(display.valueScales).toEqual([])
+  const coloured = scoredDisplay([{ name: 'a', color: '#ff0000' }])
+  coloured.setRenderingType('density')
+  expect(scoreKey(coloured)).toBeUndefined()
+})
+
+// The gradient's one table ignores a row's own colour, so the key still
+// describes every row, and the row's colour moves to its label.
+test('a gradient keys its ramp over rows with their own colours, which move to the label', () => {
+  const display = scoredDisplay([
+    { name: 'a', color: '#ff0000' },
+    { name: 'b', color: '#0000ff' },
+  ])
+  expect(scoreKey(display)).toBeUndefined()
+  expect(display.sources.map(s => s.labelColor)).toEqual([undefined, undefined])
+  display.setColor(viridis)
+  expect(scoreKey(display)?.kind).toBe('ramp')
+  expect(display.sources.map(s => s.labelColor)).toEqual(['#ff0000', '#0000ff'])
+})
+
+test('a gradient on a line keys nothing and says why', () => {
+  const display = scoredDisplay([{ name: 'a' }])
+  display.setRenderingType('line')
+  display.setColor(viridis)
+  expect(scoreKey(display)).toBeUndefined()
+  expect(display.scoreGradientPaints).toBe(false)
+  expect(display.notices).toEqual([
+    'color.scale: a gradient colours bars, points and density; a line paints its two end colours',
+  ])
+})

@@ -7,6 +7,8 @@ import {
 
 import { lineLayers, makeSummaryLayers } from './wiggleLayers.ts'
 
+import type { WiggleRenderingType } from '@jbrowse/wiggle-core'
+
 describe('makeSummaryLayers', () => {
   const positions = new Uint32Array([0, 10, 10, 20])
   const scores = new Float32Array([5, 8])
@@ -41,6 +43,7 @@ describe('makeSummaryLayers', () => {
     innerColors: [],
     origin: 0,
     summaryScoreMode: 'whiskers',
+    gradient: false,
   }
 
   test('line whiskers is a min-max band under the mean line', () => {
@@ -273,5 +276,60 @@ describe('makeSummaryLayers', () => {
     })
     const red = (abgr: number | undefined) => (abgr ?? 0) & 0xff
     expect(red(min!.colorsAbgr?.[0])).toBeGreaterThan(red(max!.colorsAbgr?.[0]))
+  })
+
+  // pivot 6 with origin 0: without a gradient these bars part by colour at 6
+  // and the whiskers bands tint.
+  const gradientLayers = (renderingType: WiggleRenderingType) =>
+    makeSummaryLayers({
+      data: summaryData,
+      ...base,
+      pivot: 6,
+      cuts: [6],
+      renderingType,
+      gradient: true,
+    })
+
+  test('gradient bars stack by the origin and carry no colour of their own', () => {
+    const result = gradientLayers(RENDERING_TYPE_XYPLOT)
+    expect(result.map(l => l.featureScores)).toEqual([
+      maxScores,
+      scores,
+      minScores,
+    ])
+    for (const layer of result) {
+      expect(layer.colorsAbgr).toBeUndefined()
+      expect(layer.color).toEqual(posColor)
+    }
+  })
+
+  test('gradient bars below the origin still split off it for painting order', () => {
+    const result = makeSummaryLayers({
+      data: summaryData,
+      ...base,
+      origin: 6,
+      renderingType: RENDERING_TYPE_XYPLOT,
+      gradient: true,
+    })
+    expect(result.map(l => [...l.featureScores])).toEqual([
+      [9, 12],
+      [8],
+      [2, 4],
+      [5],
+    ])
+    expect(result.every(l => l.colorsAbgr === undefined)).toBe(true)
+  })
+
+  test('gradient scatter keeps whole untinted bands, back to front', () => {
+    const result = gradientLayers(RENDERING_TYPE_SCATTER)
+    expect(result.map(l => l.featureScores)).toEqual([
+      minScores,
+      scores,
+      maxScores,
+    ])
+    for (const layer of result) {
+      expect(layer.colorsAbgr).toBeUndefined()
+      expect(layer.color).toEqual(posColor)
+    }
   })
 })

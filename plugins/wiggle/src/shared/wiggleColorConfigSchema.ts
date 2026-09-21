@@ -29,7 +29,8 @@ export const WIGGLE_FIELD_SCALES = {
  * its two fields through a scale. `score` through a `threshold` scale is the
  * bicolor plot — a colour each side of one cut, the `origin` where the domain
  * names none, and a colour per band where it names more — and through `linear`
- * or `log` it is the density ramp.
+ * or `log` a gradient, which colours each bar, point and density cell by its
+ * score. A line still parts in the gradient's two end colours.
  * `source` through a `categorical` scale gives each subtrack a colour of its
  * own, which is what several sources sharing one plot box need to be told
  * apart. Any other pairing paints the misconfiguration grey. A wiggle colours
@@ -74,7 +75,7 @@ export const wiggleColorSchema = ConfigurationSchema(
       fieldType: 'string',
       field: 'score or source',
       scale:
-        'how field becomes a colour: threshold paints each band between two of its cuts; linear and log run range, else scheme, else viridis across the y domain with domainMid at the middle stop, which is the density picture, and a one-colour range runs from white to that colour; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score',
+        'how field becomes a colour: threshold paints each band between two of its cuts; linear and log run range, else scheme, else viridis across the y domain with domainMid at the middle stop, colouring each bar, point and density cell by its score, and a one-colour range runs from white to that colour; a line still parts in the two end colours; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score',
     }),
     /**
      * #slot field

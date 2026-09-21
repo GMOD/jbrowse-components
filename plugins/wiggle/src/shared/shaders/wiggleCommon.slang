@@ -88,7 +88,7 @@ public struct Uniforms {
   // The score the colour parts at: the line and band colour sides and the
   // density fade's white. A threshold's cut, else `origin`.
   public float  pivot;
-  // Where a named density ramp's middle stop sits, as a normalized score:
+  // Where a gradient's middle stop sits, as a normalized score:
   // `domainMid`'s, else 0.5, which runs the ramp straight across the domain.
   public float  rampMidNorm;
   // symlog's linear-region width, already resolved on the JS side (a 0 in the
@@ -100,13 +100,11 @@ public struct Uniforms {
   // without differentiating it (antialias.slang §"Analytic"). The xyplot bar's
   // horizontal cuts and the center line's capsule both read it.
   public float  devicePixelRatio;
-  // 1 = density colours through the bound 256×1 colorRamp LUT texture (a named
-  // ramp like viridis), 0 = the default inline white→track-colour lerp. Only
-  // wiggleDensity.slang reads it — the LUT cannot encode multiwiggle's
-  // PER-ROW track colours, so the inline lerp stays the default and the LUT is
-  // the alternative a config names. In the shared block like the other mode
-  // ints so one UBO write per region serves every entry shader.
-  public int    densityRampLut;
+  // 1 = a gradient: density, xyplot and scatter colour through the bound
+  // 256×1 colorRamp LUT texture, 0 = the instance colour (density's white
+  // fade off it). The LUT cannot encode multiwiggle's PER-ROW track colours,
+  // so it is the alternative a config names.
+  public int    rampLut;
   // How many of `cuts` are in use, at least 1: the pivot.
   public int    numCuts;
   // The scores the colour changes at, ascending, four to a vector.

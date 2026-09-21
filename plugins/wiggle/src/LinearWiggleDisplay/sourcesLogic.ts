@@ -44,7 +44,9 @@ export function sourcesFromRegionData(
  *
  * A row carries `color`, which the plot paints it in, and `labelColor`, which
  * the row-label sidebar paints beside it. Which of them carries the row's
- * identity is the whole of what varies, and it varies with one thing: density.
+ * identity is the whole of what varies, and it varies with one thing: whether
+ * a score gradient paints — density always, and bars or points under a
+ * declared `linear` or `log` colour, whose table ignores `color` outright.
  *
  * **In density, `color` is a scale rather than an identity.** Density paints a
  * row white at the cut and saturates towards `color`, so a hue set there to
@@ -52,8 +54,8 @@ export function sourcesFromRegionData(
  * read by — a diverging copy-number heatmap grouped by population came out one
  * hue per population with a shared blue for losses, encoding nothing. Identity
  * is displaced one channel over, to `labelColor`, which the ramp ignores. The
- * colour dialog edits `labelColor` there, the key reads it, and a score ramp is
- * drawable only while no source sets `color`.
+ * colour dialog edits `labelColor` there, the key reads it, and density's
+ * white-fade ramp is drawable only while no source sets `color`.
  *
  * Whether a source with no colour of its own takes a palette entry is the
  * colour object's question, not this file's: `color: { field: 'source' }`
@@ -120,25 +122,25 @@ function buildPaletteColors(
 // an unfilled channel stays undefined so the renderer falls back to its own
 // default.
 //
-// Density's `labelColor` falls back to the source's OWN `color` before the
+// Under a gradient `labelColor` falls back to the source's OWN `color` before the
 // group palette because that color is what the ramp paints the row with: a
 // per-cell store shipping `color: #8c564b` for its monocytes and grouping them
 // as "Monocyte" drew a brown block beside a purple label, two palettes for one
 // grouping. The label is the key to the rows, so it names the color the rows
 // actually are; the group palette is for stores supplying no color at all.
 //
-// Density takes no `rowColors` entry, deliberately: a per-row palette on the
+// A gradient takes no `rowColors` entry, deliberately: a per-row palette on the
 // label of a 4,390-row track is `set1` wrapping every nine rows, which reads as
 // a grouping and is not one.
 function synthesizeColors(
   s: Source,
   perSource: boolean,
-  isDensity: boolean,
+  gradientPaints: boolean,
   { groupColors, rowColors }: PaletteColors,
 ) {
   const groupColor =
     s.group === undefined ? undefined : groupColors.get(s.group)
-  if (isDensity) {
+  if (gradientPaints) {
     return {
       color: s.color,
       labelColor: s.labelColor ?? s.color ?? groupColor,
@@ -164,13 +166,13 @@ export function buildSources(
   editableSources: Source[],
   subtreeFilter: readonly string[] | undefined,
   palette: SourcePalette | undefined,
-  isDensity: boolean,
+  gradientPaints: boolean,
 ): Source[] {
   const colors = buildPaletteColors(editableSources, palette ?? DEFAULT_PALETTE)
   return filterRowsBySubtree(
     editableSources.map(s => ({
       ...s,
-      ...synthesizeColors(s, palette !== undefined, isDensity, colors),
+      ...synthesizeColors(s, palette !== undefined, gradientPaints, colors),
     })),
     subtreeFilter,
   )

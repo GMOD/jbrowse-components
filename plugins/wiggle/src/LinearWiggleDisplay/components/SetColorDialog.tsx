@@ -10,9 +10,10 @@ const TRACK_COLOR: ColorColumn<Source> = {
   bulkLabel: 'Change track color of selected',
 }
 
-// Row-label sidebar tint, and in density the channel a row's identity color
-// lives in — which is why it is the default column there. See the color-model
-// table in sourcesLogic.ts; this dialog does not re-decide any of it.
+// Row-label sidebar tint, and under a score gradient the channel a row's
+// identity color lives in — which is why it is the default column there. See
+// the color-model table in sourcesLogic.ts; this dialog does not re-decide any
+// of it.
 const LABEL_COLOR: ColorColumn<Source> = {
   field: 'labelColor',
   headerName: 'Label color',
@@ -35,7 +36,7 @@ export default observer(function WiggleSetColorDialog({
 }: {
   model: TreeLayoutModel<Source> & {
     isFaceted: boolean
-    isDensityMode: boolean
+    scoreGradientPaints: boolean
   }
   handleClose: () => void
 }) {
@@ -47,7 +48,7 @@ export default observer(function WiggleSetColorDialog({
       title="Wiggle color/arrangement editor"
       colorColumns={isFaceted ? [TRACK_COLOR, LABEL_COLOR] : [TRACK_COLOR]}
       defaultColorField={
-        isFaceted && model.isDensityMode ? 'labelColor' : 'color'
+        isFaceted && model.scoreGradientPaints ? 'labelColor' : 'color'
       }
       reservedFields={isFaceted ? undefined : OVERLAY_RESERVED}
       enableBulkEdit

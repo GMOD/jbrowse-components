@@ -40,9 +40,11 @@ Canvas2D's in-order source-over does.
 record, `rowScoreToYPx` (where a score lands in its row, for both lines and the
 band) and `bandColorAt`, the colour of the band between two cuts a line is in,
 are shared, the **binding is not**, and each re-imports `colorPack`/`hpmath`.
-Density's colour parity across GPU / Canvas2D / SVG is swept by
-`densityColorParity.test.ts`; its autoscale-pan cost (one uniform write, zero
-buffer bytes) is pinned in `wiggleMarks.test.ts`.
+The gradient's colour parity across GPU / Canvas2D / SVG, for density, bars and
+points, is swept by `densityColorParity.test.ts`; its autoscale-pan cost (one
+uniform write, zero buffer bytes, zero texture uploads) is pinned per rendering
+in `wiggleMarks.test.ts`. The `fill` and `density` passes each bind the LUT
+texture, since a texture binds per pass and not per buffer.
 
 **The mark that draws, the buffer, the `renderingType` uniform and the Canvas2D
 painter all come off the encoded layers, never off `renderState`** — each of the
@@ -90,11 +92,14 @@ and `resolveWiggleColor` turns that into
 `{ posColor, negColor, pivot, rampLut, rampMid, perSource }`, which is the whole
 of what the layers and both backends read. `pivot` is where the colour parts and
 never where bars grow from: the render state carries both, bars read `origin`,
-and the lines, band and density fade read `pivot`. A density ramp indexes by
-position with `rampMid`, the config's `domainMid`, on its middle stop; the white
-fade, a threshold's density, measures distance from `pivot`. Under `linear` or
-`log` the lines still part at `domainMid ?? origin`, which is not where an unset
-`domainMid` centres the ramp. `score` paints through `threshold`, `linear` and
+and the lines, band and density fade read `pivot`. A gradient (`rampLut`, from
+`linear` or `log`) colours each bar, point and density cell by its score's
+position, `rampMid`, the config's `domainMid`, on its middle stop, and never
+reads `origin`; the white fade, a threshold's density, measures distance from
+`pivot`. The lines alone still part under a gradient, at `domainMid ?? origin`
+in its two end colours, with a corner notice saying so. The gradient follows the
+y domain and y scale; the colour's own `domainMin`/`domainMax` and
+`linear`-vs-`log` go unread. `score` paints through `threshold`, `linear` and
 `log`, `source` through `categorical`, and the other pairings paint the
 misconfiguration grey, because a two-sided plot has nothing to paint a colour
 per score or a cut over subtrack names with. ADR-144, ADR-153.
@@ -220,11 +225,13 @@ nothing. ADR-016, which put the split in the worker, is superseded;
 magnitude first — the opposite order on each side of the origin, which a single
 band order can't express. Filled bars split at the origin they grow from and
 carry `colorsAbgr` for the pivot where a threshold cuts elsewhere; density
-splits at the pivot. Density needs it because `drawDensity` builds one gradient
-per layer, and it is the only mode that reaches the split with a single band
-(`avg`). Everything else keeps each band whole and carries `colorsAbgr`, one
-packed colour per instance — or none at all where both sides of the pivot come
-out the same colour, which is what a solid-colour track is.
+splits at the pivot. Under a gradient bars and points carry no colour lane and
+no whiskers tint: the ramp is the whole colour. Density needs it because
+`drawDensity` builds one gradient per layer, and it is the only mode that
+reaches the split with a single band (`avg`). Everything else keeps each band
+whole and carries `colorsAbgr`, one packed colour per instance — or none at all
+where both sides of the pivot come out the same colour, which is what a
+solid-colour track is.
 
 ## A line plot is one line, coloured by the band between two cuts it is in
 
@@ -239,10 +246,17 @@ magenta. Whiskers adds a `band` layer under the line, split the same way.
 
 ## The colour key follows the scale
 
-The ramp for `linear`/`log`, a row per source for `categorical`, a row per
-interval for a `threshold` whose cut the config declared, and none for a string.
-A threshold cutting at the `origin` draws none either: the axis already shows
-where the origin is.
+The ramp wherever `scoreGradientPaints` — density, and bars or points under
+`linear`/`log` — a row per source for `categorical`, a row per interval for a
+`threshold` whose cut the config declared, and none for a string. A threshold
+cutting at the `origin` draws none either: the axis already shows where the
+origin is. Density's white fade is keyed only while no row brings its own
+colour; a declared gradient ignores row colours, so it is keyed regardless, and
+only density gives the ramp the axis's place.
+
+**`scoreGradientPaints` moves a row's identity to `labelColor`** — the source
+key, the row-label swatches and the colour dialog all read it there, so no key
+shows a swatch the plot does not paint.
 
 **Density is where the fallback differs.** Outside it an unset row `color` is
 painted in the resolved `posColor`, so the key resolves to it; in density that

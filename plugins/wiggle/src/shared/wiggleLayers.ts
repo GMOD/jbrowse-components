@@ -209,11 +209,24 @@ function whiskerBandSides(
   }
 }
 
+// Each band's two sides, stacked back to front: the positive side max..min,
+// the negative side min..max, empty sides dropped.
+function stackSides(
+  sides: { pos: WiggleLayer | undefined; neg: WiggleLayer | undefined }[],
+) {
+  return [
+    ...sides.map(s => s.pos),
+    ...[...sides].reverse().map(s => s.neg),
+  ].filter(l => l !== undefined)
+}
+
 // The render layers one source contributes under a summary presentation
 // (avg, whiskers, or a single min/max band), colored by each value's sign vs
 // the pivot so signed data (e.g. phyloP) reads as pos/neg. Line plots take
 // `lineLayers` instead. `summaryBands` decides which bands there are and this
-// decides how each becomes layers.
+// decides how each becomes layers. Under a gradient both backends colour bars
+// and points from the ramp, so outside density the layers carry no colour at
+// all: filled bands still split at the origin for their painting order.
 export function makeSummaryLayers({
   data,
   summaryScoreMode,
@@ -224,6 +237,7 @@ export function makeSummaryLayers({
   innerColors,
   cuts,
   renderingType,
+  gradient,
 }: {
   data: FeatureArrays
   summaryScoreMode: string
@@ -234,6 +248,7 @@ export function makeSummaryLayers({
   cuts: number[]
   innerColors: [number, number, number][]
   renderingType: WiggleRenderingType
+  gradient: boolean
 }): WiggleLayer[] {
   const colorBands = { cuts, colors: [negColor, ...innerColors, posColor] }
   const { featurePositions, numFeatures } = data
@@ -264,10 +279,30 @@ export function makeSummaryLayers({
         b.negTint(negColor),
       ),
     )
-    return [
-      ...sides.map(s => s.pos),
-      ...[...sides].reverse().map(s => s.neg),
-    ].filter(l => l !== undefined)
+    return stackSides(sides)
+  }
+  if (gradient) {
+    const layers =
+      isFilled && bands.length > 1
+        ? stackSides(
+            bands.map(b =>
+              whiskerBandSides(
+                featurePositions,
+                b.scores,
+                numFeatures,
+                origin,
+                posColor,
+                negColor,
+              ),
+            ),
+          )
+        : bands.map(b => ({
+            featurePositions,
+            featureScores: b.scores,
+            numFeatures,
+            color: posColor,
+          }))
+    return renderingType === RENDERING_TYPE_SCATTER ? layers.reverse() : layers
   }
   if (isFilled && bands.length > 1) {
     // The sides are the ones bars grow into from the origin, which sets the
@@ -297,13 +332,7 @@ export function makeSummaryLayers({
       }
       return { pos: colored(pos, b.posTint), neg: colored(neg, b.negTint) }
     })
-    // Positive side back-to-front: max (light, tallest) painted first, min
-    // (dark) on top near the origin. Negative side reverses: min (light,
-    // deepest) first, max (dark) on top near the origin.
-    return [
-      ...sides.map(s => s.pos),
-      ...[...sides].reverse().map(s => s.neg),
-    ].filter(l => l !== undefined)
+    return stackSides(sides)
   }
 
   const layers = bands.map(b => {

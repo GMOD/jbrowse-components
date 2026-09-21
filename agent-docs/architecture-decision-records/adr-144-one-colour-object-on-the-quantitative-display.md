@@ -102,9 +102,11 @@ and ~~`palette`~~ `range` (ADR-151), and hold a spec to the display's own
 five members. The tree-sidebar per-row dialog stays where it was: it edits
 adapter row metadata under the facet, not the channel.
 
-**The key follows the scale**: the ramp for `linear`/`log`, a row per source
-for `categorical`, a row per interval for a `threshold` whose cut the config
-declared, and none for a string.
+**The key follows the scale**: the ramp for `linear`/`log` on bars, points and
+density, a row per source for `categorical`, a row per interval for a
+`threshold` whose cut the config declared, and none for a string. A line under
+`linear`/`log` still parts in the ramp's two end colours, so it draws no ramp
+and the display says so in its corner notice.
 
 ## Consequences
 

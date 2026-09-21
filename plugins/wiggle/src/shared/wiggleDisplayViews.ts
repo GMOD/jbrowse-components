@@ -37,9 +37,9 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   resolution: number
   scoreField: string
   /**
-   * Whether one color ramp describes the whole plot. Density is the only
-   * rendering that spends color on the score, and each display has its own
-   * reason a ramp can still be the wrong legend there.
+   * Whether one color ramp describes the whole plot: a gradient outside the
+   * line renderings, or density's fade. Each display has its own reason a
+   * ramp can still be the wrong legend.
    */
   scoreRampApplies: boolean
 }
@@ -60,7 +60,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
   return {
     /**
      * #getter
-     * The density ramp as a color scale, or undefined when there is no single
+     * The score ramp as a color scale, or undefined when there is no single
      * ramp to describe or no domain yet. `LegendMixin`'s `colorScales` lists
      * it, so the on-screen key and the export draw one bar. The bar is drawn
      * from the resolved colour — the same cached LUT bytes both renderers

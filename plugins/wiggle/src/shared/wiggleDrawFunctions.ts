@@ -49,6 +49,11 @@ export interface RowDraw {
   // the colour of each band between two of them.
   cuts: number[]
   innerColors: [number, number, number][]
+  // A gradient's table: bars, points and density colour through it, matching
+  // the LUT texture the GPU samples, and the row's own colour goes unused.
+  rampLut: Uint8Array | null
+  // The score at the gradient's middle stop.
+  rampMid: number | undefined
 }
 
 // Per-instance colors (summary bands) exist on every layer the GPU encodes
@@ -73,31 +78,54 @@ function makeScoreToY(
   return (score: number) => (1 - normalize(score)) * rowHeight
 }
 
-export function drawXYPlot({
-  ctx,
-  source,
-  block,
-  rowHeight,
-  rowTop,
+function makeRampFill({
   domainY,
   scaleType,
   symlogConstant,
-  origin,
-  rgb,
-}: RowDraw & { rgb: string }) {
+  rampLut,
+  rampMid,
+}: RowDraw) {
+  return rampLut
+    ? makeDensityLutFillFn(
+        domainY[0],
+        domainY[1],
+        scaleType,
+        rampLut,
+        rampMid,
+        symlogConstant,
+      )
+    : undefined
+}
+
+export function drawXYPlot(row: RowDraw & { rgb: string }) {
+  const {
+    ctx,
+    source,
+    block,
+    rowHeight,
+    rowTop,
+    domainY,
+    scaleType,
+    symlogConstant,
+    origin,
+    rgb,
+  } = row
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const originY = scoreToY(origin) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
-  const colorsAbgr = source.colorsAbgr
+  const rampFill = makeRampFill(row)
+  const colorsAbgr = rampFill ? undefined : source.colorsAbgr
   let lastAbgr = NO_COLOR
-  if (!colorsAbgr) {
+  if (!colorsAbgr && !rampFill) {
     ctx.fillStyle = rgb
   }
   const toX = makeBpMapper(block)
   const n = source.numFeatures
   for (let i = 0; i < n; i++) {
-    if (colorsAbgr) {
+    if (rampFill) {
+      ctx.fillStyle = rampFill(scores[i]!)
+    } else if (colorsAbgr) {
       const c = colorsAbgr[i]!
       if (c !== lastAbgr) {
         setAbgrFill(ctx, c)
@@ -118,51 +146,35 @@ export function drawXYPlot({
   }
 }
 
-// `rampLut` is the named-ramp mode (the resolved `densityColorRamp` LUT): when
-// present the row colours through it, matching the LUT texture the GPU pass
-// samples, and the per-row track colour goes unused — a single LUT is exactly
-// what cannot vary per row.
-export function drawDensity({
-  ctx,
-  source,
-  block,
-  rowHeight,
-  rowTop,
-  domainY,
-  scaleType,
-  symlogConstant,
-  pivot,
-  r,
-  g,
-  b,
-  rampLut,
-  rampMid,
-}: RowDraw & {
-  r: number
-  g: number
-  b: number
-  rampLut: Uint8Array | null
-  rampMid: number | undefined
-}) {
-  const colorFn = rampLut
-    ? makeDensityLutFillFn(
-        domainY[0],
-        domainY[1],
-        scaleType,
-        rampLut,
-        rampMid,
-        symlogConstant,
-      )
-    : makeDensityRgbStringFn(
-        domainY[0],
-        domainY[1],
-        scaleType,
-        r,
-        g,
-        b,
-        pivot,
-        symlogConstant,
-      )
+export function drawDensity(
+  row: RowDraw & { r: number; g: number; b: number },
+) {
+  const {
+    ctx,
+    source,
+    block,
+    rowHeight,
+    rowTop,
+    domainY,
+    scaleType,
+    symlogConstant,
+    pivot,
+    r,
+    g,
+    b,
+  } = row
+  const colorFn =
+    makeRampFill(row) ??
+    makeDensityRgbStringFn(
+      domainY[0],
+      domainY[1],
+      scaleType,
+      r,
+      g,
+      b,
+      pivot,
+      symlogConstant,
+    )
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
@@ -525,20 +537,22 @@ function cssRgba([r, g, b]: [number, number, number], alpha: number) {
   return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${alpha})`
 }
 
-export function drawScatter({
-  ctx,
-  source,
-  block,
-  rowHeight,
-  rowTop,
-  domainY,
-  scaleType,
-  symlogConstant,
-  rgb,
-  pointSize,
-}: RowDraw & { rgb: string; pointSize: number }) {
-  const colorsAbgr = source.colorsAbgr
-  if (!colorsAbgr) {
+export function drawScatter(row: RowDraw & { rgb: string; pointSize: number }) {
+  const {
+    ctx,
+    source,
+    block,
+    rowHeight,
+    rowTop,
+    domainY,
+    scaleType,
+    symlogConstant,
+    rgb,
+    pointSize,
+  } = row
+  const rampFill = makeRampFill(row)
+  const colorsAbgr = rampFill ? undefined : source.colorsAbgr
+  if (!colorsAbgr && !rampFill) {
     ctx.fillStyle = rgb
   }
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
@@ -550,8 +564,16 @@ export function drawScatter({
   // centered on the bp midpoint. Mirrors the GPU wiggle.slang scatter branch.
   const path = new CappedPath(ctx, 'fill')
   let lastAbgr = NO_COLOR
+  let lastFill = ''
   for (let i = 0; i < n; i++) {
-    if (colorsAbgr) {
+    if (rampFill) {
+      const fill = rampFill(scores[i]!)
+      if (fill !== lastFill) {
+        path.flush()
+        ctx.fillStyle = fill
+        lastFill = fill
+      }
+    } else if (colorsAbgr) {
       const c = colorsAbgr[i]!
       if (c !== lastAbgr) {
         path.flush()
