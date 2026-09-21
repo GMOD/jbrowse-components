@@ -109,12 +109,13 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
-     * The `color` object as written, its `value` raw.
+     * The `color` object as written, its `value` and `field` raw: either
+     * may be a `jexl:` expression over a feature, which has none here.
      */
     get colorSettings(): ColorSetting {
       return {
         value: self.conf.color.value,
-        field: getConf(self, ['color', 'field']),
+        field: self.conf.color.field,
         scale: getConf(self, ['color', 'scale']),
         domain: getConf(self, ['color', 'domain']),
         range: getConf(self, ['color', 'range']),

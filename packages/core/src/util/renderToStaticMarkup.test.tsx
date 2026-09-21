@@ -14,6 +14,19 @@ describe('renderToStaticMarkup', () => {
     ).toContain('<text x="1">hi</text>')
   })
 
+  it('throws what a component throws, rather than returning no markup', () => {
+    function Broken(): React.ReactElement {
+      throw new Error('no feature to read')
+    }
+    expect(() =>
+      renderToStaticMarkup(
+        <svg>
+          <Broken />
+        </svg>,
+      ),
+    ).toThrow('no feature to read')
+  })
+
   // This is a real client root, so effects run and every `observer` in an
   // export ends up holding a live MobX reaction on the session's models. The
   // root has to be unmounted or each export leaves its whole detached tree

@@ -29,13 +29,23 @@ export function renderToStaticMarkup(node: React.ReactElement) {
   // jbrowse-img) loads @emotion/react before `document` exists, so its default
   // cache context is null — provide one explicitly here.
   const cache = createCache({ key: 'css' })
-  const root = createRoot(div)
+  // a client root reports a render error and unmounts, so without this the
+  // export is an empty string its caller writes as a file
+  const uncaught: unknown[] = []
+  const root = createRoot(div, {
+    onUncaughtError: error => {
+      uncaught.push(error)
+    },
+  })
   let html: string
   try {
     // eslint-disable-next-line @eslint-react/dom-no-flush-sync
     flushSync(() => {
       root.render(React.createElement(CacheProvider, { value: cache }, node))
     })
+    if (uncaught.length > 0) {
+      throw uncaught[0]
+    }
     html = div.innerHTML
   } finally {
     // This is a *real* client root, not a server render: its effects run, so

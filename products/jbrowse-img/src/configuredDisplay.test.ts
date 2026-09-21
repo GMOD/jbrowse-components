@@ -234,3 +234,16 @@ describe('a jexl: value in a path write', () => {
     expect(written).toContain('fill="rgb(255,0,0)"')
   }, 60000)
 })
+
+describe('a jexl: colour field', () => {
+  test('exports the track', async () => {
+    const svg = await exportTrack(
+      configWith({
+        ...basic,
+        color: { field: "jexl:get(feature,'name')", domain: ['EDEN.1'] },
+      }),
+    )
+    expect(svg).toContain('<svg')
+    expect(svg).toContain('EDEN.1')
+  }, 60000)
+})
