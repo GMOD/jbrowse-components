@@ -63,6 +63,17 @@ Re-checked against the code and every tutorial the display appears in.
   by a test in `clipFeatureToRegion.test.ts`; and `pickContig` caps `alsoOn` at
   `ALSO_ON_MAX = 3` with the remainder counted in `alsoOnMore`
   (`MW/laneDecision.ts`). §4 below carries what each found.
+- **The 2026-09-20 review**, landed 2026-09-21. A re-anchor no longer carries
+  the old genome's pivot and flip: the ortholog answer is held beside the
+  anchor its fetch asked for and reads as absent under any other
+  (`fetchedFeatures`, pinned by `reanchor.test.ts`). A lane's baseline is its
+  contig's extent where the session has loaded that genome (`Lane.baseline`).
+  Gene colour is the `FeatureColor` channel, with a `cluster` field that paints
+  a gene by the ortholog group it carries (`MW/geneColor.ts`). One lane's gene
+  commit repacks that lane alone, 2 of 90 cells where it had been 90
+  (`laneGeneCommitCost.test.ts`). **Flip lane** pins a lane's orientation
+  (`pinnedLaneFlips`), and a same-contig re-decision moves the lane rather
+  than snapping it (`MW/laneMotion.ts`).
 
 Still open, and carried in
 [../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md):

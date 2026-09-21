@@ -285,6 +285,19 @@ in another repository. Per-lane pan/zoom stays deliberately absent: the lanes
 re-fit to the anchor's viewport by design, and the launch to a linear synteny
 view is the route to a lane you drive yourself.
 
+**Left open by the 2026-09-20 review.** The E. coli and primate tutorials and
+their hosted configs still colour genes with
+`jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'`, which is
+`{ field: 'name' }` in the gene colour channel; moving them to
+`{ field: 'cluster' }` is a docs step with a `deploy-demo.sh` redeploy and a
+reshoot. Lane ticks still run past the contig end that `Lane.baseline` now
+stops at. The `laneStack` getter's `refNameAliasOf` calls
+`assemblyManager.get` without `has`, so a lane the session does not hold is
+reported to the unrecognized-assembly hook. The next reshoot changes
+`lane_header_menu` (the grape page, which gains **Flip lane**), the
+`synteny/multiway_zoom_out` video (lane motion) and any figure showing the
+**Color by...** menu, which now has Genes and Ribbons sections.
+
 **`syntenyGroupId` belongs in the synteny view first.** The display groups on
 gene name with `syntenyId` as the nameless fallback; the first-class
 `syntenyGroupId` this approximates is specified in
@@ -420,6 +433,14 @@ hold — where the neighbour rule read each block's run. The vote earned its
 change on an alignment source (calJac4's chain, below), and this is what it
 costs on a gene table; a weight that reads the block on both would be the
 fix, and the paragraph after this is the bar it has to clear.
+
+That fix matters more since lane motion landed (`MW/laneMotion.ts`,
+2026-09-21): a flip the vote takes back is now a visible fold and unfold
+rather than two snaps. The table's rung and slip columns have also drifted
+from the code since 2026-09-08 — a 2026-09-20 re-run of
+`benches/multiwayLaneStability.probe.ts` had peach's rung changes at 8 with a
+new oscillation, where the record says 7 — so re-run the probe and regenerate
+the record before quoting those columns.
 
 What was true of the 2026-09-02 table, kept because it is the bar: the drawn
 flip changes that remained (3 to 8 per lane) were lanes moving between
