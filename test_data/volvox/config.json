@@ -2737,8 +2737,7 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "volvox_repeats-minus-LinearWiggleDisplay",
-          "color": "jexl:repeatColor(feature)"
+          "displayId": "volvox_repeats-minus-LinearWiggleDisplay"
         }
       ]
     },
@@ -2758,8 +2757,7 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "volvox_repeat-plus-LinearWiggleDisplay",
-          "color": "jexl:repeatColor(feature)"
+          "displayId": "volvox_repeat-plus-LinearWiggleDisplay"
         }
       ]
     },
