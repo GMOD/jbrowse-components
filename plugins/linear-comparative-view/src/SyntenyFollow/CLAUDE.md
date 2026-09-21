@@ -238,6 +238,12 @@ an alignment this rung has decided does not describe the window. The frame pass
 recomputes rung 3 itself rather than steering by anything cached, which it can
 because the rung chooses no block, holds no strand and needs no transform.
 
+**Until a settle picks, the frame pass places a spreading level by rung 3 even
+over one window.** Zooming the anchor from an overview into one contig leaves
+the recorded decision spreading and no pick to steer by, and a frame pass that
+skipped the level left every row on the whole genome for up to half a second,
+then jumped.
+
 **Rung 3 reads the moving row like the rung below does**, so a hand zoom
 re-asserts on the next coarse-block debounce. It used not to, and relied on the
 level's fetch being keyed on both rows' windows — the hand zoom refetched, the

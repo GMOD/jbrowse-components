@@ -536,6 +536,17 @@ describe('a whole-genome row zoomed by hand', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown(rows[1]!)).toEqual(['chr1', 'chr2', 'chr3'])
   })
+
+  test('an anchor zoomed into one contig moves the row before the next settle', async () => {
+    const { rows } = await wholeGenome()
+    rows[0]!.holdCoarseBlocks()
+    rows[1]!.holdCoarseBlocks()
+    place(rows[0]!, 200_000, 600_000)
+    const [block] = rows[1]!.dynamicBlocks.contentBlocks
+    expect(shown(rows[1]!)).toEqual(['chr1'])
+    expect(block!.start).toBeCloseTo(200_000, -2)
+    expect(block!.end).toBeCloseTo(600_000, -2)
+  })
 })
 
 // the other rung, which navigates rather than positions. The rows here are

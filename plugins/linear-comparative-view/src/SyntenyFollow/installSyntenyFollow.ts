@@ -891,7 +891,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           if (!rung) {
             continue
           }
-          if (rung.kind === 'spread') {
+          // the block the last settle facing this way chose, rather than
+          // re-picking one per frame. Its display has to be alive, since hiding
+          // a synteny track destroys it and reading featureData throws.
+          const pick = state?.pick
+          if (rung.kind === 'spread' || (decision?.spreading && !pick)) {
             const { spans, mapped } = spreadAnswer()
             levelStates.facing(level, toMate).spreadTargets = mapped
             if (spans.length) {
@@ -903,10 +907,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             continue
           }
           const { window } = rung
-          // the block the last settle facing this way chose, rather than
-          // re-picking one per frame. Its display has to be alive, since hiding
-          // a synteny track destroys it and reading featureData throws.
-          const pick = state?.pick
           if (!pick || !isAlive(pick.display)) {
             continue
           }
