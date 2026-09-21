@@ -1,4 +1,7 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  requirementProblems,
+} from '@jbrowse/core/configuration'
 import {
   normalizeChannel,
   paintedScale,
@@ -13,17 +16,29 @@ import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
 import { markColorSchema } from './markColorConfigSchema.ts'
+import {
+  AGGREGATE_OPS,
+  DEFAULT_AGGREGATE_OP,
+  DEFAULT_MARK_SHAPE,
+  DEFAULT_MARK_SOURCE,
+  DEFAULT_TRANSFORM_TYPE,
+  MARK_SHAPES,
+  MARK_SOURCES,
+  TRANSFORM_TYPES,
+} from './markVocabulary.ts'
 
+import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export { markColorScale } from './markColorConfigSchema.ts'
 export type { MarkColorScale } from './markColorConfigSchema.ts'
-
-export const MARK_SHAPES = ['bar', 'point', 'span'] as const
-export type MarkShapeName = (typeof MARK_SHAPES)[number]
-
-export const MARK_SOURCES = ['features', 'density'] as const
-export type MarkSourceName = (typeof MARK_SOURCES)[number]
+export {
+  AGGREGATE_OPS,
+  MARK_SHAPES,
+  MARK_SOURCES,
+  TRANSFORM_TYPES,
+} from './markVocabulary.ts'
+export type { MarkShapeName, MarkSourceName } from './markVocabulary.ts'
 
 export const DEFAULT_POINT_DIAMETER_PX = 4
 
@@ -169,17 +184,6 @@ const markEncodingSchema = ConfigurationSchema(
   { closed: true },
 )
 
-export const TRANSFORM_TYPES = [
-  'filter',
-  'formula',
-  'bin',
-  'aggregate',
-  'coverage',
-  'flatten',
-  'pileup',
-] as const
-export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
-
 const aggregateOpSchema = ConfigurationSchema(
   'MarkAggregateOp',
   {
@@ -190,7 +194,7 @@ const aggregateOpSchema = ConfigurationSchema(
     op: {
       type: 'stringEnum',
       model: types.enumeration('MarkAggregateOpName', [...AGGREGATE_OPS]),
-      defaultValue: 'count',
+      defaultValue: DEFAULT_AGGREGATE_OP,
       description: 'count, sum, mean, min or max',
     },
     /**
@@ -243,7 +247,7 @@ const transformStepSchema = ConfigurationSchema(
     type: {
       type: 'stringEnum',
       model: types.enumeration('MarkTransformType', [...TRANSFORM_TYPES]),
-      defaultValue: 'filter',
+      defaultValue: DEFAULT_TRANSFORM_TYPE,
       description:
         'filter, formula, bin, aggregate, coverage, flatten or pileup',
     },
@@ -350,9 +354,10 @@ const transformStepSchema = ConfigurationSchema(
 // The one thing a load refuses of a `marks` list: a shape the display does
 // not draw, which the slot's own enumeration refuses on a write too, named
 // here because its message would otherwise be the enumeration's. Everything
-// that depends on two slots at once is `markProblems`' to report, since the
-// config editor writes one slot at a time and a load that refused the state
-// between two valid marks would drop the track (ADR-133).
+// that depends on two slots at once is reported, by the mark schema's
+// `requires` and by `markProblems`, since the config editor writes one slot at
+// a time and a load that refused the state between two valid marks would drop
+// the track (ADR-133).
 function checkMarks(snap: Record<string, unknown>) {
   const { marks } = snap
   if (!Array.isArray(marks)) {
@@ -383,7 +388,7 @@ const markSchema = ConfigurationSchema(
     shape: {
       type: 'stringEnum',
       model: types.enumeration('MarkShape', [...MARK_SHAPES]),
-      defaultValue: 'bar',
+      defaultValue: DEFAULT_MARK_SHAPE,
       description: 'bar, point or span',
     },
     /**
@@ -411,7 +416,7 @@ const markSchema = ConfigurationSchema(
     source: {
       type: 'stringEnum',
       model: types.enumeration('MarkSource', [...MARK_SOURCES]),
-      defaultValue: 'features',
+      defaultValue: DEFAULT_MARK_SOURCE,
       description: 'features, or density past the fetch budget',
     },
     /**
@@ -438,9 +443,39 @@ const markSchema = ConfigurationSchema(
   },
   {
     closed: true,
-    requires: [{ when: { shape: ['bar', 'point'] }, slots: ['encoding.y'] }],
+    requires: [
+      {
+        id: 'mark-without-value',
+        when: { shape: ['bar', 'point'] },
+        slots: ['encoding.y'],
+        message:
+          'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
+      },
+    ],
   },
 )
+
+/**
+ * What each mark's own slots say together that it cannot mean, read off the
+ * mark schema's `requires`. The generated JSON schema states the same entries,
+ * so an editor and `jbrowse validate` report them from the one declaration,
+ * where a file refuses them as errors.
+ */
+export function markRequirementProblems(
+  marks: readonly MarkSnapshot[],
+): MarkProblem[] {
+  return marks.flatMap((mark, i) =>
+    requirementProblems(markSchema, mark).map(
+      ({ id, slot, message }): MarkProblem => ({
+        rule: id,
+        level: 'error',
+        mark: i,
+        slot,
+        message,
+      }),
+    ),
+  )
+}
 
 /**
  * #config LinearMarkDisplay

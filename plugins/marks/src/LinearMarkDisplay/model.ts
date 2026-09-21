@@ -66,7 +66,11 @@ import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
 import { binStepWidth } from './autoBin.ts'
-import { markColorScale, markGlyphScale } from './configSchema.ts'
+import {
+  markColorScale,
+  markGlyphScale,
+  markRequirementProblems,
+} from './configSchema.ts'
 import { densityRegionData } from './densityLayer.ts'
 import { facetLayout, remapFacetRows } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
@@ -98,7 +102,7 @@ import type {
   MarkRenderState,
   StoredLayer,
 } from './markList.ts'
-import type { MarkProblem } from './markProblems.ts'
+import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
 import type { PlotFields, PlotSpec } from './plotFields.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -591,7 +595,7 @@ export function stateModelFactory(
        */
       get layerRequests(): LayerRequest[] {
         const { bpPerPx } = self.host
-        return self.conf.marks.map((m: MarkConfig) => {
+        return self.conf.marks.map((m: MarkConfig): LayerRequest => {
           const shape: MarkShapeName = m.shape
           const transform = stepsOf(m.transform, bpPerPx)
           return {
@@ -971,7 +975,11 @@ export function stateModelFactory(
        * reported where a load would once have refused the track.
        */
       get configProblems(): MarkProblem[] {
-        return markProblems(getSnapshot(self.conf.marks), !!self.facet)
+        const marks: MarkSnapshot[] = getSnapshot(self.conf.marks)
+        return [
+          ...markRequirementProblems(marks),
+          ...markProblems(marks, self.facet),
+        ]
       },
       /**
        * #getter

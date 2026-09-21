@@ -5,17 +5,11 @@ import {
 } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { ColorScaleName } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-/** How a colour object maps its `field`; `none` paints `value`. */
-export const COLOR_SCALES = [
-  'none',
-  'categorical',
-  'linear',
-  'log',
-  'threshold',
-] as const
-export type ColorScaleName = (typeof COLOR_SCALES)[number]
+export { COLOR_SCALES, paintedScale } from './colorScale.ts'
+export type { ColorScaleName } from './colorScale.ts'
 
 /** The scales of a colour object whose field takes a palette colour per value. */
 export const CATEGORICAL_COLOR_SCALES = ['none', 'categorical'] as const
@@ -55,17 +49,6 @@ export function normalizeChannel(
   return Array.isArray(snap.domain)
     ? { ...snap, domain: snap.domain.map(String) }
     : snap
-}
-
-/**
- * The scale a colour object paints through: `none` while no `field` is
- * named, else its own `scale`, or `fieldScale` where that is unset.
- */
-export function paintedScale<S extends string, F extends string>(
-  { scale, field }: { scale: S | undefined; field: string },
-  fieldScale: F,
-): S | F | 'none' {
-  return field ? (scale ?? fieldScale) : 'none'
 }
 
 /**

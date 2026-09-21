@@ -47,8 +47,9 @@ function validatorFor(pointer: string): ValidateFunction {
     validateSchema: false,
     code: { optimize: 0 },
   })
+  const whole = ajv.getSchema(schemaId) ?? ajv.compile(root)
   if (pointer === '') {
-    return ajv.getSchema(schemaId) ?? ajv.compile(root)
+    return whole
   }
   const fn = ajv.getSchema(`${schemaId}#${pointer}`)
   if (!fn) {
@@ -262,6 +263,35 @@ function admitsLocation(schema: Schema, locationType: string) {
   return prop?.const === locationType
 }
 
+// A schema's `requires` entry, which the generator writes as an `if`/`then`
+// annotated with the entry's id, the slot path it requires and its message.
+function requirementOf(error: ErrorObject) {
+  const parent: Schema = error.parentSchema ?? {}
+  const stated = parent['x-requirement']
+  return error.keyword === 'if' && isRecord(stated)
+    ? {
+        id: String(stated.id),
+        slot: String(stated.slot),
+        message: String(parent.errorMessage),
+        branch: `${error.schemaPath.replace(/\/if$/, '')}/then/`,
+      }
+    : undefined
+}
+
+// Whether a failure is one requirement's: the `if` itself, or an error under
+// its `then` at or beneath the object the `if` judged.
+function statesRequirement(error: ErrorObject, errors: ErrorObject[]) {
+  return errors.some(other => {
+    const requirement = requirementOf(other)
+    return (
+      requirement !== undefined &&
+      (other === error ||
+        (error.schemaPath.startsWith(requirement.branch) &&
+          error.instancePath.startsWith(other.instancePath)))
+    )
+  })
+}
+
 function requiredOnly(branches: Schema[]) {
   return branches.every(
     b => Object.keys(b).length === 1 && Array.isArray(b.required),
@@ -278,11 +308,16 @@ function explain(
   depth: number,
 ) {
   const covered = new Set<string>()
-  const emit = (where: string, message: string) => {
+  const emit = (where: string, message: string, rule?: string) => {
     const key = `${where}\0${message}`
     if (!covered.has(key)) {
       covered.add(key)
-      problems.push({ level: 'error', where, message })
+      problems.push({
+        level: 'error',
+        where,
+        message,
+        ...(rule ? { rule } : {}),
+      })
     }
   }
   // A union failure explains everything beneath it; the branch is re-validated
@@ -296,10 +331,17 @@ function explain(
           e.instancePath.startsWith(`${u.instancePath}/`)),
     )
   for (const error of errors) {
-    if (shadowed(error) || error.keyword === 'if') {
+    if (shadowed(error)) {
       continue
     }
     const where = pathOf(error.instancePath)
+    const requirement = requirementOf(error)
+    if (requirement) {
+      emit(join(where, requirement.slot), requirement.message, requirement.id)
+    }
+    if (error.keyword === 'if' || statesRequirement(error, errors)) {
+      continue
+    }
     const parent = error.parentSchema as Schema
     switch (error.keyword) {
       case 'additionalProperties':
@@ -390,6 +432,18 @@ export function schemaProblems(data: unknown, pointer = ''): Problem[] {
   const problems: Problem[] = []
   explain(data, validate.errors ?? [], problems, 0)
   return problems
+}
+
+/**
+ * Whether `data` has the keys and value types the definition at `pointer`
+ * declares, whatever its `requires` entries say of it: the contract a rule
+ * list reads a config under, since a load refuses a key or a type and no
+ * combination of slots.
+ */
+export function hasDeclaredShape(data: unknown, pointer: string) {
+  const validate = validatorFor(pointer)
+  const errors = validate(data) ? [] : (validate.errors ?? [])
+  return errors.every(error => statesRequirement(error, errors))
 }
 
 /**

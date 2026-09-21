@@ -815,6 +815,20 @@ has to read as one tone across the whole palette or it reads as noise.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/color/index.ts)
 
+### requirementProblems
+
+The `requires` entries of a configuration schema that `snapshot` does not meet,
+as a config file or `getSnapshot` spells it: a slot left off reads as its
+default, so a `when` value that is the default fires for an absent slot, which
+is what the generated JSON Schema's `if` does.
+
+```js
+// type signature
+(type: IAnyType, snapshot: Record<string, unknown>) => RequirementProblem[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/requirements.ts)
+
 ### reservedPx
 
 The pixels a band takes from the plot below it: 0 when off, the (optionally

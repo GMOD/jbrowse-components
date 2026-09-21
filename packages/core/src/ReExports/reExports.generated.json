@@ -860,6 +860,7 @@
         "preProcessSnapshotWith",
         "readConfObject",
         "readConfigValue",
+        "requirementProblems",
         "setConf",
         "shorthandForm",
         "slotChoices",
@@ -3715,6 +3716,14 @@
         "colorRampSlot",
         "colorScaleChoicesOf",
         "normalizeChannel",
+        "paintedScale"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/colorScale": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "COLOR_SCALES",
         "paintedScale"
       ],
       "worker": "real"

@@ -562,7 +562,7 @@ function noticesOf(marks: unknown[], display: Record<string, unknown> = {}) {
 // load. It loads, draws nothing for that mark, and says so.
 test('a bar or point naming no y loads, draws nothing and says so', () => {
   expect(noticesOf([{ shape: 'bar', encoding: { color: 'red' } }])).toEqual([
-    'mark 0 encoding.y: a bar stands at a value and names no field to plot, so it draws nothing',
+    'mark 0 encoding.y: a bar or a point stands at a value and names no y field to plot, so it draws nothing',
   ])
   expect(noticesOf([{ shape: 'point', encoding: { y: '' } }])).toHaveLength(1)
   expect(noticesOf([{ shape: 'span', encoding: {} }])).toEqual([])

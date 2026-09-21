@@ -3401,17 +3401,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the values that take the palette first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -3449,17 +3453,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "values whose sections stack first, in order.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -4002,17 +4010,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the values that take the palette first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under linear the ramp's two ends, where the loaded reads otherwise set them.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -4701,17 +4713,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the values that take the palette first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under linear the ramp's two ends, where the loaded reads otherwise set them.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -5126,17 +5142,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the order a text column's labels take: the labels listed here first, the rest sorted; a label's colour is its position, so this moves the key and the ribbons together; left empty the labels stay in the order the fetches first met them.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -6117,17 +6137,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "for a threshold scale, the one cut point the two sides part at, empty meaning the origin; for a categorical scale over source, the sources that take the palette first, in order.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -7222,17 +7246,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "under a categorical scale, the field's values that take the palette first, in order, in the key as on the points, the rest following sorted, each on a colour no listed value paints; under a threshold scale, the cut points in ascending order, palette taking one entry more than this, one per interval; r² to the index SNP cuts at 0.2, 0.4, 0.6 and 0.8 into the LocusZoom blue-through-red bins unless these say otherwise.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -7406,17 +7434,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes; for a threshold scale, the cut points in ascending order, a value taking the palette entry for the number of them it is at or past, so palette has one entry more than this.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -7485,17 +7517,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "category order.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -7639,7 +7675,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "as": {
           "description": "output field, or a bin's two.",
-          "$ref": "#/$defs/StringArrayOrJexl"
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            {
+              "$ref": "#/$defs/JexlString"
+            }
+          ]
         },
         "fields": {
           "description": "a pileup's [start, end] fields.",
@@ -7676,6 +7729,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "allOf": [
         {
+          "x-requirement": {
+            "id": "mark-without-value",
+            "slot": "encoding.y"
+          },
           "if": {
             "properties": {
               "shape": {
@@ -7705,7 +7762,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               }
             }
-          }
+          },
+          "errorMessage": "a bar or a point stands at a value and names no y field to plot, so it draws nothing"
         }
       ],
       "properties": {
@@ -18322,17 +18380,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the order a text column's labels take: the labels listed here first, the rest sorted; a label's colour is its position, so this moves the key and the alignments together; left empty the labels stay in the order the fetches first met them.",
               "anyOf": [
                 {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 },
                 {
                   "$ref": "#/$defs/JexlString"

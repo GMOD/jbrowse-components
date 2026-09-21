@@ -8,7 +8,11 @@ import { Ajv2020 } from 'ajv/dist/2020.js'
 
 import { configManifest } from './configManifest.generated.ts'
 import { configJsonSchema } from './configSchema.generated.ts'
-import { configSchemaUrl, schemaProblems } from './schemaValidate.ts'
+import {
+  configSchemaUrl,
+  hasDeclaredShape,
+  schemaProblems,
+} from './schemaValidate.ts'
 
 const REPO_ROOT = path.resolve(__dirname, '../../../../..')
 
@@ -102,6 +106,7 @@ describe('the schema', () => {
 
   it('is a valid draft 2020-12 schema', () => {
     const ajv = new Ajv2020({ strict: true, strictRequired: false })
+    ajv.addVocabulary(['x-requirement', 'errorMessage'])
     expect(ajv.validateSchema(configJsonSchema)).toBe(true)
     expect(() => ajv.compile(configJsonSchema)).not.toThrow()
   })
@@ -273,30 +278,54 @@ describe('the schema', () => {
     ])
   })
 
-  it('refuses a bar or point whose encoding names no y', () => {
+  it('reports a requires entry once, at the slot it requires, in its own words', () => {
+    const unmet = {
+      where: 'tracks[1].displays[0].marks[0].encoding.y',
+      message:
+        'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
+    }
     expect(
       problemsOfMarks([{ shape: 'bar', encoding: { x: 'start' } }]),
-    ).toEqual([
-      {
-        where: 'tracks[1].displays[0].marks[0].encoding',
-        message: 'missing "y"',
-      },
+    ).toEqual([unmet])
+    expect(problemsOfMarks([{ shape: 'point' }])).toEqual([unmet])
+    expect(problemsOfMarks([{ encoding: {} }])).toEqual([unmet])
+    expect(problemsOfMarks([{ shape: 'bar', encoding: { y: '' } }])).toEqual([
+      unmet,
     ])
-    expect(problemsOfMarks([{ shape: 'point' }])).toEqual([
-      {
-        where: 'tracks[1].displays[0].marks[0]',
-        message: 'missing "encoding"',
-      },
+    const config = baseConfig()
+    config.tracks[0]!.displayDefaults = { marks: [{ shape: 'bar' }] }
+    expect(schemaProblems(config).map(p => p.rule)).toEqual([
+      'mark-without-value',
     ])
-    expect(problemsOfMarks([{ encoding: {} }])).toEqual([
-      {
-        where: 'tracks[1].displays[0].marks[0].encoding',
-        message: 'missing "y"',
-      },
-    ])
+  })
+
+  it('tells a wrong key or type from an unmet requirement', () => {
+    const pointer = '/$defs/LinearMarkDisplaySlots/properties/marks'
+    expect(hasDeclaredShape([{ shape: 'bar' }], pointer)).toBe(true)
+    expect(hasDeclaredShape([{ shape: 'bar', transform: 'x' }], pointer)).toBe(
+      false,
+    )
+    expect(hasDeclaredShape([{ shape: 'bar', colour: 'red' }], pointer)).toBe(
+      false,
+    )
+  })
+
+  it('admits the file spellings a schema lifts', () => {
     expect(
-      problemsOfMarks([{ shape: 'bar', encoding: { y: '' } }]),
-    ).not.toEqual([])
+      problemsOfMarks([
+        {
+          shape: 'bar',
+          encoding: { y: 'depth', color: 'red' },
+          transform: [{ type: 'coverage', as: 'depth' }],
+        },
+        {
+          shape: 'span',
+          encoding: {
+            color: { field: 'score', ramp: ['white', 'red'], domain: [0, 10] },
+          },
+        },
+      ]),
+    ).toEqual([])
   })
 
   it('takes a y-less span, and a y naming a field', () => {

@@ -59,6 +59,11 @@ export {
   preProcessSnapshotWith,
   shorthandForm,
 } from './snapshotPreprocess.ts'
+export { requirementProblems } from './requirements.ts'
+export type {
+  ConfigurationSchemaRequirement,
+  RequirementProblem,
+} from './requirements.ts'
 export { expandTabixShorthand, tabixIndexSnapshot } from './tabixShorthand.ts'
 export { tabixIndexFields } from './tabixIndexFields.ts'
 export { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'

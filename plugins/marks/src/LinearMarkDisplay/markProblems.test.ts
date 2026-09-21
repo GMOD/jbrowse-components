@@ -1,10 +1,38 @@
 import fs from 'node:fs'
 
-import { markProblems, problemText } from './markProblems.ts'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-function texts(marks: unknown[], faceted = false) {
-  return markProblems(marks as Parameters<typeof markProblems>[0], faceted).map(
-    problemText,
+import { configSchemaFactory, markRequirementProblems } from './configSchema.ts'
+import { MARK_RULES, markProblems, problemText } from './markProblems.ts'
+
+import type {
+  FacetSnapshot,
+  MarkProblem,
+  MarkSnapshot,
+} from './markProblems.ts'
+
+const schema = configSchemaFactory()
+const reached = new Set<string>()
+
+// The list as the display reads it: the schema's own lift, defaults left off.
+function problemsOf(marks: unknown[], facet?: unknown): MarkProblem[] {
+  const snap: { marks?: MarkSnapshot[]; facet?: FacetSnapshot } = getSnapshot(
+    schema.create({ displayId: 'd', marks, ...(facet ? { facet } : {}) }),
+  )
+  const lifted = snap.marks ?? []
+  const problems = [
+    ...markRequirementProblems(lifted),
+    ...markProblems(lifted, snap.facet),
+  ]
+  for (const { rule } of problems) {
+    reached.add(rule)
+  }
+  return problems
+}
+
+function found(marks: unknown[], facet?: unknown) {
+  return problemsOf(marks, facet).map(
+    p => `${p.level} ${p.rule} mark ${p.mark} ${p.slot}`,
   )
 }
 
@@ -40,8 +68,8 @@ test.each(SHIPPED)('%s draws every mark it declares as written', path => {
   expect(displays.length).toBeGreaterThan(0)
   expect(
     displays.flatMap(d =>
-      texts(d.marks ?? [], d.facet !== undefined).map(
-        t => `${d.trackId}: ${t}`,
+      problemsOf(d.marks ?? [], d.facet).map(
+        p => `${d.trackId}: ${problemText(p)}`,
       ),
     ),
   ).toEqual([])
@@ -49,7 +77,7 @@ test.each(SHIPPED)('%s draws every mark it declares as written', path => {
 
 test('the guide examples have no problems', () => {
   expect(
-    texts([
+    found([
       { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 100 },
       {
         shape: 'bar',
@@ -62,21 +90,49 @@ test('the guide examples have no problems', () => {
       },
     ]),
   ).toEqual([])
-  expect(texts([PILEUP])).toEqual([])
-  expect(texts([COVERAGE])).toEqual([])
+  expect(found([PILEUP])).toEqual([])
+  expect(found([COVERAGE])).toEqual([])
 })
 
-test('a valued mark beside a stacked span is told it stands in the first row, unless they never draw together or a facet bands them', () => {
-  expect(texts([COVERAGE, PILEUP])).toEqual([
-    'mark 0 encoding.row: stands in the first of the rows mark 1 bands the plot into, its axis repeated per row',
+test('a bar or point naming no y is the schema requirement, said once', () => {
+  expect(
+    problemsOf([{ shape: 'bar' }, { shape: 'point', encoding: {} }]),
+  ).toEqual(
+    [0, 1].map(mark => ({
+      rule: 'mark-without-value',
+      level: 'error',
+      mark,
+      slot: 'encoding.y',
+      message:
+        'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
+    })),
+  )
+  expect(found([{ shape: 'span' }])).toEqual([])
+})
+
+test('a channel the shape does not read waits unread', () => {
+  expect(found([{ shape: 'span', encoding: { y: 'score' } }])).toEqual([
+    'warning unread-channel mark 0 encoding.y',
   ])
   expect(
-    texts([
+    found([{ shape: 'bar', encoding: { y: 'score', glyph: 'triangle' } }]),
+  ).toEqual(['warning unread-channel mark 0 encoding.glyph'])
+})
+
+test('a valued mark beside a packed span is told it stands in the first row, unless they never draw together or a facet bands them', () => {
+  expect(problemsOf([COVERAGE, PILEUP]).map(problemText)).toEqual([
+    'mark 0 encoding.row: stands in the first of the rows mark 1 bands the plot into, its axis repeated per row',
+  ])
+  expect(found([COVERAGE, PILEUP])).toEqual([
+    'warning value-beside-rows mark 0 encoding.row',
+  ])
+  expect(
+    found([
       { ...COVERAGE, minBpPerPx: 20 },
       { ...PILEUP, maxBpPerPx: 20 },
     ]),
   ).toEqual([])
-  expect(texts([COVERAGE, PILEUP], true)).toEqual([])
+  expect(found([COVERAGE, PILEUP], 'HP')).toEqual([])
 })
 
 test('two marks packing rows of their own are pointed at one shared pileup', () => {
@@ -84,27 +140,25 @@ test('two marks packing rows of their own are pointed at one shared pileup', () 
     shape: 'span',
     transform: [{ type: 'filter', expr }, { type: 'pileup' }],
   })
-  expect(texts([filtered('jexl:a'), filtered('jexl:b')])).toEqual([
-    expect.stringMatching(
-      /^mark 1 transform: packs rows of its own, as mark 0/,
-    ),
+  expect(found([filtered('jexl:a'), filtered('jexl:b')])).toEqual([
+    'warning two-packings mark 1 transform',
   ])
 })
 
 test('a y the steps do not write names what they leave', () => {
   expect(
-    texts([
+    problemsOf([
       {
         shape: 'bar',
         transform: [{ type: 'bin', step: 1000 }, { type: 'aggregate' }],
         encoding: { y: 'score' },
       },
-    ]),
+    ]).map(problemText),
   ).toEqual([
     'mark 0 encoding.y: reads "score", which its steps do not write; they leave refName, start, end',
   ])
   expect(
-    texts([
+    found([
       {
         shape: 'bar',
         transform: [
@@ -116,27 +170,36 @@ test('a y the steps do not write names what they leave', () => {
     ]),
   ).toEqual([])
   expect(
-    texts([{ ...COVERAGE, encoding: { y: 'jexl:feature.coverage' } }]),
+    found([{ ...COVERAGE, encoding: { y: 'jexl:feature.coverage' } }]),
   ).toEqual([])
+  expect(
+    found([
+      {
+        shape: 'bar',
+        transform: [{ type: 'coverage', as: 'depth' }],
+        encoding: { y: 'coverage' },
+      },
+    ]),
+  ).toEqual(['error unwritten-y mark 0 encoding.y'])
 })
 
 test('a step says which of its slots cannot run', () => {
   expect(
-    texts([
+    found([
       {
         shape: 'bar',
         encoding: { y: 'sum' },
         transform: [
-          { type: 'filter', expr: 'feature.score > 1' },
+          { expr: 'feature.score > 1' },
           { type: 'bin', step: 0 },
           { type: 'aggregate', ops: [{ op: 'sum', as: 'sum' }] },
         ],
       },
     ]),
   ).toEqual([
-    'mark 0 transform.0.expr: a filter reads a jexl: expression',
-    'mark 0 transform.1.step: a bin is a positive width in bp',
-    'mark 0 transform.2.ops.0.field: sum reads a field and names none',
+    'error step-expression mark 0 transform.0.expr',
+    'error bin-width mark 0 transform.1.step',
+    'error op-field mark 0 transform.2.ops.0.field',
   ])
 })
 
@@ -148,9 +211,9 @@ test('a jexl: field on a step is pointed at formula, where a dotted path is read
       transform: [{ type: 'aggregate', ops: [{ op: 'mean', field, as: 'm' }] }],
     },
   ]
-  expect(texts(mean('INFO.DP'))).toEqual([])
-  expect(texts(mean('jexl:feature.INFO.DP[0]'))).toEqual([
-    'mark 0 transform.0.ops.0.field: the aggregate step reads a field name or a dotted path; a formula step in front computes one',
+  expect(found(mean('INFO.DP'))).toEqual([])
+  expect(found(mean('jexl:feature.INFO.DP[0]'))).toEqual([
+    'error step-field-expression mark 0 transform.0.ops.0.field',
   ])
 })
 
@@ -164,16 +227,35 @@ test('threshold cuts written high to low are told which way they are read', () =
       },
     },
   ]
-  expect(texts(cuts(['0.1', '0.5']))).toEqual([])
-  expect(texts(cuts(['0.5', '0.1']))).toEqual([
-    expect.stringMatching(/^mark 0 encoding.color.domain: threshold cuts are/),
+  expect(found(cuts([0.1, 0.5]))).toEqual([])
+  expect(found(cuts(['0.5', '0.1']))).toEqual([
+    'warning threshold-cuts mark 0 encoding.color.domain',
   ])
-  expect(texts(cuts(['low', 'high']))).toHaveLength(1)
+  expect(found(cuts(['low', 'high']))).toHaveLength(1)
+})
+
+test('a ramp domain is a pinned pair, and a span wants one', () => {
+  const ramp = (shape: string, domain: unknown[]) => [
+    {
+      shape,
+      encoding: {
+        ...(shape === 'span' ? {} : { y: 'score' }),
+        color: { field: 'score', ramp: ['white', 'red'], domain },
+      },
+    },
+  ]
+  expect(found(ramp('bar', [0, 10]))).toEqual([])
+  expect(found(ramp('bar', [0]))).toEqual([
+    'warning open-ramp-domain mark 0 encoding.color.domain',
+  ])
+  expect(found(ramp('span', []))).toEqual([
+    'warning unpinned-span-ramp mark 0 encoding.color.domain',
+  ])
 })
 
 test('a zoom range that admits no zoom never draws', () => {
   expect(
-    texts([
+    problemsOf([
       {
         shape: 'bar',
         encoding: { y: 'score' },
@@ -182,13 +264,28 @@ test('a zoom range that admits no zoom never draws', () => {
       },
     ]),
   ).toEqual([
-    'mark 0 minBpPerPx: never draws: minBpPerPx 100 is not below maxBpPerPx 20',
+    {
+      rule: 'empty-zoom-range',
+      level: 'error',
+      mark: 0,
+      slot: 'minBpPerPx',
+      message: 'never draws: minBpPerPx 100 is not below maxBpPerPx 20',
+    },
   ])
 })
 
-test('a second density mark drawing with the first is told the first stands in', () => {
+test('a density source on a span, or on a second mark, waits unread', () => {
   const density = { shape: 'bar', source: 'density', encoding: { y: 'count' } }
-  expect(texts([density, density])).toEqual([
-    'mark 1 source: mark 0 already stands in for the density sidecar here',
+  expect(found([density, density])).toEqual([
+    'warning second-density-mark mark 1 source',
   ])
+  expect(found([{ shape: 'span', source: 'density' }])).toEqual([
+    'warning span-density-source mark 0 source',
+  ])
+})
+
+test('every rule of the list is reached by a case above', () => {
+  expect([...reached].sort()).toEqual(
+    [...Object.keys(MARK_RULES), 'mark-without-value'].sort(),
+  )
 })

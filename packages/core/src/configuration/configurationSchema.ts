@@ -9,12 +9,12 @@ import {
 import { getContainingTrack, getSession } from '../util/mstUtils.ts'
 import { ElementId } from '../util/types/mst.ts'
 import ConfigSlot from './configurationSlot.ts'
+import { checkRequirements } from './requirements.ts'
 import {
   getConfigurationSchemaMetadata,
   registerConfigurationSchema,
 } from './schemaRegistry.ts'
 import {
-  isBareConfigurationSchemaType,
   isConfigurationSchemaType,
   isConstantEntry,
   isSlotDefinitionEntry,
@@ -24,6 +24,7 @@ import { preProcessSnapshotWith } from './snapshotPreprocess.ts'
 import type PluginManager from '../PluginManager.ts'
 import type { IsAny } from '../util/types/isAny.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
+import type { ConfigurationSchemaRequirement } from './requirements.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -36,6 +37,7 @@ import type {
 } from './types.ts'
 import type {
   IAnyType,
+  ISimpleType,
   IType,
   ReferenceIdentifier,
   SnapshotIn,
@@ -62,25 +64,6 @@ export type {
  */
 export interface ConfigurationSchemaDefinition {
   [n: string]: ConfigSlotDefinition | string | number | IAnyType
-}
-
-/**
- * A combination a schema refuses, declared rather than only thrown: when every
- * named slot holds one of the listed values, each dotted slot path in `slots`
- * has to name a value. The generated JSON Schema turns it into `if`/`then`, so
- * the CLI validator and an editor refuse what the config reader refuses.
- *
- * `ConfigurationSchema()` types `when` and `slots` off the definition and
- * throws at construction for a name the types admit and the schema lacks: a
- * misspelt `when` key would never fire, and a misspelt path would require a
- * key `closed` then refuses.
- */
-export interface ConfigurationSchemaRequirement<
-  SLOT extends string = string,
-  PATH extends string = string,
-> {
-  when: Partial<Record<SLOT, string[]>>
-  slots: PATH[]
 }
 
 export interface ConfigurationSchemaOptions<
@@ -254,56 +237,6 @@ function preprocessConfigurationSchemaArguments(
     }
   }
   return { schemaDefinition, options }
-}
-
-function requiredPathProblem(
-  modelName: string,
-  definition: ConfigurationSchemaDefinition,
-  path: string[],
-): string | undefined {
-  const [head = '', ...rest] = path
-  const entry = Object.hasOwn(definition, head) ? definition[head] : undefined
-  const sub = isBareConfigurationSchemaType(entry)
-    ? getConfigurationSchemaMetadata(entry)
-    : undefined
-  return entry === undefined
-    ? `${modelName} declares no "${head}"`
-    : rest.length > 0
-      ? sub
-        ? requiredPathProblem(sub.name, sub.definition, rest)
-        : `"${head}" is not a single sub-schema, so no path runs through it`
-      : isSlotDefinitionEntry(entry) || sub?.options.shorthand !== undefined
-        ? undefined
-        : `"${head}" is neither a slot nor a sub-schema a string lifts into`
-}
-
-function checkRequirements(
-  modelName: string,
-  definition: ConfigurationSchemaDefinition,
-  requires: ConfigurationSchemaRequirement[],
-) {
-  for (const { when, slots } of requires) {
-    for (const slot of Object.keys(when)) {
-      if (
-        !Object.hasOwn(definition, slot) ||
-        !isSlotDefinitionEntry(definition[slot])
-      ) {
-        throw new Error(
-          `${modelName} requires something when "${slot}" holds a value, and declares no such slot`,
-        )
-      }
-    }
-    for (const path of slots) {
-      const problem = requiredPathProblem(
-        modelName,
-        definition,
-        path.split('.'),
-      )
-      if (problem) {
-        throw new Error(`${modelName} requires "${path}", and ${problem}`)
-      }
-    }
-  }
 }
 
 function makeConfigurationSchemaModel<
@@ -555,13 +488,21 @@ type RequirementPath<D> = {
         : never)
 }[keyof D & string]
 
+type RequirementWhen<D> = {
+  [
+    K in keyof D & string as D[K] extends { type: string } ? K : never
+  ]?: (D[K] extends { model: ISimpleType<infer V extends string> }
+    ? V
+    : string)[]
+}
+
 type RequirementOf<D, BASE> =
   BASE extends ConfigurationSchemaType<infer BD, any>
     ? ConfigurationSchemaRequirement<
-        (keyof D | keyof BD) & string,
+        RequirementWhen<D> & RequirementWhen<BD>,
         RequirementPath<D> | RequirementPath<BD>
       >
-    : ConfigurationSchemaRequirement<keyof D & string, RequirementPath<D>>
+    : ConfigurationSchemaRequirement<RequirementWhen<D>, RequirementPath<D>>
 
 export function ConfigurationSchema<
   // `const` preserves each slot's literal `type` ('stringArray', 'maybeNumber',

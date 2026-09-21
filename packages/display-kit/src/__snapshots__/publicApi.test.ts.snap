@@ -38,6 +38,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./coarseTier",
   "./coarseTierPhase",
   "./colorConfigSchema",
+  "./colorScale",
   "./configSchema",
   "./const",
   "./densityTier",

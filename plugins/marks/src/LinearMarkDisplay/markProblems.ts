@@ -1,42 +1,115 @@
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
-
 import { AUTO_BIN } from './autoBin.ts'
-import { markColorScale } from './markColorConfigSchema.ts'
+import { markColorScale } from './markColorScale.ts'
+import { isJexl } from './markRuleFacts.ts'
+import {
+  DEFAULT_AGGREGATE_OP,
+  DEFAULT_MARK_SHAPE,
+  DEFAULT_TRANSFORM_TYPE,
+} from './markVocabulary.ts'
 import { SHAPE_LANES } from './shapeLanes.ts'
 
-import type { MarkColorScale } from './markColorConfigSchema.ts'
+import type { MarkColorScale } from './markColorScale.ts'
+import type {
+  AggregateOpName,
+  MarkShapeName,
+  MarkSourceName,
+  TransformTypeName,
+} from './markVocabulary.ts'
 
 /**
- * What a `marks` list says that the display cannot draw as written: the mark,
- * the slot to look at, and why. A problem is a combination of slots, which a
- * load cannot refuse: the config editor writes one slot at a time, so moving a
- * bar to a span passes through a span that still names a `y`, and a refusal
- * there drops the track from the session it was saved in (ADR-133). The
- * display draws what it can and says the rest in its corner notice.
+ * What a config file validator calls a problem. `error`: the mark draws
+ * nothing, never draws, or a step cannot run. `warning`: a slot waits unread,
+ * or the marks draw in an arrangement the author may not have meant. The
+ * display shows both as notices, since a load refuses neither (ADR-133).
+ */
+export type MarkProblemLevel = 'error' | 'warning'
+
+/**
+ * The level of every rule of the list, by the stable id a report and a test
+ * refer to it by. A single mark's combination that a JSON schema can state is
+ * the mark schema's `requires` and is not restated here.
+ */
+export const MARK_RULES = {
+  'unread-channel': 'warning',
+  'span-density-source': 'warning',
+  'threshold-cuts': 'warning',
+  'open-ramp-domain': 'warning',
+  'unpinned-span-ramp': 'warning',
+  'empty-zoom-range': 'error',
+  'step-expression': 'error',
+  'bin-width': 'error',
+  'op-field': 'error',
+  'step-field-expression': 'error',
+  'unwritten-y': 'error',
+  'value-beside-rows': 'warning',
+  'two-packings': 'warning',
+  'second-density-mark': 'warning',
+} as const satisfies Record<string, MarkProblemLevel>
+
+export type MarkRuleId = keyof typeof MARK_RULES
+
+/**
+ * What a `marks` list says that the display cannot draw as written: the rule,
+ * the mark, the slot to look at, and why. A problem is a combination of slots,
+ * which a load cannot refuse: the config editor writes one slot at a time, so
+ * moving a bar to a span passes through a span that still names a `y`, and a
+ * refusal there drops the track from the session it was saved in (ADR-133).
+ * The display draws what it can and says the rest in its corner notice.
  */
 export interface MarkProblem {
+  rule: string
+  level: MarkProblemLevel
   mark: number
   slot: string
   message: string
 }
 
+type OwnProblem = Omit<MarkProblem, 'mark'>
+
 interface StepSnapshot {
-  type?: string
+  type?: TransformTypeName
   expr?: string
   field?: string
   fields?: string[]
   step?: number | string
-  as?: string[] | string
+  as?: string[]
   groupby?: string[]
-  ops?: { op?: string; field?: string; as?: string }[]
+  ops?: { op?: AggregateOpName; field?: string; as?: string }[]
 }
 
-interface MarkSnapshot {
-  shape?: string
-  source?: string
+interface ColorSnapshot {
+  field?: string
+  scale?: MarkColorScale
+  ramp?: string[]
+  domain?: string[]
+}
+
+/**
+ * The display's `facet` as a config snapshot holds it. A facet naming no field
+ * groups nothing, the one thing the rule list reads of it, so a caller holding
+ * a config object of its own passes that object.
+ */
+export interface FacetSnapshot {
+  field?: unknown
+}
+
+/**
+ * One entry of a `marks` list as a config snapshot holds it, defaults left
+ * off. A type alias, which a `Record<string, unknown>` reader takes.
+ */
+export type MarkSnapshot = {
+  shape?: MarkShapeName
+  source?: MarkSourceName
   minBpPerPx?: number
   maxBpPerPx?: number
-  encoding?: Record<string, unknown> & { y?: string; row?: string }
+  encoding?: {
+    x?: string
+    x2?: string
+    y?: string
+    row?: string
+    color?: ColorSnapshot
+    glyph?: unknown
+  }
   transform?: StepSnapshot[]
 }
 
@@ -47,48 +120,31 @@ const SHAPE_CHANNELS: Record<string, string[]> = Object.fromEntries(
   ]),
 )
 
+function found(rule: MarkRuleId, slot: string, message: string): OwnProblem {
+  return { rule, level: MARK_RULES[rule], slot, message }
+}
+
 function shapeOf(mark: MarkSnapshot) {
-  return mark.shape ?? 'bar'
+  return mark.shape ?? DEFAULT_MARK_SHAPE
 }
 
 function stepsOf(mark: MarkSnapshot) {
   return mark.transform ?? []
 }
 
-function listOf(as: StepSnapshot['as']) {
-  return as === undefined ? [] : typeof as === 'string' ? [as] : as
-}
-
 function rampDomain(mark: MarkSnapshot) {
-  const color = mark.encoding?.color
-  if (typeof color !== 'object' || color === null) {
-    return undefined
-  }
   const {
     field = '',
     scale,
     ramp = [],
     domain = [],
-  } = color as {
-    field?: string
-    scale?: MarkColorScale
-    ramp?: string[]
-    domain?: unknown[]
-  }
+  } = mark.encoding?.color ?? {}
   const painted = markColorScale({ scale, field, ramp })
   return painted === 'linear' || painted === 'log' ? domain : undefined
 }
 
 function thresholdDomain(mark: MarkSnapshot) {
-  const color = mark.encoding?.color
-  if (typeof color !== 'object' || color === null) {
-    return undefined
-  }
-  const {
-    field = '',
-    scale,
-    domain = [],
-  } = color as { field?: string; scale?: MarkColorScale; domain?: unknown[] }
+  const { field = '', scale, domain = [] } = mark.encoding?.color ?? {}
   return field && scale === 'threshold' ? domain : undefined
 }
 
@@ -133,10 +189,10 @@ function madeFields(mark: MarkSnapshot) {
   }
   const fields = new Set(['refName', 'start', 'end'])
   if (last.type === 'coverage') {
-    fields.add(listOf(last.as)[0] ?? 'coverage')
+    fields.add(last.as?.[0] ?? 'coverage')
   } else {
     const bin = steps.slice(0, made).findLast(s => s.type === 'bin')
-    const edges = bin ? listOf(bin.as) : []
+    const edges = bin?.as ?? []
     for (const field of last.groupby?.length
       ? last.groupby
       : edges.length === 2
@@ -144,12 +200,12 @@ function madeFields(mark: MarkSnapshot) {
         : []) {
       fields.add(field)
     }
-    for (const { op = 'count', field, as } of last.ops ?? []) {
+    for (const { op = DEFAULT_AGGREGATE_OP, field, as } of last.ops ?? []) {
       fields.add(as || (op === 'count' || !field ? op : `${op}_${field}`))
     }
   }
   for (const step of steps.slice(made + 1)) {
-    const [as] = listOf(step.as)
+    const as = step.as?.[0]
     if (step.type === 'formula') {
       fields.add(as ?? 'value')
     } else if (step.type === 'pileup') {
@@ -161,72 +217,84 @@ function madeFields(mark: MarkSnapshot) {
   return fields
 }
 
-function ownProblems(mark: MarkSnapshot): Omit<MarkProblem, 'mark'>[] {
+function ownProblems(mark: MarkSnapshot) {
   const shape = shapeOf(mark)
-  const problems: Omit<MarkProblem, 'mark'>[] = []
+  const problems: OwnProblem[] = []
   const y = mark.encoding?.y
-  if ((shape === 'bar' || shape === 'point') && !y) {
-    problems.push({
-      slot: 'encoding.y',
-      message: `a ${shape} stands at a value and names no field to plot, so it draws nothing`,
-    })
-  }
-  const channels = SHAPE_CHANNELS[shape] ?? []
+  const channels = SHAPE_CHANNELS[shape]
   for (const channel of Object.keys(mark.encoding ?? {})) {
-    if (!channels.includes(channel)) {
-      problems.push({
-        slot: `encoding.${channel}`,
-        message: `a ${shape} does not read ${channel}`,
-      })
+    if (channels && !channels.includes(channel)) {
+      problems.push(
+        found(
+          'unread-channel',
+          `encoding.${channel}`,
+          `a ${shape} does not read ${channel}`,
+        ),
+      )
     }
   }
   if (shape === 'span' && mark.source === 'density') {
-    problems.push({
-      slot: 'source',
-      message: 'a span does not draw the density sidecar',
-    })
+    problems.push(
+      found(
+        'span-density-source',
+        'source',
+        'a span does not draw the density sidecar',
+      ),
+    )
   }
   const cuts = thresholdDomain(mark)
   if (
     cuts?.some((cut, i) => !pinned(cut) || Number(cut) < Number(cuts[i - 1]))
   ) {
-    problems.push({
-      slot: 'encoding.color.domain',
-      message:
+    problems.push(
+      found(
+        'threshold-cuts',
+        'encoding.color.domain',
         'threshold cuts are numbers, read in ascending order, with the palette running from the lowest interval',
-    })
+      ),
+    )
   }
   const domain = rampDomain(mark)
   if (domain) {
     const pair = pinnedPair(domain) !== undefined
     if (domain.length > 0 && !pair) {
-      problems.push({
-        slot: 'encoding.color.domain',
-        message:
+      problems.push(
+        found(
+          'open-ramp-domain',
+          'encoding.color.domain',
           'a ramp is pinned by [min, max], two finite numbers, and anything else is not read as written',
-      })
+        ),
+      )
     } else if (shape === 'span' && !pair) {
-      problems.push({
-        slot: 'encoding.color.domain',
-        message:
+      problems.push(
+        found(
+          'unpinned-span-ramp',
+          'encoding.color.domain',
           "a span's ramp resolves against each region's own extremes, so its colours agree across regions only under a pinned [min, max]",
-      })
+        ),
+      )
     }
   }
   const { minBpPerPx = 0, maxBpPerPx = 0 } = mark
   if (minBpPerPx > 0 && maxBpPerPx > 0 && minBpPerPx >= maxBpPerPx) {
-    problems.push({
-      slot: 'minBpPerPx',
-      message: `never draws: minBpPerPx ${minBpPerPx} is not below maxBpPerPx ${maxBpPerPx}`,
-    })
+    problems.push(
+      found(
+        'empty-zoom-range',
+        'minBpPerPx',
+        `never draws: minBpPerPx ${minBpPerPx} is not below maxBpPerPx ${maxBpPerPx}`,
+      ),
+    )
   }
   for (const [i, step] of stepsOf(mark).entries()) {
-    const type = step.type ?? 'filter'
+    const type = step.type ?? DEFAULT_TRANSFORM_TYPE
     if ((type === 'filter' || type === 'formula') && !isJexl(step.expr ?? '')) {
-      problems.push({
-        slot: `transform.${i}.expr`,
-        message: `a ${type} reads a jexl: expression`,
-      })
+      problems.push(
+        found(
+          'step-expression',
+          `transform.${i}.expr`,
+          `a ${type} reads a jexl: expression`,
+        ),
+      )
     }
     if (
       type === 'bin' &&
@@ -234,17 +302,25 @@ function ownProblems(mark: MarkSnapshot): Omit<MarkProblem, 'mark'>[] {
       step.step !== AUTO_BIN &&
       !(Number(step.step) > 0)
     ) {
-      problems.push({
-        slot: `transform.${i}.step`,
-        message: 'a bin is a positive width in bp',
-      })
+      problems.push(
+        found(
+          'bin-width',
+          `transform.${i}.step`,
+          'a bin is a positive width in bp',
+        ),
+      )
     }
-    for (const [k, { op = 'count', field }] of (step.ops ?? []).entries()) {
+    for (const [k, { op = DEFAULT_AGGREGATE_OP, field }] of (
+      step.ops ?? []
+    ).entries()) {
       if (type === 'aggregate' && op !== 'count' && !field) {
-        problems.push({
-          slot: `transform.${i}.ops.${k}.field`,
-          message: `${op} reads a field and names none`,
-        })
+        problems.push(
+          found(
+            'op-field',
+            `transform.${i}.ops.${k}.field`,
+            `${op} reads a field and names none`,
+          ),
+        )
       }
     }
     const read: [string, string | undefined][] = [
@@ -264,32 +340,42 @@ function ownProblems(mark: MarkSnapshot): Omit<MarkProblem, 'mark'>[] {
     ]
     for (const [slot, ref] of read) {
       if (ref && isJexl(ref)) {
-        problems.push({
-          slot: `transform.${i}.${slot}`,
-          message: `the ${type} step reads a field name or a dotted path; a formula step in front computes one`,
-        })
+        problems.push(
+          found(
+            'step-field-expression',
+            `transform.${i}.${slot}`,
+            `the ${type} step reads a field name or a dotted path; a formula step in front computes one`,
+          ),
+        )
       }
     }
   }
   const fields = madeFields(mark)
   if (fields && y && !isJexl(y) && !fields.has(y)) {
-    problems.push({
-      slot: 'encoding.y',
-      message: `reads "${y}", which its steps do not write; they leave ${[...fields].join(', ')}`,
-    })
+    problems.push(
+      found(
+        'unwritten-y',
+        'encoding.y',
+        `reads "${y}", which its steps do not write; they leave ${[...fields].join(', ')}`,
+      ),
+    )
   }
   return problems
 }
 
 /**
- * The problems of a `marks` list as a config snapshot holds it, defaults left
- * off. `faceted` is whether the display splits its rows by a facet, under
- * which a rowless mark stands on each section's first row by design.
+ * The problems of a `marks` list as a config snapshot holds it: shorthands
+ * lifted, defaults left off. `facet` is the display's facet as written, naming
+ * the field its sections stack by; under one, a rowless mark stands on each
+ * section's first row by design. A file's own spelling goes through the
+ * schema's lift first, which `jbrowse validate` does from the generated
+ * manifest.
  */
 export function markProblems(
   marks: readonly MarkSnapshot[],
-  faceted: boolean,
+  facet?: FacetSnapshot,
 ): MarkProblem[] {
+  const faceted = typeof facet?.field === 'string' && facet.field !== ''
   const problems = marks.flatMap((mark, i) =>
     ownProblems(mark).map(p => ({ mark: i, ...p })),
   )
@@ -306,22 +392,31 @@ export function markProblems(
       ) {
         problems.push({
           mark: i,
-          slot: 'encoding.row',
-          message: `stands in the first of the rows mark ${j} bands the plot into, its axis repeated per row`,
+          ...found(
+            'value-beside-rows',
+            'encoding.row',
+            `stands in the first of the rows mark ${j} bands the plot into, its axis repeated per row`,
+          ),
         })
       }
       if (i > j && packs(mark) && packs(other)) {
         problems.push({
           mark: i,
-          slot: 'transform',
-          message: `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the display's transform packs them together`,
+          ...found(
+            'two-packings',
+            'transform',
+            `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the display's transform packs them together`,
+          ),
         })
       }
       if (i > j && mark.source === 'density' && other.source === 'density') {
         problems.push({
           mark: i,
-          slot: 'source',
-          message: `mark ${j} already stands in for the density sidecar here`,
+          ...found(
+            'second-density-mark',
+            'source',
+            `mark ${j} already stands in for the density sidecar here`,
+          ),
         })
       }
     }
@@ -330,6 +425,6 @@ export function markProblems(
 }
 
 /** A problem as one line of a notice: `mark 0 encoding.y: …`. */
-export function problemText({ mark, slot, message }: MarkProblem) {
+export function problemText({ mark, slot, message }: MarkProblem): string {
   return `mark ${mark} ${slot}: ${message}`
 }

@@ -38,7 +38,39 @@ export interface SchemaMetadata {
     implicitIdentifier?: string | boolean
     shorthand?: string
     preProcessSnapshot?: (snap: unknown) => unknown
-    requires?: { when: Record<string, string[]>; slots: string[] }[]
+    requires?: {
+      id: string
+      when: Record<string, string[]>
+      slots: string[]
+      message: string
+    }[]
+  }
+}
+
+// What a schema's own preProcessSnapshot does to one `stringArray` slot, asked
+// by probing it: a bare string becoming a list of one (a step's `as`), and
+// numbers carried as strings (a ramp's `domain: [0, 100]`). The JSON schema
+// admits the file spelling and the manifest records the lift, so the validator
+// lifts a file the way the app does before its rules read it.
+export function slotLifts(meta: SchemaMetadata, slot: string) {
+  const lifted = (input: unknown) => {
+    try {
+      const out = meta.options.preProcessSnapshot?.({ [slot]: input }) as
+        | Record<string, unknown>
+        | undefined
+      return out?.[slot]
+    } catch {
+      return undefined
+    }
+  }
+  const fromString = lifted('probe')
+  const fromNumbers = lifted([1])
+  return {
+    string:
+      Array.isArray(fromString) &&
+      fromString.length === 1 &&
+      fromString[0] === 'probe',
+    numbers: Array.isArray(fromNumbers) && fromNumbers[0] === '1',
   }
 }
 
@@ -107,6 +139,10 @@ function cssColorPattern(names: readonly string[]) {
   ]
   return String.raw`^\s*(?:${forms.join('|')})\s*$`
 }
+
+// The annotation on an `if`/`then` that states a `requires` entry: its id and
+// the one slot path the branch requires, which the CLI validator reports at.
+const REQUIREMENT = 'x-requirement'
 
 const COMMENT_KEYS = { '^_+comment': {} }
 const FROZEN_NOTE =
@@ -378,7 +414,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     def: SlotDefinition,
     depth: number,
     legacyValues?: unknown[],
-    numbersLifted = false,
+    lifts = { string: false, numbers: false },
   ): JsonSchema {
     const frozen = def.type === 'frozen' || def.type === 'maybeFrozen'
     const description = [def.description?.trim(), frozen ? FROZEN_NOTE : '']
@@ -395,15 +431,23 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           },
         ]
       : []
-    const shared = numbersLifted ? undefined : SHARED_SLOT_DEFS[def.type]
+    const lifted = lifts.string || lifts.numbers
+    const shared = lifted ? undefined : SHARED_SLOT_DEFS[def.type]
     const value = def.model
       ? mstSchema(def.model, depth)
       : frozen
         ? {}
-        : numbersLifted
+        : lifted
           ? {
-              type: 'array',
-              items: { anyOf: [{ type: 'string' }, { type: 'number' }] },
+              anyOf: [
+                {
+                  type: 'array',
+                  items: lifts.numbers
+                    ? { anyOf: [{ type: 'string' }, { type: 'number' }] }
+                    : { type: 'string' },
+                },
+                ...(lifts.string ? [{ type: 'string' }] : []),
+              ],
             }
           : builtinSlot(def.type)
     const form =
@@ -444,7 +488,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           entry,
           depth + 1,
           legacyValues[slot],
-          entry.type === 'stringArray' && liftsNumbers(meta, slot),
+          entry.type === 'stringArray' ? slotLifts(meta, slot) : undefined,
         )
       } else if (deps.isType(entry)) {
         properties[slot] = mstSchema(entry as MstType, depth + 1)
@@ -470,20 +514,6 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       properties[idName] = { type: 'string' }
     }
     return properties
-  }
-
-  // A `stringArray` slot whose sub-schema lift stringifies numbers — a ramp's
-  // `domain: [0, 100]` — admits numbers in the schema too, asked the same way.
-  function liftsNumbers(meta: SchemaMetadata, slot: string) {
-    try {
-      const out = meta.options.preProcessSnapshot?.({ [slot]: [1] }) as
-        | Record<string, unknown>
-        | undefined
-      const lifted = out?.[slot]
-      return Array.isArray(lifted) && lifted[0] === '1'
-    } catch {
-      return false
-    }
   }
 
   // What a sub-schema's own preProcessSnapshot lifts, asked by probing it: a
@@ -512,10 +542,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
   }
 
-  // What a schema declares it cannot mean (`requires`), as `if`/`then`. The
-  // config reader throws the message; this is the same refusal in the form the
-  // CLI validator and an editor enforce. A `when` value that is the slot's own
-  // default fires for an absent slot too, as `shape ?? 'bar'` does.
+  // What a schema declares it cannot mean (`requires`), as `if`/`then` carrying
+  // the requirement's id and message: `errorMessage` is what an editor's JSON
+  // language service shows, and the CLI validator reports the branch as that
+  // one problem. A display reads the same entries through
+  // `requirementProblems`. A `when` value that is the slot's own default fires
+  // for an absent slot too, in both.
   function whenSchema(meta: SchemaMetadata, when: Record<string, string[]>) {
     const properties: Record<string, JsonSchema> = {}
     const required: string[] = []
@@ -575,15 +607,14 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       return {}
     }
     return {
-      allOf: rules.map(rule => {
-        const needed = rule.slots.map(slot =>
-          pathRequirement(meta, slot.split('.')),
-        )
-        return {
+      allOf: rules.flatMap(rule =>
+        rule.slots.map(slot => ({
+          [REQUIREMENT]: { id: rule.id, slot },
           if: whenSchema(meta, rule.when),
-          then: needed.length === 1 ? needed[0]! : { allOf: needed },
-        }
-      }),
+          then: pathRequirement(meta, slot.split('.')),
+          errorMessage: rule.message,
+        })),
+      ),
     }
   }
 

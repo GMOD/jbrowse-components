@@ -1638,6 +1638,8 @@ describe('a declared requirement', () => {
           {
             when: { shape: ['bar'] },
             slots: ['shape', 'encoding.y', 'encoding.color'],
+            message: 'm',
+            id: 'r',
           },
         ],
       }),
@@ -1652,7 +1654,14 @@ describe('a declared requirement', () => {
         { origin: { type: 'number', defaultValue: 0 } },
         {
           baseConfiguration: Base,
-          requires: [{ when: { shape: ['bar'] }, slots: ['encoding.y'] }],
+          requires: [
+            {
+              when: { shape: ['bar'] },
+              slots: ['encoding.y'],
+              message: 'm',
+              id: 'r',
+            },
+          ],
         },
       ),
     ).not.toThrow()
@@ -1666,6 +1675,8 @@ describe('a declared requirement', () => {
             // @ts-expect-error a when key is a slot of the definition
             when: { shap: ['bar'] },
             slots: ['encoding.y'],
+            message: 'm',
+            id: 'r',
           },
         ],
       }),
@@ -1674,9 +1685,46 @@ describe('a declared requirement', () => {
     )
     expect(() =>
       ConfigurationSchema('RequiresMark', definition, {
-        requires: [{ when: { encoding: ['bar'] }, slots: ['encoding.y'] }],
+        requires: [
+          {
+            // @ts-expect-error a sub-schema holds no value to compare
+            when: { encoding: ['bar'] },
+            slots: ['encoding.y'],
+            message: 'm',
+            id: 'r',
+          },
+        ],
       }),
     ).toThrow('"encoding" holds a value, and declares no such slot')
+  })
+
+  test('throws for a when value the slot does not take', () => {
+    expect(() =>
+      ConfigurationSchema(
+        'RequiresEnumMark',
+        {
+          ...definition,
+          shape: {
+            type: 'stringEnum',
+            model: types.enumeration('RequiresShape', ['bar', 'span']),
+            defaultValue: 'bar',
+          },
+        },
+        {
+          requires: [
+            {
+              // @ts-expect-error a when value is a member of the slot's enumeration
+              when: { shape: ['bars'] },
+              slots: ['encoding.y'],
+              message: 'm',
+              id: 'r',
+            },
+          ],
+        },
+      ),
+    ).toThrow(
+      'RequiresEnumMark requires something when "shape" holds bars, which the slot does not take',
+    )
   })
 
   test('throws for a path that names no slot', () => {
@@ -1687,6 +1735,8 @@ describe('a declared requirement', () => {
             when: { shape: ['bar'] },
             // @ts-expect-error a path starts at a member of the definition
             slots: ['fill.y'],
+            message: 'm',
+            id: 'r',
           },
         ],
       }),
@@ -1700,6 +1750,8 @@ describe('a declared requirement', () => {
             when: { shape: ['bar'] },
             // @ts-expect-error a path ends at a member of the sub-schema
             slots: ['encoding.yy'],
+            message: 'm',
+            id: 'r',
           },
         ],
       }),
@@ -1716,16 +1768,43 @@ describe('a declared requirement', () => {
             when: { shape: ['bar'] },
             // @ts-expect-error a path runs through a single sub-schema
             slots: ['transform.expr'],
+            message: 'm',
+            id: 'r',
           },
         ],
       }),
     ).toThrow('"transform" is not a single sub-schema')
     expect(() =>
       ConfigurationSchema('RequiresMark', definition, {
-        requires: [{ when: { shape: ['bar'] }, slots: ['encoding'] }],
+        requires: [
+          {
+            when: { shape: ['bar'] },
+            slots: ['encoding'],
+            message: 'm',
+            id: 'r',
+          },
+        ],
       }),
     ).toThrow(
       '"encoding" is neither a slot nor a sub-schema a string lifts into',
+    )
+    expect(() =>
+      ConfigurationSchema(
+        'RequiresMark',
+        { ...definition, origin: { type: 'number', defaultValue: 0 } },
+        {
+          requires: [
+            {
+              when: { shape: ['bar'] },
+              slots: ['origin'],
+              message: 'm',
+              id: 'r',
+            },
+          ],
+        },
+      ),
+    ).toThrow(
+      '"origin" holds no string, and a requirement is met by naming one',
     )
   })
 })

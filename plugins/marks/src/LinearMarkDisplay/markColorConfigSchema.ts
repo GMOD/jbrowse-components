@@ -6,24 +6,10 @@ import {
   colorChannelSlots,
   colorPaletteSlot,
   colorRampSlot,
-  paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-import type { ColorScaleName } from '@jbrowse/display-kit/colorConfigSchema'
-
-export type MarkColorScale = ColorScaleName
-
-/**
- * The scale a mark's colour paints through: left unset beside a `field`,
- * `linear` with a `ramp` and `categorical` without.
- */
-export function markColorScale(color: {
-  scale: MarkColorScale | undefined
-  field: string
-  ramp: readonly string[]
-}) {
-  return paintedScale(color, color.ramp.length > 0 ? 'linear' : 'categorical')
-}
+export { markColorScale } from './markColorScale.ts'
+export type { MarkColorScale } from './markColorScale.ts'
 
 /**
  * #config MarkColor
