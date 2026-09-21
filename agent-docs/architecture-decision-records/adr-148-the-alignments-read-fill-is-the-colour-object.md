@@ -111,12 +111,11 @@ retired `methylation`, `stranded` and `insertSizeGradient` names now resolve.
 - An unpinned linear ramp rebakes every loaded region when a new region widens
   the span. The bake is one pass per read with the colour cached per distinct
   value.
-- An unset `scale` under a tag or attribute is `linear` beside a `ramp`, as on
-  MarkColor ([ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md)),
-  so a linear field comes back linear from the plain fill, which writes the
-  default ramp out where none was declared. A `threshold` comes back
-  categorical: `none` and `threshold` share the one `scale` slot, and no other
-  slot implies the cuts.
+- ~~An unset `scale` under a tag or attribute is `linear` beside a `ramp`, so a
+  linear field comes back linear from the plain fill.~~ Superseded by
+  [ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md), which
+  reads the kind off `scale` alone: the plain fill writes `scale: 'none'`, so a
+  linear or threshold field comes back categorical.
 - A `palette` beside a preset field with a vocabulary of its own (`strand`,
   `pairOrientation`) waits unread: several levels share the palette's neutral
   entry and the arcs derive their colours from the same table, so a per-level

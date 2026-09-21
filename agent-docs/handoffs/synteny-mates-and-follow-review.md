@@ -26,7 +26,7 @@ Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTEN
 ### Bugs
 
 - **M1. An alignment with no place on the facing axis can vanish without a
-  mark.** Landed, `d6c7f983f3`. Verified by scratch tests. The worker's class-A test asks whether the
+  mark.** Landed, `5946ccf31c`. Verified by scratch tests. The worker's class-A test asks whether the
   facing row displays the mate's CONTIG (`v2RefNames.has`), so a mate outside
   every displayed slice of a displayed contig passes it and is dropped later in
   the projection loop. Three drop sites: `!e2` (no slice contains the mate),
@@ -36,7 +36,7 @@ Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTEN
   flipped ribbon dropped at `e1`). Fix: collect at the drop sites with the
   clipped mate span, keep the contig test as the prefilter.
 - **M2. In coloured mode the colour painted on top can disagree with the
-  contig the hover names.** Landed, `676798b210`: the hit ranks by paint order. Verified by reading. `fillMarks` orders colour
+  contig the hover names.** Landed, `cbf87a7906`: the hit ranks by paint order. Verified by reading. `fillMarks` orders colour
   groups by each group's strongest mark anywhere in the lane; the hit takes the
   longest mark at the pixel. ADR-138's "the composite ends on the contig the
   pointer would name" holds only where the lane's strongest mark sits. A sweep
@@ -59,7 +59,7 @@ Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTEN
 
 ### Simplifications
 
-- **M7. One hit test.** Landed, `e9bf29ab3a`. `offscreenMateAt` and `offscreenMateSpanAt` are both
+- **M7. One hit test.** Landed, `6e8e26c300`. `offscreenMateAt` and `offscreenMateSpanAt` are both
   full passes of the lane since before ADR-138, so the reason given for two
   (the click "cannot early-exit") is stale. Merging drops
   `OffscreenMateMark`/`OffscreenMateHit`, `stripHit` and the `displayed` flag,
@@ -115,13 +115,13 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
 ### Bugs
 
 - **B1. Crossing a contig boundary mid-drag throws the moving row onto the
-  whole union, then settle snaps it back.** Landed, `c763101577`.
+  whole union, then settle snaps it back.** Landed, `094796a1d3`.
   `installSyntenyFollow.ts` clears the spread decision whenever the anchor
   shows one contig, and `followRung` reads no decision as "spread", which the
   frame pass then applies. Fix: the frame pass calls `decideSpread` when there
   is no decision.
 - **B2. Two view-wide commands move the anchor to the last row they touch.**
-  Landed, `44e1635203`; centering hands the anchor to the feature's own row. The stack's
+  Landed, `ea9ceda1bf`; centering hands the anchor to the feature's own row. The stack's
   "Zoom to region(s)" (`LinearSyntenyView/model.ts`) and "Center view on this
   feature" (`SyntenyFeatureDetail/LinkToSyntenyView.tsx`) call `moveTo`/`navTo`
   per row from a click handler, and both are in `ROW_GESTURES`. Fix: make them
@@ -139,7 +139,7 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
   the block pick and the orientation key; `followRung` counts visible windows,
   where `decideSpread` counts aligned ones.
 - **B7. `followDebug` reads coarse blocks tracked**, so turning the log on
-  changes what the follow reacts to. Landed, `0d0dadcf44`.
+  changes what the follow reacts to. Landed, `9c8925c17d`.
 
 ### Simplifications
 
@@ -149,7 +149,7 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
   spread branch included.
 - **S3.** `pickFor`/`spreadFor`/`mapFor` become one non-minting `peek`, with a
   direction on the state for B4.
-- **S4.** Landed, `966eb4ac77`. The anchor take (`takeFollowAnchor`, `notifyStackMove`,
+- **S4.** Landed, `be3a22e689`. The anchor take (`takeFollowAnchor`, `notifyStackMove`,
   `captureStackViewports`, `FollowAnchorHost`) lives in
   `LinearSyntenyViewHelper/offscreenMateNav.ts` and serves three features;
   it moves to `SyntenyFollow/`, and one `beginStackMove(stack, row)` replaces
@@ -168,12 +168,13 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
 - **U2.** A band drag moves every row, so it shifts a holding row that a drag
   on the anchor leaves alone.
 - **U3.** The tooltip's grammar breaks with several contigs ("chr2, chr3
-  aligns"); "approximate" shows nowhere. The partial report is parked as
+  aligns"). "Approximate" shows in the tooltip unless a partial report outranks
+  it, and the icon leaves it out on purpose. The partial report is parked as
   [ideas/ready/follow-partial-report-parity.md](../ideas/ready/follow-partial-report-parity.md).
 - **U4.** Turning follow off always lands on `'independent'`, losing a pixel
   lock the user came from.
 
 ### Stale docs
 
-Landed, `0d0dadcf44`, except the claim in the CLAUDE.md and `followFrameSpan.ts`
+Landed, `9c8925c17d`, except the claim in the CLAUDE.md and `followFrameSpan.ts`
 that nothing navigates at settle, which states the intent B3 breaks.
