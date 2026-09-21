@@ -83,7 +83,7 @@ see them.
 | `liftReport.ts` | the generated inventory + the `js-skip` staleness check |
 | `check-oracle.ts`, `oracleProbe.ts` | the differential check against slangc's C++ (`pnpm check-shader-oracle`) |
 | `assertVertexInputs.ts`, `assertUniformLayout.ts` | the build-time layout gates — the instance struct and the uniform block against both emitted backends, plus the uniform block of every shader sharing one struct declaration against its group |
-| `*.generated.ts` / `*.iface.generated.ts` / `*.consts.generated.ts` | strings / layout + packers / `export-consts` integers — three modules, one shader, see below |
+| `*.generated.ts` / `*.iface.generated.ts` / `*.consts.generated.ts` | `SOURCE` / layout + packers / `export-consts` integers — three modules, one shader, see below; the text is in `*.wgsl.generated.ts` / `*.glsl.generated.ts`, reached only by `SOURCE`'s `import()`s |
 | `*.js.generated.ts` | the generated twins — never hand-edit |
 | `*Parity.test.ts` | the retirement gates |
 | `reference/SHADER_LIFT_INVENTORY.md` | generated; candidates, declines, and the refusal surface |
@@ -99,9 +99,10 @@ passes it along. Four such chains existed and were removed; don't add one back
 for convenience.
 
 The rule is now load-bearing for the bundle rather than merely tidy. A shader
-with entry points emits **three** modules — strings, `iface` (layout + packers),
-`consts` — because a namespace import marks every export used, so a module is
-included in a chunk whole. Importing `CS_NORMAL` from `read.generated.ts` or
+with entry points emits **three** modules a consumer imports — the shader module
+with its `SOURCE` loaders, `iface` (layout + packers), `consts` — because a
+namespace import marks every export used, so a module is included in a chunk
+whole. Importing `CS_NORMAL` from `read.generated.ts` or
 `read.iface.generated.ts` compiles and passes everything, and puts 16-40 KB in
 the always-loaded chunk. `reference/EAGER_BUNDLE.md` §"A namespace import is the
 unit" has the measurement. A **module** file's `<base>.generated.ts` is already

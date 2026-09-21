@@ -984,11 +984,13 @@ every descriptor that differs from it only in `id`.
 **The two HALs build them at opposite times, and that is not cosmetic.** WebGL2
 builds a pass on its first *draw* (`getPass`), keeping one canary link in the
 constructor so a GL stack that cannot compile our shaders at all still falls to
-Canvas2D; a three-track LGV declares 29 programs and links 14. WebGPU resolves
-the whole declared list before `WebGPUHal.create` returns, so a track's first
-paint waits on every pass it could ever draw. Measured, that costs less than it
-reads: the 23 resolve concurrently, so the batch is ~22 ms of wall time and none
-of it on the main thread. And pipelines are **shared across displays** —
+Canvas2D; a three-track LGV declares 29 programs and links 14. Its text is
+loaded for every declared pass before that, since a draw cannot wait. WebGPU
+resolves the whole declared list before `WebGPUHal.create` returns, so a track's
+first paint waits on loading and compiling every pass it could ever draw.
+Measured, the compile costs less than it reads: the 23 resolve concurrently,
+so the batch is ~22 ms of wall time and none of it on the main thread. And
+pipelines are **shared across displays** —
 `hal/deviceGpuCache.ts` memoizes them per device, so a four-track session built
 23 of them, not 92. Both numbers, and why going lazy here would cost more than
 it saves, are in
@@ -1265,14 +1267,29 @@ weighed and declined in
 [ADR-061](../architecture-decision-records/adr-061-webgl2-glsl-comes-from-the-regex-adapter.md).
 
 **Never hand-edit `*.generated.ts`** — edit the `.slang` source and run `pnpm
-gen:shaders`. The generated module exports source strings, per-field byte offsets,
-strides, typed uniform/instance structs, a typed `writeUniforms()` /
-`packInstances()`, and the `VERTEX_ATTRIBUTES` array; TS imports these by name, so
+gen:shaders`. The generated module exports per-field byte offsets, strides,
+typed uniform/instance structs, a typed `writeUniforms()` / `packInstances()`,
+the `VERTEX_ATTRIBUTES` array and `SOURCE`; TS imports these by name, so
 stride/offset drift between packer and shader is impossible by construction. CI
 runs `pnpm gen:shaders && git diff --exit-code` to catch stale outputs, and the
 build itself refuses a `.generated.ts` that no `.slang` produces any more — a
 renamed shader or a dropped `//! *-out` leaves a committed file frozen at its
 last value, which is the one staleness a diff cannot see.
+
+**A shader's text is not on the module a consumer imports.** It is in
+`<base>.wgsl.generated.ts` and `<base>.glsl.generated.ts`, and `SOURCE` is one
+`import()` of each. `slangPass` puts `SOURCE` on the descriptor, and each HAL
+awaits its own target while it is built: `WebGPUHal.create` per pass inside
+pipeline resolution, `WebGL2Hal.create` for every pass at once, both before the
+canvas's context is claimed, so a load that fails falls down the ladder with the
+canvas still free. The RPC worker, which builds no HAL, evaluates no shader
+text; a WebGPU session never evaluates GLSL; Canvas2D evaluates neither. Why,
+and what it moved: [EAGER_BUNDLE.md](EAGER_BUNDLE.md) §"Shader text loads when a
+HAL is built". Three checks hold it: `shaderSources.test.ts` (every shader's
+loaders resolve to its targets' text, and no module a consumer imports exports
+any), the `noShaderTextImport` lint rule (a static import outside tests), and
+`measureRegistryBundle.ts` (the routes lint cannot see: an `exports`-map
+subpath, the product's worker entry).
 
 **A shader's binding table is generated, not restated.** `BINDINGS` is the
 reflected `@binding` list — `{ index, kind, name }`, with `kind` spelled the way

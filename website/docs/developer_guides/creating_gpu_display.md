@@ -285,7 +285,7 @@ pinned `slangc` on first use, and writes each `*.generated.ts` next to its
 source (`hpmath` / `colorPack` resolve from your installed
 `@jbrowse/render-core`). Inside this repo the same tool is `pnpm gen:shaders`.
 
-One `.slang` file with entry points produces up to four modules, and **which
+One `.slang` file with entry points produces up to six modules, and **which
 module you import determines what your users download**. A bundler treats a
 namespace import (`import * as shader from './score.generated.ts'`) as using
 every export, so it includes or excludes a module whole. If any eager code
@@ -294,17 +294,23 @@ module.
 
 | Module                      | Holds                                                             | Import it from                                                            |
 | --------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `score.generated.ts`        | the compiled WGSL/GLSL strings, and a re-export of the next two   | the shape, which needs the shader source anyway                           |
+| `score.generated.ts`        | `SOURCE`, and a re-export of the next two                         | the shape, which hands it to `slangPass`                                  |
 | `score.iface.generated.ts`  | uniform + instance layout, the typed packers, `VERTEX_ATTRIBUTES` | code that packs or reads a buffer                                         |
 | `score.consts.generated.ts` | the `//! export-consts` values, and nothing else                  | a state model, a hit test, a Canvas2D twin — anything that wants a number |
 | `score.js.generated.ts`     | the `//! js-export` functions as scalar TypeScript                | the painter and the hit test, which run the shader's own math             |
+| `score.wgsl.generated.ts`   | the compiled WGSL                                                 | nothing: `SOURCE.wgsl()` loads it when a WebGPU backend is built          |
+| `score.glsl.generated.ts`   | the compiled WebGL2 stages                                        | nothing: `SOURCE.glsl()` loads it when a WebGL2 backend is built          |
 
 A display model that reads one threshold should therefore import the `.consts.`
-module, not the shader module that re-exports it.
+module, not the shader module that re-exports it. The text is the one part no
+module you import carries: a mark declared at module scope is evaluated when
+your plugin registers, in the RPC worker too, so the WGSL and GLSL wait behind
+`import()` until a display builds a GPU backend with the pass. Import neither
+yourself.
 
 The table below says what lands in `score.generated.ts` and what a plugin
 imports from it. That module re-exports the interface and consts modules, so the
-table is the union of all three:
+table is the union of all three, plus the three strings the text modules hold:
 
 <!-- SHADER_EXPORTS START -->
 
@@ -322,9 +328,10 @@ table is the union of all three:
 | `setInstance<Field> (vector field)` | writes a whole vector instance field; takes one value per component |
 | `setUniform<Field>` | writes one element of an array-valued uniform slot, through that field's own typed view; takes every component so an element cannot be half-written |
 | `InstanceWriter` | append-at-a-time writer over the packed instance layout, for an encoder whose instance count is not known up front |
-| `WGSL_SOURCE` | the compiled WGSL, when the shader targets wgsl |
-| `GLSL_VERTEX` | the compiled WebGL2 vertex stage |
-| `GLSL_FRAGMENT` | the compiled WebGL2 fragment stage |
+| `WGSL_SOURCE` | the compiled WGSL, in `<base>.wgsl.generated.ts`; reach it through `SOURCE.wgsl()` |
+| `GLSL_VERTEX` | the compiled WebGL2 vertex stage, in `<base>.glsl.generated.ts`; reach it through `SOURCE.glsl()` |
+| `GLSL_FRAGMENT` | the compiled WebGL2 fragment stage, beside the vertex stage |
+| `SOURCE` | a loader per target, `wgsl()` and `glsl()`, each an `import()` of the module holding that text alone; `slangPass` carries it onto the descriptor and the HAL awaits it when it is built |
 | `BINDINGS` | every binding the shader declares, for HAL bind-group setup |
 | `VERTS_PER_INSTANCE` | vertices per instance, from the shader's const of that name; the draw call reads it |
 | `TOPOLOGY` | the primitive topology `vs_main` emits for, when the shader declares one |
