@@ -11,7 +11,8 @@ its commit when it lands; file what nobody takes up into
 
 ## Order
 
-1. Mates: M1 (every silent drop), M7 (one hit test), M2 with its sweep test.
+1. ~~Mates: M1 (every silent drop), M7 (one hit test), M2 with its sweep
+   test.~~ Landed.
 2. Follow: B2, then B1.
 3. Follow: S4 (the anchor take moves into `SyntenyFollow/`).
 4. The comment and stale-doc sweep for both subsystems.
@@ -24,7 +25,7 @@ Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTEN
 ### Bugs
 
 - **M1. An alignment with no place on the facing axis can vanish without a
-  mark.** Verified by scratch tests. The worker's class-A test asks whether the
+  mark.** Landed, `d6c7f983f3`. Verified by scratch tests. The worker's class-A test asks whether the
   facing row displays the mate's CONTIG (`v2RefNames.has`), so a mate outside
   every displayed slice of a displayed contig passes it and is dropped later in
   the projection loop. Three drop sites: `!e2` (no slice contains the mate),
@@ -34,7 +35,7 @@ Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTEN
   flipped ribbon dropped at `e1`). Fix: collect at the drop sites with the
   clipped mate span, keep the contig test as the prefilter.
 - **M2. In coloured mode the colour painted on top can disagree with the
-  contig the hover names.** Verified by reading. `fillMarks` orders colour
+  contig the hover names.** Landed, `676798b210`: the hit ranks by paint order. Verified by reading. `fillMarks` orders colour
   groups by each group's strongest mark anywhere in the lane; the hit takes the
   longest mark at the pixel. ADR-138's "the composite ends on the contig the
   pointer would name" holds only where the lane's strongest mark sits. A sweep
@@ -57,7 +58,7 @@ Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTEN
 
 ### Simplifications
 
-- **M7. One hit test.** `offscreenMateAt` and `offscreenMateSpanAt` are both
+- **M7. One hit test.** Landed, `e9bf29ab3a`. `offscreenMateAt` and `offscreenMateSpanAt` are both
   full passes of the lane since before ADR-138, so the reason given for two
   (the click "cannot early-exit") is stale. Merging drops
   `OffscreenMateMark`/`OffscreenMateHit`, `stripHit` and the `displayed` flag,
@@ -100,12 +101,11 @@ predicate — no place on the facing axis's domain.
 
 ### Stale docs
 
-- `OFFSCREEN_SYNTENY_MATES.md` §"Still open: the destination on a contig
-  displayed several times over" — `displayedRegionIndex` reaches both
-  `centerAt` and `flyToCenter`.
-- `OFFSCREEN_SYNTENY_MATES.md` §"The click is the one path that cannot
-  early-exit" — M7.
-- ADR-138's paint-order claim — M2.
+Landed with M7 and M2: the duplicated-region "still open" paragraph, the
+"click cannot early-exit" paragraph, and ADR-138's paint-order claim.
+
+The overlay bench's hover and click columns want a re-measure on a quiet
+machine; the 2026-09-20 A/B ran at load 7-10.
 
 ## The follow
 
