@@ -290,10 +290,7 @@ their hosted configs still colour genes with
 `jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'`, which is
 `{ field: 'name' }` in the gene colour channel; moving them to
 `{ field: 'cluster' }` is a docs step with a `deploy-demo.sh` redeploy and a
-reshoot. Lane ticks still run past the contig end that `Lane.baseline` now
-stops at. The `laneStack` getter's `refNameAliasOf` calls
-`assemblyManager.get` without `has`, so a lane the session does not hold is
-reported to the unrecognized-assembly hook. The next reshoot changes
+reshoot. The next reshoot changes
 `lane_header_menu` (the grape page, which gains **Flip lane**), the
 `synteny/multiway_zoom_out` video (lane motion) and any figure showing the
 **Color by...** menu, which now has Genes and Ribbons sections.
