@@ -75,12 +75,6 @@ export interface ParentViewDuck extends FollowAnchorHost {
   hideUnlabelled: boolean
   // a track's slot in the view's palette, keyed by trackId
   trackColorFor: (trackId: string) => string
-  // Read by the off-screen mate click, to decide whether it may FLY to the
-  // contig rather than jump: with the rows locked in pixels, the flight's
-  // zoom-out arc is replayed onto every row by `installLinkedViewSync` while
-  // its pan is not, so the whole stack would pull back and only one row would
-  // travel.
-  linkViews: boolean
 }
 
 // The two genome rows a level draws between. `v0` is the upper row, which is

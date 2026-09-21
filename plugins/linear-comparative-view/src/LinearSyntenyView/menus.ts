@@ -1,4 +1,4 @@
-import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
+import { radioItems } from '@jbrowse/core/ui/menuItems'
 import AnchorIcon from '@mui/icons-material/Anchor'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
@@ -42,9 +42,8 @@ interface NavigationModel extends FollowHost {
   squareView: () => void
   showAllRegionsAcrossRows: (sameScale: boolean) => void
   sameScale: boolean
-  rowSync: RowSyncMode
   followMatchOrientation: boolean
-  setRowSyncMode: (mode: RowSyncMode) => void
+  setFollowSynteny: (flag: boolean) => void
   setFollowMatchOrientation: (arg: boolean) => void
 }
 
@@ -63,27 +62,16 @@ const SHOW_ALL_REGIONS_MODES = [
   },
 ] as const
 
-export const ROW_SYNC_MODES = [
-  ['independent', 'Independent'],
-  ['link', 'Locked together - rows move together pixel-by-pixel'],
-  ['follow', 'Follow - other rows track the anchor through the alignment'],
-] as const
-
-export type RowSyncMode = (typeof ROW_SYNC_MODES)[number][0]
-
 /**
- * The three zoom commands that act on every row at once, and the coupling that
- * decides whether a pan of one row is a pan of the others.
+ * The three zoom commands that act on every row at once, and the follow.
  *
  * The two show-all-regions rows act on a click and carry a mark: the mark names
  * the fit rule the rows are under (`sameScale`), which holds after a zoom back
- * in. The sync modes are mutually exclusive, hence one radio group and one
- * setter.
+ * in.
  */
 export function navigationMenuItems(model: NavigationModel): MenuItem[] {
   const {
     sameScale,
-    rowSync,
     followSynteny,
     followAnchorIndex,
     followMatchOrientation,
@@ -99,40 +87,45 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
     ...radioItems(SHOW_ALL_REGIONS_MODES, sameScale ? 'same' : 'fit', m => {
       model.showAllRegionsAcrossRows(m === 'same')
     }),
-    makeRadioSubMenu({
-      label: 'Sync rows',
+    {
+      label: 'Follow',
       icon: LinkIcon,
-      value: rowSync,
-      options: ROW_SYNC_MODES,
-      onChange: mode => {
-        model.setRowSyncMode(mode)
-      },
-      extraItems: followSynteny
-        ? [
-            { type: 'subHeader', label: 'Anchor row' },
-            ...radioItems(
-              rowLabels(model.views).map((label, idx) => ({
-                value: `${idx}`,
-                label,
-              })),
-              `${followAnchorIndex}`,
-              idx => {
-                model.setFollowAnchorIndex(Number(idx))
+      subMenu: [
+        {
+          type: 'checkbox',
+          label: 'Other rows track the anchor row through the alignment',
+          checked: followSynteny,
+          onClick: () => {
+            model.setFollowSynteny(!followSynteny)
+          },
+        },
+        ...(followSynteny
+          ? ([
+              { type: 'subHeader', label: 'Anchor row' },
+              ...radioItems(
+                rowLabels(model.views).map((label, idx) => ({
+                  value: `${idx}`,
+                  label,
+                })),
+                `${followAnchorIndex}`,
+                idx => {
+                  model.setFollowAnchorIndex(Number(idx))
+                },
+              ),
+              { type: 'subHeader', label: 'Orientation' },
+              {
+                type: 'checkbox',
+                label:
+                  'Flip rows to match the anchor - inside inverted alignments',
+                checked: followMatchOrientation,
+                onClick: () => {
+                  model.setFollowMatchOrientation(!followMatchOrientation)
+                },
               },
-            ),
-            { type: 'subHeader', label: 'Orientation' },
-            {
-              type: 'checkbox',
-              label:
-                'Flip rows to match the anchor - inside inverted alignments',
-              checked: followMatchOrientation,
-              onClick: () => {
-                model.setFollowMatchOrientation(!followMatchOrientation)
-              },
-            },
-          ]
-        : [],
-    }),
+            ] satisfies MenuItem[])
+          : []),
+      ],
+    },
   ]
 }
 

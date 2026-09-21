@@ -1,8 +1,4 @@
-import {
-  OFFSCREEN_MATE_NAV_MIN_BP,
-  mateFlightAllowed,
-  navSpan,
-} from './offscreenMateNav.ts'
+import { OFFSCREEN_MATE_NAV_MIN_BP, navSpan } from './offscreenMateNav.ts'
 
 // The contig the window is framed in. Wide enough that the floor and the
 // padding are what decide the answer, except where a test says otherwise.
@@ -68,25 +64,5 @@ describe('navSpan', () => {
       expect(span.start).toBeGreaterThanOrEqual(0)
       expect(width(span)).toBe(OFFSCREEN_MATE_NAV_MIN_BP)
     }
-  })
-})
-
-// The two halves of the click's flight decision that are not about the mark:
-// what the reader asked for, and the one arrangement of the stack where the arc
-// would tear it apart.
-describe('mateFlightAllowed', () => {
-  it('flies when the reader wants motion and the rows are their own', () => {
-    expect(mateFlightAllowed({ linkViews: false }, 'enabled')).toBe(true)
-  })
-
-  it('jumps when the reader has turned motion off', () => {
-    expect(mateFlightAllowed({ linkViews: false }, 'disabled')).toBe(false)
-  })
-
-  // `installLinkedViewSync` replays a row's zoomTo onto every other row and its
-  // scroll onto none of them, so the arc's pull-back would land on the whole
-  // stack while only the clicked row travelled.
-  it('jumps when the rows are locked together in pixels', () => {
-    expect(mateFlightAllowed({ linkViews: true }, 'enabled')).toBe(false)
   })
 })

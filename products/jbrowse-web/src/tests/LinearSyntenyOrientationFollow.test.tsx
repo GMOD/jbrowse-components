@@ -24,7 +24,7 @@ interface SyntenyView {
   views: LinearGenomeViewModel[]
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
   setWidth: (n: number) => void
-  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
+  setFollowSynteny: (flag: boolean) => void
   setFollowMatchOrientation: (arg: boolean) => void
 }
 
@@ -68,7 +68,7 @@ test('a followed row turns round inside an inverted alignment and back past it',
   const [row0, row1] = view.views
   await row0!.navToLocString(`ctgA:${INVERTED.start}-${INVERTED.end}`, ASM)
   await row1!.navToLocString('ctgA', MATE)
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   view.setFollowMatchOrientation(true)
   await waitFor(() => {
     expect(reversedOf(row1!)).toBe(true)
@@ -89,7 +89,7 @@ test('ticking it after the rows have settled turns the row round', async () => {
   const [row0, row1] = view.views
   await row0!.navToLocString(`ctgA:${INVERTED.start}-${INVERTED.end}`, ASM)
   await row1!.navToLocString('ctgA', MATE)
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await waitFor(() => {
     placedInsideInverted(row1!)
   }, timeout)
@@ -106,7 +106,7 @@ test('off, the row is placed inside the inverted alignment without turning', asy
   const [row0, row1] = view.views
   await row0!.navToLocString(`ctgA:${INVERTED.start}-${INVERTED.end}`, ASM)
   await row1!.navToLocString('ctgA', MATE)
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await waitFor(() => {
     placedInsideInverted(row1!)
   }, timeout)

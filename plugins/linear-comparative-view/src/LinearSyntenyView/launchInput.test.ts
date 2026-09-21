@@ -129,15 +129,15 @@ test('a key naming neither a launch key nor a property is named on attach', asyn
   )
 })
 
-test('the row coupling is one property, and the getters it feeds are not keys', async () => {
-  const view = await open({ views: ROWS, rowSync: 'follow' })
-  expect([view.followSynteny, view.linkViews]).toEqual([true, false])
+test('the follow is one property, and the retired rowSync is not a key', async () => {
+  const view = await open({ views: ROWS, followSynteny: true })
+  expect(view.followSynteny).toBe(true)
   expect(warnings()).toEqual([])
 
-  const stale = await open({ views: ROWS, followSynteny: true })
-  expect(stale.rowSync).toBe('independent')
+  const stale = await open({ views: ROWS, rowSync: 'follow' })
+  expect(stale.followSynteny).toBe(false)
   expect(warnings()).toContain(
-    'LinearSyntenyView ignored unknown key(s): followSynteny',
+    'LinearSyntenyView ignored unknown key(s): rowSync',
   )
 })
 

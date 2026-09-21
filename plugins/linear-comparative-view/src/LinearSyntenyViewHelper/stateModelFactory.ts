@@ -1,4 +1,8 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  animationAllowed,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import {
   hideTrackGeneric,
@@ -21,7 +25,7 @@ import {
 
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { beginStackMove, notifyStackMove } from '../SyntenyFollow/stackMove.ts'
-import { mateFlightAllowed, mateNavDestination } from './offscreenMateNav.ts'
+import { mateNavDestination } from './offscreenMateNav.ts'
 import { offscreenMateStrips } from './offscreenMateStrip.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
@@ -533,15 +537,7 @@ export function linearSyntenyViewHelperModelFactory(
         const { restore, anchor } = beginStackMove(parentView, hit.navRow)
         if (dest.kind === 'scroll') {
           const { centerBp, fitWidthBp } = dest
-          if (parentView.linkViews) {
-            // the lock replays a row's zoom only from a root action, so a
-            // framing here would unlock the clicked row: it scrolls at the zoom
-            // every row shares
-            view.setWindow(
-              view.windowWidthBp,
-              centerBp - view.windowWidthBp / 2,
-            )
-          } else if (mateFlightAllowed(parentView, session.animationMode)) {
+          if (animationAllowed(session.animationMode)) {
             // the flight reads back what it wrote each frame, so the Undo
             // below ends it rather than being overwritten by its next frame
             view.flyToFit(centerBp, fitWidthBp)

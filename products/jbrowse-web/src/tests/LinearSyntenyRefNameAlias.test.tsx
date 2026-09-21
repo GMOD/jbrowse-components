@@ -73,7 +73,7 @@ interface SyntenyView {
   levels: { linearSyntenyDisplays: SyntenyDisplay[] }[]
   followUnaligned: boolean
   setWidth: (n: number) => void
-  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
+  setFollowSynteny: (flag: boolean) => void
   setShowOffscreenMates: (flag: boolean) => void
 }
 
@@ -118,7 +118,7 @@ test('both files load, so the alias resolves for the fetch', async () => {
 test('the follow places the row through a canonically-spelled file', async () => {
   const view = await openWith(CONTROL)
   const [volvox, del] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await volvox!.navToLocString(LOCUS, 'volvox')
 
   await waitFor(() => {
@@ -154,7 +154,7 @@ test('the follow places the row through a canonically-spelled file', async () =>
 test('the follow places the row through an alias-spelled file too', async () => {
   const view = await openWith(ALIASED)
   const [volvox, del] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await volvox!.navToLocString(LOCUS, 'volvox')
 
   await waitFor(() => {
@@ -246,7 +246,7 @@ test('an assembly named by alias in the track config still follows', async () =>
     view.levels[0]!.linearSyntenyDisplays[0]!.featureData!.mateAssemblyNameDict,
   ).toEqual(['volvox'])
 
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await del!.navToLocString(LOCUS, 'volvox_del')
 
   // no CIGAR on that row, so the window maps proportionally across the block:

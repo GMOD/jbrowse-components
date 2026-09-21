@@ -354,12 +354,11 @@ The integration suite asserts that count.
 
 ## A gesture on a followed row takes the anchor
 
-The rows follow whichever row the reader is driving, which is the symmetry the
-pixel lock already has. The exact pass re-asserts the follow over any row that
-moved, and it cannot tell a drag from a navigation some feature made; the
-snackbar that used to explain the snap-back offered "Anchor this row" one drag
-too late, and the heuristic behind it (`handNudged`, gone) had a documented
-false positive it could not test for.
+The rows follow whichever row the reader is driving. The exact pass re-asserts
+the follow over any row that moved, and it cannot tell a drag from a navigation
+some feature made; the snackbar that used to explain the snap-back offered
+"Anchor this row" one drag too late, and the heuristic behind it (`handNudged`,
+gone) had a documented false positive it could not test for.
 
 **The trigger is the gesture, not the settle.** MST middleware on the stack,
 installed with the follow: a **root** action from `ROW_GESTURES` on a row that

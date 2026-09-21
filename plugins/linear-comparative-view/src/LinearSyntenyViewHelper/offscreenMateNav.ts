@@ -1,14 +1,10 @@
-import {
-  animationAllowed,
-  assembleLocString,
-  getSession,
-} from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 
 import type {
   OffscreenMateLocus,
   OffscreenMateSpan,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
-import type { AnimationMode, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -37,16 +33,6 @@ export function navSpan(
     ),
   )
   return { start, end: Math.min(region.end, start + span) }
-}
-
-// `linkViews` holds the rows together in pixels and `installLinkedViewSync`
-// replays a row's zoom onto the others but not its scroll, so a flight there
-// pulls every row back to the apex while one of them travels
-export function mateFlightAllowed(
-  host: { linkViews: boolean },
-  mode: AnimationMode,
-) {
-  return animationAllowed(mode) && !host.linkViews
 }
 
 export type MateNavDestination =

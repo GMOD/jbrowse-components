@@ -27,8 +27,7 @@ dropped in, over 250-1100ms (`flyTo.ts`). The DESTINATION is unchanged, which is
 what leaves the snackbar, its Undo and the follow-anchor take exactly as they
 were — the flight reads back what it wrote each frame, so the Undo, a wheel
 zoom or a drag ends it rather than being overwritten by its next frame. Off
-under `linkViews` (the rows are locked in pixels and `installLinkedViewSync`
-replays the zoom but not the scroll) and under the reader's `animationMode`.
+under the reader's `animationMode`.
 The navigate class is not flown and cannot be: `navToLocString` replaces the
 row's regions, so there is no coordinate space the two ends are both in.
 
@@ -568,8 +567,6 @@ many windows wide whose middle holds none of them. The frame is capped at the
 widest window the row can show, or the zoom's clamp shifts it off centre. A
 flight goes through `flyToFit`, which widens from the zoom a flight already in
 the air is heading to rather than the arc's current width, so a second click
-mid-flight does not land pulled back. Under `linkViews` the click only scrolls:
-the lock replays a zoom from a root action alone, and a framing inside the
-level's action would unlock the clicked row. A union across two displayed
+mid-flight does not land pulled back. A union across two displayed
 copies of one contig centres between them, which is why the staleness test asks
 the span's ends as well as its centre.

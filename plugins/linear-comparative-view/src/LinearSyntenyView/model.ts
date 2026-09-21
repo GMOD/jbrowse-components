@@ -18,7 +18,6 @@ import {
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, cast, detach, types } from '@jbrowse/mobx-state-tree'
-import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import {
   DiagonalizeProgressMixin,
   ImportFormSyntenyMixin,
@@ -52,7 +51,6 @@ import { FADE_AUTO_MIN_FEATURES, fadesThinAt } from './fadeThin.ts'
 import { linearSyntenyLaunchKeys } from './launchKeys.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 import {
-  ROW_SYNC_MODES,
   autoScaleMenuItems,
   compactViewsMenuItems,
   displayCanShowCigar,
@@ -64,7 +62,6 @@ import {
 import { sharedFit } from './sharedFit.ts'
 
 import type { FollowReport } from '../SyntenyFollow/followHost.ts'
-import type { RowSyncMode } from './menus.ts'
 import type {
   CigarMode,
   ExportSvgOptions,
@@ -245,16 +242,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
-         * How the genome rows track each other. 'link' replays a pan or zoom of
-         * one row onto the others in pixels, which drifts as indels accumulate.
-         * 'follow' moves the non-anchor rows to whatever region aligns to the
-         * anchor row, re-resolved through the synteny data each time the anchor
-         * settles.
+         * The non-anchor rows follow the anchor row through the alignment,
+         * moving to whatever region aligns to its window.
          */
-        rowSync: types.stripDefault(
-          types.enumeration(ROW_SYNC_MODES.map(([mode]) => mode)),
-          'independent',
-        ),
+        followSynteny: types.stripDefault(types.boolean, false),
         /**
          * #property
          * Hold every genome row on one bp/px — the coarsest row's fit — so the
@@ -265,7 +256,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         sameScale: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * Which genome row drives the others while `rowSync` is 'follow'.
+         * Which genome row drives the others while following.
          */
         followAnchorIndex: types.stripDefault(types.number, 0),
         /**
@@ -322,13 +313,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Whether the 'auto' thin-fade is latched on (see `fadeThinAlignments`).
        */
       fadeThinLatch: false,
-      /**
-       * #volatile
-       * The row sync the reader left for the follow, which the header toggle
-       * returns to rather than always to 'independent', so a pixel lock
-       * survives a look through the alignment.
-       */
-      rowSyncBeforeFollow: 'independent' as RowSyncMode,
     }))
     .views(self => ({
       /**
@@ -338,23 +322,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * against, as it does a gesture on the anchor itself.
        */
       get bandGestureRows() {
-        return self.rowSync === 'follow'
+        return self.followSynteny
           ? self.views.slice(self.followAnchorIndex, self.followAnchorIndex + 1)
           : self.views
-      },
-      /**
-       * #getter
-       * the rows are locked together in pixels
-       */
-      get linkViews() {
-        return self.rowSync === 'link'
-      },
-      /**
-       * #getter
-       * the non-anchor rows follow the anchor through the alignment
-       */
-      get followSynteny() {
-        return self.rowSync === 'follow'
       },
       /**
        * #getter
@@ -791,11 +761,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setRowSyncMode(mode: RowSyncMode) {
-        if (mode === 'follow' && self.rowSync !== 'follow') {
-          self.rowSyncBeforeFollow = self.rowSync
-        }
-        self.rowSync = mode
+      setFollowSynteny(flag: boolean) {
+        self.followSynteny = flag
       },
       /**
        * #action
@@ -1430,7 +1397,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       afterAttach() {
         // a hand-authored session typically writes `views` and no `levels`
         self.reconcileLevels()
-        installLinkedViewSync(self, ['horizontalScroll', 'zoomTo'])
         installSyntenyFollow(self)
         addDisposer(
           self,

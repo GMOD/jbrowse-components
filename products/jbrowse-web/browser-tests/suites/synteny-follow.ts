@@ -46,7 +46,7 @@ interface RowWindow {
 interface FollowView {
   followApproximate: boolean
   setFollowAnchorIndex: (i: number) => void
-  setRowSyncMode: (m: string) => void
+  setFollowSynteny: (flag: boolean) => void
   views: { dynamicBlocks: { contentBlocks: RowWindow[] } }[]
 }
 type SessionWindow = typeof globalThis & {
@@ -104,7 +104,7 @@ const suite: TestSuite = {
         await page.evaluate(() => {
           const view = (window as SessionWindow).JBrowseSession.views[0]!
           view.setFollowAnchorIndex(0)
-          view.setRowSyncMode('follow')
+          view.setFollowSynteny(true)
         })
 
         await page.waitForFunction(

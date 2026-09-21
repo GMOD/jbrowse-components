@@ -11,26 +11,22 @@ its commit when it lands; file what nobody takes up into
 
 ## Next session: start here
 
-The 2026-09-21 session stopped two fixer agents mid-run. Their worktrees are
-kept, **unreviewed and unlanded**:
+The 2026-09-21 session stopped two fixer agents mid-run. The M3 one is
+superseded and gone; the other is kept, **unreviewed and unlanded**:
 
 - `.claude/worktrees/agent-abd504f266bebcb9b`, branch
   `worktree-agent-abd504f266bebcb9b`: `05ffe7f378`, B9 (the overview freeze).
   Committed by the agent; its gates and sabotage run are unconfirmed.
-- `.claude/worktrees/agent-a56cd4026f72f6654`, branch
-  `worktree-agent-a56cd4026f72f6654`: `d3a5217483`, M3 half-written. The
-  coordinator committed the stopped agent's edits as WIP; untested.
 
-Review each diff, rebase onto local `main`, run `pnpm verify` and the touched
+Review the diff, rebase onto local `main`, run `pnpm verify` and the touched
 suites, show each new test failing without its fix, and land by fast-forward.
 Then the rest, in this order — each confirmed by the second pass on real data
 or in the follow harness unless marked:
 
 1. Follow: B9 (finish `05ffe7f378`), B3's backwards jump, B10 (Collapse introns
    undone on a following row).
-2. Mates: M3 (finish `d3a5217483`), M6 with its two colour leaks, the stale
-   user guide (below), M5.
-3. Follow: U1, B6, U3.
+2. Mates: the stale user guide (M16).
+3. Follow: U1.
 4. The comment thinning, S1.
 
 Landed earlier: M1, M2, M7 (order 1), B1, B2 (order 2), S4, the stale-doc half
@@ -42,22 +38,18 @@ A second session worked the first pass's list at the same time and landed:
 
 - M3: `7905990708`, with `984fbd9888` (a mid-flight click keeps its zoom
   through the LGV's new `flyToFit`; only a scroll under `linkViews`; the frame
-  capped at the row's widest window). **This supersedes `d3a5217483`** above:
-  drop that worktree rather than finish it.
+  capped at the row's widest window).
 - M5, M13 and U2: `67f1fcf187`. M4 and M6 (class C marks, and the identity fade
   no longer re-showing a hidden ribbon): `2598650df8`; a hidden ribbon's indels
   are hidden too in `984fbd9888`.
 - B3, B4, B5, B6 and S3: `4d89cff7e9`. S6's `movingIndex` and S8: `c129862e7d`.
 - U2's wheel half, U3 and U4: `984fbd9888`.
 
-**Six of those are items the second pass closed as intended**: M4, M13, B4,
-B5, U2 and U4. The first four are internal and harmless to keep. U2 and U4
-change behaviour and want a decision: while following, a band drag and a band
-wheel now move the anchor alone and the follow places the rest
-(`bandGestureRows`, `panStack`), where the closure reads a band drag as a stack
-pan; and the header toggle turns the follow off onto the mode it was turned on
-from (`rowSyncBeforeFollow`), where the closure is content with the menu.
-Revert those two if the closures stand.
+Six of those are items the second pass closed as intended: M4, M13, B4, B5,
+U2 and U4. Colin kept U2: while following, a band gesture moves the anchor and
+the follow places the rest. U4 is moot, since Colin dropped the pixel lock:
+the view's row coupling is now the `followSynteny` boolean, and a band drag
+with the follow off is the one way to pan every row together.
 
 **The follow half has had no independent review**, and its full
 `pnpm test-related` was stopped before it finished; the linear-comparative-view

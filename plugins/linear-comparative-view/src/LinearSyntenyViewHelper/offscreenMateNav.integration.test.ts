@@ -305,7 +305,7 @@ test('with the follow off, the undo leaves the anchor row alone', async () => {
 // and the undo is what gives that back.
 test('with the follow on, the undo gives back the anchor the click took', async () => {
   const { session, view, level } = await setup()
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   view.setFollowAnchorIndex(1)
 
   level.showOffscreenMateContig(
@@ -331,7 +331,7 @@ test('with the follow on, the undo gives back the anchor the click took', async 
 // give back — a stronger property than the release path it replaces.
 test('a navigation that fails takes no anchor to begin with', async () => {
   const { session, view, level } = await setup()
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   expect(view.followAnchorIndex).toBe(0)
 
   level.showOffscreenMateContig(
@@ -547,23 +547,6 @@ test('a second click during a flight lands at the zoom the first was heading to'
   expect(row.windowWidthBp).toBe(40_000)
 }, 20000)
 
-// Rows locked in pixels replay a zoom only from a root action, so framing the
-// clicked row from inside the level's would unlock it from the others.
-test('with the rows locked together the click scrolls at the zoom they share', async () => {
-  const { view, level, row } = await scrollableSetup()
-  view.setRowSyncMode('link')
-
-  level.showOffscreenMateContig(
-    mark('ctgB', 1, {
-      locus: { start: 100_000, end: 300_000 },
-      mateCumBp: { start: BP + 100_000, end: BP + 300_000 },
-    }),
-  )
-
-  expect(row.windowWidthBp).toBe(40_000)
-  expect(row.windowStartBp).toBe(BP + 200_000 - 20_000)
-})
-
 // Flown, not jumped — so the row is somewhere else on the way and the reader
 // can see the distance being crossed. Asserted on the zoom rather than the
 // position, since the pull-back is the half a jump could not produce.
@@ -608,7 +591,7 @@ test('with animation off the row is simply placed there', async () => {
 // leaving the row wherever the arc had got to.
 test('the flight survives the follow it just became the anchor of', async () => {
   const { view, level, row } = await scrollableSetup()
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   expect(view.followAnchorIndex).toBe(0)
 
   level.showOffscreenMateContig(

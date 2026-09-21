@@ -70,13 +70,11 @@ async function launchStack(spec: Record<string, unknown>) {
 
 async function openStack() {
   const view = await launchStack({})
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   return view
 }
 
-// The pixel lock lets any row drive the others, and under the follow a row
-// that snapped back read as a bug — the snackbar that used to explain it
-// offered exactly this, one drag too late.
+// A followed row that snapped back after a drag read as a bug.
 test('a drag or a zoom on a followed row makes it the anchor', async () => {
   const view = await openStack()
   expect(view.followAnchorIndex).toBe(0)
@@ -151,22 +149,10 @@ test('a band drag moves the anchor alone while following, and every row when not
   expect(offsets()).toEqual([before[0]! + 40, before[1], before[2]])
   expect(view.followAnchorIndex).toBe(0)
 
-  view.setRowSyncMode('independent')
+  view.setFollowSynteny(false)
   const after = offsets()
   view.panStack(40)
   expect(offsets()).toEqual(after.map(x => x + 40))
-})
-
-// The header toggle turned the follow off onto 'independent' whatever the
-// reader had before, so a pixel lock did not survive a look through the
-// alignment.
-test('turning the follow off returns to the lock it was turned on from', async () => {
-  const view = await launchStack({})
-  view.setRowSyncMode('link')
-  view.setRowSyncMode('follow')
-  view.setRowSyncMode('follow')
-  view.setRowSyncMode(view.rowSyncBeforeFollow)
-  expect(view.rowSync).toBe('link')
 })
 
 // the view-wide zooms reach every row from one of the stack's own actions,
@@ -286,7 +272,7 @@ test.each([0, 2])(
         { assembly: 'volvox1' },
         { assembly: 'volvox2', displayedRegionNames: ['ctgA'] },
       ],
-      rowSync: 'follow',
+      followSynteny: true,
       followAnchorIndex,
     })
     expect(view.followSynteny).toBe(true)
@@ -316,10 +302,7 @@ test.each([{ loc: 'ctgA:100-200' }, {}])(
 
 test('off, a gesture takes nothing', async () => {
   const view = await openStack()
-  view.setRowSyncMode('independent')
-  view.views[2]!.horizontalScroll(40)
-  expect(view.followAnchorIndex).toBe(0)
-  view.setRowSyncMode('link')
+  view.setFollowSynteny(false)
   view.views[2]!.horizontalScroll(40)
   expect(view.followAnchorIndex).toBe(0)
 })

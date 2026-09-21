@@ -24,8 +24,7 @@ const useStyles = makeStyles()({
   },
 })
 
-// The word the mode goes by in the Sync rows menu, so the header and the menu
-// name one thing.
+// The header and the menu name one thing
 const FOLLOW_LABEL = 'Follow'
 
 /**
@@ -103,15 +102,6 @@ export function followToggleTitle({
  * whose effect arrives as motion nobody asked for, seconds after a pan, and a
  * session can arrive with it already on — buried in a submenu, a row that keeps
  * re-placing itself reads as a bug rather than as a setting.
- *
- * TWO STATES, not the three the setting has. `linkViews` is the other coupling
- * and stays in the menu: it is a preference someone sets once, while this is the
- * one worth flicking on and off against a locus. A three-way cycle here was the
- * obvious way to cover both and was worse than either — a ToggleButton reads as
- * on/off, so a third state makes "selected" ambiguous and leaves the tooltip as
- * the only way to tell which coupling is running. Turning this on clears
- * `linkViews` (setRowSyncMode), so the two can still never fight, and turning
- * it off returns to the mode it was turned on from.
  */
 const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
   model,
@@ -148,9 +138,7 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
           selected={followSynteny}
           disabled={views.length < 2}
           onChange={() => {
-            model.setRowSyncMode(
-              followSynteny ? model.rowSyncBeforeFollow : 'follow',
-            )
+            model.setFollowSynteny(!followSynteny)
           }}
           className={classes.button}
           size="small"

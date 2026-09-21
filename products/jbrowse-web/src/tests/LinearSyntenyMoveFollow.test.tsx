@@ -42,7 +42,7 @@ interface SyntenyView {
     linearSyntenyDisplays: LinearSyntenyDisplayModel[]
   }[]
   setWidth: (n: number) => void
-  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
+  setFollowSynteny: (flag: boolean) => void
 }
 
 // volvox_contig_swap.paf, volvox against itself: ctgA's first 6079 bases align
@@ -88,7 +88,7 @@ async function followingSwap() {
   const [row0, row1] = view.views
   await row0!.navToLocString('ctgB', ASM)
   await row1!.navToLocString('ctgA', ASM)
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await followSettled(view.views)
   expect(view.followAnchorIndex).toBe(0)
   return { view, row0: row0!, row1: row1! }

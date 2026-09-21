@@ -67,7 +67,7 @@ try {
 
   await inPage(page, `view.showTrack('volvox_all_vs_all', 1)`)
   await settle(10000)
-  await inPage(page, `view.setRowSyncMode('follow')`)
+  await inPage(page, `view.setFollowSynteny(true)`)
   await settle(10000)
 
   const before = await inPage<Record<string, unknown>>(

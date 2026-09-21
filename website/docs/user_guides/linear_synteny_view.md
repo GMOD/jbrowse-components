@@ -118,24 +118,17 @@ independently:
 
 ### Making the panels move together
 
-**Sync rows** in the hamburger menu couples the panels. **Independent** is the
-default; the other two couple them differently:
+**Follow** in the hamburger menu keeps the other panels on whatever aligns to
+one anchor panel, re-resolved through the synteny data as you move. It
+re-derives the correspondence from the alignment, so the ribbons stay
+near-vertical however far you pan. It suits two haplotypes or two assemblies of
+the same genome, where the coordinates diverge but the sequence does not.
+Turning it on adds an **Anchor row** section to the same menu, naming which
+panel drives; the others are placed from it, outward one level at a time in a
+stack of three or more.
 
-- **Locked together** replays a pan or zoom in one panel onto the others, so
-  they move together by pixels. That pixel correspondence drifts apart as indels
-  accumulate between the two genomes. Useful once the panels are already lined
-  up on the region you want to walk along, and on comparisons close enough that
-  they stay lined up
-- **Follow** keeps the other panels on whatever aligns to one anchor panel,
-  re-resolved through the synteny data as you move. It re-derives the
-  correspondence from the alignment, so the ribbons stay near-vertical however
-  far you pan
-
-Following is the mode to reach for when comparing two haplotypes or two
-assemblies of the same genome, where the coordinates diverge but the sequence
-does not. Turning it on adds an **Anchor row** section to the same menu, naming
-which panel drives; the others are placed from it, outward one level at a time
-in a stack of three or more.
+Dragging the ribbons between two panels pans them all at once. While following,
+the drag moves the anchor panel and the others follow it.
 
 The header's arrows button toggles following on and off without opening the
 menu, and shows whether it is running. It changes to a warning form where
@@ -143,8 +136,8 @@ nothing aligns to the anchor's window at all — a haplotype-specific insertion,
 centromere, a panel off the end of the alignments — where the other panels hold
 their position.
 
-A followed panel can still be panned by hand; it returns to the matching region
-once it settles. Turn following off to keep it where you put it.
+Panning or zooming any panel makes it the anchor, and the others follow it. Turn
+following off to move one panel on its own.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="Following on the two haplotypes of T2T-HG002, which carry the same coordinates and different sequence: the panels as they open, the header's toggle, and a second window typed into the anchor panel's search box alone." />
 
@@ -274,8 +267,8 @@ inside **Rows**:
   larger one. The two show-all-regions rows are settings rather than one-off
   buttons: whichever is marked stays in force, so after zooming into a locus,
   zooming back out returns to the same shared scale
-- **Sync rows** decides whether panning one row pans the others, and by what —
-  pixels, or the alignment. Following also picks which row is the anchor
+- **Follow** moves the other rows to whatever aligns to the anchor row, and
+  picks which row is the anchor
 - **Rows** - **Add assembly row** to compare three or more assemblies stacked
   vertically, **Remove row**, **Re-order chromosomes**, and one entry per genome
   opening that row's own view menu (which is otherwise reachable only from that

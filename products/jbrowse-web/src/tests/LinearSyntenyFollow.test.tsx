@@ -31,7 +31,7 @@ interface SyntenyView {
   followUnaligned: boolean
   followAnchorIndex: number
   setWidth: (n: number) => void
-  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
+  setFollowSynteny: (flag: boolean) => void
   setFollowAnchorIndex: (idx: number) => void
   showAllRegions: () => void
 }
@@ -122,7 +122,7 @@ test('the target row is left alone until following is turned on', async () => {
 
   // ...and the same anchor window moves it once the mode is on, so the hold
   // above is the mode being off rather than the pass not having run yet
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await waitFor(() => {
     expect(windowOf(target!).start).toBeGreaterThan(29500)
   }, timeout)
@@ -131,7 +131,7 @@ test('the target row is left alone until following is turned on', async () => {
 test('following sends the target row to the region that aligns to the query', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
 
@@ -149,7 +149,7 @@ test('following sends the target row to the region that aligns to the query', as
 test('the followed row tracks the anchor as it pans, rather than jumping once', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
@@ -174,7 +174,7 @@ test('the followed row tracks the anchor as it pans, rather than jumping once', 
 test('a window wider than any one alignment does not zoom the followed row in', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   // ZOOM IN FIRST. The target row opens on the whole genome, which is already
   // wider than anything asserted below — so without this the test passes on a
@@ -203,7 +203,7 @@ test('a window wider than any one alignment does not zoom the followed row in', 
 test('a whole-genome overview is a place every row can be, not just the anchor', async () => {
   const view = await openTwoContigView()
   const [anchor, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await followSettled(view.views)
 
@@ -221,7 +221,7 @@ test('a whole-genome overview is a place every row can be, not just the anchor',
 test('show all regions puts every row back on all of them while following', async () => {
   const view = await openTwoContigView()
   const [anchor, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   // zoom the stack into one locus first: ctgB's first 3kb aligns to ctgA, so
   // this is the follow doing its single-contig job and the rows sitting on
@@ -253,7 +253,7 @@ test('an overview places its rows without asking the worker anything', async () 
   const view = await openTwoContigView()
   const [anchor, target] = view.views
   const call = jest.spyOn(getSession(anchor!).rpcManager, 'call')
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await waitFor(() => {
     expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
@@ -278,7 +278,7 @@ test('an overview places its rows without asking the worker anything', async () 
 test('a row narrowed onto an unaligned stretch is still moved', async () => {
   const view = await openTwoContigView()
   const [, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await waitFor(() => {
     expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
   }, timeout)
@@ -304,7 +304,7 @@ test('a row narrowed onto an unaligned stretch is still moved', async () => {
 test('a followed row zoomed away from an overview by hand leads', async () => {
   const view = await openTwoContigView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await waitFor(() => {
     expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
   }, timeout)
@@ -333,7 +333,7 @@ test('a followed row zoomed away from an overview by hand leads', async () => {
 test('the view says when a placement was proportional rather than walked', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   // inside one alignment, and this file's rows all carry CIGARs
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
@@ -358,14 +358,14 @@ test('the view says when a placement was proportional rather than walked', async
 test('switching the mode off clears what the follow was reporting', async () => {
   const view = await openSyntenyView()
   const [query] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await query!.navToLocString('ctgA:1..49186', QUERY_ASM)
   await waitFor(() => {
     expect(view.followApproximate).toBe(true)
   }, timeout)
 
-  view.setRowSyncMode('independent')
+  view.setFollowSynteny(false)
   expect(view.followApproximate).toBe(false)
 })
 
@@ -378,7 +378,7 @@ test('switching the mode off clears what the follow was reporting', async () => 
 test('the followed row moves during a pan, not only after it settles', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   // one settled resolve, which is what caches the transform
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
@@ -412,7 +412,7 @@ test('the followed row moves during a pan, not only after it settles', async () 
 test("the row follows the alignment's scale, not one fixed ratio", async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
@@ -437,7 +437,7 @@ test("the row follows the alignment's scale, not one fixed ratio", async () => {
 test('the settle does not move a row the frame pass already placed', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
@@ -465,7 +465,7 @@ test('a followed row navigated by hand leads, and the old anchor follows it', as
   // navigation does.
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
@@ -493,7 +493,7 @@ test('a followed row navigated by hand leads, and the old anchor follows it', as
 test('an answer the follow has just applied is not resolved a second time', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
     expect(windowOf(target!).start).toBeGreaterThan(29500)
@@ -518,7 +518,7 @@ test('an answer the follow has just applied is not resolved a second time', asyn
 test('the CIGAR map is fetched once per block, not once per settle', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   // both of these windows are inside the one block covering query 26805..49184
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
@@ -563,7 +563,7 @@ test('a resolve landing after the mode is switched off does not move the row', a
       return inner(sessionId, functionName, args)
     })
 
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
     expect(release).toBeDefined()
@@ -572,7 +572,7 @@ test('a resolve landing after the mode is switched off does not move the row', a
   // resolve caches, and this one is being held open
   const held = windowOf(target!)
 
-  view.setRowSyncMode('independent')
+  view.setFollowSynteny(false)
   release!()
   await followSettled(view.views)
 
@@ -600,7 +600,7 @@ test('a resolve landing after the anchor has left every alignment does not move 
       return inner(sessionId, functionName, args)
     })
 
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
     expect(release).toBeDefined()
@@ -642,21 +642,21 @@ test('a resolve landing after the mode is toggled off and on does not move the r
       return inner(sessionId, functionName, args)
     })
 
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
     expect(releases).toHaveLength(1)
   }, timeout)
   const held = windowOf(target!)
 
-  view.setRowSyncMode('independent')
+  view.setFollowSynteny(false)
   // the same unaligned gap the test above uses, so the pass that comes back has
   // nothing of its own to place the row with — and would otherwise leave the
   // stale answer standing rather than correcting it
   await query!.navToLocString('ctgA:16100..16250', QUERY_ASM)
   await followSettled(view.views)
 
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await waitFor(() => {
     expect(view.followUnaligned).toBe(true)
   }, timeout)
@@ -678,7 +678,7 @@ test('a row the exact pass holds is not still steered by the frame pass', async 
   const { rpcManager } = getSession(query!)
   const inner = rpcManager.call.bind(rpcManager)
 
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
     expect(windowOf(target!).start).toBeGreaterThan(29500)
@@ -712,7 +712,7 @@ test('a row the exact pass holds is not still steered by the frame pass', async 
 test('anchoring the bottom row reverses which row moves', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   view.setFollowAnchorIndex(1)
 
   await target!.navToLocString('ctgA:30000..31000', TARGET_ASM)
@@ -756,7 +756,7 @@ test('following an all-vs-all track walks the CIGAR rather than scaling the bloc
   }, timeout)
 
   const [ins, volvox] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   // before the insertion: 1:1, where scaling the block would say ~27.4kb
   await ins!.navToLocString('ctgA:30000..31000', 'volvox_ins')
@@ -821,7 +821,7 @@ async function openThreeRowView() {
 test('anchoring the bottom row carries the follow up two levels', async () => {
   const view = await openThreeRowView()
   const [ins, volvox, del] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   view.setFollowAnchorIndex(2)
 
   await del!.navToLocString(
@@ -860,7 +860,7 @@ test('anchoring the bottom row carries the follow up two levels', async () => {
 test('anchoring the middle row drives both neighbours outward', async () => {
   const view = await openThreeRowView()
   const [ins, volvox, del] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   view.setFollowAnchorIndex(1)
 
   await volvox!.navToLocString(
@@ -889,7 +889,7 @@ test('anchoring the middle row drives both neighbours outward', async () => {
 // directions and reading neither, and never showed this.
 test('the frame pass does not re-run itself over an interior row', async () => {
   const view = await openThreeRowView()
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   view.setFollowAnchorIndex(0)
   await view.views[0]!.navToLocString(
     `ctgA:${INS_LOCUS}..${INS_LOCUS + 1000}`,
@@ -944,7 +944,7 @@ test('a level that can never resolve reports itself once, not once a settle', as
       return inner(sessionId, functionName, args)
     })
 
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   for (const locus of [INS_LOCUS, INS_LOCUS + 3000, INS_LOCUS + 6000]) {
     await ins!.navToLocString(`ctgA:${locus}..${locus + 1000}`, 'volvox_ins')
     // the working level placing its row is what proves the pass ran at all,
@@ -997,7 +997,7 @@ test('a swapped-assembly track holds the row rather than spinning', async () => 
   const before = windowOf(bottom!)
   const call = jest.spyOn(getSession(top!).rpcManager, 'call')
 
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
   view.setFollowAnchorIndex(0)
   await top!.navToLocString('ctgA:30000..31000', 'volvox')
   // a runaway never quiets, so this is the deadline rather than the settle —
@@ -1037,7 +1037,7 @@ test('a swapped-assembly track holds the row rather than spinning', async () => 
 test('a navigation that does not move the row is not asked for twice', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   let navs = 0
   jest.spyOn(target!, 'navToLocString').mockImplementation(async () => {
@@ -1049,7 +1049,7 @@ test('a navigation that does not move the row is not asked for twice', async () 
     // because the loop starves the timer queue — so this has to break itself,
     // and then FAIL on the count rather than hang
     if (navs > 20) {
-      view.setRowSyncMode('independent')
+      view.setFollowSynteny(false)
     }
     return true
   })
@@ -1077,7 +1077,7 @@ test('the frame pass places a two-contig row in its concatenated space', async (
     { refName: 'ctgB', start: 0, end: 6079, assemblyName: TARGET_ASM },
     { refName: 'ctgA', start: 0, end: 50001, assemblyName: TARGET_ASM },
   ])
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   let navs = 0
   jest.spyOn(target!, 'navTo').mockImplementation(() => {
@@ -1121,7 +1121,7 @@ test('following does not narrow the row it moves', async () => {
     { refName: 'ctgA', start: 0, end: 50001, assemblyName: TARGET_ASM },
   ]
   target!.setDisplayedRegions(regions)
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
@@ -1140,27 +1140,10 @@ test('following a row onto a contig it does not display still navigates', async 
   target!.setDisplayedRegions([
     { refName: 'ctgB', start: 0, end: 6079, assemblyName: TARGET_ASM },
   ])
-  view.setRowSyncMode('follow')
+  view.setFollowSynteny(true)
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
     expect(windowOf(target!).refName).toBe('ctgA')
   }, timeout)
 }, 60000)
-
-test('the two row-sync modes are mutually exclusive', async () => {
-  const view = await openSyntenyView()
-  const model = view as unknown as {
-    linkViews: boolean
-    followSynteny: boolean
-  }
-
-  view.setRowSyncMode('link')
-  expect([model.linkViews, model.followSynteny]).toEqual([true, false])
-
-  view.setRowSyncMode('follow')
-  expect([model.linkViews, model.followSynteny]).toEqual([false, true])
-
-  view.setRowSyncMode('independent')
-  expect([model.linkViews, model.followSynteny]).toEqual([false, false])
-})

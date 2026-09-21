@@ -6508,7 +6508,7 @@ export const configManifest: ConfigManifest = {
         "fadeThinAlignmentsMode",
         "launch",
         "trackSelectorType",
-        "rowSync",
+        "followSynteny",
         "sameScale",
         "followAnchorIndex",
         "diagonalizeAnchorRow",
