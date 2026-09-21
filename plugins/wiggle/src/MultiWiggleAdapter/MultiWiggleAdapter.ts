@@ -8,8 +8,8 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { SimpleFeature, createStatusFanOut } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { merge } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { firstValueFrom, merge } from 'rxjs'
+import { map, toArray } from 'rxjs/operators'
 
 import { fetchRegionRaws } from '../fetchRegionRaws.ts'
 import { getFilename } from '../util.ts'
@@ -221,36 +221,50 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     return range
   }
 
+  private sourceFeatures(
+    { source, dataAdapter }: AdapterEntry,
+    region: Region,
+    opts: WiggleOptions,
+  ) {
+    return dataAdapter.getFeatures(region, opts).pipe(
+      map(f => {
+        // Compared, not tested for presence: disambiguateSources renames a
+        // colliding entry after its subadapter was built, so a BigWigAdapter
+        // stamps the old name, and two files sharing a basename would emit
+        // every feature under one source.
+        if (f.get('source') === source) {
+          return f
+        }
+        const data = f.toJSON()
+        data.uniqueId = `${source}-${f.id()}`
+        data.source = source
+        return new SimpleFeature(data)
+      }),
+    )
+  }
+
+  // Streams each subtrack's features as they arrive, so two calls may
+  // interleave them differently; `getFeaturesArray` is the ordered list.
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const adapters = await this.getFilteredAdapters(opts.sources)
-
       merge(
-        ...adapters.map(adp => {
-          const { source, dataAdapter } = adp
-          return dataAdapter.getFeatures(region, opts).pipe(
-            map(f => {
-              // Compared, not just tested for presence: disambiguateSources
-              // renames a colliding entry AFTER its subadapter was built from
-              // the original config, so a BigWigAdapter keeps stamping the
-              // pre-disambiguation `source` slot. Two files sharing a basename
-              // would then emit every feature under one name — which is what
-              // the score-matrix clustering groups on, leaving both rows empty.
-              // BigWigAdapter normally matches on the first compare, so this
-              // still skips the wrapping in the common case.
-              if (f.get('source') === source) {
-                return f
-              }
-              // Fallback for adapters that don't set source, and rename path
-              const data = f.toJSON()
-              data.uniqueId = `${source}-${f.id()}`
-              data.source = source
-              return new SimpleFeature(data)
-            }),
-          )
-        }),
+        ...adapters.map(adp => this.sourceFeatures(adp, region, opts)),
       ).subscribe(observer)
     }, opts.signal)
+  }
+
+  // The subtracks in declared order, whichever file answers first: a click
+  // re-runs this and indexes the list by the position the first call gave
+  // the instance, so arrival order would open another file's feature.
+  public async getFeaturesArray(region: Region, opts: WiggleOptions = {}) {
+    const adapters = await this.getFilteredAdapters(opts.sources)
+    const [first = [], ...rest] = await Promise.all(
+      adapters.map(adp =>
+        firstValueFrom(this.sourceFeatures(adp, region, opts).pipe(toArray())),
+      ),
+    )
+    return first.concat(...rest)
   }
 
   // Every visible region in one call per subtrack: each subadapter is its own

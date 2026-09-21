@@ -4,6 +4,7 @@ import {
   stripBaseUris,
 } from '@jbrowse/core/util/addRelativeUris'
 import { resolveUriLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { of } from 'rxjs'
 
@@ -956,5 +957,50 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti concurrency', () =
     expect(peak()).toBeLessThanOrEqual(10)
     // and it really did run them concurrently rather than one at a time
     expect(peak()).toBeGreaterThan(1)
+  })
+})
+
+// A click re-runs the fetch and indexes the list by the position the first
+// fetch gave the instance, so two fetches of one region must list the features
+// in one order however the files' latencies fall.
+describe('MultiWiggleAdapter.getFeaturesArray order', () => {
+  it('lists the subtracks in their declared order, cold or warm', async () => {
+    const fetches = new Map<string, number>()
+    const latencyMs = (source: string, fetch: number) =>
+      source === 'slow' ? (fetch === 0 ? 30 : 0) : 10
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: ['https://example.com/slow.bw', 'https://example.com/fast.bw'],
+      }),
+      jest.fn().mockImplementation(async (conf: { source: string }) => ({
+        dataAdapter: {
+          id: conf.source,
+          getFeatures: () =>
+            ObservableCreate<Feature>(async observer => {
+              const fetch = fetches.get(conf.source) ?? 0
+              fetches.set(conf.source, fetch + 1)
+              await new Promise(res =>
+                setTimeout(res, latencyMs(conf.source, fetch)),
+              )
+              observer.next(
+                new SimpleFeature({
+                  uniqueId: conf.source,
+                  refName: 'chr1',
+                  start: 0,
+                  end: 10,
+                  score: 1,
+                  source: conf.source,
+                }),
+              )
+              observer.complete()
+            }),
+        },
+      })),
+    )
+    const region = { refName: 'chr1', start: 0, end: 100, assemblyName: 'a' }
+    const cold = await adapter.getFeaturesArray(region)
+    const warm = await adapter.getFeaturesArray(region)
+    expect(warm.map(f => f.id())).toEqual(cold.map(f => f.id()))
+    expect(cold.map(f => f.id())).toEqual(['slow', 'fast'])
   })
 })
