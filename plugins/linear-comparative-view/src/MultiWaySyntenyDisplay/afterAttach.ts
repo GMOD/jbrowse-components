@@ -31,6 +31,7 @@ interface MultiWayFetchArgs {
   regions: FetchRegion[]
   lodTier: LodTier
   haplotypes: string[] | undefined
+  anchor: string
 }
 
 const DEPENDENT_FETCH_DELAY = 500
@@ -59,6 +60,7 @@ function fetchPhases(
             regions,
             lodTier: self.lodTier,
             haplotypes: self.fetchLaneSelection,
+            anchor: self.anchorAssemblyName,
           }
         : undefined
     },
@@ -93,8 +95,8 @@ function fetchPhases(
         }),
         r => r.id(),
       ),
-    commit: features => {
-      self.setFeatures(features)
+    commit: (features, { anchor }) => {
+      self.setFeatures(features, anchor)
     },
   }
 }

@@ -203,8 +203,11 @@ export function stateModelFactory(
     .volatile(() => ({
       /**
        * #volatile
+       * the ortholog fetch's answer beside the anchor assembly it asked for
        */
-      features: undefined as Feature[] | undefined,
+      fetchedFeatures: undefined as
+        | { anchor: string; features: Feature[] }
+        | undefined,
       /**
        * #volatile
        * per ribbon channel, the span or labels every fetch since the ribbon
@@ -323,9 +326,12 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setFeatures(f: Feature[]) {
-          self.features = f
-          observeRibbonFeatures(f)
+        setFeatures(
+          features: Feature[],
+          anchor: string = containingLgv(self).assemblyNames[0]!,
+        ) {
+          self.fetchedFeatures = { anchor, features }
+          observeRibbonFeatures(features)
           dropDirectLinkClick()
         },
         /**
@@ -437,7 +443,7 @@ export function stateModelFactory(
           // the way back from a label order or a span one window fixed: the
           // ribbons re-key from the features in hand
           self.seenAttributeRanges = {}
-          observeRibbonFeatures(self.features ?? [])
+          observeRibbonFeatures(self.fetchedFeatures?.features ?? [])
           for (const { links } of self.laneLinks?.values() ?? []) {
             observeRibbonFeatures(links)
           }
@@ -483,6 +489,23 @@ export function stateModelFactory(
        */
       get lgv() {
         return containingLgv(self)
+      },
+      /**
+       * #getter
+       * the fetched features while the view is on the anchor they were
+       * fetched for; another genome's groups read as absent, so no settle
+       * decides a lane from them
+       */
+      get features() {
+        const held = self.fetchedFeatures
+        return held &&
+          isSameAssemblyName(
+            held.anchor,
+            this.lgv.assemblyNames[0],
+            getSession(self).assemblyManager,
+          )
+          ? held.features
+          : undefined
       },
       /**
        * #getter
