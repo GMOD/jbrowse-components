@@ -128,3 +128,7 @@ is the Edit as JSON counterpart, the colour as written.
   sits on everywhere in a config; a channel is not a scale.
 - **A `scheme` enum per display.** One table makes a scheme a display cannot
   bake unspellable; a per-display enum would restate it.
+- **`domain: [min, max]` under a linear colour scale**, Vega-Lite's spelling.
+  It brings back two spellings of one pin and a precedence rule between them,
+  where `scales.y` has one. The trap it answers, a `domain` written under a
+  ramp, is reported instead: `ramp-domain` in display-kit's `colorProblems`.

@@ -146,3 +146,6 @@ retired `methylation`, `stranded` and `insertSizeGradient` names now resolve.
   `Feature[]` a step would read at 4.23x the hand path.
 - **An insert-size gradient under `scale: 'linear'`.** Retired once as
   `insertSizeGradient`; `pinnedInsertSizeBand` holds the reason.
+- **Renaming the runtime scheme names to the field names.** The shader takes
+  the scheme as an integer, so no hot path gains, and `ReadColorBy`'s parsed
+  tag form is worth keeping.

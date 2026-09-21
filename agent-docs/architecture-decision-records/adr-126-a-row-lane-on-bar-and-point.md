@@ -90,6 +90,13 @@ the multi-row xyplot a user picking the display from the menu expects.
 - The per-row axis draws only where a band clears `COMPACT_AXIS_HEIGHT`, as
   the multi-wiggle display's does; a track of forty sources at the default
   height shows the bands and the chips and no ticks.
+- Every bar and point packs the row word, banded or not. A rowless pass per
+  shape, asking for the row lane only where a mark bands, is built on branch
+  `lane-split-on-lazy-shaders` (`db22edd79c`): 4 bytes an instance less, and a
+  rowless pack in 0.82-0.93x the time at 500,000 features. It adds 14,173
+  bytes of layout modules to each registry realm while those modules are
+  eager, so it waits on making them lazy. Its shape table landed alone as
+  `shapeSpecs.ts`.
 
 ## Rejected alternatives
 
