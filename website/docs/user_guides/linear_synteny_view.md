@@ -331,29 +331,26 @@ file; turning it off drops both the query and the marks.
 A run less than half as wide as its own name goes unlabelled, which at
 whole-chromosome zoom is most of them. Hover any mark and it names the contig it
 points at, how much sequence on this band goes there and in how many alignments.
-Marks stack into a column at whole-genome zoom, and a pointer over one answers
-with the longest alignment in it, which is the alignment a click then follows.
+Marks stack into a column at whole-genome zoom, and a pointer over one names the
+contig painted on top there. The hover also says where a click will go, as
+"Click to show" and the locus.
 
-Clicking a mark shows that mate on the facing panel. A contig the panel is
-already displaying is scrolled to, so the rest of what it was showing stays.
-That matters most in a stack of whole genomes, where replacing the panel's
-regions would throw away every other chromosome. A contig it is not displaying
-is added to the panel's regions, and the click navigates to the mate's own locus
-rather than to the whole contig, close enough to show the alignments the mark
-stands for. The window is widened around that locus, to at least 20kb and a
-little past its ends, so a single small anchor arrives with context around it to
-place the alignment against. The click turns those marks into ribbons, and the
-hover says which of the two it will do beforehand. Right-clicking a mark offers
-the same navigation and copies the contig's name.
+Clicking a mark shows that contig's alignments under the pointer on the facing
+panel. Where the facing panel already draws that stretch, the click scrolls
+there, and zooms out to frame it if it is wider than the panel. Otherwise the
+click adds the mate to the panel's regions without removing any. A contig the
+panel lacks is appended, and a contig the panel shows slices of gains a new
+slice beside the one nearest the mate. The panel then zooms to the mate's own
+locus, widened to at least 20kb and a little past its ends, so a single small
+anchor arrives with context around it. Right-clicking a mark offers the same
+navigation and copies the contig's name.
 
 Either way the click raises a notification carrying an **Undo** that puts back
-the row's regions, its zoom and its scroll position. The replacing kind discards
-a region list that may have been built over several navigations, and even a
-scroll is worth being able to take back. If the rows are following each other
-and the one clicked was not the anchor, the click also makes it the anchor,
-since the follow would otherwise pull the row straight back off the contig it
-was just sent to, and the notification says so. That undo restores the previous
-anchor too.
+the row's regions, its zoom and its scroll position. If the rows are following
+each other and the one clicked was not the anchor, the click also makes it the
+anchor, since the follow would otherwise pull the row straight back off the
+contig it was just sent to, and the notification says so. That undo restores the
+previous anchor too.
 
 <Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. The grey marks along the band's top edge are peach alignments whose grape end is on a chromosome the lower panel is not showing, and a labelled run names that chromosome. Most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
 
