@@ -61,7 +61,7 @@ alone — one scale per aesthetic, owned by the plot.
 | `numStdDev` | `localsd` is a mode | 3 | — | 3 | 3 |
 | `numQuantile` | `localpercentile` is a mode | 0.99 | — | — | 0.99 |
 | `symlogConstant` | `symlog` is a type | 0 | — | 1 | — |
-| `rules` | the factory is given `rules: { color }` | none, a rule drawn grey | — | — | none, a rule drawn grey |
+| `rules` | the factory is given `rules: true` | none | none | — | none |
 | `title` | the factory is given `title: true` | — | — | — | unset, which derives the shared `encoding.y` field |
 
 `numStdDev` and `numQuantile` gate on the modes rather than on `autoscale`
@@ -138,7 +138,8 @@ statement about the others. The config editor's own `setSubschema` is untouched
 ## Consequences
 
 - One object on five displays, in one place, with the members each of them
-  actually reads. Manhattan publishes two scale members rather than five;
+  actually reads. Manhattan publishes its two ends and its rules rather than
+  five members;
   the coverage band publishes the same names as everything else.
 - **No migration.** A config or session still saying `scaleType: 'log'`,
   `minScore`, `autoscale` or `numQuantile` at the display level loses it
@@ -165,10 +166,9 @@ statement about the others. The config editor's own `setSubschema` is untouched
 
 The factory takes two more opt-ins, `rules` and `title`, present only where a
 display passes them, for the reason `autoscale` is: a slot a display does not
-read is a dead slot. `rules: { color }` adds an array of
-`{ value, color, label }`, a bare number standing for `{ value }`, and names
-what a rule with no colour of its own is drawn in; `title: true` adds the axis
-caption. The members table above carries which display takes which.
+read is a dead slot. `rules: true` adds an array of `{ value, color, label }`,
+a bare number standing for `{ value }`; `title: true` adds the axis caption.
+The members table above carries which display takes which.
 
 - **`rules` is a typed sub-schema array, never `frozen`**, for
   [ADR-107](adr-107-the-quantitative-class-is-authored-in-config.md)'s reason:
@@ -197,6 +197,18 @@ caption. The members table above carries which display takes which.
   placed its rules in the whole-track box; placed per scale in the band's own
   box, a rule is drawn in every row. Density still draws none and widens to
   none, its domain being a colour ramp's.
+- **Manhattan's `significanceLine` is a rule too.** The slot made one line in
+  one red out of a number, beside a list that makes any number of lines. As
+  `scales.y.rules` a scan read against two thresholds, suggestive and
+  genome-wide, names both, and the Reference lines row in the score menu
+  replaced its own dialog.
+- **A rule's `color` is a `maybeColor`, unset by default.** Each display once
+  named the colour its rules default to, while the chrome already painted a rule
+  naming none in its own grey; the slot default defeated that fallback, and it
+  let a display assign a meaning to every line an author drew — Manhattan's red
+  said "significance" even of a suggestive line. Unset, a rule draws in the one
+  colour the chrome rules every plot in, and a red threshold is its author's
+  claim, written in the config.
 - **`title` is the `caption` ADR-109 gave `ValueScale`, in three states.** It
   is a `maybeString` slot, a slot type this change adds beside `maybeNumber`
   and `maybeColor`: unset derives, some text is that text, and `""` is an axis
@@ -205,8 +217,7 @@ caption. The members table above carries which display takes which.
   [ADR-146](adr-146-null-is-the-json-spelling-of-a-slot-reset.md) reads it as
   a reset. The config editor drives it with the text field and its reset
   button, the JSON schema types it `string | jexl`, the docs generator links
-  it to the `maybe*` section of the slot-types guide, and
-  `ConfigSlotDefaults` snapshots it with no default. The mark display's
+  it to the `maybe*` section of the slot-types guide. The mark display's
   derivation is the `encoding.y` field every mark drawing a value at the
   view's zoom shares, so a multiscale pair reads `score` at one zoom and
   `count` at the other; marks naming two fields, a `jexl:` y, and the density

@@ -189,7 +189,7 @@ echo
 echo "windows scored: $(gzip -dc "$OUTBED.gz" | wc -l)"
 # A scan has no p-value, so "how high is high" is empirical: these are the
 # quantiles of the scan's own windows. The 99.9th is what the published figure
-# draws as its significanceLine, and re-running this is how to re-derive it
+# draws as its reference line, and re-running this is how to re-derive it
 # rather than trust the number written into the spec.
 echo
 echo "empirical Fst quantiles over the scored windows:"

@@ -28,8 +28,7 @@ describe('scoreRuleMarks', () => {
     expect(mark!.label).toBe('2 copies')
   })
 
-  // Carried over from GWAS's significanceLine, which this replaced: the ends of
-  // the domain have to reach the ends of the plot box, and the bottom one is
+  // The ends of the domain reach the ends of the plot box, and the bottom one is
   // clamped a stroke inside the axis the same way a tick is, so a rule at the
   // domain minimum cannot render half outside the plot.
   test('puts the domain ends at the plot box ends', () => {
