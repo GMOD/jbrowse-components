@@ -76,6 +76,7 @@ import {
   clipGroupToAnchor,
   groupFeatures,
   laneFetchRegion,
+  mergeContiguousRegions,
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
@@ -1217,12 +1218,14 @@ export function stateModelFactory(
         const specs: LaneGenesFetchSpec[] = []
         if (view.initialized) {
           const anchorAdapter = adapters.get(self.anchorAssemblyName)
-          const regions = view.staticBlocks.contentBlocks.map(block => ({
-            assemblyName: self.anchorAssemblyName,
-            refName: block.refName,
-            start: Math.max(0, Math.floor(block.start)),
-            end: Math.ceil(block.end),
-          }))
+          const regions = mergeContiguousRegions(
+            view.staticBlocks.contentBlocks.map(block => ({
+              assemblyName: self.anchorAssemblyName,
+              refName: block.refName,
+              start: Math.max(0, block.start),
+              end: block.end,
+            })),
+          )
           if (anchorAdapter && regions.length) {
             specs.push({
               lane: self.anchorAssemblyName,
