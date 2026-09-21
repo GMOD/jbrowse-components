@@ -8,13 +8,14 @@ import {
 
 import { JEXL_PREFIX, ensureJexlPrefix, isJexl } from './jexlStrings.ts'
 
-import type { AstNode, Condition, Subject } from '@jbrowse/jexl'
+import type { AstNode, Condition, Scalar, Subject } from '@jbrowse/jexl'
 
 export type JexlFilterFieldType = 'number' | 'text' | 'flag'
 
 export type JexlFilterField = {
   label: string
-  type: JexlFilterFieldType
+  /** unset for a field whose values may be numbers or text */
+  type?: JexlFilterFieldType
   group?: string
   description?: string
   /** holds several values per feature, so a comparison asks whether any does */
@@ -25,7 +26,7 @@ export type JexlFilterField = {
 export interface FieldChoice {
   key: string
   label: string
-  type: JexlFilterFieldType
+  type?: JexlFilterFieldType
   subject: Subject
   group?: string
   description?: string
@@ -46,7 +47,7 @@ export type RowOp =
   | '!set'
 
 export const OPERATORS: Record<
-  JexlFilterFieldType,
+  JexlFilterFieldType | 'any',
   { op: RowOp; label: string }[]
 > = {
   number: [
@@ -66,6 +67,16 @@ export const OPERATORS: Record<
   flag: [
     { op: 'set', label: 'is set' },
     { op: '!set', label: 'is not set' },
+  ],
+  any: [
+    { op: '==', label: 'is' },
+    { op: '!=', label: 'is not' },
+    { op: '>', label: '>' },
+    { op: '>=', label: '≥' },
+    { op: '<', label: '<' },
+    { op: '<=', label: '≤' },
+    { op: 'in', label: 'is one of' },
+    { op: '~', label: 'matches' },
   ],
 }
 
@@ -134,11 +145,20 @@ export function resolveFields(fields: readonly JexlFilterField[]) {
 /** A field typed into the picker rather than chosen, read as a dotted path. */
 export function typedField(text: string): FieldChoice {
   const subject = pathSubject(ROW, text.split('.'))
-  return { key: subjectKey(subject), label: text, type: 'text', subject }
+  return { key: subjectKey(subject), label: text, subject }
 }
 
 export function stripJexlPrefix(line: string) {
   return isJexl(line) ? line.slice(JEXL_PREFIX.length) : line
+}
+
+/** A field of no known type writes a value that reads as a number as one. */
+function scalar(type: JexlFilterFieldType | undefined, text: string) {
+  const number = Number(text)
+  return type === 'number' ||
+    (!type && text.trim() !== '' && Number.isFinite(number))
+    ? number
+    : text
 }
 
 function subjectLabel(subject: Subject) {
@@ -162,28 +182,24 @@ function conditionRow(
   const field = choices.find(f => f.key === key) ?? {
     key,
     label: subjectLabel(c.subject),
-    type:
-      value === undefined
-        ? 'flag'
-        : typeof value === 'number' || ['<', '<=', '>', '>='].includes(c.op)
-          ? 'number'
-          : 'text',
+    type: value === undefined ? 'flag' : undefined,
     subject: c.subject,
   }
   const op = c.op as RowOp
-  const want = field.type === 'number' ? 'number' : 'string'
-  const row = { kind: 'condition', id, line, field, op } as const
-  return !OPERATORS[field.type].some(o => o.op === op)
-    ? undefined
-    : value === undefined
-      ? { ...row, value: '' }
-      : Array.isArray(value)
-        ? value.every(v => typeof v === want)
-          ? { ...row, value: value.map(String) }
-          : undefined
-        : typeof value === want
-          ? { ...row, value: String(value) }
-          : undefined
+  const values = value === undefined ? [] : [value].flat()
+  const writesBack = (v: Scalar) =>
+    op === '~' ? typeof v === 'string' : scalar(field.type, String(v)) === v
+  return OPERATORS[field.type ?? 'any'].some(o => o.op === op) &&
+    values.every(writesBack)
+    ? {
+        kind: 'condition',
+        id,
+        line,
+        field,
+        op,
+        value: Array.isArray(value) ? value.map(String) : String(value ?? ''),
+      }
+    : undefined
 }
 
 function parseConditions(text: string, parser: Parser, calls: string[]) {
@@ -259,7 +275,7 @@ export function removeRow(state: FilterRows, id: number): FilterRows {
 
 export function withField(row: ConditionRow, field: FieldChoice): ConditionRow {
   const sameType = row.field?.type === field.type
-  const ops = OPERATORS[field.type]
+  const ops = OPERATORS[field.type ?? 'any']
   return {
     ...row,
     field,
@@ -291,7 +307,6 @@ function writeCondition({ field, op, value }: ConditionRow) {
     return undefined
   }
   const { subject, type } = field
-  const scalar = (v: string) => (type === 'number' ? Number(v) : v)
   const usable = (v: string) =>
     v.trim() !== '' && (type !== 'number' || Number.isFinite(Number(v)))
   if (op === 'set' || op === '!set') {
@@ -300,7 +315,11 @@ function writeCondition({ field, op, value }: ConditionRow) {
   if (op === 'in') {
     const list = [value].flat().filter(usable)
     return list.length > 0
-      ? printCondition({ subject, op, value: list.map(scalar) })
+      ? printCondition({
+          subject,
+          op,
+          value: list.map(v => scalar(type, v)),
+        })
       : undefined
   }
   const text = [value].flat()[0] ?? ''
@@ -308,7 +327,7 @@ function writeCondition({ field, op, value }: ConditionRow) {
     ? undefined
     : op === '~'
       ? printCondition({ subject, op, value: text })
-      : printCondition({ subject, op, value: scalar(text) })
+      : printCondition({ subject, op, value: scalar(type, text) })
 }
 
 function writeRow(row: FilterRow) {

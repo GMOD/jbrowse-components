@@ -198,7 +198,7 @@ export function ConditionRowEditor({
           onChange(withOp(row, event.target.value as RowOp))
         }}
       >
-        {OPERATORS[field?.type ?? 'text'].map(({ op, label }) => (
+        {OPERATORS[field?.type ?? 'any'].map(({ op, label }) => (
           <MenuItem key={op} value={op}>
             {label}
           </MenuItem>

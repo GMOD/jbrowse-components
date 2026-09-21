@@ -130,3 +130,31 @@ test('waits for fields supplied as a promise', async () => {
   })
   expect(screen.getByDisplayValue('QUAL')).toBeInTheDocument()
 })
+
+test('a typed field takes a numeric operator and writes a number', () => {
+  const { display } = setup()
+  fireEvent.click(screen.getByRole('button', { name: 'Add condition' }))
+  const field = screen.getAllByPlaceholderText('Field').at(-1)!
+  fireEvent.change(field, { target: { value: 'AF' } })
+  fireEvent.blur(field)
+  fireEvent.mouseDown(screen.getAllByText('is').at(-1)!)
+  expect(screen.getAllByRole('option').map(o => o.textContent)).toEqual([
+    'is',
+    'is not',
+    '>',
+    '≥',
+    '<',
+    '≤',
+    'is one of',
+    'matches',
+  ])
+  fireEvent.click(screen.getByRole('option', { name: '≥' }))
+  fireEvent.change(screen.getAllByPlaceholderText('Value').at(-1)!, {
+    target: { value: '0.001' },
+  })
+  apply()
+  expect(display.jexlFiltersSetting).toEqual([
+    ...STORED,
+    'jexl:feature.AF >= 0.001',
+  ])
+})

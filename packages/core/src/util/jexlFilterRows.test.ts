@@ -114,12 +114,82 @@ test('an edited text row is written with the prefix', () => {
   ).toEqual(['jexl:nAlt(feature) == 1'])
 })
 
-test('a field outside the list shows as its path', () => {
+test('a field outside the list shows as its path, of no known type', () => {
   const state = read(['jexl:feature.INFO.AF[0] > 0.1'])
-  expect(conditionAt(state, 0).field).toMatchObject({
-    label: 'INFO.AF[0]',
-    type: 'number',
-  })
+  expect(conditionAt(state, 0).field).toMatchObject({ label: 'INFO.AF[0]' })
+  expect(conditionAt(state, 0).field?.type).toBeUndefined()
+})
+
+const generic = resolveFields([
+  { label: 'name', path: ['name'], type: 'text' },
+  { label: 'score', path: ['score'], type: 'number' },
+  { label: 'annot', path: ['annot'], description: 'consequence class' },
+])
+
+function rowsOf(state: FilterRows) {
+  return state.rows.map(row =>
+    row.kind === 'condition' ? [row.field?.label, row.op, row.value] : row.text,
+  )
+}
+
+test('columns of a feature track read back as rows', () => {
+  expect(
+    rowsOf(
+      readFilterRows(
+        [
+          'jexl:feature.AF >= 0.001',
+          "jexl:feature.annot == 'pLoF'",
+          "jexl:get(feature,'score') > 400",
+          "jexl:feature.AF < 0.5 && feature.annot in ['pLoF', 'missense']",
+        ],
+        jexl,
+        generic,
+      ),
+    ),
+  ).toEqual([
+    ['AF', '>=', '0.001'],
+    ['annot', '==', 'pLoF'],
+    ['score', '>', '400'],
+    ['AF', '<', '0.5'],
+    ['annot', 'in', ['pLoF', 'missense']],
+  ])
+})
+
+test('a value of no known type reads back only as it would be written', () => {
+  expect(
+    readFilterRows(
+      ["jexl:feature.chr == '1'", "jexl:feature.AF >= '0.001'"],
+      jexl,
+      generic,
+    ).rows.map(row => row.kind),
+  ).toEqual(['text', 'text'])
+})
+
+test('a field of no known type writes numbers as numbers', () => {
+  const af = withField(
+    { kind: 'condition', id: 0, op: '==', value: '' },
+    typedField('AF'),
+  )
+  const annot = withField({ ...af, id: 1 }, generic[2]!)
+  expect(annot.field?.description).toBe('consequence class')
+  expect(
+    writeFilterRows({
+      lines: [],
+      rows: [
+        { ...af, op: '>=', value: '0.001' },
+        { ...annot, value: 'pLoF' },
+        { ...annot, id: 2, op: 'in', value: ['pLoF', '1'] },
+        { ...annot, id: 3, op: '~', value: '5' },
+        { ...af, id: 4, op: '>', value: 'abc' },
+      ],
+    }),
+  ).toEqual([
+    'jexl:feature.AF >= 0.001',
+    "jexl:feature.annot == 'pLoF'",
+    "jexl:feature.annot in ['pLoF', 1]",
+    "jexl:feature.annot ~ '5'",
+    "jexl:feature.AF > 'abc'",
+  ])
 })
 
 test('a new row is written once complete', () => {
