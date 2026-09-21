@@ -260,6 +260,7 @@ export function encodeFeatures<L extends LaneName>(
   let yMin = Infinity
   let yMax = -Infinity
   let count = 0
+  let skippedPosition = 0
 
   const colorEncoding = encoding.color ?? DEFAULT_MARK_COLOR
   const declaredScale =
@@ -341,6 +342,9 @@ export function encodeFeatures<L extends LaneName>(
     const x2v = numericValue(readX2(f))
     const yv = readY ? numericValue(readY(f)) : 0
     if (!Number.isFinite(xv) || !Number.isFinite(x2v) || !Number.isFinite(yv)) {
+      if (!Number.isFinite(xv) || !Number.isFinite(x2v)) {
+        skippedPosition++
+      }
       continue
     }
     x[count] = xv
@@ -475,6 +479,7 @@ export function encodeFeatures<L extends LaneName>(
   const encoded: EncodedChannels = {
     count,
     skipped: n - count,
+    skippedPosition,
     x: x.subarray(0, count),
     x2: x2.subarray(0, count),
     featureIndex: featureIndex.subarray(0, count),

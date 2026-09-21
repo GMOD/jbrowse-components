@@ -28,6 +28,7 @@ export interface MarkTooltipModel {
   markShapes: MarkShapeName[]
   legendSections: MarkLegendSection[]
   facetLayout: FacetLayout
+  coarseTierStandsIn: boolean
 }
 
 /** One channel of the hovered mark: what it was read from, and what it says. */
@@ -129,18 +130,25 @@ function rowRow(
 /**
  * Every channel the hovered mark encodes, each off the hovered instance: the
  * value channel, then colour, glyph and the band, so a reader sees the fields
- * the plot was drawn from rather than the two it happens to print.
+ * the plot was drawn from rather than the two it happens to print. A bin of
+ * the density sidecar standing in is the sidecar's level, whatever field the
+ * mark names.
  */
 function markTooltipRows(
   hit: MarkHitInfo,
   encoding: MarkEncoding | undefined,
   sections: MarkLegendSection[],
   facetLayout: FacetLayout,
+  sidecar: boolean,
 ): ChannelRow[] {
   const { y } = hit
   return [
     y !== undefined && encoding?.y
-      ? { channel: 'y', field: channelName(encoding.y), value: toP(y, 4) }
+      ? {
+          channel: 'y',
+          field: sidecar ? 'density sidecar' : channelName(encoding.y),
+          value: toP(y, 4),
+        }
       : undefined,
     colorRow(hit, encoding, sections),
     glyphRow(hit, encoding, sections),
@@ -166,6 +174,7 @@ const MarkTooltip = observer(function MarkTooltip({
             encodings[hit.markIndex],
             legendSections,
             model.facetLayout,
+            model.coarseTierStandsIn,
           ).map(({ channel, field, value, swatch }) => (
             <div key={channel}>
               {swatch ? (

@@ -208,6 +208,31 @@ function pairOf(
     : [...fallback]
 }
 
+// The field a position lane's number came from: the one a `bin` read where
+// the bin wrote the lane's field, since the bin writes NaN edges for a feature
+// lacking it, and the lane's own field where a later step made it anew.
+function positionSource(
+  steps: readonly MarkTransformStepConfig[],
+  field: string,
+): string {
+  for (const step of steps.toReversed()) {
+    if (
+      step.type === 'bin' &&
+      pairOf(step.as, DEFAULT_BIN_AS).includes(field)
+    ) {
+      return step.field
+    }
+    if (
+      step.type === 'coverage' ||
+      step.type === 'flatten' ||
+      (step.type === 'formula' && step.as === field)
+    ) {
+      return field
+    }
+  }
+  return field
+}
+
 // A step list as the worker's, every slot written out so a slot left at its
 // default and one written at it are one fetch, and an `auto` bin resolved at
 // `bpPerPx`.
@@ -970,18 +995,29 @@ export function stateModelFactory(
       /**
        * #getter
        * What the worker left out of the loaded regions — a feature whose
-       * `y` field read as missing or not a number — for the corner notice.
+       * position or `y` read as missing or not a number — for the corner
+       * notice, naming the field a binned position came from.
        */
       get skippedFeatures(): SkippedFeatures {
         const { encodings } = self
         const { visible } = self.markView
+        const shared = self.conf.transform
+        const positionFields = self.conf.marks.map((m, i) => {
+          const steps = [...shared, ...m.transform]
+          const { x = 'start', x2 = 'end' } = encodings[i] ?? {}
+          return [
+            ...new Set([positionSource(steps, x), positionSource(steps, x2)]),
+          ]
+        })
         return skippedFeatures(
           [...self.rpcDataMap.values()].map(d =>
             d.layers
               .map((layer, i) => ({
                 count: layer.count,
                 skipped: layer.skipped,
+                skippedPosition: layer.skippedPosition,
                 field: encodings[i]?.y,
+                positionFields: positionFields[i],
               }))
               .filter((_, i) => visible[i]),
           ),

@@ -41,6 +41,7 @@ async function tooltip(model: Partial<MarkTooltipModel>) {
         markShapes: ['bar'],
         legendSections: [],
         facetLayout: NO_FACET,
+        coarseTierStandsIn: false,
         ...model,
       }}
       mouseState={at}
@@ -75,6 +76,18 @@ test('a point reads its glyph scale, naming the category the plot drew', async (
   expect(box.textContent).toContain('score: 7')
   expect(box.textContent).toContain('svtype: DEL')
   expect(box.textContent).toContain('point')
+})
+
+// The sidecar's bins are drawn through the density mark's `y`, but their
+// value is the sidecar's level, not that field's.
+test('a density sidecar bin names the sidecar, not the field it stands in for', async () => {
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, y: 17 },
+    encodings: [{ y: 'count' }],
+    coarseTierStandsIn: true,
+  })
+  expect(box.textContent).toContain('density sidecar: 17')
+  expect(box.textContent).not.toContain('count')
 })
 
 test('a span stacked by a transform names the band it stands in', async () => {

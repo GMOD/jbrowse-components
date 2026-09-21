@@ -217,6 +217,12 @@ export interface EncodedChannels {
    * reads this beside `count` to say so.
    */
   skipped: number
+  /**
+   * Of `skipped`, the features whose `x` or `x2` read no number, such as
+   * the edges a `bin` writes for a feature lacking its field. Absent where
+   * the layer placed nothing by a field, as the density sidecar's does.
+   */
+  skippedPosition?: number
   x: Uint32Array
   x2: Uint32Array
   featureIndex: Uint32Array

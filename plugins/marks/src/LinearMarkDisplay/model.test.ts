@@ -7,8 +7,13 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
-import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
+import {
+  DEFAULT_MARK_COLOR,
+  encodeFeatures,
+} from '@jbrowse/core/util/markEncoding'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
 import { isArrayType, isType } from '@jbrowse/mobx-state-tree'
@@ -2019,5 +2024,51 @@ test('a color or glyph naming a field and no scale reads it categorically, a ran
     field: 'score',
     scale: 'categorical',
     range: ['white', 'red'],
+  })
+})
+
+// A bin writes a missing field's edges as NaN, so the aggregate's group
+// behind it has no position and the encoder skips it: the notice has to
+// name the field the bin read, not the `y` every group has.
+test('a feature skipped for its position names the field the bin could not read', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'bar',
+      transform: [
+        { type: 'bin', field: 'INFO.AF', step: 0.1 },
+        { type: 'aggregate', ops: [{ op: 'count' }] },
+      ],
+      encoding: { y: 'count' },
+    },
+  ])
+  const { display } = createDisplay()
+  const features = [0.25, 0.35, undefined].map(
+    (af, i) =>
+      new SimpleFeature({
+        uniqueId: `v${i}`,
+        refName: 'ctgA',
+        start: i * 10,
+        end: i * 10 + 1,
+        INFO: af === undefined ? {} : { AF: [af] },
+      }),
+  )
+  const [request] = display.layerRequests
+  display.setRpcData(
+    0,
+    {
+      layers: [
+        encodeFeatures(
+          runTransforms(features, request!.transform!),
+          request!.encoding,
+          request!.lanes,
+        ),
+      ],
+    },
+    REGION,
+  )
+  expect(display.skippedFeatures).toEqual({
+    skipped: 1,
+    total: 3,
+    fields: ['INFO.AF'],
   })
 })
