@@ -8,6 +8,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./ChromeHighlight",
   "./ChromeLegend",
   "./CoarseTierMixin",
+  "./ConfigProblemsIndicator",
   "./ContextMenuMixin",
   "./DensityTierMixin",
   "./DisplayBackgroundProgress",
