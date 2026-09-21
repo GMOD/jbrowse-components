@@ -1,7 +1,6 @@
 import { decideSpread, partialShare, spreadCoverage } from './spreadDecision.ts'
 
-import type { FollowWindow } from './followAnchorWindow.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { AnchorWindow } from './followAnchorWindow.ts'
 import type { Region } from '@jbrowse/core/util/types'
 
 // Nine chromosomes of a megabase, so the gap between two answers is countable
@@ -13,32 +12,19 @@ const regions: Region[] = Array.from({ length: 9 }, (_, i) => ({
   assemblyName: 'a',
 }))
 
-function block(refName: string, widthPx: number): ContentBlock {
-  return {
-    type: 'ContentBlock',
-    key: refName,
-    offsetPx: 0,
-    widthPx,
-    assemblyName: 'a',
-    refName,
-    start: 0,
-    end: CONTIG,
-  }
-}
-
-const win = (refName: string, start: number, end: number): FollowWindow => ({
-  refName,
-  start,
-  end,
-})
+const win = (
+  refName: string,
+  start: number,
+  end: number,
+  widthPx: number,
+): AnchorWindow => ({ refName, start, end, widthPx })
 
 describe('whole contigs against cut ones', () => {
   test('an overview is whole contigs, so nothing is partial', () => {
     expect(
       partialShare({
-        blocks: [block('chr1', 400), block('chr2', 400)],
         regions,
-        windows: [win('chr1', 0, CONTIG), win('chr2', 0, CONTIG)],
+        windows: [win('chr1', 0, CONTIG, 400), win('chr2', 0, CONTIG, 400)],
       }),
     ).toBe(0)
   })
@@ -49,9 +35,8 @@ describe('whole contigs against cut ones', () => {
   test('a contig a rounding short of its end is still whole', () => {
     expect(
       partialShare({
-        blocks: [block('chr1', 800)],
         regions,
-        windows: [win('chr1', 0, CONTIG - 2)],
+        windows: [win('chr1', 0, CONTIG - 2, 800)],
       }),
     ).toBe(0)
   })
@@ -59,9 +44,11 @@ describe('whole contigs against cut ones', () => {
   test('a junction straddle is partial on both sides', () => {
     expect(
       partialShare({
-        blocks: [block('chr1', 1331), block('chr2', 657)],
         regions,
-        windows: [win('chr1', 900_000, CONTIG), win('chr2', 0, 100_000)],
+        windows: [
+          win('chr1', 900_000, CONTIG, 1331),
+          win('chr2', 0, 100_000, 657),
+        ],
       }),
     ).toBe(1)
   })
@@ -71,18 +58,12 @@ describe('whole contigs against cut ones', () => {
   test('the two contigs an overview cuts do not carry it over the floor', () => {
     expect(
       partialShare({
-        blocks: [
-          block('chr1', 100),
-          block('chr2', 400),
-          block('chr3', 400),
-          block('chr4', 100),
-        ],
         regions,
         windows: [
-          win('chr1', 500_000, CONTIG),
-          win('chr2', 0, CONTIG),
-          win('chr3', 0, CONTIG),
-          win('chr4', 0, 500_000),
+          win('chr1', 500_000, CONTIG, 100),
+          win('chr2', 0, CONTIG, 400),
+          win('chr3', 0, CONTIG, 400),
+          win('chr4', 0, 500_000, 100),
         ],
       }),
     ).toBeLessThan(0.5)
@@ -125,10 +106,9 @@ const answered = (...refNames: string[]) =>
 
 describe('the decision', () => {
   const straddle = {
-    blocks: [block('chr1', 1331), block('chr2', 657)],
     stayingRegions: regions,
     movingRegions: regions,
-    windows: [win('chr1', 900_000, CONTIG), win('chr2', 0, 100_000)],
+    windows: [win('chr1', 900_000, CONTIG, 1331), win('chr2', 0, 100_000, 657)],
     mapped: answered('chr1', 'chr2'),
   }
 
@@ -162,10 +142,9 @@ describe('the decision', () => {
   test('an overview is never refused, however little of it is answer', () => {
     expect(
       decideSpread({
-        blocks: [block('chr1', 400), block('chr9', 400)],
         stayingRegions: regions,
         movingRegions: regions,
-        windows: [win('chr1', 0, CONTIG), win('chr9', 0, CONTIG)],
+        windows: [win('chr1', 0, CONTIG, 400), win('chr9', 0, CONTIG, 400)],
         mapped: answered('chr1', 'chr9'),
         spans: [
           { refName: 'chr1', start: 0, end: 100_000 },
@@ -225,7 +204,10 @@ describe('the decision', () => {
       expect(
         decideSpread({
           ...straddle,
-          blocks: [block('chr1', 980), block('chr2', 1008)],
+          windows: [
+            win('chr1', 900_000, CONTIG, 980),
+            win('chr2', 0, 100_000, 1008),
+          ],
           spans: [
             { refName: 'chr1', start: 0, end: CONTIG },
             { refName: 'chr9', start: 0, end: CONTIG },
@@ -239,7 +221,10 @@ describe('the decision', () => {
       expect(
         decideSpread({
           ...straddle,
-          blocks: [block('chr1', 400), block('chr2', 1600)],
+          windows: [
+            win('chr1', 900_000, CONTIG, 400),
+            win('chr2', 0, 100_000, 1600),
+          ],
           spans: [
             { refName: 'chr1', start: 0, end: CONTIG },
             { refName: 'chr9', start: 0, end: CONTIG },
@@ -256,11 +241,10 @@ describe('the decision', () => {
     expect(
       decideSpread({
         ...straddle,
-        blocks: [block('chr1', 500), block('chr2', 400), block('chr3', 400)],
         windows: [
-          win('chr1', 900_000, CONTIG),
-          win('chr2', 0, 100_000),
-          win('chr3', 0, 100_000),
+          win('chr1', 900_000, CONTIG, 500),
+          win('chr2', 0, 100_000, 400),
+          win('chr3', 0, 100_000, 400),
         ],
         // chr3 is on screen and aligns to nothing in the file
         mapped: answered('chr1', 'chr2'),
@@ -279,11 +263,10 @@ describe('the decision', () => {
     expect(
       decideSpread({
         ...straddle,
-        blocks: [block('chr1', 400), block('chr2', 200), block('chr3', 200)],
         windows: [
-          win('chr1', 100, 1100),
-          win('chr2', 100, 600),
-          win('chr3', 100, 600),
+          win('chr1', 100, 1100, 400),
+          win('chr2', 100, 600, 200),
+          win('chr3', 100, 600, 200),
         ],
         mapped: answered('chr2', 'chr3'),
         spans: [
@@ -300,10 +283,9 @@ describe('the decision', () => {
 test('one contig answering demotes to the rung below, with nothing elsewhere', () => {
   expect(
     decideSpread({
-      blocks: [block('chr1', 1331), block('chr2', 657)],
       stayingRegions: regions,
       movingRegions: regions,
-      windows: [win('chr1', 0, CONTIG), win('chr2', 0, CONTIG)],
+      windows: [win('chr1', 0, CONTIG, 1331), win('chr2', 0, CONTIG, 657)],
       spans: [{ refName: 'chr1', start: 0, end: CONTIG }],
       mapped: answered('chr1'),
     }),

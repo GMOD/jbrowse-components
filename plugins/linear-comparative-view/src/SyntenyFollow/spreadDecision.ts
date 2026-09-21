@@ -3,59 +3,33 @@ import { followPlacedWindows } from './followAnchorWindow.ts'
 import { spanBounds } from './positionViewOnSpan.ts'
 
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
-import type { FollowWindow } from './followAnchorWindow.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { AnchorWindow, FollowWindow } from './followAnchorWindow.ts'
 import type { Region } from '@jbrowse/core/util/types'
 
-// Above this share of the anchor panel's pixels sitting in windows that are
-// proper SUBINTERVALS of their contig, the panel is a locus straddle rather
-// than an overview. An overview's windows are whole contigs but for the two the
-// screen edges cut, so it does not reach the floor; a window pair either side of
-// a junction is partial on both sides and scores 100%.
+// Above this share of the panel's px in windows cut short of their contig, the
+// panel is a locus straddle rather than an overview.
 const MOSTLY_PARTIAL = 0.5
 
-// A window covering all but a rounding of its contig is WHOLE. Block edges come
-// off PIXELS, so a fully visible contig reports an end a hair short of its
-// region's — measured on a `showAllRegions` panel where five of eight contigs
-// read as cut, which is not something that panel can contain. Without the
-// tolerance the gate opens on an honest overview and the coverage test, which
-// that overview fails at 26-40%, demotes it.
+// Block edges come off pixels, so a fully visible contig reports an end a hair
+// short of its region's: five of eight on a `showAllRegions` panel.
 const WHOLE_ENOUGH = 0.99
 
-// The union earns the screen only when most of what it puts there is answer.
 const MIN_COVERAGE = 0.5
 
-// ...and having lost the screen it wins it back a little higher, because the
-// two placements are the furthest apart this subsystem can put a row and the
-// frame pass would otherwise flip between them across a threshold the user is
-// panning along.
+// won back a little higher than lost, so a pan along the threshold does not
+// flip the row between the two furthest-apart placements
 const COVERAGE_BAND = 0.1
 
 export interface SpreadDecision {
   spreading: boolean
   // the contig the row is placed on instead, when it is not spreading
   onto?: string
-  // and the anchor's other contigs THAT ANSWERED, whose answers are the ones not
-  // shown. The reader can reach them by scrolling the anchor onto one — it
-  // becomes the widest window and the rows follow it — but only if something
-  // says they are there, which is the whole of what the header does with this.
-  // A contig with no alignment in the file answers nothing, so scrolling onto it
-  // shows nothing and naming it is advice that cannot be taken.
+  // the anchor's other contigs that answered, which the header offers as
+  // places to scroll onto
   elsewhere?: string[]
-  // undefined when nothing measurable was placed, which is the spreading case
   coverage?: number
 }
 
-export function pxByRefName(blocks: ContentBlock[]) {
-  const px = new Map<string, number>()
-  for (const b of blocks) {
-    px.set(b.refName, (px.get(b.refName) ?? 0) + b.widthPx)
-  }
-  return px
-}
-
-// Whether a window shows its whole contig, to the tolerance above. Exported so
-// the debug log judges a window by the same rule the decision does.
 export function coversContig(w: FollowWindow, regions: Region[]) {
   const region = regions.find(r => r.refName === w.refName)
   return (
@@ -64,49 +38,31 @@ export function coversContig(w: FollowWindow, regions: Region[]) {
 }
 
 /**
- * The share of the anchor panel's PIXELS that sit in a window covering less
- * than its whole contig.
- *
- * The gate on the coverage test below, and it is doing the work that coverage
- * cannot do alone: measured on grape/peach/cacao, an honest whole-genome
- * overview covers 40% of what it places at one level and 22% at the next, which
- * interleaves with the straddles it would have to be told apart from. Whole
- * contigs versus cut ones separates the two zoom regimes structurally, where no
- * threshold on coverage separates them at all.
- *
- * Pixels rather than count, since the two contigs an overview's screen edges cut
- * are a small part of it and a straddle's two are all of it.
+ * The share of the anchor panel's px in windows cut short of their contig: the
+ * gate on the coverage test, since an honest overview covers as little as 22%
+ * of what it places, which no coverage threshold tells from a straddle.
  */
 export function partialShare({
-  blocks,
   regions,
   windows,
 }: {
-  blocks: ContentBlock[]
   regions: Region[]
-  windows: FollowWindow[]
+  windows: AnchorWindow[]
 }) {
-  const px = pxByRefName(blocks)
   let partial = 0
   let total = 0
   for (const w of windows) {
-    const width = px.get(w.refName) ?? 0
-    total += width
+    total += w.widthPx
     if (!coversContig(w, regions)) {
-      partial += width
+      partial += w.widthPx
     }
   }
   return total > 0 ? partial / total : 0
 }
 
 /**
- * How much of what the union would put on screen is an answer: the mapped bp
- * over the bp of the interval that carries them.
- *
- * The denominator comes from `spanBounds`, the same bounds `positionViewOnSpans`
- * places, so this measures the row the reader is going to get rather than an
- * approximation of it. The numerator is the spans merged per contig, since two
- * tracks answering on one contig are one stretch of screen, not two.
+ * The mapped bp over the bp of the interval `positionViewOnSpans` would place,
+ * with spans merged per contig.
  */
 export function spreadCoverage(regions: Region[], spans: ResolvedSpan[]) {
   const bounds = spanBounds(regions, spans)
@@ -131,31 +87,12 @@ export function spreadCoverage(regions: Region[], spans: ResolvedSpan[]) {
 }
 
 /**
- * Whether this level's multi-contig answer is worth the screen it costs, and
- * what to do instead when it is not.
- *
- * A row placed on two answers also shows every contig between them, and on a
- * pair of chromosomes that are not neighbours in the moving row's layout that
- * is nearly all of what the reader ends up looking at — measured on
- * grape/peach/cacao at 13.9Mb of answer inside 137.6Mb of row, with two whole
- * chromosomes on screen that nothing reaches. The reader's own words for it were
- * "there is nothing that row 1 connects to from there".
- *
- * NOT SPAN-DROPPING BUT A DEMOTION. The answer for a row that cannot show both
- * is the answer for a row that was only ever shown one, which is the rung below
- * this one — so the caller falls through to it and inherits the block pick, the
- * CIGAR map, the settled resolve, `alreadyShowing` and the hysteresis already
- * there. It also removes a cliff rather than adding one: a tail at 4.9% of the
- * widest window is placed by that rung today and at 5.1% teleported into a union
- * ten times the size.
- *
- * The window kept is the WIDEST BY PIXEL, since the eye reads that one as where
- * the view is, biased toward the one already kept over the same margin the block
- * pick uses — 100% against 49% is one pan away from a coin toss, and a coin toss
- * re-flipped per settle is the same defect this replaces in a smaller spelling.
+ * Whether this level's multi-contig answer is worth the screen it costs: a row
+ * placed on two answers also shows every contig between them. Refused, the
+ * level is demoted onto the widest window that answered, with the block pick's
+ * hysteresis.
  */
 export function decideSpread({
-  blocks,
   stayingRegions,
   movingRegions,
   windows,
@@ -163,24 +100,20 @@ export function decideSpread({
   mapped,
   previous,
 }: {
-  blocks: ContentBlock[]
   stayingRegions: Region[]
   movingRegions: Region[]
-  windows: FollowWindow[]
+  windows: AnchorWindow[]
   spans: ResolvedSpan[]
   /** the anchor contigs a span came back for, from `followSpreadSpans` */
   mapped: ReadonlyMap<string, string>
   previous?: SpreadDecision
 }): SpreadDecision {
-  // One contig answering is the rung below's case whatever else is on screen:
-  // spread, the row was placed by a union of one, with no walk and no strand
+  // one contig answering is the rung below's case whatever else is on screen
   const [only, ...others] = mapped.keys()
   if (only !== undefined && others.length === 0) {
     return { spreading: false, onto: only, elsewhere: [] }
   }
-  if (
-    partialShare({ blocks, regions: stayingRegions, windows }) <= MOSTLY_PARTIAL
-  ) {
+  if (partialShare({ regions: stayingRegions, windows }) <= MOSTLY_PARTIAL) {
     return { spreading: true }
   }
   const coverage = spreadCoverage(movingRegions, spans)
@@ -189,15 +122,12 @@ export function decideSpread({
   if (coverage === undefined || coverage >= floor) {
     return { spreading: true, coverage }
   }
-  const px = pxByRefName(blocks)
-  // Among the contigs that ANSWERED, so the rung below has something to place
-  // from: refused onto the widest window regardless, an unaligned contig owning
-  // half the panel left every row holding, and the header saying nothing
-  // aligned while `elsewhere` named two contigs that did.
+  // among the contigs that answered, so the rung below has something to place
+  // from
   const answered = windows.filter(w => mapped.has(w.refName))
   const candidates = (answered.length ? answered : windows).map(w => ({
     refName: w.refName,
-    overlap: px.get(w.refName) ?? 0,
+    overlap: w.widthPx,
   }))
   const widest = candidates.reduce((a, b) => (b.overlap > a.overlap ? b : a))
   const incumbent = candidates.find(c => c.refName === previous?.onto)

@@ -28,11 +28,10 @@ import { decideSpread } from './spreadDecision.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
-import type { FollowWindow } from './followAnchorWindow.ts'
+import type { AnchorWindow, FollowWindow } from './followAnchorWindow.ts'
 import type { FollowAnchorHost, FollowReport } from './followHost.ts'
 import type { FollowLevelState } from './followLevelStates.ts'
 import type { FollowStep } from './planFollowStep.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type {
   LinearGenomeViewModel,
   RegionsOrientation,
@@ -560,13 +559,14 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   function planSpread({
     pair,
     windows,
-    carried,
+    measured,
     state,
     placed,
   }: {
     pair: FollowPair
     windows: FollowWindow[]
-    carried: boolean
+    // absent for a carried level
+    measured: AnchorWindow[] | undefined
     state: FollowLevelState
     placed: PlacedWindows
   }) {
@@ -580,17 +580,16 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     })
     state.spreadTargets = mapped
     const decision =
-      carried || !spans.length
+      !measured || !spans.length
         ? { spreading: true }
         : decideSpread({
-            blocks: stayingView.coarseDynamicBlocks,
             stayingRegions: stayingView.displayedRegions,
             // untracked: the tracked read of this row is its blocks, above,
             // and its region set changes only by a navigation the follow
             // may not make here
             // eslint-disable-next-line no-restricted-syntax -- self-write: the placement this pass is about to make
             movingRegions: untracked(() => movingView.displayedRegions),
-            windows,
+            windows: measured,
             spans,
             mapped,
             previous: state.spread,
@@ -600,7 +599,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       stayingView,
       movingView,
       windows,
-      carried,
+      measured,
       spans,
       decision,
     })
@@ -666,7 +665,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // re-asserts a hand-nudged interior row is the level's own fetch key, which
     // names both rows, exactly as it is for the multi-contig rung's moving row.
     const carried = placed.get(stayingView)
-    const windows = carried ?? settledWindows(stayingView)
+    const measured = carried ? undefined : settledWindows(stayingView)
+    const windows = carried ?? measured ?? []
     const widest = windows[0]
     const noSyntenyTrack = !level.linearSyntenyDisplays.length
     // A DECISION ABOUT SEVERAL CONTIGS SAYS NOTHING ABOUT ONE, and
@@ -709,7 +709,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         ? planSpread({
             pair,
             windows,
-            carried: !!carried,
+            measured,
             state,
             placed,
           })
@@ -833,14 +833,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // windows and no decision, recorded so the rest of the drag keeps it
   function decideFrameSpread(
     pair: FollowPair,
-    blocks: ContentBlock[],
-    windows: FollowWindow[],
+    windows: AnchorWindow[],
     { spans, mapped }: ReturnType<typeof followSpreadSpans>,
   ) {
     const decision = spans.length
       ? decideSpread({
-          blocks,
-          // eslint-disable-next-line no-restricted-syntax -- read for the decision, which the blocks above already track
+          // eslint-disable-next-line no-restricted-syntax -- read for the decision, which the blocks the windows came off already track
           stayingRegions: untracked(() => pair.stayingView.displayedRegions),
           // eslint-disable-next-line no-restricted-syntax -- self-write: the row this pass places
           movingRegions: untracked(() => pair.movingView.displayedRegions),
@@ -890,13 +888,15 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // placed across several contigs is not read at all, so there is no
           // read to take untracked.
           const carried = placed.get(stayingView)
-          const blocks = carried
+          const measured = carried
             ? undefined
-            : written.has(stayingView)
-              ? // eslint-disable-next-line no-restricted-syntax -- self-write: this pass wrote that row
-                untracked(() => stayingView.dynamicBlocks.contentBlocks)
-              : stayingView.dynamicBlocks.contentBlocks
-          const windows = carried ?? followAnchorWindows(blocks!)
+            : followAnchorWindows(
+                written.has(stayingView)
+                  ? // eslint-disable-next-line no-restricted-syntax -- self-write: this pass wrote that row
+                    untracked(() => stayingView.dynamicBlocks.contentBlocks)
+                  : stayingView.dynamicBlocks.contentBlocks,
+              )
+          const windows = carried ?? measured ?? []
           const state = levelStates.peek(level, toMate)
           let spreadSpans: ReturnType<typeof followSpreadSpans> | undefined
           const spreadAnswer = () =>
@@ -918,8 +918,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // answer as its previous one. `followRung` is the rule both apply.
           const decision =
             state?.spread ??
-            (blocks && windows.length > 1
-              ? decideFrameSpread(pair, blocks, windows, spreadAnswer())
+            (measured && measured.length > 1
+              ? decideFrameSpread(pair, measured, spreadAnswer())
               : undefined)
           const rung = followRung(windows, decision)
           if (!rung) {

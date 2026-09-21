@@ -38,6 +38,7 @@ test('a panel showing one contig yields that contig and its visible span', () =>
     refName: 'chr1',
     start: 100,
     end: 200,
+    widthPx: 800,
   })
 })
 
@@ -83,8 +84,8 @@ test('a panel showing several contigs yields one window each, widest first', () 
       block({ refName: 'chr1', start: 0, end: 3000, widthPx: 600 }),
     ]),
   ).toEqual([
-    { refName: 'chr1', start: 0, end: 3000 },
-    { refName: 'chr2', start: 0, end: 1000 },
+    { refName: 'chr1', start: 0, end: 3000, widthPx: 600 },
+    { refName: 'chr2', start: 0, end: 1000, widthPx: 200 },
   ])
 })
 
@@ -125,7 +126,7 @@ describe('a sliver beside a full panel', () => {
         block({ refName: 'chrA', start: 59_000, end: 60_000, widthPx: 2 }),
         block({ refName: 'chrB', start: 0, end: 60_000, widthPx: 798 }),
       ]),
-    ).toEqual([{ refName: 'chrB', start: 0, end: 60_000 }])
+    ).toEqual([{ refName: 'chrB', start: 0, end: 60_000, widthPx: 798 }])
   })
 
   // RELATIVE TO THE WIDEST, not to the panel: a two-contig assembly is

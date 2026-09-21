@@ -6,10 +6,10 @@
 import { untracked } from 'mobx'
 
 import { followAnchorWindows } from './followAnchorWindow.ts'
-import { coversContig, partialShare, pxByRefName } from './spreadDecision.ts'
+import { coversContig, partialShare } from './spreadDecision.ts'
 
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
-import type { FollowWindow } from './followAnchorWindow.ts'
+import type { AnchorWindow, FollowWindow } from './followAnchorWindow.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 function on() {
@@ -28,7 +28,10 @@ const bp = (spans: FollowWindow[]) =>
 
 // what the anchor panel actually has on screen, in px, before any floor
 function panel(view: LinearGenomeViewModel) {
-  const widths = pxByRefName(view.coarseDynamicBlocks)
+  const widths = new Map<string, number>()
+  for (const b of view.dynamicBlocks.contentBlocks) {
+    widths.set(b.refName, (widths.get(b.refName) ?? 0) + b.widthPx)
+  }
   const widest = Math.max(...widths.values())
   return [...widths.entries()]
     .sort((a, b2) => b2[1] - a[1])
@@ -40,16 +43,12 @@ function panel(view: LinearGenomeViewModel) {
 }
 
 // by the rule the decision applies, so the log cannot disagree with it
-function wholeness(view: LinearGenomeViewModel, windows: FollowWindow[]) {
+function wholeness(view: LinearGenomeViewModel, windows: AnchorWindow[]) {
   const regions = view.displayedRegions
   const parts = windows.map(
     w => `${w.refName} ${coversContig(w, regions) ? 'WHOLE' : 'partial'}`,
   )
-  const share = partialShare({
-    blocks: view.coarseDynamicBlocks,
-    regions,
-    windows,
-  })
+  const share = partialShare({ regions, windows })
   return `${parts.join(', ')} — partial by px: ${Math.round(share * 100)}%`
 }
 
@@ -66,14 +65,14 @@ export function logFollowSpread({
   stayingView,
   movingView,
   windows,
-  carried,
+  measured,
   spans,
   decision,
 }: {
   stayingView: LinearGenomeViewModel
   movingView: LinearGenomeViewModel
   windows: FollowWindow[]
-  carried: boolean
+  measured?: AnchorWindow[]
   spans: ResolvedSpan[]
   decision: { spreading: boolean; onto?: string; coverage?: number }
 }) {
@@ -87,9 +86,9 @@ export function logFollowSpread({
     return (
       `[follow] SPREAD ${stayingView.assemblyNames[0]} -> ${movingView.assemblyNames[0]}\n` +
       `  anchor panel: ${panel(stayingView)}\n` +
-      `  windows (${carried ? 'carried' : 'off blocks'}) x${windows.length}: ${windows.map(w => span(w)).join(', ')}\n` +
-      `  kept by the floor: ${followAnchorWindows(stayingView.coarseDynamicBlocks).length}\n` +
-      `  wholeness: ${wholeness(stayingView, windows)}\n` +
+      `  windows (${measured ? 'off blocks' : 'carried'}) x${windows.length}: ${windows.map(w => span(w)).join(', ')}\n` +
+      `  kept by the floor: ${followAnchorWindows(stayingView.dynamicBlocks.contentBlocks).length}\n` +
+      `  wholeness: ${measured ? wholeness(stayingView, measured) : 'carried'}\n` +
       `  spans x${spans.length}: ${spans.map(s => span(s)).join(', ')}\n` +
       `  placed on ${after.contigs.length} contigs, ${(after.bp / 1e6).toFixed(1)}Mb: ${after.contigs.join(', ')}\n` +
       `  mapped ${(mapped / 1e6).toFixed(1)}Mb of that = ${Math.round((mapped / after.bp) * 100)}% covered\n` +

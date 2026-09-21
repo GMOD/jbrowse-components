@@ -721,6 +721,30 @@ test('an answer on a contig the row does not display navigates even after a move
   expect(shown(rows[1]!)).toEqual(['chr5'])
 })
 
+// The settle reads its windows off the live blocks, and the widths it refused
+// the spread by came off the coarse ones, which mid-drag name the panel before
+// the anchor reached chr2: chr2 measured 0px and the refusal went back to chr1.
+test('a spread refused mid-drag goes onto the contig that is widest now', async () => {
+  const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+  const { rows, host } = twoRows([
+    display([pairing('chr1', 'chr1'), pairing('chr2', 'chr9')]),
+  ])
+  place(rows[0]!, 200_000, 1_000_000)
+  installSyntenyFollow(host)
+  await settle()
+  await settle()
+
+  rows[0]!.holdCoarseBlocks()
+  rows[1]!.holdCoarseBlocks()
+  place(rows[0]!, 900_000, 1_700_000)
+  rows[1]!.releaseCoarseBlocks()
+  await settle()
+  await settle()
+
+  expect(host.followReport.partial?.following).toBe('chr2')
+  expect(shown(rows[1]!)).toEqual(['chr9'])
+})
+
 const reversedOf = (view: ReturnType<typeof row>) =>
   !!view.dynamicBlocks.contentBlocks[0]?.reversed
 
