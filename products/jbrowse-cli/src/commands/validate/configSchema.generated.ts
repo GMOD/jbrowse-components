@@ -17602,13 +17602,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "hideHeaderOverview": {
           "type": "boolean"
         },
-        "detailLevels": {
+        "closeUps": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/LinearGenomeView"
           }
         },
-        "detailConnectorHeight": {
+        "closeUpConnectorHeight": {
           "type": "number"
         },
         "hideNoTracksActive": {
