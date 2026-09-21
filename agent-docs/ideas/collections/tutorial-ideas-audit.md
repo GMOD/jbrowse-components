@@ -270,7 +270,7 @@ and `directrna_isoforms` (a jbrowse.org-hosted BAM, not a hub track).
 
 ### Workflow and admin
 
-**Session sharing and bookmark-driven review.** The grid-bookmark plugin, share
+**Session sharing and highlight-driven review.** The highlight list, share
 links, and URL params as one curation workflow rather than a data type. The FAQ
 covers the mechanics ("Why can't I copy and paste my URL bar", "How does session
 sharing with shortened URLs work", "Are my share links reproducible") with no

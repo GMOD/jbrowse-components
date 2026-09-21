@@ -70,8 +70,8 @@ limit and worth saying in the UI: "next in view", not "next in the genome".
 thread at every zoom, and the packed SNP buffer beside it decodes through
 `readSnpSegments`. A bedGraph/wig (depth) or VCF-ish (allele counts) download
 from the Coverage submenu is a small addition and a frequent ask. The precedent
-for the plumbing is `SaveTrackData.tsx` and the bookmark widget's
-`downloadBookmarkFile`. The open question is scope: the visible region is what
+for the plumbing is `SaveTrackData.tsx` and the highlight list's
+`downloadHighlightFile`. The open question is scope: the visible region is what
 the user is looking at and what the display actually holds, but "export this
 track" reads as the whole file — say which one the menu item means in its label.
 

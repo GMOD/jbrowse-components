@@ -493,8 +493,8 @@ export function renderAgentModel(
  * with the model that declares each.
  *
  * Exported for the session-spec key tables, which document what a spec may set
- * on a view. Own properties alone are not that set: `highlight` is declared by
- * `HighlightsMixin` and a spec sets it on the linear genome view like any
+ * on a view. Own properties alone are not that set: `minimized` is declared by
+ * `BaseViewModel` and a spec sets it on the linear genome view like any
  * other, so a list built from the view's own file omits a key that works — and
  * a missing row reads as "not settable" exactly the way a blank cell reads as
  * "does nothing".

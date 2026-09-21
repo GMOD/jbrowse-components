@@ -1277,7 +1277,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         items: ref('View'),
       }
     }
-    if (kind === 'highlightEntries') {
+    if (key === 'highlight') {
       return {
         type: 'array',
         items: { anyOf: [{ type: 'string' }, { type: 'object' }] },

@@ -78,7 +78,7 @@ interface InitState {
   tracks?: TrackInit[] // string id, or { trackId, trackSnapshot?, displaySnapshot? }
   tracklist?: boolean // open the hierarchical track selector
   nav?: boolean // false => setHideHeader(true)
-  highlight?: (string | HighlightType)[] // HighlightType object, locstring, or
+  highlight?: (string | HighlightInput)[] // object, locstring, or
   // (URL wire-format) JSON-encoded HighlightType string
 }
 ```
@@ -128,7 +128,6 @@ meaning for the whole thing.
 | --- | --- | --- |
 | `trackEntries` | a string, or `'trackId' in entry` | a built track snapshot cannot carry `trackId` — `BaseTrackModel` does not declare it. `type` would not discriminate: specs write display types inline |
 | `rows` | an entry with no `type` | a built row is a view snapshot, and every view's `type` is a required literal |
-| `highlightEntries` | a string | a string needs `coerceHighlight` and the assembly manager; an object is the persisted shape |
 | `launch` | always | the key collides with no declared property, so the lift is unconditional |
 | `replay` | always, and the value also lands on the property | below |
 
@@ -252,7 +251,8 @@ afterAttach.ts setupInitAutorun (autorun "LGVInit"):
                                                    clobber existing navigation)
   → showTrack for each track recipe
   → if nav !== undefined: setHideHeader(!nav)
-  → backfill assemblyName on existing highlights, then parse the highlight recipes
+  → parse the highlight entries onto session.highlights, each defaulting to the
+    launch's assembly
     (per-entry try/catch: parseLocString throws on an unknown refName)
   → setLaunch(undefined)   // clear; one-shot
 ```
