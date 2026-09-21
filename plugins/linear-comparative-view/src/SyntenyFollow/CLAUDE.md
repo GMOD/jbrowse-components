@@ -381,8 +381,8 @@ await, as fresh roots, on the follow's own behalf; nor `horizontallyFlip`, since
 a hand flip of a followed row is meant to stand. The view-wide zooms
 (`squareView`, `showAllRegionsAcrossRows`, the stack's rubber-band "Zoom to
 region(s)") nest the rows' zooms under the stack's own actions, and
-`centerStackOnFeature` holds its two navigations the same way after handing the
-anchor to the feature's own row.
+`centerStackOnFeature` holds its two navigations the same way and hands the
+anchor to the first row that moved, the feature's own unless its `navTo` threw.
 
 **The set is a list of names, so a contract test holds it against the view.**
 Every navigation-shaped action the row actually has must be in `ROW_GESTURES` or

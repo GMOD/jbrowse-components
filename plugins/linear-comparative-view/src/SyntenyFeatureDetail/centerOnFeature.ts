@@ -104,10 +104,9 @@ export function syntenyCenterTargets({
 /**
  * "Center view on this feature": both sides onto their rows, each attempted
  * whichever fails, and a message for every side that could not move. Held as
- * one stack move with the feature's own row taking the follow anchor, so the
- * follow brings the rest of the stack to the feature. As root actions each
- * row's `navTo` read as a gesture and the anchor landed on the mate row, and
- * with the anchor held where it was the follow would pull both rows back.
+ * one stack move, and the follow anchor goes to the first row that moved — the
+ * feature's own, unless its `navTo` threw — so the follow brings the rest of
+ * the stack to it rather than pulling the moved rows back to an unmoved one.
  */
 export function centerStackOnFeature({
   view,
@@ -128,16 +127,17 @@ export function centerStackOnFeature({
   })
   const problems = [...missing]
   view.holdFollowAnchor(() => {
-    const own = targets[0] ? view.views.indexOf(targets[0].view) : -1
-    if (view.followSynteny && own !== -1) {
-      view.setFollowAnchorIndex(own)
-    }
+    let moved: LinearGenomeViewModel | undefined
     for (const { view: row, loc } of targets) {
       try {
         row.navTo(loc, 0.2)
+        moved ??= row
       } catch (e) {
         problems.push(`${e}`)
       }
+    }
+    if (view.followSynteny && moved) {
+      view.setFollowAnchorIndex(view.views.indexOf(moved))
     }
   })
   return problems

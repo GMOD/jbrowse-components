@@ -167,28 +167,48 @@ test("the stack's rubber-band zoom leaves the anchor where it was", async () => 
 // Centering moves both rows of a level. Held where it was, the anchor would
 // have the follow pull them straight back; as root actions it landed on the
 // mate row. The feature's own row drives.
+const CENTERED = {
+  uniqueId: 'f',
+  refName: 'ctgA',
+  start: 1000,
+  end: 2000,
+  assemblyName: 'volvox1',
+  mate: {
+    refName: 'ctgA',
+    start: 3000,
+    end: 4000,
+    assemblyName: 'volvox2',
+  },
+}
+
 test("centering on a feature hands the anchor to the feature's own row", async () => {
   const view = await openStack()
   const problems = centerStackOnFeature({
     view,
     level: 1,
-    feat: {
-      uniqueId: 'f',
-      refName: 'ctgA',
-      start: 1000,
-      end: 2000,
-      assemblyName: 'volvox1',
-      mate: {
-        refName: 'ctgA',
-        start: 3000,
-        end: 4000,
-        assemblyName: 'volvox2',
-      },
-    },
+    feat: CENTERED,
     assemblyManager: getSession(view).assemblyManager,
   })
   expect(problems).toEqual([])
   expect(view.followAnchorIndex).toBe(1)
+})
+
+// The widget can sit open while its row is narrowed away from the feature, so
+// that row's `navTo` throws and it stays put. Anchored anyway, it would have
+// the follow pull the mate row, which did move, back to the unmoved one.
+test('a row that could not center gives the anchor to the one that did', async () => {
+  const view = await openStack()
+  view.views[1]!.setDisplayedRegions([
+    { assemblyName: 'volvox1', refName: 'ctgA', start: 8000, end: 16000 },
+  ])
+  const problems = centerStackOnFeature({
+    view,
+    level: 1,
+    feat: CENTERED,
+    assemblyManager: getSession(view).assemblyManager,
+  })
+  expect(problems).toHaveLength(1)
+  expect(view.followAnchorIndex).toBe(2)
 })
 
 // The gesture set is a list of names, and a navigation the view grows that is
