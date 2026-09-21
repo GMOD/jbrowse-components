@@ -138,12 +138,14 @@ const TrackContainer = observer(function TrackContainer({
   // the data. One binding rather than three copies of the ternary, because the
   // three agreeing is the whole point.
   const outlineOffset = showTrackOutlines ? TRACK_OUTLINE_BORDER : 0
-  // `prefersOffset` buys the label a row of its own so it doesn't print over
-  // the display's left edge. A minimized track draws no left edge, so honoring
-  // it there only leaves one minimized track taller than its neighbors.
+  // A label in flow is a row of track height, which is most of what minimizing
+  // buys back — so a minimized track overlaps its label whatever the setting
+  // says, and there is nothing under it to print over. `prefersOffset` is the
+  // display asking for the offset row in 'overlapping' mode, because its left
+  // edge carries an axis or a sidebar the label would cover.
   const trackLabelStyle =
-    model.effectiveTrackLabels === 'overlapping' &&
-    (track.minimized || !display.prefersOffset)
+    track.minimized ||
+    (model.effectiveTrackLabels === 'overlapping' && !display.prefersOffset)
       ? classes.trackLabelOverlap
       : classes.trackLabelOffset
   const { setPaper, setContainer } = useTrackLabelBand(model, track.trackId)

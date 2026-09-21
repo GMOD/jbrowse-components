@@ -319,45 +319,50 @@ class OffsetPreferringDisplayPlugin extends Plugin {
 }
 
 // Minimizing is worth ~20px of track, and a label left in flow spends most of
-// that back. The left edge is what `prefersOffset` protects, and a minimized
-// track draws none, so its label overlaps like every other minimized track's.
-test('a minimized track overlaps its label even when the display prefers offset', async () => {
-  const model = await setup({
-    runtimePlugins: [
-      {
-        plugin: new OffsetPreferringDisplayPlugin(),
-        definition: {
-          name: 'OffsetPreferringDisplay',
-          umdUrl: 'offset-preferring.js',
+// that back. Both routes to a label in flow are here: the 'offset' setting, and
+// a display that asks for the row under 'overlapping' because its left edge
+// carries an axis. A minimized track draws no left edge and nothing else the
+// label could cover, so both yield.
+test.each(['offset', 'overlapping'] as const)(
+  'a minimized track overlaps its label in trackLabels:%s',
+  async setting => {
+    const model = await setup({
+      runtimePlugins: [
+        {
+          plugin: new OffsetPreferringDisplayPlugin(),
+          definition: {
+            name: 'OffsetPreferringDisplay',
+            umdUrl: 'offset-preferring.js',
+          },
         },
-      },
-    ],
-    displays: [
-      {
-        type: 'OffsetPreferringDisplay',
-        displayId: 'offset-preferring-display',
-      },
-    ],
-  })
-  // the setting `prefersOffset` overrides; in 'offset' every label is in flow
-  model.setTrackLabels('overlapping')
-  const { findByTestId } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <LinearGenomeView model={model} />
-    </ThemeProvider>,
-  )
+      ],
+      displays: [
+        {
+          type: 'OffsetPreferringDisplay',
+          displayId: 'offset-preferring-display',
+        },
+      ],
+    })
+    model.setTrackLabels(setting)
+    const { findByTestId } = render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <LinearGenomeView model={model} />
+      </ThemeProvider>,
+    )
 
-  const labelPosition = async () =>
-    getComputedStyle(await findByTestId('trackLabel-genes')).position
+    const labelPosition = async () =>
+      getComputedStyle(await findByTestId('trackLabel-genes')).position
 
-  expect(await labelPosition()).toBe('relative')
-  const track = model.tracks[0]!
-  track.setMinimized(true)
-  await waitFor(async () => {
-    expect(await labelPosition()).toBe('absolute')
-  })
-  track.setMinimized(false)
-  await waitFor(async () => {
     expect(await labelPosition()).toBe('relative')
-  })
-}, 20000)
+    const track = model.tracks[0]!
+    track.setMinimized(true)
+    await waitFor(async () => {
+      expect(await labelPosition()).toBe('absolute')
+    })
+    track.setMinimized(false)
+    await waitFor(async () => {
+      expect(await labelPosition()).toBe('relative')
+    })
+  },
+  20000,
+)
