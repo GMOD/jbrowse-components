@@ -48,15 +48,18 @@ export const BLAT_ROUTE: ProxyRoute = {
       : undefined,
 }
 
-// Markers of a Cloudflare interstitial. Kept narrow on purpose: an ordinary
-// UCSC page's CSP whitelists `www.google.com/recaptcha/api.js`, so a bare
-// `captcha` matches every real result page — including hgPcr's honest "No
-// matches" — and would report a working server as a CAPTCHA wall.
+// Markers of a Cloudflare interstitial. Kept narrow on purpose, and narrowed
+// twice: an ordinary UCSC page's CSP whitelists `www.google.com/recaptcha/api.js`
+// AND `challenges.cloudflare.com/turnstile/v0/api.js`, so `captcha` and then
+// `turnstile` each matched every real result page — including hgPcr's honest
+// "No matches" — and reported a working server as a CAPTCHA wall.
+// `turnstile.render(` is the call that mounts the widget, which only the
+// challenge page makes.
 //
 // Duplicated in `plugins/blat/src/blatQuery.ts`, which decides the same thing
 // about the same pages client-side. This package is standalone and cannot import
 // the plugin, so the copies are deliberate: narrow one and narrow both.
-const CHALLENGE_MARKERS = /turnstile|cf[-_]chl/i
+const CHALLENGE_MARKERS = /turnstile\s*\.\s*render|cf[-_](?:chl|turnstile)/i
 
 export const ISPCR_ROUTE: ProxyRoute = {
   name: 'ispcr',

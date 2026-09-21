@@ -259,17 +259,21 @@ export class BlatChallengeError extends Error {
   name = 'BlatChallengeError'
 }
 
-// Markers on a Cloudflare Turnstile challenge page. Every marker has to be
-// specific to the challenge itself: a bare `cf-`, `captcha` or `challenge` also
-// matches an ordinary UCSC page, whose standard nav links to
-// FAQdownloads.html#CAPTCHA and whose scripts load from challenges.cloudflare.com.
-// Those two words made a failed parse of a perfectly good result page report
-// itself as a CAPTCHA, sending the user off to solve one that wasn't there.
+// Markers on a Cloudflare Turnstile challenge page. Every marker has to name
+// the widget being MOUNTED, never a page that merely mentions it: a bare `cf-`,
+// `captcha` or `challenge` matches an ordinary UCSC page, whose nav links to
+// FAQdownloads.html#CAPTCHA, and a bare `turnstile` matches one too, because
+// UCSC's Content-Security-Policy whitelists
+// `challenges.cloudflare.com/turnstile/v0/api.js` on every page it serves —
+// including the honest "No matches" that hgPcr answers a primer pair with.
+// Each of those words in turn sent a user off to solve a CAPTCHA that was not
+// there. `turnstile.render(` is the call that puts one on screen, and the
+// challenge page is the only page that makes it.
 //
 // Duplicated in `products/aws/blat-proxy/src/routes.ts`, which decides the same thing
 // about the same pages server-side. The proxy is a standalone package and cannot
 // import this one, so the copies are deliberate: narrow one and narrow both.
-const CHALLENGE_MARKERS = /turnstile|cf[-_]chl/i
+const CHALLENGE_MARKERS = /turnstile\s*\.\s*render|cf[-_](?:chl|turnstile)/i
 
 export function isChallengePage(text: string) {
   return CHALLENGE_MARKERS.test(text)

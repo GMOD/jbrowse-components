@@ -83,10 +83,14 @@ describe('ISPCR_ROUTE.rejectReason', () => {
   // the honest "no products" answer, which a bare /captcha/ marker used to
   // misread as a CAPTCHA wall because every UCSC page's CSP whitelists
   // www.google.com/recaptcha/api.js
-  it('accepts a no-matches page, CSP recaptcha mention and all', () => {
+  // Both halves of UCSC's CSP, verbatim: it whitelists the recaptcha script and
+  // the turnstile one on every page it serves, so each word in turn matched a
+  // perfectly good result and reported a working server as a CAPTCHA wall.
+  it('accepts a no-matches page, CSP challenge-script mentions and all', () => {
     const page =
       '<HTML><head><meta http-equiv="Content-Security-Policy" ' +
-      'content="script-src www.google.com/recaptcha/api.js">' +
+      'content="script-src www.google.com/recaptcha/api.js ' +
+      'challenges.cloudflare.com/turnstile/v0/api.js">' +
       '</head><body>No matches</body></HTML>'
     expect(ISPCR_ROUTE.rejectReason(page)).toBeUndefined()
     // and the blat route still refuses it, since there HTML is never a result
@@ -94,8 +98,18 @@ describe('ISPCR_ROUTE.rejectReason', () => {
   })
 
   it('refuses an actual Cloudflare challenge', () => {
+    // the mount call off UCSC's own interstitial, which loads the same script
+    // the CSP above names — so the script URL cannot be what separates them
     expect(
-      ISPCR_ROUTE.rejectReason('<html><script>window.turnstile</script>'),
+      ISPCR_ROUTE.rejectReason(
+        "<html><script>turnstile.render('#myWidget', {" +
+          "sitekey: '0x4AAAAAABgxfUUSzYakb-Pd'})</script>" +
+          "<script src='https://challenges.cloudflare.com/turnstile/v0/api.js'>" +
+          "</script><div id='myWidget'></div></html>",
+      ),
+    ).toMatch(/CAPTCHA challenge/)
+    expect(
+      ISPCR_ROUTE.rejectReason('<html><div class="cf-turnstile"></div>'),
     ).toMatch(/CAPTCHA challenge/)
     expect(
       ISPCR_ROUTE.rejectReason('<html><div id="cf-chl-widget"></div>'),

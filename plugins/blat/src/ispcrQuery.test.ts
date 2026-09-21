@@ -122,11 +122,31 @@ test('throws BlatChallengeError on a Cloudflare turnstile page', () => {
   expect(() =>
     parseIsPcrResponse('<html><div class="cf-turnstile"></div></html>'),
   ).toThrow(BlatChallengeError)
+  // UCSC's own interstitial, which mounts the widget by hand
+  expect(() =>
+    parseIsPcrResponse(
+      "<html><script>turnstile.render('#myWidget', {sitekey: 'x'})</script>" +
+        "<div id='myWidget'></div></html>",
+    ),
+  ).toThrow(BlatChallengeError)
 })
 
 test('returns no features when there are no products', () => {
   expect(
     parseIsPcrResponse('<HTML><BODY>No matches found</BODY></HTML>'),
+  ).toEqual([])
+})
+
+// UCSC's CSP whitelists the turnstile script on every page it serves, so a page
+// that merely names it is not a challenge — and "no products" is the one answer
+// where a false positive reaches the user, as a CAPTCHA that is not there.
+test('a no-matches page naming the turnstile script is not a challenge', () => {
+  expect(
+    parseIsPcrResponse(
+      '<HTML><head><meta http-equiv="Content-Security-Policy" ' +
+        'content="script-src challenges.cloudflare.com/turnstile/v0/api.js">' +
+        '</head><BODY>No matches found</BODY></HTML>',
+    ),
   ).toEqual([])
 })
 
