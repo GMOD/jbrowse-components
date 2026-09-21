@@ -7,6 +7,7 @@
 // holds the ceiling.
 
 import type { ZoomRange } from '../data_adapters/BaseAdapter/zoomRange.ts'
+import type { ColorSchemeName } from './colorSchemes.ts'
 
 /**
  * #api
@@ -19,15 +20,8 @@ export type FieldRef = string
 
 /**
  * #api
- * The ramp a continuous colour scale samples: a named ramp, or evenly spaced
- * CSS colour stops.
- */
-export type RampRef = 'viridis' | string[]
-
-/**
- * #api
  * A field bound to a categorical scale: each distinct value takes one entry
- * of the channel's range — a palette entry for `color`, a glyph name for
+ * of the channel's `range` — a colour for `color`, a glyph name for
  * `glyph`. Every value derives its entry from itself (an integer takes the
  * slot it names, anything else hashes in), so every region agrees on a value
  * it shares with another at the cost of an occasional collision. A `domain`
@@ -44,7 +38,7 @@ export interface CategoricalRef {
 /**
  * #api
  * A numeric field cut into intervals: `domain` is the ascending cut points
- * and `palette` holds one colour more, so a value paints the entry for the
+ * and `range` holds one colour more, so a value paints the entry for the
  * number of cut points it is at or past. A value that is not a number
  * belongs to no interval.
  */
@@ -52,28 +46,40 @@ export interface ThresholdRef {
   field: FieldRef
   scale: 'threshold'
   domain?: (string | number)[]
-  palette?: string[]
+  range?: string[]
+}
+
+/**
+ * #api
+ * A numeric field read through a linear or log scale into a ramp. Each end of
+ * the domain is pinned by `domainMin` or `domainMax`, or is the region's own
+ * extreme where unset, so pinning both keeps colours consistent across a
+ * whole view. The ramp is `range`'s CSS colours, evenly spaced, where it
+ * lists any, else the named `scheme`; `reverse` turns it round.
+ */
+export interface ContinuousRef {
+  field: FieldRef
+  scale: 'linear' | 'log'
+  domainMin?: number
+  domainMax?: number
+  /** The value the ramp's middle stop sits at; the domain's centre unset. */
+  domainMid?: number
+  range?: string[]
+  scheme?: ColorSchemeName
+  reverse?: boolean
 }
 
 /**
  * #api
  * How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
- * returning one paints per feature with no scale; the two object forms bind a
- * field to a scale, which a legend can describe. A continuous scale maps the
- * field through `domain` (the region's minimum and maximum when absent) into
- * `ramp`; list a `domain` to keep colors consistent across a whole view.
+ * returning one paints per feature with no scale; the object forms bind a
+ * field to a scale, which a legend can describe, and share the config's
+ * member names.
  */
 export type ColorEncoding =
   | string
-  | (CategoricalRef & { palette?: string[] })
-  | {
-      field: FieldRef
-      scale: 'linear' | 'log'
-      domain?: [number, number]
-      ramp?: RampRef
-      /** The value the ramp's middle stop sits at; the domain's centre unset. */
-      domainMid?: number
-    }
+  | (CategoricalRef & { range?: string[] })
+  | ContinuousRef
   | ThresholdRef
 
 export type GlyphName = 'disc' | 'triangle' | 'diamond'
@@ -128,8 +134,8 @@ export type ColorScaleTable =
       kind: 'categorical'
       field: string
       domain: string[]
-      /** The declared palette, the other half of what assigns a key its colour. */
-      palette?: string[]
+      /** The declared range, the other half of what assigns a key its colour. */
+      range?: string[]
       /**
        * Whether every non-empty key met here parsed as a finite number: a
        * numeric field the declaration landed on a categorical scale, which
@@ -152,13 +158,20 @@ export type ColorScaleTable =
       kind: 'ramp'
       field: string
       scale: 'linear' | 'log'
-      /** What the ramp spans here: the declared domain, else `extent`. */
+      /** What the ramp spans here: each declared end, else `extent`'s. */
       domain: [number, number]
-      /** Whether `domain` was declared, and so already agrees across regions. */
-      pinned: boolean
+      /**
+       * Whether each end was declared, and so already agrees across regions;
+       * an open end is what a display widens to the union of theirs.
+       */
+      pinned: [boolean, boolean]
       /** The declared {@link ColorEncoding} `domainMid`, already baked into `lut`. */
       domainMid?: number
-      /** This region's own extremes of the field, what a display unions. */
+      /**
+       * This region's own extremes of the field, what a display unions;
+       * `[Infinity, -Infinity]` where it holds no number, so a union passes
+       * over it.
+       */
       extent: [number, number]
       lut: Uint8Array
       /**

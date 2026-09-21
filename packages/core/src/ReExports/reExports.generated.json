@@ -2646,6 +2646,7 @@
       "names": [
         "VIRIDIS_STOPS",
         "buildColorRampLut",
+        "colorRampStops",
         "sampleColorRamp",
         "stopsFromRampLut"
       ],
@@ -3075,6 +3076,7 @@
     "@jbrowse/core/util/markEncoding": {
       "package": "@jbrowse/core",
       "names": [
+        "COLOR_SCHEMES",
         "DEFAULT_MARK_COLOR",
         "NO_VALUE_LABEL",
         "colorEvaluator",

@@ -20,6 +20,6 @@ export function featureColorScale(
 ) {
   const { field, domain, palette } = color
   return paintedScale(color, 'categorical') === 'categorical'
-    ? categoricalField(field, { domain, palette })
+    ? categoricalField(field, { domain, range: palette })
     : undefined
 }

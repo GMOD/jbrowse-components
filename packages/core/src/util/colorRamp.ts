@@ -1,6 +1,9 @@
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
 
+import { cssColorToRgba } from './colorBits.ts'
+
 import type { RampStop } from '../ui/colorScale.ts'
+import type { ColorSchemeName } from './colorSchemes.ts'
 
 /** One evenly-spaced ramp stop: 8-bit red, green, blue, alpha. */
 export type ColorRampStop = readonly [number, number, number, number]
@@ -34,6 +37,31 @@ function viridisStopsFromHex(): ColorRampStop[] {
  * stops.
  */
 export const VIRIDIS_STOPS: readonly ColorRampStop[] = viridisStopsFromHex()
+
+const SCHEME_STOPS: Record<ColorSchemeName, readonly ColorRampStop[]> = {
+  viridis: VIRIDIS_STOPS,
+}
+
+/**
+ * #api
+ * The stops a continuous colour scale samples: `range`'s CSS colours where it
+ * lists any, else the named `scheme`, viridis while that is unset, turned
+ * round under `reverse`.
+ */
+export function colorRampStops({
+  range,
+  scheme,
+  reverse,
+}: {
+  range?: readonly string[]
+  scheme?: ColorSchemeName
+  reverse?: boolean
+}): readonly ColorRampStop[] {
+  const stops = range?.length
+    ? range.map(c => cssColorToRgba(c))
+    : SCHEME_STOPS[scheme ?? 'viridis']
+  return reverse ? stops.toReversed() : stops
+}
 
 function lerp8(a: number, b: number, t: number) {
   return Math.round(a * (1 - t) + b * t)

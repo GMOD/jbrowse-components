@@ -124,7 +124,7 @@ function drawnScales(layer: StoredLayer): StoredLayer {
       scale?.kind === 'categorical' && color
         ? { ...scale, entries: scale.entries.filter(e => colors.has(e.color)) }
         : scale?.kind === 'ramp' && colorValue
-          ? scale.pinned
+          ? scale.pinned[0] && scale.pinned[1]
             ? { ...scale, extent: [vMin, vMax] }
             : rampOverExtent(scale, [vMin, vMax])
           : scale,

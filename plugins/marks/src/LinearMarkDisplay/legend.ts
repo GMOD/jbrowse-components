@@ -19,7 +19,7 @@ const RAMP_STOPS = 8
 const NUMERIC_KEY_HINT_ROWS = 8
 
 const NUMERIC_KEY_HINT =
-  "numeric values drawn as categories; set scale: 'linear' or a ramp for a color scale"
+  "numeric values drawn as categories; set scale: 'linear' for a color scale"
 
 export type ScaledChannel = 'color' | 'glyph'
 
@@ -60,6 +60,10 @@ function copyOf(scale: ScaleTable): ScaleTable {
   }
 }
 
+function fullyPinned(scale: Extract<ScaleTable, { kind: 'ramp' }>) {
+  return scale.pinned[0] && scale.pinned[1]
+}
+
 function unionEntries<E extends { value: string }>(
   into: E[],
   from: readonly E[],
@@ -87,15 +91,14 @@ function union(current: ScaleTable, next: ScaleTable) {
       }
       break
     case 'threshold':
-      // Identical in every region: the section key already holds the field
-      // and the cut points, and the palette follows from them.
+      // Identical in every region: the section key already holds the field,
+      // the cut points and the colours.
       break
     case 'ramp':
-      // An unpinned ramp's domain is the union of the regions' extremes,
-      // which is the same number the shapes read as a uniform, so the key
-      // and the painting cannot disagree across a pan. A pinned one already
-      // agrees.
-      if (next.kind === 'ramp' && !current.pinned && !next.pinned) {
+      // A ramp's open ends are the union of the regions' extremes, which is
+      // the same number the shapes read as a uniform, so the key and the
+      // painting cannot disagree across a pan. A pinned end already agrees.
+      if (next.kind === 'ramp' && !fullyPinned(current)) {
         current.extent = [
           Math.min(current.extent[0], next.extent[0]),
           Math.max(current.extent[1], next.extent[1]),
@@ -117,10 +120,15 @@ function sectionKey(markIndex: number, scale: ScaleTable) {
         'categorical',
         scale.field,
         scale.domain,
-        scale.palette ?? [],
+        scale.range ?? [],
       ])
     case 'threshold':
-      return JSON.stringify(['threshold', scale.field, scale.domain])
+      return JSON.stringify([
+        'threshold',
+        scale.field,
+        scale.domain,
+        scale.entries.map(e => e.color),
+      ])
     case 'glyph':
       return JSON.stringify([
         'glyph',
@@ -135,9 +143,10 @@ function sectionKey(markIndex: number, scale: ScaleTable) {
  * The keys the loaded regions carry, one per scale, in the order of the first
  * mark drawing through each with colour before glyph. A categorical table is
  * the union over regions and over the marks declaring it alike, in the
- * field's order; a key's entry is the same in every region. A ramp's domain is
- * the union of the regions' own extremes, or the pinned one where the config
- * listed it — the same number the shapes read as a uniform.
+ * field's order; a key's entry is the same in every region. A ramp's domain
+ * takes each pinned end as the config wrote it and each open one from the
+ * union of the regions' own extremes — the same number the shapes read as a
+ * uniform.
  */
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,
@@ -173,7 +182,7 @@ export function buildMarkLegend(
   }
   for (const section of sections.values()) {
     const { scale } = section
-    if (scale.kind === 'ramp' && !scale.pinned) {
+    if (scale.kind === 'ramp' && !fullyPinned(scale)) {
       section.scale = rampOverExtent(scale, scale.extent)
     }
   }

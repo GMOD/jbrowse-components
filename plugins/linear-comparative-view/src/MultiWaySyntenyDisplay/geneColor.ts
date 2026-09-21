@@ -38,7 +38,7 @@ export function geneColorScale({
   palette,
 }: ColorSetting) {
   return paintedScale({ field, scale }, 'categorical') === 'categorical'
-    ? categoricalField(field, { domain, palette })
+    ? categoricalField(field, { domain, range: palette })
     : undefined
 }
 

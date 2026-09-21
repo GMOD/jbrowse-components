@@ -4,7 +4,10 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { buildMarkLegend, categoryLabel, markColorScales } from './legend.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
-import type { ColorScaleTable } from '@jbrowse/core/util/markEncoding'
+import type {
+  ColorScaleTable,
+  ContinuousRef,
+} from '@jbrowse/core/util/markEncoding'
 
 function table(values: string[], numericKeys?: boolean): ColorScaleTable {
   return {
@@ -60,7 +63,7 @@ test('the hint needs every region to have met numbers, the union ANDing them', (
   expect(key?.kind === 'categorical' && key.note).toBeFalsy()
 })
 
-function thresholdTable(): ColorScaleTable {
+function thresholdTable(): Extract<ColorScaleTable, { kind: 'threshold' }> {
   return {
     kind: 'threshold',
     field: 'pip',
@@ -109,7 +112,7 @@ test('a colour two values hashed onto names both of them on hover', () => {
   expect(categoryLabel(thresholdTable(), 0xff222222)).toBe('0.1 – 0.5')
 })
 
-function divergingRegion(values: number[]) {
+function rampRegion(values: unknown[], color: Partial<ContinuousRef> = {}) {
   return region(
     encodeFeatures(
       values.map(
@@ -122,18 +125,57 @@ function divergingRegion(values: number[]) {
             log2,
           }),
       ),
-      {
-        color: {
-          field: 'log2',
-          scale: 'linear',
-          ramp: ['blue', 'white', 'red'],
-          domainMid: 0,
-        },
-      },
+      { color: { field: 'log2', scale: 'linear', ...color } },
       ['colorValue'],
     ).scale,
   )
 }
+
+function divergingRegion(values: number[]) {
+  return rampRegion(values, {
+    range: ['blue', 'white', 'red'],
+    domainMid: 0,
+  })
+}
+
+function keyDomain(regions: MarkRegionData[]) {
+  const table = buildMarkLegend(regions)[0]?.scale
+  return table?.kind === 'ramp' ? table.domain : undefined
+}
+
+// A sparse region used to contribute [0, 1] to the union, so a ramp over
+// [100, 1000] became [0, 1000] once one loaded.
+test('a region holding no number leaves an open ramp where the others put it', () => {
+  expect(keyDomain([rampRegion([100, 1000]), rampRegion([])])).toEqual([
+    100, 1000,
+  ])
+  expect(keyDomain([rampRegion(['none']), rampRegion([100, 1000])])).toEqual([
+    100, 1000,
+  ])
+  expect(keyDomain([rampRegion([]), rampRegion(['none'])])).toEqual([0, 1])
+})
+
+test('a pinned floor holds across the union, and the open ceiling widens to it', () => {
+  expect(
+    keyDomain([
+      rampRegion([10, 20], { domainMin: 0 }),
+      rampRegion([15, 90], { domainMin: 0 }),
+    ]),
+  ).toEqual([0, 90])
+})
+
+test('two threshold marks over one field and cuts keep a key each when their ranges differ', () => {
+  const recoloured: ColorScaleTable = {
+    ...thresholdTable(),
+    entries: thresholdTable().entries.map(e => ({
+      ...e,
+      color: e.color + 1,
+    })),
+  }
+  const sections = buildMarkLegend([region(thresholdTable(), recoloured)])
+  expect(sections).toHaveLength(2)
+  expect(categoryLabel(sections[1]!.scale, 0xff222223)).toBe('0.1 – 0.5')
+})
 
 // Each region bakes its table with the middle stop placed by its own domain,
 // and the union kept the first region's: white sat at 1.4 over [-0.2, 3].

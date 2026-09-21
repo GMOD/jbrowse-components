@@ -16,7 +16,7 @@ interface Vocabulary {
   /** The key a feature carrying no value files under. */
   missing: string
   domain: readonly string[]
-  palette: readonly string[]
+  range: readonly string[]
   labels: Readonly<Record<string, string>>
 }
 
@@ -27,7 +27,7 @@ const VOCABULARIES: Readonly<Record<string, Vocabulary>> = {
   [STRAND_FIELD]: {
     missing: '0',
     domain: ['1', '-1', '0'],
-    palette: ['tomato', 'cornflowerblue', 'goldenrod'],
+    range: ['tomato', 'cornflowerblue', 'goldenrod'],
     labels: {
       '1': 'Forward strand',
       '-1': 'Reverse strand',
@@ -39,7 +39,7 @@ const VOCABULARIES: Readonly<Record<string, Vocabulary>> = {
 /**
  * #api
  * One categorical field as every channel reads it — a facet's sections, a
- * color's palette entries, a key's rows. `key` files a value, `compare`
+ * color's range entries, a key's rows. `key` files a value, `compare`
  * orders keys (the `domain` first, the rest by `compareGroupKeys`, `''`
  * after them), `label` names a key in a legend, `sectionLabel` on a chip, and
  * `color` paints it. A key's color depends only on the key and the
@@ -61,12 +61,12 @@ export function categoricalField(
   field: string,
   {
     domain = [],
-    palette = [],
-  }: { domain?: readonly string[]; palette?: readonly string[] } = {},
+    range = [],
+  }: { domain?: readonly string[]; range?: readonly string[] } = {},
 ): CategoricalField {
   const vocabulary = VOCABULARIES[field]
   const order = domain.length > 0 ? domain : (vocabulary?.domain ?? [])
-  const colors = palette.length > 0 ? palette : (vocabulary?.palette ?? [])
+  const colors = range.length > 0 ? range : (vocabulary?.range ?? [])
   const named = (key: string) => vocabulary?.labels[key]
   let colorOf: ((key: string) => string) | undefined
   return {

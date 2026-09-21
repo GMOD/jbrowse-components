@@ -56,7 +56,7 @@ cannot disagree about the warp.
 
 ```js
 // type signature
-(field: string, { domain, palette, }?: { domain?: readonly string[] | undefined; palette?: readonly string[] | undefined; }) => CategoricalField
+(field: string, { domain, range, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -64,7 +64,7 @@ cannot disagree about the warp.
 ## CategoricalField
 
 One categorical field as every channel reads it — a facet's sections, a
-color's palette entries, a key's rows. `key` files a value, `compare`
+color's range entries, a key's rows. `key` files a value, `compare`
 orders keys (the `domain` first, the rest by `compareGroupKeys`, `''`
 after them), `label` names a key in a legend, `sectionLabel` on a chip, and
 `color` paints it. A key's color depends only on the key and the
@@ -75,7 +75,7 @@ declaration, so every region agrees on it.
 ## CategoricalRef
 
 A field bound to a categorical scale: each distinct value takes one entry
-of the channel's range — a palette entry for `color`, a glyph name for
+of the channel's `range` — a colour for `color`, a glyph name for
 `glyph`. Every value derives its entry from itself (an integer takes the
 slot it names, anything else hashes in), so every region agrees on a value
 it shares with another at the cost of an occasional collision. A `domain`
@@ -94,13 +94,25 @@ rule over two fields.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
+## COLOR_SCHEMES
+
+The named ramps a continuous colour scale's `scheme` takes, each one a stop
+table in `colorRamp.ts` that every ramp baker reads, so no display can name
+a scheme nothing bakes.
+
+```js
+// type signature
+readonly ["viridis"]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
+
 ## ColorEncoding
 
 How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
-returning one paints per feature with no scale; the two object forms bind a
-field to a scale, which a legend can describe. A continuous scale maps the
-field through `domain` (the region's minimum and maximum when absent) into
-`ramp`; list a `domain` to keep colors consistent across a whole view.
+returning one paints per feature with no scale; the object forms bind a
+field to a scale, which a legend can describe, and share the config's
+member names.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -117,11 +129,38 @@ carries a plain `color` slot.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
+## colorRampStops
+
+The stops a continuous colour scale samples: `range`'s CSS colours where it
+lists any, else the named `scheme`, viridis while that is unset, turned
+round under `reverse`.
+
+```js
+// type signature
+({ range, scheme, reverse, }: { range?: readonly string[] | undefined; scheme?: "viridis" | undefined; reverse?: boolean | undefined; }) => readonly ColorRampStop[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
 ## ColorScaleTable
 
 The scale a colour channel was resolved through, as the legend reads it —
 the same table the colours in the payload came from, so the key cannot
 disagree with the painting.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## ColorSchemeName
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
+
+## ContinuousRef
+
+A numeric field read through a linear or log scale into a ramp. Each end of
+the domain is pinned by `domainMin` or `domainMax`, or is the region's own
+extreme where unset, so pinning both keeps colours consistent across a
+whole view. The ramp is `range`'s CSS colours, evenly spaced, where it
+lists any, else the named `scheme`; `reverse` turns it round.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -408,11 +447,11 @@ encoding `row` stacks it. Under a facet it packs each section on its own.
 
 ## rampOverExtent
 
-An unpinned ramp table over `extent`, the union a display took across the
-regions it loaded: the domain the shapes read as a uniform, and the table
-baked again where a `domainMid` places its middle stop by that domain. Each
-region baked its own, so keeping the first region's put the middle colour
-at a value none of them declared.
+A ramp table over `extent`, the union a display took across the regions it
+loaded: each open end of the domain moved to the union's, the pinned ends
+kept, and the table baked again where a `domainMid` places its middle stop
+by that domain. Each region baked its own, so keeping the first region's
+put the middle colour at a value none of them declared.
 
 One table per stop list and middle position, so a display asking again over
 an extent that has not moved gets the bytes it already uploaded: a backend
@@ -424,13 +463,6 @@ re-uploads a ramp on identity.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
-
-## RampRef
-
-The ramp a continuous colour scale samples: a named ramp, or evenly spaced
-CSS colour stops.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ## relight
 
@@ -608,7 +640,7 @@ default categorical palette where it runs out.
 ## ThresholdRef
 
 A numeric field cut into intervals: `domain` is the ascending cut points
-and `palette` holds one colour more, so a value paints the entry for the
+and `range` holds one colour more, so a value paints the entry for the
 number of cut points it is at or past. A value that is not a number
 belongs to no interval.
 

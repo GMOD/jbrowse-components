@@ -78,7 +78,7 @@ function ramp(
     field: 'score',
     scale: 'linear',
     domain: pinnedDomain ?? extent,
-    pinned: pinnedDomain !== undefined,
+    pinned: [pinnedDomain !== undefined, pinnedDomain !== undefined],
     extent,
     lut: new Uint8Array(256 * 4),
   }
@@ -167,7 +167,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           color: {
             field: 'strand',
             scale: 'categorical',
-            palette: undefined,
+            range: undefined,
             domain: ['1', '-1'],
           },
           glyph: 'disc',
@@ -194,8 +194,10 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           color: {
             field: 'score',
             scale: 'log',
-            domain: [1, 1000],
-            ramp: ['white', 'red'],
+            domainMin: 1,
+            domainMax: 1000,
+            range: ['white', 'red'],
+            reverse: false,
           },
           glyph: 'disc',
         },
@@ -727,7 +729,10 @@ test('a colour ramp domain with an open end autoscales and says it is not read a
   expect(display.notices).toEqual([
     expect.stringMatching(/^mark 0 encoding.color.domain: a ramp is pinned by/),
   ])
-  expect(display.encodings[0]!.color).toMatchObject({ domain: undefined })
+  expect(display.encodings[0]!.color).toMatchObject({
+    domainMin: undefined,
+    domainMax: undefined,
+  })
 })
 
 test('a span-only display has no score domain', () => {
@@ -1051,12 +1056,12 @@ test('the legend reads the scale table the worker resolved', () => {
 test('two marks colouring by one field through one palette share a key', () => {
   const strandTable = (
     entries: { value: string; color: number }[],
-    palette?: string[],
+    range?: string[],
   ): Layer['scale'] => ({
     kind: 'categorical',
     field: 'strand',
     domain: [],
-    ...(palette ? { palette } : {}),
+    ...(range ? { range } : {}),
     entries,
   })
   const marks = [

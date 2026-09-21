@@ -566,7 +566,7 @@ export function stateModelFactory(
               }),
               {
                 id: 'field',
-                field: categoricalField(field, { domain, palette }),
+                field: categoricalField(field, { domain, range: palette }),
                 maxItems: MAX_LEGEND_ENTRIES,
               },
             )

@@ -9,10 +9,14 @@ import { NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR } from './colorBits.ts'
 import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
-import { encodeFeatures, encodedChannelTransferables } from './markEncoding.ts'
+import {
+  encodeFeatures,
+  encodedChannelTransferables,
+  rampOverExtent,
+} from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
 
-import type { GlyphName, LaneName } from './markEncoding.ts'
+import type { ContinuousRef, GlyphName, LaneName } from './markEncoding.ts'
 
 const jexl = createJexlInstance()
 const ALL: LaneName[] = ['y', 'color', 'glyph', 'row', 'index']
@@ -93,8 +97,9 @@ test('a ramp value that holds no number paints the misconfiguration grey, not th
       color: {
         field: 'score',
         scale: 'linear',
-        domain: [-1, 1],
-        ramp: ['blue', 'white', 'red'],
+        domainMin: -1,
+        domainMax: 1,
+        range: ['blue', 'white', 'red'],
       },
     },
     ['color'],
@@ -113,7 +118,7 @@ test('threshold cuts written high to low paint the intervals they name', () => {
         field: 'pip',
         scale: 'threshold',
         domain: [0.5, 0.1],
-        palette: ['#111111', '#222222', '#333333'],
+        range: ['#111111', '#222222', '#333333'],
       },
     },
     ['color'],
@@ -124,23 +129,24 @@ test('threshold cuts written high to low paint the intervals they name', () => {
   expect(r.scale).toMatchObject({ kind: 'threshold', domain: [0.1, 0.5] })
 })
 
-// Every value painted white: the normalizer clamped all of them to one end.
-test('a ramp domain written high to low reverses the ramp', () => {
-  const ramp = (domain: [number, number]) =>
-    encodeFeatures(
-      [0, 25, 50].map((score, i) => feature(i, { score })),
-      {
-        color: {
-          field: 'score',
-          scale: 'linear',
-          domain,
-          ramp: ['black', 'white'],
-        },
+function blackToWhite(color: Partial<ContinuousRef>) {
+  return encodeFeatures(
+    [0, 25, 50].map((score, i) => feature(i, { score })),
+    {
+      color: {
+        field: 'score',
+        scale: 'linear',
+        range: ['black', 'white'],
+        ...color,
       },
-      ['color'],
-    )
-  const forward = ramp([0, 50])
-  const reversed = ramp([50, 0])
+    },
+    ['color'],
+  )
+}
+
+test('reverse turns the ramp round over the same domain', () => {
+  const forward = blackToWhite({ domainMin: 0, domainMax: 50 })
+  const reversed = blackToWhite({ domainMin: 0, domainMax: 50, reverse: true })
   expect([forward.color[0], forward.color[2]]).toEqual(
     ['black', 'white'].map(c => cssColorToABGR(c)),
   )
@@ -152,7 +158,81 @@ test('a ramp domain written high to low reverses the ramp', () => {
   expect(
     Math.abs(grey(reversed.color[1]!) - grey(forward.color[1]!)),
   ).toBeLessThanOrEqual(1)
-  expect(reversed.scale).toMatchObject({ domain: [0, 50], pinned: true })
+  expect(reversed.scale).toMatchObject({
+    domain: [0, 50],
+    pinned: [true, true],
+  })
+})
+
+// A domain is a span and `reverse` its one direction, so ends written the
+// wrong way round span the same interval rather than a second way to reverse.
+test('ends written high to low span the same interval, unreversed', () => {
+  const written = blackToWhite({ domainMin: 50, domainMax: 0 })
+  const forward = blackToWhite({ domainMin: 0, domainMax: 50 })
+  expect([...written.color]).toEqual([...forward.color])
+  expect(written.scale).toMatchObject({ domain: [0, 50] })
+})
+
+test('a pinned floor keeps its value and the open ceiling follows the region', () => {
+  const r = blackToWhite({ domainMin: -50 })
+  expect(r.scale).toMatchObject({
+    domain: [-50, 50],
+    pinned: [true, false],
+    extent: [0, 50],
+  })
+  expect(r.color[0]).toBe(cssColorToABGR('rgb(128,128,128)'))
+  expect(r.color[2]).toBe(cssColorToABGR('white'))
+})
+
+test('a pinned ceiling keeps its value and the open floor follows the region', () => {
+  const r = blackToWhite({ domainMax: 100 })
+  expect(r.scale).toMatchObject({ domain: [0, 100], pinned: [false, true] })
+  expect(r.color[0]).toBe(cssColorToABGR('black'))
+  expect(r.color[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
+})
+
+test('an open end never crosses a pinned one', () => {
+  const r = blackToWhite({ domainMin: 80 })
+  expect(r.scale).toMatchObject({ domain: [80, 80] })
+  expect(new Set(r.color)).toEqual(new Set([cssColorToABGR('black')]))
+})
+
+test('scheme names the ramp, and range, where it lists colours, wins over it', () => {
+  const viridis = blackToWhite({ range: undefined, scheme: 'viridis' })
+  const unset = blackToWhite({ range: undefined })
+  expect([...viridis.color]).toEqual([...unset.color])
+  expect(viridis.color[0]).toBe(cssColorToABGR('#440154'))
+  const both = blackToWhite({ scheme: 'viridis' })
+  expect(both.color[0]).toBe(cssColorToABGR('black'))
+})
+
+test('a region holding no number spans [0, 1] and contributes no extent', () => {
+  const r = encodeFeatures(
+    [feature(0, { score: 'none' })],
+    { color: { field: 'score', scale: 'linear', range: ['black', 'white'] } },
+    ['color'],
+  )
+  expect(r.scale).toMatchObject({
+    domain: [0, 1],
+    extent: [Infinity, -Infinity],
+  })
+  if (r.scale?.kind === 'ramp') {
+    expect(rampOverExtent(r.scale, r.scale.extent).domain).toEqual([0, 1])
+  }
+})
+
+test('rampOverExtent widens only the open ends of a half-pinned table', () => {
+  const r = blackToWhite({ domainMin: -50 })
+  const table = r.scale
+  expect(table?.kind).toBe('ramp')
+  if (table?.kind === 'ramp') {
+    expect(rampOverExtent(table, [-20, 200]).domain).toEqual([-50, 200])
+    expect(rampOverExtent(table, [-100, -60]).domain).toEqual([-50, -50])
+    const open = blackToWhite({}).scale
+    if (open?.kind === 'ramp') {
+      expect(rampOverExtent(open, [-20, 200]).domain).toEqual([-20, 200])
+    }
+  }
 })
 
 test('a jexl: field ref is the escape for a derived channel', () => {
@@ -228,7 +308,7 @@ test('a categorical domain pins the order and a palette the colours', () => {
         field: 'strand',
         scale: 'categorical',
         domain: [-1, 1],
-        palette: ['red', 'blue'],
+        range: ['red', 'blue'],
       },
     },
     ALL,
@@ -238,7 +318,7 @@ test('a categorical domain pins the order and a palette the colours', () => {
     kind: 'categorical',
     field: 'strand',
     domain: ['-1', '1'],
-    palette: ['red', 'blue'],
+    range: ['red', 'blue'],
     numericKeys: true,
     entries: [
       { value: '-1', color: cssColorToABGR('red') },
@@ -320,7 +400,7 @@ test('a ramp scale reads the field through its domain into the LUT', () => {
       color: {
         field: 'score',
         scale: 'linear',
-        ramp: ['black', 'white'],
+        range: ['black', 'white'],
       },
     },
     ALL,
@@ -349,8 +429,9 @@ test('domainMid puts the ramp middle stop at that value', () => {
       color: {
         field: 'score',
         scale: 'linear',
-        domain: [0, 40],
-        ramp: ['black', 'white', 'black'],
+        domainMin: 0,
+        domainMax: 40,
+        range: ['black', 'white', 'black'],
         domainMid: 10,
       },
     },
@@ -372,8 +453,9 @@ test('a pinned ramp domain wins over the region extremes', () => {
       color: {
         field: 'score',
         scale: 'linear',
-        domain: [0, 100],
-        ramp: ['black', 'white'],
+        domainMin: 0,
+        domainMax: 100,
+        range: ['black', 'white'],
       },
     },
     ALL,
@@ -389,8 +471,9 @@ test('a pinned ramp domain with no range steps at its value', () => {
       color: {
         field: 'score',
         scale: 'linear',
-        domain: [25, 25],
-        ramp: ['black', 'white'],
+        domainMin: 25,
+        domainMax: 25,
+        range: ['black', 'white'],
       },
     },
     ALL,
@@ -404,7 +487,7 @@ test('a pinned ramp domain with no range steps at its value', () => {
 test('the colorValue lane ships the raw values and the region extent instead of colours', () => {
   const r = encodeFeatures(
     features,
-    { color: { field: 'score', scale: 'linear', ramp: ['black', 'white'] } },
+    { color: { field: 'score', scale: 'linear', range: ['black', 'white'] } },
     [...ALL, 'colorValue'],
     { jexl },
   )
@@ -413,7 +496,7 @@ test('the colorValue lane ships the raw values and the region extent instead of 
   expect(r.scale?.kind).toBe('ramp')
   if (r.scale?.kind === 'ramp') {
     expect(r.scale.extent).toEqual([10, 40])
-    expect(r.scale.pinned).toBe(false)
+    expect(r.scale.pinned).toEqual([false, false])
     expect(r.scale.lut.length).toBe(256 * 4)
   }
   expect(encodedChannelTransferables(r)).toContain(r.colorValue.buffer)
@@ -422,11 +505,13 @@ test('the colorValue lane ships the raw values and the region extent instead of 
 test('a pinned domain says so, so the display leaves it alone', () => {
   const r = encodeFeatures(
     features,
-    { color: { field: 'score', scale: 'log', domain: [1, 100] } },
+    {
+      color: { field: 'score', scale: 'log', domainMin: 1, domainMax: 100 },
+    },
     [...ALL, 'colorValue'],
     { jexl },
   )
-  expect(r.scale?.kind === 'ramp' && r.scale.pinned).toBe(true)
+  expect(r.scale?.kind === 'ramp' && r.scale.pinned).toEqual([true, true])
   expect(r.scale?.kind === 'ramp' && r.scale.domain).toEqual([1, 100])
 })
 
@@ -439,7 +524,7 @@ test('a threshold colour packs one palette entry per interval', () => {
         field: 'score',
         scale: 'threshold',
         domain: [20, 30],
-        palette,
+        range: palette,
       },
     },
     [...ALL, 'colorValue'],

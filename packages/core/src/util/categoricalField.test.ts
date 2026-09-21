@@ -30,7 +30,7 @@ test('strand names its values and paints red and blue, and yields each to one wr
   expect(strand.sectionLabel('1')).toBe('Forward strand')
   expect(strand.color('1')).toBe('tomato')
   expect(strand.color('-1')).toBe('cornflowerblue')
-  const repainted = categoricalField('strand', { palette: ['red', 'blue'] })
+  const repainted = categoricalField('strand', { range: ['red', 'blue'] })
   expect(repainted.color('1')).toBe('red')
   expect(repainted.domain).toEqual(['1', '-1', '0'])
 })

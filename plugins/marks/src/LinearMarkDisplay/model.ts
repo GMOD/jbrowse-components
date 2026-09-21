@@ -186,29 +186,30 @@ function colorEncodingOf(
       return {
         field: color.field,
         scale,
-        palette: listed(color.palette),
+        range: listed(color.palette),
         domain: listed(color.domain),
       }
     case 'threshold':
       return {
         field: color.field,
         scale,
-        palette: listed(color.palette),
+        range: listed(color.palette),
         domain: [...color.domain],
       }
-    default:
+    default: {
+      const pair = pinnedPair(color.domain)
+      const named = color.ramp.length === 1 && color.ramp[0] === 'viridis'
       return {
         field: color.field,
         scale,
-        domain: pinnedPair(color.domain),
-        ramp:
-          color.ramp.length === 0
-            ? undefined
-            : color.ramp.length === 1 && color.ramp[0] === 'viridis'
-              ? 'viridis'
-              : [...color.ramp],
+        domainMin: pair && Math.min(...pair),
+        domainMax: pair && Math.max(...pair),
+        reverse: pair ? pair[0] > pair[1] : undefined,
+        range: named ? undefined : listed(color.ramp),
+        scheme: named ? 'viridis' : undefined,
         domainMid: color.domainMid,
       }
+    }
   }
 }
 

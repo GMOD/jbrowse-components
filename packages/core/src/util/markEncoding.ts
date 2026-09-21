@@ -6,8 +6,8 @@ import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { categoricalScale } from '../ui/colors.ts'
 import { categoricalField } from './categoricalField.ts'
-import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
-import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
+import { cssColorToABGR, packAbgr } from './colorBits.ts'
+import { buildColorRampLut, colorRampStops } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
@@ -34,7 +34,6 @@ import type {
   GlyphName,
   GlyphScaleTable,
   LaneName,
-  RampRef,
 } from './markEncodingTypes.ts'
 import type { ProgressReporter } from './progress.ts'
 import type { Feature } from './simpleFeature.ts'
@@ -45,6 +44,7 @@ export type {
   BinStep,
   CategoricalRef,
   ColorEncoding,
+  ContinuousRef,
   CoverageStep,
   ColorScaleTable,
   CoreEncodeFeaturesArgs,
@@ -62,10 +62,12 @@ export type {
   LaneName,
   LayerRequest,
   MarkEncoding,
-  RampRef,
   ScaleTable,
+  ThresholdRef,
   TransformStep,
 } from './markEncodingTypes.ts'
+export type { ColorSchemeName } from './colorSchemes.ts'
+export { COLOR_SCHEMES } from './colorSchemes.ts'
 
 export { NO_VALUE_LABEL } from './categoricalField.ts'
 
@@ -150,13 +152,6 @@ function glyphReader(
     const v = expr.eval(buildJexlContext({ feature }))
     return typeof v === 'string' && isGlyphName(v) ? GLYPH_CODES[v] : GLYPH_DISC
   }
-}
-
-function rampStops(ramp: RampRef | undefined): readonly ColorRampStop[] {
-  if (ramp === undefined || ramp === 'viridis') {
-    return VIRIDIS_STOPS
-  }
-  return ramp.map(c => cssColorToRgba(c))
 }
 
 function lutColorAt(lut: Uint8Array, t: number) {
@@ -296,7 +291,7 @@ export function encodeFeatures<L extends LaneName>(
     scaled?.scale === 'categorical'
       ? categoricalField(scaled.field, {
           domain: scaled.domain?.map(String),
-          palette: scaled.palette,
+          range: scaled.range,
         })
       : undefined
   const colorCategories =
@@ -312,7 +307,7 @@ export function encodeFeatures<L extends LaneName>(
   const binColors =
     thresholdEncoding && cuts
       ? Uint32Array.from(
-          thresholdPalette(cuts.length + 1, thresholdEncoding.palette),
+          thresholdPalette(cuts.length + 1, thresholdEncoding.range),
           c => cssColorToABGR(c),
         )
       : undefined
@@ -405,7 +400,7 @@ export function encodeFeatures<L extends LaneName>(
       kind: 'categorical',
       field: scaled.field,
       domain: [...colorField.domain],
-      ...(scaled.palette ? { palette: [...scaled.palette] } : {}),
+      ...(scaled.range ? { range: [...scaled.range] } : {}),
       ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
       entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
@@ -421,22 +416,15 @@ export function encodeFeatures<L extends LaneName>(
     }
   } else if (rampEncoding && rampValues) {
     const extent = finiteExtremes(rampValues, count)
-    const declared = rampEncoding.domain ?? extent
-    // A domain written high to low reverses the ramp, as it does in d3 and
-    // Vega-Lite; the shapes read an ascending domain, so the stops turn round.
-    const reversed = declared[0] > declared[1]
-    const domain: [number, number] = reversed
-      ? [declared[1], declared[0]]
-      : declared
+    const { domainMin, domainMax, domainMid } = rampEncoding
+    const domain = rampDomain(domainMin, domainMax, extent)
     const norm = makeScoreNormalizer(
       domain[0],
       domain[1],
       scaleTypeCode(rampEncoding.scale),
       1,
     )
-    const { domainMid } = rampEncoding
-    const forward = rampStops(rampEncoding.ramp)
-    const stops = reversed ? forward.toReversed() : forward
+    const stops = colorRampStops(rampEncoding)
     const lut = rampLut(stops, rampEncoding.scale, domain, domainMid)
     if (color) {
       for (let i = 0; i < count; i++) {
@@ -451,7 +439,7 @@ export function encodeFeatures<L extends LaneName>(
       field: rampEncoding.field,
       scale: rampEncoding.scale,
       domain,
-      pinned: rampEncoding.domain !== undefined,
+      pinned: [domainMin !== undefined, domainMax !== undefined],
       ...(domainMid === undefined ? {} : { domainMid, stops }),
       extent,
       lut,
@@ -520,6 +508,27 @@ export function encodeFeatures<L extends LaneName>(
   return encoded as Encoded<L>
 }
 
+// Each end the declaration pins, else the extent's, and ascending: a span has
+// no direction, `reverse` being the ramp's. An open end stops at a pinned one
+// rather than crossing it, and an extent holding no value spans [0, 1].
+function rampDomain(
+  min: number | undefined,
+  max: number | undefined,
+  extent: readonly [number, number],
+): [number, number] {
+  const [lo, hi] = extent[0] <= extent[1] ? extent : EMPTY_EXTENT_DOMAIN
+  if (min !== undefined && max !== undefined) {
+    return min <= max ? [min, max] : [max, min]
+  }
+  if (min !== undefined) {
+    return [min, Math.max(min, hi)]
+  }
+  if (max !== undefined) {
+    return [Math.min(lo, max), max]
+  }
+  return [lo, hi]
+}
+
 function rampMid(
   scale: 'linear' | 'log',
   domain: [number, number],
@@ -549,11 +558,11 @@ const bakedRamps = new Map<string, Uint8Array>()
 
 /**
  * #api
- * An unpinned ramp table over `extent`, the union a display took across the
- * regions it loaded: the domain the shapes read as a uniform, and the table
- * baked again where a `domainMid` places its middle stop by that domain. Each
- * region baked its own, so keeping the first region's put the middle colour
- * at a value none of them declared.
+ * A ramp table over `extent`, the union a display took across the regions it
+ * loaded: each open end of the domain moved to the union's, the pinned ends
+ * kept, and the table baked again where a `domainMid` places its middle stop
+ * by that domain. Each region baked its own, so keeping the first region's
+ * put the middle colour at a value none of them declared.
  *
  * One table per stop list and middle position, so a display asking again over
  * an extent that has not moved gets the bytes it already uploaded: a backend
@@ -563,11 +572,16 @@ export function rampOverExtent(
   table: Extract<ColorScaleTable, { kind: 'ramp' }>,
   extent: [number, number],
 ): Extract<ColorScaleTable, { kind: 'ramp' }> {
-  const { stops } = table
+  const { stops, pinned } = table
+  const domain = rampDomain(
+    pinned[0] ? table.domain[0] : undefined,
+    pinned[1] ? table.domain[1] : undefined,
+    extent,
+  )
   if (!stops) {
-    return { ...table, extent, domain: extent }
+    return { ...table, extent, domain }
   }
-  const mid = rampMid(table.scale, extent, table.domainMid)
+  const mid = rampMid(table.scale, domain, table.domainMid)
   const key = `${mid}|${stops.join(';')}`
   let lut = bakedRamps.get(key)
   if (!lut) {
@@ -577,7 +591,7 @@ export function rampOverExtent(
     lut = buildColorRampLut(stops, mid)
     bakedRamps.set(key, lut)
   }
-  return { ...table, extent, domain: extent, lut }
+  return { ...table, extent, domain, lut }
 }
 
 function keysAreNumeric(entries: readonly { value: string }[]) {
@@ -585,6 +599,10 @@ function keysAreNumeric(entries: readonly { value: string }[]) {
   return named.length > 0 && named.every(e => Number.isFinite(Number(e.value)))
 }
 
+const EMPTY_EXTENT_DOMAIN = [0, 1] as const
+
+// `[Infinity, -Infinity]` where no value is finite, which a union of regions'
+// extents passes over.
 function finiteExtremes(values: Float32Array, count: number): [number, number] {
   let min = Infinity
   let max = -Infinity
@@ -599,7 +617,7 @@ function finiteExtremes(values: Float32Array, count: number): [number, number] {
       }
     }
   }
-  return min === Infinity ? [0, 1] : [min, max]
+  return [min, max]
 }
 
 /**

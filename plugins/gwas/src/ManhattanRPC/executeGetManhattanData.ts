@@ -95,7 +95,7 @@ async function makeReaders(
         field: color.field,
         scale: 'threshold',
         domain: [...color.domain],
-        palette: color.palette.length ? [...color.palette] : undefined,
+        range: color.palette.length ? [...color.palette] : undefined,
       },
       glyph: defaultGlyph,
     }
@@ -105,7 +105,7 @@ async function makeReaders(
         field: color.field,
         scale: 'categorical',
         domain: color.domain.length ? [...color.domain] : undefined,
-        palette: color.palette.length ? [...color.palette] : undefined,
+        range: color.palette.length ? [...color.palette] : undefined,
       },
       glyph: defaultGlyph,
     }
