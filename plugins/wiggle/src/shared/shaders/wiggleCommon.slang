@@ -182,11 +182,11 @@ public float densityGradientT(float norm, float zeroNorm) {
   return abs(norm - zeroNorm) / max(maxDist, 0.0001);
 }
 
-// A named ramp's position: the domain's ends at its end stops and `midNorm` at
-// its middle one, linear on each side, so a diverging scheme parts at
-// `domainMid` and a sequential one runs low to high.
+// A named ramp's position: the domain's ends at its end stops and `midNorm`, in
+// [0, 1], at its middle one, linear on each side. core's `buildColorRampLut`
+// warps by the same rule, so a middle at the domain's bottom starts there.
 public float densityRampT(float norm, float midNorm) {
-  return norm <= midNorm
-    ? 0.5 * norm / max(midNorm, 0.0001)
+  return midNorm > 0.0 && norm <= midNorm
+    ? 0.5 * norm / midNorm
     : 0.5 + 0.5 * (norm - midNorm) / max(1.0 - midNorm, 0.0001);
 }

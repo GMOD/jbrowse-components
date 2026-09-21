@@ -150,12 +150,11 @@ test('CSS stops build one cached LUT, and domainMid moves the pivot', () => {
   expect(out.rampLut).not.toBeNull()
 })
 
-test('one CSS stop is the inline fade to that colour', () => {
-  const out = resolved(
-    color({ field: 'score', scale: 'linear', range: ['red'] }),
-    0,
-  )
-  expect(out.rampLut).toBeNull()
-  expect(out.posColor).toBe('red')
-  expect(out.negColor).toBe('red')
+test('one CSS stop is a ramp from white to that colour, whatever the origin', () => {
+  const written = color({ field: 'score', scale: 'linear', range: ['red'] })
+  const out = resolved(written, 3)
+  expect(out.rampLut).toBe(rampLutOf({ range: ['white', 'red'] }))
+  expect(out.rampMid).toBeUndefined()
+  expect(resolved(written, -7).rampLut).toBe(out.rampLut)
+  expect([out.posColor, out.negColor]).toEqual(['red', 'red'])
 })

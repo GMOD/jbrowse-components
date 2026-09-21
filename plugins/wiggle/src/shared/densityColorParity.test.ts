@@ -1,3 +1,8 @@
+import {
+  buildColorRampLut,
+  colorRampStops,
+  sampleColorRamp,
+} from '@jbrowse/core/util/colorRamp'
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
 import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
 import {
@@ -374,6 +379,33 @@ describe('named-ramp (LUT) density mode', () => {
       })
     },
   )
+})
+
+// The mark display bakes `domainMid` into its table with core's
+// `buildColorRampLut`; wiggle warps per read with `densityRampT`. Over a 0..1
+// linear domain `rampMidNorm` is the middle itself, clamped, so both must pick
+// the same point on the stops for every middle, in view or not.
+test.each([-0.5, 0, 0.2, 0.5, 0.8, 1, 1.5])(
+  'densityRampT warps as buildColorRampLut does, middle at %p',
+  mid => {
+    const stops = colorRampStops({ range: ['blue', 'white', 'red'] })
+    const core = buildColorRampLut(stops, mid)
+    const midNorm = rampMidNorm(0, 1, SCALE_TYPE_LINEAR, mid)
+    for (let i = 0; i < COLOR_RAMP_LUT_ENTRIES; i++) {
+      const t = i / (COLOR_RAMP_LUT_ENTRIES - 1)
+      expect(sampleColorRamp(stops, densityRampT(t, midNorm))).toEqual([
+        ...core.slice(i * 4, i * 4 + 4),
+      ])
+    }
+  },
+)
+
+test('an unset domainMid runs the ramp straight across the domain', () => {
+  const midNorm = rampMidNorm(-4, 12, SCALE_TYPE_LINEAR, undefined)
+  expect(midNorm).toBe(0.5)
+  for (const norm of [0, 0.1, 0.25, 0.5, 0.7, 1]) {
+    expect(densityRampT(norm, midNorm)).toBeCloseTo(norm, 9)
+  }
 })
 
 // The sweeps above model `rampColor`'s texel mapping rather than reading it, so

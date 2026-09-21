@@ -60,7 +60,8 @@ so "nothing written" is a state the display can read.
 An empty threshold `domain` cuts at the `origin`. ~~A ramp with no
 `domainMid` fades from it.~~ A ramp with no `domainMid` runs straight across
 the y domain, and one with no `range` or `scheme` is viridis, as every other
-display's ramp is; a one-colour `range` is the white-centred fade.
+display's ramp is; ~~a one-colour `range` is the white-centred fade~~ a
+one-colour `range` runs from white to that colour, so no ramp reads `origin`.
 
 **`bicolorPivot` becomes `origin`**, a `number` defaulting to 0, the mark
 display's slot with the mark display's doc sentence: the value bars grow from,

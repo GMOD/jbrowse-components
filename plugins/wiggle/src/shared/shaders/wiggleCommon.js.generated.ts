@@ -13,11 +13,17 @@ export function densityGradientT(norm: number, zeroNorm: number): number {
 }
 
 export function densityRampT(norm: number, midNorm: number): number {
-  let _t0: number
-  if ((norm <= midNorm)) {
-    _t0 = ((0.5 * norm) / _max(midNorm, 0.00009999999747379))
+  let _t0: boolean
+  if ((midNorm > 0.0)) {
+    _t0 = (norm <= midNorm)
   } else {
-    _t0 = (0.5 + ((0.5 * (norm - midNorm)) / _max((1.0 - midNorm), 0.00009999999747379)))
+    _t0 = false
   }
-  return _t0
+  let _t1: number
+  if (_t0) {
+    _t1 = ((0.5 * norm) / midNorm)
+  } else {
+    _t1 = (0.5 + ((0.5 * (norm - midNorm)) / _max((1.0 - midNorm), 0.00009999999747379)))
+  }
+  return _t1
 }

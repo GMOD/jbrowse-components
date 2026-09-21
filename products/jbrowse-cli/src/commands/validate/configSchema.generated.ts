@@ -6134,7 +6134,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "scale": {
-              "description": "how field becomes a colour: threshold paints each band between two of its cuts; linear and log run range, else scheme, else viridis across the y domain with domainMid at the middle stop, which is the density picture, and a one-colour range fades from white at domainMid; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
+              "description": "how field becomes a colour: threshold paints each band between two of its cuts; linear and log run range, else scheme, else viridis across the y domain with domainMid at the middle stop, which is the density picture, and a one-colour range runs from white to that colour; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
               "enum": [
                 "none",
                 "categorical",
@@ -6162,7 +6162,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "range": {
-              "description": "a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear or log scale's stops, evenly spaced.",
+              "description": "a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear or log scale's stops, evenly spaced, one colour meaning white to it.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/CssColor"
@@ -6336,7 +6336,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 1
         },
         "origin": {
-          "description": "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin.",
+          "description": "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin.",
           "type": "number",
           "default": 0
         },
@@ -6470,7 +6470,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 1
         },
         "origin": {
-          "description": "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin.",
+          "description": "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin.",
           "type": "number",
           "default": 0
         },
@@ -6619,7 +6619,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 1
         },
         "origin": {
-          "description": "The value bars grow from, and what a color scale reads where its own domain or domainMid is empty. The same slot, with the same meaning, as the mark display's origin.",
+          "description": "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin.",
           "type": "number",
           "default": 0
         },

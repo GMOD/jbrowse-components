@@ -57,7 +57,8 @@ export function makeDensityRgbStringFn(
 
 /**
  * Where a named ramp's middle stop sits in the normalized domain: `rampMid`'s
- * position, else 0.5, which runs the ramp straight from one end to the other.
+ * position, clamped to [0, 1] by the normalizer as `buildColorRampLut` clamps
+ * its `mid`, else 0.5, which runs the ramp straight from one end to the other.
  * The GPU's `rampMidNorm` uniform and the Canvas2D fill read this one number.
  */
 export function rampMidNorm(

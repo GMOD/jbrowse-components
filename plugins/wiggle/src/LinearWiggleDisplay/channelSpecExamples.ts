@@ -6,7 +6,11 @@ export const CHANNEL_SPEC_EXAMPLES = [
   },
   {
     spec: '{ "color": { "field": "score", "scale": "linear", "scheme": "viridis" } }',
-    description: 'the density ramp, viridis from the origin outwards',
+    description: 'viridis from the bottom of the axis to the top',
+  },
+  {
+    spec: '{ "color": { "field": "score", "scale": "linear", "range": ["#2166ac", "white", "#b2182b"], "domainMid": 0 } }',
+    description: 'blue through white to red, white at 0',
   },
   {
     spec: '{ "color": { "field": "source" } }',

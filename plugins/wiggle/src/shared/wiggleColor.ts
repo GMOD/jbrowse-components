@@ -28,13 +28,13 @@ export interface ResolvedWiggleColor {
   posColor: string
   /** Below `pivot`. */
   negColor: string
-  /** The lowest cut, and where the two-sided density fade is white. */
+  /** The lowest cut, and where the density fade is white. */
   pivot: number
   /** Where the colour changes, ascending, `pivot` first; at most `MAX_WIGGLE_CUTS`. */
   cuts: number[]
   /** The colours between `negColor` and `posColor`, one per band between two cuts. */
   innerColors: string[]
-  /** A ramp's 256 entries, or null for the two-sided fade off `posColor`/`negColor`. */
+  /** A ramp's 256 entries, or null for the white fade off `posColor`/`negColor`. */
   rampLut: Uint8Array | null
   /** The score at the ramp's middle stop; unset runs the ramp straight across the domain. */
   rampMid: number | undefined
@@ -142,8 +142,6 @@ export function resolveWiggleColor(
     }
     case 'linear':
     case 'log': {
-      // `domainMid` is the ramp's middle stop, and a range of one colour is
-      // the two-sided fade off it rather than a one-stop ramp.
       const { range = [], scheme, reverse = false, domainMid } = encoding
       const ends = reverse ? range.toReversed() : range
       return {
@@ -152,8 +150,11 @@ export function resolveWiggleColor(
         pivot: domainMid ?? origin,
         cuts: [domainMid ?? origin],
         innerColors: [],
-        rampLut:
-          range.length === 1 ? null : rampLutOf({ range, scheme, reverse }),
+        rampLut: rampLutOf({
+          range: range.length === 1 ? ['white', range[0]!] : range,
+          scheme,
+          reverse,
+        }),
         rampMid: domainMid,
         perSource: false,
       }

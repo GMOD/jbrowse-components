@@ -91,8 +91,10 @@ and `resolveWiggleColor` turns that into
 of what the layers and both backends read. `pivot` is where the colour parts and
 never where bars grow from: the render state carries both, bars read `origin`,
 and the lines, band and density fade read `pivot`. A density ramp indexes by
-position with `rampMid` on its middle stop, while the white-centred fade
-measures distance from `pivot`. `score` paints through `threshold`, `linear` and
+position with `rampMid`, the config's `domainMid`, on its middle stop; the white
+fade, a threshold's density, measures distance from `pivot`. Under `linear` or
+`log` the lines still part at `domainMid ?? origin`, which is not where an unset
+`domainMid` centres the ramp. `score` paints through `threshold`, `linear` and
 `log`, `source` through `categorical`, and the other pairings paint the
 misconfiguration grey, because a two-sided plot has nothing to paint a colour
 per score or a cut over subtrack names with. ADR-144, ADR-153.

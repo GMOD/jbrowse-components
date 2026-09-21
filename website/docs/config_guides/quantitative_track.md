@@ -85,8 +85,9 @@ scale it reads through:
 
 A threshold with an empty `domain` cuts at
 [`origin`](/docs/config/linearwiggledisplay/#slot-origin), the value the bars
-also grow from, and a ramp with no `domainMid` fades from it. A ramp takes a
-named `scheme` or a `range` of CSS stops. The
+also grow from. A ramp takes a named `scheme` or a `range` of CSS stops, runs
+straight across the y domain unless `domainMid` places its middle stop, and with
+one colour runs from white to it. The
 [cookbook](/docs/cookbook#quantitative-wiggle-tracks) has worked recipes.
 
 ## Adapters
