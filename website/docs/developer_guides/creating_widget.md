@@ -80,14 +80,12 @@ opens its results table that way when a search returns hits:
 // a drawer — an embedded component may be built without one — so the guard is
 // not optional.
 if (isSessionModelWithWidgets(session)) {
-  session.showWidget(
-    session.addWidget('UcscResultsWidget', 'ucscResults', {
-      features,
-      assembly,
-      trackName,
-      resultNoun,
-    }),
-  )
+  session.openWidget('UcscResultsWidget', 'ucscResults', {
+    features,
+    assembly,
+    trackName,
+    resultNoun,
+  })
 }
 ```
 
