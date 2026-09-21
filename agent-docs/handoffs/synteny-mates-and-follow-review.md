@@ -40,15 +40,15 @@ of the comment sweep, and M14 with M10 and M12.
 
 A second session worked the first pass's list at the same time and landed:
 
-- M3: `c75a9d9323`, with `8f023cfcde` (a mid-flight click keeps its zoom
+- M3: `7905990708`, with `984fbd9888` (a mid-flight click keeps its zoom
   through the LGV's new `flyToFit`; only a scroll under `linkViews`; the frame
   capped at the row's widest window). **This supersedes `d3a5217483`** above:
   drop that worktree rather than finish it.
-- M5, M13 and U2: `d36634d243`. M4 and M6 (class C marks, and the identity fade
-  no longer re-showing a hidden ribbon): `5c5ad29f6f`; a hidden ribbon's indels
-  are hidden too in `8f023cfcde`.
-- B3, B4, B5, B6 and S3: `8f8659ca8f`. S6's `movingIndex` and S8: `ff011ef85e`.
-- U2's wheel half, U3 and U4: `8f023cfcde`.
+- M5, M13 and U2: `67f1fcf187`. M4 and M6 (class C marks, and the identity fade
+  no longer re-showing a hidden ribbon): `2598650df8`; a hidden ribbon's indels
+  are hidden too in `984fbd9888`.
+- B3, B4, B5, B6 and S3: `4d89cff7e9`. S6's `movingIndex` and S8: `c129862e7d`.
+- U2's wheel half, U3 and U4: `984fbd9888`.
 
 **Six of those are items the second pass closed as intended**: M4, M13, B4,
 B5, U2 and U4. The first four are internal and harmless to keep. U2 and U4
@@ -61,7 +61,7 @@ Revert those two if the closures stand.
 
 **The follow half has had no independent review**, and its full
 `pnpm test-related` was stopped before it finished; the linear-comparative-view
-and linear-genome-view suites ran green. Review `8f8659ca8f` for whether B3's
+and linear-genome-view suites ran green. Review `4d89cff7e9` for whether B3's
 live-block read can skip a correction mid-flight (it may bear on "B3's
 backwards jump"), whether the frame pass's `facing()` write of `spreadTargets`
 breaks its rule of minting no state, and whether `bandGestureRows` goes empty on
