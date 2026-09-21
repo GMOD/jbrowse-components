@@ -71,7 +71,7 @@ is enough to locate it against whichever assembly is in use.
 The build script rebuilds _CYP1A2_'s coding sequence from the reference and the
 RefSeq exon structure, translates it, and reports codon 373:
 
-```
+```text
 NM_001008720.1 CDS 1539 bp, 513 aa
 codon 373 = CGA (R) at chr30:38261635
 C>T at that first base makes TGA, a stop
@@ -99,6 +99,8 @@ index beside it, so one gene reads straight out of it:
 
 ```bash
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
+# --force-samples: proceed even if a name in cyp.samples isn't in the VCF's
+# own sample list, instead of exiting
 bcftools view -r chr30:38258000-38265000 -S cyp.samples --force-samples \
   -Oz -o dog10k_cyp1a2_snvs.vcf.gz "$SNVS"
 tabix -p vcf dog10k_cyp1a2_snvs.vcf.gz
@@ -194,7 +196,7 @@ The build script converts depth to copy number by comparison within each dog.
 The sequence around the element in that same dog is copy number two, so it is
 the denominator:
 
-```
+```text
 CN = 2 * depth over the element / depth over the sequence around it
 ```
 

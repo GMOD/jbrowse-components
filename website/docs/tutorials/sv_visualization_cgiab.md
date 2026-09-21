@@ -117,6 +117,8 @@ of the prerequisites install from release binaries:
 ```bash
 wget https://github.com/ChristopherWilks/megadepth/releases/download/1.2.0/megadepth
 chmod +x megadepth && sudo mv megadepth /usr/local/bin/
+# --strip-components drops the release's top-level folder and --wildcards
+# extracts only the binary, straight into the install directory
 curl -L https://github.com/PacificBiosciences/HiFiCNV/releases/download/v1.0.1/hificnv-v1.0.1-x86_64-unknown-linux-gnu.tar.gz \
   | tar xz --strip-components=1 -C /usr/local/bin --wildcards '*/hificnv'
 ```
@@ -410,7 +412,7 @@ both of them URL tracks.
 The copy-number file needs its columns spelled out. It is long format, one row
 per haplotype, and its column-name line carries no `#`:
 
-```
+```text
 chr	start	end	copynumber_state	coverage	haplotype
 chr1	0	23750000	2	106.025	1
 chr1	23750001	119650000	0.72	58.025	1

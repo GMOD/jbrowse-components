@@ -85,6 +85,8 @@ separate URLs, so the index is named explicitly:
 Z=https://zenodo.org/api/records/14968874/files
 SV=$Z/Dog10k_manta_paragraph.vcf.gz/content
 SVI=$Z/Dog10k_manta_paragraph.vcf.gz.tbi/content
+# --force-samples: proceed even if a name in sv.samples isn't in the VCF's
+# own sample list, instead of exiting
 bcftools view -r chr37:25500000-25620000 -S sv.samples --force-samples \
   -Oz -o dog10k_nhej1_svs.vcf.gz "$SV##idx##$SVI"
 tabix -p vcf dog10k_nhej1_svs.vcf.gz
@@ -266,7 +268,7 @@ signature of domestication
 ([Axelsson et al. 2013](https://doi.org/10.1038/nature11837)), and the record
 separates dogs from wolves almost completely:
 
-```
+```text
   Breed_Dogs      1575 canids: 1568 hom alt, 6 hom ref, 1 het
   Mixed/Other       12 canids: 12 hom alt
   Village_Dogs     237 canids: 236 hom alt, 1 hom ref
@@ -276,7 +278,7 @@ separates dogs from wolves almost completely:
 A 223 bp SINE insertion in pancreatic ribonuclease, chr15:18,164,072 in the
 Zenodo Paragraph set, runs the other way:
 
-```
+```text
   Breed_Dogs      1575 canids: 1574 hom ref, 1 het
   Mixed/Other       12 canids: 12 hom ref
   Village_Dogs     237 canids: 236 hom ref, 1 het
@@ -350,7 +352,7 @@ one intron end to end.
 derives the introns from the RefSeq annotation and asserts each record against
 them, with one base of slack at each breakpoint:
 
-```
+```text
 FGF4 RefSeq exons:  48869443-48869782, 48870315-48870418, 48870953-48873311
 FGF4 RefSeq introns: 48869783-48870314 (532 bp),  48870419-48870952 (534 bp)
 
@@ -368,6 +370,8 @@ and `INV` records too. Selecting on `POS` keeps the two intron records:
 ```bash
 SHARE=https://kiddlabshare.med.umich.edu/dog10K
 SV=$SHARE/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz
+# --force-samples: proceed even if a name in fgf4.samples isn't in the VCF's
+# own sample list, instead of exiting
 bcftools view -r chr18:48865000-48876000 -S fgf4.samples --force-samples \
   -i 'POS=48869782 || POS=48870417' \
   -Oz -o dog10k_fgf4_svs.vcf.gz "$SV"
@@ -474,7 +478,7 @@ tail.
 The same two intron records genotyped over every canid the callset carries,
 printed by the build script:
 
-```
+```text
 Genotype counts per group, at the intron 1 record (chr18:48869782):
   Breed_Dogs     1575 canids: 1177 hom ref, 381 het, 12 no call, 5 hom alt
   Mixed/Other      12 canids: 10 hom ref, 2 het

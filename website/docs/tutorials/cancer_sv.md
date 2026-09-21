@@ -113,7 +113,7 @@ the tools above.
 COLO829's der(3) is the chain the rest of this page follows. Three junctions
 close a triangle across three chromosomes:
 
-```
+```text
 chr3:25,359,111  <-> chr12:72,273,112
 chr3:25,359,568  <-> chr10:58,717,464
 chr10:58,717,662 <-> chr12:72,273,294
@@ -180,13 +180,15 @@ put the contig through the two commands the tracks below read:
 
 ```bash
 # contigs.fa is the assembler's output for the reads crossing the loci
+# asm5 is the same-species preset; -c emits the base-level CIGAR the synteny
+# view needs to draw a junction at base scale
 minimap2 -cx asm5 GRCh38.fa contigs.fa > der3.vs_reference.paf
 jbrowse make-pif der3.vs_reference.paf
 ```
 
 The published contig aligns to the reference in four blocks:
 
-```
+```text
     derivative       0-32732   + -> chr3:25,326,821-25,359,568
     derivative   32732-32931   + -> chr10:58,717,463-58,717,662
     derivative   32932-33115   - -> chr12:72,273,111-72,273,294

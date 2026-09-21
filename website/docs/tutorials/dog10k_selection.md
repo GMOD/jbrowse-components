@@ -142,6 +142,11 @@ beside it. `bcftools` reads only the window:
 
 ```bash
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
+# --force-samples: proceed even if a name in igf1.samples isn't in the VCF's
+# own sample list, instead of exiting
+# -f PASS: keep only sites that passed every quality filter
+# -q 0.05:minor (second pass): drop sites where the minor allele is under 5%
+# frequency in this panel, since most sites in a callset this size are rare
 bcftools view -r chr15:41350000-41750000 -S igf1.samples --force-samples \
   -f PASS "$SNVS" \
   | bcftools view -q 0.05:minor -Oz -o dog10k_igf1.vcf.gz
@@ -161,7 +166,7 @@ The display draws one row per sample. For a panel this size, point the adapter
 at a TSV whose first column is the sample name and whose other columns are
 attributes; the display colors and orders rows by any of them:
 
-```
+```text
 name	breed	size
 CHIH000005	Chihuahua	Toy/small
 STBD000001	Saint Bernard	Giant

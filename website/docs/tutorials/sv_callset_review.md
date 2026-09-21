@@ -56,13 +56,15 @@ so a callset renders straight into a review queue:
 
 ```bash
 curl -fO https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
+# --track takes the track id, then inline display settings as key:value pairs
+# (here a shorter read height, so more of the pileup fits in the frame)
 jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --config https://jbrowse.org/demos/cancer_sv/config.json --assembly hg38 \
   --track COLO829_tumor_ont height:240 \
   --outDir tumor --flank 600 --width 1100
 ```
 
-```
+```text
 [########################] 100% 135/135
 wrote 135/135 images to tumor
 ```
