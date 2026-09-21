@@ -386,6 +386,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       'StringArrayOrJexl',
       { type: 'array', items: { type: 'string' } },
     ],
+    colorArray: [
+      'CssColorArrayOrJexl',
+      { type: 'array', items: ref('CssColor') },
+    ],
   }
   for (const [name, value] of Object.values(SHARED_SLOT_DEFS)) {
     defs[name] = { anyOf: [value, ref('JexlString')] }
@@ -395,6 +399,8 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     switch (type) {
       case 'stringArray':
         return { type: 'array', items: { type: 'string' } }
+      case 'colorArray':
+        return { type: 'array', items: ref('CssColor') }
       case 'stringArrayMap':
         return {
           type: 'object',
@@ -448,7 +454,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     const lifted = lifts.string || lifts.numbers
     const shared = lifted ? undefined : SHARED_SLOT_DEFS[def.type]
     const value = def.model
-      ? mstSchema(def.model, depth)
+      ? def.type === 'stringEnumArray'
+        ? { type: 'array', items: mstSchema(def.model, depth) }
+        : mstSchema(def.model, depth)
       : frozen
         ? {}
         : lifted

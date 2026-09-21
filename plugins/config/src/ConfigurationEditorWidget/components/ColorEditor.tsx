@@ -27,7 +27,8 @@ const useStyles = makeStyles()({
 // refuses what is not a color, so text that does not parse yet stays a draft
 // in the field and reaches the slot once it does; leaving the field drops an
 // unparsed draft. "Unset" is reachable through the slot's reset button, which
-// is where every other slot type puts it.
+// is where every other slot type puts it. An entry of a colour list takes no
+// `jexl:` callback, so `admitsJexl` is off there.
 /** #slotEditor text field beside a swatch that opens a color picker */
 const ColorEditor = observer(function ColorEditor(props: {
   slot: {
@@ -36,8 +37,9 @@ const ColorEditor = observer(function ColorEditor(props: {
     description: string
     set: (arg: string) => void
   }
+  admitsJexl?: boolean
 }) {
-  const { slot } = props
+  const { slot, admitsJexl = true } = props
   const { classes } = useStyles()
   const [draft, setDraft] = useState<string>()
   const value = slot.value ?? ''
@@ -53,7 +55,7 @@ const ColorEditor = observer(function ColorEditor(props: {
         className={classes.field}
         onChange={event => {
           const text = event.target.value
-          if (isCssColor(text) || isJexl(text)) {
+          if (isCssColor(text) || (admitsJexl && isJexl(text))) {
             slot.set(text)
             setDraft(undefined)
           } else {

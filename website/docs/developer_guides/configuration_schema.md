@@ -124,6 +124,7 @@ typed, a slot can be edited graphically without an author writing any UI.
 | <code>maybeBoolean</code> | <code>types.maybe(types.boolean)</code> | <code>boolean &#124; undefined</code> | checkbox |
 | <code>color</code> | <code>CssColorType</code> | <code>string</code> | text field beside a swatch that opens a color picker |
 | <code>maybeColor</code> | <code>types.maybe(CssColorType)</code> | <code>string &#124; undefined</code> | text field beside a swatch that opens a color picker |
+| <code>colorArray</code> | <code>types.array(CssColorEntryType)</code> | <code>string[]</code> | a text field and color picker per entry, with add and delete |
 | <code>fileLocation</code> | <code>FileLocation</code> | <code>FileLocation</code> | URL, local file path (desktop) or file blob (browser) |
 | <code>frozen</code> | <code>types.frozen()</code> | <code>any</code> | monospace textarea holding arbitrary JSON |
 | <code>maybeFrozen</code> | <code>types.maybe(types.frozen())</code> | <code>any</code> | monospace textarea holding arbitrary JSON |
@@ -137,6 +138,7 @@ typed, a slot can be edited graphically without an author writing any UI.
 | <code>stringArrayMap</code> | <code>types.map(types.array(types.string))</code> | <code>Record&lt;string, string[]&gt;</code> | one card per key, each holding that key's "todolist" of strings |
 | <code>stringEnum</code> | the `model` the slot declares | the `model` enumeration's members | dropdown of the `model`'s members |
 | <code>maybeStringEnum</code> | the `model` the slot declares | the `model` enumeration's members | dropdown of the `model`'s members |
+| <code>stringEnumArray</code> | the `model` the slot declares | a list of the `model` enumeration's members | a dropdown of the `model`'s members per entry, with add and delete |
 | <code>text</code> | <code>types.string</code> | <code>string</code> | multi-line textarea |
 
 <!-- SLOT_TYPES END -->

@@ -129,6 +129,12 @@ describe('getConf slot-value type narrowing', () => {
       string: { type: 'string', defaultValue: '' },
       text: { type: 'text', defaultValue: '' },
       color: { type: 'color', defaultValue: 'red' },
+      colorArray: { type: 'colorArray', defaultValue: [] },
+      stringEnumArray: {
+        type: 'stringEnumArray',
+        model: types.enumeration('Glyph', ['disc', 'triangle']),
+        defaultValue: [],
+      },
     })
     const node = all.create(undefined, { pluginManager })
 
@@ -148,6 +154,8 @@ describe('getConf slot-value type narrowing', () => {
     const string = readConfObject(node, 'string')
     const text = readConfObject(node, 'text')
     const color = readConfObject(node, 'color')
+    const colorArray = readConfObject(node, 'colorArray')
+    const stringEnumArray = readConfObject(node, 'stringEnumArray')
 
     assertType<Equal<typeof stringArray, string[]>>()
     assertType<Equal<typeof stringArrayMap, Record<string, string[]>>>()
@@ -166,6 +174,8 @@ describe('getConf slot-value type narrowing', () => {
     assertType<Equal<typeof string, string>>()
     assertType<Equal<typeof text, string>>()
     assertType<Equal<typeof color, string>>()
+    assertType<Equal<typeof colorArray, string[]>>()
+    assertType<Equal<typeof stringEnumArray, ('disc' | 'triangle')[]>>()
 
     // the values round-trip too, so this isn't purely a type fixture
     expect(integer).toBe(1)

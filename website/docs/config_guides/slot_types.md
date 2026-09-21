@@ -55,11 +55,22 @@ only) and `BlobLocation` (a file opened from the browser's file picker).
 One value from a fixed set, listed next to the slot, e.g.
 `stringEnum (linear, log)`.
 
+## stringEnumArray
+
+A list whose every entry is one value from a fixed set, listed next to the slot,
+e.g. `stringEnumArray (disc, triangle, diamond)`. An entry outside the set fails
+the load and names the slot.
+
 ## color
 
 A CSS color: a hex string (`#f00`), an `rgb()`/`rgba()` value, or a named color.
 Many color slots also accept a [`jexl:` callback](/docs/config_guides/jexl) for
 [per-feature coloring](/docs/config_guides/customizing_feature_colors).
+
+## colorArray
+
+A list of CSS colors, e.g. a colour scale's `range`. An entry that is not a
+color, the empty string included, fails the load and names the slot.
 
 ## frozen
 

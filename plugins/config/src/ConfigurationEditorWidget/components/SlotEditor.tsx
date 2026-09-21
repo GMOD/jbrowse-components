@@ -15,6 +15,7 @@ import BooleanEditor from './BooleanEditor.tsx'
 import CallbackEditor from './CallbackEditor.tsx'
 import ColorEditor from './ColorEditor.tsx'
 import ConfigurationTextField from './ConfigurationTextField.tsx'
+import { ColorArrayEditor, StringEnumArrayEditor } from './EntryListEditor.tsx'
 import IntegerEditor from './IntegerEditor.tsx'
 import JsonEditor from './JsonEditor.tsx'
 import NumberEditor from './NumberEditor.tsx'
@@ -156,6 +157,8 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   text: TextEditor,
   fileLocation: FileSelectorWrapper,
   stringArray: StringArrayEditor,
+  colorArray: ColorArrayEditor,
+  stringEnumArray: StringEnumArrayEditor,
   stringArrayMap: StringArrayMapEditor,
   numberMap: NumberMapEditor,
   number: NumberEditor,

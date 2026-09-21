@@ -183,7 +183,10 @@ export interface SlotFacade {
   type: ConfigSlotType
   contextVariable: string[]
   defaultValue: unknown
-  /** enum choices, present only for `stringEnum`/`maybeStringEnum` slots */
+  /**
+   * enum choices, present only for the enum slot types; a `stringEnumArray`'s
+   * are the choices of each entry
+   */
   choices?: string[]
   pluginManager: PluginManager
   readonly value: unknown
@@ -199,9 +202,9 @@ export interface SlotFacade {
 
 /**
  * The vocabulary an enum slot offers, or undefined for any other slot. Reads the
- * author's own `types.enumeration` off `model` — `stringEnum` and
- * `maybeStringEnum` are the only two types the editor takes choices from, so a
- * slot typed anything else renders as free text however valid its `model` is.
+ * author's own `types.enumeration` off `model` — the enum types are the only
+ * ones the editor takes choices from, so a slot typed anything else renders as
+ * free text however valid its `model` is.
  *
  * Shared by the config editor's facade below and by
  * `ConfigSlotDefaults.test.ts`, which snapshots every schema's vocabularies:
@@ -210,7 +213,10 @@ export interface SlotFacade {
  */
 export function slotChoices(def: ConfigSlotDefinition): string[] | undefined {
   const { type, model } = def
-  return (type === 'stringEnum' || type === 'maybeStringEnum') && model
+  return (type === 'stringEnum' ||
+    type === 'maybeStringEnum' ||
+    type === 'stringEnumArray') &&
+    model
     ? getEnumerationValues(model)
     : undefined
 }

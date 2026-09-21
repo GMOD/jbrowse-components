@@ -23,8 +23,8 @@ import {
 // of them hand-mirrored here:
 //
 // - `slotTypes` in configurationSlot.ts — the names, and the MST model each one
-//   builds its value from. `ENUM_SLOT_TYPES` beside it carries the two names
-//   with no builtin model, since the author supplies the `types.enumeration`.
+//   builds its value from. `ENUM_SLOT_TYPES` beside it carries the names with
+//   no builtin model, since the author supplies the `types.enumeration`.
 // - `SlotValueByType` in types.ts — what a `getConf`/`readConfObject` read of
 //   the slot is typed as. tsc already checks that it names the same set as
 //   `slotTypes`; this only has to find a row per name.
@@ -43,13 +43,17 @@ const TYPES_FILE = 'packages/core/src/configuration/types.ts'
 const EDITOR_FILE =
   'plugins/config/src/ConfigurationEditorWidget/components/SlotEditor.tsx'
 
-// The two enum types' cells. `slotTypes` has no entry for them and
+// The enum types' cells. `slotTypes` has no entry for them and
 // `SlotValueByType` deliberately omits them (both files say why): the author
 // passes the `types.enumeration` as the slot's `model`, so the value type is
-// whatever they wrote. That is a property of the two names rather than a fact
+// whatever they wrote. That is a property of the names rather than a fact
 // stored anywhere to read, so it is stated once here rather than tagged twice.
 const ENUM_MODEL = 'the `model` the slot declares'
-const ENUM_READ_TYPE = "the `model` enumeration's members"
+function enumReadType(name: string) {
+  return name === 'stringEnumArray'
+    ? "a list of the `model` enumeration's members"
+    : "the `model` enumeration's members"
+}
 
 export interface SlotTypeRow {
   name: string
@@ -60,7 +64,7 @@ export interface SlotTypeRow {
   /** what the config editor renders, from the component's `#slotEditor` tag */
   editor: string
   /**
-   * true for the two enum types, whose model and read type are the author's own
+   * true for the enum types, whose model and read type are the author's own
    * and so render as prose rather than as a code cell
    */
   fromModel: boolean
@@ -172,7 +176,7 @@ export function collectSlotTypes(): SlotTypeRow[] {
       SLOT_FILE,
       'const ENUM_SLOT_TYPES = [',
       ']',
-      'the two slot types whose model the author supplies',
+      'the slot types whose model the author supplies',
     ).matchAll(/'(\w+)'/g),
   ].map(m => m[1]!)
 
@@ -216,7 +220,7 @@ export function collectSlotTypes(): SlotTypeRow[] {
     return {
       name,
       model: isEnum ? ENUM_MODEL : modelExpression(models.get(name)!, name),
-      readsAs: isEnum ? ENUM_READ_TYPE : readsAs!,
+      readsAs: isEnum ? enumReadType(name) : readsAs!,
       editor: component ? (labels.get(component) ?? '') : '',
       fromModel: isEnum,
     }
@@ -257,7 +261,7 @@ export function writeSlotTypeDocs({ check = false } = {}) {
     markdownTable(
       ['`type`', 'MST model', 'Reads as', 'Config editor renders'],
       collectSlotTypes().map(r => {
-        // the two enum rows say where their model and read type come from,
+        // the enum rows say where their model and read type come from,
         // which is prose; every other row's is an expression from the source
         const value = r.fromModel ? tableCell : codeCell
         return `| ${codeCell(r.name)} | ${value(r.model)} | ${value(r.readsAs)} | ${tableCell(r.editor)} |`

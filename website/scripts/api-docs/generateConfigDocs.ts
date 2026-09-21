@@ -1187,7 +1187,9 @@ const DOCUMENTED_SLOT_TYPES = new Map([
   ['maybeFrozen', MAYBE_TYPES_ANCHOR],
   ['fileLocation', 'filelocation'],
   ['stringEnum', 'stringenum'],
+  ['stringEnumArray', 'stringenumarray'],
   ['color', 'color'],
+  ['colorArray', 'colorarray'],
   ['frozen', 'frozen'],
   ['text', 'text'],
 ])

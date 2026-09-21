@@ -49,6 +49,18 @@ test('facade derives stringEnum choices from the metadata model', () => {
   expect(facade.choices).toEqual(['a', 'b', 'c'])
 })
 
+test("facade derives a stringEnumArray slot's choices from its entries' enumeration", () => {
+  const schema = ConfigurationSchema('Test', {
+    glyphs: {
+      type: 'stringEnumArray',
+      model: types.enumeration('Glyph', ['disc', 'triangle']),
+      defaultValue: [],
+    },
+  })
+  const facade = makeSlotFacade(create(schema), 'glyphs')
+  expect(facade.choices).toEqual(['disc', 'triangle'])
+})
+
 test('facade finds slots inherited via baseConfiguration', () => {
   const base = ConfigurationSchema('Base', {
     shared: { type: 'string', defaultValue: 'inherited' },

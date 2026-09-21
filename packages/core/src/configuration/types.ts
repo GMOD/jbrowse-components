@@ -255,6 +255,7 @@ interface SlotValueByType {
   string: string
   text: string
   color: string
+  colorArray: string[]
 }
 
 /**
@@ -288,11 +289,14 @@ type SlotValueRawFromDef<DEF> = DEF extends AnyConfigurationSchemaType
   : DEF extends {
         model: ISimpleType<infer T extends string>
       }
-    ? // `maybeStringEnum` declares the plain enumeration as its `model` and gets
-      // its nullability from ConfigSlot, so the `undefined` is added back here
+    ? // an enum slot declares the plain enumeration as its `model` and gets
+      // its shape from ConfigSlot, so the `undefined` or the list is added
+      // back here
       DEF extends { type: 'maybeStringEnum' }
       ? T | undefined
-      : T
+      : DEF extends { type: 'stringEnumArray' }
+        ? T[]
+        : T
     : // A slot whose `type` names a row of the table above. The constrained
       // `infer` is what makes this one branch instead of fourteen, and it keeps
       // a multi-name row honest: `type: 'number' | 'integer'` infers that union

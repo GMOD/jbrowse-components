@@ -23,12 +23,24 @@ interface SlotTypeSpec {
 // What a color slot admits is what the painters parse (`isCssColor`), plus the
 // empty string a slot such as `outlineColor` spells "none" with; a field name
 // written where a color goes used to load and paint the invalid sentinel.
+function notAColor(value: unknown) {
+  return `${JSON.stringify(value)} is not a color. A color is a CSS color: a name like "red" or "steelblue", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", or "transparent"; a color computed per feature is a "jexl:" callback`
+}
+
 const CssColorType = types.refinement(
   'CssColor',
   types.string,
   value => value === '' || isCssColor(value),
-  value =>
-    `${JSON.stringify(value)} is not a color. A color is a CSS color: a name like "red" or "steelblue", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", or "transparent"; a color computed per feature is a "jexl:" callback`,
+  notAColor,
+)
+
+// An entry of a colour list has no "none" to spell, so '' is refused with the
+// rest of what is not a colour.
+const CssColorEntryType = types.refinement(
+  'CssColorEntry',
+  types.string,
+  isCssColor,
+  notAColor,
 )
 
 // Single source of truth for the builtin slot type names, pairing each with its
@@ -42,6 +54,7 @@ const CssColorType = types.refinement(
 // of.
 const slotTypes = {
   stringArray: { model: types.array(types.string), fallbackDefault: [] },
+  colorArray: { model: types.array(CssColorEntryType), fallbackDefault: [] },
   stringArrayMap: {
     model: types.map(types.array(types.string)),
     fallbackDefault: {},
@@ -83,14 +96,20 @@ const slotTypes = {
  */
 export type BuiltinSlotTypeName = keyof typeof slotTypes
 
-// The two types with no builtin table entry, because the author supplies the
-// `types.enumeration` as `model`. Named once, and spliced into both the type
-// union and the runtime set below so those two cannot drift apart.
-const ENUM_SLOT_TYPES = ['stringEnum', 'maybeStringEnum'] as const
+// The types with no builtin table entry, because the author supplies the
+// `types.enumeration` as `model` and `ConfigSlot` wraps it: in `types.maybe`
+// for `maybeStringEnum`, in `types.array` for `stringEnumArray`. Named once,
+// and spliced into both the type union and the runtime set below so those two
+// cannot drift apart.
+const ENUM_SLOT_TYPES = [
+  'stringEnum',
+  'maybeStringEnum',
+  'stringEnumArray',
+] as const
 
 /**
  * Every legal `type` on a slot definition: the builtin table's own names, plus
- * the two enum types.
+ * the enum types.
  *
  * Closed on purpose. A name outside this set still *works* at runtime as long
  * as a `model` is given — which is exactly the trap: the value round-trips
@@ -253,15 +272,19 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
   }
 
   return types.stripDefault(
-    types.union(
-      JexlStringType,
-      // `maybeStringEnum` is the only maybe type whose model comes from the
-      // author: they write the plain vocabulary and the nullability is added
-      // here.
-      type === 'maybeStringEnum' ? types.maybe(valueModel) : valueModel,
-    ),
+    types.union(JexlStringType, enumShaped(type, valueModel)),
     defaultValue,
   )
+}
+
+// The author writes an enum slot's plain vocabulary, and the slot's shape
+// around it is added here.
+function enumShaped(type: ConfigSlotType, model: IAnyType) {
+  return type === 'maybeStringEnum'
+    ? types.maybe(model)
+    : type === 'stringEnumArray'
+      ? types.array(model)
+      : model
 }
 
 /**

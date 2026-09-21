@@ -135,6 +135,67 @@ describe('a color slot', () => {
   })
 })
 
+describe('a colorArray slot', () => {
+  const colors = (value?: unknown) =>
+    makeConfig({ type: 'colorArray', defaultValue: [] }, value)
+
+  test('holds CSS colours, in order', () => {
+    expect(
+      readConfObject(colors(['red', '#00f', 'rgb(0,128,0)']), 'slot'),
+    ).toEqual(['red', '#00f', 'rgb(0,128,0)'])
+  })
+
+  test.each([[['nosuchcolor', 'red']], [['magma']], [['']]])(
+    'refuses %j at load, naming the path and the entry',
+    value => {
+      expect(() => colors(value)).toThrow('/slot')
+      expect(() => colors(value)).toThrow(
+        `${JSON.stringify(value[0])} is not a color`,
+      )
+    },
+  )
+
+  test('refuses a write naming no colour and keeps the value it had', () => {
+    const config = colors(['white', 'red'])
+    expect(() => {
+      config.setSlot('slot', ['nosuchcolor'])
+    }).toThrow('Test.slot is a colorArray slot and cannot take ["nosuchcolor"]')
+    expect(readConfObject(config, 'slot')).toEqual(['white', 'red'])
+  })
+})
+
+describe('a stringEnumArray slot', () => {
+  const glyphs = (value?: unknown) =>
+    makeConfig(
+      {
+        type: 'stringEnumArray',
+        model: types.enumeration('Glyph', ['disc', 'triangle', 'diamond']),
+        defaultValue: [],
+      },
+      value,
+    )
+
+  test('holds members of its enumeration, in order', () => {
+    expect(readConfObject(glyphs(['diamond', 'disc']), 'slot')).toEqual([
+      'diamond',
+      'disc',
+    ])
+  })
+
+  test('refuses an entry outside the enumeration at load, naming the path', () => {
+    expect(() => glyphs(['star', 'triangle'])).toThrow('/slot')
+    expect(() => glyphs(['star', 'triangle'])).toThrow('"star"')
+  })
+
+  test('refuses such a write and keeps the value it had', () => {
+    const config = glyphs(['triangle'])
+    expect(() => {
+      config.setSlot('slot', ['star'])
+    }).toThrow('Test.slot is a stringEnumArray slot and cannot take ["star"]')
+    expect(readConfObject(config, 'slot')).toEqual(['triangle'])
+  })
+})
+
 test('stringEnum slot uses a custom model and reads its value', () => {
   const config = makeConfig({
     type: 'stringEnum',

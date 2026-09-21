@@ -139,6 +139,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "CssColorArrayOrJexl": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CssColor"
+          }
+        },
+        {
+          "$ref": "#/$defs/JexlString"
+        }
+      ]
+    },
     "JexlString": {
       "type": "string",
       "pattern": "^jexl:",
