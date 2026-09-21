@@ -322,6 +322,7 @@ export default [
   '@jbrowse/core/util/localStorage',
   '@jbrowse/core/util/makeAssembly',
   '@jbrowse/core/util/markEncoding',
+  '@jbrowse/core/util/measureText',
   '@jbrowse/core/util/mst-reflection',
   '@jbrowse/core/util/mstUtils',
   '@jbrowse/core/util/nanoid',

@@ -1,8 +1,7 @@
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 
 import AxisGutter from './AxisGutter.tsx'
-import { axisGutterLeft } from './axisPlacement.ts'
-import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
+import { axisGutterLeft, axisGutterWidth } from './axisPlacement.ts'
 
 import type { YAxis } from './valueScale.ts'
 
@@ -28,7 +27,7 @@ export default function YScaleBarOverlay({
         left: axisGutterLeft(axis, width, VERTICAL_SCROLLBAR_CLEARANCE),
         pointerEvents: 'none',
         height: axis.height,
-        width: AXIS_GUTTER_WIDTH_PX,
+        width: axisGutterWidth(axis),
         overflow: 'visible',
       }}
     >

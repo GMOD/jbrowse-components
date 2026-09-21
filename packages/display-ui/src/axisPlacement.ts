@@ -1,3 +1,10 @@
+import { measureText } from '@jbrowse/core/util/measureText'
+
+import {
+  AXIS_FONT_PX,
+  CAPTION_BAND_PX,
+  TICK_LABEL_X_PX,
+} from './yAxisConstants.ts'
 import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
 
 import type { ValueScale, YAxis } from './valueScale.ts'
@@ -36,6 +43,26 @@ export function axisCaptionY(axis: Pick<YAxis, 'ticks'>, bandTops: number[]) {
   return (Math.min(...bandTops) + yTop + Math.max(...bandTops) + yBottom) / 2
 }
 
+/**
+ * How wide an axis's gutter is: the ordinary width, grown inward over the plot
+ * where a caption and the widest tick label cannot share it, so neither is
+ * drawn over the other. The caption keeps the outer edge and the labels stay
+ * beside the spine.
+ */
+export function axisGutterWidth(axis: Pick<YAxis, 'ticks' | 'caption'>) {
+  if (!axis.caption) {
+    return AXIS_GUTTER_WIDTH_PX
+  }
+  let widest = 0
+  for (const { value, label } of axis.ticks.items) {
+    widest = Math.max(widest, measureText(label ?? value, AXIS_FONT_PX))
+  }
+  return Math.max(
+    AXIS_GUTTER_WIDTH_PX,
+    Math.ceil(CAPTION_BAND_PX + widest + TICK_LABEL_X_PX),
+  )
+}
+
 /** How far in from the plot's right edge a right-side gutter ends in an export. */
 export const AXIS_RIGHT_INSET_PX = 4
 
@@ -45,19 +72,20 @@ export const AXIS_RIGHT_INSET_PX = 4
  * scrollbar a display may mount on screen; a margin in an export). A left-side
  * axis takes the gutter at the display's left edge, past whatever panel the
  * scale's `left` reserves — except in an export, whose margin is the gutter,
- * so an axis nothing pushes right sits in the margin with its spine on the
- * content edge and its numbers outside the plot.
+ * so an axis nothing pushes right sits in the margin with its numbers outside
+ * the plot and its spine on the content edge, or past it by what
+ * `axisGutterWidth` grew.
  */
 export function axisGutterLeft(
-  scale: Pick<ValueScale, 'side' | 'left'>,
+  axis: Pick<YAxis, 'side' | 'left' | 'ticks' | 'caption'>,
   width: number,
   rightInset: number,
   exportContentLeft?: number,
 ) {
-  if (scale.side === 'right') {
-    return width - rightInset - AXIS_GUTTER_WIDTH_PX
+  if (axis.side === 'right') {
+    return width - rightInset - axisGutterWidth(axis)
   }
-  const left = scale.left ?? 0
+  const left = axis.left ?? 0
   return exportContentLeft !== undefined && left === 0
     ? exportContentLeft - AXIS_GUTTER_WIDTH_PX
     : left

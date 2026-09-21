@@ -233,7 +233,7 @@ export function SvgYAxis({
             ))}
             {fits && axis.caption && bandTops.length > 0 ? (
               <g transform={`translate(${gutterLeft} 0)`}>
-                <AxisCaption axis={axis} bandTops={bandTops} />
+                <AxisCaption axis={axis} bandTops={bandTops} height={height} />
               </g>
             ) : null}
           </Fragment>

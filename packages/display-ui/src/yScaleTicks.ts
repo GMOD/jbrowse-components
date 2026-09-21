@@ -65,7 +65,8 @@ export function scoreToAxisY(
 
 /**
  * Width of the gutter an axis is drawn in, on screen and in the export
- * margin alike. `YScaleBar` grows its ticks and numbers away from the spine,
+ * margin alike, unless a caption beside wide labels grows it
+ * (`axisGutterWidth`). `YScaleBar` grows its ticks and numbers away from the spine,
  * and `x = ±9`, `fontSize 10` put a label of ordinary width inside this many
  * px; the alignments coverage axis and the MAF band axes had each arrived at
  * the same number independently, so a change to the labels moved neither.

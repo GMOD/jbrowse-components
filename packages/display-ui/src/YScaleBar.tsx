@@ -1,5 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
+import { AXIS_FONT_PX, TICK_LABEL_X_PX } from './yAxisConstants.ts'
 import { clampStrokeInsideAxis } from './yScaleTicks.ts'
 
 import type { YScaleTicks } from './yScaleTicks.ts'
@@ -67,7 +68,7 @@ export default function YScaleBar({
   }
   return (
     <g
-      fontSize={10}
+      fontSize={AXIS_FONT_PX}
       textAnchor={isLeft ? 'end' : 'start'}
       stroke={fg}
       strokeWidth={1}
@@ -86,7 +87,7 @@ export default function YScaleBar({
             fill={fg}
             y={labelDy(strokeY(y))}
             dy="0.32em"
-            x={k * 9}
+            x={k * TICK_LABEL_X_PX}
           >
             {label ?? value}
           </text>

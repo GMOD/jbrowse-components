@@ -1,3 +1,4 @@
+import { measureText } from '@jbrowse/core/util/measureText'
 import { types } from '@jbrowse/mobx-state-tree'
 import { render } from '@testing-library/react'
 
@@ -260,6 +261,8 @@ describe('the y axis', () => {
     expect(labelsOf(container)).toEqual(['0', '10', 'TLEN'])
   })
 
+  // The bands' centre is the display's bottom edge here, so the caption rises
+  // until it is whole inside the display
   test('a scale ruling several bands is captioned once, beside the bands', async () => {
     const { container } = await renderShell(
       axisHost([scale({ height: 100, bandTops: [0, 100], caption: 'TLEN' })]),
@@ -269,7 +272,9 @@ describe('the y axis', () => {
       t => t.textContent === 'TLEN',
     )
     expect(captions).toHaveLength(1)
-    expect(captions[0]!.getAttribute('y')).toBe('100')
+    expect(Number(captions[0]!.getAttribute('y'))).toBe(
+      100 - measureText('TLEN', 10) / 2,
+    )
   })
 
   test('a scale too short for an axis leads its domain caption with its own', async () => {

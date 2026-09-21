@@ -1,4 +1,5 @@
 import { useMouseState } from '@jbrowse/core/ui/useMouseTracking'
+import { measureText } from '@jbrowse/core/util/measureText'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   isGpuRenderingDisabled,
@@ -927,7 +928,8 @@ describe('the y axis', () => {
   })
 
   // A caption names the scale, so a scale ruling several bands still has one:
-  // beside the bands on screen, centred on their extent.
+  // beside the bands on screen, centred on their extent as nearly as the
+  // display holds it whole.
   test('a scale ruling several bands is captioned once, beside the bands on screen', async () => {
     const { container, findByTestId } = renderChrome(
       AxisModel.create({
@@ -941,7 +943,9 @@ describe('the y axis', () => {
       t => t.textContent === 'TLEN',
     )
     expect(captions).toHaveLength(1)
-    expect(captions[0]!.getAttribute('y')).toBe('100')
+    expect(Number(captions[0]!.getAttribute('y'))).toBe(
+      100 - measureText('TLEN', 10) / 2,
+    )
     expect(captions[0]!.closest('svg')!.style.top).toBe('0px')
   })
 

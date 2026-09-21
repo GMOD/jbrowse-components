@@ -127,6 +127,7 @@ export {
   COMPACT_AXIS_HEIGHT,
   axisDrawn,
   axisGutterLeft,
+  axisGutterWidth,
 } from './axisPlacement.ts'
 export { default as AxisGutter } from './AxisGutter.tsx'
 export { AxisCaptionOverlay, default as AxisCaption } from './AxisCaption.tsx'

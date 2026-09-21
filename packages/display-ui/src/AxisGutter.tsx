@@ -1,5 +1,5 @@
 import YScaleBar from './YScaleBar.tsx'
-import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
+import { axisGutterWidth } from './axisPlacement.ts'
 
 import type { YAxis } from './valueScale.ts'
 
@@ -14,7 +14,7 @@ import type { YAxis } from './valueScale.ts'
 export default function AxisGutter({ axis }: { axis: YAxis }) {
   const right = axis.side === 'right'
   return (
-    <g transform={`translate(${right ? 0 : AXIS_GUTTER_WIDTH_PX} 0)`}>
+    <g transform={`translate(${right ? 0 : axisGutterWidth(axis)} 0)`}>
       <YScaleBar
         ticks={axis.ticks}
         orientation={right ? 'right' : 'left'}

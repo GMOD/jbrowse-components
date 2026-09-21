@@ -3098,6 +3098,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/measureText": {
+      "package": "@jbrowse/core",
+      "names": [
+        "measureText",
+        "measuredFont"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/mst-reflection": {
       "package": "@jbrowse/core",
       "names": [
@@ -4371,6 +4379,7 @@
         "YScaleBarOverlay",
         "axisDrawn",
         "axisGutterLeft",
+        "axisGutterWidth",
         "axisPlotBox",
         "clampStrokeInsideAxis",
         "formatScore",
@@ -4398,6 +4407,7 @@
         "axisCaptionY",
         "axisDrawn",
         "axisGutterLeft",
+        "axisGutterWidth",
         "rulesABand"
       ],
       "worker": "real"
@@ -4426,8 +4436,12 @@
     "@jbrowse/display-ui/yAxisConstants": {
       "package": "@jbrowse/display-ui",
       "names": [
+        "AXIS_FONT_PX",
+        "CAPTION_BAND_PX",
+        "CAPTION_INSET_PX",
         "DEFAULT_RULE_COLOR",
         "SCORE_CAPTION_HEIGHT",
+        "TICK_LABEL_X_PX",
         "YSCALEBAR_LABEL_OFFSET"
       ],
       "worker": "real"

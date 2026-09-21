@@ -1,4 +1,4 @@
-import { AXIS_GUTTER_WIDTH_PX, axisGutterLeft } from '@jbrowse/display-ui'
+import { axisGutterLeft, axisGutterWidth } from '@jbrowse/display-ui'
 import { SvgRowLabels } from '@jbrowse/tree-sidebar'
 import { axisDrawn } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
@@ -53,8 +53,8 @@ export default observer(function WiggleRowLabels({
         axis
           ? Math.max(
               labelOffset,
-              axisGutterLeft({ left: axis.left }, 0, 0, exportContentLeft) +
-                AXIS_GUTTER_WIDTH_PX +
+              axisGutterLeft(axis, 0, 0, exportContentLeft) +
+                axisGutterWidth(axis) +
                 AXIS_TO_LABEL_GAP_PX,
             )
           : labelOffset
