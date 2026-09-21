@@ -3767,16 +3767,12 @@ export default function stateModelFactory(
             }
             const currentType = self.colorBy.type
             if (mode === 'off') {
-              // Leaving pairs: pairing-only schemes no longer have meaning, so
-              // reset colorBy back to the slot's default. Explicit non-pairing
-              // choices (tag, methylation, base quality, ...) are preserved by
-              // the gate.
               if (PAIRING_COLOR_SCHEMES.has(currentType)) {
                 setConf(self, 'color', { value: self.colorSetting.value })
               }
-            } else if (currentType === 'normal') {
-              // Entering pairs: nudge the plain default to the SV-signal
-              // scheme, but don't clobber a scheme the user explicitly picked.
+            } else if (currentType === 'normal' && !self.baseLayer) {
+              // The plain default becomes the SV-signal fill; a plain fill
+              // under a per-base layer is the backdrop its marks read against.
               setConf(self, 'color', {
                 value: self.colorSetting.value,
                 field: COLOR_FIELDS.insertSizeAndOrientation,

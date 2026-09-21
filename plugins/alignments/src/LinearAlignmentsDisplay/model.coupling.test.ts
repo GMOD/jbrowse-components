@@ -193,6 +193,15 @@ describe('setLinkedReads color scheme preservation', () => {
     expect(display.colorBy.type).toBe('insertSizeAndOrientation')
   })
 
+  test('entering pairs leaves the plain fill under a per-base layer', () => {
+    const display = createDisplay()
+    display.setBaseLayer({ type: 'modifications' })
+
+    display.setLinkedReads('normal')
+    expect(display.colorBy.type).toBe('normal')
+    expect(display.bodyColorScheme).toBe('modifications')
+  })
+
   test('entering pairs preserves an explicit non-pairing color scheme', () => {
     const display = createDisplay()
     display.setColorBy({ type: 'tag', tag: 'HP' })
