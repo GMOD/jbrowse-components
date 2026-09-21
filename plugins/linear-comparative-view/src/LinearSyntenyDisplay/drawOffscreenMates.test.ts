@@ -1094,9 +1094,8 @@ describe('marks colored by the contig they name', () => {
   })
 
   // The two lanes hold contigs of different assemblies, and only one of them is
-  // usually keyed the way the ribbons are. They hang off opposite edges, so the
-  // order between them decides nothing a reader sees; it is the same length
-  // order the rest of the band paints in.
+  // usually keyed the way the ribbons are. They hang off opposite edges, so
+  // each paints on its own.
   test('a colored lane and a grey one share a band', () => {
     const { ctx, fills } = fakeCtx()
     draw(ctx, [
@@ -1106,7 +1105,42 @@ describe('marks colored by the contig they name', () => {
       },
       { datasets: [data([[500, 700]], ['chr2'])], side: 'bottom' as const },
     ])
-    expect(fills.map(f => f.style)).toEqual(['red', 'color:chr7'])
+    expect(fills.map(f => f.style)).toEqual(['color:chr7', 'red'])
+  })
+
+  // A palette colours contigs of both assemblies, so a colour can name a contig
+  // in each strip. Ranked across both, the other strip's long alignment put a
+  // weak colour over a stronger one here, and the pointer named the stronger.
+  test('a colour both strips use is ranked by its own strip', () => {
+    const colorFor = (refName: string) =>
+      refName === 'chrB' ? 'color:B' : 'color:X'
+    const top = {
+      ...params,
+      datasets: [
+        data(
+          [
+            [100, 150],
+            [100, 400],
+          ],
+          ['chrA', 'chrB'],
+        ),
+      ],
+      markColorFor: colorFor,
+    }
+    const { ctx, fills } = fakeCtx()
+    draw(ctx, [
+      top,
+      {
+        datasets: [data([[500, 1000]], ['chrZ'])],
+        markColorFor: colorFor,
+        side: 'bottom' as const,
+      },
+    ])
+    const onTop = fills.findLast(f =>
+      f.rects.some(r => r.y === 0 && 12 >= r.x && 12 <= r.x + r.w),
+    )?.style
+    expect(onTop).toBe('color:B')
+    expect(offscreenMateAt(top, 12, 3)?.refName).toBe('chrB')
   })
 })
 
