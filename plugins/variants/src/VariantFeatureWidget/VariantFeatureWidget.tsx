@@ -1,14 +1,14 @@
 import { Suspense, lazy } from 'react'
 
-import { FeatureWash } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import {
+  FeatureWash,
+  filterByValueItems,
+  jexlFilterDisplay,
+} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { assembleLocString, notEmpty } from '@jbrowse/core/util'
-import {
-  filterByValueItems,
-  jexlFilterDisplay,
-} from '@jbrowse/core/util/jexlFilterActions'
 import { getBreakendMateLocString, safeParseBreakend } from '@jbrowse/sv-core'
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'

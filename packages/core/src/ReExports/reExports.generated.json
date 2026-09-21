@@ -740,7 +740,9 @@
         "BaseCoreDetails",
         "FeatureDetails",
         "FeatureWash",
-        "default"
+        "default",
+        "filterByValueItems",
+        "jexlFilterDisplay"
       ],
       "worker": "stub",
       "uiVia": [
@@ -2984,15 +2986,6 @@
       "package": "@jbrowse/core",
       "names": [
         "default"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/core/util/jexlFilterActions": {
-      "package": "@jbrowse/core",
-      "names": [
-        "filterByValueItems",
-        "isJexlFilterDisplay",
-        "jexlFilterDisplay"
       ],
       "worker": "real"
     },

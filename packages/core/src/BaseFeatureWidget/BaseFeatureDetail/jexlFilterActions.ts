@@ -1,11 +1,11 @@
 import { pathSubject, printCondition } from '@jbrowse/jexl'
 
-import { activeJexlFilters } from './jexlFilters.ts'
-import { ensureJexlPrefix } from './jexlStrings.ts'
-import { getNotificationSink } from './sessionServices.ts'
+import { activeJexlFilters } from '../../util/jexlFilters.ts'
+import { ensureJexlPrefix } from '../../util/jexlStrings.ts'
+import { getNotificationSink } from '../../util/sessionServices.ts'
 
-import type { MenuItem } from '../ui/MenuTypes.ts'
-import type { JexlFilterModel } from './jexlFilters.ts'
+import type { MenuItem } from '../../ui/MenuTypes.ts'
+import type { JexlFilterModel } from '../../util/jexlFilters.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface JexlFilterDisplay extends JexlFilterModel, IStateTreeNode {}

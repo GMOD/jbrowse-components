@@ -1,10 +1,10 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
-import { ConfigurationSchema } from '../configuration/index.ts'
+import { ConfigurationSchema } from '../../configuration/index.ts'
 import { filterByValueItems, jexlFilterDisplay } from './jexlFilterActions.ts'
 
-import type { MenuItem } from '../ui/MenuTypes.ts'
-import type { SnackAction } from './types/services.ts'
+import type { MenuItem } from '../../ui/MenuTypes.ts'
+import type { SnackAction } from '../../util/types/services.ts'
 
 const CONFIGURED = ["jexl:feature.FILTER == 'PASS'"]
 
