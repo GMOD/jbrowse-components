@@ -1,6 +1,6 @@
 ---
 name: colour-and-render-review-followups
-description: What a 2026-09-21 review of the overnight colour-object, shader-loading and multiway landings found and did not fix, the synteny mate and follow findings excepted (those are synteny-mates-and-follow-review). Three calls for Colin — the plain fill forgetting a linear or threshold scale, `scales.y.title` null meaning derive, and re-hosting the multiway tutorials' gene colours — two gaps, and three measurements that decide whether anything is built. Read before touching the colour objects' menus, the mark rule list, the shader loaders or the multiway demos.
+description: What a 2026-09-21 review of the overnight colour-object, shader-loading and multiway landings found and did not fix, the synteny mate and follow findings excepted (those are synteny-mates-and-follow-review). Two calls for Colin — `scales.y.title` null meaning derive, and re-hosting the multiway tutorials' gene colours — and three measurements that decide whether anything is built; the plain fill's lost scale kind and both gaps moved to colour-object-and-jexl-branches. Read before touching the colour objects' menus, the mark rule list, the shader loaders or the multiway demos.
 ---
 
 # Colour, shader-loading and multiway follow-ups
@@ -12,16 +12,9 @@ decides it, and delete this file when none is left.
 
 ## Waiting on a call
 
-- **The plain fill forgets a declared scale kind.** The Color by menus switch
-  to the constant by writing `scale: 'none'`, which overwrites `linear` or
-  `threshold`, so Normal and back turns a tag ramp categorical.
-  `showSoftClipping.test.ts` ("Normal and back keeps the field, range and ends
-  of a linear tag") pins `scale: undefined` on the way back.
-  [ADR-151](../architecture-decision-records/adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md)
-  §Consequences accepts this. The fix is an on/off member separate from `scale`,
-  a change to every menu that writes `none` and to
-  [ADR-133](../architecture-decision-records/adr-133-a-channel-objects-slots-are-each-valid-alone.md)'s
-  rule.
+- **The plain fill forgets a declared scale kind.** Decided on 2026-09-21:
+  drop `none` and keep the way back in display state. [colour-object-and-jexl-branches](colour-object-and-jexl-branches.md)
+  step 2 carries it.
 - **`scales.y.title: null` means "derive the caption"**
   ([ADR-146](../architecture-decision-records/adr-146-null-is-the-json-spelling-of-a-slot-reset.md)
   §Consequences), the opposite of Vega-Lite's and GenomeSpy's `title: null`,
@@ -39,19 +32,9 @@ decides it, and delete this file when none is left.
 
 ## Gaps
 
-- **Only the mark display reports a ramp's domain problems.** `ramp-domain`
-  and `ramp-ends` live in `plugins/marks/src/LinearMarkDisplay/markProblems.ts`
-  and reach its notice and `jbrowse validate`. A `domain` beside a linear
-  scale on the quantitative or alignments displays loads and paints over the
-  regions' extremes with nothing said (ADR-151 §Consequences).
-- **The alignments colour runs through its own translators.** The config
-  object goes `color` → `colorByOf` → runtime `ColorBy` → `workerColorBy`, with
-  `colorSnapshotFor` back and `baseLayerOf` and `bodyColorScheme` beside it
-  (`plugins/alignments/src/shared/alignmentsColor.ts`). ADR-151 made
-  `colorEncodingOf` (display-kit) the one bridge for the mark and Manhattan
-  displays, and ADR-148 kept the scheme name as the alignments runtime form.
-  Whether the alignments display can join the bridge is open; the bake already
-  shares `colorRampStops`, `rampDomain` and `thresholdCuts`.
+Both moved to [colour-object-and-jexl-branches](colour-object-and-jexl-branches.md): the ramp-domain
+report is its step 3, and the alignments colour joins `colorEncodingOf` on
+its colour branch.
 
 ## Waiting on a number
 

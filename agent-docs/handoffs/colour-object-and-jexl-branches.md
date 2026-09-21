@@ -110,7 +110,9 @@ Left on that branch:
    canvas's `setFeatureColor`/`setColorScale`, Manhattan's `colorBy`,
    multi-way's `setGeneColorBy`). Undo alone does not cover it: on Desktop and
    for a Web admin the edit lands in `root.jbrowse`, outside the history's
-   `../session` target. The same change settles:
+   `../session` target. `showSoftClipping.test.ts` ("Normal and back keeps
+   the field, range and ends of a linear tag") pins today's lost kind. The
+   same change settles:
    - Manhattan re-picking the current field writes `scale: undefined` and
      drops a declared threshold.
    - LGVSyntenyColor's three states (strand by default, the plain fill, a
