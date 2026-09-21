@@ -2541,6 +2541,29 @@ describe('highlights', () => {
     expect(model.highlights).toEqual([onVolvox])
   })
 
+  test('highlighting the current region adds the region in view', () => {
+    const model = setupHighlightModel()
+    model.highlightCurrentRegion()
+    expect(getSession(model).highlights).toEqual([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 800 },
+    ])
+  })
+
+  test('the rubberband menu highlights the selection', () => {
+    const model = setupHighlightModel()
+    model.setOffsets(model.pxToBp(100), model.pxToBp(200))
+    const item = model
+      .rubberBandMenuItems()
+      .find(m => 'label' in m && m.label === 'Highlight region')
+    if (!item || !('onClick' in item)) {
+      throw new Error('no Highlight region item')
+    }
+    item.onClick()
+    expect(getSession(model).highlights).toMatchObject([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 100, end: 200 },
+    ])
+  })
+
   test('label toggle defaults to true and can be flipped', () => {
     const model = setupHighlightModel()
     expect(model.labelsVisible).toBe(true)

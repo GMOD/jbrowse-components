@@ -1765,7 +1765,7 @@ export default function stateModelFactory(pm: PluginManager) {
                 ]
               : []),
             {
-              label: 'Toggle highlights',
+              label: 'Show highlights',
               icon: HighlightIcon,
               type: 'checkbox' as const,
               checked: session.highlightsVisible,

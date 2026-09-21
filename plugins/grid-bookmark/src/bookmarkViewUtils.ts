@@ -1,8 +1,6 @@
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
-import HighlightIcon from '@mui/icons-material/Highlight'
 
 import type { GridBookmarkModel } from './GridBookmarkWidget/model.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // get-or-create the singleton highlight list widget and bring it to front
@@ -15,17 +13,4 @@ export function activateHighlightWidget(node: IAnyStateTreeNode) {
     return widget as GridBookmarkModel
   }
   throw new Error('Could not open the highlight list')
-}
-
-export function toggleHighlightsMenuItem(self: IAnyStateTreeNode): MenuItem {
-  const session = getSession(self)
-  return {
-    label: 'Toggle highlights',
-    icon: HighlightIcon,
-    type: 'checkbox',
-    checked: session.highlightsVisible,
-    onClick: () => {
-      session.setHighlightsVisible(!session.highlightsVisible)
-    },
-  }
 }

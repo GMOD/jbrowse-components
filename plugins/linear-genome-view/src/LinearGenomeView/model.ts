@@ -3198,6 +3198,37 @@ export function stateModelFactory(pluginManager: PluginManager) {
       ) {
         return self.navToLocations([parsedLocString], assemblyName, grow)
       },
+      /**
+       * #action
+       * adds the region in view to the session's highlights
+       */
+      highlightCurrentRegion() {
+        const [region] = self.visibleWholeBaseRegions
+        if (region) {
+          getSession(self).addHighlight(region)
+        }
+      },
+      /**
+       * #action
+       * navigates to the most recently added highlight on this view's
+       * assemblies, zoomed out a little for context
+       */
+      async navigateNewestHighlight() {
+        const newest = self.highlights.at(-1)
+        if (newest) {
+          const { assemblyName, ...region } = newest
+          await self.navToLocString(
+            assembleLocString(region),
+            assemblyName,
+            0.2,
+          )
+        } else {
+          getSession(self).notify(
+            'There are no highlights to navigate to.',
+            'info',
+          )
+        }
+      },
     }))
     .views(self => ({
       /**

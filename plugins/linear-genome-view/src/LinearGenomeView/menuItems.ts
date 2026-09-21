@@ -1,4 +1,7 @@
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import {
+  Highlighter,
+  TrackSelector as TrackSelectorIcon,
+} from '@jbrowse/core/ui/Icons'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import {
   assembleLocStrings,
@@ -270,6 +273,23 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             self.setHideNoTracksActive(!self.hideNoTracksActive)
           },
         },
+        { type: 'subHeader', label: 'Highlights' },
+        {
+          label: 'Show highlights',
+          type: 'checkbox',
+          checked: session.highlightsVisible,
+          onClick: () => {
+            session.setHighlightsVisible(!session.highlightsVisible)
+          },
+        },
+        {
+          label: 'Show highlight labels',
+          type: 'checkbox',
+          checked: self.labelsVisible,
+          onClick: () => {
+            self.setLabelsVisible(!self.labelsVisible)
+          },
+        },
         // The two answers to what the sequence draws as: one colours the
         // codons, the other spells them out. Both lost the palette icon they
         // used to carry — nothing else in this list has one.
@@ -408,6 +428,16 @@ export function buildRubberBandMenuItems(
       icon: ContentCopyIcon,
       onClick: () => {
         void copyText(self, rangeString, 'range')
+      },
+    },
+    {
+      label: 'Highlight region',
+      icon: Highlighter,
+      onClick: () => {
+        const [region] = self.getSelectedRegions(leftOffset, rightOffset)
+        if (region) {
+          getSession(self).addHighlight(region)
+        }
       },
     },
     ...(launch.length

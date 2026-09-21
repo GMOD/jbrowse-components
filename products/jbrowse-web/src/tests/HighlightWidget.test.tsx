@@ -71,7 +71,6 @@ test('Open the highlight list from the view menu', async () => {
   const { findByTestId, findByText } = await createView(config)
 
   fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Highlights'))
   fireEvent.click(await findByText('Open highlight list'))
 
   expect(await findByTestId('grid_bookmark_menu', ...opts)).toBeTruthy()
@@ -100,22 +99,20 @@ test('Highlight the current region with the hotkey', async () => {
   expect(session.highlights).toEqual([currentRegion])
 }, 60000)
 
-test('Highlight the current region from the view menu', async () => {
+test('Hide the bands from the view menu', async () => {
   const { session, findByTestId, findByText } = await createView(config)
 
-  await focusView(findByTestId)
   fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Highlights'))
-  fireEvent.click(await findByText('Highlight current region'))
+  fireEvent.click(await findByText('Show...'))
+  fireEvent.click(await findByText('Show highlights'))
 
-  expect(session.highlights).toEqual([currentRegion])
+  expect(session.highlightsVisible).toBe(false)
 }, 40000)
 
 test('Navigate to a highlight with the link in the list', async () => {
   const { view, session, findByTestId, findByText } = await createView(config)
 
   fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Highlights'))
   fireEvent.click(await findByText('Open highlight list'))
   session.addHighlight(region)
 

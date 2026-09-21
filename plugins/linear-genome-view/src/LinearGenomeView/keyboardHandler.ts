@@ -9,6 +9,8 @@ import type { LinearGenomeViewModel } from './model.ts'
  * - Ctrl/Cmd + ArrowRight: slide right
  * - Ctrl/Cmd + ArrowUp: zoom in
  * - Ctrl/Cmd + ArrowDown: zoom out
+ * - Ctrl/Cmd + Shift + D: highlight the region in view
+ * - Ctrl/Cmd + Shift + M: go to the newest highlight
  */
 export function setupKeyboardHandler(self: LinearGenomeViewModel) {
   if (typeof document === 'undefined') {
@@ -29,6 +31,13 @@ export function setupKeyboardHandler(self: LinearGenomeViewModel) {
       } else if (e.code === 'ArrowDown') {
         e.preventDefault()
         self.zoom(self.bpPerPx * 2)
+      } else if (e.shiftKey && e.code === 'KeyD') {
+        e.preventDefault()
+        self.highlightCurrentRegion()
+        session.notify('Region highlighted.', 'success')
+      } else if (e.shiftKey && e.code === 'KeyM') {
+        e.preventDefault()
+        void self.navigateNewestHighlight()
       }
     }
   }
