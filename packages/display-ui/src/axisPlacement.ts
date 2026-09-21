@@ -11,13 +11,19 @@ import type { ValueScale, YAxis } from './valueScale.ts'
 export const COMPACT_AXIS_HEIGHT = 30
 
 /**
+ * Whether a scale places anything by y, which is whether its rules draw: it
+ * rules at least one band, where `[]` is a scale mapped to colour instead.
+ */
+export function rulesABand(scale: Pick<ValueScale, 'bandTops'>) {
+  return (scale.bandTops?.length ?? 1) > 0
+}
+
+/**
  * Whether a scale gets an axis at all: it rules at least one band, and the
  * band has room for tick labels. A scale that fails either is captioned.
  */
 export function axisDrawn(scale: Pick<ValueScale, 'height' | 'bandTops'>) {
-  return (
-    (scale.bandTops?.length ?? 1) > 0 && scale.height >= COMPACT_AXIS_HEIGHT
-  )
+  return rulesABand(scale) && scale.height >= COMPACT_AXIS_HEIGHT
 }
 
 /**

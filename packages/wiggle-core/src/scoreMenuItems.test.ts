@@ -8,6 +8,7 @@ import { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
 
 import type { AutoscaleModel, ScoreScaleModel } from './scoreMenuItems.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ValueScale } from '@jbrowse/display-ui'
 
 // A minimal ScoreScaleModel. `getSession` is only reached from an onClick, and
 // nothing here clicks, so the node-ness the interface asks for never gets used.
@@ -179,19 +180,33 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
 })
 
 // The reference lines are a member of the scale, so the one menu that writes
-// the scale offers them, and only where the display's scale declares `rules`.
+// the scale offers them, and only where the display's scale declares `rules`
+// and a scale it draws rules a band for them to cross.
 describe('the reference lines row', () => {
   const ruledSchema = ConfigurationSchema('TestRuledDisplay', {
     scales: scalesSchema(valueScaleSchema({ types: ['linear'], rules: true })),
   })
-  const ruled = () =>
+  const ruled = (bandTops?: number[]) =>
     types
       .compose(
         'TestRuledDisplay',
         ScoreScaleMixin(),
         types.model({ configuration: ruledSchema }),
       )
+      .views(() => ({
+        get valueScales(): ValueScale[] {
+          return [
+            { domain: [0, 10], scaleType: 'linear', height: 100, bandTops },
+          ]
+        },
+      }))
       .create({ configuration: {} })
+
+  it('is absent where the one scale is mapped to colour', () => {
+    expect(labels(makeScoreSubMenu(ruled([])))).not.toContain(
+      'Reference lines...',
+    )
+  })
 
   it('is absent where the scale declares no rules', () => {
     expect(labels(makeScoreSubMenu(makePinnedDomainDisplay()))).not.toContain(

@@ -48,10 +48,10 @@ export interface AutoscaleModel {
   setAutoscale: (v?: string) => void
 }
 
-// The reference-lines half, apart for the same reason: a scale declares `rules`
-// or it does not, and `scoreRulesDeclared` is which.
+// The reference-lines half, apart for the same reason: a display draws its
+// scale's `rules` or it does not, and `scoreRulesDrawn` is which.
 export interface ScoreRulesModel {
-  scoreRulesDeclared: boolean
+  scoreRulesDrawn: boolean
   scoreRules: ValueScaleRule[]
   setScoreRules: (rules: ValueScaleRule[]) => void
 }
@@ -192,11 +192,11 @@ export interface ScoreSubMenuOptions {
   disabledHelpText?: string
 }
 
-function declaresScoreRules<T extends IStateTreeNode>(
+function drawsScoreRules<T extends IStateTreeNode>(
   self: T & Partial<ScoreRulesModel>,
 ): self is T & ScoreRulesModel {
   return (
-    self.scoreRulesDeclared === true &&
+    self.scoreRulesDrawn === true &&
     self.scoreRules !== undefined &&
     self.setScoreRules !== undefined
   )
@@ -255,7 +255,7 @@ export function makeScoreSubMenu(
       makeSetMinMaxScoreItem(self),
       ...(domain ? [makePinCurrentRangeItem(self, domain)] : []),
       ...(self.hasManualScoreBounds ? [makeClearMinMaxScoreItem(self)] : []),
-      ...(declaresScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),
+      ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),
       ...trailingItems,
     ],
   }

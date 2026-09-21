@@ -5,6 +5,7 @@ import {
   setConf,
   slotChoices,
 } from '@jbrowse/core/configuration'
+import { rulesABand } from '@jbrowse/display-ui/axisPlacement'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 
@@ -130,11 +131,16 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
-       * Whether this display's scale declares `rules`, which is whether the
-       * score menu offers the reference lines.
+       * Whether this display draws `scales.y.rules`, which is whether the
+       * score menu offers the reference lines: its scale declares them, and
+       * a scale it places y through rules a band for them to cross, which a
+       * density plot's colour-mapped rows and a colour ramp do not.
        */
-      get scoreRulesDeclared(): boolean {
-        return confNode(self).configuration.scales.y.rules !== undefined
+      get scoreRulesDrawn(): boolean {
+        return (
+          confNode(self).configuration.scales.y.rules !== undefined &&
+          self.valueScales.some(rulesABand)
+        )
       },
       /**
        * #getter

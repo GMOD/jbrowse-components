@@ -4397,7 +4397,8 @@
         "COMPACT_AXIS_HEIGHT",
         "axisCaptionY",
         "axisDrawn",
-        "axisGutterLeft"
+        "axisGutterLeft",
+        "rulesABand"
       ],
       "worker": "real"
     },
