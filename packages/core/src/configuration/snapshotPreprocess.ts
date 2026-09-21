@@ -12,7 +12,7 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
 // `patternProperties` admits them
 const COMMENT_KEY = /^_+comment/
 
-function listed(keys: readonly string[]) {
+export function listed(keys: readonly string[]) {
   return keys.length > 1
     ? `${keys.slice(0, -1).join(', ')} and ${keys.at(-1)}`
     : (keys[0] ?? 'nothing')

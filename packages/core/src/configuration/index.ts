@@ -4,6 +4,11 @@ export {
   hydrateTrackConfig,
 } from './configurationSchema.ts'
 export type { ConfigurationSchemaDefinition } from './configurationSchema.ts'
+export {
+  ConfigurationSchemaUnion,
+  arraySlotUnion,
+} from './configurationSchemaUnion.ts'
+export type { ConfigurationSchemaUnionType } from './configurationSchemaUnion.ts'
 // Named in the shape `ConfigurationSchema()` returns, so every downstream
 // `configSchema` declaration emit has to be able to reach them by name.
 export type { ConfigSlotDefinition } from './configurationSlot.ts'
@@ -36,7 +41,9 @@ export {
   // TextSearchAdapterType, where the shorthand is nonetheless the documented
   // way to write the config
   getConfigurationSchemaMetadata,
+  getConfigurationSchemaUnion,
 } from './schemaRegistry.ts'
+export type { ConfigurationSchemaUnionMetadata } from './schemaRegistry.ts'
 export {
   getTypeNamesFromExplicitlyTypedUnion,
   isBareConfigurationSchemaType,

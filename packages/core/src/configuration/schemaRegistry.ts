@@ -4,7 +4,10 @@ import type {
   ConfigurationSchemaDefinition,
   MergedConfigurationSchemaOptions,
 } from './configurationSchema.ts'
-import type { AnyConfigurationModel } from './types.ts'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from './types.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 export interface ConfigurationSchemaMetadata {
@@ -44,6 +47,30 @@ export function getConfigurationSchemaMetadata(type: IAnyType) {
 
 export function isRegisteredConfigurationSchema(type: IAnyType) {
   return schemaRegistry.has(type)
+}
+
+export interface ConfigurationSchemaUnionMetadata {
+  /** the name `ConfigurationSchemaUnion` was given, e.g. `MarkTransform` */
+  name: string
+  /** each member schema, keyed by the `type` it answers to */
+  members: Record<string, AnyConfigurationSchemaType>
+}
+
+const unionRegistry = new WeakMap<IAnyType, ConfigurationSchemaUnionMetadata>()
+
+export function registerConfigurationSchemaUnion(
+  type: IAnyType,
+  metadata: ConfigurationSchemaUnionMetadata,
+) {
+  unionRegistry.set(type, metadata)
+}
+
+/**
+ * The name and members of a union `ConfigurationSchemaUnion` built, or
+ * undefined for any other type — a pluggable element union included.
+ */
+export function getConfigurationSchemaUnion(type: IAnyType) {
+  return unionRegistry.get(type)
 }
 
 // The three lookups above take a schema *type*; the two below take a live config

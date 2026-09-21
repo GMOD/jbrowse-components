@@ -58,6 +58,13 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
   replace; override one by redeclaring its name.
   `ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy for a different
   reason — it wants a subset, and `baseConfiguration` only adds.
+- **A list whose entries are one of several schemas is
+  `types.array(ConfigurationSchemaUnion(name, { key: schema }))`**, not a bare
+  `types.union`, which loads a snapshot naming no member as its first member and
+  drops every key that member lacks. Each member is `explicitlyTyped`, `closed`
+  and named by its key, and the helper throws at construction when one is not.
+  `getConfigurationSchemaUnion` is what the editor and the JSON schema read; a
+  pluggable element union is not one.
 - **The base must be the type `ConfigurationSchema()` returned.** A `types.late`
   wrapper or a union passes `isBareConfigurationSchemaType` and used to drop
   every inherited slot silently; it now throws at construction.

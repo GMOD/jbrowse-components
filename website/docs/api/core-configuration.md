@@ -7,6 +7,35 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## arraySlotUnion
+
+The `ConfigurationSchemaUnion` an array slot's entries answer to, read off
+the slot's MST type, or undefined for any other slot.
+
+```js
+// type signature
+(slotType: IAnyType) => ConfigurationSchemaUnionMetadata | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchemaUnion.ts)
+
+## ConfigurationSchemaUnion
+
+A list entry that is one of several configuration schemas, each keyed by the
+`type` it answers to: `types.array(ConfigurationSchemaUnion('Step', { filter,
+bin }))`. The keys are the vocabulary, the snapshot's `type` picks the
+member, and a `type` naming no member is refused in every build — where a
+bare `types.union` would load it as its first member. Each member is an
+`explicitlyTyped`, `closed` schema named by its key, so a key belonging to
+another member is refused rather than dropped; one that is not throws here.
+
+```js
+// type signature
+<const MEMBERS extends Record<string, AnyConfigurationSchemaType>>(name: string, members: MEMBERS) => ConfigurationSchemaUnionType<MEMBERS>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchemaUnion.ts)
+
 ## getConf
 
 Reads a configuration value from a state model that has a `.configuration`
