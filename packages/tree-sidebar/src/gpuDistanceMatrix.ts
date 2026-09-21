@@ -16,7 +16,7 @@ import type { NumericRow } from './clusterMatrix.ts'
 const MIN_WORK = 1e9
 
 const ensurePipeline = makeComputePipelineCache(
-  kernel.WGSL_SOURCE,
+  kernel.SOURCE,
   kernel.COMPUTE_ENTRY_POINT,
   kernel.BINDINGS,
 )

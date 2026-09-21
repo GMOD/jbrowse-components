@@ -21,7 +21,7 @@ import { launch } from 'puppeteer'
 import {
   GLSL_FRAGMENT,
   GLSL_VERTEX,
-} from '../../../plugins/dotplot-view/src/DotplotDisplay/shaders/dotplot.generated.ts'
+} from '../../../plugins/dotplot-view/src/DotplotDisplay/shaders/dotplot.glsl.generated.ts'
 
 const INSTANCES = Number(process.argv[2] ?? 400000)
 const LINE_WIDTH = Number(process.argv[3] ?? 2.5)

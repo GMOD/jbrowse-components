@@ -87,6 +87,18 @@ export interface TextureBinding {
 }
 
 /**
+ * A shader's compiled text, one loader per target. `pnpm gen:shaders` emits it
+ * as a shader module's `SOURCE`, each loader an `import()` of a module holding
+ * nothing but that target's strings, so no realm evaluates shader text until a
+ * HAL is built with the pass: WebGPU loads the WGSL, WebGL2 the GLSL, Canvas2D
+ * neither, and the RPC worker never builds one.
+ */
+export interface ShaderSource {
+  wgsl: () => Promise<{ WGSL_SOURCE: string }>
+  glsl: () => Promise<{ GLSL_VERTEX: string; GLSL_FRAGMENT: string }>
+}
+
+/**
  * A **pipeline state object (PSO)**: shaders, vertex input layout, blend state,
  * primitive topology and texture bindings, baked into one immutable
  * description. One of these compiles to exactly one `GPURenderPipeline`
@@ -100,9 +112,7 @@ export interface TextureBinding {
  */
 export interface PipelineDescriptor {
   id: string
-  wgslSource: string
-  glslVertex: string
-  glslFragment: string
+  source: ShaderSource
   instanceStride: number
   /** Bytes of the uniform block the shader binds; the HAL's slot is the largest over its passes. */
   uniformByteSize: number

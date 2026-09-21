@@ -1,4 +1,4 @@
-import { MockHal } from './hal/mockHal.ts'
+import { MOCK_SHADER_SOURCE, MockHal } from './hal/mockHal.ts'
 import {
   Canvas2DPerRegionRenderingBackend,
   GpuPerRegionRenderingBackend,
@@ -204,9 +204,7 @@ describe('GpuPerRegionRenderingBackend.upload', () => {
   ): InstancePass<Data> {
     return {
       id,
-      wgslSource: '',
-      glslVertex: '',
-      glslFragment: '',
+      source: MOCK_SHADER_SOURCE,
       instanceStride: STRIDE,
       uniformByteSize: 0,
       verticesPerInstance: 6,

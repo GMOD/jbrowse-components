@@ -2,7 +2,7 @@
 
 import { onDeviceLost } from './gpuDevice.ts'
 
-import type { ShaderBinding } from './hal/index.ts'
+import type { ShaderBinding, ShaderSource } from './hal/index.ts'
 
 export interface ComputePipelineState {
   device: GPUDevice
@@ -40,10 +40,11 @@ function makeBindGroupLayout(
 /**
  * One compute pipeline per kernel, built on first use against the current
  * device and rebuilt after a device loss. Concurrent first callers share the
- * one async build.
+ * one async build, which is also when the kernel's WGSL is loaded; a failed
+ * one is retried by the next caller rather than kept.
  */
 export function makeComputePipelineCache(
-  code: string,
+  source: Pick<ShaderSource, 'wgsl'>,
   entryPoint: string,
   bindings: readonly ShaderBinding[],
 ) {
@@ -61,17 +62,21 @@ export function makeComputePipelineCache(
       return statePromise
     }
     statePromise = (async () => {
-      const module = device.createShaderModule({ code })
-      const bindGroupLayout = makeBindGroupLayout(device, bindings)
-      const pipeline = await device.createComputePipelineAsync({
-        layout: device.createPipelineLayout({
-          bindGroupLayouts: [bindGroupLayout],
-        }),
-        compute: { module, entryPoint },
-      })
-      state = { device, pipeline, bindGroupLayout, bindings }
-      statePromise = null
-      return state
+      try {
+        const { WGSL_SOURCE } = await source.wgsl()
+        const module = device.createShaderModule({ code: WGSL_SOURCE })
+        const bindGroupLayout = makeBindGroupLayout(device, bindings)
+        const pipeline = await device.createComputePipelineAsync({
+          layout: device.createPipelineLayout({
+            bindGroupLayouts: [bindGroupLayout],
+          }),
+          compute: { module, entryPoint },
+        })
+        state = { device, pipeline, bindGroupLayout, bindings }
+        return state
+      } finally {
+        statePromise = null
+      }
     })()
     return statePromise
   }

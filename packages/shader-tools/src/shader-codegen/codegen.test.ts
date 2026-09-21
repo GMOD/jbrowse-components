@@ -1,4 +1,10 @@
-import { emitInterface, emitLayoutOnly, emitShaderStrings } from './codegen.ts'
+import {
+  emitGlslText,
+  emitInterface,
+  emitLayoutOnly,
+  emitShaderModule,
+  emitWgslText,
+} from './codegen.ts'
 
 import type { Reflection } from './reflection.ts'
 
@@ -596,19 +602,39 @@ describe('emitLayoutOnly', () => {
   })
 })
 
-describe('emitShaderStrings', () => {
-  test('emits shader source constants and re-exports the interface', () => {
-    const out = emitShaderStrings({
-      baseName: 'test',
-      reflection,
-      wgsl: 'WGSL',
-      glslVertex: 'VERT',
-      glslFragment: 'FRAG',
-    })
-    expect(out).toContain('export const WGSL_SOURCE = "WGSL"')
-    expect(out).toContain('export const GLSL_VERTEX = "VERT"')
-    expect(out).toContain('export const GLSL_FRAGMENT = "FRAG"')
+describe('the shader module and its text', () => {
+  const both = {
+    baseName: 'test',
+    reflection,
+    wgsl: 'WGSL',
+    glslVertex: 'VERT',
+    glslFragment: 'FRAG',
+  }
+
+  test('each target gets a module holding its text alone', () => {
+    expect(emitWgslText(both)).toContain('export const WGSL_SOURCE = "WGSL"')
+    const glsl = emitGlslText(both)
+    expect(glsl).toContain('export const GLSL_VERTEX = "VERT"')
+    expect(glsl).toContain('export const GLSL_FRAGMENT = "FRAG"')
+    expect(glsl).not.toContain('WGSL')
+  })
+
+  test('the shader module reaches the text only through import()', () => {
+    const out = emitShaderModule(both)
+    expect(out).not.toMatch(/WGSL|VERT|FRAG/)
     expect(out).toContain("export * from './test.iface.generated.ts'")
+    expect(out).toContain('export const SOURCE: ShaderSource = {')
+    expect(out).toContain("wgsl: () => import('./test.wgsl.generated.ts'),")
+    expect(out).toContain("glsl: () => import('./test.glsl.generated.ts'),")
+    expect(out).not.toMatch(/^import (?!type).*generated/m)
+  })
+
+  test('a wgsl-only shader has no glsl loader and no glsl module', () => {
+    const wgslOnly = { baseName: 'test', reflection, wgsl: 'WGSL' }
+    expect(emitGlslText(wgslOnly)).toBeUndefined()
+    const out = emitShaderModule(wgslOnly)
+    expect(out).toContain("export const SOURCE: Pick<ShaderSource, 'wgsl'> = {")
+    expect(out).not.toContain('glsl')
   })
 })
 

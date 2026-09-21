@@ -49,10 +49,11 @@ function gpuBlendState(bs: BlendState): GPUBlendState {
 
 export function pipelineRecipe(
   desc: PipelineDescriptor,
+  wgslSource: string,
   sampleCount: SampleCount,
 ): PipelineRecipe {
   return {
-    wgslSource: desc.wgslSource,
+    wgslSource,
     textured: !!desc.textures?.length,
     vertexBuffer: {
       arrayStride: desc.instanceStride,

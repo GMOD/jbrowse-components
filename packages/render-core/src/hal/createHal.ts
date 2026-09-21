@@ -131,7 +131,7 @@ async function climbLadder(
     }
   }
   try {
-    return new WebGL2Hal(canvas, passes)
+    return await WebGL2Hal.create(canvas, passes)
   } catch (e) {
     console.warn('[GPU] WebGL2 unavailable, falling back to Canvas2D:', e)
     failures?.push(e)

@@ -6,9 +6,12 @@ import type {
   BlendFactor,
   GpuHal,
   PipelineDescriptor,
+  ShaderSource,
   TextureBinding,
   TextureSource,
 } from './types.ts'
+
+type GlslStages = Awaited<ReturnType<ShaderSource['glsl']>>
 
 function createShader(
   gl: WebGL2RenderingContext,
@@ -152,6 +155,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private canvas: HTMLCanvasElement
   // `null` is a pass whose link failed, so it is reported once, not per frame.
   private passes = new Map<string, PassState | null>()
+  private glsl: ReadonlyMap<string, GlslStages>
   // By vertex source, then fragment source, attribute names and sampler as
   // JSON: every pass id over one program shares it, and a failed link keeps
   // its error.
@@ -183,9 +187,28 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
   }
 
-  constructor(canvas: HTMLCanvasElement, descriptors: PipelineDescriptor[]) {
+  /**
+   * Loads every pass's GLSL before the context is acquired, so a load that
+   * fails leaves the canvas free for Canvas2D.
+   */
+  static async create(
+    canvas: HTMLCanvasElement,
+    descriptors: PipelineDescriptor[],
+  ) {
+    const glsl = await Promise.all(
+      descriptors.map(async d => [d.id, await d.source.glsl()] as const),
+    )
+    return new WebGL2Hal(canvas, descriptors, new Map(glsl))
+  }
+
+  private constructor(
+    canvas: HTMLCanvasElement,
+    descriptors: PipelineDescriptor[],
+    glsl: ReadonlyMap<string, GlslStages>,
+  ) {
     super(descriptors, 'WebGL2Hal')
     this.canvas = canvas
+    this.glsl = glsl
     this.debug = debugEnabled()
     totalCreated += 1
     this.instanceId = totalCreated
@@ -270,14 +293,19 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   // Throws on a failed link, and again on every later ask for that content.
   private link(desc: PipelineDescriptor): LinkedProgram {
     const gl = this.gl
+    const stages = this.glsl.get(desc.id)
+    if (!stages) {
+      throw new Error(`no GLSL was loaded for pass "${desc.id}"`)
+    }
+    const { GLSL_VERTEX, GLSL_FRAGMENT } = stages
     const tb = desc.textures?.[0]
     const names = desc.vertexAttributes.map(attr => attr.name)
     const sampler = tb && [tb.glUniformName, tb.glTextureUnit]
-    const key = JSON.stringify([desc.glslFragment, names, sampler])
-    let byVertex = this.programs.get(desc.glslVertex)
+    const key = JSON.stringify([GLSL_FRAGMENT, names, sampler])
+    let byVertex = this.programs.get(GLSL_VERTEX)
     if (!byVertex) {
       byVertex = new Map()
-      this.programs.set(desc.glslVertex, byVertex)
+      this.programs.set(GLSL_VERTEX, byVertex)
     }
     const known = byVertex.get(key)
     if (known instanceof Error) {
@@ -288,7 +316,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
     let program: WebGLProgram
     try {
-      program = createProgram(gl, desc.glslVertex, desc.glslFragment)
+      program = createProgram(gl, GLSL_VERTEX, GLSL_FRAGMENT)
     } catch (e) {
       byVertex.set(key, e instanceof Error ? e : new Error(String(e)))
       throw e

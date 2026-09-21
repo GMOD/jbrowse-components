@@ -3,17 +3,17 @@ import type {
   VertexAttributeLayout,
   PipelineDescriptor,
   ShaderBinding,
+  ShaderSource,
   TextureBinding,
 } from './hal'
 
 // Common surface exposed by every `.generated.ts` shader module (see
 // packages/shader-tools/src/shader-codegen/codegen.ts). A plugin renderer imports the module
 // and passes it here — keeps pass construction a one-liner and stops stride
-// / attribute layout from drifting away from the shader source.
+// / attribute layout from drifting away from the shader source. The text itself
+// is not on it, only `SOURCE`'s loaders, so declaring a pass evaluates none.
 export interface ShaderModule {
-  WGSL_SOURCE: string
-  GLSL_VERTEX: string
-  GLSL_FRAGMENT: string
+  SOURCE: ShaderSource
   INSTANCE_STRIDE_BYTES: number
   UNIFORMS_SIZE_BYTES: number
   VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[]
@@ -89,9 +89,7 @@ export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
   }
   return {
     id: opts.id,
-    wgslSource: opts.mod.WGSL_SOURCE,
-    glslVertex: opts.mod.GLSL_VERTEX,
-    glslFragment: opts.mod.GLSL_FRAGMENT,
+    source: opts.mod.SOURCE,
     instanceStride: opts.mod.INSTANCE_STRIDE_BYTES,
     uniformByteSize: opts.mod.UNIFORMS_SIZE_BYTES,
     verticesPerInstance,

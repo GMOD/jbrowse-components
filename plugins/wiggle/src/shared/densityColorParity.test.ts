@@ -12,10 +12,8 @@ import {
   makeDensityRgbStringFn,
 } from './getDensityColor.ts'
 import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
-import {
-  GLSL_FRAGMENT,
-  WGSL_SOURCE,
-} from './shaders/wiggleDensity.generated.ts'
+import { GLSL_FRAGMENT } from './shaders/wiggleDensity.glsl.generated.ts'
+import { WGSL_SOURCE } from './shaders/wiggleDensity.wgsl.generated.ts'
 
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 

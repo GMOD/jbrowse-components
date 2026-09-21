@@ -760,62 +760,97 @@ export const header = (baseName: string) => [
 ]
 
 /**
- * The heavy WGSL / GLSL shader strings, and the top of the re-export chain.
+ * The module a shader's text lives in, one per target. Nothing imports it but
+ * the `SOURCE` loader `emitShaderModule` writes, and that only through
+ * `import()`, which is what keeps the text out of every realm that never builds
+ * a HAL with the pass: a static import of one is a lint error.
+ */
+export function shaderTextFile(baseName: string, target: 'wgsl' | 'glsl') {
+  return `${baseName}.${target}.generated.ts`
+}
+
+export function emitWgslText({ baseName, wgsl }: CodegenInputs) {
+  return wgsl === undefined
+    ? undefined
+    : [
+        ...header(baseName),
+        // #shaderExport WGSL_SOURCE | the compiled WGSL, in `<base>.wgsl.generated.ts`; reach it through `SOURCE.wgsl()`
+        `export const WGSL_SOURCE = ${toStringLiteral(wgsl)}`,
+        '',
+      ].join('\n')
+}
+
+export function emitGlslText({
+  baseName,
+  glslVertex,
+  glslFragment,
+}: CodegenInputs) {
+  return glslVertex === undefined || glslFragment === undefined
+    ? undefined
+    : [
+        ...header(baseName),
+        // #shaderExport GLSL_VERTEX | the compiled WebGL2 vertex stage, in `<base>.glsl.generated.ts`; reach it through `SOURCE.glsl()`
+        `export const GLSL_VERTEX = ${toStringLiteral(glslVertex)}`,
+        '',
+        // #shaderExport GLSL_FRAGMENT | the compiled WebGL2 fragment stage, beside the vertex stage
+        `export const GLSL_FRAGMENT = ${toStringLiteral(glslFragment)}`,
+        '',
+      ].join('\n')
+}
+
+/**
+ * The module a consumer imports, `<base>.generated.ts`: the interface and
+ * consts modules re-exported, and `SOURCE`, a loader per target the shader
+ * compiles to.
  *
- * One shader emits up to three modules — strings here, shape in
- * `${base}.iface.generated.ts`, `//! export-consts` values in
- * `${base}.consts.generated.ts` — and the split is about the BUNDLER, not about
- * tidiness. A render path imports the whole surface as a namespace
+ * Three modules make up what a consumer sees, and the split is about the
+ * BUNDLER, not tidiness. A render path imports the whole surface as a namespace
  * (`import * as readShader`), which marks every export used, so a module is
  * included or excluded whole: whatever the smallest eager consumer of a module
- * wants, the eager chunk pays for all of it.
+ * wants, the eager chunk pays for all of it. Three eager modules in
+ * plugins/alignments importing only `CS_*` / `RC_*` held all 16 KB of
+ * `read.iface.generated.ts` that way, which is why a consumer imports from the
+ * SMALLEST module carrying what it wants, and the re-export chain runs one way
+ * only.
  *
- * That is measured, not reasoned. Three eager modules in plugins/alignments
- * (`constants.ts`, `colorUtils.ts`, `renderers/rendererTypes.ts`) import only
- * `CS_*` / `RC_*` / one pixel threshold, and were holding all 16 KB of
- * `read.iface.generated.ts` — `writeUniforms` and the packers included — in the
- * always-loaded chunk. `pnpm probe-eager-graph --holds` in the byo examples site
- * is the tool that says so, and the eager-bundle backlog entry in
- * agent-docs/TODO.md is where the number came from.
- *
- * So: a consumer imports from the SMALLEST module carrying what it wants. Every
- * one of the 33 sites that imports an export-const wanted nothing else from the
- * module it was importing from, which is what made the constants the right seam.
- * The re-export chain runs one way only — strings re-export shape and consts, so
- * an existing `import * as xShader` from `${base}.generated.ts` still sees the
- * full `ShaderModule` surface — and never back up it.
+ * The text is not in any of the three. A mark declared at module scope makes
+ * its shader module as eager as a plugin's registration, in the RPC worker too,
+ * so the WGSL and GLSL sit behind `SOURCE`'s `import()`s and load when a HAL is
+ * built with the pass.
  */
-export function emitShaderStrings(inputs: CodegenInputs) {
-  const { baseName, wgsl, glslVertex, glslFragment, exportedConsts } = inputs
-  const lines = header(baseName)
-  if (wgsl !== undefined) {
-    // #shaderExport WGSL_SOURCE | the compiled WGSL, when the shader targets wgsl
-    lines.push(`export const WGSL_SOURCE = ${toStringLiteral(wgsl)}`, '')
-  }
-  if (glslVertex !== undefined) {
-    // #shaderExport GLSL_VERTEX | the compiled WebGL2 vertex stage
-    lines.push(`export const GLSL_VERTEX = ${toStringLiteral(glslVertex)}`, '')
-  }
-  if (glslFragment !== undefined) {
-    // #shaderExport GLSL_FRAGMENT | the compiled WebGL2 fragment stage
-    lines.push(
-      `export const GLSL_FRAGMENT = ${toStringLiteral(glslFragment)}`,
-      '',
-    )
-  }
-  lines.push(`export * from './${baseName}.iface.generated.ts'`, '')
-  if (exportedConsts) {
-    lines.push(`export * from './${baseName}.consts.generated.ts'`, '')
-  }
-  return lines.join('\n')
+export function emitShaderModule(inputs: CodegenInputs) {
+  const { baseName, wgsl, glslVertex, exportedConsts } = inputs
+  const loaders = [
+    ...(wgsl === undefined ? [] : (['wgsl'] as const)),
+    ...(glslVertex === undefined ? [] : (['glsl'] as const)),
+  ]
+  const sourceType =
+    loaders.length === 2
+      ? 'ShaderSource'
+      : `Pick<ShaderSource, ${loaders.map(t => `'${t}'`).join(' | ')}>`
+  return [
+    ...header(baseName),
+    "import type { ShaderSource } from '@jbrowse/render-core/hal'",
+    '',
+    `export * from './${baseName}.iface.generated.ts'`,
+    ...(exportedConsts
+      ? [`export * from './${baseName}.consts.generated.ts'`]
+      : []),
+    '',
+    // #shaderExport SOURCE | a loader per target, `wgsl()` and `glsl()`, each an `import()` of the module holding that text alone; `slangPass` carries it onto the descriptor and the HAL awaits it when it is built
+    `export const SOURCE: ${sourceType} = {`,
+    ...loaders.map(
+      t => `  ${t}: () => import('./${shaderTextFile(baseName, t)}'),`,
+    ),
+    '}',
+    '',
+  ].join('\n')
 }
 
 // The uniform/instance layout, the typed packers, VERTEX_ATTRIBUTES, textures —
-// everything derived from the shader's *shape*. Neither the shader strings
-// (`emitShaderStrings`) nor the `//! export-consts` values (`emitConsts`) are
-// here; each of the three is its own module because each has its own set of
-// consumers, and a namespace import of any one of them defeats tree-shaking for
-// everything that module carries. See emitShaderStrings for the measured case.
+// everything derived from the shader's *shape*. Neither the shader text
+// (`emitWgslText`, `emitGlslText`) nor the `//! export-consts` values
+// (`emitConsts`) are here; see emitShaderModule for why each has its own module.
 export function emitInterface(inputs: CodegenInputs) {
   const {
     baseName,

@@ -1,3 +1,4 @@
+import { MOCK_SHADER_SOURCE } from './hal/mockHal.ts'
 import { slangPass } from './slangPass.ts'
 
 import type { BlendState, TextureBinding } from './hal/types.ts'
@@ -15,9 +16,7 @@ const ATTRS = [
 
 function shaderModule(extra: Partial<ShaderModule> = {}): ShaderModule {
   return {
-    WGSL_SOURCE: 'wgsl',
-    GLSL_VERTEX: 'vs',
-    GLSL_FRAGMENT: 'fs',
+    SOURCE: MOCK_SHADER_SOURCE,
     INSTANCE_STRIDE_BYTES: 16,
     UNIFORMS_SIZE_BYTES: 48,
     VERTEX_ATTRIBUTES: ATTRS,
@@ -40,9 +39,7 @@ describe('slangPass', () => {
 
     expect(desc).toMatchObject({
       id: 'rect',
-      wgslSource: 'wgsl',
-      glslVertex: 'vs',
-      glslFragment: 'fs',
+      source: MOCK_SHADER_SOURCE,
       instanceStride: 16,
       uniformByteSize: 48,
       verticesPerInstance: 6,

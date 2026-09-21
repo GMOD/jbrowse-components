@@ -1,5 +1,5 @@
 export { createGpuHal } from './createHal.ts'
-export { MockHal } from './mockHal.ts'
+export { MOCK_SHADER_SOURCE, MockHal } from './mockHal.ts'
 export { assertUniquePassIds } from './passIds.ts'
 export { WebGL2Hal } from './webgl2Hal.ts'
 export { WebGPUHal } from './webgpuHal.ts'
@@ -11,6 +11,7 @@ export type {
   PipelineDescriptor,
   SampleCount,
   ShaderBinding,
+  ShaderSource,
   TextureBinding,
   TextureSource,
 } from './types.ts'

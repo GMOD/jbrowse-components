@@ -1,4 +1,5 @@
 import { spanMark } from '../marks/spanMark.ts'
+import { WGSL_SOURCE } from '../shaders/spanMark.wgsl.generated.ts'
 import {
   getDeviceLayouts,
   getOrBuildPipeline,
@@ -93,7 +94,7 @@ describe('deviceGpuCache', () => {
       return pending
     }
     const asks = [1, 2, 3].map(() =>
-      getOrBuildPipeline(device, pipelineRecipe(SPAN, 4), build),
+      getOrBuildPipeline(device, pipelineRecipe(SPAN, WGSL_SOURCE, 4), build),
     )
     expect(builds).toBe(1)
     release({} as GPURenderPipeline)
@@ -110,7 +111,11 @@ describe('deviceGpuCache', () => {
     const ids = ['span', 'span#0', 'span#1']
     const pipelines = await Promise.all(
       ids.map(id =>
-        getOrBuildPipeline(device, pipelineRecipe({ ...SPAN, id }, 4), build),
+        getOrBuildPipeline(
+          device,
+          pipelineRecipe({ ...SPAN, id }, WGSL_SOURCE, 4),
+          build,
+        ),
       ),
     )
     expect(built).toHaveLength(1)
@@ -120,9 +125,7 @@ describe('deviceGpuCache', () => {
   it('builds apart every recipe that differs in what the pipeline compiles', async () => {
     const { built, build } = counting()
     const [attr, ...attrs] = SPAN.vertexAttributes
-    const variants: PipelineDescriptor[] = [
-      SPAN,
-      { ...SPAN, wgslSource: `${SPAN.wgslSource}\n` },
+    const layouts: PipelineDescriptor[] = [
       { ...SPAN, instanceStride: SPAN.instanceStride + 4 },
       { ...SPAN, vertexAttributes: [{ ...attr!, offsetBytes: 4 }, ...attrs] },
       { ...SPAN, vertexAttributes: [{ ...attr!, components: 3 }, ...attrs] },
@@ -143,28 +146,44 @@ describe('deviceGpuCache', () => {
         ],
       },
     ]
+    const variants: [PipelineDescriptor, string][] = [
+      [SPAN, WGSL_SOURCE],
+      [SPAN, `${WGSL_SOURCE}\n`],
+      ...layouts.map((desc): [PipelineDescriptor, string] => [
+        desc,
+        WGSL_SOURCE,
+      ]),
+    ]
     const counts: SampleCount[] = [4, 1]
     for (const sampleCount of counts) {
-      for (const desc of variants) {
+      for (const [desc, wgsl] of variants) {
         await getOrBuildPipeline(
           device,
-          pipelineRecipe(desc, sampleCount),
+          pipelineRecipe(desc, wgsl, sampleCount),
           build,
         )
       }
     }
     expect(built).toHaveLength(variants.length * counts.length)
     // and a second pass over the same content builds nothing
-    for (const desc of variants) {
-      await getOrBuildPipeline(device, pipelineRecipe(desc, 4), build)
+    for (const [desc, wgsl] of variants) {
+      await getOrBuildPipeline(device, pipelineRecipe(desc, wgsl, 4), build)
     }
     expect(built).toHaveLength(variants.length * counts.length)
   })
 
   it('hands the builder the sample count it keyed on', async () => {
     const { built, build } = counting()
-    await getOrBuildPipeline(device, pipelineRecipe(SPAN, 1), build)
-    await getOrBuildPipeline(device, pipelineRecipe(SPAN, 4), build)
+    await getOrBuildPipeline(
+      device,
+      pipelineRecipe(SPAN, WGSL_SOURCE, 1),
+      build,
+    )
+    await getOrBuildPipeline(
+      device,
+      pipelineRecipe(SPAN, WGSL_SOURCE, 4),
+      build,
+    )
     expect(built.map(r => r.sampleCount)).toEqual([1, 4])
   })
 
@@ -174,10 +193,13 @@ describe('deviceGpuCache', () => {
       builds++
       return Promise.reject(new Error('WGSL compile error'))
     }
-    const broken = { ...SPAN, wgslSource: 'not wgsl' }
     for (const id of ['broken', 'alsoBroken']) {
       await expect(
-        getOrBuildPipeline(device, pipelineRecipe({ ...broken, id }, 4), build),
+        getOrBuildPipeline(
+          device,
+          pipelineRecipe({ ...SPAN, id }, 'not wgsl', 4),
+          build,
+        ),
       ).rejects.toThrow('WGSL compile error')
     }
     expect(builds).toBe(1)

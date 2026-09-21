@@ -1,5 +1,5 @@
 import { createRenderingBackend } from './createRenderingBackend.ts'
-import { createGpuHal, MockHal } from './hal/index.ts'
+import { MOCK_SHADER_SOURCE, createGpuHal, MockHal } from './hal/index.ts'
 
 import type { GpuHalOptions } from './hal/index.ts'
 import type { PipelineDescriptor } from './hal/types.ts'
@@ -21,9 +21,7 @@ beforeEach(() => {
 function pass(id: string, coverage?: 'analytic'): PipelineDescriptor {
   return {
     id,
-    wgslSource: '',
-    glslVertex: '',
-    glslFragment: '',
+    source: MOCK_SHADER_SOURCE,
     instanceStride: 16,
     uniformByteSize: 0,
     verticesPerInstance: 6,

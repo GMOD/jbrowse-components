@@ -5,9 +5,16 @@ import { assertUniquePassIds } from './passIds.ts'
 import type {
   GpuHal,
   PipelineDescriptor,
+  ShaderSource,
   TextureBinding,
   TextureSource,
 } from './types.ts'
+
+/** Text for a pass built only for a `MockHal`, which never loads it. */
+export const MOCK_SHADER_SOURCE: ShaderSource = {
+  wgsl: () => Promise.resolve({ WGSL_SOURCE: '' }),
+  glsl: () => Promise.resolve({ GLSL_VERTEX: '', GLSL_FRAGMENT: '' }),
+}
 
 export interface MockCall {
   method: string

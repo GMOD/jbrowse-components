@@ -1,13 +1,11 @@
 import { COLOR_RAMP_LUT_ENTRIES, uploadColorRampLut } from './colorRampLut.ts'
-import { MockHal } from './hal/index.ts'
+import { MOCK_SHADER_SOURCE, MockHal } from './hal/index.ts'
 
 import type { PipelineDescriptor } from './hal/index.ts'
 
 const texturedPass = (id: string): PipelineDescriptor => ({
   id,
-  wgslSource: '',
-  glslVertex: '',
-  glslFragment: '',
+  source: MOCK_SHADER_SOURCE,
   instanceStride: 4,
   uniformByteSize: 0,
   verticesPerInstance: 6,

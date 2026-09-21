@@ -105,9 +105,9 @@ function drawEach(hal: WebGL2Hal, ids: string[]) {
   hal.endFrame()
 }
 
-test('passes that differ only in id link one program on a context', () => {
+test('passes that differ only in id link one program on a context', async () => {
   const { canvas, log } = fakeContext()
-  const hal = new WebGL2Hal(canvas, [
+  const hal = await WebGL2Hal.create(canvas, [
     pass('span'),
     pass('span#0'),
     pass('span#1'),
@@ -121,9 +121,9 @@ test('passes that differ only in id link one program on a context', () => {
   expect(log.deletedPrograms).toBe(2)
 })
 
-test('each pass keeps its own texture over a shared program', () => {
+test('each pass keeps its own texture over a shared program', async () => {
   const { canvas, log } = fakeContext()
-  const hal = new WebGL2Hal(canvas, [
+  const hal = await WebGL2Hal.create(canvas, [
     pass('ring0', { textures: [RAMP] }),
     pass('ring1', { textures: [RAMP] }),
   ])
@@ -141,11 +141,21 @@ test('each pass keeps its own texture over a shared program', () => {
   expect(log.deletedTextures).toBe(2)
 })
 
-test('a program that fails to link is compiled once and reported for each pass', () => {
+test('a program that fails to link is compiled once and reported for each pass', async () => {
   jest.spyOn(console, 'error').mockImplementation(() => {})
   const { canvas, log } = fakeContext()
-  const broken = { glslVertex: `${spanMark.pass.glslVertex}\n// broken` }
-  const hal = new WebGL2Hal(canvas, [
+  const stages = await spanMark.pass.source.glsl()
+  const broken = {
+    source: {
+      ...spanMark.pass.source,
+      glsl: () =>
+        Promise.resolve({
+          ...stages,
+          GLSL_VERTEX: `${stages.GLSL_VERTEX}\n// broken`,
+        }),
+    },
+  }
+  const hal = await WebGL2Hal.create(canvas, [
     pass('span'),
     pass('bad0', broken),
     pass('bad1', broken),

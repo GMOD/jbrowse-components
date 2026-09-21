@@ -10,7 +10,13 @@ jest.mock('./hal/webgpuHal.ts', () => {
   WebGPUHal.create = jest.fn()
   return { WebGPUHal }
 })
-jest.mock('./hal/webgl2Hal.ts', () => ({ WebGL2Hal: jest.fn() }))
+jest.mock('./hal/webgl2Hal.ts', () => {
+  function WebGL2Hal() {}
+  WebGL2Hal.create = jest.fn(() =>
+    Promise.resolve(Object.create(WebGL2Hal.prototype)),
+  )
+  return { WebGL2Hal }
+})
 
 const UNMASKED_RENDERER_WEBGL = 0x9246
 

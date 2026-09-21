@@ -113,20 +113,21 @@ async function buildPipeline(
 
 // Every declared pass up front, unlike WebGL2's first-draw link; see
 // ARCHITECTURAL_LIMITS.md §"Every WebGPU display resolves its whole pass list
-// before it can paint".
+// before it can paint". Each pass compiles as soon as its own WGSL arrives.
 async function resolvePipelines(
   device: GPUDevice,
   descriptors: PipelineDescriptor[],
   sampleCount: SampleCount,
 ) {
   const built = await Promise.all(
-    descriptors.map(desc =>
-      getOrBuildPipeline(
+    descriptors.map(async desc => {
+      const { WGSL_SOURCE } = await desc.source.wgsl()
+      return getOrBuildPipeline(
         device,
-        pipelineRecipe(desc, sampleCount),
+        pipelineRecipe(desc, WGSL_SOURCE, sampleCount),
         (layouts, recipe) => buildPipeline(device, recipe, layouts, desc.id),
-      ),
-    ),
+      )
+    }),
   )
   return new Map(descriptors.map((desc, i) => [desc.id, built[i]!]))
 }
@@ -319,10 +320,10 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       return null
     }
     // Resolve pipelines BEFORE acquiring the canvas's webgpu context. A canvas's
-    // context type is permanent once acquired, so if shader compilation throws
-    // here the canvas stays pristine and createGpuHal's WebGL2 fallback can
-    // still claim it — otherwise a partial WebGPU init would drop us all the way
-    // to Canvas2D on a WebGL2-capable machine.
+    // context type is permanent once acquired, so if a shader fails to load or
+    // compile here the canvas stays pristine and createGpuHal's WebGL2 fallback
+    // can still claim it — otherwise a partial WebGPU init would drop us all the
+    // way to Canvas2D on a WebGL2-capable machine.
     const layouts = getDeviceLayouts(device)
     const pipelines = await resolvePipelines(device, descriptors, sampleCount)
     const context = canvas.getContext('webgpu')

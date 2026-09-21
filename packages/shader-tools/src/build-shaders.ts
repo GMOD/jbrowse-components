@@ -12,12 +12,13 @@
 //   //! targets: wgsl           (compute shaders, WebGPU-only)
 // Default: wgsl + glsl.
 //
-// A shader with entry points emits three modules, and which one a consumer
-// imports from decides what the bundler makes it pay for (see
-// emitShaderStrings): `<base>.generated.ts` (the WGSL/GLSL strings, re-exporting
-// the other two), `<base>.iface.generated.ts` (layout, packers, uniforms) and —
-// when it declares `//! export-consts: A, B` — `<base>.consts.generated.ts`,
-// which is the numbers alone.
+// A shader with entry points emits three modules a consumer imports, and which
+// one decides what the bundler makes it pay for (see emitShaderModule):
+// `<base>.generated.ts` (the `SOURCE` loaders, re-exporting the other two),
+// `<base>.iface.generated.ts` (layout, packers, uniforms) and — when it declares
+// `//! export-consts: A, B` — `<base>.consts.generated.ts`, the numbers alone.
+// Its text goes to `<base>.wgsl.generated.ts` / `<base>.glsl.generated.ts`,
+// which only `SOURCE`'s `import()`s reach.
 //
 // Module files (those whose Slang source begins with `module <name>;`) are
 // treated as imports only. A module declaring `//! export-consts` emits just the
@@ -62,11 +63,14 @@ import {
 } from './shader-codegen/bindings.ts'
 import {
   emitConsts,
+  emitGlslText,
   emitInterface,
   emitLayoutOnly,
-  emitShaderStrings,
+  emitShaderModule,
+  emitWgslText,
   header,
   instanceAttrsFor,
+  shaderTextFile,
   uniformFieldsFor,
 } from './shader-codegen/codegen.ts'
 import {
@@ -876,15 +880,23 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       instanceWriter: parseInstanceWriter(source),
     }
     // The interface is emitted FIRST, because it is the one that refuses an
-    // unmodeled uniform/instance field or a second sampler. Writing the strings
-    // module before that check leaves a half-updated pair on disk when it fires.
+    // unmodeled uniform/instance field or a second sampler. Writing the other
+    // modules before that check leaves a half-updated set on disk when it fires.
     const iface = emitInterface(codegenInputs)
     emit(
       log,
       path.join(dir, `${base}.generated.ts`),
-      emitShaderStrings(codegenInputs),
+      emitShaderModule(codegenInputs),
     )
     emit(log, path.join(dir, `${base}.iface.generated.ts`), iface)
+    for (const [target, text] of [
+      ['wgsl', emitWgslText(codegenInputs)],
+      ['glsl', emitGlslText(codegenInputs)],
+    ] as const) {
+      if (text !== undefined) {
+        emit(log, path.join(dir, shaderTextFile(base, target)), text)
+      }
+    }
     if (codegenInputs.exportedConsts) {
       emit(
         log,
