@@ -29,6 +29,15 @@
  * `createTheme` from @mui/material/styles and every renderer reads the theme,
  * so @mui/system and emotion ride into the worker with it. That is the trade
  * ADR-128 took deliberately over marking every theme reader as UI.
+ *
+ * **No realm evaluates shader text at startup**, and both modes fail naming
+ * the import chain if one does. A shader's WGSL and GLSL are reached only
+ * through its module's `SOURCE` loaders, which a HAL awaits when it is built;
+ * a static edge to one puts the text back into every realm that reaches the
+ * importer. The lint rule `noShaderTextImport` refuses that edge in source, and
+ * this is the check on the routes it cannot see: a served subpath in an
+ * `exports` map, and the product's own worker entry, whose plugin graph is
+ * the main thread's `corePlugins.ts` plus the worker's bootstrap.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -51,7 +60,9 @@ function packageOf(file: string) {
   return parts[0]!.startsWith('@') ? `${parts[0]}/${parts[1]}` : parts[0]!
 }
 
-async function measure(entry: string) {
+const SHADER_TEXT = /^export const (WGSL_SOURCE|GLSL_VERTEX|GLSL_FRAGMENT) /m
+
+async function evaluatedModules(entry: string) {
   const result = await esbuild.build({
     entryPoints: [path.join(root, entry)],
     bundle: true,
@@ -61,6 +72,7 @@ async function measure(entry: string) {
     platform: 'browser',
     target: 'esnext',
     logLevel: 'error',
+    absWorkingDir: root,
   })
   const { inputs } = result.metafile
   const start = Object.keys(inputs).find(
@@ -69,20 +81,44 @@ async function measure(entry: string) {
   if (!start) {
     throw new Error(`${entry}: esbuild reported no input for the entry point`)
   }
-  const evaluated = new Set<string>()
-  const walk = (file: string) => {
-    const input = inputs[file]
-    if (evaluated.has(file) || !input) {
-      return
-    }
-    evaluated.add(file)
-    for (const imported of input.imports) {
-      if (imported.kind === 'import-statement') {
-        walk(imported.path)
+  // Breadth first, keeping the importer that reached each module first, so a
+  // failure below can print the shortest chain.
+  const importer = new Map<string, string | undefined>([[start, undefined]])
+  const queue = [start]
+  for (let i = 0; i < queue.length; i++) {
+    for (const imported of inputs[queue[i]!]?.imports ?? []) {
+      if (
+        imported.kind === 'import-statement' &&
+        inputs[imported.path] &&
+        !importer.has(imported.path)
+      ) {
+        importer.set(imported.path, queue[i])
+        queue.push(imported.path)
       }
     }
   }
-  walk(start)
+  return { inputs, importer }
+}
+
+function shaderTextChains(importer: Map<string, string | undefined>) {
+  return [...importer.keys()]
+    .filter(
+      file =>
+        !file.includes('node_modules/') &&
+        SHADER_TEXT.test(readFileSync(path.join(root, file), 'utf8')),
+    )
+    .map(file => {
+      const chain = []
+      for (let f: string | undefined = file; f; f = importer.get(f)) {
+        chain.unshift(f)
+      }
+      return chain.join('\n      -> ')
+    })
+}
+
+async function measure(entry: string) {
+  const { inputs, importer } = await evaluatedModules(entry)
+  const evaluated = importer.keys()
   let bytes = 0
   let uiBytes = 0
   for (const file of evaluated) {
@@ -92,13 +128,31 @@ async function measure(entry: string) {
       uiBytes += size
     }
   }
-  return { bytes, uiBytes, modules: evaluated.size }
+  return { bytes, uiBytes, modules: importer.size, importer }
 }
 
-const main = await measure('products/jbrowse-web/src/reExports.generated.ts')
-const worker = await measure(
+const { importer: mainImporter, ...main } = await measure(
+  'products/jbrowse-web/src/reExports.generated.ts',
+)
+const { importer: workerImporter, ...worker } = await measure(
   'products/jbrowse-web/src/workerReExports.generated.ts',
 )
+const WORKER_ENTRY = 'products/jbrowse-web/src/rpcWorker.ts'
+const shaderText = [
+  ...shaderTextChains(mainImporter),
+  ...shaderTextChains(workerImporter),
+  ...shaderTextChains((await evaluatedModules(WORKER_ENTRY)).importer),
+]
+if (shaderText.length > 0) {
+  console.error(
+    `${shaderText.length} shader text module(s) evaluated at startup, each reached by a static import:\n${shaderText
+      .map(chain => `  ${chain}`)
+      .join(
+        '\n',
+      )}\nReach a shader through its <name>.generated.ts, whose SOURCE loads the text when a HAL is built with the pass, and never serve a text module in an exports map.`,
+  )
+  process.exit(1)
+}
 const kb = (n: number) => Math.round(n / 1024)
 
 const sizes = {

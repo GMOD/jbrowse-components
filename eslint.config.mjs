@@ -363,6 +363,14 @@ const noSrcImport = {
   message:
     'Do not import from the src directory of another package. Use the package public API instead.',
 }
+// A shader's text reaches a realm only through its module's `SOURCE` loaders,
+// which a HAL awaits when it is built; a static import evaluates it at startup
+// in every realm that reaches the importer, the RPC worker included.
+const noShaderTextImport = {
+  group: ['*.wgsl.generated.ts', '*.glsl.generated.ts'],
+  message:
+    "Import the shader's `<name>.generated.ts` and pass it to slangPass; its `SOURCE` loads the text when a HAL is built with the pass.",
+}
 
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
@@ -962,6 +970,25 @@ export default defineConfig(
         'error',
         {
           paths: [noUseEffectEvent],
+          patterns: [noSrcImport, noShaderTextImport],
+        },
+      ],
+    },
+  },
+  // Tests, benches and probes read a shader's text to assert on it, and no
+  // realm evaluates them.
+  {
+    files: [
+      '**/*.test.{ts,tsx}',
+      '**/tests/**',
+      '**/browser-tests/**',
+      '**/benches/**',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [noUseEffectEvent],
           patterns: [noSrcImport],
         },
       ],
@@ -984,6 +1011,7 @@ export default defineConfig(
           paths: [noUseEffectEvent],
           patterns: [
             noSrcImport,
+            noShaderTextImport,
             {
               group: ['./index.ts'],
               message:
