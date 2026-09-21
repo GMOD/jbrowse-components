@@ -36,6 +36,37 @@ or in the follow harness unless marked:
 Landed earlier: M1, M2, M7 (order 1), B1, B2 (order 2), S4, the stale-doc half
 of the comment sweep, and M14 with M10 and M12.
 
+### Landed in parallel, 2026-09-21, from `worktree-agent-docs-followups`
+
+A second session worked the first pass's list at the same time and landed:
+
+- M3: `c75a9d9323`, with `8f023cfcde` (a mid-flight click keeps its zoom
+  through the LGV's new `flyToFit`; only a scroll under `linkViews`; the frame
+  capped at the row's widest window). **This supersedes `d3a5217483`** above:
+  drop that worktree rather than finish it.
+- M5, M13 and U2: `d36634d243`. M4 and M6 (class C marks, and the identity fade
+  no longer re-showing a hidden ribbon): `5c5ad29f6f`; a hidden ribbon's indels
+  are hidden too in `8f023cfcde`.
+- B3, B4, B5, B6 and S3: `8f8659ca8f`. S6's `movingIndex` and S8: `ff011ef85e`.
+- U2's wheel half, U3 and U4: `8f023cfcde`.
+
+**Six of those are items the second pass closed as intended**: M4, M13, B4,
+B5, U2 and U4. The first four are internal and harmless to keep. U2 and U4
+change behaviour and want a decision: while following, a band drag and a band
+wheel now move the anchor alone and the follow places the rest
+(`bandGestureRows`, `panStack`), where the closure reads a band drag as a stack
+pan; and the header toggle turns the follow off onto the mode it was turned on
+from (`rowSyncBeforeFollow`), where the closure is content with the menu.
+Revert those two if the closures stand.
+
+**The follow half has had no independent review**, and its full
+`pnpm test-related` was stopped before it finished; the linear-comparative-view
+and linear-genome-view suites ran green. Review `8f8659ca8f` for whether B3's
+live-block read can skip a correction mid-flight (it may bear on "B3's
+backwards jump"), whether the frame pass's `facing()` write of `spreadTargets`
+breaks its rule of minting no state, and whether `bandGestureRows` goes empty on
+a stale `followAnchorIndex`.
+
 ## Off-screen mates
 
 Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTENY_MATES.md),
