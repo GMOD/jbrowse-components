@@ -163,15 +163,21 @@ function pairing(refName: string, mateRefName: string) {
   }
 }
 
+interface HostRow {
+  displayedRegions: readonly unknown[]
+  bpPerPx: number
+}
+
 const Host = types
   .model('TestSyntenyFollowHost', {})
   .volatile(() => ({
     followSynteny: true,
     followMatchOrientation: true,
+    sameScale: false,
     followReport: EMPTY_FOLLOW_REPORT,
     followAnchorIndex: 0,
     followPairs: [] as FollowPair[],
-    views: [] as { assemblyNames: string[]; displayedRegions: unknown[] }[],
+    views: [] as HostRow[],
   }))
   .views(self => ({
     get followUnaligned() {
@@ -188,10 +194,11 @@ const Host = types
     setFollowPairs(pairs: FollowPair[]) {
       self.followPairs = pairs
     },
-    setViews(
-      views: { assemblyNames: string[]; displayedRegions: unknown[] }[],
-    ) {
+    setViews(views: HostRow[]) {
       self.views = views
+    },
+    setSameScale(arg: boolean) {
+      self.sameScale = arg
     },
     setFollowMatchOrientation(arg: boolean) {
       self.followMatchOrientation = arg
@@ -224,7 +231,7 @@ const Session = types
 function hostFor(assemblies = ['a', 'b', 'c']) {
   const session = Session.create({ host: {} })
   session.host.setViews(
-    assemblies.map(name => ({ assemblyNames: [name], displayedRegions: [] })),
+    assemblies.map(() => ({ displayedRegions: [], bpPerPx: 1 })),
   )
   return session.host
 }
@@ -535,6 +542,27 @@ describe('a whole-genome row zoomed by hand', () => {
     place(rows[0]!, 0, CONTIG * 3)
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown(rows[1]!)).toEqual(['chr1', 'chr2', 'chr3'])
+  })
+
+  // mates half their contigs' length, so the union the row is spread across is
+  // narrower than the anchor's window
+  test("a spread row keeps the anchor's scale under same bp per pixel", async () => {
+    const half = (i: number) => ({
+      ...pairing(`chr${i}`, `chr${i}`),
+      mateEnd: CONTIG / 2,
+    })
+    const { rows, host } = twoRows([display([half(1), half(2)])])
+    host.setViews(rows)
+    host.setSameScale(true)
+    place(rows[0]!, 0, CONTIG * 2)
+    installSyntenyFollow(host)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(rows[1]!.bpPerPx).toBeCloseTo(rows[0]!.bpPerPx)
+
+    host.setSameScale(false)
+    place(rows[0]!, 0, CONTIG * 2 + 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(rows[1]!.bpPerPx).toBeLessThan(rows[0]!.bpPerPx * 0.8)
   })
 
   test('an anchor zoomed into one contig moves the row before the next settle', async () => {

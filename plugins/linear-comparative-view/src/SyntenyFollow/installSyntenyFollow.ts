@@ -50,11 +50,12 @@ export interface FollowPair {
 
 export interface SyntenyFollowHost extends FollowAnchorHost {
   followMatchOrientation: boolean
+  sameScale: boolean
   followPairs: FollowPair[]
   setFollowReport: (report: Partial<FollowReport>) => void
   // which row a gesture landed on, and whether that row is showing anything
   // yet — a row's first navigation is its initialization, not a gesture
-  views: readonly { displayedRegions: readonly unknown[] }[]
+  views: readonly { displayedRegions: readonly unknown[]; bpPerPx: number }[]
 }
 
 // The root actions a person's own gesture on a row produces: a drag or a
@@ -209,6 +210,10 @@ function navSignature(
  */
 export function installSyntenyFollow(self: SyntenyFollowHost) {
   const levelStates = createFollowLevelStates<FollowLevel>()
+
+  // under "same bp per pixel" a spread row draws no finer than the anchor
+  const spreadFloor = () =>
+    self.sameScale ? self.views[self.followAnchorIndex]?.bpPerPx : undefined
 
   addDisposer(
     self,
@@ -365,7 +370,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     state.pick = undefined
     state.orientedKey = undefined
     const placed = self.holdFollowAnchor(() =>
-      positionViewOnSpans(movingView, spans),
+      positionViewOnSpans(movingView, spans, spreadFloor()),
     )
     if (placed) {
       state.lastNav = undefined
@@ -901,7 +906,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             if (spans.length) {
               placed.set(movingView, followPlacedWindows(spans))
               self.holdFollowAnchor(() =>
-                positionViewOnSpans(movingView, spans),
+                positionViewOnSpans(movingView, spans, spreadFloor()),
               )
             }
             continue

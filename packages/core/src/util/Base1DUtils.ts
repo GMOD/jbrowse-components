@@ -89,10 +89,11 @@ export function moveTo(
   },
   start?: BpOffset,
   end?: BpOffset,
+  minBpPerPx = 0,
 ) {
   if (start && end) {
     const targetBpPerPx = computeTargetBpPerPx(self, start, end)
-    const newBpPerPx = self.zoomTo(targetBpPerPx)
+    const newBpPerPx = self.zoomTo(Math.max(targetBpPerPx, minBpPerPx))
     const extraBp =
       targetBpPerPx < newBpPerPx
         ? ((newBpPerPx - targetBpPerPx) * self.width) / 2

@@ -53,11 +53,14 @@ export function spanBounds(
  * and then flushes the view's coarse blocks — sixty times a second that would
  * wake the exact pass, which tracks them, into an RPC per frame.
  *
+ * `minBpPerPx` widens a narrower interval around its centre.
+ *
  * False when nothing landed at all.
  */
 export function positionViewOnSpans(
   view: LinearGenomeViewModel,
   spans: ResolvedSpan[],
+  minBpPerPx?: number,
 ) {
   const bounds = spanBounds(view.displayedRegions, spans)
   if (
@@ -67,7 +70,7 @@ export function positionViewOnSpans(
   ) {
     return false
   }
-  moveTo(view, bounds.lo, bounds.hi)
+  moveTo(view, bounds.lo, bounds.hi, minBpPerPx)
   return true
 }
 
