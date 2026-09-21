@@ -151,12 +151,12 @@ test('Edit a highlight label with a single click in the list', async () => {
   // userEvent, not fireEvent.change: the grid cell is a <div>, not an input, so
   // it has no value setter for a change event to drive. Typing goes to whatever
   // the click focused, which is the editor the grid mounts.
-  await userEvent.setup().type(field, 'new label')
-  // get the focus away from the field
-  fireEvent.click(document)
+  await userEvent.setup().type(field, 'new label{Enter}')
 
-  expect(field.innerHTML).toContain('new label')
-  expect(session.highlights[0]!.label).toBe('new label')
+  await waitFor(() => {
+    expect(session.highlights[0]!.label).toBe('new label')
+  })
+  expect(field.textContent).toContain('new label')
 }, 60000)
 
 test('Toggle highlight visibility across all views', async () => {
