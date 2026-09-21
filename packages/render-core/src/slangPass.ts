@@ -77,7 +77,18 @@ export interface SlangPassOpts {
   textures?: [TextureBinding, ...TextureBinding[]]
 }
 
+function generatedBeforeLazyText(mod: Partial<ShaderModule>) {
+  return !mod.SOURCE || !mod.BINDINGS?.every(binding => 'stages' in binding)
+}
+
 export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
+  if (generatedBeforeLazyText(opts.mod)) {
+    throw new Error(
+      `slangPass(${opts.id}): the shader module has no SOURCE loaders or no ` +
+        `binding stages, so an older jbrowse-build-shaders generated it; ` +
+        `regenerate it`,
+    )
+  }
   const verticesPerInstance =
     opts.verticesPerInstance ?? opts.mod.VERTS_PER_INSTANCE
   if (verticesPerInstance === undefined) {

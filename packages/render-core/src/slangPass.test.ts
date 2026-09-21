@@ -59,6 +59,23 @@ describe('slangPass', () => {
     )
   })
 
+  it('names the fix for a module generated before the text went lazy', () => {
+    // An older module carries the strings and no SOURCE, or bindings with no
+    // stages; each GPU rung would throw on it and the display fall to Canvas2D
+    // with nothing saying why.
+    const current = shaderModule({ VERTS_PER_INSTANCE: 6 })
+    const { SOURCE: _source, ...stringsOnly } = current
+    const unstaged = {
+      ...current,
+      BINDINGS: [{ index: 1, kind: 'uniform', name: 'u' }],
+    }
+    for (const mod of [stringsOnly, unstaged]) {
+      expect(() =>
+        slangPass({ id: 'rect', mod: mod as unknown as ShaderModule }),
+      ).toThrow(/slangPass\(rect\).*jbrowse-build-shaders/s)
+    }
+  })
+
   it('lets the consumer override the shader vertex count', () => {
     // The canvas chevron pass: its count is the shader's own times a cap the
     // renderer chooses, so the module cannot state it.
