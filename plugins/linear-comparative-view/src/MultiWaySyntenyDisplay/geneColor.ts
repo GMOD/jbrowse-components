@@ -5,7 +5,7 @@ import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { categoricalColorField } from '@jbrowse/display-kit/colorConfigSchema'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MultiWaySyntenyDisplayConfig } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type {
@@ -57,7 +57,7 @@ function memo<K, V>(map: Map<K, V>, key: K, make: () => V) {
  * display), and `utrColor` the slot as written.
  */
 export function geneColors(
-  conf: AnyConfigurationModel,
+  conf: MultiWaySyntenyDisplayConfig,
   encoding: string | undefined | FieldColorEncoding,
   utrColor: unknown,
   jexl: JexlInstance,
@@ -69,9 +69,11 @@ export function geneColors(
   const painted = (css: string) =>
     memo(byCss, css, () => ({ css, packed: cssColorToABGR(css) }))
 
+  // the slot as written, not resolved: a jexl colour read without a feature
+  // evaluates against an empty context and hands back the fallout (adr-066)
   const utrConstant = isJexl(utrColor)
     ? undefined
-    : cssColorToABGR(String(readConfObject(conf, 'utrColor')))
+    : cssColorToABGR(String(utrColor))
   const utr = (feature: Feature) =>
     utrConstant ??
     memo(utrByFeature, feature.id(), () =>

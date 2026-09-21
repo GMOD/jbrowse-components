@@ -6,6 +6,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { ribbonColorConfigSchema } from './ribbonColorConfigSchema.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config MultiWaySyntenyDisplay
  *
@@ -167,3 +169,6 @@ export function configSchemaFactory() {
 export type MultiWaySyntenyDisplayConfigModel = ReturnType<
   typeof configSchemaFactory
 >
+
+export type MultiWaySyntenyDisplayConfig =
+  Instance<MultiWaySyntenyDisplayConfigModel>
