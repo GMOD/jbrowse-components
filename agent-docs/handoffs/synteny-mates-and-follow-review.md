@@ -1,6 +1,6 @@
 ---
 name: synteny-mates-and-follow-review
-description: Findings from a 2026-09-20 review of the off-screen mate strip and the synteny follow, the mate half re-checked by a second reviewer. Waiting on the items below that are not marked landed — the mate drop sites and hit-test merge first, then the follow's anchor bugs (B1, B2), the anchor-take move, and a comment sweep. Read before touching `drawOffscreenMates`, the mate collection in `executeSyntenyFeaturesAndPositions`, or `SyntenyFollow/`.
+description: Findings from a 2026-09-20 review of the off-screen mate strip and the synteny follow, the mate half re-checked by a second reviewer. The four ordered items have landed but the comment thinning; waiting on that and on every finding not marked landed — the follow's B3-B6, the mate UI items M3-M14, and the simplifications. Read before touching `drawOffscreenMates`, the mate collection in `executeSyntenyFeaturesAndPositions`, or `SyntenyFollow/`.
 ---
 
 # Off-screen mates and the synteny follow: review findings
@@ -13,9 +13,10 @@ its commit when it lands; file what nobody takes up into
 
 1. ~~Mates: M1 (every silent drop), M7 (one hit test), M2 with its sweep
    test.~~ Landed.
-2. Follow: B2, then B1.
-3. Follow: S4 (the anchor take moves into `SyntenyFollow/`).
-4. The comment and stale-doc sweep for both subsystems.
+2. ~~Follow: B2, then B1.~~ Landed.
+3. ~~Follow: S4 (the anchor take moves into `SyntenyFollow/`).~~ Landed.
+4. The comment sweep for both subsystems. The stale-doc half landed with B7;
+   thinning the comments that restate `SyntenyFollow/CLAUDE.md` (S1) is open.
 
 ## Off-screen mates
 
@@ -114,13 +115,13 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
 ### Bugs
 
 - **B1. Crossing a contig boundary mid-drag throws the moving row onto the
-  whole union, then settle snaps it back.** Verified by test.
+  whole union, then settle snaps it back.** Landed, `c763101577`.
   `installSyntenyFollow.ts` clears the spread decision whenever the anchor
   shows one contig, and `followRung` reads no decision as "spread", which the
   frame pass then applies. Fix: the frame pass calls `decideSpread` when there
   is no decision.
 - **B2. Two view-wide commands move the anchor to the last row they touch.**
-  Rubber band verified by test, center-on-feature by reading. The stack's
+  Landed, `44e1635203`; centering hands the anchor to the feature's own row. The stack's
   "Zoom to region(s)" (`LinearSyntenyView/model.ts`) and "Center view on this
   feature" (`SyntenyFeatureDetail/LinkToSyntenyView.tsx`) call `moveTo`/`navTo`
   per row from a click handler, and both are in `ROW_GESTURES`. Fix: make them
@@ -138,7 +139,7 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
   the block pick and the orientation key; `followRung` counts visible windows,
   where `decideSpread` counts aligned ones.
 - **B7. `followDebug` reads coarse blocks tracked**, so turning the log on
-  changes what the follow reacts to.
+  changes what the follow reacts to. Landed, `0d0dadcf44`.
 
 ### Simplifications
 
@@ -148,7 +149,7 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
   spread branch included.
 - **S3.** `pickFor`/`spreadFor`/`mapFor` become one non-minting `peek`, with a
   direction on the state for B4.
-- **S4.** The anchor take (`takeFollowAnchor`, `notifyStackMove`,
+- **S4.** Landed, `966eb4ac77`. The anchor take (`takeFollowAnchor`, `notifyStackMove`,
   `captureStackViewports`, `FollowAnchorHost`) lives in
   `LinearSyntenyViewHelper/offscreenMateNav.ts` and serves three features;
   it moves to `SyntenyFollow/`, and one `beginStackMove(stack, row)` replaces
@@ -174,12 +175,5 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
 
 ### Stale docs
 
-- `alreadyShowing.ts` says two callers widen a collapsed answer; neither does.
-- `installSyntenyFollow.ts` still names `navToLocString` as what wakes the
-  pass; `navToResolvedSpan` tries `navTo` first.
-- `interpolateFollowSpan.ts` claims to be the one interpolating navigation; the
-  envelope is another.
-- `followDebug.ts` says it is untracked (B7);
-  `browser-tests/follow-spread-probe.ts` calls it temporary.
-- The CLAUDE.md and `followFrameSpan.ts` say nothing navigates at settle (B3),
-  and the CLAUDE.md says view-wide zooms nest their row actions (B2).
+Landed, `0d0dadcf44`, except the claim in the CLAUDE.md and `followFrameSpan.ts`
+that nothing navigates at settle, which states the intent B3 breaks.
