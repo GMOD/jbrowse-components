@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import {
+  arraySlotUnion,
   getSlotDefinition,
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationModel,
@@ -8,11 +9,15 @@ import {
   isConfigurationSlot,
   makeSlotFacade,
   readConfObject,
+  setConf,
 } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getMembers } from '@jbrowse/mobx-state-tree'
+import { getMembers, getSnapshot } from '@jbrowse/mobx-state-tree'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ClearIcon from '@mui/icons-material/Clear'
+import DeleteIcon from '@mui/icons-material/Delete'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import SearchIcon from '@mui/icons-material/Search'
@@ -23,6 +28,7 @@ import {
   Button,
   IconButton,
   InputAdornment,
+  MenuItem,
   TextField,
   Typography,
 } from '@mui/material'
@@ -61,7 +67,23 @@ const useStyles = makeStyles()(theme => ({
     margin: theme.spacing(1, 0),
     textTransform: 'none',
   },
+  entryControls: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
 }))
+
+// The entries of an array of sub-schemas as snapshots, for a whole-list write.
+function listSnapshot(schema: AnyConfigurationModel, listName: string) {
+  return [...getSnapshot<readonly unknown[]>(schema[listName])]
+}
+
+interface UnionEntry {
+  listName: string
+  choices: string[]
+  index: number
+  count: number
+}
 
 // matches a slot or sub-schema against a lowercased filter string, recursing
 // into sub-schemas so a nested slot name keeps its ancestors visible
@@ -124,6 +146,71 @@ function displayDefaultExpanded(
   return !displayId || !expandedDisplayId || displayId === expandedDisplayId
 }
 
+// A union list entry's own controls: its type, and its place in the list. Each
+// is one whole-list write, so every state it leaves loads again.
+const EntryControls = observer(function EntryControls({
+  schema,
+  title,
+  slot,
+  entry: { listName, choices, index, count },
+}: {
+  schema: AnyConfigurationModel
+  title: string
+  slot: AnyConfigurationModel
+  entry: UnionEntry
+}) {
+  const { classes } = useStyles()
+  const write = (edit: (entries: unknown[]) => unknown[]) => {
+    setConf(schema, listName, edit(listSnapshot(schema, listName)))
+  }
+  const swap = (at: number) => {
+    write(list => list.toSpliced(at, 2, list[at + 1], list[at]))
+  }
+  return (
+    <>
+      <div className={classes.entryControls}>
+        <IconButton
+          aria-label={`move ${title} up`}
+          disabled={index === 0}
+          onClick={() => {
+            swap(index - 1)
+          }}
+        >
+          <ArrowUpwardIcon fontSize="small" />
+        </IconButton>
+        <IconButton
+          aria-label={`move ${title} down`}
+          disabled={index === count - 1}
+          onClick={() => {
+            swap(index)
+          }}
+        >
+          <ArrowDownwardIcon fontSize="small" />
+        </IconButton>
+        <IconButton
+          aria-label={`remove ${title}`}
+          onClick={() => {
+            write(list => list.toSpliced(index, 1))
+          }}
+        >
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </div>
+      <TypeSelector
+        typeNameChoices={choices}
+        slotName={title}
+        slot={slot}
+        onChange={evt => {
+          const type = evt.target.value
+          if (type !== slot.type) {
+            write(list => list.with(index, { type }))
+          }
+        }}
+      />
+    </>
+  )
+})
+
 const Member = observer(function Member(props: {
   slotName: string
   slotSchema: IAnyType
@@ -132,6 +219,7 @@ const Member = observer(function Member(props: {
   path?: string[]
   filter?: string
   expandedDisplayId?: string
+  entry?: UnionEntry
 }) {
   const { classes } = useStyles()
   const {
@@ -142,6 +230,7 @@ const Member = observer(function Member(props: {
     path = [],
     filter = '',
     expandedDisplayId,
+    entry,
   } = props
   // when the sub-schema's own name matches, drop the filter for its children so
   // the whole group stays visible; otherwise keep filtering descendants
@@ -154,12 +243,7 @@ const Member = observer(function Member(props: {
     // keyed on Array.isArray, not `.length` truthiness, so an empty array maps
     // to nothing instead of being mis-handled as a single schema
     if (Array.isArray(slot)) {
-      return slot.map((subslot: AnyConfigurationModel, slotIndex: number) => {
-        const key = subslot.type
-          ? `${singularSlotName(slotName)} ${subslot.type}`
-          : `${singularSlotName(slotName)} ${slotIndex + 1}`
-        return <Member key={key} {...props} slot={subslot} slotName={key} />
-      })
+      return <EntryList {...props} entries={slot} />
     }
     // if this is an explicitly typed schema, make a type-selecting dropdown
     // that can be used to change its type
@@ -183,6 +267,14 @@ const Member = observer(function Member(props: {
           <Typography>{[...path, slotName].join('➔')}</Typography>
         </AccordionSummary>
         <AccordionDetails className={classes.expansionPanelDetails}>
+          {entry && slot ? (
+            <EntryControls
+              schema={schema}
+              title={slotName}
+              slot={slot}
+              entry={entry}
+            />
+          ) : null}
           {typeNameChoices.length ? (
             <TypeSelector
               typeNameChoices={typeNameChoices}
@@ -217,6 +309,71 @@ const Member = observer(function Member(props: {
   } else {
     return null
   }
+})
+
+// An array of sub-schemas, one accordion per entry. A list whose entries are a
+// `ConfigurationSchemaUnion` also offers each entry's type and place, and a new
+// entry of any member type; a pluggable union such as a track's `displays` is
+// not one, since a display is added through the track.
+const EntryList = observer(function EntryList(props: {
+  slotName: string
+  slotSchema: IAnyType
+  schema: AnyConfigurationModel
+  entries: AnyConfigurationModel[]
+  path?: string[]
+  filter?: string
+  expandedDisplayId?: string
+}) {
+  const { classes } = useStyles()
+  const { slotName, slotSchema, schema, entries } = props
+  const singular = singularSlotName(slotName)
+  const union = arraySlotUnion(slotSchema)
+  const choices = union ? Object.keys(union.members) : []
+  return (
+    <>
+      {entries.map((subslot, index) => {
+        const title = `${singular} ${index + 1}`
+        return (
+          <Member
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- a config entry has no identity but its place
+            key={index}
+            {...props}
+            slot={subslot}
+            slotName={
+              union || !subslot.type ? title : `${title} ${subslot.type}`
+            }
+            entry={
+              union
+                ? { listName: slotName, choices, index, count: entries.length }
+                : undefined
+            }
+          />
+        )
+      })}
+      {union ? (
+        <TextField
+          className={classes.filter}
+          select
+          size="small"
+          label={`Add ${singular}`}
+          value=""
+          onChange={evt => {
+            setConf(schema, slotName, [
+              ...listSnapshot(schema, slotName),
+              { type: evt.target.value },
+            ])
+          }}
+          fullWidth
+        >
+          {choices.map(type => (
+            <MenuItem key={type} value={type}>
+              {type}
+            </MenuItem>
+          ))}
+        </TextField>
+      ) : null}
+    </>
+  )
 })
 
 const Schema = observer(function Schema({

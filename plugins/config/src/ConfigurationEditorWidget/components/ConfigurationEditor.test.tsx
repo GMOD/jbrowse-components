@@ -1,10 +1,11 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   ConfigurationSchema,
+  ConfigurationSchemaUnion,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
@@ -451,4 +452,121 @@ test('filtering does not crash over an unset optional sub-schema', () => {
       target: { value: 'adapter' },
     })
   }).not.toThrow()
+})
+
+describe('an array of a ConfigurationSchemaUnion', () => {
+  const filter = ConfigurationSchema(
+    'filter',
+    { expr: { type: 'string', defaultValue: '' } },
+    { explicitlyTyped: true, closed: true },
+  )
+  const bin = ConfigurationSchema(
+    'bin',
+    {
+      step: { type: 'number', defaultValue: 10000 },
+      field: { type: 'string', defaultValue: 'start' },
+    },
+    { explicitlyTyped: true, closed: true },
+  )
+  const Host = ConfigurationSchema('StepHost', {
+    transform: types.array(ConfigurationSchemaUnion('Step', { filter, bin })),
+    marks: types.array(
+      ConfigurationSchema('StepHostMark', {
+        shape: { type: 'string', defaultValue: 'bar' },
+      }),
+    ),
+  })
+
+  function renderHost(snapshot: Record<string, unknown>) {
+    const target = Host.create(snapshot, { pluginManager })
+    const screen = render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <ConfigurationEditor model={{ target }} />
+      </ThemeProvider>,
+    )
+    const pick = (combobox: string, option: string) => {
+      fireEvent.mouseDown(screen.getByRole('combobox', { name: combobox }))
+      fireEvent.click(screen.getByRole('option', { name: option }))
+    }
+    const reloads = () => {
+      const snap = getSnapshot(target)
+      expect(getSnapshot(Host.create(snap, { pluginManager }))).toEqual(snap)
+    }
+    return { target, pick, reloads, ...screen }
+  }
+
+  test('renders every entry of a repeated type', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const { getAllByLabelText } = renderHost({
+      transform: [
+        { type: 'filter', expr: 'a' },
+        { type: 'filter', expr: 'b' },
+        { type: 'bin' },
+      ],
+    })
+    expect(
+      getAllByLabelText('expr').map(e => (e as HTMLInputElement).value),
+    ).toEqual(['a', 'b'])
+    expect(getAllByLabelText('step')).toHaveLength(1)
+    expect(errorSpy).not.toHaveBeenCalled()
+    errorSpy.mockRestore()
+  })
+
+  test("a type change replaces that entry with the new type's defaults and leaves its siblings", () => {
+    const { target, pick, reloads } = renderHost({
+      transform: [
+        { type: 'filter', expr: 'a' },
+        { type: 'bin', step: 500, field: 'end' },
+      ],
+    })
+    pick('Type of transform 2', 'filter')
+    expect(getSnapshot(target).transform).toEqual([
+      { type: 'filter', expr: 'a' },
+      { type: 'filter' },
+    ])
+    reloads()
+  })
+
+  test('adds, reorders and removes entries, each state loading again', () => {
+    const { target, pick, reloads, getByLabelText } = renderHost({
+      transform: [{ type: 'filter', expr: 'a' }],
+    })
+    pick('Add transform', 'bin')
+    expect(getSnapshot(target).transform).toEqual([
+      { type: 'filter', expr: 'a' },
+      { type: 'bin' },
+    ])
+    reloads()
+    fireEvent.click(getByLabelText('move transform 2 up'))
+    expect(getSnapshot(target).transform).toEqual([
+      { type: 'bin' },
+      { type: 'filter', expr: 'a' },
+    ])
+    reloads()
+    fireEvent.click(getByLabelText('remove transform 1'))
+    expect(getSnapshot(target).transform).toEqual([
+      { type: 'filter', expr: 'a' },
+    ])
+    reloads()
+  })
+
+  test('offers none of it on an array of one schema', () => {
+    const { queryByLabelText, queryByRole } = renderHost({
+      marks: [{ shape: 'bar' }, { shape: 'point' }],
+    })
+    expect(queryByLabelText('remove mark 1')).toBeNull()
+    expect(queryByRole('combobox', { name: 'Add mark' })).toBeNull()
+    expect(queryByRole('combobox', { name: 'Type of mark 1' })).toBeNull()
+  })
+
+  test('a filter finds a slot inside one member and not the others', () => {
+    const { getByLabelText, queryAllByLabelText } = renderHost({
+      transform: [{ type: 'filter', expr: 'a' }, { type: 'bin' }],
+    })
+    fireEvent.change(getByLabelText('Filter options'), {
+      target: { value: 'step' },
+    })
+    expect(queryAllByLabelText('step')).toHaveLength(1)
+    expect(queryAllByLabelText('expr')).toHaveLength(0)
+  })
 })

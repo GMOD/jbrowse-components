@@ -24,10 +24,9 @@ const TypeSelector = observer(function TypeSelector({
       <div className={classes.paperContent}>
         <TextField
           value={slot?.type ?? ''}
-          label="Type"
+          label={`Type of ${slotName}`}
           select
           variant="outlined"
-          helperText={`Type of ${slotName} to use`}
           fullWidth
           onChange={onChange}
         >
