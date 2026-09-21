@@ -4,7 +4,11 @@ import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { heightModeLabel } from '@jbrowse/display-kit/heightMode'
 import { autorun } from 'mobx'
 
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
+import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
+import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
+import { applyReadColorsByGroup } from './groupLayout.ts'
 import {
   bootAlignmentsDisplay,
   clickMenuItem,
@@ -18,6 +22,7 @@ import {
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 import type { ResolvedBlock } from '../shared/hitTestTypes.ts'
+import type { BaseLayer, ReadColorBy } from '../shared/types.ts'
 
 // The block a right-click resolves. Only refName is read by the menu items
 // under test, but the hit carries a whole block or none at all, so the cases
@@ -1471,5 +1476,50 @@ describe('a selection is the chrome guide, not the canvas', () => {
     expect(renderStates).toBe(1)
     expect(display.selectionInk).toEqual([])
     stop()
+  })
+})
+
+// A reverse segment under a reverse frame bakes `fwdStrand` only when the
+// framing runs, so it reads the bake's answer off the display's own context.
+describe('chain-strand framing: the gate, the bake and the key agree', () => {
+  const fills: ReadColorBy[] = [
+    { type: 'normal' },
+    { type: 'strand' },
+    { type: 'insertSize' },
+    { type: 'pairOrientation' },
+    { type: 'tag', tag: 'HP' },
+  ]
+  const layers: (BaseLayer | undefined)[] = [
+    undefined,
+    { type: 'perBaseQuality' },
+    { type: 'perBaseLetter' },
+    { type: 'modifications' },
+  ]
+  const splitSegment = makePileupDataResult({
+    readStrands: Int8Array.of(-1),
+    readChainHasSupp: Uint8Array.of(CHAIN_SUPP_PRESENT | CHAIN_FRAME_REV),
+  })
+
+  test.each(
+    fills.flatMap(fill =>
+      layers.map(layer => [fill.type, layer?.type, fill, layer] as const),
+    ),
+  )('%s fill under the %s layer', (_fill, _layer, fill, layer) => {
+    const display = createDisplay()
+    display.setLinkedReads('normal')
+    display.setColorBy(fill)
+    display.setBaseLayer(layer)
+    const baked = applyReadColorsByGroup(
+      new Map([['', new Map([[0, splitSegment]])]]),
+      display.readColorContext,
+    )
+    const category =
+      READ_COLOR_CATEGORY_BY_INDEX[
+        baked.get('')!.get(0)!.readColorCategories[0]!
+      ]
+    expect(category === 'fwdStrand').toBe(display.framesChainStrand)
+    if (layer) {
+      expect(display.framesChainStrand).toBe(false)
+    }
   })
 })

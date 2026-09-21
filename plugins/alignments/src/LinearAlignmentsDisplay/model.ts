@@ -191,7 +191,7 @@ import type {
   SortedBy,
 } from '../shared/types'
 import type { NumericExtent } from './bakedColorScale.ts'
-import type { ReadColorCategory } from './colorUtils.ts'
+import type { ReadColorCategory, ReadColorOpts } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { ContextMenuHit } from './components/hitTestPipeline.ts'
 import type { SashimiArcSection } from './components/sashimiArcs.ts'
@@ -1514,17 +1514,19 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether the unpaired chain-strand framing is on, as a boolean in a
-           * separate computed. Nine of the schemes give one of two answers, so
-           * MobX's value comparison stops a scheme switch from invalidating
-           * `laidOutByGroupFramed` unless the answer changed. Reading
-           * `framesUnpairedChainStrand` inline there would make the frame solve
-           * depend on `colorBy` and re-run on every switch.
+           * Whether the unpaired chain-strand framing is on: the one answer the
+           * consensus pass, the bake (`readColorOpts`) and the key read. A
+           * boolean in its own computed, so a scheme switch that leaves the
+           * answer alone does not re-run the frame solve.
            */
           get framesChainStrand() {
             return framesUnpairedChainStrand(
               self.baseLayer?.type ?? self.colorBy.type,
-              this.readColorOpts,
+              {
+                chainMode: self.isChainMode,
+                flipStrandLongReadChains: self.flipStrandLongReadChains,
+                colorSupplementaryChains: self.colorSupplementaryChains,
+              },
             )
           },
 
@@ -1674,15 +1676,15 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The non-scheme inputs to read classification. One bundle so the bake
-           * (`overlayReadColorCategories`) and any ad-hoc `readColorCategory` call
-           * can't be handed a different set.
+           * The non-scheme inputs to read classification, with the framing as
+           * `framesChainStrand` answered it, so the bake frames exactly where
+           * the consensus pass ran and the key words it.
            */
-          get readColorOpts() {
+          get readColorOpts(): ReadColorOpts {
             return {
               chainMode: self.isChainMode,
-              flipStrandLongReadChains: self.flipStrandLongReadChains,
               colorSupplementaryChains: self.colorSupplementaryChains,
+              framesChainStrand: this.framesChainStrand,
             }
           },
 

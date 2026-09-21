@@ -125,21 +125,24 @@ function insertSizeCategory(
   return insertClassCategory[classifyInsertSize(insertSize, stats)]
 }
 
-// Whether the unpaired chain-strand framing below is actually going to be read,
-// which is the gate on running `consensusChainStrandFrames` at all — that pass
-// rewrites the very marker the framing reads, so under a scheme or a tickbox
-// that discards the framing it would be work whose result nothing looks at.
-// The `flipStrandLongReadChains` default here mirrors its config slot's (true).
-// Takes the SCHEME, not the shader index it dispatches through: that index puts
-// both per-base schemes on `normal`, and framing them repainted every unpaired
-// split segment fwd-red / rev-blue under the wall of cells the user asked for.
+export interface ChainFramingSettings {
+  chainMode?: boolean
+  flipStrandLongReadChains?: boolean
+  colorSupplementaryChains?: boolean
+}
+
+// Whether the unpaired chain-strand framing is live. The display asks once and
+// hands the answer to the consensus pass, the bake (`ReadColorOpts`) and the
+// key. It takes a scheme name, not the shader index: that index puts both
+// per-base schemes on `normal`, which frames split segments under the cells.
+// The `flipStrandLongReadChains` default mirrors its config slot's (true).
 export function framesUnpairedChainStrand(
   colorScheme: ColorSchemeType,
   {
     chainMode = false,
     flipStrandLongReadChains = true,
     colorSupplementaryChains = false,
-  }: ReadColorOpts = {},
+  }: ChainFramingSettings = {},
 ) {
   return (
     chainMode &&
@@ -207,8 +210,8 @@ export function buildReadColorCategories(
 
 export interface ReadColorOpts {
   chainMode?: boolean
-  flipStrandLongReadChains?: boolean
   colorSupplementaryChains?: boolean
+  framesChainStrand?: boolean
 }
 
 // Classify read `i` under the active color scheme: the cross-cutting override
@@ -286,12 +289,10 @@ function overrideCategory(
   // candidates for "longest alignment", so the flag lands on whichever the read
   // happened to cover more of, and the colours flip with it). It is now settled
   // across chains by `consensusChainStrandFrames`, which rewrites this same
-  // marker before the bake. Read the marker; don't re-derive a frame here.
-  //
-  // `framesUnpairedChainStrand` is the whole of the scheme/tickbox gate, and the
-  // consensus pass reads that same predicate, so it cannot run where the framing
-  // is discarded.
-  if (framesUnpairedChainStrand(colorScheme, opts) && hasSupp && !isPaired) {
+  // marker before the bake. Read the marker; don't re-derive a frame here, and
+  // don't re-derive whether to frame either: `framesChainStrand` is the
+  // display's one answer, which the consensus pass and the key read too.
+  if (opts.framesChainStrand && hasSupp && !isPaired) {
     // One bit, read as the sign it is. This was a comparison against a code,
     // and correct only while the split bits could not coexist with the frame —
     // which rested on `summarizeChain`'s `paired` (ANY read of the chain is

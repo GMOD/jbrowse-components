@@ -1,6 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
   CHAIN_FRAME_REV,
@@ -20,7 +19,7 @@ import { makeTestPalette } from './testUtils.ts'
 
 import type { RGBColor } from '../shaders/colors.ts'
 import type { ColorSchemeType } from '../shared/types.ts'
-import type { ReadColorOpts } from './colorUtils.ts'
+import type { ChainFramingSettings } from './colorUtils.ts'
 
 // The `readChainHasSupp` bit combinations these cases build, named for what they
 // mean rather than spelled as the byte. The frame and the split kind are
@@ -76,6 +75,7 @@ function makeData(
 
 const stats = { upper: 600, lower: 100 }
 const chainOpts = { chainMode: true }
+const framedOpts = { chainMode: true, framesChainStrand: true }
 
 describe('readColorCategory', () => {
   test('strand scheme buckets by read strand', () => {
@@ -289,12 +289,12 @@ describe('readColorCategory', () => {
   // tickboxes are ordered, not scoped to different data.
   test('the orange opt-in covers unpaired chains and beats the strand framing', () => {
     const longRead = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
-    expect(readColorCategory(0, longRead, 'normal', chainOpts)).toBe(
+    expect(readColorCategory(0, longRead, 'normal', framedOpts)).toBe(
       'revStrand',
     )
     expect(
       readColorCategory(0, longRead, 'normal', {
-        ...chainOpts,
+        ...framedOpts,
         colorSupplementaryChains: true,
       }),
     ).toBe('supplementary')
@@ -316,27 +316,16 @@ describe('readColorCategory', () => {
         0,
         makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
         'strand',
-        chainOpts,
+        framedOpts,
       ),
     ).toBe('revStrand')
-    // pileup (chain mode off): no chain framing, plain strand applies
+    // Unframed, the scheme answers, which under `strand` is the segment's own.
     expect(
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
         'strand',
-      ),
-    ).toBe('fwdStrand')
-    // Turning the framing off falls through to the scheme, which under `strand`
-    // is the segment's own strand. The assertion above omits the option and
-    // relies on it defaulting ON, so the two together pin the default rather
-    // than just one side of the flag.
-    expect(
-      readColorCategory(
-        0,
-        makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
-        'strand',
-        { ...chainOpts, flipStrandLongReadChains: false },
+        chainOpts,
       ),
     ).toBe('fwdStrand')
   })
@@ -359,7 +348,7 @@ describe('readColorCategory', () => {
           0,
           makeData({ chainHasSupp: SUPP_FWD | split, flags: 0, strand: 1 }),
           'strand',
-          chainOpts,
+          framedOpts,
         ),
       ).toBe('fwdStrand')
       // and the reverse frame still inverts, which under the enum was the
@@ -369,56 +358,21 @@ describe('readColorCategory', () => {
           0,
           makeData({ chainHasSupp: SUPP_REV | split, flags: 0, strand: 1 }),
           'strand',
-          chainOpts,
+          framedOpts,
         ),
       ).toBe('revStrand')
     }
   })
 
-  // The framing repaints the whole read, so it may only refine a fill that is
-  // already about the alignment's geometry. Over a scheme carrying a per-read
-  // datum it would answer a different question than the one the user asked.
-  test('the long-read framing yields to the data-carrying schemes', () => {
-    const supp = makeData({
-      chainHasSupp: SUPP_REV,
-      flags: 0,
-      strand: 1,
-      tagColor: 7,
-    })
-    expect(readColorCategory(0, supp, 'tag', chainOpts)).toBe('tag')
-    expect(readColorCategory(0, supp, 'mappingQuality', chainOpts)).toBe('mapq')
-    expect(readColorCategory(0, supp, 'modifications', chainOpts)).toBe(
-      'modFwd',
-    )
-    // the geometry schemes still frame — including the chain-mode default
-    expect(
-      readColorCategory(0, supp, 'insertSizeAndOrientation', chainOpts),
-    ).toBe('revStrand')
-    expect(readColorCategory(0, supp, 'normal', chainOpts)).toBe('revStrand')
-  })
-
-  // The same rule for the two whose datum is per-BASE. Their body IS `normal`'s,
-  // so a gate on the shader index framed them — repainting the split reads at an
-  // SV that chain mode exists to show, under the cells the user asked for.
-  test.each(['perBaseQuality', 'perBaseLetter'] as const)(
-    'the long-read framing yields to %s',
-    scheme => {
-      const supp = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
-      expect(readColorCategory(0, supp, scheme, chainOpts)).toBe('plain')
-      expect(getReadColor(0, supp, scheme, palette, chainOpts)).toBe(
-        rgb255(palette.colorPairLR),
-      )
-    },
-  )
-
-  // Unticking it is the only escape hatch under a geometry scheme, and it used
-  // to leave the reads strand-coloured anyway.
-  test('unticking the framing restores the scheme, not the unframed strand', () => {
+  // Unticking the framing is the only escape hatch under a geometry scheme, and
+  // it used to leave the reads strand-coloured anyway.
+  test('unframed, a geometry scheme paints its own bucket, not the strand', () => {
     const supp = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
-    const off = { ...chainOpts, flipStrandLongReadChains: false }
-    expect(readColorCategory(0, supp, 'normal', chainOpts)).toBe('revStrand')
-    expect(readColorCategory(0, supp, 'normal', off)).toBe('plain')
-    expect(readColorCategory(0, supp, 'pairOrientation', off)).toBe('nonSplit')
+    expect(readColorCategory(0, supp, 'normal', framedOpts)).toBe('revStrand')
+    expect(readColorCategory(0, supp, 'normal', chainOpts)).toBe('plain')
+    expect(readColorCategory(0, supp, 'pairOrientation', chainOpts)).toBe(
+      'nonSplit',
+    )
   })
 
   test('unmapped mate and inter-chromosomal apply to orientation schemes', () => {
@@ -540,14 +494,11 @@ describe('firstOfPairStrand: color and grouping agree', () => {
   })
 })
 
-// The gate on running `consensusChainStrandFrames`, which rewrites the very
-// marker the framing branch reads. Its four conditions are that branch's own, so
-// this checks it stays a restatement rather than a second opinion — a `true`
-// where the branch discards the framing is wasted work, and a `false` where the
-// branch honors it is the consensus silently not running.
+// The framing repaints the whole read, so it may only refine a fill that is
+// about the alignment's geometry, never one carrying a datum the user asked for.
 describe('framesUnpairedChainStrand', () => {
   const on = { chainMode: true }
-  const cases: [string, ColorSchemeType, ReadColorOpts, boolean][] = [
+  const cases: [string, ColorSchemeType, ChainFramingSettings, boolean][] = [
     ['chain mode with the defaults', 'strand', on, true],
     ['pileup mode', 'strand', {}, false],
     [
@@ -583,24 +534,6 @@ describe('framesUnpairedChainStrand', () => {
   ]
   test.each(cases)('%s', (_label, scheme, opts, expected) => {
     expect(framesUnpairedChainStrand(scheme, opts)).toBe(expected)
-  })
-
-  test('agrees with the branch it gates on every scheme', () => {
-    for (const { type: scheme } of Object.values(COLOR_SCHEMES)) {
-      // A REVERSE segment under a REVERSE frame is the probe, because
-      // `fwdStrand` is the one category no other branch can produce for it: the
-      // strand and first-of-pair schemes would both call it reverse, and every
-      // other scheme answers in its own vocabulary. Probing with a forward frame
-      // instead makes this vacuous under those two.
-      const framed =
-        readColorCategory(
-          0,
-          makeData({ strand: -1, chainHasSupp: SUPP_REV }),
-          scheme,
-          on,
-        ) === 'fwdStrand'
-      expect(framesUnpairedChainStrand(scheme, on)).toBe(framed)
-    }
   })
 })
 
