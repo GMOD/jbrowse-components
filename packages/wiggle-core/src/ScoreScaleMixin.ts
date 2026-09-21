@@ -146,9 +146,10 @@ export function ScoreScaleMixin() {
         const { rules = [] } = confNode(self).configuration.scales.y
         return rules.map((rule: ValueScaleRuleConfig) => {
           const label = readConfObject(rule, 'label')
+          const color = readConfObject(rule, 'color')
           return {
             value: readConfObject(rule, 'value'),
-            color: readConfObject(rule, 'color'),
+            ...(color ? { color } : {}),
             ...(label ? { label } : {}),
           }
         })

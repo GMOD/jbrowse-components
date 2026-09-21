@@ -1,4 +1,3 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
 import { axisPlotBox } from '@jbrowse/wiggle-core'
 
 import { manhattanFixture } from './manhattanFixture.ts'
@@ -14,9 +13,9 @@ function ruleMarksOf(display: { axes: YAxis[] }) {
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 }
 
 // The placement arithmetic lives in wiggle-core's scoreRules.test.ts, which this
-// display now shares. What is GWAS's own is the wiring: the slot reaches the
-// rule, and the threshold draws in the significance red rather than the grey a
-// configured wiggle rule defaults to.
+// display shares. What is GWAS's own is that a threshold is a rule like any
+// other: the same slot, the same widening, and a scan read against two of them
+// names two.
 function makeResult(score: number): ManhattanRpcResult {
   return {
     ...manhattanFixture({ x: [100], y: [score], flatbush: false }),
@@ -25,34 +24,34 @@ function makeResult(score: number): ManhattanRpcResult {
   }
 }
 
-describe('significanceLine config slot', () => {
-  it('defaults to unset, so no rule is drawn', () => {
+describe('a threshold on a Manhattan plot', () => {
+  it('defaults to none, so no rule is drawn', () => {
     const { display } = createTestEnvironment().createDisplay()
-    expect(getConf(display, 'significanceLine')).toBeUndefined()
+    expect(display.scoreRules).toEqual([])
     expect(ruleMarksOf(display)).toEqual([])
   })
 
   it('draws nothing before the data gives it a domain', () => {
     const { display } = createTestEnvironment().createDisplay()
-    setConf(display, 'significanceLine', 7.3)
-    expect(display.significanceLine).toBe(7.3)
+    display.setScoreRules([7.3])
+    expect(display.scoreRules).toEqual([{ value: 7.3 }])
     expect(ruleMarksOf(display)).toEqual([])
   })
 
-  it('places the threshold in the significance red once there is a domain', () => {
+  it('places a bare threshold, and paints the one its author colours', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, makeResult(10), ctgA)
-    setConf(display, 'significanceLine', 5)
+    display.setScoreRules([5, { value: 7.3, color: 'red', label: 'p = 5e-8' }])
 
     const box = axisPlotBox(display.height)
     expect(display.domain).toEqual([0, 10])
     expect(ruleMarksOf(display)).toEqual([
+      { value: 5, y: (box.yTop + box.yBottom) / 2 },
       {
-        value: 5,
-        // red, not the grey a wiggle rule defaults to: this one is a
-        // significance threshold, not a level the reader chose
-        color: 'rgb(200,60,60)',
-        y: (box.yTop + box.yBottom) / 2,
+        value: 7.3,
+        color: 'red',
+        label: 'p = 5e-8',
+        y: expect.any(Number) as number,
       },
     ])
   })
@@ -63,7 +62,7 @@ describe('significanceLine config slot', () => {
   it('widens the axis to a threshold the loaded scores never reach', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, makeResult(3), ctgA)
-    setConf(display, 'significanceLine', 7.3)
+    display.setScoreRules([7.3])
 
     expect(display.domain?.[1]).toBeGreaterThanOrEqual(7.3)
     expect(ruleMarksOf(display)).toHaveLength(1)
@@ -74,7 +73,7 @@ describe('significanceLine config slot', () => {
   it('an explicit domainMax below the threshold still wins', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, makeResult(3), ctgA)
-    setConf(display, 'significanceLine', 7.3)
+    display.setScoreRules([7.3])
     display.setMaxScore(4)
 
     expect(display.domain?.[1]).toBe(4)

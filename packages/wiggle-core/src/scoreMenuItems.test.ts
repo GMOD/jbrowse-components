@@ -182,9 +182,7 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
 // the scale offers them, and only where the display's scale declares `rules`.
 describe('the reference lines row', () => {
   const ruledSchema = ConfigurationSchema('TestRuledDisplay', {
-    scales: scalesSchema(
-      valueScaleSchema({ types: ['linear'], rules: { color: 'red' } }),
-    ),
+    scales: scalesSchema(valueScaleSchema({ types: ['linear'], rules: true })),
   })
   const ruled = () =>
     types
@@ -206,8 +204,8 @@ describe('the reference lines row', () => {
     expect(labels(makeScoreSubMenu(display))).toContain('Reference lines...')
     display.setScoreRules([7.3, { value: 5, label: 'suggestive' }])
     expect(display.scoreRules).toEqual([
-      { value: 7.3, color: 'red' },
-      { value: 5, color: 'red', label: 'suggestive' },
+      { value: 7.3 },
+      { value: 5, label: 'suggestive' },
     ])
     expect(labels(makeScoreSubMenu(display))).toContain(
       'Reference lines (2)...',

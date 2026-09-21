@@ -1,6 +1,5 @@
 import {
   DEFAULT_GAP_BREAK_MULTIPLE,
-  DEFAULT_RULE_COLOR,
   scalesSchema,
   scoreFieldConfigSchemaFields,
   valueScaleSchema,
@@ -20,7 +19,7 @@ export function wiggleValueScale() {
         modes: ['local', 'localsd', 'localpercentile'],
         default: 'localpercentile',
       },
-      rules: { color: DEFAULT_RULE_COLOR },
+      rules: true,
     }),
   )
 }

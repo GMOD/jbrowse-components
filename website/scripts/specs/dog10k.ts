@@ -331,7 +331,17 @@ const fstCallout = (
 // would sit somewhere arbitrary inside it. The per-site IGF1 lane is a third
 // distribution again. Each would need its own quantile off its own windows, and
 // none of the three is the axis-sharing case FST_AXIS is.
-const FST_SIGNIFICANCE = { significanceLine: 0.295 }
+const FST_AXIS_RULED = {
+  scales: {
+    y: {
+      ...FST_AXIS.scales.y,
+      // The red is the figure's own claim, not a meaning the display assigns:
+      // a rule naming no colour draws in the grey the chrome rules every plot
+      // in.
+      rules: [{ value: 0.295, color: 'rgb(200,60,60)' }],
+    },
+  },
+}
 
 // The IGF1 peak window, which the zoom half marks and the tutorial's next
 // figure slices. One 200 kb bin of the scan.
@@ -1019,8 +1029,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearManhattanDisplay',
           height: FST_LANE_H,
           scatterPointSize: 4,
-          ...FST_AXIS,
-          ...FST_SIGNIFICANCE,
+          ...FST_AXIS_RULED,
         },
       ],
     }),

@@ -134,7 +134,7 @@ Two checkers could hold it and neither reaches the corpus:
 
 One hard case:
 
-- `dog10k_selection`'s `"significanceLine": 0.295` is a result inside a config
+- `dog10k_selection`'s `"rules": [0.295]` is a result inside a config
   block, the one place a result cannot be cut. The page already says the line is
   a quantile of its own windows and that rebinning means re-taking it. Pattern
   to copy.

@@ -4742,7 +4742,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "color",
-                      "type": "(JexlString | CssColor)"
+                      "type": "(JexlString | (CssColor | undefined))"
                     },
                     {
                       "name": "label",
@@ -4940,7 +4940,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "color",
-                      "type": "(JexlString | CssColor)"
+                      "type": "(JexlString | (CssColor | undefined))"
                     },
                     {
                       "name": "label",
@@ -5150,7 +5150,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "color",
-                      "type": "(JexlString | CssColor)"
+                      "type": "(JexlString | (CssColor | undefined))"
                     },
                     {
                       "name": "label",
@@ -5573,6 +5573,24 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainMax",
                   "type": "(JexlString | (number | undefined))"
+                },
+                {
+                  "name": "rules",
+                  "type": "ValueScaleRuleConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | number)"
+                    },
+                    {
+                      "name": "color",
+                      "type": "(JexlString | (CssColor | undefined))"
+                    },
+                    {
+                      "name": "label",
+                      "type": "(JexlString | string)"
+                    }
+                  ]
                 }
               ]
             }
@@ -5581,10 +5599,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "significanceLine",
-          "type": "(JexlString | (number | undefined))"
         },
         {
           "name": "minimalTicks",
@@ -5921,7 +5935,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "color",
-                      "type": "(JexlString | CssColor)"
+                      "type": "(JexlString | (CssColor | undefined))"
                     },
                     {
                       "name": "label",

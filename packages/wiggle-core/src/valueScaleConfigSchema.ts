@@ -16,16 +16,13 @@ export interface ValueScaleOptions {
   autoscale?: ValueScaleAutoscale
   /** `symlogConstant`'s default, where `types` holds `symlog` */
   symlogConstant?: number
-  /**
-   * present where the display draws `rules` and widens its domain to them;
-   * `color` is what a rule naming none is drawn in
-   */
-  rules?: { color: string }
+  /** the display draws `rules` and widens its domain to them */
+  rules?: boolean
   /** the display captions its axis with `title` */
   title?: boolean
 }
 
-function valueScaleRuleSchema(color: string) {
+function valueScaleRuleSchema() {
   return ConfigurationSchema(
     'ValueScaleRule',
     {
@@ -41,13 +38,14 @@ function valueScaleRuleSchema(color: string) {
       },
       /**
        * #slot scales.y.rules.color
-       * The line's colour, and its label's. The default is the display's
-       * own, grey unless a rule means something particular there.
+       * The line's colour, and its label's. Unset draws every rule in the one
+       * colour the chrome rules plots in, so a threshold that means something
+       * particular — genome-wide significance, a diploid depth — is one an
+       * author paints, on the plot where it means it.
        */
       color: {
-        type: 'color',
-        defaultValue: color,
-        description: 'line and label colour',
+        type: 'maybeColor',
+        description: 'line and label colour; unset is the chrome’s own',
       },
       /**
        * #slot scales.y.rules.label
@@ -86,8 +84,11 @@ export type ValueScaleRuleConfig = Instance<
  * `local` on the coverage band and the mark display. `symlogConstant` starts
  * at `0` on the wiggle family and at `1` on the coverage band.
  *
- * The mark display's scale also carries `rules`, reference lines at chosen
- * values, and `title`, the caption beside the axis.
+ * The wiggle family, the Manhattan plot and the mark display also carry
+ * `rules`, reference lines at chosen values; the mark display adds `title`,
+ * the caption beside the axis. A rule naming no `color` draws in the one
+ * colour the chrome rules every plot in, so a red line is a claim its author
+ * makes rather than a meaning a display assigns.
  *
  * #example
  * A log axis floored at 1:
@@ -266,7 +267,7 @@ export function valueScaleSchema({
              * every rule on the axis; a pinned `domainMin` or `domainMax`
              * that excludes a rule drops it.
              */
-            rules: types.array(valueScaleRuleSchema(rules.color)),
+            rules: types.array(valueScaleRuleSchema()),
           }
         : {}),
     },

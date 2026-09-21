@@ -666,7 +666,16 @@ const AUTOSCALE_TYPES: Record<string, string> = Object.fromEntries(
   DEFAULT_AUTOSCALE_OPTIONS,
 )
 
-// `scales.y` is one spec key over four controls that live in different places,
+function ruleValues(rules: unknown[]) {
+  const values = rules.map(rule =>
+    typeof rule === 'number' ? rule : asRecord(rule)?.value,
+  )
+  return values.length === 1
+    ? `A horizontal line at ${String(values[0])}`
+    : `Horizontal lines at ${values.map(String).join(' and ')}`
+}
+
+// `scales.y` is one spec key over five controls that live in different places,
 // so it answers with a step per member the figure names.
 const scalesStep: FieldRecipe = (value, { displayType }) => {
   const y = asRecord(asRecord(value)?.y)
@@ -697,6 +706,12 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
     displayType === 'LinearWiggleDisplay'
       ? {
           path: `${TRACK_MENU} → Score → Autoscale type → ${AUTOSCALE_TYPES[autoscale]}`,
+        }
+      : undefined,
+    Array.isArray(y.rules) && y.rules.length
+      ? {
+          path: `${TRACK_MENU} → ${menu} → Reference lines...`,
+          note: `${ruleValues(y.rules)}, on the same scale as the plot. Each row takes a value, a label and a colour; removing every row removes every line.`,
         }
       : undefined,
     typeof y.numStdDev === 'number' && displayType && displayType in SCORE_MENUS
@@ -1488,10 +1503,6 @@ export const trackFields: Record<string, FieldRecipe> = {
   resolution: numberField(n => ({
     path: `${TRACK_MENU} → Resolution`,
     note: `Step with Coarser and Finer, 2× per click; the caption between them reads the current bin size. Higher fetches finer bins, and this figure uses ${resolutionLabel(n)}.`,
-  })),
-  significanceLine: numberField(n => ({
-    path: `${TRACK_MENU} → Set significance line...`,
-    note: `Draws a horizontal line at this score (${n} here), on the same scale as the plotted points. Clearing the field removes it.`,
   })),
   coverageHeight: numberField(() => ({
     path: 'Drag the bottom edge of the coverage band to resize it.',

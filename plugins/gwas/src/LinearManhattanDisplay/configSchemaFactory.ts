@@ -112,13 +112,26 @@ export function configSchemaFactory() {
       ...scoreFieldConfigSchemaFields,
       /**
        * #slot scales
-       * The y scale: `domainMin` and `domainMax` alone. -log10 p values are
+       * The y scale: `domainMin`, `domainMax` and `rules`. -log10 p values are
        * pre-transformed, so `type` admits `linear` only and the plot's domain
        * is plain min/max over the loaded regions with no autoscale mode to
        * consult — the track menu draws neither radio, because the scale
        * declares neither.
+       *
+       * A threshold a scan is read against — genome-wide significance on a
+       * GWAS, an empirical outlier cutoff on a differentiation scan — is a
+       * `scales.y.rules` entry, on the plot's own scale, so it is a
+       * `-log10(p)` where the points are and an Fst where `scoreColumn` names
+       * an Fst column. A scan read against two thresholds, suggestive and
+       * genome-wide, names both. The axis widens to reach a rule, so a window
+       * where nothing clears the threshold still shows it.
        */
-      scales: scalesSchema(valueScaleSchema({ types: ['linear'] })),
+      scales: scalesSchema(
+        valueScaleSchema({
+          types: ['linear'],
+          rules: true,
+        }),
+      ),
       /**
        * #slot
        */
@@ -127,25 +140,6 @@ export function configSchemaFactory() {
         defaultValue: false,
         description:
           'Rule the score axis with horizontal cross hatches at the tick positions',
-      },
-      /**
-       * #slot
-       * Draw a horizontal line across the plot at this score, for the threshold
-       * a scan is read against: genome-wide significance on a GWAS, or an
-       * empirical outlier cutoff on a differentiation scan. Unset (the default)
-       * draws none, since there is no threshold that is right for every scan.
-       *
-       * On the plot's own scale, so it is a `-log10(p)` where the points are
-       * and an Fst where `scoreColumn` names an Fst column. The autoscaled
-       * y-axis widens to reach it, so a window where nothing clears the
-       * threshold still shows the threshold; an explicit
-       * `scales.y.domainMin`/`domainMax` that excludes it still wins, and there
-       * the line is not drawn.
-       */
-      significanceLine: {
-        type: 'maybeNumber',
-        description:
-          'Score to draw a horizontal threshold line at, on the same scale as the plotted points. Unset draws none',
       },
       /**
        * #slot

@@ -44,7 +44,6 @@ import {
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
-import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 
@@ -118,9 +117,6 @@ function shippedExtremes(entries: VisibleEntry<ManhattanRpcResult>[]) {
   return Number.isFinite(scoreMin) ? { scoreMin, scoreMax } : undefined
 }
 
-const SetSignificanceLineDialog = lazy(
-  () => import('./components/SetSignificanceLineDialog.tsx'),
-)
 const SetColorFieldDialog = lazy(
   () => import('./components/SetColorFieldDialog.tsx'),
 )
@@ -148,11 +144,6 @@ function ldScale(
     ],
   }
 }
-
-// Red, where a configured wiggle rule defaults to grey: this one is a
-// significance threshold rather than a reference level the reader chose, and it
-// is the only rule this display draws.
-const SIGNIFICANCE_LINE_COLOR = 'rgb(200,60,60)'
 
 /**
  * #stateModel LinearManhattanDisplay
@@ -304,29 +295,21 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * the configured threshold score, or undefined when the slot is unset
-         */
-        get significanceLine(): number | undefined {
-          return getConf(self, 'significanceLine')
-        },
-        /**
-         * #getter
          * nice-rounded [min, max] -log10 p domain across the visible regions,
          * or undefined before any data loads. The only walker of the four that
          * reads shipped per-region extremes rather than scanning scores: the
          * worker already reduced them, so a block contributes its whole
          * region's extremes rather than the part it shows.
          *
-         * Widened to reach the significance line, the same way the wiggle
-         * displays widen theirs to reach a configured `scoreRules` entry. The
-         * threshold answers "does anything here clear it?", so the window where
-         * the answer is no — every score well under the line — is the one where
-         * an unwidened axis drops the line and leaves the reader nothing to
-         * read the plot against. `widenRangeToRules` applies to the raw range,
-         * so an explicit `scales.y` bound still wins.
+         * Widened to reach every `scales.y.rules` entry, as the wiggle displays
+         * widen theirs. A threshold answers "does anything here clear it?", so
+         * the window where the answer is no — every score well under the line —
+         * is the one where an unwidened axis drops the line and leaves the
+         * reader nothing to read the plot against. `widenRangeToRules` applies
+         * to the raw range, so an explicit `scales.y` bound still wins.
          */
         get domain() {
-          const line = this.significanceLine
+          const rules = self.scoreRules
           return visibleStatsDomain({
             active: true,
             view: self.host,
@@ -336,7 +319,7 @@ export function stateModelFactory(
             range: ({ scoreMin, scoreMax }) =>
               widenRangeToRules(
                 [scoreMin, scoreMax],
-                line === undefined ? [] : [line],
+                rules.map(rule => rule.value),
               ),
             bounds: [self.minScoreBound, self.maxScoreBound],
             scaleType: self.scaleType,
@@ -348,21 +331,17 @@ export function stateModelFactory(
          * #getter
          * The y scale the chrome draws the axis from. Manhattan plots are
          * linear-only — `scales.y.type` admits nothing else, since the points
-         * are pre-transformed -log10 p values. The threshold is the scale's
-         * one rule, which the chrome and the export both draw off the axis.
+         * are pre-transformed -log10 p values. Its thresholds are the scale's
+         * rules, which the chrome and the export both draw off the axis.
          */
         get valueScales(): ValueScale[] {
-          const line = self.significanceLine
           return [
             {
               domain: self.domain,
               scaleType: self.scaleType,
               height: self.height,
               minimalTicks: getConf(self, 'minimalTicks'),
-              rules:
-                line === undefined
-                  ? []
-                  : [{ value: line, color: SIGNIFICANCE_LINE_COLOR }],
+              rules: self.scoreRules,
             },
           ]
         },
@@ -656,13 +635,6 @@ export function stateModelFactory(
           },
           /**
            * #action
-           * Score to draw the threshold line at; undefined removes it.
-           */
-          setSignificanceLine(score?: number) {
-            setConf(self, 'significanceLine', score)
-          },
-          /**
-           * #action
            */
           setIndexSnp(snp?: string) {
             self.indexSnp = snp
@@ -712,22 +684,6 @@ export function stateModelFactory(
               label: 'Point size',
               applies: true,
             }),
-            {
-              // The score is shown in the label when one is set, the same way
-              // the min/max row above does it: a horizontal line on a plot with
-              // no p-value is meaningless until you know what number it is at.
-              label:
-                self.significanceLine === undefined
-                  ? 'Set significance line...'
-                  : `Set significance line (${self.significanceLine})...`,
-              icon: HorizontalRuleIcon,
-              onClick: () => {
-                getDialogHost(self).queueDialog(handleClose => [
-                  SetSignificanceLineDialog,
-                  { display: self, handleClose },
-                ])
-              },
-            },
             ...makeShowSubMenu([
               makeCrossHatchItem(self),
               legendCheckboxItem(self, {

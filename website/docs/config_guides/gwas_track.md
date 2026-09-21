@@ -135,7 +135,7 @@ types**), and two slots choose what it reads:
       "type": "LinearManhattanDisplay",
       "scoreField": "fst",
       "color": { "field": "population" },
-      "significanceLine": 0.25
+      "scales": { "y": { "rules": [0.25] } }
     }
   ]
 }

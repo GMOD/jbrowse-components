@@ -6170,9 +6170,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": 0
             },
             "color": {
-              "description": "line and label colour.",
-              "$ref": "#/$defs/CssColorOrJexl",
-              "default": "rgb(120,120,120)"
+              "description": "line and label colour; unset is the chrome’s own.",
+              "$ref": "#/$defs/CssColorOrJexl"
             },
             "label": {
               "description": "text at the rule's right-hand end.",
@@ -7275,6 +7274,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
           "$ref": "#/$defs/NumberOrJexl"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ValueScaleRule"
+          }
         }
       },
       "patternProperties": {
@@ -7318,10 +7323,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Rule the score axis with horizontal cross hatches at the tick positions.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
-        },
-        "significanceLine": {
-          "description": "Score to draw a horizontal threshold line at, on the same scale as the plotted points. Unset draws none.",
-          "$ref": "#/$defs/NumberOrJexl"
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
@@ -8548,9 +8549,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
                 }
               ]
-            },
-            "significanceLine": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/significanceLine"
             },
             "minimalTicks": {
               "anyOf": [
@@ -11231,9 +11229,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
-            },
-            "significanceLine": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/significanceLine"
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"

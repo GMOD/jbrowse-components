@@ -45,8 +45,8 @@ waiting.
 
 **The axis autoscales over the loaded regions, and that is the whole design.**
 No mode reads the file. The domain is the extremes of what is drawn, widened
-to the origin, the score rules and the significance line as each display
-declares, and it moves as the loaded set moves. A value nobody has loaded has
+to the origin and to the reference lines each display declares, and it moves as
+the loaded set moves. A value nobody has loaded has
 no claim on the axis.
 
 **A figure that needs a still axis pins it, and the menu does the pinning.**

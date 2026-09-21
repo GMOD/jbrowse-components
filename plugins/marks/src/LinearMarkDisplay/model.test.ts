@@ -11,10 +11,7 @@ import LinearGenomeViewPlugin, {
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
 import { pointInsetPx } from '@jbrowse/render-core/marks'
-import {
-  DEFAULT_RULE_COLOR,
-  makePinCurrentRangeItem,
-} from '@jbrowse/wiggle-core'
+import { makePinCurrentRangeItem } from '@jbrowse/wiggle-core'
 import { render, screen, waitFor } from '@testing-library/react'
 
 import MarkFacetChips from './components/MarkFacetChips.tsx'
@@ -416,7 +413,7 @@ test('a rule widens the axis to reach it and lands on its own value', () => {
   const [axis] = display.axes
   const { yTop, yBottom } = axis!.ticks
   const [top, suggestive] = ruleMarksOf(display)
-  expect(top).toEqual({ value: 20, color: DEFAULT_RULE_COLOR, y: yTop })
+  expect(top).toEqual({ value: 20, y: yTop })
   expect(suggestive).toMatchObject({
     value: 5,
     color: 'red',

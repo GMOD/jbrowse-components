@@ -249,7 +249,6 @@ function assertInventoryParsed(
     ['displayMode', 'stringEnum'], // bare spelling
     ['jexlFilters', 'stringArray'], // bare, non-enum
     ['height', 'number'], // linked, non-enum
-    ['significanceLine', 'maybeNumber'], // linked, maybe*
     ['facet', SUB_SCHEMA_KIND], // a sub-schema
   ]
   for (const [name, kind] of canaries) {

@@ -78,7 +78,9 @@ slots.
     "scoreColumn": "fst"
   },
   "displayDefaults": {
-    "significanceLine": 0.295
+    "scales": {
+      "y": { "rules": [{ "value": 0.295, "color": "rgb(200,60,60)" }] }
+    }
   }
 }
 ```
@@ -102,12 +104,12 @@ Each point is a window, so a peak names a region. A genome-wide scan bins wide
 enough to hold down twelve thousand windows' worth of noise, and that binning
 makes the _IGF1_ peak a single bar.
 
-Fst has no p-value, so
-[`significanceLine`](/docs/config/linearmanhattandisplay/#slot-significanceline)
-draws a quantile of the scan's own windows: the dashed line is the 99.9th
-percentile, printed by the build script alongside the ranked windows. It is a
-property of these windows at this size, so rebinning the scan means taking it
-again. The tallest labelled peak, on chr10, is _HMGA2_, one of the six variants
+Fst has no p-value, so the threshold is a
+[reference line](/docs/config/valuescale/#slot-scalesyrules) at a quantile of
+the scan's own windows: the dashed line is the 99.9th percentile, printed by the
+build script alongside the ranked windows. It is a property of these windows at
+this size, so rebinning the scan means taking it again. The tallest labelled
+peak, on chr10, is _HMGA2_, one of the six variants
 [Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113) fit to about half
 the size variation across breeds.
 

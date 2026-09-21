@@ -9,11 +9,7 @@ import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterCon
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  DEFAULT_RULE_COLOR,
-  scalesSchema,
-  valueScaleSchema,
-} from '@jbrowse/wiggle-core'
+import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { AUTO_BIN } from './autoBin.ts'
 import { markColorSchema } from './markColorConfigSchema.ts'
@@ -534,7 +530,7 @@ export function configSchemaFactory() {
             modes: ['local', 'localsd', 'localpercentile'],
             default: 'local',
           },
-          rules: { color: DEFAULT_RULE_COLOR },
+          rules: true,
           title: true,
         }),
       ),
