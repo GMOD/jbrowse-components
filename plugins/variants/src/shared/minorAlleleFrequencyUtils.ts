@@ -1,3 +1,5 @@
+import { unwrapFeature } from '@jbrowse/core/util/simpleFeature'
+
 import {
   calculateAlleleCounts,
   calculateAlleleCountsFast,
@@ -107,6 +109,27 @@ function computeAlleleCounts(
     alleleCounts = calculateAlleleCounts(genotypes)
   }
   return alleleCounts
+}
+
+// A jexlFeatureProxy answers `processGenotypes` through `get()`, so the jexl
+// functions unwrap to reach VcfFeature's own method
+function featureAlleleCounts(feature: Feature) {
+  const raw = unwrapFeature(feature)
+  if (hasProcessGenotypes(raw)) {
+    return calculateAlleleCountsFast(raw)
+  }
+  const genotypes = raw.get('genotypes') as Record<string, string> | undefined
+  return genotypes ? calculateAlleleCounts(genotypes) : undefined
+}
+
+export function featureMinorAlleleFrequency(feature: Feature) {
+  const counts = featureAlleleCounts(feature)
+  return counts ? calculateMinorAlleleFrequency(counts) : 0
+}
+
+export function featureMissingness(feature: Feature) {
+  const counts = featureAlleleCounts(feature)
+  return counts ? calculateMissingnessFrequency(counts) : 0
 }
 
 // The single feature-level filter chokepoint for the cell/matrix/cluster

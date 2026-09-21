@@ -16,15 +16,14 @@ import { MultiSampleVariantGetSources } from './VariantRPC/MultiSampleVariantGet
 import VariantTrackF from './VariantTrack/index.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
-import { calculateAlleleCounts } from './shared/alleleCounts.ts'
 import { getAlleleLength } from './shared/alleleLength.ts'
 import {
   getAltAlleleCount,
   getGenotypeClassCount,
 } from './shared/genotypeClassCounts.ts'
 import {
-  calculateMinorAlleleFrequency,
-  calculateMissingnessFrequency,
+  featureMinorAlleleFrequency,
+  featureMissingness,
 } from './shared/minorAlleleFrequencyUtils.ts'
 import {
   getVariantConsequence,
@@ -38,7 +37,6 @@ import {
 } from './shared/variantSvType.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature } from '@jbrowse/core/util'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'
@@ -74,25 +72,10 @@ export default class VariantsPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     const { jexl } = pluginManager
 
-    // Both jexl filters share the same genotypes->allele-count scan. Returns
-    // undefined (no allocation) when a feature carries no genotypes, so the
-    // callers keep their 0 fallback without building an empty counts object.
-    const featureAlleleCounts = (feature: Feature) => {
-      const genotypes = feature.get('genotypes') as
-        | Record<string, string>
-        | undefined
-      return genotypes ? calculateAlleleCounts(genotypes) : undefined
-    }
     /** #jexlFunction Variant functions | maf(feature) | minor allele frequency over the called alleles */
-    jexl.addFunction('maf', (feature: Feature) => {
-      const counts = featureAlleleCounts(feature)
-      return counts ? calculateMinorAlleleFrequency(counts) : 0
-    })
+    jexl.addFunction('maf', featureMinorAlleleFrequency)
     /** #jexlFunction Variant functions | missingness(feature) | fraction of samples with no call */
-    jexl.addFunction('missingness', (feature: Feature) => {
-      const counts = featureAlleleCounts(feature)
-      return counts ? calculateMissingnessFrequency(counts) : 0
-    })
+    jexl.addFunction('missingness', featureMissingness)
 
     // Variant-consequence helpers, reading SnpEff ANN / VEP CSQ. `impact` and
     // `consequence` return strings for custom color-by-attribute expressions
