@@ -2,7 +2,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
-import AddDetailLevelDialog from './AddDetailLevelDialog.tsx'
+import AddCloseUpDialog from './AddCloseUpDialog.tsx'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 
@@ -48,13 +48,13 @@ async function setup() {
   return { session, view }
 }
 
-function levels(view: LinearGenomeViewModel) {
-  return view.detailLevelViews as LinearGenomeViewModel[]
+function closeUps(view: LinearGenomeViewModel) {
+  return view.closeUpViews as LinearGenomeViewModel[]
 }
 
 function open(view: LinearGenomeViewModel) {
   return render(
-    <AddDetailLevelDialog
+    <AddCloseUpDialog
       model={view}
       leftOffset={view.pxToBp(100)}
       rightOffset={view.pxToBp(300)}
@@ -65,12 +65,12 @@ function open(view: LinearGenomeViewModel) {
 
 // One control, and it is not a span: the drag already named that, and the
 // dialog says which one it is about to open
-test('the dialog names the dragged span and opens a level over it', async () => {
+test('the dialog names the dragged span and opens a close-up over it', async () => {
   const { view } = await setup()
   const { getByRole, baseElement } = open(view)
   expect(baseElement.textContent).toContain('ctgA:401,001..403,000')
   fireEvent.click(getByRole('button', { name: 'Add' }))
-  expect(levels(view).map(l => l.windowWidthBp)).toEqual([2000])
+  expect(closeUps(view).map(l => l.windowWidthBp)).toEqual([2000])
 })
 
 test("the view's tracks come over by default", async () => {
@@ -86,17 +86,17 @@ test("the view's tracks come over by default", async () => {
   ).toBe(true)
   fireEvent.click(getByRole('button', { name: 'Add' }))
   await waitFor(() => {
-    expect(levels(view)[0]!.tracks.map(t => t.configuration.trackId)).toEqual([
-      'genes',
-    ])
+    expect(closeUps(view)[0]!.tracks.map(t => t.configuration.trackId)).toEqual(
+      ['genes'],
+    )
   })
 })
 
-test('the box unchecked opens an empty level', async () => {
+test('the box unchecked opens an empty close-up', async () => {
   const { view } = await setup()
   await view.launchTrack('genes')
   const { getByRole } = open(view)
   fireEvent.click(getByRole('checkbox', { name: "Copy this view's tracks" }))
   fireEvent.click(getByRole('button', { name: 'Add' }))
-  expect(levels(view)[0]!.tracks).toEqual([])
+  expect(closeUps(view)[0]!.tracks).toEqual([])
 })

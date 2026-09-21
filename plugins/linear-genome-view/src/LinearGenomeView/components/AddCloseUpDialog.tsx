@@ -9,7 +9,7 @@ import type { LinearGenomeViewModel } from '../model.ts'
 import type { BpOffset } from '../types.ts'
 
 /**
- * The one thing a detail level still needs deciding once a drag has named its
+ * The one thing a close-up still needs deciding once a drag has named its
  * span: whether it opens showing what this view shows, or empty for a track
  * chosen afterwards.
  *
@@ -18,7 +18,7 @@ import type { BpOffset } from '../types.ts'
  * the feature. The model's action takes the same two offsets, for a stack an
  * agent or a spec builds outright.
  */
-const AddDetailLevelDialog = observer(function AddDetailLevelDialog({
+const AddCloseUpDialog = observer(function AddCloseUpDialog({
   model,
   leftOffset,
   rightOffset,
@@ -39,11 +39,11 @@ const AddDetailLevelDialog = observer(function AddDetailLevelDialog({
       open
       maxWidth="xs"
       fullWidth
-      title="Add detail level"
+      title="Add close-up view"
       onCancel={handleClose}
       submitText="Add"
       onSubmit={() => {
-        model.addDetailLevelForSpan(leftOffset, rightOffset, {
+        model.addCloseUpForSpan(leftOffset, rightOffset, {
           trackIds: copyTracks ? undefined : [],
         })
         handleClose()
@@ -60,7 +60,7 @@ const AddDetailLevelDialog = observer(function AddDetailLevelDialog({
             <Checkbox
               size="small"
               checked={copyTracks}
-              data-testid="detail-level-copy-tracks"
+              data-testid="close-up-copy-tracks"
               onChange={event => {
                 setCopyTracks(event.target.checked)
               }}
@@ -72,4 +72,4 @@ const AddDetailLevelDialog = observer(function AddDetailLevelDialog({
   )
 })
 
-export default AddDetailLevelDialog
+export default AddCloseUpDialog

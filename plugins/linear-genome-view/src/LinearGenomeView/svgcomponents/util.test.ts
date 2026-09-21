@@ -125,7 +125,7 @@ test('a row header without a scalebar is unmoved', () => {
 })
 
 // A row that draws no assembly name can decline to reserve its band, which is
-// what the detail-levels export does: the band then starts at the scalebar's
+// what the close-ups export does: the band then starts at the scalebar's
 // upper cap, and the bar and its bp label still clear the ruler.
 test.each(fontSizes)(
   'an unnamed row header reserves only its scalebar at fontSize %i',

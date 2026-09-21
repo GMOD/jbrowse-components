@@ -8,8 +8,8 @@ import {
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { CLOSE_UP_FRAME_WIDTH, closeUpColor } from '../closeUps.ts'
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
-import { DETAIL_FRAME_WIDTH, detailLevelColor } from '../detailLevels.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { PxSpan, ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -37,8 +37,8 @@ function trapezoidPoints(top: PxSpan, bottom: PxSpan, height: number) {
 const FILL_OPACITY = 0.3
 const STROKE_OPACITY = 0.8
 
-const DETAIL_FILL_TOP = 0.6
-const DETAIL_FILL_BOTTOM = 0.2
+const CLOSE_UP_FILL_TOP = 0.6
+const CLOSE_UP_FILL_BOTTOM = 0.2
 
 const useStyles = makeStyles()(theme => ({
   polygon: {
@@ -59,9 +59,9 @@ const useStyles = makeStyles()(theme => ({
  * @param exportSvg - serialize explicit fill/stroke attributes (the split the
  * `getFill/StrokeProps` helpers exist for) instead of the on-screen CSS class,
  * which wouldn't survive into a standalone exported SVG.
- * @param gradient - the detail levels' connector: a fill fading from the narrow
- * edge to the wide one, outlined in the colour of the frame it opens into, so
- * the level below reads as an inset of the row above rather than a second view
+ * @param gradient - a close-up's connector: a fill fading from the narrow edge
+ * to the wide one, outlined in the colour of the frame it opens into, so the
+ * close-up below reads as an inset of the row above rather than a second view
  * at the same zoom.
  */
 const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
@@ -99,25 +99,29 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   const points = trapezoidPoints(top, bottom, height)
 
   if (gradient) {
-    const id = `detail-connector-${svgNodeId(model)}`
+    const id = `close-up-connector-${svgNodeId(model)}`
     const color = stripAlpha(theme.palette.tertiary.light)
     return (
       <>
         <defs>
           <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity={DETAIL_FILL_TOP} />
+            <stop
+              offset="0%"
+              stopColor={color}
+              stopOpacity={CLOSE_UP_FILL_TOP}
+            />
             <stop
               offset="100%"
               stopColor={color}
-              stopOpacity={DETAIL_FILL_BOTTOM}
+              stopOpacity={CLOSE_UP_FILL_BOTTOM}
             />
           </linearGradient>
         </defs>
         <polygon
           points={points}
           fill={`url(#${id})`}
-          stroke={detailLevelColor(theme)}
-          strokeWidth={DETAIL_FRAME_WIDTH}
+          stroke={closeUpColor(theme)}
+          strokeWidth={CLOSE_UP_FRAME_WIDTH}
           strokeLinejoin="round"
         />
       </>

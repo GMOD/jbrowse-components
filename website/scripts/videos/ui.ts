@@ -13,8 +13,8 @@ import type { VideoSpec } from '../video-spec-types.ts'
 
 const {
   addTrackSession,
-  detailLevelSpans,
-  detailLevelsSession,
+  closeUpSpans,
+  closeUpSession,
   addTrackUrl,
   bookmarkSession,
   bookmarkSpan,
@@ -40,9 +40,9 @@ const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 // carries the same `data-field`.
 const BOOKMARK_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
 
-// The button that takes the Add detail level dialog, which is one checkbox the
+// The button that takes the Add close-up view dialog, which is one checkbox the
 // tour leaves checked.
-const DETAIL_LEVEL_SUBMIT = 'form button[type="submit"]'
+const CLOSE_UP_SUBMIT = 'form button[type="submit"]'
 
 export const uiVideos: VideoSpec[] = [
   // A LOOP, which is what bookmark_widget.md is about and what neither of its
@@ -136,19 +136,19 @@ export const uiVideos: VideoSpec[] = [
     tailMs: 4000,
   },
 
-  // DETAIL LEVELS, WHICH ARE BUILT RATHER THAN CONFIGURED. basic_usage.md's
+  // CLOSE-UPS, WHICH ARE BUILT RATHER THAN CONFIGURED. basic_usage.md's
   // figure holds the finished stack, and the route to it is two things a still
   // cannot hold: the drag that names each row's span, and the stack staying
   // centred afterwards, so a navigation at the top moves every row with it.
   //
-  // One gene track, copied onto each level a drag opens, so the three rows show
-  // the same data at three scales — which is the claim, drawn three times in
-  // one frame.
+  // One gene track, copied onto each close-up a drag opens, so the three rows
+  // show the same data at three scales — which is the claim, drawn three times
+  // in one frame.
   {
-    name: 'ui/detail_levels',
+    name: 'ui/close_ups',
     description:
-      'Two detail levels opened by dragging spans across the view, each row a closer look than the one above it, and a navigation the whole stack follows',
-    url: detailLevelsSession,
+      'Two close-ups opened by dragging spans across the view, each row a closer look than the one above it, and a navigation the whole stack follows',
+    url: closeUpSession,
     // three gene rows at 100 with their trapezoids, and the menu that opens
     // over them on each release
     viewportHeight: 700,
@@ -159,15 +159,16 @@ export const uiVideos: VideoSpec[] = [
       { type: 'delay', ms: 2000 },
       {
         type: 'drag',
-        fromAnchor: { locus: detailLevelSpans.outer.start, band: RUBBERBAND },
-        toAnchor: { locus: detailLevelSpans.outer.end, band: RUBBERBAND },
+        fromAnchor: { locus: closeUpSpans.outer.start, band: RUBBERBAND },
+        toAnchor: { locus: closeUpSpans.outer.end, band: RUBBERBAND },
         say: 'Drag the span you want a closer look at',
       },
-      { type: 'waitForText', text: 'Add detail level' },
-      { type: 'click', text: 'Add detail level', hold: 1000 },
+      { type: 'waitForText', text: 'Launch' },
+      { type: 'hover', text: 'Launch', hold: 900 },
+      { type: 'click', text: 'Close-up view', hold: 1000 },
       {
         type: 'click',
-        selector: DETAIL_LEVEL_SUBMIT,
+        selector: CLOSE_UP_SUBMIT,
         say: 'It opens below the tracks, showing the same track',
         hold: 900,
       },
@@ -176,23 +177,24 @@ export const uiVideos: VideoSpec[] = [
       // a narrower span, so the row it opens lands under the first one
       {
         type: 'drag',
-        fromAnchor: { locus: detailLevelSpans.inner.start, band: RUBBERBAND },
-        toAnchor: { locus: detailLevelSpans.inner.end, band: RUBBERBAND },
+        fromAnchor: { locus: closeUpSpans.inner.start, band: RUBBERBAND },
+        toAnchor: { locus: closeUpSpans.inner.end, band: RUBBERBAND },
         say: 'A narrower drag opens a row under that one',
       },
-      { type: 'waitForText', text: 'Add detail level' },
-      { type: 'click', text: 'Add detail level', hold: 1000 },
-      { type: 'click', selector: DETAIL_LEVEL_SUBMIT, hold: 900 },
+      { type: 'waitForText', text: 'Launch' },
+      { type: 'hover', text: 'Launch', hold: 900 },
+      { type: 'click', text: 'Close-up view', hold: 1000 },
+      { type: 'click', selector: CLOSE_UP_SUBMIT, hold: 900 },
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 2500 },
-      // The claim, performed: the levels are centred on the view, so a
+      // The claim, performed: the close-ups are centred on the view, so a
       // navigation at the top moves both of them.
       {
         type: 'type',
         selector: LOCATION_BOX,
         value: 'chr17:7,660,000-7,860,000',
         clear: true,
-        say: 'Both levels follow the view',
+        say: 'Both close-ups follow the view',
       },
       { type: 'press', key: 'Enter' },
       { type: 'waitForAppSettled', timeout: 120000 },

@@ -248,11 +248,12 @@ Click and drag on either the main (lower) or overview (upper) scale bar.
 
 <Figure caption="Rubberbanding the main and overview scalebars. The main one produces extra options on selection." src="/img/rubberband.png" />
 
-The main scale bar's menu holds **Zoom to region**,
-[**Add detail level**](#detail-levels), **Get sequence**, **Copy range**,
-**Highlight region** and **Bookmark region**, then a **Launch** submenu of what
-the loaded plugins can start from the selection:
+The main scale bar's menu holds **Zoom to region**, **Get sequence**, **Copy
+range**, **Highlight region** and **Bookmark region**, then a **Launch** submenu
+of what can open from the selection:
 
+- [**Close-up view**](#close-up-views), a zoomed-in copy of the view below its
+  tracks
 - [](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at),
   when a synteny dataset in the session covers this assembly. It opens one panel
   per assembly aligning to the selection, whether or not the synteny track is
@@ -292,37 +293,37 @@ sessions.
 The entry is absent unless the view shows a whole chromosome, since a sub-region
 gives an arbitrary slice of bands.
 
-### Detail levels
+### Close-up views
 
-Drag a span across the view and pick **Add detail level**: a closer view of that
-span opens below the tracks. Drag a narrower span and a third row opens below
-that — genes over a gene's exons over the reads at base level, each row a closer
-look at the one above it. A trapezoid joins each row to the one above, marking
-the span it opens, the same shape the header overview draws between the
-chromosome and the view. A frame in the trapezoid's colour outlines each level,
-so a row reads as an inset of the one above rather than a second view at the
-same zoom.
+Drag a span across the view and pick **Launch → Close-up view**: a zoomed-in
+copy of the view opens below the tracks, showing that span. Drag a narrower span
+and a second close-up opens below the first — genes over a gene's exons over the
+reads at base level, each row a closer look at the one above it. A trapezoid
+joins each row to the one above, marking the span it opens, the same shape the
+header overview draws between the chromosome and the view. A thin frame in the
+trapezoid's colour outlines each close-up, so a row reads as an inset of the one
+above rather than a second view at the same zoom.
 
-The dialog asks one thing. **Copy this view's tracks** opens the level showing
-what this view is showing, so Add alone gives a closer look at the same data;
-unchecked, the level opens empty and its own track selector fills it.
+The dialog asks one thing. **Copy this view's tracks** opens the close-up
+showing what this view is showing, so Add alone gives a closer look at the same
+data; unchecked, the close-up opens empty and its own track selector fills it.
 
-The stack stays centred on the view, so adding a level moves the view to the
+The stack stays centred on the view, so adding a close-up moves the view to the
 middle of the span you dragged.
 
-Pan or drag a level and the view moves by the same number of bases; zoom a level
-and only that level changes width. Drag a trapezoid itself to set how tall its
-band is, which is how steep the connector reads. **Remove detail level** in a
-level's own hamburger menu takes it away.
+Pan or drag a close-up and the view moves by the same number of bases; zoom a
+close-up and only that close-up changes width. Drag a trapezoid itself to set
+how tall its band is, which is how steep the connector reads. **Remove close-up
+view** in a close-up's own hamburger menu takes it away.
 
-**Export SVG** draws the whole stack whichever menu it is asked from, each level
-under a bar labelled with the span it covers.
+**Export SVG** draws the whole stack whichever menu it is asked from, each
+close-up under a bar labelled with the span it covers.
 
-<Figure caption="Add detail level in the rubberband menu, over a span dragged across the view." src="/img/detail_levels_menu.png" />
+<Figure caption="Close-up view under Launch in the rubberband menu, over a span dragged across the view." src="/img/close_up_menu.png" />
 
-<Figure caption="A linear genome view of hg38 at TP53 with two detail levels, each row the same RefSeq gene track: 2 Mb, then 200 kb, then 20 kb. Each trapezoid marks the span the row below it opens." src="/img/detail_levels.png" />
+<Figure caption="A linear genome view of hg38 at TP53 with two close-ups, each row the same RefSeq gene track: 2 Mb, then 200 kb, then 20 kb. Each trapezoid marks the span the row below it opens." src="/img/close_ups.png" />
 
-<Video src="/media/ui/detail_levels.mp4" caption="Building that stack: a span dragged across the view, Add detail level from its menu, a narrower drag for the row below that, and a navigation the whole stack follows." />
+<Video src="/media/ui/close_ups.mp4" caption="Building that stack: a span dragged across the view, Close-up view from its Launch menu, a narrower drag for the row below that, and a navigation the whole stack follows." />
 
 ### Track label positioning
 

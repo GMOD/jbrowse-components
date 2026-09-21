@@ -15,6 +15,6 @@ export const GetSequenceDialog = lazy(
 export const RegionWidthEditorDialog = lazy(
   () => import('./components/RegionWidthEditorDialog.tsx'),
 )
-export const AddDetailLevelDialog = lazy(
-  () => import('./components/AddDetailLevelDialog.tsx'),
+export const AddCloseUpDialog = lazy(
+  () => import('./components/AddCloseUpDialog.tsx'),
 )

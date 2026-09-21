@@ -1046,7 +1046,7 @@ function refSeqTrackConf(
 /**
  * Every track config a view can be offered, each assembly's sequence track
  * first and then {@link filterTracks} over the list handed in. The track
- * selector's tree and the detail-level dialog are both this, so a track one
+ * selector's tree and the close-up dialog are both this, so a track one
  * offers and the other hides would have to be a difference in the assemblies
  * they were asked about.
  */

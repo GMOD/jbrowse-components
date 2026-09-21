@@ -419,7 +419,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
   },
 
   // popgen/fst_in2lt_2L plus the genotypes: six arms on the host, chr2L with one row
-  // per DGRP line on a detail level under it. A level shares its host's centre,
+  // per DGRP line on a close-up under it. A close-up shares its host's centre,
   // so the arms are ordered to put chr2L in the middle: chrX and chr3R before
   // it, 55.6 Mb, nearly balance chr2R, chr3L and chr4 after it, 54.7 Mb.
   {
@@ -439,7 +439,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
             'chr3L',
             'chr4',
           ],
-          detailConnectorHeight: 64,
           tracks: [
             {
               trackId: 'in2lt_inversion',
@@ -452,7 +451,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
               height: 160,
             },
           ],
-          detailLevels: [
+          closeUps: [
             {
               type: 'LinearGenomeView',
               assembly: 'dm6',

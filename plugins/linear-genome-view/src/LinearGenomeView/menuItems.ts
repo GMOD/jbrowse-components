@@ -22,9 +22,9 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
-import { detailLevelHost } from './detailLevels.ts'
+import { closeUpHost } from './closeUps.ts'
 import {
-  AddDetailLevelDialog,
+  AddCloseUpDialog,
   ExportSvgDialog,
   GetSequenceDialog,
   RegionWidthEditorDialog,
@@ -106,7 +106,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     return []
   }
   const session = getSession(self)
-  const host = detailLevelHost(self)
+  const host = closeUpHost(self)
   const menuItems: MenuItem[] = [
     {
       label: 'Open track selector',
@@ -162,16 +162,16 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           },
         ]
       : []),
-    // The one row a detail level adds, and the only one of its own it needs.
-    // Top-level rather than under Zoom with the item that made it: a level is
-    // a second panel on the page, and taking a panel away is not a zoom.
+    // The one row a close-up adds, and the only one of its own it needs.
+    // Top-level rather than under Zoom: a close-up is a second panel on the
+    // page, and taking a panel away is not a zoom.
     ...(host
       ? [
           {
-            label: 'Remove detail level',
+            label: 'Remove close-up view',
             icon: LayersClearIcon,
             onClick: () => {
-              host.removeDetailLevel(self)
+              host.removeCloseUp(self)
             },
           },
         ]
@@ -313,14 +313,13 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
 }
 
 /**
- * Build rubberband selection menu items. `launchItems` are the plugin-supplied
- * things a selection can start (`rubberBandLaunchMenuItems()`); they collect
- * under one "Launch" submenu so the menu stays a few actions plus a group
- * however many plugins are loaded, and vanish entirely when none apply. The
- * group sorts last, below any row a plugin appends to the menu itself.
+ * Build rubberband selection menu items. What a selection can open collects
+ * under one "Launch" submenu, which sorts last, below any row a plugin appends
+ * to the menu itself: a close-up view first, then `launchItems`, the
+ * plugin-supplied ones (`rubberBandLaunchMenuItems()`).
  *
- * A detail level is offered from HERE and nowhere else, because a drag is what
- * the feature was always asking for and a menu item could not: the level shows
+ * A close-up is offered from HERE and nowhere else, because a drag is what the
+ * feature was always asking for and a menu item could not: the close-up shows
  * one span of one place, and this is the gesture that names both. From the view
  * menu it could only guess — a tenth of the middle, which is a span nobody
  * picked.
@@ -328,10 +327,10 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
  * Only a view of its own offers it, which `isTopLevelView` is the whole of. A
  * row of a comparative stack is already part of somebody's figure: the synteny
  * ribbons and the breakpoint split panels are placed against each row's own
- * height, and those views' exports draw one row per view, so a level grown
+ * height, and those views' exports draw one row per view, so a close-up grown
  * there walks the ribbons off their rows and is dropped from the picture
- * without a word. A level, living under a view rather than under the session,
- * is not a top-level view either.
+ * without a word. A close-up, living under a view rather than under the
+ * session, is not a top-level view either.
  */
 export function buildRubberBandMenuItems(
   self: LinearGenomeViewModel,
@@ -350,26 +349,17 @@ export function buildRubberBandMenuItems(
   const rangeString = assembleLocStrings(
     self.getSelectedRegions(leftOffset, rightOffset),
   )
-
-  return [
-    {
-      label: 'Zoom to region',
-      icon: ZoomInIcon,
-      onClick: () => {
-        self.moveTo(leftOffset, rightOffset)
-      },
-    },
-    // Directly under "Zoom to region", which covers the same bases and is the
-    // choice being made: navigate there, or keep this view and open that span
-    // under it. The two below are what a selection is for when neither.
+  const launch: MenuItem[] = [
     ...(self.isTopLevelView
       ? [
           {
-            label: 'Add detail level',
+            label: 'Close-up view',
             icon: LayersIcon,
+            helpText:
+              'A zoomed-in copy of this view, opened below its tracks. It stays centred on this view and pans with it.',
             onClick: () => {
               getDialogHost(self).queueDialog(handleClose => [
-                AddDetailLevelDialog,
+                AddCloseUpDialog,
                 {
                   model: self,
                   leftOffset,
@@ -384,6 +374,17 @@ export function buildRubberBandMenuItems(
           },
         ]
       : []),
+    ...launchItems,
+  ]
+
+  return [
+    {
+      label: 'Zoom to region',
+      icon: ZoomInIcon,
+      onClick: () => {
+        self.moveTo(leftOffset, rightOffset)
+      },
+    },
     {
       label: 'Get sequence',
       icon: MenuOpenIcon,
@@ -409,14 +410,14 @@ export function buildRubberBandMenuItems(
         void copyText(self, rangeString, 'range')
       },
     },
-    ...(launchItems.length
+    ...(launch.length
       ? [
           {
             label: 'Launch',
             icon: LaunchIcon,
             type: 'subMenu' as const,
             priority: -1000,
-            subMenu: launchItems,
+            subMenu: launch,
           },
         ]
       : []),

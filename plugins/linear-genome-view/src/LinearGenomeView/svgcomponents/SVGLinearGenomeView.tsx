@@ -7,9 +7,9 @@ import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 
+import { closeUpStackRows } from '../closeUps.ts'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
-import { detailStackRows } from '../detailLevels.ts'
-import SVGDetailLevelFrame from './SVGDetailLevelFrame.tsx'
+import SVGCloseUpFrame from './SVGCloseUpFrame.tsx'
 import SVGHeader from './SVGHeader.tsx'
 import SVGRowHeader from './SVGRowHeader.tsx'
 import SVGView from './SVGView.tsx'
@@ -59,11 +59,11 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   // own readiness wait — an LGV display through `renderDisplaySvg`'s
   // `awaitSvgReady`, a non-LGV one (dotplot, synteny, circular) by calling that
   // itself.
-  const levels = model.detailLevelViews as LGV[]
-  const stack = detailStackRows(model, levels)
+  const closeUps = model.closeUpViews as LGV[]
+  const stack = closeUpStackRows(model, closeUps)
   const [
     { tracks, displayResults, tracksHeight, legendWidth, skippedTracks },
-    levelTracks,
+    closeUpTracks,
   ] = await awaitSvgRenders([
     renderViewTracks({
       view: model,
@@ -75,16 +75,22 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       // canvas below so a legend sits beside the plot rather than over it
       reserveLegendWidth: true,
     }),
-    // a level is a stacked row, like a synteny row: no room for a legend
+    // a close-up is a stacked row, like a synteny row: no room for a legend
     awaitSvgRenders(
-      levels.map(level =>
-        renderViewTracks({ view: level, opts, theme, textHeight, trackLabels }),
+      closeUps.map(closeUp =>
+        renderViewTracks({
+          view: closeUp,
+          opts,
+          theme,
+          textHeight,
+          trackLabels,
+        }),
       ),
     ),
   ])
   notifySkippedSvgTracks(session, [
     ...skippedTracks,
-    ...levelTracks.flatMap(r => r.skippedTracks),
+    ...closeUpTracks.flatMap(r => r.skippedTracks),
   ])
 
   // The view geometry is read *after* the displays' waits, never before —
@@ -100,9 +106,9 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     rulerHeight,
   })
   // one gutter for the whole export, wide enough for the widest label in any
-  // level, so the levels stay aligned with the view
+  // close-up, so the close-ups stay aligned with the view
   const trackLabelOffset = trackLabelLeftOffset({
-    tracks: [...tracks, ...levelTracks.flatMap(r => r.tracks)],
+    tracks: [...tracks, ...closeUpTracks.flatMap(r => r.tracks)],
     trackLabels,
     fontSize,
     fontFamily,
@@ -110,14 +116,15 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   })
   const w = width + trackLabelOffset + legendWidth
 
-  // The view under its full header, then each detail level under the trapezoid
-  // joining it to the row above, in the order `detailStackRows` gives — which
+  // The view under its full header, then each close-up under the trapezoid
+  // joining it to the row above, in the order `closeUpStackRows` gives — which
   // is the order the screen draws too.
   //
-  // A level's row header is a scalebar and no assembly name — the opposite of a
-  // synteny row's. Every level is the host's own assembly, named once in the
-  // host's own header, while the span each level covers is the whole point of
-  // the stack and is the one thing a ruler at figure size cannot be read for.
+  // A close-up's row header is a scalebar and no assembly name — the opposite
+  // of a synteny row's. Every close-up is the host's own assembly, named once
+  // in the host's own header, while the span each close-up covers is the whole
+  // point of the stack and is the one thing a ruler at figure size cannot be
+  // read for.
   const rowTopGap = 6
   const { bandHeight } = getRowHeaderLayout({
     fontSize,
@@ -125,24 +132,24 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     reserveAssemblyName: false,
   })
   const rendered = new Map(
-    levels.map((level, i) => [level.id, levelTracks[i]!]),
+    closeUps.map((closeUp, i) => [closeUp.id, closeUpTracks[i]!]),
   )
-  const levelRow = (level: LGV) => {
-    const { tracksHeight, displayResults } = rendered.get(level.id)!
+  const closeUpRow = (closeUp: LGV) => {
+    const { tracksHeight, displayResults } = rendered.get(closeUp.id)!
     const rowTop = rowTopGap + bandHeight
     const height = rowTop + rulerHeight + tracksHeight
     return {
-      key: level.id,
+      key: closeUp.id,
       height,
       node: (
         <>
           <g transform={`translate(${exportMargin} ${rowTop})`}>
             <SVGView
-              view={level}
+              view={closeUp}
               displayResults={displayResults}
               header={
                 <SVGRowHeader
-                  view={level}
+                  view={closeUp}
                   fontSize={fontSize}
                   rulerHeight={rulerHeight}
                   showAssemblyName={false}
@@ -159,27 +166,27 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
               leftBuffer={exportMargin}
             />
           </g>
-          <SVGDetailLevelFrame
+          <SVGCloseUpFrame
             x={exportMargin + trackLabelOffset}
-            width={level.width}
+            width={closeUp.width}
             height={height}
           />
         </>
       ),
     }
   }
-  const connectorRow = (level: LGV, context: LGV) => ({
-    key: `connector-${level.id}`,
+  const connectorRow = (closeUp: LGV, context: LGV) => ({
+    key: `connector-${closeUp.id}`,
     // the band the reader set by dragging one of them, since how steep the
     // connectors read is the whole of what that drag is for
-    height: model.detailConnectorHeight,
+    height: model.closeUpConnectorHeight,
     node: (
       <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
         <OverviewScalebarPolygon
-          model={level}
+          model={closeUp}
           overview={context}
           overviewOffsetPx={-context.offsetPx}
-          height={model.detailConnectorHeight}
+          height={model.closeUpConnectorHeight}
           gradient
         />
       </g>
@@ -219,9 +226,9 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   }
   const rows = [
     hostRow,
-    ...stack.flatMap(({ level, context }) => [
-      connectorRow(level, context),
-      levelRow(level),
+    ...stack.flatMap(({ closeUp, context }) => [
+      connectorRow(closeUp, context),
+      closeUpRow(closeUp),
     ]),
   ]
 

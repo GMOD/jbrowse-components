@@ -516,7 +516,7 @@ export const qcSpecs: ScreenshotSpec[] = [
   },
 
   // The two scales above as one view: the 2.5 Mb frame's lanes on the host, the
-  // 650 kb read frame's lanes on a detail level under it. A level shares its
+  // 650 kb read frame's lanes on a close-up under it. A close-up shares its
   // host's centre, so the host is centred on WIDE_LOC and widened to 3.45 Mb to
   // keep the block's left edge and SMN2 in frame.
   {
@@ -530,7 +530,6 @@ export const qcSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: 'chr5:69,450,000-72,900,000',
           highlight: SMN_HIGHLIGHT,
-          detailConnectorHeight: 64,
           tracks: [
             { ...geneTrack(60, true), displayMode: 'compact' },
             gnomadCoverageTrack(90, 'avg'),
@@ -545,7 +544,7 @@ export const qcSpecs: ScreenshotSpec[] = [
               height: 100,
             },
           ],
-          detailLevels: [
+          closeUps: [
             {
               type: 'LinearGenomeView',
               assembly: 'hg38',

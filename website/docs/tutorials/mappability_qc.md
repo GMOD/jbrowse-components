@@ -71,7 +71,7 @@ means the aligner found the position it chose about as likely wrong as right.
 
 ## The block, and the reads inside it
 
-<Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place in one view. Top, 3.45 Mb of chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Below it, a detail level over the 650 kb the trapezoid marks, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
+<Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place in one view. Top, 3.45 Mb of chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Below it, a close-up over the 650 kb the trapezoid marks, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
 The affected sequence is a much larger block than the gene. The two published
 annotations disagree about where it ends: GIAB's interval stops well short of
@@ -84,8 +84,8 @@ megabase-and-a-half region, a second one a few kilobases past it, and then
 nothing larger than a few kilobases for megabases in either direction. Short
 reads fail across a whole gene neighbourhood here.
 
-The detail level shows the same block at the scale a read lives at, where reads
-do not recover until well past the end of _SMN1_.
+The close-up shows the same block at the scale a read lives at, where reads do
+not recover until well past the end of _SMN1_.
 
 ## The same block in T2T-CHM13
 

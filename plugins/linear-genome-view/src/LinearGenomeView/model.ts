@@ -65,13 +65,14 @@ import { observable, when } from 'mobx'
 
 import { handleSelectedRegion } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
+import { closeUpHost, closeUpType } from './closeUps.ts'
 import { shouldSwapTracks } from './components/util.ts'
 import {
-  DETAIL_CONNECTOR_HEIGHT,
+  CLOSE_UP_CONNECTOR_HEIGHT,
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
   MIN_BP_PER_PX,
-  MIN_DETAIL_CONNECTOR_HEIGHT,
+  MIN_CLOSE_UP_CONNECTOR_HEIGHT,
   MINIMIZED_TRACK_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
@@ -79,7 +80,6 @@ import {
   TRACK_OUTLINE_BORDER,
   TRACK_TOP_GAP,
 } from './consts.ts'
-import { detailLevelHost, detailLevelType } from './detailLevels.ts'
 import { planFlight } from './flyTo.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
 import { lgvLaunchKeys } from './launchKeys.ts'
@@ -104,7 +104,7 @@ import {
   tickLabelWidth,
 } from './util.ts'
 
-import type { DetailLevel } from './detailLevels.ts'
+import type { CloseUp } from './closeUps.ts'
 import type { FlightViewport } from './flyTo.ts'
 import type {
   BpOffset,
@@ -440,23 +440,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * first, so the page zooms in as it reads down. Each is a
          * LinearGenomeView with tracks of its own whose regions, width and
          * centre this view drives; its window width is the one thing it keeps.
-         * See `detailLevels.ts`.
+         * See `closeUps.ts`.
          */
-        detailLevels: types.stripDefault(
-          types.array(detailLevelType(pluginManager)),
+        closeUps: types.stripDefault(
+          types.array(closeUpType(pluginManager)),
           [],
         ),
 
         /**
          * #property
-         * Height of the bands the trapezoids between this view's detail levels
+         * Height of the bands the trapezoids between this view's close-ups
          * are drawn in, dragged by any one of them. One number for the stack:
          * the bands are a ladder the eye reads down, and a rung of its own
          * height reads as a difference in the data rather than in the drawing.
          */
-        detailConnectorHeight: types.stripDefault(
+        closeUpConnectorHeight: types.stripDefault(
           types.number,
-          DETAIL_CONNECTOR_HEIGHT,
+          CLOSE_UP_CONNECTOR_HEIGHT,
         ),
 
         /**
@@ -773,26 +773,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The census entry for this view's detail levels, which are views in
+       * The census entry for this view's close-ups, which are views in
        * their own right.
        */
       get ownViews() {
-        return [...self.detailLevels]
+        return [...self.closeUps]
       },
       /**
        * #getter
-       * The detail levels as what the host reads off them. The array element
+       * The close-ups as what the host reads off them. The array element
        * is a late type back onto this view, so this is where it gets a shape.
        */
-      get detailLevelViews(): DetailLevel[] {
-        return self.detailLevels
+      get closeUpViews(): CloseUp[] {
+        return self.closeUps
       },
       /**
        * #getter
-       * Whether this view is itself a detail level of another
+       * Whether this view is itself a close-up of another
        */
-      get isDetailLevel() {
-        return !!detailLevelHost(self)
+      get isCloseUp() {
+        return !!closeUpHost(self)
       },
       /**
        * #getter
@@ -1439,54 +1439,54 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Add a detail level showing `trackIds`, spanning `windowWidthBp` bases
-       * or a tenth of the closest level there is. The stack stays widest first,
-       * so a span between two existing levels lands between them, and one wider
-       * than this view is pulled back in to it by the sync.
+       * Add a close-up showing `trackIds`, spanning `windowWidthBp` bases or a
+       * tenth of the closest close-up there is. The stack stays widest first,
+       * so a span between two existing close-ups lands between them, and one
+       * wider than this view is pulled back in to it by the sync.
        *
-       * Answers the level, which is a LinearGenomeView: its own actions
+       * Answers the close-up, which is a LinearGenomeView: its own actions
        * navigate it, name its tracks and take it away again.
        */
-      addDetailLevel({
+      addCloseUp({
         windowWidthBp,
         trackIds = [],
       }: { windowWidthBp?: number; trackIds?: string[] } = {}) {
-        const closest = self.detailLevelViews.at(-1)
+        const closest = self.closeUpViews.at(-1)
         const width =
           windowWidthBp ?? (closest?.windowWidthBp ?? self.windowWidthBp) / 10
         const centerBp = self.windowStartBp + self.windowWidthBp / 2
-        const at = self.detailLevelViews.filter(
-          level => level.windowWidthBp > width,
+        const at = self.closeUpViews.filter(
+          closeUp => closeUp.windowWidthBp > width,
         ).length
-        self.detailLevels.splice(at, 0, {
+        self.closeUps.splice(at, 0, {
           type: 'LinearGenomeView',
           hideHeader: true,
           displayedRegions: self.displayedRegions,
           windowWidthBp: width,
           windowStartBp: centerBp - width / 2,
         })
-        const level = self.detailLevelViews[at]!
+        const closeUp = self.closeUpViews[at]!
         for (const trackId of trackIds) {
-          level.showTrack(trackId)
+          closeUp.showTrack(trackId)
         }
-        return level
+        return closeUp
       },
       /**
        * #action
        */
-      removeDetailLevel(level: DetailLevel) {
-        detach(level)
-        scheduleDetachedDestroy(level)
+      removeCloseUp(closeUp: CloseUp) {
+        detach(closeUp)
+        scheduleDetachedDestroy(closeUp)
       },
       /**
        * #action
-       * Set the height of every band between this view's detail levels.
+       * Set the height of every band between this view's close-ups.
        * Floored at the drag surface's own height rather than at 0: the band IS
        * the handle, so a band dragged shut could never be dragged open again.
        */
-      setDetailConnectorHeight(height: number) {
-        self.detailConnectorHeight = Math.max(
-          MIN_DETAIL_CONNECTOR_HEIGHT,
+      setCloseUpConnectorHeight(height: number) {
+        self.closeUpConnectorHeight = Math.max(
+          MIN_CLOSE_UP_CONNECTOR_HEIGHT,
           Math.round(height),
         )
       },
@@ -1639,17 +1639,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * Open a detail level over a rubberband selection, showing this view's
-       * tracks. The view recentres on the span first, because every level
-       * shares its host's centre — a level is a closer look at the middle of
+       * Open a close-up over a rubberband selection, showing this view's
+       * tracks. The view recentres on the span first, because every close-up
+       * shares its host's centre — a close-up is a closer look at the middle of
        * this view, and a selection off to one side would otherwise open
        * somewhere else.
        *
        * The span is `computeMoveToLayout`'s, the pure half of the `moveTo` the
-       * same selection's "Zoom to region" runs, so the level covers exactly
+       * same selection's "Zoom to region" runs, so the close-up covers exactly
        * what zooming would have navigated to.
        */
-      addDetailLevelForSpan(
+      addCloseUpForSpan(
         start?: BpOffset,
         end?: BpOffset,
         { trackIds }: { trackIds?: string[] } = {},
@@ -1661,11 +1661,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const windowWidthBp = bpPerPx * self.width
         const centerBp = offsetPx * bpPerPx + windowWidthBp / 2
         self.scrollToBp(centerBp - self.windowWidthBp / 2)
-        return self.addDetailLevel({
+        return self.addCloseUp({
           windowWidthBp,
-          // the view's own tracks unless the caller named a list, so a level is
-          // a closer look at what is on screen by default and an empty row when
-          // someone asked for one
+          // the view's own tracks unless the caller named a list, so a close-up
+          // is a closer look at what is on screen by default and an empty row
+          // when someone asked for one
           trackIds:
             trackIds ?? self.tracks.map(track => track.configuration.trackId),
         })

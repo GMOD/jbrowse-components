@@ -16,7 +16,7 @@ import { observer } from 'mobx-react'
 
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import { stickyChromeTops } from '../stickyChrome.ts'
-import DetailLevels from './DetailLevels.tsx'
+import CloseUps from './CloseUps.tsx'
 import Header from './Header.tsx'
 import MiniControls from './MiniControls.tsx'
 import NavigationAnnouncer from './NavigationAnnouncer.tsx'
@@ -223,7 +223,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
             </TracksContainer>
           )}
         </div>
-        <DetailLevels model={model} />
+        <CloseUps model={model} />
       </div>
     </>
   )

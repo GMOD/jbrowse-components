@@ -5,10 +5,10 @@ import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { observer } from 'mobx-react'
 
 import {
-  DETAIL_FRAME_WIDTH,
-  detailLevelColor,
-  detailStackRows,
-} from '../detailLevels.ts'
+  CLOSE_UP_FRAME_WIDTH,
+  closeUpColor,
+  closeUpStackRows,
+} from '../closeUps.ts'
 import LinearGenomeView from './LinearGenomeView.tsx'
 import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 
@@ -25,13 +25,13 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'visible',
     pointerEvents: 'none',
   },
-  level: {
+  closeUp: {
     position: 'relative',
     '&::after': {
       content: '""',
       position: 'absolute',
       inset: 0,
-      border: `${DETAIL_FRAME_WIDTH}px solid ${detailLevelColor(theme)}`,
+      border: `${CLOSE_UP_FRAME_WIDTH}px solid ${closeUpColor(theme)}`,
       pointerEvents: 'none',
       zIndex: 1,
     },
@@ -53,9 +53,9 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The trapezoid from the span `level` shows, as it sits in `context`, out to
- * `level`'s full width: the header overview's "you are here", drawn between two
- * rows of the stack instead. A detail level is scrolled, where the header
+ * The trapezoid from the span `close-up` shows, as it sits in `context`, out to
+ * `close-up`'s full width: the header overview's "you are here", drawn between
+ * two rows of the stack instead. A close-up is scrolled, where the header
  * overview never is, so its left edge is what its origin is shifted by.
  *
  * Its height belongs to the stack rather than to this pair, so a drag on any
@@ -65,27 +65,27 @@ const useStyles = makeStyles()(theme => ({
  * wider than the one under it narrows to a tenth of the width there — and how
  * steep that reads is the figure's to decide, not ours.
  */
-const LevelConnector = observer(function LevelConnector({
+const CloseUpConnector = observer(function CloseUpConnector({
   host,
   context,
-  level,
+  closeUp,
 }: {
   host: LinearGenomeViewModel
   context: LinearGenomeViewModel
-  level: LinearGenomeViewModel
+  closeUp: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const height = host.detailConnectorHeight
+  const height = host.closeUpConnectorHeight
   const handleProps = useResizeDrag({
     onDrag: delta => {
-      host.setDetailConnectorHeight(host.detailConnectorHeight + delta)
+      host.setCloseUpConnectorHeight(host.closeUpConnectorHeight + delta)
     },
   })
-  return context.initialized && level.initialized ? (
+  return context.initialized && closeUp.initialized ? (
     <div className={classes.connector} style={{ height }}>
       <svg className={classes.polygon}>
         <OverviewScalebarPolygon
-          model={level}
+          model={closeUp}
           overview={context}
           overviewOffsetPx={-context.offsetPx}
           height={height}
@@ -94,28 +94,28 @@ const LevelConnector = observer(function LevelConnector({
       </svg>
       <div
         {...handleProps}
-        data-testid={`detail-connector-${level.id}`}
+        data-testid={`close-up-connector-${closeUp.id}`}
         className={classes.grab}
       />
     </div>
   ) : null
 })
 
-const DetailLevels = observer(function DetailLevels({
+const CloseUps = observer(function CloseUps({
   model,
 }: {
   model: LinearGenomeViewModel
 }) {
-  const levels = model.detailLevelViews as LinearGenomeViewModel[]
+  const closeUps = model.closeUpViews as LinearGenomeViewModel[]
   const { classes } = useStyles()
-  const rows = detailStackRows(model, levels)
+  const rows = closeUpStackRows(model, closeUps)
   return rows.length ? (
-    <div data-testid={`detail-levels-${model.id}`}>
-      {rows.map(({ level, context }) => (
-        <Fragment key={level.id}>
-          <LevelConnector host={model} context={context} level={level} />
-          <div className={classes.level}>
-            <LinearGenomeView model={level} />
+    <div data-testid={`close-ups-${model.id}`}>
+      {rows.map(({ closeUp, context }) => (
+        <Fragment key={closeUp.id}>
+          <CloseUpConnector host={model} context={context} closeUp={closeUp} />
+          <div className={classes.closeUp}>
+            <LinearGenomeView model={closeUp} />
           </div>
         </Fragment>
       ))}
@@ -123,4 +123,4 @@ const DetailLevels = observer(function DetailLevels({
   ) : null
 })
 
-export default DetailLevels
+export default CloseUps
