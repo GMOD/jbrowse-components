@@ -49,6 +49,13 @@ contest, summed over whatever is competing.**
 - **A pointer answers with the longest alignment under it**, hover and click
   alike, and colour groups paint weakest-first so the composite ends on the
   contig the pointer would name.
+
+  *Amended 2026-09-20:* in a coloured strip that held only where the lane's
+  strongest mark sits. A colour ranks by its longest alignment anywhere in the
+  lane, so a weak mark of the strongest contig is painted over a longer mark of
+  another, and the pointer named the one underneath. The pointer now names the
+  colour painted on top, and the longest alignment within it; an uncoloured
+  strip is one colour, so nothing changed there.
 - **A name may overhang its stretch by up to half its own width**
   (`MIN_LABEL_COVERAGE`), clamped into the window, with the collision box the
   text box. A reader already reads a name by the marks under its centre: two

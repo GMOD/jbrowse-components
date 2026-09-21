@@ -195,9 +195,9 @@ of this file assumes:
 - A name may overhang its stretch by up to half its own width
   (`MIN_LABEL_COVERAGE`), clamped into the window, and the box it holds against
   the rule above is the TEXT box.
-- A pointer answers with the longest alignment under it, hover and click alike,
-  and colour groups paint weakest-first so the composite ends on the same
-  contig.
+- Colour groups paint weakest-first by their longest alignment, and a pointer
+  answers with the colour painted on top and the longest alignment within it,
+  hover and click alike — in a grey strip, the longest alignment under it.
 - The hover leads with that sequence — `NC_081816.1 · 920Kbp in 176 alignments`
   — off the per-contig `alignedBp` tally each lane carries beside `counts`, so
   it stays O(contigs) per pointer move.

@@ -1033,6 +1033,54 @@ describe('marks colored by the contig they name', () => {
     expect(fills.map(f => f.style)).toEqual(['color:chr2', 'color:chr7'])
   })
 
+  // A colour's rank is its longest alignment anywhere in the lane, so a weak
+  // mark of the strongest contig is painted over a longer mark of another.
+  // The pointer names what is on top.
+  test('the pointer names the colour painted on top, not a longer mark under it', () => {
+    const lane = {
+      ...params,
+      datasets: [
+        data(
+          [
+            [100, 110],
+            [500, 1500],
+            [100, 500],
+          ],
+          ['chr7', 'chr7', 'chr2'],
+        ),
+      ],
+      markColorFor: (refName: string) => `color:${refName}`,
+    }
+    expect(offscreenMateAt(lane, 10.5, 3)?.refName).toBe('chr7')
+    expect(offscreenMateAt(lane, 30, 3)?.refName).toBe('chr2')
+  })
+
+  test('at every pixel the hit names the colour painted last there', () => {
+    const contigs = ['chrA', 'chrB', 'chrC', 'chrD']
+    const spans: [number, number][] = []
+    const names: string[] = []
+    for (let i = 0; i < 40; i++) {
+      const start = (i * 37) % 900
+      spans.push([start, start + 10 + ((i * 53) % 300)])
+      names.push(contigs[(i * 7) % contigs.length]!)
+    }
+    const colorFor = (refName: string) => `color:${refName}`
+    const lane = {
+      ...params,
+      datasets: [data(spans, names)],
+      markColorFor: colorFor,
+    }
+    const { ctx, fills } = fakeCtx()
+    draw(ctx, [lane])
+    for (let x = 0; x <= params.width; x += 0.25) {
+      const onTop = fills.findLast(f =>
+        f.rects.some(r => x >= r.x && x <= r.x + r.w),
+      )?.style
+      const hit = offscreenMateAt(lane, x, 3)
+      expect([x, hit ? colorFor(hit.refName) : undefined]).toEqual([x, onTop])
+    }
+  })
+
   // The two lanes hold contigs of different assemblies, and only one of them is
   // usually keyed the way the ribbons are. They hang off opposite edges, so the
   // order between them decides nothing a reader sees; it is the same length

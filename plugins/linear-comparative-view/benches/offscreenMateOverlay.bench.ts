@@ -115,9 +115,10 @@ function layoutFor(data: OffscreenMateData): OffscreenMateLane {
   }
 }
 
-// The pre-change hit test, transcribed. Deliberately written out longhand rather
-// than sharing anything with the arm above it: a shared driver goes polymorphic
-// and every arm pays for it (BENCHMARKING.md).
+// The pre-change hit test, transcribed, answering by the longest alignment under
+// the pointer as ADR-138 has the shipped one do. Deliberately written out
+// longhand rather than sharing anything with the arm above it: a shared driver
+// goes polymorphic and every arm pays for it (BENCHMARKING.md).
 const MARK_H = 6
 const MIN_W = 1.5
 function hitOld(layout: OffscreenMateLane, x: number, y: number) {
@@ -142,13 +143,18 @@ function hitOld(layout: OffscreenMateLane, x: number, y: number) {
       height: markHeight,
     })
   }
-  for (let i = rects.length - 1; i >= 0; i--) {
-    const r = rects[i]!
+  let hit: string | undefined
+  let hitBp = -Infinity
+  for (const r of rects) {
     if (y >= 0 && y <= r.height && x >= r.x && x <= r.x + r.width) {
-      return data.mateRefNameDict[data.mateRefNameIds[r.index]!]
+      const bp = data.lengths[r.index]!
+      if (bp > hitBp) {
+        hitBp = bp
+        hit = data.mateRefNameDict[data.mateRefNameIds[r.index]!]
+      }
     }
   }
-  return undefined
+  return hit
 }
 
 // The control: the same code as hitOld, declared a second time so it gets its own
@@ -175,13 +181,18 @@ function hitControl(layout: OffscreenMateLane, x: number, y: number) {
       height: markHeight,
     })
   }
-  for (let i = rects.length - 1; i >= 0; i--) {
-    const r = rects[i]!
+  let hit: string | undefined
+  let hitBp = -Infinity
+  for (const r of rects) {
     if (y >= 0 && y <= r.height && x >= r.x && x <= r.x + r.width) {
-      return data.mateRefNameDict[data.mateRefNameIds[r.index]!]
+      const bp = data.lengths[r.index]!
+      if (bp > hitBp) {
+        hitBp = bp
+        hit = data.mateRefNameDict[data.mateRefNameIds[r.index]!]
+      }
     }
   }
-  return undefined
+  return hit
 }
 
 function fakeCtx() {
