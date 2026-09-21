@@ -22,8 +22,8 @@ export function scaleTypeCode(scaleType: string | undefined): ScaleTypeCode {
       : 0
 }
 
-// `Math.log1p` rather than the shader's `log(1.0 + x)`, which loses precision
-// near zero.
+// `Math.log1p` rather than a bare `log(1 + x)`, which loses precision
+// near zero; `scoreScale.slang` spells the same correction by hand.
 function symlog(x: number, c: number) {
   return Math.sign(x) * Math.log1p(Math.abs(x / c))
 }

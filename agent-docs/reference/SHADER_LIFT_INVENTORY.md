@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 44 shaders with entry points. 106 functions
+Scanned 44 shaders with entry points. 107 functions
 are inside the emitter's subset, of which **79 are exported**.
 
 ## Candidates
@@ -48,6 +48,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `expandToMinWidthX` | `(f32, f32, f32, f32) -> vec2f` | clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX |
 | `extendToMinWidthX` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported extendToMinWidthPx, which is the decision |
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
+| `log1pf` | `(f32) -> f32` | JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it |
 | `perpCoverage` | `(f32, f32, f32, f32, f32, f32, bool, f32) -> f32` | measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function |
 | `pxToClipLen` | `(f32, f32) -> f32` | the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert |
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
@@ -58,7 +59,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `snapBoxCenterY` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported snapBoxCenterYPx |
 | `snapCellEdgePx` | `(f32, f32) -> f32` | reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor |
 | `snapToPixelX` | `(f32, f32) -> f32` | clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin |
-| `symlogTransform` | `(f32, f32) -> f32` | the JS twin (render-core scoreScale.ts) spells it Math.log1p, which is accurate near zero where the shader's log(1.0 + x) is not; a generated twin would be a faithful copy of the worse of the two. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts |
+| `symlogTransform` | `(f32, f32) -> f32` | render-core scoreScale.ts reaches Math.log1p directly, one call inside a normalizer it hoists the whole log domain out of, so a per-call twin of this would have no caller. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts |
 | `valueToYPx` | `(f32, f32, f32, f32) -> f32` | the linear case of valueToYPxScaled, whose twin pointMark.slang lifts; a shader reading it alone (the score example's scoreBarHeightPx) lifts the caller it sits inside |
 | `vertCoverage` | `(f32, f32, f32) -> f32` | the top/bottom antialiasing ramp, measured per fragment; Canvas2D gets its edge AA from the rasterizer |
 | `yCurveDeriv` | `(f32) -> f32` | same as sBlendDeriv, the other half of the tangent |

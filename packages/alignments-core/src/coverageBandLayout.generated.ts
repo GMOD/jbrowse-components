@@ -24,8 +24,19 @@ export function covBottomOffsetPx(covHeight: number, covYOffset: number): number
   return (covHeight - covYOffset)
 }
 
+function log1pf(x: number): number {
+  let u = (1.0 + x)
+  let _t0: number
+  if ((u == 1.0)) {
+    _t0 = x
+  } else {
+    _t0 = (Math.log(u) * (x / (u - 1.0)))
+  }
+  return _t0
+}
+
 function symlogTransform(x: number, c: number): number {
-  return ((((Math.sign(x)) | 0)) * Math.log((1.0 + Math.abs((x / c)))))
+  return ((((Math.sign(x)) | 0)) * log1pf(Math.abs((x / c))))
 }
 
 function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {

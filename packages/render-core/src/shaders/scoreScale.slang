@@ -7,15 +7,27 @@
 // other to 0, so a score above a pinned domain sits off the top everywhere.
 //! export-consts: SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG
 //! js-export: normalizeScore
-//! js-skip: symlogTransform — the JS twin (render-core scoreScale.ts) spells it Math.log1p, which is accurate near zero where the shader's log(1.0 + x) is not; a generated twin would be a faithful copy of the worse of the two. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
+//! js-skip: log1pf — JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it
+//! js-skip: symlogTransform — render-core scoreScale.ts reaches Math.log1p directly, one call inside a normalizer it hoists the whole log domain out of, so a per-call twin of this would have no caller. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
 module scoreScale;
 
 // `ScaleTypeCode` in scoreScale.ts is these two and 0, for linear.
 public static const int SCALE_TYPE_LOG = 1;
 public static const int SCALE_TYPE_SYMLOG = 2;
 
+// log(1 + x) for x that `1.0 + x` rounds away: a symlog domain narrower than
+// its constant lands entirely in that region, and in float32 the rounding
+// survives the normalize's divide by a tiny domain range — 0.2px of a 40px row
+// on domain [-1, 0.75] with constant 100.5, against the Canvas2D twin's
+// Math.log1p. Kahan's identity: `u - 1.0` is exact where `u` is near 1, so the
+// ratio is the correction the sum lost.
+float log1pf(float x) {
+  float u = 1.0 + x;
+  return u == 1.0 ? x : log(u) * (x / (u - 1.0));
+}
+
 public float symlogTransform(float x, float c) {
-  return sign(x) * log(1.0 + abs(x / c));
+  return sign(x) * log1pf(abs(x / c));
 }
 
 public float normalizeScore(float score, float domainMin, float domainMax, int scaleType, float symlogConstant) {
