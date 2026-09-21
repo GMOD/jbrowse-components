@@ -11,20 +11,17 @@ import { autorun, untracked } from 'mobx'
 
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { decideLaneFrames, sameDecisions } from './laneDecision.ts'
-import { mergeContiguousRegions } from './layoutMultiWay.ts'
 import {
   declaredLanesOf,
   specsCoverMate,
   staleLaneSpecs,
   starAnchorOf,
-} from './model.ts'
+} from './laneFetch.ts'
+import { mergeContiguousRegions } from './layoutMultiWay.ts'
 
+import type { LaneFetchSpec, LaneRegion } from './laneFetch.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
-import type {
-  LaneFetchSpec,
-  LaneRegion,
-  MultiWaySyntenyDisplayModel,
-} from './model.ts'
+import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'

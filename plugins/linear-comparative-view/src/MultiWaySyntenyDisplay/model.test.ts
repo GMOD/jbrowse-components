@@ -7,10 +7,10 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { LaneGene } from './geneGlyph.ts'
+import { declaredLanesOf, specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import { lanesMenuItem } from './menus.ts'
-import { declaredLanesOf, specsCoverMate, staleLaneSpecs } from './model.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 const namedGene = (
