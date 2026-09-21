@@ -1,5 +1,5 @@
 // Worker → main-thread payload for per-base-lettering entries.
-// One entry per visible aligned base when colorBy.type === 'perBaseLetter';
+// One entry per visible aligned base under the perBaseLetter base layer;
 // every base is drawn in its nucleotide color (not just mismatches).
 export interface PerBaseLetterUploadData {
   perBaseLetterPositions: Uint32Array

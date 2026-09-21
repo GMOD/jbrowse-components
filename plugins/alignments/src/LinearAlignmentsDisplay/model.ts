@@ -3268,10 +3268,18 @@ export default function stateModelFactory(
            */
           setBaseLayer(layer?: BaseLayer) {
             if (!compareStructural(layer, self.baseLayer)) {
+              const field: string | undefined = getConf(self, [
+                'baseColor',
+                'field',
+              ])
               setConf(
                 self,
                 'baseColor',
-                layer ? { field: BASE_COLOR_FIELDS[layer.type] } : {},
+                layer
+                  ? { field: BASE_COLOR_FIELDS[layer.type] }
+                  : field
+                    ? { field, scale: 'none' }
+                    : {},
               )
               if (layer?.modifications) {
                 setConf(self, 'modifications', layer.modifications)

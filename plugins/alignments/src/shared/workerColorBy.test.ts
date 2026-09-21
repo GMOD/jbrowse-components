@@ -5,7 +5,7 @@ import { COLOR_SCHEMES, workerColorBy } from './colorSchemes.ts'
 import { extractFeatureArrays } from './extractFeatureArrays.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 
-import type { ColorBy, ColorSchemeType } from './types.ts'
+import type { ColorBy, ColorSchemeType, ReadColorBy } from './types.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -111,10 +111,7 @@ describe('workerColorBy', () => {
   })
 
   test('an extracting scheme passes through whole, config and all', () => {
-    const colorBy: ColorBy = {
-      type: 'modifications',
-      modifications: { threshold: 42, cytosineContext: 'CHG' },
-    }
+    const colorBy: ReadColorBy = { type: 'tag', tag: 'HP', attribute: 'x' }
     expect(workerColorBy(colorBy)).toBe(colorBy)
     expect(workerColorBy({ type: 'tag', tag: 'HP' })).toEqual({
       type: 'tag',

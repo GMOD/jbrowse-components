@@ -2,7 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { extractFeatureArrays } from './extractFeatureArrays.ts'
 
-import type { ColorBy } from './types.ts'
+import type { ReadColorBy } from './types.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -56,7 +56,7 @@ const buildFeatureData = (f: Feature): FeatureData => ({
   strand: f.get('strand') ?? 0,
 })
 
-function extract(features: Feature[], colorBy: ColorBy) {
+function extract(features: Feature[], colorBy: ReadColorBy) {
   return extractFeatureArrays(features, buildFeatureData, {
     colorBy,
     showSoftClipping: false,

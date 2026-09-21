@@ -19,7 +19,7 @@ import { getStrand } from './util.ts'
 
 import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
-import type { BaseLayer, ColorBy } from './types.ts'
+import type { BaseLayer, ReadColorBy } from './types.ts'
 import type {
   FeatureData,
   GapData,
@@ -42,7 +42,7 @@ function getMateRefName(feature: Feature) {
 }
 
 interface ExtractOpts {
-  colorBy: ColorBy | undefined
+  colorBy: ReadColorBy | undefined
   baseLayer?: BaseLayer
   showSoftClipping: boolean
   region: Region

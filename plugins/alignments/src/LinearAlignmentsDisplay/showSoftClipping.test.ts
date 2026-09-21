@@ -1,3 +1,5 @@
+import { getConf } from '@jbrowse/core/configuration'
+
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
 import {
   bootAlignmentsDisplay,
@@ -374,6 +376,15 @@ describe('alignments colorBy', () => {
     expect(display.showPerBaseQuality).toBe(true)
     display.setBaseLayer()
     expect(display.baseLayer).toBeUndefined()
+  })
+
+  it('None keeps the per-base field under none, as the read fill does', () => {
+    const { display } = createDisplay({ baseColor: 'modifications' })
+    const field = getConf(display, ['baseColor', 'field'])
+    display.setBaseLayer()
+    expect(display.baseLayer).toBeUndefined()
+    expect(getConf(display, ['baseColor', 'field'])).toBe(field)
+    expect(getConf(display, ['baseColor', 'scale'])).toBe('none')
   })
 
   it('a string is the constant read fill', () => {

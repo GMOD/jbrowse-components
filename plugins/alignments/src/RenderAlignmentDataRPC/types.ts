@@ -9,7 +9,7 @@
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKeys } from '../shared/readIdentity.ts'
-import type { BaseLayer, ColorBy, FilterBy, GroupBy } from '../shared/types'
+import type { BaseLayer, FilterBy, GroupBy, ReadColorBy } from '../shared/types'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
@@ -29,7 +29,7 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   filterBy?: FilterBy
-  colorBy?: ColorBy
+  colorBy?: ReadColorBy
   // the per-base layer, which extracts beside whatever `colorBy` fills reads with
   baseLayer?: BaseLayer
   // Tag name for tag-sort. Only the tag is sent to the worker (not the
@@ -263,15 +263,15 @@ export interface WorkerPileupData {
   // in both buckets, so this is the only thing that tells them apart.
   modificationNoMod?: Uint8Array
 
-  // Per-base quality overlay data — only populated when colorBy.type === 'perBaseQuality'.
+  // Per-base quality overlay data — only populated under the perBaseQuality base layer.
   // One entry per ref-aligned base inside the region; main thread paints
   // overlay rects on top of the GPU-rendered read body.
   perBaseQualPositions: Uint32Array // absolute genomic uint32
   perBaseQualScores: Uint8Array // raw 0-255 quality score
   perBaseQualReadIndices: Uint32Array // maps to parent read index
 
-  // Per-base lettering overlay data — only populated when
-  // colorBy.type === 'perBaseLetter'. One entry per ref-aligned base; every
+  // Per-base lettering overlay data — only populated under the perBaseLetter
+  // base layer. One entry per ref-aligned base; every
   // base is drawn in its nucleotide color via the shared mismatch pass.
   perBaseLetterPositions: Uint32Array // absolute genomic uint32
   perBaseLetterBases: Uint8Array // uppercase ASCII base code

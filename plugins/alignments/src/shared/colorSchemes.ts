@@ -1,7 +1,7 @@
 import type {
   BaseLayer,
-  ColorBy,
   ColorSchemeType,
+  ReadColorBy,
   ShaderScheme,
 } from './types.ts'
 
@@ -234,7 +234,7 @@ export function isDataFillScheme(type: ColorSchemeType) {
 // modification TYPES are still detected on every fetch (the detection loop in
 // extractModifications is ungated, so the Modifications menu still populates),
 // only the paint/extract passes are gated.
-export function workerColorBy(colorBy: ColorBy): ColorBy | undefined {
+export function workerColorBy(colorBy: ReadColorBy): ReadColorBy | undefined {
   return COLOR_SCHEMES[colorBy.type].workerExtracts ? colorBy : undefined
 }
 

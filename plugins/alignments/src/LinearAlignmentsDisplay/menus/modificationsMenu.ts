@@ -140,8 +140,8 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
   // states for a heading).
   //
   // `patchMods` is the single writer and it always writes
-  // `type: 'modifications'`, so a refinement clicked from another scheme both
-  // switched the scheme and rebuilt it from `{}` — which silently threw away a
+  // `type: 'modifications'`, so a refinement clicked from another layer both
+  // switched the layer and rebuilt it from `{}` — which silently threw away a
   // `bisulfite` selection, its own cytosine context included, from the row
   // directly beneath. That is what the shared reveal is protecting.
   const refinements: MenuItem[] = isActive
