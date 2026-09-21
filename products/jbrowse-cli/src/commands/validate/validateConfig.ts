@@ -11,6 +11,7 @@
 
 import { configManifest } from './configManifest.generated.ts'
 import { isRecord, liftToSnapshot } from './liftConfig.ts'
+import { colorProblems, fieldScaleOf } from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
 import {
   hasDeclaredShape,
@@ -494,6 +495,48 @@ function checkMarkDisplay(
   }
 }
 
+// A colour object's slots together, by the rule its display paints by: the
+// schema's `fieldScale`, carried in the manifest, stands in for the plugin
+// code the CLI does not run.
+function checkColorSlots(
+  display: Record<string, unknown>,
+  slots: SlotEntry[],
+  where: string,
+  report: Report,
+) {
+  const lifted = liftToSnapshot(display, slots)
+  if (!isRecord(lifted)) {
+    return
+  }
+  for (const { name, fieldScale } of slots) {
+    const color = lifted[name]
+    if (!fieldScale || !isRecord(color)) {
+      continue
+    }
+    const field = typeof color.field === 'string' ? color.field : ''
+    for (const problem of colorProblems(
+      {
+        field,
+        scale: typeof color.scale === 'string' ? color.scale : undefined,
+        domain: Array.isArray(color.domain) ? color.domain : undefined,
+        range: Array.isArray(color.range) ? color.range : undefined,
+        domainMin:
+          typeof color.domainMin === 'number' ? color.domainMin : undefined,
+        domainMax:
+          typeof color.domainMax === 'number' ? color.domainMax : undefined,
+      },
+      fieldScaleOf(fieldScale, field),
+    )) {
+      report.problems.push({
+        level: 'warning',
+        where: `${where}.${name}.${problem.slot}`,
+        message: problem.message,
+        rule: problem.rule,
+      })
+    }
+  }
+}
+
 // A marks list sits wherever a config takes the mark display's slots: a
 // track's `displays` entry, its `displayDefaults`, a session's inline track
 // entry. No other type declares `marks`, so the walk is over the whole file,
@@ -510,6 +553,13 @@ function checkMarkDisplays(
       checkMarkDisplays(item, manifest, `${where}[${i}]`, report)
     }
   } else if (isRecord(node)) {
+    const colorSlots =
+      typeof node.type === 'string'
+        ? manifest.displays[node.type]?.slots
+        : undefined
+    if (colorSlots) {
+      checkColorSlots(node, colorSlots, where, report)
+    }
     if (
       Array.isArray(node.marks) &&
       (node.type === undefined || node.type === MARK_DISPLAY) &&

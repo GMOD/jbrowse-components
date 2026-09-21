@@ -16,6 +16,11 @@ export interface SlotEntry {
    * `color: { value: "red" }`).
    */
   shorthand?: string
+  /**
+   * A colour object: the scale a `field` paints through while `scale` is
+   * unset, `*` for any other field (the schema's `fieldScale` option).
+   */
+  fieldScale?: Readonly<Record<string, string>>
   /** A `stringArray` slot whose schema reads a bare string as a list of one. */
   liftsString?: true
   /** A `stringArray` slot whose schema carries a number written in it as a string. */

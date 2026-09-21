@@ -7,6 +7,8 @@ import {
   colorRangeSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
+import type { FieldScales } from '@jbrowse/display-kit/colorScale'
+
 const MANHATTAN_COLOR_SCALES = ['none', 'categorical', 'threshold'] as const
 
 /**
@@ -14,6 +16,12 @@ const MANHATTAN_COLOR_SCALES = ['none', 'categorical', 'threshold'] as const
  * `GWASAdapter`'s `ldAdapter` rather than read off the feature.
  */
 export const LD_FIELD = 'ld'
+
+/** r² bins are a threshold and any other field categorical while `scale` is unset. */
+export const MANHATTAN_FIELD_SCALES = {
+  [LD_FIELD]: 'threshold',
+  '*': 'categorical',
+} as const satisfies FieldScales
 
 /**
  * #config ManhattanColor
@@ -83,5 +91,5 @@ export const manhattanColorConfigSchema = ConfigurationSchema(
         'CSS colours a categorical scale hands its domain in order, continuing into the default palette past its end, or a threshold scale hands its intervals, lowest first',
     }),
   },
-  colorChannelOptions('color'),
+  colorChannelOptions('color', MANHATTAN_FIELD_SCALES),
 )

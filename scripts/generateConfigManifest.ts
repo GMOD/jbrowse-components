@@ -137,6 +137,9 @@ function slotsOf(type) {
   return Object.entries(model.properties).map(([name, prop]) => {
     const sub = isSubSchema(prop)
     const lifts = meta ? slotLifts(meta, name) : {}
+    const subOptions = sub
+      ? getConfigurationSchemaMetadata(modelOf(prop))?.options
+      : undefined
     return {
       name,
       // MST's own name for the slot type. Verbose for unions, but it is the real
@@ -148,9 +151,10 @@ function slotsOf(type) {
       // What the schema lifts on the way in, which the validator applies to a
       // file before its rules read it: a bare string into a sub-schema's
       // shorthand slot or into a list of one, and numbers carried as strings.
-      shorthand: sub
-        ? getConfigurationSchemaMetadata(modelOf(prop))?.options.shorthand
-        : undefined,
+      shorthand: subOptions?.shorthand,
+      // a colour object's scale by field while its scale is unset, which the
+      // validator's colour rules read
+      fieldScale: subOptions?.fieldScale,
       liftsString: lifts.string || undefined,
       liftsNumbers: lifts.numbers || undefined,
     }

@@ -32,7 +32,7 @@ import {
   colorForField,
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices } from '@jbrowse/display-kit/colorScale'
+import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -52,7 +52,7 @@ import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 
-import { LD_FIELD } from './colorConfigSchema.ts'
+import { LD_FIELD, MANHATTAN_FIELD_SCALES } from './colorConfigSchema.ts'
 import {
   LD_LEGEND_TITLE,
   isLdColoring,
@@ -254,7 +254,7 @@ export function stateModelFactory(
           const field = getConf(self, ['color', 'field'])
           const scale = paintedScale(
             { scale: getConf(self, ['color', 'scale']), field },
-            field === LD_FIELD ? 'threshold' : 'categorical',
+            fieldScaleOf(MANHATTAN_FIELD_SCALES, field),
           )
           const written = {
             domain: getConf(self, ['color', 'domain']),
@@ -456,7 +456,7 @@ export function stateModelFactory(
               domain: getConf(self, ['color', 'domain']),
               range: getConf(self, ['color', 'range']),
             },
-            field === LD_FIELD ? 'threshold' : 'categorical',
+            fieldScaleOf(MANHATTAN_FIELD_SCALES, field),
           )
         },
       }))

@@ -105,6 +105,12 @@ export interface ConfigurationSchemaOptions<
    * `preProcessSnapshot`, on the same paths.
    */
   closed?: boolean
+  /**
+   * A colour object's scale while `scale` is unset, by the `field` it names,
+   * `*` for any other. Data rather than a function so `jbrowse validate`,
+   * which runs no plugin code, reads the same rule the display paints by.
+   */
+  fieldScale?: Readonly<Record<string, string>>
   preProcessSnapshot?: (
     snapshot: Record<string, unknown>,
   ) => Record<string, unknown>

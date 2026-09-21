@@ -3,7 +3,7 @@ import {
   colorEncodingOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices } from '@jbrowse/display-kit/colorScale'
+import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
 
 import { TAG_FIELD_PREFIX, facetTag } from './groupByLabels.ts'
 
@@ -18,6 +18,7 @@ import type {
 } from './types.ts'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { FieldScales } from '@jbrowse/display-kit/colorScale'
 
 export const ALIGNMENTS_COLOR_SCALES = [
   'none',
@@ -92,16 +93,24 @@ const INSERT_SIZE_FIELDS = new Set([
  * between short, normal and long, and any other field is categorical.
  */
 export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
-  return colorEncodingOf(setting, fieldScaleOf(setting.field))
+  return colorEncodingOf(
+    setting,
+    fieldScaleOf(ALIGNMENTS_FIELD_SCALES, setting.field),
+  )
 }
 
-function fieldScaleOf(field: string) {
-  return INSERT_SIZE_FIELDS.has(field) ? 'threshold' : 'categorical'
-}
+/** Insert size is a threshold and any other field categorical while `scale` is unset. */
+export const ALIGNMENTS_FIELD_SCALES = {
+  ...Object.fromEntries([...INSERT_SIZE_FIELDS].map(f => [f, 'threshold'])),
+  '*': 'categorical',
+} satisfies FieldScales
 
 /** What the `color` object's slots say together that it cannot paint as written. */
 export function alignmentsColorNotices(setting: AlignmentsColorSetting) {
-  return colorNotices(setting, fieldScaleOf(setting.field))
+  return colorNotices(
+    setting,
+    fieldScaleOf(ALIGNMENTS_FIELD_SCALES, setting.field),
+  )
 }
 
 export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>

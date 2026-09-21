@@ -8,7 +8,10 @@ import {
   colorRangeSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { ALIGNMENTS_COLOR_SCALES } from '../shared/alignmentsColor.ts'
+import {
+  ALIGNMENTS_COLOR_SCALES,
+  ALIGNMENTS_FIELD_SCALES,
+} from '../shared/alignmentsColor.ts'
 
 /**
  * #config AlignmentsColor
@@ -77,5 +80,5 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
     }),
     ...colorRampSlots,
   },
-  colorChannelOptions('color'),
+  colorChannelOptions('color', ALIGNMENTS_FIELD_SCALES),
 )

@@ -2927,7 +2927,10 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "*": "categorical"
+          }
         },
         {
           "name": "connectorColor",
@@ -3294,7 +3297,12 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "insertSize": "threshold",
+            "insertSizeAndOrientation": "threshold",
+            "*": "categorical"
+          }
         },
         {
           "name": "baseColor",
@@ -3727,7 +3735,10 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "*": "categorical"
+          }
         },
         {
           "name": "baseColor",
@@ -3995,7 +4006,10 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "*": "categorical"
+          }
         },
         {
           "name": "utrColor",
@@ -4031,7 +4045,10 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "*": "categorical"
+          }
         },
         {
           "name": "hideUnlabelled",
@@ -4198,7 +4215,10 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "*": "categorical"
+          }
         },
         {
           "name": "connectorColor",
@@ -4750,7 +4770,11 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "source": "categorical",
+            "*": "threshold"
+          }
         },
         {
           "name": "scoreField",
@@ -4957,7 +4981,11 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "source": "categorical",
+            "*": "threshold"
+          }
         },
         {
           "name": "scoreField",
@@ -5176,7 +5204,11 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "source": "categorical",
+            "*": "threshold"
+          }
         },
         {
           "name": "scoreField",
@@ -5653,7 +5685,11 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "value"
+          "shorthand": "value",
+          "fieldScale": {
+            "ld": "threshold",
+            "*": "categorical"
+          }
         },
         {
           "name": "scoreField",
@@ -5831,7 +5867,10 @@ export const configManifest: ConfigManifest = {
                       "type": "(number | undefined)"
                     }
                   ],
-                  "shorthand": "value"
+                  "shorthand": "value",
+                  "fieldScale": {
+                    "*": "categorical"
+                  }
                 },
                 {
                   "name": "glyph",

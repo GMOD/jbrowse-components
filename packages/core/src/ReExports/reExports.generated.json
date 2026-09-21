@@ -3760,6 +3760,7 @@
         "COLOR_SCALES",
         "colorNotices",
         "colorProblems",
+        "fieldScaleOf",
         "paintedScale"
       ],
       "worker": "real"

@@ -10,7 +10,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { paintedScale } from './colorScale.ts'
 
-import type { ColorScaleName } from './colorScale.ts'
+import type { ColorScaleName, FieldScales } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
@@ -177,11 +177,19 @@ export function colorMembersOf(color: AnyConfigurationModel): string[] {
   return Object.keys(getConfigurationSchemaDefinition(color) ?? {})
 }
 
-/** A colour object's options: a bare string is its `value`, and an undeclared key is refused. */
-export function colorChannelOptions(name: string) {
+/**
+ * A colour object's options: a bare string is its `value`, an undeclared key
+ * is refused, and `fieldScale` is what a field paints through while `scale` is
+ * unset.
+ */
+export function colorChannelOptions(
+  name: string,
+  fieldScale: FieldScales = { '*': 'categorical' },
+) {
   return {
     shorthand: 'value',
     closed: true,
+    fieldScale,
     preProcessSnapshot: (snap: Record<string, unknown> | undefined) =>
       normalizeChannel(snap, name),
   }

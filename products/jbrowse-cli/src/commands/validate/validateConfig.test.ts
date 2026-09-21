@@ -331,6 +331,50 @@ describe('validateConfig', () => {
   // Stale but working, so a warning — and scoped to the display type the
   // migration actually covers, since `colorBySetting` is lifted for the
   // alignments display and means nothing on a LinearBasicDisplay.
+  // The display's own default scale decides which rules apply, read off the
+  // schema's fieldScale through the manifest: a score colour with no scale is
+  // a threshold on the quantitative display, a name colour categorical.
+  it('warns on a colour object its display cannot paint as written', () => {
+    const withDisplay = (display: Record<string, unknown>) => {
+      const config = baseConfig()
+      config.tracks[0] = {
+        ...config.tracks[0]!,
+        displays: [display],
+      } as (typeof config.tracks)[0]
+      return config
+    }
+    const where = 'tracks[0].displays[0].color'
+    expect(
+      warningsOf(
+        withDisplay({
+          type: 'LinearAlignmentsDisplay',
+          color: {
+            field: 'tags.XS',
+            scale: 'linear',
+            domainMin: 10,
+            domainMax: 1,
+          },
+        }),
+      ).map(p => `${p.rule} ${p.where}`),
+    ).toEqual([`ramp-ends ${where}.domainMax`])
+    expect(
+      warningsOf(
+        withDisplay({
+          type: 'LinearAlignmentsDisplay',
+          color: { field: 'insertSize', domain: ['2', '1'] },
+        }),
+      ).map(p => `${p.rule} ${p.where}`),
+    ).toEqual([`threshold-cuts ${where}.domain`])
+    expect(
+      warningsOf(
+        withDisplay({
+          type: 'LinearAlignmentsDisplay',
+          color: { field: 'tags.HP', domain: ['2', '1'] },
+        }),
+      ),
+    ).toEqual([])
+  })
+
   it('warns rather than errors on a key a session migration still lifts', () => {
     const config = sessionDisplay({
       type: 'LinearAlignmentsDisplay',

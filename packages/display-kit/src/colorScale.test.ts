@@ -1,4 +1,12 @@
-import { colorNotices, colorProblems } from './colorScale.ts'
+import { colorNotices, colorProblems, fieldScaleOf } from './colorScale.ts'
+
+test("a field's scale comes from the table's own keys, then its *", () => {
+  const scales = { source: 'categorical', '*': 'threshold' } as const
+  expect(fieldScaleOf(scales, 'source')).toBe('categorical')
+  expect(fieldScaleOf(scales, 'score')).toBe('threshold')
+  expect(fieldScaleOf(scales, 'toString')).toBe('threshold')
+  expect(fieldScaleOf({}, 'score')).toBe('categorical')
+})
 
 const rules = (
   color: Parameters<typeof colorProblems>[0],

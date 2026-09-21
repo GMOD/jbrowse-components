@@ -14,6 +14,20 @@ export const COLOR_SCALES = [
 ] as const
 export type ColorScaleName = (typeof COLOR_SCALES)[number]
 
+/** The scale each field paints through while `scale` is unset, `*` for any other field. */
+export type FieldScales = Readonly<Record<string, ColorScaleName>>
+
+/** What a field paints through under `scales` while `scale` is unset. */
+export function fieldScaleOf<S extends string>(
+  scales: Readonly<Record<string, S>>,
+  field: string,
+): S | 'categorical' {
+  return (
+    (Object.hasOwn(scales, field) ? scales[field] : scales['*']) ??
+    'categorical'
+  )
+}
+
 /**
  * The scale a colour object paints through: `none` while no `field` is
  * named, else its own `scale`, or `fieldScale` where that is unset.
