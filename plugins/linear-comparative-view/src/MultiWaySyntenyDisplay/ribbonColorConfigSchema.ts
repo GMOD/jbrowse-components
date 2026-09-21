@@ -45,7 +45,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
       scales: SYNTENY_COLOR_SCALES,
       scaleName: 'RibbonColorScale',
       field:
-        "what colours a ribbon: strand reads the record's strand against the anchor (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)",
+        "what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)",
       scale:
         'none paints value and keeps the field for a switch back; unset, a field paints',
       domain:

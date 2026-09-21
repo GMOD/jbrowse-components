@@ -5123,7 +5123,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "rgba(130,130,130,0.3)"
             },
             "field": {
-              "description": "what colours a ribbon: strand reads the record's strand against the anchor (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
+              "description": "what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
