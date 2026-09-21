@@ -1,11 +1,14 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import { ScrollChrome } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { morphClockMs } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
+import { isAlive } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { MultiWayRenderer } from '../MultiWayRenderer.ts'
@@ -75,6 +78,30 @@ const MultiWaySyntenyReactComponent = observer(
     // a pan ends with a click on whatever the drag stopped over; only a press
     // that stayed put opens what it pressed
     const pressX = useRef<number | undefined>(undefined)
+    useEffect(() => {
+      let raf = 0
+      const tick = () => {
+        raf = 0
+        if (isAlive(model)) {
+          model.tickLaneMotion(morphClockMs())
+          if (model.animating) {
+            raf = requestAnimationFrame(tick)
+          }
+        }
+      }
+      const dispose = autorun(() => {
+        if (model.animating && raf === 0) {
+          raf = requestAnimationFrame(tick)
+        }
+      })
+      return () => {
+        dispose()
+        cancelAnimationFrame(raf)
+        if (isAlive(model)) {
+          model.endLaneMotion()
+        }
+      }
+    }, [model])
     return (
       <DisplayChrome
         model={model}

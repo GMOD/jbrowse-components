@@ -1,6 +1,11 @@
 import { clamp } from '@jbrowse/core/util'
 
-import { frameSpan, groupRunSpansOnRow, rowFrameX } from './layoutMultiWay.ts'
+import {
+  frameReachPx,
+  frameSpan,
+  groupRunSpansOnRow,
+  rowFrameX,
+} from './layoutMultiWay.ts'
 
 import type {
   MultiWayGroup,
@@ -247,6 +252,11 @@ export function buildLanes({
         return name
       }
       const frameRefName = frame && canon(frame.refName)
+      // a moving lane reaches every frame it moves between
+      const framed = frame && frameReachPx(frame, width)
+      const clip: Span = framed
+        ? [Math.min(reach[0], framed[0]), Math.max(reach[1], framed[1])]
+        : reach
       const contig =
         frameRefName === undefined
           ? undefined
@@ -294,9 +304,9 @@ export function buildLanes({
                   rowFrameX(frame, contig.start, width),
                   rowFrameX(frame, contig.end, width),
                 ],
-                reach,
+                clip,
               )
-            : [reach],
+            : [clip],
         ...rows[row]!,
       }
     }),

@@ -19,6 +19,7 @@ import { stateModelFactory } from './model.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
+import type { AnimationMode } from '@jbrowse/core/util'
 import type { TestAssembly } from '@jbrowse/display-test-utils'
 
 /**
@@ -66,6 +67,7 @@ export function createDisplayWithSession({
   rpc = async () => [],
   assemblyAliases = {},
   assemblyOf = () => testAssembly(),
+  animationMode = 'enabled',
 }: {
   syntenyAdapter?: Record<string, unknown>
   trackAssemblyNames?: string[]
@@ -74,6 +76,7 @@ export function createDisplayWithSession({
   rpc?: RpcCall
   assemblyAliases?: Record<string, string>
   assemblyOf?: (assemblyName: string) => TestAssembly
+  animationMode?: AnimationMode
 } = {}) {
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory()
@@ -219,9 +222,11 @@ export function createDisplayWithSession({
       getTrackById: (id: string) =>
         id === 'multiway_track' ? syntenyTrack : undefined,
     }),
-    types
-      .model({})
-      .volatile(() => ({ tracks: sessionTracks, connectionInstances })),
+    types.model({}).volatile(() => ({
+      tracks: sessionTracks,
+      connectionInstances,
+      animationMode,
+    })),
   )
 
   const session = Session.create({ configuration: {} }, { pluginManager })

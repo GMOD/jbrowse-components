@@ -102,6 +102,11 @@ export interface RowFrame {
   // past the cap are counted rather than named.
   alsoOn: string[]
   alsoOnMore: number
+  // while a transition runs, the frames the lane is moving from, each with its
+  // share of where the lane draws. The lane's cells are packed in this frame
+  // and culled to all of them, so the transition's first picture is the old
+  // one rather than the new frame's content with its edges missing
+  morphFrom?: readonly { frame: RowFrame; weight: number }[]
 }
 
 // Both fetch shapes as one list: a grouped feature's `mates` carry their own
@@ -297,16 +302,49 @@ export function tickIntervalFor(spanBp: number) {
 // than as a scale, and the header's multiple is the legible statement
 const MAX_LANE_TICKS = 24
 
-/** the frame plus the half screen either side a pan reveals before relayout */
-export function frameReach(frame: RowFrame) {
-  const margin = (frame.max - frame.min) / 2
-  return { min: frame.min - margin, max: frame.max + margin }
+function framesOf(frame: RowFrame) {
+  return [frame, ...(frame.morphFrom ?? []).map(from => from.frame)]
 }
 
-// The x positions of the shared tick interval over a lane's reach.
+/** the bp the lane shows: its frame, and every frame a transition moves it from */
+export function frameExtent(frame: RowFrame) {
+  let { min, max } = frame
+  for (const from of frame.morphFrom ?? []) {
+    min = Math.min(min, from.frame.min)
+    max = Math.max(max, from.frame.max)
+  }
+  return { min, max }
+}
+
+/** the extent plus the half screen either side a pan reveals before relayout */
+export function frameReach(frame: RowFrame) {
+  const { min, max } = frameExtent(frame)
+  const margin = (max - min) / 2
+  return { min: min - margin, max: max + margin }
+}
+
+/** `frameReach` in the lane's own px, ascending */
+export function frameReachPx(frame: RowFrame, width: number): Span {
+  const { min, max } = frameReach(frame)
+  const a = rowFrameX(frame, min, width)
+  const b = rowFrameX(frame, max, width)
+  return a <= b ? [a, b] : [b, a]
+}
+
+/**
+ * The most a transition magnifies the lane's packed px: a frame showing less
+ * than this one draws each px wider than it was packed
+ */
+export function frameMagnification(frame: RowFrame) {
+  const span = frame.max - frame.min
+  return Math.max(1, ...framesOf(frame).map(f => span / (f.max - f.min)))
+}
+
+// The x positions of the shared tick interval over a lane's reach, drawn while
+// any frame the lane shows would draw them.
 export function frameTickXs(frame: RowFrame, interval: number, width: number) {
   const xs: number[] = []
-  const span = frame.max - frame.min
+  const span = Math.min(...framesOf(frame).map(f => f.max - f.min))
   if (interval > 0 && span / interval <= MAX_LANE_TICKS) {
     const reach = frameReach(frame)
     for (
@@ -369,11 +407,11 @@ export function groupRunsOnRow(
   assemblyName: string,
   frame: RowFrame,
 ): PlacementRun[] {
+  const { min, max } = frameExtent(frame)
   const placements = (group.mates.get(assemblyName) ?? [])
     .filter(
       p =>
-        p.refName === frame.refName &&
-        doesIntersect2(frame.min, frame.max, p.start, p.end),
+        p.refName === frame.refName && doesIntersect2(min, max, p.start, p.end),
     )
     .sort((a, b) => a.start - b.start)
   // length-weighted within a run, so a fragment aligning the other way cannot

@@ -8,9 +8,11 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
 import {
+  animationAllowed,
   doesIntersect2,
   getSession,
   isFeature,
+  morphClockMs,
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -64,6 +66,12 @@ import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneHeaderRows } from './laneHeader.ts'
+import {
+  laneMapAt,
+  laneMotionEase,
+  laneTransitionsAfter,
+  laneTransitionsRunning,
+} from './laneMotion.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
 import {
   hiddenLanesOf,
@@ -96,7 +104,12 @@ import {
   outlineKey,
 } from './multiwayGeometry.ts'
 import { multiwayBlocks } from './multiwayMarks.ts'
-import { ribbonParams } from './multiwayRenderTypes.ts'
+import {
+  drawnPx,
+  laneMapOf,
+  packedPx,
+  ribbonParams,
+} from './multiwayRenderTypes.ts'
 
 import type {
   SyntenyRenderState,
@@ -116,11 +129,13 @@ import type {
   LaneLinksFetchSpec,
   LaneRegion,
 } from './laneFetch.ts'
+import type { LaneTransition } from './laneMotion.ts'
 import type { LaneChoice, LaneFilter } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { LaneGlyphColors, TickGeometry } from './multiwayGeometry.ts'
 import type {
+  LaneMap,
   MultiWayCell,
   MultiWayLayer,
   MultiWayRenderState,
@@ -310,6 +325,19 @@ export function stateModelFactory(
        * stack (`dragOffsetPx`), not a relayout of every lane
        */
       renderOriginPx: 0,
+      /**
+       * #volatile
+       * per mate lane re-decided onto the contig it already drew, the move
+       * from where it drew to its new frame; see `laneTransitionsAfter`. A
+       * transition is dropped once the clock passes its end
+       */
+      laneTransitions: new Map<string, LaneTransition>(),
+      /**
+       * #volatile
+       * the wall clock the last drawn frame of a transition read, advanced by
+       * the component's frame loop
+       */
+      laneMotionClockMs: 0,
     }))
     .actions(self => {
       function dropDirectLinkClick() {
@@ -401,16 +429,6 @@ export function stateModelFactory(
          */
         setStarAnchor(assemblyName: string | undefined) {
           self.starAnchor = assemblyName
-        },
-        /**
-         * #action
-         */
-        setLaneFrames(
-          originPx: number,
-          decisions: Map<string, LaneDecision | undefined>,
-        ) {
-          self.renderOriginPx = originPx
-          self.laneDecisions = decisions
         },
         /**
          * #action
@@ -1317,30 +1335,95 @@ export function stateModelFactory(
         return out
       },
       /**
+       * #method
+       * the frame a decision draws a lane in, against where the view draws
+       * its pivot now; undefined once the pivot is off the displayed regions
+       */
+      laneFrameOf(decision: LaneDecision): RowFrame | undefined {
+        const pivot = self.lgv.bpToPx(decision.pivotAnchor)
+        return pivot
+          ? frameFromDecision(
+              decision,
+              pivot.offsetPx - self.renderOriginPx,
+              self.visibleBpSpan,
+              self.canvasWidth,
+              self.anchorReversed,
+            )
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
        * #getter
        * each mate lane's local coordinate frame: the settle's decision
-       * against where the view draws its pivot now
+       * against where the view draws its pivot now, carrying the frames a
+       * running transition moves it from
        */
       get rowFrames(): Map<string, RowFrame | undefined> {
-        const view = self.lgv
         const out = new Map<string, RowFrame | undefined>()
         for (const assemblyName of self.rowAssemblies) {
           const decision = self.laneDecisions.get(assemblyName)
-          const pivot = decision && view.bpToPx(decision.pivotAnchor)
+          const frame = decision && self.laneFrameOf(decision)
+          const motion = frame && self.laneTransitions.get(assemblyName)
+          const morphFrom = motion?.from.flatMap(seed => {
+            const from = self.laneFrameOf(seed.decision)
+            return from ? [{ frame: from, weight: seed.weight }] : []
+          })
           out.set(
             assemblyName,
-            decision && pivot
-              ? frameFromDecision(
-                  decision,
-                  pivot.offsetPx - self.renderOriginPx,
-                  self.visibleBpSpan,
-                  self.canvasWidth,
-                  self.anchorReversed,
-                )
-              : undefined,
+            frame && motion && morphFrom?.length === motion.from.length
+              ? { ...frame, morphFrom }
+              : frame,
           )
         }
         return out
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * a settle's decisions and the offset their px space is anchored at. A
+       * lane re-decided on the contig it drew starts moving from where it drew
+       * rather than snapping, where motion is allowed
+       */
+      setLaneFrames(
+        originPx: number,
+        decisions: Map<string, LaneDecision | undefined>,
+      ) {
+        const previous = self.laneDecisions
+        self.renderOriginPx = originPx
+        self.laneDecisions = decisions
+        self.laneTransitions = laneTransitionsAfter({
+          previous,
+          next: decisions,
+          running: self.laneTransitions,
+          drawnAtMs: self.laneMotionClockMs,
+          nowMs: morphClockMs(),
+          allowed: animationAllowed(getSession(self).animationMode),
+          frameOf: decision => self.laneFrameOf(decision),
+          width: self.canvasWidth,
+        })
+      },
+      /**
+       * #action
+       * the frame loop's clock; a transition past its end is dropped, which
+       * repacks its lane in its settled frame alone
+       */
+      tickLaneMotion(nowMs: number) {
+        self.laneMotionClockMs = nowMs
+        const running = laneTransitionsRunning(self.laneTransitions, nowMs)
+        if (running.size !== self.laneTransitions.size) {
+          self.laneTransitions = running
+        }
+      },
+      /**
+       * #action
+       * every lane to its settled frame now
+       */
+      endLaneMotion() {
+        if (self.laneTransitions.size > 0) {
+          self.laneTransitions = new Map()
+        }
       },
     }))
     .views(self => ({
@@ -1472,6 +1555,35 @@ export function stateModelFactory(
           width: self.canvasWidth,
           height: self.height,
         })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * by lane row, where each moving lane draws its cells at the frame
+       * loop's clock: both frames re-derived against the live view, so a pan
+       * or zoom mid-flight composes with the move
+       */
+      get laneMaps(): ReadonlyMap<number, LaneMap> {
+        const out = new Map<number, LaneMap>()
+        if (self.laneTransitions.size > 0) {
+          const nowMs = self.laneMotionClockMs
+          self.laneStack.lanes.forEach(({ assemblyName, frame }, row) => {
+            const motion = self.laneTransitions.get(assemblyName)
+            if (motion && frame?.morphFrom) {
+              out.set(
+                row,
+                laneMapAt(
+                  frame.morphFrom,
+                  frame,
+                  laneMotionEase(motion, nowMs),
+                  self.canvasWidth,
+                ),
+              )
+            }
+          })
+        }
+        return out
       },
     }))
     .views(self => ({
@@ -1847,16 +1959,21 @@ export function stateModelFactory(
         const { lanes, glyphHeight } = self.laneStack
         return hoveredGroupKey === undefined
           ? []
-          : lanes.flatMap(lane =>
-              (lane.placements.get(hoveredGroupKey)?.spans ?? []).map(
-                ([a, b]) => ({
-                  left: Math.min(a, b) + dragOffsetPx,
-                  top: lane.glyphTop - scrollTop,
-                  width: Math.abs(b - a),
-                  height: glyphHeight,
-                }),
-              ),
-            )
+          : lanes.flatMap((lane, row) => {
+              const map = laneMapOf(self, row)
+              return (lane.placements.get(hoveredGroupKey)?.spans ?? []).map(
+                span => {
+                  const a = drawnPx(map, span[0])
+                  const b = drawnPx(map, span[1])
+                  return {
+                    left: Math.min(a, b) + dragOffsetPx,
+                    top: lane.glyphTop - scrollTop,
+                    width: Math.abs(b - a),
+                    height: glyphHeight,
+                  }
+                },
+              )
+            })
       },
       /**
        * #getter
@@ -1868,18 +1985,26 @@ export function stateModelFactory(
         const { selectedFeatureId, dragOffsetPx, scrollTop } = self
         return selectedFeatureId === undefined
           ? []
-          : [...self.laneGlyphCells.values()].flatMap(cell =>
-              cell.kind === 'glyphs'
-                ? cell.data.hits
-                    .filter(hit => hit.feature.id() === selectedFeatureId)
-                    .map(hit => ({
-                      left: hit.x1 + dragOffsetPx,
-                      top: hit.y1 - scrollTop,
-                      width: hit.x2 - hit.x1,
-                      height: hit.y2 - hit.y1,
-                    }))
-                : [],
-            )
+          : self.laneStack.lanes.flatMap((_lane, row) => {
+              const map = laneMapOf(self, row)
+              return [boxesKey(row), glyphsKey(row)].flatMap(key => {
+                const cell = self.laneGlyphCells.get(key)
+                return cell?.kind === 'glyphs'
+                  ? cell.data.hits
+                      .filter(hit => hit.feature.id() === selectedFeatureId)
+                      .map(hit => {
+                        const a = drawnPx(map, hit.x1)
+                        const b = drawnPx(map, hit.x2)
+                        return {
+                          left: Math.min(a, b) + dragOffsetPx,
+                          top: hit.y1 - scrollTop,
+                          width: Math.abs(b - a),
+                          height: hit.y2 - hit.y1,
+                        }
+                      })
+                  : []
+              })
+            })
       },
       /**
        * #getter
@@ -1969,7 +2094,8 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * what a frame draws with: the cells' layout and the one live transform
+       * what a frame draws with: the cells' layout and the live transforms,
+       * the drag and each moving lane's map
        */
       get renderState(): MultiWayRenderState {
         return {
@@ -1979,7 +2105,7 @@ export function stateModelFactory(
           scrollTopPx: self.scrollTop,
           hoveredFeatureId: self.hoveredFeatureId,
           clickedFeatureId: self.clickedFeatureId,
-          laneMaps: new Map(),
+          laneMaps: self.laneMaps,
           groundColor: bandGroundColor(),
           layers: self.renderLayers,
         }
@@ -2050,10 +2176,11 @@ export function stateModelFactory(
         const row = lanes.findIndex(
           lane => oy >= lane.glyphTop && oy <= lane.glyphTop + glyphHeight,
         )
+        const px = packedPx(laneMapOf(self, row), ox)
         for (const key of row < 0 ? [] : [boxesKey(row), glyphsKey(row)]) {
           const cell = self.laneGlyphCells.get(key)
           if (cell?.kind === 'glyphs') {
-            const hit = glyphHitAt(cell.data.hits, ox, oy)
+            const hit = glyphHitAt(cell.data.hits, px, oy)
             if (hit) {
               return {
                 label: hit.label,
@@ -2087,6 +2214,16 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * a lane is moving between two frames, which the chrome publishes for
+       * the capture waits. Its cells are culled to both frames meanwhile, so
+       * `dataSuperseded` holds the export for it too; the deadline installed
+       * in afterAttach drops every transition at its end, so neither latches
+       */
+      get animating() {
+        return self.laneTransitions.size > 0
+      },
       /**
        * #getter
        * `FetchMixin`'s hook: the dependent fetches are part of loading until
@@ -2126,7 +2263,8 @@ export function stateModelFactory(
         return (
           staleLaneSpecs(self.laneGenesFetchSpecs, self.laneGenes).length > 0 ||
           staleLaneSpecs(self.laneLinksFetchSpecs, self.laneLinks).length > 0 ||
-          self.lodTier !== self.liveLodTier
+          self.lodTier !== self.liveLodTier ||
+          this.animating
         )
       },
       /**

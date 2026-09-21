@@ -16,7 +16,12 @@ import {
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
-import { frameTickXs, groupSpansLanes } from './layoutMultiWay.ts'
+import {
+  frameMagnification,
+  frameReachPx,
+  frameTickXs,
+  groupSpansLanes,
+} from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -57,10 +62,19 @@ export function outlineKey(key: string) {
   return `${key}:outline`
 }
 
-function wideEnough(s1: Span, s2: Span) {
+// at the widest either lane draws it, which a transition can make wider than
+// it was packed
+function wideEnough(s1: Span, s2: Span, upper: Lane, lower: Lane) {
   return (
-    Math.max(Math.abs(s1[1] - s1[0]), Math.abs(s2[1] - s2[0])) >= MIN_RIBBON_PX
+    Math.max(
+      Math.abs(s1[1] - s1[0]) * magnification(upper),
+      Math.abs(s2[1] - s2[0]) * magnification(lower),
+    ) >= MIN_RIBBON_PX
   )
+}
+
+function magnification(lane: Lane) {
+  return lane.frame ? frameMagnification(lane.frame) : 1
 }
 
 function fmt(n: number) {
@@ -282,6 +296,7 @@ export function buildRibbonGeometry({
         continue
       }
       const bridged = toRow !== row + 1
+      const farLane = lanes[toRow]!
       let builder = ribbons
       if (bridged) {
         builder = bridges.get(toRow) ?? new RibbonBuilder()
@@ -289,7 +304,7 @@ export function buildRibbonGeometry({
       }
       spans.forEach((s1, i) => {
         far.spans.forEach((s2, j) => {
-          if (wideEnough(s1, s2)) {
+          if (wideEnough(s1, s2, upper, farLane)) {
             builder.add(
               s1,
               s2,
@@ -316,7 +331,7 @@ export function buildRibbonGeometry({
         link.get('end'),
       )
       const s2 = lower.spanOf(mate.refName, mate.start, mate.end)
-      if (s1 && s2 && wideEnough(s1, s2)) {
+      if (s1 && s2 && wideEnough(s1, s2, upper, lower)) {
         const ordered: Span = link.get('strand') === -1 ? [s2[1], s2[0]] : s2
         const idx = targets.length
         const via = link.get('composedThrough') as
@@ -546,11 +561,18 @@ export interface LaneGlyphColors {
   divider: string
 }
 
-function onCanvas(span: Span, width: number) {
+function onCanvas(span: Span, [left, right]: Span) {
   return (
-    Math.max(span[0], span[1]) >= -width / 2 &&
-    Math.min(span[0], span[1]) <= 1.5 * width
+    Math.max(span[0], span[1]) >= left && Math.min(span[0], span[1]) <= right
   )
+}
+
+// the anchor lane's half screen either side, and a mate lane's frame reach,
+// which a transition widens to every frame it moves between
+function laneReachPx(lane: Lane, width: number): Span {
+  return lane.frame
+    ? frameReachPx(lane.frame, width)
+    : [-width / 2, 1.5 * width]
 }
 
 export interface LaneCells {
@@ -620,8 +642,9 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
  * What one lane draws on its baseline: its gene models where it has an
  * annotation, and the table's own placement box, outlined rather than filled,
  * where it does not — per GROUP, since a table pairing genes the lane's GFF3
- * does not name is the ordinary case. Culled to half a screen either side,
- * which is as far as a pan can carry the stack before it re-lays out.
+ * does not name is the ordinary case. Culled to half a screen either side of
+ * what the lane shows, which is as far as a pan can carry the stack before it
+ * re-lays out.
  *
  * TWO cells, because `outlineColor` is a per-cell uniform the rect pass applies
  * to every rect it holds: the boxes take the lane's stroke as their border,
@@ -650,6 +673,7 @@ export function buildLaneCells({
   // and in line.slang/arrow.slang's `snapBoxCenterY`
   const centerY = y + glyphHeight / 2
   const stroke = cssColorToABGR(colors.stroke)
+  const reach = laneReachPx(lane, width)
   boxes.outlineColor = stroke
   const divider = cssColorToABGR(colors.divider)
   for (const [x1, x2] of lane.baseline) {
@@ -664,7 +688,7 @@ export function buildLaneCells({
       feature.get('start'),
       feature.get('end'),
     )
-    if (span !== undefined && onCanvas(span, width)) {
+    if (span !== undefined && onCanvas(span, reach)) {
       drawn.push({ gene, span })
     }
   }
