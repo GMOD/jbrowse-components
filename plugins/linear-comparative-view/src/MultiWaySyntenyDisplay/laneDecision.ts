@@ -615,7 +615,9 @@ export function decideLaneFrames({
 
     let decision: LaneDecision | undefined
     // the pivot carries across a rung change too: a zoom scales the lane
-    // about it, and only the content leaving the frame re-aligns the lane
+    // about it, and only the content leaving the frame re-aligns the lane. A
+    // flip re-aligns; its move is still one fold, since a mirror and a shift
+    // are a mirror about another point
     const held =
       prev &&
       prev.refName === aligned.refName &&

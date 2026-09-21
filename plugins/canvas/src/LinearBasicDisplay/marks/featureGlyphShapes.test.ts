@@ -107,13 +107,18 @@ const sliceArrow = (c: ArrowChannels, i: number): ArrowChannels => ({
 })
 
 describe('arrow: the box holds the stem and the head', () => {
-  test.each([false, true])('reversed %s', reversed => {
+  test.each([
+    [false, false],
+    [true, false],
+    [false, true],
+    [true, true],
+  ])('reversed %s, inside %s', (reversed, arrowInside) => {
     expect(
       sweepMarkAgainstHit(
         defineMark({
           shape: arrowShape,
           channels: (c: ArrowChannels) => c,
-          params: () => ({ scrollY: 0, outlineColor: 0 }),
+          params: () => ({ scrollY: 0, outlineColor: 0, arrowInside }),
         }),
         arrows,
         { ...block, reversed },
@@ -123,6 +128,26 @@ describe('arrow: the box holds the stem and the head', () => {
     ).toEqual([])
   })
 })
+
+test.each([false, true])(
+  'an arrow drawn inside ends where it starts outside, reversed %s',
+  reversed => {
+    const inkOf = (arrowInside: boolean, i: number) =>
+      arrowShape.ink!(
+        arrows,
+        { ...block, reversed },
+        frame,
+        { scrollY: 0, outlineColor: 0, arrowInside },
+        i,
+      )!
+    for (const i of [0, 1]) {
+      const outside = inkOf(false, i)
+      const inside = inkOf(true, i)
+      expect(inside.width).toBe(outside.width)
+      expect(Math.abs(inside.left - outside.left)).toBe(outside.width)
+    }
+  },
+)
 
 // 180 bp at 2 bp/px is a 90 px intron, wide enough for chevrons.
 describe('line: the render state decides whether chevrons draw', () => {

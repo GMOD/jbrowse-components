@@ -185,6 +185,18 @@ export function laneTransitionsAfter({
   return out
 }
 
+/**
+ * The frame a moving lane's header names: where it drew until the move is
+ * half done, where it is going after. A flip is edge-on at the midpoint, so
+ * its [rev] turns over with the lane.
+ */
+export function headerFrame(frame: RowFrame, e: number) {
+  const from = frame.morphFrom
+  return from?.length && e < 0.5
+    ? from.reduce((a, b) => (b.weight > a.weight ? b : a)).frame
+    : frame
+}
+
 /** the running transitions whose end the clock has not reached */
 export function laneTransitionsRunning(
   running: ReadonlyMap<string, LaneTransition>,

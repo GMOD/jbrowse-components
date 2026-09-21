@@ -19,7 +19,6 @@ const A = 'volvox'
 const B = 'volvox_random'
 const C = 'volvox_ins'
 const STARTS = Array.from({ length: 10 }, (_, i) => 50 + 90 * i)
-const STEM_HEIGHT = 2
 
 function record(id: string, name: string, anchor: string, mateStart: number) {
   const start = STARTS[Number(name.slice(1))]!
@@ -115,19 +114,18 @@ function picture(display: MultiWaySyntenyDisplayModel) {
     display.renderState,
   )
   const width = display.canvasWidth
-  // A strand arrow's stem sits a fixed px inside its gene's end, so a rescale
-  // carries it up to (1 - scale) times that length off it; the heads are
-  // three-point paths, and neither is compared
   const rects = calls
-    .filter(c => c.method === 'fillRect' && c.args[3]! > STEM_HEIGHT)
+    .filter(c => c.method === 'fillRect')
     .flatMap(({ args }) => {
       const [x, y, w, h] = args as [number, number, number, number]
       const x1 = Math.max(0, x)
       const x2 = Math.min(width, x + w)
       return x2 > x1 ? [[x1, x2, y, h]] : []
     })
-  // a ribbon is a closed four-corner path, its corners in draw order
+  // a ribbon is a closed four-corner path and a strand arrow's head a
+  // three-corner one, corners in draw order
   const ribbons: number[][] = []
+  const heads: number[][] = []
   let path: number[] = []
   for (const { method, args } of calls) {
     if (method === 'beginPath') {
@@ -136,9 +134,16 @@ function picture(display: MultiWaySyntenyDisplayModel) {
       path.push(args[0]!, args[1]!)
     } else if (method === 'fill' && path.length === 8) {
       ribbons.push(path)
+    } else if (
+      method === 'fill' &&
+      path.length === 6 &&
+      Math.max(path[0]!, path[4]!) > 0 &&
+      Math.min(path[0]!, path[4]!) < width
+    ) {
+      heads.push(path)
     }
   }
-  return { rects, ribbons }
+  return { rects, ribbons, heads }
 }
 
 // what one list draws that the other does not, to a pixel: the cells are
@@ -164,6 +169,8 @@ function expectSamePicture(
   expect(unmatched(b.rects, a.rects)).toEqual([])
   expect(unmatched(a.ribbons, b.ribbons)).toEqual([])
   expect(unmatched(b.ribbons, a.ribbons)).toEqual([])
+  expect(unmatched(a.heads, b.heads)).toEqual([])
+  expect(unmatched(b.heads, a.heads)).toEqual([])
 }
 
 // the cells are packed in the NEW frame and culled to both, so frame 0 of the
@@ -226,6 +233,22 @@ describe.each([
     expect(Math.min(a!, b!)).toBeLessThanOrEqual(0)
     expect(Math.max(a!, b!)).toBeGreaterThanOrEqual(display.canvasWidth)
   })
+})
+
+// an arrow is a fixed px long, so it has to hang off a point the lane map
+// carries: anchored a stem's length inside the end, a 3x rescale drew its
+// first frame 4.7 px off the gene it marks
+test("a strand arrow rides its gene's end through a rescale", async () => {
+  const { display } = await settledDisplay()
+  redecide(display, () => ({ rung: 3 }))
+  display.endLaneMotion()
+  const old = picture(display).heads
+  expect(old.length).toBeGreaterThan(3)
+  redecide(display, () => ({ rung: 1 }))
+  expect(display.animating).toBe(true)
+  const moving = picture(display).heads
+  expect(unmatched(moving, old)).toEqual([])
+  expect(unmatched(old, moving)).toEqual([])
 })
 
 test('mid-flight the hit test, the hover ink and the selection ink sit on the drawn glyph', async () => {
@@ -309,6 +332,21 @@ describe('nothing animates', () => {
     expect(display.laneDecisions.get(C)).toBeDefined()
     expect(display.animating).toBe(false)
   })
+})
+
+test('a moving lane names the frame it is drawn nearer to', async () => {
+  const { display } = await settledDisplay()
+  const header = () =>
+    display.laneHeaderRows.find(r => r.assemblyName === C)!.label
+  const before = header()
+  expect(before).not.toContain('[rev]')
+  display.flipLane(C)
+  const { startMs } = display.laneTransitions.get(C)!
+  expect(header()).toBe(before)
+  display.tickLaneMotion(startMs + MORPH_DURATION_MS * 0.45)
+  expect(header()).toBe(before)
+  display.tickLaneMotion(startMs + MORPH_DURATION_MS * 0.55)
+  expect(header()).toContain('[rev]')
 })
 
 test('a Flip lane moves the lane rather than snapping it', async () => {

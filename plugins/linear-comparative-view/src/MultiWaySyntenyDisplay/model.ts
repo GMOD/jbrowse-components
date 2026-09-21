@@ -72,6 +72,7 @@ import { frameFromDecision } from './laneDecision.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneHeaderRows } from './laneHeader.ts'
 import {
+  headerFrame,
   laneMapAt,
   laneMotionEase,
   laneTransitionsAfter,
@@ -1613,14 +1614,23 @@ export function stateModelFactory(
       /**
        * #getter
        * what each lane's header says and where, for the on-screen headers and
-       * the export's captions alike
+       * the export's captions alike; a moving lane's names the frame it is
+       * drawn nearer to
        */
       get laneHeaderRows() {
-        return laneHeaderRows(
-          self.laneStack.lanes,
-          self.visibleBpSpan,
-          self.anchorLocString,
-        )
+        const lanes = self.laneStack.lanes.map(lane => {
+          const motion = self.laneTransitions.get(lane.assemblyName)
+          return motion && lane.frame
+            ? {
+                ...lane,
+                frame: headerFrame(
+                  lane.frame,
+                  laneMotionEase(motion, self.laneMotionClockMs),
+                ),
+              }
+            : lane
+        })
+        return laneHeaderRows(lanes, self.visibleBpSpan, self.anchorLocString)
       },
       /**
        * #getter
