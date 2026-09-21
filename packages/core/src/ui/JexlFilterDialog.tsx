@@ -221,7 +221,7 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
           }}
         >
           <Tab value="conditions" label="Conditions" />
-          <Tab value="text" label="Text" />
+          <Tab value="text" label="Text" data-testid="jexl-filter-text-tab" />
         </Tabs>
         {tab === 'conditions' ? (
           <>

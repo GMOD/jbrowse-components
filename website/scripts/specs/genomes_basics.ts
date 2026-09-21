@@ -679,7 +679,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Filter by...' },
-          { type: 'waitForText', text: 'Add track filters' },
+          { type: 'waitForText', text: 'Add condition' },
+          { type: 'click', selector: '[data-testid="jexl-filter-text-tab"]' },
           // The visible textarea, not the autosize shadow MUI renders beside
           // it. Typed from column one, because the dialog opens EMPTY on a
           // track that declares no filters of its own -- which is what this

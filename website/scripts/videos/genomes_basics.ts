@@ -57,10 +57,10 @@ export const genomesBasicsVideos: VideoSpec[] = [
   {
     name: 'genomes_basics/gnomad_filter',
     description:
-      'gnomAD v4.1 Exomes over TP53 cut down to its predicted loss-of-function records: Track menu, Filter by..., a jexl line typed into the empty Add track filters dialog, and the lane redrawing under it',
+      'gnomAD v4.1 Exomes over TP53 cut down to its predicted loss-of-function records: Track menu, Filter by..., a jexl line typed into the Text tab of the filter dialog, and the lane redrawing under it',
     url: unfilteredGnomad,
     // Sized to the DIALOG, which the run's content report cannot see: it
-    // measures the app, and Add track filters is ~490px of centred dialog on
+    // measures the app, and the filter dialog is ~490px of centred dialog on
     // top of one. The fixture's taller lane is what keeps the rest of the frame
     // from being page background once the dialog goes. Even, per the encode.
     viewportHeight: 640,
@@ -85,11 +85,10 @@ export const genomesBasicsVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Filter by...' },
       { type: 'click', text: 'Filter by...' },
-      { type: 'waitForText', text: 'Add track filters' },
-      // The dialog opens EMPTY on this track, which is the state the page's
-      // "the dialog takes one jexl expression per line" describes and the thing
-      // a reader most needs to see before being told to type into it: the
-      // examples are the dialog's own, and none of them is about this file.
+      { type: 'waitForText', text: 'Add condition' },
+      { type: 'click', selector: '[data-testid="jexl-filter-text-tab"]' },
+      // The Text tab opens EMPTY on this track, which is the state the page's
+      // "one jexl expression per line" describes.
       { type: 'delay', ms: 2200 },
       {
         type: 'type',
@@ -98,10 +97,10 @@ export const genomesBasicsVideos: VideoSpec[] = [
         say: plofFilter,
       },
       { type: 'delay', ms: 1200 },
-      // The button reads SUBMIT and the DOM says Submit: MUI uppercases it in
+      // The button reads APPLY and the DOM says Apply: MUI uppercases it in
       // CSS, so the match is the string and the chip is the label.
-      { type: 'click', text: 'Submit' },
-      { type: 'waitForText', text: 'Add track filters', hidden: true },
+      { type: 'click', text: 'Apply' },
+      { type: 'waitForText', text: 'jexl documentation', hidden: true },
       // The pointer is where SUBMIT was, which is over the lane the moment the
       // dialog goes — and this track's mouseover is nine lines of allele
       // counts. Off it before the redraw is on camera.

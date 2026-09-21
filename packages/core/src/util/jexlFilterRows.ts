@@ -186,26 +186,16 @@ function conditionRow(
           : undefined
 }
 
-function readLine(
-  text: string,
-  parser: Parser,
-  choices: readonly FieldChoice[],
-  calls: string[],
-  firstId: number,
-  line: number,
-): FilterRow[] {
-  let found: Condition[] | undefined
+function parseConditions(text: string, parser: Parser, calls: string[]) {
   try {
-    found = conditions(parser.parse(text), {
+    return conditions(parser.parse(text), {
       row: ROW,
       accessors: { get: [] },
       calls,
     })
-  } catch {}
-  const rows = found?.map((c, i) => conditionRow(c, choices, firstId + i, line))
-  return rows?.every(row => row !== undefined)
-    ? rows
-    : [{ kind: 'text', id: firstId, line, text: text.trim() }]
+  } catch {
+    return undefined
+  }
 }
 
 export function readFilterRows(
@@ -218,15 +208,15 @@ export function readFilterRows(
   )
   const rows: FilterRow[] = []
   for (const [line, stored] of lines.entries()) {
+    const text = stripJexlPrefix(stored)
+    const id = rows.length
+    const read = parseConditions(text, parser, calls)?.map((c, i) =>
+      conditionRow(c, choices, id + i, line),
+    )
     rows.push(
-      ...readLine(
-        stripJexlPrefix(stored),
-        parser,
-        choices,
-        calls,
-        rows.length,
-        line,
-      ),
+      ...(read?.every(row => row !== undefined)
+        ? read
+        : [{ kind: 'text' as const, id, line, text: text.trim() }]),
     )
   }
   return { lines, rows }
@@ -236,7 +226,7 @@ function nextId(rows: FilterRow[]) {
   return rows.reduce((max, row) => Math.max(max, row.id + 1), 0)
 }
 
-export function emptyRow(id: number): ConditionRow {
+function emptyRow(id: number): ConditionRow {
   return { kind: 'condition', id, op: '==', value: '' }
 }
 
@@ -321,7 +311,7 @@ function writeCondition({ field, op, value }: ConditionRow) {
       : printCondition({ subject, op, value: scalar(text) })
 }
 
-export function writeRow(row: FilterRow) {
+function writeRow(row: FilterRow) {
   const text =
     row.kind === 'text' ? row.text.trim() || undefined : writeCondition(row)
   return text === undefined ? undefined : ensureJexlPrefix(text)

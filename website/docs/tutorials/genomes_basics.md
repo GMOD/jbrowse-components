@@ -157,7 +157,8 @@ H3K27ac an active one; all seven cell lines carry both.
 
 **gnomAD v4.1 - gnomAD v4.1 Exomes** under Variation and Repeats opens as
 several thousand records over _TP53_, one block of colour. **Track menu → Filter
-by...** takes the track's own columns, one jexl expression per line:
+by...** takes the track's own columns, as rows of field, operator and value or,
+on its Text tab, one jexl expression per line:
 
 - `jexl:feature.AF >= 0.001` keeps the variants standing in the population
 - `jexl:feature.annot == 'pLoF'` keeps gnomAD's predicted loss-of-function
@@ -168,7 +169,7 @@ by...** takes the track's own columns, one jexl expression per line:
 The colours are the file's own, per consequence class, so the loss-of-function
 filter leaves a track drawn in one colour.
 
-<Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1 Exomes over TP53 and the Add track filters dialog its track menu opens. One consequence-class expression redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
+<Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1 Exomes over TP53 and the filter dialog its track menu opens. One consequence-class expression redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
 
 Once a filter is in effect the same menu row opens a submenu with **Edit
 filters...** and **Clear all filters**.
