@@ -454,11 +454,16 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   one donor per tissue.
 
   **The hosted GFF3 carries the statistics on gene and transcript rows only**
-  (`feature.parent.dif` reads them from the box) and no `Name=` (`labels.name`
-  reads `gene_name`/`transcript_name`). The child copies came off the deployed
-  bytes in place rather than by rerunning satuRn, checked by reading the
-  before/after pair through `Gff3TabixAdapter` and comparing the color every box
-  resolves. Only a rebuild would prove byte equality.
+  (a transcript's parts paint its value) and no `Name=` (`labels.name` reads
+  `gene_name`/`transcript_name`). Two edits came off the deployed bytes in place
+  rather than by rerunning satuRn: dropping the child copies, checked by reading
+  the before/after pair through `Gff3TabixAdapter` and comparing the color every
+  box resolves; and appending `dif_called` to the 631 called transcript rows,
+  the writer's rule applied to each row's own `dif` and `dtu`, the decompressed
+  pair otherwise identical. The script reaches GENCODE v29 on `ftp.ebi.ac.uk`,
+  which timed out on every protocol on 2026-09-21, and the bucket hosts only
+  v36 and later, which the RSEM transcript versions do not match. Only a
+  rebuild would prove byte equality.
 - **The `*.demo_slices.bam` files** — three region-sliced GIAB alignments (HG002
   ONT haplotagged, HG002 Illumina 2x250, HG008-T PacBio Revio), rebuilt by
   `scripts/build_demo_slices.sh`. **A sliced BAM records its own provenance**:
