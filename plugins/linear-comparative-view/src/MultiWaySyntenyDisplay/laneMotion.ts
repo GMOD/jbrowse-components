@@ -88,13 +88,17 @@ export function laneMapAt(
   }
 }
 
-// Whether the bp the lane draws on screen at the settle overlap what the new
-// frame shows, and the move starts no more magnified than the packing can
-// bear. A jump to somewhere else entirely is a relocation, and a smear across
-// it says nothing.
+// Whether the move shows anything, starts no more magnified than the packing
+// can bear, and joins two pictures sharing some bp on screen. A re-decision
+// that only moved a lane's fit draws where it drew, and a jump to somewhere
+// else entirely is a relocation, which a smear across says nothing about.
 function canMove(from: WeightedFrames, to: RowFrame, width: number) {
-  const { slope, at, target } = drawnLine(from, to, 0, width)
-  if (Math.abs(slope / target.slope) > MAX_START_SCALE) {
+  const { slope, at } = drawnLine(from, to, 0, width)
+  const { scale, offset } = laneMapAt(from, to, 0, width)
+  if (
+    Math.max(Math.abs(offset), Math.abs((scale - 1) * width + offset)) < 0.5 ||
+    Math.abs(scale) > MAX_START_SCALE
+  ) {
     return false
   }
   if (Math.abs(slope) < Number.EPSILON) {

@@ -127,6 +127,12 @@ describe('snaps rather than animating', () => {
   test("on a lane's first decision", () => {
     expect(transitionsAfter(undefined, decision()).size).toBe(0)
   })
+  test('on a re-decision that moves nothing on screen', () => {
+    expect(
+      transitionsAfter(decision(), decision({ fitMin: 996_000, alsoOn: ['x'] }))
+        .size,
+    ).toBe(0)
+  })
   test('on a leap of several rungs at once', () => {
     expect(transitionsAfter(decision(), decision({ rung: 5 })).size).toBe(0)
     expect(transitionsAfter(decision(), decision({ rung: 3 })).size).toBe(1)
