@@ -187,9 +187,10 @@ lane drawn first took every row a short band has.
 which carries the reasoning and the alternatives it rejected. The rules the rest
 of this file assumes:
 
-- A contig draws marks only where the sequence it holds is worth
-  `MIN_CONTIG_MARK_PX` of the band, so the floor lifts with the window and the
-  scattered contigs appear on the way in.
+- A contig draws marks only where the sequence it holds, summed over every
+  dataset in the strip, is worth `MIN_CONTIG_MARK_PX` of the band, so the floor
+  lifts with the window and the scattered contigs appear on the way in.
+- A ribbon "Hide unlabelled" paints transparent leaves no mark and no tally.
 - A label row goes to the stretch holding the most sequence, the lane interleave
   above breaking a tie.
 - A name may overhang its stretch by up to half its own width

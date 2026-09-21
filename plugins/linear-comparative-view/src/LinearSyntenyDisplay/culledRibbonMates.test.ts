@@ -211,3 +211,21 @@ test('a feature with no instances is empty on both axes', () => {
   expect(onQueryAxis.starts[0]! > onQueryAxis.ends[0]!).toBe(true)
   expect(onTargetAxis.starts[0]! > onTargetAxis.ends[0]!).toBe(true)
 })
+
+// "Hide unlabelled" takes the ribbon off the band, so a mark and a tally for it
+// would stand for an alignment the reader asked not to see.
+test('a feature whose ribbon is painted transparent is neither marked nor counted', () => {
+  const { onQueryAxis, onTargetAxis } = culledRibbonMateData(
+    geometry([
+      [0, 100, 200, 7000, 7100],
+      [1, 300, 400, 8000, 8100],
+    ]),
+    features(['ctgB', 'ctgB']),
+    Uint32Array.from([0xff0000ff, 0x000000ff]),
+  )
+  expect(onQueryAxis.starts[1]! > onQueryAxis.ends[1]!).toBe(true)
+  expect(onTargetAxis.starts[1]! > onTargetAxis.ends[1]!).toBe(true)
+  expect([...onQueryAxis.counts]).toEqual([1])
+  expect([...onQueryAxis.alignedBp]).toEqual([1000])
+  expect(onQueryAxis.starts[0]).toBe(100)
+})

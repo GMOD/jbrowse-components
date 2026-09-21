@@ -112,6 +112,40 @@ describe("computeSyntenyColors under the 'track' field", () => {
   })
 })
 
+// "Hide unlabelled" paints a ribbon at zero alpha, and the identity fade wrote
+// its own alpha over every ribbon, so the hidden ones came back at 30% or more.
+test('a ribbon the colour mode hides stays hidden under the identity fade', () => {
+  const group = { labels: ['A'], colors: {} }
+  const colors = computeSyntenyColors({
+    groundColor: '#fff',
+    instanceData: {
+      kinds: new Uint8Array([KIND_BASE, KIND_BASE]),
+      instanceFeatureIdx: new Uint32Array([0, 1]),
+      instanceCount: 2,
+    },
+    featureData: {
+      ...features(
+        [
+          { refName: 'chr1', mateRefName: 'chrA' },
+          { refName: 'chr2', mateRefName: 'chrB' },
+        ],
+        {
+          group: new Float32Array([0, -1]),
+          identity: new Float32Array([0.9, 0.9]),
+        },
+      ),
+      attributeRanges: { group },
+    },
+    field: 'group',
+    trackColor: TRACK_COLOR,
+    attributeRanges: { group },
+    opacityByIdentity: true,
+    hideUnlabelled: true,
+  })
+  expect(abgrAlpha(colors[0]!)).toBeGreaterThan(0x4c)
+  expect(abgrAlpha(colors[1]!)).toBe(0)
+})
+
 // The location-marker toggle is a COLOR decision, which is what keeps it out of
 // `currentFetchKey`: the worker emits every tick unconditionally, and "off" is a
 // zero alpha written here. Ticking the checkbox used to re-download and re-parse

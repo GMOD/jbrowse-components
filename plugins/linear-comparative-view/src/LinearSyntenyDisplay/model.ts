@@ -334,12 +334,18 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * so either strip can mark the ones the band is currently culling. One
        * per row, since culling is symmetric. Lazy by construction: with the
        * marks off nothing observes it. Both perspectives are one walk; whether
-       * the lower row's is drawn is `laneData`'s question.
+       * the lower row's is drawn is `laneData`'s question. With unlabelled
+       * ribbons hidden it reads the colours too, so a hidden ribbon leaves no
+       * mark.
        */
       get culledRibbonMates() {
         const { featureData, instanceData } = self
         return featureData && instanceData
-          ? culledRibbonMateData(instanceData, featureData)
+          ? culledRibbonMateData(
+              instanceData,
+              featureData,
+              this.view.hideUnlabelled ? this.computedColors : undefined,
+            )
           : undefined
       },
       /**

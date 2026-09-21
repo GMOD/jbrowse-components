@@ -1,3 +1,5 @@
+import { paintsFeatureColor } from '../LinearSyntenyRPC/syntenyColors.ts'
+
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
   MateAxisPlacement,
@@ -38,10 +40,13 @@ export interface CulledMateFeatureLanes {
 // the adapter's untrimmed coordinates: a CIGAR-clipped block draws from
 // corners the projection loop moved. A feature whose instances all fell off
 // screen keeps its sentinel span (`starts` above `ends`), which the layout's
-// x test drops.
+// x test drops. Given the per-instance colours, a feature whose ribbon is
+// painted transparent is dropped whole, marks and tallies alike, since the band
+// shows nothing of it to account for.
 export function culledRibbonMateData(
   geometry: SyntenyGeometry,
   features: CulledMateFeatureLanes,
+  colors?: Uint32Array,
 ): CulledRibbonMates {
   const { refNameDict, refNameIds, mateRefNameDict, mateRefNameIds } = features
   const n = mateRefNameIds.length
@@ -57,12 +62,17 @@ export function culledRibbonMateData(
     bp4,
     base0,
     base1,
+    kinds,
     instanceFeatureIdx,
     alignmentLengths,
     instanceCount,
   } = geometry
+  const hidden = new Uint8Array(colors ? n : 0)
   for (let i = 0; i < instanceCount; i++) {
     const f = instanceFeatureIdx[i]!
+    if (colors && paintsFeatureColor(kinds[i]!) && colors[i]! >>> 24 === 0) {
+      hidden[f] = 1
+    }
     const q1 = bp1[i]!
     const q2 = bp2[i]!
     const m1 = bp3[i]!
@@ -82,6 +92,13 @@ export function culledRibbonMateData(
   let targetLo = Infinity
   let targetHi = -Infinity
   for (let f = 0; f < n; f++) {
+    if (hidden[f]) {
+      queryStarts[f] = Infinity
+      queryEnds[f] = -Infinity
+      targetStarts[f] = Infinity
+      targetEnds[f] = -Infinity
+      continue
+    }
     queryCounts[refNameIds[f]!]! += 1
     targetCounts[mateRefNameIds[f]!]! += 1
     queryAlignedBp[refNameIds[f]!]! += lengths[f]!

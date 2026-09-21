@@ -181,6 +181,21 @@ function stripGeometry({
   }
 }
 
+// Each dataset's contigs with the aligned bp of that contig across the whole
+// lane: one contig split over two tracks, or over the worker's marks and the
+// band's, is one contig to a reader, and the floor is a question about it.
+function laneContigBp(datasets: OffscreenMateDataset[]) {
+  const byName = new Map<string, number>()
+  for (const { mateRefNameDict, alignedBp } of datasets) {
+    for (const [id, name] of mateRefNameDict.entries()) {
+      byName.set(name, (byName.get(name) ?? 0) + (alignedBp[id] ?? Infinity))
+    }
+  }
+  return datasets.map(({ mateRefNameDict }) =>
+    Float64Array.from(mateRefNameDict, name => byName.get(name)!),
+  )
+}
+
 // The one place a mark's x is decided, so the draw and the hit test cannot
 // disagree. Entries whose instances all fell off screen keep a sentinel
 // span (`starts` above `ends`) that the x test drops before `mateAxis` is
@@ -197,14 +212,16 @@ function forEachMark(
 ) {
   const { bpPerPx, offsetPx, width, minAlignmentLength, mateBand } = lane
   const contigFloor = MIN_CONTIG_MARK_PX * bpPerPx
+  const contigBp = laneContigBp(lane.datasets)
   for (const [d, data] of lane.datasets.entries()) {
-    const { starts, ends, lengths, mateRefNameIds, alignedBp, mateAxis } = data
+    const { starts, ends, lengths, mateRefNameIds, mateAxis } = data
+    const bpOfContig = contigBp[d]!
     for (let i = 0; i < starts.length; i++) {
       const x1 = starts[i]! / bpPerPx - offsetPx
       const x2 = ends[i]! / bpPerPx - offsetPx
       if (
         lengths[i]! >= minAlignmentLength &&
-        (alignedBp[mateRefNameIds[i]!] ?? Infinity) >= contigFloor &&
+        bpOfContig[mateRefNameIds[i]!]! >= contigFloor &&
         x2 >= 0 &&
         x1 <= width &&
         !(mateAxis && ribbonDrawn(mateAxis, i, mateBand))

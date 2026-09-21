@@ -196,6 +196,18 @@ test('...and draws them again once the window is narrow enough', () => {
   expect(rects).toHaveLength(1)
 })
 
+// The floor is per contig, not per dataset: two tracks, or the worker's marks
+// and the band's, can each hold 3px of one contig, which the tooltip sums to 6.
+test('a contig split across datasets is floored on its sum', () => {
+  const { ctx, rects } = fakeCtx()
+  draw(ctx, [
+    {
+      datasets: [data([[100, 130]], ['ctgB']), data([[300, 330]], ['ctgB'])],
+    },
+  ])
+  expect(rects).toHaveLength(2)
+})
+
 // The strong contig in the same lane is untouched by its neighbour's fate.
 test('...while a contig that earns it keeps its marks at that window', () => {
   const { ctx, rects } = fakeCtx()

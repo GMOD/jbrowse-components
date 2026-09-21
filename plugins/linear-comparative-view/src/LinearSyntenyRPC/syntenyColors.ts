@@ -44,6 +44,12 @@ export const KIND_CIGAR_I = KIND_CIGAR_MIN + 1
 export const KIND_CIGAR_D = KIND_CIGAR_MIN + 2
 export const KIND_CIGAR_N = KIND_CIGAR_MIN + 3
 
+// the kinds painted in their feature's own colour, so one transparent there is
+// a ribbon the colour mode hides
+export function paintsFeatureColor(kind: number) {
+  return kind === KIND_BASE || kind === KIND_BASE_TILE
+}
+
 // Location-marker tick: the band's contrast ink at the alpha of the legacy
 // rgba(0,0,0,0.25) context lines. Renderers draw KIND_MARKER instances as 1px
 // lines using this packed alpha directly (no colorBy/global-alpha scaling).
@@ -166,7 +172,8 @@ export function computeSyntenyColors({
     } else {
       const f = instanceFeatureIdx[i]!
       const base = colorFn(f)
-      if (opacityByIdentity) {
+      // a ribbon the colour mode hides stays hidden under the identity fade
+      if (opacityByIdentity && base >>> 24 !== 0) {
         // Identity in [0,1] -> alpha byte in [0x4c, 0xff] (30% floor so
         // low-identity blocks remain perceptible). Unknown identity (-1)
         // gets full alpha.
