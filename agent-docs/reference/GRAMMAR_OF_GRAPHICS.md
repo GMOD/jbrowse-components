@@ -346,7 +346,23 @@ The seams, named honestly:
   is `NO_CATEGORY_COLOR`, one grey across the encoder, the feature display and
   synteny's unlabelled rows; `#808080` beside it is the misconfiguration
   colour — a `jexl:` colour that yielded a non-string, a ramp value that is
-  not finite — and means something else.
+  not finite, text a feature threshold reads that is no number — and means
+  something else.
+- **A feature threshold is a categorical field over its bins.** The canvas
+  feature and multi-way gene colours take `threshold` beside `categorical`,
+  and `thresholdField` (`@jbrowse/core/util/thresholdScale`) reads it through
+  the same interface `categoricalField` answers: a value files under its bin's
+  label, so the worker's walk, a transcript's parts inheriting its value and
+  the derived key take it unchanged. Its domain is `closed`, and
+  `derivedColorScale` lists every bin of a closed domain whether or not
+  anything painted it, as Manhattan's, the alignments' and the LD keys list
+  theirs; the no-value and not-a-number rows still appear only once painted.
+  `colorFieldOf` answers either field, while `categoricalColorField` and the
+  canvas display's `colorField` stay categorical, for the facet, Group by and
+  "Pin distinct colors", which would write values into the cuts
+  ([ADR-156](../architecture-decision-records/adr-156-the-feature-colour-takes-a-threshold.md)).
+  The mark encoder still paints a threshold's value-less point the
+  misconfiguration grey, with no key row.
 
 ## The facet stage
 
