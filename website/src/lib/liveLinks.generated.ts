@@ -1010,8 +1010,7 @@ export const videoSteps: Record<string, string[]> = {
   ],
   "methylation/group_by_hp": [
     "Group the pileup by the HP tag",
-    "HP",
-    "Keep the modification coloring"
+    "HP"
   ],
   "synteny/multiway_zoom_out": [
     "Hover a ribbon",

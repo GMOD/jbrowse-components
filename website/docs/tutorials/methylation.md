@@ -125,11 +125,11 @@ Each long read is a single DNA molecule, so reads that carry an `HP` haplotype
 tag (from WhatsHap, HiPhase, or ONT's `wf-human-variation`) can be separated by
 allele. Pick **Group by... → Tag...** from the track menu and enter `HP`. The
 dialog scans the reads in view, reports the values it found, and offers to color
-reads by the same tag, with that box **checked** by default; uncheck it to keep
-the methylation coloring. The pileup then stacks into one band per haplotype,
+reads by the same tag too; the box starts unchecked under the methylation
+coloring, which stays. The pileup then stacks into one band per haplotype,
 computed in the browser, one band methylated over the island and the other not.
 
-<Video src="/media/methylation/group_by_hp.mp4" caption="The split as the menu does it: the interleaved pileup, the tag dialog finding HP values 1 and 2 in the reads themselves, the coloring box turned back off, and one methylated band resolving over one unmethylated." />
+<Video src="/media/methylation/group_by_hp.mp4" caption="The split as the menu does it: the interleaved pileup, the tag dialog finding HP values 1 and 2 in the reads themselves, and one methylated band resolving over one unmethylated." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order. Bottom: the same reads grouped by the HP tag, one band per haplotype. Only the grouping differs." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 

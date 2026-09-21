@@ -65,19 +65,6 @@ export const methylationVideos: VideoSpec[] = [
         timeout: 120000,
         hold: 2500,
       },
-      // THE STEP THE PAGE DID NOT KNOW IT NEEDED. This box arrives CHECKED here:
-      // its default is "unless you are already coloring by this tag", so any
-      // non-tag scheme -- modifications included -- counts as free to replace,
-      // and submitting as-is paints HP1 one flat color and HP2 another. That is
-      // the opposite of what this section is about, which is what each haplotype
-      // is METHYLATED like. The page said "leave coloring on modifications" as
-      // though that were the default; leaving it is this click.
-      {
-        type: 'click',
-        text: 'Also color reads by this tag',
-        say: 'Keep the modification coloring',
-        hold: 1800,
-      },
       { type: 'click', text: 'Submit' },
       // Grouping REFETCHES rather than re-laying-out what is loaded -- the frame
       // says "Downloading alignments.." -- so this is off camera for the reason
