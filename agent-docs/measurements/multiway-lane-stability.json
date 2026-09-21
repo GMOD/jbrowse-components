@@ -1,11 +1,11 @@
 {
   "id": "multiway-lane-stability",
-  "measured": "2026-09-06",
+  "measured": "2026-09-21",
   "published": false,
   "source": {
     "kind": "bench",
     "repro": "pnpm exec esbuild --bundle --platform=node --format=esm --target=node22 --outfile=/tmp/lanestab.mjs plugins/linear-comparative-view/benches/multiwayLaneStability.probe.ts && node /tmp/lanestab.mjs, from the repo root (it rewrites this file) - the deployed demos/grape_peach_cacao MCScan blocks track over the network, grape chr1 (NC_081805.1), a 2Mb window walked in 100kb steps, 259 steps, 1280px, each step's decision carried into the next the way the display carries a settle's into the next settle.",
-    "notes": "WHICH OF A LANE'S PER-SETTLE CHOICES HOLD STILL WHILE THE ANCHOR PANS. `decideLaneFrames` decides four things per settle - contig, orientation, ladder rung and placement - and every one now has an incumbent: the contig by `preferIncumbent`'s switch margin, the cluster the fit is centred on by the same rule (`keepNearMedian` takes the incumbent centre), the rung by a shrink room, the orientation by the follow's NEARLY_ALL deadband over at least five shared groups and carried across a contig change, the placement by coverage of the placed weight.\n\nA CHANGE IS NOT A FLICKER, and the two are counted apart: a lane moving from one syntenic block to the next changes once and stays, which is the data; a lane on a near-tie leaves a value and comes back. `osc` counts only the second, within a fifth of a window.\n\nRE-MEASURED 2026-09-06 after `orientationVote` changed from neighbour pairs weighed by the lighter run to every pair weighed by the product of group weights: the same bundle with the old rule patched back reproduces the 2026-09-02 table exactly (drawn flip changes 3/4/5/7/8/2, every osc 0), and the new rule is worse on every lane - drawn flip changes 5/7/12/9/14/9 and drawn flip oscillations 0/0/3/2/2/2 (peach, citrus, cacao, poplar, tomato, arabidopsis). Contig, rung and fallback columns are unchanged; the slip columns moved because fewer steps sit on one orientation. On a gene table every group weighs one, so the product vote is a plain concordance over every pair of shared genes, and a paleopolyploid lane holding two interleaved blocks reads close to even under it where the neighbour rule read the runs.\n\nTHE 2026-09-02 TABLE, before the vote change: EVERY OSC COLUMN WAS ZERO. The stateless version of the same walk (2026-08-26, earlier the same day) had contig oscillations only on arabidopsis (3 of 12 changes), drawn flip changes of 10-21 per lane with 1-7 oscillations, and rungs that swung between 1 and 3 on consecutive steps on cacao as `keepNearMedian`'s median hopped between two paleo-blocks. Flip changes are 3-8 now; `fallback` is the anchor-order sign sum a fresh lane falls back on, kept as the control and never applied over an incumbent.\n\nWHAT THE DEADBAND ALONE DID NOT CLOSE: a contig change used to reset the orientation to that fallback, which the vote then corrected a step later (poplar, tomato); three reversed genes could mirror a whole lane (tomato at a 26kb fit); and the rung oscillated because the cluster the fit keeps is a discrete choice too. Each got its own incumbent.\n\n`empty` is windows where the lane places nothing at all - a low-synteny stretch of grape chr1, the same 33 for every lane."
+    "notes": "WHICH OF A LANE'S PER-SETTLE CHOICES HOLD STILL WHILE THE ANCHOR PANS. `decideLaneFrames` decides four things per settle - contig, orientation, ladder rung and placement - and every one now has an incumbent: the contig by `preferIncumbent`'s switch margin, the cluster the fit is centred on by the same rule (`keepNearMedian` takes the incumbent centre), the rung by a shrink room, the orientation by the follow's NEARLY_ALL deadband over at least five shared groups and carried across a contig change, the placement by coverage of the placed weight.\n\nA CHANGE IS NOT A FLICKER, and the two are counted apart: a lane moving from one syntenic block to the next changes once and stays, which is the data; a lane on a near-tie leaves a value and comes back. `osc` counts only the second, within a fifth of a window.\n\n`crossed` is steps a lane is drawn with more than half its ribbon pairs to the lane above crossing, counted off the drawn frames rather than any vote, so a rule that holds a lane the wrong way round shows here however rarely it flips.\n\nTHREE ALTERNATIVES TO THE ORIENTATION VOTE, measured 2026-09-21 with this probe and the vote patched (peach, citrus, cacao, poplar, tomato, arabidopsis). Each run against its neighbour weighed by the lighter run, which shipped until 2026-09-06: drawn flip changes 3/4/5/7/8/2, no oscillation, crossed 37/50/27/41/84/55. The heaviest collinear chain each way less its heaviest run: flip changes 3/5/8/7/12/9, oscillations 0/0/1/1/1/1, crossed 36/29/37/22/70/39. The shipped rule voting against the anchor instead of the lane above: flip changes 5/7/10/5/7/8, oscillations 0/0/1/1/0/0, crossed 20/4/16/23/46/51. No alternative crosses less on any lane.\n\nTHE 2026-09-02 TABLE, before the vote change: EVERY OSC COLUMN WAS ZERO. The stateless version of the same walk (2026-08-26, earlier the same day) had contig oscillations only on arabidopsis (3 of 12 changes), drawn flip changes of 10-21 per lane with 1-7 oscillations, and rungs that swung between 1 and 3 on consecutive steps on cacao as `keepNearMedian`'s median hopped between two paleo-blocks. `fallback` is the anchor-order sign sum a fresh lane falls back on, kept as the control and never applied over an incumbent.\n\nWHAT THE DEADBAND ALONE DID NOT CLOSE: a contig change used to reset the orientation to that fallback, which the vote then corrected a step later (poplar, tomato); three reversed genes could mirror a whole lane (tomato at a 26kb fit); and the rung oscillated because the cluster the fit keeps is a discrete choice too. Each got its own incumbent.\n\n`empty` is windows where the lane places nothing at all - a low-synteny stretch of grape chr1, the same 33 for every lane."
   },
   "columns": [
     {
@@ -63,6 +63,12 @@
       "align": "right"
     },
     {
+      "key": "crossedSteps",
+      "label": "crossed steps",
+      "format": "int",
+      "align": "right"
+    },
+    {
       "key": "rungChanges",
       "label": "rung chg",
       "format": "int",
@@ -105,6 +111,7 @@
         "fallbackFlipChanges": 10,
         "fallbackFlipOsc": 2,
         "empty": 33,
+        "crossedSteps": 20,
         "rungChanges": 8,
         "rungOsc": 1,
         "slipSteps": 23,
@@ -123,6 +130,7 @@
         "fallbackFlipChanges": 13,
         "fallbackFlipOsc": 3,
         "empty": 33,
+        "crossedSteps": 2,
         "rungChanges": 2,
         "rungOsc": 0,
         "slipSteps": 22,
@@ -141,6 +149,7 @@
         "fallbackFlipChanges": 17,
         "fallbackFlipOsc": 2,
         "empty": 33,
+        "crossedSteps": 16,
         "rungChanges": 14,
         "rungOsc": 0,
         "slipSteps": 63,
@@ -159,6 +168,7 @@
         "fallbackFlipChanges": 14,
         "fallbackFlipOsc": 3,
         "empty": 33,
+        "crossedSteps": 13,
         "rungChanges": 4,
         "rungOsc": 0,
         "slipSteps": 60,
@@ -177,6 +187,7 @@
         "fallbackFlipChanges": 12,
         "fallbackFlipOsc": 3,
         "empty": 33,
+        "crossedSteps": 35,
         "rungChanges": 7,
         "rungOsc": 0,
         "slipSteps": 44,
@@ -195,6 +206,7 @@
         "fallbackFlipChanges": 15,
         "fallbackFlipOsc": 5,
         "empty": 34,
+        "crossedSteps": 27,
         "rungChanges": 2,
         "rungOsc": 0,
         "slipSteps": 60,

@@ -51,6 +51,7 @@ import {
 } from '../src/MultiWaySyntenyDisplay/laneDecision.ts'
 import {
   groupFeatures,
+  groupRunsOnRow,
   rowAssembliesOf,
   rowFrameX,
 } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
@@ -119,6 +120,7 @@ const ANCHOR_ASSEMBLY = 'grape'
 // over a few percent of its own evidence, which is the state this is about.
 const WINDOW_BP = 2_000_000
 const STEP_BP = 100_000
+const WIDTH = 1280
 
 async function anchorFeatures() {
   const { dataAdapter } = await getAdapter(
@@ -183,6 +185,58 @@ interface LaneRun {
   // how far the lane's content moved on screen beyond the anchor's own pan,
   // per step on one contig, orientation and rung: 0 is a lane riding the pan
   slipsPx: number[]
+  // steps drawn with most ribbon pairs to the lane above crossing
+  crossed: number
+}
+
+// where a lane draws each group: its heaviest run, as the lane below aligns to
+function drawnXs(
+  visible: ReturnType<typeof groupFeatures>,
+  assemblyName: string,
+  frame: RowFrame,
+) {
+  const out = new Map<string, number>()
+  for (const group of visible) {
+    let heaviest: { min: number; max: number } | undefined
+    for (const run of groupRunsOnRow(group, assemblyName, frame)) {
+      if (!heaviest || run.max - run.min > heaviest.max - heaviest.min) {
+        heaviest = run
+      }
+    }
+    if (heaviest) {
+      out.set(
+        group.key,
+        rowFrameX(frame, (heaviest.min + heaviest.max) / 2, WIDTH),
+      )
+    }
+  }
+  return out
+}
+
+// The share of ribbon pairs between two lanes that cross as drawn, over the
+// groups both place; undefined below the vote's switching floor of five.
+// Counted off the screen, not off the vote, so a rule that holds a lane the
+// wrong way round shows here however few times it flips.
+function crossingShare(upper: Map<string, number>, lane: Map<string, number>) {
+  const shared = [...lane].filter(([key]) => upper.has(key))
+  if (shared.length < 5) {
+    return undefined
+  }
+  let pairs = 0
+  let crossing = 0
+  for (let i = 0; i < shared.length; i++) {
+    for (let j = i + 1; j < shared.length; j++) {
+      const [a, ax] = shared[i]!
+      const [b, bx] = shared[j]!
+      const dUpper = upper.get(a)! - upper.get(b)!
+      const dLane = ax - bx
+      if (dUpper !== 0 && dLane !== 0) {
+        pairs++
+        crossing += Math.sign(dUpper) === Math.sign(dLane) ? 0 : 1
+      }
+    }
+  }
+  return pairs > 0 ? crossing / pairs : undefined
 }
 
 // How many times a series leaves a value and comes back to it within `reach`
@@ -224,12 +278,17 @@ console.log(
   `${features.length} pairwise features, ${groups.length} groups, ${lanes.length} lanes`,
 )
 
-const WIDTH = 1280
-
 const runs = new Map<string, LaneRun>(
   lanes.map(a => [
     a,
-    { refNames: [], fitFlip: [], drawnFlip: [], rungs: [], slipsPx: [] },
+    {
+      refNames: [],
+      fitFlip: [],
+      drawnFlip: [],
+      rungs: [],
+      slipsPx: [],
+      crossed: 0,
+    },
   ]),
 )
 let steps = 0
@@ -258,6 +317,7 @@ for (let start = 0; start + WINDOW_BP <= ANCHOR_BP; start += STEP_BP) {
     previous,
   })
   previous = drawn
+  let upperXs = anchorSeed(visible, start, WIDTH)
   for (const assemblyName of lanes) {
     const run = runs.get(assemblyName)!
     const decision = drawn.get(assemblyName)
@@ -287,6 +347,12 @@ for (let start = 0; start + WINDOW_BP <= ANCHOR_BP; start += STEP_BP) {
       )
     }
     if (frame) {
+      const xs = drawnXs(visible, assemblyName, frame)
+      const share = crossingShare(upperXs, xs)
+      if (share !== undefined && share > 0.5) {
+        run.crossed++
+      }
+      upperXs = xs
       previousFrames.set(assemblyName, frame)
     } else {
       previousFrames.delete(assemblyName)
@@ -302,10 +368,10 @@ console.log(
   `\n${steps} steps of ${STEP_BP / 1000}kb across a ${WINDOW_BP / 1e6}Mb window on ${ANCHOR_REF}\n`,
 )
 console.log(
-  '                 contig            drawn flip        fallback flip      rung           slip px',
+  '                 contig            drawn flip        fallback flip              rung           slip px',
 )
 console.log(
-  'lane            n  chg  osc     chg  osc         chg  osc   empty   chg  osc   steps median    max',
+  'lane            n  chg  osc     chg  osc         chg  osc   empty crossed   chg  osc   steps median    max',
 )
 const rows: Record<string, string | number>[] = []
 for (const [assemblyName, run] of runs) {
@@ -325,6 +391,7 @@ for (const [assemblyName, run] of runs) {
     fallbackFlipChanges: changes(run.fitFlip),
     fallbackFlipOsc: oscillations(run.fitFlip, REACH),
     empty,
+    crossedSteps: run.crossed,
     rungChanges: changes(run.rungs),
     rungOsc: oscillations(run.rungs, REACH),
     slipSteps: moving.length,
@@ -343,6 +410,7 @@ for (const [assemblyName, run] of runs) {
       String(values.fallbackFlipChanges).padStart(12),
       String(values.fallbackFlipOsc).padStart(5),
       String(empty).padStart(8),
+      String(values.crossedSteps).padStart(8),
       String(values.rungChanges).padStart(6),
       String(values.rungOsc).padStart(5),
       String(values.slipSteps).padStart(8),
@@ -359,6 +427,12 @@ const existing = JSON.parse(fs.readFileSync(record, 'utf8')) as {
   rows: { values: Record<string, string | number> }[]
 }
 const rungColumns = [
+  {
+    key: 'crossedSteps',
+    label: 'crossed steps',
+    format: 'int',
+    align: 'right',
+  },
   { key: 'rungChanges', label: 'rung chg', format: 'int', align: 'right' },
   { key: 'rungOsc', label: 'rung osc', format: 'int', align: 'right' },
   { key: 'slipSteps', label: 'slip steps', format: 'int', align: 'right' },
@@ -381,7 +455,8 @@ console.log(
   '\nchg: consecutive steps whose answer differs. osc: those that go back within\n' +
     'a fifth of a window, which is the near-tie rather than the data. "drawn" is\n' +
     '`alignRowFrames`, which is what a reader sees; "fallback" is the lane\'s own\n' +
-    'anchor-order vote, which only decides where the drawn one abstains. slip is\n' +
+    'anchor-order vote, which only decides where the drawn one abstains. crossed\n' +
+    'is steps drawn with most ribbon pairs to the lane above crossing. slip is\n' +
     "how far a lane's content moved on screen beyond the pan, on one contig,\n" +
     'orientation and rung: a held lane slips 0, a re-alignment is one slip.',
 )

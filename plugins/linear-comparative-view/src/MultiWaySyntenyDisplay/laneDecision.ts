@@ -351,7 +351,10 @@ function lanePlacementXs(
 // of a few kb. Paired all-ways, the heavy runs vote with each other, and the
 // evidence is the contig vote's own — one per gene on a named table, so a
 // gene table's vote is a plain count of concordant pairs, and anchor bp on
-// an alignment, so a block outweighs the hits inside it
+// an alignment, so a block outweighs the hits inside it. Across grape chr1 no
+// lane draws fewer steps crossed against the lane above under the neighbour
+// rule, a heaviest-chain rule or a vote against the anchor (the
+// multiway-lane-stability record's notes)
 function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   const shared = lane
     .filter(p => upperX.has(p.key))
