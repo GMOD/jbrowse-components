@@ -123,6 +123,8 @@ function stack({
     ]),
     laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
+    anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
+    contigOf: () => undefined,
     refNameAliasOf: () => undefined,
     width: WIDTH,
     height: HEIGHT,

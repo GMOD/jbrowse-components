@@ -55,7 +55,7 @@ import {
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { captureStackViewports } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
-import { axisPlacement, axisSpan } from './anchorAxis.ts'
+import { axisPlacement, axisSpan, displayedRegionSpans } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { composeLaneLinks } from './composeLaneLinks.ts'
 import { annotationRank } from './laneAnnotation.ts'
@@ -1382,6 +1382,14 @@ export function stateModelFactory(
           laneGeneAdapters: self.laneGeneAdapters,
           axisSpanOf: (refName, start, end) =>
             axisSpan(view, refName, start, end, self.renderOriginPx),
+          anchorRegionSpans: displayedRegionSpans(view, self.renderOriginPx),
+          contigOf: (assemblyName, refName) => {
+            const assembly = self.holdsAssembly(assemblyName)
+              ? assemblyManager.get(assemblyName)
+              : undefined
+            const index = assembly?.refNameToIndex?.get(refName)
+            return index === undefined ? undefined : assembly?.regions?.[index]
+          },
           refNameAliasOf: assemblyName => {
             const assembly = assemblyManager.get(assemblyName)
             return (

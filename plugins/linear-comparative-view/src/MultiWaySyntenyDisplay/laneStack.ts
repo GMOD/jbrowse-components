@@ -1,6 +1,6 @@
 import { clamp } from '@jbrowse/core/util'
 
-import { frameSpan, groupRunSpansOnRow } from './layoutMultiWay.ts'
+import { frameSpan, groupRunSpansOnRow, rowFrameX } from './layoutMultiWay.ts'
 
 import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
 
@@ -128,6 +128,12 @@ export interface Lane {
    * `===` between two file spellings drops every gene.
    */
   canon: (refName: string) => string
+  /**
+   * the px the baseline draws over, a screen either side at most: the
+   * displayed regions on the anchor lane, the contig on a mate lane, and all
+   * of it where a mate lane cannot say where its contig ends
+   */
+  baseline: Span[]
   glyphTop: number
   bandTop: number
   bandStart: number
@@ -162,12 +168,28 @@ export interface BuildLanesOpts {
   laneGeneAdapters: Map<string, unknown>
   /** an interval on the anchor lane's axis, clipped — `axisSpan` bound to the view */
   axisSpanOf: (refName: string, start: number, end: number) => Span | undefined
+  /** each displayed region on the anchor lane's axis — `displayedRegionSpans` bound to the view */
+  anchorRegionSpans: Span[]
+  /**
+   * a lane's contig by canonical refName, or undefined where the session does
+   * not hold the lane's genome or has not loaded it
+   */
+  contigOf: (
+    assemblyName: string,
+    refName: string,
+  ) => { start: number; end: number } | undefined
   /** the session's assembly under a lane's name, for the refName alias table */
   refNameAliasOf: (
     assemblyName: string,
   ) => ((refName: string) => string) | undefined
   width: number
   height: number
+}
+
+function clipSpan([a, b]: Span, [lo, hi]: Span): Span[] {
+  const left = Math.max(Math.min(a, b), lo)
+  const right = Math.min(Math.max(a, b), hi)
+  return left < right ? [[left, right]] : []
 }
 
 /**
@@ -188,6 +210,8 @@ export function buildLanes({
   rowFrames,
   laneGeneAdapters,
   axisSpanOf,
+  anchorRegionSpans,
+  contigOf,
   refNameAliasOf,
   width,
   height,
@@ -196,6 +220,7 @@ export function buildLanes({
     height,
     assemblyNames.length,
   )
+  const reach: Span = [-width, 2 * width]
   return {
     glyphHeight,
     bandHeight,
@@ -215,6 +240,10 @@ export function buildLanes({
         return name
       }
       const frameRefName = frame && canon(frame.refName)
+      const contig =
+        frameRefName === undefined
+          ? undefined
+          : contigOf(assemblyName, frameRefName)
 
       const placements = new Map<string, LaneGroup>()
       for (const group of groups) {
@@ -249,6 +278,17 @@ export function buildLanes({
               frame && canon(refName) === frameRefName
                 ? frameSpan(frame, start, end, width)
                 : undefined,
+        baseline: isAnchor
+          ? anchorRegionSpans.flatMap(span => clipSpan(span, reach))
+          : frame && contig
+            ? clipSpan(
+                [
+                  rowFrameX(frame, contig.start, width),
+                  rowFrameX(frame, contig.end, width),
+                ],
+                reach,
+              )
+            : [reach],
         ...rows[row]!,
       }
     }),

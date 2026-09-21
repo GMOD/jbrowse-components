@@ -2,7 +2,8 @@ import type { Region } from '@jbrowse/core/util'
 
 export interface TestAssembly {
   initialized: boolean
-  regions: Region[]
+  regions: Region[] | undefined
+  refNameToIndex: Map<string, number> | undefined
   getCanonicalRefName: (refName: string) => string
   getCanonicalRefName2: (refName: string) => string
   getGeneticCodeId: () => number | undefined
@@ -44,6 +45,7 @@ export function testAssembly({
   return {
     initialized: true,
     regions,
+    refNameToIndex: new Map(regions.map((region, i) => [region.refName, i])),
     getCanonicalRefName: canonical,
     getCanonicalRefName2: canonical,
     getGeneticCodeId: () => undefined,

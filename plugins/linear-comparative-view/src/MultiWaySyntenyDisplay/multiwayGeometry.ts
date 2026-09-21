@@ -586,14 +586,10 @@ export function buildLaneCells({
   const centerY = y + glyphHeight / 2
   const stroke = cssColorToABGR(colors.stroke)
   boxes.outlineColor = stroke
-  glyphs.line(
-    -width,
-    2 * width,
-    centerY,
-    glyphHeight,
-    0,
-    cssColorToABGR(colors.divider),
-  )
+  const divider = cssColorToABGR(colors.divider)
+  for (const [x1, x2] of lane.baseline) {
+    glyphs.line(x1, x2, centerY, glyphHeight, 0, divider)
+  }
   // a slot answers the same few strings for a whole lane; parse each once
   const packed = new Map<string, number>()
   const pack = (css: string) => {

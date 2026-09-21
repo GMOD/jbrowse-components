@@ -19,6 +19,7 @@ import { stateModelFactory } from './model.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
+import type { TestAssembly } from '@jbrowse/display-test-utils'
 
 /**
  * A real MultiWaySyntenyDisplay on a SyntenyTrack, in a real LGV, beside a
@@ -64,6 +65,7 @@ export function createDisplayWithSession({
   connectionGeneTracks = [],
   rpc = async () => [],
   assemblyAliases = {},
+  assemblyOf = () => testAssembly(),
 }: {
   syntenyAdapter?: Record<string, unknown>
   trackAssemblyNames?: string[]
@@ -71,6 +73,7 @@ export function createDisplayWithSession({
   connectionGeneTracks?: GeneTrackSpec[]
   rpc?: RpcCall
   assemblyAliases?: Record<string, string>
+  assemblyOf?: (assemblyName: string) => TestAssembly
 } = {}) {
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory()
@@ -199,7 +202,7 @@ export function createDisplayWithSession({
         ) => rpc(functionName, args),
       },
       assemblyManager: {
-        get: () => testAssembly(),
+        get: assemblyOf,
         // the dependent lane fetches canonicalize their regions through this
         // before the RPC; without it a test that commits features watches them
         // fail on a TypeError a lane's own error handling then swallows

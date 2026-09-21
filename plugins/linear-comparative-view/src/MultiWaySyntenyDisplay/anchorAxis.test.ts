@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { axisSpan } from './anchorAxis.ts'
+import { axisSpan, displayedRegionSpans } from './anchorAxis.ts'
 import { createDisplay } from './testEnv.ts'
 
 // The harness displays `ctgA:0..1000` and nothing else, which is the shape a
@@ -57,4 +57,24 @@ test('a group straddling the region edge keeps its anchor span and its seed', ()
   expect(display.groups.map(g => g.key)).toEqual(['g-100', 'g-700'])
   expect([...display.anchorSpans.keys()]).toEqual(['g-100', 'g-700'])
   expect([...display.anchorAbsX.keys()]).toEqual(['g-100', 'g-700'])
+})
+
+test('each displayed region spans what axisSpan maps the whole region to', () => {
+  const view = createDisplay().lgv
+  view.setDisplayedRegions([
+    { refName: 'ctgA', start: 0, end: 300, assemblyName: 'volvox' },
+    {
+      refName: 'ctgA',
+      start: 500,
+      end: 800,
+      assemblyName: 'volvox',
+      reversed: true,
+    },
+    { refName: 'ctgB', start: 0, end: 200, assemblyName: 'volvox' },
+  ])
+  expect(displayedRegionSpans(view, 40)).toEqual(
+    view.displayedRegions.map(r =>
+      axisSpan(view, r.refName, r.start, r.end, 40),
+    ),
+  )
 })

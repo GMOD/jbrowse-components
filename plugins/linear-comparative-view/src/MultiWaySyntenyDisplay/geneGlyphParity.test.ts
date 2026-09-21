@@ -99,6 +99,7 @@ const { glyphs: lane } = buildLaneCells({
   lane: {
     glyphTop: 0,
     spanOf: (_refName: string, start: number, end: number) => [start, end],
+    baseline: [[0, 1000]],
     placements: new Map(),
   } as unknown as Lane,
   genes: [new LaneGene(gene)],
@@ -146,8 +147,7 @@ test('a lane emits the boxes the feature track emits, at its UTR height and cent
 })
 
 test('a lane connects the introns the feature track connects, on the box centre', () => {
-  // the lane's own baseline divider spans the whole canvas and has no
-  // counterpart on the feature track, so it is not one of the gene's lines
+  // the lane's own baseline has no counterpart on the feature track
   const laneIntrons = boxes(
     lane.linePositions,
     lane.lineYs,

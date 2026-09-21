@@ -2,6 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { SimpleFeature } from '@jbrowse/core/util'
+import { testAssembly } from '@jbrowse/display-test-utils'
+import { autorun, observable, runInAction, when } from 'mobx'
 
 import {
   MIN_LANE_PITCH,
@@ -9,10 +11,12 @@ import {
   laneContentHeight,
   laneGeometry,
 } from './laneStack.ts'
-import { groupFeatures } from './layoutMultiWay.ts'
+import { groupFeatures, rowFrameX } from './layoutMultiWay.ts'
+import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 import type { BuildLanesOpts } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
+import type { TestAssembly } from '@jbrowse/display-test-utils'
 
 const WIDTH = 800
 const HEIGHT = 240
@@ -75,6 +79,8 @@ function stack(overrides: Partial<BuildLanesOpts> = {}) {
     rowFrames: new Map([['peach', peachFrame]]),
     laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
+    anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
+    contigOf: () => undefined,
     refNameAliasOf: () => undefined,
     width: WIDTH,
     height: HEIGHT,
@@ -147,6 +153,168 @@ describe('the map a lane answers intervals with', () => {
     const [, peach] = stack().lanes
     expect(peach!.canon('Pp1')).toBe('Pp1')
     expect(peach!.spanOf('Pp1', 1100, 1200)).toEqual([80, 160])
+  })
+})
+
+describe('the baseline', () => {
+  const DIVIDER = [[-WIDTH, 2 * WIDTH]]
+  const pp1 = (_assemblyName: string, refName: string) =>
+    refName === 'Pp1' ? { start: 0, end: 1750 } : undefined
+
+  test('a mate lane draws its line only to its contig end', () => {
+    expect(stack({ contigOf: pp1 }).lanes[1]!.baseline).toEqual([[-WIDTH, 600]])
+    const flipped = stack({
+      contigOf: pp1,
+      rowFrames: new Map([['peach', { ...peachFrame, flipped: true }]]),
+    })
+    expect(flipped.lanes[1]!.baseline).toEqual([[200, 2 * WIDTH]])
+  })
+
+  test('a frame reaching below 0 starts the line at 0', () => {
+    const { lanes } = stack({
+      contigOf: () => ({ start: 0, end: 5000 }),
+      rowFrames: new Map([['peach', { ...peachFrame, min: -200, max: 800 }]]),
+    })
+    expect(lanes[1]!.baseline).toEqual([[160, 2 * WIDTH]])
+  })
+
+  test('the contig is looked up by its canonical name', () => {
+    const asked: string[] = []
+    const { lanes } = stack({
+      refNameAliasOf: name =>
+        name === 'peach'
+          ? refName => (refName === 'Pp1' ? 'peach_chr1' : refName)
+          : undefined,
+      contigOf: (assemblyName, refName) => {
+        asked.push(`${assemblyName}:${refName}`)
+        return refName === 'peach_chr1' ? { start: 0, end: 1750 } : undefined
+      },
+    })
+    expect(asked).toEqual(['peach:peach_chr1'])
+    expect(lanes[1]!.baseline).toEqual([[-WIDTH, 600]])
+  })
+
+  test('a lane with no contig to measure keeps the divider', () => {
+    expect(stack().lanes[1]!.baseline).toEqual(DIVIDER)
+    expect(
+      stack({ contigOf: pp1, rowFrames: new Map() }).lanes[1]!.baseline,
+    ).toEqual(DIVIDER)
+  })
+
+  test('the anchor lane draws its displayed regions, clipped', () => {
+    const { lanes } = stack({
+      anchorRegionSpans: [
+        [-3000, -900],
+        [300, -100],
+        [300, 5000],
+      ],
+      contigOf: pp1,
+    })
+    expect(lanes[0]!.baseline).toEqual([
+      [-100, 300],
+      [300, 2 * WIDTH],
+    ])
+  })
+
+  describe('through the display', () => {
+    const CONTIG_END = 50_000
+
+    async function framedDisplay(
+      mate: string,
+      opts: Parameters<typeof createDisplayWithSession>[0] = {},
+    ) {
+      const { display } = createDisplayWithSession({
+        trackAssemblyNames: ['volvox', mate],
+        ...opts,
+      })
+      await when(() => display.features !== undefined, { timeout: 5000 })
+      display.setFeatures(
+        [0, 1, 2, 3].map(
+          i =>
+            new SimpleFeature({
+              uniqueId: `g${i}`,
+              name: `g${i}`,
+              refName: 'ctgA',
+              start: 50 + 100 * i,
+              end: 110 + 100 * i,
+              strand: 1,
+              mate: {
+                assemblyName: mate,
+                refName: 'ctgA',
+                start: 49_600 + 100 * i,
+                end: 49_660 + 100 * i,
+              },
+            }),
+        ),
+      )
+      await when(() => display.rowFrames.get(mate) !== undefined, {
+        timeout: 5000,
+      })
+      const frame = display.rowFrames.get(mate)!
+      expect(frame.max).toBeGreaterThan(CONTIG_END)
+      return {
+        display,
+        contigLine: [[-WIDTH, rowFrameX(frame, CONTIG_END, WIDTH)]],
+      }
+    }
+
+    test('a held genome draws its lane to the contig end', async () => {
+      const { display, contigLine } = await framedDisplay('volvox_random')
+      expect(display.laneStack.lanes[1]!.baseline).toEqual(contigLine)
+    })
+
+    test('a genome the session does not hold keeps the divider', async () => {
+      const { display } = await framedDisplay('hg002')
+      expect(display.laneStack.lanes[1]!.baseline).toEqual(DIVIDER)
+    })
+
+    test('a genome still loading keeps the divider until its load redraws the lane', async () => {
+      const loaded = observable.box(false)
+      const assembly = testAssembly()
+      const loading: TestAssembly = {
+        ...assembly,
+        get regions() {
+          return loaded.get() ? assembly.regions : undefined
+        },
+        get refNameToIndex() {
+          return loaded.get() ? assembly.refNameToIndex : undefined
+        },
+      }
+      const { display, contigLine } = await framedDisplay('volvox_random', {
+        assemblyOf: name =>
+          name === 'volvox_random' ? loading : testAssembly(),
+      })
+      const baselines: Span[][] = []
+      const dispose = autorun(() => {
+        baselines.push(display.laneStack.lanes[1]!.baseline)
+      })
+      expect(baselines.at(-1)).toEqual(DIVIDER)
+      runInAction(() => {
+        loaded.set(true)
+      })
+      expect(baselines.at(-1)).toEqual(contigLine)
+      dispose()
+    })
+
+    test('the anchor lane draws the displayed slice of its contig', () => {
+      const display = createDisplay()
+      expect(display.laneStack.lanes[0]!.baseline).toEqual([[0, 1000]])
+      display.lgv.setDisplayedRegions([
+        { refName: 'ctgA', start: 0, end: 300, assemblyName: 'volvox' },
+        {
+          refName: 'ctgA',
+          start: 500,
+          end: 800,
+          assemblyName: 'volvox',
+          reversed: true,
+        },
+      ])
+      const px = (bp: number) => Math.round(bp / display.lgv.bpPerPx)
+      expect(display.laneStack.lanes[0]!.baseline).toEqual([
+        [0, px(300)],
+        [px(300), px(600)],
+      ])
+    })
   })
 })
 

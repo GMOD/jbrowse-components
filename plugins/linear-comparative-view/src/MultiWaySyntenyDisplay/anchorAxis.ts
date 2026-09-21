@@ -60,3 +60,21 @@ export function axisSpan(
   const placement = axisPlacement(view, refName, start, end)
   return placement && [placement.x1 - originPx, placement.x2 - originPx]
 }
+
+/**
+ * `axisSpan` of every whole displayed region, in one walk: asked region by
+ * region, each call rescans the regions before it
+ */
+export function displayedRegionSpans(
+  view: LinearGenomeViewModel,
+  originPx = view.offsetPx,
+): Span[] {
+  const { bpPerPx, displayedRegions } = view
+  let bp = 0
+  return displayedRegions.map(({ start, end, reversed }) => {
+    const left = Math.round(bp / bpPerPx) - originPx
+    bp += end - start
+    const right = Math.round(bp / bpPerPx) - originPx
+    return reversed ? [right, left] : [left, right]
+  })
+}
