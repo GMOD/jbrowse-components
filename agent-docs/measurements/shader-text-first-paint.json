@@ -1,0 +1,63 @@
+{
+  "id": "shader-text-first-paint",
+  "measured": "2026-09-21",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "pnpm --filter @jbrowse/web build && PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome node products/jbrowse-web/browser-tests/shader-text-first-paint-probe.ts",
+    "notes": "Headless Chrome on a production build of jbrowse-web, pinned to WebGL2 with renderer=webgl, opening volvox_alignments_pileup_coverage at ctgA:1000-6000 under puppeteer's predefined network conditions. Times run from navigation to when the last GLSL chunk (a script holding #version 300 es), the last data request (bam, bai, fasta and their indexes) and the first display with data-display-drawn finish, each the median of three sittings. The worker's requests are among those counted."
+  },
+  "columns": [
+    {
+      "key": "network",
+      "label": "network"
+    },
+    {
+      "key": "glslChunks",
+      "label": "GLSL chunks",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "lastGlslMs",
+      "label": "last GLSL chunk",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "lastDataMs",
+      "label": "last data request",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "firstPaintMs",
+      "label": "first paint",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "network": "Fast 4G",
+        "glslChunks": 18,
+        "lastGlslMs": 6697,
+        "lastDataMs": 9729,
+        "firstPaintMs": 9903
+      }
+    },
+    {
+      "values": {
+        "network": "Slow 4G",
+        "glslChunks": 18,
+        "lastGlslMs": 27277,
+        "lastDataMs": 38408,
+        "firstPaintMs": 38553
+      }
+    }
+  ]
+}
