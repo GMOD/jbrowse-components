@@ -11,10 +11,16 @@ Nearly all of this is about placement happening **twice, on two clocks**.
 ## Two passes, because the exact answer costs an RPC
 
 A CIGAR walk happens in the worker, so the **exact pass** can only ask once the
-anchor settles, reading the debounced `coarseDynamicBlocks`. On its own the row
+anchor settles, woken by the debounced `coarseDynamicBlocks`. On its own the row
 sits still through the drag and jumps half a second after the user stops. So a
 **frame pass** on live `dynamicBlocks.contentBlocks` does everything except the
 RPC. Exact supplies correctness, frame supplies motion.
+
+**The exact pass wakes on the coarse blocks and reads the live ones**, for the
+anchor's window and for where the moving row is. Mid-drag the coarse blocks name
+where the anchor was half a second ago, and after a drag they name where the
+moving row was before the frame pass placed it; read off them, the settle sent
+the row back to the first and re-navigated a row already on its answer.
 
 **The frame pass replans; it does not extrapolate the last exact answer.** That
 was tried and snaps 43% of a screen when the settle lands, because "the answer"
@@ -411,8 +417,10 @@ the set.
 
 **Nothing in the middleware may register as a dependency.** It also sees the
 follow's own root actions, some dispatched from inside its autoruns, so its
-reads are `untracked`. `gestureTakesAnchor.integration.test.ts` holds all of
-this on a real stack; the unit harness's rows are not the host's children and
+reads are `untracked`. A row showing nothing yet takes nothing: `appendRow`
+builds an LGV whose own init navigates it as a root action, and that places the
+row rather than the anchor. `gestureTakesAnchor.integration.test.ts` holds all
+of this on a real stack; the unit harness's rows are not the host's children and
 see no middleware, which is what lets it still test the exact pass re-asserting
 over a row something other than a gesture moved.
 
