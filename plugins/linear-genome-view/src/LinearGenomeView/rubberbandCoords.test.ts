@@ -183,3 +183,13 @@ test('"Zoom to region" survives the selection being released on menu close', () 
 
   expect(view.bpPerPx).toBeLessThan(before)
 })
+
+test('Launch sorts below rows a plugin appends at the default priority', () => {
+  const { view } = setup()
+  view.setOffsets(view.pxToBp(100), view.pxToBp(200))
+  const launch = buildRubberBandMenuItems(view, [
+    { label: 'Consensus sequence', onClick: () => {} },
+  ]).find(item => 'label' in item && item.label === 'Launch')
+
+  expect(launch?.priority).toBeLessThan(0)
+})

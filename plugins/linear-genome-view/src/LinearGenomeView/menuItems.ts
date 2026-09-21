@@ -315,8 +315,9 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
 /**
  * Build rubberband selection menu items. `launchItems` are the plugin-supplied
  * things a selection can start (`rubberBandLaunchMenuItems()`); they collect
- * under one "Launch" submenu so the menu stays four actions plus a group
- * however many plugins are loaded, and vanish entirely when none apply.
+ * under one "Launch" submenu so the menu stays a few actions plus a group
+ * however many plugins are loaded, and vanish entirely when none apply. The
+ * group sorts last, below any row a plugin appends to the menu itself.
  *
  * A detail level is offered from HERE and nowhere else, because a drag is what
  * the feature was always asking for and a menu item could not: the level shows
@@ -414,6 +415,7 @@ export function buildRubberBandMenuItems(
             label: 'Launch',
             icon: LaunchIcon,
             type: 'subMenu' as const,
+            priority: -1000,
             subMenu: launchItems,
           },
         ]

@@ -655,9 +655,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Rubberband selection on the main scalebar, which pops the "Zoom to region /
-  // Get sequence / Copy range / Launch / Bookmark region" menu — the volvox
-  // cram track puts Consensus sequence under that Launch group.
+  // Rubberband selection on the main scalebar and the menu it pops. The volvox
+  // cram track puts Consensus sequence under the Launch group at its foot.
   {
     mode: 'url',
     name: 'rubberband',

@@ -248,9 +248,10 @@ Click and drag on either the main (lower) or overview (upper) scale bar.
 
 <Figure caption="Rubberbanding the main and overview scalebars. The main one produces extra options on selection." src="/img/rubberband.png" />
 
-The main scale bar's menu holds **Zoom to region**, **Get sequence**, **Copy
-range**, **Highlight region** and **Bookmark region**, plus a **Launch** submenu
-of what the loaded plugins can start from the selection:
+The main scale bar's menu holds **Zoom to region**,
+[**Add detail level**](#detail-levels), **Get sequence**, **Copy range**,
+**Highlight region** and **Bookmark region**, then a **Launch** submenu of what
+the loaded plugins can start from the selection:
 
 - [](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at),
   when a synteny dataset in the session covers this assembly. It opens one panel
