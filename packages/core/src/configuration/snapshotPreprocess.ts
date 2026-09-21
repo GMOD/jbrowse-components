@@ -60,14 +60,31 @@ export function shorthandForm({
       : 'string'
 }
 
+// ADR-146's reset, on the snapshot path: the member keeps its key, so a
+// settings bag still resets it, and `create` reads `undefined` as the default
+function nullMembersAsUnset(
+  snapshot: Record<string, unknown>,
+  storesNull: ReadonlySet<string>,
+) {
+  let out = snapshot
+  for (const key in snapshot) {
+    if (snapshot[key] === null && !storesNull.has(key)) {
+      out = out === snapshot ? { ...snapshot } : out
+      out[key] = undefined
+    }
+  }
+  return out
+}
+
 /**
  * What a schema does to every snapshot on its way in, whichever door it
  * arrives by (`create`, `applySnapshot`, `setSubschema`, a settings bag): a
  * bare string or number lifts into the declared `shorthand` slot, beside any
- * `shorthandWith` slots, and `null`
- * into the empty object that clears it, a `closed` schema refuses a key it
- * does not declare, then the schema's own `preProcessSnapshot` runs. A bare
- * value the shorthand does not lift passes through for MST to refuse.
+ * `shorthandWith` slots, and `null` into the empty object that clears it; a
+ * `null` member reads as unset, except in a frozen-family slot, which stores
+ * it; a `closed` schema refuses a key it does not declare, then the schema's
+ * own `preProcessSnapshot` runs. A bare value the shorthand does not lift
+ * passes through for MST to refuse.
  */
 export function preProcessSnapshotWith(
   schema: ConfigurationSchemaMetadata,
@@ -80,7 +97,10 @@ export function preProcessSnapshotWith(
       ? {}
       : shorthand !== undefined && typeof snapshot === shorthandForm(schema)
         ? { ...shorthandWith, [shorthand]: snapshot }
-        : (snapshot as Record<string, unknown>)
+        : nullMembersAsUnset(
+            snapshot as Record<string, unknown>,
+            schema.storesNull,
+          )
   if (closed) {
     refuseUndeclaredKeys(schema, lifted)
   }

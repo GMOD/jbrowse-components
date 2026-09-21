@@ -247,7 +247,10 @@ export function valueScaleSchema({
              * the display derives it (the mark display from the `encoding.y`
              * field every mark drawing a value at the view's zoom shares,
              * and none where they differ or one is a `jexl:` expression);
-             * some text is that text; `""` is an axis with no caption.
+             * some text is that text; `""` is an axis with no caption, and
+             * the only spelling of one. `null` reads as unset, as it does in
+             * every slot, so it derives the caption — where Vega-Lite and
+             * GenomeSpy read `title: null` as no title.
              */
             title: {
               type: 'maybeString',

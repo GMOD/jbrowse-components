@@ -20,6 +20,8 @@ export interface ConfigurationSchemaMetadata {
    * i.e. with any `baseConfiguration`'s hooks already composed in
    */
   options: MergedConfigurationSchemaOptions<any, any>
+  /** the frozen-family slots, the only members a snapshot's `null` is stored in */
+  storesNull: ReadonlySet<string>
 }
 
 // Per-schema metadata keyed by the MST type itself. Registered for BOTH the

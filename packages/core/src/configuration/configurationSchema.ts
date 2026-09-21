@@ -287,6 +287,7 @@ function makeConfigurationSchemaModel<
   // that also holds the sub-schema properties and the identifier, neither of
   // which setSlot may write. Same collect-as-you-classify as subSchemaKeys.
   const slotKeys = new Set<string>()
+  const storesNull = new Set<string>()
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (isConfigurationSchemaType(slotDefinition)) {
       // a sub-configuration. A bare sub-schema is already stripDefault-wrapped
@@ -309,6 +310,9 @@ function makeConfigurationSchemaModel<
       slotKeys.add(slotName)
       try {
         modelDefinition[slotName] = ConfigSlot(slotDefinition)
+        if (modelDefinition[slotName].is(null)) {
+          storesNull.add(slotName)
+        }
       } catch (e) {
         throw new Error(
           `invalid config slot definition for ${modelName}.${slotName}: ${e}`,
@@ -415,16 +419,15 @@ function makeConfigurationSchemaModel<
   for (const hook of hookList(options.extend)) {
     completeModel = completeModel.extend(hook)
   }
-  const metadata = { name: modelName, definition: schemaDefinition, options }
-  if (
-    options.shorthand !== undefined ||
-    options.closed ||
-    options.preProcessSnapshot
-  ) {
-    completeModel = completeModel.preProcessSnapshot(snapshot =>
-      preProcessSnapshotWith(metadata, snapshot),
-    )
+  const metadata = {
+    name: modelName,
+    definition: schemaDefinition,
+    options,
+    storesNull,
   }
+  completeModel = completeModel.preProcessSnapshot(snapshot =>
+    preProcessSnapshotWith(metadata, snapshot),
+  )
 
   const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
   const modelDefault = options.explicitlyTyped

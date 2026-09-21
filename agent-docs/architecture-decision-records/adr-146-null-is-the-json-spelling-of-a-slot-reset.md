@@ -110,6 +110,17 @@ member", rather than inventing a house convention.
   only when both are post-`stripDefault`, so every caller diffs two snapshots in
   that form. Having no schema, the delta reads `null` this way at every depth,
   a frozen slot's object members included.
+- **The create path reads a `null` member as unset too**, so a config file
+  says what a session spec says. Every schema's snapshot preprocessing
+  (`preProcessSnapshotWith`) turns a `null` member into `undefined`, which
+  `create` reads as the default, in a typed slot and a sub-schema alike and at
+  every depth, since each schema runs it over its own members. Before, a
+  `null` in a `maybe*` slot — `{ scales: { y: { domainMin: null } } }` — failed
+  MST validation and the session dropped the whole track. A frozen-family
+  slot keeps what the Decision says of it: its type takes `null`, so the
+  snapshot stores one. For `scales.y.title` this makes `null` mean
+  "derive the caption", the opposite of Vega-Lite's and GenomeSpy's `title:
+  null`; `""` is the spelling for no caption, and the slot doc says so.
 - A frozen slot's *nested* nulls are untouched — the merge path reinterprets a
   slot's own value and a namespace's members, and recurses into nothing else. A
   caller that needs to store a bare `null` wraps it, or writes it as a snapshot.

@@ -826,6 +826,62 @@ describe('setSlot', () => {
   })
 })
 
+describe('a null member on the create path', () => {
+  const Axis = ConfigurationSchema(
+    'NullAxis',
+    {
+      title: { type: 'maybeString' },
+      domainMin: { type: 'maybeNumber' },
+      ticks: { type: 'number', defaultValue: 5 },
+    },
+    { closed: true },
+  )
+  const Rule = ConfigurationSchema(
+    'NullRule',
+    { value: { type: 'number', defaultValue: 1 } },
+    { shorthand: 'value' },
+  )
+  const Display = ConfigurationSchema('NullDisplay', {
+    label: { type: 'string', defaultValue: 'hello' },
+    axis: Axis,
+    open: ConfigurationSchema('NullOpen', {
+      height: { type: 'number', defaultValue: 100 },
+    }),
+    rules: types.array(Rule),
+    sidecar: { type: 'maybeFrozen' },
+  })
+
+  test('reads as absent, in a slot, a sub-schema and a list of them', () => {
+    const node = Display.create(
+      {
+        label: null,
+        axis: { title: null, domainMin: null, ticks: null },
+        open: null,
+        rules: [{ value: null }],
+      },
+      { pluginManager },
+    )
+    expect(getSnapshot(node)).toEqual({ rules: [{}] })
+    expect(readConfObject(node, 'label')).toBe('hello')
+    expect(readConfObject(node, ['axis', 'title'])).toBeUndefined()
+    expect(readConfObject(node, ['axis', 'ticks'])).toBe(5)
+    expect(readConfObject(node, ['open', 'height'])).toBe(100)
+    expect(getSnapshot(Display.create({ rules: null }))).toEqual({})
+  })
+
+  test('is what a dialog or validator checks against', () => {
+    expect(preProcessConfigSnapshot(Axis, { title: null })).toEqual({
+      title: undefined,
+    })
+  })
+
+  test('still stores a literal null in a frozen-family slot', () => {
+    expect(getSnapshot(Display.create({ sidecar: null }))).toEqual({
+      sidecar: null,
+    })
+  })
+})
+
 describe('schema definition entry classification', () => {
   test('a slot definition missing its type throws a specific error', () => {
     expect(() =>

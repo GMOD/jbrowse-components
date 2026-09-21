@@ -19,10 +19,11 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
   `null` as its default** — a slot meaning "unset" is `maybeFrozen`, never
   `frozen` with `defaultValue: null`. Omitting the key is a different thing:
   `setSlot` is the merge path, where an absent key means "leave it alone", while
-  a snapshot handed to `create` resets an omitted slot already — and still
-  stores a literal `null` if one is written there. A namespace's member takes
-  the other merge, `mergedSubschemaValue`, which reads `null` the same way at
-  any depth. ADR-146.
+  a snapshot handed to `create` resets an omitted slot already. **`create` reads
+  a `null` member as unset too**, in a slot or a sub-schema at any depth
+  (`preProcessSnapshotWith`), except in a frozen-family slot, which stores it. A
+  namespace's member takes the other merge, `mergedSubschemaValue`, which reads
+  `null` the same way at any depth. ADR-146.
 - **`setConf` classifies a member off the schema's definition**, not off what
   the node holds there: an optional sub-schema nobody has written holds nothing,
   and a `stringArray` slot holds an array.
