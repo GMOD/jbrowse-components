@@ -786,7 +786,7 @@ export const videoFrames: Record<
   },
   "ui/close_ups": {
     "width": 1920,
-    "height": 700
+    "height": 750
   },
   "ui/open_track_url": {
     "width": 1920,

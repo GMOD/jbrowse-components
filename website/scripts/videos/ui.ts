@@ -151,7 +151,7 @@ export const uiVideos: VideoSpec[] = [
     url: closeUpSession,
     // three gene rows at 100 with their trapezoids, and the menu that opens
     // over them on each release
-    viewportHeight: 700,
+    viewportHeight: 750,
     readySelector: displayPainted('feature-display'),
     readyTimeout: 120000,
     steps: [

@@ -277,9 +277,7 @@ function installCloseUpGestures(
       // and one of those is `syncCloseUps` — an autorun that dispatches
       // close-up actions. A `pendingLaunch` or `bpPerPx` read registered there
       // re-runs the whole sync whenever anything in the stack moves.
-      // eslint-disable-next-line no-restricted-syntax -- effect input: the two
-      // scales a gesture is replayed at, read where an autorun may be the
-      // caller
+      // eslint-disable-next-line no-restricted-syntax -- effect input: the two scales a gesture is replayed at, read where an autorun may be the caller
       const handled = untracked(
         () => mine && redirectCloseUpGesture(self, host, call, abort),
       )
