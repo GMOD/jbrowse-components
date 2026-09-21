@@ -73,6 +73,7 @@ import { MIGRATED_DISPLAY_INSTANCE_KEYS } from '@jbrowse/product-core'
 import { JBrowseConfigF } from '@jbrowse/app-core'
 import {
   getConfigurationSchemaMetadata,
+  getConfigurationSchemaUnion,
   shorthandForm,
 } from '@jbrowse/core/configuration'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -570,6 +571,7 @@ const schema = buildConfigJsonSchema({
     views: elements('view', n => pm.getViewType(n)),
   },
   metadataOf: getConfigurationSchemaMetadata,
+  unionOf: getConfigurationSchemaUnion,
   shorthandFormOf: shorthandForm,
   cssColorNames: CSS_COLOR_NAMES,
   isType,

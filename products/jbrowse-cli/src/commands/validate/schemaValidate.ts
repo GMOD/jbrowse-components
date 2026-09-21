@@ -167,6 +167,12 @@ const viewNames = new Set(
 // so a slot name written there is dropped just like a misspelling — and the
 // advice differs, because the key is real and there are two right places for
 // it.
+function listed(keys: readonly string[]) {
+  return keys.length > 1
+    ? `${keys.slice(0, -1).join(', ')} and ${keys.at(-1)}`
+    : (keys[0] ?? 'nothing')
+}
+
 function unknownKeyMessage(
   key: string,
   schema: Schema,
@@ -201,6 +207,9 @@ function unknownKeyMessage(
   }
   if (title.endsWith('TrackEntry')) {
     return `"${key}" is neither a config slot nor a property of ${title.replace(/TrackEntry$/, '')}${guess} — the entry's keys are folded onto that display, and one it does not declare silently does nothing`
+  }
+  if (schema['x-closed'] === true) {
+    return `unknown slot "${key}"${guess} — ${title} takes ${listed(accepted)}, and JBrowse refuses to load it rather than drop a key it does not declare`
   }
   return `unknown slot "${key}"${guess} — JBrowse ignores keys it does not declare, so this setting silently does nothing`
 }
@@ -322,13 +331,19 @@ function explain(
   }
   // A union failure explains everything beneath it; the branch is re-validated
   // on its own so the sub-errors reported for the other branches drop out.
+  // A union nested as another's branch at the same path (`number | "auto"`
+  // inside a slot's `value | jexl:`) is the outer one's to explain, and never
+  // the other way round, or neither is reported.
   const unions = errors.filter(e => e.keyword === 'anyOf')
+  const isBranchOf = (u: ErrorObject, e: ErrorObject) =>
+    branchesOf(u).some(b => resolve(b) === e.parentSchema)
   const shadowed = (e: ErrorObject) =>
     unions.some(
       u =>
         u !== e &&
-        (e.instancePath === u.instancePath ||
-          e.instancePath.startsWith(`${u.instancePath}/`)),
+        (e.instancePath.startsWith(`${u.instancePath}/`) ||
+          (e.instancePath === u.instancePath &&
+            !(e.keyword === 'anyOf' && isBranchOf(e, u)))),
     )
   for (const error of errors) {
     if (shadowed(error)) {

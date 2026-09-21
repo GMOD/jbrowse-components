@@ -417,6 +417,38 @@ describe('where a config holds a marks list', () => {
   })
 })
 
+describe('a transform step in a config file', () => {
+  const stepProblems = (step: Record<string, unknown>) =>
+    problemsOf(
+      configOf([{ shape: 'bar', encoding: { y: 'score' }, transform: [step] }]),
+    ).map(p => `${p.where}: ${p.message}`)
+  const STEP = `${DISPLAY}.marks[0].transform[0]`
+
+  it('names its type', () => {
+    expect(stepProblems({ step: 1000 })).toEqual([`${STEP}: missing "type"`])
+  })
+
+  it('names a type the list has', () => {
+    expect(stepProblems({ type: 'fliter', expr: 'jexl:true' })).toEqual([
+      `${STEP}.type: expected one of "filter", "formula", "bin", "aggregate", "coverage", "flatten", "pileup", got "fliter"`,
+    ])
+  })
+
+  it('takes only its own slots, and says a load refuses a key of another step', () => {
+    expect(
+      stepProblems({ type: 'filter', expr: 'jexl:true', step: 50 }),
+    ).toEqual([
+      `${STEP}.step: unknown slot "step" — MarkTransform.filter takes type and expr, and JBrowse refuses to load it rather than drop a key it does not declare`,
+    ])
+  })
+
+  it('reads a slot whose value is itself a choice as that choice', () => {
+    expect(stepProblems({ type: 'bin', step: 'wide' })).toEqual([
+      `${STEP}.step: expected a number or "auto" or a "jexl:" expression, got "wide"`,
+    ])
+  })
+})
+
 describe('the lift a file takes before the rules read it', () => {
   const slots = configManifest.displays.LinearMarkDisplay!.slots
 

@@ -3373,6 +3373,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback.",
@@ -3443,6 +3444,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "field": {
               "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand.",
@@ -3980,6 +3982,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "CSS colour of a read no field paints.",
@@ -4060,6 +4063,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "field": {
               "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none.",
@@ -4088,6 +4092,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ValueScale": {
       "title": "ValueScale",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "description": "linear or log or symlog.",
@@ -4147,6 +4152,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "Scales": {
       "title": "Scales",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "y": {
           "$ref": "#/$defs/ValueScale"
@@ -4683,6 +4689,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "CSS colour of a read no field paints.",
@@ -5116,6 +5123,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "the color of the ribbons connecting adjacent lanes.",
@@ -6106,6 +6114,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "CSS colour painting every bar.",
@@ -6187,6 +6196,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "the value the rule is drawn at.",
@@ -6213,6 +6223,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ValueScale2": {
       "title": "ValueScale2",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "description": "linear or log or symlog.",
@@ -6284,6 +6295,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "Scales2": {
       "title": "Scales2",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "y": {
           "$ref": "#/$defs/ValueScale2"
@@ -7216,6 +7228,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "CSS color or jexl callback for Manhattan points.",
@@ -7282,6 +7295,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ValueScale3": {
       "title": "ValueScale3",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "description": "linear.",
@@ -7318,6 +7332,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "Scales3": {
       "title": "Scales3",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "y": {
           "$ref": "#/$defs/ValueScale3"
@@ -7402,6 +7417,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback.",
@@ -7484,6 +7500,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "disc, triangle, diamond or jexl callback.",
@@ -7549,6 +7566,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MarkEncoding": {
       "title": "MarkEncoding",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "x": {
           "description": "left edge field.",
@@ -7582,9 +7600,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "filter": {
-      "title": "filter",
+    "MarkTransform.filter": {
+      "title": "MarkTransform.filter",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "const": "filter"
@@ -7600,9 +7619,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "formula": {
-      "title": "formula",
+    "MarkTransform.formula": {
+      "title": "MarkTransform.formula",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "const": "formula"
@@ -7623,9 +7643,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "bin": {
-      "title": "bin",
+    "MarkTransform.bin": {
+      "title": "MarkTransform.bin",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "const": "bin"
@@ -7671,6 +7692,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MarkAggregateOp": {
       "title": "MarkAggregateOp",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "op": {
           "description": "count, sum, mean, min or max.",
@@ -7706,9 +7728,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "aggregate": {
-      "title": "aggregate",
+    "MarkTransform.aggregate": {
+      "title": "MarkTransform.aggregate",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "const": "aggregate"
@@ -7729,9 +7752,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "coverage": {
-      "title": "coverage",
+    "MarkTransform.coverage": {
+      "title": "MarkTransform.coverage",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "const": "coverage"
@@ -7747,9 +7771,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "flatten": {
-      "title": "flatten",
+    "MarkTransform.flatten": {
+      "title": "MarkTransform.flatten",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "const": "flatten"
@@ -7775,9 +7800,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "pileup": {
-      "title": "pileup",
+    "MarkTransform.pileup": {
+      "title": "MarkTransform.pileup",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "const": "pileup"
@@ -7805,6 +7831,140 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "additionalProperties": false
+    },
+    "MarkTransform": {
+      "title": "MarkTransform",
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "filter",
+            "formula",
+            "bin",
+            "aggregate",
+            "coverage",
+            "flatten",
+            "pileup"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "filter"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.filter"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "formula"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.formula"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "bin"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.bin"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "aggregate"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.aggregate"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "coverage"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.coverage"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "flatten"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.flatten"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "pileup"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.pileup"
+          }
+        }
+      ]
     },
     "Mark": {
       "title": "Mark",
@@ -7848,6 +8008,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "errorMessage": "a bar or a point stands at a value and names no y field to plot, so it draws nothing"
         }
       ],
+      "x-closed": true,
       "properties": {
         "shape": {
           "description": "bar, point or span.",
@@ -7871,29 +8032,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "transform": {
           "type": "array",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/filter"
-              },
-              {
-                "$ref": "#/$defs/formula"
-              },
-              {
-                "$ref": "#/$defs/bin"
-              },
-              {
-                "$ref": "#/$defs/aggregate"
-              },
-              {
-                "$ref": "#/$defs/coverage"
-              },
-              {
-                "$ref": "#/$defs/flatten"
-              },
-              {
-                "$ref": "#/$defs/pileup"
-              }
-            ]
+            "$ref": "#/$defs/MarkTransform"
           }
         },
         "source": {
@@ -7930,6 +8069,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ValueScale4": {
       "title": "ValueScale4",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "type": {
           "description": "linear or log.",
@@ -7999,6 +8139,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "Scales4": {
       "title": "Scales4",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "y": {
           "$ref": "#/$defs/ValueScale4"
@@ -8057,29 +8198,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "transform": {
           "type": "array",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/filter"
-              },
-              {
-                "$ref": "#/$defs/formula"
-              },
-              {
-                "$ref": "#/$defs/bin"
-              },
-              {
-                "$ref": "#/$defs/aggregate"
-              },
-              {
-                "$ref": "#/$defs/coverage"
-              },
-              {
-                "$ref": "#/$defs/flatten"
-              },
-              {
-                "$ref": "#/$defs/pileup"
-              }
-            ]
+            "$ref": "#/$defs/MarkTransform"
           }
         },
         "facet": {
@@ -18481,6 +18600,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "type": "object",
+          "x-closed": true,
           "properties": {
             "value": {
               "description": "the color of every alignment in place of the default scheme.",

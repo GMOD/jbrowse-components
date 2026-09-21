@@ -83,6 +83,9 @@ interface ConfigHeader {
   // adapter's example is wrapped in to show a full track config (see
   // wrapAdapterExample). Adapter pages only.
   trackType?: string
+  // the #config sits on a `ConfigurationSchemaUnion`, whose rows are each
+  // prefixed with the member type they belong to
+  union?: boolean
 }
 export interface Config {
   header?: ConfigHeader
@@ -258,6 +261,7 @@ export function accumulateConfig(
       declId: obj.selfDeclId,
       category: item.category,
       trackType: item.trackType,
+      union: obj.node.includes('ConfigurationSchemaUnion('),
     }
     // assigned, not appended: extractWithComment can emit one declaration twice
     // (the variable statement and its inner declaration), and appending would
@@ -773,6 +777,12 @@ function shorthandLine(name: string, category: string, isBase: boolean) {
   return `It also accepts the [shorthand](${FILE_TYPES_GUIDE}#the-uri-shorthand) key${keys.length > 1 ? 's' : ''} ${keys.map(k => `\`${k}\``).join(', ')} in place of writing a location slot out.`
 }
 
+// How a union's rows are written: `bin.step` is `{ "type": "bin", "step": … }`.
+function unionNesting(name: string, slots: Item[]) {
+  const [type = 'type', slot = 'slot'] = slots[0]?.name.split('.') ?? []
+  return `A ${name} is one of the types its rows begin with, named by its \`type\`, and takes only that type's rows: \`${type}.${slot}\` is written \`{ "type": "${type}", "${slot}": ... }\`, and a key belonging to another type is refused where the config is read.`
+}
+
 // Where a page's slots are written in a config file. A `#slot-` deep link
 // scrolls past the example and lands mid-table, so the nesting — adapter slot,
 // display entry, or top-level track field — has to be stated at the table
@@ -866,7 +876,9 @@ function renderConfig(
     ? section(
         '## Config slots',
         [
-          slotNesting(header.name, category, isBase),
+          header.union
+            ? unionNesting(header.name, slots)
+            : slotNesting(header.name, category, isBase),
           shorthandLine(header.name, category, isBase),
           `Slot types (\`fileLocation\`, \`frozen\`, ...) are explained in the [config slot types reference](${SLOT_TYPES_GUIDE}). Slots a base configuration contributes are listed here too, so this table is the whole surface.`,
         ]
@@ -1799,7 +1811,9 @@ export function renderAgentConfig(
         firstParagraph(header.docs, 600),
         isBase
           ? `A shared base schema, not a type you write: use one of ${(links.extendedBy.get(header.name) ?? []).join(', ')}.`
-          : AGENT_SLOT_NESTING[category]?.(header.name),
+          : header.union
+            ? unionNesting(header.name, slots).replaceAll('`', '')
+            : AGENT_SLOT_NESTING[category]?.(header.name),
         shorthand.length > 0 &&
           `Shorthand: ${shorthand.join(', ')} may replace the location slot.`,
         trackType && trackType !== header.name && `Track type: ${trackType}.`,

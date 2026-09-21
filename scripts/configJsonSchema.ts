@@ -37,6 +37,7 @@ export interface SchemaMetadata {
     explicitIdentifier?: string
     implicitIdentifier?: string | boolean
     shorthand?: string
+    closed?: boolean
     preProcessSnapshot?: (snap: unknown) => unknown
     requires?: {
       id: string
@@ -103,6 +104,10 @@ export interface Deps {
     views: ElementEntry[]
   }
   metadataOf: (type: MstType) => SchemaMetadata | undefined
+  /** The name and members of a `ConfigurationSchemaUnion`, keyed by `type`. */
+  unionOf: (
+    type: MstType,
+  ) => { name: string; members: Record<string, MstType> } | undefined
   /** The bare value a schema's `shorthand` lifts, as the config reader decides it. */
   shorthandFormOf: (meta: SchemaMetadata) => 'string' | 'number' | undefined
   /** The CSS named colors, as the painters' table spells them. */
@@ -143,6 +148,10 @@ function cssColorPattern(names: readonly string[]) {
 // The annotation on an `if`/`then` that states a `requires` entry: its id and
 // the one slot path the branch requires, which the CLI validator reports at.
 const REQUIREMENT = 'x-requirement'
+
+// The annotation on a `closed` schema's object: JBrowse refuses a key it does
+// not declare where every other schema drops one, and the validator says which.
+const CLOSED = 'x-closed'
 
 const COMMENT_KEYS = { '^_+comment': {} }
 const FROZEN_NOTE =
@@ -275,6 +284,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   function mstSchema(raw: MstType, depth: number): JsonSchema {
     if (raw === deps.fileLocation) {
       return ref('FileLocation')
+    }
+    const declared = deps.unionOf(raw)
+    if (declared) {
+      return declaredUnion(declared.name, declared.members, depth)
     }
     const configName = configDefNames.get(raw)
     if (configName) {
@@ -618,6 +631,54 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
   }
 
+  // A `ConfigurationSchemaUnion`: `type` is one of its keys and dispatches to
+  // that member's closed object, the shape `$defs.Display` has. The keys are
+  // an enum rather than any string, since no plugin adds a member.
+  const declaredUnions = new Map<string, Record<string, MstType>>()
+  function declaredUnion(
+    name: string,
+    members: Record<string, MstType>,
+    depth: number,
+  ): JsonSchema {
+    const seen = declaredUnions.get(name)
+    if (seen && seen !== members) {
+      throw new Error(`two ConfigurationSchemaUnions are named ${name}`)
+    }
+    if (!seen) {
+      if (name in defs) {
+        throw new Error(
+          `the ConfigurationSchemaUnion ${name} names a def already taken`,
+        )
+      }
+      declaredUnions.set(name, members)
+      const arms = Object.entries(members).map(([key, member]) => {
+        const meta = deps.metadataOf(member)
+        if (!meta) {
+          throw new Error(`${name}'s "${key}" has no registered metadata`)
+        }
+        return {
+          key,
+          then: configObject(member, meta, depth, `${name}.${key}`),
+        }
+      })
+      defs[name] = {
+        title: name,
+        type: 'object',
+        properties: { type: { enum: Object.keys(members) } },
+        required: ['type'],
+        allOf: arms.map(({ key, then }) => ({
+          if: {
+            type: 'object',
+            properties: { type: { const: key } },
+            required: ['type'],
+          },
+          then,
+        })),
+      }
+    }
+    return ref(name)
+  }
+
   // An unregistered ConfigurationSchema, i.e. a sub-schema slot. Every track
   // schema builds its own `textSearching` and `formatDetails`, so identical
   // ones share one definition, named after the sub-schema.
@@ -626,6 +687,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     type: MstType,
     meta: SchemaMetadata,
     depth: number,
+    defName?: string,
   ): JsonSchema {
     const name = type.name.replace(/ConfigurationSchema$/, '')
     const forms = liftedForms(meta)
@@ -636,7 +698,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         ? { uri: shorthandSchema('uri'), baseUri: shorthandSchema('baseUri') }
         : {}),
     }
-    const object = closed(properties, [], requirements(meta))
+    const object = closed(properties, [], {
+      ...requirements(meta),
+      ...(meta.options.closed ? { [CLOSED]: true } : {}),
+    })
     const schema = forms.bare
       ? {
           anyOf: [
@@ -648,12 +713,13 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           ],
         }
       : object
-    const content = `${name}:${JSON.stringify(schema)}`
+    const base = defName ?? name
+    const content = `${base}:${JSON.stringify(schema)}`
     let shared = sharedByContent.get(content)
     if (!shared) {
-      shared = name
+      shared = base
       for (let i = 2; shared in defs; i++) {
-        shared = `${name}${i}`
+        shared = `${base}${i}`
       }
       sharedByContent.set(content, shared)
       defs[shared] = { title: shared, ...schema }

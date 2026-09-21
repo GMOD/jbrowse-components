@@ -106,7 +106,7 @@ describe('the schema', () => {
 
   it('is a valid draft 2020-12 schema', () => {
     const ajv = new Ajv2020({ strict: true, strictRequired: false })
-    ajv.addVocabulary(['x-requirement', 'errorMessage'])
+    ajv.addVocabulary(['x-requirement', 'x-closed', 'errorMessage'])
     expect(ajv.validateSchema(configJsonSchema)).toBe(true)
     expect(() => ajv.compile(configJsonSchema)).not.toThrow()
   })

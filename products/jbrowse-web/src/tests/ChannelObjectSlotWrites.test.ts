@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   getConfigurationSchemaMetadata,
+  getConfigurationSchemaUnion,
   isConfigurationSchemaType,
   isSlotDefinitionEntry,
   makeSlotFacade,
@@ -22,7 +23,10 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
 function subSchemas(type: IAnyType): IAnyType[] {
   const meta = getConfigurationSchemaMetadata(type)
   if (!meta) {
-    return []
+    const members = Object.values(
+      getConfigurationSchemaUnion(type)?.members ?? {},
+    )
+    return [...members, ...members.flatMap(subSchemas)]
   }
   return Object.values(meta.definition).flatMap(entry => {
     if (!isConfigurationSchemaType(entry)) {

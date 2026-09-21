@@ -1,4 +1,10 @@
-import { getTypeNamesFromExplicitlyTypedUnion } from '@jbrowse/core/configuration'
+import {
+  getConfigurationSchemaDefinition,
+  getConfigurationSchemaUnion,
+  getTypeNamesFromExplicitlyTypedUnion,
+  isSlotDefinitionEntry,
+  slotChoices,
+} from '@jbrowse/core/configuration'
 import {
   DEFAULT_BIN_AS as WORKER_BIN_AS,
   DEFAULT_BIN_FIELD as WORKER_BIN_FIELD,
@@ -7,6 +13,7 @@ import {
   DEFAULT_PILEUP_AS as WORKER_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS as WORKER_PILEUP_FIELDS,
 } from '@jbrowse/core/util/featureTransforms'
+import { isArrayType, isType } from '@jbrowse/mobx-state-tree'
 
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
@@ -26,7 +33,7 @@ import type {
   ConfigNodeBrand,
 } from '@jbrowse/core/configuration'
 import type { TransformStep } from '@jbrowse/core/util/markEncoding'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type MutuallyExtends<A, B> = [A] extends [B]
   ? [B] extends [A]
@@ -76,5 +83,56 @@ test("a step's defaults are the ones the worker reads for a slot the wire leaves
     flattenField: WORKER_FLATTEN_FIELD,
     pileupAs: WORKER_PILEUP_AS,
     pileupFields: WORKER_PILEUP_FIELDS,
+  })
+})
+
+// Each step slot's type, default and vocabulary, one line apiece: the line a
+// changed default shows up as. `ConfigSlotDefaults.test.ts` reads each
+// registered element's own slots and never the steps inside a `transform`.
+function slotLines(schema: IAnyType, prefix: string): [string, string][] {
+  return Object.entries(getConfigurationSchemaDefinition(schema)!).flatMap(
+    ([name, entry]): [string, string][] => {
+      if (isSlotDefinitionEntry(entry)) {
+        const choices = slotChoices(entry)
+        return [
+          [
+            `${prefix}${name}`,
+            `${entry.type} = ${JSON.stringify(entry.defaultValue)}${choices ? ` of ${choices.join(', ')}` : ''}`,
+          ],
+        ]
+      }
+      return isType(entry) && isArrayType(entry)
+        ? slotLines(entry.getChildType(), `${prefix}${name}[].`)
+        : []
+    },
+  )
+}
+
+test('every step slot keeps its type, default and vocabulary', () => {
+  const { members } = getConfigurationSchemaUnion(markTransformStep)!
+  expect(
+    Object.fromEntries(
+      Object.entries(members).flatMap(([type, member]) =>
+        slotLines(member, `${type}.`),
+      ),
+    ),
+  ).toEqual({
+    'filter.expr': 'string = ""',
+    'formula.expr': 'string = ""',
+    'formula.as': 'string = "value"',
+    'bin.step': 'number = 10000',
+    'bin.field': 'string = "start"',
+    'bin.as': 'stringArray = ["start","end"]',
+    'aggregate.groupby': 'stringArray = []',
+    'aggregate.ops[].op': 'stringEnum = "count" of count, sum, mean, min, max',
+    'aggregate.ops[].field': 'string = ""',
+    'aggregate.ops[].as': 'string = ""',
+    'coverage.as': 'string = "coverage"',
+    'flatten.field': 'string = "subfeatures"',
+    'flatten.index': 'string = ""',
+    'flatten.keepEmpty': 'boolean = false',
+    'pileup.as': 'string = "row"',
+    'pileup.fields': 'stringArray = ["start","end"]',
+    'pileup.padding': 'number = 0',
   })
 })
