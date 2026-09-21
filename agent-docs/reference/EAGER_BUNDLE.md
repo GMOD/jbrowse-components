@@ -606,11 +606,13 @@ it, the always-loaded chunk pays for all of it — and nothing in tsc, lint or t
 test suite says so.
 
 That is a *module-splitting* problem, not an import-fixing one, and the generated
-shader modules are the worked example. `pnpm gen:shaders` emits three files per
-shader with entry points — the WGSL/GLSL strings (`x.generated.ts`), the layout
-and packers (`x.iface.generated.ts`), and the `//! export-consts` integers
-(`x.consts.generated.ts`) — with the re-export chain running one way, strings →
-iface → consts, so a render path's namespace import still sees everything.
+shader modules are the worked example. `pnpm gen:shaders` emits three modules a
+consumer imports per shader with entry points — the shader module with its
+`SOURCE` loaders (`x.generated.ts`), the layout and packers
+(`x.iface.generated.ts`), and the `//! export-consts` integers
+(`x.consts.generated.ts`) — with the re-export chain running one way, shader →
+iface → consts, so a render path's namespace import still sees everything. The
+text itself is in none of them; see §"Shader text loads when a HAL is built".
 
 The consts module exists because of what a survey found: **all 33 sites in the
 tree that imported a shader constant wanted nothing else from the module they
@@ -630,8 +632,114 @@ Two things generalize from it:
   If you find a third, check whether the generator can own it before adding to it.
 - **A shader constant now comes from `x.consts.generated.ts`, and there is no
   reason to reach past it.** Importing the same name from `x.generated.ts`
-  compiles, passes every test, and drags the shader source — which is exactly
-  what `plugins/hic`'s `colorRamp.ts` was doing.
+  compiles, passes every test, and drags the layout and packers — which is what
+  `plugins/hic`'s `colorRamp.ts` was doing, when the shader source rode along
+  too.
+
+## Shader text loads when a HAL is built
+
+Measured 2026-09-21 by walking `import-statement` edges through esbuild's
+metafile, the method `scripts/measureRegistryBundle.ts` uses. Every realm
+evaluated every shader's WGSL and GLSL at startup, the RPC worker included,
+though a worker never draws:
+
+| entry | before: text files | before: KB | after |
+| --- | ---: | ---: | ---: |
+| `reExports.generated.ts` (main-thread registry) | 8 | 135 | 0 |
+| `workerReExports.generated.ts` (worker registry) | 8 | 135 | 0 |
+| `rpcWorker.ts` (jbrowse-web's worker: `corePlugins` and the bootstrap) | 18 | 332 | 0 |
+
+The registry record moved by the same 133,016 bytes in each realm
+(`scripts/registryBundleSizes.json`); the layout modules beside the text stayed,
+41 KB of them in each registry and 92 KB from the worker entry.
+
+**Every route was a mark or a pass declared at module scope.**
+`slangPass({ id, mod: shader })` read `mod.WGSL_SOURCE` synchronously, so a
+declaration made its shader module exactly as eager as the plugin registering
+it. From the worker entry: `plugins/canvas/src/index.ts` →
+`featureGlyphMarks.ts` → `render-core/marks` (bar, point, span) and →
+`featureGlyphShapes.ts` → `passes/index.ts` (arrow, chevron, continuation, line,
+rect); `plugins/alignments/src/index.ts` → `shared/groupFeatures.ts` → the
+alignments-core barrel → `coverageBandMarks.ts` → `render-core/coverageBand`
+(the five coverage passes); `plugins/circular-view/src/index.ts` →
+`ringMarks.ts` → `ringShape.ts` (ringWarp);
+`plugins/linear-comparative-view/src/index.ts` → `LevelSyntenyCanvas.tsx` →
+`SyntenyRenderer.ts` → `syntenyRibbonMarks.ts` (the four synteny passes). The
+registries reach the render-core eight through the served subpaths
+`@jbrowse/render-core/marks`, `coverageBand` and `shaders/coverage*`.
+
+**The worker reads layout, and none of it needed the text.** Hi-C's
+`executeRenderHicData` packs through `hic.iface.generated.ts`, alignments'
+`sortLayout` reads gap's consts, GWAS and synteny colours read their consts
+modules, and alignments-core's coverage packers read their `layout-out`
+modules; all of those already lived apart from the strings. The one shader a
+worker runs is tree-sidebar's distance kernel, a compute pass a clustering RPC
+dispatches, and it now loads its WGSL when that run builds its pipeline.
+
+**So the generator moved the text, not the consumers.** `<base>.generated.ts`
+keeps the layout and consts re-exports and gains `SOURCE`, one `import()` per
+target of `<base>.wgsl.generated.ts` / `<base>.glsl.generated.ts`, modules that
+hold the strings and nothing else. `slangPass` carries `SOURCE` onto the
+descriptor, and each consumer awaits its own target at the async point it
+already had: `WebGPUHal.create` per pass inside pipeline resolution,
+`WebGL2Hal.create` for every declared pass (a draw cannot wait), the compute
+cache with its build. Both HALs load before claiming the canvas's context, so a
+load that fails falls down the ladder like any rung failure. A WebGPU session
+never evaluates GLSL, a Canvas2D one evaluates neither, and the 90 `slangPass`
+call sites did not change.
+
+**What a user sees on first opening a display:** its loading state, held until
+the first real frame. The canvas mounts, the backend waits for the text of
+every pass the display declares, fetched in parallel alongside the data, and the
+first paint happens once both are there, with no blank frame ahead of it
+(`firstPaintAwaitsShaderText.test.ts`). Driven in jbrowse-web's dev server with
+a mark bar track and an alignments track: default headless Chrome lands on
+Canvas2D (software WebGL) and fetched no text at all; pinned to WebGL2 the page
+fetched 19 GLSL modules, the bar's one and the alignments display's 18, and no
+WGSL; the worker fetched none in either.
+
+**How it fails quietly, and what says so.**
+
+- A loader that points at the wrong module fails at HAL creation, where the
+  ladder reads it as an unavailable rung and draws on Canvas2D with a console
+  warning. `shaderSources.test.ts` holds every shader in the tree: `SOURCE`
+  names exactly the `.slang`'s targets, each loader resolves to that target's
+  strings alone, and the module a consumer imports exports none.
+- A static import of a text module puts it back in every realm reaching the
+  importer, a few KB heavier and nothing visibly wrong. `noShaderTextImport` in
+  `eslint.config.mjs` refuses one outside tests, benches and probes.
+- A text module served in an `exports` map, or a generator that imports one
+  statically, is invisible to lint. `measureRegistryBundle.ts` fails in both
+  modes, printing the chain, when either registry or jbrowse-web's
+  `rpcWorker.ts` reaches a module exporting `WGSL_SOURCE` or `GLSL_*`.
+- A HAL that drew before its text arrived would paint an empty frame or skip
+  its canary. The first-paint test drives the whole path with the text held
+  back, and fails if the text is loaded in the background instead.
+
+**Declined, with the reason at hand:** one text module per shader for both
+targets (a WebGPU session evaluates the GLSL too); loading at display attach
+(the rung is not chosen yet, so it loads both targets or the wrong one, and a
+display that never mounts a canvas loads for nothing); grouping a plugin's text
+into one chunk (`webpackChunkName` is one bundler's hint, and the generator
+cannot know which passes a display declares together); making the layout lazy
+too (the packers run synchronously, in the encode and in the worker).
+
+**What a second pass now costs at startup.** The lane split held on
+`lane-split-held` compiles a banded bar and point beside the rowless ones, and
+added about 59 KB to each realm while the text was eager. Replayed onto this
+mechanism it adds 14,173 bytes to each registry realm: 11,167 of them the two
+banded passes' layout modules (`bandedBarMark` and `bandedPointMark`, iface and
+shader module), 3,804 the marks' own code, less 798 from the rowless layouts
+dropping their row word. Its 44,650 bytes of text load only when a banded
+display builds a backend, which the dev server confirmed: a rowless bar track
+fetched `barMark`'s GLSL alone, a faceted one `bandedBarMark`'s alone. The
+layout is eager because `render-core/marks` declares both shapes at module
+scope, which is the same registration path that carried the text.
+
+On the build-your-own examples site one page moved: `synteny` went 576 → 565 KB
+gzip eager, chunk count unchanged, and the other eighteen pages measured the
+same on both builds, their shader modules already sitting behind the lazy
+state-model loaders (§"A state model is a loader").
 
 ## A multi-page site's budgets are coupled: adding a page moves all of them
 
@@ -848,11 +956,14 @@ workload — a session builds
 3,415<!--m:config-schema-construction.all-three.types--> MST types in total — so
 a startup cost chased through that figure is being chased in the wrong place.
 
-**Not worth chasing: the synteny shader source.** `syntenyFillCurve`,
-`syntenyFillStraight`, `syntenyEdgeCurve` and `syntenyEdgeStraight` are 116 KB
+**Not worth chasing: a synteny renderer behind its own `import()`.** The
+synteny shader text is lazy now anyway, by the generator (§"Shader text loads
+when a HAL is built"), which is what took that page 576 → 565 KB. What follows
+is why deferring the renderer factory itself was declined. `syntenyFillCurve`,
+`syntenyFillStraight`, `syntenyEdgeCurve` and `syntenyEdgeStraight` were 116 KB
 raw in the synteny page's eager set, four of the six costliest first-party
-modules there, and that reads like the largest win left. Measured 2026-08-21, it
-is not one.
+modules there, and that read like the largest win left. Measured 2026-08-21, it
+was not one.
 
 Two things the raw number hides. Shader text compresses about 4.8x — the four
 modules are 23.6 KB gzipped, and the budget here is bytes over the wire. And the
