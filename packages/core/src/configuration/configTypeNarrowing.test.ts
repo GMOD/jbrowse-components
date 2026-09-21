@@ -5,6 +5,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from './configurationSchema.ts'
+import { ConfigurationSchemaUnion } from './configurationSchemaUnion.ts'
 import { getConf, readConfObject, setConf } from './index.ts'
 
 import type { FileLocation } from '../util/types/index.ts'
@@ -516,6 +517,38 @@ describe('an undeclared member of a config node does not compile', () => {
   // exists to rewrite. None of the three is a type parameter, and the last
   // cannot be one. So the check stays opt-in, at the boundary where legacy keys
   // are not expected.
+  it('reads an array of sub-schemas as its entries, and a union entry as the member it names', () => {
+    const filter = ConfigurationSchema(
+      'filter',
+      { expr: { type: 'string', defaultValue: '' } },
+      { explicitlyTyped: true, closed: true },
+    )
+    const bin = ConfigurationSchema(
+      'bin',
+      { step: { type: 'number', defaultValue: 1 } },
+      { explicitlyTyped: true, closed: true },
+    )
+    const host = ConfigurationSchema('ConfigArrayHost', {
+      filters: types.array(filter),
+      transform: types.array(
+        ConfigurationSchemaUnion('ConfigArrayStep', { filter, bin }),
+      ),
+    })
+    const node = host.create(
+      { filters: [{ expr: 'x' }], transform: [{ type: 'bin', step: 5 }] },
+      { pluginManager },
+    )
+    assertType<Equal<(typeof node.filters)[number]['expr'], string>>()
+    assertType<
+      Equal<(typeof node.transform)[number]['type'], 'filter' | 'bin'>
+    >()
+    const [step] = node.transform
+    // @ts-expect-error an entry is only its member's slots until its type is read
+    expect(step?.step).toBe(5)
+    expect(step?.type === 'bin' ? step.step : undefined).toBe(5)
+    expect(node.filters.map(f => f.expr)).toEqual(['x'])
+  })
+
   it('refuses an unknown key in a snapshot literal', () => {
     const snapshot: ConfigurationSnapshot<typeof nested> = {
       color: 'blue',

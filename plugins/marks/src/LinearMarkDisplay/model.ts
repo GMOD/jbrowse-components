@@ -228,7 +228,7 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
   // A `pileup` writes the row this mark then stands in, so its output field
   // is the row channel's default and a pileup restates nothing.
   const packed = mark.transform.find(
-    (s: MarkTransformStepConfig): s is PileupStepConfig => s.type === 'pileup',
+    (s): s is PileupStepConfig => s.type === 'pileup',
   )
   return {
     x,
@@ -285,13 +285,11 @@ function stepsOf(
           type: 'aggregate',
           groupby:
             step.groupby.length > 0 ? [...step.groupby] : (binEdges ?? []),
-          ops: step.ops.map(
-            (o: Instance<typeof step.ops>[number]): AggregateOp => ({
-              op: o.op,
-              field: o.field || undefined,
-              as: o.as || undefined,
-            }),
-          ),
+          ops: step.ops.map((o): AggregateOp => ({
+            op: o.op,
+            field: o.field || undefined,
+            as: o.as || undefined,
+          })),
         }
       case 'coverage':
         return { type: 'coverage', as: step.as }
@@ -501,7 +499,7 @@ export function stateModelFactory(
        * The declared marks' shapes, in draw order.
        */
       get markShapes(): MarkShapeName[] {
-        return self.conf.marks.map((m: MarkConfig) => m.shape)
+        return self.conf.marks.map(m => m.shape)
       },
       /**
        * #getter
@@ -526,7 +524,7 @@ export function stateModelFactory(
        * Each mark's shape and zoom range, what the mark list is built from.
        */
       get markEntries(): MarkEntry[] {
-        return self.conf.marks.map((m: MarkConfig) => markEntryOf(m))
+        return self.conf.marks.map(m => markEntryOf(m))
       },
       /**
        * #getter
@@ -537,13 +535,13 @@ export function stateModelFactory(
       get markView(): MarkView {
         const { bpPerPx } = self.host
         const { marks } = self.conf
-        const visible: boolean[] = marks.map((m: MarkConfig) =>
+        const visible: boolean[] = marks.map(m =>
           markDrawsAt(markEntryOf(m), bpPerPx),
         )
         return {
           visible,
           densityMark: marks.findIndex(
-            (m: MarkConfig, i: number) => visible[i] && m.source === 'density',
+            (m, i) => visible[i] && m.source === 'density',
           ),
         }
       },
@@ -580,7 +578,7 @@ export function stateModelFactory(
        * The declared marks' encodings, as the worker takes them.
        */
       get encodings(): MarkEncoding[] {
-        return self.conf.marks.map((m: MarkConfig) => encodingOf(m))
+        return self.conf.marks.map(m => encodingOf(m))
       },
       /**
        * #getter
@@ -595,7 +593,7 @@ export function stateModelFactory(
        */
       get layerRequests(): LayerRequest[] {
         const { bpPerPx } = self.host
-        return self.conf.marks.map((m: MarkConfig): LayerRequest => {
+        return self.conf.marks.map((m): LayerRequest => {
           const shape: MarkShapeName = m.shape
           const transform = stepsOf(m.transform, bpPerPx)
           return {
@@ -915,7 +913,7 @@ export function stateModelFactory(
        */
       get colorRamps(): (MarkRamp | undefined)[] {
         const sections = this.legendSections
-        return self.conf.marks.map((_: MarkConfig, i: number) => {
+        return self.conf.marks.map((_, i) => {
           const table = colorSection(sections, i)
           return table?.kind === 'ramp'
             ? { domain: table.domain, scale: table.scale, lut: table.lut }

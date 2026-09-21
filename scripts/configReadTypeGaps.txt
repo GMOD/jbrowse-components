@@ -32,11 +32,11 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 121 unchecked in source, 150 in tests,
-# of 1044 total config accessor calls. The gate counts source only.
+# 120 unchecked in source, 154 in tests,
+# of 1058 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
-  1124	readConfObject('adapter')
+  1133	readConfObject('adapter')
 packages/app-core/src/JBrowseModel/index.ts  (1)
   89	readConfObject('name')
 packages/core/src/assemblyManager/assemblyManager.ts  (4)
@@ -45,19 +45,20 @@ packages/core/src/assemblyManager/assemblyManager.ts  (4)
   316	readConfObject('aliases')
   496	readConfObject('name')
 packages/core/src/configuration/configTypeNarrowing.test.ts  (5)  [test]
-  140	readConfObject('frozen')
-  141	readConfObject('maybeFrozen')
-  175	getConf('colorBy')
-  206	getConf('notASlot')
-  233	readConfObject('limit')
-packages/core/src/configuration/configurationSchema.test.ts  (7)  [test]
-  575	getConf('frozenSlot')
-  1393	readConfObject('a')
-  1397	readConfObject('b')
-  1401	readConfObject('zzz')
-  1428	readConfObject('limit')
-  1446	readConfObject('assemblyNames')
-  1447	readConfObject('trackId')
+  143	readConfObject('frozen')
+  144	readConfObject('maybeFrozen')
+  188	getConf('colorBy')
+  219	getConf('notASlot')
+  246	readConfObject('limit')
+packages/core/src/configuration/configurationSchema.test.ts  (8)  [test]
+  562	getConf('frozenSlot')
+  729	readConfObject('sidecar')
+  1414	readConfObject('a')
+  1418	readConfObject('b')
+  1422	readConfObject('zzz')
+  1449	readConfObject('limit')
+  1467	readConfObject('assemblyNames')
+  1468	readConfObject('trackId')
 packages/core/src/configuration/configurationSlot.test.ts  (12)  [test]
   28	readConfObject('slot')
   61	readConfObject('slot')
@@ -131,7 +132,7 @@ packages/embedded-core/src/EmbeddedSessionThemeMixin.ts  (2)
   31	getConf('theme')
   101	getConf('theme')
 packages/product-core/src/RootModel/createConfigModel.ts  (1)
-  106	readConfObject('name')
+  110	readConfObject('name')
 packages/product-core/src/Session/SessionTracks.ts  (3)
   83	readConfObject('name')
   84	readConfObject('aliases')
@@ -170,11 +171,11 @@ packages/wiggle-core/src/WiggleScoreConfigMixin.test.ts  (3)  [test]
 plugins/alignments/src/consensus/index.ts  (1)
   52	getConf('name')
 plugins/alignments/src/LinearAlignmentsDisplay/configSlotViews.ts  (2)
-  152	getConf('colorBy')
-  158	getConf('filterBy')
+  183	getConf('modifications')
+  218	getConf('filterBy')
 plugins/alignments/src/LinearAlignmentsDisplay/model.ts  (2)
-  724	getConf('sortedBy')
-  2298	getConf('showOutline')
+  740	getConf('sortedBy')
+  2359	getConf('showOutline')
 plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts  (1)
   140	getConf('adapter')
 plugins/authentication/src/tokenEntryModelFactory.ts  (1)
@@ -323,18 +324,21 @@ plugins/wiggle/src/CreateMultiWiggleExtension/index.ts  (3)
   50	readConfObject('assemblyNames')
   54	readConfObject('adapter')
   55	readConfObject('name')
-plugins/wiggle/src/LinearWiggleDisplay/model.ts  (1)
-  260	getConf('scoreRules')
 plugins/wiggle/src/shared/wiggleMixinHosts.test.ts  (2)  [test]
   15	getConf('posColour')
   34	getConf('origin')
 products/jbrowse-react-app/src/createApp.test.ts  (1)  [test]
   352	readConfObject('adapter')
+products/jbrowse-react-circular-genome-view/src/jbrowseHub.test.ts  (1)  [test]
+  39	readConfObject('trackId')
 products/jbrowse-react-linear-genome-view/src/createLinearGenomeView.test.tsx  (1)  [test]
   237	readConfObject('adapter')
 products/jbrowse-react-linear-genome-view/src/createViewState.test.ts  (2)  [test]
-  376	readConfObject('ixFilePath')
-  381	readConfObject('textSearchAdapterId')
+  404	readConfObject('ixFilePath')
+  409	readConfObject('textSearchAdapterId')
+products/jbrowse-react-linear-genome-view/src/jbrowseHub.test.ts  (2)  [test]
+  53	readConfObject('trackId')
+  58	readConfObject('name')
 products/jbrowse-react-linear-genome-view/src/UpdateTrackConfiguration.test.ts  (1)  [test]
   90	readConfObject('name')
 products/jbrowse-web/src/rootModel/rootModel.test.ts  (3)  [test]

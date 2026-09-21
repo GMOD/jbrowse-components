@@ -54,8 +54,9 @@ test('each member loads as its own schema, keeping its type when all-default', (
   expect(getSnapshot(host)).toEqual({
     transform: [{ type: 'bin', step: 500 }, { type: 'filter' }],
   })
-  expect(readConfObject(host.transform[0], 'step')).toBe(500)
-  expect(readConfObject(host.transform[0], 'field')).toBe('start')
+  const [step] = host.transform
+  expect(step?.type === 'bin' && readConfObject(step, 'step')).toBe(500)
+  expect(step?.type === 'bin' && readConfObject(step, 'field')).toBe('start')
 })
 
 test("a member node reads its type as its key, and a switch narrows to that member's slots", () => {

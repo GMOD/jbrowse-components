@@ -99,9 +99,12 @@ test.each(Object.entries(STARTS))(
   'every one-slot write to %s loads again',
   (_name, start) => {
     const refused: string[] = []
-    const steps = (load(start).marks[0].transform as unknown[]).map(
-      (_, i): Path => ['marks', 0, 'transform', i],
-    )
+    const steps = load(start).marks[0]!.transform.map((_, i): Path => [
+      'marks',
+      0,
+      'transform',
+      i,
+    ])
     for (const path of [...NODES, ...steps]) {
       for (const [slot, values] of slotsOf(nodeAt(load(start), path))) {
         for (const value of values) {

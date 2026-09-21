@@ -8,6 +8,7 @@ import type {
 import type { BuiltinSlotTypeName } from './configurationSlot.ts'
 import type {
   IAnyType,
+  IArrayType,
   ISimpleType,
   IStateTreeNode,
   Instance,
@@ -90,11 +91,13 @@ type ConfigNodeValue<DEF> =
     ? any
     : DEF extends AnyConfigurationSchemaType
       ? DEF['Type']
-      : DEF extends string
-        ? string
-        : DEF extends number
-          ? number
-          : SlotValueRawFromDef<DEF>
+      : DEF extends IArrayType<any>
+        ? DEF['Type']
+        : DEF extends string
+          ? string
+          : DEF extends number
+            ? number
+            : SlotValueRawFromDef<DEF>
 
 /**
  * The slots a config node presents, read off the schema's own DEFINITION rather
