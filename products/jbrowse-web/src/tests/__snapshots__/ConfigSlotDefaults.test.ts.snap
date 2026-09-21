@@ -602,7 +602,6 @@ exports[`every registered schema slot default 1`] = `
     "scatterPointSize": "number = 4",
     "scoreField": "string = "score"",
     "showLegend": "boolean = true",
-    "significanceLine": "maybeNumber = undefined",
   },
   "display: LinearMarkDisplay": {
     "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
