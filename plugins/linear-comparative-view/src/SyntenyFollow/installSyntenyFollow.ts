@@ -612,6 +612,17 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     }
   }
 
+  // The coarse blocks wake the pass on their throttle, and the window comes off
+  // the live ones: mid-drag the coarse ones name where the anchor was half a
+  // second ago, and an answer for that window sent the row back there.
+  function settledWindows(row: LinearGenomeViewModel) {
+    void row.coarseDynamicBlocks
+    return followAnchorWindows(
+      // eslint-disable-next-line no-restricted-syntax -- read for the window, which the coarse read above tracks
+      untracked(() => row.dynamicBlocks.contentBlocks),
+    )
+  }
+
   // Every observable one level's placement needs, read off the tree HERE:
   // `execute` is async and MobX stops tracking at its first `await`, so a field
   // missing from `FollowStep` can only be read untracked, producing a follow
@@ -637,8 +648,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // re-asserts a hand-nudged interior row is the level's own fetch key, which
     // names both rows, exactly as it is for the multi-contig rung's moving row.
     const carried = placed.get(stayingView)
-    const windows =
-      carried ?? followAnchorWindows(stayingView.coarseDynamicBlocks)
+    const windows = carried ?? settledWindows(stayingView)
     const widest = windows[0]
     const noSyntenyTrack = !level.linearSyntenyDisplays.length
     // A DECISION ABOUT SEVERAL CONTIGS SAYS NOTHING ABOUT ONE, and

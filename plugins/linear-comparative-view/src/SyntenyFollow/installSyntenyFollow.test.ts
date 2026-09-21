@@ -641,6 +641,32 @@ test('a settle after a drag the frame pass placed does not navigate again', asyn
   )
 })
 
+// Mid-drag the anchor's coarse blocks lag its live ones, and the moving row's
+// own refresh wakes the settle in between: planned from the lagging window, it
+// sent the row back to where the anchor was half a second ago.
+test('a settle mid-drag plans from where the anchor is, not where it was', async () => {
+  const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+  const { rows, host } = twoRows([display([pairing('chr1', 'chr1')])])
+  place(rows[0]!, 400_000, 500_000)
+  installSyntenyFollow(host)
+  await settle()
+  await settle()
+  const navigations = rows[1]!.navigations
+
+  rows[0]!.holdCoarseBlocks()
+  rows[1]!.holdCoarseBlocks()
+  place(rows[0]!, 420_000, 520_000)
+  rows[1]!.releaseCoarseBlocks()
+  await settle()
+  await settle()
+
+  expect(rows[1]!.navigations).toBe(navigations)
+  expect(rows[1]!.dynamicBlocks.contentBlocks[0]!.start).toBeCloseTo(
+    420_000,
+    -3,
+  )
+})
+
 const reversedOf = (view: ReturnType<typeof row>) =>
   !!view.dynamicBlocks.contentBlocks[0]?.reversed
 

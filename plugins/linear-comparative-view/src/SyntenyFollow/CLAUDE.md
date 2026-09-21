@@ -53,9 +53,10 @@ higher price — the map walks the whole CIGAR where a resolve walks two offsets
 into it. `LevelCigarMap` therefore outlives the pick, and a MISS is recorded
 too, or a CIGAR-less block is asked about every settle forever.
 
-**A map is refused unless it names this block**, by feature id in `mapFor` and
-by the block's own coordinates in `cigarMapSpan`. Both: ids are only comparable
-within one LOD tier, and an all-vs-all file has several rows over one extent.
+**A map is refused unless it names this block**, by feature id where the frame
+pass reads it and by the block's own coordinates in `cigarMapSpan`. Both: ids
+are only comparable within one LOD tier, and an all-vs-all file has several rows
+over one extent.
 
 **And a map request carries the store's own abort signal**, so dropping the
 store stops the work and not merely the answer. The request re-reads the whole
@@ -600,10 +601,10 @@ Keyed by index, an entry outlived a removed level and a re-added row inherited a
 dead level's incumbent feature id and cached transform. A `WeakMap` on the node
 is also the entire pruning story.
 
-The store hands out two things on purpose: `get` mints state, `pickFor` and
-`spreadFor` do not. The frame pass steers by the exact pass's pick and must not
-mint one; the only state it writes is the spread decision it makes for an
-undecided level.
+The store hands out two things on purpose: `get` and `facing` mint state, `peek`
+does not. The frame pass steers by the exact pass's pick and must not mint one;
+the only state it writes is the spread decision it makes for an undecided level
+and the spread targets it placed by.
 
 `lastErrorMessage` lives there too, per level rather than per view — a follow
 that cannot resolve cannot resolve repeatedly, so it says so once, and a single
