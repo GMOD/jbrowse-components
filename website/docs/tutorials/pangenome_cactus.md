@@ -386,7 +386,7 @@ in_cactus vg giraffe -p \
 
 # -x is the graph the GAM was mapped against; -b writes BAM instead of GAM;
 # -p is the path to surject onto, so the BAM's one reference sequence is that
-# PanSN name; -N/-R set the sample and read-group fields the BAM header needs
+# PanSN name; -N/-R set the sample name and read group on every read
 in_cactus vg surject -x /data/mc/ecoli.d2.gbz -b -p K12#0#chr \
   -N KTa004 -R KTa004 /data/mapped.gam > mapped.raw.bam
 ```

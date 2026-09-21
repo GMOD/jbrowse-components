@@ -219,8 +219,8 @@ The store is read by the `MultiWiggleZarrAdapter` from
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr), the
 adapter [](/docs/tutorials/population_cnv) uses for the 1000 Genomes panel. The
 cell list, bin size and row colors are attributes of the store, written by the
-build step. Because the adapter needs the plugin, this whole fragment, `plugins`
-and `tracks` together, goes into `config.json` rather than through Add track:
+build step. The plugin is not in the plugin store yet, so this whole fragment,
+`plugins` and `tracks` together, goes into `config.json`:
 
 ```json
 {

@@ -117,9 +117,9 @@ The trio VCF calls its chromosome `1`, with no `chr` prefix, so reach for the
 <!-- from: scripts/build_khv_trio_hapibd.sh -->
 
 ```bash
-# min-seed and min-output lower the shortest IBD segment hap-ibd will report
-# (in cM); the defaults are tuned for population-scale cohorts and miss the
-# shorter blocks a single trio's more limited statistical power produces
+# min-seed is the shortest shared stretch (in cM) hap-ibd starts a segment
+# from, and min-output the shortest segment it writes; both default to 2.0,
+# so 1.0 also reports segments between 1 and 2 cM
 java -jar hap-ibd.jar \
   gt=HG02024_VN049_KHVTrio.chr1.vcf.gz \
   map=plink.chr1.GRCh38.map \
