@@ -88,8 +88,6 @@ export interface FeatureGlyphParams {
   /** Packed ABGR; 0 for no outline. */
   outlineColor: number
   hideChevrons?: boolean
-  /** each strand arrow ends at its feature's end instead of starting there */
-  arrowInside?: boolean
 }
 
 /** A box from `startEnd[2i]` to `startEnd[2i+1]`, `height` tall from `y`. */
@@ -113,7 +111,7 @@ export interface LineChannels {
   count: number
 }
 
-/** A strand arrow at the end `x` of a feature `widthBp` wide. */
+/** A strand arrow off the end `x` of a feature `widthBp` wide. */
 export interface ArrowChannels {
   x: Uint32Array
   y: Float32Array
@@ -187,7 +185,6 @@ function writeFeatureGlyphUniforms(
     outlineColor: params.outlineColor,
     leftIsCanvasEdge: edges.leftIsCanvasEdge ? 1 : 0,
     rightIsCanvasEdge: edges.rightIsCanvasEdge ? 1 : 0,
-    arrowInside: params.arrowInside ? 1 : 0,
   })
 }
 
@@ -424,10 +421,6 @@ export function makeChevronShape(
   }
 }
 
-function arrowBaseX(endX: number, dir: number, params: FeatureGlyphParams) {
-  return params.arrowInside ? endX - STEM_LENGTH_PX * dir : endX
-}
-
 export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
   id: 'arrow',
   pass: { ...ArrowPass, pack: c => arrowShader.packInstances(c, c.count) },
@@ -448,15 +441,14 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
       // `xBp` is whichever end the arrow points off, so the feature's other end
       // is a widthBp step back along its strand.
       const otherEndBp = rawDir === 1 ? xBp - widthBp[i]! : xBp + widthBp[i]!
-      const endX = toX(xBp)
+      const cx = toX(xBp)
       // A feature too narrow to be worth a direction marker gets none, so a
       // dense repeat run does not drown in overlapping arrowheads.
-      if (!arrowDraws(Math.abs(toX(otherEndBp) - endX))) {
+      if (!arrowDraws(Math.abs(toX(otherEndBp) - cx))) {
         continue
       }
       const y = snapBoxCenterYPx(ys[i]!, height[i]!, scrollY)
       const dir = block.reversed ? -rawDir : rawDir
-      const cx = arrowBaseX(endX, dir, params)
       setFill(color[i]!)
 
       const stemEndX = cx + STEM_LENGTH_PX * 0.5 * dir
@@ -478,8 +470,8 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
     }
   },
 
-  // Stem and head together: `STEM_LENGTH_PX` out from the feature's end, or up
-  // to it, as tall as the taller of the two.
+  // Stem and head together: `STEM_LENGTH_PX` out from the feature's end, as
+  // tall as the taller of the two.
   ink(channels, block, frame, params, i) {
     const { x: xs, y: ys, height, widthBp, direction } = channels
     if (
@@ -496,12 +488,11 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
     const rawDir = direction[i]!
     const otherEndBp = rawDir === 1 ? xBp - widthBp[i]! : xBp + widthBp[i]!
     const toX = makeBpMapper(block)
-    const endX = toX(xBp)
-    if (!arrowDraws(Math.abs(toX(otherEndBp) - endX))) {
+    const cx = toX(xBp)
+    if (!arrowDraws(Math.abs(toX(otherEndBp) - cx))) {
       return undefined
     }
     const dir = block.reversed ? -rawDir : rawDir
-    const cx = arrowBaseX(endX, dir, params)
     const y = snapBoxCenterYPx(ys[i]!, height[i]!, params.scrollY)
     const tipX = cx + STEM_LENGTH_PX * dir
     const half = Math.max(STEM_HALF_H_PX, arrowHeadHalfHeightPx(height[i]!))

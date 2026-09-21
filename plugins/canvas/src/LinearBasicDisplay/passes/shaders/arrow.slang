@@ -1,5 +1,4 @@
-// Strand-direction arrow glyph placed at feature boundaries: outward from the
-// end by default, or ending at it where `arrowInside` is set.
+// Strand-direction arrow glyph placed at feature boundaries.
 // 9 vertices per arrow: 6 stem vertices (two triangles) + 3 arrowhead
 // triangle vertices dispatched via vertex ID.
 //! targets: wgsl, glsl
@@ -84,6 +83,8 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
     return culled;
   }
 
+  float cx = bpToClipX(inst.x, u);
+
   float cy = snapBoxCenterY(inst.y, inst.height, u.scrollY, u.canvasHeight);
 
   float stemLength = pxToClipW(STEM_LENGTH_PX, u);
@@ -91,8 +92,6 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
   float headHalf = pxToClipH(arrowHeadHalfHeightPx(inst.height), u);
 
   float dir = flipX(inst.direction, u);
-
-  float cx = bpToClipX(inst.x, u) - stemLength * dir * u.arrowInside;
 
   float sx;
   float sy;

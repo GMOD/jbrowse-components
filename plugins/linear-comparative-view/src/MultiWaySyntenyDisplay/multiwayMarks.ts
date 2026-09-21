@@ -34,9 +34,7 @@ function ribbonLayerOf(layer: MultiWayLayer | undefined) {
  * A lane's gene glyphs are drawn under the stack's own axis: positions are px
  * rather than bp, so the block a layer draws over is `glyphBlockRange`, one px
  * per "bp" for a settled lane. No continuation markers — a lane is one
- * unclipped band. A strand arrow ends at its gene's end, since a lane packs its
- * genes in one row and an arrow past the end lands on the neighbour, and is
- * anchored there so a lane's map moves it with the end it marks.
+ * unclipped band.
  */
 export const MULTIWAY_MARKS = [
   ...syntenyRibbonMarks<MultiWayCell, MultiWayRenderState>({
@@ -60,7 +58,6 @@ export const MULTIWAY_MARKS = [
     params: (state, cell) => ({
       scrollY: state.scrollTopPx,
       outlineColor: cell.kind === 'glyphs' ? (cell.data.outlineColor ?? 0) : 0,
-      arrowInside: true,
     }),
     maxChevronsPerLine: MAX_VISIBLE_CHEVRONS_PER_LINE,
     continuation: false,

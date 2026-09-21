@@ -32,9 +32,6 @@ public struct FeatureGlyphUniforms {
   // at a mid-screen region boundary.
   public float  leftIsCanvasEdge;
   public float  rightIsCanvasEdge;
-  // 1.0 when a strand arrow ends at its feature's end rather than starting
-  // there. Only the arrow pass reads it.
-  public float  arrowInside;
 };
 
 // Type-safe bp→clip/linear converters. Mirrors the same wrappers in

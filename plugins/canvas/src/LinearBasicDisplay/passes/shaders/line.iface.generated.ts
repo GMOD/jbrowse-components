@@ -9,7 +9,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 64
+export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -22,7 +22,6 @@ export const UNIFORM_OFFSET_F32 = {
   reversed: 8,
   leftIsCanvasEdge: 10,
   rightIsCanvasEdge: 11,
-  arrowInside: 12,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
@@ -42,7 +41,6 @@ export interface Uniforms {
   outlineColor: number
   leftIsCanvasEdge: number
   rightIsCanvasEdge: number
-  arrowInside: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -60,7 +58,6 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   u32[9] = uniforms.outlineColor
   f32[10] = uniforms.leftIsCanvasEdge
   f32[11] = uniforms.rightIsCanvasEdge
-  f32[12] = uniforms.arrowInside
 }
 
 export const INSTANCE_STRIDE_BYTES = 24
