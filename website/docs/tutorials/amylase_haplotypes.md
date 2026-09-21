@@ -409,15 +409,16 @@ The top band runs through a module GRCh38 does not have. Open the same track in
 HG02004.2's own view at `JBHDRU010000054.1:31,942,330-31,942,580`, inside that
 module, where a synteny track draws each aligned haplotype as a row:
 
-<Figure caption="The synteny track in HG02004.2's own view, inside the module GRCh38 lacks. The HG01978.2 row marks each substituted base, an insertion and a deletion; the hg38 row is one deletion across the whole window." src="/img/multiway_synteny/hprc_c4_graph_bases.png" />
+<Figure caption="The synteny track in HG02004.2's own view, inside the module GRCh38 lacks. The HG01978.2 row marks each substituted base, insertion and deletion; the hg38 row is one deletion across the whole window." src="/img/multiway_synteny/hprc_c4_graph_bases.png" />
 
 The [check above](#check-it-against-the-paf) on `adjacent.paf` prints the module
 as one 32,738 bp insertion and the HERV-K as 6,367 bp. The last record holds the
 same module as a short one and its HERV-K, 26,370 and 6,368 bp.
 
-At the amylase locus the graph folds the paralogous copies onto shared nodes,
-and the walks of NA18608.2 and HG00232.1 come out as short records on both
-strands, so that stack takes its alignments from minimap2.
+The script wraps the command and writes the config. REGION and ROWS pick the
+window and the stack, so the amylase rows from the top of the page go through it
+as well. There the graph folds the paralogous copies onto shared nodes, and the
+rows are aligned by comparing their bases through the array.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_graph_haplotype_stack.sh
@@ -425,6 +426,9 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 REGION=chr6:31940000-32090000 \
   ROWS='HG01978#2 HG02004#2 GRCh38#0 HG02818#1 HG00146#1' \
   bash build_graph_haplotype_stack.sh
+# the amylase stack:
+#   REGION=chr1:103539800-103801379
+#   ROWS='HG01361#1 GRCh38#0 HG00133#1 NA18608#2 HG00232#1'
 ```
 
 ## Reproduce it end to end
