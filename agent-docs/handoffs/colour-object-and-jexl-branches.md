@@ -45,20 +45,15 @@ Left open from the `jexl:` work:
 1. **Wiggle bars grow from `origin`: landed** at `c2ff455203`, with the two
    density-ramp items. Canvas2D and WebGL2 captures agree; WebGPU was checked
    by the shader build and `webgpuHalBindingVisibility.test.ts` only.
-2. **Solid-and-back: keep `none`.** Settled by
-   [ADR-154](../architecture-decision-records/adr-154-the-colour-menus-default-is-the-tracks-own-colour.md):
-   a field set aside stays in the object under `scale: 'none'`, so the way
-   back is the config itself. One display-kit helper replaces the five writers
-   (`colorSnapshotFor`, `syntenyColorFor`, canvas's
-   `setFeatureColor`/`setColorScale`, Manhattan's `colorBy`, multi-way's
-   `setGeneColorBy`) and keeps the field, range and ends under `none`.
-   `showSoftClipping.test.ts` ("Normal and back keeps the field, range and
-   ends of a linear tag") pins today's lost kind. The same change settles:
-   - Manhattan re-picking the current field writes `scale: undefined` and
-     drops a declared threshold.
-   - LGVSyntenyColor's three states (strand by default, the plain fill, a
-     constant): `shorthandWith: { field: '' }`, or strand moved into a
-     track-type default.
+2. **Solid-and-back: landed** at `358bdbd5ba`. Every Color by pick writes
+   through display-kit's `colorForField` / `colorForValue`, which fixed
+   Manhattan (and synteny and multi-way) dropping a declared scale on a
+   re-pick. LGVSyntenyColor needs nothing: `{}` paints strand,
+   `{ scale: 'none' }` the plain fill, `{ value, scale: 'none' }` a constant.
+   Open, waiting on Colin: `none` shares the `scale` slot, so a declared
+   `linear`/`log` comes back through the field's default scale after the
+   constant and back (`showSoftClipping.test.ts`, "Normal and back keeps the
+   field, range and ends of a linear tag").
 3. **Colour rules on every display.** `threshold-cuts`, `ramp-domain` and
    `ramp-ends` live only in the mark display's rule list
    (`plugins/marks/src/LinearMarkDisplay/markProblems.ts`), so a bad colour
