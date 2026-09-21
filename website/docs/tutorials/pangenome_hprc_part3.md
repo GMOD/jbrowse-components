@@ -99,7 +99,7 @@ The `uri` shorthand resolves the sibling `.tai`, which downloads once. This is
 the build [the graph](/docs/tutorials/pangenome_hprc#add-the-graph-track) and
 [the callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) come
 from. Release 2.0 publishes the same alignment as a 5.9 GB TAF, which
-`BgzipTaffyAdapter` reads with the same shorthand — a quarter of the bytes per
+`BgzipTaffyAdapter` reads with the same shorthand: a quarter of the bytes per
 locus, but an earlier build, with more underalignment and unpatched centromeres.
 
 Type `chr6:31,980,000-32,050,000`, the C4 window from part 1's table, and show

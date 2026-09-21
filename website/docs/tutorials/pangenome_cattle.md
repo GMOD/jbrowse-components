@@ -68,7 +68,11 @@ over the same graph gives a genotype per assembly:
 <!-- from: scripts/build_bovine_pangenome.sh -->
 
 ```bash
+# -p writes vg's own PackedGraph format, which deconstruct reads
 vg convert -g "$TMPDIR/$k.renamed.gfa" -p > "$TMPDIR/$k.vg"
+# -p names the reference path to decompose against; -a walks nested snarls
+# too, so a bubble inside a bubble gets its own record rather than being
+# folded into its parent's
 vg deconstruct -p "chr$k" -a -t "$THREADS" "$TMPDIR/$k.vg" > "vcf/chr$k.vcf.tmp"
 ```
 

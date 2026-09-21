@@ -99,7 +99,7 @@ haplotypes, keeping each haplotype's walk, and we host the cut as a GFA. Take
 **Add → Graph genome view** from the app's top menu, give it the file's URL, and
 pick **Force-directed layout** again:
 
-```
+```text
 https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
 ```
 

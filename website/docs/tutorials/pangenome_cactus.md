@@ -377,20 +377,24 @@ MiSeq), a strain the graph has never seen:
 <!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
 
 ```bash
+# -Z/-d/-m/-z are the graph and the three indexes --giraffe built; -f takes
+# the paired FASTQs, one flag per mate; -p shows progress
 in_cactus vg giraffe -p \
   -Z /data/mc/ecoli.d2.gbz -d /data/mc/ecoli.d2.dist \
   -m /data/mc/ecoli.d2.shortread.withzip.min -z /data/mc/ecoli.d2.shortread.zipcodes \
   -f /data/reads/sub_1.fastq.gz -f /data/reads/sub_2.fastq.gz > mapped.gam
 
+# -x is the graph the GAM was mapped against; -b writes BAM instead of GAM;
+# -p is the path to surject onto, so the BAM's one reference sequence is that
+# PanSN name; -N/-R set the sample and read-group fields the BAM header needs
 in_cactus vg surject -x /data/mc/ecoli.d2.gbz -b -p K12#0#chr \
   -N KTa004 -R KTa004 /data/mapped.gam > mapped.raw.bam
 ```
 
-`-p K12#0#chr` picks the path to surject onto, so the BAM's one reference
-sequence is that PanSN name. Rename it to the assembly's refName in the header,
-drop the unmapped reads, sort and index; the
-[build script](#reproduce-it-end-to-end) does those `samtools` steps and
-subsamples the reads. The result loads as an ordinary alignments track:
+Rename the surjected path to the assembly's refName in the header, drop the
+unmapped reads, sort and index; the [build script](#reproduce-it-end-to-end)
+does those `samtools` steps and subsamples the reads. The result loads as an
+ordinary alignments track:
 
 ```json addtrack
 {

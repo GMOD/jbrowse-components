@@ -42,6 +42,9 @@ the strains. The reference goes first, which gives it rank 0.
 <!-- from: scripts/build_mouse_pangenome.sh -->
 
 ```bash
+# -xggs is the incremental-graph-construction preset, adding each genome onto
+# the growing graph in turn; -c adds base-level alignment, which minigraph
+# recommends for graph generation
 minigraph -cxggs -t "$THREADS" $(tr '\n' ' ' < "chrom/$c/order.txt")
 ```
 
@@ -99,7 +102,7 @@ written about yet.
 in the genomes.jbrowse.org repo computes the ranking. That repo publishes the
 derived catalogues at
 [staging.genomes.jbrowse.org/pangenomes/mouse](https://staging.genomes.jbrowse.org/pangenomes/mouse)
-— staging, until the graph plugin's JBrowse 5 host ships — so a locus can be
+(staging, until the graph plugin's JBrowse 5 host ships), so a locus can be
 opened without building anything.
 
 ## One bubble, one label

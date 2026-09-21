@@ -75,7 +75,7 @@ of the two builders you run. Both produce the same pair of indexes.
 An rGFA tags every segment with three fields, which is the whole of the
 [spec](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md):
 
-```
+```text
 S  s3  TTGCAA  LN:i:6  SN:Z:GRCh38#0#chr1  SO:i:10621  SR:i:0
 ```
 

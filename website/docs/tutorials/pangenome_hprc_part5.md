@@ -260,16 +260,16 @@ far apart, one whose two are both long, and one whose two are both short.
 
 HG02647 and HG01943 are where reads and assemblies part. TRGT called each of
 them close to homozygous, with reads spanning both alleles, and the graph
-carries a haplotype neither call reaches — in HG01943 it carries two — so those
+carries a haplotype neither call reaches (in HG01943 it carries two), so those
 readouts turn red.
 
 The last two samples each carry a walk the view leaves unscored, because one
 side of that comparison is not a measurement. No read spanned HG02559's second
 allele, so TRGT reported the first one twice; the copy lands on the sample's
 long walk as a grey tick and says nothing about it. HG04199's second walk is
-partial — that assembly does not span the repeat — and TRGT's long allele sits
-far past where the bar stops, so here it is the graph that may be missing an
-allele.
+partial, since that assembly does not span the repeat, and TRGT's long allele
+sits far past where the bar stops, so here it is the graph that may be missing
+an allele.
 
 <Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar carrying the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
