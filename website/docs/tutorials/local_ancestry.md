@@ -94,7 +94,7 @@ An animal cannot be in a panel and painted against it:
 
 FLARE reads the two lists as one `ref-panel` file:
 
-```
+```text
 CLUPGR000001	Wolf
 CLUPGR000002	Wolf
 AFFN000001	Dog
@@ -150,7 +150,7 @@ java -Xmx12g -jar flare.jar ref=chr1.ref.vcf.gz ref-panel=refpanel.txt \
 `wolfdog_chr1.global.anc.gz` is the per-sample summary, and on chr1 it already
 sorts the targets:
 
-```
+```text
 SAMPLE          Wolf    Dog
 CLUPRU000001    0.996   0.004     held-out gray wolf
 SAAR000001      0.446   0.554     Saarloos Wolfdog
@@ -191,7 +191,7 @@ tabix -p bed ancestry.chr1.bed.gz
 
 Each output line looks like this:
 
-```
+```text
 #chrom	chromStart	chromEnd	name	score	strand	thickStart	thickEnd	itemRgb	sample	ancestry
 chr1	49135137	57939751	Wolf	0	.	49135137	57939751	230,159,0	Czechoslovakian 1 hap1	Wolf
 ```

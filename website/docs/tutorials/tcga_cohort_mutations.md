@@ -50,7 +50,7 @@ The hg38 reference and gene track beside them are the hosted UCSC
 The VCF is the GDC's per-tumor **Masked Somatic Mutation** calls merged into one
 multi-sample file, one column per tumor:
 
-```
+```text
 #CHROM POS       ID  REF ALT  INFO                          FORMAT    TCGA-A2-A0T2-01A  TCGA-A8-A07C-01A
 chr3   179234297 .   A   G    GENE=PIK3CA;HGVSP=p.H1047R... GT:AD:DP  0/1:81,29:110     0/0
 ```
@@ -67,7 +67,7 @@ can color cells by consequence impact without running an annotator.
 
 The clinical TSV is one row per tumor barcode and one column per attribute:
 
-```
+```text
 name              histology  er        pr        her2      subtype    stage
 TCGA-3C-AAAU-01A  lobular    positive  positive  negative  HR+/HER2-  X
 ```
@@ -232,7 +232,7 @@ python3 mutation_recurrence.py tcga_brca_mutations.vcf.gz by_subtype.bedGraph \
   --groups tcga_brca_clinical.tsv:subtype
 ```
 
-```
+```text
 #chrom  start      end        HR+/HER2-  HER2+  triple-negative  unknown
 chr3    179199065  179234302  40.56      30.18  11.19            30.71
 chr17   7670683    7676564    19.44      39.64  80.42            32.28

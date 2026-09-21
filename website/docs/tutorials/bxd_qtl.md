@@ -66,7 +66,7 @@ file. Each row is a marker (with a `cM` genetic-map and an mm10 `Mb` physical
 position, we use `Mb`). Each column is a strain, with a one-letter genotype,
 `B`, `D`, `H` (heterozygous) or `U` (unknown):
 
-```
+```text
 @name:BXD
 @mat:B
 @pat:D
@@ -98,7 +98,7 @@ markers along every chromosome and emit one BED interval per run of consecutive
 same-genotype markers (run-length encoding), coloring `B`/`D`/`H` and writing
 the strain name into an extra `sample` column:
 
-```
+```text
 #chrom  chromStart  chromEnd   name  score strand thickStart thickEnd itemRgb      sample  genotype
 chr1    3001490     20291558   B     0     .      3001490    20291558 65,105,225   BXD1    B
 chr1    20291558    53451539   D     0     .      20291558   53451539 220,60,50    BXD1    D
@@ -199,7 +199,7 @@ coat color scale, scored across more strains than most.
 
 That writes a tabix'd BED-like table, one line per marker:
 
-```
+```text
 #chrom  start     end       name        score strand lod
 chr4    81304223  81304224  rs3708061   .     .      48.1126
 ```

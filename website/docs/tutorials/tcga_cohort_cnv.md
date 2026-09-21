@@ -55,7 +55,7 @@ from the GDC for any project id.
 The BED is one segment call per line, with a `#`-prefixed header naming the
 columns past `end`:
 
-```
+```text
 #chrom  start     end        name    sample             segmean
 chr1    3301764   30796057   +0.15   TCGA-3C-AAAU-01A   0.1480
 chr1    3301764   7589655    -0.98   TCGA-3C-AALI-01A   -0.9761
@@ -149,7 +149,7 @@ Each 100 kb bin of `tcga_brca_cnv_recurrence.bedGraph.gz` carries the percent of
 the cohort gained and the percent lost, on the same log2 cutoffs the stack
 colors by (gain above 0.3, loss below -0.3):
 
-```
+```text
 #chrom  start      end        gain   loss
 chr1    204700000  204800000  58.88  -1.36
 chr8    127600000  127800000  49.73  -0.91
@@ -259,7 +259,7 @@ different split. `histology` and `stage` work for any TCGA project, while
 Any caller that emits per-sample segments works. The track config only needs a
 BED with a sample column and a numeric column to color by:
 
-```
+```text
 #chrom  start  end  name  sample  segmean
 ```
 
