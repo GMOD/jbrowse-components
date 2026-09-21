@@ -434,44 +434,15 @@ describe('color routing', () => {
     ).toThrow(/baseQuality/)
   })
 
-  test('a path=value option writes a slot, and fills one object in any order', () => {
-    const expected = {
-      color: {
-        field: 'tags.HP',
-        domain: [1, 2],
-        palette: ['#d9c9a3', '#b7c4b1'],
-      },
-    }
+  test('a whole-setting slot write joins the snapshot and a member write waits for the display', () => {
     expect(
       buildDisplaySnapshot('alignments', [
         'color:tag:HP',
         'color.domain=1,2',
-        'color.palette=#d9c9a3,#b7c4b1',
-      ]).snap,
-    ).toEqual(expected)
-    expect(
-      buildDisplaySnapshot('alignments', [
-        'color.palette=#d9c9a3,#b7c4b1',
-        'color.domain=1,2',
-        'color:tag:HP',
-      ]).snap,
-    ).toEqual(expected)
-  })
-
-  test('a slot write reaches settings no named modifier covers', () => {
-    expect(
-      buildDisplaySnapshot('alignments', [
-        'color.field=tags.NM',
-        'color.scale=linear',
-        'color.ramp=white,darkred',
         'modifications.threshold=50',
         'showOutline=false',
       ]).snap,
-    ).toEqual({
-      color: { field: 'tags.NM', scale: 'linear', ramp: ['white', 'darkred'] },
-      modifications: { threshold: 50 },
-      showOutline: false,
-    })
+    ).toEqual({ color: { field: 'tags.HP' }, showOutline: false })
   })
 
   test('a JSON option merges into what earlier options wrote', () => {

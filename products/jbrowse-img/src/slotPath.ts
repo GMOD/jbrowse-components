@@ -32,6 +32,14 @@ export function isSlotPathOption(opt: string) {
 }
 
 /**
+ * Whether a slot write names a member of a setting, `color.field=…`, rather
+ * than a whole setting, `height=…`.
+ */
+export function isMemberWrite(opt: string) {
+  return isSlotPathOption(opt) && opt.slice(0, opt.indexOf('=')).includes('.')
+}
+
+/**
  * Merge `patch` into `target`, object into object and anything else replacing
  * what was there, so `color.field=…` and `color.palette=…` fill one object in
  * either order.

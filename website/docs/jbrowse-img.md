@@ -767,8 +767,10 @@ figure wants. The rest are BigWig-only and warn on any other track type.
 
 A modifier written `slot.path=value` sets that slot of the track's display, so
 every setting in the [config docs](https://jbrowse.org/jb2/docs/config/) is
-reachable without a modifier of its own. Paths nest with dots and several fill
-one object in any order, beside the named modifiers above:
+reachable without a modifier of its own. Paths nest with dots. A path into a
+setting, such as `color.domain`, changes that one member and keeps the rest of
+what the track's config or a named modifier gave the setting, in whatever order
+the modifiers come:
 
 ```bash
 ## a numeric tag on a colour ramp
@@ -788,9 +790,11 @@ jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
 
 ### Raw display settings (JSON)
 
-A modifier that starts with `{` is parsed as JSON and merged into the same
-settings, for a value `slot.path=value` cannot write: a color with commas of its
-own, or a list of objects. Use compact JSON (a single shell token, no spaces):
+A modifier that starts with `{` is parsed as JSON, for a value `slot.path=value`
+cannot write: a color with commas of its own, or a list of objects. Each key
+states its setting whole, the way a session spec does, so a `color` object here
+replaces the one the track's config wrote. Use compact JSON (a single shell
+token, no spaces):
 
 ```bash
 jb2export --fasta ref.fa --bam reads.bam '{"color":{"palette":["rgb(217,201,163)"]}}' \

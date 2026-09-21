@@ -21,6 +21,7 @@ import {
   applyDisplayOpts,
   configTrackCategory,
   resolveTrackId,
+  writeMembers,
 } from './applyTrackOpts.ts'
 import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
 import {
@@ -539,31 +540,34 @@ const renderCircular: ModeRenderer = async ctx => {
 // --track, because its panels are ordinary LGVs and the whole picture is the
 // tracks on them: with no track there is nothing to connect and the export is a
 // stack of empty rulers. The modifiers that follow a --track reach the panels
-// through breakpointTracks, which is the one route a panel's launch blob has.
+// through breakpointTracks, which is the one route a panel's launch blob has,
+// and their member writes through `writeMembers` once each panel has opened.
 //
 // The view's panels are its `views`, one entry per panel, which is why this
 // does not go through `viewSettingsFromSpec` the way the single-blob modes do —
 // but it is the same launch state machine underneath, so
 // `addLaunchView`/`readyView` wait on it identically.
 const renderBreakpoint: ModeRenderer = async ctx => {
-  const { data, opts } = ctx
+  const { data, opts, model } = ctx
+  let flagTracks: OpenTrack[] = []
   const view = await addLaunchView<BreakpointViewModel, 'BreakpointSplitView'>(
     ctx,
     'BreakpointSplitView',
-    () => ({
-      views: breakpointInit(
-        data,
-        opts,
-        resolvedShowTracks(opts.showTracks, data),
-      ),
-    }),
+    () => {
+      const showTracks = resolvedShowTracks(opts.showTracks, data)
+      flagTracks = [...showTracks, ...(data.openTracks ?? [])]
+      return { views: breakpointInit(data, opts, showTracks) }
+    },
     spec => ({ views: breakpointPanelsFromSpec(spec) }),
   )
-  // No second wait on the panels here: this view's own launch clears in the
-  // tick it creates the sub-views, each still carrying its pending launch — but
-  // renderToSvg awaits every panel itself (awaitViewInitialized covers
-  // pendingLaunch), and renderRegion's throwOnRenderError catches a failure
-  // that reached only the session.
+  // the view's own launch clears in the tick it creates the panels, each still
+  // carrying the launch that opens its tracks
+  for (const panel of view.views) {
+    await whenViewReady(panel, model.session)
+    for (const { trackId, opts: modifiers } of flagTracks) {
+      writeMembers(panel, trackId, modifiers)
+    }
+  }
   const svg = await renderBreakpointToSvg(view, {
     ...baseSvgOpts(opts),
     trackLabels: opts.trackLabels,

@@ -1,6 +1,8 @@
 import { samFlagNames } from '@jbrowse/cigar-utils'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
+  isMemberWrite,
   isSlotPathOption,
   mergeSettings,
   slotPathSettings,
@@ -58,12 +60,8 @@ const BASE_COLORS = [
 ] as const
 const BASE_COLOR_NAMES: ReadonlySet<string> = new Set(BASE_COLORS)
 
-// `color:` names a field on the colour object a `color.palette=…` slot write
-// may already have started, so it merges rather than replaces. The object's
-// other slots have no modifier of their own: a `domain:` and `palette:` pair
-// was tried, and each was one slice of the object, bound to `color:` without
-// saying so where `group:` orders by a domain too, with every further scale
-// slot wanting another.
+// `color:` names a field on the colour object a JSON modifier may already have
+// started, so it merges rather than replaces.
 function mergeColor(r: BuildResult, patch: Partial<ColorObject>) {
   r.snap.color = {
     ...(typeof r.snap.color === 'object' ? r.snap.color : {}),
@@ -929,7 +927,7 @@ function parseJsonModifier(opt: string): DisplaySnapshot {
 // Parse a track's modifier list into a declarative display snapshot. snpcov is
 // applied last because it reads the resolved height. Pure (no view/display), so
 // it's unit-testable; the center-line sort is returned as an intent for the
-// caller to resolve against the view.
+// caller to resolve against the view. A member write is `writeMembers`'s.
 export function buildDisplaySnapshot(category: Category, opts: string[]) {
   const result: BuildResult = { snap: {} }
   const deferred: [string, string, string | undefined][] = []
@@ -942,7 +940,9 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
       continue
     }
     if (isSlotPathOption(opt)) {
-      mergeSettings(settingsOf(result), slotPathSettings(opt))
+      if (!isMemberWrite(opt)) {
+        mergeSettings(settingsOf(result), slotPathSettings(opt))
+      }
       continue
     }
     const [prefix = '', val1 = '', val2] = opt.split(':')
@@ -1043,5 +1043,46 @@ export async function applyDisplayOpts(
         `Warning: filter options on "${trackId}" ignored — its display has no filterBy`,
       )
     }
+  }
+  writeMembers(view, trackId, opts)
+}
+
+/**
+ * Write a track's `color.field=…` modifiers onto what its display in `view`
+ * already has, after every other modifier, so a member write keeps the rest
+ * of the setting whatever order the command line gives them in. A display
+ * replaces a colour or facet object whole, the way a session spec writes one,
+ * which is why these cannot ride in on the launch snapshot.
+ */
+export function writeMembers(
+  view: LinearGenomeViewModel,
+  trackId: string,
+  opts: string[],
+) {
+  const members = opts.filter(isMemberWrite)
+  if (members.length > 0) {
+    const track = view.tracks.find(t => t.configuration.trackId === trackId)
+    if (!track) {
+      throw new Error(
+        `"${trackId}" is not open, so ${members.join(' ')} has nothing to write to`,
+      )
+    }
+    const configured: Record<string, unknown> = getSnapshot(
+      track.activeDisplay.configuration,
+    )
+    const writes = members.map(slotPathSettings)
+    const written = new Set(writes.flatMap(write => Object.keys(write)))
+    view.showTrack(
+      trackId,
+      {},
+      writes.reduce(
+        mergeSettings,
+        structuredClone(
+          Object.fromEntries(
+            Object.entries(configured).filter(([key]) => written.has(key)),
+          ),
+        ),
+      ),
+    )
   }
 }
