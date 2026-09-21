@@ -157,9 +157,9 @@ each defaulting to what the worker reads for a slot the wire leaves off, and a
 key of another step is refused at load. The display writes every slot of every
 step onto the wire (`stepsOf`), so a step left at its defaults and the same
 step written at them are one fetch; `model.test.ts` pins that for every slot of
-every step type. Four lists name the step types — `TRANSFORM_TYPES`, the
-union's keys, the wire's `TransformStep` and the rule list's `StepSnapshot` —
-and `markTransformConfigSchema.test.ts` fails when they disagree
+every step type. Three lists name the step types — the union's keys, the
+wire's `TransformStep` and the rule list's `StepSnapshot` — and the union's
+`satisfies` and `markTransformConfigSchema.test.ts` fail when they disagree
 ([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)).
 
 `bin` writes over `start` and `end` on purpose: an `aggregate` grouped by

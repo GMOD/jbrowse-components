@@ -17,7 +17,7 @@ import {
   DEFAULT_PILEUP_FIELDS,
 } from './markVocabulary.ts'
 
-import type { TransformTypeName } from './markVocabulary.ts'
+import type { StepSnapshot } from './markProblems.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -286,6 +286,6 @@ export const markTransformStep = ConfigurationSchemaUnion('MarkTransform', {
   coverage,
   flatten,
   pileup,
-} satisfies Record<TransformTypeName, AnyConfigurationSchemaType>)
+} satisfies Record<StepSnapshot['type'], AnyConfigurationSchemaType>)
 
 export type MarkTransformStepConfig = Instance<typeof markTransformStep>

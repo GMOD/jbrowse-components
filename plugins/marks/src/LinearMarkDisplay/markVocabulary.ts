@@ -13,17 +13,6 @@ export const MARK_SOURCES = ['features', 'density'] as const
 export type MarkSourceName = (typeof MARK_SOURCES)[number]
 export const DEFAULT_MARK_SOURCE: MarkSourceName = 'features'
 
-export const TRANSFORM_TYPES = [
-  'filter',
-  'formula',
-  'bin',
-  'aggregate',
-  'coverage',
-  'flatten',
-  'pileup',
-] as const
-export type TransformTypeName = (typeof TRANSFORM_TYPES)[number]
-
 export const DEFAULT_FORMULA_AS = 'value'
 export const DEFAULT_BIN_FIELD = 'start'
 export const DEFAULT_BIN_AS = ['start', 'end'] as const

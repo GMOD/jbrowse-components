@@ -59,9 +59,10 @@ every step type.
 
 **The wire type stays hand-written in core**, optional fields and worker
 defaults included, and the two sides are held together by tests rather than by
-one file. `markTransformConfigSchema.test.ts` asserts at the type level that the
-union's keys, `TRANSFORM_TYPES`, the wire's `TransformStep` and the rule list's
-`StepSnapshot` name the same types and the same slots, pins the vocabulary's
+one file. The union's keys satisfy `StepSnapshot['type']`, and
+`markTransformConfigSchema.test.ts` asserts at the type level that they, the
+wire's `TransformStep` and the rule list's `StepSnapshot` name the same types
+and the same slots, pins the vocabulary's
 defaults against the worker's constants, and lists every step slot's type,
 default and vocabulary.
 

@@ -1,7 +1,6 @@
 import {
   getConfigurationSchemaDefinition,
   getConfigurationSchemaUnion,
-  getTypeNamesFromExplicitlyTypedUnion,
   isSlotDefinitionEntry,
   slotChoices,
 } from '@jbrowse/core/configuration'
@@ -23,11 +22,9 @@ import {
   DEFAULT_FLATTEN_FIELD,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
-  TRANSFORM_TYPES,
 } from './markVocabulary.ts'
 
 import type { StepSnapshot } from './markProblems.ts'
-import type { TransformTypeName } from './markVocabulary.ts'
 import type {
   ConfigNodeActions,
   ConfigNodeBrand,
@@ -46,26 +43,23 @@ type StepNode = Instance<typeof markTransformStep>
 
 // The rule list's hand-written snapshot of each step, which `jbrowse validate`
 // carries a copy of and so cannot read the schema, names what the schema does.
-type SnapshotKeys<T extends TransformTypeName> = Exclude<
+type StepType = StepSnapshot['type']
+type SnapshotKeys<T extends StepType> = Exclude<
   keyof Extract<StepSnapshot, { type: T }>,
   'type'
 >
-type SchemaKeys<T extends TransformTypeName> = Exclude<
+type SchemaKeys<T extends StepType> = Exclude<
   keyof Extract<StepNode, { type: T }>,
   'type' | keyof ConfigNodeActions | keyof ConfigNodeBrand<any>
 >
 type EachStepNamesTheSchemasSlots = {
-  [T in TransformTypeName]: MutuallyExtends<SnapshotKeys<T>, SchemaKeys<T>>
-}[TransformTypeName]
+  [T in StepType]: MutuallyExtends<SnapshotKeys<T>, SchemaKeys<T>>
+}[StepType]
 
-test('the step types are the vocabulary, the wire and the rule list alike', () => {
+test('the step types are the union, the wire and the rule list alike', () => {
   assertType<MutuallyExtends<StepNode['type'], TransformStep['type']>>()
-  assertType<MutuallyExtends<TransformTypeName, TransformStep['type']>>()
-  assertType<MutuallyExtends<StepSnapshot['type'], TransformTypeName>>()
+  assertType<MutuallyExtends<StepType, TransformStep['type']>>()
   assertType<EachStepNamesTheSchemasSlots>()
-  expect(getTypeNamesFromExplicitlyTypedUnion(markTransformStep)).toEqual([
-    ...TRANSFORM_TYPES,
-  ])
 })
 
 test("a step's defaults are the ones the worker reads for a slot the wire leaves off", () => {

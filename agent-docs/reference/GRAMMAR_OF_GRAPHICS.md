@@ -545,7 +545,7 @@ the row axis in the vocabulary above, and none is a new channel.
 A new channel or scale kind is the encoder's (`markEncodingTypes.ts`) and
 needs a shape that reads it. A new guide is a hook on the mixin that owns the
 scale and a placement in the two shells; a guide over the painting reads the
-shapes' `ink`. A transform is a name in `TRANSFORM_TYPES`, a `type` on
+shapes' `ink`. A transform is a `type` on `StepSnapshot` and on
 `TransformStep`, an arm in `runTransforms`, a member of the `MarkTransform`
 union with its own slots and an arm in `stepsOf`, which a test and the compiler
 refuse to let disagree
