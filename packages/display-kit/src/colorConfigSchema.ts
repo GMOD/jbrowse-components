@@ -259,7 +259,8 @@ function definedMembers(color: object) {
  * The colour object a Color by pick writes over `current`. `''` paints
  * `value` and keeps the field and its members under `scale: 'none'` for the
  * way back; the field already named keeps its members and a declared scale;
- * a new field keeps only `value`.
+ * a new field keeps only `value`. `none` takes the `scale` slot, so after the
+ * way back the field paints through the display's default scale for it.
  */
 export function colorForField(current: PickableColor, field: string) {
   const kept = definedMembers(current)

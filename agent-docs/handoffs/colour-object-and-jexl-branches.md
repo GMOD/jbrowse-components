@@ -50,10 +50,11 @@ Left open from the `jexl:` work:
    Manhattan (and synteny and multi-way) dropping a declared scale on a
    re-pick. LGVSyntenyColor needs nothing: `{}` paints strand,
    `{ scale: 'none' }` the plain fill, `{ value, scale: 'none' }` a constant.
-   Open, waiting on Colin: `none` shares the `scale` slot, so a declared
-   `linear`/`log` comes back through the field's default scale after the
-   constant and back (`showSoftClipping.test.ts`, "Normal and back keeps the
-   field, range and ends of a linear tag").
+   After the constant and back, a field paints through its default scale, as
+   ADR-151 records: Colin chose the plain rule over guessing the kind
+   (2026-09-21). Open, waiting on Colin: the alignments Tag dialog picks no
+   scale, so a numeric tag opens categorical and a gradient is reachable only
+   through the config editor.
 3. **Colour rules on every display.** `threshold-cuts`, `ramp-domain` and
    `ramp-ends` live only in the mark display's rule list
    (`plugins/marks/src/LinearMarkDisplay/markProblems.ts`), so a bad colour

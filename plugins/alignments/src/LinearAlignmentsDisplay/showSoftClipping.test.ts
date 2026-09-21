@@ -408,7 +408,7 @@ describe('alignments colorBy', () => {
 
   // `none` and a declared kind share the one `scale` slot (ADR-151), so the
   // way back keeps every member the kind reads but not the kind itself.
-  it('Normal and back keeps the field, range and ends of a linear tag', () => {
+  it('Normal and back keeps a tag and its members, and paints it through the default scale', () => {
     const color = {
       field: 'tags.NM',
       scale: 'linear',
