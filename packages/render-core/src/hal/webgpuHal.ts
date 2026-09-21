@@ -9,22 +9,21 @@ import {
 } from '../canvasContext.ts'
 import { createGpuSurfaceLostError } from '../gpuContextLostError.ts'
 import { getGpuDevice } from '../gpuDevice.ts'
+import { createVertexBuffer } from '../webgpuUtils.ts'
 import {
-  createUniformOnlyBindGroup,
-  createVertexBuffer,
-} from '../webgpuUtils.ts'
-import {
-  getDeviceLayouts,
+  bindGroupLayoutEntries,
   getOrBuildPipeline,
+  getPassLayout,
   pipelineRecipe,
 } from './deviceGpuCache.ts'
 import { GpuHalBase } from './gpuHalBase.ts'
 
-import type { DeviceLayouts, PipelineRecipe } from './deviceGpuCache.ts'
+import type { PipelineRecipe } from './deviceGpuCache.ts'
 import type {
   GpuHal,
   PipelineDescriptor,
   SampleCount,
+  ShaderBinding,
   TextureBinding,
   TextureSource,
 } from './types.ts'
@@ -77,7 +76,6 @@ interface RegionPassBuffer {
 async function buildPipeline(
   device: GPUDevice,
   recipe: PipelineRecipe,
-  layouts: DeviceLayouts,
   passId: string,
 ) {
   const module = device.createShaderModule({ code: recipe.wgslSource })
@@ -91,9 +89,7 @@ async function buildPipeline(
   }
   const { blend } = recipe
   return device.createRenderPipelineAsync({
-    layout: recipe.textured
-      ? layouts.texturedPipelineLayout
-      : layouts.uniformOnlyPipelineLayout,
+    layout: getPassLayout(device, recipe.bindGroupLayout).pipelineLayout,
     vertex: { module, entryPoint: 'vs_main', buffers: [recipe.vertexBuffer] },
     fragment: {
       module,
@@ -125,7 +121,7 @@ async function resolvePipelines(
       return getOrBuildPipeline(
         device,
         pipelineRecipe(desc, WGSL_SOURCE, sampleCount),
-        (layouts, recipe) => buildPipeline(device, recipe, layouts, desc.id),
+        recipe => buildPipeline(device, recipe, desc.id),
       )
     }),
   )
@@ -159,14 +155,13 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private context: GPUCanvasContext
   private pipelines: ReadonlyMap<string, GPURenderPipeline>
   private passTextures = new Map<string, PassTextureState>()
-  // One bind group per textured pass, built lazily by `getBindGroup` and
-  // dropped when `uploadTexture` swaps that pass's texture. Uniform-only passes
-  // are not stored here — they all share `uniformOnlyBindGroup`.
+  // Every pass's bind group, by the pass drawn. A pass that binds no texture
+  // has one from construction, shared with each pass over the same layout; a
+  // textured pass gets its own when its texture arrives, dropped when
+  // `uploadTexture` replaces the texture. The layouts are the device's, shared
+  // with every display on it; the groups are this HAL's, since they name its
+  // uniform ring buffer.
   private passBindGroups = new Map<string, GPUBindGroup>()
-  // The device's layouts, not this HAL's — shared with every other display on
-  // the same device. The bind GROUPS above stay per-HAL: they reference this
-  // HAL's uniform ring buffer.
-  private layouts: DeviceLayouts
 
   // Uniform ring buffer: holds up to MAX_UNIFORM_SLOTS sets of uniforms so
   // that all draw calls in a frame can reference different uniform data via
@@ -179,11 +174,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   // console the developer stops reading, and the fact is about the renderer
   // rather than about this frame.
   private warnedUniformSlots = false
-
-  // Shared bind group for every uniform-only pass — only references
-  // `uniformRingBuffer` (via dynamic offset at draw time), so one instance
-  // serves all passes/regions instead of allocating a fresh one per upload.
-  private uniformOnlyBindGroup: GPUBindGroup
 
   // Samples per pixel this display renders at, stated by whoever built it (see
   // `RenderingBackendOptions.sampleCount`). Every render-pass, texture and
@@ -247,14 +237,12 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     descriptors: PipelineDescriptor[],
     sampleCount: SampleCount,
     pipelines: Map<string, GPURenderPipeline>,
-    layouts: DeviceLayouts,
   ) {
     super(descriptors, 'WebGPUHal')
     this.device = device
     this.canvas = canvas
     this.context = context
     this.pipelines = pipelines
-    this.layouts = layouts
     this.sampleCount = sampleCount
 
     // Align uniform slots to device requirements for dynamic offsets
@@ -268,13 +256,62 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
     this.uniformStaging = new Uint8Array(ringSize)
-    this.uniformOnlyBindGroup = createUniformOnlyBindGroup(
-      device,
-      layouts.uniformOnlyBindGroupLayout,
-      this.uniformRingBuffer,
-      this.alignedUniformSize,
-    )
+    const byLayout = new Map<GPUBindGroupLayout, GPUBindGroup>()
+    for (const desc of descriptors) {
+      if (!desc.bindings.some(b => b.kind === 'texture')) {
+        const layout = this.bindGroupLayoutOf(desc.bindings)
+        let group = byLayout.get(layout)
+        if (!group) {
+          group = this.createBindGroup(desc.bindings, layout)
+          byLayout.set(layout, group)
+        }
+        this.passBindGroups.set(desc.id, group)
+      }
+    }
     this.configureContext()
+  }
+
+  private bindGroupLayoutOf(bindings: readonly ShaderBinding[]) {
+    return getPassLayout(this.device, bindGroupLayoutEntries(bindings))
+      .bindGroupLayout
+  }
+
+  // One entry per binding in the pass's table, the same table its layout was
+  // built from, so the group cannot name a binding the layout lacks.
+  private createBindGroup(
+    bindings: readonly ShaderBinding[],
+    layout: GPUBindGroupLayout,
+    texture?: PassTextureState,
+  ) {
+    return this.device.createBindGroup({
+      layout,
+      entries: bindings.map(b => ({
+        binding: b.index,
+        resource: this.bindingResource(b, texture),
+      })),
+    })
+  }
+
+  private bindingResource(
+    b: ShaderBinding,
+    texture: PassTextureState | undefined,
+  ): GPUBindingResource {
+    if (b.kind === 'uniform') {
+      return {
+        buffer: this.uniformRingBuffer,
+        offset: 0,
+        size: this.alignedUniformSize,
+      }
+    }
+    if (texture && b.kind === 'texture') {
+      return texture.texture.createView()
+    }
+    if (texture && b.kind === 'sampler') {
+      return texture.sampler
+    }
+    throw new Error(
+      `[WebGPUHal] nothing to bind for the ${b.kind} '${b.name}' at binding ${b.index}`,
+    )
   }
 
   protected limits() {
@@ -324,7 +361,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     // compile here the canvas stays pristine and createGpuHal's WebGL2 fallback
     // can still claim it — otherwise a partial WebGPU init would drop us all the
     // way to Canvas2D on a WebGL2-capable machine.
-    const layouts = getDeviceLayouts(device)
     const pipelines = await resolvePipelines(device, descriptors, sampleCount)
     const context = canvas.getContext('webgpu')
     if (!context) {
@@ -342,7 +378,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       descriptors,
       sampleCount,
       pipelines,
-      layouts,
     )
   }
 
@@ -391,43 +426,27 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
    * (and a dropped draw) the moment one side samples a texture.
    *
    * Nothing in a bind group varies per region either: it references the
-   * HAL-wide uniform ring buffer plus the pass's own texture/sampler. So
-   * uniform-only passes all share `uniformOnlyBindGroup`, and a textured pass
-   * gets exactly one, cached until `uploadTexture` replaces its texture.
-   * Returns undefined when a pass needs a texture that hasn't arrived yet;
-   * drawPass skips those.
+   * HAL-wide uniform ring buffer plus the pass's own texture/sampler. Returns
+   * undefined when a pass needs a texture that hasn't arrived yet; drawPass
+   * skips those.
    */
   private getBindGroup(passId: string): GPUBindGroup | undefined {
-    const tb = this.descriptors.get(passId)?.textures?.[0]
-    if (tb) {
-      let bindGroup = this.passBindGroups.get(passId)
-      if (!bindGroup) {
-        const texState = this.passTextures.get(passId)
-        if (texState) {
-          bindGroup = this.device.createBindGroup({
-            layout: this.layouts.texturedBindGroupLayout,
-            entries: [
-              {
-                binding: 1,
-                resource: {
-                  buffer: this.uniformRingBuffer,
-                  offset: 0,
-                  size: this.alignedUniformSize,
-                },
-              },
-              {
-                binding: tb.textureBinding,
-                resource: texState.texture.createView(),
-              },
-              { binding: tb.samplerBinding, resource: texState.sampler },
-            ],
-          })
-          this.passBindGroups.set(passId, bindGroup)
-        }
-      }
-      return bindGroup
+    return this.passBindGroups.get(passId) ?? this.bindTexture(passId)
+  }
+
+  private bindTexture(passId: string) {
+    const texture = this.passTextures.get(passId)
+    const desc = this.descriptors.get(passId)
+    if (!texture || !desc) {
+      return undefined
     }
-    return this.uniformOnlyBindGroup
+    const group = this.createBindGroup(
+      desc.bindings,
+      this.bindGroupLayoutOf(desc.bindings),
+      texture,
+    )
+    this.passBindGroups.set(passId, group)
+    return group
   }
 
   /**

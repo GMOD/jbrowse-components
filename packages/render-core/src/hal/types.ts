@@ -134,11 +134,10 @@ export interface PipelineDescriptor {
   // implementations — multi-texture passes are not currently supported, and
   // `pnpm gen:shaders` refuses a shader that declares a second sampler.
   textures?: readonly [TextureBinding, ...TextureBinding[]]
-  // The shader's reflected binding table (its generated `BINDINGS`). The HALs
-  // still build their layouts from the two shapes they implement; this carries
-  // the shader's own answer so a consumer that needs it — and the parity gate —
-  // reads reflection rather than a hardcoded index.
-  bindings?: readonly ShaderBinding[]
+  // The shader's reflected binding table (its generated `BINDINGS`). The WebGPU
+  // HAL builds the pass's bind-group layout and bind group from it, each
+  // binding visible to the stages that read it.
+  bindings: readonly ShaderBinding[]
 }
 
 export interface GpuHal {

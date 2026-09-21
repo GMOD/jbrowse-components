@@ -11,6 +11,7 @@ const texturedPass = (id: string): PipelineDescriptor => ({
   verticesPerInstance: 6,
   blend: true,
   vertexAttributes: [],
+  bindings: [],
   textures: [
     {
       textureBinding: 2,

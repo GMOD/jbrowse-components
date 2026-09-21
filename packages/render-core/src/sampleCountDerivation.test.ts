@@ -27,6 +27,7 @@ function pass(id: string, coverage?: 'analytic'): PipelineDescriptor {
     verticesPerInstance: 6,
     blend: true,
     vertexAttributes: [],
+    bindings: [],
     coverage,
   }
 }

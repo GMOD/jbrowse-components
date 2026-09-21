@@ -269,8 +269,8 @@ lands, which is a visibly missing layer on the frame that first needs it. WebGL2
 has neither problem: linking is synchronous there anyway.
 
 **The set is also shared across displays**, which is what keeps the 22 ms from
-multiplying — `hal/deviceGpuCache.ts` memoizes pipelines and the two bind group
-layouts per device. When this was measured it keyed on the `PipelineDescriptor`
+multiplying — `hal/deviceGpuCache.ts` memoizes pipelines and bind group layouts
+per device, one layout per distinct binding table. When this was measured it keyed on the `PipelineDescriptor`
 object; A/B'd by bypassing the pipeline memo and nothing else, one page load per
 row, cycling real alignments tracks:
 

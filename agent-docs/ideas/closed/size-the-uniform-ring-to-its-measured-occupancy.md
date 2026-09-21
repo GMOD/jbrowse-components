@@ -68,9 +68,8 @@ come first:
 
 - **The cap has to stay a cap.** Overrunning it does not throw: the write is
   dropped and its draws render against another batch's uniforms, which is wrong
-  pixels with no error. So this is a growth path — recreate the buffer, the
-  shared `uniformOnlyBindGroup` and every entry in `passBindGroups` — rather
-  than a lower number.
+  pixels with no error. So this is a growth path — recreate the buffer and
+  every bind group in `passBindGroups` — rather than a lower number.
 - **The worst case is not measured.** Alignments writes once per stacked section
   per block, plus one per section with an arc band, so a grouped view multiplies
   by up to `MAX_GROUPS` (40) and a multi-region view by the block count again.

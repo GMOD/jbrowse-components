@@ -35,9 +35,9 @@ export interface ShaderModule {
   // derives bindings from reflection so the renderer doesn't hand-maintain
   // them.
   TEXTURES?: readonly [TextureBinding, ...TextureBinding[]]
-  // The shader's whole reflected binding table. Optional only because a pass
-  // may be built from a module generated before this existed.
-  BINDINGS?: readonly ShaderBinding[]
+  // The shader's whole reflected binding table, with the stages that read
+  // each binding; the WebGPU HAL's layout is built from it.
+  BINDINGS: readonly ShaderBinding[]
 }
 
 /**

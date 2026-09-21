@@ -20,6 +20,7 @@ function shaderModule(extra: Partial<ShaderModule> = {}): ShaderModule {
     INSTANCE_STRIDE_BYTES: 16,
     UNIFORMS_SIZE_BYTES: 48,
     VERTEX_ATTRIBUTES: ATTRS,
+    BINDINGS: [],
     ...extra,
   }
 }
@@ -106,9 +107,9 @@ describe('slangPass', () => {
   })
 
   it('forwards the reflected binding table and the module textures', () => {
-    // `bindings` is the shader's own answer, and the parity gate reads it rather
-    // than a hardcoded index — so dropping it here would quietly re-open the
-    // three-places-asserted-by-hand problem it was added to close.
+    // `bindings` is the shader's own answer, and the WebGPU HAL builds the
+    // pass's layout from it — so dropping it here would leave no layout to
+    // build.
     const textures: [TextureBinding] = [
       {
         textureBinding: 2,

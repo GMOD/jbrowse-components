@@ -1,8 +1,9 @@
 import { spanMark } from '../marks/spanMark.ts'
 import { WGSL_SOURCE } from '../shaders/spanMark.wgsl.generated.ts'
 import {
-  getDeviceLayouts,
+  bindGroupLayoutEntries,
   getOrBuildPipeline,
+  getPassLayout,
   pipelineRecipe,
   resetDeviceGpuCacheForTests,
 } from './deviceGpuCache.ts'
@@ -31,7 +32,7 @@ const SPAN: PipelineDescriptor = spanMark.pass
 
 function counting() {
   const built: PipelineRecipe[] = []
-  const build = async (_layouts: unknown, recipe: PipelineRecipe) => {
+  const build = async (recipe: PipelineRecipe) => {
     built.push(recipe)
     return { recipe } as unknown as GPURenderPipeline
   }
@@ -41,7 +42,7 @@ function counting() {
 describe('deviceGpuCache', () => {
   // A WebGPU-only global, so jsdom has none and the layout builder reads it at
   // call time. Nothing in the app reaches that code without a real device.
-  const shaderStage = { VERTEX: 1, FRAGMENT: 2 }
+  const shaderStage = { VERTEX: 1, FRAGMENT: 2, COMPUTE: 4 }
   let device: GPUDevice
   beforeAll(() => {
     Object.assign(globalThis, { GPUShaderStage: shaderStage })
@@ -56,13 +57,50 @@ describe('deviceGpuCache', () => {
     resetDeviceGpuCacheForTests(device)
   })
 
-  it('builds one set of layouts per device, not per HAL', () => {
+  // The bar mark's table: the vertex stage samples the ramp, and a layout
+  // showing it to the fragment stage alone is a pipeline WebGPU refuses.
+  it('shows each binding to exactly the stages that read it', () => {
+    expect(
+      bindGroupLayoutEntries([
+        {
+          index: 1,
+          kind: 'uniform',
+          name: 'u',
+          stages: ['vertex', 'fragment'],
+        },
+        { index: 2, kind: 'texture', name: 'ramp', stages: ['vertex'] },
+        { index: 3, kind: 'sampler', name: 'ramp', stages: ['vertex'] },
+      ]),
+    ).toEqual([
+      {
+        binding: 1,
+        visibility: 3,
+        buffer: { type: 'uniform', hasDynamicOffset: true },
+      },
+      { binding: 2, visibility: 1, texture: { sampleType: 'float' } },
+      { binding: 3, visibility: 1, sampler: { type: 'filtering' } },
+    ])
+  })
+
+  it('refuses a binding kind a render pass does not bind', () => {
+    expect(() =>
+      bindGroupLayoutEntries([
+        { index: 0, kind: 'storage', name: 'out', stages: ['vertex'] },
+      ]),
+    ).toThrow(/binds no storage/)
+  })
+
+  it('builds one layout per binding table per device, not per HAL', () => {
     const own = fakeDevice()
+    const entries = bindGroupLayoutEntries(SPAN.bindings)
     try {
-      expect(getDeviceLayouts(own.device)).toBe(getDeviceLayouts(own.device))
-      // uniform-only + textured, and their two pipeline layouts
+      expect(getPassLayout(own.device, entries)).toBe(
+        getPassLayout(own.device, bindGroupLayoutEntries(SPAN.bindings)),
+      )
+      expect(own.calls.bindGroupLayouts).toBe(1)
+      expect(own.calls.pipelineLayouts).toBe(1)
+      getPassLayout(own.device, [{ ...entries[0]!, visibility: 3 }])
       expect(own.calls.bindGroupLayouts).toBe(2)
-      expect(own.calls.pipelineLayouts).toBe(2)
     } finally {
       resetDeviceGpuCacheForTests(own.device)
     }
@@ -71,10 +109,13 @@ describe('deviceGpuCache', () => {
   it('gives two devices their own layouts', () => {
     const a = fakeDevice()
     const b = fakeDevice()
+    const entries = bindGroupLayoutEntries(SPAN.bindings)
     try {
-      expect(getDeviceLayouts(a.device)).not.toBe(getDeviceLayouts(b.device))
-      expect(a.calls.bindGroupLayouts).toBe(2)
-      expect(b.calls.bindGroupLayouts).toBe(2)
+      expect(getPassLayout(a.device, entries)).not.toBe(
+        getPassLayout(b.device, entries),
+      )
+      expect(a.calls.bindGroupLayouts).toBe(1)
+      expect(b.calls.bindGroupLayouts).toBe(1)
     } finally {
       resetDeviceGpuCacheForTests(a.device)
       resetDeviceGpuCacheForTests(b.device)
@@ -135,15 +176,10 @@ describe('deviceGpuCache', () => {
       { ...SPAN, topology: 'line-list' },
       {
         ...SPAN,
-        textures: [
-          {
-            textureBinding: 2,
-            samplerBinding: 3,
-            glTextureUnit: 0,
-            glUniformName: 'u_colorRamp',
-            filter: 'linear',
-          },
-        ],
+        bindings: SPAN.bindings.map(b => ({
+          ...b,
+          stages: ['vertex', 'fragment'] as const,
+        })),
       },
     ]
     const variants: [PipelineDescriptor, string][] = [

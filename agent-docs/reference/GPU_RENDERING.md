@@ -1292,15 +1292,27 @@ any), the `noShaderTextImport` lint rule (a static import outside tests), and
 subpath, the product's worker entry).
 
 **A shader's binding table is generated, not restated.** `BINDINGS` is the
-reflected `@binding` list — `{ index, kind, name }`, with `kind` spelled the way
-WebGPU spells it so a consumer hands it straight to `createBindGroupLayout`.
-Three places used to assert those indices by hand, none consulting the shader.
-The LD compute driver now builds both its layout and its bind group from
-`BINDINGS`, matching buffers by *kind* rather than name, since the two kernels
-call their input `genotypes` and `haps`. The render HALs still build the two
-shapes they implement, but `pnpm gen:shaders` refuses a render shader whose table
-is not one of them — the check the comment above `createUniformOnlyBindGroup`
-("Binding index 1 matches what the codegen emits") never had.
+reflected `@binding` list — `{ index, kind, name, stages }`, with `kind` spelled
+the way WebGPU spells it and `stages` naming the entry points that read the
+binding. The WebGPU HAL builds each pass's bind-group layout and bind group from
+it (`bindGroupLayoutEntries` in `hal/deviceGpuCache.ts`), each binding visible to
+exactly its `stages`, and so does the compute driver (`computePipeline.ts`).
+`pnpm gen:shaders` refuses a render shader whose table is not one the HALs bind:
+the uniform block at 1, and at most one combined `Sampler2D` at 2/3.
+
+**Which stage reads a binding is the shader's answer, not the HAL's.** A
+hand-set layout showed the ramp to the fragment stage alone while the bar and
+point marks sample theirs in the vertex stage, so WebGPU refused both pipelines
+and those displays drew on WebGL2 wherever WebGPU is the first rung, with
+nothing on screen to say so.
+slangc marks what an entry point reads (`used` on its reflected bindings) only
+when it compiles that entry point alone, so the build compiles each one alone —
+the per-stage GLSL compile it already ran — and `assertStageReadsMatchWgsl`
+holds the result to the emitted WGSL: every binding an entry point's body, or a
+function it calls, names has to be in that binding's `stages`. Then
+`webgpuHalBindingVisibility.test.ts` builds every pass in the tree through the
+real `WebGPUHal` against a recording device, and fails naming the stage a
+binding is hidden from.
 
 **Reflection and the emitted WGSL are cross-checked.** They are two outputs of
 different slangc passes and only one of them is what the GPU runs, so

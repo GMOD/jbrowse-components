@@ -1,6 +1,7 @@
 /// <reference types="@webgpu/types" />
 
 import { onDeviceLost } from './gpuDevice.ts'
+import { stageVisibility } from './webgpuUtils.ts'
 
 import type { ShaderBinding, ShaderSource } from './hal/index.ts'
 
@@ -30,7 +31,7 @@ function makeBindGroupLayout(
       }
       return {
         binding: b.index,
-        visibility: GPUShaderStage.COMPUTE,
+        visibility: stageVisibility(b.stages),
         buffer: { type: b.kind },
       }
     }),
