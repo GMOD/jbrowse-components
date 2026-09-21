@@ -441,6 +441,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setselectedsashimikey">**setSelectedSashimiKey**</span><br><code>(key: string &#124; undefined) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setselectedchainreadids">**setSelectedChainReadIds**</span><br><code>(ids: string[]) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setcolorby">**setColorBy**</span><br><code>(colorBy: ReadColorBy) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setcolorbytag">**setColorByTag**</span><br><code>(tag: string, scale: TagColorScale) =&gt; void</code> | Color by a read tag as categories, a colour per value, or on a gradient over its numeric values. | LinearAlignmentsDisplay |
 | <span id="action-setbaselayer">**setBaseLayer**</span><br><code>(layer?: BaseLayer &#124; undefined) =&gt; void</code> | Draw a per-base layer over the reads, or none. The read fill is `setColorBy`'s and stays as it is. | LinearAlignmentsDisplay |
 | <span id="action-setcolor">**setColor**</span><br><code>(color: string &#124; Partial&lt;AlignmentsColorSetting&gt;) =&gt; void</code> | Replace the `color` object whole: `"steelblue"`, `{ field: 'tags.HP', range: [...] }`. | LinearAlignmentsDisplay |
 | <span id="action-setfilterby">**setFilterBy**</span><br><code>(filterBy: FilterBy) =&gt; void</code> |  | LinearAlignmentsDisplay |

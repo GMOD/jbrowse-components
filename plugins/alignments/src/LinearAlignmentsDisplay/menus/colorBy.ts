@@ -15,6 +15,7 @@ import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import { bisulfiteItem } from './bisulfiteMenu.ts'
 import { modificationsMenu } from './modificationsMenu.ts'
 
+import type { AlignmentsColorEncoding } from '../../shared/alignmentsColor.ts'
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type {
   ArcColorByType,
@@ -22,6 +23,7 @@ import type {
   BaseLayerType,
   ColorSchemeType,
   ReadColorBy,
+  TagColorScale,
 } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -30,7 +32,9 @@ const TagDialog = lazy(() => import('../dialogs/TagDialog.tsx'))
 
 interface ColorByModel {
   colorBy: ReadColorBy
+  colorEncoding: AlignmentsColorEncoding
   setColorBy: (colorBy: ReadColorBy) => void
+  setColorByTag: (tag: string, scale: TagColorScale) => void
   baseLayer: BaseLayer | undefined
   setBaseLayer: (layer?: BaseLayer) => void
 }
@@ -137,6 +141,17 @@ function baseLayerItems(
   ]
 }
 
+function tagColorScaleOf({
+  colorBy,
+  colorEncoding,
+}: AnyColorByModel): TagColorScale {
+  return colorBy.type === 'tag' &&
+    typeof colorEncoding === 'object' &&
+    (colorEncoding.scale === 'linear' || colorEncoding.scale === 'log')
+    ? 'linear'
+    : 'categorical'
+}
+
 // Names the tag in the label once one is picked ("Tag (HP)...") — the radio is
 // the only scheme whose choice has a parameter, and it was previously invisible
 // without reopening the dialog.
@@ -154,8 +169,9 @@ function tagItem(model: AnyColorByModel): MenuItem {
           title: 'Color by tag',
           prompt: 'Pick or enter a tag to color by:',
           initialTag: colorBy.tag,
-          onSubmit: (tag: string) => {
-            model.setColorBy({ type: 'tag', tag })
+          colorScale: tagColorScaleOf(model),
+          onSubmit: (tag: string, scale: TagColorScale | undefined) => {
+            model.setColorByTag(tag, scale ?? 'categorical')
           },
           handleClose,
         },

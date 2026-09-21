@@ -65,6 +65,12 @@ The track menu's **Color by...** offers several schemes.
 - **Per-base lettering** draws every aligned base in its nucleotide color, not
   just the mismatches.
 
+### A read tag
+
+**Color by → Tag...** asks for a tag name and how to color it: **A color per
+value** for a tag like `HP` (haplotype) or `RG` (read group), or **A gradient
+over numbers** for a numeric tag like `NM` (edit distance).
+
 ### Modifications and methylation
 
 For a BAM/CRAM with MM/ML modification calls (nanopore, PacBio), **Color by →

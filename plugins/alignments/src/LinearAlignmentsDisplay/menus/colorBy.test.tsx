@@ -13,8 +13,12 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function makeModel() {
   return {
     colorBy: { type: 'normal' } as ReadColorBy,
+    colorEncoding: undefined,
     setColorBy(cb: ReadColorBy) {
       this.colorBy = cb
+    },
+    setColorByTag(tag: string) {
+      this.colorBy = { type: 'tag', tag }
     },
     baseLayer: undefined as BaseLayer | undefined,
     setBaseLayer(layer?: BaseLayer) {

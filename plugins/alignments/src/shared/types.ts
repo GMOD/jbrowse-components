@@ -129,6 +129,9 @@ export interface ReadColorBy extends ColorBy {
   modifications?: undefined
 }
 
+/** How a read tag colours: a colour per value, or a gradient over its numbers. */
+export type TagColorScale = 'categorical' | 'linear'
+
 /** The per-base layer: the display's `baseColor` object as a scheme. */
 export interface BaseLayer extends ColorBy {
   type: BaseLayerType

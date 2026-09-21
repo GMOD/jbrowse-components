@@ -428,6 +428,26 @@ describe('alignments colorBy', () => {
     })
   })
 
+  it('the Tag dialog picks a gradient or a colour per value', () => {
+    const { display } = createDisplay({
+      color: {
+        field: 'tags.NM',
+        scale: 'linear',
+        range: ['#ffffff', '#000000'],
+        domainMin: 0,
+      },
+    })
+    display.setColorBy({ type: 'normal' })
+    display.setColorByTag('NM', 'linear')
+    expect(display.bakedColorScale?.kind).toBe('linear')
+    expect(display.colorSetting).toMatchObject({
+      range: ['#ffffff', '#000000'],
+      domainMin: 0,
+    })
+    display.setColorByTag('NM', 'categorical')
+    expect(display.colorSetting.scale).toBeUndefined()
+  })
+
   it('leaving pairs and coming back keeps a pinned insert-size band', () => {
     const { display } = createDisplay({
       color: { field: 'insertSizeAndOrientation', domain: ['150', '600'] },

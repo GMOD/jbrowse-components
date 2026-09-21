@@ -187,6 +187,7 @@ import type {
   GroupBy,
   ReadColorBy,
   SortedBy,
+  TagColorScale,
 } from '../shared/types'
 import type { NumericExtent } from './bakedColorScale.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
@@ -3259,6 +3260,18 @@ export default function stateModelFactory(
                 colorSnapshotFor(colorBy, self.colorSetting),
               )
             }
+          },
+
+          /**
+           * #action
+           * Color by a read tag as categories, a colour per value, or on a
+           * gradient over its numeric values.
+           */
+          setColorByTag(tag: string, scale: TagColorScale) {
+            setConf(self, 'color', {
+              ...colorSnapshotFor({ type: 'tag', tag }, self.colorSetting),
+              scale: scale === 'linear' ? 'linear' : undefined,
+            })
           },
 
           /**

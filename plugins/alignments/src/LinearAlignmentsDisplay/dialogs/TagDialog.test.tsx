@@ -6,9 +6,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import TagDialog from './TagDialog.tsx'
 
+import type { TagColorScale } from '../../shared/types.ts'
+
 afterEach(cleanup)
 
-function renderDialog(initialTag?: string) {
+function renderDialog(initialTag?: string, colorScale?: TagColorScale) {
   const onSubmit = jest.fn()
   const handleClose = jest.fn()
   render(
@@ -19,6 +21,7 @@ function renderDialog(initialTag?: string) {
         onSubmit={onSubmit}
         handleClose={handleClose}
         initialTag={initialTag}
+        colorScale={colorScale}
       />
     </ThemeProvider>,
   )
@@ -35,7 +38,7 @@ test('pre-fills the tag being sorted on, and can submit it unchanged', () => {
   expect(tagInput()).toHaveValue('HP')
 
   fireEvent.click(screen.getByText('Submit'))
-  expect(onSubmit).toHaveBeenCalledWith('HP')
+  expect(onSubmit).toHaveBeenCalledWith('HP', undefined)
   expect(handleClose).toHaveBeenCalled()
 })
 
@@ -50,7 +53,7 @@ test('editing the pre-filled tag submits the new one', () => {
   const { onSubmit } = renderDialog('HP')
   fireEvent.change(tagInput(), { target: { value: 'RG' } })
   fireEvent.click(screen.getByText('Submit'))
-  expect(onSubmit).toHaveBeenCalledWith('RG')
+  expect(onSubmit).toHaveBeenCalledWith('RG', undefined)
 })
 
 // TagTextField emits undefined for anything that isn't a valid two-character
@@ -59,4 +62,17 @@ test('an incomplete tag cannot be submitted', () => {
   renderDialog('HP')
   fireEvent.change(tagInput(), { target: { value: 'H' } })
   expect(screen.getByText('Submit').closest('button')).toBeDisabled()
+})
+
+test('asks how the tag colours only where the caller passes a scale', () => {
+  renderDialog('NM')
+  expect(screen.queryByText('A gradient over numbers')).toBeNull()
+})
+
+test('submits the colouring picked, opening on the one in use', () => {
+  const { onSubmit } = renderDialog('NM', 'categorical')
+  expect(screen.getByLabelText('A color per value')).toBeChecked()
+  fireEvent.click(screen.getByLabelText('A gradient over numbers'))
+  fireEvent.click(screen.getByText('Submit'))
+  expect(onSubmit).toHaveBeenCalledWith('NM', 'linear')
 })
