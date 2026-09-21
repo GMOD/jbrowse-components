@@ -367,7 +367,7 @@ test('a mate outside every displayed slice of its contig is marked on the query 
   expect(offscreenMates.mateRefNameDict).toEqual(['t1'])
   expect([...offscreenMates.counts]).toEqual([1])
   expect([...offscreenMates.starts]).toEqual([100])
-  expect([...offscreenMates.mateStarts]).toEqual([5000])
+  expect(Array.from(offscreenMates.mateStarts)).toEqual([5000])
 })
 
 test('an alignment the two slices share no part of is marked', async () => {
@@ -445,5 +445,5 @@ test('a target-anchored alignment whose query end misses every query slice is ma
   expect(featureIds).toEqual([])
   expect(targetOffscreenMates.mateRefNameDict).toEqual(['q1'])
   expect([...targetOffscreenMates.starts]).toEqual([500])
-  expect([...targetOffscreenMates.mateStarts]).toEqual([50000])
+  expect(Array.from(targetOffscreenMates.mateStarts)).toEqual([50000])
 })
