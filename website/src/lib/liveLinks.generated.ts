@@ -186,8 +186,8 @@ export const figureLiveRefs: Record<string, string> = {
   "edit_track_settings": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22volvox_bam%22%5D%7D%5D%7D&sessionName=Screenshot",
   "drawer_widget_toggle": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22volvox_bam%22%5D%7D%5D%7D&sessionName=Screenshot",
   "share_button": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22volvox_cram_alignments%22%5D%7D%5D%7D&sessionName=Screenshot",
-  "bookmark_widget_create": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr10%3A89%2C613%2C000-89%2C740%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
-  "bookmark_widget_edit_label": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr1%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "highlight_list_create": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr10%3A89%2C613%2C000-89%2C740%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "highlight_list_edit_label": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr1%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
   "hierarchical/hierarchical_user_menu-fs8": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%5D%7D%5D%7D&sessionName=Screenshot",
   "recent_tracks": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%221%3A1-100%2C000%22%7D%5D%7D&sessionName=Screenshot",
   "favorite_tracks": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22volvox_bam%22%5D%7D%5D%7D&sessionName=Screenshot",
@@ -628,7 +628,7 @@ export const videoLiveRefs: Record<string, string> = {
   "sv/inspector_route": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
   "sv/multisample_sort": "?config=test_data/1000g_cnv/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22kgp_sv_matrix%22%2C%22name%22%3A%221KGP%20ensemble%20SV%20calls%2C%203202%20samples%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2F1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz%22%7D%7D%2C%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22kgp_sv_records%22%2C%22name%22%3A%221KGP%20ensemble%20SV%20calls%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2F1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz%22%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%221%3A25%2C200%2C000-25%2C400%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22kgp_sv_matrix%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22forceLoad%22%3Atrue%2C%22height%22%3A290%7D%2C%7B%22trackId%22%3A%22cnv_1000g_zarr%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22defaultRendering%22%3A%22density%22%2C%22origin%22%3A2%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A4%7D%7D%2C%22color%22%3A%7B%22field%22%3A%22score%22%2C%22scale%22%3A%22threshold%22%2C%22range%22%3A%5B%22%232166ac%22%2C%22%23b2182b%22%5D%7D%2C%22height%22%3A330%2C%22runClustering%22%3Atrue%2C%22showTree%22%3Afalse%7D%2C%7B%22trackId%22%3A%22kgp_sv_records%22%2C%22type%22%3A%22LinearVariantDisplay%22%2C%22forceLoad%22%3Atrue%2C%22height%22%3A170%2C%22color%22%3A%22%234a5568%22%7D%2C%7B%22trackId%22%3A%22ncbi_refseq_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A120%2C%22showLabels%22%3A%22name%22%2C%22showOnlyGenes%22%3Atrue%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv_cgiab/copy_number_layout": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22MultiQuantitativeTrack%22%2C%22trackId%22%3A%22hg008_cnv_indexcov%22%2C%22name%22%3A%22HG008%20normal%20vs%20tumor%20coverage%20(indexcov)%22%2C%22assemblyNames%22%3A%5B%22GRCh38_GIABv3%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22MultiWiggleAdapter%22%2C%22subadapters%22%3A%5B%7B%22name%22%3A%22HG008-N%20(normal)%22%2C%22type%22%3A%22BigWigAdapter%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-N_indexcov.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%7B%22name%22%3A%22HG008-T%20(tumor)%22%2C%22type%22%3A%22BigWigAdapter%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcgiab%2FHG008-T_indexcov.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%5D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr5%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg008_cnv_indexcov%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A200%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "ui/bookmark_region": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr10%3A89%2C613%2C000-89%2C740%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "ui/highlight_region": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr10%3A89%2C613%2C000-89%2C740%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/close_ups": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcancer_sv%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C576%2C500-7%2C776%2C500%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A100%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/open_track_url": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes%22%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/feature_sequence_types": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A17200-23200%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22gff3tabix_genes%22%2C%22height%22%3A300%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -780,7 +780,7 @@ export const videoFrames: Record<
     "width": 1920,
     "height": 520
   },
-  "ui/bookmark_region": {
+  "ui/highlight_region": {
     "width": 1920,
     "height": 360
   },
@@ -906,12 +906,12 @@ export const videoCaptioned: string[] = [
   "tcga/cohort_cnv_clustering",
   "tcga/mutations_collapse_introns",
   "ui/add_genome",
-  "ui/bookmark_region",
   "ui/bulk_add_tracks",
   "ui/close_ups",
   "ui/feature_sequence_types",
   "ui/gene_track_channel_spec",
   "ui/gene_track_sections",
+  "ui/highlight_region",
   "ui/open_track_url",
   "ui/sequence_search_motifs",
   "variants/trio_phased_matrix"
@@ -1104,12 +1104,12 @@ export const videoSteps: Record<string, string[]> = {
     "3",
     "Draw the two rows on one axis, as points"
   ],
-  "ui/bookmark_region": [
-    "Bookmark the span on screen",
-    "Open the bookmark widget from the view menu",
+  "ui/highlight_region": [
+    "Highlight the span on screen",
+    "Open the highlight list from the view menu",
     "PTEN 5' end",
     "chr10:100,000,000-100,200,000",
-    "Click the saved row to navigate back"
+    "Click the row to navigate back"
   ],
   "ui/close_ups": [
     "Drag the span you want a closer look at",

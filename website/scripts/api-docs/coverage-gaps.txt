@@ -58,11 +58,11 @@ packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts showCoordina
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts showCoordinatesSetting
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts upDownBp
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts upperCaseCDS
-plugins/grid-bookmark/src/index.ts activateBookmarkWidget
-plugins/grid-bookmark/src/index.ts bookmarkCurrentRegion
+plugins/grid-bookmark/src/index.ts activateHighlightWidget
+plugins/grid-bookmark/src/index.ts highlightCurrentRegion
 plugins/grid-bookmark/src/index.ts highlightMenuItems
 plugins/grid-bookmark/src/index.ts menuItems
-plugins/grid-bookmark/src/index.ts navigateNewestBookmark
+plugins/grid-bookmark/src/index.ts navigateNewestHighlight
 plugins/grid-bookmark/src/index.ts rubberBandMenuItems
 plugins/linear-comparative-view/src/SyntenyFeatureDetail/index.ts level
 plugins/linear-comparative-view/src/SyntenyFeatureDetail/index.ts type

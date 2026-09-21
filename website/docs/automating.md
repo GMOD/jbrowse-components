@@ -122,8 +122,8 @@ export interface InitState {
   nav?: boolean
   // a string entry is a locstring or a JSON-encoded HighlightType (the URL
   // wire-format); programmatic callers (createViewState/session JSON) can pass
-  // a HighlightType object directly
-  highlight?: (string | HighlightType)[]
+  // an object directly. Each entry lands on the session's highlight list
+  highlight?: (string | HighlightInput)[]
 }
 
 // Plain persisted view props a launch spec may set beside the launch keys.

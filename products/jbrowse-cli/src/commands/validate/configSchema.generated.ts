@@ -17566,19 +17566,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
-        "highlight": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "object"
-              }
-            ]
-          }
-        },
         "windowStartBp": {
           "type": "number"
         },
@@ -17677,6 +17664,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nav": {
           "description": "Launch key, resolved by the LinearGenomeView launcher on open."
+        },
+        "highlight": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
         },
         "bpPerPx": {
           "deprecated": true,
@@ -18753,19 +18753,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
-        "highlight": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "object"
-              }
-            ]
-          }
-        },
         "colorBy": {
           "$ref": "#/$defs/SyntenyColor"
         },
@@ -18875,6 +18862,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "The rows this view composes, each a view of its own.",
           "items": {
             "$ref": "#/$defs/View"
+          }
+        },
+        "highlight": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ]
           }
         },
         "autoDiagonalize": {
@@ -19671,6 +19671,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "focusedViewId": {
           "type": "string"
+        },
+        "highlights": {
+          "type": "array",
+          "items": {}
         },
         "highlightsVisible": {
           "type": "boolean"
