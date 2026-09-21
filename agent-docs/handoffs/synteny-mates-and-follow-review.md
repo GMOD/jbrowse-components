@@ -1,6 +1,6 @@
 ---
 name: synteny-mates-and-follow-review
-description: Findings from a 2026-09-20 review of the off-screen mate strip and the synteny follow, the mate half re-checked by a second reviewer. The four ordered items have landed but the comment thinning; waiting on that and on every finding not marked landed — the follow's B3-B6, the mate UI items M3-M14, and the simplifications. Read before touching `drawOffscreenMates`, the mate collection in `executeSyntenyFeaturesAndPositions`, or `SyntenyFollow/`.
+description: Findings from a 2026-09-20 review of the off-screen mate strip and the synteny follow, the mate half re-checked by a second reviewer. The four ordered items have landed but the comment thinning; waiting on that and on every finding not marked landed — the follow's B3-B6 and B8, the mate items M3-M6, M11, M13 and M15, and the simplifications. Read before touching `drawOffscreenMates`, the mate collection in `executeSyntenyFeaturesAndPositions`, or `SyntenyFollow/`.
 ---
 
 # Off-screen mates and the synteny follow: review findings
@@ -17,6 +17,8 @@ its commit when it lands; file what nobody takes up into
 3. ~~Follow: S4 (the anchor take moves into `SyntenyFollow/`).~~ Landed.
 4. The comment sweep for both subsystems. The stale-doc half landed with B7;
    thinning the comments that restate `SyntenyFollow/CLAUDE.md` (S1) is open.
+5. ~~Mates: M14, with the hover naming the click's destination (M10, M12).~~
+   Landed.
 
 ## Off-screen mates
 
@@ -49,10 +51,17 @@ Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTEN
   a false "no longer lands on it".
 - **M4. The contig floor is per dataset, not per contig**
   (`drawOffscreenMates.ts` `forEachMark`). Two tracks on one level can each
-  hold 3px of a contig and draw nothing while the tooltip sums both; M1 adds a
-  second dataset per lane that splits the same way.
+  hold 3px of a contig and draw nothing while the tooltip sums both. Since M1
+  one contig can also sit in a lane's class A and class C datasets at once,
+  which splits the same way.
 - **M5. A refetch leaves the mark tooltip standing** — `LevelSyntenyCanvas`
   keys the hover on `bandTransformKey`, which a refetch does not change.
+- **M15. A chain clipped inside a CIGAR gap is marked with a one-base mate
+  locus** on a sliced facing row (probe on the `clipGapDrop.test.ts` fixture,
+  facing row t1:5000+). The mark is truthful — the chain's aligned ends do map
+  outside the slice — but a click frames 20kb around that base. Marking with
+  the unclipped mate span when the clipped one collapses would frame the chain.
+  Dropping the mark instead makes it blink as the fetch window pans.
 - **M6. `hideUnlabelled` hides ribbons, not their marks.** Fixable on the main
   thread for class C (it carries a feature index; take the ribbon's zero-alpha
   mask, not its colour). Class A carries no attribute lanes.
@@ -74,17 +83,19 @@ Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTEN
 
 ### UI
 
-- **M10.** The tooltip can name the destination at no cost once M7 lands —
+- **M10.** Landed, `dc3953f5da`. The tooltip can name the destination at no cost once M7 lands —
   print `mateNavDestination(...).loc` so it matches the snackbar, and warn on
   hover for a mark that resolves to `none`.
 - **M11. Labels are not hoverable or clickable**; the hit test covers the 6px
   strip only. Open: a measurer outside the draw (`canvasLabelMeasurer` is
   undefined in jsdom), what a label click means (the stretch's union, which
   `labelRuns` does not carry), and label boxes blocking the ribbon pick.
-- **M12.** "The panel below has scrolled off it" is false whenever part of the
+- **M12.** Landed, `dc3953f5da`: every hint is "Click to show <locus>". "The panel below has scrolled off it" is false whenever part of the
   contig is on screen.
 - **M13.** The level's `::before` drop shadow sits over the whole top strip.
-- **M14.** With M1, a click on a mark for a sliced contig takes the add
+- **M14.** Landed, `dc3953f5da` and `3a31c3948a`: the click adds a slice in
+  the gap holding the most of the locus, beside its neighbour, and removes
+  nothing. With M1, a click on a mark for a sliced contig takes the add
   class's drop path every time, replacing the user's slices (a reversed one
   included) with the whole forward contig, and the hint says "Not on the panel
   below" about a contig that is. Appending a slice framed on the mate keeps
@@ -121,7 +132,10 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
   frame pass then applies. Fix: the frame pass calls `decideSpread` when there
   is no decision.
 - **B2. Two view-wide commands move the anchor to the last row they touch.**
-  Landed, `ea9ceda1bf`; centering hands the anchor to the feature's own row. The stack's
+  Landed, `ea9ceda1bf`; centering hands the anchor to the first row that
+  moved (`013b4b9a47`), since handing it to a row whose `navTo` threw let the
+  follow pull the moved row back. When the moved row is the mate's, the
+  snackbar still warns about the other while the follow brings it along. The stack's
   "Zoom to region(s)" (`LinearSyntenyView/model.ts`) and "Center view on this
   feature" (`SyntenyFeatureDetail/LinkToSyntenyView.tsx`) call `moveTo`/`navTo`
   per row from a click handler, and both are in `ROW_GESTURES`. Fix: make them
@@ -130,6 +144,11 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
   the harness. The plan reads the moving row's `coarseDynamicBlocks`, which
   refresh on their own 500ms timer after the anchor's, so it compares against a
   stale position; below 1bp/px it also snaps the row to whole bases.
+- **B8. Two visible slices of one contig follow as one window.**
+  `followAnchorWindow.ts` `measure()` unions blocks per refName, so an anchor
+  row showing a contig twice — a collapsed-intron row, or a slice M14's click
+  added — follows the span between them, and `coversContig` reads only the
+  first region of the name (reading).
 - **B4. A level's pick and spread state survive a direction flip** (reading).
   `planLevel` hands the previous block id, target contig and spread decision
   over without the frame pass's direction check.
