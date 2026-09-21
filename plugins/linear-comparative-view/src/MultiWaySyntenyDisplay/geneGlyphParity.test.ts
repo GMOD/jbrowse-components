@@ -83,7 +83,7 @@ const config: DisplayConfig = {
     field: '',
     scale: undefined,
     domain: [],
-    palette: [],
+    range: [],
   },
   connectorColor: undefined,
   utrColor: undefined,

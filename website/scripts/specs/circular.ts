@@ -28,7 +28,7 @@ const DENSITY_RING = {
   color: {
     field: 'score',
     scale: 'threshold',
-    palette: ['#e01e26', '#d95f02'],
+    range: ['#e01e26', '#d95f02'],
   },
   height: 40,
 }

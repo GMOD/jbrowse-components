@@ -314,7 +314,7 @@
                 "color": {
                   "field": "coverage",
                   "scale": "linear",
-                  "ramp": ["white", "red"]
+                  "range": ["white", "red"]
                 }
               }
             }

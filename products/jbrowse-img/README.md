@@ -418,7 +418,7 @@ jb2export --fasta ref.fa --bam reads.bam baseColor:modifications featureHeight:s
   --loc chr1:1-10000
 
 ## methylation over reads tinted by haplotype, in two quiet colors
-jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 color.palette=#d9c9a3,#b7c4b1 \
+jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 color.range=#d9c9a3,#b7c4b1 \
   baseColor:methylation legend --loc chr1:1-10000
 
 ## color by insert size + orientation to highlight structural variants
@@ -766,16 +766,16 @@ the modifiers come:
 ```bash
 ## a numeric tag on a colour ramp
 jb2export --fasta ref.fa --bam reads.bam color.field=tags.NM color.scale=linear \
-  color.ramp=white,darkred --loc chr1:1-10000 --out out.svg
+  color.range=white,darkred --loc chr1:1-10000 --out out.svg
 
 ## haplotype in two declared colours, methylation over it, a log coverage axis
 jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
-  color.palette=#d9c9a3,#b7c4b1 baseColor:methylation scales.y.type=log \
+  color.range=#d9c9a3,#b7c4b1 baseColor:methylation scales.y.type=log \
   --loc chr1:1-10000 --out out.svg
 ```
 
 - `true` and `false` are booleans and a number is a number
-- a comma makes a list, and a trailing comma a list of one: `color.palette=tan,`
+- a comma makes a list, and a trailing comma a list of one: `color.range=tan,`
 - a `jexl:` item keeps the commas inside its own brackets and quotes:
   `jexlFilters=jexl:get(feature,'score')>5,` is a list of one filter
 - a slot the display does not declare, or a key its object refuses, fails the
@@ -790,7 +790,7 @@ replaces the one the track's config wrote. Use compact JSON (a single shell
 token, no spaces):
 
 ```bash
-jb2export --fasta ref.fa --bam reads.bam '{"color":{"palette":["rgb(217,201,163)"]}}' \
+jb2export --fasta ref.fa --bam reads.bam '{"color":{"range":["rgb(217,201,163)"]}}' \
   color:tag:HP --loc chr1:1-10000 --out out.svg
 ```
 

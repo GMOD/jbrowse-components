@@ -1,11 +1,11 @@
 export const CHANNEL_SPEC_EXAMPLES = [
   { spec: '{ "color": "darkgreen" }', description: 'one color for every bar' },
   {
-    spec: '{ "color": { "field": "score", "scale": "threshold", "domain": [2], "palette": ["#2166ac", "#b2182b"] } }',
+    spec: '{ "color": { "field": "score", "scale": "threshold", "domain": [2], "range": ["#2166ac", "#b2182b"] } }',
     description: 'blue below 2, red at or above it',
   },
   {
-    spec: '{ "color": { "field": "score", "scale": "linear", "ramp": ["viridis"] } }',
+    spec: '{ "color": { "field": "score", "scale": "linear", "scheme": "viridis" } }',
     description: 'the density ramp, viridis from the origin outwards',
   },
   {

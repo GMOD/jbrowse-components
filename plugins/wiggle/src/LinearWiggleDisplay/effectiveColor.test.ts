@@ -61,7 +61,7 @@ test('a declared threshold draws a key, the layout default draws none', () => {
     field: 'score',
     scale: 'threshold',
     domain: ['2'],
-    palette: ['#2166ac', '#b2182b'],
+    range: ['#2166ac', '#b2182b'],
   })
   const key = display.colorScales.find(s => s.id === 'threshold')
   expect(key?.kind).toBe('categorical')
@@ -73,11 +73,17 @@ test('a declared threshold draws a key, the layout default draws none', () => {
 
 test('the spec reads back what was written', () => {
   const display = makeDisplay(['a'], true)
-  display.setColor({ field: 'score', scale: 'linear', ramp: ['viridis'] })
+  display.setColor({
+    field: 'score',
+    scale: 'linear',
+    scheme: 'viridis',
+    reverse: true,
+  })
   expect(display.channelSpec.color).toEqual({
     field: 'score',
     scale: 'linear',
-    ramp: ['viridis'],
+    scheme: 'viridis',
+    reverse: true,
   })
   display.setColor('green')
   expect(display.channelSpec.color).toBe('green')

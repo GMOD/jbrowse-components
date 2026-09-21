@@ -56,15 +56,15 @@ colour, and the reviewer's case against a view-level resolution instead was
 that it either refetches on every union growth or rewrites colour per instance
 on the main thread, which breaks the one-place rule above.
 
-Which kind a colour scale is comes from the `ramp` slot and never from the
-data — a `field` with a ramp is `linear`, one without is `categorical` — so a
-numeric field with no ramp takes a colour per distinct value; the table carries
-`numericKeys` for that case and the key prints a line naming `scale` and `ramp`
-once the rows pass a handful.
+Which kind a colour scale is comes from `scale` and never from the data or
+from which other member is written — a `field` with no `scale` is
+`categorical`, whatever `range` lists — so a numeric field with no scale takes
+a colour per distinct value; the table carries `numericKeys` for that case and
+the key prints a line naming `scale` once the rows pass a handful.
 
 A **threshold** scale is the third kind, and it is only ever declared: `domain`
-is the ascending cut points, `palette` holds one colour more, and a value takes
-`palette[thresholdIndex(value, domain)]` — the count of cut points it is at or
+is the ascending cut points, `range` holds one colour more, and a value takes
+`range[thresholdIndex(value, domain)]` — the count of cut points it is at or
 past, `-1` and the fallback grey for a value that is not a number
 (`@jbrowse/core/util/thresholdScale`). It resolves per region in the worker the
 way a categorical scale does, so it needs no lane, no ramp and no shader
@@ -86,13 +86,18 @@ ABGR or the value's float32 bits, `colorBits` on the packing side and
 byte. The Canvas2D painters, which are also the SVG export, bake the packed
 colours once per domain change (`paintColors`, memoized on the payload). A
 `span` keeps the worker-resolved lane: its geometry is `rowRect`'s, whose
-uniform struct four other displays share. A listed `domain` still pins, and is
-what fixes a legend for a figure.
+uniform struct four other displays share. `domainMin` and `domainMax` each pin
+one end and leave the other to that union (`rampDomain`,
+`@jbrowse/core/util/colorRamp`), so a pinned floor holds across a pan while the
+ceiling follows the data; both pinned is what fixes a legend for a figure. The
+ramp's stops are `range`'s colours or the named `scheme`, turned round under
+`reverse` (`colorRampStops`), so a direction is a member rather than a domain
+written high to low.
 
 **A scale belongs to a channel, not to colour alone.** `glyph` takes the
 same `{ field, scale: 'categorical', domain? }` that `color` does, with
-`range` — glyph names, the three in order by default — where colour has
-`palette`, and `encodeFeatures` resolves both through one categorical arm:
+`range` — glyph names, the three in order by default — as colour's `range`
+lists colours, and `encodeFeatures` resolves both through one categorical arm:
 the walk records which distinct value each admitted instance carried and
 `resolve` hands every value its range entry once the table is known, pinned
 by `domain` or derived from the value. The payload carries `scale` for the

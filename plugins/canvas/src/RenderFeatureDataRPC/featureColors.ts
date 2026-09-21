@@ -16,10 +16,10 @@ export const UTR_DEFAULT_COLOR = utrDefaultColor
  * field named, or `scale: 'none'` beside one.
  */
 export function featureColorScale(
-  color: Pick<ColorSetting, 'field' | 'scale' | 'domain' | 'palette'>,
+  color: Pick<ColorSetting, 'field' | 'scale' | 'domain' | 'range'>,
 ) {
-  const { field, domain, palette } = color
+  const { field, domain, range } = color
   return paintedScale(color, 'categorical') === 'categorical'
-    ? categoricalField(field, { domain, range: palette })
+    ? categoricalField(field, { domain, range })
     : undefined
 }

@@ -9,6 +9,8 @@ import type {
   ReadColorBy,
   ReadColorSchemeType,
 } from './types.ts'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 export const ALIGNMENTS_COLOR_SCALES = [
   'none',
@@ -18,17 +20,13 @@ export const ALIGNMENTS_COLOR_SCALES = [
 ] as const
 export type AlignmentsColorScale = (typeof ALIGNMENTS_COLOR_SCALES)[number]
 
-/** The ramp an empty `ramp` paints. */
-export const DEFAULT_RAMP = 'viridis'
-
 /** The `color` object as written on an alignments display. */
-export interface AlignmentsColorSetting {
-  value: string | undefined
-  field: string
+export interface AlignmentsColorSetting extends ColorSetting {
   scale: AlignmentsColorScale | undefined
-  domain: readonly string[]
-  palette: readonly string[]
-  ramp: readonly string[]
+  scheme: ColorSchemeName | undefined
+  reverse: boolean
+  domainMin: number | undefined
+  domainMax: number | undefined
   domainMid: number | undefined
 }
 
@@ -148,18 +146,6 @@ export function bodyColorScheme(
     : colorBy.type
 }
 
-/**
- * The scale a tag or attribute field paints through: the written `scale`, or
- * unset, `linear` beside a `ramp` and `categorical` without, as on the mark
- * display's colour.
- */
-export function bakedScaleOf({
-  scale,
-  ramp,
-}: Pick<AlignmentsColorSetting, 'scale' | 'ramp'>) {
-  return scale ?? (ramp.length > 0 ? 'linear' : 'categorical')
-}
-
 /** Whether the main thread bakes a colour per read from a value the worker ships. */
 export function isBakedScheme(colorBy: ColorBy) {
   return (
@@ -170,10 +156,10 @@ export function isBakedScheme(colorBy: ColorBy) {
 
 /**
  * The `color` object a scheme pick writes. The plain fill keeps the field
- * under `none` for the way back, with the default ramp written out where a
- * linear scale painted it, and a field re-picked keeps its order, palette and
- * ramp, so its unset scale reads linear again beside the ramp; a new field
- * starts from none of them.
+ * under `none` for the way back, and a field re-picked keeps its order, range
+ * and ends; a new field starts from none of them. A re-picked field paints
+ * through its own default scale: `none` and a declared `linear` or `threshold`
+ * share the one `scale` slot, so the plain fill cannot keep the kind.
  */
 export function colorSnapshotFor(
   colorBy: ColorBy,
@@ -185,13 +171,7 @@ export function colorSnapshotFor(
   )
   return field === ''
     ? current.field
-      ? {
-          ...kept,
-          scale: 'none',
-          ...(current.scale === 'linear' && current.ramp.length === 0
-            ? { ramp: [DEFAULT_RAMP] }
-            : {}),
-        }
+      ? { ...kept, scale: 'none' }
       : kept
     : field === current.field
       ? { ...kept, scale: current.scale === 'none' ? undefined : current.scale }

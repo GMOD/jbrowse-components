@@ -75,7 +75,7 @@ color settings are declared once:
     "color": {
       "field": "score",
       "scale": "threshold",
-      "palette": ["#2166ac", "#b2182b"]
+      "range": ["#2166ac", "#b2182b"]
     }
   }
 }
@@ -89,7 +89,7 @@ display settings turn that into a copy-number heatmap:
   `density` gives each sample one strip of color.
 - [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
   the diploid baseline, and [`color`](/docs/config/wigglecolor/) cuts there,
-  painting gains in the palette's second entry and losses in its first.
+  painting gains in the `range`'s second colour and losses in its first.
 - [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
   [`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) pin the
   scale, so two copies are the same color in every window. Keep the bounds
@@ -197,7 +197,7 @@ hosted (see [configuring plugins](/docs/config_guides/plugins)):
         "color": {
           "field": "score",
           "scale": "threshold",
-          "palette": ["#2166ac", "#b2182b"]
+          "range": ["#2166ac", "#b2182b"]
         }
       }
     }

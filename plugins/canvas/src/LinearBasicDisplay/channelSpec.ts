@@ -3,12 +3,10 @@ import {
   isJexl,
   stringToJexlExpression,
 } from '@jbrowse/core/util/jexlStrings'
-import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { FeatureFacet } from './facet.ts'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
-import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 export const CHANNEL_SPEC_EXAMPLES = [
   { spec: '{ "facet": "strand" }', description: 'one section per strand' },
@@ -25,7 +23,7 @@ export const CHANNEL_SPEC_EXAMPLES = [
     description: 'forward strand red, reverse blue',
   },
   {
-    spec: '{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "palette": ["#1f77b4", "#ff7f0e"] } }',
+    spec: '{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } }',
     description:
       'those two biotypes blue and orange, and every other its own color',
   },
@@ -49,17 +47,6 @@ export function facetOf(facet: FeatureFacet | undefined): ChannelSpec['facet'] {
         ...(facet.domain.length ? { domain: [...facet.domain] } : {}),
       }
     : null
-}
-
-export function colorOf(color: ColorSetting): ChannelSpec['color'] {
-  const { value, field, domain, palette } = color
-  return paintedScale(color, 'categorical') === 'categorical'
-    ? {
-        field,
-        ...(domain.length ? { domain: [...domain] } : {}),
-        ...(palette.length ? { palette: [...palette] } : {}),
-      }
-    : (value ?? null)
 }
 
 export function filterOf(activeFilters: string[]) {

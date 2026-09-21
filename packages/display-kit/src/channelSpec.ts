@@ -4,6 +4,8 @@ import { compareStructural } from 'mobx'
 import { normalizeChannel, paintedScale } from './colorConfigSchema.ts'
 import { facetConfigSchema } from './facetConfigSchema.ts'
 
+import type { ColorSetting } from './colorConfigSchema.ts'
+
 /**
  * A display's grouping, color and filter as "Edit as JSON..." shows them:
  * `facet` and `color` are the display's own settings, in the shape their
@@ -19,8 +21,9 @@ export interface ChannelSpec {
 /**
  * A string is a constant: a CSS color, or a `jexl:` callback. An object binds
  * a field to a scale — the display's own list, `categorical` where it declares
- * nothing else — with `domain` spending the `palette` or naming the cut
- * points, and `ramp` and `domainMid` the continuous scales' colours.
+ * nothing else — with the members the config spells: `domain` spending the
+ * `range` or naming the cut points, and a linear or log scale's ends, middle,
+ * `scheme` and `reverse`.
  */
 export type ColorChannel =
   | string
@@ -28,8 +31,11 @@ export type ColorChannel =
       field: string
       scale?: string
       domain?: string[]
-      palette?: string[]
-      ramp?: string[]
+      range?: string[]
+      scheme?: string
+      reverse?: boolean
+      domainMin?: number
+      domainMax?: number
       domainMid?: number
     }
 
@@ -56,16 +62,34 @@ function parseFacet(value: unknown): ChannelSpec['facet'] {
 }
 
 // Every member any display's colour object declares, so one spec language
-// reaches all of them; which of these a display paints is `colorSpecProblems`.
+// reaches all of them; which of these a display declares is
+// `colorSpecProblems`, off its own schema.
 const COLOR_MEMBERS = [
   'value',
   'field',
   'scale',
   'domain',
-  'palette',
-  'ramp',
+  'range',
+  'scheme',
+  'reverse',
+  'domainMin',
+  'domainMax',
   'domainMid',
 ]
+
+const NUMBER_MEMBERS = ['domainMin', 'domainMax', 'domainMid'] as const
+
+function numberMember(lifted: Record<string, unknown>, key: string) {
+  const value = lifted[key]
+  if (value === undefined) {
+    return {}
+  }
+  const n = Number(value)
+  if (!Number.isFinite(n)) {
+    throw new Error(`color.${key} is a number`)
+  }
+  return { [key]: n }
+}
 
 function parseColor(value: unknown): ChannelSpec['color'] {
   if (value === null) {
@@ -88,20 +112,25 @@ function parseColor(value: unknown): ChannelSpec['color'] {
   const scale = typeof lifted.scale === 'string' ? lifted.scale : undefined
   if (paintedScale({ scale, field }, 'categorical') !== 'none') {
     const domain = strings(lifted.domain)
-    const palette = strings(lifted.palette)
-    const ramp = strings(lifted.ramp)
-    const domainMid =
-      lifted.domainMid === undefined ? undefined : Number(lifted.domainMid)
-    if (domainMid !== undefined && !Number.isFinite(domainMid)) {
-      throw new Error('color.domainMid is a number')
+    const range = strings(lifted.range)
+    const { scheme, reverse } = lifted
+    if (scheme !== undefined && typeof scheme !== 'string') {
+      throw new Error('color.scheme is the name of a ramp')
+    }
+    if (reverse !== undefined && typeof reverse !== 'boolean') {
+      throw new Error('color.reverse is true or false')
     }
     return {
       field,
       ...(scale ? { scale } : {}),
       ...(domain?.length ? { domain } : {}),
-      ...(palette?.length ? { palette } : {}),
-      ...(ramp?.length ? { ramp } : {}),
-      ...(domainMid === undefined ? {} : { domainMid }),
+      ...(range?.length ? { range } : {}),
+      ...(scheme ? { scheme } : {}),
+      ...(reverse ? { reverse } : {}),
+      ...Object.assign(
+        {},
+        ...NUMBER_MEMBERS.map(key => numberMember(lifted, key)),
+      ),
     }
   }
   if (typeof lifted.value !== 'string' || !lifted.value.trim()) {
@@ -114,32 +143,67 @@ function parseColor(value: unknown): ChannelSpec['color'] {
 
 /**
  * What a spec's colour asks for that this display cannot paint. `scales` is
- * the display's own `scale` enum, read off the slot, so a spec is held to the
- * set a config file is held to — and a ramp is only ever read through a
- * continuous scale, so a display with none declines one.
+ * the display's own `scale` enum and `members` its colour object's slots, both
+ * read off its schema, so a spec is held to the set a config file is held to.
  */
 export function colorSpecProblems(
   spec: ChannelSpec,
-  scales: readonly string[],
+  {
+    scales,
+    members,
+  }: { scales: readonly string[]; members: readonly string[] },
 ): string[] {
   const { color } = spec
   if (typeof color !== 'object' || !color) {
     return []
   }
   const problems: string[] = []
-  const { scale, ramp, domainMid } = color
+  const { scale } = color
   if (scale !== undefined && !scales.includes(scale)) {
     problems.push(
       `color: this display paints ${scales.join(', ')}, not ${scale}`,
     )
   }
-  const continuous = scales.includes('linear') || scales.includes('log')
-  if (!continuous && (ramp !== undefined || domainMid !== undefined)) {
+  const undeclared = Object.keys(color).filter(k => !members.includes(k))
+  if (undeclared.length) {
     problems.push(
-      'color: this display has no ramp scale to read a ramp through',
+      `color: this display takes ${members.join(', ')}, not ${undeclared.join(', ')}`,
     )
   }
   return problems
+}
+
+/**
+ * A colour object as "Edit as JSON..." shows it: the string form for a
+ * constant, and each member as written, a list only where it lists
+ * something, so a round trip through the box changes nothing on its own.
+ */
+export function colorSpecOf(color: ColorSetting): ChannelSpec['color'] {
+  if (paintedScale(color, 'categorical') === 'none') {
+    return color.value ?? null
+  }
+  const {
+    field,
+    scale,
+    domain,
+    range,
+    scheme,
+    reverse,
+    domainMin,
+    domainMax,
+    domainMid,
+  } = color
+  return {
+    field,
+    ...(scale ? { scale } : {}),
+    ...(domain.length ? { domain: [...domain] } : {}),
+    ...(range.length ? { range: [...range] } : {}),
+    ...(scheme ? { scheme } : {}),
+    ...(reverse ? { reverse } : {}),
+    ...(domainMin === undefined ? {} : { domainMin }),
+    ...(domainMax === undefined ? {} : { domainMax }),
+    ...(domainMid === undefined ? {} : { domainMid }),
+  }
 }
 
 function parseFilter(value: unknown): ChannelSpec['filter'] {

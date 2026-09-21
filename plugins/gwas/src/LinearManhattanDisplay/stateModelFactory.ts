@@ -27,7 +27,10 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorEncodingOf,
+  paintedScale,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -57,7 +60,6 @@ import {
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type {
-  ManhattanColor,
   ManhattanColorScale,
   ManhattanRpcResult,
 } from '../ManhattanRPC/rpcTypes.ts'
@@ -77,8 +79,10 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type {
   HighlightRect,
   HighlightStyle,
@@ -125,7 +129,7 @@ const SetColorFieldDialog = lazy(
 // so, or an export where every point is grey sits under a full r² key that
 // implies the colors mean something.
 function ldScale(
-  color: { domain: readonly string[]; palette: readonly string[] },
+  color: { domain: readonly string[]; range: readonly string[] },
   indexSnpMissing: boolean,
 ): ColorScale {
   return {
@@ -234,13 +238,17 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The `color` object, forwarded to the worker whole, its `scale` the
-         * one that paints. `value` is read raw rather than through `getConf`,
+         * The `color` object as painted, its `scale` the one that paints and
+         * LD's default cuts and colours filled in; `rpcProps` hands it to the
+         * worker as the encoder takes it. `value` is read raw rather than through `getConf`,
          * which would evaluate a `jexl:` callback against no feature and
          * throw; the worker binds `feature` and evaluates it per point
          * (`colorSlotTransport.test.ts`).
          */
-        get color(): ManhattanColor {
+        get color(): ColorSetting & {
+          value: string
+          scale: ManhattanColorScale
+        } {
           const field = getConf(self, ['color', 'field'])
           const scale = paintedScale(
             { scale: getConf(self, ['color', 'scale']), field },
@@ -248,7 +256,7 @@ export function stateModelFactory(
           )
           const written = {
             domain: getConf(self, ['color', 'domain']),
-            palette: getConf(self, ['color', 'palette']),
+            range: getConf(self, ['color', 'range']),
           }
           return {
             value: self.conf.color.value,
@@ -353,13 +361,13 @@ export function stateModelFactory(
          */
         rpcProps(): {
           scoreField: string
-          color: ManhattanColor
+          color: ColorEncoding
           indexSnp: string | undefined
           ldAdapterConfig: Record<string, unknown> | undefined
         } {
           return {
             scoreField: self.scoreField,
-            color: self.color,
+            color: colorEncodingOf(self.color, 'categorical'),
             indexSnp: self.indexSnp,
             ldAdapterConfig: self.ldAdapterConfig,
           }
@@ -530,14 +538,14 @@ export function stateModelFactory(
           if (self.ldColoringActive) {
             return [ldScale(self.color, this.indexSnpMissing)]
           }
-          const { scale, field, domain, palette } = self.color
+          const { scale, field, domain, range } = self.color
           if (scale === 'threshold') {
             // `field: 'ld'` with no adapter paints `value`, so it keys nothing.
             if (isLdColoring(self.color)) {
               return []
             }
             const labels = thresholdLabels(thresholdCuts(domain))
-            const colors = thresholdPalette(labels.length, palette)
+            const colors = thresholdPalette(labels.length, range)
             return [
               {
                 kind: 'categorical',
@@ -566,7 +574,7 @@ export function stateModelFactory(
               }),
               {
                 id: 'field',
-                field: categoricalField(field, { domain, range: palette }),
+                field: categoricalField(field, { domain, range }),
                 maxItems: MAX_LEGEND_ENTRIES,
               },
             )
@@ -575,7 +583,7 @@ export function stateModelFactory(
         },
       }))
       .actions(self => {
-        // `self.color` is the colour as painted, LD's default cuts and palette
+        // `self.color` is the colour as painted, LD's default cuts and range
         // filled in, so neither write below reads it back into the config
         function colorBy(field: string) {
           if (field === self.color.field) {

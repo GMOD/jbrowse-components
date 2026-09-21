@@ -2,10 +2,9 @@ import { numericDomain } from '@jbrowse/core/util/thresholdScale'
 import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
-import { densityRampLut, stopRampLut } from './densityColorRamp.ts'
+import { rampLutOf } from './densityColorRamp.ts'
 
-import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
-import type { FullColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
  * The colour object as the encoder and both backends take it: the pair every
@@ -28,38 +27,17 @@ export interface ResolvedWiggleColor {
 
 /**
  * The scale a wiggle colour paints through. Unset beside a field it follows
- * the field: `source` is categorical, `score` the bicolor cut, and a declared
- * ramp is the density fade whatever the field is called.
+ * the field: `source` is categorical, and anything else the bicolor cut.
  */
-export function wiggleColorScale(color: FullColorSetting) {
+export function wiggleColorScale(color: ColorSetting) {
   return paintedScale(
     color,
-    color.ramp.length > 0
-      ? 'linear'
-      : color.field === 'source'
-        ? 'categorical'
-        : 'threshold',
+    color.field === 'source' ? 'categorical' : 'threshold',
   )
 }
 
-/** The colour as "Edit as JSON..." shows it: the string form for a constant. */
-export function wiggleColorSpec(color: FullColorSetting): ChannelSpec['color'] {
-  if (wiggleColorScale(color) === 'none') {
-    return color.value ?? null
-  }
-  const { field, scale, domain, palette, ramp, domainMid } = color
-  return {
-    field,
-    ...(scale ? { scale } : {}),
-    ...(domain.length ? { domain: [...domain] } : {}),
-    ...(palette.length ? { palette: [...palette] } : {}),
-    ...(ramp.length ? { ramp: [...ramp] } : {}),
-    ...(domainMid === undefined ? {} : { domainMid }),
-  }
-}
-
 export function resolveWiggleColor(
-  color: FullColorSetting,
+  color: ColorSetting,
   origin: number,
 ): ResolvedWiggleColor {
   const solid = color.value ?? WIGGLE_POS_COLOR_DEFAULT
@@ -79,33 +57,32 @@ export function resolveWiggleColor(
       const [cut] = numericDomain(color.domain)
       return {
         ...base,
-        negColor: color.palette[0] ?? WIGGLE_NEG_COLOR_DEFAULT,
-        posColor: color.palette[1] ?? WIGGLE_POS_COLOR_DEFAULT,
+        negColor: color.range[0] ?? WIGGLE_NEG_COLOR_DEFAULT,
+        posColor: color.range[1] ?? WIGGLE_POS_COLOR_DEFAULT,
         pivot: cut === undefined || !Number.isFinite(cut) ? origin : cut,
       }
     }
     default: {
       // A ramp runs from the colour at `pivot` out to the ends of the y
       // domain, so its stops are a magnitude and `domainMid` is where that
-      // magnitude is zero.
-      const stops = color.ramp
+      // magnitude is zero. With no range or scheme it is the two-sided fade
+      // off the pos/neg pair.
+      const { range, scheme, reverse = false } = color
       const pivot = color.domainMid ?? origin
-      const named = stops.length === 1 ? densityRampLut(stops[0]) : null
-      return named
-        ? {
-            ...base,
-            negColor: WIGGLE_NEG_COLOR_DEFAULT,
-            posColor: WIGGLE_POS_COLOR_DEFAULT,
-            pivot,
-            rampLut: named,
-          }
-        : {
-            ...base,
-            negColor: stops[0] ?? WIGGLE_NEG_COLOR_DEFAULT,
-            posColor: stops.at(-1) ?? WIGGLE_POS_COLOR_DEFAULT,
-            pivot,
-            rampLut: stops.length > 1 ? stopRampLut(stops) : null,
-          }
+      const ends = reverse ? range.toReversed() : range
+      const [neg, pos] = reverse
+        ? [WIGGLE_POS_COLOR_DEFAULT, WIGGLE_NEG_COLOR_DEFAULT]
+        : [WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT]
+      return {
+        ...base,
+        negColor: ends[0] ?? (scheme ? WIGGLE_NEG_COLOR_DEFAULT : neg),
+        posColor: ends.at(-1) ?? (scheme ? WIGGLE_POS_COLOR_DEFAULT : pos),
+        pivot,
+        rampLut:
+          range.length > 1 || (range.length === 0 && scheme)
+            ? rampLutOf({ range, scheme, reverse })
+            : null,
+      }
     }
   }
 }

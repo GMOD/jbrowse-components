@@ -42,22 +42,26 @@ export const ldIndexColor = cssColorToABGR(LD_INDEX_SWATCH.color)
 export const ldMissingColor = cssColorToABGR(LD_MISSING_SWATCH.color)
 
 interface LdColor {
-  field: string
-  scale: string
-  domain: readonly string[]
-  palette: readonly string[]
+  domain?: readonly (string | number)[]
+  range?: readonly string[]
 }
 
 /** Whether a colour object asks for r² to the index SNP. */
-export function isLdColoring(color: { field: string; scale: string }) {
-  return color.field === LD_FIELD && color.scale === 'threshold'
+export function isLdColoring(
+  color: string | { field: string; scale?: string },
+): boolean {
+  return (
+    typeof color === 'object' &&
+    color.field === LD_FIELD &&
+    color.scale === 'threshold'
+  )
 }
 
 /** The cuts and colours an LD colour object paints through, defaults filled. */
-export function ldColorDefaults(color: Pick<LdColor, 'domain' | 'palette'>) {
+export function ldColorDefaults(color: LdColor) {
   return {
-    domain: color.domain.length > 0 ? color.domain : LD_DOMAIN,
-    palette: color.palette.length > 0 ? color.palette : LD_PALETTE,
+    domain: color.domain?.length ? color.domain.map(String) : LD_DOMAIN,
+    range: color.range?.length ? color.range : LD_PALETTE,
   }
 }
 
@@ -66,17 +70,17 @@ export function ldColorDefaults(color: Pick<LdColor, 'domain' | 'palette'>) {
 // end rather than the no-data grey, which would read as "absent from the LD
 // data" on points that are in it. Four cuts and the five LocusZoom colours —
 // the default — spend the palette exactly and reach neither.
-function ldBins(color: Pick<LdColor, 'domain' | 'palette'>) {
-  const { domain, palette } = ldColorDefaults(color)
+function ldBins(color: LdColor) {
+  const { domain, range } = ldColorDefaults(color)
   const cuts = thresholdCuts(domain)
-  return { cuts, colors: thresholdPalette(cuts.length + 1, palette) }
+  return { cuts, colors: thresholdPalette(cuts.length + 1, range) }
 }
 
 /**
  * Packed ABGR per r² to the index SNP: the palette entry for the bin the value
  * falls in, and the no-data grey for a SNP absent from the LD data.
  */
-export function ldBinColor(color: Pick<LdColor, 'domain' | 'palette'>) {
+export function ldBinColor(color: LdColor) {
   const { cuts, colors } = ldBins(color)
   const abgr = colors.map(c => cssColorToABGR(c))
   return (r2: number | undefined) => {
@@ -86,9 +90,7 @@ export function ldBinColor(color: Pick<LdColor, 'domain' | 'palette'>) {
 }
 
 /** Legend rows, top to bottom: index, the r² bins high to low, the no-data grey. */
-export function ldLegend(
-  color: Pick<LdColor, 'domain' | 'palette'>,
-): LdSwatch[] {
+export function ldLegend(color: LdColor): LdSwatch[] {
   const { cuts, colors } = ldBins(color)
   return [
     LD_INDEX_SWATCH,

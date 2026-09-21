@@ -22,12 +22,12 @@ test('the object carries the scale and the slots it reads', () => {
       field: 'score',
       scale: 'threshold',
       domain: [2],
-      palette: ['#2166ac', '#b2182b'],
+      range: ['#2166ac', '#b2182b'],
     },
   })
   expect(readConfObject(conf, ['color', 'scale'])).toBe('threshold')
   expect(readConfObject(conf, ['color', 'domain'])).toEqual(['2'])
-  expect(readConfObject(conf, ['color', 'palette'])).toEqual([
+  expect(readConfObject(conf, ['color', 'range'])).toEqual([
     '#2166ac',
     '#b2182b',
   ])

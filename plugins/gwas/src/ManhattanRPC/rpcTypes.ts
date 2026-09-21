@@ -6,7 +6,12 @@ import {
 import { isLdColoring } from '../LinearManhattanDisplay/ldBins.ts'
 
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { Encoded, LaneName } from '@jbrowse/core/util/markEncoding'
+import type {
+  ColorEncoding,
+  Encoded,
+  LaneName,
+  ThresholdRef,
+} from '@jbrowse/core/util/markEncoding'
 
 // The per-feature glyph classes belong to render-core's `point` shape, whose
 // pointMark.slang authors them once and `//! export-consts`es them (adr-051) —
@@ -28,23 +33,14 @@ export function defaultGlyph(feature: Feature) {
  */
 export type ManhattanColorScale = 'none' | 'categorical' | 'threshold'
 
-/** The display's `color` object, carried to the worker whole. */
-export interface ManhattanColor {
-  value: string
-  field: string
-  scale: ManhattanColorScale
-  domain: readonly string[]
-  palette: readonly string[]
-}
-
 export interface GetManhattanDataArgs {
   adapterConfig: Record<string, unknown>
   region: Region
-  // `value` is a CSS color or `jexl:` expression evaluated per feature on the
-  // worker, the result baked into the payload's `color`. Under `ld` each point
-  // takes its r² to `indexSnp`, read from `ldAdapterConfig` (a PLINK .ld
-  // adapter).
-  color: ManhattanColor
+  // The display's `color` as the encoder takes it: a CSS color or `jexl:`
+  // expression evaluated per feature on the worker, the result baked into the
+  // payload's `color`, or a field through a scale. Under `ld` each point takes
+  // its r² to `indexSnp`, read from `ldAdapterConfig` (a PLINK .ld adapter).
+  color: ColorEncoding
   // The feature field plotted on the y axis, `score` unless the display's
   // `scoreField` slot names another
   scoreField: string
@@ -79,6 +75,7 @@ export function ldColoringRequested<
 >(
   args: T,
 ): args is T & {
+  color: ThresholdRef
   indexSnp: string
   ldAdapterConfig: Record<string, unknown>
 } {

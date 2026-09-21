@@ -49,7 +49,7 @@
         "color": {
           "field": "score",
           "scale": "threshold",
-          "palette": ["#2166ac", "#b2182b"]
+          "range": ["#2166ac", "#b2182b"]
         },
         "height": 500
       }
@@ -71,7 +71,7 @@
         "color": {
           "field": "score",
           "scale": "threshold",
-          "palette": ["#2166ac", "#b2182b"]
+          "range": ["#2166ac", "#b2182b"]
         },
         "height": 500
       }

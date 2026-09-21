@@ -42,6 +42,33 @@ const SCHEME_STOPS: Record<ColorSchemeName, readonly ColorRampStop[]> = {
   viridis: VIRIDIS_STOPS,
 }
 
+const EMPTY_EXTENT_DOMAIN = [0, 1] as const
+
+/**
+ * #api
+ * The domain a continuous colour scale spans: each end `min` or `max` pins,
+ * else the extent's, ascending, since a span has no direction and `reverse`
+ * is the ramp's. An open end stops at a pinned one rather than crossing it,
+ * and an extent holding no value (`[Infinity, -Infinity]`) spans [0, 1].
+ */
+export function rampDomain(
+  min: number | undefined,
+  max: number | undefined,
+  extent: readonly [number, number],
+): [number, number] {
+  const [lo, hi] = extent[0] <= extent[1] ? extent : EMPTY_EXTENT_DOMAIN
+  if (min !== undefined && max !== undefined) {
+    return min <= max ? [min, max] : [max, min]
+  }
+  if (min !== undefined) {
+    return [min, Math.max(min, hi)]
+  }
+  if (max !== undefined) {
+    return [Math.min(lo, max), max]
+  }
+  return [lo, hi]
+}
+
 /**
  * #api
  * The stops a continuous colour scale samples: `range`'s CSS colours where it

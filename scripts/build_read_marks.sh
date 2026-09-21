@@ -158,8 +158,9 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|\"@ADAPTER@\"|$ADAP
             "color": {
               "field": "score",
               "scale": "linear",
-              "domain": [0, 60],
-              "ramp": ["#bdbdbd", "#1f4e9a"]
+              "domainMin": 0,
+              "domainMax": 60,
+              "range": ["#bdbdbd", "#1f4e9a"]
             }
           }
         }
@@ -199,8 +200,9 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
             "color": {
               "field": "score",
               "scale": "linear",
-              "domain": [0, 60],
-              "ramp": ["#bdbdbd", "#1f4e9a"]
+              "domainMin": 0,
+              "domainMax": 60,
+              "range": ["#bdbdbd", "#1f4e9a"]
             }
           }
         }

@@ -8,7 +8,7 @@ import {
   ldLegend,
 } from './ldBins.ts'
 
-const defaults = { domain: [], palette: [] }
+const defaults = {}
 const binOf = ldBinColor(defaults)
 
 test('missing or NaN r² renders grey, distinct from every bin', () => {
@@ -59,7 +59,7 @@ test('legend swatches and the color lookup share one palette', () => {
 // The grey means "absent from the LD data", so a bin past the palette's end
 // cannot borrow it — the points in that bin are in the data.
 test('a cut past the palette takes a colour, not the no-data grey', () => {
-  const custom = { domain: ['0.2', '0.4', '0.6', '0.8', '0.9'], palette: [] }
+  const custom = { domain: ['0.2', '0.4', '0.6', '0.8', '0.9'] }
   const paint = ldBinColor(custom)
   expect(paint(0.95)).not.toBe(cssColorToABGR(LD_MISSING_SWATCH.color))
   expect(paint(0.95)).not.toBe(paint(0.85))
@@ -69,7 +69,7 @@ test('a cut past the palette takes a colour, not the no-data grey', () => {
 })
 
 test('a config moves the cuts and recolours the bins', () => {
-  const custom = { domain: ['0.5'], palette: ['#000080', '#800000'] }
+  const custom = { domain: ['0.5'], range: ['#000080', '#800000'] }
   const paint = ldBinColor(custom)
   expect(paint(0.49)).toBe(cssColorToABGR('#000080'))
   expect(paint(0.5)).toBe(cssColorToABGR('#800000'))
@@ -84,7 +84,7 @@ test('a config moves the cuts and recolours the bins', () => {
 test('cuts written high to low are read ascending, on the points and in the key', () => {
   const custom = {
     domain: ['0.8', '0.2'],
-    palette: ['#000080', '#008000', '#800000'],
+    range: ['#000080', '#008000', '#800000'],
   }
   expect(ldBinColor(custom)(0.5)).toBe(cssColorToABGR('#008000'))
   expect(ldLegend(custom).map(s => s.label)).toEqual([

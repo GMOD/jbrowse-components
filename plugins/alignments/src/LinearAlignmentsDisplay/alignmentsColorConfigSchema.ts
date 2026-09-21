@@ -2,8 +2,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   colorChannelOptions,
   colorChannelSlots,
-  colorPaletteSlot,
-  colorRampSlot,
+  colorDomainEndsSlots,
+  colorDomainSlot,
+  colorRampSlots,
+  colorRangeSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { ALIGNMENTS_COLOR_SCALES } from '../shared/alignmentsColor.ts'
@@ -26,13 +28,13 @@ import { ALIGNMENTS_COLOR_SCALES } from '../shared/alignmentsColor.ts'
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   color: { field: 'tags.HP', domain: ['1', '2'], palette: ['#d95f02', '#1b9e77'] },
+ *   color: { field: 'tags.HP', domain: ['1', '2'], range: ['#d95f02', '#1b9e77'] },
  * }
  * ```
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   color: { field: 'tags.NM', scale: 'linear', ramp: ['viridis'] },
+ *   color: { field: 'tags.NM', scale: 'linear', scheme: 'viridis' },
  * }
  * ```
  * ```js
@@ -61,12 +63,18 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
       field:
         'what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute',
       scale:
-        'none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field, and under a tag or attribute is linear with a ramp and categorical without',
-      domain:
-        "the values that take the palette first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under linear the ramp's two ends, where the loaded reads otherwise set them",
+        'none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset follows field',
     }),
-    ...colorPaletteSlot,
-    ...colorRampSlot,
+    ...colorDomainSlot({
+      domain:
+        'the values that take the range first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under threshold the cut points',
+    }),
+    ...colorDomainEndsSlots,
+    ...colorRangeSlot({
+      range:
+        "CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis",
+    }),
+    ...colorRampSlots,
   },
   colorChannelOptions('color'),
 )

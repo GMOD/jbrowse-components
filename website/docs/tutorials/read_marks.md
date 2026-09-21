@@ -133,8 +133,9 @@ draws one axis, so the insert goes on a track of its own over the same file:
             "color": {
               "field": "score",
               "scale": "linear",
-              "domain": [0, 60],
-              "ramp": ["#bdbdbd", "#1f4e9a"]
+              "domainMin": 0,
+              "domainMax": 60,
+              "range": ["#bdbdbd", "#1f4e9a"]
             }
           }
         }
@@ -171,8 +172,9 @@ spanning pair red.
       "color": {
         "field": "insert",
         "scale": "linear",
-        "domain": [0, 5000],
-        "ramp": ["#c8d8ee", "#d62728"]
+        "domainMin": 0,
+        "domainMax": 5000,
+        "range": ["#c8d8ee", "#d62728"]
       }
     }
   }
@@ -250,8 +252,9 @@ file:
             "color": {
               "field": "score",
               "scale": "linear",
-              "domain": [0, 60],
-              "ramp": ["#bdbdbd", "#1f4e9a"]
+              "domainMin": 0,
+              "domainMax": 60,
+              "range": ["#bdbdbd", "#1f4e9a"]
             }
           }
         }

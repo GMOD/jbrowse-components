@@ -47,13 +47,7 @@ function args(overrides: Partial<GetManhattanDataArgs> = {}) {
       end: 1000,
       assemblyName: 'hg38',
     },
-    color: {
-      value: 'red',
-      field: 'ld',
-      scale: 'threshold' as const,
-      domain: [],
-      palette: [],
-    },
+    color: { field: 'ld', scale: 'threshold' as const },
     scoreField: 'score',
     indexSnp: 'rsIndex',
     ldAdapterConfig: LD_ADAPTER,
@@ -88,9 +82,7 @@ describe('serializeArguments resolves the LD adapter its own refName', () => {
 
   it('never touches the LD adapter in normal coloring mode', async () => {
     const { rpc, getRefNameMapForAdapter } = setup()
-    const out = await rpc.serializeArguments(
-      args({ color: { ...args().color, scale: 'none' } }),
-    )
+    const out = await rpc.serializeArguments(args({ color: 'red' }))
     expect(out.ldRefName).toBeUndefined()
     // Not just "no name resolved": no refName map resolved at all. That call is
     // a CoreGetRefNames round trip, and for the in-memory PLINK adapter it parses

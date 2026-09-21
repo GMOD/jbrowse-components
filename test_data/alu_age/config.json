@@ -58,7 +58,7 @@
                   "field": "lineage",
                   "scale": "categorical",
                   "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
-                  "palette": [
+                  "range": [
                     "#4575b4",
                     "#fdae61",
                     "#d73027",

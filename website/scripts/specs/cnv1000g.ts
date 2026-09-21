@@ -100,7 +100,7 @@ export const CN_HEATMAP_SETTINGS = {
   color: {
     field: 'score',
     scale: 'threshold',
-    palette: ['#2166ac', '#b2182b'],
+    range: ['#2166ac', '#b2182b'],
   },
 }
 

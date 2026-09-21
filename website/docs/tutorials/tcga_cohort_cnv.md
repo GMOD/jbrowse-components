@@ -176,7 +176,7 @@ draws gains up in one colour and losses down in the other.
     "color": {
       "field": "score",
       "scale": "threshold",
-      "palette": ["#2166ac", "#b2182b"]
+      "range": ["#2166ac", "#b2182b"]
     },
     "scales": { "y": { "domainMin": -100, "domainMax": 100 } }
   }
@@ -230,7 +230,7 @@ each:
     "color": {
       "field": "score",
       "scale": "threshold",
-      "palette": ["#2166ac", "#b2182b"]
+      "range": ["#2166ac", "#b2182b"]
     },
     "scales": { "y": { "domainMin": -70, "domainMax": 70 } },
     "showRowSeparators": true

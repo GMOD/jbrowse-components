@@ -55,8 +55,11 @@ function colorSettingOf(self: ConfigSlotSelf): AlignmentsColorSetting {
     field: getConf(self, ['color', 'field']),
     scale: getConf(self, ['color', 'scale']),
     domain: getConf(self, ['color', 'domain']),
-    palette: getConf(self, ['color', 'palette']),
-    ramp: getConf(self, ['color', 'ramp']),
+    range: getConf(self, ['color', 'range']),
+    scheme: getConf(self, ['color', 'scheme']),
+    reverse: getConf(self, ['color', 'reverse']),
+    domainMin: getConf(self, ['color', 'domainMin']),
+    domainMax: getConf(self, ['color', 'domainMax']),
     domainMid: getConf(self, ['color', 'domainMid']),
   }
 }

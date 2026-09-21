@@ -37,7 +37,7 @@ export function laneDisplayConfig({
       field: '',
       scale: undefined,
       domain: [],
-      palette: [],
+      range: [],
     },
     connectorColor: undefined,
     utrColor: undefined,

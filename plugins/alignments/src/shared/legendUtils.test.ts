@@ -312,14 +312,17 @@ describe('getReadDisplayLegendItems', () => {
       field: 'tags.HP',
       scale: undefined,
       domain: [] as string[],
-      palette: [] as string[],
-      ramp: [] as string[],
+      range: [] as string[],
+      scheme: undefined,
+      reverse: false,
+      domainMin: undefined,
+      domainMax: undefined,
       domainMid: undefined,
     }
     const HP: ColorBy = { type: 'tag', tag: 'HP' }
     const ordered = bakedColorScale(
       HP,
-      { ...declared, domain: ['2', '1'], palette: ['#ff0000', '#0000ff'] },
+      { ...declared, domain: ['2', '1'], range: ['#ff0000', '#0000ff'] },
       undefined,
       undefined,
     )
@@ -336,7 +339,13 @@ describe('getReadDisplayLegendItems', () => {
     const NM: ColorBy = { type: 'tag', tag: 'NM' }
     const ramp = bakedColorScale(
       NM,
-      { ...declared, field: 'tags.NM', scale: 'linear', domain: ['0', '10'] },
+      {
+        ...declared,
+        field: 'tags.NM',
+        scale: 'linear',
+        domainMin: 0,
+        domainMax: 10,
+      },
       undefined,
       undefined,
     )
@@ -352,7 +361,7 @@ describe('getReadDisplayLegendItems', () => {
         field: 'tags.NM',
         scale: 'threshold',
         domain: ['5'],
-        palette: ['#00ff00', '#ff0000'],
+        range: ['#00ff00', '#ff0000'],
       },
       undefined,
       undefined,

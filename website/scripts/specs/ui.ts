@@ -460,7 +460,7 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
           color: {
             field: 'score',
             scale: 'threshold',
-            palette: ['#2166ac', '#b2182b'],
+            range: ['#2166ac', '#b2182b'],
           },
           // 480 -> 330, and directly under the matrix rather than with the
           // record lane between them (reviewer: "reduce height of both ...

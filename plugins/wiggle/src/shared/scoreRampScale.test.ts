@@ -1,4 +1,4 @@
-import { densityRampLut } from './densityColorRamp.ts'
+import { rampLutOf } from './densityColorRamp.ts'
 import {
   makeDensityLutFillFn,
   makeDensityRgbStringFn,
@@ -23,7 +23,7 @@ const RAMP = {
 
 // A configured constant well away from the auto value this domain derives
 // (max/1000 = 1), so a key resolving "auto" paints a visibly different bar.
-function makeModel(symlogConstant: number, ramp?: string) {
+function makeModel(symlogConstant: number, scheme?: 'viridis') {
   return {
     domain: DOMAIN,
     scaleType: 'symlog',
@@ -31,7 +31,11 @@ function makeModel(symlogConstant: number, ramp?: string) {
     renderingType: 'density',
     scatterPointSize: 2,
     lineWidth: 1,
-    wiggleColor: { ...RAMP, rampLut: densityRampLut(ramp), perSource: false },
+    wiggleColor: {
+      ...RAMP,
+      rampLut: scheme ? rampLutOf({ scheme }) : null,
+      perSource: false,
+    },
   }
 }
 
@@ -89,7 +93,7 @@ test('and still agrees when the constant is left at the auto default', () => {
 test('named-ramp stops are the render LUT entries the plot paints', () => {
   const model = makeModel(10, 'viridis')
   const state = renderState(model)
-  const lut = densityRampLut('viridis')!
+  const lut = rampLutOf({ scheme: 'viridis' })
   const paint = makeDensityLutFillFn(
     DOMAIN[0],
     DOMAIN[1],

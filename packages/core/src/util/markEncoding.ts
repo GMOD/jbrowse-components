@@ -7,7 +7,7 @@ import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 import { categoricalScale } from '../ui/colors.ts'
 import { categoricalField } from './categoricalField.ts'
 import { cssColorToABGR, packAbgr } from './colorBits.ts'
-import { buildColorRampLut, colorRampStops } from './colorRamp.ts'
+import { buildColorRampLut, colorRampStops, rampDomain } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
@@ -508,27 +508,6 @@ export function encodeFeatures<L extends LaneName>(
   return encoded as Encoded<L>
 }
 
-// Each end the declaration pins, else the extent's, and ascending: a span has
-// no direction, `reverse` being the ramp's. An open end stops at a pinned one
-// rather than crossing it, and an extent holding no value spans [0, 1].
-function rampDomain(
-  min: number | undefined,
-  max: number | undefined,
-  extent: readonly [number, number],
-): [number, number] {
-  const [lo, hi] = extent[0] <= extent[1] ? extent : EMPTY_EXTENT_DOMAIN
-  if (min !== undefined && max !== undefined) {
-    return min <= max ? [min, max] : [max, min]
-  }
-  if (min !== undefined) {
-    return [min, Math.max(min, hi)]
-  }
-  if (max !== undefined) {
-    return [Math.min(lo, max), max]
-  }
-  return [lo, hi]
-}
-
 function rampMid(
   scale: 'linear' | 'log',
   domain: [number, number],
@@ -598,8 +577,6 @@ function keysAreNumeric(entries: readonly { value: string }[]) {
   const named = entries.filter(e => e.value !== '')
   return named.length > 0 && named.every(e => Number.isFinite(Number(e.value)))
 }
-
-const EMPTY_EXTENT_DOMAIN = [0, 1] as const
 
 // `[Infinity, -Infinity]` where no value is finite, which a union of regions'
 // extents passes over.

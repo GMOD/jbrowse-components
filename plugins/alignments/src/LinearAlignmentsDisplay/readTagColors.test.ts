@@ -27,8 +27,11 @@ const UNDECLARED: AlignmentsColorSetting = {
   field: '',
   scale: undefined,
   domain: [],
-  palette: [],
-  ramp: [],
+  range: [],
+  scheme: undefined,
+  reverse: false,
+  domainMin: undefined,
+  domainMax: undefined,
   domainMid: undefined,
 }
 
@@ -169,21 +172,22 @@ describe('overlayReadTagColors', () => {
 describe('a declared scale', () => {
   const NM: ColorBy = { type: 'tag', tag: 'NM' }
 
-  test('a domain and palette hand the listed values their colours in order', () => {
+  test('a domain and range hand the listed values their colours in order', () => {
     const scale = scaleFor(TAG, {
       domain: ['2', '1'],
-      palette: ['#ff0000', '#0000ff'],
+      range: ['#ff0000', '#0000ff'],
     })
     expect([
       ...buildReadTagColors(pileupWith(['1', '2', '']), TAG, scale),
     ]).toEqual([packed('#0000ff'), packed('#ff0000'), 0])
   })
 
-  test('a linear scale runs the ramp across a pinned domain and clamps past it', () => {
+  test('a linear scale runs the ramp across its pinned ends and clamps past them', () => {
     const scale = scaleFor(NM, {
       scale: 'linear',
-      domain: ['0', '10'],
-      ramp: ['#000000', '#ffffff'],
+      domainMin: 0,
+      domainMax: 10,
+      range: ['#000000', '#ffffff'],
     })
     const [low, high, past, text] = buildReadTagColors(
       pileupWith(['0', '10', '99', 'x']),
@@ -199,7 +203,7 @@ describe('a declared scale', () => {
   test('an unpinned linear scale stretches over the loaded extent', () => {
     const scale = bakedColorScale(
       NM,
-      { ...UNDECLARED, scale: 'linear', ramp: ['#000000', '#ffffff'] },
+      { ...UNDECLARED, scale: 'linear', range: ['#000000', '#ffffff'] },
       undefined,
       [4, 8],
     )
@@ -207,20 +211,68 @@ describe('a declared scale', () => {
     expect([low, high]).toEqual([packed('#000000'), packed('#ffffff')])
   })
 
+  // Ends written high to low used to read as no pin at all, so the ramp
+  // stretched over the reads instead; reverse is now the one way to turn it.
+  test('ends written high to low still pin, and reverse turns the ramp round', () => {
+    const colorsOf = (declared: Partial<AlignmentsColorSetting>) =>
+      buildReadTagColors(
+        pileupWith(['0', '10']),
+        NM,
+        bakedColorScale(
+          NM,
+          {
+            ...UNDECLARED,
+            scale: 'linear',
+            range: ['#000000', '#ffffff'],
+            ...declared,
+          },
+          undefined,
+          [4, 8],
+        ),
+      )
+    expect([...colorsOf({ domainMin: 10, domainMax: 0 })]).toEqual([
+      packed('#000000'),
+      packed('#ffffff'),
+    ])
+    expect([
+      ...colorsOf({ domainMin: 0, domainMax: 10, reverse: true }),
+    ]).toEqual([packed('#ffffff'), packed('#000000')])
+  })
+
+  test('a pinned floor holds while the open ceiling follows the reads', () => {
+    const scale = bakedColorScale(
+      NM,
+      {
+        ...UNDECLARED,
+        scale: 'linear',
+        domainMin: 0,
+        range: ['#000000', '#ffffff'],
+      },
+      undefined,
+      [4, 8],
+    )
+    const [floor, ceiling] = buildReadTagColors(
+      pileupWith(['0', '8']),
+      NM,
+      scale,
+    )
+    expect([floor, ceiling]).toEqual([packed('#000000'), packed('#ffffff')])
+  })
+
   test('a threshold scale paints the bin a value falls in', () => {
     const scale = scaleFor(NM, {
       scale: 'threshold',
       domain: ['5'],
-      palette: ['#00ff00', '#ff0000'],
+      range: ['#00ff00', '#ff0000'],
     })
     expect([
       ...buildReadTagColors(pileupWith(['1', '5', '9']), NM, scale),
     ]).toEqual([packed('#00ff00'), packed('#ff0000'), packed('#ff0000')])
   })
 
-  test('a domain and palette reach a mate reference too', () => {
+  test('a domain and range reach a mate reference too', () => {
     const MATE: ColorBy = { type: 'mateRefName' }
-    const scale = scaleFor(MATE, { domain: ['chr2'], palette: ['#ff0000'] })
+    const scale = scaleFor(MATE, { domain: ['chr2'], range: ['#ff0000'] })
     expect(scale.declared).toBe(true)
     expect(scale.color('chr2')).toBe('#ff0000')
   })
@@ -229,7 +281,7 @@ describe('a declared scale', () => {
     const scale = scaleFor(NM, {
       scale: 'threshold',
       domain: ['0.5', '0.1'],
-      palette: ['#0000ff', '#00ff00', '#ff0000'],
+      range: ['#0000ff', '#00ff00', '#ff0000'],
     })
     expect(scale.color('0.3')).toBe('#00ff00')
     expect(
@@ -239,7 +291,7 @@ describe('a declared scale', () => {
 
   test('a declared scale over a strand tag replaces the strand vocabulary', () => {
     const XS: ColorBy = { type: 'tag', tag: 'XS' }
-    const scale = scaleFor(XS, { domain: ['+'], palette: ['#123456'] })
+    const scale = scaleFor(XS, { domain: ['+'], range: ['#123456'] })
     expect(buildReadTagColors(pileupWith(['+']), XS, scale)[0]).toBe(
       packed('#123456'),
     )

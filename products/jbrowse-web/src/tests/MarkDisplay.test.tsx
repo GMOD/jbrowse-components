@@ -104,7 +104,7 @@ test('the SVG export paints the same bars and carries the key', async () => {
         shape: 'bar',
         encoding: {
           y: 'score',
-          color: { field: 'strand', scale: 'categorical', palette: ['red'] },
+          color: { field: 'strand', scale: 'categorical', range: ['red'] },
         },
       },
     ]),

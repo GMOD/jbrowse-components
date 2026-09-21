@@ -66,7 +66,7 @@ A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 **Edit color...** opens the colour spec the config file holds. A CSS color
 string paints the whole plot in it; `{ "field": "score", "scale": "threshold" }`
 is the two-sided plot, one colour below the cut and one above; a ramp
-(`{ "field": "score", "scale": "linear", "ramp": ["viridis"] }`) is what density
+(`{ "field": "score", "scale": "linear", "scheme": "viridis" }`) is what density
 mode fades through; and `{ "field": "source" }` gives each signal in the track a
 palette entry of its own. The
 [quantitative track configuration](/docs/config_guides/quantitative_track#colors)

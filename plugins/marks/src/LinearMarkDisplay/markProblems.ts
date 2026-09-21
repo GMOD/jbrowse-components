@@ -1,6 +1,5 @@
 import { AUTO_BIN } from './autoBin.ts'
-import { markColorScale } from './markColorScale.ts'
-import { isJexl } from './markRuleFacts.ts'
+import { isJexl, paintedScale } from './markRuleFacts.ts'
 import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
@@ -12,7 +11,7 @@ import {
 } from './markVocabulary.ts'
 import { SHAPE_LANES } from './shapeLanes.ts'
 
-import type { MarkColorScale } from './markColorScale.ts'
+import type { ColorScaleName } from './markRuleFacts.ts'
 import type {
   AggregateOpName,
   MarkShapeName,
@@ -36,7 +35,8 @@ export const MARK_RULES = {
   'unread-channel': 'warning',
   'span-density-source': 'warning',
   'threshold-cuts': 'warning',
-  'open-ramp-domain': 'warning',
+  'ramp-domain': 'warning',
+  'ramp-ends': 'warning',
   'unpinned-span-ramp': 'warning',
   'empty-zoom-range': 'error',
   'step-expression': 'error',
@@ -88,9 +88,10 @@ export type StepSnapshot =
 
 interface ColorSnapshot {
   field?: string
-  scale?: MarkColorScale
-  ramp?: string[]
+  scale?: ColorScaleName
   domain?: string[]
+  domainMin?: number
+  domainMax?: number
 }
 
 /**
@@ -141,15 +142,13 @@ function stepsOf(mark: MarkSnapshot) {
   return mark.transform ?? []
 }
 
-function rampDomain(mark: MarkSnapshot) {
-  const {
-    field = '',
-    scale,
-    ramp = [],
-    domain = [],
-  } = mark.encoding?.color ?? {}
-  const painted = markColorScale({ scale, field, ramp })
-  return painted === 'linear' || painted === 'log' ? domain : undefined
+function rampColor(mark: MarkSnapshot) {
+  const color = mark.encoding?.color ?? {}
+  const painted = paintedScale(
+    { scale: color.scale, field: color.field ?? '' },
+    'categorical',
+  )
+  return painted === 'linear' || painted === 'log' ? color : undefined
 }
 
 function thresholdDomain(mark: MarkSnapshot) {
@@ -159,15 +158,6 @@ function thresholdDomain(mark: MarkSnapshot) {
 
 function pinned(entry: unknown) {
   return entry !== '' && Number.isFinite(Number(entry))
-}
-
-/** A ramp's declared domain as the [min, max] it pins, or nothing where it pins none. */
-export function pinnedPair(
-  domain: readonly unknown[],
-): [number, number] | undefined {
-  return domain.length === 2 && domain.every(pinned)
-    ? [Number(domain[0]), Number(domain[1])]
-    : undefined
 }
 
 function drawTogether(a: MarkSnapshot, b: MarkSnapshot) {
@@ -295,27 +285,44 @@ function ownProblems(mark: MarkSnapshot) {
       found(
         'threshold-cuts',
         'encoding.color.domain',
-        'threshold cuts are distinct numbers, read in ascending order, with the palette running from the lowest interval; a repeated cut leaves an interval no value falls in',
+        'threshold cuts are distinct numbers, read in ascending order, with the range running from the lowest interval; a repeated cut leaves an interval no value falls in',
       ),
     )
   }
-  const domain = rampDomain(mark)
-  if (domain) {
-    const pair = pinnedPair(domain) !== undefined
-    if (domain.length > 0 && !pair) {
+  const ramp = rampColor(mark)
+  if (ramp) {
+    const { domain = [], domainMin, domainMax } = ramp
+    if (domain.length > 0) {
       problems.push(
         found(
-          'open-ramp-domain',
+          'ramp-domain',
           'encoding.color.domain',
-          'a ramp is pinned by [min, max], two finite numbers, and anything else is not read as written',
+          "a linear or log scale reads its ends from domainMin and domainMax; domain is a categorical scale's order and a threshold scale's cuts",
         ),
       )
-    } else if (shape === 'span' && !pair) {
+    }
+    if (
+      domainMin !== undefined &&
+      domainMax !== undefined &&
+      domainMin > domainMax
+    ) {
+      problems.push(
+        found(
+          'ramp-ends',
+          'encoding.color.domainMax',
+          'domainMax is below domainMin: the ramp spans the two either way, and reverse is what turns it round',
+        ),
+      )
+    }
+    if (
+      shape === 'span' &&
+      (domainMin === undefined || domainMax === undefined)
+    ) {
       problems.push(
         found(
           'unpinned-span-ramp',
-          'encoding.color.domain',
-          "a span's ramp resolves against each region's own extremes, so its colours agree across regions only under a pinned [min, max]",
+          `encoding.color.${domainMin === undefined ? 'domainMin' : 'domainMax'}`,
+          "a span's ramp resolves an open end against each region's own extremes, so its colours agree across regions only with domainMin and domainMax both pinned",
         ),
       )
     }

@@ -197,28 +197,35 @@ numbers.
 callback answers). As an object it binds a field to a scale, and the legend
 describes that binding:
 
-- **categorical** — `{ "field": "strand", "scale": "categorical" }` hands a
-  palette entry to each distinct value, derived from the value itself so every
-  region paints it the same way. `palette` lists CSS colours to draw from. An
-  optional `domain` lists the values in legend order and walks the palette from
-  the first entry, continuing into the default palette past its end, for when
-  the colours should be spent deliberately. A value it leaves out keeps a colour
-  derived from itself that no listed value paints, and follows the listed ones
-  in the legend sorted, the order a facet stacks its sections in. The legend
-  lists the values drawn; a listed value the data lacks takes no row.
+- **categorical** —
+  `{ "field": "strand", "scale": "categorical", "range": ["#1f77b4", "#ff7f0e"] }`
+  hands each distinct value a colour, derived from the value itself so every
+  region paints it the same way. `range` lists the CSS colours to draw from, and
+  left off is the default palette. An optional `domain` lists the values in
+  legend order and walks `range` from the first entry, continuing into the
+  default palette past its end, for when the colours should be spent
+  deliberately. A value it leaves out keeps a colour derived from itself that no
+  listed value paints, and follows the listed ones in the legend sorted, the
+  order a facet stacks its sections in. The legend lists the values drawn; a
+  listed value the data lacks takes no row.
 - **linear** or **log** —
-  `{ "field": "signal", "scale": "linear", "domain": [0, 50], "ramp": ["white", "red"] }`
-  reads the value through `domain` into the ramp. `ramp` is `["viridis"]` or two
-  or more CSS colour stops spaced evenly; `domain` left off spans the values of
+  `{ "field": "signal", "scale": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] }`
+  reads the value between `domainMin` and `domainMax` into a ramp through the
+  colours `range` lists, spaced evenly. `scheme` names a ramp instead
+  (`"viridis"`, which is also what a ramp with no `range` draws), and
+  `reverse: true` turns either one round. An end left off spans the values of
   every region loaded, so a bar and its key mean the same thing in every block
-  on screen and the ramp widens as you pan into bigger values. Pin `domain` when
-  a figure needs the colours to stay put. `domainMid` names the value the ramp's
-  middle stop sits at, so a diverging ramp centres on zero inside an asymmetric
-  domain.
+  on screen and that end moves as you pan into bigger values: pin both when a
+  figure needs the colours to stay put, or one to hold a floor or a ceiling, as
+  `{ "field": "signal", "scale": "linear", "domainMin": 0, "range": ["white", "red"] }`
+  does. `domainMid` names the value the ramp's middle stop sits at, so a
+  diverging ramp centres on zero inside an asymmetric domain, and
+  `{ "field": "score", "scale": "log", "scheme": "viridis", "reverse": true }`
+  runs viridis from yellow at the bottom to purple at the top.
 - **threshold** —
-  `{ "field": "signal", "scale": "threshold", "domain": [10, 50], "palette": ["#eee", "#f90", "#c00"] }`
-  cuts the value at each `domain` point and hands each interval a `palette`
-  entry, so `palette` carries one more than `domain` does. The legend lists one
+  `{ "field": "signal", "scale": "threshold", "domain": [10, 50], "range": ["#eee", "#f90", "#c00"] }`
+  cuts the value at each `domain` point and hands each interval a `range`
+  colour, so `range` carries one more than `domain` does. The legend lists one
   row per interval.
 
 Whichever way a scale resolves, the legend reads the same table the colours came
@@ -228,10 +235,10 @@ from.
 
 A scale belongs to a channel, not only to colour. `glyph` takes the same
 categorical form — `{ "field": "svtype", "scale": "categorical" }` — with
-`range` listing the glyph names to hand out in place of `palette` (`disc`,
-`triangle`, `diamond` in that order when left off) and `domain` the values in
-legend order. The legend then carries a second key whose swatches are the glyphs
-themselves:
+`range` listing the glyph names to hand out as a colour scale's lists colours
+(`disc`, `triangle`, `diamond` in that order when left off) and `domain` the
+values in legend order. The legend then carries a second key whose swatches are
+the glyphs themselves:
 
 ```json
 {
@@ -542,12 +549,12 @@ rule's id beside it.
 
 **Plot field...** writes the `marks` above without leaving the app: pick a
 numeric field the loaded features carry, a bar or a point, optionally a colour
-field — a palette for a text column, a ramp for a number — and a "count per bin
-zoomed out" box that adds the second `bin`/`aggregate` mark with `step: "auto"`
-and the `minBpPerPx`/`maxBpPerPx` handoff at 100. It reopens on what a
-single-mark config already declares, so editing is the same dialog. A display
-shown with no `marks` at all plots `score` as bars where the features carry a
-numeric one, and opens this dialog where they do not.
+field — a categorical scale for a text column, a linear one for a number — and a
+"count per bin zoomed out" box that adds the second `bin`/`aggregate` mark with
+`step: "auto"` and the `minBpPerPx`/`maxBpPerPx` handoff at 100. It reopens on
+what a single-mark config already declares, so editing is the same dialog. A
+display shown with no `marks` at all plots `score` as bars where the features
+carry a numeric one, and opens this dialog where they do not.
 
 <Figure src="/img/mark_display/plot_field.png" caption="The Plot field dialog over an Alu track, reopened on the mark that track declares: the numeric fields the loaded features carry, the shape, the colour field and the count-per-bin box."/>
 

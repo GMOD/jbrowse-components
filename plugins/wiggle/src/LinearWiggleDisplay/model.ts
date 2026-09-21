@@ -20,7 +20,11 @@ import LegendMixin, {
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { colorScaleChoicesOf } from '@jbrowse/display-kit/colorConfigSchema'
+import { colorSpecOf } from '@jbrowse/display-kit/channelSpec'
+import {
+  colorMembersOf,
+  colorScaleChoicesOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -53,11 +57,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
-import {
-  resolveWiggleColor,
-  wiggleColorScale,
-  wiggleColorSpec,
-} from '../shared/wiggleColor.ts'
+import { resolveWiggleColor, wiggleColorScale } from '../shared/wiggleColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
@@ -83,7 +83,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
-import type { FullColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -205,14 +205,15 @@ export default function stateModelFactory(
        * The `color` object as written, `value` undefined while nothing names
        * a colour and the layout decides (`effectiveColor`).
        */
-      get colorSetting(): FullColorSetting {
+      get colorSetting(): ColorSetting {
         return {
           value: getConf(self, ['color', 'value']),
           field: getConf(self, ['color', 'field']),
           scale: getConf(self, ['color', 'scale']),
           domain: getConf(self, ['color', 'domain']),
-          palette: getConf(self, ['color', 'palette']),
-          ramp: getConf(self, ['color', 'ramp']),
+          range: getConf(self, ['color', 'range']),
+          scheme: getConf(self, ['color', 'scheme']),
+          reverse: getConf(self, ['color', 'reverse']),
           domainMid: getConf(self, ['color', 'domainMid']),
         }
       },
@@ -223,6 +224,15 @@ export default function stateModelFactory(
        */
       get colorScaleChoices(): string[] {
         return colorScaleChoicesOf(self.configuration.color)
+      },
+
+      /**
+       * #getter
+       * The members this display's colour object declares, for the Edit as
+       * JSON box.
+       */
+      get colorMembers(): string[] {
+        return colorMembersOf(self.configuration.color)
       },
 
       /**
@@ -356,7 +366,7 @@ export default function stateModelFactory(
        * `defaultValue`, because the default moves with the layout and a slot
        * default cannot.
        */
-      get effectiveColor(): FullColorSetting {
+      get effectiveColor(): ColorSetting {
         const color = self.colorSetting
         if (color.value !== undefined || color.field) {
           return color
@@ -401,7 +411,7 @@ export default function stateModelFactory(
                 ...(facet.domain.length ? { domain: [...facet.domain] } : {}),
               }
             : null,
-          color: wiggleColorSpec(self.colorSetting),
+          color: colorSpecOf(self.colorSetting),
         }
       },
     }))
@@ -763,7 +773,7 @@ export default function stateModelFactory(
        * The whole colour object at once, since a scale and the slots it reads
        * are one setting; `undefined` returns to the layout's own picture.
        */
-      setColor(color?: Partial<FullColorSetting> | string) {
+      setColor(color?: Partial<ColorSetting> | string) {
         self.configuration.setSubschema('color', color ?? {})
       },
 

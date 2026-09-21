@@ -1,0 +1,120 @@
+import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { compareStructural } from 'mobx'
+
+import {
+  COLOR_SCALES,
+  colorChannelOptions,
+  colorChannelSlots,
+  colorDomainEndsSlots,
+  colorDomainSlot,
+  colorEncodingOf,
+  colorRampSlots,
+  colorRangeSlot,
+} from './colorConfigSchema.ts'
+
+const pluginManager = new PluginManager([]).createPluggableElements()
+pluginManager.configure()
+
+const TestColor = ConfigurationSchema(
+  'TestColor',
+  {
+    value: { type: 'color', defaultValue: 'red' },
+    ...colorChannelSlots({
+      scales: COLOR_SCALES,
+      scaleName: 'TestColorScale',
+      field: 'field',
+    }),
+    ...colorDomainSlot({}),
+    ...colorDomainEndsSlots,
+    ...colorRangeSlot({}),
+    ...colorRampSlots,
+  },
+  colorChannelOptions('color'),
+)
+
+function encodingOf(snapshot: Record<string, unknown>) {
+  return colorEncodingOf(
+    TestColor.create(snapshot, { pluginManager }),
+    'categorical',
+  )
+}
+
+const WRITTEN = {
+  domain: ['1', '2'],
+  domainMin: 0,
+  domainMax: 10,
+  domainMid: 5,
+  range: ['white', 'red'],
+  scheme: 'viridis',
+  reverse: true,
+}
+
+// A fetch key compares the encoding structurally, and `{ a: 1, b: undefined }`
+// is not `{ a: 1 }`, so a scale whose keys followed what a config happened to
+// write would refetch on a write that paints the same.
+test.each(['categorical', 'threshold', 'linear', 'log'])(
+  'a %s scale answers one fixed set of keys whatever is written',
+  scale => {
+    const bare = encodingOf({ field: 'score', scale })
+    const full = encodingOf({ field: 'score', scale, ...WRITTEN })
+    expect(typeof bare).toBe('object')
+    expect(Object.keys(bare).sort()).toEqual(Object.keys(full).sort())
+  },
+)
+
+test('an unset member and one written at its default are one key', () => {
+  expect(
+    compareStructural(
+      encodingOf({ field: 'score', scale: 'linear' }),
+      encodingOf({
+        field: 'score',
+        scale: 'linear',
+        domain: [],
+        range: [],
+        reverse: false,
+        domainMin: undefined,
+      }),
+    ),
+  ).toBe(true)
+})
+
+test('each scale carries the members it reads under the config names', () => {
+  expect(encodingOf({ field: 'score', scale: 'log', ...WRITTEN })).toEqual({
+    field: 'score',
+    scale: 'log',
+    domainMin: 0,
+    domainMax: 10,
+    domainMid: 5,
+    range: ['white', 'red'],
+    scheme: 'viridis',
+    reverse: true,
+  })
+  expect(encodingOf({ field: 'pip', scale: 'threshold', ...WRITTEN })).toEqual({
+    field: 'pip',
+    scale: 'threshold',
+    domain: ['1', '2'],
+    range: ['white', 'red'],
+  })
+  expect(encodingOf({ field: 'strand', ...WRITTEN })).toEqual({
+    field: 'strand',
+    scale: 'categorical',
+    domain: ['1', '2'],
+    range: ['white', 'red'],
+  })
+  expect(encodingOf({ value: 'blue', field: 'strand', scale: 'none' })).toBe(
+    'blue',
+  )
+})
+
+// The scale follows `field` and the display's own default alone: a written
+// range used to make an unset scale linear, so emptying it flipped the key.
+test('the scale is never read off which output member is written', () => {
+  const scaleOf = (snapshot: Record<string, unknown>) => {
+    const encoding = encodingOf({ field: 'score', ...snapshot })
+    return typeof encoding === 'object' ? encoding.scale : 'none'
+  }
+  expect(scaleOf({ range: ['white', 'red'] })).toBe('categorical')
+  expect(scaleOf({ range: [] })).toBe('categorical')
+  expect(scaleOf({ scheme: 'viridis' })).toBe('categorical')
+})

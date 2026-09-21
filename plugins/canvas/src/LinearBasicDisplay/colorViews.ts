@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
+  colorMembersOf,
   colorScaleChoicesOf,
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -99,6 +100,15 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
+     * The members this display's colour object declares, for the Edit as
+     * JSON box.
+     */
+    get colorMembers(): string[] {
+      return colorMembersOf(self.conf.color)
+    },
+
+    /**
+     * #getter
      * The `color` object as written, its `value` raw.
      */
     get colorSettings(): ColorSetting {
@@ -107,7 +117,7 @@ export function colorViews(self: ColorHost) {
         field: getConf(self, ['color', 'field']),
         scale: getConf(self, ['color', 'scale']),
         domain: getConf(self, ['color', 'domain']),
-        palette: getConf(self, ['color', 'palette']),
+        range: getConf(self, ['color', 'range']),
       }
     },
   }

@@ -20,7 +20,7 @@ describe('the color slot reaches the worker unevaluated', () => {
     display.configuration.setSubschema('color', BY_ATTRIBUTE)
 
     expect(display.color.value).toBe(BY_ATTRIBUTE)
-    expect(display.rpcProps().color.value).toBe(BY_ATTRIBUTE)
+    expect(display.rpcProps().color).toBe(BY_ATTRIBUTE)
   })
 
   it('leaves a plain CSS color alone', () => {
@@ -28,12 +28,6 @@ describe('the color slot reaches the worker unevaluated', () => {
     const { display } = createDisplay()
     display.configuration.setSubschema('color', 'rebeccapurple')
 
-    expect(display.rpcProps().color).toEqual({
-      value: 'rebeccapurple',
-      field: '',
-      scale: 'none',
-      domain: [],
-      palette: [],
-    })
+    expect(display.rpcProps().color).toBe('rebeccapurple')
   })
 })

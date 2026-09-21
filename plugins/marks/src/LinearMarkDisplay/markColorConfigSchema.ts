@@ -4,23 +4,22 @@ import {
   COLOR_SCALES,
   colorChannelOptions,
   colorChannelSlots,
-  colorPaletteSlot,
-  colorRampSlot,
+  colorDomainEndsSlots,
+  colorDomainSlot,
+  colorRampSlots,
+  colorRangeSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
-
-export { markColorScale } from './markColorScale.ts'
-export type { MarkColorScale } from './markColorScale.ts'
 
 /**
  * #config MarkColor
  * #category display
  * A mark's `encoding.color`: one CSS colour or `jexl:` callback for every
- * instance, or a field through a categorical scale (a palette colour per
- * value), a `linear` or `log` scale (a ramp over `domain`, `domainMid`
- * placing its middle stop where a diverging ramp turns) or a `threshold`
- * scale (a palette colour per interval between the cut points `domain`
- * lists). A string is the constant; the object binds the field, and a scale
- * is what the legend describes.
+ * instance, or a field through a categorical scale (a `range` colour per
+ * value), a `linear` or `log` scale (a ramp between `domainMin` and
+ * `domainMax`, `domainMid` placing its middle stop where a diverging ramp
+ * turns) or a `threshold` scale (a `range` colour per interval between the
+ * cut points `domain` lists). A string is the constant; the object binds the
+ * field, and a scale is what the legend describes.
  *
  * #example
  * ```js
@@ -36,7 +35,13 @@ export type { MarkColorScale } from './markColorScale.ts'
  * {
  *   shape: 'span',
  *   encoding: {
- *     color: { field: 'score', scale: 'log', domain: [1, 1000], ramp: ['white', 'red'] },
+ *     color: {
+ *       field: 'score',
+ *       scale: 'log',
+ *       domainMin: 1,
+ *       domainMax: 1000,
+ *       range: ['white', 'red'],
+ *     },
  *   },
  * }
  * ```
@@ -48,9 +53,10 @@ export type { MarkColorScale } from './markColorScale.ts'
  *     color: {
  *       field: 'score',
  *       scale: 'linear',
- *       domain: [-2, 6],
- *       ramp: ['blue', 'white', 'red'],
+ *       domainMin: -2,
+ *       domainMax: 6,
  *       domainMid: 0,
+ *       range: ['blue', 'white', 'red'],
  *     },
  *   },
  * }
@@ -64,7 +70,7 @@ export type { MarkColorScale } from './markColorScale.ts'
  *       field: 'pip',
  *       scale: 'threshold',
  *       domain: [0.1, 0.5],
- *       palette: ['#357ebd', '#eea236', '#d43f3a'],
+ *       range: ['#357ebd', '#eea236', '#d43f3a'],
  *     },
  *   },
  * }
@@ -91,12 +97,18 @@ export const markColorSchema = ConfigurationSchema(
       field:
         'the feature field a scale reads, or a jexl callback over feature, which is slower per feature and so the opt-in',
       scale:
-        'how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; threshold cuts the value at the domain and hands each interval a palette entry; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without',
-      domain:
-        "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes; for a threshold scale, the cut points in ascending order, a value taking the palette entry for the number of them it is at or past, so palette has one entry more than this",
+        'how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset beside a field, it is categorical',
     }),
-    ...colorPaletteSlot,
-    ...colorRampSlot,
+    ...colorDomainSlot({
+      domain:
+        "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead",
+    }),
+    ...colorDomainEndsSlots,
+    ...colorRangeSlot({
+      range:
+        "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme",
+    }),
+    ...colorRampSlots,
   },
   colorChannelOptions('color'),
 )

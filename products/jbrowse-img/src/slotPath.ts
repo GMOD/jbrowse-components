@@ -72,7 +72,7 @@ export function isMemberWrite(opt: string) {
 
 /**
  * Merge `patch` into `target`, object into object and anything else replacing
- * what was there, so `color.field=…` and `color.palette=…` fill one object in
+ * what was there, so `color.field=…` and `color.range=…` fill one object in
  * either order.
  */
 export function mergeSettings(
@@ -93,7 +93,7 @@ export function mergeSettings(
   return target
 }
 
-/** `color.palette=tan,teal` as the settings object it writes: `{ color: { palette: [...] } }`. */
+/** `color.range=tan,teal` as the settings object it writes: `{ color: { range: [...] } }`. */
 export function slotPathSettings(opt: string) {
   const eq = opt.indexOf('=')
   const segments = opt.slice(0, eq).split('.')

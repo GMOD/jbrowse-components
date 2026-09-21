@@ -28,6 +28,7 @@ import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { colorSpecOf } from '@jbrowse/display-kit/channelSpec'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import {
   autorunOnReadyView,
@@ -63,7 +64,6 @@ import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
 import {
   CHANNEL_SPEC_EXAMPLES,
   channelSpecProblems,
-  colorOf,
   facetOf,
   filterOf,
 } from './channelSpec.ts'
@@ -1153,15 +1153,15 @@ export default function baseStateModelFactory(
          * #action
          * Paints every feature one constant, a CSS color or a `jexl:`
          * callback; undefined lets each feature's own color paint. The field,
-         * its order and palette stay under `scale: 'none'` for the way back.
+         * its order and range stay under `scale: 'none'` for the way back.
          */
         setFeatureColor(color?: string) {
-          const { field, domain, palette } = self.colorSettings
+          const { field, domain, range } = self.colorSettings
           self.configuration.setSubschema('color', {
             ...(color === undefined ? {} : { value: color }),
             field,
             domain: [...domain],
-            palette: [...palette],
+            range: [...range],
             scale: 'none',
           })
         },
@@ -1174,7 +1174,7 @@ export default function baseStateModelFactory(
         setColorScale(scale?: {
           field: string
           domain?: readonly string[]
-          palette?: readonly string[]
+          range?: readonly string[]
         }) {
           self.configuration.setSubschema(
             'color',
@@ -1182,7 +1182,7 @@ export default function baseStateModelFactory(
               ? {
                   field: scale.field,
                   domain: [...(scale.domain ?? [])],
-                  palette: [...(scale.palette ?? [])],
+                  range: [...(scale.range ?? [])],
                 }
               : {},
           )
@@ -1464,7 +1464,7 @@ export default function baseStateModelFactory(
       get channelSpec(): ChannelSpec {
         return {
           facet: facetOf(self.facet),
-          color: colorOf(self.colorSettings),
+          color: colorSpecOf(self.colorSettings),
           filter: filterOf(self.activeFilters()),
         }
       },
@@ -1564,12 +1564,12 @@ export default function baseStateModelFactory(
        * #action
        * The categorical analogue of the Score menu's "Pin current min/max"
        * (ADR-124): writes `pinnedColorDomain`, so every value the key lists
-       * spends its own palette color in key order, where the hash could give
+       * spends its own range color in key order, where the hash could give
        * two values one color.
        */
       pinColorDomain() {
-        const { field, palette } = self.colorSettings
-        self.setColorScale({ field, domain: self.pinnedColorDomain, palette })
+        const { field, range } = self.colorSettings
+        self.setColorScale({ field, domain: self.pinnedColorDomain, range })
       },
       /**
        * #action
@@ -1592,12 +1592,12 @@ export default function baseStateModelFactory(
       /**
        * #action
        * What a menu or dialog naming only a field writes: the field, keeping
-       * the domain and palette while it is the field already painting.
+       * the domain and range while it is the field already painting.
        */
       colorByField(field: string) {
-        const { field: current, domain, palette } = self.colorSettings
+        const { field: current, domain, range } = self.colorSettings
         self.setColorScale(
-          field === current ? { field, domain, palette } : { field },
+          field === current ? { field, domain, range } : { field },
         )
       },
       /**

@@ -2923,8 +2923,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "palette",
-              "type": "(JexlString | string[])"
+              "name": "range",
+              "type": "(JexlString | CssColorEntry[])"
             }
           ],
           "shorthand": "value"
@@ -3270,12 +3270,24 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "palette",
-              "type": "(JexlString | string[])"
+              "name": "domainMin",
+              "type": "(JexlString | (number | undefined))"
             },
             {
-              "name": "ramp",
-              "type": "(JexlString | string[])"
+              "name": "domainMax",
+              "type": "(JexlString | (number | undefined))"
+            },
+            {
+              "name": "range",
+              "type": "(JexlString | CssColorEntry[])"
+            },
+            {
+              "name": "scheme",
+              "type": "(JexlString | (ColorScheme | undefined))"
+            },
+            {
+              "name": "reverse",
+              "type": "(JexlString | boolean)"
             },
             {
               "name": "domainMid",
@@ -3691,12 +3703,24 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "palette",
-              "type": "(JexlString | string[])"
+              "name": "domainMin",
+              "type": "(JexlString | (number | undefined))"
             },
             {
-              "name": "ramp",
-              "type": "(JexlString | string[])"
+              "name": "domainMax",
+              "type": "(JexlString | (number | undefined))"
+            },
+            {
+              "name": "range",
+              "type": "(JexlString | CssColorEntry[])"
+            },
+            {
+              "name": "scheme",
+              "type": "(JexlString | (ColorScheme | undefined))"
+            },
+            {
+              "name": "reverse",
+              "type": "(JexlString | boolean)"
             },
             {
               "name": "domainMid",
@@ -3967,8 +3991,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "palette",
-              "type": "(JexlString | string[])"
+              "name": "range",
+              "type": "(JexlString | CssColorEntry[])"
             }
           ],
           "shorthand": "value"
@@ -4166,8 +4190,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "palette",
-              "type": "(JexlString | string[])"
+              "name": "range",
+              "type": "(JexlString | CssColorEntry[])"
             }
           ],
           "shorthand": "value"
@@ -4706,12 +4730,16 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "palette",
-              "type": "(JexlString | string[])"
+              "name": "range",
+              "type": "(JexlString | CssColorEntry[])"
             },
             {
-              "name": "ramp",
-              "type": "(JexlString | string[])"
+              "name": "scheme",
+              "type": "(JexlString | (ColorScheme | undefined))"
+            },
+            {
+              "name": "reverse",
+              "type": "(JexlString | boolean)"
             },
             {
               "name": "domainMid",
@@ -4909,12 +4937,16 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "palette",
-              "type": "(JexlString | string[])"
+              "name": "range",
+              "type": "(JexlString | CssColorEntry[])"
             },
             {
-              "name": "ramp",
-              "type": "(JexlString | string[])"
+              "name": "scheme",
+              "type": "(JexlString | (ColorScheme | undefined))"
+            },
+            {
+              "name": "reverse",
+              "type": "(JexlString | boolean)"
             },
             {
               "name": "domainMid",
@@ -5124,12 +5156,16 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "palette",
-              "type": "(JexlString | string[])"
+              "name": "range",
+              "type": "(JexlString | CssColorEntry[])"
             },
             {
-              "name": "ramp",
-              "type": "(JexlString | string[])"
+              "name": "scheme",
+              "type": "(JexlString | (ColorScheme | undefined))"
+            },
+            {
+              "name": "reverse",
+              "type": "(JexlString | boolean)"
             },
             {
               "name": "domainMid",
@@ -5609,8 +5645,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "palette",
-              "type": "(JexlString | string[])"
+              "name": "range",
+              "type": "(JexlString | CssColorEntry[])"
             }
           ],
           "shorthand": "value"
@@ -5767,12 +5803,24 @@ export const configManifest: ConfigManifest = {
                       "liftsNumbers": true
                     },
                     {
-                      "name": "palette",
-                      "type": "(JexlString | string[])"
+                      "name": "domainMin",
+                      "type": "(JexlString | (number | undefined))"
                     },
                     {
-                      "name": "ramp",
-                      "type": "(JexlString | string[])"
+                      "name": "domainMax",
+                      "type": "(JexlString | (number | undefined))"
+                    },
+                    {
+                      "name": "range",
+                      "type": "(JexlString | CssColorEntry[])"
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(JexlString | (ColorScheme | undefined))"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "(JexlString | boolean)"
                     },
                     {
                       "name": "domainMid",
@@ -5787,7 +5835,7 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | string)"
+                      "type": "(JexlString | GlyphName)"
                     },
                     {
                       "name": "field",
@@ -5799,7 +5847,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "range",
-                      "type": "(JexlString | string[])"
+                      "type": "(JexlString | GlyphName[])"
                     },
                     {
                       "name": "domain",

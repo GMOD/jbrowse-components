@@ -76,17 +76,17 @@ submenu opens **Reference lines**, which writes this list.
 `color` is a CSS color string, or an object naming the field it reads and the
 scale it reads through:
 
-| the picture                         | the value                                                                                |
-| ----------------------------------- | ---------------------------------------------------------------------------------------- |
-| one solid colour                    | `"#8b0000"`                                                                              |
-| a colour each side of a cut         | `{ "field": "score", "scale": "threshold", "domain": [5], "palette": ["#aaa", "#f00"] }` |
-| a ramp, which density fades through | `{ "field": "score", "scale": "linear", "ramp": ["viridis"] }`                           |
-| a colour per source                 | `{ "field": "source", "scale": "categorical" }`                                          |
+| the picture                         | the value                                                                              |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| one solid colour                    | `"#8b0000"`                                                                            |
+| a colour each side of a cut         | `{ "field": "score", "scale": "threshold", "domain": [5], "range": ["#aaa", "#f00"] }` |
+| a ramp, which density fades through | `{ "field": "score", "scale": "linear", "scheme": "viridis" }`                         |
+| a colour per source                 | `{ "field": "source", "scale": "categorical" }`                                        |
 
 A threshold with an empty `domain` cuts at
 [`origin`](/docs/config/linearwiggledisplay/#slot-origin), the value the bars
-also grow from, and a ramp with no `domainMid` fades from it. A ramp takes
-either a named scheme or a list of CSS stops. The
+also grow from, and a ramp with no `domainMid` fades from it. A ramp takes a
+named `scheme` or a `range` of CSS stops. The
 [cookbook](/docs/cookbook#quantitative-wiggle-tracks) has worked recipes.
 
 ## Adapters

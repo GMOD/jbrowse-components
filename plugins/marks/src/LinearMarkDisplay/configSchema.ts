@@ -2,6 +2,7 @@ import {
   ConfigurationSchema,
   requirementProblems,
 } from '@jbrowse/core/configuration'
+import { GLYPH_NAMES } from '@jbrowse/core/util/glyphNames'
 import {
   normalizeChannel,
   paintedScale,
@@ -26,8 +27,6 @@ import {
 import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-export { markColorScale } from './markColorConfigSchema.ts'
-export type { MarkColorScale } from './markColorConfigSchema.ts'
 export { MARK_SHAPES, MARK_SOURCES } from './markVocabulary.ts'
 export type { MarkShapeName, MarkSourceName } from './markVocabulary.ts'
 
@@ -54,7 +53,8 @@ const markGlyphSchema = ConfigurationSchema(
      * `glyph: 'triangle'` directly on the encoding lands here.
      */
     value: {
-      type: 'string',
+      type: 'stringEnum',
+      model: types.enumeration('GlyphName', [...GLYPH_NAMES]),
       defaultValue: 'disc',
       description: 'disc, triangle, diamond or jexl callback',
       contextVariable: ['feature'],
@@ -86,7 +86,8 @@ const markGlyphSchema = ConfigurationSchema(
      * `disc`, `triangle`, `diamond`.
      */
     range: {
-      type: 'stringArray',
+      type: 'stringEnumArray',
+      model: types.enumeration('GlyphName', [...GLYPH_NAMES]),
       defaultValue: [],
       description: 'glyph names, in order',
     },

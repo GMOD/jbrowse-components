@@ -1,38 +1,45 @@
 import {
   ConfigurationSchema,
+  getConfigurationSchemaDefinition,
   getSlotDefinition,
   slotChoices,
 } from '@jbrowse/core/configuration'
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { types } from '@jbrowse/mobx-state-tree'
+
+import { paintedScale } from './colorScale.ts'
 
 import type { ColorScaleName } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
 export { COLOR_SCALES, paintedScale } from './colorScale.ts'
 export type { ColorScaleName } from './colorScale.ts'
 
-/** The scales of a colour object whose field takes a palette colour per value. */
+/** The scales of a colour object whose field takes a range colour per value. */
 export const CATEGORICAL_COLOR_SCALES = ['none', 'categorical'] as const
 
-/** The `color` object as written: a constant, or a field through a categorical scale. */
+/**
+ * A colour object as written: the members every one declares, and the ones a
+ * linear or log scale adds on the displays that declare them.
+ */
 export interface ColorSetting {
   value: string | undefined
   field: string
-  scale: 'none' | 'categorical' | undefined
-  domain: readonly string[]
-  palette: readonly string[]
-}
-
-/** A colour object carrying every member any display declares. */
-export interface FullColorSetting extends Omit<ColorSetting, 'scale'> {
   scale: ColorScaleName | undefined
-  ramp: readonly string[]
-  domainMid: number | undefined
+  domain: readonly string[]
+  range: readonly string[]
+  scheme?: ColorSchemeName | undefined
+  reverse?: boolean
+  domainMin?: number | undefined
+  domainMax?: number | undefined
+  domainMid?: number | undefined
 }
 
 /**
  * What every channel object checks on the way in, `name` being the setting's
- * key: a `domain` or `palette` is a list, and a `domain` written as numbers is
+ * key: a `domain` or `range` is a list, and a `domain` written as numbers is
  * carried as strings. No combination of slots is refused, since the config
  * editor writes one slot at a time: a `domain` with no `field`, or a `field`
  * under `none`, waits unread until it paints again.
@@ -41,7 +48,7 @@ export function normalizeChannel(
   snap: Record<string, unknown> = {},
   name: string,
 ): Record<string, unknown> {
-  for (const key of ['domain', 'palette']) {
+  for (const key of ['domain', 'range']) {
     if (snap[key] !== undefined && !Array.isArray(snap[key])) {
       throw new Error(`${name}.${key} is a list`)
     }
@@ -53,21 +60,19 @@ export function normalizeChannel(
 
 /**
  * The mapping half of a colour object, spread beside the display's own
- * `value` slot: the field, the scale it reads through and the order its
- * values take. `scales` are the members the display can paint.
+ * `value` slot: the field, and the scale it reads through. `scales` are the
+ * members the display can paint.
  */
 export function colorChannelSlots<S extends ColorScaleName>({
   scales,
   scaleName,
   field,
   scale = 'how field paints; unset follows field, none paints value',
-  domain = 'values that take the palette first, in order',
 }: {
   scales: readonly S[]
   scaleName: string
   field: string
   scale?: string
-  domain?: string
 }) {
   return {
     field: {
@@ -80,6 +85,16 @@ export function colorChannelSlots<S extends ColorScaleName>({
       model: types.enumeration(scaleName, [...scales]),
       description: scale,
     },
+  } as const
+}
+
+/** The values that matter to a categorical or threshold scale, in order. */
+export function colorDomainSlot({
+  domain = 'values that take the range first, in order',
+}: {
+  domain?: string
+}) {
+  return {
     domain: {
       type: 'stringArray',
       defaultValue: [],
@@ -88,27 +103,53 @@ export function colorChannelSlots<S extends ColorScaleName>({
   } as const
 }
 
-/** The colours a scale hands `domain`, in order; empty is the default palette. */
-export const colorPaletteSlot = {
-  palette: {
-    type: 'stringArray',
-    defaultValue: [],
-    description:
-      'CSS colors the domain takes, in order, continuing into the default palette past its end',
-  },
-} as const
+/** The colours a scale hands out, in order; empty is the display's default. */
+export function colorRangeSlot({
+  range = 'CSS colours the scale hands out, in order; empty is the default palette',
+}: {
+  range?: string
+}) {
+  return {
+    range: {
+      type: 'colorArray',
+      defaultValue: [],
+      description: range,
+    },
+  } as const
+}
 
-/** A linear or log scale's ramp: `["viridis"]`, or CSS colour stops spaced evenly. */
-export const colorRampSlot = {
-  ramp: {
-    type: 'stringArray',
-    defaultValue: [],
-    description: 'viridis, or two or more CSS colour stops; empty is viridis',
+/** What a linear or log scale adds: a named ramp, its direction, its middle. */
+export const colorRampSlots = {
+  scheme: {
+    type: 'maybeStringEnum',
+    model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
+    description:
+      "a named ramp for a linear or log scale; range's colours, where it lists any, win over it",
+  },
+  reverse: {
+    type: 'boolean',
+    defaultValue: false,
+    description:
+      "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain",
   },
   domainMid: {
     type: 'maybeNumber',
     description:
       "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it",
+  },
+} as const
+
+/** A linear or log scale's two ends, each pinned or following the data. */
+export const colorDomainEndsSlots = {
+  domainMin: {
+    type: 'maybeNumber',
+    description:
+      "the bottom of a linear or log scale's domain; unset follows the loaded values",
+  },
+  domainMax: {
+    type: 'maybeNumber',
+    description:
+      "the top of a linear or log scale's domain; unset follows the loaded values",
   },
 } as const
 
@@ -123,6 +164,11 @@ export function colorScaleChoicesOf(color: AnyConfigurationModel): string[] {
   )
 }
 
+/** The members a display's colour object declares, read off its schema. */
+export function colorMembersOf(color: AnyConfigurationModel): string[] {
+  return Object.keys(getConfigurationSchemaDefinition(color) ?? {})
+}
+
 /** A colour object's options: a bare string is its `value`, and an undeclared key is refused. */
 export function colorChannelOptions(name: string) {
   return {
@@ -133,11 +179,60 @@ export function colorChannelOptions(name: string) {
   }
 }
 
+function listed(values: readonly string[]) {
+  return values.length > 0 ? [...values] : undefined
+}
+
+/**
+ * A colour object as the encoder takes it: the scale it paints through,
+ * `fieldScale` beside a field naming none, with the members that scale reads
+ * under the names the config spells them. Each scale answers one fixed set of
+ * keys, absent members `undefined`, so a fetch key built over it compares
+ * alike whichever members a config happens to write.
+ */
+export function colorEncodingOf(
+  color: ColorSetting & { value: string },
+  fieldScale: ColorScaleName,
+): ColorEncoding {
+  const { field } = color
+  const scale = paintedScale(color, fieldScale)
+  switch (scale) {
+    case 'none':
+      return color.value
+    case 'categorical':
+      return {
+        field,
+        scale,
+        domain: listed(color.domain),
+        range: listed(color.range),
+      }
+    case 'threshold':
+      return {
+        field,
+        scale,
+        domain: [...color.domain],
+        range: listed(color.range),
+      }
+    case 'linear':
+    case 'log':
+      return {
+        field,
+        scale,
+        domainMin: color.domainMin,
+        domainMax: color.domainMax,
+        domainMid: color.domainMid,
+        range: listed(color.range),
+        scheme: color.scheme,
+        reverse: color.reverse ?? false,
+      }
+  }
+}
+
 /**
  * #config FeatureColor
  * #category display
  * The canvas feature displays' `color` setting: a CSS colour or `jexl:`
- * callback in `value`, or a field whose values each take a palette colour,
+ * callback in `value`, or a field whose values each take a range colour,
  * with a key. A string is the constant; the object binds the field, and
  * `scale: "none"` beside a field paints the constant while keeping the field
  * for the way back.
@@ -149,7 +244,7 @@ export function colorChannelOptions(name: string) {
  * ```js
  * {
  *   type: 'LinearBasicDisplay',
- *   color: { field: 'gene_biotype', palette: ['#1f77b4', '#ff7f0e'] },
+ *   color: { field: 'gene_biotype', range: ['#1f77b4', '#ff7f0e'] },
  * }
  * ```
  */
@@ -171,13 +266,18 @@ export const colorConfigSchema = ConfigurationSchema(
       scales: CATEGORICAL_COLOR_SCALES,
       scaleName: 'FeatureColorScale',
       field:
-        "a feature field, or a jexl expression over feature, whose values each paint one palette colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or palette says otherwise",
+        "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
       scale:
-        'none paints value and keeps the field for a switch back; categorical a palette colour per value of field; unset follows field',
-      domain:
-        'the values that take the palette first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it',
+        'none paints value and keeps the field for a switch back; categorical a range colour per value of field; unset follows field',
     }),
-    ...colorPaletteSlot,
+    ...colorDomainSlot({
+      domain:
+        'the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it',
+    }),
+    ...colorRangeSlot({
+      range:
+        'CSS colours the domain takes, in order, continuing into the default palette past its end',
+    }),
   },
   colorChannelOptions('color'),
 )

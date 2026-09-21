@@ -6,7 +6,7 @@ import {
   SCALE_TYPE_SYMLOG,
 } from '@jbrowse/wiggle-core'
 
-import { densityRampLut } from './densityColorRamp.ts'
+import { rampLutOf } from './densityColorRamp.ts'
 import {
   makeDensityLutFillFn,
   makeDensityRgbStringFn,
@@ -308,16 +308,13 @@ test('a score above a degenerate domain is the track colour on both backends', (
 // Canvas2D/SVG painter indexes as a fillStyle LUT — with each side landing
 // within one bucket of the other, and exactly together at the pivot end.
 describe('named-ramp (LUT) density mode', () => {
-  const lut = densityRampLut('viridis')!
+  const lut = rampLutOf({ scheme: 'viridis' })
   const bucketStep = maxAdjacentStep(lut)
 
-  test('the viridis LUT resolves, stably, and default resolves to none', () => {
+  test('the viridis LUT resolves, stably, one table per ramp and direction', () => {
     expect(lut).toHaveLength(256 * 4)
-    expect(densityRampLut('viridis')).toBe(lut)
-    expect(densityRampLut('default')).toBeNull()
-    expect(densityRampLut(undefined)).toBeNull()
-    // an unknown name (a stale session value) degrades to the default fade
-    expect(densityRampLut('no-such-ramp')).toBeNull()
+    expect(rampLutOf({ scheme: 'viridis' })).toBe(lut)
+    expect(rampLutOf({ scheme: 'viridis', reverse: true })).not.toBe(lut)
     // viridis really is a LUT a lerp can't fake: adjacent entries move by a
     // few 8-bit units at most, so the one-bucket bound below has teeth
     expect(bucketStep).toBeGreaterThan(0)

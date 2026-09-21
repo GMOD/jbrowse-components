@@ -131,7 +131,7 @@ is:
   a section per biotype, these two first
 - `{ "color": { "field": "source" } }` one color per source
 - `{ "color": { "field": "strand" } }` forward strand red, reverse blue
-- `{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "palette": ["#1f77b4", "#ff7f0e"] } }`
+- `{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } }`
   those two biotypes blue and orange, and every other its own color
 - `{ "color": "#1f77b4" }` one color for everything
 - `{ "filter": ["feature.type == 'gene'"] }` genes only
@@ -156,17 +156,17 @@ filter alone:
 
 <Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit as JSON from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
 
-A color by a field is the `color` setting's `{ "field", "domain", "palette" }`
+A color by a field is the `color` setting's `{ "field", "domain", "range" }`
 form, and the track draws a key from the values it painted. Every value keeps a
 color derived from itself, so a pan or a reload paints it the same; a `domain`
-spends the palette on the values it lists, in order, and a value it leaves out
-never takes one of their colors. Two unlisted values can share a color, and
-**Color by... → Pin distinct colors** lists every value the key shows in the
-color's `domain`, in its order, so each takes its own. A transcript and all its
-parts paint the transcript's value, or its gene's where the transcript has none.
-`strand` is a field too, painting forward tomato and reverse cornflowerblue
-unless a domain or palette says otherwise. Each channel is the same setting its
-menu writes, so the Sections menu reorders a facet written this way.
+spends the `range` colors on the values it lists, in order, and a value it
+leaves out never takes one of their colors. Two unlisted values can share a
+color, and **Color by... → Pin distinct colors** lists every value the key shows
+in the color's `domain`, in its order, so each takes its own. A transcript and
+all its parts paint the transcript's value, or its gene's where the transcript
+has none. `strand` is a field too, painting forward tomato and reverse
+cornflowerblue unless a domain or range says otherwise. Each channel is the same
+setting its menu writes, so the Sections menu reorders a facet written this way.
 
 ## Color by CDS
 

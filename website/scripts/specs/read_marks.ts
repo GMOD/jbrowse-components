@@ -55,8 +55,9 @@ const PILEUP_TRACK = {
             color: {
               field: 'insert',
               scale: 'linear',
-              domain: [0, 5000],
-              ramp: ['#c8d8ee', '#d62728'],
+              domainMin: 0,
+              domainMax: 5000,
+              range: ['#c8d8ee', '#d62728'],
             },
           },
         },

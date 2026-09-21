@@ -24,7 +24,7 @@ test('facet and color are the two settings, read back as the dialog shows them',
   expect(
     d.applyDisplaySettings({
       facet: { field: 'subtrack', domain: ['key5', 'key2', 'key3'] },
-      color: { field: 'subtrack', palette: ['red'] },
+      color: { field: 'subtrack', range: ['red'] },
     }),
   ).toMatchObject({ applied: ['facet', 'color'], failed: [] })
   d.setJexlFilters(["jexl:feature.type == 'gene'"])
@@ -37,12 +37,12 @@ test('facet and color are the two settings, read back as the dialog shows them',
     field: 'subtrack',
     scale: undefined,
     domain: [],
-    palette: ['red'],
+    range: ['red'],
   })
   expect(d.colorByAttribute).toBe('subtrack')
   expect(d.channelSpec).toEqual({
     facet: { field: 'subtrack', domain: ['key5', 'key2', 'key3'] },
-    color: { field: 'subtrack', palette: ['red'] },
+    color: { field: 'subtrack', range: ['red'] },
     filter: ["feature.type == 'gene'"],
   })
   expect(getConf(d, 'facet')).toEqual({
@@ -72,9 +72,9 @@ test('strand is a field on both channels, painting its own colors', () => {
   })
 })
 
-test('strand takes a palette like any other field', () => {
+test('strand takes a range like any other field', () => {
   const d = display()
-  const spec = { color: { field: 'strand', palette: ['red', 'blue'] } }
+  const spec = { color: { field: 'strand', range: ['red', 'blue'] } }
   expect(d.channelSpecProblems(spec)).toEqual([])
   d.applyDisplaySettings(spec)
   expect(d.colorEncoding?.domain).toEqual(['1', '-1', '0'])
@@ -84,14 +84,14 @@ test('strand takes a palette like any other field', () => {
 
 test('an object replaces the channel whole, and null clears it', () => {
   const d = display()
-  d.applyDisplaySettings({ color: { field: 'source', palette: ['red'] } })
+  d.applyDisplaySettings({ color: { field: 'source', range: ['red'] } })
   d.applyDisplaySettings({ color: 'red' })
   expect(d.colorSettings).toEqual({
     value: 'red',
     field: '',
     scale: undefined,
     domain: [],
-    palette: [],
+    range: [],
   })
   d.applyDisplaySettings({ facet: 'strand', color: { field: 'type' } })
   d.applyDisplaySettings({ color: null })
@@ -103,12 +103,12 @@ test('an object replaces the channel whole, and null clears it', () => {
   expect(d.channelSpec.facet).toEqual({ field: 'biotype' })
 })
 
-test('a domain or palette that is not a list is refused, and the display keeps what it had', () => {
+test('a domain or range that is not a list is refused, and the display keeps what it had', () => {
   const d = display()
   d.applyDisplaySettings({ color: { field: 'source' } })
   expect(
     d.applyDisplaySettings({
-      color: { field: 'source', palette: 'red' },
+      color: { field: 'source', range: 'red' },
       facet: { field: 'source', domain: 'a' },
     }),
   ).toMatchObject({
@@ -165,16 +165,16 @@ test('the gene track guide prints every example the dialog lists', () => {
 })
 
 describe('the Group by dialog applies a channel spec', () => {
-  it('keeps the palette of the field already painting', () => {
+  it('keeps the range of the field already painting', () => {
     const d = display()
     d.applyDisplaySettings({
       facet: 'biotype',
-      color: { field: 'biotype', palette: ['red', 'blue'] },
+      color: { field: 'biotype', range: ['red', 'blue'] },
     })
     d.applyGroupBy('biotype', true)
     expect(d.channelSpec.color).toEqual({
       field: 'biotype',
-      palette: ['red', 'blue'],
+      range: ['red', 'blue'],
     })
   })
 
@@ -202,9 +202,9 @@ describe('the Group by dialog applies a channel spec', () => {
   })
 })
 
-test('Solid color keeps the field, its order and palette under scale none for the way back', () => {
+test('Solid color keeps the field, its order and range under scale none for the way back', () => {
   const d = display()
-  d.setColorScale({ field: 'biotype', domain: ['lncRNA'], palette: ['red'] })
+  d.setColorScale({ field: 'biotype', domain: ['lncRNA'], range: ['red'] })
   d.setFeatureColor('purple')
   expect(d.colorByMode).toBe('solid')
   expect(d.colorEncoding).toBeUndefined()

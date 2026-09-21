@@ -9,7 +9,7 @@ import {
   SCALE_TYPE_LOG,
 } from '@jbrowse/wiggle-core'
 
-import { densityRampLut } from './densityColorRamp.ts'
+import { rampLutOf } from './densityColorRamp.ts'
 import {
   INSTANCE_OFFSET_F32 as FILL_F32,
   INSTANCE_OFFSET_U32 as FILL_U32,
@@ -379,7 +379,7 @@ describe('the wiggle mark list', () => {
     const state = {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_DENSITY,
-      rampLut: densityRampLut('viridis') ?? undefined,
+      rampLut: rampLutOf({ scheme: 'viridis' }),
     }
 
     backend.upload(0, [source])
@@ -396,7 +396,7 @@ describe('the wiggle mark list', () => {
     const i32 = hal.getLastUniformsI32()!
     expect(i32[UI.densityRampLut]).toBe(1)
     // the uploaded bytes are the shared cached table Canvas2D indexes too
-    expect(hal.getTexture('density')).toEqual(densityRampLut('viridis'))
+    expect(hal.getTexture('density')).toEqual(rampLutOf({ scheme: 'viridis' }))
 
     // an autoscale pan in LUT mode is still one uniform write, zero buffer
     // bytes and zero texture re-uploads — the ramp memo holds across frames
@@ -434,7 +434,7 @@ describe('the wiggle mark list', () => {
     // flipping to a named ramp re-uploads exactly once and flips the flag
     backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...state,
-      rampLut: densityRampLut('viridis') ?? undefined,
+      rampLut: rampLutOf({ scheme: 'viridis' }),
     })
     expect(hal.callsOf('uploadTexture').length).toBe(2)
     expect(hal.getLastUniformsI32()![UI.densityRampLut]).toBe(1)

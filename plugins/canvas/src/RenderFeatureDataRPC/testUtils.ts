@@ -39,7 +39,7 @@ export function mockDisplayConfig({
       field: '',
       scale: undefined,
       domain: [],
-      palette: [],
+      range: [],
       ...(typeof color === 'string' ? { value: color } : color),
     },
     featureHeight: 10,

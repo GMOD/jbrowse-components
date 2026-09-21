@@ -321,7 +321,12 @@ describe('the schema', () => {
         {
           shape: 'span',
           encoding: {
-            color: { field: 'score', ramp: ['white', 'red'], domain: [0, 10] },
+            color: {
+              field: 'score',
+              scale: 'threshold',
+              domain: [0, 10],
+              range: ['white', 'red', 'black'],
+            },
           },
         },
       ]),

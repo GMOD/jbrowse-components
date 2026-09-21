@@ -214,7 +214,7 @@ export type AssertHeightModesCoverUpstream = AssertTrue<
 interface ColorObject {
   field?: string
   domain?: string[]
-  palette?: string[]
+  range?: string[]
 }
 
 interface DisplaySnapshot {

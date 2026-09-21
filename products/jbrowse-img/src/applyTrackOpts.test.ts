@@ -449,10 +449,10 @@ describe('color routing', () => {
     expect(
       buildDisplaySnapshot('alignments', [
         'color:tag:HP',
-        '{"color":{"palette":["rgb(1,2,3)"]},"height":300}',
+        '{"color":{"range":["rgb(1,2,3)"]},"height":300}',
       ]).snap,
     ).toEqual({
-      color: { field: 'tags.HP', palette: ['rgb(1,2,3)'] },
+      color: { field: 'tags.HP', range: ['rgb(1,2,3)'] },
       height: 300,
     })
   })

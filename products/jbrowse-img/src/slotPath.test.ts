@@ -35,9 +35,9 @@ test('merging fills objects and replaces everything else', () => {
     string,
     unknown
   >
-  mergeSettings(target, { color: { palette: ['red'] }, height: 200 })
+  mergeSettings(target, { color: { range: ['red'] }, height: 200 })
   expect(target).toEqual({
-    color: { field: 'strand', palette: ['red'] },
+    color: { field: 'strand', range: ['red'] },
     height: 200,
   })
   mergeSettings(target, { color: 'purple' })

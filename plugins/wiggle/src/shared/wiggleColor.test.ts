@@ -1,20 +1,18 @@
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
-import { densityRampLut } from './densityColorRamp.ts'
+import { rampLutOf } from './densityColorRamp.ts'
 import { resolveWiggleColor } from './wiggleColor.ts'
 
-import type { FullColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
-const EMPTY: FullColorSetting = {
+const EMPTY: ColorSetting = {
   value: undefined,
   field: '',
   scale: undefined,
   domain: [],
-  palette: [],
-  ramp: [],
-  domainMid: undefined,
+  range: [],
 }
 
-const color = (over: Partial<FullColorSetting>) => ({ ...EMPTY, ...over })
+const color = (over: Partial<ColorSetting>) => ({ ...EMPTY, ...over })
 
 test('a bare value paints both sides', () => {
   expect(resolveWiggleColor(color({ value: 'green' }), 0)).toEqual({
@@ -36,13 +34,13 @@ test('an empty threshold domain cuts at the origin, in the wiggle defaults', () 
   })
 })
 
-test('a threshold domain names the cut and the palette the two sides', () => {
+test('a threshold domain names the cut and the range the two sides', () => {
   const out = resolveWiggleColor(
     color({
       field: 'score',
       scale: 'threshold',
       domain: ['2'],
-      palette: ['#2166ac', '#b2182b'],
+      range: ['#2166ac', '#b2182b'],
     }),
     0,
   )
@@ -55,19 +53,59 @@ test('source through a categorical scale is a colour per source', () => {
   expect(resolveWiggleColor(color({ field: 'source' }), 0).perSource).toBe(true)
 })
 
-test('a named ramp resolves to the LUT both backends index', () => {
+test('a scheme resolves to the LUT both backends index', () => {
   const out = resolveWiggleColor(
-    color({ field: 'score', scale: 'linear', ramp: ['viridis'] }),
+    color({ field: 'score', scale: 'linear', scheme: 'viridis' }),
     0,
   )
-  expect(out.rampLut).toBe(densityRampLut('viridis'))
+  expect(out.rampLut).toBe(rampLutOf({ scheme: 'viridis' }))
+})
+
+// A ramp field named anything else used to become linear because a ramp was
+// written; the scale follows the field alone now, and a ramp asks for linear.
+test('a range written under an unset scale does not turn score into a ramp', () => {
+  const out = resolveWiggleColor(
+    color({ field: 'score', range: ['white', 'red'] }),
+    0,
+  )
+  expect(out.rampLut).toBeNull()
+  expect([out.negColor, out.posColor]).toEqual(['white', 'red'])
+})
+
+test('reverse turns a ramp and its ends round', () => {
+  const forward = resolveWiggleColor(
+    color({ field: 'score', scale: 'linear', range: ['white', 'red'] }),
+    0,
+  )
+  const reversed = resolveWiggleColor(
+    color({
+      field: 'score',
+      scale: 'linear',
+      range: ['white', 'red'],
+      reverse: true,
+    }),
+    0,
+  )
+  expect([reversed.negColor, reversed.posColor]).toEqual(['red', 'white'])
+  expect(reversed.rampLut).not.toBe(forward.rampLut)
+  expect([...reversed.rampLut!.slice(0, 4)]).toEqual([
+    ...forward.rampLut!.slice(-4),
+  ])
+  const fade = resolveWiggleColor(
+    color({ field: 'score', scale: 'linear', reverse: true }),
+    0,
+  )
+  expect([fade.negColor, fade.posColor]).toEqual([
+    WIGGLE_POS_COLOR_DEFAULT,
+    WIGGLE_NEG_COLOR_DEFAULT,
+  ])
 })
 
 test('CSS stops build one cached LUT, and domainMid moves the pivot', () => {
   const written = color({
     field: 'score',
     scale: 'linear',
-    ramp: ['white', 'red'],
+    range: ['white', 'red'],
     domainMid: 2,
   })
   const out = resolveWiggleColor(written, 0)
@@ -78,7 +116,7 @@ test('CSS stops build one cached LUT, and domainMid moves the pivot', () => {
 
 test('one CSS stop is the inline fade to that colour', () => {
   const out = resolveWiggleColor(
-    color({ field: 'score', scale: 'linear', ramp: ['red'] }),
+    color({ field: 'score', scale: 'linear', range: ['red'] }),
     0,
   )
   expect(out.rampLut).toBeNull()

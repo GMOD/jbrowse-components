@@ -147,8 +147,9 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
         color: {
           field: 'score',
           scale: 'log',
-          domain: [1, 1000],
-          ramp: ['white', 'red'],
+          domainMin: 1,
+          domainMax: 1000,
+          range: ['white', 'red'],
         },
       },
     },
@@ -364,7 +365,12 @@ test('a pinned ramp domain is every region s, whatever they hold', () => {
       shape: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'score', scale: 'linear', domain: [0, 100] },
+        color: {
+          field: 'score',
+          scale: 'linear',
+          domainMin: 0,
+          domainMax: 100,
+        },
       },
     },
   ])
@@ -589,7 +595,7 @@ test('an encoding channel refuses a key it does not declare', () => {
       { shape: 'span', encoding: { color: { colour: 'strand' } } },
     ]).createDisplay(),
   ).toThrow(
-    'MarkColor takes value, field, scale, domain, palette, ramp and domainMid, not colour',
+    'MarkColor takes value, field, scale, domain, domainMin, domainMax, range, scheme, reverse and domainMid, not colour',
   )
   expect(() =>
     createTestEnvironment([
@@ -616,6 +622,41 @@ test('an encoding channel refuses a key it does not declare', () => {
   ).toThrow('ValueScaleRule takes value, color and label, not colour')
 })
 
+// Each of these loaded and painted something else: a scheme name inside a
+// list of colour stops painted the invalid-colour sentinel, and a glyph range
+// or value naming no glyph drew a disc under a key saying otherwise, or made
+// the worker throw for every mark.
+test.each([
+  [
+    { field: 'score', scale: 'linear', range: ['magma'] },
+    undefined,
+    '"magma" is not a color',
+  ],
+  [
+    { field: 'score', scale: 'linear', scheme: 'magma' },
+    undefined,
+    '(ColorScheme | undefined)',
+  ],
+  [undefined, { field: 'svtype', range: ['star', 'triangle'] }, '"star"'],
+  [undefined, 'triangl', '"triangl"'],
+])(
+  'a colour %j or glyph %j naming nothing the display paints fails the load',
+  (color, glyph, message) => {
+    expect(() =>
+      createTestEnvironment([
+        {
+          shape: 'point',
+          encoding: {
+            y: 'score',
+            ...(color ? { color } : {}),
+            ...(glyph ? { glyph } : {}),
+          },
+        },
+      ]).createDisplay(),
+    ).toThrow(message)
+  },
+)
+
 // A span's ramp resolves in the worker (ADR-113), one table per region, under
 // a legend that unions their extents.
 test('a span painting an unpinned colour ramp says its colours differ by region, and a pinned one says nothing', () => {
@@ -623,11 +664,13 @@ test('a span painting an unpinned colour ramp says its colours differ by region,
     noticesOf([
       {
         shape: 'span',
-        encoding: { color: { field: 'score', ramp: ['white', 'red'] } },
+        encoding: {
+          color: { field: 'score', scale: 'linear', range: ['white', 'red'] },
+        },
       },
     ]),
   ).toEqual([
-    expect.stringMatching(/^mark 0 encoding.color.domain: a span's ramp/),
+    expect.stringMatching(/^mark 0 encoding.color.domainMin: a span's ramp/),
   ])
   expect(
     noticesOf([
@@ -637,8 +680,9 @@ test('a span painting an unpinned colour ramp says its colours differ by region,
           color: {
             field: 'score',
             scale: 'log',
-            domain: [1, 1000],
-            ramp: ['white', 'red'],
+            domainMin: 1,
+            domainMax: 1000,
+            range: ['white', 'red'],
           },
         },
       },
@@ -715,22 +759,31 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
   ).toThrow(/MarkAggregateOp takes .* not fields/)
 })
 
-// An open end used to read as 0 through `Number`, and then refused the load.
-test('a colour ramp domain with an open end autoscales and says it is not read as written', () => {
+// A ramp spelled with the pair `domain` used to be how its ends were pinned,
+// so a config written that way loads, paints over each region's extremes, and
+// says the domain is not what a ramp reads.
+test('a colour ramp pins the end it names, and a domain beside it is named as unread', () => {
   const { display } = createTestEnvironment([
     {
       shape: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'score', scale: 'linear', domain: ['0', ''] },
+        color: {
+          field: 'score',
+          scale: 'linear',
+          domainMin: 0,
+          domain: ['0', '10'],
+        },
       },
     },
   ]).createDisplay()
   expect(display.notices).toEqual([
-    expect.stringMatching(/^mark 0 encoding.color.domain: a ramp is pinned by/),
+    expect.stringMatching(
+      /^mark 0 encoding.color.domain: a linear or log scale reads its ends from domainMin and domainMax/,
+    ),
   ])
   expect(display.encodings[0]!.color).toMatchObject({
-    domainMin: undefined,
+    domainMin: 0,
     domainMax: undefined,
   })
 })
@@ -1053,7 +1106,7 @@ test('the legend reads the scale table the worker resolved', () => {
 
 // Two marks over one field through one declaration paint a value alike, so
 // two keys listing the same rows said it twice.
-test('two marks colouring by one field through one palette share a key', () => {
+test('two marks colouring by one field through one range share a key', () => {
   const strandTable = (
     entries: { value: string; color: number }[],
     range?: string[],
@@ -1899,8 +1952,8 @@ test('a declared list the dialog cannot read counts as what a save replaces', ()
 })
 
 // The dialog writes a colour object it did not author every member of, so a
-// reopen and save has to hand the declared palette and order back.
-test('a reopened plot keeps the colour domain, palette and ramp it was declared with', () => {
+// reopen and save has to hand the declared range and order back.
+test('a reopened plot keeps the colour domain and range it was declared with', () => {
   const { createDisplay } = createTestEnvironment([
     {
       shape: 'bar',
@@ -1910,7 +1963,7 @@ test('a reopened plot keeps the colour domain, palette and ramp it was declared 
           field: 'repClass',
           scale: 'categorical',
           domain: ['Alu', 'L1'],
-          palette: ['red', 'blue'],
+          range: ['red', 'blue'],
         },
       },
     },
@@ -1920,10 +1973,12 @@ test('a reopened plot keeps the colour domain, palette and ramp it was declared 
   display.setPlotMarks(display.plotSpec)
   const { color } = display.conf.marks[0]!.encoding
   expect([...color.domain]).toEqual(['Alu', 'L1'])
-  expect([...color.palette]).toEqual(['red', 'blue'])
+  expect([...color.range]).toEqual(['red', 'blue'])
 })
 
-test('a color or glyph naming a field and no scale reads it categorically, or through a ramp as linear', () => {
+// Categorical whatever else is written: a range beside an unset scale used to
+// make it linear, so emptying the range in the editor flipped the scale.
+test('a color or glyph naming a field and no scale reads it categorically, a range beside it or not', () => {
   const { createDisplay } = createTestEnvironment([
     {
       shape: 'point',
@@ -1937,7 +1992,7 @@ test('a color or glyph naming a field and no scale reads it categorically, or th
       shape: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'score', ramp: ['white', 'red'] },
+        color: { field: 'score', range: ['white', 'red'] },
       },
     },
   ])
@@ -1952,6 +2007,7 @@ test('a color or glyph naming a field and no scale reads it categorically, or th
   })
   expect(display.encodings[1]!.color).toMatchObject({
     field: 'score',
-    scale: 'linear',
+    scale: 'categorical',
+    range: ['white', 'red'],
   })
 })

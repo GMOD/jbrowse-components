@@ -382,30 +382,39 @@ describe('alignments colorBy', () => {
     expect(display.colorSetting.value).toBe('rgb(0, 0, 255)')
   })
 
-  it('a scheme pick writes the field and keeps a declared palette for the way back', () => {
+  it('a scheme pick writes the field and keeps a declared range for the way back', () => {
     const { display } = createDisplay({
-      color: { field: 'tags.HP', palette: ['red', 'blue'] },
+      color: { field: 'tags.HP', range: ['red', 'blue'] },
     })
     display.setColorBy({ type: 'normal' })
     expect(display.colorBy).toEqual({ type: 'normal' })
     expect(display.colorSetting.field).toBe('tags.HP')
     display.setColorBy({ type: 'tag', tag: 'HP' })
-    expect(display.colorSetting.palette).toEqual(['red', 'blue'])
+    expect(display.colorSetting.range).toEqual(['red', 'blue'])
     display.setColorBy({ type: 'strand' })
-    expect(display.colorSetting).toMatchObject({ field: 'strand', palette: [] })
+    expect(display.colorSetting).toMatchObject({ field: 'strand', range: [] })
   })
 
-  it.each([
-    { field: 'tags.NM', scale: 'linear', ramp: ['#ffffff', '#000000'] },
-    { field: 'tags.NM', scale: 'linear' },
-    { field: 'tags.NM', ramp: ['#ffffff', '#000000'] },
-  ])('Normal and back keeps the linear ramp of %j', color => {
+  // `none` and a declared kind share the one `scale` slot (ADR-151), so the
+  // way back keeps every member the kind reads but not the kind itself.
+  it('Normal and back keeps the field, range and ends of a linear tag', () => {
+    const color = {
+      field: 'tags.NM',
+      scale: 'linear',
+      range: ['#ffffff', '#000000'],
+      domainMin: 0,
+    }
     const { display } = createDisplay({ color })
     expect(display.bakedColorScale?.kind).toBe('linear')
     display.setColorBy({ type: 'normal' })
     expect(display.bakedColorScale).toBeUndefined()
     display.setColorBy({ type: 'tag', tag: 'NM' })
-    expect(display.bakedColorScale?.kind).toBe('linear')
+    expect(display.colorSetting).toMatchObject({
+      field: 'tags.NM',
+      scale: undefined,
+      range: ['#ffffff', '#000000'],
+      domainMin: 0,
+    })
   })
 
   it('leaving pairs and coming back keeps a pinned insert-size band', () => {

@@ -904,7 +904,7 @@ describe('color key', () => {
         value: undefined,
         field: 'biotype',
         domain: ['lncRNA'],
-        palette: ['#123456'],
+        range: ['#123456'],
       },
     })
     expect(result.colorKey).toEqual({

@@ -69,7 +69,7 @@ test('features from more than one source name source as the facet field', () => 
   ])
 })
 
-test('a colour field takes a palette or a ramp by what it holds', () => {
+test('a colour field takes a categorical or a linear scale by what it holds', () => {
   const fields = { numeric: ['score', 'depth'], categorical: ['repClass'] }
   expect(
     plotMarks(
@@ -157,8 +157,9 @@ test('a reopened colour carries the members the dialog does not ask about', () =
   const color = {
     field: 'depth',
     scale: 'linear' as const,
-    domain: ['-2', '6'],
-    ramp: ['blue', 'white', 'red'],
+    domainMin: -2,
+    domainMax: 6,
+    range: ['blue', 'white', 'red'],
     domainMid: 0,
   }
   const spec = specOf([{ shape: 'bar', encoding: { y: 'score', color } }])!

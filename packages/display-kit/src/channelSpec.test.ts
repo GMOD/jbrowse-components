@@ -25,37 +25,44 @@ test('a string facet is a field, and a string color is a constant', () => {
   })
 })
 
-test('a color object is the field with its order and palette, and a lifted constant reads back as the string', () => {
+test('a color object is the field with its order and range, and a lifted constant reads back as the string', () => {
   expect(
     parse({
-      color: { field: 'strand', domain: [-1, 1], palette: ['blue', 'red'] },
+      color: { field: 'strand', domain: [-1, 1], range: ['blue', 'red'] },
     }),
   ).toEqual({
-    color: { field: 'strand', domain: ['-1', '1'], palette: ['blue', 'red'] },
+    color: { field: 'strand', domain: ['-1', '1'], range: ['blue', 'red'] },
   })
   expect(parse({ color: { value: 'red' } })).toEqual({ color: 'red' })
 })
 
-test('a color object carries its scale, ramp and domainMid through', () => {
+test('a color object carries the members of a continuous scale through', () => {
   expect(
     parse({
       color: {
         field: 'score',
         scale: 'linear',
-        domain: [0, 10],
-        ramp: ['blue', 'white', 'red'],
+        domainMin: 0,
+        domainMax: 10,
         domainMid: 2,
+        range: ['blue', 'white', 'red'],
+        reverse: true,
       },
     }),
   ).toEqual({
     color: {
       field: 'score',
       scale: 'linear',
-      domain: ['0', '10'],
-      ramp: ['blue', 'white', 'red'],
+      domainMin: 0,
+      domainMax: 10,
       domainMid: 2,
+      range: ['blue', 'white', 'red'],
+      reverse: true,
     },
   })
+  expect(
+    parse({ color: { field: 'score', scale: 'log', scheme: 'viridis' } }),
+  ).toEqual({ color: { field: 'score', scale: 'log', scheme: 'viridis' } })
 })
 
 test('a channel left out stays out, and null is kept to clear one', () => {
@@ -92,15 +99,23 @@ test.each([
   [{ color: '' }, 'color is a CSS color'],
   [{ color: { field: 'x', scale: 'none' } }, 'color is a CSS color'],
   [
-    { color: { field: 'x', stops: ['red'] } },
-    'color takes value, field, scale, domain, palette, ramp, domainMid, not stops',
+    { color: { field: 'x', palette: ['red'] } },
+    'color takes value, field, scale, domain, range, scheme, reverse, domainMin, domainMax, domainMid, not palette',
   ],
   [
     { color: { field: 'x', scale: 'linear', domainMid: 'mid' } },
-    'domainMid is a number',
+    'color.domainMid is a number',
   ],
-  [{ color: { field: 'x', palette: 'red' } }, 'color.palette is a list'],
-  [{ color: { palette: ['red'] } }, 'color is a CSS color'],
+  [
+    { color: { field: 'x', scale: 'linear', domainMin: 'low' } },
+    'color.domainMin is a number',
+  ],
+  [
+    { color: { field: 'x', scale: 'linear', reverse: 'yes' } },
+    'color.reverse is true or false',
+  ],
+  [{ color: { field: 'x', range: 'red' } }, 'color.range is a list'],
+  [{ color: { range: ['red'] } }, 'color is a CSS color'],
   [{ filter: [1] }, 'filter is a jexl expression'],
 ])('%j is refused: %s', (spec, message) => {
   expect(() => parse(spec)).toThrow(message)
@@ -128,15 +143,28 @@ test('changes are what differs from the current channels', () => {
   ).toEqual({ sets: ['color'], clears: ['filter'] })
 })
 
-test('a scale the display does not paint is a problem, and a ramp needs one', () => {
+test('a scale the display does not paint is a problem, and so is a member it does not declare', () => {
+  const members = ['value', 'field', 'scale', 'domain', 'range']
   const threshold = parse({ color: { field: 'score', scale: 'threshold' } })
-  expect(colorSpecProblems(threshold, ['categorical', 'threshold'])).toEqual([])
-  expect(colorSpecProblems(threshold, ['categorical'])).toEqual([
-    'color: this display paints categorical, not threshold',
+  expect(
+    colorSpecProblems(threshold, {
+      scales: ['categorical', 'threshold'],
+      members,
+    }),
+  ).toEqual([])
+  expect(
+    colorSpecProblems(threshold, { scales: ['categorical'], members }),
+  ).toEqual(['color: this display paints categorical, not threshold'])
+  const ramped = parse({ color: { field: 'score', scheme: 'viridis' } })
+  expect(
+    colorSpecProblems(ramped, { scales: ['categorical'], members }),
+  ).toEqual([
+    'color: this display takes value, field, scale, domain, range, not scheme',
   ])
-  const ramped = parse({ color: { field: 'score', ramp: ['viridis'] } })
-  expect(colorSpecProblems(ramped, ['categorical'])).toEqual([
-    'color: this display has no ramp scale to read a ramp through',
-  ])
-  expect(colorSpecProblems(ramped, ['categorical', 'linear'])).toEqual([])
+  expect(
+    colorSpecProblems(ramped, {
+      scales: ['categorical', 'linear'],
+      members: [...members, 'scheme'],
+    }),
+  ).toEqual([])
 })

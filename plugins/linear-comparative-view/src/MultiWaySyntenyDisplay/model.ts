@@ -719,7 +719,7 @@ export function stateModelFactory(
             field: getConf(self, ['color', 'field']),
             scale: getConf(self, ['color', 'scale']),
             domain: getConf(self, ['color', 'domain']),
-            palette: getConf(self, ['color', 'palette']),
+            range: getConf(self, ['color', 'range']),
           },
           utrColor: self.configuration.utrColor,
         }
@@ -1720,7 +1720,7 @@ export function stateModelFactory(
       /**
        * #action
        * paint the genes by `field`, or by `color.value` for `''`, keeping the
-       * value, and the field's order and palette while it is the field
+       * value, and the field's order and range while it is the field
        * already named, for the way back
        */
       setGeneColorBy(field: string) {
@@ -1728,11 +1728,11 @@ export function stateModelFactory(
           value,
           field: current,
           domain,
-          palette,
+          range,
         } = self.geneColorSettings.color
         const kept =
           field === '' || field === current
-            ? { domain: [...domain], palette: [...palette] }
+            ? { domain: [...domain], range: [...range] }
             : {}
         setConf(self, 'color', {
           ...(value === undefined ? {} : { value }),
@@ -1744,15 +1744,15 @@ export function stateModelFactory(
       /**
        * #action
        * `pinnedGeneColorDomain` into `color.domain`, so every value the gene
-       * key lists spends its own palette color
+       * key lists spends its own range color
        */
       pinGeneColorDomain() {
-        const { value, field, palette } = self.geneColorSettings.color
+        const { value, field, range } = self.geneColorSettings.color
         setConf(self, 'color', {
           ...(value === undefined ? {} : { value }),
           field,
           domain: self.pinnedGeneColorDomain,
-          palette: [...palette],
+          range: [...range],
         })
       },
     }))

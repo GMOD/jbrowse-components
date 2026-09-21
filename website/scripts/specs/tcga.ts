@@ -92,7 +92,7 @@ const TCGA_BRCA_RECURRENCE_TRACK = {
       color: {
         field: 'score',
         scale: 'threshold',
-        palette: ['#2166ac', '#b2182b'],
+        range: ['#2166ac', '#b2182b'],
       },
       scales: { y: { domainMin: -100, domainMax: 100 } },
     },
@@ -197,7 +197,7 @@ const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = {
       color: {
         field: 'score',
         scale: 'threshold',
-        palette: ['#2166ac', '#b2182b'],
+        range: ['#2166ac', '#b2182b'],
       },
       scales: { y: { domainMin: -70, domainMax: 70 } },
       // eight rows of one signed direction each, so the boundary between a

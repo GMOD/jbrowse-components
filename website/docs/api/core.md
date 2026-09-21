@@ -445,6 +445,20 @@ encoding `row` stacks it. Under a facet it packs each section on its own.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## rampDomain
+
+The domain a continuous colour scale spans: each end `min` or `max` pins,
+else the extent's, ascending, since a span has no direction and `reverse`
+is the ramp's. An open end stops at a pinned one rather than crossing it,
+and an extent holding no value (`[Infinity, -Infinity]`) spans [0, 1].
+
+```js
+// type signature
+(min: number | undefined, max: number | undefined, extent: readonly [number, number]) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
 ## rampOverExtent
 
 A ramp table over `extent`, the union a display took across the regions it

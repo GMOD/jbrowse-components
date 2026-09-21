@@ -255,23 +255,46 @@ test('threshold cuts written high to low are told which way they are read', () =
   ])
 })
 
-test('a ramp domain is a pinned pair, and a span wants one', () => {
-  const ramp = (shape: string, domain: unknown[]) => [
+test('a ramp reads its ends, not a domain, and a span wants both ends pinned', () => {
+  const ramp = (shape: string, color: Record<string, unknown>) => [
     {
       shape,
       encoding: {
         ...(shape === 'span' ? {} : { y: 'score' }),
-        color: { field: 'score', ramp: ['white', 'red'], domain },
+        color: { field: 'score', scale: 'linear', ...color },
       },
     },
   ]
-  expect(found(ramp('bar', [0, 10]))).toEqual([])
-  expect(found(ramp('bar', [0]))).toEqual([
-    'warning open-ramp-domain mark 0 encoding.color.domain',
+  expect(found(ramp('bar', { domainMin: 0, domainMax: 10 }))).toEqual([])
+  expect(found(ramp('bar', { domainMin: 0 }))).toEqual([])
+  expect(found(ramp('bar', { domain: ['0', '10'] }))).toEqual([
+    'warning ramp-domain mark 0 encoding.color.domain',
   ])
-  expect(found(ramp('span', []))).toEqual([
-    'warning unpinned-span-ramp mark 0 encoding.color.domain',
+  expect(found(ramp('bar', { domainMin: 10, domainMax: 0 }))).toEqual([
+    'warning ramp-ends mark 0 encoding.color.domainMax',
   ])
+  expect(found(ramp('span', { domainMin: 0 }))).toEqual([
+    'warning unpinned-span-ramp mark 0 encoding.color.domainMax',
+  ])
+  expect(found(ramp('span', {}))).toEqual([
+    'warning unpinned-span-ramp mark 0 encoding.color.domainMin',
+  ])
+  expect(found(ramp('span', { domainMin: 0, domainMax: 10 }))).toEqual([])
+})
+
+// A written range used to make an unset scale linear, so emptying it in the
+// editor flipped the key to categorical with no message.
+test('a range under an unset scale is categorical, whatever it lists', () => {
+  const marks = [
+    {
+      shape: 'bar',
+      encoding: {
+        y: 'score',
+        color: { field: 'score', range: ['white', 'red'], domain: ['0'] },
+      },
+    },
+  ]
+  expect(found(marks)).toEqual([])
 })
 
 test('a zoom range that admits no zoom never draws', () => {

@@ -22,6 +22,7 @@ function setup({
     ],
     channelSpecProblems: jest.fn(() => problems),
     colorScaleChoices: ['categorical'],
+    colorMembers: ['value', 'field', 'scale', 'domain', 'range'],
     applyDisplaySettings: jest.fn(),
     setJexlFilters: jest.fn(),
   }

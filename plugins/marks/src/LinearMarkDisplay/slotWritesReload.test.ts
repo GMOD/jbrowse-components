@@ -27,7 +27,64 @@ const STARTS: Record<string, unknown> = {
     shape: 'span',
     transform: [{ type: 'pileup' }],
     encoding: {
-      color: { field: 'score', domain: [0, 10], ramp: ['white', 'red'] },
+      color: {
+        field: 'score',
+        scale: 'linear',
+        domainMin: 0,
+        domainMax: 10,
+        range: ['white', 'red'],
+      },
+    },
+  },
+  'a constant colour': {
+    shape: 'bar',
+    encoding: { y: 'score', color: 'steelblue' },
+  },
+  'a categorical colour with a range': {
+    shape: 'bar',
+    encoding: {
+      y: 'score',
+      color: { field: 'strand', domain: ['1'], range: ['red', 'blue'] },
+    },
+  },
+  'an open-ended ramp': {
+    shape: 'bar',
+    encoding: {
+      y: 'score',
+      color: { field: 'score', scale: 'linear', domainMin: 0 },
+    },
+  },
+  'a diverging ramp': {
+    shape: 'bar',
+    encoding: {
+      y: 'score',
+      color: {
+        field: 'score',
+        scale: 'linear',
+        domainMin: -2,
+        domainMax: 6,
+        domainMid: 0,
+        range: ['blue', 'white', 'red'],
+      },
+    },
+  },
+  'a threshold': {
+    shape: 'point',
+    encoding: {
+      y: 'score',
+      color: {
+        field: 'pip',
+        scale: 'threshold',
+        domain: [0.1, 0.5],
+        range: ['#357ebd', '#eea236', '#d43f3a'],
+      },
+    },
+  },
+  'a reversed scheme': {
+    shape: 'bar',
+    encoding: {
+      y: 'score',
+      color: { field: 'score', scale: 'log', scheme: 'viridis', reverse: true },
     },
   },
   'a density bar': {
@@ -48,12 +105,19 @@ const STARTS: Record<string, unknown> = {
 function samples(def: Parameters<typeof slotChoices>[0]): unknown[] {
   const maybe = def.type.startsWith('maybe') ? [undefined] : []
   const choices = slotChoices(def)
+  if (choices && def.type === 'stringEnumArray') {
+    return [[], choices.slice(0, 1), choices]
+  }
   if (choices) {
     return [...maybe, ...choices]
   }
   switch (def.type) {
     case 'stringArray':
       return [[], ['10'], ['10', '20', '30']]
+    case 'colorArray':
+      return [[], ['red'], ['white', 'red']]
+    case 'maybeNumber':
+      return [undefined, 0, 5]
     case 'color':
       return ['red']
     case 'string':

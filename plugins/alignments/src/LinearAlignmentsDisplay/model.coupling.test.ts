@@ -1146,7 +1146,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const beforeLayout = display.laidOutByGroupUncolored
     const before = region0(display)
 
-    display.setColor({ field: 'tags.HP', palette: ['#ff0000'] })
+    display.setColor({ field: 'tags.HP', range: ['#ff0000'] })
 
     const after = region0(display)
     // Layout memoized across the recolor…
@@ -1172,11 +1172,11 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     expect(region0(display).readYs).toBe(before.readYs)
   })
 
-  test('a declared palette is a recolor and not a refetch', () => {
+  test('a declared range is a recolor and not a refetch', () => {
     const display = displayWithOneRead()
     const before = display.rpcProps()
 
-    display.setColor({ field: 'tags.HP', palette: ['#ff0000'] })
+    display.setColor({ field: 'tags.HP', range: ['#ff0000'] })
 
     expect(display.rpcProps()).toStrictEqual(before)
   })

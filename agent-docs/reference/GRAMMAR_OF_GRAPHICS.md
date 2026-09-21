@@ -227,17 +227,22 @@ The seams, named honestly:
   say will look like this.
 - **The colour objects are one shape, and a preset is a field.** FeatureColor,
   ManhattanColor, RibbonColor, MarkColor and AlignmentsColor are each
-  `{ value, field, scale, domain, palette, ramp }` from one display-kit factory
-  (`colorChannelSlots`), `scale` drawn from
+  `{ value, field, scale, domain, domainMin, domainMax, domainMid, range,
+  scheme, reverse }`, spelt as Vega-Lite spells a scale and as `scales.y`
+  already did, from display-kit's pieces (`colorChannelSlots`,
+  `colorDomainSlot`, `colorRangeSlot`, `colorRampSlots`,
+  `colorDomainEndsSlots`), `scale` drawn from
   `none | categorical | linear | log | threshold`
   with each display declaring the members it paints; `none` is ggplot2's
   set-versus-map distinction (a parameter beside `aes()` creates no scale),
-  and a field left without a scale takes the kind the declaration implies
-  rather than one read off the data: `markColorScale` answers `linear` where a
-  `ramp` is written and `categorical` where none is, and Manhattan answers
-  `threshold` over `field: 'ld'` and `categorical` over anything else.
-  `threshold` is ggplot2's `scale_colour_steps`: ascending cut points in
-  `domain` and one palette entry more, so a value takes the bin it falls in
+  and a field left without a scale takes the kind its display declares for the
+  field (`paintedScale`), never one read off the data or off which other
+  member is written: the mark display answers `categorical`, and Manhattan
+  answers `threshold` over `field: 'ld'` and `categorical` over anything else.
+  `range` is one output word for every kind, a palette, a threshold's colours
+  or a ramp's stops, and `scheme` a named ramp from one table every baker
+  reads. `threshold` is ggplot2's `scale_colour_steps`: ascending cut points in
+  `domain` and one `range` colour more, so a value takes the bin it falls in
   (`thresholdIndex`, `@jbrowse/core/util/thresholdScale`).
   The ribbon's `strand`, `identity`,
   `mappingQual` and `dnds` are fields with a vocabulary or ramp of their own,
@@ -262,7 +267,7 @@ The seams, named honestly:
   categorical variable per read — `insertSizeAndOrientation` a `case_when` with
   the mate and split overrides as further levels — and both backends index one
   table by its level, which is how GenomeSpy resolves a categorical colour. A
-  declared `domain`, `palette`, `linear` ramp or `threshold` evaluates where the
+  declared `domain`, `range`, `linear` ramp or `threshold` evaluates where the
   tag colours already bake, once per read after layout, so it costs no fetch,
   no layout and no per-frame work. The mismatch and modification marks stay
   tables too: a key into a colour table (the base byte; the modification's type
@@ -401,7 +406,7 @@ and every derived key construct one, so a value keys, orders, names and paints
 the same way wherever it is read. A field with a vocabulary of its own carries
 it there as data: `strand` files a missing strand as `0`, orders forward,
 reverse, unstranded, names each and paints red, blue and goldenrod, each
-yielding to a declared `domain` or `palette`. Only a facet on another field has
+yielding to a declared `domain` or `range`. Only a facet on another field has
 the canvas worker stamp a key on each feature, so a strand facet never
 refetches. The canvas worker paints a part in its transcript's value (the
 emitter passes the level) and records each key it painted with the section its

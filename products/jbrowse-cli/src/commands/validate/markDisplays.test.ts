@@ -259,7 +259,7 @@ describe('a marks list in a config file', () => {
     ])
   })
 
-  it('reads threshold cuts and a ramp domain written as numbers or as strings', () => {
+  it('reads threshold cuts written as numbers or as strings, and the ends of a ramp', () => {
     const colored = (shape: string, color: Record<string, unknown>) => [
       {
         shape,
@@ -273,13 +273,20 @@ describe('a marks list in a config file', () => {
     expect(cuts(['0.1', '0.5'])).toEqual([])
     expect(cuts([0.5, 0.1])).toEqual([`warning threshold-cuts ${domain}`])
     expect(cuts(['low', 'high'])).toEqual([`warning threshold-cuts ${domain}`])
-    const ramp = { field: 'score', ramp: ['white', 'red'] }
-    expect(found(colored('bar', { ...ramp, domain: [0, 10] }))).toEqual([])
-    expect(found(colored('bar', { ...ramp, domain: [0] }))).toEqual([
-      `warning open-ramp-domain ${domain}`,
+    const ramp = { field: 'score', scale: 'linear', range: ['white', 'red'] }
+    const color = `${DISPLAY}.marks[0].encoding.color`
+    expect(
+      found(colored('bar', { ...ramp, domainMin: 0, domainMax: 10 })),
+    ).toEqual([])
+    expect(found(colored('bar', { ...ramp, domainMin: 0 }))).toEqual([])
+    expect(found(colored('bar', { ...ramp, domain: [0, 10] }))).toEqual([
+      `warning ramp-domain ${domain}`,
     ])
+    expect(
+      found(colored('bar', { ...ramp, domainMin: 10, domainMax: 0 })),
+    ).toEqual([`warning ramp-ends ${color}.domainMax`])
     expect(found(colored('span', ramp))).toEqual([
-      `warning unpinned-span-ramp ${domain}`,
+      `warning unpinned-span-ramp ${color}.domainMin`,
     ])
     expect(found(colored('span', { value: 'red' }))).toEqual([])
     expect(found([{ shape: 'span', encoding: { color: 'red' } }])).toEqual([])

@@ -71,7 +71,6 @@ import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
 import {
   BASE_COLOR_FIELDS,
-  bakedScaleOf,
   colorSnapshotFor,
   isBakedScheme,
 } from '../shared/alignmentsColor.ts'
@@ -97,7 +96,6 @@ import { getColorForModification } from '../util.ts'
 import {
   bakedColorScale,
   numericExtentAcrossGroups,
-  pinnedLinearDomain,
 } from './bakedColorScale.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -1607,16 +1605,16 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The span of a linear colour field over the loaded reads, which an
-           * unpinned ramp stretches across. Undefined while `domain` pins the
-           * ramp or another scale paints, so a region arriving rebakes nothing
-           * then.
+           * The span of a linear colour field over the loaded reads, which a
+           * ramp's open ends stretch across. Undefined while `domainMin` and
+           * `domainMax` both pin the ramp or another scale paints, so a region
+           * arriving rebakes nothing then.
            */
           get bakedColorExtent(): NumericExtent | undefined {
-            const setting = self.colorSetting
+            const { scale, domainMin, domainMax } = self.colorSetting
             return self.colorBy.type === 'tag' &&
-              bakedScaleOf(setting) === 'linear' &&
-              !pinnedLinearDomain(setting.domain)
+              scale === 'linear' &&
+              (domainMin === undefined || domainMax === undefined)
               ? numericExtentAcrossGroups(
                   this.laidOutByGroupFramed,
                   d => d.readTagValues,
@@ -3282,7 +3280,7 @@ export default function stateModelFactory(
           /**
            * #action
            * Replace the `color` object whole: `"steelblue"`,
-           * `{ field: 'tags.HP', palette: [...] }`.
+           * `{ field: 'tags.HP', range: [...] }`.
            */
           setColor(color: string | Partial<AlignmentsColorSetting>) {
             setConf(self, 'color', color)

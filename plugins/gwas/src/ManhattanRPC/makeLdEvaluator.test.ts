@@ -6,7 +6,7 @@ import {
 
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 
-const binColor = ldBinColor({ domain: [], palette: [] })
+const binColor = ldBinColor({})
 import { feat, testLd as ld } from './ldTestHelpers.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 

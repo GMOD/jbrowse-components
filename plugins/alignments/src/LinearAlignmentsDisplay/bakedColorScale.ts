@@ -1,24 +1,19 @@
 import { categoricalColorScale } from '@jbrowse/core/ui/colors'
 import { tagColorPalette } from '@jbrowse/core/ui/palette'
-import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
 import {
-  VIRIDIS_STOPS,
   buildColorRampLut,
+  colorRampStops,
+  rampDomain,
   stopsFromRampLut,
 } from '@jbrowse/core/util/colorRamp'
 import {
-  numericDomain,
   thresholdCuts,
   thresholdIndex,
   thresholdLabels,
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
 
-import {
-  DEFAULT_RAMP,
-  bakedScaleOf,
-  isBakedScheme,
-} from '../shared/alignmentsColor.ts'
+import { isBakedScheme } from '../shared/alignmentsColor.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
@@ -63,28 +58,6 @@ export type BakedColorScale =
 
 const LEGEND_RAMP_STOPS = 8
 
-function rampLut({ ramp }: Pick<AlignmentsColorSetting, 'ramp'>, mid: number) {
-  const named =
-    ramp.length === 0 || (ramp.length === 1 && ramp[0] === DEFAULT_RAMP)
-  return buildColorRampLut(
-    named ? VIRIDIS_STOPS : ramp.map(c => cssColorToRgba(c)),
-    mid,
-  )
-}
-
-/** A linear scale's two ends as `domain` pins them, undefined while it does not. */
-export function pinnedLinearDomain(
-  domain: readonly string[],
-): NumericExtent | undefined {
-  const [min, max] = numericDomain(domain)
-  return domain.length === 2 &&
-    min !== undefined &&
-    max !== undefined &&
-    min < max
-    ? [min, max]
-    : undefined
-}
-
 function linearScale(
   setting: AlignmentsColorSetting,
   [min, max]: NumericExtent,
@@ -92,7 +65,10 @@ function linearScale(
   const span = max - min
   const norm = (v: number) => (span > 0 ? (v - min) / span : 0.5)
   const { domainMid } = setting
-  const lut = rampLut(setting, domainMid === undefined ? 0.5 : norm(domainMid))
+  const lut = buildColorRampLut(
+    colorRampStops(setting),
+    domainMid === undefined ? 0.5 : norm(domainMid),
+  )
   const last = lut.length / 4 - 1
   const css = new Map<number, string>()
   return {
@@ -119,10 +95,10 @@ function linearScale(
 
 function thresholdScale({
   domain,
-  palette,
+  range,
 }: AlignmentsColorSetting): ThresholdBakedScale {
   const cuts = thresholdCuts(domain)
-  const colors = thresholdPalette(cuts.length + 1, palette)
+  const colors = thresholdPalette(cuts.length + 1, range)
   const labels = thresholdLabels(cuts)
   return {
     kind: 'threshold',
@@ -136,7 +112,7 @@ function thresholdScale({
 /**
  * The scale the tag, attribute and mate-reference fields bake through. With
  * nothing declared a value's colour is a function of the value alone
- * (`bakedValueColor`); a `domain` or `palette` hands the listed values their
+ * (`bakedValueColor`); a `domain` or `range` hands the listed values their
  * colours in order, over the same tag palette.
  */
 export function bakedColorScale(
@@ -145,22 +121,28 @@ export function bakedColorScale(
   refNamePosition: RefNamePosition | undefined,
   extent: NumericExtent | undefined,
 ): BakedColorScale {
-  const { domain, palette } = setting
-  const scale = bakedScaleOf(setting)
+  const { scale, domain, range } = setting
   if (colorBy.type === 'tag' && scale === 'linear') {
-    return linearScale(setting, pinnedLinearDomain(domain) ?? extent ?? [0, 1])
+    return linearScale(
+      setting,
+      rampDomain(
+        setting.domainMin,
+        setting.domainMax,
+        extent ?? [Infinity, -Infinity],
+      ),
+    )
   }
   if (colorBy.type === 'tag' && scale === 'threshold') {
     return thresholdScale(setting)
   }
-  if (isBakedScheme(colorBy) && (domain.length > 0 || palette.length > 0)) {
+  if (isBakedScheme(colorBy) && (domain.length > 0 || range.length > 0)) {
     return {
       kind: 'categorical',
       declared: true,
       domain,
       color: categoricalColorScale(
         domain,
-        palette.length > 0 ? palette : tagColorPalette,
+        range.length > 0 ? range : tagColorPalette,
       ),
     }
   }

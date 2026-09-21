@@ -273,6 +273,7 @@ export default [
   '@jbrowse/core/util/colorBits',
   '@jbrowse/core/util/colord',
   '@jbrowse/core/util/colorRamp',
+  '@jbrowse/core/util/colorSchemes',
   '@jbrowse/core/util/convertCodingSequenceToPeptides',
   '@jbrowse/core/util/copyText',
   '@jbrowse/core/util/createAbortRotation',

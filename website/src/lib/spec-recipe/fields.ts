@@ -175,11 +175,11 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
     SPECIAL_COLOR_MENUS[colorBy.type] ?? menu.label,
   ].join(' → ')
   const declared =
-    asList(color.domain) ?? asList(color.palette) ?? asString(color.scale)
+    asList(color.domain) ?? asList(color.range) ?? asString(color.scale)
   return {
     path: colorBy.tag ? `${path} → enter tag "${colorBy.tag}"` : path,
     note: declared
-      ? "This figure also declares the colour scale's domain, palette or ramp, which only the config sets."
+      ? "This figure also declares the colour scale's domain, range or scale, which only the config sets."
       : undefined,
   }
 }

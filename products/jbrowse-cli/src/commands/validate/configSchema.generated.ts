@@ -3393,12 +3393,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/CssColorOrJexl"
             },
             "field": {
-              "description": "a feature field, or a jexl expression over feature, whose values each paint one palette colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or palette says otherwise.",
+              "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value of field; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; unset follows field.",
               "anyOf": [
                 {
                   "enum": [
@@ -3412,7 +3412,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "the values that take the palette first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it.",
+              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it.",
               "anyOf": [
                 {
                   "anyOf": [
@@ -3436,9 +3436,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "palette": {
-              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "range": {
+              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end.",
+              "$ref": "#/$defs/CssColorArrayOrJexl"
             }
           },
           "patternProperties": {
@@ -4007,7 +4007,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field, and under a tag or attribute is linear with a ramp and categorical without.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset follows field.",
               "anyOf": [
                 {
                   "enum": [
@@ -4023,7 +4023,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "the values that take the palette first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under linear the ramp's two ends, where the loaded reads otherwise set them.",
+              "description": "the values that take the range first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under threshold the cut points.",
               "anyOf": [
                 {
                   "anyOf": [
@@ -4047,13 +4047,33 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "palette": {
-              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "domainMin": {
+              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "$ref": "#/$defs/NumberOrJexl"
             },
-            "ramp": {
-              "description": "viridis, or two or more CSS colour stops; empty is viridis.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "domainMax": {
+              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "$ref": "#/$defs/NumberOrJexl"
+            },
+            "range": {
+              "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis.",
+              "$ref": "#/$defs/CssColorArrayOrJexl"
+            },
+            "scheme": {
+              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "anyOf": [
+                {
+                  "const": "viridis"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "reverse": {
+              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "$ref": "#/$defs/BooleanOrJexl",
+              "default": false
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
@@ -4725,7 +4745,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "strand"
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field, and under a tag or attribute is linear with a ramp and categorical without.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset follows field.",
               "anyOf": [
                 {
                   "enum": [
@@ -4741,7 +4761,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "the values that take the palette first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under linear the ramp's two ends, where the loaded reads otherwise set them.",
+              "description": "the values that take the range first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under threshold the cut points.",
               "anyOf": [
                 {
                   "anyOf": [
@@ -4765,13 +4785,33 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "palette": {
-              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "domainMin": {
+              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "$ref": "#/$defs/NumberOrJexl"
             },
-            "ramp": {
-              "description": "viridis, or two or more CSS colour stops; empty is viridis.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "domainMax": {
+              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "$ref": "#/$defs/NumberOrJexl"
+            },
+            "range": {
+              "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis.",
+              "$ref": "#/$defs/CssColorArrayOrJexl"
+            },
+            "scheme": {
+              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "anyOf": [
+                {
+                  "const": "viridis"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "reverse": {
+              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "$ref": "#/$defs/BooleanOrJexl",
+              "default": false
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
@@ -6148,7 +6188,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "how field becomes a colour: threshold cuts score at the domain and paints each side; linear and log fade from the colour at the cut out to the ends of the y domain, which is the density picture; categorical hands each source a palette entry; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp, categorical over source and threshold over score.",
+              "description": "how field becomes a colour: threshold cuts score at the domain and paints each side; linear and log fade from the colour at domainMid out to the ends of the y domain, which is the density picture, through range, else scheme, else the two-sided fade; categorical hands each source a range colour; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
               "anyOf": [
                 {
                   "enum": [
@@ -6165,7 +6205,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "for a threshold scale, the one cut point the two sides part at, empty meaning the origin; for a categorical scale over source, the sources that take the palette first, in order.",
+              "description": "for a threshold scale, the one cut point the two sides part at, empty meaning the origin; for a categorical scale over source, the sources that take the range first, in order.",
               "anyOf": [
                 {
                   "anyOf": [
@@ -6189,13 +6229,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "palette": {
-              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "range": {
+              "description": "a threshold scale's colour below the cut and at or above it; a categorical scale's colour per source, continuing into the default palette; a linear or log scale's stops, evenly spaced.",
+              "$ref": "#/$defs/CssColorArrayOrJexl"
             },
-            "ramp": {
-              "description": "viridis, or two or more CSS colour stops; empty is viridis.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "scheme": {
+              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "anyOf": [
+                {
+                  "const": "viridis"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "reverse": {
+              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "$ref": "#/$defs/BooleanOrJexl",
+              "default": false
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
@@ -7258,12 +7310,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "#0068d1"
             },
             "field": {
-              "description": "the feature field whose values each take a palette colour, with a key listing the values met: name, refName, a BED extra column, a GFF attribute; ld is each point's r² to the index SNP, read from the GWASAdapter's ldAdapter.",
+              "description": "the feature field whose values each take a range colour, with a key listing the values met: name, refName, a BED extra column, a GFF attribute; ld is each point's r² to the index SNP, read from the GWASAdapter's ldAdapter.",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value of field; threshold a palette colour per interval between the cut points domain lists; unset follows field, and is threshold over ld and categorical over anything else.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points domain lists; unset follows field, and is threshold over ld and categorical over anything else.",
               "anyOf": [
                 {
                   "enum": [
@@ -7278,7 +7330,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "under a categorical scale, the field's values that take the palette first, in order, in the key as on the points, the rest following sorted, each on a colour no listed value paints; under a threshold scale, the cut points in ascending order, palette taking one entry more than this, one per interval; r² to the index SNP cuts at 0.2, 0.4, 0.6 and 0.8 into the LocusZoom blue-through-red bins unless these say otherwise.",
+              "description": "under a categorical scale, the field's values that take the range first, in order, in the key as on the points, the rest following sorted, each on a colour no listed value paints; under a threshold scale, the cut points in ascending order, range taking one entry more than this, one per interval; r² to the index SNP cuts at 0.2, 0.4, 0.6 and 0.8 into the LocusZoom blue-through-red bins unless these say otherwise.",
               "anyOf": [
                 {
                   "anyOf": [
@@ -7302,9 +7354,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "palette": {
-              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "range": {
+              "description": "CSS colours a categorical scale hands its domain in order, continuing into the default palette past its end, or a threshold scale hands its intervals, lowest first.",
+              "$ref": "#/$defs/CssColorArrayOrJexl"
             }
           },
           "patternProperties": {
@@ -7452,7 +7504,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "how field becomes a colour: categorical hands out palette entries per distinct value; linear and log read the value through domain into ramp; threshold cuts the value at the domain and hands each interval a palette entry; none paints value, keeping a field for a switch back; unset beside a field, it is linear with a ramp and categorical without.",
+              "description": "how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset beside a field, it is categorical.",
               "anyOf": [
                 {
                   "enum": [
@@ -7469,7 +7521,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "for a categorical scale, the values in legend order, walking the palette from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a linear or log scale, the [min, max] the ramp spans, empty using each region's own extremes; for a threshold scale, the cut points in ascending order, a value taking the palette entry for the number of them it is at or past, so palette has one entry more than this.",
+              "description": "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
               "anyOf": [
                 {
                   "anyOf": [
@@ -7493,13 +7545,33 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "palette": {
-              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "domainMin": {
+              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "$ref": "#/$defs/NumberOrJexl"
             },
-            "ramp": {
-              "description": "viridis, or two or more CSS colour stops; empty is viridis.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+            "domainMax": {
+              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "$ref": "#/$defs/NumberOrJexl"
+            },
+            "range": {
+              "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
+              "$ref": "#/$defs/CssColorArrayOrJexl"
+            },
+            "scheme": {
+              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "anyOf": [
+                {
+                  "const": "viridis"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
+            },
+            "reverse": {
+              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "$ref": "#/$defs/BooleanOrJexl",
+              "default": false
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
@@ -7526,7 +7598,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "disc, triangle, diamond or jexl callback.",
-              "$ref": "#/$defs/StringOrJexl",
+              "anyOf": [
+                {
+                  "enum": [
+                    "disc",
+                    "triangle",
+                    "diamond"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
               "default": "disc"
             },
             "field": {
@@ -7550,7 +7633,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "range": {
               "description": "glyph names, in order.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "disc",
+                      "triangle",
+                      "diamond"
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             },
             "domain": {
               "description": "category order.",

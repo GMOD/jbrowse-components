@@ -18,8 +18,11 @@ const UNSET: AlignmentsColorSetting = {
   field: '',
   scale: undefined,
   domain: [],
-  palette: [],
-  ramp: [],
+  range: [],
+  scheme: undefined,
+  reverse: false,
+  domainMin: undefined,
+  domainMax: undefined,
   domainMid: undefined,
 }
 
@@ -104,7 +107,7 @@ describe('colorSnapshotFor', () => {
     ...UNSET,
     field: 'tags.HP',
     domain: ['1', '2'],
-    palette: ['red', 'blue'],
+    range: ['red', 'blue'],
   }
   const tagHP: ColorBy = { type: 'tag', tag: 'HP' }
 
@@ -115,11 +118,11 @@ describe('colorSnapshotFor', () => {
       domain: ['1', '2'],
     })
     const back = colorSnapshotFor(tagHP, { ...hp, scale: 'none' })
-    expect(back).toMatchObject({ field: 'tags.HP', palette: ['red', 'blue'] })
+    expect(back).toMatchObject({ field: 'tags.HP', range: ['red', 'blue'] })
     expect(back.scale).toBeUndefined()
   })
 
-  test('a new field starts from no order or palette and keeps the constant', () => {
+  test('a new field starts from no order or range and keeps the constant', () => {
     expect(
       colorSnapshotFor({ type: 'strand' }, { ...hp, value: 'grey' }),
     ).toEqual({ value: 'grey', field: 'strand' })

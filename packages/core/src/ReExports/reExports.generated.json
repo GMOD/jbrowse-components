@@ -2647,8 +2647,16 @@
         "VIRIDIS_STOPS",
         "buildColorRampLut",
         "colorRampStops",
+        "rampDomain",
         "sampleColorRamp",
         "stopsFromRampLut"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/colorSchemes": {
+      "package": "@jbrowse/core",
+      "names": [
+        "COLOR_SCHEMES"
       ],
       "worker": "real"
     },
@@ -3651,6 +3659,7 @@
       "names": [
         "CHANNELS",
         "channelSpecChanges",
+        "colorSpecOf",
         "colorSpecProblems",
         "parseChannelSpec"
       ],
@@ -3718,8 +3727,12 @@
         "colorChannelOptions",
         "colorChannelSlots",
         "colorConfigSchema",
-        "colorPaletteSlot",
-        "colorRampSlot",
+        "colorDomainEndsSlots",
+        "colorDomainSlot",
+        "colorEncodingOf",
+        "colorMembersOf",
+        "colorRampSlots",
+        "colorRangeSlot",
         "colorScaleChoicesOf",
         "normalizeChannel",
         "paintedScale"

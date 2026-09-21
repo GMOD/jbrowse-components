@@ -4,7 +4,6 @@ import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
-  colorEvaluator,
   encodeFeatures,
   encodedChannelTransferables,
 } from '@jbrowse/core/util/markEncoding'
@@ -46,9 +45,9 @@ export interface ManhattanReaders {
 }
 
 // LD coloring needs the scale, an index and an adapter to read r² from; with
-// any of the three missing the worker falls back to `color.value`, which is
-// also the whole of the `none` scale. Field coloring needs only the field: the
-// values come off the features themselves.
+// any of the three missing the encoder reads `ld` off the features like any
+// other threshold field. Every other colour is the encoding as the display
+// sent it.
 async function makeReaders(
   args: Pick<
     RpcExecuteArgs<'GetManhattanData'>,
@@ -86,34 +85,11 @@ async function makeReaders(
     )
     checkAbortSignal(signal)
     return {
-      ...makeLdEvaluator(ld, indexSnp, region.refName, ldBinColor(color)),
+      ...makeLdEvaluator(ld, indexSnp, region.refName, ldBinColor(args.color)),
       indexFound: ld.indexFound,
     }
-  } else if (color.scale === 'threshold') {
-    return {
-      color: {
-        field: color.field,
-        scale: 'threshold',
-        domain: [...color.domain],
-        range: color.palette.length ? [...color.palette] : undefined,
-      },
-      glyph: defaultGlyph,
-    }
-  } else if (color.scale === 'categorical') {
-    return {
-      color: {
-        field: color.field,
-        scale: 'categorical',
-        domain: color.domain.length ? [...color.domain] : undefined,
-        range: color.palette.length ? [...color.palette] : undefined,
-      },
-      glyph: defaultGlyph,
-    }
   } else {
-    return {
-      color: colorEvaluator(color.value, pluginManager.jexl),
-      glyph: defaultGlyph,
-    }
+    return { color, glyph: defaultGlyph }
   }
 }
 

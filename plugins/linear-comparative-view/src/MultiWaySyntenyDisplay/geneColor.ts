@@ -31,14 +31,9 @@ export interface GeneColorSettings {
 }
 
 /** the gene colour's field, or undefined while `color.value` paints */
-export function geneColorScale({
-  field,
-  scale,
-  domain,
-  palette,
-}: ColorSetting) {
+export function geneColorScale({ field, scale, domain, range }: ColorSetting) {
   return paintedScale({ field, scale }, 'categorical') === 'categorical'
-    ? categoricalField(field, { domain, range: palette })
+    ? categoricalField(field, { domain, range })
     : undefined
 }
 

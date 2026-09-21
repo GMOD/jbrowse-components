@@ -350,9 +350,9 @@ also the value the bars grow from.
 <!-- prettier-ignore -->
 | v4 | v5 |
 | --- | --- |
-| `posColor`, `negColor`, `bicolorPivot: p` | `color: { field: 'score', scale: 'threshold', domain: [p], palette: [neg, pos] }` |
+| `posColor`, `negColor`, `bicolorPivot: p` | `color: { field: 'score', scale: 'threshold', domain: [p], range: [neg, pos] }` |
 | `color` beside `useBicolor: false` | `color: '#…'` |
-| `densityColorRamp: 'viridis'` | `color: { field: 'score', scale: 'linear', ramp: ['viridis'] }` |
+| `densityColorRamp: 'viridis'` | `color: { field: 'score', scale: 'linear', scheme: 'viridis' }` |
 
 `setPosColor`, `setNegColor`, `setUseBicolor` and `setBicolorPivot` are
 `setColor` and `setOrigin`. **None of it migrates**, in a config, a session or

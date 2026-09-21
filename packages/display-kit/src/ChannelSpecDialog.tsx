@@ -19,6 +19,8 @@ export interface ChannelSpecHost {
   channelSpecProblems: (spec: ChannelSpec) => string[]
   /** The display's own `color.scale` enum, minus `none`, which the string form is. */
   colorScaleChoices: string[]
+  /** The members the display's colour object declares. */
+  colorMembers: string[]
   applyDisplaySettings: (settings: Record<string, unknown>) => unknown
   /** Absent on a display with no runtime filter list, which then refuses one. */
   setJexlFilters?: (filters?: string[]) => void
@@ -28,7 +30,10 @@ function readSpec(host: ChannelSpecHost, text: string) {
   try {
     const spec = parseChannelSpec(text)
     const problems = [
-      ...colorSpecProblems(spec, host.colorScaleChoices),
+      ...colorSpecProblems(spec, {
+        scales: host.colorScaleChoices,
+        members: host.colorMembers,
+      }),
       ...host.channelSpecProblems(spec),
     ]
     return problems.length

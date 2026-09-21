@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   colorChannelOptions,
   colorChannelSlots,
+  colorDomainSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
@@ -80,6 +81,8 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
         'what colours an alignment: strand paints forward and reverse; query and target one colour per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mappingQual and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)',
       scale:
         'none paints value and keeps the field for a switch back; unset, a field paints',
+    }),
+    ...colorDomainSlot({
       domain:
         "the order a text column's labels take: the labels listed here first, the rest sorted; a label's colour is its position, so this moves the key and the alignments together; left empty the labels stay in the order the fetches first met them",
     }),

@@ -114,7 +114,9 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(
       scale?.kind === 'categorical' ? scale.entries.map(e => e.value) : [],
     ).toEqual(['chr10', 'chr2', 'chr1'])
-    expect(display.rpcProps().color.domain).toEqual(['chr10', 'chr2'])
+    expect(display.rpcProps().color).toMatchObject({
+      domain: ['chr10', 'chr2'],
+    })
   })
 
   it('has no key under a single color, and the r² bins under LD coloring', () => {
@@ -128,7 +130,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(scale?.title).toBe(LD_LEGEND_TITLE)
     expect(
       scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
-    ).toEqual(ldLegend({ domain: [], palette: [] }).map(sw => sw.label))
+    ).toEqual(ldLegend({}).map(sw => sw.label))
   })
 
   // Without it an export where nothing matched the index SNP is an all-grey
@@ -148,18 +150,19 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
+  // The constant stays in the config for the way back, and the worker is sent
+  // only what the categorical scale reads, so it is no fetch input there.
   it('colorByField writes the field through the categorical scale, and it reaches the worker', () => {
     const { display } = createTestEnvironment({
       color: 'rebeccapurple',
     }).createDisplay()
     display.colorByField('population')
-    expect(display.rpcProps()).toMatchObject({
-      color: {
-        value: 'rebeccapurple',
-        field: 'population',
-        scale: 'categorical',
-      },
-      scoreField: 'score',
+    expect(display.color.value).toBe('rebeccapurple')
+    expect(display.rpcProps().color).toEqual({
+      field: 'population',
+      scale: 'categorical',
+      domain: undefined,
+      range: undefined,
     })
   })
 
@@ -184,12 +187,12 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
-  it('Single color keeps the field, its order and palette for the way back', () => {
+  it('Single color keeps the field, its order and range for the way back', () => {
     const { display } = createTestEnvironment({
       color: {
         field: 'population',
         domain: ['EUR'],
-        palette: ['red'],
+        range: ['red'],
       },
     }).createDisplay()
     display.setColorScale('none')
@@ -199,7 +202,7 @@ describe('LinearManhattanDisplay field coloring', () => {
       field: 'population',
       scale: 'categorical',
       domain: ['EUR'],
-      palette: ['red'],
+      range: ['red'],
     })
   })
 
@@ -222,7 +225,7 @@ describe('LinearManhattanDisplay field coloring', () => {
       field: 'ld',
       scale: 'threshold',
       domain: LD_DOMAIN,
-      palette: LD_PALETTE,
+      range: LD_PALETTE,
     })
     expect(display.ldColoringActive).toBe(true)
     display.setColorScale('none')
@@ -249,7 +252,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(display.color).toMatchObject({
       scale: 'threshold',
       domain: LD_DOMAIN,
-      palette: LD_PALETTE,
+      range: LD_PALETTE,
     })
   })
 
@@ -265,7 +268,7 @@ describe('LinearManhattanDisplay field coloring', () => {
       field: 'ld',
       scale: 'threshold',
       domain: LD_DOMAIN,
-      palette: LD_PALETTE,
+      range: LD_PALETTE,
     })
     expect(ldColoringRequested({ color, indexSnp, ldAdapterConfig })).toBe(true)
   })
@@ -277,7 +280,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     ).toThrow()
     expect(() =>
       display.configuration.setSubschema('color', { colorBy: 'ld' }),
-    ).toThrow('ManhattanColor takes value, field, scale, domain and palette')
+    ).toThrow('ManhattanColor takes value, field, scale, domain and range')
   })
 
   it('offers the three schemes as one radio submenu, LD greyed without an adapter', () => {

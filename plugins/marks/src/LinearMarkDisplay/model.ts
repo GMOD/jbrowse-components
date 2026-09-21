@@ -39,6 +39,10 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import {
+  colorEncodingOf,
+  paintedScale,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -68,18 +72,14 @@ import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
 import { binStepWidth } from './autoBin.ts'
-import {
-  markColorScale,
-  markGlyphScale,
-  markRequirementProblems,
-} from './configSchema.ts'
+import { markGlyphScale, markRequirementProblems } from './configSchema.ts'
 import { densityRegionData } from './densityLayer.ts'
 import { facetLayout, facetRegion } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
 import { buildMarkList, markDrawsAt, markRowHeightPx } from './markList.ts'
-import { markProblems, pinnedPair, problemText } from './markProblems.ts'
+import { markProblems, problemText } from './markProblems.ts'
 import { DEFAULT_BIN_AS, DEFAULT_PILEUP_FIELDS } from './markVocabulary.ts'
 import {
   EMPTY_PLOT_SPEC,
@@ -111,11 +111,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   AggregateOp,
-  ColorEncoding,
   EncodedFeaturesResult,
   FacetSpec,
   GlyphEncoding,
-  GlyphName,
   LayerRequest,
   MarkEncoding,
   TransformStep,
@@ -171,63 +169,18 @@ function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
   return highest
 }
 
-function listed(values: readonly string[]) {
-  return values.length > 0 ? [...values] : undefined
-}
-
-function colorEncodingOf(
-  color: MarkConfig['encoding']['color'],
-): ColorEncoding {
-  const scale = markColorScale(color)
-  switch (scale) {
-    case 'none':
-      return color.value
-    case 'categorical':
-      return {
-        field: color.field,
-        scale,
-        range: listed(color.palette),
-        domain: listed(color.domain),
-      }
-    case 'threshold':
-      return {
-        field: color.field,
-        scale,
-        range: listed(color.palette),
-        domain: [...color.domain],
-      }
-    default: {
-      const pair = pinnedPair(color.domain)
-      const named = color.ramp.length === 1 && color.ramp[0] === 'viridis'
-      return {
-        field: color.field,
-        scale,
-        domainMin: pair && Math.min(...pair),
-        domainMax: pair && Math.max(...pair),
-        reverse: pair ? pair[0] > pair[1] : undefined,
-        range: named ? undefined : listed(color.ramp),
-        scheme: named ? 'viridis' : undefined,
-        domainMid: color.domainMid,
-      }
-    }
-  }
-}
-
 // The config's raw slot values as the worker's encoding: a `jexl:` string
 // crosses untouched, which is why nothing here reads through `getConf`.
 function encodingOf(mark: MarkConfig): MarkEncoding {
   const { x, x2, y, row, glyph, color } = mark.encoding
-  const scaled = colorEncodingOf(color)
+  const scaled = colorEncodingOf(color, 'categorical')
   const glyphEncoding: GlyphEncoding =
     markGlyphScale(glyph) === 'none'
-      ? (glyph.value as GlyphEncoding)
+      ? glyph.value
       : {
           field: glyph.field,
           scale: 'categorical',
-          range:
-            glyph.range.length > 0
-              ? ([...glyph.range] as GlyphName[])
-              : undefined,
+          range: glyph.range.length > 0 ? [...glyph.range] : undefined,
           domain: glyph.domain.length > 0 ? [...glyph.domain] : undefined,
         }
   // A `pileup` writes the row this mark then stands in, so its output field
@@ -340,7 +293,8 @@ function toBinEdges(region: Region, step: number, bounds: Region) {
 function markConstantColor(mark: MarkConfig): number {
   const { color } = mark.encoding
   return cssColorToABGR(
-    markColorScale(color) === 'none' && !color.value.startsWith('jexl:')
+    paintedScale(color, 'categorical') === 'none' &&
+      !color.value.startsWith('jexl:')
       ? color.value
       : DEFAULT_MARK_COLOR,
   )

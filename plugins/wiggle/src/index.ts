@@ -51,7 +51,6 @@ export {
 // their save-file format. Exported because gccontent's track offers the same
 // download of the same four columns, and had its own copy.
 export { bedGraphFormatOptions } from './saveTrackFormats/bedGraph.ts'
-export type { DensityRampName } from './shared/densityColorRamp.ts'
 // The one slot every score-summarizing display declares with a different
 // default, so gccontent states its default without restating the enumeration.
 export { summaryScoreModeConfigSchemaFields } from './shared/summaryScoreModeConfigSchemaFields.ts'

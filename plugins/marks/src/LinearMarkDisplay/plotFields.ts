@@ -1,9 +1,8 @@
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
+import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { markColorScale } from './configSchema.ts'
-
-import type { MarkColorScale } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { ColorScaleName } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
  * The value scale `bin`/`aggregate` hands over to, in bp per px: the raw mark
@@ -90,8 +89,7 @@ type ColorSnapshot =
   | string
   | {
       field?: string
-      scale?: MarkColorScale
-      ramp?: readonly string[]
+      scale?: ColorScaleName
       [member: string]: unknown
     }
 
@@ -189,8 +187,8 @@ function paintedField(color: ColorSnapshot | undefined) {
   if (typeof color !== 'object') {
     return ''
   }
-  const { field = '', scale, ramp = [] } = color
-  return markColorScale({ field, scale, ramp }) === 'none' ? '' : field
+  const { field = '', scale } = color
+  return paintedScale({ field, scale }, 'categorical') === 'none' ? '' : field
 }
 
 function isPlotShape(shape: string): shape is PlotShape {
