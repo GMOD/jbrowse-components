@@ -19,7 +19,7 @@ function isBundledLanguage(lang: string): lang is BundledLanguage {
   return Object.hasOwn(bundledLanguages, lang)
 }
 
-function resolveLang(label = '') {
+export function resolveLang(label = '') {
   const lang = LANG_ALIASES[label] ?? label
   return isBundledLanguage(lang) ? lang : undefined
 }
@@ -48,6 +48,28 @@ function codeBlock(node: Element) {
     : undefined
 }
 
+function isCopyWrap(node: Root | Element) {
+  const className = node.type === 'element' ? node.properties.className : []
+  return Array.isArray(className) && className.includes('code-copywrap')
+}
+
+function copyWrap(pre: Element): Element {
+  return {
+    type: 'element',
+    tagName: 'div',
+    properties: { className: ['code-copywrap'] },
+    children: [
+      {
+        type: 'element',
+        tagName: 'button',
+        properties: { type: 'button', className: ['code-copy'] },
+        children: [{ type: 'text', value: 'Copy' }],
+      },
+      pre,
+    ],
+  }
+}
+
 const rehypeShiki: Plugin<[], Root> = () => {
   return async tree => {
     const langs = new Set<BundledLanguage>()
@@ -69,7 +91,7 @@ const rehypeShiki: Plugin<[], Root> = () => {
         )
         const pre = highlighted.children[0]
         if (pre?.type === 'element') {
-          parent.children[index] = pre
+          parent.children[index] = isCopyWrap(parent) ? pre : copyWrap(pre)
         }
       }
     })

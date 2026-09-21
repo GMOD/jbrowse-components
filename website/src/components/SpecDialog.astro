@@ -4,7 +4,8 @@
 // (src/lib/spec-recipe/html.ts) — by remark-figure for a doc figure, by
 // remark-video for a tour — because each carries that figure's own decoded
 // session spec. This component owns only the parts that must be identical
-// wherever one appears: the click that opens it and the Copy buttons inside it.
+// wherever one appears: the click that opens it. Its Copy buttons are
+// CodeCopy.astro's.
 //
 // The CSS is in styles/widgets/spec-recipe.css with the rest of the
 // string-emitted markup's styling, imported by BaseLayout. It cannot be scoped
@@ -38,31 +39,6 @@
         if (dialog instanceof HTMLDialogElement && !dialog.open) {
           dialog.showModal()
         }
-      }
-    }
-  })
-
-  // Copy a recipe code block (session spec JSON, Desktop link, notebook
-  // snippet). The text comes from the block's own <code>, decoded from the
-  // figure's link, so it can't drift from the image.
-  document.addEventListener('click', async event => {
-    const target = event.target
-    if (target instanceof Element) {
-      const button = target.closest('.spec-copy')
-      if (button instanceof HTMLElement) {
-        const code = button.parentElement?.querySelector('code')
-        let ok = true
-        try {
-          await navigator.clipboard.writeText(code?.textContent ?? '')
-        } catch {
-          ok = false
-        }
-        button.textContent = ok ? 'Copied!' : 'Copy failed'
-        button.classList.toggle('copied', ok)
-        setTimeout(() => {
-          button.textContent = 'Copy'
-          button.classList.remove('copied')
-        }, 1500)
       }
     }
   })

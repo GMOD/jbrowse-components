@@ -22,8 +22,8 @@ function renderTitle(title: string): string {
 // The copy handler is delegated in DocsLayout (the dialog is not hydrated).
 function copyableBlock(text: string, className: string): string {
   return [
-    '<div class="spec-copywrap">',
-    '<button type="button" class="spec-copy">Copy</button>',
+    '<div class="code-copywrap">',
+    '<button type="button" class="code-copy">Copy</button>',
     `<pre class="${className}"><code>${escapeAttr(text)}</code></pre>`,
     '</div>',
   ].join('')

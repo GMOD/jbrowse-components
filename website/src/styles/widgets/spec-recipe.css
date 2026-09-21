@@ -104,46 +104,22 @@
     display: block;
     margin-top: 0.15rem;
   }
-  .spec-copywrap {
-    position: relative;
-  }
   /* The fallback for a route that does NOT hand these blocks to shiki. Where
      the markdown pipeline runs, rehype-shiki swaps each `<pre>` for its own
-     highlighted one and the `spec-json` class does not survive — the page's
-     `pre` rule paints them there, as it always has. Keep background and
-     color together: --color-code-text on a light background is unreadable.
-     One rule rather than a base plus a padding-top override, since every block
-     copyableBlock emits is inside a `.spec-copywrap`; the extra top padding is
-     what keeps the Copy button off the first line of code. */
-  .spec-copywrap .spec-json,
-  .spec-copywrap .spec-python {
+     highlighted one and the `spec-json` class does not survive. Keep
+     background and color together: --color-code-text on a light background is
+     unreadable. */
+  .spec-json,
+  .spec-python {
     max-height: 45vh;
     overflow: auto;
     margin: 1rem 0;
-    padding: 1.9rem 0.75rem 0.75rem;
+    padding: 0.75rem;
     border-radius: 4px;
     background: var(--color-code-bg);
     color: var(--color-code-text);
     font-family: var(--font-mono);
     font-size: 0.8rem;
     line-height: 1.5;
-  }
-  .spec-copy {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.4rem;
-    padding: 0.2rem 0.55rem;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    background: var(--color-surface);
-    color: var(--color-text-muted);
-    font-size: 0.72rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .spec-copy:hover,
-  .spec-copy.copied {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
   }
 }

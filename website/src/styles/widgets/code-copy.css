@@ -1,0 +1,38 @@
+/* The Copy button over a code block. Markup: rehype-shiki wraps every fence,
+   and spec-recipe/html.ts wraps the recipe dialog's blocks. Behavior:
+   components/CodeCopy.astro. */
+@layer widget {
+  .code-copywrap {
+    position: relative;
+  }
+  .code-copy {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .code-copywrap:hover .code-copy,
+  .code-copy:focus-visible,
+  .code-copy.copied {
+    opacity: 1;
+  }
+  .code-copy:hover,
+  .code-copy.copied {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  @media (hover: none) {
+    .code-copy {
+      opacity: 1;
+    }
+  }
+}

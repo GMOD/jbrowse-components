@@ -1,0 +1,23 @@
+<script>
+  document.addEventListener('click', async event => {
+    const target = event.target
+    if (target instanceof Element) {
+      const button = target.closest('.code-copy')
+      if (button instanceof HTMLElement) {
+        const code = button.parentElement?.querySelector('code')
+        let ok = true
+        try {
+          await navigator.clipboard.writeText(code?.textContent ?? '')
+        } catch {
+          ok = false
+        }
+        button.textContent = ok ? 'Copied!' : 'Copy failed'
+        button.classList.toggle('copied', ok)
+        setTimeout(() => {
+          button.textContent = 'Copy'
+          button.classList.remove('copied')
+        }, 1500)
+      }
+    }
+  })
+</script>
