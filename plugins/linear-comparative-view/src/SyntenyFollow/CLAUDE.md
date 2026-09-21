@@ -324,6 +324,15 @@ row holds and lit `followUnaligned`; bumping only for levels with something to
 resolve let the previous window's answer land underneath that and move the row
 anyway.
 
+**`seq` cannot see a move between settles.** The coarse blocks wake the settle
+on a 500ms throttle, so an answer can land after the staying row has moved and
+before the settle that move brings; navigating on it sent the row back to the
+window the anchor had left. `execute` compares the staying row's live windows
+with the ones it planned from, and on a difference records the pick and stops
+there: the frame pass places the row through that pick, and the coarse refresh
+brings a settle for where the row stopped. A carried level reads no row, so it
+is not checked.
+
 Switching the mode off issues no pass at all, so it still needs its own check in
 `execute` — and switching it back on defeats that check, since dropping the
 store leaves an in-flight `execute` holding a state object nobody will bump

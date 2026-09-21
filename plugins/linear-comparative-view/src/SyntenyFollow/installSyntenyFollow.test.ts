@@ -667,6 +667,42 @@ test('a settle mid-drag plans from where the anchor is, not where it was', async
   )
 })
 
+// The answer arrives after the anchor has moved on and before its coarse
+// blocks refresh, so no newer settle has superseded it yet. Navigating on it
+// sent the row back to the window the anchor had left.
+test('an answer for a window the anchor has left does not navigate', async () => {
+  const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+  const { rows, host } = twoRows([display([pairing('chr1', 'chr1')])])
+  place(rows[0]!, 400_000, 500_000)
+  installSyntenyFollow(host)
+  await settle()
+  await settle()
+  const navigations = rows[1]!.navigations
+
+  rows[0]!.holdCoarseBlocks()
+  rows[1]!.holdCoarseBlocks()
+  place(rows[0]!, 420_000, 520_000)
+  rows[0]!.releaseCoarseBlocks()
+  rows[0]!.holdCoarseBlocks()
+  place(rows[0]!, 440_000, 540_000)
+  await settle()
+  await settle()
+
+  expect(rows[1]!.navigations).toBe(navigations)
+  expect(rows[1]!.dynamicBlocks.contentBlocks[0]!.start).toBeCloseTo(
+    440_000,
+    -3,
+  )
+
+  rows[0]!.releaseCoarseBlocks()
+  await settle()
+  await settle()
+  expect(rows[1]!.dynamicBlocks.contentBlocks[0]!.start).toBeCloseTo(
+    440_000,
+    -3,
+  )
+})
+
 const reversedOf = (view: ReturnType<typeof row>) =>
   !!view.dynamicBlocks.contentBlocks[0]?.reversed
 

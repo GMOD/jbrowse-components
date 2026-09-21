@@ -8,6 +8,7 @@ import {
   followAnchorWindow,
   followAnchorWindows,
   followPlacedWindows,
+  sameWindows,
 } from './followAnchorWindow.ts'
 import { logFollowSpread, logFollowStep } from './followDebug.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
@@ -111,17 +112,15 @@ export const ROW_NAVIGATIONS_HELD = new Set([
 ])
 
 // One level's placement, with the observables the async half needs already read
-// off the tree.
-//
-// The two fields off the `FollowPair` rather than the pair itself, so that this
-// says what the async half can still reach: `step` already carries the window,
-// the display and `toMate`, and the staying row is the one thing a settled
-// answer must never re-read.
+// off the tree. `step` carries the window, the display and `toMate`; the
+// staying row comes back only to ask whether it still shows `windows`.
 interface FollowWork {
   kind: 'resolve'
   level: FollowLevel
   movingView: LinearGenomeViewModel
   step: FollowStep
+  // absent for a carried level, whose windows are this pass's own placement
+  staying?: { view: LinearGenomeViewModel; windows: FollowWindow[] }
   // the narrowest window the moving row can show, which is what lets
   // `alreadyShowing` terminate over an answer below it
   movingMinWidthBp: number
@@ -251,6 +250,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     level,
     movingView,
     step,
+    staying,
     movingMinWidthBp,
     matchOrientation,
     anchorOrientation,
@@ -307,6 +307,19 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         : undefined,
     }
     ensureCigarMap(state, step)
+    // The staying row moved while the answer was in flight. The frame pass
+    // places the row from the pick above, and the staying row's coarse refresh
+    // brings a settle for where it stopped; navigating now sends the row back
+    // to a window it has left.
+    if (
+      staying &&
+      !sameWindows(
+        followAnchorWindows(staying.view.dynamicBlocks.contentBlocks),
+        staying.windows,
+      )
+    ) {
+      return
+    }
     // WHERE THE ROW IS NOW, off its live blocks. The coarse ones the plan woke
     // on refresh on their own 500ms throttle, so after a drag they still name
     // where the row was before the frame pass placed it, and the settle
@@ -731,6 +744,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         level,
         movingView,
         step,
+        staying: carried ? undefined : { view: stayingView, windows },
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
         matchOrientation,
         anchorOrientation: stayingView.displayedRegionsOrientation,

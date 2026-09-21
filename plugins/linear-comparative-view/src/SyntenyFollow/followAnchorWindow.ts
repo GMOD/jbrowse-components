@@ -119,6 +119,18 @@ export function followPlacedWindows(spans: FollowWindow[]): FollowWindow[] {
     .slice(0, MAX_WINDOWS)
 }
 
+export function sameWindows(a: FollowWindow[], b: FollowWindow[]) {
+  return (
+    a.length === b.length &&
+    a.every(
+      (w, i) =>
+        w.refName === b[i]!.refName &&
+        w.start === b[i]!.start &&
+        w.end === b[i]!.end,
+    )
+  )
+}
+
 /**
  * The one window a single-contig follow reads off the anchor panel: the widest
  * by SCREEN px. The eye picks that one as "where the view is", and the rule
