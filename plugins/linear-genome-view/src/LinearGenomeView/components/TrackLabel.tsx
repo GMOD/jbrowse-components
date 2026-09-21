@@ -39,7 +39,10 @@ const TrackLabel = observer(function TrackLabel({
   const trackName = getTrackName(track.configuration, getSession(track))
 
   return (
-    <Paper className={cx(className, classes.root)}>
+    <Paper
+      className={cx(className, classes.root)}
+      data-testid={`trackLabel-${track.trackId}`}
+    >
       <TrackLabelDragHandle track={track} />
       <TrackLabelCloseButton track={track} />
       <TrackLabelMinimizeButton track={track} />

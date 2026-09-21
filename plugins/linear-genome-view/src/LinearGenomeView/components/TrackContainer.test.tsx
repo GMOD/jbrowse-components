@@ -274,3 +274,90 @@ test('a display without the height mixin survives drag and double click', async 
   // and the other one, which would have thrown on expandToContentHeight
   fireEvent.doubleClick(handle)
 }, 20000)
+
+/**
+ * A display that wants the label on a row of its own, as every display with a
+ * left-edge axis or sidebar does.
+ */
+class OffsetPreferringDisplayPlugin extends Plugin {
+  name = 'OffsetPreferringDisplayPlugin'
+
+  install(pluginManager: PluginManager) {
+    pluginManager.addDisplayType(() => {
+      const configSchema = ConfigurationSchema(
+        'OffsetPreferringDisplay',
+        {},
+        { explicitlyTyped: true },
+      )
+      return new DisplayType({
+        name: 'OffsetPreferringDisplay',
+        displayName: 'Offset-preferring display',
+        configSchema,
+        stateModel: types
+          .compose(
+            'OffsetPreferringDisplay',
+            BaseDisplay,
+            types.model({
+              type: types.literal('OffsetPreferringDisplay'),
+              configuration: ConfigurationReference(configSchema),
+            }),
+          )
+          .views(() => ({
+            get height() {
+              return 100
+            },
+            get prefersOffset() {
+              return true
+            },
+          })),
+        trackType: 'FeatureTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: () => <div data-testid="offset-preferring-display" />,
+      })
+    })
+  }
+}
+
+// Minimizing is worth ~20px of track, and a label left in flow spends most of
+// that back. The left edge is what `prefersOffset` protects, and a minimized
+// track draws none, so its label overlaps like every other minimized track's.
+test('a minimized track overlaps its label even when the display prefers offset', async () => {
+  const model = await setup({
+    runtimePlugins: [
+      {
+        plugin: new OffsetPreferringDisplayPlugin(),
+        definition: {
+          name: 'OffsetPreferringDisplay',
+          umdUrl: 'offset-preferring.js',
+        },
+      },
+    ],
+    displays: [
+      {
+        type: 'OffsetPreferringDisplay',
+        displayId: 'offset-preferring-display',
+      },
+    ],
+  })
+  // the setting `prefersOffset` overrides; in 'offset' every label is in flow
+  model.setTrackLabels('overlapping')
+  const { findByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <LinearGenomeView model={model} />
+    </ThemeProvider>,
+  )
+
+  const labelPosition = async () =>
+    getComputedStyle(await findByTestId('trackLabel-genes')).position
+
+  expect(await labelPosition()).toBe('relative')
+  const track = model.tracks[0]!
+  track.setMinimized(true)
+  await waitFor(async () => {
+    expect(await labelPosition()).toBe('absolute')
+  })
+  track.setMinimized(false)
+  await waitFor(async () => {
+    expect(await labelPosition()).toBe('relative')
+  })
+}, 20000)

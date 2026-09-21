@@ -6,8 +6,6 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { MINIMIZED_TRACK_HEIGHT } from '../consts.ts'
-
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
@@ -115,7 +113,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   // an LGV track always holds at least one linear display (activeDisplay =
   // displays[0]); narrow to the linear shape for height/RenderingComponent
   const display = track.activeDisplay as LinearDisplayModel
-  const { height, RenderingComponent, DisplayBlurb } = display
+  const { RenderingComponent, DisplayBlurb } = display
   const { showTrackOutlines } = model
   const trackId = track.trackId
   const minimized = track.minimized
@@ -125,7 +123,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
       ref={ref}
       className={classes.trackRenderingContainer}
       style={{
-        height: minimized ? MINIMIZED_TRACK_HEIGHT : height,
+        height: model.trackHeight(track),
       }}
       data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
     >

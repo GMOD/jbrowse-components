@@ -138,10 +138,14 @@ const TrackContainer = observer(function TrackContainer({
   // the data. One binding rather than three copies of the ternary, because the
   // three agreeing is the whole point.
   const outlineOffset = showTrackOutlines ? TRACK_OUTLINE_BORDER : 0
+  // `prefersOffset` buys the label a row of its own so it doesn't print over
+  // the display's left edge. A minimized track draws no left edge, so honoring
+  // it there only leaves one minimized track taller than its neighbors.
   const trackLabelStyle =
-    model.effectiveTrackLabels !== 'overlapping' || display.prefersOffset
-      ? classes.trackLabelOffset
-      : classes.trackLabelOverlap
+    model.effectiveTrackLabels === 'overlapping' &&
+    (track.minimized || !display.prefersOffset)
+      ? classes.trackLabelOverlap
+      : classes.trackLabelOffset
   const { setPaper, setContainer } = useTrackLabelBand(model, track.trackId)
 
   return (
