@@ -872,7 +872,7 @@ test("a transform list reaches the worker as its own layer's steps, every slot w
       type: 'aggregate',
       groupby: ['start', 'end'],
       ops: [
-        { op: 'count', field: undefined, as: undefined },
+        { op: 'count', field: undefined, as: 'count' },
         { op: 'mean', field: 'twice', as: 'm' },
       ],
     },
@@ -961,14 +961,14 @@ test('a flatten keeping its empty features says so on the wire', () => {
   ])
 })
 
+type StepPair = [Record<string, unknown>, Record<string, unknown>]
+
 // What a step writes at its defaults, as pairs of snapshots meaning the same
 // step: the slot left off, and the slot written at its default. An array of
 // sub-schemas (an aggregate's ops) contributes each of its entry's pairs.
-function defaultWrites(
-  schema: IAnyType,
-): [Record<string, unknown>, Record<string, unknown>][] {
+function defaultWrites(schema: IAnyType): StepPair[] {
   return Object.entries(getConfigurationSchemaDefinition(schema)!).flatMap(
-    ([slot, entry]): [Record<string, unknown>, Record<string, unknown>][] =>
+    ([slot, entry]): StepPair[] =>
       isSlotDefinitionEntry(entry)
         ? [[{}, { [slot]: entry.defaultValue }]]
         : isType(entry) && isArrayType(entry)
@@ -1012,16 +1012,22 @@ test('every step type reaches the worker with each of its slots written out', ()
   )
 })
 
-test('a step slot left at its default and one written at it are one fetch, for every step type', () => {
+test('a step slot left at its default and one written at it are one fetch, for every step type and an aggregate op named its own output name', () => {
   const { members } = getConfigurationSchemaUnion(markTransformStep)!
-  const pairs = Object.entries(members).flatMap(([type, member]) =>
-    defaultWrites(member).map(
-      ([left, written]): [Record<string, unknown>, Record<string, unknown>] => [
+  const aggregateAs = (op: Record<string, unknown>, as: string): StepPair => [
+    { type: 'aggregate', ops: [op] },
+    { type: 'aggregate', ops: [{ ...op, as }] },
+  ]
+  const pairs = [
+    ...Object.entries(members).flatMap(([type, member]) =>
+      defaultWrites(member).map(([left, written]): StepPair => [
         { type, ...left },
         { type, ...written },
-      ],
+      ]),
     ),
-  )
+    aggregateAs({ op: 'count' }, 'count'),
+    aggregateAs({ op: 'mean', field: 'score' }, 'mean_score'),
+  ]
   const fetchKey = (step: Record<string, unknown>) =>
     JSON.stringify(stepFetch([step]))
   expect(pairs.map(([, written]) => written)).toContainEqual({

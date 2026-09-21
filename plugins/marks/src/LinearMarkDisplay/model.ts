@@ -18,6 +18,7 @@ import {
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
+import { aggregateFieldName } from '@jbrowse/core/util/featureTransforms'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
@@ -236,11 +237,10 @@ function stepsOf(
           type: 'aggregate',
           groupby:
             step.groupby.length > 0 ? [...step.groupby] : (binEdges ?? []),
-          ops: step.ops.map((o): AggregateOp => ({
-            op: o.op,
-            field: o.field || undefined,
-            as: o.as || undefined,
-          })),
+          ops: step.ops.map((o): AggregateOp => {
+            const op = { op: o.op, field: o.field || undefined }
+            return { ...op, as: o.as || aggregateFieldName(op) }
+          }),
         }
       case 'coverage':
         return { type: 'coverage', as: step.as }
