@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every colour object is `{ value, field, scale, domain, palette, ramp }` built from one display-kit factory, `scale` drawn from `none | categorical | linear | log` with each display declaring the members it paints. A preset with a ramp or vocabulary of its own is a `field` — Manhattan's `ld`, the ribbon's `strand`, `identity`, `mappingQual` and `dnds` — not a scale. FeatureColor gains `scale`, so Solid color and Default keep the field under `none` for the way back. MarkColor, MarkGlyph and MarkValue are `closed`. Supersedes ADR-133's \"FeatureColor has no scale\" and ADR-134's rejection of one colour vocabulary"
+summary: "Every colour object is `{ value, field, scale, domain, palette, ramp }` built from one display-kit factory, `scale` drawn from `none | categorical | linear | log` with each display declaring the members it paints. A preset with a ramp or vocabulary of its own is a `field` — Manhattan's `ld`, the ribbon's `strand`, `identity`, `mappingQual` and `dnds` — not a scale. FeatureColor gains `scale`, so Solid color and Default keep the field under `none` for the way back. MarkColor, MarkGlyph and MarkValue are `closed`. Supersedes ADR-133's \"FeatureColor has no scale\" and ADR-134's rejection of one colour vocabulary. Superseded by ADR-151 for the `palette` and `ramp` members, which are `range` and `scheme`"
 ---
 
 # ADR-135: The colour objects share one shape, and a preset is a field
@@ -13,6 +13,14 @@ Accepted (2026-09-18). Supersedes one consequence of
 [ADR-134](adr-134-displaydefaults-routes-a-value-to-the-displays-that-take-it.md)
 ("one colour vocabulary across the four colour objects"). Everything else in
 ADR-131, ADR-133 and ADR-134 stands.
+
+Superseded by
+[ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md) for the
+`palette` and `ramp` members, which it spells `range` and `scheme` beside
+`domainMin`, `domainMax`, `domainMid` and `reverse`, and for the factory's
+`colorPaletteSlot` and `colorRampSlot`, which are its `colorRangeSlot`,
+`colorRampSlots` and `colorDomainEndsSlots`. One shape, one factory, a preset as
+a field and `none` as the set/map switch stand.
 
 ## Context
 
@@ -48,29 +56,34 @@ unset scale means under ADR-133.
 
 ## Decision
 
-**One shape.** Every colour object is `{ value, field, scale, domain,
-palette, ramp }`, and `scale` is drawn from `none | categorical | linear |
-log` (`COLOR_SCALES`). A display declares the members it can paint and the
-optional slots something reads: FeatureColor and ManhattanColor `none |
-categorical` with `palette`; MarkColor all four with `palette` and `ramp`;
-RibbonColor `none` alone, and no `palette`, since a label's colour there is
-its position in synteny-core's palette and nothing configures it.
+**One shape.** ~~Every colour object is `{ value, field, scale, domain, palette,
+ramp }`, and `scale` is drawn from `none | categorical | linear | log`
+(`COLOR_SCALES`). A display declares the members it can paint and the optional
+slots something reads: FeatureColor and ManhattanColor `none | categorical` with
+`palette`; MarkColor all four with `palette` and `ramp`; RibbonColor `none`
+alone, and no `palette`, since a label's colour there is its position in
+synteny-core's palette and nothing configures it.~~ Superseded by ADR-151: every
+colour object is `{ value, field, scale, domain, domainMin, domainMax,
+domainMid, range, scheme, reverse }`, `threshold` joined `COLOR_SCALES`, and
+each display declares the members it paints. RibbonColor still declares `none`
+alone and no `range`, since a label's colour there is its position in
+synteny-core's palette and nothing configures it.
 
-**One factory.** `colorChannelSlots({ scales, scaleName, field, scale,
-domain })` in `@jbrowse/display-kit/colorConfigSchema` declares the mapping
-half — `field`, `scale`, `domain` — beside `colorPaletteSlot`,
-`colorRampSlot` and `colorChannelOptions(name)` (`shorthand: 'value'`,
-`closed`, `normalizeChannel`). Each object keeps its own `value` slot, whose
-type and default are the display's (`maybeColor` on FeatureColor so a BED
-`itemRgb` still paints; a colour with a default elsewhere). The factory is a
-slot table rather than a schema so the config docs generator, which reads a
-`#config` block off the `ConfigurationSchema(...)` call that declares it and
-recovers spread-in slots from a single-parameter factory, keeps one page per
-object. MarkColor moved to `markColorConfigSchema.ts` for the same reason: a
-spread inside a schema declared apart from the display's `#config` block is
-invisible to that block, so the mark display's page lost the colour rows until
-MarkColor had a `#config` page of its own, which `marks.encoding.color` now
-links.
+**One factory.** `colorChannelSlots({ scales, scaleName, field, scale, domain
+})` in `@jbrowse/display-kit/colorConfigSchema` declares the mapping half —
+`field`, `scale`, `domain` — beside ~~`colorPaletteSlot`, `colorRampSlot`~~
+(ADR-151's `colorRangeSlot`, `colorRampSlots` and `colorDomainEndsSlots`) and
+`colorChannelOptions(name)` (`shorthand: 'value'`, `closed`,
+`normalizeChannel`). Each object keeps its own `value` slot, whose type and
+default are the display's (`maybeColor` on FeatureColor so a BED `itemRgb` still
+paints; a colour with a default elsewhere). The factory is a slot table rather
+than a schema so the config docs generator, which reads a `#config` block off
+the `ConfigurationSchema(...)` call that declares it and recovers spread-in
+slots from a single-parameter factory, keeps one page per object. MarkColor
+moved to `markColorConfigSchema.ts` for the same reason: a spread inside a
+schema declared apart from the display's `#config` block is invisible to that
+block, so the mark display's page lost the colour rows until MarkColor had a
+`#config` page of its own, which `marks.encoding.color` now links.
 
 **`none` is the set/map switch on every object, and `paintedScale` is the one
 reader**: `none` while no `field` is named, else the written `scale`, or the
@@ -114,14 +127,14 @@ dormant field paints nothing and offers no pin row.
   'LinearManhattanDisplay', color: { field: 'ld' } }]`), as does every doc
   example on a `GWASTrack`, whose only display is the Manhattan one.
   `TrackConfigShorthand.test.ts` pins the routing.
-- The refusal messages name the shared order: `FeatureColor takes value,
+- The refusal messages name the shared order: ~~`FeatureColor takes value,
   field, scale, domain and palette`, `MarkColor takes value, field, scale,
-  domain, palette and ramp`. `ChannelObjectSlotWrites.test.ts` already
-  walked the mark objects through their shorthand and now walks FeatureColor's
-  `scale` too.
-- The Edit as JSON dialog's language stays `"css" | { field, domain,
-  palette }`: `parseChannelSpec` reads `scale: 'none'` beside a field as the
-  constant, and the dialog does not write a dormant field.
+  domain, palette and ramp`~~ (ADR-151 lists `range`, `scheme` and the domain
+  ends in their place). `ChannelObjectSlotWrites.test.ts` already walked the
+  mark objects through their shorthand and now walks FeatureColor's `scale` too.
+- The Edit as JSON dialog's language stays `"css" | { field, domain, range }`
+  (`palette` until ADR-151): `parseChannelSpec` reads `scale: 'none'` beside a
+  field as the constant, and the dialog does not write a dormant field.
 - `RibbonColor`'s `categorical` is gone. A `field` with no `scale` paints as
   its values say, which is what it did.
 

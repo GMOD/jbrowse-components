@@ -66,8 +66,8 @@ Config bounds are still checked first.
 
 ![What a quantitative track's colour resolves to](diagrams/wiggle-colour.svg)
 
-`color` is one object — a CSS string, or `{ field, scale, domain, palette |
-ramp }` — and where the config leaves it unset the layout answers for it:
+`color` is one object — a CSS string, or `{ field, scale, domain, range,
+scheme }` — and where the config leaves it unset the layout answers for it:
 
 | the layout | an unset `color` means | identity lives in | palette fills |
 | --- | --- | --- | --- |

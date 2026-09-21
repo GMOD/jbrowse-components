@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments displays' `colorBy: { type, tag, modifications }` mode slot is `color`, the display-kit colour object `\"steelblue\" | { value, field, scale, domain, palette, ramp }`, with `scale` drawn from `none | categorical | linear | threshold`. A read dimension is a field under the facet's own name (`strand`, `firstOfPairStrand`, `pairOrientation`, `mapq`) beside the colour-only presets (`insertSize`, `insertSizeAndOrientation`, `mateRefName`), `tags.XX` reads a SAM tag and any other name a feature attribute, and a per-base variable is ADR-149's `baseColor`. A declared scale evaluates in the per-read bake, so it recolours with no refetch and no relayout, and the GPU path is unchanged. The modification settings are their own `modifications` slot. The scheme name stays the runtime form. Supersedes ADR-131's \"alignments' `colorBy` selects a scheme and is outside this decision\""
+summary: "The alignments displays' `colorBy: { type, tag, modifications }` mode slot is `color`, the display-kit colour object `\"steelblue\" | { value, field, scale, domain, palette, ramp }`, with `scale` drawn from `none | categorical | linear | threshold`. A read dimension is a field under the facet's own name (`strand`, `firstOfPairStrand`, `pairOrientation`, `mapq`) beside the colour-only presets (`insertSize`, `insertSizeAndOrientation`, `mateRefName`), `tags.XX` reads a SAM tag and any other name a feature attribute, and a per-base variable is ADR-149's `baseColor`. A declared scale evaluates in the per-read bake, so it recolours with no refetch and no relayout, and the GPU path is unchanged. The modification settings are their own `modifications` slot. The scheme name stays the runtime form. Supersedes ADR-131's \"alignments' `colorBy` selects a scheme and is outside this decision\". ADR-151 spells `palette` and `ramp` as `range` and `scheme`, pins a ramp with `domainMin`/`domainMax`, and drops the `linear` read off a written ramp"
 ---
 
 # ADR-148: The alignments read fill is the colour object
@@ -13,6 +13,12 @@ alignments' `colorBy` it selects a scheme and is outside this decision").
 Extends
 [ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)
 to the last display holding a mode vocabulary in a `frozen` slot.
+
+[ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md)
+supersedes the `palette` and `ramp` members this record declares, which it
+spells `range` and `scheme`, a ramp pinned by a two-entry `domain`, which is
+`domainMin` and `domainMax`, and the consequence that an unset `scale` under a
+tag or attribute is `linear` beside a ramp.
 
 ## Context
 
@@ -44,8 +50,9 @@ change and touches neither the fetch nor the layout.
 
 **`color` is the display-kit colour object** (`AlignmentsColor`,
 `alignmentsColorConfigSchema.ts`): `value`, and `field`, `scale`, `domain` from
-`colorChannelSlots` with `colorPaletteSlot` and `colorRampSlot`, `closed`, a
-string lifting into `value`.
+`colorChannelSlots` with ~~`colorPaletteSlot` and `colorRampSlot`~~
+`colorDomainSlot`, `colorRangeSlot`, `colorRampSlots` and `colorDomainEndsSlots`
+(ADR-151), `closed`, a string lifting into `value`.
 
 **A preset is a field, and a read dimension takes the facet's name.**
 `COLOR_FIELDS` (`shared/alignmentsColor.ts`) is the table, and
@@ -65,14 +72,15 @@ the reads with.
 `ColorBy` the worker request, the classifier, the shader dispatch and the menus
 already read, as `ribbonColorBy.ts` does for the multi-way display, and
 `setColorBy` writes the object back through `colorSnapshotFor`: the plain fill
-keeps the field under `none`, a re-picked field keeps its order, palette and
-ramp, and a re-pick of the scheme in use writes nothing, since every colour tier
-keys on the slot's arrays.
+keeps the field under `none`, a re-picked field keeps its order, ~~palette and
+ramp~~ `range`, `scheme` and domain ends (ADR-151), and a re-pick of the scheme
+in use writes nothing, since every colour tier keys on the slot's arrays.
 
 **A declared scale evaluates in the bake.** `bakedColorScale` builds one scale
-from the object and the bake and the key both read it: a `domain` or `palette`
-hands the listed values their colours over the tag palette, `linear` runs a
-ramp over a pinned `domain` or the span of the loaded reads
+from the object and the bake and the key both read it: a `domain` or
+~~`palette`~~ `range` hands the listed values their colours over the tag
+palette, `linear` runs a ramp over ~~a pinned `domain`~~ each end `domainMin`
+and `domainMax` pin (ADR-151), or the span of the loaded reads
 ([ADR-124](adr-124-the-score-axis-autoscales-over-what-is-loaded.md)),
 `threshold` paints the bin a value falls in. The result is the packed colour per
 read the shader already takes, so no shader, instance layout or per-frame path
@@ -116,10 +124,10 @@ retired `methylation`, `stranded` and `insertSizeGradient` names now resolve.
   [ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md), which
   reads the kind off `scale` alone: the plain fill writes `scale: 'none'`, so a
   linear or threshold field comes back categorical.
-- A `palette` beside a preset field with a vocabulary of its own (`strand`,
-  `pairOrientation`) waits unread: several levels share the palette's neutral
-  entry and the arcs derive their colours from the same table, so a per-level
-  override is a change to that table and not to the bake.
+- A ~~`palette`~~ `range` (ADR-151) beside a preset field with a vocabulary of
+  its own (`strand`, `pairOrientation`) waits unread: several levels share the
+  palette's neutral entry and the arcs derive their colours from the same table,
+  so a per-level override is a change to that table and not to the bake.
 
 ## Rejected alternatives
 

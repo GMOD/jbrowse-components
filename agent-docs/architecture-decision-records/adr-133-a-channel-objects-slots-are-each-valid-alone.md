@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "No combination of a channel object's slots is refused: a `domain` with no `field`, or a `field` under a scale that reads none, loads and waits unread. `scale` on the Manhattan, multi-way and mark colour objects is unset by default and reads as the scale its field implies (`paintedScale`), so an explicit `none` survives a reload, and a scale switch in a menu keeps the field, order and palette for the way back. Supersedes ADR-131's refusals of a `domain` or `palette` naming no `field` and of a `field` under a non-categorical scale"
+summary: "No combination of a channel object's slots is refused: a `domain` with no `field`, or a `field` under a scale that reads none, loads and waits unread. `scale` on the Manhattan, multi-way and mark colour objects is unset by default and reads as the scale its field implies (`paintedScale`), so an explicit `none` survives a reload, and a scale switch in a menu keeps the field, order and palette for the way back. Supersedes ADR-131's refusals of a `domain` or `palette` naming no `field` and of a `field` under a non-categorical scale. ADR-151 spells `palette` and `ramp` as `range` and `scheme` and drops MarkColor's `linear` beside a ramp"
 ---
 
 # ADR-133: A channel object's slots are each valid alone
@@ -8,10 +8,14 @@ summary: "No combination of a channel object's slots is refused: a `domain` with
 ## Status
 
 Accepted (2026-09-18). Supersedes two refusals in
-[ADR-131](adr-131-a-categorical-channel-is-one-config-object.md): a `domain`
-or `palette` naming no `field`, and a `field` under any scale but
-`categorical` (`normalizeScaledColor`). ADR-131's object, shorthand, `closed`
-keys and whole-object writers stand.
+[ADR-131](adr-131-a-categorical-channel-is-one-config-object.md): a `domain` or
+`palette` naming no `field`, and a `field` under any scale but `categorical`
+(`normalizeScaledColor`). ADR-131's object, shorthand, `closed` keys and
+whole-object writers stand.
+[ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md) spells
+the objects' `palette` and `ramp` as `range` and `scheme`, and reads a field's
+kind off `scale` alone, which retires the MarkColor exception below; the rule
+this record states stands.
 
 ## Context
 
@@ -35,16 +39,17 @@ field for the object to load.
 
 **A channel object refuses keys and types, never a combination.** The one
 preprocessor, `normalizeChannel` (`@jbrowse/display-kit/colorConfigSchema`),
-checks that `domain` and `palette` are lists and carries a numeric `domain` as
-strings; `closed` still refuses an undeclared key. Facet, FeatureColor,
-ManhattanColor, RibbonColor, MarkColor, MarkGlyph and MarkValue all use it.
+checks that `domain` and ~~`palette`~~ `range` (ADR-151) are lists and carries a
+numeric `domain` as strings; `closed` still refuses an undeclared key. Facet,
+FeatureColor, ManhattanColor, RibbonColor, MarkColor, MarkGlyph and MarkValue
+all use it.
 
 **`scale` is unset by default** (`maybeStringEnum`) on ManhattanColor,
 RibbonColor, MarkColor and MarkGlyph. `paintedScale` reads it: unset is
-`categorical` beside a `field` (MarkColor: `linear` beside a `ramp`) and
-`none` without; a scale that reads a field paints `value` until one is named.
-Every reader goes through it, so an explicit `none` is a real state that
-survives a reload.
+`categorical` beside a `field` ~~(MarkColor: `linear` beside a `ramp`)~~
+(superseded by ADR-151: a ramp asks for `scale: 'linear'`) and `none` without; a
+scale that reads a field paints `value` until one is named. Every reader goes
+through it, so an explicit `none` is a real state that survives a reload.
 
 **A slot the scale does not read waits.** `{ field: 'population', scale: 'ld' }`
 paints by LD and keeps the field. The Manhattan Single color and LD items and

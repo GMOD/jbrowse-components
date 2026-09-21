@@ -410,7 +410,7 @@ function manhattanColorStep(
     ? {
         path: `${colorBy} → Field... → enter "${field}"`,
         note:
-          asList(scale.domain) || asList(scale.palette)
+          asList(scale.domain) || asList(scale.range)
             ? 'The order and colors the values take have no menu row; the figure declares them in the track config.'
             : undefined,
       }
@@ -418,7 +418,7 @@ function manhattanColorStep(
 }
 
 // The canvas displays' `color` object: a string is the constant, and
-// `{ field, domain, palette }` a field through a palette. The dialog names the
+// `{ field, domain, range }` a field through a range. The dialog names the
 // field; the order and colors it spends are the JSON the same dialog opens.
 function colorStep(
   value: unknown,
@@ -448,7 +448,7 @@ function colorStep(
       return undefined
     }
     const colorBy = `${TRACK_MENU} → Color by...`
-    if (asList(scale.domain) || asList(scale.palette)) {
+    if (asList(scale.domain) || asList(scale.range)) {
       return { path: `${colorBy} → Attribute... → Edit as JSON...` }
     }
     return field === 'strand' && displayType === 'LinearBasicDisplay'

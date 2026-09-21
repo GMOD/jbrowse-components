@@ -342,7 +342,7 @@ plus `facet: ""` where it was an overlapping mode. Nothing migrates.
 ## The wiggle color is one `color` object
 
 `color` on `LinearWiggleDisplay` is a CSS color string, or
-`{ field, scale, domain, palette | ramp }` — the object every other display's
+`{ field, scale, domain, range, scheme }` — the object every other display's
 color already was. `posColor`, `negColor`, `useBicolor` and `densityColorRamp`
 stop loading, and `bicolorPivot` is `origin`, the mark display's slot, which is
 also the value the bars grow from.

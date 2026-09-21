@@ -8,9 +8,12 @@ summary: "The alignments displays hold two colour objects: `color` fills the rea
 ## Status
 
 Accepted (2026-09-20). Supersedes one decision of
-[ADR-148](adr-148-the-alignments-read-fill-is-the-colour-object.md) ("A
-per-base variable is a field too") and its rejected alternative "Splitting the
-per-base layers from the read fill". Everything else in ADR-148 stands.
+[ADR-148](adr-148-the-alignments-read-fill-is-the-colour-object.md) ("A per-base
+variable is a field too") and its rejected alternative "Splitting the per-base
+layers from the read fill". Everything else in ADR-148 stands.
+[ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md) spells
+the colour object's `palette` and `ramp` as `range` and `scheme`, so the
+spellings below that name them read that way now.
 
 ## Context
 
@@ -34,9 +37,9 @@ hue at base grain belonged to the modifications alone.
 **Two colour objects, one per mark.** `color` is the read fill (ADR-148).
 `baseColor` (`AlignmentsBaseColor`) names the per-base variable: `field` and a
 `scale` of `none` alone, a string lifting into `field`. It declares no `domain`,
-`palette` or `ramp`, since each of its fields paints a vocabulary or ramp of its
-own and nothing reads a declared one. The multi-sample variant displays hold
-`color` and `rowColor` on the same ground
+~~`palette` or `ramp`~~ `range` or `scheme` (ADR-151), since each of its fields
+paints a vocabulary or ramp of its own and nothing reads a declared one. The
+multi-sample variant displays hold `color` and `rowColor` on the same ground
 ([ADR-131](adr-131-a-categorical-channel-is-one-config-object.md)).
 
 **The runtime form splits the same way.** `colorBy` is a `ReadColorBy`, whose
@@ -82,14 +85,15 @@ when one is set.
   modification-coloured pileup its marks.
 - The default tag palette leads with a blue and a pink, and the two-colour
   modification view paints blue and red. A figure combining them reads better
-  with a declared `color.palette` of two quiet tones.
-- `jb2export` gains a `baseColor:` modifier beside `color:`, and a per-base
-  name on `color:` is refused with the modifier that draws it. The colour
-  object's other slots are `slot.path=value` writes
-  (`color.palette=#d9c9a3,#b7c4b1`), which reach any display slot and merge into
-  one settings object with the named modifiers and the JSON form. The display
-  refuses a slot it does not declare and `jb2export` fails on that report, so
-  the path form needs no schema of its own.
+  with a declared ~~`color.palette`~~ `color.range` (ADR-151) of two quiet
+  tones.
+- `jb2export` gains a `baseColor:` modifier beside `color:`, and a per-base name
+  on `color:` is refused with the modifier that draws it. The colour object's
+  other slots are `slot.path=value` writes (~~`color.palette=#d9c9a3,#b7c4b1`~~
+  `color.range=#d9c9a3,#b7c4b1` since ADR-151), which reach any display slot and
+  merge into one settings object with the named modifiers and the JSON form. The
+  display refuses a slot it does not declare and `jb2export` fails on that
+  report, so the path form needs no schema of its own.
 
 ## Rejected alternatives
 

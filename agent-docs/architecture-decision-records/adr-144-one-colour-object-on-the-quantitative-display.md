@@ -1,20 +1,24 @@
 ---
 status: Accepted
-summary: "The quantitative display's six colour spellings — `color`, `posColor`, `negColor`, `useBicolor`, `bicolorPivot`, `densityColorRamp` and the `colorImpliesSolid` preprocessor that inferred one from another — become one `color` object, declared through display-kit's `colorChannelSlots` + `colorPaletteSlot` + `colorRampSlot` the way `markColorSchema` is: a CSS string, or a field through `none | categorical | linear | log | threshold`. `score` through `threshold` is the bicolor plot and through `linear`/`log` the density ramp; `source` through `categorical` is a palette entry per subtrack. `bicolorPivot` becomes `origin`, the mark display's slot with the mark display's meaning, and `domainMid` is new on the shared ramp slot. The layout's default lives in a resolved getter, `effectiveColor`, not in a `defaultValue` that cannot move with a layout. `ChannelSpecDialog` replaces the display's own colour dialog, and the channel spec carries the whole object. No migration"
+summary: "The quantitative display's six colour spellings — `color`, `posColor`, `negColor`, `useBicolor`, `bicolorPivot`, `densityColorRamp` and the `colorImpliesSolid` preprocessor that inferred one from another — become one `color` object, declared through display-kit's `colorChannelSlots` + `colorPaletteSlot` + `colorRampSlot` the way `markColorSchema` is: a CSS string, or a field through `none | categorical | linear | log | threshold`. `score` through `threshold` is the bicolor plot and through `linear`/`log` the density ramp; `source` through `categorical` is a palette entry per subtrack. `bicolorPivot` becomes `origin`, the mark display's slot with the mark display's meaning, and `domainMid` is new on the shared ramp slot. The layout's default lives in a resolved getter, `effectiveColor`, not in a `defaultValue` that cannot move with a layout. `ChannelSpecDialog` replaces the display's own colour dialog, and the channel spec carries the whole object. No migration. ADR-151 spells `palette` and `ramp` as `range` and `scheme`, from `colorRangeSlot` and `colorRampSlots`"
 ---
 
 # ADR-144: One colour object on the quantitative display
 
 ## Status
 
-Accepted (2026-09-19). Follows
-[ADR-142](adr-142-one-value-scale-object.md) and
-[ADR-143](adr-143-one-quantitative-display-and-facet-is-the-layout.md).
-Applies [ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)'s
+Accepted (2026-09-19). Follows [ADR-142](adr-142-one-value-scale-object.md) and
+[ADR-143](adr-143-one-quantitative-display-and-facet-is-the-layout.md). Applies
+[ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)'s
 shared colour shape to the display that had not taken it, and finishes
 superseding [ADR-016](adr-016-bicolorpivot-stays-in-worker.md).
 [plugins/wiggle/src/CLAUDE.md](../../plugins/wiggle/src/CLAUDE.md) is the
 operational doc.
+[ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md)
+supersedes the `palette` and `ramp` members this record declares, which it
+spells `range` and `scheme`, and the `colorPaletteSlot` and `colorRampSlot`
+pieces, which are `colorRangeSlot` and `colorRampSlots`; the wiggle's colour
+object and its layout default stand.
 
 ## Context
 
@@ -40,16 +44,17 @@ moved off the worker so no colour setting is a fetch key.
 ## Decision
 
 **`color` is the one colour setting**, declared as `WiggleColor` through
-`colorChannelSlots({ scales: COLOR_SCALES, … })` + `colorPaletteSlot` +
-`colorRampSlot` + `colorChannelOptions('color')`, with `value` a `maybeColor`
+`colorChannelSlots({ scales: COLOR_SCALES, … })` + ~~`colorPaletteSlot` +
+`colorRampSlot`~~ (`colorDomainSlot`, `colorRangeSlot` and `colorRampSlots`
+since ADR-151) + `colorChannelOptions('color')`, with `value` a `maybeColor`
 so "nothing written" is a state the display can read.
 
 | the picture                       | the object                                                            |
 | --------------------------------- | --------------------------------------------------------------------- |
-| bicolor xyplot, line, scatter     | `{ field: 'score', scale: 'threshold', domain: [], palette: [neg, pos] }` |
+| bicolor xyplot, line, scatter     | ~~`{ field: 'score', scale: 'threshold', domain: [], palette: [neg, pos] }`~~ `{ field: 'score', scale: 'threshold', domain: [], range: [neg, pos] }` (ADR-151) |
 | one solid colour                  | `'#…'`, a string                                                      |
 | density, the white-centred fade   | the same threshold pair, which density reads as its two fade ends      |
-| density, a named or stopped ramp  | `{ field: 'score', scale: 'linear', ramp: ['viridis'] }`               |
+| density, a named or stopped ramp  | ~~`{ field: 'score', scale: 'linear', ramp: ['viridis'] }`~~ `{ field: 'score', scale: 'linear', scheme: 'viridis' }` (ADR-151) |
 | a colour per source               | `{ field: 'source', scale: 'categorical' }`                           |
 
 An empty threshold `domain` cuts at the `origin`, and a ramp with no
@@ -60,12 +65,12 @@ display's slot with the mark display's doc sentence: the value bars grow from,
 and what a colour scale reads where its own domain says nothing. One word for
 one idea, across the two displays that have it.
 
-**`domainMid` is new on `colorRampSlot`** (`maybeNumber`, Vega-Lite's name):
-the value the ramp's middle stop sits at. `buildColorRampLut` bakes the warp
-into the table rather than warping per read, so the shader, the Canvas2D
-fillStyle table and the legend bar all sample one evenly spaced LUT and cannot
-disagree about it. The mark display gets a diverging ramp on any mark out of
-the same slot.
+**`domainMid` is new on ~~`colorRampSlot`~~ `colorRampSlots` (ADR-151)**
+(`maybeNumber`, Vega-Lite's name): the value the ramp's middle stop sits at.
+`buildColorRampLut` bakes the warp into the table rather than warping per read,
+so the shader, the Canvas2D fillStyle table and the legend bar all sample one
+evenly spaced LUT and cannot disagree about it. The mark display gets a
+diverging ramp on any mark out of the same slot.
 
 **`effectiveColor` is where the layout decides.** Several sources in one plot
 box default to `{ field: 'source' }`, because overlaid plots need a colour each
@@ -88,11 +93,11 @@ LUT bytes in place of a ramp name.
 radio and a pivot field that no longer exist; `Edit color...` now opens the
 shared JSON box on the same object a config file holds, so a colour a session
 spec can carry is a colour the dialog can write. `ChannelSpec` and `parseColor`
-carry `scale`, `ramp` and `domainMid` alongside `field`, `domain` and
-`palette`, and hold a spec to the display's own `scale` enum
-(`colorScaleChoicesOf`, off the slot) rather than to FeatureColor's five
-members. The tree-sidebar per-row dialog stays where it was: it edits adapter
-row metadata under the facet, not the channel.
+carry `scale`, ~~`ramp`~~ `scheme` and `domainMid` alongside `field`, `domain`
+and ~~`palette`~~ `range` (ADR-151), and hold a spec to the display's own
+`scale` enum (`colorScaleChoicesOf`, off the slot) rather than to FeatureColor's
+five members. The tree-sidebar per-row dialog stays where it was: it edits
+adapter row metadata under the facet, not the channel.
 
 **The key follows the scale**: the ramp for `linear`/`log`, a row per source
 for `categorical`, a row per interval for a `threshold` whose cut the config

@@ -7,8 +7,11 @@ summary: "A scale is declared on the channel it scales and resolved wherever it 
 
 ## Status
 
-Superseded by [ADR-141](adr-141-one-y-scale-the-displays.md) for
-§"`encoding.y` carries the value scale"; the colour-ramp half stands.
+Superseded by [ADR-141](adr-141-one-y-scale-the-displays.md) for §"`encoding.y`
+carries the value scale"; the colour-ramp half stands. Where this record spells
+the colour channel `palette | ramp` and pins a ramp with `domain`, the channel
+says `range`, `scheme`, `domainMin` and `domainMax` since
+[ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md).
 
 Accepted (2026-09-10). Closes the two seams
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) named — "the

@@ -87,7 +87,7 @@ in full and of the format-typed displays only where it says so.
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own. An adapter with zoom levels is sent the view's `bpPerPx` ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)), so a BigWig answers from the summary tier the wiggle display reads |
 | transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup` — each step its own schema taking only its own slots ([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)), run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own | whole, layout included — `pileup` is a read pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
-| scale | domain → range, separate from the encoding | the colour and glyph channels carry their own, `{ field, scale, domain, palette \| range \| ramp }`, read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (a quantitative ramp); the value scale is the display's one `scales.y`, which every mark's `encoding.y` field is read through and `ScoreAxisMixin` derives the axis from ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md), generalised to every quantitative display by [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)) | whole, declared in one place |
+| scale | domain → range, separate from the encoding | the colour and glyph channels carry their own, `{ field, scale, domain, range }` and on a ramp `domainMin`, `domainMax` and `scheme`, read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (a quantitative ramp); the value scale is the display's one `scales.y`, which every mark's `encoding.y` field is read through and `ScoreAxisMixin` derives the axis from ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md), generalised to every quantitative display by [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)) | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, its title, hatches, and the reference lines `scales.y.rules` declares (`packages/wiggle-core/src/ScoreAxisMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
 | layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every drawing mark folds into the display's one y domain, ggplot2's one-scale-per-aesthetic rule ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the domain, legend and row count fold only the marks drawing | y is the plot's, colour and glyph are each mark's; semantic zoom per layer; the display's `facet` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
@@ -243,7 +243,12 @@ The seams, named honestly:
   or a ramp's stops, and `scheme` a named ramp from one table every baker
   reads. `threshold` is ggplot2's `scale_colour_steps`: ascending cut points in
   `domain` and one `range` colour more, so a value takes the bin it falls in
-  (`thresholdIndex`, `@jbrowse/core/util/thresholdScale`).
+  (`thresholdIndex`, `@jbrowse/core/util/thresholdScale`). The quantitative
+  display is the exception: its layers part into two sides of one value, so it
+  paints the first cut and the first two `range` colours, and neither paints
+  nor keys a second cut
+  ([ADR-144](../architecture-decision-records/adr-144-one-colour-object-on-the-quantitative-display.md)
+  §"Rejected alternatives").
   The ribbon's `strand`, `identity`,
   `mappingQual` and `dnds` are fields with a vocabulary or ramp of their own,
   as synteny-core's `continuousRampConfig` keys them
@@ -388,7 +393,7 @@ hidden sections with their key-space reset `HiddenGroupsMixin.ts`.
 
 **Edit as JSON...** in the feature display's Group by and Color by attribute
 dialogs is an editor over the display's two settings and the filter override:
-`{ facet: "strand" | { field, domain }, color: "css" | { field, domain, palette }, filter }`.
+`{ facet: "strand" | { field, domain }, color: "css" | { field, domain, range }, filter }`.
 `@jbrowse/display-kit/channelSpec` parses the text through
 `preProcessConfigSnapshot`, the two objects' own lift and checks, so the box
 refuses what a config file cannot hold, and a spec naming no field or colour
@@ -398,7 +403,7 @@ constant, since the dialog has no dormant-field spelling; the dialog hands `face
 through `setFacet` and `setColorScale` (`groupByChannelSpec`).
 
 **Every categorical channel reads its field through one object**,
-`categoricalField(field, { domain, palette })`
+`categoricalField(field, { domain, range })`
 (`packages/core/src/util/categoricalField.ts`): `key` files a value, `compare`
 orders keys, `label` and `sectionLabel` name them in a key and on a chip, and
 `color` paints them. The facets, the encoder, the canvas worker's colour walk

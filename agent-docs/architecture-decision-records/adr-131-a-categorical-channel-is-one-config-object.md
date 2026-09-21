@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display's facet and its categorical colour are one config object each — `facet: \"HP\" | { field, domain }` and `color: \"red\" | \"jexl:…\" | { field, domain, palette }` — replacing the flat `facetField`/`facetDomain`/`colorField`/`colorDomain`/`colorPalette` slots on the feature, mark and multi-sample variant displays, where the row tint is `rowColor`, and the alignments displays' `groupBy`, now the same `facet` with read dimensions and `tags.HP` as fields. The GWAS and multi-way colours are one object too, with a `scale` naming each display's own schemes. A string is the channel's one-value form and lifts into the object; an object replaces the channel whole and `null` clears it; a key the object does not declare is refused when the snapshot is read (ADR-133 dropped this record's refusals of slot combinations). `applyDisplaySettings` writes a sub-schema, `describeSlots` lists one, and Edit as JSON is an editor over the two settings rather than a translation onto flat slots"
+summary: "A display's facet and its categorical colour are one config object each — `facet: \"HP\" | { field, domain }` and `color: \"red\" | \"jexl:…\" | { field, domain, palette }` — replacing the flat `facetField`/`facetDomain`/`colorField`/`colorDomain`/`colorPalette` slots on the feature, mark and multi-sample variant displays, where the row tint is `rowColor`, and the alignments displays' `groupBy`, now the same `facet` with read dimensions and `tags.HP` as fields. The GWAS and multi-way colours are one object too, with a `scale` naming each display's own schemes. A string is the channel's one-value form and lifts into the object; an object replaces the channel whole and `null` clears it; a key the object does not declare is refused when the snapshot is read (ADR-133 dropped this record's refusals of slot combinations). `applyDisplaySettings` writes a sub-schema, `describeSlots` lists one, and Edit as JSON is an editor over the two settings rather than a translation onto flat slots. The colour object's `palette` is `range` since ADR-151"
 ---
 
 # ADR-131: A categorical channel is one config object
@@ -9,7 +9,10 @@ summary: "A display's facet and its categorical colour are one config object eac
 
 Accepted (2026-09-18). Supersedes the "two flat slots" sentence of
 [ADR-130](adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md),
-whose level and semantics for the facet stand.
+whose level and semantics for the facet stand. The colour object's `palette`,
+which this record's shapes spell out, is `range` since
+[ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md), and
+`categoricalField` takes `{ domain, range }`.
 
 ## Context
 
@@ -44,8 +47,10 @@ design, answered each point and reversed it.
   alignments displays; the alignments displays also take a read dimension
   (`pairOrientation`, `splitRead`, `mapq`, ...) as the field, and a tag as
   `tags.HP`.
-- `color` (`colorConfigSchema`, `FeatureColor`): `{ value, field, domain,
-  palette }`. `"red"` and `"jexl:…"` lift to `{ value }`; `value` is a
+- `color` (`colorConfigSchema`, `FeatureColor`): ~~`{ value, field, domain,
+  palette }`~~ `{ value, field, scale, domain, range }` since
+  [ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)
+  and ADR-151. `"red"` and `"jexl:…"` lift to `{ value }`; `value` is a
   `maybeColor`, so an unset colour still lets a BED `itemRgb` paint. On the
   canvas base display, so the feature and variant displays.
 - The multi-sample variant displays' row tint is `rowColor`, a plain field
@@ -110,19 +115,20 @@ its own slots and the declared shorthand.
   `LGVSyntenyDisplay` inherits it. The model's getter and action are `facet`
   and `setFacet`; the worker request still says `groupBy`, the partition
   mechanism's name.
-- **The GWAS Manhattan and multi-way colours are one object too** (landed
-  the same day), each with a `scale` naming the display's own schemes, as
-  `MarkColor` has: `color: "goldenrod" | { field, domain, palette } |
-  { scale: "ld" }` (`ManhattanColor`), and `ribbonColor: "grey" |
-  { scale: "strand" } | { field, domain }` (`RibbonColor`), whose scales are
-  the synteny view's scheme names and whose `field` is a declared attribute
-  column. A `field` with no `scale` reads through `categorical`; a `field`
-  under another scale waits unread since
-  [ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md), which
-  also made `scale` unset by default. `RibbonColor` declares no `palette`: a
-  label's colour there is its position in synteny-core's palette, which
-  nothing configures. The multi-way model keeps a synteny mode as the runtime
-  mode (`ribbonColorBy.ts`), so its geometry and menu are unchanged.
+- **The GWAS Manhattan and multi-way colours are one object too** (landed the
+  same day), each with a `scale` naming the display's own schemes, as
+  `MarkColor` has: ~~`color: "goldenrod" | { field, domain, palette } | { scale:
+  "ld" }`~~ (`ManhattanColor`, `"goldenrod" | { field, domain, range }` with LD
+  the field `ld` since ADR-135 and ADR-151), and `ribbonColor: "grey" | { scale:
+  "strand" } | { field, domain }` (`RibbonColor`), whose scales are the synteny
+  view's scheme names and whose `field` is a declared attribute column. A
+  `field` with no `scale` reads through `categorical`; a `field` under another
+  scale waits unread since
+  [ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md), which also
+  made `scale` unset by default. `RibbonColor` declares no `palette`: a label's
+  colour there is its position in synteny-core's palette, which nothing
+  configures. The multi-way model keeps a synteny mode as the runtime mode
+  (`ribbonColorBy.ts`), so its geometry and menu are unchanged.
 - ~~**The synteny view's `colorBy` stays a mode string**: a view property with
   launch keys and v4 `init` compatibility, not a track config slot.~~
   Superseded by
