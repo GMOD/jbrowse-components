@@ -3814,6 +3814,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "autorunOnReadyView",
+        "installAnimationDeadline",
         "makeSettingsLoopGuard",
         "onDisplayedRegionsChange"
       ],
