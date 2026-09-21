@@ -9,16 +9,14 @@ import type { FollowAnswerCache } from './followAnswerCache.ts'
 import type { FollowTransform } from './followTransform.ts'
 import type { SpreadDecision } from './spreadDecision.ts'
 
-// What one settle decided: which block places this level, which axis it was
-// picked on, and the affine shortcut the frame pass may take until the next
-// settle. One object because these are only correct TOGETHER — a transform left
+// What one settle decided: which block places this level, and the affine
+// shortcut the frame pass may take until the next settle. One object because these are only correct TOGETHER — a transform left
 // behind by a previous `feat` maps the window through the wrong block — and as
 // loose fields on the state that invariant rested on their being assigned next
 // to each other.
 export interface LevelPick {
   feat: FeatPos
   display: LinearSyntenyDisplayModel
-  toMate: boolean
   // The contig this level last placed the row on, which the envelope's vote
   // between the mate contigs under the window is biased toward. Here rather
   // than beside the state because it is the same decision the `feat` above is:
@@ -47,6 +45,10 @@ export interface LevelCigarMap {
 // Not observable: the exact pass writes this every pass, so an observable would
 // make it a dependency of the run that writes it and re-enter forever.
 export interface FollowLevelState {
+  // which way the level last followed: toward the mate row or away from it.
+  // The pick and the spread decision were made on that axis and say nothing
+  // about the other
+  toMate?: boolean
   pick?: LevelPick
   map?: LevelCigarMap
   // the block a map is in flight for, so a settle inside a block already being
@@ -70,6 +72,9 @@ export interface FollowLevelState {
   // is panning along — and it also carries the hysteresis, which needs a
   // previous answer to be hysteresis at all.
   spread?: SpreadDecision
+  // Each anchor contig's mate contig at the last spread, which that rung's vote
+  // leans toward the way a pick's `target` leans the single-contig one
+  spreadTargets?: ReadonlyMap<string, string>
   // Where the row was and where the last navigation sent it, so a repeat of the
   // same pair can be recognised as a navigation that achieved nothing. Cleared
   // the moment the row arrives — see `navSignature`.
@@ -105,6 +110,14 @@ export function createFollowLevelStates<Level extends object>() {
   // underneath it, which is what `generation` says, so the signal's lifetime is
   // exactly one generation.
   let controller: AbortController | undefined
+  function get(level: Level) {
+    let state = states.get(level)
+    if (!state) {
+      state = { seq: 0, answer: createFollowAnswerCache() }
+      states.set(level, state)
+    }
+    return state
+  }
   return {
     // Which reset of the store an answer was planned under. `seq` cannot say
     // it: dropping the map leaves an in-flight `execute` holding a state object
@@ -112,34 +125,26 @@ export function createFollowLevelStates<Level extends object>() {
     get generation() {
       return generation
     },
-    get(level: Level) {
-      let state = states.get(level)
-      if (!state) {
-        state = { seq: 0, answer: createFollowAnswerCache() }
-        states.set(level, state)
+    get,
+    // The state for a pass following `toMate`, with the decisions made facing
+    // the other way dropped: a pick and a spread handed across a flip were
+    // the next plan's incumbents on an axis they were never made on.
+    facing(level: Level, toMate: boolean) {
+      const state = get(level)
+      if (state.toMate !== toMate) {
+        state.toMate = toMate
+        state.pick = undefined
+        state.spread = undefined
+        state.spreadTargets = undefined
       }
       return state
     },
-    // What the last settle chose, for the frame pass — which only steers by a
-    // decision the exact pass has already made, and so must not mint state of
-    // its own for a level that pass has never reached.
-    pickFor(level: Level) {
-      return states.get(level)?.pick
-    },
-    // What was decided about the multi-contig rung, for the frame pass to
-    // follow. Like `pickFor`, it does not mint: undefined is the frame pass's
-    // cue to decide for itself.
-    spreadFor(level: Level) {
-      return states.get(level)?.spread
-    },
-    // The map only if it is THIS block's. `cigarMapSpan` re-checks the block's
-    // coordinates, which is the check that matters, but a map is per block and
-    // the id is what says so — the coordinates alone would accept the map of a
-    // different alignment sharing an extent, which an all-vs-all file has by
-    // the row.
-    mapFor(level: Level, featureId: string) {
-      const map = states.get(level)?.map
-      return map?.featureId === featureId ? map.value : undefined
+    // What the last pass facing `toMate` decided, for the frame pass, which
+    // steers only by decisions already made and so mints no state of its own:
+    // undefined is its cue to decide for itself.
+    peek(level: Level, toMate: boolean) {
+      const state = states.get(level)
+      return state?.toMate === toMate ? state : undefined
     },
     // The signal every request planned under this generation carries, so that
     // dropping the store stops the work as well as the answer.

@@ -127,13 +127,14 @@ export function followWindowsMapping({
   windows,
   toMate,
   mateAssembly,
-  incumbentTarget,
+  incumbentTargets,
 }: {
   data: SyntenyFeatureData
   windows: FollowWindow[]
   toMate: boolean
   mateAssembly?: string
-  incumbentTarget?: string
+  // per window, the contig it last mapped to
+  incumbentTargets?: readonly (string | undefined)[]
 }): (ResolvedSpan | undefined)[] {
   const {
     refNameIds,
@@ -237,7 +238,8 @@ export function followWindowsMapping({
     offer(target.startAt, aLo, aHi, atLo, atHi)
     offer(target.endAt, aLo, aHi, atLo, atHi)
   }
-  return targetsPerWindow.map(targets => {
+  return targetsPerWindow.map((targets, w) => {
+    const incumbentTarget = incumbentTargets?.[w]
     let best: Target | undefined
     let incumbent: Target | undefined
     for (const t of targets) {
@@ -281,6 +283,6 @@ export function followWindowMapping({
     windows: [window],
     toMate,
     mateAssembly,
-    incumbentTarget,
+    incumbentTargets: [incumbentTarget],
   })[0]
 }

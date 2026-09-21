@@ -111,11 +111,41 @@ test('a track whose data has not arrived contributes nothing', () => {
 // moving row's contigs. A refused spread's header offers the reader the ones
 // worth scrolling onto, and a contig with no alignment in the file is not one.
 test('reports the anchor contigs that mapped, not the ones asked about', () => {
-  expect(
-    followSpreadSpans({
-      displays: [permuted],
-      windows: [win('chr1', 0, 20_000), win('chrUn', 0, 1_000)],
-      toMate: true,
-    }).mapped,
-  ).toEqual(new Set(['chr1']))
+  const { mapped, spans } = followSpreadSpans({
+    displays: [permuted],
+    windows: [win('chr1', 0, 20_000), win('chrUn', 0, 1_000)],
+    toMate: true,
+  })
+  expect(mapped).toEqual(new Map([['chr1', spans[0]!.refName]]))
+})
+
+// A window over a fusion breakpoint: the evidence moves from one mate contig to
+// the other as the anchor pans, level at the midpoint. With no incumbent the
+// spread took whichever led by a base, and a whole-genome row jumped between
+// two chromosomes frame to frame.
+test('a window leans toward the contig it last answered on', () => {
+  const fusion = display([
+    {
+      refName: 'chr1',
+      start: 0,
+      end: 5_100,
+      mateRefName: 'Pp01',
+      mateStart: 0,
+      mateEnd: 5_100,
+    },
+    {
+      refName: 'chr1',
+      start: 5_100,
+      end: 10_000,
+      mateRefName: 'Pp07',
+      mateStart: 0,
+      mateEnd: 4_900,
+    },
+  ])
+  const windows = [win('chr1', 0, 10_000), win('chr3', 0, 1_000)]
+  const answer = (incumbents?: Map<string, string>) =>
+    followSpreadSpans({ displays: [fusion], windows, toMate: true, incumbents })
+      .mapped
+  expect(answer().get('chr1')).toBe('Pp01')
+  expect(answer(new Map([['chr1', 'Pp07']])).get('chr1')).toBe('Pp07')
 })

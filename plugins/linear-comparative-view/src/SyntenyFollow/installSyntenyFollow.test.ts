@@ -45,6 +45,7 @@ const WIDTH = 800
 // is the only state the frame pass can be seen in.
 const Row = Base1DView.volatile(() => ({
   heldBlocks: undefined as ContentBlock[] | undefined,
+  navigations: 0,
 }))
   .views(self => ({
     get coarseDynamicBlocks() {
@@ -62,6 +63,9 @@ const Row = Base1DView.volatile(() => ({
   .actions(self => ({
     holdCoarseBlocks() {
       self.heldBlocks = [...self.dynamicBlocks.contentBlocks]
+    },
+    releaseCoarseBlocks() {
+      self.heldBlocks = undefined
     },
     horizontallyFlip() {
       self.setDisplayedRegions(
@@ -94,6 +98,7 @@ const Row = Base1DView.volatile(() => ({
       // bpPerPx from a backwards pair rather than refusing
       const backwards = compareBpOffsets(a, b) > 0
       moveTo(self, backwards ? b : a, backwards ? a : b)
+      self.navigations += 1
     },
     // navTo's fallback, which is what the follow reaches for a span on a contig
     // the row is not displaying: `showRegions` with the one region the
@@ -573,6 +578,33 @@ describe('a row nudged off a single-contig answer', () => {
     await settle()
     expect(rows[1]!.offsetPx).toBe(before)
   })
+})
+
+// The frame pass places the moving row through the drag, and the settle that
+// follows compared its answer against the row's coarse blocks, which refresh on
+// their own throttle after the anchor's and so still named where the row was
+// before the drag. Every settle then re-navigated a row already on its answer.
+test('a settle after a drag the frame pass placed does not navigate again', async () => {
+  const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+  const { rows, host } = twoRows([display([pairing('chr1', 'chr1')])])
+  place(rows[0]!, 400_000, 500_000)
+  installSyntenyFollow(host)
+  await settle()
+  await settle()
+  const navigations = rows[1]!.navigations
+
+  rows[0]!.holdCoarseBlocks()
+  rows[1]!.holdCoarseBlocks()
+  place(rows[0]!, 420_000, 520_000)
+  rows[0]!.releaseCoarseBlocks()
+  await settle()
+  await settle()
+
+  expect(rows[1]!.navigations).toBe(navigations)
+  expect(rows[1]!.dynamicBlocks.contentBlocks[0]!.start).toBeCloseTo(
+    420_000,
+    -3,
+  )
 })
 
 const reversedOf = (view: ReturnType<typeof row>) =>

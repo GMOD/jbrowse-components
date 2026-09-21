@@ -169,9 +169,15 @@ export function decideSpread({
   windows: FollowWindow[]
   spans: ResolvedSpan[]
   /** the anchor contigs a span came back for, from `followSpreadSpans` */
-  mapped: ReadonlySet<string>
+  mapped: ReadonlyMap<string, string>
   previous?: SpreadDecision
 }): SpreadDecision {
+  // One contig answering is the rung below's case whatever else is on screen:
+  // spread, the row was placed by a union of one, with no walk and no strand
+  const [only, ...others] = mapped.keys()
+  if (only !== undefined && others.length === 0) {
+    return { spreading: false, onto: only, elsewhere: [] }
+  }
   if (
     partialShare({ blocks, regions: stayingRegions, windows }) <= MOSTLY_PARTIAL
   ) {

@@ -110,8 +110,7 @@ export const ROW_NAVIGATIONS_HELD = new Set([
 ])
 
 // One level's placement, with the observables the async half needs already read
-// off the tree. `movingWindow` is `alreadyShowing`'s operand — where the row
-// ACTUALLY is, which the exact pass reads on purpose.
+// off the tree.
 //
 // The two fields off the `FollowPair` rather than the pair itself, so that this
 // says what the async half can still reach: `step` already carries the window,
@@ -122,7 +121,6 @@ interface FollowWork {
   level: FollowLevel
   movingView: LinearGenomeViewModel
   step: FollowStep
-  movingWindow: FollowWindow | undefined
   // the narrowest window the moving row can show, which is what lets
   // `alreadyShowing` terminate over an answer below it
   movingMinWidthBp: number
@@ -242,7 +240,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     level,
     movingView,
     step,
-    movingWindow,
     movingMinWidthBp,
     matchOrientation,
     anchorOrientation,
@@ -293,13 +290,19 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     state.pick = {
       feat: step.feat,
       display: step.display,
-      toMate: step.toMate,
       target: span.refName,
       transform: step.windowInsideFeat
         ? followTransform(step.window, span, step.feat.strand === -1)
         : undefined,
     }
     ensureCigarMap(state, step)
+    // WHERE THE ROW IS NOW, off its live blocks. The coarse ones the plan woke
+    // on refresh on their own 500ms throttle, so after a drag they still name
+    // where the row was before the frame pass placed it, and the settle
+    // re-navigated a row already on its answer.
+    const movingWindow = followAnchorWindow(
+      movingView.dynamicBlocks.contentBlocks,
+    )
     if (alreadyShowing(movingWindow, span, movingMinWidthBp)) {
       // arrived, so the next disagreement is a fresh one — a row the user
       // nudges away from here has to be navigable back to exactly this span
@@ -457,7 +460,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
    * ON AN ENVELOPE SETTLE TOO. The envelope itself reads no map, but the pick
    * is the widest block under the window, and a zoom into it mid-drag is placed
    * by the affine transform until the next settle unless the map is already
-   * here — the frame pass reads `mapFor(pick.feat.id)` the moment the window is
+   * here — the frame pass reads the pick's map the moment the window is
    * inside the block, and the map is a property of the block, not the window.
    */
   function ensureCigarMap(state: FollowLevelState, step: FollowStep) {
@@ -544,7 +547,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       windows,
       toMate,
       mateAssembly,
+      incumbents: state.spreadTargets,
     })
+    state.spreadTargets = mapped
     const decision =
       carried || !spans.length
         ? { spreading: true }
@@ -602,7 +607,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // that works once and never re-fires.
   function planLevel(pair: FollowPair, placed: PlacedWindows): FollowPlan {
     const { level, stayingView, movingView, toMate, mateAssembly } = pair
-    const state = levelStates.get(level)
+    const state = levelStates.facing(level, toMate)
     // UNCONDITIONALLY, so the checkbox is a dependency of the pass whichever
     // rung the level ends up on — read where it is used, at the bottom, a level
     // placed by the multi-contig rung registers none and the toggle waits for
@@ -649,8 +654,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // writing the row's regions. The multi-contig rung used to skip it and
     // waited on the level's refetch instead, ~1s on `volvox_contig_swap`; a
     // placement that writes the same numbers settles the same block keys, so
-    // the re-entry converges.
-    const movingWindow = followAnchorWindow(movingView.coarseDynamicBlocks)
+    // the re-entry converges. Where the row IS is read at execution, off its
+    // live blocks.
+    void movingView.coarseDynamicBlocks
 
     // THE THIRD RUNG. Inside one alignment the answer is a CIGAR walk, wider
     // than one it is the envelope of what lies under the window — and wider
@@ -704,7 +710,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         level,
         movingView,
         step,
-        movingWindow,
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
         matchOrientation,
         anchorOrientation: stayingView.displayedRegionsOrientation,
@@ -720,7 +725,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           step.display.coarseWalkIsApproximate),
       noSyntenyTrack,
       partial:
-        state.spread?.spreading === false && state.spread.onto
+        state.spread?.spreading === false &&
+        state.spread.onto &&
+        state.spread.elsewhere?.length
           ? {
               following: state.spread.onto,
               elsewhere: state.spread.elsewhere ?? [],
@@ -802,7 +809,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           mapped,
         })
       : { spreading: true }
-    levelStates.get(pair.level).spread = decision
+    levelStates.facing(pair.level, pair.toMate).spread = decision
     return decision
   }
 
@@ -850,6 +857,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
                 untracked(() => stayingView.dynamicBlocks.contentBlocks)
               : stayingView.dynamicBlocks.contentBlocks
           const windows = carried ?? followAnchorWindows(blocks!)
+          const state = levelStates.peek(level, toMate)
           let spreadSpans: ReturnType<typeof followSpreadSpans> | undefined
           const spreadAnswer = () =>
             (spreadSpans ??= followSpreadSpans({
@@ -857,6 +865,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
               windows,
               toMate,
               mateAssembly,
+              incumbents: state?.spreadTargets,
             }))
           // The multi-contig rung's ANSWER is recomputed here rather than
           // steered by the settle — it chooses no block, so there is nothing
@@ -868,7 +877,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // on screen before any settle has, and the settle then inherits that
           // answer as its previous one. `followRung` is the rule both apply.
           const decision =
-            levelStates.spreadFor(level) ??
+            state?.spread ??
             (blocks && windows.length > 1
               ? decideFrameSpread(pair, blocks, windows, spreadAnswer())
               : undefined)
@@ -877,7 +886,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             continue
           }
           if (rung.kind === 'spread') {
-            const { spans } = spreadAnswer()
+            const { spans, mapped } = spreadAnswer()
+            levelStates.facing(level, toMate).spreadTargets = mapped
             if (spans.length) {
               placed.set(movingView, followPlacedWindows(spans))
               self.holdFollowAnchor(() =>
@@ -887,12 +897,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             continue
           }
           const { window } = rung
-          // the block the last settle chose, rather than re-picking one per
-          // frame. Its direction has to match, since it was picked on whichever
-          // axis `toMate` was then, and its display has to be alive, since
-          // hiding a synteny track destroys it and reading featureData throws.
-          const pick = levelStates.pickFor(level)
-          if (!pick || pick.toMate !== toMate || !isAlive(pick.display)) {
+          // the block the last settle facing this way chose, rather than
+          // re-picking one per frame. Its display has to be alive, since hiding
+          // a synteny track destroys it and reading featureData throws.
+          const pick = state?.pick
+          if (!pick || !isAlive(pick.display)) {
             continue
           }
           const data = pick.display.featureData
@@ -906,7 +915,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             toMate,
             mateAssembly,
             transform: pick.transform,
-            map: levelStates.mapFor(level, pick.feat.id),
+            // the map only if it is this block's: the coordinates alone would
+            // take the map of another alignment sharing an extent
+            map:
+              state.map?.featureId === pick.feat.id
+                ? state.map.value
+                : undefined,
             incumbentTarget: pick.target,
           })
           if (

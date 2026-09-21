@@ -119,13 +119,17 @@ describe('how much of the placed row is answer', () => {
   })
 })
 
+// the anchor contigs that answered, each on the mate contig of the same name
+const answered = (...refNames: string[]) =>
+  new Map(refNames.map(refName => [refName, refName]))
+
 describe('the decision', () => {
   const straddle = {
     blocks: [block('chr1', 1331), block('chr2', 657)],
     stayingRegions: regions,
     movingRegions: regions,
     windows: [win('chr1', 900_000, CONTIG), win('chr2', 0, 100_000)],
-    mapped: new Set(['chr1', 'chr2']),
+    mapped: answered('chr1', 'chr2'),
   }
 
   test('a straddle whose answers are a genome apart is refused', () => {
@@ -162,7 +166,7 @@ describe('the decision', () => {
         stayingRegions: regions,
         movingRegions: regions,
         windows: [win('chr1', 0, CONTIG), win('chr9', 0, CONTIG)],
-        mapped: new Set(['chr1', 'chr9']),
+        mapped: answered('chr1', 'chr9'),
         spans: [
           { refName: 'chr1', start: 0, end: 100_000 },
           { refName: 'chr9', start: 0, end: 100_000 },
@@ -259,7 +263,7 @@ describe('the decision', () => {
           win('chr3', 0, 100_000),
         ],
         // chr3 is on screen and aligns to nothing in the file
-        mapped: new Set(['chr1', 'chr2']),
+        mapped: answered('chr1', 'chr2'),
         spans: [
           { refName: 'chr1', start: 0, end: CONTIG },
           { refName: 'chr9', start: 0, end: CONTIG },
@@ -281,7 +285,7 @@ describe('the decision', () => {
           win('chr2', 100, 600),
           win('chr3', 100, 600),
         ],
-        mapped: new Set(['chr2', 'chr3']),
+        mapped: answered('chr2', 'chr3'),
         spans: [
           { refName: 'chr1', start: 0, end: 1000 },
           { refName: 'chr5', start: 0, end: 1000 },
@@ -289,4 +293,19 @@ describe('the decision', () => {
       }),
     ).toMatchObject({ spreading: false, onto: 'chr2', elsewhere: ['chr3'] })
   })
+})
+
+// A second window with no alignment is filler: spread, the row was placed by a
+// union of one contig's answer, with no walk and no strand.
+test('one contig answering demotes to the rung below, with nothing elsewhere', () => {
+  expect(
+    decideSpread({
+      blocks: [block('chr1', 1331), block('chr2', 657)],
+      stayingRegions: regions,
+      movingRegions: regions,
+      windows: [win('chr1', 0, CONTIG), win('chr2', 0, CONTIG)],
+      spans: [{ refName: 'chr1', start: 0, end: CONTIG }],
+      mapped: answered('chr1'),
+    }),
+  ).toEqual({ spreading: false, onto: 'chr1', elsewhere: [] })
 })
