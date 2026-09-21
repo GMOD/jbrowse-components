@@ -1,7 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-import { captureStackViewports } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
+import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
 import { createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
