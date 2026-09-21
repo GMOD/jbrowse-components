@@ -75,10 +75,11 @@ export function widenAttributeRanges(
   return grown.length === 0 ? into : { ...into, ...Object.fromEntries(grown) }
 }
 
-// The declared order, applied at the read rather than to the accumulation:
+// The declared domain, applied at the read rather than to the accumulation:
 // `widenOne` above stays first-seen, so clearing the domain gives back the
-// order the fetches found. Identity-preserving like `widenAttributeRanges`,
-// and for the same reason.
+// order the fetches found. Each label range carries the domain, which also
+// decides its colors. Identity-preserving like `widenAttributeRanges`, and for
+// the same reason.
 export function orderAttributeLabels(
   ranges: Record<string, AttributeRange>,
   domain: readonly string[],
@@ -92,9 +93,10 @@ export function orderAttributeLabels(
       return []
     }
     const labels = [...range.labels].sort(compare)
-    return labels.every((label, i) => label === range.labels[i])
+    return labels.every((label, i) => label === range.labels[i]) &&
+      range.domain?.join('\u001F') === domain.join('\u001F')
       ? []
-      : ([[name, { ...range, labels }]] as const)
+      : ([[name, { ...range, labels, domain }]] as const)
   })
   return moved.length === 0
     ? ranges

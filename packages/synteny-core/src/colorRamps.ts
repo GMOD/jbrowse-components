@@ -200,6 +200,8 @@ export interface AttributeSpan {
 export interface AttributeLabels {
   labels: string[]
   colors: Record<string, string>
+  /** the view's declared `colorBy.domain`, which orders the labels and colors them */
+  domain?: readonly string[]
 }
 
 export type AttributeRange = AttributeSpan | AttributeLabels
@@ -214,13 +216,14 @@ export interface CategoricalMode {
   attribute: string
   labels: string[]
   colors: Record<string, string>
+  domain: readonly string[]
 }
 
 /**
- * How a column carrying text paints: one color per distinct label, ordinal by
- * the order the labels were first seen across the view, so a label keeps its
- * color as the window moves. Undefined for a field whose values are numbers,
- * a preset, or the constant.
+ * How a column carrying text paints: one color per distinct label, which
+ * depends only on the label and the declared domain, so every window, session
+ * and view agrees on it. Undefined for a field whose values are numbers, a
+ * preset, or the constant.
  */
 export function resolveCategoricalMode(
   field: string,
@@ -228,7 +231,12 @@ export function resolveCategoricalMode(
 ): CategoricalMode | undefined {
   const range = field ? ranges?.[field] : undefined
   return range && isAttributeLabels(range)
-    ? { attribute: field, labels: range.labels, colors: range.colors }
+    ? {
+        attribute: field,
+        labels: range.labels,
+        colors: range.colors,
+        domain: range.domain ?? [],
+      }
     : undefined
 }
 

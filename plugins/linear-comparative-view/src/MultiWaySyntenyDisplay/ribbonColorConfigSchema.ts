@@ -52,7 +52,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
     }),
     ...colorDomainSlot({
       domain:
-        "the order a text column's labels take: the labels listed here first, the rest sorted; a label's colour is its position, so this moves the key and the ribbons together; left empty the labels stay in the order the fetches first met them",
+        "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it",
     }),
   },
   colorChannelOptions('ribbonColor'),

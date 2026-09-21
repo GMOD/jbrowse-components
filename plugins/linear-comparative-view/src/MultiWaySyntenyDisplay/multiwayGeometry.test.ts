@@ -1,4 +1,4 @@
-import { refNameColor } from '@jbrowse/core/ui/colors'
+import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { SimpleFeature } from '@jbrowse/core/util'
 import {
   abgrAlpha,
@@ -418,7 +418,7 @@ describe('the ribbons', () => {
     const alpha = Math.round(0.4 * 255)
     expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR('#4DB5E3'), alpha))
     expect(data.colors[1]).toBe(
-      withAbgrAlpha(cssColorToABGR(refNameColor('B1', 0)), alpha),
+      withAbgrAlpha(cssColorToABGR(categoricalColor('B1')), alpha),
     )
     expect(data.colors[2]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))
 

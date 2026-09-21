@@ -1,4 +1,4 @@
-import { refNameColor } from '@jbrowse/core/ui/colors'
+import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
@@ -225,20 +225,26 @@ describe('a categorical attribute', () => {
     attributeRanges: { group: fetchLabels },
   })
 
-  test('paints the palette by view order and the file color where given', () => {
-    const fn = createComparativeColorFunction({
-      field: 'group',
-      data,
-      trackColor: '#000',
-      defaultColor: 0,
-      attributeRanges: {
-        group: { labels: ['C1', 'B1', 'A1a'], colors: fetchLabels.colors },
-      },
-    })
-    expect(fn(0)).toBe(cssColorToABGR(refNameColor('B1', 1)))
+  test('paints a label its own color whatever order the view met it in, and the file color where given', () => {
+    const paint = (labels: string[], domain?: string[]) =>
+      createComparativeColorFunction({
+        field: 'group',
+        data,
+        trackColor: '#000',
+        defaultColor: 0,
+        attributeRanges: {
+          group: { labels, colors: fetchLabels.colors, domain },
+        },
+      })
+    const fn = paint(['C1', 'B1', 'A1a'])
+    expect(fn(0)).toBe(cssColorToABGR(categoricalColor('B1')))
+    expect(paint(['B1', 'C1', 'A1a'])(0)).toBe(fn(0))
     expect(fn(1)).toBe(cssColorToABGR('#4DB5E3'))
     expect(fn(2)).toBe(UNLABELLED_COLOR)
     expect(fn(2)).not.toBe(MISSING_VALUE_COLOR)
+    expect(paint(['B1', 'C1', 'A1a'], ['C1', 'B1'])(0)).toBe(
+      cssColorToABGR(categoricalColor('B1', ['C1', 'B1'])),
+    )
   })
 
   test('hideUnlabelled draws the unlabelled row at zero alpha and leaves the rest', () => {

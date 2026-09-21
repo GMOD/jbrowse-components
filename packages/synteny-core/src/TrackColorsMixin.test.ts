@@ -138,7 +138,7 @@ describe('a categorical column', () => {
     })
     view.setColorDomain(['C1'])
     expect(view.attributeRanges).toEqual({
-      group: { labels: ['C1', 'A1a', 'B1'], colors: {} },
+      group: { labels: ['C1', 'A1a', 'B1'], colors: {}, domain: ['C1'] },
     })
     view.setColorDomain([])
     expect(view.attributeRanges).toBe(view.seenAttributeRanges)

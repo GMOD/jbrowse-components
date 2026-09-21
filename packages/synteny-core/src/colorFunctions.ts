@@ -1,4 +1,8 @@
-import { refNameColor, refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
+import {
+  categoricalColor as labelColor,
+  refNameColor,
+  refNamePaletteColorAt,
+} from '@jbrowse/core/ui/colors'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import {
   cssColorToABGR,
@@ -173,14 +177,11 @@ export function makeContinuousColorFunction(
 
 /**
  * The color a label paints: the file's own if the row carried one, else the
- * palette slot of the label's position in the VIEW's first-seen order, so the
- * same label is the same color in every fetch and every overlaid track.
+ * one core's categorical channel paints it under the declared domain, so the
+ * same label is the same color whichever window, session or view met it first.
  */
 export function categoricalColor(mode: CategoricalMode, label: string) {
-  const own = mode.colors[label]
-  return own === undefined
-    ? refNameColor(label, mode.labels.indexOf(label))
-    : own
+  return mode.colors[label] ?? labelColor(label, mode.domain)
 }
 
 /**

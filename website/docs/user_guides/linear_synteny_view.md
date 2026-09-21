@@ -210,11 +210,12 @@ ribbon band; close it with its own button and it stays away for that mode.
 A mode whose number a track does not carry leaves every ribbon the default
 color.
 
-A text column's labels are colored by their position in the list, which starts
-in the order the fetches met them. The view's `colorBy.domain` declares that
-order instead — the labels it lists first, the rest sorted — so a session can
-put an ancestral linkage group's names in the order a reader expects, and the
-ribbons and the legend rows move together.
+A text column's label paints the same color in every window and session. The
+view's `colorBy.domain` lists labels that take the palette in order and lead the
+legend, the rest sorted after them, so a session can put an ancestral linkage
+group's names in the order a reader expects and give each a distinct color.
+**Pin distinct colors**, under a text column's mode, writes every label seen so
+far into it.
 
 **Track colors**, offered once a view has more than one track, lists each track
 with the swatch it draws in under Distinct color per track. Pick a color there

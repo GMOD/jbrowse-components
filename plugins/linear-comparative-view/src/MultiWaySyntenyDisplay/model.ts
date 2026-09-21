@@ -230,8 +230,8 @@ export function stateModelFactory(
       /**
        * #volatile
        * per ribbon channel, the span or labels every fetch since the ribbon
-       * mode was picked has carried, labels in first-seen order so a pan
-       * recolors nothing; see `ribbonAttributeRanges`
+       * mode was picked has carried, labels in first-seen order; see
+       * `ribbonAttributeRanges`
        */
       seenAttributeRanges: {} as Record<string, AttributeRange>,
       /**

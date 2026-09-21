@@ -84,8 +84,7 @@ function radios(target: ColorByMenuTarget, modes: ModeEntry[]): MenuItem[] {
 }
 
 // Under a text column: hide the rows it leaves unlabelled, and pin the labels
-// seen so far into the domain so each keeps its palette slot in the next
-// session and the next window
+// seen so far into the domain so each takes a palette color of its own
 function categoricalItems(
   target: ColorByMenuTarget,
   { labels }: CategoricalMode,
