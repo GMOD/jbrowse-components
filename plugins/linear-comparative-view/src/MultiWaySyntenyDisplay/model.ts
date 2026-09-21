@@ -72,11 +72,12 @@ import { frameFromDecision } from './laneDecision.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneHeaderRows } from './laneHeader.ts'
 import {
-  headerFrame,
   laneMapAt,
   laneMotionEase,
   laneTransitionsAfter,
   laneTransitionsRunning,
+  lanesPastHalfway,
+  shownFrame,
 } from './laneMotion.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
 import {
@@ -344,6 +345,11 @@ export function stateModelFactory(
        * the component's frame loop
        */
       laneMotionClockMs: 0,
+      /**
+       * #volatile
+       * the moving lanes past their midpoint; see `lanesPastHalfway`
+       */
+      laneMotionHalfway: new Set<string>() as ReadonlySet<string>,
     }))
     .actions(self => {
       function dropDirectLinkClick() {
@@ -544,6 +550,12 @@ export function stateModelFactory(
         /**
          * #action
          */
+        setSplitStrands(flag: boolean) {
+          setConf(self, 'splitStrands', flag)
+        },
+        /**
+         * #action
+         */
         setLodMode(mode: LodMode) {
           setConf(self, 'lodMode', mode)
         },
@@ -731,6 +743,12 @@ export function stateModelFactory(
        */
       get showLaneTicks(): boolean {
         return getConf(self, 'showLaneTicks')
+      },
+      /**
+       * #getter
+       */
+      get splitStrands(): boolean {
+        return getConf(self, 'splitStrands')
       },
       /**
        * #getter
@@ -1401,53 +1419,70 @@ export function stateModelFactory(
         return out
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       * a settle's decisions and the offset their px space is anchored at. A
-       * lane re-decided on the contig it drew starts moving from where it drew
-       * rather than snapping, where motion is allowed
-       */
-      setLaneFrames(
-        originPx: number,
-        decisions: Map<string, LaneDecision | undefined>,
-      ) {
-        const previous = self.laneDecisions
-        self.renderOriginPx = originPx
-        self.laneDecisions = decisions
-        self.laneTransitions = laneTransitionsAfter({
-          previous,
-          next: decisions,
-          running: self.laneTransitions,
-          drawnAtMs: self.laneMotionClockMs,
-          nowMs: morphClockMs(),
-          allowed: animationAllowed(getSession(self).animationMode),
-          frameOf: decision => self.laneFrameOf(decision),
-          width: self.canvasWidth,
-        })
-      },
-      /**
-       * #action
-       * the frame loop's clock; a transition past its end is dropped, which
-       * repacks its lane in its settled frame alone
-       */
-      tickLaneMotion(nowMs: number) {
-        self.laneMotionClockMs = nowMs
-        const running = laneTransitionsRunning(self.laneTransitions, nowMs)
-        if (running.size !== self.laneTransitions.size) {
-          self.laneTransitions = running
+    .actions(self => {
+      // replaced only when its membership changes, so what reads it recomputes
+      // once per move rather than once per frame
+      function setHalfway(next: ReadonlySet<string>) {
+        const held = self.laneMotionHalfway
+        if (
+          next.size !== held.size ||
+          [...next].some(lane => !held.has(lane))
+        ) {
+          self.laneMotionHalfway = next
         }
-      },
-      /**
-       * #action
-       * every lane to its settled frame now
-       */
-      endLaneMotion() {
-        if (self.laneTransitions.size > 0) {
-          self.laneTransitions = new Map()
-        }
-      },
-    }))
+      }
+      return {
+        /**
+         * #action
+         * a settle's decisions and the offset their px space is anchored at. A
+         * lane re-decided on the contig it drew starts moving from where it drew
+         * rather than snapping, where motion is allowed
+         */
+        setLaneFrames(
+          originPx: number,
+          decisions: Map<string, LaneDecision | undefined>,
+        ) {
+          const previous = self.laneDecisions
+          self.renderOriginPx = originPx
+          self.laneDecisions = decisions
+          const nowMs = morphClockMs()
+          self.laneTransitions = laneTransitionsAfter({
+            previous,
+            next: decisions,
+            running: self.laneTransitions,
+            drawnAtMs: self.laneMotionClockMs,
+            nowMs,
+            allowed: animationAllowed(getSession(self).animationMode),
+            frameOf: decision => self.laneFrameOf(decision),
+            width: self.canvasWidth,
+          })
+          setHalfway(lanesPastHalfway(self.laneTransitions, nowMs))
+        },
+        /**
+         * #action
+         * the frame loop's clock; a transition past its end is dropped, which
+         * repacks its lane in its settled frame alone
+         */
+        tickLaneMotion(nowMs: number) {
+          self.laneMotionClockMs = nowMs
+          const running = laneTransitionsRunning(self.laneTransitions, nowMs)
+          if (running.size !== self.laneTransitions.size) {
+            self.laneTransitions = running
+          }
+          setHalfway(lanesPastHalfway(running, nowMs))
+        },
+        /**
+         * #action
+         * every lane to its settled frame now
+         */
+        endLaneMotion() {
+          if (self.laneTransitions.size > 0) {
+            self.laneTransitions = new Map()
+          }
+          setHalfway(new Set())
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
@@ -1578,6 +1613,8 @@ export function stateModelFactory(
           },
           width: self.canvasWidth,
           height: self.height,
+          splitStrands: self.splitStrands,
+          pastHalfway: self.laneMotionHalfway,
         })
       },
     }))
@@ -1619,13 +1656,12 @@ export function stateModelFactory(
        */
       get laneHeaderRows() {
         const lanes = self.laneStack.lanes.map(lane => {
-          const motion = self.laneTransitions.get(lane.assemblyName)
-          return motion && lane.frame
+          return lane.frame?.morphFrom
             ? {
                 ...lane,
-                frame: headerFrame(
+                frame: shownFrame(
                   lane.frame,
-                  laneMotionEase(motion, self.laneMotionClockMs),
+                  self.laneMotionHalfway.has(lane.assemblyName),
                 ),
               }
             : lane
@@ -1725,8 +1761,11 @@ export function stateModelFactory(
         return {
           kind: 'glyphs',
           data: buildBandCell({
-            bands: laneGeometry(self.height, 1 + self.rowAssemblies.length)
-              .rows,
+            bands: laneGeometry(
+              self.height,
+              1 + self.rowAssemblies.length,
+              self.splitStrands,
+            ).rows,
             width: self.canvasWidth,
             paper: bandGroundColor(),
             stripe: bandInk().stripe,

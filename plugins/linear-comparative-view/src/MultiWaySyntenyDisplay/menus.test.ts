@@ -152,6 +152,8 @@ function trackModel({
     setHideUnlabelled: () => {},
     showLaneTicks: true,
     setShowLaneTicks: () => {},
+    splitStrands: false,
+    setSplitStrands: () => {},
     drawCurves: false,
     setDrawCurves: () => {},
     bridgeSkippedLanes: true,
@@ -181,6 +183,7 @@ test('the track menu is Show, Color by and Lanes', () => {
   ])
   expect(labelsOf(showSubMenuItems(model))).toEqual([
     'Show lane ticks',
+    'Split strands',
     'Curved lines',
     'Show ribbons across gaps',
   ])
@@ -259,11 +262,11 @@ test('Show offers the legend only when something is keyed, and the hidden lanes 
     laneFilter: { except: ['peach', 'cacao'] },
   })
   const show = showSubMenuItems(model)
-  expect(labelsOf(show).slice(3)).toEqual([
+  expect(labelsOf(show).slice(4)).toEqual([
     'Show legend',
     'Show 2 hidden lanes',
   ])
-  click(show[4])
+  click(show[5])
   expect(calls).toEqual(['show hidden'])
 })
 

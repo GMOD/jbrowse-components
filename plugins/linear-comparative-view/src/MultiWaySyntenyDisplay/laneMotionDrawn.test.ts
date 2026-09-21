@@ -334,6 +334,38 @@ describe('nothing animates', () => {
   })
 })
 
+test('split strands, a flip keeps its rows until halfway and turns them over there', async () => {
+  const { display } = await settledDisplay()
+  display.setSplitStrands(true)
+  redecide(display, () => ({ rung: 3 }))
+  display.endLaneMotion()
+  const old = picture(display)
+  const geneTops = () => {
+    const cell = display.laneGlyphCells.get(glyphsKey(1))!
+    return new Set(cell.kind === 'glyphs' ? cell.data.hits.map(h => h.y1) : [])
+  }
+  const before = geneTops()
+  expect(before.size).toBe(1)
+
+  redecide(display, d => ({ flipped: !d.flipped }))
+  expect(display.animating).toBe(true)
+  expectSamePicture(picture(display), old)
+  const { startMs } = display.laneTransitions.get(C)!
+  display.tickLaneMotion(startMs + MORPH_DURATION_MS * 0.45)
+  expect(geneTops()).toEqual(before)
+  display.tickLaneMotion(startMs + MORPH_DURATION_MS * 0.55)
+  const after = geneTops()
+  expect(after.size).toBe(1)
+  expect([...after][0]).toBeGreaterThan([...before][0]!)
+
+  display.tickLaneMotion(startMs + MORPH_DURATION_MS)
+  const landed = picture(display)
+  const decisions = new Map(display.laneDecisions)
+  display.setLaneFrames(display.renderOriginPx, new Map())
+  display.setLaneFrames(display.renderOriginPx, decisions)
+  expectSamePicture(landed, picture(display))
+})
+
 test('a moving lane names the frame it is drawn nearer to', async () => {
   const { display } = await settledDisplay()
   const header = () =>

@@ -637,6 +637,29 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
   return boxes
 }
 
+// the line shows between a lane's two strand rows
+const STRAND_GAP_PX = 2
+
+/**
+ * Where a gene sits on its lane: the whole glyph row, or with the strands split
+ * the half above the line for one reading rightwards on screen and the half
+ * below for one reading leftwards, as gggenomes' `position_strand` stacks them.
+ * A strandless gene takes the upper row.
+ */
+function geneRow(lane: Lane, glyphHeight: number, pxDir: number) {
+  if (lane.strandRows === undefined) {
+    return { top: lane.glyphTop, height: glyphHeight }
+  }
+  const height = (glyphHeight - STRAND_GAP_PX) / 2
+  return {
+    top:
+      pxDir * lane.strandRows < 0
+        ? lane.glyphTop + glyphHeight - height
+        : lane.glyphTop,
+    height,
+  }
+}
+
 /**
  * What one lane draws on its baseline: its gene models where it has an
  * annotation, and the table's own placement box, outlined rather than filled,
@@ -703,15 +726,21 @@ export function buildLaneCells({
     )
     const fill = colors.genes.fill(feature, cluster)
     const utrColor = colors.genes.utr(feature)
+    const row = geneRow(lane, glyphHeight, pxDir)
+    const rowCenter = row.top + row.height / 2
     for (const [x1, x2] of introns) {
-      glyphs.line(x1, x2, centerY, glyphHeight, pxDir, stroke)
+      glyphs.line(x1, x2, rowCenter, row.height, pxDir, stroke)
     }
-    const [utrY, utrHeight] = centerShrink(y, glyphHeight, UTR_HEIGHT_FRACTION)
+    const [utrY, utrHeight] = centerShrink(
+      row.top,
+      row.height,
+      UTR_HEIGHT_FRACTION,
+    )
     for (const [x1, x2] of thin) {
       glyphs.rect(x1, x2, utrY, utrHeight, utrColor)
     }
     for (const [x1, x2] of full) {
-      glyphs.rect(x1, x2, y, glyphHeight, fill.packed)
+      glyphs.rect(x1, x2, row.top, row.height, fill.packed)
     }
     // no width gate here: the passes cull an arrow narrower than
     // ARROW_MIN_FEATURE_WIDTH_PX themselves, in px, and these cells are packed
@@ -720,8 +749,8 @@ export function buildLaneCells({
       glyphs.arrow(
         pxDir === 1 ? right : left,
         right - left,
-        centerY,
-        glyphHeight,
+        rowCenter,
+        row.height,
         pxDir,
         stroke,
       )
@@ -729,8 +758,8 @@ export function buildLaneCells({
     glyphs.hits.push({
       x1: left,
       x2: right,
-      y1: y,
-      y2: y + glyphHeight,
+      y1: row.top,
+      y2: row.top + row.height,
       feature,
       groupKey: cluster,
       label: feature.get('name') ?? feature.id(),

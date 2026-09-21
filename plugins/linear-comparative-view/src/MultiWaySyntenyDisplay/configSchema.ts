@@ -136,6 +136,15 @@ export function configSchemaFactory() {
       },
       /**
        * #slot
+       */
+      splitStrands: {
+        type: 'boolean',
+        description:
+          "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack",
+        defaultValue: false,
+      },
+      /**
+       * #slot
        * overrides the base schema's 100, which divides into a lane stack at
        * the glyph-height floor with the headers colliding into the glyphs
        */

@@ -344,6 +344,15 @@ describe('lane geometry', () => {
   // and a lie on every other one — at the anchor. A band covering only its own
   // header and glyphs left them standing in the gutters, which is most of the
   // ink in a tall track.
+  test('split strands, the glyph row doubles its cap so each strand keeps the gene height', () => {
+    const one = laneGeometry(240, 4)
+    const split = laneGeometry(240, 4, true)
+    expect(split.glyphHeight).toBe(2 * one.glyphHeight)
+    expect(laneGeometry(10 * MIN_LANE_PITCH, 10, true).glyphHeight).toBe(
+      laneGeometry(10 * MIN_LANE_PITCH, 10).glyphHeight,
+    )
+  })
+
   test('the bands below the anchor tile without gaps', () => {
     const { rows } = laneGeometry(240, 4)
     for (const [row, band] of rows.entries()) {

@@ -186,13 +186,25 @@ export function laneTransitionsAfter({
 }
 
 /**
- * The frame a moving lane's header names: where it drew until the move is
- * half done, where it is going after. A flip is edge-on at the midpoint, so
- * its [rev] turns over with the lane.
+ * The lanes whose move is half done. A flip is edge-on at the midpoint, so what
+ * a lane says of its frame — its header's [rev], which of its strand rows a
+ * gene sits in — turns over there and nowhere else.
  */
-export function headerFrame(frame: RowFrame, e: number) {
+export function lanesPastHalfway(
+  running: ReadonlyMap<string, LaneTransition>,
+  nowMs: number,
+) {
+  return new Set(
+    [...running]
+      .filter(([, t]) => nowMs >= t.startMs + MORPH_DURATION_MS / 2)
+      .map(([lane]) => lane),
+  )
+}
+
+/** the frame a moving lane is drawn nearer to: where it drew, until halfway */
+export function shownFrame(frame: RowFrame, pastHalfway: boolean) {
   const from = frame.morphFrom
-  return from?.length && e < 0.5
+  return from?.length && !pastHalfway
     ? from.reduce((a, b) => (b.weight > a.weight ? b : a)).frame
     : frame
 }

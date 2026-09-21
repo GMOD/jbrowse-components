@@ -62,6 +62,8 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setHideUnlabelled: (flag: boolean) => void
   showLaneTicks: boolean
   setShowLaneTicks: (flag: boolean) => void
+  splitStrands: boolean
+  setSplitStrands: (flag: boolean) => void
   drawCurves: boolean
   setDrawCurves: (flag: boolean) => void
   bridgeSkippedLanes: boolean
@@ -210,6 +212,10 @@ function hiddenLanesMenuItems(model: MultiWayMenuModel): MenuItem[] {
 export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return [
     toggleItem('Show lane ticks', model.showLaneTicks, model.setShowLaneTicks),
+    toggleItem('Split strands', model.splitStrands, model.setSplitStrands, {
+      helpText:
+        'Genes reading rightwards above the lane line and leftwards below it.',
+    }),
     toggleItem('Curved lines', model.drawCurves, model.setDrawCurves),
     toggleItem(
       'Show ribbons across gaps',

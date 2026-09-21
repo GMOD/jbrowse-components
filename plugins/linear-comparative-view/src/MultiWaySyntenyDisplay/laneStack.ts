@@ -1,5 +1,6 @@
 import { clamp } from '@jbrowse/core/util'
 
+import { shownFrame } from './laneMotion.ts'
 import {
   frameReachPx,
   frameSpan,
@@ -53,12 +54,16 @@ export interface LaneGeometry {
 // half the gutter on each side — so the view's gridlines, true on the anchor
 // lane and a lie on every other one, are covered everywhere below the anchor
 // rather than standing in the gaps.
-export function laneGeometry(height: number, rowCount: number): LaneGeometry {
+export function laneGeometry(
+  height: number,
+  rowCount: number,
+  splitStrands = false,
+): LaneGeometry {
   const contentHeight = laneContentHeight(height, rowCount)
   const glyphHeight = clamp(
     contentHeight / rowCount - LABEL_HEIGHT - 6,
     MIN_GLYPH_PX,
-    MAX_GLYPH_PX,
+    splitStrands ? 2 * MAX_GLYPH_PX : MAX_GLYPH_PX,
   )
   const usable = contentHeight - LABEL_HEIGHT - glyphHeight - 4
   const glyphTop = (row: number) =>
@@ -148,6 +153,13 @@ export interface Lane {
   bandTop: number
   bandStart: number
   bandEnd: number
+  /**
+   * one gene row where undefined; two either side of the line otherwise, and
+   * the sign that turns the way a gene reads in its cells into its row: -1
+   * while a flip is short of halfway, since the cells are packed in the frame
+   * the lane is flipping to
+   */
+  strandRows?: 1 | -1
 }
 
 export interface LaneGroup {
@@ -196,6 +208,9 @@ export interface BuildLanesOpts {
   ) => ((refName: string) => string) | undefined
   width: number
   height: number
+  splitStrands?: boolean
+  /** the moving lanes past their midpoint, which draw their new rows */
+  pastHalfway?: ReadonlySet<string>
 }
 
 function clipSpan([a, b]: Span, [lo, hi]: Span): Span[] {
@@ -227,10 +242,13 @@ export function buildLanes({
   refNameAliasOf,
   width,
   height,
+  splitStrands = false,
+  pastHalfway = new Set(),
 }: BuildLanesOpts): LaneStack {
   const { glyphHeight, bandHeight, rows } = laneGeometry(
     height,
     assemblyNames.length,
+    splitStrands,
   )
   const reach: Span = [-width, 2 * width]
   return {
@@ -307,6 +325,13 @@ export function buildLanes({
                 clip,
               )
             : [clip],
+        strandRows: !splitStrands
+          ? undefined
+          : frame &&
+              shownFrame(frame, pastHalfway.has(assemblyName)).flipped !==
+                frame.flipped
+            ? -1
+            : 1,
         ...rows[row]!,
       }
     }),

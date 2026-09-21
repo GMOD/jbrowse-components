@@ -103,11 +103,13 @@ function stack({
   assemblyNames = ['grape', 'peach'],
   peach = peachFrame,
   contigOf = () => undefined,
+  splitStrands = false,
 }: {
   features: Feature[]
   assemblyNames?: string[]
   peach?: RowFrame
   contigOf?: BuildLanesOpts['contigOf']
+  splitStrands?: boolean
 }) {
   const groups = groupFeatures(features)
   return buildLanes({
@@ -130,6 +132,7 @@ function stack({
     refNameAliasOf: () => undefined,
     width: WIDTH,
     height: HEIGHT,
+    splitStrands,
   })
 }
 
@@ -819,5 +822,58 @@ describe('a lane cell', () => {
     expect(glyphs.hits.map(h => h.groupKey)).toEqual(['b'])
     expect(claims).toEqual(['b'])
     expect(boxes.hits).toEqual([])
+  })
+
+  describe('with the strands split', () => {
+    const gene = (
+      uniqueId: string,
+      refName: string,
+      start: number,
+      strand: number,
+    ) =>
+      new LaneGene(
+        new SimpleFeature({
+          uniqueId,
+          refName,
+          start,
+          end: start + 100,
+          strand,
+          name: uniqueId,
+          type: 'gene',
+        }),
+      )
+    const rowsOf = (peach: RowFrame) => {
+      const s = stack({
+        features: [pairFeature('g1', 100, 200)],
+        peach,
+        splitStrands: true,
+      })
+      const lane = s.lanes[1]!
+      const { glyphs } = buildLaneCells({
+        lane,
+        genes: [gene('fwd', 'Pp1', 1300, 1), gene('rev', 'Pp1', 1600, -1)],
+        glyphHeight: s.glyphHeight,
+        width: WIDTH,
+        colors,
+      })
+      const line = lane.glyphTop + s.glyphHeight / 2
+      const side = (name: string) => {
+        const hit = glyphs.hits.find(h => h.label === name)!
+        return hit.y2 <= line ? 'above' : hit.y1 >= line ? 'below' : 'across'
+      }
+      return { fwd: side('fwd'), rev: side('rev'), divider: glyphs.lineYs[0] }
+    }
+
+    test('a gene reading rightwards sits above the line and one reading leftwards below it', () => {
+      const rows = rowsOf(peachFrame)
+      expect(rows).toMatchObject({ fwd: 'above', rev: 'below' })
+    })
+
+    test('a flipped lane turns its genes over with it', () => {
+      expect(rowsOf({ ...peachFrame, flipped: true })).toMatchObject({
+        fwd: 'below',
+        rev: 'above',
+      })
+    })
   })
 })
