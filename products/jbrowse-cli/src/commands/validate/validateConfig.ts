@@ -10,9 +10,16 @@
 // Pure: no filesystem, no process exit. The command wrapper owns both.
 
 import { configManifest } from './configManifest.generated.ts'
-import { rootConfigurationSlots, schemaProblems } from './schemaValidate.ts'
+import { isRecord, liftToSnapshot } from './liftConfig.ts'
+import { markProblems } from './markRules/markProblems.ts'
+import {
+  hasDeclaredShape,
+  rootConfigurationSlots,
+  schemaProblems,
+} from './schemaValidate.ts'
 import { didYouMean } from './suggest.ts'
 
+import type { MarkSnapshot } from './markRules/markProblems.ts'
 import type {
   ConfigManifest,
   Problem,
@@ -45,10 +52,6 @@ class Report {
       warningCount: this.problems.filter(p => p.level === 'warning').length,
     }
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 // A declared `sequenceAdapter` works and is simply the wrong way round: every
@@ -447,6 +450,84 @@ function checkSession(
   }
 }
 
+const MARK_DISPLAY = 'LinearMarkDisplay'
+const MARKS_POINTER = `/$defs/${MARK_DISPLAY}Slots/properties/marks`
+
+// The rule list reads a config snapshot, which is what a file is once the
+// schema passes its keys and types and the manifest's lifts are applied.
+function isMarkList(
+  lifted: unknown,
+  written: unknown,
+): lifted is MarkSnapshot[] {
+  return Array.isArray(lifted) && hasDeclaredShape(written, MARKS_POINTER)
+}
+
+function slotPath(slot: string) {
+  return slot.replaceAll(/\.(\d+)(?=\.|$)/g, '[$1]')
+}
+
+// What the marks of one display say together that it cannot draw as written:
+// the rule list the display shows in its corner notice, copied from the plugin
+// (`markRules/`). A single mark's `requires` is the schema's to report.
+function checkMarkDisplay(
+  display: Record<string, unknown>,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  const slots = manifest.displays[MARK_DISPLAY]?.slots
+  const lifted = liftToSnapshot(display, slots ?? [])
+  if (!slots || !isRecord(lifted) || !isMarkList(lifted.marks, display.marks)) {
+    return
+  }
+  const { facet } = lifted
+  for (const { level, rule, mark, slot, message } of markProblems(
+    lifted.marks,
+    isRecord(facet) ? facet : undefined,
+  )) {
+    report.problems.push({
+      level,
+      where: `${where}.marks[${mark}].${slotPath(slot)}`,
+      message,
+      rule,
+    })
+  }
+}
+
+// A marks list sits wherever a config takes the mark display's slots: a
+// track's `displays` entry, its `displayDefaults`, a session's inline track
+// entry. No other type declares `marks`, so the walk is over the whole file,
+// past a place where the schema refused the key: a session display node
+// drops it.
+function checkMarkDisplays(
+  node: unknown,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  if (Array.isArray(node)) {
+    for (const [i, item] of node.entries()) {
+      checkMarkDisplays(item, manifest, `${where}[${i}]`, report)
+    }
+  } else if (isRecord(node)) {
+    if (
+      Array.isArray(node.marks) &&
+      (node.type === undefined || node.type === MARK_DISPLAY) &&
+      !report.problems.some(p => p.where === `${where}.marks`)
+    ) {
+      checkMarkDisplay(node, manifest, where, report)
+    }
+    for (const [key, member] of Object.entries(node)) {
+      checkMarkDisplays(
+        member,
+        manifest,
+        where ? `${where}.${key}` : key,
+        report,
+      )
+    }
+  }
+}
+
 export function validateConfig(
   config: unknown,
   manifest: ConfigManifest = configManifest,
@@ -566,6 +647,7 @@ export function validateConfig(
   // Tracks are registered before the session is checked, so a session may
   // reference any track in the file regardless of declaration order.
   checkSession(config.defaultSession, manifest, report, ctx)
+  checkMarkDisplays(config, manifest, '', report)
 
   return report.result()
 }

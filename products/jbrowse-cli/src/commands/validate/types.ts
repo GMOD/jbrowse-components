@@ -10,6 +10,16 @@ export interface SlotEntry {
   type: string
   /** present when the slot is a nested sub-schema (adapter.index and friends) */
   subSlots?: SlotEntry[]
+  /**
+   * A sub-schema slot: the member a bare string written in its place lifts
+   * into, the schema's `shorthand` option (`color: "red"` is
+   * `color: { value: "red" }`).
+   */
+  shorthand?: string
+  /** A `stringArray` slot whose schema reads a bare string as a list of one. */
+  liftsString?: true
+  /** A `stringArray` slot whose schema carries a number written in it as a string. */
+  liftsNumbers?: true
 }
 
 export interface TypeEntry {
@@ -92,6 +102,12 @@ export interface Problem {
   /** JSON-ish path into the config, e.g. `tracks[3].adapter.bamLocation` */
   where: string
   message: string
+  /**
+   * The stable id of the rule that found it, where one states the problem: a
+   * schema's `requires` entry or a display's rule list. The text may be
+   * reworded; this is what a caller keys on.
+   */
+  rule?: string
 }
 
 export interface ValidationResult {

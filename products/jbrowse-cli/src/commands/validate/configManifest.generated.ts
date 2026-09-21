@@ -2919,13 +2919,15 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             },
             {
               "name": "palette",
               "type": "(JexlString | string[])"
             }
-          ]
+          ],
+          "shorthand": "value"
         },
         {
           "name": "connectorColor",
@@ -2957,9 +2959,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "geneGlyphMode",
@@ -3262,7 +3266,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             },
             {
               "name": "palette",
@@ -3276,7 +3281,8 @@ export const configManifest: ConfigManifest = {
               "name": "domainMid",
               "type": "(JexlString | (number | undefined))"
             }
-          ]
+          ],
+          "shorthand": "value"
         },
         {
           "name": "baseColor",
@@ -3290,7 +3296,8 @@ export const configManifest: ConfigManifest = {
               "name": "scale",
               "type": "(JexlString | (AlignmentsBaseColorScale | undefined))"
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "modifications",
@@ -3310,9 +3317,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "collapseGroupRows",
@@ -3678,7 +3687,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             },
             {
               "name": "palette",
@@ -3692,7 +3702,8 @@ export const configManifest: ConfigManifest = {
               "name": "domainMid",
               "type": "(JexlString | (number | undefined))"
             }
-          ]
+          ],
+          "shorthand": "value"
         },
         {
           "name": "baseColor",
@@ -3706,7 +3717,8 @@ export const configManifest: ConfigManifest = {
               "name": "scale",
               "type": "(JexlString | (AlignmentsBaseColorScale | undefined))"
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "modifications",
@@ -3726,9 +3738,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "collapseGroupRows",
@@ -3965,9 +3979,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "value"
         },
         {
           "name": "hideUnlabelled",
@@ -4122,13 +4138,15 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             },
             {
               "name": "palette",
               "type": "(JexlString | string[])"
             }
-          ]
+          ],
+          "shorthand": "value"
         },
         {
           "name": "connectorColor",
@@ -4160,9 +4178,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "geneGlyphMode",
@@ -4357,9 +4377,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "referenceDrawingMode",
@@ -4503,9 +4525,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "referenceDrawingMode",
@@ -4626,9 +4650,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "height",
@@ -4652,7 +4678,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             },
             {
               "name": "palette",
@@ -4666,7 +4693,8 @@ export const configManifest: ConfigManifest = {
               "name": "domainMid",
               "type": "(JexlString | (number | undefined))"
             }
-          ]
+          ],
+          "shorthand": "value"
         },
         {
           "name": "scoreField",
@@ -4748,7 +4776,8 @@ export const configManifest: ConfigManifest = {
                       "name": "label",
                       "type": "(JexlString | string)"
                     }
-                  ]
+                  ],
+                  "shorthand": "value"
                 }
               ]
             }
@@ -4824,9 +4853,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "height",
@@ -4850,7 +4881,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             },
             {
               "name": "palette",
@@ -4864,7 +4896,8 @@ export const configManifest: ConfigManifest = {
               "name": "domainMid",
               "type": "(JexlString | (number | undefined))"
             }
-          ]
+          ],
+          "shorthand": "value"
         },
         {
           "name": "scoreField",
@@ -4946,7 +4979,8 @@ export const configManifest: ConfigManifest = {
                       "name": "label",
                       "type": "(JexlString | string)"
                     }
-                  ]
+                  ],
+                  "shorthand": "value"
                 }
               ]
             }
@@ -5034,9 +5068,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "height",
@@ -5060,7 +5096,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             },
             {
               "name": "palette",
@@ -5074,7 +5111,8 @@ export const configManifest: ConfigManifest = {
               "name": "domainMid",
               "type": "(JexlString | (number | undefined))"
             }
-          ]
+          ],
+          "shorthand": "value"
         },
         {
           "name": "scoreField",
@@ -5156,7 +5194,8 @@ export const configManifest: ConfigManifest = {
                       "name": "label",
                       "type": "(JexlString | string)"
                     }
-                  ]
+                  ],
+                  "shorthand": "value"
                 }
               ]
             }
@@ -5542,13 +5581,15 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             },
             {
               "name": "palette",
               "type": "(JexlString | string[])"
             }
-          ]
+          ],
+          "shorthand": "value"
         },
         {
           "name": "scoreField",
@@ -5697,7 +5738,8 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "domain",
-                      "type": "(JexlString | string[])"
+                      "type": "(JexlString | string[])",
+                      "liftsNumbers": true
                     },
                     {
                       "name": "palette",
@@ -5711,7 +5753,8 @@ export const configManifest: ConfigManifest = {
                       "name": "domainMid",
                       "type": "(JexlString | (number | undefined))"
                     }
-                  ]
+                  ],
+                  "shorthand": "value"
                 },
                 {
                   "name": "glyph",
@@ -5735,9 +5778,11 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "domain",
-                      "type": "(JexlString | string[])"
+                      "type": "(JexlString | string[])",
+                      "liftsNumbers": true
                     }
-                  ]
+                  ],
+                  "shorthand": "value"
                 }
               ]
             },
@@ -5763,7 +5808,8 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "as",
-                  "type": "(JexlString | string[])"
+                  "type": "(JexlString | string[])",
+                  "liftsString": true
                 },
                 {
                   "name": "fields",
@@ -5837,7 +5883,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "as",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsString": true
             },
             {
               "name": "fields",
@@ -5885,9 +5932,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
-              "type": "(JexlString | string[])"
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "scales",
@@ -5941,7 +5990,8 @@ export const configManifest: ConfigManifest = {
                       "name": "label",
                       "type": "(JexlString | string)"
                     }
-                  ]
+                  ],
+                  "shorthand": "value"
                 }
               ]
             }

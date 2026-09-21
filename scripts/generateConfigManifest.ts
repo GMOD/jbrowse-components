@@ -91,7 +91,10 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import corePlugins from './src/corePlugins.ts'
 import sessionModelFactory from './src/sessionModel/index.ts'
-import { buildConfigJsonSchema } from '../../scripts/configJsonSchema.ts'
+import {
+  buildConfigJsonSchema,
+  slotLifts,
+} from '../../scripts/configJsonSchema.ts'
 
 const pm = new PluginManager(corePlugins.map(P => new P()))
 pm.createPluggableElements()
@@ -129,15 +132,28 @@ function slotsOf(type) {
   if (!model?.properties) {
     return undefined
   }
-  return Object.entries(model.properties).map(([name, prop]) => ({
-    name,
-    // MST's own name for the slot type. Verbose for unions, but it is the real
-    // accepted shape, and truncating it would invent a contract.
-    type: prop?.name ?? 'unknown',
-    // A sub-schema is an object slot with slots of its own (adapter.index,
-    // track.displays[]); the validator recurses into these.
-    subSlots: isSubSchema(prop) ? slotsOf(prop) : undefined,
-  }))
+  const meta = getConfigurationSchemaMetadata(model)
+  return Object.entries(model.properties).map(([name, prop]) => {
+    const sub = isSubSchema(prop)
+    const lifts = meta ? slotLifts(meta, name) : {}
+    return {
+      name,
+      // MST's own name for the slot type. Verbose for unions, but it is the real
+      // accepted shape, and truncating it would invent a contract.
+      type: prop?.name ?? 'unknown',
+      // A sub-schema is an object slot with slots of its own (adapter.index,
+      // track.displays[]); the validator recurses into these.
+      subSlots: sub ? slotsOf(prop) : undefined,
+      // What the schema lifts on the way in, which the validator applies to a
+      // file before its rules read it: a bare string into a sub-schema's
+      // shorthand slot or into a list of one, and numbers carried as strings.
+      shorthand: sub
+        ? getConfigurationSchemaMetadata(modelOf(prop))?.options.shorthand
+        : undefined,
+      liftsString: lifts.string || undefined,
+      liftsNumbers: lifts.numbers || undefined,
+    }
+  })
 }
 
 function isSubSchema(prop) {
