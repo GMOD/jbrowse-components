@@ -382,6 +382,8 @@ test('a ribbon the old frame drew wide is kept for a move that starts magnified'
         ]),
         laneGeneAdapters: new Map(),
         axisSpanOf: () => undefined,
+        anchorRegionSpans: [],
+        contigOf: () => undefined,
         refNameAliasOf: () => undefined,
         width: 800,
         height: 240,
