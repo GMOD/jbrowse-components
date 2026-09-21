@@ -41,11 +41,15 @@ function samples(def: Parameters<typeof slotChoices>[0]): unknown[] {
   const maybe = def.type.startsWith('maybe') ? [undefined] : []
   const choices = slotChoices(def)
   if (choices) {
-    return [...maybe, ...choices]
+    return def.type === 'stringEnumArray'
+      ? [[], ...choices.map(choice => [choice])]
+      : [...maybe, ...choices]
   }
   switch (def.type) {
     case 'stringArray':
       return [[], ['a']]
+    case 'colorArray':
+      return [[], ['red', 'blue']]
     case 'color':
     case 'maybeColor':
       return [...maybe, 'red']
