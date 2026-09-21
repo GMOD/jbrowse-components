@@ -68,9 +68,9 @@ test('a display still animating keeps the app unsettled', async () => {
   document.body.innerHTML = `<span hidden data-app-phase="ready"></span>
     <div data-display-phase="ready" data-display-animating="true"></div>`
   const landed = setTimeout(() => {
-    document
-      .querySelector('[data-display-animating]')!
-      .setAttribute('data-display-animating', 'false')
+    document.querySelector<HTMLElement>(
+      '[data-display-animating]',
+    )!.dataset.displayAnimating = 'false'
   }, 100)
   const start = Date.now()
   await expect(waitForAppSettled(jsdomPage(), FAST)).resolves.toBe(true)
