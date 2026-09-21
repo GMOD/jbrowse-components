@@ -11,11 +11,6 @@ export function dropRowAt(lanes: Lane[], y: number) {
   return row < 0 ? undefined : row
 }
 
-/**
- * `order` with `name` moved to index `to`, clamped to the stack. A drop on
- * the anchor's band is `to = -1` and lands the lane at the top of the mate
- * lanes, where "above the anchor" cannot be granted
- */
 export function sameLaneOrder(a: string[], b: string[]) {
   return a.length === b.length && a.every((name, i) => name === b[i])
 }
@@ -24,7 +19,9 @@ export function sameLaneOrder(a: string[], b: string[]) {
  * The order a drop of `name` on `row` writes, or nothing when the drop leaves
  * the lanes where they are — a click, or a drop back on the lane's own row.
  * Writing the unchanged order would still pin every lane and end the
- * densest-first sort
+ * densest-first sort. `row` clamped to the stack; a drop on the anchor's
+ * band is `row = 0` and lands the lane at the top of the mate lanes, where
+ * "above the anchor" cannot be granted
  */
 export function laneOrderAfterDrop(
   order: string[],
