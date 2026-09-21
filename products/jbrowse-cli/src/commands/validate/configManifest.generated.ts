@@ -3290,7 +3290,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "(JexlString | (AlignmentsBaseColorField | undefined))"
             },
             {
               "name": "scale",
@@ -3711,7 +3711,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(JexlString | string)"
+              "type": "(JexlString | (AlignmentsBaseColorField | undefined))"
             },
             {
               "name": "scale",

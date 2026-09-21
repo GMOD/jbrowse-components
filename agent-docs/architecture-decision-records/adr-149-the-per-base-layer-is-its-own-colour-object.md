@@ -72,8 +72,12 @@ when one is set.
 ## Consequences
 
 - `color: { field: 'modifications' | 'bisulfite' | 'baseQuality' | 'base' }`,
-  ADR-148's spelling, is `baseColor` now. A v4 per-base `colorBy` migrates there
-  (`V4_BASE_COLOR_FIELDS`).
+  ADR-148's spelling, is `baseColor` now, and `color` paints the plain fill for
+  it rather than looking the name up as a feature attribute. A v4 per-base
+  `colorBy` migrates there (`V4_BASE_COLOR_FIELDS`).
+- `baseColor.field` is an enum of the four, so a load refuses any other name,
+  jb2export's `methylation` alias among them. `jbrowse validate` refuses one in
+  the object form; its schema types a shorthand string as any string.
 - Group by tag with "also color by tag" ticked no longer costs a
   modification-coloured pileup its marks.
 - The default tag palette leads with a blue and a pink, and the two-colour

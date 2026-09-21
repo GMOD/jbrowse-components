@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { BASE_COLOR_FIELDS } from '../shared/alignmentsColor.ts'
+
 /**
  * #config AlignmentsBaseColor
  * #category display
@@ -32,10 +34,13 @@ export const alignmentsBaseColorConfigSchema = ConfigurationSchema(
      * #slot field
      */
     field: {
-      type: 'string',
-      defaultValue: '',
+      type: 'maybeStringEnum',
+      model: types.enumeration(
+        'AlignmentsBaseColorField',
+        Object.values(BASE_COLOR_FIELDS),
+      ),
       description:
-        'the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none',
+        'the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset draws none',
     },
     /**
      * #slot scale

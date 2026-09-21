@@ -86,13 +86,14 @@ export function colorFieldOf(colorBy: ColorBy) {
 /**
  * The read scheme a `color` object selects: a preset field its own scheme,
  * `tags.XX` the tag scheme, any other name a feature attribute through the
- * same per-read bake. A field under `none` paints the plain fill.
+ * same per-read bake. A field under `none`, or a per-base variable, which
+ * `baseColor` draws, paints the plain fill.
  */
 export function colorByOf({
   field,
   scale,
 }: Pick<AlignmentsColorSetting, 'field' | 'scale'>): ReadColorBy {
-  if (!field || scale === 'none') {
+  if (!field || scale === 'none' || LAYER_OF_FIELD.has(field)) {
     return { type: 'normal' }
   }
   const scheme = SCHEME_OF_FIELD.get(field)
@@ -105,7 +106,7 @@ export function colorByOf({
 
 /** The `baseColor` object as written. */
 export interface BaseColorSetting {
-  field: string
+  field: string | undefined
   scale: 'none' | undefined
 }
 
@@ -118,7 +119,10 @@ export function baseLayerOf(
   { field, scale }: BaseColorSetting,
   modifications?: ModificationColorBy,
 ): BaseLayer | undefined {
-  const type = scale === 'none' ? undefined : LAYER_OF_FIELD.get(field)
+  const type =
+    scale === 'none' || field === undefined
+      ? undefined
+      : LAYER_OF_FIELD.get(field)
   return type === undefined
     ? undefined
     : READS_MODIFICATION_SETTINGS.has(type) && modifications

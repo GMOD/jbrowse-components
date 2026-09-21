@@ -332,6 +332,33 @@ describe('alignments colorBy', () => {
     })
   })
 
+  it('the methylation view draws its calls, with the fill unmarked', () => {
+    const { display } = createDisplay({
+      baseColor: 'modifications',
+      modifications: { fillUnmarked: true },
+    })
+    expect(display.showModifications).toBe(true)
+    expect(display.rpcProps()).toMatchObject({
+      colorBy: undefined,
+      baseLayer: {
+        type: 'modifications',
+        modifications: { fillUnmarked: true },
+      },
+    })
+  })
+
+  it('a per-base variable on the read fill paints the plain fill', () => {
+    const { display } = createDisplay({ color: { field: 'modifications' } })
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.rpcProps()).toMatchObject({ colorBy: undefined })
+  })
+
+  it('a per-base layer names one of its four variables', () => {
+    expect(() => createDisplay({ baseColor: 'methylation' })).toThrow(
+      /methylation/,
+    )
+  })
+
   it('a modification layer over the plain fill tints the body by strand', () => {
     const { display } = createDisplay({ baseColor: { field: 'bisulfite' } })
     expect(display.colorBy).toEqual({ type: 'normal' })

@@ -56,11 +56,10 @@ describe('colorByOf', () => {
     expect(colorByOf({ field: 'strand', scale: 'none' }).type).toBe('normal')
   })
 
-  test('a per-base field is no read fill', () => {
-    expect(colorByOf({ field: 'modifications', scale: undefined })).toEqual({
-      type: 'tag',
-      attribute: 'modifications',
-    })
+  test('a per-base field is no read fill, and costs no attribute lookup', () => {
+    for (const field of Object.values(BASE_COLOR_FIELDS)) {
+      expect(colorByOf({ field, scale: undefined })).toEqual({ type: 'normal' })
+    }
   })
 })
 

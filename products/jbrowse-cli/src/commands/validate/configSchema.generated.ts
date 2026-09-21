@@ -4066,9 +4066,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none.",
-              "$ref": "#/$defs/StringOrJexl",
-              "default": ""
+              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset draws none.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "baseQuality",
+                    "base",
+                    "modifications",
+                    "bisulfite"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             },
             "scale": {
               "description": "none draws no layer and keeps the field for a switch back.",

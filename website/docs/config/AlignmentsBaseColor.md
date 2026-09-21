@@ -38,5 +38,5 @@ These slots go on a display entry: `"displays": [{ "type": "AlignmentsBaseColor"
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none |
+| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) | the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset draws none |
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none) | none draws no layer and keeps the field for a switch back |

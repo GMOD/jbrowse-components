@@ -290,6 +290,24 @@ describe('validateConfig', () => {
     expect(validateConfig(onBasic).problems).toEqual([])
   })
 
+  it('reports a per-base layer naming none of its four variables', () => {
+    const withLayer = (baseColor: unknown) => {
+      const config = baseConfig()
+      config.tracks[0] = {
+        ...config.tracks[0]!,
+        // @ts-expect-error the base config's track carries no displays
+        displays: [
+          { type: 'LinearAlignmentsDisplay', displayId: 'd', baseColor },
+        ],
+      }
+      return config
+    }
+    expect(validateConfig(withLayer('modifications')).problems).toEqual([])
+    expect(
+      errorsOf(withLayer({ field: 'methylation' })).map(e => e.where),
+    ).toEqual(['tracks[0].displays[0].baseColor'])
+  })
+
   function sessionDisplay(display: Record<string, unknown>) {
     const config = baseConfig()
     config.defaultSession.views = [
