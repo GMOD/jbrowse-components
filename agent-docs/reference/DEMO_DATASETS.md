@@ -460,10 +460,17 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   the before/after pair through `Gff3TabixAdapter` and comparing the color every
   box resolves; and appending `dif_called` to the 631 called transcript rows,
   the writer's rule applied to each row's own `dif` and `dtu`, the decompressed
-  pair otherwise identical. The script reaches GENCODE v29 on `ftp.ebi.ac.uk`,
-  which timed out on every protocol on 2026-09-21, and the bucket hosts only
-  v36 and later, which the RSEM transcript versions do not match. Only a
-  rebuild would prove byte equality.
+  pair otherwise identical. Only a rebuild would prove byte equality.
+
+  **The annotation is pinned to GENCODE v29 by the transcript versions.** ENCODE
+  records it on each file (`genome_annotation: V29`). Of the 631 called
+  transcripts, GENCODE v49 (`jbrowse.org/ucsc/hg38/`) matches 347 versioned IDs
+  exactly, revised 276 and retired 8, so a newer release loses them from the
+  join without an error. The script reaches v29 on `ftp.ebi.ac.uk` (Ensembl's
+  FTP is EBI too), which timed out on every protocol on 2026-09-21. UCSC serves
+  the same release as `wgEncodeGencodeCompV29` and `wgEncodeGencodeAttrsV29` in
+  `goldenPath/hg38/database/`, matching 630 of the 631; pseudogene transcripts
+  sit in a separate table there, and the rows are genePred, not GFF3.
 - **The `*.demo_slices.bam` files** — three region-sliced GIAB alignments (HG002
   ONT haplotagged, HG002 Illumina 2x250, HG008-T PacBio Revio), rebuilt by
   `scripts/build_demo_slices.sh`. **A sliced BAM records its own provenance**:

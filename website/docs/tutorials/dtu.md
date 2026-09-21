@@ -103,9 +103,15 @@ res <- rowData(se)[["fitDTUResult_muscle_vs_liver"]]
 The isoform fractions the color reads come from the TPM matrix rather than from
 this table.
 
-**Write the statistics into GENCODE.** The script subsets the called genes out
-of the GENCODE v29 GFF3 and appends each transcript's numbers to its attribute
-column. The rows come out in coordinate order, so indexing is the ordinary pair:
+**Write the statistics into GENCODE.** The annotation has to be the release the
+quantifications were made against. RSEM names each transcript with its version,
+`ENST00000356708.11`, and GENCODE raises that version whenever it revises the
+transcript, so joining these tables against a later release drops every
+transcript revised since without an error. ENCODE lists the release on each
+quantification's file page as its genome annotation, `V29` for all eight here.
+The script subsets the called genes out of the GENCODE v29 GFF3 and appends each
+transcript's numbers to its attribute column. The rows come out in coordinate
+order, so indexing is the ordinary pair:
 
 <!-- from: scripts/build_dtu_demo.sh -->
 
