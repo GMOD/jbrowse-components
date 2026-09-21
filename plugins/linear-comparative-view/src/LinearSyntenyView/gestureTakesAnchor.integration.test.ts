@@ -1,7 +1,9 @@
+import { getSession } from '@jbrowse/core/util'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { transaction, when } from 'mobx'
 
+import { centerStackOnFeature } from '../SyntenyFeatureDetail/centerOnFeature.ts'
 import {
   ROW_GESTURES,
   ROW_NAVIGATIONS_HELD,
@@ -145,6 +147,48 @@ test('a view-wide zoom is not one either', async () => {
   view.squareView()
   view.showAllRegionsAcrossRows(false)
   expect(view.followAnchorIndex).toBe(0)
+})
+
+// The stack's rubber band zooms every row from a menu click, where each row's
+// `moveTo` was a root action of its own and the last row took the anchor.
+test("the stack's rubber-band zoom leaves the anchor where it was", async () => {
+  const view = await openStack()
+  for (const row of view.views) {
+    row.setOffsets(row.pxToBp(100), row.pxToBp(300))
+  }
+  view
+    .rubberBandMenuItems()
+    .find(item => item.label === 'Zoom to region(s)')!
+    .onClick()
+  expect(view.followAnchorIndex).toBe(0)
+  expect(view.views.every(row => row.bpPerPx < 5)).toBe(true)
+})
+
+// Centering moves both rows of a level. Held where it was, the anchor would
+// have the follow pull them straight back; as root actions it landed on the
+// mate row. The feature's own row drives.
+test("centering on a feature hands the anchor to the feature's own row", async () => {
+  const view = await openStack()
+  const problems = centerStackOnFeature({
+    view,
+    level: 1,
+    feat: {
+      uniqueId: 'f',
+      refName: 'ctgA',
+      start: 1000,
+      end: 2000,
+      assemblyName: 'volvox1',
+      mate: {
+        refName: 'ctgA',
+        start: 3000,
+        end: 4000,
+        assemblyName: 'volvox2',
+      },
+    },
+    assemblyManager: getSession(view).assemblyManager,
+  })
+  expect(problems).toEqual([])
+  expect(view.followAnchorIndex).toBe(1)
 })
 
 // The gesture set is a list of names, and a navigation the view grows that is

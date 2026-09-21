@@ -1381,11 +1381,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Zoom to region(s)',
               onClick: () => {
-                for (const { view, leftOffset, rightOffset } of selection) {
-                  if (leftOffset && rightOffset) {
-                    view.moveTo(leftOffset, rightOffset)
+                // one stack zoom, which leaves the follow anchor where it was
+                self.holdFollowAnchor(() => {
+                  for (const { view, leftOffset, rightOffset } of selection) {
+                    if (leftOffset && rightOffset) {
+                      view.moveTo(leftOffset, rightOffset)
+                    }
                   }
-                }
+                })
               },
             },
           ]

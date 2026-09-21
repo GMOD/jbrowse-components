@@ -10,7 +10,7 @@ import { allAssembliesLaunchItems } from '../LaunchSyntenyView/allAssembliesLaun
 import { openMateInLinearView } from '../LaunchSyntenyView/openMateInLinearView.ts'
 import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
 import { visibleSpanOnFeature } from '../LaunchSyntenyView/visibleSpanOnRefName.ts'
-import { syntenyCenterTargets } from './centerOnFeature.ts'
+import { centerStackOnFeature } from './centerOnFeature.ts'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
 import type { SimpleFeatureSerialized, TrackCatalog } from '@jbrowse/core/util'
@@ -103,25 +103,12 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
           <li>
             <ActionLink
               onClick={() => {
-                const { targets, missing } = syntenyCenterTargets({
-                  views: view.views,
+                const problems = centerStackOnFeature({
+                  view,
                   level,
                   feat,
                   assemblyManager: session.assemblyManager,
                 })
-                // Both sides attempted, whichever fails. `navTo` throws for a
-                // row whose displayed regions do not contain the feature — a
-                // panel sent elsewhere while this widget sat open in the
-                // drawer — and letting that escape a click handler both took
-                // out the second row's navigation and went unreported.
-                const problems = [...missing]
-                for (const { view: row, loc } of targets) {
-                  try {
-                    row.navTo(loc, 0.2)
-                  } catch (e) {
-                    problems.push(`${e}`)
-                  }
-                }
                 if (problems.length > 0) {
                   session.notify(problems.join(' ... '), 'warning')
                 }
