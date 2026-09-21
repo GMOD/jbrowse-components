@@ -1,5 +1,9 @@
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
-import { isConstantEntry, isSlotDefinitionEntry } from './schemaTypes.ts'
+import {
+  identifierName,
+  isConstantEntry,
+  isSlotDefinitionEntry,
+} from './schemaTypes.ts'
 
 import type { ConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
@@ -15,12 +19,15 @@ function listed(keys: readonly string[]) {
 }
 
 function refuseUndeclaredKeys(
-  { name, definition }: ConfigurationSchemaMetadata,
+  { name, definition, options }: ConfigurationSchemaMetadata,
   snapshot: unknown,
 ) {
-  const declared = Object.keys(definition).filter(
-    key => !isConstantEntry(definition[key]),
-  )
+  const id = identifierName(options)
+  const declared = [
+    ...Object.keys(definition).filter(key => !isConstantEntry(definition[key])),
+    ...(options.explicitlyTyped ? ['type'] : []),
+    ...(id ? [id] : []),
+  ]
   const unknown =
     typeof snapshot === 'string'
       ? [JSON.stringify(snapshot)]

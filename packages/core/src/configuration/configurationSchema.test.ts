@@ -1610,6 +1610,38 @@ describe('a closed schema', () => {
       color: { value: 'blue' },
     })
   })
+
+  test('admits the type an explicitly typed schema names itself by', () => {
+    const Step = ConfigurationSchema(
+      'ClosedStep',
+      { expr: { type: 'string', defaultValue: '' } },
+      { explicitlyTyped: true, closed: true },
+    )
+    expect(getSnapshot(Step.create({ type: 'ClosedStep', expr: 'x' }))).toEqual(
+      { type: 'ClosedStep', expr: 'x' },
+    )
+    expect(() => Step.create({ type: 'ClosedStep', bogus: 1 })).toThrow(
+      'ClosedStep takes expr and type, not bogus',
+    )
+  })
+
+  test('admits the identifier the options declare', () => {
+    const Explicit = ConfigurationSchema(
+      'ClosedExplicit',
+      { expr: { type: 'string', defaultValue: '' } },
+      { explicitIdentifier: 'stepId', closed: true },
+    )
+    const Implicit = ConfigurationSchema(
+      'ClosedImplicit',
+      { expr: { type: 'string', defaultValue: '' } },
+      { implicitIdentifier: true, closed: true },
+    )
+    expect(Explicit.create({ stepId: 's', expr: 'x' }).stepId).toBe('s')
+    expect(getSnapshot(Implicit.create({ id: 'i' }))).toEqual({ id: 'i' })
+    expect(() => Explicit.create({ stepId: 's', id: 'i' })).toThrow(
+      'ClosedExplicit takes expr and stepId, not id',
+    )
+  })
 })
 
 describe('a declared requirement', () => {

@@ -15,6 +15,7 @@ import {
   registerConfigurationSchema,
 } from './schemaRegistry.ts'
 import {
+  identifierName,
   isConfigurationSchemaType,
   isConstantEntry,
   isSlotDefinitionEntry,
@@ -245,8 +246,6 @@ function makeConfigurationSchemaModel<
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
   const modelDefinition: Record<string, any> = {}
-  let identifier: string | undefined
-
   if (options.explicitlyTyped) {
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
   }
@@ -256,17 +255,11 @@ function makeConfigurationSchemaModel<
       `Cannot have both explicit and implicit identifiers in ${modelName}`,
     )
   }
-  // explicit identifiers are plain MST identifiers (caller-supplied id);
-  // implicit identifiers auto-generate via ElementId. Both name the field after
-  // the option string, or default to `id` when the option is just `true`.
-  const idSpec = options.explicitIdentifier
-    ? { name: options.explicitIdentifier, idType: types.identifier }
-    : options.implicitIdentifier
-      ? { name: options.implicitIdentifier, idType: ElementId }
-      : undefined
-  if (idSpec) {
-    identifier = typeof idSpec.name === 'string' ? idSpec.name : 'id'
-    modelDefinition[identifier] = idSpec.idType
+  const identifier = identifierName(options)
+  if (identifier) {
+    modelDefinition[identifier] = options.explicitIdentifier
+      ? types.identifier
+      : ElementId
   }
 
   // String/number entries in the schema definition become volatile instance
