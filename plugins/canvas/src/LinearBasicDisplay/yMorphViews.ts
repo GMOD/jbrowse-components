@@ -1,4 +1,9 @@
-import { animationAllowed, getSession } from '@jbrowse/core/util'
+import {
+  animationAllowed,
+  easeInOutCubic,
+  getSession,
+  morphClockMs,
+} from '@jbrowse/core/util'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { untracked } from 'mobx'
 
@@ -6,9 +11,7 @@ import { maxBottom } from './layoutQueries.ts'
 import {
   canMorph,
   captureFeatureTops,
-  easeInOutCubic,
   interpolateYData,
-  morphClockMs,
   rowGeometrySignature,
 } from './yMorph.ts'
 

@@ -242,7 +242,12 @@ export {
   mergeIntervals,
 } from './intervals.ts'
 export { clampToContig, clampToListedContig } from './clampToContig.ts'
-export { animationAllowed } from './animationAllowed.ts'
+export {
+  MORPH_DURATION_MS,
+  animationAllowed,
+  easeInOutCubic,
+  morphClockMs,
+} from './animationAllowed.ts'
 export { springAnimate } from './springAnimate.ts'
 export {
   localStorageAvailable,

@@ -3,7 +3,11 @@ import React, { useCallback, useEffect, useId, useState } from 'react'
 import { ScrollChrome } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
-import { capitalizeFirst } from '@jbrowse/core/util'
+import {
+  MORPH_DURATION_MS,
+  capitalizeFirst,
+  morphClockMs,
+} from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
@@ -22,7 +26,6 @@ import { observer } from 'mobx-react'
 
 import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
 import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
-import { MORPH_DURATION_MS, morphClockMs } from '../yMorph.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
 import GroupLabelsLayer from './GroupLabelsLayer.tsx'

@@ -6,7 +6,6 @@ import {
 import {
   canMorph,
   captureFeatureTops,
-  easeInOutCubic,
   interpolateYData,
   morphOffset,
   rowGeometrySignature,
@@ -31,12 +30,6 @@ function region(features: { featureId: string; top: number }[]) {
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
   })
 }
-
-test('easeInOutCubic pins the endpoints and midpoint', () => {
-  expect(easeInOutCubic(0)).toBe(0)
-  expect(easeInOutCubic(1)).toBe(1)
-  expect(easeInOutCubic(0.5)).toBeCloseTo(0.5)
-})
 
 test('captureFeatureTops records each feature row by id', () => {
   const tops = captureFeatureTops(

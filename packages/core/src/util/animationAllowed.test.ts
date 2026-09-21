@@ -1,4 +1,4 @@
-import { animationAllowed } from './animationAllowed.ts'
+import { animationAllowed, easeInOutCubic } from './animationAllowed.ts'
 
 // jsdom ships no `matchMedia` at all, so the OS half of this has to be stood up
 // rather than steered. Only `matches` is ever read.
@@ -51,4 +51,10 @@ test('an environment with no frame clock animates nothing', () => {
   } finally {
     globalThis.requestAnimationFrame = real
   }
+})
+
+test('easeInOutCubic pins the endpoints and midpoint', () => {
+  expect(easeInOutCubic(0)).toBe(0)
+  expect(easeInOutCubic(1)).toBe(1)
+  expect(easeInOutCubic(0.5)).toBeCloseTo(0.5)
 })

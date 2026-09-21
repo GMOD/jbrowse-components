@@ -2,8 +2,6 @@ import { isPlacedRow } from './rowPlacement.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-export const MORPH_DURATION_MS = 300
-
 // Above this many rects the per-frame re-upload costs more than the animation
 // is worth, so snap instead.
 const MORPH_MAX_RECTS = 20000
@@ -11,10 +9,6 @@ const MORPH_MAX_RECTS = 20000
 // Keyed by id, not array index, so the transition survives a re-fetch that
 // rebuilds the primitive arrays.
 type FeatureTops = Map<string, number>
-
-export function easeInOutCubic(t: number) {
-  return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
-}
 
 const NO_TOPS: FeatureTops = new Map()
 
@@ -88,13 +82,6 @@ export function captureFeatureTops(
     }
   }
   return out
-}
-
-// Guarded for environments without `performance`, falling back to the epoch
-// clock rather than a constant: a clock that never advances leaves the frame
-// loop at progress 0 forever.
-export function morphClockMs() {
-  return typeof performance === 'undefined' ? Date.now() : performance.now()
 }
 
 // A stable-seeded repack that moved nothing would burn a 300ms rAF loop

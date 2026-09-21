@@ -25,3 +25,19 @@ export function animationAllowed(mode: AnimationMode) {
     (mode === 'enabled' || (mode === 'system' && !prefersReduced))
   )
 }
+
+/** how long a layout morph takes from where it drew to where it now draws */
+export const MORPH_DURATION_MS = 300
+
+export function easeInOutCubic(t: number) {
+  return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
+}
+
+/**
+ * The wall clock a morph is timed on. Falls back to the epoch clock rather than
+ * a constant where `performance` is missing: a clock that never advances
+ * leaves a frame loop at progress 0 forever.
+ */
+export function morphClockMs() {
+  return typeof performance === 'undefined' ? Date.now() : performance.now()
+}
