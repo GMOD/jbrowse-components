@@ -21,6 +21,7 @@ import {
 } from './testUtils.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
+import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type { ResolvedBlock } from '../shared/hitTestTypes.ts'
 import type { BaseLayer, ReadColorBy } from '../shared/types.ts'
 
@@ -1086,11 +1087,13 @@ test('a region arrival invalidates renderState, not just the size gate', () => {
 //    `readYs` — the token `GpuAlignmentsRenderer` keys its upload memo on —
 //    reference-identical.
 describe('upload tiers: what a settings change does to the laid-out payloads', () => {
-  function displayWithOneRead() {
+  function displayWithOneRead(
+    color: Partial<AlignmentsColorSetting> = { field: 'tags.HP' },
+  ) {
     const display = createDisplay()
     // Tag coloring is the CPU-baked scheme `colorTagMap` feeds; set it before
     // seeding, since colorBy is an rpcProps (tier-1) setting and clears data.
-    display.setColorBy({ type: 'tag', tag: 'HP' })
+    display.setColor(color)
     display.setRpcData(
       0,
       {
@@ -1155,6 +1158,18 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     expect(after.mismatchYs).toBe(before.mismatchYs)
     expect(after.readTagColors).not.toBe(before.readTagColors)
     expect(after.readTagColors[0]).toBe(0xff0000ff)
+  })
+
+  test('a colour write that leaves a pinned insert-size band alone keeps the layout', () => {
+    const pinned = { field: 'insertSize', domain: ['150', '600'] }
+    const display = displayWithOneRead(pinned)
+    const beforeLayout = display.laidOutByGroupUncolored
+    const before = region0(display)
+
+    display.setColor({ ...pinned, value: 'red' })
+
+    expect(display.laidOutByGroupUncolored).toBe(beforeLayout)
+    expect(region0(display).readYs).toBe(before.readYs)
   })
 
   test('a declared palette is a recolor and not a refetch', () => {

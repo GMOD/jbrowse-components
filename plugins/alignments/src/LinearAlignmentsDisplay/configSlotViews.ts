@@ -1,5 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
 import {
   baseLayerOf,
@@ -48,7 +49,22 @@ export interface ConfigSlotSelf extends IStateTreeNode {
   configuration: Instance<LinearAlignmentsDisplayConfigSchema>
 }
 
+function colorSettingOf(self: ConfigSlotSelf): AlignmentsColorSetting {
+  return {
+    value: getConf(self, ['color', 'value']),
+    field: getConf(self, ['color', 'field']),
+    scale: getConf(self, ['color', 'scale']),
+    domain: getConf(self, ['color', 'domain']),
+    palette: getConf(self, ['color', 'palette']),
+    ramp: getConf(self, ['color', 'ramp']),
+    domainMid: getConf(self, ['color', 'domainMid']),
+  }
+}
+
 export function configSlotViews(self: ConfigSlotSelf) {
+  const insertSizeBand = stableIdentityComputed(() =>
+    pinnedInsertSizeBand(colorSettingOf(self)),
+  )
   return {
     /** #getter */
     get linkedReads(): LinkedReadsMode {
@@ -158,23 +174,16 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get colorSetting(): AlignmentsColorSetting {
-      return {
-        value: getConf(self, ['color', 'value']),
-        field: getConf(self, ['color', 'field']),
-        scale: getConf(self, ['color', 'scale']),
-        domain: getConf(self, ['color', 'domain']),
-        palette: getConf(self, ['color', 'palette']),
-        ramp: getConf(self, ['color', 'ramp']),
-        domainMid: getConf(self, ['color', 'domainMid']),
-      }
+      return colorSettingOf(self)
     },
     /**
      * #getter
      * The short/long cut points `color.domain` pins under an insert-size
-     * field, undefined while the sampled band decides.
+     * field, undefined while the sampled band decides. Compared by value, so
+     * a colour write that leaves the cut points alone relayouts nothing.
      */
     get pinnedInsertSizeBand() {
-      return pinnedInsertSizeBand(this.colorSetting)
+      return insertSizeBand.get()
     },
     /**
      * #getter
