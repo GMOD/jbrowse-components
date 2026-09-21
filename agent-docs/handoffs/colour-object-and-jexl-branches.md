@@ -20,9 +20,7 @@ this file.
   ([ADR-153](../architecture-decision-records/adr-153-every-display-resolves-its-colour-through-one-function.md)).
   Found and left: the wiggle density ramp measures distance from `domainMid`
   rather than placing its middle stop there, and a `linear` scale with no range
-  falls back to the two-sided fade instead of viridis. Colin decided both:
-  `domainMid` becomes the ramp's middle stop, and a `linear`/`log` scale with
-  no range defaults to viridis as `colorRampStops` does. They go with step 1.
+  falls back to the two-sided fade instead of viridis. Both fixed with step 1.
   `alignments-colour-pipeline.dot` is stale on main (`pnpm diagrams:check`).
 - **`jexl:` admission**, landed at `5efdbab034`
   ([ADR-155](../architecture-decision-records/adr-155-a-slot-takes-a-callback-only-where-it-declares-one.md)):
@@ -44,17 +42,9 @@ Left open from the `jexl:` work:
 
 ## Next, in order
 
-1. **Wiggle bars grow from `origin`.** `wiggleComponentUtils.ts` sets
-   `origin: self.wiggleColor.pivot`, so a colour cut moves where bars grow
-   from, against ADR-144. The plan: a `pivot` uniform beside `origin` in
-   `wiggleCommon.slang`; bars keep `u.origin`, while the line, line-centre,
-   band and density shaders read `u.pivot`; `pivot` joins
-   `WiggleGPURenderState`, `WiggleParams` and `writeWiggleUniforms`; the
-   Canvas2D painters split the same way; `makeSummaryLayers` orders layers by
-   `origin` and colours them by `pivot`. The first test: `origin` 0 with
-   `domain: ['2']` gives a render state with origin 0 and pivot 2. Check
-   `gen:shaders`'s exit code, and keep
-   `webgpuHalBindingVisibility.test.ts` green.
+1. **Wiggle bars grow from `origin`: landed** at `c2ff455203`, with the two
+   density-ramp items. Canvas2D and WebGL2 captures agree; WebGPU was checked
+   by the shader build and `webgpuHalBindingVisibility.test.ts` only.
 2. **Solid-and-back: keep `none`.** Settled by
    [ADR-154](../architecture-decision-records/adr-154-the-colour-menus-default-is-the-tracks-own-colour.md):
    a field set aside stays in the object under `scale: 'none'`, so the way
