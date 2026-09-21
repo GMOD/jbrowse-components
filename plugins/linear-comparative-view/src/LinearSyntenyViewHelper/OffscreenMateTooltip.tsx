@@ -25,9 +25,7 @@ export function offscreenMateClickHint(
   const panel = side === 'top' ? 'panel below' : 'panel above'
   return dest.kind === 'none'
     ? dest.reason
-    : dest.kind === 'show' && dest.adds
-      ? `Click to add ${dest.loc} to the ${panel}`
-      : `Click to show ${dest.loc} on the ${panel}`
+    : `Click to show ${dest.loc} on the ${panel}`
 }
 
 // A stretch too narrow to carry a name is unlabelled, so the marks a reader

@@ -109,10 +109,8 @@ test('...and keeps everything that row was already showing', async () => {
   expect(session.queueOfDialogs).toEqual([])
 }, 20000)
 
-// APPENDED, NEVER SORTED IN. `setDisplayedRegions` re-clamps the zoom and the
-// scroll, and growing the set raises both bounds so neither clamp bites — which
-// holds only while the regions already there keep their offsets. An insert
-// would renumber them under every mark, ribbon and cumBp lane on screen.
+// A new contig goes after everything the row showed, so the regions before it
+// keep their offsets.
 test('...at the end, leaving the regions before it where they were', async () => {
   const { view, level } = await setup()
 
@@ -588,9 +586,8 @@ test('a locus at the start of its contig still gets the whole floor', async () =
 // A ROW SHOWING SLICES OF THE CONTIG THE MARK NAMES — a multi-locus search, or
 // Collapse introns' "Replace current view". The worker marks an alignment whose
 // mate misses every slice, so this is the common case for such a row, and the
-// click used to answer it by swapping the slices for the whole contig. It
-// appends a slice of the window instead, which keeps the region list
-// append-only and every slice the reader chose.
+// click used to answer it by swapping the slices for the whole contig. It adds
+// a slice of the window beside the reader's own instead, and removes nothing.
 function sliceOf(start: number, end: number, reversed?: boolean) {
   return { assemblyName: 'volvox2', refName: 'ctgB', start, end, reversed }
 }
@@ -624,54 +621,111 @@ test('a row showing a slice of the contig keeps it and gains a slice of the wind
   expect(visible!.end).toBeLessThanOrEqual(310_500)
 }, 20000)
 
+test('a second click on the same mark adds nothing more', async () => {
+  const { view, level } = await setup()
+  view.views[1]!.setDisplayedRegions([sliceOf(0, 1000)])
+  const clicked = mark('ctgB', 1, { locus: { start: 300_000, end: 301_000 } })
+
+  level.showOffscreenMateContig(clicked)
+  level.showOffscreenMateContig(clicked)
+
+  expect(regionsOf(view, 1)).toHaveLength(2)
+}, 20000)
+
 // The worker's clip assumes one contig's regions do not overlap, and exon
-// slices sit closer than the window's 20kb floor
-test('the added slice stops where the slices either side of it start', async () => {
+// slices sit closer than the window's 20kb floor. Beside its neighbours, so
+// the ruler still reads in order.
+test('the added slice fills the gap between its neighbours, in order', async () => {
   const { view, level } = await setup()
   view.views[1]!.setDisplayedRegions([
     sliceOf(0, 295_000),
-    sliceOf(305_000, BP),
+    sliceOf(305_000, 350_000),
+    { assemblyName: 'volvox2', refName: 'ctgA', start: 0, end: BP },
   ])
 
   level.showOffscreenMateContig(
     mark('ctgB', 1, { locus: { start: 299_500, end: 300_500 } }),
   )
 
-  expect(regionsOf(view, 1).at(-1)).toEqual(['ctgB', 295_000, 305_000, false])
-}, 20000)
-
-test('a slice added beside reversed ones runs the same way', async () => {
-  const { view, level } = await setup()
-  view.views[1]!.setDisplayedRegions([sliceOf(0, 1000, true)])
-
-  level.showOffscreenMateContig(
-    mark('ctgB', 1, { locus: { start: 300_000, end: 301_000 } }),
-  )
-
   expect(regionsOf(view, 1)).toEqual([
-    ['ctgB', 0, 1000, true],
-    ['ctgB', 290_500, 310_500, true],
+    ['ctgB', 0, 295_000, false],
+    ['ctgB', 295_000, 305_000, false],
+    ['ctgB', 305_000, 350_000, false],
+    ['ctgA', 0, BP, false],
   ])
 }, 20000)
 
-// A locus straddling a slice's edge is shown in the slice that holds its
-// centre, rather than added again beside it
-test('a window centred inside a slice is shown there, adding nothing', async () => {
+// Collapse introns lists a reversed gene's exons in descending order
+test('a slice added among reversed ones runs their way, in their order', async () => {
+  const { view, level } = await setup()
+  view.views[1]!.setDisplayedRegions([
+    sliceOf(103_000, 103_300, true),
+    sliceOf(101_000, 101_150, true),
+    sliceOf(100_000, 100_200, true),
+  ])
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, { locus: { start: 102_000, end: 102_100 } }),
+  )
+
+  expect(regionsOf(view, 1)).toEqual([
+    ['ctgB', 103_000, 103_300, true],
+    ['ctgB', 101_150, 103_000, true],
+    ['ctgB', 101_000, 101_150, true],
+    ['ctgB', 100_000, 100_200, true],
+  ])
+}, 20000)
+
+// The framed window is clamped to the contig, so its centre is not the
+// locus's: picked by the window, the gap missed the mates altogether
+test('a mate near the contig end is added from the gap that holds it', async () => {
+  const { view, level } = await setup()
+  view.views[1]!.setDisplayedRegions([
+    sliceOf(370_000, 380_000),
+    sliceOf(385_000, 395_000),
+  ])
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, { locus: { start: 399_700, end: 399_900 } }),
+  )
+
+  expect(regionsOf(view, 1).at(-1)).toEqual(['ctgB', 395_000, BP, false])
+}, 20000)
+
+// A pointer column unions several alignments' loci, and the union can run
+// across a slice: the gap holding the most of it is added rather than the
+// slice shown again
+test('a locus running across a slice adds a gap it covers', async () => {
+  const { view, level } = await setup()
+  view.views[1]!.setDisplayedRegions([
+    sliceOf(0, 1000),
+    sliceOf(299_900, 300_100),
+  ])
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, { locus: { start: 299_000, end: 301_000 } }),
+  )
+
+  expect(regionsOf(view, 1)).toEqual([
+    ['ctgB', 0, 1000, false],
+    ['ctgB', 290_000, 299_900, false],
+    ['ctgB', 299_900, 300_100, false],
+  ])
+}, 20000)
+
+test('a locus inside a slice is shown there, adding nothing', async () => {
   const { view, level } = await setup()
   view.views[1]!.setDisplayedRegions([
     sliceOf(0, 1000),
     sliceOf(200_000, 205_000),
   ])
-  const straddling = mark('ctgB', 1, {
-    locus: { start: 203_000, end: 204_000 },
-  })
+  const inside = mark('ctgB', 1, { locus: { start: 203_000, end: 204_000 } })
 
-  expect(level.offscreenMateDestination(straddling)).toMatchObject({
+  expect(level.offscreenMateDestination(inside)).toMatchObject({
     kind: 'show',
-    adds: false,
     location: { refName: 'ctgB', start: 200_000, end: 205_000 },
   })
-  level.showOffscreenMateContig(straddling)
+  level.showOffscreenMateContig(inside)
 
   expect(regionsOf(view, 1)).toEqual([
     ['ctgB', 0, 1000, false],

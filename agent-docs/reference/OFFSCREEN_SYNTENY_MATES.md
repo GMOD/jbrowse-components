@@ -522,23 +522,23 @@ navigates with now comes off `pxToBp`, which is the row's own, and the staleness
 test canonicalizes both sides.
 
 **Otherwise the click frames the mate locus and never removes a region.** A
-region of the contig holding the framed window's centre shows it; a contig the
-row lacks is appended whole; a contig the row shows only slices of gains a slice
-of the window, trimmed to the gap between the slices either side, so no two
-regions of one contig overlap — the worker's clip assumes they do not
-(`clipLargeBlockToWindow`). The added slice runs the way the contig's other
-slices do. Since the worker marks by locus, this is the common case on a row
-showing slices, from a multi-locus search or Collapse introns' "Replace current
-view": an alignment whose mate misses every slice is marked, and the click used
-to swap those slices for the whole forward contig.
+contig the row lacks is appended whole, after everything else. A contig the row
+shows slices of gains a slice in the gap between them that holds the most of the
+locus, trimmed to that gap so no two regions of one contig overlap — the
+worker's clip assumes they do not (`clipLargeBlockToWindow`). The slice goes
+beside its neighbour in the list and runs its way, so a collapsed-intron row,
+reversed or not, still reads in order. A locus no gap holds any of is shown in
+the slice holding its centre, adding nothing. The gap is chosen by the locus,
+not the framed window: `navSpan` clamps the window to the contig, so near an
+end its centre is not the locus's.
 
-**Appended, never inserted or removed.** A region removed from or inserted into
-the middle of the list shifts the cumulative bp of every region after it, and
-ribbons, marks and fetch-time cumBp lanes on screen are keyed to the old
-numbering until the refetch lands. The display blanks its band on any
-`regionSignature` change (`SyntenyBlankOnRegionChange` in
-`LinearSyntenyDisplay/afterAttach.ts`), so the reader sees one empty round trip
-either way.
+Since the worker marks by locus, this is the common case on a row showing
+slices, from a multi-locus search or Collapse introns' "Replace current view":
+an alignment whose mate misses every slice is marked, and the click used to
+swap those slices for the whole forward contig. Any change to the list blanks
+the band for one round trip (`SyntenyBlankOnRegionChange` in
+`LinearSyntenyDisplay/afterAttach.ts`), so an inserted slice costs the reader
+no more than an appended one.
 
 **An aliased region is respelled in place.** `navTo` canonicalizes the location
 and then compares `displayedRegions` refNames raw, so no spelling reaches a
@@ -548,8 +548,8 @@ also stops the row listing one contig under two spellings.
 
 **The hover states the click's destination.** `offscreenMateDestination` is the
 one resolver the tooltip and the click share, so the hover names the locus the
-snackbar will, says whether the click adds a region or shows one the row has,
-and gives the reason for a mark that resolves nowhere before anyone clicks it.
+snackbar will, and gives the reason for a mark that resolves nowhere before
+anyone clicks it.
 
 **A click that resolves nothing notifies**, as the hover already did, so a stale
 mark is never a dead pixel.

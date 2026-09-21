@@ -36,19 +36,18 @@ function source(
   } as OffscreenMateSource
 }
 
-const ADDS: MateNavDestination = {
+const SHOW: MateNavDestination = {
   kind: 'show',
   loc: 'ctgB:190,001..210,000',
   regions: [],
   location: { refName: 'ctgB', start: 190_000, end: 210_000 },
-  adds: true,
 }
 
 function draw(
   model: OffscreenMateSource,
   refName: string,
   side: 'top' | 'bottom' = 'top',
-  destination: MateNavDestination | undefined = ADDS,
+  destination: MateNavDestination | undefined = SHOW,
 ) {
   const { getByRole } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -99,26 +98,8 @@ test('and how many alignments carry it', () => {
 // snackbar will.
 test('and says what clicking it does', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB')).toContain(
-    'Click to add ctgB:190,001..210,000 to the panel below',
+    'Click to show ctgB:190,001..210,000 on the panel below',
   )
-})
-
-test('a mark the panel can already reach offers to show it', () => {
-  expect(
-    draw(source({ ctgB: 1 }), 'ctgB', 'top', { ...ADDS, adds: false }),
-  ).toContain('Click to show ctgB:190,001..210,000 on the panel below')
-})
-
-test('so does a mark whose alignments are drawn off screen', () => {
-  expect(
-    draw(source({ ctgB: 1 }), 'ctgB', 'top', {
-      kind: 'scroll',
-      loc: 'ctgB:200,001..201,000',
-      refName: 'ctgB',
-      coord0: 200_500,
-      displayedRegionIndex: 0,
-    }),
-  ).toContain('Click to show ctgB:200,001..201,000 on the panel below')
 })
 
 // warned on hover, where it used to be found out only by clicking
@@ -135,7 +116,7 @@ test('a mark that resolves nowhere says why', () => {
 // fetches both rows
 test('a mark on the target axis names the panel above instead', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB', 'bottom')).toContain(
-    'to the panel above',
+    'on the panel above',
   )
 })
 

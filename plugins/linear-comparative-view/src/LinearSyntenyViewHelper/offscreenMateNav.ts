@@ -62,8 +62,6 @@ export type MateNavDestination =
       loc: string
       regions: Region[]
       location: { refName: string; start: number; end: number }
-      // the row gains a region, the whole contig or a slice of it
-      adds: boolean
     }
   | { kind: 'none'; reason: string }
 
@@ -97,13 +95,13 @@ function drawnPlacement(
 // The scroll class navigates with the row's own spelling and coordinates,
 // read back through `pxToBp` from where the ribbons are drawn; a drawn span
 // landing off the layout or on another contig is stale geometry and the row
-// holds. Otherwise the click frames the mate locus and never removes a
-// region: a region of the contig holding the window's centre shows it, a
-// contig the row lacks is appended whole, and one the row shows only slices
-// of gains a slice of the window, trimmed clear of the slices either side so
-// no two regions overlap. A region spelling the contig by an alias is respelled
-// in place first: `navTo` canonicalizes the location and then compares refNames
-// raw, so no spelling reaches an aliased region.
+// holds. Otherwise the click frames the mate locus and never removes a region.
+// A contig the row lacks is appended whole. One the row shows slices of gains
+// a slice in the gap between them holding most of the locus, placed beside its
+// neighbour and running its way; a locus no gap holds any of is shown in the
+// slice holding its centre. A region spelling the contig by an alias is
+// respelled in place first: `navTo` canonicalizes the location and then
+// compares refNames raw, so no spelling reaches an aliased region.
 export function mateNavDestination({
   node,
   view,
@@ -145,46 +143,80 @@ export function mateNavDestination({
     }
   }
   const regions = view.displayedRegions.map(r =>
-    r.refName !== region.refName && canonical(r.refName) === region.refName
+    canonical(r.refName) === region.refName
       ? { ...r, refName: region.refName }
       : r,
   )
   const own = regions.filter(r => r.refName === region.refName)
   const window = navSpan(region, mate.locus)
-  const room = roomAround(own, (window.start + window.end) / 2)
+  if (own.length === 0) {
+    return show([...regions, region], { refName: region.refName, ...window })
+  }
+  const gap = gapHolding(own, region, mate.locus)
+  const centre = (mate.locus.start + mate.locus.end) / 2
+  const room = gap ?? own.find(r => centre >= r.start && centre <= r.end)
+  if (!room) {
+    return {
+      kind: 'none',
+      reason: `Could not place that mark on ${refName}`,
+    }
+  }
   const location = {
     refName: region.refName,
     start: Math.max(window.start, room.start),
     end: Math.min(window.end, room.end),
   }
-  const appended = room.shown
-    ? undefined
-    : own.length > 0
-      ? { ...region, ...location, reversed: own.every(r => r.reversed) }
-      : region
-  return {
-    kind: 'show',
-    regions: appended ? [...regions, appended] : regions,
-    location,
-    loc: assembleLocString(location),
-    adds: !!appended,
+  if (!gap) {
+    return show(regions, location)
   }
+  const left = regions.findIndex(
+    r => r.refName === region.refName && r.end === gap.start,
+  )
+  const right = regions.findIndex(
+    r => r.refName === region.refName && r.start === gap.end,
+  )
+  const beside = regions[left] ?? regions[right]!
+  const at =
+    left === -1
+      ? right + (beside.reversed ? 1 : 0)
+      : left + (beside.reversed ? 0 : 1)
+  return show(
+    [
+      ...regions.slice(0, at),
+      { ...region, ...location, reversed: beside.reversed },
+      ...regions.slice(at),
+    ],
+    location,
+  )
 }
 
-// The region holding `centre`, or else the gap between the regions either side
-function roomAround(regions: Region[], centre: number) {
-  const holder = regions.find(r => centre >= r.start && centre < r.end)
-  return holder
-    ? { start: holder.start, end: holder.end, shown: true }
-    : {
-        start: Math.max(
-          -Infinity,
-          ...regions.filter(r => r.end <= centre).map(r => r.end),
-        ),
-        end: Math.min(
-          Infinity,
-          ...regions.filter(r => r.start > centre).map(r => r.start),
-        ),
-        shown: false,
-      }
+function show(
+  regions: Region[],
+  location: { refName: string; start: number; end: number },
+): MateNavDestination {
+  return { kind: 'show', regions, location, loc: assembleLocString(location) }
+}
+
+// The gap between a contig's displayed slices that holds the most of `locus`,
+// a point counting as one base; undefined when no gap holds any of it
+function gapHolding(
+  own: Region[],
+  contig: { start: number; end: number },
+  locus: OffscreenMateLocus,
+) {
+  const lo = locus.start
+  const hi = Math.max(locus.end, locus.start + 1)
+  let best: { start: number; end: number } | undefined
+  let most = 0
+  let start = contig.start
+  const sorted = [...own].sort((a, b) => a.start - b.start)
+  for (const r of [...sorted, { start: contig.end, end: contig.end }]) {
+    const held = Math.min(hi, r.start) - Math.max(lo, start)
+    if (held > most) {
+      most = held
+      best = { start, end: r.start }
+    }
+    start = Math.max(start, r.end)
+  }
+  return best
 }
