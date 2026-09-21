@@ -15,6 +15,7 @@ import {
   isFeature,
   pluralize,
 } from '@jbrowse/core/util'
+import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   activeJexlFilters,
@@ -1215,6 +1216,24 @@ export default function baseStateModelFactory(
         },
       }
     })
+    .actions(self => {
+      const fetchMetadata = createAdapterMetadataFetch(self)
+      return {
+        /**
+         * #action
+         */
+        openFilterDialog() {
+          getDialogHost(self).queueDialog(handleClose => [
+            JexlFilterDialog,
+            {
+              model: self,
+              handleClose,
+              metadata: fetchMetadata().catch(() => undefined),
+            },
+          ])
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action
@@ -1245,16 +1264,6 @@ export default function baseStateModelFactory(
         getDialogHost(self).queueDialog(handleClose => [
           SetColorDialog,
           { model: self, handleClose, showUtrColor },
-        ])
-      },
-
-      /**
-       * #action
-       */
-      openFilterDialog() {
-        getDialogHost(self).queueDialog(handleClose => [
-          JexlFilterDialog,
-          { model: self, handleClose },
         ])
       },
 

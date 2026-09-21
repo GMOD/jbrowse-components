@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 import { readConfObject } from '../configuration/readConfObject.ts'
 import {
   addRow,
+  describedColumns,
   readFilterRows,
   removeRow,
   replaceRow,
@@ -147,25 +148,32 @@ function withOneRow(state: FilterRows) {
  * line as rows of field, operator and value where it can, and as text where it
  * cannot; the Text tab is every line as text.
  *
- * `fields` lists what the field picker offers. A promise suspends the dialog
- * until it resolves, so it must not reject.
+ * `fields` lists what the field picker offers, then the columns `metadata`
+ * describes, if it is an adapter's `{column: description}` map. Either one
+ * given as a promise suspends the dialog until it resolves, so it must not
+ * reject.
  */
 const JexlFilterDialog = observer(function JexlFilterDialog({
   model,
   handleClose,
   examples = FEATURE_FILTER_EXAMPLES,
   fields = FEATURE_FIELDS,
+  metadata,
 }: {
   model: JexlFilterModel
   handleClose: () => void
   examples?: JexlFilterExample[]
   fields?: JexlFilterField[] | Promise<JexlFilterField[]>
+  metadata?: Promise<unknown>
 }) {
   const { classes } = useStyles()
   const jexl = getEnv<{ pluginManager: { jexl: Jexl } }>(model).pluginManager
     .jexl
   const fieldList = fields instanceof Promise ? use(fields) : fields
-  const [choices] = useState(() => resolveFields(fieldList))
+  const described = metadata && use(metadata)
+  const [choices] = useState(() =>
+    resolveFields([...fieldList, ...describedColumns(described, fieldList)]),
+  )
   const [state, setState] = useState(() =>
     withOneRow(readFilterRows(activeJexlFilters(model), jexl, choices)),
   )

@@ -142,6 +142,34 @@ export function resolveFields(fields: readonly JexlFilterField[]) {
   )
 }
 
+// a feature carries these as refName, start and end
+const BED_LOCUS_COLUMNS = new Set(['chrom', 'chromStart', 'chromEnd'])
+
+/**
+ * The columns an adapter's metadata describes as `{column: description}`, as
+ * a BigBed's autoSql does, less those `fields` already lists. Any other
+ * metadata describes none.
+ */
+export function describedColumns(
+  metadata: unknown,
+  fields: readonly JexlFilterField[],
+): JexlFilterField[] {
+  const entries =
+    metadata && typeof metadata === 'object' ? Object.entries(metadata) : []
+  const listed = new Set(fields.map(field => field.label))
+  return entries.every(
+    (entry): entry is [string, string] => typeof entry[1] === 'string',
+  )
+    ? entries
+        .filter(([name]) => !listed.has(name) && !BED_LOCUS_COLUMNS.has(name))
+        .map(([name, description]) => ({
+          label: name,
+          path: [name],
+          description: description || undefined,
+        }))
+    : []
+}
+
 /** A field typed into the picker rather than chosen, read as a dotted path. */
 export function typedField(text: string): FieldChoice {
   const subject = pathSubject(ROW, text.split('.'))

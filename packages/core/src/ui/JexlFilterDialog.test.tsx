@@ -29,6 +29,7 @@ const FIELDS: JexlFilterField[] = [
 
 function setup(
   fields: JexlFilterField[] | Promise<JexlFilterField[]> = FIELDS,
+  metadata?: Promise<unknown>,
 ) {
   const track = types
     .model('Track', {
@@ -61,6 +62,7 @@ function setup(
         model={track.display}
         handleClose={handleClose}
         fields={fields}
+        metadata={metadata}
       />
     </Suspense>,
   )
@@ -157,4 +159,15 @@ test('a typed field takes a numeric operator and writes a number', () => {
     ...STORED,
     'jexl:feature.AF >= 0.001',
   ])
+})
+
+test('the picker lists the columns the adapter describes', async () => {
+  await act(async () => {
+    setup(FIELDS, Promise.resolve({ AF: 'Allele Frequency' }))
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Add condition' }))
+  fireEvent.change(screen.getAllByPlaceholderText('Field').at(-1)!, {
+    target: { value: 'A' },
+  })
+  expect(screen.getByText('Allele Frequency')).toBeInTheDocument()
 })

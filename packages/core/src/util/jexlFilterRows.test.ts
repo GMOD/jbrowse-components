@@ -1,6 +1,7 @@
 import createJexlInstance from './jexl.ts'
 import {
   addRow,
+  describedColumns,
   readFilterRows,
   removeRow,
   replaceRow,
@@ -254,4 +255,28 @@ test('a number field drops a value that is not a number', () => {
   expect(
     writeFilterRows({ lines: [], rows: [{ ...qual, value: 'abc' }] }),
   ).toEqual([])
+})
+
+test("a BigBed's autoSql columns join the fields it does not list", () => {
+  const fields = [{ label: 'name', path: ['name'], type: 'text' as const }]
+  expect(
+    describedColumns(
+      {
+        chrom: 'Chromosome (or contig, scaffold, etc.)',
+        chromStart: 'Start position in chromosome',
+        chromEnd: 'End position in chromosome',
+        name: 'md5 of data used as a key into external data file',
+        AF: 'Allele Frequency',
+        _dataLen: '',
+      },
+      fields,
+    ),
+  ).toEqual([
+    { label: 'AF', path: ['AF'], description: 'Allele Frequency' },
+    { label: '_dataLen', path: ['_dataLen'], description: undefined },
+  ])
+  expect(
+    describedColumns({ columnNumbers: { ref: 1 }, metaChar: '#' }, fields),
+  ).toEqual([])
+  expect(describedColumns(undefined, fields)).toEqual([])
 })
