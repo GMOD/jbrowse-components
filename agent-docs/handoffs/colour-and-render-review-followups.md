@@ -1,6 +1,6 @@
 ---
 name: colour-and-render-review-followups
-description: What a 2026-09-21 review of the overnight colour-object, shader-loading and multiway landings found and did not fix, the synteny mate and follow findings excepted (those are synteny-mates-and-follow-review). Its calls are all decided; four measurements remain, each deciding whether anything is built. Read before touching the colour objects' menus, the mark rule list, the shader loaders or the multiway demos.
+description: What a 2026-09-21 review of the overnight colour-object, shader-loading and multiway landings found and did not fix, the synteny mate and follow findings excepted (those are synteny-mates-and-follow-review). Its calls are all decided; three measurements remain, each deciding whether anything is built. Read before touching the colour objects' menus, the mark rule list, the shader loaders or the multiway demos.
 ---
 
 # Colour, shader-loading and multiway follow-ups
@@ -18,12 +18,6 @@ decides it, and delete this file when none is left.
   loads when a HAL is built"). Grouping a plugin's text into one chunk was
   declined with no latency figure; time first paint under a throttled network
   before reopening it.
-- **Multiway lane stability.** A 2026-09-20 re-run of
-  `plugins/linear-comparative-view/benches/multiwayLaneStability.probe.ts` had
-  peach at 8 rung changes with a new oscillation where the record says 7, and
-  lane motion now shows a flip the vote takes back as a fold and unfold. Re-run the probe and regenerate the
-  record before quoting it
-  ([ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md)).
 - **Where config time goes in a browser.** Creating 262 track config nodes
   took 159 ms under jsdom, five times plugin registration
   (`agent-docs/measurements/config-schema-construction.json`, EAGER_BUNDLE
