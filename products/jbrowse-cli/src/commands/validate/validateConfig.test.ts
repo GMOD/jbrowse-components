@@ -397,6 +397,24 @@ describe('validateConfig', () => {
       ).toEqual([`threshold-range ${where}.range`])
     })
 
+    it("checks a feature track's threshold colour", () => {
+      const track = {
+        type: 'FeatureTrack',
+        adapter: { type: 'Gff3TabixAdapter', uri: 'x.gff3.gz' },
+        ...display('LinearBasicDisplay', {
+          field: 'dif',
+          scale: 'threshold',
+          domain: ['0.3', '-0.3'],
+          range: ['blue', 'red'],
+        }),
+      }
+      expect(errorsOf(onTrack(track))).toEqual([])
+      expect(found(track)).toEqual([
+        `threshold-cuts ${where}.domain`,
+        `threshold-range ${where}.range`,
+      ])
+    })
+
     it('checks displayDefaults against the display the track offers', () => {
       expect(
         found({
