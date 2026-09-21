@@ -66,7 +66,12 @@ describe('thresholdField', () => {
   })
 
   test('tells a missing value from text that is no number', () => {
-    expect([undefined, ''].map(field.key)).toEqual(['', ''])
+    expect([undefined, '', [undefined], [null]].map(field.key)).toEqual([
+      '',
+      '',
+      '',
+      '',
+    ])
     expect(field.key('NA')).toBe(NOT_A_NUMBER_LABEL)
     expect(field.color('')).toBe(NO_CATEGORY_COLOR)
     expect(field.color(NOT_A_NUMBER_LABEL)).toBe(MISCONFIGURED_COLOR)

@@ -238,8 +238,8 @@ describe('derivedColorScale', () => {
         field: bins,
       }).flatMap(scale => (scale.kind === 'categorical' ? scale.entries : [])),
     ).toEqual([
-      { value: '< 1', label: '< 1', color: '#0000ff' },
-      { value: '1 – 2', label: '1 – 2', color: '#00ff00' },
+      { value: '< 1', label: '< 1', color: 'rgba(0,0,255,1)' },
+      { value: '1 – 2', label: '1 – 2', color: 'rgba(0,255,0,1)' },
       {
         value: '≥ 2',
         values: ['≥ 2'],
@@ -254,6 +254,15 @@ describe('derivedColorScale', () => {
         missing: true,
       },
     ])
+  })
+
+  test('lists no bin of a closed domain while nothing painted', () => {
+    expect(
+      derivedColorScale([[]], allRowsPaint, {
+        id: 'color',
+        field: thresholdField('score', { domain: ['1', '2'] }),
+      }),
+    ).toEqual([])
   })
 
   test('is no scale at all where every row is one color', () => {

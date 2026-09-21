@@ -200,6 +200,19 @@ describe('the Group by dialog applies a channel spec', () => {
     d.applyDisplaySettings({ color: 'purple' })
     expect(d.groupByChannelSpec(undefined, false)).toEqual({ facet: null })
   })
+
+  it('leaves a threshold color alone, ticked on its own field or unticked on another', () => {
+    const d = display()
+    d.applyDisplaySettings({
+      color: { field: 'dif', scale: 'threshold', domain: ['0'] },
+    })
+    expect(d.groupByChannelSpec('dif', true)).toEqual({
+      facet: { field: 'dif' },
+    })
+    expect(d.groupByChannelSpec('strand', false)).toEqual({
+      facet: { field: 'strand' },
+    })
+  })
 })
 
 test('Solid color keeps the field, its order and range under scale none for the way back', () => {

@@ -1,5 +1,5 @@
 import { legendIsReadable } from '../ui/legendSpec.ts'
-import { abgrToCssRgba } from './colorBits.ts'
+import { abgrToCssRgba, cssColorToABGR } from './colorBits.ts'
 
 import type { ColorScale } from '../ui/colorScale.ts'
 import type { CategoricalField } from './categoricalField.ts'
@@ -112,7 +112,8 @@ export function unionLegendCandidates<T>(
  * rows would say nothing (`legendIsReadable`). A display resolving its own colors hands the
  * candidates its packer recorded; one resolved by `encodeFeatures` hands the
  * entries of the scale tables that came back. Either way the key lists what
- * the painting holds, and a `closed` field's domain besides.
+ * the painting holds, and a `closed` field's domain besides once anything
+ * painted.
  */
 export function derivedColorScale<T>(
   regions: Iterable<T>,
@@ -137,15 +138,16 @@ export function derivedColorScale<T>(
     },
   )
   const named = new Set(painted.flatMap(e => e.values))
-  const unpainted = field.closed
-    ? field.domain
-        .filter(value => !named.has(value))
-        .map(value => ({
-          value,
-          label: field.label(value),
-          color: field.color(value),
-        }))
-    : []
+  const unpainted =
+    field.closed && painted.length > 0
+      ? field.domain
+          .filter(value => !named.has(value))
+          .map(value => ({
+            value,
+            label: field.label(value),
+            color: abgrToCssRgba(cssColorToABGR(field.color(value))),
+          }))
+      : []
   const entries = [...painted, ...unpainted].sort((a, b) =>
     field.compare(a.value, b.value),
   )

@@ -90,6 +90,14 @@ export function thresholdLabels(domain: readonly number[]): string[] {
  */
 export const NOT_A_NUMBER_LABEL = '(not a number)'
 
+// A VCF's `AF=.` arrives as `[undefined]`, which is no value rather than text
+// that fails to parse.
+function isMissing(value: unknown) {
+  return Array.isArray(value)
+    ? value.every(v => v === undefined || v === null)
+    : valueText(value) === ''
+}
+
 /**
  * #api
  * A threshold scale read the way every categorical channel reads its field: a
@@ -113,7 +121,7 @@ export function thresholdField(
     domain: labels,
     closed: true,
     key: value => {
-      if (valueText(value) === '') {
+      if (isMissing(value)) {
         return ''
       }
       const bin = thresholdIndex(value, cuts)

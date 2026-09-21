@@ -353,10 +353,10 @@ The seams, named honestly:
   and `thresholdField` (`@jbrowse/core/util/thresholdScale`) reads it through
   the same interface `categoricalField` answers: a value files under its bin's
   label, so the worker's walk, a transcript's parts inheriting its value and
-  the derived key take it unchanged. Its domain is `closed`, and
-  `derivedColorScale` lists every bin of a closed domain whether or not
-  anything painted it, as Manhattan's, the alignments' and the LD keys list
-  theirs; the no-value and not-a-number rows still appear only once painted.
+  the derived key take it unchanged. Its domain is `closed`, and once anything
+  painted, `derivedColorScale` lists every bin of a closed domain, as
+  Manhattan's, the alignments' and the LD keys list theirs; the no-value and
+  not-a-number rows still appear only once painted.
   `colorFieldOf` answers either field, while `categoricalColorField` and the
   canvas display's `colorField` stay categorical, for the facet, Group by and
   "Pin distinct colors", which would write values into the cuts

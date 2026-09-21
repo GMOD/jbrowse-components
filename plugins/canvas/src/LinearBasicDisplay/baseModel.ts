@@ -1515,14 +1515,16 @@ export default function baseStateModelFactory(
        * #method
        * The Group by dialog's choice of field as channels: the facet, keeping
        * its domain while the field is the one already set, a color by the
-       * field when ticked (left alone while it already paints), and no color
-       * when unticked over a color that was the facet's own.
+       * field when ticked (left alone while it already paints, through any
+       * scale), and no color when unticked over a categorical color that was
+       * the facet's own.
        */
       groupByChannelSpec(
         field: string | undefined,
         colorByGroup: boolean,
       ): ChannelSpec {
         const colorField = self.colorField?.field ?? ''
+        const painted = self.paintedColorField?.field ?? ''
         const current = facetOf(self.facet)
         const wasGroupColor =
           colorField !== '' &&
@@ -1530,7 +1532,7 @@ export default function baseStateModelFactory(
         return {
           facet: field === current?.field ? current : field ? { field } : null,
           ...(colorByGroup && field
-            ? field === colorField
+            ? field === painted
               ? {}
               : { color: { field } }
             : wasGroupColor
@@ -1646,7 +1648,7 @@ export default function baseStateModelFactory(
               model: self,
               handleClose,
               color: self.colorSettings.value,
-              colorField: self.colorField?.field ?? '',
+              colorField: self.paintedColorField?.field ?? '',
             },
           ])
         },
