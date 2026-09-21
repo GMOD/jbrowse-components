@@ -266,7 +266,9 @@ same direction). Most ribbons are individually thin and
 collectively collinear, and one band per run would cut both the clutter and the
 svg node count. It is parked because it changes what a ribbon IS: hover reads
 one ortholog group today, and a run either becomes the hover unit or has to
-carry its members. Lane ordering could also use it — seed with the densest lane,
+carry its members. Drawing blocks only below a zoom threshold was declined
+on 2026-09-21: ribbons switching between blocks and genes at the threshold read
+as flicker now that lane moves animate. Lane ordering could also use it — seed with the densest lane,
 then append whichever unused lane shares the most collinear runs with the last
 one placed, which shortens the travel without giving up the density-first
 property that keeps chains running.

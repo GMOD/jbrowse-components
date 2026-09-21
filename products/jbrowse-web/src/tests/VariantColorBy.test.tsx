@@ -28,6 +28,8 @@ const opts = [{}, delay] as const
 
 interface ColorMenuItem {
   label: string
+  checked?: boolean
+  onClick?: () => void
   subMenu?: ColorMenuItem[]
 }
 interface VariantDisplay {
@@ -56,16 +58,25 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
   expect(colorItems.map(item => item.label)).toEqual(['Color by...'])
   expect(colorItems[0]!.subMenu?.map(item => item.label)).toEqual([
     'Default',
-    'Solid color...',
     'Consequence impact',
     'SV type',
     'Attribute...',
+    'Solid color...',
   ])
 
   expect(display.colorByMode).toBe('default')
   display.setFeatureColor('red')
   expect(display.featureColor).toBe('red')
-  expect(display.colorByMode).toBe('solid')
+  expect(display.colorByMode).toBe('default')
+
+  const radio = (label: string) =>
+    display.colorMenuItems()[0]!.subMenu!.find(item => item.label === label)!
+  radio('Consequence impact').onClick!()
+  expect(radio('Consequence impact').checked).toBe(true)
+  expect(radio('Default').checked).toBe(false)
+  radio('Default').onClick!()
+  expect(radio('Default').checked).toBe(true)
+  expect(radio('Consequence impact').checked).toBe(false)
 }, 60000)
 
 // The variant display has no component of its own — it registers the canvas

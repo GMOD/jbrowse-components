@@ -140,6 +140,17 @@ test('a color picked by hand survives regrouping without the color', () => {
   expect(display.featureColor).toBe('purple')
 })
 
+test('unticking the grouping color returns to the color picked by hand', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setFeatureColor('purple')
+  display.applyGroupBy('strand', true)
+  expect(display.colorByMode).toBe('strand')
+  display.applyGroupBy('strand', false)
+  expect(display.colorByMode).toBe('default')
+  expect(display.colorEncoding).toBe('purple')
+})
+
 test('reordering the sections keeps the hidden ones hidden', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()

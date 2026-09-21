@@ -63,15 +63,13 @@ export function colorViews(self: ColorHost) {
     /**
      * #getter
      */
-    get colorByMode(): 'default' | 'strand' | 'attribute' | 'solid' {
-      const encoding = this.colorEncoding
-      if (typeof encoding === 'object') {
-        return encoding.field === STRAND_FIELD ? 'strand' : 'attribute'
-      }
-      if (encoding === undefined) {
-        return 'default'
-      }
-      return isJexl(encoding) ? 'attribute' : 'solid'
+    get colorByMode(): 'default' | 'strand' | 'attribute' {
+      const field = this.colorField?.field
+      return field === undefined
+        ? 'default'
+        : field === STRAND_FIELD
+          ? 'strand'
+          : 'attribute'
     },
 
     /**

@@ -64,7 +64,7 @@ interface ColorMenuSelf {
   colorByMode: string
   openSetColorDialog: () => void
   openColorByAttributeDialog: () => void
-  setFeatureColor: (color?: string) => void
+  setColorScale: () => void
   colorByField: (field: string) => void
 }
 
@@ -160,24 +160,16 @@ export function defaultColorItem(self: ColorMenuSelf): MenuItem {
     type: 'radio' as const,
     checked: self.colorByMode === 'default',
     onClick: () => {
-      self.setFeatureColor(undefined)
+      self.setColorScale()
     },
   }
 }
 
+// The radios pick what paints: the track's own `color.value` (Default) or a
+// field. Solid color writes that value, so it is an action, not a radio.
 export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
   return [
     defaultColorItem(self),
-    {
-      label: 'Solid color...',
-      type: 'radio' as const,
-      checked: self.colorByMode === 'solid',
-      // Opens a dialog, so it dismisses like any other action.
-      keepMenuOpen: false,
-      onClick: () => {
-        self.openSetColorDialog()
-      },
-    },
     {
       label: 'Strand',
       type: 'radio' as const,
@@ -193,6 +185,12 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
       keepMenuOpen: false,
       onClick: () => {
         self.openColorByAttributeDialog()
+      },
+    },
+    {
+      label: 'Solid color...',
+      onClick: () => {
+        self.openSetColorDialog()
       },
     },
   ]

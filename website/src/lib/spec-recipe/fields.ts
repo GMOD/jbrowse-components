@@ -344,9 +344,8 @@ const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
 
 // Mirrors the canvas display's own `colorByMode` getter (colorViews.ts), which
 // is what decides which of the "Color by..." radios reads as checked: a
-// `color.field` of `strand` is 'strand', any other field is 'attribute', and the
-// `color` slot is a solid color, a preset, or a jexl only the config editor
-// authors.
+// `color.field` of `strand` is 'strand', any other field is 'attribute', and
+// with no field painting it is 'default', whatever `color.value` holds.
 //
 // Three displays take a `color`, and the submenu is the same one on two of
 // them: LinearVariantDisplay is built on the same canvas base model, so its

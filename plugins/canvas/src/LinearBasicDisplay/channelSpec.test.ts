@@ -56,7 +56,7 @@ test('a string is the one-value form: the facet field, or the constant color', (
   d.applyDisplaySettings({ facet: 'strand', color: 'red' })
   expect(d.facet).toEqual({ field: 'strand', domain: [] })
   expect(d.colorSettings).toMatchObject({ value: 'red', field: '' })
-  expect(d.colorByMode).toBe('solid')
+  expect(d.colorByMode).toBe('default')
   expect(d.channelSpec.color).toBe('red')
 })
 
@@ -206,7 +206,7 @@ test('Solid color keeps the field, its order and range under scale none for the 
   const d = display()
   d.setColorScale({ field: 'biotype', domain: ['lncRNA'], range: ['red'] })
   d.setFeatureColor('purple')
-  expect(d.colorByMode).toBe('solid')
+  expect(d.colorByMode).toBe('default')
   expect(d.colorField).toBeUndefined()
   expect(d.channelSpec.color).toBe('purple')
   expect(d.colorSettings).toMatchObject({

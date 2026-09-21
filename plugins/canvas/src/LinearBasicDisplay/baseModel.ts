@@ -1097,6 +1097,16 @@ export default function baseStateModelFactory(
     })
     .actions(self => {
       const openDetails = createCanvasFeatureDetailsOpener(self)
+      function writeFeatureColor(color?: string) {
+        const { field, domain, range } = self.colorSettings
+        self.configuration.setSubschema('color', {
+          ...(color === undefined ? {} : { value: color }),
+          field,
+          domain: [...domain],
+          range: [...range],
+          scale: 'none',
+        })
+      }
       return {
         /**
          * #action
@@ -1156,36 +1166,30 @@ export default function baseStateModelFactory(
          * its order and range stay under `scale: 'none'` for the way back.
          */
         setFeatureColor(color?: string) {
-          const { field, domain, range } = self.colorSettings
-          self.configuration.setSubschema('color', {
-            ...(color === undefined ? {} : { value: color }),
-            field,
-            domain: [...domain],
-            range: [...range],
-            scale: 'none',
-          })
+          writeFeatureColor(color)
         },
 
         /**
          * #action
-         * Paints by a field's values through a categorical scale; undefined
-         * returns to the default color.
+         * Paints by a field's values through a categorical scale, keeping
+         * `color.value` for the way back; undefined returns to that value.
          */
         setColorScale(scale?: {
           field: string
           domain?: readonly string[]
           range?: readonly string[]
         }) {
-          self.configuration.setSubschema(
-            'color',
-            scale
-              ? {
-                  field: scale.field,
-                  domain: [...(scale.domain ?? [])],
-                  range: [...(scale.range ?? [])],
-                }
-              : {},
-          )
+          const { value } = self.colorSettings
+          if (scale) {
+            self.configuration.setSubschema('color', {
+              ...(value === undefined ? {} : { value }),
+              field: scale.field,
+              domain: [...(scale.domain ?? [])],
+              range: [...(scale.range ?? [])],
+            })
+          } else {
+            writeFeatureColor(value)
+          }
         },
 
         /**
@@ -1582,10 +1586,10 @@ export default function baseStateModelFactory(
           self.setFacet(facet ?? undefined)
         }
         if (color !== undefined) {
-          if (color && typeof color !== 'string') {
-            self.setColorScale(color)
+          if (typeof color === 'string') {
+            self.setFeatureColor(color)
           } else {
-            self.setFeatureColor(color ?? undefined)
+            self.setColorScale(color ?? undefined)
           }
         }
       },
@@ -1726,7 +1730,8 @@ export default function baseStateModelFactory(
       /**
        * #method
        * Color-related track menu entries: a single "Color by..." entry
-       * whose "Solid color..." choice opens the solid+UTR color picker.
+       * whose radios pick the track's own color or a field, and whose
+       * "Solid color..." item opens the solid+UTR color picker.
        */
       colorMenuItems(): MenuItem[] {
         return colorMenuItems(self)

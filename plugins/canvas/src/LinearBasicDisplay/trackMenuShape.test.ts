@@ -63,9 +63,9 @@ describe('canvas track menu shape', () => {
       ]),
     ).toEqual([
       ['Default', true],
-      ['Solid color...', false],
       ['Strand', true],
       ['Attribute...', false],
+      ['Solid color...', false],
     ])
   })
 
@@ -239,11 +239,11 @@ describe('color swatches under a per-feature jexl slot', () => {
     expect(display.utrColor).toBe(plainUtr)
   })
 
-  it('still reports the jexl as the active color-by mode', () => {
+  it('reads the track expression as Default, since no field paints', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setFeatureColor(jexlColor)
-    expect(display.colorByMode).toBe('attribute')
+    expect(display.colorByMode).toBe('default')
   })
 
   it('keeps a concrete color as the swatch', () => {
@@ -288,5 +288,20 @@ describe('the Default color rung', () => {
     item.onClick()
     expect(display.colorByMode).toBe('default')
     expect(display.colorField).toBeUndefined()
+  })
+
+  it("returns to the track's own color after a field painted over it", () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const own = "jexl:get(feature,'type')=='CDS'?'red':'blue'"
+    display.setFeatureColor(own)
+    const colorBy = () => subMenuOf(display.trackMenuItems(), 'Color by...')
+    ;(find(colorBy(), 'Strand') as { onClick: () => void }).onClick()
+    expect(display.colorByMode).toBe('strand')
+    display.colorByField('biotype')
+    expect(display.colorByMode).toBe('attribute')
+    ;(find(colorBy(), 'Default') as { onClick: () => void }).onClick()
+    expect(display.colorByMode).toBe('default')
+    expect(display.colorEncoding).toBe(own)
   })
 })

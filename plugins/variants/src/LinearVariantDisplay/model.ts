@@ -3,9 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the canvas base display model would undo that display's lazy loading.
 // This module is itself only reached through LinearVariantDisplay's own loader.
-import linearCanvasBaseDisplayStateModelFactory, {
-  defaultColorItem,
-} from '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel'
+import linearCanvasBaseDisplayStateModelFactory from '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel'
 
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
 import { JexlFilterDialog } from '../shared/lazyDialogs.ts'
@@ -179,17 +177,18 @@ export default function stateModelFactory(
       // `isGeneLike`'s (pluginFacingDisplayApi.test.ts); a getter is safe with
       // `this` because it is always read through a receiver, a method is not.
       colorBySubMenuItems() {
+        const preset = self.colorsByConsequenceImpact || self.colorsBySvType
         return [
-          defaultColorItem(self),
           {
-            label: 'Solid color...',
+            label: 'Default',
             type: 'radio' as const,
-            checked: self.colorByMode === 'solid',
-            // the dialog openers here opt out of the checkbox/radio default and
-            // dismiss; the setting radios between them keep the menu up
-            keepMenuOpen: false,
+            checked: self.colorByMode === 'default' && !preset,
             onClick: () => {
-              self.openSetColorDialog(false)
+              if (preset) {
+                self.setFeatureColor(undefined)
+              } else {
+                self.setColorScale()
+              }
             },
           },
           {
@@ -213,13 +212,16 @@ export default function stateModelFactory(
           {
             label: 'Attribute...',
             type: 'radio' as const,
-            checked:
-              self.colorByMode === 'attribute' &&
-              !self.colorsByConsequenceImpact &&
-              !self.colorsBySvType,
+            checked: self.colorByMode === 'attribute',
             keepMenuOpen: false,
             onClick: () => {
               self.openColorByAttributeDialog()
+            },
+          },
+          {
+            label: 'Solid color...',
+            onClick: () => {
+              self.openSetColorDialog(false)
             },
           },
         ]

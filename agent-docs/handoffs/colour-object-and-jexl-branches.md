@@ -120,9 +120,6 @@ Left on that branch:
      track-type default.
    - `AlignmentsBaseColor.scale`, whose only member is `none`, the question
      [adr-149-base-color-audit](adr-149-base-color-audit.md) leaves open.
-   - Canvas's Default dropping a track author's colour,
-     [colour-menu-default-and-grammar-ideas](colour-menu-default-and-grammar-ideas.md).
-     One writer answers both, so decide them together.
 3. **Colour rules on every display.** `threshold-cuts`, `ramp-domain` and
    `ramp-ends` live only in the mark display's rule list
    (`plugins/marks/src/LinearMarkDisplay/markProblems.ts`), so a bad colour
