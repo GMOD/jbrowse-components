@@ -4052,6 +4052,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showLaneTicks",
           "type": "boolean"
+        },
+        {
+          "name": "splitStrands",
+          "type": "boolean"
         }
       ],
       "stateModelProps": [

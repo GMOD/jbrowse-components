@@ -5310,6 +5310,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "draw each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. Turning this off leaves the header's span and multiple as the only scale statement.",
           "type": "boolean",
           "default": true
+        },
+        "splitStrands": {
+          "description": "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack.",
+          "type": "boolean",
+          "default": false
         }
       }
     },
@@ -11396,6 +11401,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showLaneTicks": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLaneTicks"
+            },
+            "splitStrands": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/splitStrands"
             }
           },
           "patternProperties": {

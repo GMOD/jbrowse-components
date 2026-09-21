@@ -50,6 +50,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="volatile-renderoriginpx">**renderOriginPx**</span><br><code>renderOriginPx: 0</code> | the view's scroll offset the stack is laid out against, refreshed with the decisions. Between refreshes a pan is one translate of the whole stack (`dragOffsetPx`), not a relayout of every lane | MultiWaySyntenyDisplay |
 | <span id="volatile-lanetransitions">**laneTransitions**</span><br><code>laneTransitions: new Map&lt;string, LaneTransition&gt;()</code> | per mate lane re-decided onto the contig it already drew, the move from where it drew to its new frame; see `laneTransitionsAfter`. A transition is dropped once the clock passes its end | MultiWaySyntenyDisplay |
 | <span id="volatile-lanemotionclockms">**laneMotionClockMs**</span><br><code>laneMotionClockMs: 0</code> | the wall clock the last drawn frame of a transition read, advanced by the component's frame loop | MultiWaySyntenyDisplay |
+| <span id="volatile-lanemotionhalfway">**laneMotionHalfway**</span><br><code>laneMotionHalfway: new Set&lt;string&gt;() as ReadonlySet&lt;string&gt;</code> | the moving lanes past their midpoint; see `lanesPastHalfway` | MultiWaySyntenyDisplay |
 | <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
 | <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
 | <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |
@@ -99,6 +100,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-drawcurves">**drawCurves**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-showlaneticks">**showLaneTicks**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-splitstrands">**splitStrands**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorsettings">**geneColorSettings**</span><br><code>GeneColorSettings</code> | the `color` object and `utrColor` as written, neither evaluated | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorencoding">**geneColorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> | the gene `color` as it paints, through the one resolver every display's colour object goes through | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorfield">**geneColorField**</span><br><code>string</code> | the field the genes paint by, `''` while `color.value` paints | MultiWaySyntenyDisplay |
@@ -254,6 +256,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setshowlaneticks">**setShowLaneTicks**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setsplitstrands">**setSplitStrands**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlodmode">**setLodMode**</span><br><code>(mode: LodMode) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-chooselanes">**chooseLanes**</span><br><code>(names: string[]) =&gt; void</code> | the picker's submit: `names` plus the picked lanes no window has offered here, or no choice at all where that is what the lanes come back to | MultiWaySyntenyDisplay |
 | <span id="action-hidelane">**hideLane**</span><br><code>(assemblyName: string) =&gt; void</code> | out of the drawing, whatever choice is in force: the lane stays fetched, so this refetches nothing | MultiWaySyntenyDisplay |
