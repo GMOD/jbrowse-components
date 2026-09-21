@@ -188,6 +188,35 @@ test('emptying an admin-filled list is a null on the list', () => {
   expect(mergeTrackConfig(manhattanBase, delta)).toEqual(emptied)
 })
 
+// The edit left the whole namespace at its default, so `stripDefault` dropped
+// `scales` itself; the reset is still of the one member the base set
+test('a reset that empties a namespace nulls only what the base set there', () => {
+  const rulesOnly = manhattan({ rules: [{ value: 0.295 }] })
+  const emptied = {
+    trackId: 'fst',
+    displays: [
+      {
+        type: 'LinearManhattanDisplay',
+        displayId: 'fst-LinearManhattanDisplay',
+      },
+    ],
+  }
+  const delta = diffTrackConfig(rulesOnly, emptied)
+  expect(delta).toEqual({
+    trackId: 'fst',
+    displays: [
+      {
+        displayId: 'fst-LinearManhattanDisplay',
+        scales: { y: { rules: null } },
+      },
+    ],
+  })
+  const laterBase = manhattan({ rules: [{ value: 0.295 }], domainMin: 5 })
+  expect(mergeTrackConfig(laterBase, delta)).toEqual(
+    manhattan({ domainMin: 5 }),
+  )
+})
+
 test('a null survives the JSON a share link carries', () => {
   const emptied = manhattan({ domainMax: 50 })
   const shared = JSON.parse(

@@ -16,7 +16,10 @@
  * a reset: the merge removes the member and the schema's default applies. That
  * is ADR-146's spelling of a reset, and the diff writes one wherever the base
  * sets a member the edited config lacks — a slot put back to its default, or a
- * list emptied, since `stripDefault` drops both from a snapshot. The inference
+ * list emptied, since `stripDefault` drops both from a snapshot. Where the edit
+ * left a whole namespace at its default, the nulls land on the members the base
+ * set inside it rather than on the namespace, so a member the admin adds there
+ * later still flows through. The inference
  * is exact only because both sides are post-`stripDefault` snapshots: a member
  * the admin wrote at its default is absent from both, where a `null` for it
  * would block a later admin value. As in RFC 7396, a delta cannot set a member
@@ -67,7 +70,10 @@ const UNCHANGED = Symbol('unchanged')
 
 function diffValue(base: Json, edited: Json): Json | typeof UNCHANGED {
   if (edited == null) {
-    return base == null ? UNCHANGED : null
+    if (base == null) {
+      return UNCHANGED
+    }
+    return isPlainObject(base) ? diffValue(base, {}) : null
   }
   if (deepEqual(base, edited)) {
     return UNCHANGED
