@@ -12,12 +12,12 @@ describe('function string parsing', () => {
   it('can create a jexl expression', () => {
     const str = 'jexl:a+b+c+5'
     const expr = stringToJexlExpression(str, jexl)
-    expect(expr._exprStr).toEqual('a+b+c+5')
+    expect(expr.source).toEqual('a+b+c+5')
   })
   it('can create a jexl expression 2', () => {
     const str = 'jexl:\na+b+c+5'
     const expr = stringToJexlExpression(str, jexl)
-    expect(expr._exprStr).toEqual('\na+b+c+5')
+    expect(expr.source).toEqual('\na+b+c+5')
     const result = expr.eval({ a: 5, b: 10, c: 15 })
     expect(result).toEqual(35)
   })
@@ -32,6 +32,13 @@ describe('function string parsing', () => {
       jexl,
     )
     expect(await expr2.eval({})).toBe(false)
+  })
+
+  it('keeps the list-aware min and max', () => {
+    const evaluate = (code: string) =>
+      stringToJexlExpression(`jexl:${code}`, jexl).eval({ af: [0.3, 0.1] })
+    expect(evaluate('min(af)')).toBe(0.1)
+    expect(evaluate('max(0, 2)')).toBe(2)
   })
 
   describe('split is total', () => {

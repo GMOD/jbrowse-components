@@ -10,21 +10,6 @@ import type { Feature } from './simpleFeature.ts'
 export default function JexlF(/* config?: any*/) {
   const j = new Jexl()
 
-  // Memoize compilation on the instance itself. A compiled Expression closes
-  // over this instance's grammar (its registered functions), so the cache
-  // belongs here and is naturally per-instance — there is no shared cache that
-  // could bind an expression to the wrong instance's functions.
-  const rawCompile = j.compile.bind(j)
-  const cache = new Map<string, ReturnType<typeof rawCompile>>()
-  j.compile = (code: string) => {
-    let expr = cache.get(code)
-    if (expr === undefined) {
-      expr = rawCompile(code)
-      cache.set(code, expr)
-    }
-    return expr
-  }
-
   // someday will make sure all of configs callbacks are added in, including
   // ones passed in
 
@@ -58,13 +43,13 @@ export default function JexlF(/* config?: any*/) {
   // let user cast a jexl type into a javascript type
   j.addFunction('cast', (arg: unknown) => arg)
 
-  // math
-  // addfunction added in jexl 2.3 but types/jexl still on 2.2
-  /** #jexlFunction Math functions | max(0, 2) */
-  j.addFunction('max', Math.max)
-  /** #jexlFunction Math functions | min(0, 2) */
-  j.addFunction('min', Math.min)
-  /** #jexlFunction Math functions | sqrt(4) */
+  // jexl's own list-aware min and max take varargs too; a Math.min
+  // registration would replace them
+  /**
+   * #jexlFunction Math functions | max(0, 2)
+   * #jexlFunction Math functions | min(feature.INFO.AF)
+   * #jexlFunction Math functions | sqrt(4)
+   */
   j.addFunction('sqrt', Math.sqrt)
   /** #jexlFunction Math functions | ceil(0.5) */
   j.addFunction('ceil', Math.ceil)

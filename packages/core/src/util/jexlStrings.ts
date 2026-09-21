@@ -1,6 +1,6 @@
 export interface JexlExpression {
   eval(context?: Record<string, unknown>): unknown
-  _exprStr?: string
+  readonly source?: string
 }
 
 export interface JexlInstance {
@@ -20,9 +20,8 @@ export function ensureJexlPrefix(code: string) {
 }
 
 /**
- * Compile a `jexl:...` string to an Expression. Compilation is memoized on the
- * jexl instance (see `createJexlInstance`), so this is a thin prefix-stripping
- * wrapper.
+ * Compile a `jexl:...` string to an Expression. The jexl instance caches
+ * compilation, so this only strips the prefix.
  *
  * @param str - string of code like `jexl:...`
  * @param jexl - the instance whose registered functions the expression may call

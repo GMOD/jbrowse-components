@@ -7,9 +7,9 @@ import type { JexlFilterExample } from '@jbrowse/core/ui/JexlFilterDialog'
  * https://samtools.github.io/bcftools/bcftools.html#expressions.
  *
  * Most of that vocabulary needs no function at all: a VCF feature exposes QUAL,
- * FILTER, REF, ALT and INFO by name, and jexl resolves a member access on a
- * single-element array against the element, so `feature.INFO.DP > 20` reads the
- * one-value INFO field bcftools spells `INFO/DP>20`. What the examples exist to
+ * FILTER, REF, ALT and INFO by name, and a jexl comparison against a list holds
+ * when any of its values does, so `feature.INFO.DP > 20` reads the INFO field
+ * bcftools spells `INFO/DP>20`. What the examples exist to
  * say is that this is so — the generic feature list teaches `get(feature,'x')`
  * and a `type=='gene'` test, neither of which is how a VCF is filtered.
  */
@@ -25,7 +25,7 @@ export const VARIANT_FILTER_EXAMPLES: JexlFilterExample[] = [
   {
     code: 'jexl:feature.INFO.DP > 20',
     description:
-      'an INFO field by name (bcftools INFO/DP>20). A field holding several values needs an index, as in feature.INFO.AF[1]',
+      'an INFO field by name (bcftools INFO/DP>20). On a field holding several values it holds when any value does; index one with feature.INFO.AF[1]',
   },
   {
     code: 'jexl:maf(feature) > 0.05',
