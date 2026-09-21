@@ -25,7 +25,7 @@ Two levels are reported:
            nesting its settings under "init". Never fails the run.
 
 A LinearMarkDisplay loads whenever its keys and value types are right and says
-what it cannot draw in a corner notice, which a headless render never shows.
+what it cannot draw in a corner notice rather than refusing the track.
 This command runs the display's own rule list over every "marks" list in the
 file: an error where a mark draws nothing, never draws or a step cannot run,
 and a warning where a slot waits unread or the marks draw in an arrangement
