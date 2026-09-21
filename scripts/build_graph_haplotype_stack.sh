@@ -25,7 +25,6 @@ set -euo pipefail
 OUT="${1:-graph_haplotype_stack}"
 REGION="${REGION:-chr6:31940000-32090000}"
 ROWS="${ROWS:-HG01978#2 HG02004#2 GRCh38#0 HG02818#1 HG00146#1}"
-MAX_GAP="${MAX_GAP:-200000}"
 GBZ_DB="${GBZ_DB:-https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db}"
 GBZ_INDEX="${GBZ_INDEX:-https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db}"
 HOSTED=https://jbrowse.org/pangenome/hprc-grch38
@@ -48,13 +47,12 @@ done
 
 echo "== each row against the row under it, from one window of the graph"
 # --stack aligns each row to the next off the two walks, comparing the bases
-#   between two shared nodes
-# --max-gap keeps a module-sized indel inside one record, where the view draws
-#   it from the CIGAR
+#   between two shared nodes, and keeps an indel of any size inside one record
+#   where the view draws it from the CIGAR
 npx --yes -p @gmod/gbz-base gbz-base-query "$GBZ_DB" \
   --haplotype-index "$GBZ_INDEX" --sample GRCh38 --contig "$contig" \
   --interval "${range%-*}..${range#*-}" --context 0 --stack "${ROWS// /,}" \
-  --max-gap "$MAX_GAP" --contig-lengths contig_lengths.tsv >adjacent.paf
+  --contig-lengths contig_lengths.tsv >adjacent.paf
 
 echo "== config.json and session.json"
 ROWS="$ROWS" HOSTED="$HOSTED" python3 - <<'PY'
