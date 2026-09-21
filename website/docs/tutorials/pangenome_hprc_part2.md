@@ -229,8 +229,8 @@ decomposed, so this window holds over fourteen thousand records, most of them
 SNPs and the rest small indels. This file already contains the structural tier.
 Open the track menu, choose **Edit filters**, and enter:
 
-```js
-jexl: feature.INFO.LV[0] == 0 && alleleLength(feature) >= 50
+```text
+jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50
 ```
 
 The same window then drops to a couple of hundred sites, and one column sits
@@ -338,8 +338,8 @@ paths disagree about orientation, and the adapter exposes that column as an
 `inversion` boolean. Open the bubble track's menu, choose **Edit filters**, and
 enter:
 
-```js
-jexl: feature.inversion
+```text
+jexl:feature.inversion
 ```
 
 Type `chr1:144,260,000-144,610,000`, the 1q21.1 locus. The lane holds one block
