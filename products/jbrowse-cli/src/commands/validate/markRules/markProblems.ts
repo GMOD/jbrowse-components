@@ -10,7 +10,7 @@ import {
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
 } from './markVocabulary.ts'
-import { SHAPE_LANES } from './shapeLanes.ts'
+import { SHAPE_SPECS, rampResolvesPerRegion, readsValue } from './shapeSpecs.ts'
 
 import type { ColorScaleName } from './markRuleFacts.ts'
 import type {
@@ -124,13 +124,6 @@ export type MarkSnapshot = {
   }
   transform?: StepSnapshot[]
 }
-
-const SHAPE_CHANNELS: Record<string, string[]> = Object.fromEntries(
-  Object.entries(SHAPE_LANES).map(([shape, lanes]) => [
-    shape,
-    ['x', 'x2', ...lanes.filter(l => l !== 'index' && l !== 'colorValue')],
-  ]),
-)
 
 function found(rule: MarkRuleId, slot: string, message: string): OwnProblem {
   return { rule, level: MARK_RULES[rule], slot, message }
@@ -249,9 +242,9 @@ function ownProblems(mark: MarkSnapshot) {
   const shape = shapeOf(mark)
   const problems: OwnProblem[] = []
   const y = mark.encoding?.y
-  const channels = SHAPE_CHANNELS[shape]
+  const channels = new Set<string>(['x', 'x2', ...SHAPE_SPECS[shape].channels])
   for (const channel of Object.keys(mark.encoding ?? {})) {
-    if (channels && !channels.includes(channel)) {
+    if (!channels.has(channel)) {
       problems.push(
         found(
           'unread-channel',
@@ -261,12 +254,12 @@ function ownProblems(mark: MarkSnapshot) {
       )
     }
   }
-  if (shape === 'span' && mark.source === 'density') {
+  if (!readsValue(shape) && mark.source === 'density') {
     problems.push(
       found(
         'span-density-source',
         'source',
-        'a span does not draw the density sidecar',
+        `a ${shape} does not draw the density sidecar`,
       ),
     )
   }
@@ -278,7 +271,7 @@ function ownProblems(mark: MarkSnapshot) {
   if (ramp) {
     const { domainMin, domainMax } = ramp
     if (
-      shape === 'span' &&
+      rampResolvesPerRegion(shape) &&
       (domainMin === undefined || domainMax === undefined)
     ) {
       problems.push(

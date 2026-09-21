@@ -101,7 +101,7 @@ const zooms = flag('zooms')
     ]
 
 const jexl = createJexlInstance()
-// SHAPE_LANES.bar, spelled here because markList.ts reaches React
+// markLanes('bar'), spelled here because markList.ts reaches React
 const BAR_LANES: LaneName[] = ['y', 'color', 'colorValue', 'index']
 
 function meanSteps(bpPerPx: number): TransformStep[] {

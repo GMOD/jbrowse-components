@@ -66,13 +66,14 @@ Left open from the `jexl:` work:
    its start point's bin. Fills cost nothing, since each instance carries its
    colour; the lines and band are a shader change to `pivotSideColor`. After
    step 1.
-5. **The lane-split table.** Branch `lane-split-on-lazy-shaders`
-   (`db22edd79c`, whose ADR is also numbered 152). `shapeSpecs.ts` lands alone
-   if `rows: 'banded'`, the row skip in `markLanes` and the `banded` flag in
-   `markEntryOf` stay on the branch. The second shader pass per shape waits on
-   lazy layout modules, 14,173 bytes per realm eager today. The superseded
-   copies `lane-split-held`, `worktree-agent-a17c3133a78d5d594` and the
-   replaced validator draft `worktree-agent-ac122262301221b0e` can go.
+5. **The lane-split table: `shapeSpecs.ts` landed** without the banding. Each
+   shape's channels and ramp side are one table, and the lane request, the
+   rule list, the requires rule and the model's value tests read it. The
+   banded half (a `rows` field, the row skip in `markLanes`, `banded` in
+   `markEntryOf`, the second shader pass per shape) stays on
+   `lane-split-on-lazy-shaders` (`db22edd79c`), waiting on lazy layout
+   modules: 14,173 bytes per realm eager today. The superseded copies are
+   deleted.
 
 ## Declined in the review
 

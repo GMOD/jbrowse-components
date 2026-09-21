@@ -85,7 +85,7 @@ import {
   plotMarks,
   specOfMarks,
 } from './plotFields.ts'
-import { SHAPE_LANES } from './shapeLanes.ts'
+import { markLanes, readsValue } from './shapeSpecs.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
@@ -319,7 +319,7 @@ function markEntryOf(mark: MarkConfig): MarkEntry {
     shape: mark.shape,
     minBpPerPx: mark.minBpPerPx,
     maxBpPerPx: mark.maxBpPerPx,
-    placed: mark.shape === 'span' || mark.encoding.y !== '',
+    placed: !readsValue(mark.shape) || mark.encoding.y !== '',
   }
 }
 
@@ -359,7 +359,7 @@ function layerSpans(entries: VisibleEntry<StoredLayer>[]): ScoreSpan[] {
 function sharedValueField(marks: readonly MarkConfig[]) {
   const fields = new Set(
     marks.flatMap(({ shape, encoding }) =>
-      shape === 'span' || encoding.y === '' ? [] : [encoding.y],
+      !readsValue(shape) || encoding.y === '' ? [] : [encoding.y],
     ),
   )
   const [field = ''] = fields
@@ -567,11 +567,10 @@ export function stateModelFactory(
       get layerRequests(): LayerRequest[] {
         const { bpPerPx } = self.host
         return self.conf.marks.map((m): LayerRequest => {
-          const shape: MarkShapeName = m.shape
           const transform = stepsOf(m.transform, bpPerPx)
           return {
             encoding: encodingOf(m),
-            lanes: [...SHAPE_LANES[shape]],
+            lanes: markLanes(m.shape),
             ...(transform.length > 0 ? { transform } : {}),
           }
         })
@@ -748,7 +747,7 @@ export function stateModelFactory(
           ...(shapes.includes('bar') ? [origin] : []),
         ]
         return visibleStatsDomain({
-          active: shapes.some(s => s !== 'span'),
+          active: shapes.some(readsValue),
           view: self.host,
           payloadFor: index => self.rpcDataMap.get(index),
           itemsFor: data =>

@@ -42,7 +42,7 @@ no rows, which is how Manhattan and every hand-built channel set stay as they
 are.
 
 **The mark display bands its value marks the way it bands spans.**
-`SHAPE_LANES` names `row` for `bar` and `point`, so the worker fills it: the
+`SHAPE_SPECS` names `row` for `bar` and `point`, so the worker fills it: the
 facet's row for a faceted layer, zeros otherwise. `rowCount` was already the
 facet's row count or the highest row any layer carries plus one, and
 `markRowHeightPx(canvasHeight, rowCount)` is the band every shape gets.

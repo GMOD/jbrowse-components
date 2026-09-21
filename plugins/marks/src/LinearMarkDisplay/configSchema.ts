@@ -23,6 +23,7 @@ import {
   MARK_SHAPES,
   MARK_SOURCES,
 } from './markVocabulary.ts'
+import { readsValue } from './shapeSpecs.ts'
 
 import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -270,7 +271,7 @@ const markSchema = ConfigurationSchema(
     requires: [
       {
         id: 'mark-without-value',
-        when: { shape: ['bar', 'point'] },
+        when: { shape: MARK_SHAPES.filter(readsValue) },
         slots: ['encoding.y'],
         message:
           'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
