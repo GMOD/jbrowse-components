@@ -102,11 +102,11 @@ function withoutDelta(
  */
 export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
   // A base is the raw config-file object — shorthand `uri`, no display stubs —
-  // and a working copy's snapshot is hydrated. Diffing or merging across the
+  // while a working copy's snapshot is hydrated. Diffing or merging across the
   // two reads every expanded field as an edit, pinning whole adapters into the
-  // delta, and every default the admin spelled out as a reset. So a base goes
-  // through the same schema first, memoized per frozen-base identity, which is
-  // stable until a jbrowse.tracks write.
+  // delta, and every member one form has and the other lacks as a reset. So
+  // both sides go through the same schema first; a base is memoized per
+  // frozen-base identity, which is stable until a jbrowse.tracks write.
   const hydrate = hydratedTrackForm(pluginManager)
   const canonicalBaseCache = new WeakMap<object, PlainTrackConfig>()
   function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
@@ -514,7 +514,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             const plainBase = toPlainConfig(base)
             const delta = diffTrackConfig(
               plainBase,
-              trackConf,
+              hydrate(trackConf),
             ) as PlainTrackConfig
             // an edit that nets back to the base clears any prior override
             if (deltaHasChanges(plainBase, delta)) {

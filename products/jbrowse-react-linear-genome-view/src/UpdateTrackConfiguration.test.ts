@@ -96,6 +96,18 @@ test('a non-admin edit over a frozen config base merges cleanly (no leaked live 
   expect(isStateTreeNode(adapter)).toBe(false)
 })
 
+// A caller can hand in a config as its author wrote it, spelling defaults and
+// lacking the display stubs a working copy's snapshot has; neither is a reset
+test('an edit handed in as its config is written records only the edit', () => {
+  const state = createViewState({ assembly, tracks: [track] })
+  const session = state.session as unknown as DeltaSession
+  session.updateTrackConfiguration({ ...track, name: 'Edited name' })
+  expect(session.trackConfigDeltas[TRACK_ID]).toEqual({
+    trackId: TRACK_ID,
+    name: 'Edited name',
+  })
+})
+
 test('re-persisting a hydrated config with only injected display stubs stores no delta', () => {
   // a track config that omits `displays`; hydration injects {type, displayId}
   // stubs. Persisting that hydrated snapshot back (no real user edit) must not

@@ -16,7 +16,9 @@ genuinely user-added tracks.
   value is an implicit reset. **Unsetting a slot the base sets is a change**:
   the delta records it as a `null` (ADR-146), which survives a reload and a
   share link. That rests on both sides of the diff being post-`stripDefault`
-  snapshots, which is why every base goes through `toPlainConfig` first.
+  snapshots, which is why a base and an edit both go through the track schema
+  first (`hydratedForms.ts`), and why the desktop web export diffs a hub config
+  the same way.
 
 - **A working copy is cached against the delta it was built from**, not by
   trackId alone. `writeDelta` re-stamps it, so the copy a value is still being
