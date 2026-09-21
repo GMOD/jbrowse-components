@@ -122,10 +122,10 @@ That is the single most common way an authored config is wrong, and the only
 symptom is "it rendered but not how I asked". The validator's error/warning
 split is drawn on exactly this line:
 
-|             | meaning                                                                                                                                                                                                               |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **error**   | JBrowse accepts it and silently does the wrong thing — unknown slot, a key a `defaultSession` view or display does not declare, dangling `trackId`/assembly reference, duplicate `trackId`, a mark that draws nothing |
-| **warning** | JBrowse will tell you itself on load — unknown type name, legacy key a migration rewrites, a mark display slot left unread                                                                                            |
+|             | meaning                                                                                                                                                                                                                       |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **error**   | JBrowse silently does the wrong thing, or refuses to load it — unknown slot, a key a `defaultSession` view or display does not declare, dangling `trackId`/assembly reference, duplicate `trackId`, a mark that draws nothing |
+| **warning** | JBrowse will tell you itself on load — unknown type name, legacy key a migration rewrites, a mark display slot left unread                                                                                                    |
 
 So: fix every error. Read the warnings and decide.
 

@@ -409,10 +409,11 @@ nothing. That is what this command is mainly for.
 
 Two levels are reported:
 
-  error    JBrowse accepts it and silently does the wrong thing — an unknown
-       slot, a key a defaultSession view or display does not declare, a
-  track naming an assembly the config never defines, a defaultSession
-naming a trackId that does not exist, a duplicate trackId. Exits 1.
+  error    JBrowse silently does the wrong thing, or refuses to load it — an
+       unknown slot, a key a defaultSession view or display does not
+declare, a track naming an assembly the config never defines, a
+defaultSession naming a trackId that does not exist, a duplicate
+trackId. Exits 1.
 
   warning  JBrowse will complain by itself on load, or handles it — a type name
           the core plugins do not register (expected if one of your plugins
