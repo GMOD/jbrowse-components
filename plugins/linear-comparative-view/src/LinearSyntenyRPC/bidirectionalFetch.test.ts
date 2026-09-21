@@ -80,6 +80,8 @@ function run({
   fromTarget = [],
   targetFetchRegions,
   queryDisplayed,
+  queryFetched,
+  targetDisplayed,
 }: {
   fromQuery?: Feature[]
   fromTarget?: Feature[]
@@ -87,6 +89,8 @@ function run({
   // wider than what the query row FETCHED, which is the only place the ribbon
   // class can be: displayed up there, outside the window asked for
   queryDisplayed?: Region[]
+  queryFetched?: Region[]
+  targetDisplayed?: Region[]
 }) {
   const calls: Region[][] = []
   const getFeaturesInMultipleRegionsArray = jest.fn(
@@ -107,8 +111,14 @@ function run({
       queryView: {
         ...queryView,
         displayedRegions: queryDisplayed ?? queryView.displayedRegions,
+        fetchRegions: queryFetched ?? queryView.fetchRegions,
       },
-      targetView: { ...targetView, fetchRegions: targetFetchRegions },
+      targetView: {
+        ...targetView,
+        displayedRegions: targetDisplayed ?? targetView.displayedRegions,
+        windowRegions: targetDisplayed ?? targetView.windowRegions,
+        fetchRegions: targetFetchRegions,
+      },
     }),
   }
 }
@@ -289,4 +299,151 @@ test('a recovered ribbon names the target row as its mate', async () => {
 
   expect(mateRefNameDict).toEqual(['t1'])
   expect([...mateStarts]).toEqual([500])
+})
+
+function slice(
+  assemblyName: string,
+  refName: string,
+  start: number,
+  end: number,
+) {
+  return { assemblyName, refName, start, end }
+}
+
+function block({
+  id,
+  refName,
+  start,
+  end,
+  mateRefName,
+  mateStart,
+  mateEnd,
+  CIGAR,
+}: {
+  id: string
+  refName: string
+  start: number
+  end: number
+  mateRefName: string
+  mateStart: number
+  mateEnd: number
+  CIGAR?: string
+}): Feature {
+  return new SimpleFeature({
+    uniqueId: id,
+    refName,
+    start,
+    end,
+    strand: 1,
+    CIGAR,
+    mate: {
+      refName: mateRefName,
+      start: mateStart,
+      end: mateEnd,
+      assemblyName: refName.startsWith('q') ? TARGET_ASM : QUERY_ASM,
+    },
+  })
+}
+
+// A displayed contig is not a displayed locus: the facing row can show a slice
+// of the mate's contig that the mate falls outside, and the alignment then has
+// no ribbon to draw and has to be marked like one whose contig is not shown.
+test('a mate outside every displayed slice of its contig is marked on the query axis', async () => {
+  const { result } = run({
+    targetDisplayed: [slice(TARGET_ASM, 't1', 0, 1000)],
+    fromQuery: [
+      alignment({
+        id: 'a',
+        refName: 'q1',
+        start: 100,
+        mateRefName: 't1',
+        mateStart: 5000,
+      }),
+    ],
+  })
+  const { featureIds, offscreenMates } = (await result).value
+
+  expect(featureIds).toEqual([])
+  expect(offscreenMates.mateRefNameDict).toEqual(['t1'])
+  expect([...offscreenMates.counts]).toEqual([1])
+  expect([...offscreenMates.starts]).toEqual([100])
+  expect([...offscreenMates.mateStarts]).toEqual([5000])
+})
+
+test('an alignment the two slices share no part of is marked', async () => {
+  const { result } = run({
+    queryDisplayed: [slice(QUERY_ASM, 'q1', 1000, 2000)],
+    queryFetched: [slice(QUERY_ASM, 'q1', 1000, 2000)],
+    targetDisplayed: [slice(TARGET_ASM, 't1', 0, 500)],
+    fromQuery: [
+      block({
+        id: 'a',
+        refName: 'q1',
+        start: 0,
+        end: 3000,
+        mateRefName: 't1',
+        mateStart: 0,
+        mateEnd: 3000,
+      }),
+    ],
+  })
+  const { featureIds, offscreenMates } = (await result).value
+
+  expect(featureIds).toEqual([])
+  expect([...offscreenMates.counts]).toEqual([1])
+  // clamped to the query slice, and still the block's own length
+  expect([...offscreenMates.starts]).toEqual([0])
+  expect([...offscreenMates.ends]).toEqual([1000])
+  expect([...offscreenMates.lengths]).toEqual([3000])
+})
+
+// A chain wider than the window is re-anchored to the part the window shows,
+// which moves its mate; the whole chain's mate reaching the facing slice says
+// nothing about whether the part on screen does.
+test('a clipped chain whose visible part maps outside the facing slice is marked there', async () => {
+  const { result } = run({
+    queryDisplayed: [region(QUERY_ASM, 'q1', 100000)],
+    queryFetched: [slice(QUERY_ASM, 'q1', 0, 1000)],
+    targetDisplayed: [slice(TARGET_ASM, 't1', 90000, 100000)],
+    fromQuery: [
+      block({
+        id: 'chain',
+        refName: 'q1',
+        start: 0,
+        end: 100000,
+        mateRefName: 't1',
+        mateStart: 0,
+        mateEnd: 100000,
+        CIGAR: '100000M',
+      }),
+    ],
+  })
+  const { featureIds, offscreenMates } = (await result).value
+
+  expect(featureIds).toEqual([])
+  expect([...offscreenMates.counts]).toEqual([1])
+  expect(offscreenMates.mateEnds[0]).toBeLessThanOrEqual(1000)
+})
+
+// The mirror: a query end on a contig the row above shows, outside every slice
+// of it, has no ribbon either, and its only position is on the target axis.
+test('a target-anchored alignment whose query end misses every query slice is marked on the target axis', async () => {
+  const { result } = run({
+    targetFetchRegions: [region(TARGET_ASM, 't1')],
+    fromTarget: [
+      alignment({
+        id: 'b',
+        refName: 't1',
+        start: 500,
+        mateRefName: 'q1',
+        mateStart: 50000,
+      }),
+    ],
+  })
+  const { featureIds, targetOffscreenMates } = (await result).value
+
+  expect(featureIds).toEqual([])
+  expect(targetOffscreenMates.mateRefNameDict).toEqual(['q1'])
+  expect([...targetOffscreenMates.starts]).toEqual([500])
+  expect([...targetOffscreenMates.mateStarts]).toEqual([50000])
 })

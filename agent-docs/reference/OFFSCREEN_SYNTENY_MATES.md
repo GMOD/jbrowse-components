@@ -390,10 +390,19 @@ to answer was the one arrangement the feature said nothing about.
 
 | class | anchor | mate | why no ribbon | decided | marked on |
 | --- | --- | --- | --- | --- | --- |
-| **A** | visible v1 window | contig v2 does not display | no second endpoint | worker, per fetch | query axis |
-| **B** | contig v1 does not display | visible v2 window | never requested | worker, per fetch (`showOffscreenMates`) | target axis |
+| **A** | visible v1 window | no v2 region reaches it | no second endpoint | worker, per fetch | query axis |
+| **B** | no v1 region reaches it | visible v2 window | never requested | worker, per fetch (`showOffscreenMates`) | target axis |
 | **C** | visible v1 window | contig v2 displays and has scrolled off | `overdrawPx` cull | **main thread, per repaint** | query axis |
 | **D** | contig v1 displays and has scrolled off | visible v2 window | `overdrawPx` cull | **main thread, per repaint** | target axis |
+
+*2026-09-20:* **A and B are decided by locus, not by contig.** A row showing a
+slice of the mate's contig passed the contig test, and the projection loop then
+dropped the alignment with no mark: a mate outside every slice, a chain clipped
+to the window whose visible part maps outside the slice, or a block the two
+slices share no part of. The worker marks at each of those drop sites
+(`markUnplaced`), and the target fetch asks `findRegionEntry` against the
+displayed regions before it flips anything. `bidirectionalFetch.test.ts` holds
+all four.
 
 **C cannot move into the fetch, and that is the whole of its design.** The facing
 row pans a full `syntenyPanBufferPx` without refetching, so a mark decided when

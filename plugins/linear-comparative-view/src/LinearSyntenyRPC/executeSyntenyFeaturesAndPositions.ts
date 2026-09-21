@@ -61,6 +61,8 @@ interface DecoratedFeature extends DrawOrderKey {
   end: number
   strand: number
   mate: SyntenyMate
+  // turned round from the target-row fetch, so a drop marks the target axis
+  flipped: boolean
 }
 
 // Fields both axes supply: the cumBp index (bpPerPx + the whole concatenated
@@ -235,7 +237,7 @@ export async function executeSyntenyFeaturesAndPositions({
    *   the overdraw past the buffer reveals them, and this fetch supplies the
    *   ribbons to reveal — see
    *   agent-docs/reference/TWO_AXIS_SYNTENY_FETCH.md.
-   * - on a contig the row above is not displaying at all → there is no second
+   * - where no region the row above displays reaches → there is no second
    *   endpoint to run a ribbon to, so it is counted and marked on the target
    *   axis: the mirror of `offscreenMates` below.
    */
@@ -256,7 +258,7 @@ export async function executeSyntenyFeaturesAndPositions({
       }
       const lo = Math.min(mate.start, mate.end)
       const hi = Math.max(mate.start, mate.end)
-      if (!v1RefNames.has(mate.refName)) {
+      if (!findRegionEntry(v1Index, mate.refName, lo, hi)) {
         targetOffscreenMates.add(
           refName,
           f.get('start'),
@@ -274,8 +276,6 @@ export async function executeSyntenyFeaturesAndPositions({
     }
   }
 
-  const deduped = [...dedupe(allFeatures, f => f.id()), ...flippedRibbons]
-
   // Decorate with a deterministic total order so the worker's output never
   // depends on the adapter's block-arrival order — `compareDrawOrder` is the
   // paint order and, through the pick engine's backwards walk, the pick order
@@ -286,7 +286,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // `collectOffscreenMates`. Split out so what it drops can be counted and
   // placed on the query axis instead of vanishing.
   const offscreenMates = createOffscreenMateCollector(v1Index)
-  for (const f of deduped) {
+  function decorate(f: Feature, flipped: boolean) {
     const refName = f.get('refName')
     const mate = getMate(f)
     if (mate && v1RefNames.has(refName)) {
@@ -303,7 +303,7 @@ export async function executeSyntenyFeaturesAndPositions({
           mate.start,
           mate.end,
         )
-        continue
+        return
       }
       const px = Math.max(
         (end - start) / v1.bpPerPx,
@@ -321,8 +321,15 @@ export async function executeSyntenyFeaturesAndPositions({
         mateRefName: mate.refName,
         mateStart: mate.start,
         id: f.id(),
+        flipped,
       })
     }
+  }
+  for (const f of dedupe(allFeatures, f => f.id())) {
+    decorate(f, false)
+  }
+  for (const f of flippedRibbons) {
+    decorate(f, true)
   }
   decorated.sort(compareDrawOrder)
 
@@ -410,6 +417,30 @@ export async function executeSyntenyFeaturesAndPositions({
     signal,
   })
   const breakpoint = createAbortBreakpoint(signal)
+  // The decorate loop's test is per contig, so a mate outside every displayed
+  // slice of a displayed contig, or one the two slices share no part of, gets
+  // here with no ribbon to draw. It is marked on the axis it does reach, with
+  // the far end as clipped, which is the part the window shows.
+  function markUnplaced(
+    d: DecoratedFeature,
+    fStart: number,
+    fEnd: number,
+    mStart: number,
+    mEnd: number,
+  ) {
+    if (d.flipped) {
+      targetOffscreenMates.add(
+        d.mateRefName,
+        d.mate.start,
+        d.mate.end,
+        d.refName,
+        fStart,
+        fEnd,
+      )
+    } else {
+      offscreenMates.add(d.refName, d.start, d.end, d.mateRefName, mStart, mEnd)
+    }
+  }
   let validCount = 0
   for (const d of decorated) {
     report()
@@ -481,6 +512,7 @@ export async function executeSyntenyFeaturesAndPositions({
       Math.max(mStart, mEnd),
     )
     if (!e1 || !e2) {
+      markUnplaced(d, fStart, fEnd, mStart, mEnd)
       continue
     }
 
@@ -497,6 +529,7 @@ export async function executeSyntenyFeaturesAndPositions({
       r2End: e2.region.end,
     })
     if (!trim) {
+      markUnplaced(d, fStart, fEnd, mStart, mEnd)
       continue
     }
     if (trim.trimmed) {
