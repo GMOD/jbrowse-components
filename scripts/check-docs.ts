@@ -264,6 +264,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-captions.ts', '--check'),
   },
   {
+    name: 'every code fence names a language shiki highlights',
+    argv: web('check-fence-langs.ts'),
+  },
+  {
     name: 'no new "which is what" clefts or "silently" in hand-written docs',
     argv: web('check-writing-tropes.ts', '--check'),
   },

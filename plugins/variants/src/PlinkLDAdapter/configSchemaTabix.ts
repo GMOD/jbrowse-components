@@ -53,7 +53,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  *
  * `study.vcor` before bgzipping, plink2 adding `cols=` for anything past r²:
  *
- * ```
+ * ```tsv
  * #CHROM_A	POS_A	ID_A	CHROM_B	POS_B	ID_B	UNPHASED_R2
  * 1	729679	rs4970383	1	752566	rs3131972	0.0925926
  * 1	729679	rs4970383	1	754182	rs3131969	0.157316

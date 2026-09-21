@@ -95,7 +95,7 @@ function injectHelp(md: string) {
   return md.replace(
     helpStartRe,
     (_match, start: string, end: string) =>
-      `${start}\n\n\`\`\`\n${help}\n\`\`\`\n\n${end}`,
+      `${start}\n\n\`\`\`text\n${help}\n\`\`\`\n\n${end}`,
   )
 }
 

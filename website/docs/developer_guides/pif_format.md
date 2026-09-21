@@ -94,7 +94,7 @@ row's counts and tags, so identity coloring does not jump at a tier switch.
 
 One meta line, sorted first and kept by tabix (`tabix -H file.pif.gz`):
 
-```
+```tsv
 #pif	version:i:2	writer:Z:jbrowse-cli/5.0.0	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
 ```
 
@@ -133,7 +133,7 @@ tag verbatim. The CIGAR is replaced by a **coarse CIGAR** in a `cr:Z:` tag:
   and `P`, which the writer never emits
 - the `Q` row is reoriented the way the fine tier's `cg` is
 
-```
+```text
 cg:Z:31198M4800I18803M   fine row
 cr:Z:31198M4800I18803M   coarse T row at --coarse 1000, the insertion is kept
 cr:Z:31198M4800D18803M   the same alignment's coarse Q row
@@ -192,7 +192,7 @@ the sequence names, following the
 [PanSN](https://github.com/pangenome/PanSN-spec) convention
 `sample#haplotype#contig`:
 
-```
+```tsv
 qgrape#1#chr1	1000	100	200	+	peach#1#G1	1000	300	400	90	100	60
 tpeach#1#G1	1000	300	400	+	grape#1#chr1	1000	100	200	90	100	60
 ```

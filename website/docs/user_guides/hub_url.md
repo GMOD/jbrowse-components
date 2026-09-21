@@ -13,7 +13,7 @@ link lands in JBrowse with the hub's assemblies and tracks already available.
 
 ## Basic usage
 
-```
+```text
 https://jbrowse.org/code/jb2/latest/?config=none&hubURL=https://example.com/hub.txt
 ```
 
@@ -30,7 +30,7 @@ Drop `config=none` and point [`?config=`](/docs/urlparams#config) at a real
 config when the launch needs something the hub does not carry, such as plugins
 or extra assemblies:
 
-```
+```text
 ?config=myconfig.json&hubURL=https://example.com/hub.txt
 ```
 
@@ -42,7 +42,7 @@ By default a hub opens at the location `defaultPos` states, in its `genomes`
 stanza. Add [`&loc=`](/docs/urlparams#loc) and
 [`&assembly=`](/docs/urlparams#assembly) to land somewhere else:
 
-```
+```text
 ?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000
 ```
 
@@ -56,7 +56,7 @@ the hub defines.
 
 Pass a comma-separated list to open more than one hub at once:
 
-```
+```text
 ?config=none&hubURL=https://example.com/hubA.txt,https://example.com/hubB.txt
 ```
 

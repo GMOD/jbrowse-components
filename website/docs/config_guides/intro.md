@@ -64,7 +64,7 @@ data file:
 jbrowse validate myconfig.json
 ```
 
-```
+```text
 error: tracks[0].assemblyNames: assembly "hg19" is not defined in this config — did you mean "hg38"?
 error: tracks[0].adapter.bamLocatoin: unknown slot "bamLocatoin" — did you mean "bamLocation"? — JBrowse ignores keys it does not declare, so this setting silently does nothing
 error: defaultSession.views[0].tracks[0]: trackId "sample_bem" is not defined in this config — did you mean "sample_bam"?

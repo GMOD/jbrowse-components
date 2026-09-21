@@ -132,7 +132,7 @@ Hosted trackIds are all prefixed with the assembly name (`hg19-...`), so
 track's display name, and a token that doesn't match anything errors with the
 closest trackIds:
 
-```
+```console
 $ jb2export --hub hg19 --track clinvar ...
 Error: --track "clinvar" not found in the config. Did you mean: hg19-clinvarMain,
 hg19-clinvarCnv, hg19-dbSnp155ClinVar, ...?
@@ -871,7 +871,7 @@ draws.
 
 So the flags alternate, and each one's position is what it means:
 
-```
+```text
 --chromSizes a.chrom.sizes    assembly 1, the top row
 --paf        a_vs_b.paf       the ribbon between rows 1 and 2
 --chromSizes b.chrom.sizes    assembly 2
@@ -1201,7 +1201,7 @@ can ask for here.
 
 Example:
 
-```
+```bash
 jb2export --bam file1.bam --bigwig file.bw --bam file2.bam
 ```
 
@@ -1312,7 +1312,7 @@ subcommand's options. The complete output:
 
 <!-- INJECT_HELP START: auto-filled from buildFullHelp() by website/scripts/generate-img-doc.ts; run `pnpm gen-img-doc` to refresh -->
 
-```
+```text
 Usage: jb2export [options]
        jb2export <dotplot|synteny|circular|breakpoint> [options]
        jb2export list [hub] [filter]

@@ -15,7 +15,7 @@ In the "Add a track" form, paste the URL to a `.hic` file (or open it from
 disk). JBrowse detects the format from the extension and creates a Hi-C track.
 To try it without preparing anything:
 
-```
+```text
 https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic
 ```
 

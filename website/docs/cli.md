@@ -16,7 +16,7 @@ or by using a script file.
 
 A simple script that does not use @jbrowse/cli at all may just look like this
 
-```
+```js
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'))
 // do something with config.tracks, config.assemblies, etc.
 fs.writeFileSync('config.json', JSON.stringify(config, null, 2))
@@ -46,7 +46,7 @@ npx @jbrowse/cli create myfolder
 It is likely preferable in most cases to install the tools globally with
 `npm install @jbrowse/cli -g` however
 
-```
+```text
 
 JBrowse CLI
 
@@ -80,7 +80,7 @@ Use "jbrowse <command> --help" for more information about a command.
 
 ## jbrowse create
 
-```
+```text
 Downloads and installs the latest JBrowse 2 release
 
 Usage: jbrowse create [localPath] [options]
@@ -124,7 +124,7 @@ $ jbrowse create --listVersions
 
 ## jbrowse add-assembly
 
-```
+```text
 Add an assembly to a JBrowse 2 configuration
 
 Usage: jbrowse add-assembly <sequence> [options]
@@ -242,7 +242,7 @@ $ jbrowse add-assembly GRCh38.fa --load copy --config '{"sequence":{"formatAbout
 
 ## jbrowse add-track
 
-```
+```text
 Add a track to a JBrowse 2 configuration
 
 Usage: jbrowse add-track <track> [options]
@@ -391,7 +391,7 @@ $ jbrowse add-track https://mywebsite.com/genes.gff3.gz --density https://mywebs
 
 ## jbrowse validate
 
-```
+```text
 Check a JBrowse configuration for errors, including the ones JBrowse itself
 accepts silently
 
@@ -456,7 +456,7 @@ $ jbrowse validate config.json --json
 
 ## jbrowse text-index
 
-```
+```text
 Make a text-indexing file for any given track(s).
 
 Usage: jbrowse text-index [options]
@@ -565,7 +565,7 @@ $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 
 ## jbrowse admin-server
 
-```
+```text
 Start up a small admin server for JBrowse configuration
 
 Usage: jbrowse admin-server [options]
@@ -611,7 +611,7 @@ $ jbrowse admin-server --host 0.0.0.0
 
 ## jbrowse upgrade
 
-```
+```text
 Upgrades JBrowse 2 to latest version
 
 Usage: jbrowse upgrade [localPath] [options]
@@ -658,7 +658,7 @@ $ jbrowse upgrade --nightly
 
 ## jbrowse make-pif
 
-```
+```text
 creates pairwise indexed PAF (PIF), with bgzip and tabix
 
 Usage: jbrowse make-pif <file> [options]
@@ -718,7 +718,7 @@ $ jbrowse make-pif input.paf --threads 8
 
 ## jbrowse make-density
 
-```
+```text
 Counts feature starts per bin into a bigWig, the density sidecar a track draws
 where the region is too large to fetch its features
 
@@ -773,7 +773,7 @@ $ jbrowse make-density genes.gff3.gz --assembly hg38.fa --bin 10000 --out genes.
 
 ## jbrowse sort-gff
 
-```
+```text
 Sort a GFF or GTF for tabix — the two share a refname/start column layout. It is
 `sort -k1,1 -k4,4n` with LC_ALL=C and a tab separator, plus every line starting
 with # kept at the top rather than sorted into the data. Takes a file, or the
@@ -800,7 +800,7 @@ $ tabix -p gff sorted.gtf.gz
 
 ## jbrowse sort-bed
 
-```
+```text
 Sort a BED file for tabix. It is `sort -k1,1 -k2,2n` with LC_ALL=C and a tab
 separator, plus every line starting with # kept at the top rather than sorted
 into the data. Takes a file, or the same data on stdin
@@ -821,7 +821,7 @@ $ tabix sorted.bed.gz
 
 ## jbrowse add-connection
 
-```
+```text
 Add a connection to a JBrowse 2 configuration
 
 Usage: jbrowse add-connection <connectionUrlOrPath> [options]
@@ -876,7 +876,7 @@ $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId
 
 ## jbrowse add-track-json
 
-```
+```text
 Add a track configuration directly from a JSON hunk to the JBrowse 2
 configuration
 
@@ -918,7 +918,7 @@ $ jbrowse add-track-json track.json --out /path/to/jb2/
 
 ## jbrowse remove-track
 
-```
+```text
 Remove a track configuration from a JBrowse 2 configuration. Be aware that this
 can cause crashes in saved sessions that refer to this track!
 
@@ -946,7 +946,7 @@ $ jbrowse remove-track my_track_id --target /path/to/jb2/config.json
 
 ## jbrowse set-default-session
 
-```
+```text
 Set a default session with views and tracks
 
 Usage: jbrowse set-default-session [options]

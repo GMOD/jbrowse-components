@@ -13,7 +13,7 @@ or by using a script file.
 
 A simple script that does not use @jbrowse/cli at all may just look like this
 
-```
+```js
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'))
 // do something with config.tracks, config.assemblies, etc.
 fs.writeFileSync('config.json', JSON.stringify(config, null, 2))

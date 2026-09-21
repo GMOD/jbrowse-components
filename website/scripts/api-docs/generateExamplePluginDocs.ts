@@ -125,7 +125,7 @@ function renderTree(entries: Entry[]) {
   }
   const width = Math.max(...rows.map(r => r.label.length)) + 2
   return [
-    '```',
+    '```text',
     ...rows.map(r =>
       r.description ? `${r.label.padEnd(width)}${r.description}` : r.label,
     ),

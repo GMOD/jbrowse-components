@@ -210,7 +210,7 @@ const React = pluginManager.jbrequire('react')
 
 `jbrequire` only knows the re-export list. Requesting anything else throws:
 
-```
+```text
 No jbrequire re-export defined for 'd3-scale'. The host serves what
 @jbrowse/core/ReExports/list names: the framework singletons, Material UI, and
 every subpath the bundled @jbrowse packages publish. Anything else, bundle into

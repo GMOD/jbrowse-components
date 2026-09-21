@@ -59,7 +59,7 @@ One linear genome view, from a handful of parameters:
 
 `&loc=chr1:6000-7000`, navigated to on load. Accepted forms:
 
-```
+```text
 &loc=chr1:6000-7000 // using - notation for range
 &loc=chr1:6000..7000 // using .. notation for range
 &loc=chr1:7000 // centered on this position
@@ -128,7 +128,7 @@ no `type` or `adapter`, since the extension gives both, but nothing implies its
 assembly, so name it
 ([the shortest track](/docs/config_guides/tracks#the-shortest-track)):
 
-```
+```text
 &sessionTracks=[{"trackId":"reads","uri":"https://example.com/sample.bam","assemblyNames":["hg38"]}]
 ```
 
@@ -202,7 +202,7 @@ on screen; the fatal error dialog offers the same thing as a button.
 `&extendSession=true` beside `&loc=` navigates a curated `defaultSession`
 instead of replacing it:
 
-```
+```text
 ?loc=chr1:100000-200000&extendSession=true
 ```
 
@@ -237,7 +237,7 @@ shorthand on its own, and is not layered onto a default session or any
 A session spec is the session as JSON in the URL, the value of `&session=`
 prefixed `spec-`:
 
-```
+```text
 &session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5100"}]}
 ```
 
@@ -1140,7 +1140,7 @@ rather than instructions for building one.
 A plain JSON snapshot, the shape "Export session..." produces, and the Share
 button's "Plaintext JSON" option: the longest format, and the one to read.
 
-```
+```text
 &session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"name":"MsaView","url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
 ```
 
@@ -1150,7 +1150,7 @@ The same JSON snapshot as base64 plus gzip, the Share button's "Long URL"
 option. It works without the session-sharing server, and because it is long the
 Share button puts it [in the fragment](#query-string-or-hash-fragment).
 
-```
+```text
 https://jbrowse.org/code/jb2/latest/#session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6Ndfj...
 ```
 

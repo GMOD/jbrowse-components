@@ -60,7 +60,7 @@ Open the track selector's hamburger menu → `Connections...` →
 
 The URL must point directly to the `hub.txt` file of the hub, for example:
 
-```
+```text
 https://hgdownload.soe.ucsc.edu/hubs/GCA/009/914/755/GCA_009914755.4/hub.txt
 ```
 

@@ -95,7 +95,7 @@ detail in the steps below:
 
 <!-- EXAMPLE_PLUGIN_TREE START -->
 
-```
+```text
 src/
   index.ts                       the plugin class; installs the display, the RPC method and the feature panel
   LinearScoreDisplay/

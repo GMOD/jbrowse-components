@@ -24,7 +24,7 @@ p-value column (`negLog10`) or a natural-log one (`negLog10FromLn`, a Pan-UKBB
 `ln P` column) at read time. The `name` column (4th BED field) is the SNP id LD
 lookups key on; without it they fall back to `chr:bp` (1-based).
 
-```
+```text
 #chrom  chromStart  chromEnd  name      neg_log_pvalue
 chr1    109817590   109817591 rs4970383 1.234
 chr1    110162459   110162460 rs4971059 7.891

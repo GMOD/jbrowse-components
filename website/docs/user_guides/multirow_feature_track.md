@@ -102,7 +102,7 @@ The input is one file holding every sample's intervals, with a column naming the
 sample. For BED, name the columns with a `#`-prefixed header line so the adapter
 picks them up, then bgzip and tabix as usual:
 
-```
+```text
 #chrom  chromStart  chromEnd  name               score  strand  thickStart  thickEnd  itemRgb      cellType
 chr1    10000       10600     15_Repetitive/CNV  0      .       10000       10600     245,245,245  GM12878
 chr1    10000       10600     15_Repetitive/CNV  0      .       10000       10600     245,245,245  K562

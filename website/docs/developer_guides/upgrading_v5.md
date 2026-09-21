@@ -493,7 +493,7 @@ wrong, and several published demos did.
 Every view type now reports one. The key is kept rather than discarded, and the
 view names it once on attach, in the console and in a notification:
 
-```
+```text
 LinearGenomeView ignored unknown key(s): asembly
 ```
 
@@ -532,7 +532,7 @@ apply and a v4 `defaultSession` keeps working; the console names the spelling to
 fix, and `jbrowse validate` reports it as a warning and checks the keys inside
 it the way it checks the flat ones:
 
-```
+```text
 LinearGenomeView nests its settings under "init", which is deprecated: write every setting directly on the view object.
 ```
 

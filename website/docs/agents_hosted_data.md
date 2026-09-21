@@ -35,7 +35,7 @@ and indexed, a `GCA_` (GenBank) one usually neither, so read
 
 Two shapes, and an agent can construct either without a lookup:
 
-```
+```text
 UCSC database    https://jbrowse.org/ucsc/<db>/config.json
                  e.g. hg38, hg19, mm39, hs1, danRer11
 
@@ -63,7 +63,7 @@ GenArk accession https://jbrowse.org/hubs/genark/<GCA|GCF>/<3>/<3>/<3>/<accessio
   `https://genomes.jbrowse.org/searchIndex.json` is the index the Desktop start
   screen searches: one row per assembly, as a bare array.
 
-```
+```text
 [accession, commonName, scientificName, assemblyName, assemblyStatus,
  source, taxonId, ncbiStatusBits, year, ucscRank, altAccession]
 ```
@@ -74,7 +74,7 @@ curl -s https://genomes.jbrowse.org/searchIndex.json |
          "\(.[0])\t\(.[1])\t\(.[3])"'
 ```
 
-```
+```text
 GCA_002915635.3   axolotl (DD151 2021)             AmbMex60DD
 GCF_040938575.1   axolotl (Mex_15411 2024 refseq)  UKY_AmexF1_1
 GCA_040938575.1   axolotl (Mex_15411 2024 genbank) UKY_AmexF1_1
@@ -98,7 +98,7 @@ npx @jbrowse/img list hg38
 npx @jbrowse/img list hg38 conservation
 ```
 
-```
+```text
   hg38-phyloP30way      QuantitativeTrack   Basewise Conservation (phyloP) - 30-way vertebrate alignment
   hg38-phyloP100way     QuantitativeTrack   Basewise Conservation (phyloP) - 100-way vertebrate alignment
   hg38-phastCons30way   QuantitativeTrack   Element Conservation (phastCons) - 30-way vertebrates
@@ -132,7 +132,7 @@ curl -s https://jbrowse.org/ucsc/hg38/config.json |
 - `npx @jbrowse/capture url --hub hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated`
   builds that link, correctly encoded, without launching anything.
 
-```
+```text
 https://jbrowse.org/code/jb2/latest/?config=https://jbrowse.org/ucsc/hg38/config.json&assembly=hg38&loc=BRCA1&tracks=hg38-ncbiRefSeqCurated,hg38-clinvarMain
 ```
 

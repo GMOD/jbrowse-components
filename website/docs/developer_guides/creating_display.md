@@ -13,7 +13,7 @@ is a new conceptual category of track.
 A track owns the high-level identity (an ID, a name, a default set of displays);
 a display shows that track inside a particular view and owns the drawing.
 
-```
+```text
 Track  ─owns→  Display(s)  ─draw→  canvas
 ```
 

@@ -99,14 +99,14 @@ see
 [UCSC trix format](https://genome.ucsc.edu/goldenPath/help/trix.html) so no UCSC
 tools are needed. Given input like:
 
-```
+```text
 GENEID001  Wnt signalling
 GENEID002  ey  Pax6
 ```
 
 it writes an `.ix` file sorted alphabetically by word:
 
-```
+```text
 ey  GENEID002
 Pax6  GENEID002
 signalling  GENEID001

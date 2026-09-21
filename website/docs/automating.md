@@ -204,7 +204,7 @@ The view object serves every launch route unchanged:
 
 - **A link**, as query parameters mapped straight onto one linear view:
 
-  ```
+  ```text
   ?assembly=hg19&loc=chr1:1,000-2,000&tracks=genes,variants&tracklist=true&nav=false&highlight=chr1:1,500-1,600
   ```
 

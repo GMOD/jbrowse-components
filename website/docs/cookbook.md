@@ -445,7 +445,7 @@ vs 1 vs NC_000001):
 
 ## From config to a URL
 
-```
+```text
 https://host/jbrowse2/?config=config.json&assembly=volvox&loc=ctgA:1-50000&tracks=genes,coverage
 ```
 

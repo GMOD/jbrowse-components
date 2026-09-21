@@ -47,7 +47,7 @@ Reads any tab-separated alias file, including the UCSC
 [chromAlias](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt)
 format. Each row lists every name for one sequence:
 
-```
+```tsv
 chr1	1	NC_000001.11
 chr2	2	NC_000002.12
 ```
@@ -95,7 +95,7 @@ or a different alias adapter entirely:
   adapter throws if the named column is not in that header. It only looks when a
   `#` line exists: a file with no header row falls back to `refNameColumn`.
 
-```
+```tsv
 #name	alias1	alias2
 chr1	1	NC_000001.11
 ```

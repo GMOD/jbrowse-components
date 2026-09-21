@@ -53,7 +53,7 @@ attributes.
 The **Motif list** mode takes a pasted list in the notation REBASE already uses,
 one motif per line, with an optional name and an optional cut marker:
 
-```
+```text
 # name  site
 EcoRI   G^AATTC
 BamHI   G^GATCC

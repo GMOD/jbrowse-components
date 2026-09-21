@@ -60,7 +60,7 @@ plink2 --bfile study --r2-unphased --out study
 
 Writes `study.vcor`, tab-delimited with a commented header:
 
-```
+```tsv
 #CHROM_A	POS_A	ID_A	CHROM_B	POS_B	ID_B	UNPHASED_R2
 1	729679	rs4970383	1	752566	rs3131972	0.0925926
 1	729679	rs4970383	1	754182	rs3131969	0.157316

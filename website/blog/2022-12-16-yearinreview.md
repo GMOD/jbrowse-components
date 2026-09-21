@@ -22,7 +22,7 @@ We added the ability to control JBrowse 2 using URL parameters in v1.6.4
 
 This allows users to write URLs such as
 
-```
+```text
 http://yoursite/jbrowse/?loc=chr1:1,000,000-2,000,000&assembly=hg19&tracks=genes
 ```
 

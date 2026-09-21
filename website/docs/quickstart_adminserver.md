@@ -37,7 +37,7 @@ jbrowse admin-server
 
 Open the printed link in your browser:
 
-```
+```text
 Admin server started on port 9090
 
 To access the admin interface, open your browser to:
@@ -59,7 +59,7 @@ deletes assemblies:
 To add hg38, press **Add new assembly**, then **Open from a URL**, and paste the
 FASTA and its two indexes, one per line:
 
-```
+```text
 https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai
 https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi

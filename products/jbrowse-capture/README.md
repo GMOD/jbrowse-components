@@ -117,7 +117,7 @@ way, which is the vacuous-gate problem again, one step later.
 Here every stage reports its outcome, and an unsettled one throws by default,
 naming the gate:
 
-```
+```text
 gave up waiting after 60000ms: the app never held itself ready; display(s)
 never painted: LinearAlignmentsDisplay (volvox_cram-LinearAlignmentsDisplay) is
 loading. Raise the timeout, or pass allowUnsettled (--allowUnsettled) to capture

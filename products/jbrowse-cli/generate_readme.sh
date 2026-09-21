@@ -17,7 +17,7 @@ fi
 
 cat preamble.md
 echo ""
-echo "\`\`\`"
+echo "\`\`\`text"
 node dist/bin.js --help
 echo "\`\`\`"
 echo ""
@@ -26,7 +26,7 @@ for i in $commands; do
   echo "## jbrowse $i"
 
   echo ""
-  echo "\`\`\`"
+  echo "\`\`\`text"
   node dist/bin.js "$i" --help
   echo "\`\`\`"
   echo ""

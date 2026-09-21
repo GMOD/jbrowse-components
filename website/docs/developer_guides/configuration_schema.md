@@ -568,7 +568,7 @@ A configuration is a `@jbrowse/mobx-state-tree` model tree: leaf nodes are
 config-slot types and inner nodes are `ConfigurationSchema` types. All
 configurations descend from a single root, `root.configuration`.
 
-```
+```text
        Schema
     /     |     \
    Slot  Schema  Slot

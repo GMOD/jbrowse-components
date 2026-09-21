@@ -11,7 +11,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 A custom BED with a column naming each row, its columns named by a
 `#`-prefixed header line (tab-separated, shown space-aligned):
 
-```
+```text
 #chrom  start    end      name  sample
 chr1    0        2000000  seg1  HG00096
 chr1    2000000  5500000  seg2  HG00096

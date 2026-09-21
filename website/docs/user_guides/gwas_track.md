@@ -23,7 +23,7 @@ To try the workflow without preparing anything, paste this hg19 BMI GWAS summary
 statistics file (with `neg_log_pvalue` as the score column) into the Add GWAS
 track form:
 
-```
+```text
 https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz
 ```
 
