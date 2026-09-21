@@ -17,7 +17,7 @@
 // entirely, and the bench times both so the choice is visible rather than
 // baked in.
 //
-// The verdict it was built for: agent-docs/ideas/closed/column-encoder-verdict.md.
+// The verdict it was built for: agent-docs/architecture-decision-records/adr-152-wiggle-stays-off-the-column-encoder-until-two-lanes-go.md.
 import { cssColorToABGR } from '../src/util/colorBits.ts'
 import { isJexl, stringToJexlExpression } from '../src/util/jexlStrings.ts'
 import { hitIndexOf } from '../src/util/markEncoding.ts'

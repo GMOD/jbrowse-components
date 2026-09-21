@@ -282,7 +282,7 @@ scatter families, not only for the lines. Settle density's texture first.
 
 ## 2026-09-19: #3 is also what the mark grammar needs
 
-[column-encoder-verdict](../closed/column-encoder-verdict.md) benched a column encoder
+[ADR-152](../../architecture-decision-records/adr-152-wiggle-stays-off-the-column-encoder-until-two-lanes-go.md) benched a column encoder
 against this file's own path and found the time free and the bytes not: an
 `EncodedChannels` retains 20 bytes a feature where `processFeaturesFromArrays`
 retains 12, four of them a `featureIndex` that is the identity permutation and

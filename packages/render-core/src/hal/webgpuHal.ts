@@ -36,22 +36,16 @@ class ShaderCompileError extends Error {
 }
 
 // Maximum number of writeUniforms() calls per frame. Each call occupies one
-// aligned slot in the uniform ring buffer.
-//
-// The ring is allocated eagerly at this many slots, as a GPU buffer AND a CPU
-// staging array, whether a renderer writes 4 slots or 1900 — so the cost is per
-// display, and both terms are in it. A display whose uniform fits the 256-byte
-// minimum alignment pays 512 KB each side; alignments' 640-byte uniform aligns
-// to 768, so 1.5 MiB each side, per track. A frame is measured using 2-4 of
-// those slots, which is what makes the count above the oversized term rather
-// than any struct:
-// agent-docs/ideas/closed/size-the-uniform-ring-to-its-measured-occupancy.md.
+// aligned slot in the uniform ring, allocated eagerly per display as a GPU
+// buffer and a CPU staging array. A frame is measured using 2-4 slots, so the
+// count rather than any struct is the oversized term:
+// agent-docs/reference/ARCHITECTURAL_LIMITS.md §"The uniform ring is allocated
+// at 2048 slots".
 //
 // Exhausting it does not throw: the write is dropped and its draws render
-// against the previous batch's uniforms, which is wrong data rather than stale
-// data. If we ever hit the cap, switch to a dynamic-growth buffer (recreate
-// buffer + every region's bind group) rather than just bumping the constant
-// again.
+// against another batch's uniforms. If we ever hit the cap, grow the buffer and
+// recreate every bind group in `passBindGroups` rather than bumping the
+// constant again.
 const MAX_UNIFORM_SLOTS = 2048
 
 // Warn while there is still headroom, because the cap itself is not a place to

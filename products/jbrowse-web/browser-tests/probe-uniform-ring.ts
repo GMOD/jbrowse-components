@@ -20,8 +20,8 @@
 //       [--dpr=2] [--frames=30]
 //
 // Its `record:` line is the row agent-docs/measurements/uniform-ring-occupancy.json
-// holds, and agent-docs/ideas/closed/size-the-uniform-ring-to-its-measured-occupancy.md
-// is what those values decided.
+// holds, and agent-docs/reference/ARCHITECTURAL_LIMITS.md §"The uniform ring is
+// allocated at 2048 slots" is what those values decided.
 import {
   BASE_CHROME_ARGS,
   encodeSessionSpec,

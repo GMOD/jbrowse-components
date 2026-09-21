@@ -49,7 +49,7 @@
 //     its `none`, `bin-count` and `coverage` arms rerun here, plus:
 //     bin-count-columns, coverage-columns   the same steps as column kernels
 //
-// KILL CRITERIA, evaluated by agent-docs/ideas/closed/column-encoder-verdict.md:
+// KILL CRITERIA, evaluated by agent-docs/architecture-decision-records/adr-152-wiggle-stays-off-the-column-encoder-until-two-lanes-go.md:
 //   `columns` above 1.10x `wiggle` in time, or retaining more than wiggle's
 //   12 bytes per feature plus 4; `pileup-columns` above 1.5x `layout`;
 //   `columns-cursor-jexl` above 1.2x `features-jexl`. A control row far from

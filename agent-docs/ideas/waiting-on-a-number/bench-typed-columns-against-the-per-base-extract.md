@@ -41,7 +41,7 @@ number.
 
 ## 2026-09-19: the same substitution, benched one subsystem over
 
-[column-encoder-verdict](../closed/column-encoder-verdict.md) puts typed columns through
+[ADR-152](../../architecture-decision-records/adr-152-wiggle-stays-off-the-column-encoder-until-two-lanes-go.md) puts typed columns through
 the mark encoder against wiggle's hand packer and against a `SimpleFeature`
 per row, and the columnar arm wins on time at every size — the
 opposite sign to the `modExtract.bench.ts` result this entry is parked behind.

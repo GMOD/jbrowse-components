@@ -144,7 +144,7 @@ the same way.
 
 ## 2026-09-19: this entry's headline, measured on the encoder
 
-[column-encoder-verdict](../closed/column-encoder-verdict.md) takes "the lanes are not the
+[ADR-152](../../architecture-decision-records/adr-152-wiggle-stays-off-the-column-encoder-until-two-lanes-go.md) takes "the lanes are not the
 cost — the objects are, on both sides of the hop" to the mark encoder and the
 transform steps, where the same shape holds: a `SimpleFeature` per row costs
 5-10x wiggle's hand packer and the identical encode over typed columns costs

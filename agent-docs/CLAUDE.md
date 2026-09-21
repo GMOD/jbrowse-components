@@ -11,7 +11,8 @@ is filed:
   [mechanisms/README.md](mechanisms/README.md) carries the admission test.
 - `ideas/` — a proposal parked, one per file, in the subfolder naming what it
   waits on: `ready/`, `waiting-on-a-call/`, `waiting-on-a-number/`,
-  `waiting-on-someone-else/`, `collections/`, `closed/`.
+  `waiting-on-someone-else/`, `collections/`. A verdict leaves `ideas/`: an ADR
+  if it is a decision worth its own record, otherwise deleted.
 - `architecture-decision-records/` — *why*, one per file.
 - `handoffs/` — live state of an unfinished thread, usually a review whose
   findings nobody has committed to. **Pointers, not content.** Delete when the

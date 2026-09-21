@@ -85,7 +85,6 @@ const PARKED_GROUPS = [
     'Waiting on someone else: upstream, a client, data or a CI runner',
   ],
   ['collections', 'Collections: several proposals in one file, triage inside'],
-  ['closed', 'Closed: a verdict, nothing to pick up'],
 ].map(([folder, title]) => ({
   title: title!,
   match: (doc: Doc) => doc.folder === folder,
