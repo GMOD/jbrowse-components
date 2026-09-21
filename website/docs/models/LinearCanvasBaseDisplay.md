@@ -163,6 +163,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-fitnote">**fitNote**</span><br><code>string &#124; undefined</code> | The track-sizing control's account of what fit mode gave up, or undefined when nothing. | LinearCanvasBaseDisplay |
 | <span id="getter-labelsfithint">**labelsFitHint**</span><br><code>string &#124; undefined</code> | The note on the selected "Labels" radio while the ladder is not honouring it (see `inertLabelHint`). | LinearCanvasBaseDisplay |
 | <span id="getter-morpheased">**morphEased**</span><br><code>number</code> |  | LinearCanvasBaseDisplay |
+| <span id="getter-animating">**animating**</span><br><code>boolean</code> | a row morph is in flight, which the chrome publishes for the capture waits | LinearCanvasBaseDisplay |
 | <span id="getter-renderdatamap">**renderDataMap**</span><br><code>ReadonlyMap&lt;number, FeatureDataResult&gt;</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-settledmaxy">**settledMaxY**</span><br><code>number</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-maxy">**maxY**</span><br><code>number</code> |  | LinearCanvasBaseDisplay |

@@ -50,7 +50,9 @@ decides the answer:
    resolving an assembly and no display is fetching. It has to hold for a beat,
    not merely be true once: a display drops to `ready` in the gap between one
    fetch finishing and the debounced next one starting. The hold also waits out
-   a view body still loading its code, which the marker cannot see.
+   a view body still loading its code and a display drawing a morph between two
+   layouts (`data-display-animating="true"`), neither of which the marker can
+   see.
 
 Then one negative gate, which is meaningful only after those two and answers
 what they do not — the marker is about WORK, and a display whose fetch failed is
