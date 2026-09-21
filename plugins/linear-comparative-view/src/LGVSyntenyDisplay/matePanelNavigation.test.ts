@@ -300,8 +300,8 @@ function followingStack(
   return asPanelStack(stack)
 }
 
-// The BreakpointSplitView shape: a stack with no follow at all, which is what
-// `isFollowingStack` answers false for.
+// The BreakpointSplitView shape: a stack with no follow at all, which
+// `beginStackMove` takes no anchor on.
 function plainStack(views: TestPanelModel[]) {
   return asPanelStack({ views })
 }

@@ -16,8 +16,7 @@ import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMate
 import type { MarkColorDisplay } from './offscreenMateMarkColors.ts'
 
 export interface OffscreenMateStrip extends OffscreenMateLane {
-  // the row a click on one of these marks navigates: the one not displaying
-  // the contig the mark names
+  // the facing row, which a click on one of these marks navigates
   navRow: number
 }
 

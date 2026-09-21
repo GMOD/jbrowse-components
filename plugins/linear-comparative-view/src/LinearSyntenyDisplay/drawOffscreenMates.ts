@@ -181,8 +181,8 @@ function stripGeometry({
   }
 }
 
-// The one place a mark's x is decided, so the draw and the two hit tests
-// cannot disagree. Entries whose instances all fell off screen keep a sentinel
+// The one place a mark's x is decided, so the draw and the hit test cannot
+// disagree. Entries whose instances all fell off screen keep a sentinel
 // span (`starts` above `ends`) that the x test drops before `mateAxis` is
 // read, since reading that sentinel as a position would call it hidden.
 function forEachMark(
@@ -236,10 +236,10 @@ export interface OffscreenMateLocus {
   end: number
 }
 
-// What a pointer on a mark resolves to, hover and click alike. `mateCumBp`
-// present means the facing row displays the contig and a click scrolls to
-// where the alignments are drawn; absent means the row has to gain the contig
-// first, and `locus` frames the window inside it.
+// What a pointer on a mark resolves to, hover and click alike. With
+// `mateCumBp` the facing row draws those alignments off screen and a click
+// scrolls there; without it nothing on that row places them, and `locus`
+// frames the window a click shows.
 export interface OffscreenMateSpan {
   refName: string
   // the blocks' untrimmed extent in the contig's own bp

@@ -7,8 +7,8 @@ import {
 
 import type { BpRegionIndex } from '@jbrowse/synteny-core'
 
-// The alignments anchored in a fetch whose mate lands on a contig the facing
-// view is not displaying: counted per contig, and placed on the axis they do
+// The alignments anchored in a fetch whose mate lands outside every region the
+// facing view displays: counted per contig, and placed on the axis they do
 // have so something can be drawn where they are. `counts` includes the
 // alignments the placed lanes have no entry for, since a block can fall
 // outside every displayed region of its own refName and still go somewhere.

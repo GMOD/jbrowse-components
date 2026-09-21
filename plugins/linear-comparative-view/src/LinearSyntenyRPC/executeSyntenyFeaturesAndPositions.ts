@@ -448,8 +448,6 @@ export async function executeSyntenyFeaturesAndPositions({
       await breakpoint.yield()
     }
     const { f, id, refName, start, end, strand, mate, mateRefName } = d
-    // Off-refName features (whole-genome PAF at low zoom) were already dropped
-    // during decorate, so every record here projects into both views.
 
     const cigarStr = f.get('CIGAR') as string | undefined
     // The coarse tier's fold of the CIGAR, walked in the CIGAR's place: runs
@@ -496,9 +494,7 @@ export async function executeSyntenyFeaturesAndPositions({
     let clippedCigar = clip?.cigar
 
     // The displayed region each axis shows this block in, resolved once from the
-    // block's span. A block that overlaps no displayed region on either axis is
-    // genuinely not in view and drops here — the same features the per-endpoint
-    // bpToCumBp used to drop, minus the ones that merely straddled an edge.
+    // block's span; a block with none on an axis is marked on the other.
     const e1 = findRegionEntry(
       v1Index,
       refName,

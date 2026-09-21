@@ -1,6 +1,6 @@
 ---
 name: offscreen-synteny-mates
-description: Alignments whose mate lands on a contig the facing view is not displaying, drawn as a mark rather than a ribbon. Both classes shipped 2026-08-19. Read before changing the mate marks, their click or their SVG export.
+description: Alignments whose mate lands outside every region the facing view displays, drawn as a mark rather than a ribbon. Both classes shipped 2026-08-19. Read before changing the mate marks, their click or their SVG export.
 kind: spec
 ---
 

@@ -68,13 +68,13 @@ export interface SyntenyFeatureData extends SyntenyFeatureLanes {
   // has per-row ops.
   hasCigar: boolean
   // The alignments this level FETCHED and could not draw a ribbon for, because
-  // their mate is on a contig the facing row is not displaying. Counted per
-  // contig and placed on the query axis. Not a subset of anything above: no
-  // entry here has a row in the per-feature lanes.
+  // no region the facing row displays reaches their mate. Counted per contig
+  // and placed on the query axis. Not a subset of anything above: no entry
+  // here has a row in the per-feature lanes.
   offscreenMates: OffscreenMateData
   // The same thing seen from the other row, and empty unless the view asked for
   // the second fetch: alignments anchored on a target-axis contig whose query
-  // end is on a contig the row above is not displaying. The query-axis fetch
+  // end no region of the row above reaches. The query-axis fetch
   // never requests these, so this is the one class the view cannot report from
   // one fetch. Placed on the TARGET axis.
   targetOffscreenMates: OffscreenMateData
