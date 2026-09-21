@@ -103,16 +103,15 @@ const TrackDisplayRegion = observer(function TrackDisplayRegion({
 const TrackRenderingContainer = observer(function TrackRenderingContainer({
   model,
   track,
+  display,
   ref,
 }: {
   model: LGV
   track: BaseTrackModel
+  display: LinearDisplayModel
   ref?: React.Ref<HTMLDivElement>
 }) {
   const { classes } = useStyles()
-  // an LGV track always holds at least one linear display (activeDisplay =
-  // displays[0]); narrow to the linear shape for height/RenderingComponent
-  const display = track.activeDisplay as LinearDisplayModel
   const { RenderingComponent, DisplayBlurb } = display
   const { showTrackOutlines } = model
   const trackId = track.trackId
