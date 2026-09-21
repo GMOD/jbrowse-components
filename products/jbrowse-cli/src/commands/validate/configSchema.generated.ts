@@ -4696,7 +4696,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "type": "string",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+          "description": "Shorthand for \`{ \\"value\\": ..., \\"scale\\": \\"none\\" }\`."
         },
         {
           "type": "object",

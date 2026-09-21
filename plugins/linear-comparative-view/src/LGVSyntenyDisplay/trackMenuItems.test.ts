@@ -25,6 +25,20 @@ test('the curated colour schemes are the four synteny ones', () => {
   ).toEqual(['Normal', 'Strand', 'Mapping quality', 'Query name'])
 })
 
+// The field defaults to `strand` here, so the string has to say "no field" as
+// well as naming the colour, or the constant lands under a field that hides it.
+test('a string colour is the constant fill, over the strand default', () => {
+  const display = createDisplay()
+  expect(display.colorBy).toEqual({ type: 'strand' })
+  display.setColor('steelblue')
+  expect(display.colorBy).toEqual({ type: 'normal' })
+  expect(display.colorSetting.value).toBe('steelblue')
+  display.setColorBy({ type: 'strand' })
+  expect(display.colorBy).toEqual({ type: 'strand' })
+  display.setColor({ value: 'steelblue', field: 'strand' })
+  expect(display.colorBy).toEqual({ type: 'strand' })
+})
+
 // An all-vs-all track stacks one section per mate assembly, so this display
 // inherits the alignments base's `facet.domain` and has to offer the same
 // reorder menu over it.

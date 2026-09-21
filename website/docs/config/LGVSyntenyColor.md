@@ -16,7 +16,8 @@ _See the **Config slots** section below for all available configuration fields._
 
 The LGVSyntenyDisplay's `color` setting: the
 [AlignmentsColor](../alignmentscolor) object with `field` defaulting to
-`strand`, where the alignments display paints one fill.
+`strand`, where the alignments display paints one fill. A string is the
+constant, `{ value, scale: 'none' }`, so the default field does not hide it.
 
 ## Related links
 

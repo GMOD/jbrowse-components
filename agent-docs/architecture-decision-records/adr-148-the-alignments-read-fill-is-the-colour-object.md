@@ -102,6 +102,9 @@ retired `methylation`, `stranded` and `insertSizeGradient` names now resolve.
 
 - A config or session writing `colorBy` on an alignments display that skips the
   migration paints the plain fill.
+- LGVSyntenyColor's `field` defaults to `strand`, so its string form sets
+  `scale: 'none'` beside `value` (`shorthandWith`); without it
+  `color: "steelblue"` landed under the strand fill and painted nothing.
 - `displayDefaults: { color: { field: 'strand' } }` on an `AlignmentsTrack`
   routes to the alignments display and the mark display, which take one shape
   ([ADR-134](adr-134-displaydefaults-routes-a-value-to-the-displays-that-take-it.md)).

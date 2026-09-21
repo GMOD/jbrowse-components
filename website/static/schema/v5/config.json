@@ -4457,7 +4457,7 @@
       "anyOf": [
         {
           "type": "string",
-          "description": "Shorthand for `{ \"value\": ... }`."
+          "description": "Shorthand for `{ \"value\": ..., \"scale\": \"none\" }`."
         },
         {
           "type": "object",

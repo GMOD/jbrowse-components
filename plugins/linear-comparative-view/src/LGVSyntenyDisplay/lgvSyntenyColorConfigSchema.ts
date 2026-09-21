@@ -7,7 +7,8 @@ import { alignmentsColorConfigSchema } from '@jbrowse/plugin-alignments'
  * #category display
  * The LGVSyntenyDisplay's `color` setting: the
  * [AlignmentsColor](../alignmentscolor) object with `field` defaulting to
- * `strand`, where the alignments display paints one fill.
+ * `strand`, where the alignments display paints one fill. A string is the
+ * constant, `{ value, scale: 'none' }`, so the default field does not hide it.
  *
  * #example
  * ```js
@@ -30,5 +31,6 @@ export const lgvSyntenyColorConfigSchema = ConfigurationSchema(
      */
     baseConfiguration: alignmentsColorConfigSchema,
     ...colorChannelOptions('color'),
+    shorthandWith: { scale: 'none' },
   },
 )
