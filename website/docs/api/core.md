@@ -421,6 +421,19 @@ says why a mark is grey rather than listing a blank value.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
+## NOT_A_NUMBER_LABEL
+
+The key a value holding text that is no number files under on a threshold
+scale, painted the misconfiguration grey rather than passing for a missing
+value.
+
+```js
+// type signature
+"(not a number)"
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
 ## numericDomain
 
 A domain written as strings — the shared `domain` slot is a `stringArray` —
@@ -609,6 +622,20 @@ at the first cut a value is under.
 ```js
 // type signature
 (domain: readonly (string | number)[]) => number[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
+## thresholdField
+
+A threshold scale read the way every categorical channel reads its field: a
+value files under the label of the bin it falls in, a feature with no value
+under `''`, and text that is no number under NOT_A_NUMBER_LABEL.
+The bins are the whole domain, so a key lists each one.
+
+```js
+// type signature
+(field: string, { domain, range, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)

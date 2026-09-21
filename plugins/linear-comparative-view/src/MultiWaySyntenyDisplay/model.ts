@@ -29,8 +29,8 @@ import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
-  categoricalColorField,
   colorEncodingOf,
+  colorFieldOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -153,6 +153,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
+import type { ColorScaleName } from '@jbrowse/display-kit/colorConfigSchema'
 import type {
   HighlightRect,
   HighlightStyle,
@@ -783,7 +784,15 @@ export function stateModelFactory(
        * the field the genes paint by, `''` while `color.value` paints
        */
       get geneColorField(): string {
-        return categoricalColorField(self.geneColorEncoding)?.field ?? ''
+        return colorFieldOf(self.geneColorEncoding)?.field ?? ''
+      },
+      /**
+       * #getter
+       * the scale the genes paint through, `none` while `color.value` paints
+       */
+      get geneColorScale(): ColorScaleName {
+        const encoding = self.geneColorEncoding
+        return typeof encoding === 'object' ? encoding.scale : 'none'
       },
       /**
        * #getter
@@ -1864,7 +1873,7 @@ export function stateModelFactory(
         })
         const onScreen: Span = [0, self.canvasWidth]
         const encoding = self.geneColorEncoding
-        const field = categoricalColorField(encoding)
+        const field = colorFieldOf(encoding)
         if (field) {
           return laneFieldKey(hits, onScreen, field)
         }

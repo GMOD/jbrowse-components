@@ -320,4 +320,63 @@ describe('derived color key', () => {
     )
     expect(display.colorScales).toEqual([])
   })
+
+  describe('threshold color', () => {
+    function thresholdDisplay(range = ['#0000ff', '#8888ff', '#ff0000']) {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      setConf(display, 'color', {
+        field: 'dif',
+        scale: 'threshold',
+        domain: ['-0.3', '0.3'],
+        range,
+      })
+      return display
+    }
+
+    it('keys every bin in order, and the no-value row once something paints it', () => {
+      const display = thresholdDisplay()
+      display.setRpcData(
+        0,
+        makeFeatureData({
+          colorKey: {
+            candidates: [
+              { rowIndex: 0, value: '≥ 0.3', color: cssColorToABGR('#ff0000') },
+              {
+                rowIndex: 0,
+                value: '',
+                color: cssColorToABGR(NO_CATEGORY_COLOR),
+              },
+            ],
+            rows: [{ strand: undefined, groupKey: undefined }],
+          },
+        }),
+        ctgA,
+      )
+      expect(display.colorScales[0]).toMatchObject({ title: 'dif' })
+      expect(keyValues(display)).toEqual(['< -0.3', '-0.3 – 0.3', '≥ 0.3', ''])
+      expect(display.colorByMode).toBe('attribute')
+      expect(display.colorField).toBeUndefined()
+    })
+
+    it('offers no pin, which would write values into the cuts', () => {
+      const item = thresholdDisplay()
+        .trackMenuItems()
+        .find(i => 'label' in i && i.label === 'Color by...')!
+      expect(
+        resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0]).map(
+          i => 'label' in i && i.label,
+        ),
+      ).not.toContain('Pin distinct colors')
+    })
+
+    it('notices a range that is not one colour per interval', () => {
+      expect(thresholdDisplay().notices).toEqual([])
+      expect(thresholdDisplay(['#0000ff', '#ff0000']).notices).toEqual([
+        expect.stringMatching(
+          /^color\.range: 2 threshold cuts make 3 intervals/,
+        ),
+      ])
+    })
+  })
 })

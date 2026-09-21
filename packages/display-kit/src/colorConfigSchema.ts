@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { paintedScale } from './colorScale.ts'
@@ -20,6 +21,12 @@ export type { ColorScaleName } from './colorScale.ts'
 
 /** The scales of a colour object whose field takes a range colour per value. */
 export const CATEGORICAL_COLOR_SCALES = ['none', 'categorical'] as const
+
+/** The scales FeatureColor paints: a range colour per value, or per bin. */
+export const FEATURE_COLOR_SCALES = [
+  ...CATEGORICAL_COLOR_SCALES,
+  'threshold',
+] as const
 
 /**
  * A colour object as written: the members every one declares, and the ones a
@@ -310,13 +317,29 @@ export function categoricalColorField(encoding: ColorEncoding | undefined) {
 }
 
 /**
+ * The field a categorical or threshold encoding paints through, keyed,
+ * ordered, named and coloured as every categorical channel reads one — a
+ * threshold's values filed under their bins — or `undefined` for any other
+ * encoding.
+ */
+export function colorFieldOf(encoding: ColorEncoding | undefined) {
+  return typeof encoding === 'object' && encoding.scale === 'threshold'
+    ? thresholdField(encoding.field, {
+        domain: encoding.domain?.map(String),
+        range: encoding.range,
+      })
+    : categoricalColorField(encoding)
+}
+
+/**
  * #config FeatureColor
  * #category display
  * The canvas feature displays' `color` setting: a CSS colour or `jexl:`
  * callback in `value`, or a field whose values each take a range colour,
- * with a key. A string is the constant; the object binds the field, and
- * `scale: "none"` beside a field paints the constant while keeping the field
- * for the way back.
+ * or whose numbers each take the colour of the interval between cut points
+ * they fall in, with a key. A string is the constant; the object binds the
+ * field, and `scale: "none"` beside a field paints the constant while keeping
+ * the field for the way back.
  *
  * #example
  * ```js
@@ -326,6 +349,17 @@ export function categoricalColorField(encoding: ColorEncoding | undefined) {
  * {
  *   type: 'LinearBasicDisplay',
  *   color: { field: 'gene_biotype', range: ['#1f77b4', '#ff7f0e'] },
+ * }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearBasicDisplay',
+ *   color: {
+ *     field: 'score',
+ *     scale: 'threshold',
+ *     domain: ['0.5', '0.9'],
+ *     range: ['#c6dbef', '#6baed6', '#08519c'],
+ *   },
  * }
  * ```
  */
@@ -344,21 +378,21 @@ export const colorConfigSchema = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     ...colorChannelSlots({
-      scales: CATEGORICAL_COLOR_SCALES,
+      scales: FEATURE_COLOR_SCALES,
       scaleName: 'FeatureColorScale',
       fieldType: 'featureField',
       field:
         "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range colour per value of field; unset follows field',
+        'none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field',
     }),
     ...colorDomainSlot({
       domain:
-        'the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it',
+        'the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it. Under threshold, the ascending cut points, a value on a cut taking the interval above it',
     }),
     ...colorRangeSlot({
       range:
-        'CSS colours the domain takes, in order, continuing into the default palette past its end',
+        'CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
     }),
   },
   colorChannelOptions('color'),

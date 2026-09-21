@@ -4,9 +4,11 @@ import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
   categoricalColorField,
   colorEncodingOf,
+  colorFieldOf,
   colorMembersOf,
   colorScaleChoicesOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { colorNotices } from '@jbrowse/display-kit/colorScale'
 
 import {
   FEATURE_DEFAULT_COLOR,
@@ -64,7 +66,7 @@ export function colorViews(self: ColorHost) {
      * #getter
      */
     get colorByMode(): 'default' | 'strand' | 'attribute' {
-      const field = this.colorField?.field
+      const field = this.paintedColorField?.field
       return field === undefined
         ? 'default'
         : field === STRAND_FIELD
@@ -83,8 +85,8 @@ export function colorViews(self: ColorHost) {
     /**
      * #getter
      * `colorSettings` as it paints, through the one resolver every display's
-     * colour object goes through: `color.value`, or a field's categorical
-     * scale.
+     * colour object goes through: `color.value`, or a field through its
+     * categorical or threshold scale.
      */
     get colorEncoding() {
       return colorEncodingOf(this.colorSettings, 'categorical')
@@ -92,10 +94,30 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
-     * The color channel's field, or undefined while `color.value` paints.
+     * The color channel's field while it paints through a categorical scale,
+     * which a facet on the same field shares and "Pin distinct colors"
+     * writes the domain of.
      */
     get colorField() {
       return categoricalColorField(this.colorEncoding)
+    },
+
+    /**
+     * #getter
+     * The field the color channel paints through, a threshold's values filed
+     * under their bins, or undefined while `color.value` paints.
+     */
+    get paintedColorField() {
+      return colorFieldOf(this.colorEncoding)
+    },
+
+    /**
+     * #getter
+     * What the `color` object's slots say together that it cannot paint as
+     * written, for the corner notice.
+     */
+    get notices(): string[] {
+      return colorNotices(this.colorSettings, 'categorical')
     },
 
     /**

@@ -112,7 +112,7 @@ export function unionLegendCandidates<T>(
  * rows would say nothing (`legendIsReadable`). A display resolving its own colors hands the
  * candidates its packer recorded; one resolved by `encodeFeatures` hands the
  * entries of the scale tables that came back. Either way the key lists what
- * the painting holds.
+ * the painting holds, and a `closed` field's domain besides.
  */
 export function derivedColorScale<T>(
   regions: Iterable<T>,
@@ -123,8 +123,8 @@ export function derivedColorScale<T>(
     maxItems,
   }: { id: string; field: CategoricalField; maxItems?: number },
 ): ColorScale[] {
-  const entries = unionLegendCandidates(regions, resolve)
-    .map(({ values, color }) => {
+  const painted = unionLegendCandidates(regions, resolve).map(
+    ({ values, color }) => {
       const sorted = values.toSorted(field.compare)
       const value = sorted[0]!
       return {
@@ -134,8 +134,21 @@ export function derivedColorScale<T>(
         color: abgrToCssRgba(color),
         ...(value === '' ? { missing: true } : {}),
       }
-    })
-    .sort((a, b) => field.compare(a.value, b.value))
+    },
+  )
+  const named = new Set(painted.flatMap(e => e.values))
+  const unpainted = field.closed
+    ? field.domain
+        .filter(value => !named.has(value))
+        .map(value => ({
+          value,
+          label: field.label(value),
+          color: field.color(value),
+        }))
+    : []
+  const entries = [...painted, ...unpainted].sort((a, b) =>
+    field.compare(a.value, b.value),
+  )
   return legendIsReadable(entries, maxItems)
     ? [
         {

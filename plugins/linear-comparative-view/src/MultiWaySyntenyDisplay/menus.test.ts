@@ -111,6 +111,7 @@ function trackModel({
   domain = [],
   hasLegendKey = false,
   geneColorField = '',
+  geneColorScale = geneColorField ? 'categorical' : 'none',
 }: {
   universe?: number
   laneFilter?: LaneFilter
@@ -118,6 +119,7 @@ function trackModel({
   domain?: string[]
   hasLegendKey?: boolean
   geneColorField?: string
+  geneColorScale?: string
 } = {}) {
   const { model: header, calls } = headerModel()
   const model = {
@@ -162,6 +164,7 @@ function trackModel({
     setShowLegend: () => {},
     hasLegendKey,
     geneColorField,
+    geneColorScale,
     setGeneColorBy: (field: string) => {
       calls.push(`gene color ${field}`)
     },
@@ -252,6 +255,17 @@ test('the gene modes name a configured field and offer the pin under it', () => 
   click(genes[5])
   expect(calls).toEqual(['pin gene colors'])
   expect(labelsOf(geneColorMenuItems(trackModel().model))).not.toContain(
+    'Pin distinct colors',
+  )
+})
+
+// The pin writes values into `domain`, which under a threshold is the cuts
+test('a threshold gene color offers no pin', () => {
+  const { model } = trackModel({
+    geneColorField: 'score',
+    geneColorScale: 'threshold',
+  })
+  expect(labelsOf(geneColorMenuItems(model))).not.toContain(
     'Pin distinct colors',
   )
 })

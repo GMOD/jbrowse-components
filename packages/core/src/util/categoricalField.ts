@@ -49,6 +49,11 @@ export interface CategoricalField {
   field: string
   /** The declared order, or the field's own where none is declared. */
   domain: readonly string[]
+  /**
+   * Every key a value can file under is in `domain`, as a threshold scale's
+   * bins are, so a key lists all of them whether or not anything painted one.
+   */
+  closed?: boolean
   key: (value: unknown) => string
   compare: (a: string, b: string) => number
   label: (key: string) => string

@@ -3,7 +3,7 @@ import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { categoricalColorField } from '@jbrowse/display-kit/colorConfigSchema'
+import { colorFieldOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { MultiWaySyntenyDisplayConfig } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -80,7 +80,7 @@ export function geneColors(
       cssColorToABGR(String(readConfObject(conf, 'utrColor', { feature }))),
     )
 
-  const field = categoricalColorField(encoding)
+  const field = colorFieldOf(encoding)
   if (field) {
     const keyed = (key: string) =>
       memo(byKey, key, () => {

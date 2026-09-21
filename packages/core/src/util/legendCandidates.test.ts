@@ -6,6 +6,7 @@ import {
   derivedColorScale,
   unionLegendCandidates,
 } from './legendCandidates.ts'
+import { thresholdField } from './thresholdScale.ts'
 
 import type { LegendCandidate } from './legendCandidates.ts'
 
@@ -218,6 +219,39 @@ describe('derivedColorScale', () => {
         values: ['Enh', 'TssA'],
         label: 'Enh, TssA',
         color: 'rgba(255,0,0,1)',
+      },
+    ])
+  })
+
+  test('lists every bin of a closed domain, painted or not, and the no-value row where one painted', () => {
+    const bins = thresholdField('score', {
+      domain: ['1', '2'],
+      range: ['#0000ff', '#00ff00', '#ff0000'],
+    })
+    const drawn = collect([
+      [0, '≥ 2', RED],
+      [0, '', GREEN],
+    ])
+    expect(
+      derivedColorScale([drawn], allRowsPaint, {
+        id: 'color',
+        field: bins,
+      }).flatMap(scale => (scale.kind === 'categorical' ? scale.entries : [])),
+    ).toEqual([
+      { value: '< 1', label: '< 1', color: '#0000ff' },
+      { value: '1 – 2', label: '1 – 2', color: '#00ff00' },
+      {
+        value: '≥ 2',
+        values: ['≥ 2'],
+        label: '≥ 2',
+        color: 'rgba(255,0,0,1)',
+      },
+      {
+        value: '',
+        values: [''],
+        label: NO_VALUE_LABEL,
+        color: 'rgba(0,255,0,1)',
+        missing: true,
       },
     ])
   })

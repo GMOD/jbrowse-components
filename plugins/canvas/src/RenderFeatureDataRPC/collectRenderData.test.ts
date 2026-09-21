@@ -403,7 +403,9 @@ describe('collectRenderData intron chevrons', () => {
 })
 
 // gene → two mRNA transcripts, each with two CDS exons, stacked at their own y.
-function geneWithTwoTranscripts() {
+function geneWithTwoTranscripts(
+  txAttributes: Record<string, Record<string, unknown>> = {},
+) {
   function transcript(id: string, base: number, topPx: number) {
     const cds1 = mockFeature({
       type: 'CDS',
@@ -423,6 +425,7 @@ function geneWithTwoTranscripts() {
       start: base,
       end: base + 40,
       subfeatures: [cds1, cds2],
+      attributes: txAttributes[id],
     })
     return {
       feature: mRNA,
@@ -928,5 +931,32 @@ describe('color key', () => {
   it('is not collected while the color slot paints', () => {
     expect(collectAll({ color: 'red' }).colorKey).toBeUndefined()
     expect(collectAll({}).colorKey).toBeUndefined()
+  })
+
+  it("paints a transcript's exons the threshold bin of the transcript's value, and a transcript with none grey", () => {
+    const result = collectRenderData({
+      layouts: [geneWithTwoTranscripts({ tx1: { dif: '0.45' } })],
+      regionStart: 0,
+      regionEnd: 1000,
+      config: mockDisplayConfig({
+        color: {
+          value: undefined,
+          field: 'dif',
+          scale: 'threshold',
+          domain: ['-0.3', '0', '0.3'],
+          range: ['#0000ff', '#8888ff', '#ff8888', '#ff0000'],
+        },
+      }),
+      colorByCDS: false,
+      peptideDataMap: undefined,
+      jexl,
+    })
+    const red = cssColorToABGR('#ff0000')
+    const grey = cssColorToABGR(NO_CATEGORY_COLOR)
+    expect([...result.rectColors]).toEqual([red, red, grey, grey])
+    expect(result.colorKey?.candidates.map(c => [c.value, c.color])).toEqual([
+      ['≥ 0.3', red],
+      ['', grey],
+    ])
   })
 })

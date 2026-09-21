@@ -1,5 +1,10 @@
 import { categoricalPalette } from '../ui/colors.ts'
+import { NO_VALUE_LABEL } from './categoricalField.ts'
+import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
+import { groupKeyComparator, valueText } from './groupKeys.ts'
 import { numericValue } from './numericValue.ts'
+
+import type { CategoricalField } from './categoricalField.ts'
 
 /**
  * #api
@@ -75,4 +80,51 @@ export function thresholdLabels(domain: readonly number[]): string[] {
     ...domain.slice(1).map((cut, i) => `${domain[i]} – ${cut}`),
     `≥ ${domain.at(-1)}`,
   ]
+}
+
+/**
+ * #api
+ * The key a value holding text that is no number files under on a threshold
+ * scale, painted the misconfiguration grey rather than passing for a missing
+ * value.
+ */
+export const NOT_A_NUMBER_LABEL = '(not a number)'
+
+/**
+ * #api
+ * A threshold scale read the way every categorical channel reads its field: a
+ * value files under the label of the bin it falls in, a feature with no value
+ * under `''`, and text that is no number under {@link NOT_A_NUMBER_LABEL}.
+ * The bins are the whole domain, so a key lists each one.
+ */
+export function thresholdField(
+  field: string,
+  {
+    domain = [],
+    range = [],
+  }: { domain?: readonly string[]; range?: readonly string[] } = {},
+): CategoricalField {
+  const cuts = thresholdCuts(domain)
+  const labels = thresholdLabels(cuts)
+  const palette = thresholdPalette(labels.length, range)
+  const colorOf = new Map(labels.map((label, i) => [label, palette[i]!]))
+  return {
+    field,
+    domain: labels,
+    closed: true,
+    key: value => {
+      if (valueText(value) === '') {
+        return ''
+      }
+      const bin = thresholdIndex(value, cuts)
+      return bin < 0 ? NOT_A_NUMBER_LABEL : labels[bin]!
+    },
+    compare: groupKeyComparator([...labels, NOT_A_NUMBER_LABEL]),
+    label: key => (key === '' ? NO_VALUE_LABEL : key),
+    sectionLabel: key => `${field}: ${key === '' ? 'none' : key}`,
+    color: key =>
+      key === ''
+        ? NO_CATEGORY_COLOR
+        : (colorOf.get(key) ?? MISCONFIGURED_COLOR),
+  }
 }

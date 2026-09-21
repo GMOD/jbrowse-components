@@ -3560,14 +3560,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
               "enum": [
                 "none",
-                "categorical"
+                "categorical",
+                "threshold"
               ]
             },
             "domain": {
-              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it.",
+              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
               "anyOf": [
                 {
                   "type": "array",
@@ -3585,7 +3586,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "range": {
-              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end.",
+              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/CssColor"

@@ -1477,8 +1477,8 @@ export default function baseStateModelFactory(
        * sections' order where the facet reads the same field.
        */
       get derivedColorScales(): ColorScale[] {
-        const scale = self.colorField
-        const { facet, hiddenGroupKeys } = self
+        const scale = self.paintedColorField
+        const { facet, hiddenGroupKeys, colorField } = self
         if (!scale) {
           return []
         }
@@ -1487,7 +1487,9 @@ export default function baseStateModelFactory(
             ? sectionIdsOf(self.laidOutDataMap, facet)
             : undefined
         return derivedColorKey(
-          facet?.field === scale.field ? facetField(facet) : scale,
+          facet && facet.field === colorField?.field
+            ? facetField(facet)
+            : scale,
           self.rpcDataMap.values(),
           sectionOf && (section => hiddenGroupKeys.has(sectionOf(section).key)),
         )

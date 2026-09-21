@@ -72,6 +72,7 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setShowLegend: (flag: boolean) => void
   hasLegendKey: boolean
   geneColorField: string
+  geneColorScale: string
   setGeneColorBy: (field: string) => void
   geneColorDomain: readonly string[]
   pinnedGeneColorDomain: readonly string[]
@@ -261,7 +262,7 @@ export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
     ...radioItems(modes, field, value => {
       model.setGeneColorBy(value)
     }),
-    ...(field === ''
+    ...(model.geneColorScale !== 'categorical'
       ? []
       : [
           {

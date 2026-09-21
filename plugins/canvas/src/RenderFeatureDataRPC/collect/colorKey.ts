@@ -3,8 +3,8 @@ import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
 import {
-  categoricalColorField,
   colorEncodingOf,
+  colorFieldOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { DisplayConfig } from '../renderConfig.ts'
@@ -25,9 +25,7 @@ export interface PaintedValue {
  * values can leave it.
  */
 export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
-  const field = categoricalColorField(
-    colorEncodingOf(config.color, 'categorical'),
-  )
+  const field = colorFieldOf(colorEncodingOf(config.color, 'categorical'))
   if (!field) {
     return undefined
   }

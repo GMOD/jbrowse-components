@@ -13,6 +13,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
+import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
@@ -374,6 +375,7 @@ const FeatureBody = observer(function FeatureBody({
           }}
         />
         <GeneGlyphIndicator model={model} />
+        <ConfigProblemsIndicator notices={model.notices} />
         <TrackHeightIndicator
           heightMode={model.heightMode}
           hasOverflow={model.hasOverflow}
