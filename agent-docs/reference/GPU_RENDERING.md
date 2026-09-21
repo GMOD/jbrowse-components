@@ -617,7 +617,7 @@ own — dotplot and the synteny ribbons fold a `panPx` from the fetch-time base,
 hic and LD apply the diagonal `viewScale`/`viewOffsetX` — so the block carries
 nothing but its key and the identity bp span that keeps `clipBlock` well-formed.
 The multi-way stack is the mixed case: its ribbon gutters take a canvas-wide
-block and its glyph lanes a real bp-span one off `glyphRangeStart`, which is
+block and its glyph lanes a real bp-span one off `glyphBlockRange`, which is
 what lets one mark list serve both. It was four
 per-plugin copies of that until 2026-09-08.
 
