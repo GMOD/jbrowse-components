@@ -191,7 +191,7 @@ import type {
   SortedBy,
 } from '../shared/types'
 import type { NumericExtent } from './bakedColorScale.ts'
-import type { ReadColorCategory, ReadColorOpts } from './colorUtils.ts'
+import type { ReadColorCategory } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { ContextMenuHit } from './components/hitTestPipeline.ts'
 import type { SashimiArcSection } from './components/sashimiArcs.ts'
@@ -1680,7 +1680,7 @@ export default function stateModelFactory(
            * `framesChainStrand` answered it, so the bake frames exactly where
            * the consensus pass ran and the key words it.
            */
-          get readColorOpts(): ReadColorOpts {
+          get readColorOpts() {
             return {
               chainMode: self.isChainMode,
               colorSupplementaryChains: self.colorSupplementaryChains,
