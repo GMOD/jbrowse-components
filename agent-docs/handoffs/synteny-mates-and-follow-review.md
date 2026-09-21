@@ -1,6 +1,6 @@
 ---
 name: synteny-mates-and-follow-review
-description: Findings from two review passes (2026-09-20, 2026-09-21) of the off-screen mate strip and the synteny follow. A second pass confirmed seven more fixes on real data; two fixer worktrees were stopped mid-work and hold unreviewed commits. Start at "Next session". Read before touching `drawOffscreenMates`, `mateNavDestination`, the mate collection in `executeSyntenyFeaturesAndPositions`, or `SyntenyFollow/`.
+description: Findings from two review passes (2026-09-20, 2026-09-21) of the off-screen mate strip and the synteny follow, and a review of the follow fixes. Every bug and UI item has landed or closed; two unconfirmed follow findings and the simplifications remain. Start at "Next session". Read before touching `drawOffscreenMates`, `mateNavDestination`, the mate collection in `executeSyntenyFeaturesAndPositions`, or `SyntenyFollow/`.
 ---
 
 # Off-screen mates and the synteny follow: review findings
@@ -11,26 +11,27 @@ its commit when it lands; file what nobody takes up into
 
 ## Next session: start here
 
-The 2026-09-21 session stopped two fixer agents mid-run. The M3 one is
-superseded and gone; the other is kept, **unreviewed and unlanded**:
+Every bug and UI item is landed or closed. What is left:
 
-- `.claude/worktrees/agent-abd504f266bebcb9b`, branch
-  `worktree-agent-abd504f266bebcb9b`: `05ffe7f378`, B9 (the overview freeze).
-  Committed by the agent; its gates and sabotage run are unconfirmed.
+1. **Two findings from the follow review, neither confirmed by a test.**
+   - A band over a level with no synteny track does nothing while following:
+     `bandGestureRows` moves only the anchor, and a row no track connects to it
+     never follows. Fix, ~5 lines: return every row when no follow path reaches
+     the band.
+   - `execute` still navigates when the anchor moved on during the resolve's
+     await, so an RPC slower than the drag can send the row back by that much.
+     Skipping the navigation would mean `execute` re-reads the staying row,
+     which `FollowWork` is built to avoid; measure before choosing.
+2. The comment thinning, S1, and the simplifications S2, S5, S6's test-only
+   getters, S7 and M8.
+3. The overlay bench's hover and click columns, re-measured on a quiet
+   machine.
 
-Review the diff, rebase onto local `main`, run `pnpm verify` and the touched
-suites, show each new test failing without its fix, and land by fast-forward.
-Then the rest, in this order — each confirmed by the second pass on real data
-or in the follow harness unless marked:
-
-1. Follow: B9 (finish `05ffe7f378`), B3's backwards jump, B10 (Collapse introns
-   undone on a following row).
-2. Mates: the stale user guide (M16).
-3. Follow: U1.
-4. The comment thinning, S1.
-
-Landed earlier: M1, M2, M7 (order 1), B1, B2 (order 2), S4, the stale-doc half
-of the comment sweep, and M14 with M10 and M12.
+Landed: M1, M2, M7, B1, B2, S4, the stale-doc half of the comment sweep, M14
+with M10 and M12, and the parallel session's list below. On 2026-09-21 the
+pixel lock went (`ca7d25f2fc`), and B9 (`2d46e91175`), B10 (`b2c5b5c74e`), U1
+(`d7d7816760`), B3's mid-drag half (`9426933c51`) and M16 (`7b97a31259`)
+landed. The superseded M3 worktree `d3a5217483` is dropped.
 
 ### Landed in parallel, 2026-09-21, from `worktree-agent-docs-followups`
 
@@ -51,13 +52,11 @@ the follow places the rest. U4 is moot, since Colin dropped the pixel lock:
 the view's row coupling is now the `followSynteny` boolean, and a band drag
 with the follow off is the one way to pan every row together.
 
-**The follow half has had no independent review**, and its full
-`pnpm test-related` was stopped before it finished; the linear-comparative-view
-and linear-genome-view suites ran green. Review `4d89cff7e9` for whether B3's
-live-block read can skip a correction mid-flight (it may bear on "B3's
-backwards jump"), whether the frame pass's `facing()` write of `spreadTargets`
-breaks its rule of minting no state, and whether `bandGestureRows` goes empty on
-a stale `followAnchorIndex`.
+The follow half had its review on 2026-09-21. B3's live read fixed only the
+post-drag settle; the mid-drag half landed later. The frame pass's `facing()`
+write mints state in one case, which the follow doc now states.
+`bandGestureRows` cannot go empty through any action; only a snapshot applied
+onto a live view could write an out-of-range anchor.
 
 ## Off-screen mates
 
@@ -125,7 +124,7 @@ Background: [reference/OFFSCREEN_SYNTENY_MATES.md](../reference/OFFSCREEN_SYNTEN
   `f` before the identity override; `culledRibbonMateData` takes the colours and
   neither places nor counts a feature with instances but none visible. Class A
   carries no attribute lanes; close that half.
-- **M16. The public user guide contradicts the landed click.**
+- **M16.** Landed, `7b97a31259`. **The public user guide contradicts the landed click.**
   `website/docs/user_guides/linear_synteny_view.md` ~341 says a pointer answers
   with the longest alignment and a click follows it (it names the contig painted
   on top, and a click shows where that contig's alignments under the pointer
@@ -211,7 +210,7 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
   feature" (`SyntenyFeatureDetail/LinkToSyntenyView.tsx`) call `moveTo`/`navTo`
   per row from a click handler, and both are in `ROW_GESTURES`. Fix: make them
   stack actions, as `squareView` is.
-- **B3. Settle re-navigates a row the frame pass already placed.** Verified in
+- **B3.** Landed, `4d89cff7e9` after a drag and `9426933c51` mid-drag. **Settle re-navigates a row the frame pass already placed.** Verified in
   the harness. The plan reads the moving row's `coarseDynamicBlocks`, which
   refresh on their own 500ms timer after the anchor's, so it compares against a
   stale position; below 1bp/px it also snaps the row to whole bases. **The
@@ -221,7 +220,7 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
   `planLevel` pairs one row's fresh debounced window with the other's stale one
   (~:552, :625, :653). Fix, ~7 lines: keep the debounced reads as the trigger,
   plan from both rows' live `dynamicBlocks.contentBlocks` read untracked.
-- **B9. Zooming or panning out of an overview freezes the other rows, then
+- **B9.** Landed, `2d46e91175`. **Zooming or panning out of an overview freezes the other rows, then
   they jump.** Confirmed on volvox_contig_swap: the anchor went to
   ctgA:2337-10126 and the other row sat on ctgA+ctgB for 250ms+, then jumped.
   Default trigger: the grape/peach/cacao session opens on whole genomes. The
@@ -229,7 +228,7 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
   overview never makes, while the decision still says spreading
   (`installSyntenyFollow.ts` ~:879-897). Fix, ~1 line: take the spread branch
   when `decision?.spreading && !levelStates.pickFor(level)`. In `05ffe7f378`.
-- **B10. "Collapse introns → Replace current view" on a following row is
+- **B10.** Landed, `b2c5b5c74e`. **"Collapse introns → Replace current view" on a following row is
   undone at once**, and so are alignments' "View mate region" and "View split
   alignment regions" (confirmed). All go through
   `plugins/linear-genome-view/src/LinearGenomeView/showRegionsWithUndo.ts`,
@@ -284,7 +283,7 @@ Background: `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`.
 
 ### UI
 
-- **U1.** "Show all regions – same bp per pixel" does nothing lasting to rows
+- **U1.** Landed, `d7d7816760`. "Show all regions – same bp per pixel" does nothing lasting to rows
   the follow spreads: confirmed at 61.48 against 77.89 bp/px with "same"
   selected. Fix, ~7 lines: `positionViewOnSpans` takes a minimum bp/px, and the
   rung-3 callers pass the anchor's under same-scale. The "Square view" half is
