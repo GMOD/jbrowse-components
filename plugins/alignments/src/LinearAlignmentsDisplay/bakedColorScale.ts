@@ -13,7 +13,11 @@ import {
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
 
-import { DEFAULT_RAMP, bakedScaleOf } from '../shared/alignmentsColor.ts'
+import {
+  DEFAULT_RAMP,
+  bakedScaleOf,
+  isBakedScheme,
+} from '../shared/alignmentsColor.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
@@ -148,7 +152,7 @@ export function bakedColorScale(
   if (colorBy.type === 'tag' && scale === 'threshold') {
     return thresholdScale(setting)
   }
-  if (colorBy.type === 'tag' && (domain.length > 0 || palette.length > 0)) {
+  if (isBakedScheme(colorBy) && (domain.length > 0 || palette.length > 0)) {
     return {
       kind: 'categorical',
       declared: true,

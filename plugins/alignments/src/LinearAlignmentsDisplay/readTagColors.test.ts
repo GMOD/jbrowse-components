@@ -218,6 +218,13 @@ describe('a declared scale', () => {
     ]).toEqual([packed('#00ff00'), packed('#ff0000'), packed('#ff0000')])
   })
 
+  test('a domain and palette reach a mate reference too', () => {
+    const MATE: ColorBy = { type: 'mateRefName' }
+    const scale = scaleFor(MATE, { domain: ['chr2'], palette: ['#ff0000'] })
+    expect(scale.declared).toBe(true)
+    expect(scale.color('chr2')).toBe('#ff0000')
+  })
+
   test('a declared scale over a strand tag replaces the strand vocabulary', () => {
     const XS: ColorBy = { type: 'tag', tag: 'XS' }
     const scale = scaleFor(XS, { domain: ['+'], palette: ['#123456'] })
